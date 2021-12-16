@@ -1,5 +1,5 @@
 {
-    Copyright (c) 1998-2020 by the FPC Development Team
+    Copyright (c) 1998-2025 by the FPC Development Team
 
     Dumps the contents of a FPC unit file (PPU File)
 
@@ -47,7 +47,7 @@ uses
 
 const
   Title     = 'PPU-Analyser';
-  Copyright = 'Copyright (c) 1998-2020 by the Free Pascal Development Team';
+  Copyright = 'Copyright (c) 1998-2025 by the Free Pascal Development Team';
 
 { verbosity }
   v_none           = $0;
@@ -3119,7 +3119,8 @@ const
      (mask:po_objc_related_result_type; str: 'Objective-C related result type'),
      (mask:po_anonymous;       str: 'Anonymous'),
      (mask:po_wasm_funcref;    str: 'WebAssembly funcref'),
-     (mask:po_wasm_suspending; str: 'WebAssembly suspending')
+     (mask:po_wasm_suspending; str: 'WebAssembly suspending'),
+     (mask:po_pure;            str: 'Pure')
   );
 var
   proctypeoption  : tproctypeoption;
@@ -3150,7 +3151,7 @@ begin
   writeln;
   proccalloption:=tproccalloption(ppufile.getbyte);
   writeln([space,'       CallOption : ',proccalloptionStr[proccalloption]]);
-  ppufile.getset(tppuset8(procoptions));
+  ppufile.getset(tppuset9(procoptions));
   if procoptions<>[] then
    begin
      if po_classmethod in procoptions then Include(ProcDef.Options, poClassMethod);
@@ -3435,7 +3436,8 @@ const
     (mask:pio_nested_access; str:'NestedAccess'),
     (mask:pio_thunk; str:'Thunk'),
     (mask:pio_fastmath; str:'FastMath'),
-    (mask:pio_inline_forbidden; str:'InlineForbidden')
+    (mask:pio_inline_forbidden; str:'InlineForbidden'),
+    (mask:pio_has_purityinfo; str:'HasPurityInfo')
   );
 var
   i: timplprocoption;
