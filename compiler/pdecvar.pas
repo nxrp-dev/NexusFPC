@@ -948,7 +948,7 @@ implementation
       { only allowed for one var }
       vs:=tabstractvarsym(sc[0]);
       if sc.count>1 then
-        Message1(parser_e_directive_only_one_var,arraytokeninfo[current_scanner.idtoken].str);
+        Message1(parser_e_directive_only_one_var,tokeninfo[current_scanner.idtoken].str);
       read_public_and_external(vs);
     end;
 
@@ -1143,7 +1143,7 @@ implementation
       { only allowed for one var }
       vs:=tabstractvarsym(sc[0]);
       if sc.count>1 then
-        Message1(parser_e_directive_only_one_var,arraytokeninfo[current_scanner.idtoken].str);
+        Message1(parser_e_directive_only_one_var,tokeninfo[current_scanner.idtoken].str);
       try_read_field_external(vs);
     end;
 
