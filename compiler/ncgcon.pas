@@ -74,6 +74,9 @@ implementation
       verbose,globals,cutils,
       aasmcnst,
       symconst,symdef,aasmtai,aasmdata,defutil,
+{$ifdef avr}
+      symsym,
+{$endif avr}
       cpuinfo,cpubase,
       cgbase,cgutils,
       hlcgobj,cclasses
@@ -229,8 +232,10 @@ implementation
          datatcb: ttai_typedconstbuilder;
          datadef: tdef;
          t : tai_string;
-
-
+{$ifdef avr}
+        currentsymsection: tsymsection;
+        tmpcst: tconststringtype;
+{$endif avr}
       const
         PoolMap: array[tconststringtype] of TConstPoolType = (
           sp_conststr,
@@ -239,8 +244,26 @@ implementation
           sp_ansistr,
           sp_widestr,
           sp_unicodestr
+{$ifdef avr}
+          ,
+          sp_conststr_progmem,
+          sp_shortstr_progmem,
+          sp_longstr_progmem,
+          sp_ansistr_progmem,
+          sp_widestr_progmem,
+          sp_unicodestr_progmem,
+          sp_conststr_eeprom,
+          sp_shortstr_eeprom,
+          sp_longstr_eeprom,
+          sp_ansistr_eeprom,
+          sp_widestr_eeprom,
+          sp_unicodestr_eeprom
+{$endif avr}
         );
       begin
+{$ifdef avr}
+        currentsymsection:=Self.location.reference.symsection;
+{$endif avr}
          case cst_type of
            cst_shortstring,
            cst_conststring,
@@ -269,6 +292,14 @@ implementation
          { const already used ? }
          if not assigned(lab_str) then
            begin
+{$ifdef avr}
+             tmpcst:=cst_type;
+             { Apologies for this ugly hack! }
+             if currentsymsection=ss_progmem then
+               cst_type:=tconststringtype(ord(cst_type)+(ord(cst_conststring_progmem)-ord(cst_conststring)))
+             else if currentsymsection=ss_eeprom then
+               cst_type:=tconststringtype(ord(cst_type)+(ord(cst_conststring_eeprom)-ord(cst_conststring)));
+{$endif avr}
               pool := current_asmdata.ConstPools[PoolMap[cst_type]];
 
               if cst_type in [cst_widestring, cst_unicodestring] then
@@ -279,6 +310,9 @@ implementation
               else
                 entry := pool.FindOrAdd(pointer(valueas),len);
 
+{$ifdef avr}
+              cst_type:=tmpcst;
+{$endif avr}
               lab_str := TAsmLabel(entry^.Data);  // is it needed anymore?
 
               { :-(, we must generate a new entry }
@@ -339,6 +373,16 @@ implementation
                           t:=Tai_string.Create_Data(asconstpchar,l,true);
                           datatcb.emit_tai(t,datadef);
                           datatcb.maybe_end_aggregate(datadef);
+{$ifdef avr}
+                          if currentsymsection<>ss_none then
+                            begin
+                              current_asmdata.asmlists[al_typedconsts].concatList(
+                                datatcb.get_final_asmlist(lastlabel.lab,datadef,sec_user,symSectionToSectionName(currentsymsection),
+                                const_align(sizeof(pint)))
+                              )
+                            end
+                          else
+{$endif avr}
                           current_asmdata.asmlists[al_typedconsts].concatList(
                             datatcb.get_final_asmlist(lastlabel.lab,datadef,sec_rodata_norel,lastlabel.lab.name,const_align(sizeof(pint)))
                           );
@@ -356,6 +400,16 @@ implementation
                           t:=Tai_string.Create_Data(asconstpchar,len,true);
                           datatcb.emit_tai(t,datadef);
                           datatcb.maybe_end_aggregate(datadef);
+{$ifdef avr}
+                          if currentsymsection<>ss_none then
+                            begin
+                              current_asmdata.asmlists[al_typedconsts].concatList(
+                                datatcb.get_final_asmlist(lastlabel.lab,datadef,sec_user,symSectionToSectionName(currentsymsection),
+                                const_align(sizeof(pint)))
+                              )
+                            end
+                          else
+{$endif avr}
                           current_asmdata.asmlists[al_typedconsts].concatList(
                             datatcb.get_final_asmlist(lastlabel.lab,datadef,sec_rodata_norel,lastlabel.lab.name,const_align(sizeof(pint)))
                           );
@@ -379,6 +433,9 @@ implementation
              location_reset_ref(location, LOC_CREFERENCE, def_cgsize(resultdef), const_align(strpointerdef.size), []);
              location.reference.symbol:=lab_str;
            end;
+{$ifdef avr}
+         Self.location.reference.symsection:=currentsymsection;
+{$endif avr}
       end;
 
 

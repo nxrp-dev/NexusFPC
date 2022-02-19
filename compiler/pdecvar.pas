@@ -1459,6 +1459,19 @@ implementation
                begin
                  vs:=tabstractvarsym(sc[i]);
                  vs.vardef:=hdef;
+{$ifdef avr}
+                 { Carry section across from def to symbol if not a pointer.
+                   A pointer can point to a specific section and be
+                   stored in a different section }
+                 if (vs.typ=staticvarsym) and not(is_pointer(hdef)) and (hdef.symsection<>ss_none) then
+                   begin
+                     if hdef.symsection=ss_progmem then
+                       Comment(V_Error, 'Section PROGMEM is read-only and only supported for const values');
+                     vs.symsection:=hdef.symsection;
+                     tstaticvarsym(vs).section:=symSectionToSectionName(vs.symsection);
+                     include(vs.varoptions, vo_has_section);
+                   end;
+{$endif avr}
                end;
              block_type:=bt_var;
 
@@ -1613,6 +1626,10 @@ implementation
                            Message(parser_e_section_no_locals);
                          tstaticvarsym(vs).section:=sectionname;
                          include(vs.varoptions, vo_has_section);
+{$ifdef avr}
+                         vs.symsection:=sectionNameToSymSection(sectionname);
+                         maybeRegisterNewTypeWithSection(vs);
+{$endif avr}
                        end;
                    end;
                end;
