@@ -261,6 +261,7 @@ unit aoptx86;
         class procedure OptimizeRefs(var p: taicpu); static;
 
         { Sliding window routines }
+        function HandleSimple2OpSWInstruction(var p: tai): Boolean;
         procedure ResetSW;
         procedure AddToSW(var p: tai);
         function FindSWMatch(const p: tai; out RegState: TAllUsedRegs): tai;
@@ -930,9 +931,12 @@ unit aoptx86;
                   ((getregtype(reg)=R_INTREGISTER) and (getsupreg(reg)=RS_EAX)) and
                   ((getsubreg(reg)<>R_SUBH) or (p.opsize<>S_B))
                  );
-            2,3:
+            2:
               regReadByInstruction :=
                 reginop(reg,p.oper[0]^) or
+                reginop(reg,p.oper[1]^);
+            3:
+              regReadByInstruction :=
                 reginop(reg,p.oper[1]^);
             else
               InternalError(2019112801);
@@ -3367,7 +3371,6 @@ unit aoptx86;
         MovAligned, MovUnaligned: TAsmOp;
         ThisRef: TReference;
         JumpTracking: TLinkedList;
-        SWRegState: TAllUsedRegs;
       begin
         Result:=false;
 
@@ -5730,27 +5733,9 @@ unit aoptx86;
             Exit;
           end;
 
-        if not Result and
-          (cs_opt_asmcse in current_settings.optimizerswitches) and
-          (taicpu(p).oper[1]^.typ = top_reg) then
-          begin
-            hp1 := FindSWMatch(taicpu(p), SWRegState);
-            if Assigned(hp1) and
-              not (
-                (taicpu(p).oper[0]^.typ = top_ref) and
-                { Make sure the registers that make up the reference haven't changed }
-                (taicpu(p).oper[0]^.ref^.refaddr = addr_no) and
-                RegPairModifiedBetween(taicpu(p).oper[0]^.ref^.base, taicpu(p).oper[0]^.ref^.index, hp1, p)
-              ) and
-              TraceRLE(p, hp1, SWRegState) then
-              begin
-                Result := True;
-                Exit;
-              end;
-
-            if not Result then
-              AddToSW(p);
-          end;
+        { Don't call if Result is already True }
+        if not Result then
+          Result := HandleSimple2OpSWInstruction(p);
       end;
 
 
@@ -5838,7 +5823,6 @@ unit aoptx86;
    function TX86AsmOptimizer.OptPass1MOVXX(var p : tai) : boolean;
       var
         hp1 : tai;
-        SWRegState: TAllUsedRegs;
       begin
         Result:=false;
         if taicpu(p).ops <> 2 then
@@ -5893,27 +5877,9 @@ unit aoptx86;
             end;
           end;
 
-        if not Result and
-          (cs_opt_asmcse in current_settings.optimizerswitches) and
-          (taicpu(p).oper[1]^.typ = top_reg) then
-          begin
-            hp1 := FindSWMatch(taicpu(p), SWRegState);
-            if Assigned(hp1) and
-              not (
-                (taicpu(p).oper[0]^.typ = top_ref) and
-                { Make sure the registers that make up the reference haven't changed }
-                (taicpu(p).oper[0]^.ref^.refaddr = addr_no) and
-                RegPairModifiedBetween(taicpu(p).oper[0]^.ref^.base, taicpu(p).oper[0]^.ref^.index, hp1, p)
-              ) and
-              TraceRLE(p, hp1, SWRegState) then
-              begin
-                Result := True;
-                Exit;
-              end;
-
-            if not Result then
-              AddToSW(p);
-          end;
+        { Don't call if Result is already True }
+        if not Result then
+          Result := HandleSimple2OpSWInstruction(p);
       end;
 
 
@@ -6574,7 +6540,6 @@ unit aoptx86;
         TempReg: TRegister;
         Multiple: TCGInt;
         Adjacent, IntermediateRegDiscarded: Boolean;
-        SWRegState: TAllUsedRegs;
       begin
         Result:=false;
 
@@ -7072,25 +7037,9 @@ unit aoptx86;
                   end;
               end;
           end;
-        if not Result and
-          (cs_opt_asmcse in current_settings.optimizerswitches) then
-          begin
-            hp1 := FindSWMatch(taicpu(p), SWRegState);
-            if Assigned(hp1) and
-              not (
-                { Make sure the registers that make up the reference haven't changed }
-                (taicpu(p).oper[0]^.ref^.refaddr = addr_no) and
-                RegPairModifiedBetween(taicpu(p).oper[0]^.ref^.base, taicpu(p).oper[0]^.ref^.index, hp1, p)
-              ) and
-              TraceRLE(p, hp1, SWRegState) then
-              begin
-                Result := True;
-                Exit;
-              end;
-
-            if not Result then
-              AddToSW(p);
-          end;
+        { Don't call if Result is already True }
+        if not Result then
+          Result := HandleSimple2OpSWInstruction(p);
       end;
 
 
@@ -14744,7 +14693,6 @@ unit aoptx86;
         NewRegSize: TSubRegister;
         Limit: TCgInt;
         SwapOper: POper;
-        SWRegState: TAllUsedRegs;
       begin
         result:=false;
         reg_and_hp1_is_instr:=(taicpu(p).oper[1]^.typ = top_reg) and
@@ -15683,27 +15631,9 @@ unit aoptx86;
               end;
           end;
 
-        if not Result and
-          (cs_opt_asmcse in current_settings.optimizerswitches) and
-          (taicpu(p).oper[1]^.typ = top_reg) then
-          begin
-            hp1 := FindSWMatch(taicpu(p), SWRegState);
-            if Assigned(hp1) and
-              not (
-                (taicpu(p).oper[0]^.typ = top_ref) and
-                { Make sure the registers that make up the reference haven't changed }
-                (taicpu(p).oper[0]^.ref^.refaddr = addr_no) and
-                RegPairModifiedBetween(taicpu(p).oper[0]^.ref^.base, taicpu(p).oper[0]^.ref^.index, hp1, p)
-              ) and
-              TraceRLE(p, hp1, SWRegState) then
-              begin
-                Result := True;
-                Exit;
-              end;
-
-            if not Result then
-              AddToSW(p);
-          end;
+        { Don't call if Result is already True }
+        if not Result then
+          Result := HandleSimple2OpSWInstruction(p);
       end;
 
 
@@ -18075,6 +18005,39 @@ unit aoptx86;
       end;
 
 
+    function TX86AsmOptimizer.HandleSimple2OpSWInstruction(var p: tai): Boolean;
+      var
+        SWRegState: TAllUsedRegs;
+        hp1: tai;
+      begin
+        Result := False;
+        if (cs_opt_asmcse in current_settings.optimizerswitches) and
+          (taicpu(p).oper[1]^.typ = top_reg) then
+          begin
+            hp1 := FindSWMatch(taicpu(p), SWRegState);
+            if Assigned(hp1) and
+              not (
+                (taicpu(hp1).oper[0]^.typ = top_reg) and
+                { Call SuperRegistersEqual to save calling RegModifiedBetween unnecessarily }
+                RegModifiedBetween(taicpu(hp1).oper[0]^.reg, hp1, p)
+              ) and
+              not (
+                (taicpu(hp1).oper[0]^.typ = top_ref) and
+                { Make sure the registers that make up the reference haven't changed }
+                (taicpu(hp1).oper[0]^.ref^.refaddr = addr_no) and
+                RegPairModifiedBetween(taicpu(hp1).oper[0]^.ref^.base, taicpu(hp1).oper[0]^.ref^.index, hp1, p)
+              ) and
+              TraceRLE(p, hp1, SWRegState) then
+              begin
+                Result := True;
+                Exit;
+              end;
+
+            AddToSW(p);
+          end;
+      end;
+
+
     procedure TX86AsmOptimizer.ResetSW;
       var
         X: Integer;
@@ -18376,10 +18339,7 @@ unit aoptx86;
                   Exit;
                 end;
 
-              if taicpu(p).oper[1]^.typ = top_reg then
-                begin
-                  IncludeRegInUsedRegs(taicpu(p).oper[1]^.reg, ForwardTrackedRegs);
-                end;
+              IncludeRegInUsedRegs(taicpu(p).oper[1]^.reg, ForwardTrackedRegs);
             end;
           A_IMUL:
             begin
@@ -18540,10 +18500,6 @@ unit aoptx86;
                 end;
               A_NOT, A_NEG:
                 begin
-                  { Not allowed writes to references }
-                  if taicpu(forward_pointer).oper[0]^.typ = top_ref then
-                    Break;
-
                   if not CheckInput(taicpu(forward_pointer).oper[0]^) then
                     Break;
                  end;
@@ -18553,10 +18509,6 @@ unit aoptx86;
                     not MatchOperand(taicpu(forward_pointer).oper[1]^, taicpu(rle_pointer).oper[1]^) then
                     Break;
 
-                  { Not allowed writes to references }
-                  if taicpu(forward_pointer).oper[1]^.typ = top_ref then
-                    Break;
-
                   if not CheckInput(taicpu(forward_pointer).oper[0]^) or
                     not CheckInput(taicpu(forward_pointer).oper[1]^) then
                     Break;
@@ -18564,10 +18516,6 @@ unit aoptx86;
               A_SHL, A_SHR, A_SAR, A_ROR, A_ROL, A_ADD, A_SUB:
                 begin
                   if not MatchOperand(taicpu(forward_pointer).oper[1]^, taicpu(rle_pointer).oper[1]^) then
-                    Break;
-
-                  { Not allowed writes to references }
-                  if taicpu(forward_pointer).oper[1]^.typ = top_ref then
                     Break;
 
                   if not CheckInput(taicpu(forward_pointer).oper[1]^) then
@@ -18638,10 +18586,6 @@ unit aoptx86;
                 begin
                   if taicpu(forward_pointer).ops <> 2 then
                     { Wrong MOVSS }
-                    Break;
-
-                  { Not allowed writes to references }
-                  if taicpu(forward_pointer).oper[1]^.typ = top_ref then
                     Break;
 
                   if not MatchOperand(taicpu(forward_pointer).oper[0]^, taicpu(rle_pointer).oper[0]^) or
