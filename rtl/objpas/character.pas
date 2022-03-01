@@ -1241,9 +1241,7 @@ end;
 
 class function TCharacter.ToLower(aChar: UCS4Char): UCS4Char;
 begin
-  Result := UCS4Char(Cardinal(GetProps(aChar)^.SimpleLowerCase));
-  if (Result = UCS4Char(0)) then
-    Result := aChar;
+  Result := UnicodeData.GetSimpleLowerCase(AChar);
 end;
 
 class function TCharacter.ToUpper(AChar : UnicodeChar) : UnicodeChar;
@@ -1270,9 +1268,7 @@ end;
 
 class function TCharacter.ToUpper(aChar: UCS4Char): UCS4Char;
 begin
-  Result := UCS4Char(Cardinal(GetProps(aChar)^.SimpleUpperCase));
-  if (Result = UCS4Char(0)) then
-    Result := aChar;
+  Result := UnicodeData.GetSimpleUpperCase(AChar);
 end;
 
 
