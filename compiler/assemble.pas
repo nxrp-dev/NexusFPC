@@ -2663,12 +2663,12 @@ Implementation
                  ddword:=eabi_section.Size-1;
                  if source_info.endian<>target_info.endian then
                    ddword:=SwapEndian(ddword);
-                 eabi_section.Data.write(ddword,4);
+                 dword(eabi_section.Data.writeptr(4)^):=ddword;
                  eabi_section.Data.seek(12);
                  ddword:=eabi_section.Size-1-4-6;
                  if source_info.endian<>target_info.endian then
                    ddword:=SwapEndian(ddword);
-                 eabi_section.Data.write(ddword,4);
+                 dword(eabi_section.Data.writeptr(4)^):=ddword;
                  eabi_section.Data.Seek(TmpDataPos);
                end;
 {$ifdef WASM}
