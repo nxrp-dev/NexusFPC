@@ -81,20 +81,20 @@ unit rgobj;
       Tmoveins=class(Tlinkedlistitem)
         moveset:Tmoveset;
         x,y:Tsuperregister;
-        id:longint;
       end;
 
-      Tmovelistheader=record
-        count,
-        maxcount,
-        sorted_until : cardinal;
+      PTmoveins=^Tmoveins;
+      Pmovehashlist=^Tmovehashlist;
+      Tmovehashlist=object
+        h2itemid : puint32; { region contains h2itemid + items; h2itemid[i]=0 means empty cell, h2itemid[i] = itemid > 0 references items[itemid - 1]. }
+        items : PTmoveins;
+        hmask,nitems,maxitems : uint32;
+        procedure init;
+        procedure done;
+        procedure add(ins:Tmoveins); { no-op if exists }
+        procedure rehash(foritems:sizeuint);
+        class function hashins(m:Tmoveins):sizeuint; static; {$ifdef USEINLINE} inline; {$endif}
       end;
-
-      Tmovelist=record
-        header : Tmovelistheader;
-        data : array[tsuperregister] of Tmoveins;
-      end;
-      Pmovelist=^Tmovelist;
 
       Treginfoflag=(
         ri_coalesced,       { the register is coalesced with other register }
@@ -111,7 +111,7 @@ unit rgobj;
         alias    : Tsuperregister;
         { The register allocator assigns each register a colour }
         colour   : Tsuperregister;
-        movelist : Pmovelist;
+        movehlist : Tmovehashlist;
         adjlist  : Psuperregisterworklist;
         degree   : TSuperregister;
         flags    : Treginfoflagset;
@@ -152,6 +152,7 @@ unit rgobj;
         spilled : boolean;
         interferences : Tinterferencebitmap;
       end;
+      pspillinfo = ^tspillinfo;
 
       {#------------------------------------------------------------------
 
@@ -262,7 +263,6 @@ unit rgobj;
         has_usedmarks: boolean;
         has_directalloc: boolean;
         spillinfo : array of tspillinfo;
-        moveins_id_counter: longint;
 
         { Disposes of the reginfo array.}
         procedure dispose_reginfo;
@@ -334,36 +334,6 @@ unit rgobj;
       globals,
       verbose,tgobj,procinfo,cgobj;
 
-    procedure sort_movelist(ml:Pmovelist);
-
-    var h,i,p:longword;
-        t:Tmoveins;
-
-    begin
-      with ml^ do
-        begin
-          if header.count<2 then
-            exit;
-          p:=longword(1) shl BsrDWord(header.count-1);
-          repeat
-            for h:=p to header.count-1 do
-              begin
-                i:=h;
-                t:=data[i];
-                repeat
-                  if data[i-p].id<=t.id then
-                    break;
-                  data[i]:=data[i-p];
-                  dec(i,p);
-                until i<p;
-                data[i]:=t;
-              end;
-            p:=p shr 1;
-          until p=0;
-          header.sorted_until:=header.count-1;
-        end;
-    end;
-
 {******************************************************************************
                               tinterferencebitmap
 ******************************************************************************}
@@ -425,6 +395,110 @@ unit rgobj;
           exclude(fbitmap[x1,y1][y and $ff],(x and $ff));
       end;
 
+    procedure Tmovehashlist.init;
+      const
+        EmptyH2itemid : uint32=0;
+      begin
+        h2itemid:=@EmptyH2itemid;
+        { Other fields must be zero. External zeroing assumed! }
+      end;
+
+    procedure Tmovehashlist.done;
+      begin
+        if assigned(items) then
+          freemem(h2itemid);
+      end;
+
+    procedure Tmovehashlist.add(ins:Tmoveins);
+      var hashRest,ih,ii : sizeuint;
+      begin
+        hashRest:=hashins(ins);
+        ih:=hashRest and hmask;
+        repeat
+          ii:=h2itemid[ih];
+          if ii=0 then
+            if nitems<>maxitems then
+              begin
+                h2itemid[ih]:=1+nitems;
+                items[nitems]:=ins;
+                nitems:=nitems+1;
+                exit;
+              end
+            else
+              begin
+                rehash(nitems+1);
+                add(ins);
+                exit;
+              end
+          else
+            if items[ii-1]=ins then
+              exit;
+{$push} {$q-,r-}
+          ih:=(ih+hashRest+1) and hmask;
+          hashRest:=hashRest shr 5;
+{$pop}
+        until false;
+      end;
+
+    procedure Tmovehashlist.rehash(foritems:sizeuint);
+      var newh2itemid : puint32;
+          newitems : PTmoveins;
+          item : Tmoveins;
+          newhmask,newmaxitems,itemsOffset,iitem,ih,hashRest : sizeuint;
+      begin
+        if foritems shr (bitsizeof(h2itemid^)-3)<>0 then
+          internalerror(2022042501); { too big table }
+        newmaxitems:=4+foritems+foritems div 2;
+        newhmask:=sizeuint(1) shl (1+BsrDWord(newmaxitems-1))-1; { UpToPow2(newmaxitems)-1 }
+        if newmaxitems>newhmask div 2+newhmask div 16 then { 1/2+1/16 = 56.25% = max allowed load factor }
+          newhmask:=2*newhmask+1;
+
+        itemsOffset:=Align(sizeof(h2itemid^)*(newhmask+1), {alignof(items^)} sizeof(pointer));
+        newh2itemid:=GetMem(itemsOffset+newmaxitems*sizeof(items^));
+        newitems:=pointer(newh2itemid)+itemsOffset;
+
+        Move(items^,newitems^,sizeof(items^)*nitems);
+
+        { Add newitems to newh2itemid. Shortcut by copying previous h2itemid if hmask hasn't changed. }
+        if hmask=newhmask then
+          Move(h2itemid^,newh2itemid^,sizeof(h2itemid^)*(newhmask+1))
+        else
+          begin
+            FillChar(newh2itemid^,sizeof(h2itemid^)*(newhmask+1),0);
+            iitem:=0;
+            while iitem<nitems do
+              begin
+                item:=newitems[iitem];
+                hashRest:=hashins(item);
+                ih:=hashRest and newhmask;
+                repeat
+                  if newh2itemid[ih]=0 then
+                    begin
+                      newh2itemid[ih]:=1+iitem;
+                      break;
+                    end;
+{$push} {$q-,r-}
+                  ih:=(ih+hashRest+1) and newhmask;
+                  hashRest:=hashRest shr 5;
+{$pop}
+                until false;
+                iitem:=iitem+1;
+              end;
+          end;
+
+        if assigned(items) then { h2itemid is fake when items=nil }
+          FreeMem(h2itemid);
+        h2itemid:=newh2itemid;
+        items:=newitems;
+        hmask:=newhmask;
+        maxitems:=newmaxitems;
+      end;
+
+    class function tmovehashlist.hashins(m:Tmoveins):sizeuint;
+      begin
+        result:=PtrUint(m) div (4*sizeof(pointer)); { "div approximate Tmoveins.InstanceSize". }
+      end;
+
 
 {******************************************************************************
                                 trgobj
@@ -454,12 +528,12 @@ unit rgobj;
          { Get reginfo for CPU registers }
          maxreginfo:=first_imaginary;
          maxreginfoinc:=16;
-         moveins_id_counter:=0;
          worklist_moves:=Tlinkedlist.create;
          move_garbage:=TLinkedList.Create;
          SetLength(reginfo,first_imaginary);
          for i:=0 to first_imaginary-1 do
            begin
+             reginfo[i].movehlist.init;
              reginfo[i].degree:=high(tsuperregister);
              reginfo[i].alias:=RS_INVALID;
            end;
@@ -512,8 +586,7 @@ unit rgobj;
                 begin
                   if adjlist<>nil then
                     dispose(adjlist,done);
-                  if movelist<>nil then
-                    dispose(movelist);
+                  movehlist.Done;
                 end;
             reginfo:=nil;
           end;
@@ -523,6 +596,7 @@ unit rgobj;
     function trgobj.getnewreg(subreg:tsubregister):tsuperregister;
       var
         oldmaxreginfo : tsuperregister;
+        i : sizeint;
       begin
         result:=maxreg;
         inc(maxreg);
@@ -541,6 +615,8 @@ unit rgobj;
                   maxreginfoinc:=maxreginfoinc*2;
               end;
             SetLength(reginfo,maxreginfo);
+            for i:=oldmaxreginfo to maxreginfo-1 do
+              reginfo[i].movehlist.init;
           end;
         reginfo[result].subreg:=subreg;
       end;
@@ -797,28 +873,7 @@ unit rgobj;
         if (u>=maxreginfo) then
           internalerror(2012101902);
 {$endif}
-      with reginfo[u] do
-        begin
-          if movelist=nil then
-            begin
-              { don't use sizeof(tmovelistheader), because that ignores alignment }
-              getmem(movelist,ptruint(@movelist^.data)-ptruint(movelist)+16*sizeof(pointer));
-              movelist^.header.maxcount:=16;
-              movelist^.header.count:=0;
-              movelist^.header.sorted_until:=0;
-            end
-          else
-            begin
-              if movelist^.header.count>=movelist^.header.maxcount then
-                begin
-                  movelist^.header.maxcount:=movelist^.header.maxcount*2;
-                  { don't use sizeof(tmovelistheader), because that ignores alignment }
-                  reallocmem(movelist,ptruint(@movelist^.data)-ptruint(movelist)+movelist^.header.maxcount*sizeof(pointer));
-                end;
-            end;
-          movelist^.data[movelist^.header.count]:=ins;
-          inc(movelist^.header.count);
-        end;
+      reginfo[u].movehlist.add(ins);
     end;
 
 
@@ -949,11 +1004,7 @@ unit rgobj;
       { How should we handle m68k move %d0,%a0? }
       if (getregtype(sreg)<>getregtype(dreg)) then
         exit;
-      if moveins_id_counter=high(moveins_id_counter) then
-        internalerror(2021112701);
-      inc(moveins_id_counter);
       i:=Tmoveins.create;
-      i.id:=moveins_id_counter;
       i.moveset:=ms_worklist_moves;
       worklist_moves.insert(i);
       ssupreg:=getsupreg(sreg);
@@ -970,19 +1021,18 @@ unit rgobj;
 
     function trgobj.move_related(n:Tsuperregister):boolean;
 
-    var i:cardinal;
+    var i : sizeint;
+        movehlist : Pmovehashlist;
 
     begin
       move_related:=false;
-      with reginfo[n] do
-        if movelist<>nil then
-          with movelist^ do
-            for i:=0 to header.count-1 do
-              if Tmoveins(data[i]).moveset in [ms_worklist_moves,ms_active_moves] then
-                begin
-                  move_related:=true;
-                  break;
-                end;
+      movehlist:=@reginfo[n].movehlist;
+      for i:=0 to sizeint(movehlist^.nitems)-1 do
+        if movehlist^.items[i].moveset in [ms_worklist_moves,ms_active_moves] then
+          begin
+            move_related:=true;
+            break;
+          end;
     end;
 
     procedure Trgobj.sort_simplify_worklist;
@@ -1114,23 +1164,23 @@ unit rgobj;
 
     procedure trgobj.enable_moves(n:Tsuperregister);
 
-    var m:Tlinkedlistitem;
-        i:cardinal;
+    var i : sizeint;
+        movehlist : Pmovehashlist;
+        m : Tmoveins;
 
     begin
-      with reginfo[n] do
-        if movelist<>nil then
-          for i:=0 to movelist^.header.count-1 do
+      movehlist:=@reginfo[n].movehlist;
+      for i:=0 to sizeint(movehlist^.nitems)-1 do
+        begin
+          m:=movehlist^.items[i];
+          if m.moveset=ms_active_moves then
             begin
-              m:=movelist^.data[i];
-              if Tmoveins(m).moveset=ms_active_moves then
-                begin
-                  {Move m from the set active_moves to the set worklist_moves.}
-                  active_moves.remove(m);
-                  Tmoveins(m).moveset:=ms_worklist_moves;
-                  worklist_moves.concat(m);
-                end;
-          end;
+              {Move m from the set active_moves to the set worklist_moves.}
+              active_moves.remove(m);
+              m.moveset:=ms_worklist_moves;
+              worklist_moves.concat(m);
+            end;
+        end;
     end;
 
     procedure Trgobj.decrement_degree(m:Tsuperregister);
@@ -1327,10 +1377,12 @@ unit rgobj;
     procedure trgobj.combine(u,v:Tsuperregister);
 
     var adj : Psuperregisterworklist;
-        original_u_count, i,n,p,q:cardinal;
+        i,p,q:cardinal;
+        n:sizeint;
         t : tsuperregister;
         searched:Tmoveins;
         found : boolean;
+        vmovehlist : Pmovehashlist;
 
     begin
       if not freezeworklist.delete(v) then
@@ -1340,66 +1392,16 @@ unit rgobj;
       reginfo[v].alias:=u;
 
       {Combine both movelists. Since the movelists are sets, only add
-       elements that are not already present. The movelists cannot be
-       empty by definition; nodes are only coalesced if there is a move
-       between them. To prevent quadratic time blowup (movelists of
-       especially machine registers can get very large because of moves
-       generated during calls) we need to go into disgusting complexity.
+       elements that are not already present, but Tmovehashlist.add
+       already silently refuses duplicates, so just add.
 
-       (See webtbs/tw2242 for an example that stresses this.)
+       The movelists cannot be empty by definition; nodes are only coalesced
+       if there is a move between them.
 
-       We want to sort the movelist to be able to search logarithmically.
-       Unfortunately, sorting the movelist every time before searching
-       is counter-productive, since the movelist usually grows with a few
-       items at a time. Therefore, we split the movelist into a sorted
-       and an unsorted part and search through both. If the unsorted part
-       becomes too large, we sort.}
-      if assigned(reginfo[u].movelist) then
-        begin
-          {We have to weigh the cost of sorting the list against searching
-           the cost of the unsorted part. I use factor of 8 here; if the
-           number of items is less than 8 times the numer of unsorted items,
-           we'll sort the list.}
-          with reginfo[u].movelist^ do
-            if header.count<8*(header.count-header.sorted_until) then
-              sort_movelist(reginfo[u].movelist);
-          if assigned(reginfo[v].movelist) then
-            begin
-              original_u_count:=reginfo[u].movelist^.header.count;
-              for n:=0 to reginfo[v].movelist^.header.count-1 do
-                begin
-                  {Binary search the sorted part of the list.}
-                  searched:=reginfo[v].movelist^.data[n];
-                  p:=0;
-                  q:=reginfo[u].movelist^.header.sorted_until;
-                  i:=0;
-                  if q<>0 then
-                    repeat
-                      i:=(p+q) shr 1;
-                      if searched.id>reginfo[u].movelist^.data[i].id then
-                        p:=i+1
-                      else
-                        q:=i;
-                    until p=q;
-                  with reginfo[u].movelist^ do
-                    if searched<>data[i] then
-                      begin
-                        {Linear search the unsorted part of the list.}
-                        found:=false;
-                        { no need to search the instructions we've already added
-                          from v, we know we won't find a match there }
-                        for i:=header.sorted_until+1 to original_u_count-1 do
-                          if searched.id=data[i].id then
-                            begin
-                              found:=true;
-                              break;
-                            end;
-                        if not found then
-                          add_to_movelist(u,searched);
-                      end;
-                end;
-            end;
-        end;
+       See webtbs/tw2242 for an example that stresses this. }
+      vmovehlist:=@reginfo[v].movehlist;
+      for n:=0 to sizeint(vmovehlist^.nitems)-1 do
+        add_to_movelist(u,vmovehlist^.items[n]);
 
       enable_moves(v);
 
@@ -1502,39 +1504,40 @@ unit rgobj;
 
     procedure trgobj.freeze_moves(u:Tsuperregister);
 
-    var i:cardinal;
-        m:Tlinkedlistitem;
-        v,x,y:Tsuperregister;
+    var i:sizeint;
+        m:Tmoveins;
+        v,xalias,yalias:Tsuperregister;
+        umovehlist : Pmovehashlist;
 
     begin
-      if reginfo[u].movelist<>nil then
-        for i:=0 to reginfo[u].movelist^.header.count-1 do
-          begin
-            m:=reginfo[u].movelist^.data[i];
-            if Tmoveins(m).moveset in [ms_worklist_moves,ms_active_moves] then
-              begin
-                x:=Tmoveins(m).x;
-                y:=Tmoveins(m).y;
-                if get_alias(y)=get_alias(u) then
-                  v:=get_alias(x)
-                else
-                  v:=get_alias(y);
-                {Move m from active_moves/worklist_moves to frozen_moves.}
-                if Tmoveins(m).moveset=ms_active_moves then
-                  active_moves.remove(m)
-                else
-                  worklist_moves.remove(m);
-                Tmoveins(m).moveset:=ms_frozen_moves;
-                frozen_moves.insert(m);
+      umovehlist:=@reginfo[u].movehlist;
+      for i:=0 to sizeint(umovehlist^.nitems)-1 do
+        begin
+          m:=umovehlist^.items[i];
+          if m.moveset in [ms_worklist_moves,ms_active_moves] then
+            begin
+              xalias:=get_alias(m.x);
+              yalias:=get_alias(m.y);
+              if yalias=get_alias(u) then
+                v:=xalias
+              else
+                v:=yalias;
+              {Move m from active_moves/worklist_moves to frozen_moves.}
+              if m.moveset=ms_active_moves then
+                active_moves.remove(m)
+              else
+                worklist_moves.remove(m);
+              m.moveset:=ms_frozen_moves;
+              frozen_moves.insert(m);
 
-                if (v>=first_imaginary) and not(move_related(v)) and
-                   (reginfo[v].degree<usable_registers_cnt) then
-                  begin
-                    freezeworklist.delete(v);
-                    simplifyworklist.add(v);
-                  end;
-              end;
-          end;
+              if (v>=first_imaginary) and not(move_related(v)) and
+                 (reginfo[v].degree<usable_registers_cnt) then
+                begin
+                  freezeworklist.delete(v);
+                  simplifyworklist.add(v);
+                end;
+            end;
+        end;
     end;
 
     procedure trgobj.freeze;
@@ -2416,10 +2419,13 @@ unit rgobj;
         p : Tai;
         regs_to_spill_set:Tsuperregisterset;
         spill_temps : Tspill_temp_list;
-        supreg,x,y : tsuperregister;
+        supreg : tsuperregister;
+        xspill,yspill : pspillinfo;
         templist : TAsmList;
-        j : Longint;
+        j : sizeint;
         getnewspillloc : Boolean;
+        tmovehlist : Pmovehashlist;
+        m : Tmoveins;
       begin
         spill_registers:=false;
         live_registers.clear;
@@ -2470,34 +2476,41 @@ unit rgobj;
 
                 doing so might save some mem->mem moves }
               if (cs_opt_level3 in current_settings.optimizerswitches) and
-                 getnewspillloc and
-                 assigned(reginfo[t].movelist) then
-                for j:=0 to reginfo[t].movelist^.header.count-1 do
-                  begin
-                    x:=Tmoveins(reginfo[t].movelist^.data[j]).x;
-                    y:=Tmoveins(reginfo[t].movelist^.data[j]).y;
-                    if (x=t) and
-                      (spillinfo[get_alias(y)].spilled) and
-                      not(spillinfo[get_alias(y)].interferences[0,t]) then
-                      begin
-                        spill_temps[t]:=spillinfo[get_alias(y)].spilllocation;
+                 getnewspillloc then
+                begin
+                  tmovehlist:=@reginfo[t].movehlist;
+                  for j:=0 to sizeint(tmovehlist^.nitems)-1 do
+                    begin
+                      m:=tmovehlist^.items[j];
+                      if (m.x=t) then
+                        begin
+                          yspill:=@spillinfo[get_alias(m.y)];
+                          if (yspill^.spilled) and
+                             not(yspill^.interferences[0,t]) then
+                            begin
+                              spill_temps[t]:=yspill^.spilllocation;
 {$ifdef DEBUG_SPILLCOALESCE}
-                        writeln('trgobj.spill_registers: Spill coalesce ',t,' to ',y);
+                              writeln('trgobj.spill_registers: Spill coalesce ',t,' to ',m.y);
 {$endif DEBUG_SPILLCOALESCE}
-                        getnewspillloc:=false;
-                        break;
-                      end
-                    else if (y=t) and
-                      (spillinfo[get_alias(x)].spilled) and
-                      not(spillinfo[get_alias(x)].interferences[0,t]) then
-                      begin
+                              getnewspillloc:=false;
+                              break;
+                            end;
+                        end;
+                      if (m.y=t) then
+                        begin
+                          xspill:=@spillinfo[get_alias(m.x)];
+                          if (xspill^.spilled) and
+                             not(xspill^.interferences[0,t]) then
+                            begin
 {$ifdef DEBUG_SPILLCOALESCE}
-                        writeln('trgobj.spill_registers: Spill coalesce ',t,' to ',x);
+                              writeln('trgobj.spill_registers: Spill coalesce ',t,' to ',m.x);
 {$endif DEBUG_SPILLCOALESCE}
-                        spill_temps[t]:=spillinfo[get_alias(x)].spilllocation;
-                        getnewspillloc:=false;
-                        break;
-                      end;
+                              spill_temps[t]:=xspill^.spilllocation;
+                              getnewspillloc:=false;
+                              break;
+                            end;
+                        end;
+                    end;
                   end;
 
               if getnewspillloc then
