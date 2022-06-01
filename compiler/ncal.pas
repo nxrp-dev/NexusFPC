@@ -4020,10 +4020,10 @@ implementation
                 end
               else
                 hiddentree:=cnothingnode.create;
-                
+
               pt:=ccallparanode.create(hiddentree,oldppt^);
               { set correct callnode }
-              pt.callnode:=self;              
+              pt.callnode:=self;
               oldppt^:=pt;
             end;
            if not assigned(pt) then
@@ -4334,7 +4334,7 @@ implementation
                           pt:=tcallparanode(left);
                           while assigned(pt) do
                            begin
-                             if is_undefined_recursive(pt.resultdef) then
+                             if is_undefined(pt.resultdef) then
                                begin
                                  ignoregenericparacall:=true;
                                  break;
@@ -4777,7 +4777,7 @@ implementation
             currloc:=hpcurr.parasym.paraloc[callerside].location^.loc;
             hpprev:=nil;
             hp:=hpfirst;
-            { on fixed_stack targets, always evaluate parameters containing
+            { on fixed_stack targets, always evaluate parameters containing
               a call with stack parameters before all other parameters,
               because they will prevent any other parameters from being put
               in their final place; if both the current and the next para
@@ -5366,7 +5366,7 @@ implementation
 
     function tcallnode.paraneedsinlinetemp(para: tcallparanode; const pushconstaddr, complexpara: boolean): boolean;
       begin
-        { if it's an assignable call-by-reference parameter, we cannot pass a
+        { if it's an assignable call-by-reference parameter, we cannot pass a
           temp since then the modified valua will be lost }
         if para.parasym.varspez in [vs_var,vs_out] then
           exit(false);
