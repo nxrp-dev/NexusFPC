@@ -3971,18 +3971,6 @@ implementation
 
 
     function tcallnode.pass_typecheck:tnode;
-
-      function is_undefined_recursive(def:tdef):boolean;
-        begin
-          { might become more refined in the future }
-          if def.typ=undefineddef then
-            result:=true
-          else if def.typ=arraydef then
-            result:=is_undefined_recursive(tarraydef(def).elementdef)
-          else
-            result:=false;
-        end;
-
       var
         candidates : tcallcandidates;
         ccflags : tcallcandidatesflags;
@@ -4219,7 +4207,7 @@ implementation
                              pt:=tcallparanode(left);
                              while assigned(pt) do
                               begin
-                                if is_undefined_recursive(pt.resultdef) then
+                                if is_undefined(pt.resultdef) then
                                   begin
                                     ignoregenericparacall:=true;
                                     break;
