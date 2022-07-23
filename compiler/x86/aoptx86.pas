@@ -4526,6 +4526,22 @@ unit aoptx86;
                               { See if we can remove the allocation of reg0 }
                               if not RegInRef(p_TargetReg, taicpu(p).oper[0]^.ref^) then
                                 TryRemoveRegAlloc(p_TargetReg, p, hp1);
+                            if (taicpu(hp3).opcode = A_Jcc) then
+                              begin
+                                { Check for jump shortcuts first.  Not only will they
+                                  be missed if the condition is destroyed, but the
+                                  jump optimisations may invert the condition, or remove
+                                  it completely, so doing these optimisations after the
+                                  condition has already been read may cause incorrect
+                                  code to be generated. }
+                                DoJumpOptimizations(hp3, TempBool);
+                                if taicpu(hp3).condition = C_None then
+                                  begin
+                                    DoOptimisation := False;
+                                    hp3 := hp2;
+                                    Continue;
+                                  end;
+                              end;
 
                               { Update the register tracking for the registers inside the reference }
                               if (taicpu(p).oper[0]^.ref^.base<>NR_NO) then
