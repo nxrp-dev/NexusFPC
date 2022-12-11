@@ -59,21 +59,29 @@ unit optdeadstore;
 
                 { we need to have dfa for the node }
                 if assigned(a.left.optinfo) and
-                   { node must be either a local or parameter load node }
-                   (a.left.nodetype=loadn) and
-                   { its address cannot have escaped the current routine }
-                   not(tabstractvarsym(tloadnode(a.left).symtableentry).addr_taken) and
-                   ((
-                     (tloadnode(a.left).symtableentry.typ=localvarsym) and
-                     (tloadnode(a.left).symtable=current_procinfo.procdef.localst)) or
-                    ((tloadnode(a.left).symtableentry.typ=paravarsym) and
-                     (tloadnode(a.left).symtable=current_procinfo.procdef.parast) and
-                     (tparavarsym(tloadnode(a.left).symtableentry).varspez in [vs_const,vs_value])) or
-                    ((tloadnode(a.left).symtableentry.typ=staticvarsym) and
-                     (tloadnode(a.left).symtable.symtabletype=staticsymtable) and
-                     (current_procinfo.procdef.proctypeoption<>potype_unitinit) and
-                     not(vsa_different_scope in tstaticvarsym(tloadnode(a.left).symtableentry).varsymaccess)
-                    )
+                   { node must be either a local or parameter load node or a tempref node}
+                   (
+                     (
+                       (a.left.nodetype=loadn) and
+                       { its address cannot have escaped the current routine }
+                       not(tabstractvarsym(tloadnode(a.left).symtableentry).addr_taken) and
+                       ((
+                         (tloadnode(a.left).symtableentry.typ=localvarsym) and
+                         (tloadnode(a.left).symtable=current_procinfo.procdef.localst)) or
+                        ((tloadnode(a.left).symtableentry.typ=paravarsym) and
+                         (tloadnode(a.left).symtable=current_procinfo.procdef.parast) and
+                         (tparavarsym(tloadnode(a.left).symtableentry).varspez in [vs_const,vs_value])) or
+                        ((tloadnode(a.left).symtableentry.typ=staticvarsym) and
+                         (tloadnode(a.left).symtable.symtabletype=staticsymtable) and
+                         (current_procinfo.procdef.proctypeoption<>potype_unitinit) and
+                         not(vsa_different_scope in tstaticvarsym(tloadnode(a.left).symtableentry).varsymaccess)
+                        )
+                       )
+                     ) or
+                     (
+                       (a.left.nodetype=temprefn) and
+                       not(ti_addr_taken in ttemprefnode(a.left).tempflags)
+                     )
                    ) and
                     ((a.right.nodetype in [niln,stringconstn,pointerconstn,setconstn,guidconstn]) or
                      ((a.right.nodetype=ordconstn) and not(cs_check_range in current_settings.localswitches)) or
