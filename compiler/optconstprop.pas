@@ -50,7 +50,7 @@ unit optconstprop;
 
       will not result in any constant propagation.
     }
-    function do_optconstpropagate(var rootnode : tnode;out changed: boolean) : tnode;
+    function do_optconstpropagate(var rootnode : tnode;out changed: boolean; const pure_function: boolean=false) : tnode;
 
   implementation
 
@@ -60,6 +60,14 @@ unit optconstprop;
       symsym, symconst,
       nutils, nbas, ncnv, nld, nflw, ncal, ninl,
       optbase, optutils;
+
+    type
+      PPropagateInfo=^TPropagateInfo;
+      TPropagateInfo=record
+        changed: boolean;
+        pure_function: boolean;
+      end;
+
 
     function check_written(var n: tnode; arg: pointer): foreachnoderesult;
       begin
@@ -74,8 +82,9 @@ unit optconstprop;
 
 
     { propagates the constant assignment passed in arg into n, it returns true if
-      the search can continue with the next statement }
-    function replaceBasicAssign(var n: tnode; arg: tnode; var tree_modified: boolean): boolean;
+      the search can continue with the next statement.  If "pure_function" is
+      true, do_firstpass is not called }
+    function replaceBasicAssign(var n: tnode; arg: tnode; var tree_modified: boolean; const pure_function: boolean): boolean;
       var
         st2, oldnode: tnode;
         old: pnode;
@@ -107,14 +116,14 @@ unit optconstprop;
             tree_modified:=false;
 
             { we can propagate the constant in both branches because the evaluation order is not defined }
-            result:=replaceBasicAssign(tassignmentnode(n).right, arg, tree_modified);
+            result:=replaceBasicAssign(tassignmentnode(n).right,arg,tree_modified,pure_function);
             { do not use the intuitive way result:=result and replace... because this would prevent
               replaceBasicAssign being called if the result is already false }
-            result:=replaceBasicAssign(tassignmentnode(n).left, arg, tree_modified2) and result;
+            result:=replaceBasicAssign(tassignmentnode(n).left,arg,tree_modified2,pure_function) and result;
             tree_modified:=tree_modified or tree_modified2;
 
             { but we have to check if left writes to the currently searched variable ... }
-            written:=foreachnodestatic(pm_postprocess, tassignmentnode(n).left, @check_written, tassignmentnode(arg).left);
+            written:=foreachnodestatic(pm_postprocess,tassignmentnode(n).left,@check_written,tassignmentnode(arg).left);
             { ... if this is the case, we have to stop searching }
             result:=result and not(written);
           end
@@ -127,14 +136,14 @@ unit optconstprop;
             tree_modified:=true;
           end
         else if n.nodetype=statementn then
-          result:=replaceBasicAssign(tstatementnode(n).left, arg, tree_modified)
+          result:=replaceBasicAssign(tstatementnode(n).left,arg,tree_modified,pure_function)
         else if n.nodetype=forn then
           begin
-            result:=replaceBasicAssign(tfornode(n).right, arg, tree_modified);
+            result:=replaceBasicAssign(tfornode(n).right,arg,tree_modified,pure_function);
             if result then
               begin
                 { play safe and set the result which is check below }
-                result:=replaceBasicAssign(tfornode(n).t1, arg, tree_modified2);
+                result:=replaceBasicAssign(tfornode(n).t1,arg,tree_modified2,pure_function);
                 tree_modified:=tree_modified or tree_modified2;
                 if result and (pi_dfaavailable in current_procinfo.flags) and
                   { play safe }
@@ -148,7 +157,7 @@ unit optconstprop;
                       { and no definition in the loop? }
                       not(DynSetIn(tfornode(n).t2.optinfo^.defsum,tassignmentnode(arg).left.optinfo^.index)) then
                       begin
-                        result:=replaceBasicAssign(tfornode(n).t2, arg, tree_modified3);
+                        result:=replaceBasicAssign(tfornode(n).t2,arg,tree_modified3,pure_function);
                         tree_modified:=tree_modified or tree_modified3;
                       end
                     else
@@ -170,7 +179,7 @@ unit optconstprop;
                   oldnode:=st2;
 
                   tree_modified2:=false;
-                  if not replaceBasicAssign(st2, arg, tree_modified2) then
+                  if not replaceBasicAssign(st2,arg,tree_modified2,pure_function) then
                     begin
                       old^:=st2;
                       oldnode:=nil;
@@ -194,7 +203,7 @@ unit optconstprop;
           end
         else if n.nodetype=ifn then
           begin
-            result:=replaceBasicAssign(tifnode(n).left, arg, tree_modified);
+            result:=replaceBasicAssign(tifnode(n).left,arg,tree_modified,pure_function);
 
             if result then
               begin
@@ -203,17 +212,17 @@ unit optconstprop;
                     { we can propagate the constant in both branches of an if statement
                       because even if the the branch writes to it, the else branch gets the
                       unmodified value }
-                    result:=replaceBasicAssign(tifnode(n).right, arg, tree_modified2);
+                    result:=replaceBasicAssign(tifnode(n).right,arg,tree_modified2,pure_function);
 
                     { do not use the intuitive way result:=result and replace... because this would prevent
                       replaceBasicAssign being called if the result is already false }
-                    result:=replaceBasicAssign(tifnode(n).t1, arg, tree_modified3) and result;
+                    result:=replaceBasicAssign(tifnode(n).t1,arg,tree_modified3,pure_function) and result;
 
                     tree_modified:=tree_modified or tree_modified2 or tree_modified3;
                   end
                 else
                   begin
-                    result:=replaceBasicAssign(tifnode(n).right, arg, tree_modified2);
+                    result:=replaceBasicAssign(tifnode(n).right,arg,tree_modified2,pure_function);
                     tree_modified:=tree_modified or tree_modified2;
                   end;
               end;
@@ -225,7 +234,7 @@ unit optconstprop;
               begin
                 result:=true;
                 if assigned(tcallparanode(tinlinenode(n).left).right) then
-                  result:=replaceBasicAssign(tcallparanode(tinlinenode(n).left).right,arg,tree_modified);
+                  result:=replaceBasicAssign(tcallparanode(tinlinenode(n).left).right,arg,tree_modified,pure_function);
 
                 if result and not tree_modified and
                   tnode(tassignmentnode(arg).left).isequal(tcallparanode(tinlinenode(n).left).left) and
@@ -259,7 +268,7 @@ unit optconstprop;
             else if might_have_sideeffects(n) then
               exit(false);
 
-            result:=replaceBasicAssign(tunarynode(n).left, arg, tree_modified);
+            result:=replaceBasicAssign(tunarynode(n).left,arg,tree_modified,pure_function) or tree_modified2;
           end
         else if n.nodetype=calln then
           begin
@@ -268,11 +277,11 @@ unit optconstprop;
             if (tassignmentnode(arg).left.nodetype=loadn) and
               (tabstractvarsym(tloadnode(tassignmentnode(arg).left).symtableentry).varregable in [vr_fpureg,vr_mmreg,vr_intreg]) then
               begin
-                result:=replaceBasicAssign(tnode(tcallnode(n).callinitblock), arg, tree_modified);
-                result:=result and replaceBasicAssign(tcallnode(n).left, arg, tree_modified2);
-                result:=result and replaceBasicAssign(tcallnode(n).vmt_entry, arg, tree_modified3);
-                result:=result and replaceBasicAssign(tcallnode(n).right, arg, tree_modified4);
-                result:=result and replaceBasicAssign(tnode(tcallnode(n).callcleanupblock), arg, tree_modified5);
+                result:=replaceBasicAssign(tnode(tcallnode(n).callinitblock),arg,tree_modified,pure_function);
+                result:=result and replaceBasicAssign(tcallnode(n).left,arg,tree_modified2,pure_function);
+                result:=result and replaceBasicAssign(tcallnode(n).vmt_entry,arg,tree_modified3,pure_function);
+                result:=result and replaceBasicAssign(tcallnode(n).right,arg,tree_modified4,pure_function);
+                result:=result and replaceBasicAssign(tnode(tcallnode(n).callcleanupblock),arg,tree_modified5,pure_function);
                 tree_modified:=tree_modified or tree_modified2 or tree_modified3 or tree_modified4 or tree_modified5;
 
                 { If the parameters were simplified, we may be able to simplify
@@ -288,17 +297,17 @@ unit optconstprop;
           end
         else if n.InheritsFrom(tbinarynode) then
           begin
-            result:=replaceBasicAssign(tbinarynode(n).left, arg, tree_modified);
+            result:=replaceBasicAssign(tbinarynode(n).left,arg,tree_modified,pure_function);
             if result then
-              result:=replaceBasicAssign(tbinarynode(n).right, arg, tree_modified2);
+              result:=replaceBasicAssign(tbinarynode(n).right,arg,tree_modified2,pure_function);
             tree_modified:=tree_modified or tree_modified2;
           end
         else if n.InheritsFrom(tunarynode) then
           begin
-            result:=replaceBasicAssign(tunarynode(n).left, arg, tree_modified);
+            result:=replaceBasicAssign(tunarynode(n).left,arg,tree_modified,pure_function);
           end;
 
-        if tree_modified and (n.nodetype<>callparan) then
+        if not pure_function and tree_modified and (n.nodetype<>callparan) then
           begin
             exclude(n.transientflags,tnf_pass1_done);
             do_firstpass(n);
@@ -317,7 +326,6 @@ unit optconstprop;
         result:=fen_true;
 
         changed:=false;
-        PBoolean(arg)^:=false;
 
         if not assigned(n) then
           exit;
@@ -377,7 +385,7 @@ unit optconstprop;
 
                               { Simple assignment of constant found }
                               tree_mod:=false;
-                              if not replaceBasicAssign(st2, a, tree_mod) then
+                              if not replaceBasicAssign(st2,a,tree_mod,PPropagateInfo(arg)^.pure_function) then
                                 begin
                                   old^:=st2;
                                   oldnode:=nil;
@@ -402,31 +410,37 @@ unit optconstprop;
               end;
           end;
 
-        PBoolean(arg)^:=changed;
+        if changed then
+          PPropagateInfo(arg)^.changed:=True;
       end;
 
 
-    function do_optconstpropagate(var rootnode: tnode;out changed: boolean): tnode;
+    function do_optconstpropagate(var rootnode: tnode;out changed: boolean; const pure_function: Boolean): tnode;
       var
-        iteration_changed: Boolean;
+        PropagateInfo: TPropagateInfo;
       begin
         changed:=false;
+        PropagateInfo.pure_function:=pure_function;
         repeat
-          iteration_changed:=false;
 {$ifdef DEBUG_CONSTPROP}
           writeln('************************ before constant propagation ***************************');
           printnode(output,rootnode);
 {$endif DEBUG_CONSTPROP}
-          foreachnodestatic(pm_postandagain, rootnode, @propagate, @iteration_changed);
-          changed:=changed or iteration_changed;
-          if iteration_changed then
-            doinlinesimplify(rootnode);
+          PropagateInfo.changed:=False;
+
+          foreachnodestatic(pm_postandagain,rootnode,@propagate,@PropagateInfo);
+          changed:=changed or PropagateInfo.changed;
+          if PropagateInfo.changed then
+            if pure_function then
+              dopuresimplify(rootnode)
+            else
+              doinlinesimplify(rootnode);
 {$ifdef DEBUG_CONSTPROP}
           writeln('************************ after constant propagation ***************************');
           printnode(output,rootnode);
           writeln('*******************************************************************************');
 {$endif DEBUG_CONSTPROP}
-        until not(cs_opt_level3 in current_settings.optimizerswitches) or not(iteration_changed);
+        until not(cs_opt_level3 in current_settings.optimizerswitches) or not(PropagateInfo.changed);
         result:=rootnode;
       end;
 
