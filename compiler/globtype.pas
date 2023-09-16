@@ -556,7 +556,8 @@ interface
          m_implicit_function_specialization,    { attempt to specialize generic function by inferring types from parameters }
          m_function_references, { enable Delphi-style function references }
          m_anonymous_functions,  { enable Delphi-style anonymous functions }
-         m_multiline_strings    { multi-line strings denoted with '`' are enabled and valid }
+         m_multiline_strings,   { multi-line strings denoted with '`' are enabled and valid }
+         m_record_composition   { enables record composition }
        );
        tmodeswitches = set of tmodeswitch;
 
@@ -764,7 +765,8 @@ interface
          'IMPLICITFUNCTIONSPECIALIZATION',
          'FUNCTIONREFERENCES',
          'ANONYMOUSFUNCTIONS',
-         'MULTILINESTRINGS'
+         'MULTILINESTRINGS',
+         'RECORDCOMPOSITION'
          );
 
 
