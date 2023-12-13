@@ -1234,7 +1234,7 @@ implementation
                    OS_F64,
                    OS_F128:
                      a_loadmm_ref_reg(list,location^.def,location^.def,tmpref,location^.register,mms_movescalar);
-                   OS_M8..OS_M128:
+                   OS_M8..OS_M128, OS_M8F..OS_M128F, OS_M8D..OS_M128D:
                      a_loadmm_ref_reg(list,location^.def,location^.def,tmpref,location^.register,nil);
                    else
                      internalerror(2010053103);

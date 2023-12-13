@@ -156,8 +156,12 @@ unit cpubase;
         {OS_F32,OS_F64,OS_F80,OS_C64,OS_F128,}
              2,      3,     0,     3,      4,
 
-         {OS_M8,   OS_M16,  OS_M32,  OS_M64,  OS_M128, OS_M256, OS_M512}
-              0,        1,       2,       3,        4,       5,       6);
+        {OS_M8,   OS_M16,  OS_M32,  OS_M64,  OS_M128, OS_M256, OS_M512}
+             0,        1,       2,       3,        4,       5,       6,
+        {OS_M8F,  OS_M16F, OS_M32F, OS_M64F, OS_M128F,OS_M256F,OS_M512F}
+             0,        1,       2,       3,        4,       5,       6,
+        {OS_M8D,  OS_M16D, OS_M32D, OS_M64D, OS_M128D,OS_M256D,OS_M512D}
+             0,        1,       2,       3,        4,       5,       6);
 
       oppostfix2str: array[TOpPostfix] of string[2] = ('',
         's',

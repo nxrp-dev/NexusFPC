@@ -469,11 +469,17 @@ implementation
               else
                 internalerror(2009071902);
             end;
-          OS_M128:
+          OS_M128,
+          OS_M128F,
+          OS_M128D:
             cgsize2subreg:=R_SUBMMX;
-          OS_M256:
+          OS_M256,
+          OS_M256F,
+          OS_M256D:
             cgsize2subreg:=R_SUBMMY;
-          OS_M512:
+          OS_M512,
+          OS_M512F,
+          OS_M512D:
             cgsize2subreg:=R_SUBMMZ;
           OS_S128,
           OS_128,

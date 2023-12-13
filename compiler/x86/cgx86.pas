@@ -163,16 +163,22 @@ unit cgx86;
       TCGSize2OpSize: Array[tcgsize] of topsize =
         (S_NO,S_B,S_W,S_L,S_Q,S_XMM,S_B,S_W,S_L,S_Q,S_XMM,
          S_FS,S_FL,S_FX,S_IQ,S_FXX,
+         S_NO,S_NO,S_NO,S_MD,S_XMM,S_YMM,S_ZMM,
+         S_NO,S_NO,S_NO,S_MD,S_XMM,S_YMM,S_ZMM,
          S_NO,S_NO,S_NO,S_MD,S_XMM,S_YMM,S_ZMM);
 {$elseif defined(i386)}
       TCGSize2OpSize: Array[tcgsize] of topsize =
         (S_NO,S_B,S_W,S_L,S_L,S_T,S_B,S_W,S_L,S_L,S_L,
          S_FS,S_FL,S_FX,S_IQ,S_FXX,
+         S_NO,S_NO,S_NO,S_MD,S_XMM,S_YMM,S_ZMM,
+         S_NO,S_NO,S_NO,S_MD,S_XMM,S_YMM,S_ZMM,
          S_NO,S_NO,S_NO,S_MD,S_XMM,S_YMM,S_ZMM);
 {$elseif defined(i8086)}
       TCGSize2OpSize: Array[tcgsize] of topsize =
         (S_NO,S_B,S_W,S_W,S_W,S_T,S_B,S_W,S_W,S_W,S_W,
          S_FS,S_FL,S_FX,S_IQ,S_FXX,
+         S_NO,S_NO,S_NO,S_MD,S_XMM,S_YMM,S_ZMM,
+         S_NO,S_NO,S_NO,S_MD,S_XMM,S_YMM,S_ZMM,
          S_NO,S_NO,S_NO,S_MD,S_XMM,S_YMM,S_ZMM);
 {$endif}
 
@@ -283,11 +289,17 @@ unit cgx86;
             result:=rg[R_MMREGISTER].getregister(list,R_SUBQ);
           OS_128,
           OS_M128,
+          OS_M128F,
+          OS_M128D,
           OS_F128:
             result:=rg[R_MMREGISTER].getregister(list,R_SUBMMX); { R_SUBMMWHOLE seems a bit dangerous and ambiguous, so changed to R_SUBMMX. [Kit] }
-          OS_M256:
+          OS_M256,
+          OS_M256F,
+          OS_M256D:
             result:=rg[R_MMREGISTER].getregister(list,R_SUBMMY);
-          OS_M512:
+          OS_M512,
+          OS_M512F,
+          OS_M512D:
             result:=rg[R_MMREGISTER].getregister(list,R_SUBMMZ);
           else
             internalerror(200506041);
@@ -1398,22 +1410,31 @@ unit cgx86;
                   result:=A_VMOVQ
                 else
                   result:=A_MOVQ;
-              OS_M128:
+              OS_M128,
+              OS_M256,
+              OS_M512:
                 { 128-bit aligned vector }
                 if UseAVX then
                   begin
                     if aligned then
-                      result:=A_VMOVAPS
+                      result:=A_VMOVDQA
                     else
-                      result:=A_VMOVUPS;
+                      result:=A_VMOVDQU;
                   end
-                else if aligned then
-                  result:=A_MOVAPS
                 else
-                  result:=A_MOVUPS;
-              OS_M256,
-              OS_M512:
-                { 256-bit aligned vector }
+                  begin
+                    if fromsize = OS_M512 then
+                      InternalError(2018012930);
+
+                    if aligned then
+                      result:=A_MOVDQA
+                    else
+                      result:=A_MOVDQU;
+                  end;
+              OS_M128F,
+              OS_M256F,
+              OS_M512F:
+                { Vector of Singles }
                 if UseAVX then
                   begin
                     if aligned then
@@ -1422,19 +1443,76 @@ unit cgx86;
                       result:=A_VMOVUPS;
                   end
                 else
-                  { SSE does not support 256-bit or 512-bit vectors }
-                  InternalError(2018012930);
+                  begin
+                    if fromsize = OS_M512F then
+                      InternalError(2018012931);
+
+                    if aligned then
+                      result:=A_MOVAPS
+                    else
+                      result:=A_MOVUPS;
+                  end;
+              OS_M128D,
+              OS_M256D,
+              OS_M512D:
+                { Vector of Doubles }
+                if UseAVX then
+                  begin
+                    if aligned then
+                      result:=A_VMOVAPD
+                    else
+                      result:=A_VMOVUPD;
+                  end
+                else
+                  begin
+                    if fromsize = OS_M512D then
+                      InternalError(2018012932);
+
+                    if aligned then
+                      result:=A_MOVAPD
+                    else
+                      result:=A_MOVUPD;
+                  end;
               else
                 InternalError(2018012920);
             end;
           end
-        else if (tcgsize2size[fromsize]=tcgsize2size[tosize]) and
-          (fromsize=OS_M128) then
+        else if (tcgsize2size[fromsize]=tcgsize2size[tosize]) then
           begin
-            if UseAVX then
-              result:=A_VMOVDQU
-            else
-              result:=A_MOVDQU;
+            case fromsize of
+              OS_M128, OS_M256, OS_M512:
+                begin
+                  if UseAVX then
+                    result:=A_VMOVDQU
+                  else if fromsize = OS_M512 then
+                    InternalError(2018012933)
+                  else
+                    result:=A_MOVDQU;
+                end;
+
+              OS_M128F, OS_M256F, OS_M512F:
+                begin
+                  if UseAVX then
+                    result:=A_VMOVUPS
+                  else if fromsize = OS_M512F then
+                    InternalError(2018012934)
+                  else
+                    result:=A_MOVUPS;
+                end;
+
+              OS_M128D, OS_M256D, OS_M512D:
+                begin
+                  if UseAVX then
+                    result:=A_VMOVUPD
+                  else if fromsize = OS_M512D then
+                    InternalError(2018012935)
+                  else
+                    result:=A_MOVUPD;
+                end;
+
+              else
+                internalerror(2010060105);
+            end;
           end
         else
           internalerror(2010060104);
@@ -1473,15 +1551,106 @@ unit cgx86;
                     instr:=taicpu.op_reg_reg(A_VMOVDQA,S_NO,reg1,reg2)
                   else
                     instr:=taicpu.op_reg_reg(A_MOVDQA,S_NO,reg1,reg2);
-                OS_M256,
-                OS_M512:
+                OS_M128F:
+                  if UseAVX then
+                    instr:=taicpu.op_reg_reg(A_VMOVAPS,S_NO,reg1,reg2)
+                  else
+                    instr:=taicpu.op_reg_reg(A_MOVAPS,S_NO,reg1,reg2);
+                OS_M128D:
+                  if UseAVX then
+                    instr:=taicpu.op_reg_reg(A_VMOVAPD,S_NO,reg1,reg2)
+                  else
+                    instr:=taicpu.op_reg_reg(A_MOVAPD,S_NO,reg1,reg2);
+                OS_M256:
                   if UseAVX then
                     instr:=taicpu.op_reg_reg(A_VMOVDQA,S_NO,reg1,reg2)
                   else
+                    { SSE doesn't support 256-bit vectors }
+                    InternalError(2018012936);
+                OS_M256F,
+                OS_M512F:
+                  if UseAVX then
+                    instr:=taicpu.op_reg_reg(A_VMOVAPS,S_NO,reg1,reg2)
+                  else
+                    { SSE doesn't support 256-bit or 512-bit  vectors }
+                    InternalError(2018012937);
+                OS_M256D,
+                OS_M512D:
+                  if UseAVX then
+                    instr:=taicpu.op_reg_reg(A_VMOVAPD,S_NO,reg1,reg2)
+                  else
+                    { SSE doesn't support 256-bit or 512-bit vectors }
+                    InternalError(2018012938);
+                OS_M512:
+                  if UseAVX then
+                    instr:=taicpu.op_reg_reg(A_VMOVDQA64,S_NO,reg1,reg2)
+                  else
                     { SSE doesn't support 512-bit vectors }
-                    InternalError(2018012933);
+                    InternalError(2018012939);
                 else
                   internalerror(2006091201);
+              end
+
+            { Permit moves between differently-sized vector types, which might
+              occur with unions etc. }
+            else if (tosize=OS_M128F) and (fromsize in [OS_M128, OS_M128D]) then
+              begin
+                if UseAVX then
+                  instr:=taicpu.op_reg_reg(A_VMOVAPS,S_NO,reg1,reg2)
+                else
+                  instr:=taicpu.op_reg_reg(A_MOVAPS,S_NO,reg1,reg2);
+              end
+            else if (
+                ((tosize=OS_M256F) and (fromsize in [OS_M256, OS_M256D])) or
+                ((tosize=OS_M512F) and (fromsize in [OS_M512, OS_M512D]))
+              ) then
+              begin
+                if UseAVX then
+                  instr:=taicpu.op_reg_reg(A_VMOVAPS,S_NO,reg1,reg2)
+                else
+                  { SSE doesn't support 256-bit or 512-bit vectors }
+                  InternalError(2018012940);
+              end
+            else if (tosize=OS_M128D) and (fromsize in [OS_M128, OS_M128F]) then
+              begin
+                if UseAVX then
+                  instr:=taicpu.op_reg_reg(A_VMOVAPD,S_NO,reg1,reg2)
+                else
+                  instr:=taicpu.op_reg_reg(A_MOVAPD,S_NO,reg1,reg2);
+              end
+            else if (
+                ((tosize=OS_M256D) and (fromsize in [OS_M256, OS_M256F])) or
+                ((tosize=OS_M512D) and (fromsize in [OS_M512, OS_M512F]))
+              ) then
+              begin
+                if UseAVX then
+                  instr:=taicpu.op_reg_reg(A_VMOVAPD,S_NO,reg1,reg2)
+                else
+                  { SSE doesn't support 256-bit or 512-bit vectors }
+                  InternalError(2018012941);
+              end
+            else if (tosize=OS_M128) and (fromsize in [OS_M128F, OS_M128D]) then
+              begin
+                if UseAVX then
+                  instr:=taicpu.op_reg_reg(A_VMOVDQA,S_NO,reg1,reg2)
+                else
+                  instr:=taicpu.op_reg_reg(A_MOVDQA,S_NO,reg1,reg2);
+              end
+            else if (tosize=OS_M256) and (fromsize in [OS_M256F, OS_M256D]) then
+              begin
+                if UseAVX then
+                  instr:=taicpu.op_reg_reg(A_VMOVDQA,S_NO,reg1,reg2)
+                else
+                  { SSE doesn't support 256-bit vectors }
+                  InternalError(2018012942);
+              end
+            else if (tosize=OS_M512) and (fromsize in [OS_M512F, OS_M512D]) then
+              begin
+                if UseAVX then
+                  instr:=taicpu.op_reg_reg(A_VMOVDQA64,S_NO,reg1,reg2)
+                else
+                  { SSE doesn't support 512-bit vectors }
+                  InternalError(2018012943);
               end
             else
               internalerror(200312202);
@@ -1602,6 +1771,86 @@ unit cgx86;
                  else
                    { SSE doesn't support 512-bit vectors }
                    InternalError(2018012939);
+               OS_M128F:
+                 { Use XMM single transfer }
+                 if UseAVX then
+                   begin
+                     if GetRefAlignment(tmpref) = 16 then
+                       op := A_VMOVAPS
+                     else
+                       op := A_VMOVUPS;
+                   end
+                 else
+                   begin
+                     if GetRefAlignment(tmpref) = 16 then
+                       op := A_MOVAPS
+                     else
+                       op := A_MOVUPS;
+                   end;
+               OS_M256F:
+                 { Use YMM single transfer }
+                 if UseAVX then
+                   begin
+                     if GetRefAlignment(tmpref) = 32 then
+                       op := A_VMOVAPS
+                     else
+                       op := A_VMOVUPS;
+                   end
+                 else
+                   { SSE doesn't support 256-bit vectors }
+                   Internalerror(2020010402);
+               OS_M512F:
+                 { Use ZMM single transfer }
+                 if UseAVX then
+                   begin
+                     if GetRefAlignment(tmpref) = 64 then
+                       op := A_VMOVAPS
+                     else
+                       op := A_VMOVUPS;
+                   end
+                 else
+                   { SSE doesn't support 512-bit vectors }
+                   InternalError(2020010403);
+               OS_M128D:
+                 { Use XMM double transfer }
+                 if UseAVX then
+                   begin
+                     if GetRefAlignment(tmpref) = 16 then
+                       op := A_VMOVAPD
+                     else
+                       op := A_VMOVUPD;
+                   end
+                 else
+                   begin
+                     if GetRefAlignment(tmpref) = 16 then
+                       op := A_MOVAPD
+                     else
+                       op := A_MOVUPD;
+                   end;
+               OS_M256D:
+                 { Use YMM double transfer }
+                 if UseAVX then
+                   begin
+                     if GetRefAlignment(tmpref) = 32 then
+                       op := A_VMOVAPD
+                     else
+                       op := A_VMOVUPD;
+                   end
+                 else
+                   { SSE doesn't support 256-bit vectors }
+                   Internalerror(2020010404);
+               OS_M512D:
+                 { Use ZMM double transfer }
+                 if UseAVX then
+                   begin
+                     if GetRefAlignment(tmpref) = 64 then
+                       op := A_VMOVAPD
+                     else
+                       op := A_VMOVUPD;
+                   end
+                 else
+                   { SSE doesn't support 512-bit vectors }
+                   InternalError(2020010405);
                else
                  { No valid transfer command available }
                  internalerror(2017121410);
@@ -1659,40 +1908,130 @@ unit cgx86;
                OS_M128:
                  { Use XMM integer transfer }
                  if UseAVX then
-                 begin
-                   if GetRefAlignment(tmpref) = 16 then
-                     op := A_VMOVDQA
-                   else
-                     op := A_VMOVDQU;
-                 end else
-                 begin
-                   if GetRefAlignment(tmpref) = 16 then
-                     op := A_MOVDQA
-                   else
-                     op := A_MOVDQU;
-                 end;
+                   begin
+                     if GetRefAlignment(tmpref) = 16 then
+                       op := A_VMOVDQA
+                     else
+                       op := A_VMOVDQU;
+                   end
+                 else
+                   begin
+                     if GetRefAlignment(tmpref) = 16 then
+                       op := A_MOVDQA
+                     else
+                       op := A_MOVDQU;
+                   end;
                OS_M256:
-                 { Use XMM integer transfer }
+                 { Use YMM integer transfer }
                  if UseAVX then
-                 begin
-                   if GetRefAlignment(tmpref) = 32 then
-                     op := A_VMOVDQA
-                   else
-                     op := A_VMOVDQU;
-                 end else
+                   begin
+                     if GetRefAlignment(tmpref) = 32 then
+                       op := A_VMOVDQA
+                     else
+                       op := A_VMOVDQU;
+                   end
+                 else
                    { SSE doesn't support 256-bit vectors }
                    InternalError(2018012942);
+
                OS_M512:
+                 { Use ZMM integer transfer }
+                 if UseAVX then
+                   begin
+                     if GetRefAlignment(tmpref) = 64 then
+                       op := A_VMOVDQA64
+                     else
+                       op := A_VMOVDQU64;
+                   end
+                 else
+                   { SSE doesn't support 512-bit vectors }
+                   InternalError(2018012943);
+
+               OS_M128F:
                  { Use XMM integer transfer }
                  if UseAVX then
-                 begin
-                   if GetRefAlignment(tmpref) = 64 then
-                     op := A_VMOVDQA64
-                   else
-                     op := A_VMOVDQU64;
-                 end else
+                   begin
+                     if GetRefAlignment(tmpref) = 16 then
+                       op := A_VMOVAPS
+                     else
+                       op := A_VMOVUPS;
+                   end
+                 else
+                   begin
+                     if GetRefAlignment(tmpref) = 16 then
+                       op := A_MOVAPS
+                     else
+                       op := A_MOVUPS;
+                   end;
+
+               OS_M256F:
+                 { Use YMM integer transfer }
+                 if UseAVX then
+                   begin
+                     if GetRefAlignment(tmpref) = 32 then
+                       op := A_VMOVAPS
+                     else
+                       op := A_VMOVUPS;
+                   end
+                 else
+                   { SSE doesn't support 256-bit vectors }
+                   InternalError(2018012944);
+
+               OS_M512F:
+                 { Use ZMM integer transfer }
+                 if UseAVX then
+                   begin
+                     if GetRefAlignment(tmpref) = 64 then
+                       op := A_VMOVAPS
+                     else
+                       op := A_VMOVUPS;
+                   end
+                 else
                    { SSE doesn't support 512-bit vectors }
                    InternalError(2018012945);
+
+               OS_M128D:
+                 { Use XMM integer transfer }
+                 if UseAVX then
+                   begin
+                     if GetRefAlignment(tmpref) = 16 then
+                       op := A_VMOVAPD
+                     else
+                       op := A_VMOVUPD;
+                   end
+                 else
+                   begin
+                     if GetRefAlignment(tmpref) = 16 then
+                       op := A_MOVAPD
+                     else
+                       op := A_MOVUPD;
+                   end;
+
+               OS_M256D:
+                 { Use YMM integer transfer }
+                 if UseAVX then
+                   begin
+                     if GetRefAlignment(tmpref) = 32 then
+                       op := A_VMOVAPD
+                     else
+                       op := A_VMOVUPD;
+                   end
+                 else
+                   { SSE doesn't support 256-bit vectors }
+                   InternalError(2018012946);
+
+               OS_M512D:
+                 { Use ZMM integer transfer }
+                 if UseAVX then
+                   begin
+                     if GetRefAlignment(tmpref) = 64 then
+                       op := A_VMOVAPD
+                     else
+                       op := A_VMOVUPD;
+                   end
+                 else
+                   { SSE doesn't support 512-bit vectors }
+                   InternalError(2018012947);
                else
                  { No valid transfer command available }
                  internalerror(2017121411);

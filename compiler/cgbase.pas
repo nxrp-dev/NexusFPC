@@ -222,9 +222,10 @@ interface
                   OS_S8,  OS_S16,  OS_S32,  OS_S64,  OS_S128,
                  { single, double, extended, comp, float128 }
                   OS_F32, OS_F64,  OS_F80,  OS_C64,  OS_F128,
-                 { multi-media sizes, describes only the register size but not how it is split,
-                   this information must be passed separately }
-                  OS_M8,  OS_M16,  OS_M32,  OS_M64,  OS_M128,  OS_M256,  OS_M512);
+                 { multi-media sizes }
+                  OS_M8,  OS_M16,  OS_M32,  OS_M64,  OS_M128,  OS_M256,  OS_M512, { Unknown or integer }
+                  OS_M8F, OS_M16F, OS_M32F, OS_M64F, OS_M128F, OS_M256F, OS_M512F, { Floating-point }
+                  OS_M8D, OS_M16D, OS_M32D, OS_M64D, OS_M128D, OS_M256D, OS_M512D); { Double precision }
 
       { Register types }
       TRegisterType = (
@@ -408,6 +409,8 @@ interface
          { floating point values }
          4,  8, 10,  8, 16,
          { multimedia values }
+         1,  2,  4,  8, 16, 32, 64,
+         1,  2,  4,  8, 16, 32, 64,
          1,  2,  4,  8, 16, 32, 64);
 
        tfloat2tcgsize: array[tfloattype] of tcgsize =
@@ -448,7 +451,9 @@ interface
          OS_8,    OS_16,   OS_32,   OS_64,   OS_128,
 
          OS_F32,  OS_F64,  OS_F80,  OS_C64,  OS_F128,
-         OS_M8,   OS_M16,  OS_M32,  OS_M64,  OS_M128, OS_M256, OS_M512);
+         OS_M8,   OS_M16,  OS_M32,  OS_M64,  OS_M128, OS_M256, OS_M512,
+         OS_M8F,  OS_M16F, OS_M32F, OS_M64F, OS_M128F,OS_M256F,OS_M512F,
+         OS_M8D,  OS_M16D, OS_M32D, OS_M64D, OS_M128D,OS_M256D,OS_M512D);
 
 
        tcgsize2signed : array[tcgsize] of tcgsize = (OS_NO,
@@ -456,7 +461,9 @@ interface
          OS_S8,   OS_S16,  OS_S32,  OS_S64,  OS_S128,
 
          OS_F32,  OS_F64,  OS_F80,  OS_C64,  OS_F128,
-         OS_M8,   OS_M16,  OS_M32,  OS_M64,  OS_M128, OS_M256,OS_M512);
+         OS_M8,   OS_M16,  OS_M32,  OS_M64,  OS_M128, OS_M256, OS_M512,
+         OS_M8F,  OS_M16F, OS_M32F, OS_M64F, OS_M128F,OS_M256F,OS_M512F,
+         OS_M8D,  OS_M16D, OS_M32D, OS_M64D, OS_M128D,OS_M256D,OS_M512D);
 
 
        tcgloc2str : array[TCGLoc] of string[12] = (
@@ -846,13 +853,13 @@ implementation
       begin
         case a of
           4:
-            result := OS_M32;
+            result := OS_M32F;
           16:
-            result := OS_M128;
+            result := OS_M128F;
           32:
-            result := OS_M256;
+            result := OS_M256F;
           64:
-            result := OS_M512;
+            result := OS_M512F;
           else
             result := int_cgsize(a);
         end;
@@ -862,13 +869,13 @@ implementation
       begin
         case a of
           8:
-            result := OS_M64;
+            result := OS_M64D;
           16:
-            result := OS_M128;
+            result := OS_M128D;
           32:
-            result := OS_M256;
+            result := OS_M256D;
           64:
-            result := OS_M512;
+            result := OS_M512D;
           else
             result := int_cgsize(a);
         end;

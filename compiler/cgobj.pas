@@ -1173,7 +1173,7 @@ implementation
                    OS_F64,
                    OS_F128:
                      a_loadmm_ref_reg(list,location^.size,location^.size,tmpref,location^.register,mms_movescalar);
-                   OS_M8..OS_M512:
+                   OS_M8..OS_M512,OS_M8F..OS_M512F,OS_M8D..OS_M512D:
                      a_loadmm_ref_reg(list,location^.size,location^.size,tmpref,location^.register,nil);
                    else
                      internalerror(2010053101);
@@ -1393,7 +1393,7 @@ implementation
                 OS_F64,
                 OS_F128:
                   a_loadmm_reg_ref(list,paraloc.size,paraloc.size,paraloc.register,ref,mms_movescalar);
-                OS_M8..OS_M512:
+                OS_M8..OS_M512,OS_M8F..OS_M512F,OS_M8D..OS_M512D:
                   a_loadmm_reg_ref(list,paraloc.size,paraloc.size,paraloc.register,ref,nil);
                 else
                   internalerror(2010053102);
@@ -1449,7 +1449,7 @@ implementation
                        OS_F64,
                        OS_F128:
                         a_loadmm_reg_reg(list,paraloc.size,regsize,paraloc.register,reg,mms_movescalar);
-                       OS_M8..OS_M512:
+                       OS_M8..OS_M512,OS_M8F..OS_M512F,OS_M8D..OS_M512D:
                          a_loadmm_reg_reg(list,paraloc.size,paraloc.size,paraloc.register,reg,nil);
                        else
                          internalerror(2010053106);

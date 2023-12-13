@@ -1860,19 +1860,19 @@ implementation
                     case TFloatDef(tarraydef(def).elementdef).floattype of
                       s32real:
                         case def.size of
-                          4:  result:=OS_M32;
-                          16: result:=OS_M128;
-                          32: result:=OS_M256;
-                          64: result:=OS_M512;
+                          4:  result:=OS_M32F;
+                          16: result:=OS_M128F;
+                          32: result:=OS_M256F;
+                          64: result:=OS_M512F;
                           else
                             internalerror(2017121400);
                         end;
                       s64real:
                         case def.size of
-                          8:  result:=OS_M64;
-                          16: result:=OS_M128;
-                          32: result:=OS_M256;
-                          64: result:=OS_M512;
+                          8:  result:=OS_M64D;
+                          16: result:=OS_M128D;
+                          32: result:=OS_M256D;
+                          64: result:=OS_M512D;
                           else
                             internalerror(2017121401);
                         end;
