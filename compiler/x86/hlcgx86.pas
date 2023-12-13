@@ -44,6 +44,8 @@ interface
      public
       procedure a_load_undefined_cgpara(list: TAsmList; size: tdef; const cgpara: TCGPara); override;
       procedure a_bit_set_reg_reg(list: TAsmList; doset: boolean; bitnumbersize, destsize: tdef; bitnumber, dest: tregister); override;
+
+      class function def2regtyp(def: tdef): tregistertype; override;
     end;
 
 implementation
@@ -51,7 +53,7 @@ implementation
   uses
     globals,systems,
     aasmbase,
-    cgutils,
+    symconst,cgutils,
 {$ifdef I8086}
     cpuinfo,
 {$endif I8086}
@@ -116,5 +118,13 @@ implementation
         list.concat(taicpu.op_reg_reg(bit_set_clr_instr[doset],S_NO,bitnumber,dest));
     end;
 
+
+  class function thlcgx86.def2regtyp(def: tdef): tregistertype;
+    begin
+      if use_vectorfpu(def) then
+        Result := R_MMREGISTER
+      else
+        Result := inherited def2regtyp(def);
+    end;
 
 end.

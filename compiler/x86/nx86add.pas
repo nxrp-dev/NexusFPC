@@ -1668,6 +1668,7 @@ unit nx86add;
     procedure tx86addnode.second_opvector;
       var
         op : topcg;
+        elemdef: tdef;
       begin
         pass_left_right;
         if (nf_swapped in flags) then
@@ -1689,34 +1690,40 @@ unit nx86add;
         if fits_in_mm_register(left.resultdef) then
           begin
             location_reset(location,LOC_MMREGISTER,def_cgsize(resultdef));
+
+            elemdef := get_vector_element(left.resultdef);
+            if not Assigned(elemdef) or (elemdef.typ <> floatdef) then
+              InternalError(2023121320);
+
             { we can use only right as left operand if the operation is commutative }
             if (right.location.loc=LOC_MMREGISTER) and (op in [OP_ADD,OP_MUL]) then
               begin
                 if UseAVX then
                   begin
                     location.register:=cg.getmmregister(current_asmdata.CurrAsmList,OS_VECTOR);
-                    cg.a_opmm_loc_reg_reg(current_asmdata.CurrAsmList,op,tfloat2tcgsize[tfloatdef(left.resultdef).floattype],left.location,right.location.register,location.register,nil);
+                    cg.a_opmm_loc_reg_reg(current_asmdata.CurrAsmList,op,left.location.size,left.location,right.location.register,location.register,nil);
                   end
                 else
                   begin
                     location.register:=right.location.register;
-                    cg.a_opmm_loc_reg(current_asmdata.CurrAsmList,op,tfloat2tcgsize[tfloatdef(left.resultdef).floattype],left.location,location.register,nil);
+                    cg.a_opmm_loc_reg(current_asmdata.CurrAsmList,op,left.location.size,left.location,location.register,nil);
                   end;
               end
             else
               begin
                 location_force_mmreg(current_asmdata.CurrAsmList,left.location,false);
+
                 if UseAVX then
                   begin
                     location.register:=cg.getmmregister(current_asmdata.CurrAsmList,OS_VECTOR);
                     cg.a_opmm_loc_reg_reg(current_asmdata.CurrAsmList,op,
-                      tfloat2tcgsize[tfloatdef(tarraydef(left.resultdef).elementdef).floattype],right.location,left.location.register,location.register,nil);
+                      left.location.size,right.location,left.location.register,location.register,nil);
                   end
                 else
                   begin
                     location.register:=left.location.register;
                     cg.a_opmm_loc_reg(current_asmdata.CurrAsmList,op,
-                      tfloat2tcgsize[tfloatdef(tarraydef(left.resultdef).elementdef).floattype],right.location,location.register,nil);
+                      left.location.size,right.location,location.register,nil);
                   end;
               end;
           end

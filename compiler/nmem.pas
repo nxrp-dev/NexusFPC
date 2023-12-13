@@ -1006,7 +1006,8 @@ implementation
         // don't put records from which we load float fields
         // in integer registers
         if (left.resultdef.typ=recorddef) and
-           (resultdef.typ=floatdef) then
+           (resultdef.typ=floatdef) and
+           not is_vector(left.resultdef) then
           make_not_regable(left,[ra_addr_regable]);
       end;
 

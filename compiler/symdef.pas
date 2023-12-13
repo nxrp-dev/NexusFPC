@@ -1387,6 +1387,9 @@ interface
     procedure loadobjctypes;
     procedure maybeloadcocoatypes;
 
+{$ifdef x86}
+    function is_vectorable_record(def : tdef) : boolean;
+{$endif x86}
     function use_vectorfpu(def : tdef) : boolean;
 
     function getansistringcodepage:tstringencoding; inline;
@@ -9683,12 +9686,181 @@ implementation
       end;
 
 
+{$ifdef x86}
+    function is_vectorable_record(def : tdef) : boolean;
+      var
+        SingleCoverage: array[0..3] of Boolean;
+        DoubleCoverage: array[0..1] of Boolean;
+
+        function EvaluateRecord(ThisDef : TRecordDef; Root: Boolean; Offset: ASizeUInt): Boolean;
+          var
+            X, Y, Start: Integer;
+            CurrentDef: TDef;
+            CurrentOffset: ASizeUInt;
+          begin
+            Result := not Root; { Let nested records pass by default (e.g. it may be empty) }
+
+            for X := 0 to ThisDef.symtable.SymList.Count - 1 do
+              if TSym(ThisDef.symtable.SymList[X]).typ = fieldvarsym then
+                begin
+                  if is_cyclic(TFieldVarSym(ThisDef.symtable.SymList[X]).vardef) then
+                    { Try another one }
+                    Continue;
+
+                  { Needs to be at least one field to set to True }
+                  Result := True;
+                  CurrentDef := TFieldVarSym(ThisDef.symtable.SymList[X]).vardef;
+                  CurrentOffset := TFieldVarSym(ThisDef.symtable.SymList[X]).bitoffset + Offset;
+
+                  case CurrentDef.typ of
+                    recorddef:
+                      if not EvaluateRecord(TRecordDef(CurrentDef), False, CurrentOffset) then
+                        Exit(False);
+
+                    arraydef:
+                      begin
+                        if not use_vectorfpu(TArrayDef(CurrentDef).elementdef) then
+                          Exit(False);
+
+                        if (
+                            is_double(TArrayDef(CurrentDef).elementdef) and
+                            not ((CurrentOffset mod 64) = 0)
+                          ) or (
+                            is_single(TArrayDef(CurrentDef).elementdef) and
+                            not ((CurrentOffset mod 32) = 0)
+                          ) then
+                          { Unaligned }
+                          Exit(False);
+
+                        { Keep track of where the floats appear }
+                        if is_single(TArrayDef(CurrentDef).elementdef) then
+                          begin
+                            Start := CurrentOffset div 32;
+
+                            for Y := 0 to TArrayDef(CurrentDef).elecount - 1 do
+                              SingleCoverage[Start + Y] := True;
+                          end
+                        else if is_double(TArrayDef(CurrentDef).elementdef) then
+                          begin
+                            Start := CurrentOffset div 64;
+
+                            for Y := 0 to TArrayDef(CurrentDef).elecount - 1 do
+                              DoubleCoverage[Start + Y] := True;
+                          end;
+                      end
+
+                    else
+                      begin
+                        if not use_vectorfpu(CurrentDef) then
+                          Exit(False);
+
+                        if is_single(CurrentDef) then
+                          begin
+                            if (CurrentOffset mod 32) <> 0 then
+                              { Unaligned }
+                              Exit(False);
+
+                            SingleCoverage[CurrentOffset div 32] := True;
+                          end;
+
+                        if is_double(CurrentDef) then
+                          begin
+                            if (CurrentOffset mod 64) <> 0 then
+                              { Unaligned }
+                              Exit(False);
+
+                            DoubleCoverage[CurrentOffset div 64] := True;
+                          end;
+                      end;
+                  end;
+                end;
+          end;
+
+      var
+        I: Integer;
+      begin
+        Result := False;
+
+        { Make sure SSE is actually enabled }
+        if not (current_settings.fputype in sse_singlescalar) and
+          not (current_settings.fputype in sse_doublescalar) then
+          Exit;
+
+        FillChar(SingleCoverage[0], SizeOf(SingleCoverage), 0);
+        FillChar(DoubleCoverage[0], SizeOf(DoubleCoverage), 0);
+
+        case def.typ of
+          recorddef:
+            begin
+              if (TRecordDef(def).size = 16) then
+              { Support larger vector types at a later date }
+              //if ((TRecordDef(def).size mod 16) = 0) then
+                begin
+                  Result := EvaluateRecord(TRecordDef(def), True, 0);
+
+                  if Result then
+                    begin
+                      { Check to see if the coverage is complete for the
+                        relevant floating-point types }
+                      if SingleCoverage[0] then
+                        begin
+                          for I := 1 to Length(SingleCoverage) - 1 do
+                            begin
+                              if not SingleCoverage[I] then
+                                { Not full coverage }
+                                Exit(False);
+                            end;
+                        end
+                      else
+                        begin
+                          for I := 1 to Length(SingleCoverage) - 1 do
+                            begin
+                              if SingleCoverage[I] then
+                                { Partial coverage }
+                                Exit(False);
+                            end;
+                        end;
+
+                      if DoubleCoverage[0] then
+                        begin
+                          for I := 1 to Length(DoubleCoverage) - 1 do
+                            begin
+                              if not DoubleCoverage[I] then
+                                { Not full coverage }
+                                Exit(False);
+                            end;
+                        end
+                      else
+                        begin
+                          for I := 1 to Length(DoubleCoverage) - 1 do
+                            begin
+                              if DoubleCoverage[I] then
+                                { Partial coverage }
+                                Exit(False);
+                            end;
+                        end;
+
+                      if not SingleCoverage[0] and not DoubleCoverage[0] then
+                        { No singles or doubles at all?  Integer not supported yet }
+                        Exit(False);
+                    end;
+                end;
+            end;
+          else
+            ;
+        end;
+      end;
+
+{$endif x86}
+
+
     function use_vectorfpu(def : tdef) : boolean;
       begin
 {$ifdef x86}
 {$define use_vectorfpuimplemented}
         use_vectorfpu:=(is_single(def) and (current_settings.fputype in sse_singlescalar)) or
           (is_double(def) and (current_settings.fputype in sse_doublescalar)) or
+          is_vectorable_record(def) or
           { Check vector types }
           (
             is_normal_array(def) and
