@@ -1160,7 +1160,7 @@ unit cpupara;
                       { Packed, unaligned array of Singles }
                       Result := 4
                     else
-                      Result := vecsize * 8
+                      Result := vecsize * 4
                 end
               else
                 Result := 0;
