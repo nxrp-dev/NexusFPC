@@ -2261,6 +2261,10 @@ unit cgx86;
               end
             else if size in [OS_F32,OS_F64] then
               asmop:=opmm2asmop[0,size,op]
+            else if size in [OS_M128F,OS_M256F,OS_M512F] then
+              asmop:=opmm2asmop[1,OS_F32,op]
+            else if size in [OS_M128D,OS_M256D,OS_M512D] then
+              asmop:=opmm2asmop[1,OS_F64,op]
             else
               asmop:=opmm2asmop_full[op];
           end

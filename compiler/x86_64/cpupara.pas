@@ -1758,7 +1758,7 @@ unit cpupara;
                     { Try to get a more accurate size type }
                     if is_vector(paralocdef) then
                       begin
-                        tempdef := get_vector_element(paralocdef);
+                        tempdef := TArrayDef(paralocdef).elementdef;
                         if tempdef.typ = floatdef then
                           begin
                             floattype := TFloatDef(tempdef).floattype;
