@@ -1450,7 +1450,7 @@ end;
 {$checkpointer off}
 
 Function GetEnvironmentVariable(Const EnvVar : AnsiString) : AnsiString;
-
+{$ifdef wince}
 var
    oemenvvar, oemstr : RawByteString;
    i, hplen : longint;
@@ -1479,9 +1479,16 @@ begin
      end;
    FreeEnvironmentStringsA(p);
 end;
+{$else wince}
+var
+   buf : array[0 .. 32767-1] of ansichar;
+begin
+   SetString(Result,PAnsiChar(buf),GetEnvironmentVariableA(PAnsiChar(EnvVar),PAnsiChar(buf),length(buf)));
+end;
+{$endif wince}
 
 Function GetEnvironmentVariable(Const EnvVar : UnicodeString) : UnicodeString;
-
+{$ifdef wince}
 var
    s, upperenv : Unicodestring;
    i : longint;
@@ -1505,6 +1512,13 @@ begin
      end;
    FreeEnvironmentStringsW(p);
 end;
+{$else wince}
+var
+   buf : array[0 .. 32767-1] of unicodechar;
+begin
+   SetString(Result,PUnicodeChar(buf),GetEnvironmentVariableW(PUnicodeChar(EnvVar),PUnicodeChar(buf),length(buf)));
+end;
+{$endif wince}
 
 Function GetEnvironmentVariableCount : Integer;
 
