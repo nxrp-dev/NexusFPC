@@ -607,7 +607,7 @@ function ExpM1(x : extended) : extended;
 
 { exponential functions }
 
-function Power(base,exponent : float) : float;
+function Power(base,exponent : float) : float; {$ifdef FPC_HAS_PURE}pure;{$endif}
 { base^exponent }
 function IntPower(base : float;exponent : longint) : float;
 
