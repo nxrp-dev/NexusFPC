@@ -94,15 +94,35 @@ unit optcse;
       end;
 
     type
-      tlists = record
-        nodelist : tfplist;
-        locationlist : tfplist;
-        equalto : tfplist;
-        refs : tfplist;
-        avail : TDFASet;
+      PCSEData = ^TCSEData;
+      TCSEData = record
+        NodeTree: TNode;
+        Location: PNode;
+        TempRef: TTempCreateNode;
+        RefCount: Cardinal;
+        EqualTo: PCSEData;
+        Next: PCSEData;
       end;
 
-      plists = ^tlists;
+      PCSELinkedList = ^TCSELinkedList;
+      TCSELinkedList = record
+        First, Last: PCSEData;
+        Count: Integer;
+        Avail: TDFASet;
+      end;
+
+    procedure AddCSEItem(List: PCSELinkedList; Item: PCSEData);
+      begin
+        Item^.Next := nil;
+        if not Assigned(List^.First) then
+          List^.First := Item
+        else
+          List^.Last^.Next := Item;
+
+        List^.Last := Item;
+        DFASetInclude(List^.Avail, List^.Count);
+        Inc(List^.Count);
+      end;
 
     { collectnodes needs the address of itself to call foreachnodestatic,
       so we need a wrapper because @<func> inside <func doesn't work }
@@ -123,7 +143,7 @@ unit optcse;
           and  C
           / \
          A   B
-        all expressions of B are available during evaluation of C. However considerung the whole expression,
+        all expressions of B are available during evaluation of C. However considering the whole expression,
         values of B and C might not be available due to short boolean evaluation.
 
         So recurseintobooleanchain detectes such chained and/or expressions and makes sub-expressions of B
@@ -133,14 +153,21 @@ unit optcse;
         in the cse table after handling A
       }
       var
-        firstleftend : longint;
+        LeftEnd, NewItem, CurrentItem: PCSEData;
+        LeftEndIndex: Integer;
+
       procedure recurseintobooleanchain(t : tnodetype;n : tnode);
         begin
           if (tbinarynode(n).left.nodetype=t) and is_boolean(tbinarynode(n).left.resultdef) then
             recurseintobooleanchain(t,tbinarynode(n).left)
           else
             foreachnodestatic(pm_postprocess,tbinarynode(n).left,@collectnodes2,arg);
-          firstleftend:=min(plists(arg)^.nodelist.count,firstleftend);
+
+          if PCSELinkedList(Arg)^.Count < LeftEndIndex then
+            begin
+              LeftEnd := PCSELinkedList(Arg)^.Last;
+              LeftEndIndex := PCSELinkedList(Arg)^.Count;
+            end;
           foreachnodestatic(pm_postprocess,tbinarynode(n).right,@collectnodes2,arg);
         end;
 
@@ -246,29 +273,39 @@ unit optcse;
 {$endif not(defined(i386)) and not(defined(i8086))}
           ) then
           begin
-            plists(arg)^.nodelist.Add(n);
-            plists(arg)^.locationlist.Add(@n);
-            plists(arg)^.refs.Add(nil);
-            plists(arg)^.equalto.Add(pointer(-1));
+            New(NewItem);
 
-            DFASetInclude(plists(arg)^.avail,plists(arg)^.nodelist.count-1);
+            NewItem^.NodeTree := n;
+            NewItem^.Location := @n;
+            NewItem^.RefCount := 0;
+            NewItem^.EqualTo := nil;
 
-            for i:=0 to plists(arg)^.nodelist.count-2 do
+            AddCSEItem(PCSELinkedList(arg), NewItem);
+
+            CurrentItem := PCSELinkedList(arg)^.First;
+            i := 0;
+
+            while (CurrentItem <> NewItem) do
               begin
-                if tnode(plists(arg)^.nodelist[i]).isequal(n) and DFASetIn(plists(arg)^.avail,i) then
+                Prefetch(CurrentItem^.Next);
+                if TNode(CurrentItem^.NodeTree).isequal(n) and DFASetIn(PCSELinkedList(arg)^.Avail,i) then
                   begin
                     { use always the first occurence }
-                    if plists(arg)^.equalto[i]<>pointer(-1) then
-                      plists(arg)^.equalto[plists(arg)^.nodelist.count-1]:=plists(arg)^.equalto[i]
+                    if Assigned(CurrentItem^.EqualTo) then
+                      NewItem^.EqualTo := CurrentItem^.EqualTo
                     else
-                      plists(arg)^.equalto[plists(arg)^.nodelist.count-1]:=pointer(ptrint(i));
-                    plists(arg)^.refs[i]:=pointer(plists(arg)^.refs[i])+1;
+                      NewItem^.EqualTo := CurrentItem;
+
+                    Inc(NewItem^.EqualTo^.RefCount);
                     { tree has been found, no need to search further,
                       sub-trees have been added by the first occurence of
                       the tree already }
                     result:=fen_norecurse_false;
                     break;
                   end;
+
+                CurrentItem := CurrentItem^.Next;
+                Inc(i);
               end;
           end;
 
@@ -278,10 +315,18 @@ unit optcse;
           as unavailable }
         if (n.nodetype in [orn,andn]) and is_boolean(taddnode(n).left.resultdef) then
           begin
-            firstleftend:=high(longint);
+            LeftEndIndex := High(LongInt);
+            LeftEnd := nil;
             recurseintobooleanchain(n.nodetype,n);
-            for i:=firstleftend to plists(arg)^.nodelist.count-1 do
-              DFASetExclude(plists(arg)^.avail,i);
+            CurrentItem := LeftEnd^.Next;
+            i := LeftEndIndex;
+            while Assigned(CurrentItem) do
+              begin
+                DFASetExclude(PCSELinkedList(arg)^.Avail,i);
+                Inc(i);
+                CurrentItem := CurrentItem^.Next;
+              end;
+
             result:=fen_norecurse_false;
           end;
 {$ifdef cpuhighleveltarget}
@@ -301,17 +346,16 @@ unit optcse;
     function searchcsedomain(var n: tnode; arg: pointer) : foreachnoderesult;
       var
         csedomain : boolean;
-        lists : tlists;
-        templist : tfplist;
+        LastItem, CurrentItem, NextItem: PCSEData;
+        CandidateList: TCSELinkedList;
         i : longint;
         def : tstoreddef;
         nodes : tblocknode;
         creates,
         statements : tstatementnode;
         deletetemp : ttempdeletenode;
-        hp : ttempcreatenode;
+        hp : tnode;
         addrstored : boolean;
-        hp2 : tnode;
       begin
         result:=fen_false;
         nodes:=nil;
@@ -370,7 +414,6 @@ unit optcse;
                       foreachnodestatic(pm_postprocess,tbinarynode(n).right,@searchsubdomain,@csedomain);
                       if csedomain then
                         begin
-                          csedomain:=true;
                           foreachnodestatic(pm_postprocess,tbinarynode(tbinarynode(n).left).right,@searchsubdomain,@csedomain);
                           if csedomain then
                             begin
@@ -391,11 +434,11 @@ unit optcse;
                                     end;
                                 end;
 
-                              hp2:=tbinarynode(tbinarynode(n).left).left;
+                              hp:=tbinarynode(tbinarynode(n).left).left;
                               tbinarynode(tbinarynode(n).left).left:=tbinarynode(tbinarynode(n).left).right;
                               tbinarynode(tbinarynode(n).left).right:=tbinarynode(n).right;
                               tbinarynode(n).right:=tbinarynode(n).left;
-                              tbinarynode(n).left:=hp2;
+                              tbinarynode(n).left:=hp;
 
                               { the transformed tree could result in new possibilities to fold constants
                                 so force a firstpass on the root node }
@@ -418,20 +461,18 @@ unit optcse;
                 printnode(output,n);
                 writeln('Complexity: ',node_complexity(n));
 {$endif csedebug}
-                lists.nodelist:=tfplist.create;
-                lists.locationlist:=tfplist.create;
-                lists.equalto:=tfplist.create;
-                lists.refs:=tfplist.create;
-                foreachnodestatic(pm_postprocess,n,@collectnodes,@lists);
-
-                templist:=tfplist.create;
-                templist.count:=lists.nodelist.count;
+                { Initialise linked list }
+                FillChar(CandidateList, SizeOf(CandidateList), 0);
+                foreachnodestatic(pm_postprocess,n,@collectnodes,@CandidateList);
 
                 { check all nodes if one is used more than once }
-                for i:=0 to lists.nodelist.count-1 do
+                LastItem := nil;
+                CurrentItem := CandidateList.First;
+                while Assigned(CurrentItem) do
                   begin
+                    Prefetch(CurrentItem^.Next);
                     { current node used more than once? }
-                    if assigned(lists.refs[i]) then
+                    if CurrentItem^.RefCount <> 0 then
                       begin
                         if not(assigned(statements)) then
                           begin
@@ -439,96 +480,123 @@ unit optcse;
                             addstatement(statements,internalstatements(creates));
                           end;
 
-                        def:=tstoreddef(tnode(lists.nodelist[i]).resultdef);
+                        def:=tstoreddef(CurrentItem^.NodeTree.resultdef);
+
                         { we cannot handle register stored records or array in CSE yet
                           but we can store their reference }
                         addrstored:=((def.typ in [arraydef,recorddef]) or is_object(def)) and not(is_dynamic_array(def));
 
                         if addrstored then
-                          templist[i]:=ctempcreatenode.create_value(cpointerdef.getreusable(def),voidpointertype.size,tt_persistent,
-                            true,caddrnode.create_internal(tnode(lists.nodelist[i])))
+                          CurrentItem^.TempRef:=ctempcreatenode.create_value(cpointerdef.getreusable(def),voidpointertype.size,tt_persistent,
+                            true,caddrnode.create_internal(CurrentItem^.NodeTree))
                         else
-                          templist[i]:=ctempcreatenode.create_value(def,def.size,tt_persistent,
-                            def.is_intregable or def.is_fpuregable or def.is_const_intregable,tnode(lists.nodelist[i]));
+                          CurrentItem^.TempRef:=ctempcreatenode.create_value(def,def.size,tt_persistent,
+                            def.is_intregable or def.is_fpuregable or def.is_const_intregable,CurrentItem^.NodeTree);
 
                         { the value described by the temp. is immutable and the temp. can be always in register
 
                           ttempcreatenode.create normally takes care of the register location but it does not
                           know about immutability so it cannot take care of managed types }
-                        ttempcreatenode(templist[i]).includetempflag(ti_const);
-                        ttempcreatenode(templist[i]).includetempflag(ti_may_be_in_reg);
+                        CurrentItem^.TempRef.includetempflag(ti_const);
+                        CurrentItem^.TempRef.includetempflag(ti_may_be_in_reg);
 
                         { make debugging easier and set temp. location to the original location }
-                        tnode(templist[i]).fileinfo:=tnode(lists.nodelist[i]).fileinfo;
+                        CurrentItem^.TempRef.fileinfo:=CurrentItem^.NodeTree.fileinfo;
 
-                        addstatement(creates,tnode(templist[i]));
+                        addstatement(creates,CurrentItem^.TempRef);
 
                         { the delete node has no semantic use yet, it is just used to clean up memory }
-                        deletetemp:=ctempdeletenode.create(ttempcreatenode(templist[i]));
+                        deletetemp:=ctempdeletenode.create(CurrentItem^.TempRef);
                         deletetemp.includetempflag(ti_cleanup_only);
                         addstatement(tstatementnode(arg^),deletetemp);
 
                         { make debugging easier and set temp. location to the original location }
-                        creates.fileinfo:=tnode(lists.nodelist[i]).fileinfo;
+                        creates.fileinfo:=CurrentItem^.NodeTree.fileinfo;
 
-                        hp:=ttempcreatenode(templist[i]);
-                        do_firstpass(tnode(hp));
-                        templist[i]:=hp;
+                        do_firstpass(TNode(CurrentItem^.TempRef));
 
+                        hp := ctemprefnode.create(CurrentItem^.TempRef);
                         if addrstored then
-                          pnode(lists.locationlist[i])^:=cderefnode.Create(ctemprefnode.create(ttempcreatenode(templist[i])))
+                          CurrentItem^.Location^:=cderefnode.Create(hp)
                         else
-                          pnode(lists.locationlist[i])^:=ctemprefnode.create(ttempcreatenode(templist[i]));
+                          CurrentItem^.Location^:=hp;
                         { make debugging easier and set temp. location to the original location }
-                        pnode(lists.locationlist[i])^.fileinfo:=tnode(lists.nodelist[i]).fileinfo;
+                        CurrentItem^.Location^.fileinfo:=CurrentItem^.NodeTree.fileinfo;
 
-                        do_firstpass(pnode(lists.locationlist[i])^);
+                        do_firstpass(CurrentItem^.Location^);
 {$ifdef csedebug}
                         printnode(output,statements);
 {$endif csedebug}
+                        LastItem := CurrentItem;
+                        CurrentItem := CurrentItem^.Next;
                       end
-                    { current node reference to another node? }
-                    else if lists.equalto[i]<>pointer(-1) then
+                    else
                       begin
-                        def:=tstoreddef(tnode(lists.nodelist[i]).resultdef);
-                        { we cannot handle register stored records or array in CSE yet
-                          but we can store their reference }
-                        addrstored:=((def.typ in [arraydef,recorddef]) or is_object(def)) and not(is_dynamic_array(def));
+                        NextItem := CurrentItem^.Next;
+
+                        { current node reference to another node? }
+                        if Assigned(CurrentItem^.EqualTo) then
+                          begin
+                            def:=tstoreddef(CurrentItem^.NodeTree.resultdef);
+                            { we cannot handle register stored records or array in CSE yet
+                              but we can store their reference }
+                            addrstored:=((def.typ in [arraydef,recorddef]) or is_object(def)) and not(is_dynamic_array(def));
 
 {$if defined(csedebug) or defined(csestats)}
-                        writeln;
-                        writeln('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
-                        writeln('Complexity: ',node_complexity(tnode(lists.nodelist[i])),'  Node ',i,' equals Node ',ptrint(lists.equalto[i]));
-                        printnode(output,tnode(lists.nodelist[i]));
-                        printnode(output,tnode(lists.nodelist[ptrint(lists.equalto[i])]));
-                        writeln('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
-                        writeln;
+                            writeln;
+                            writeln('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+                            writeln('Complexity: ',node_complexity(CurrentItem^.NodeTree),' - found branch match');
+                            printnode(output,CurrentItem^.NodeTree);
+                            printnode(output,CurrentItem^.EqualTo^.NodeTree);
+                            writeln('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+                            writeln;
 {$endif defined(csedebug) or defined(csestats)}
-                        templist[i]:=templist[ptrint(lists.equalto[i])];
-                        if addrstored then
-                          pnode(lists.locationlist[i])^:=cderefnode.Create(ctemprefnode.create(ttempcreatenode(templist[ptrint(lists.equalto[i])])))
+                            hp := ctemprefnode.Create(CurrentItem^.EqualTo^.TempRef);
+                            if addrstored then
+                              CurrentItem^.Location^ := cderefnode.Create(hp)
+                            else
+                              CurrentItem^.Location^ := hp;
+
+                            { make debugging easier and set temp. location to the original location }
+                            CurrentItem^.Location^.fileinfo:=CurrentItem^.NodeTree.fileinfo;
+
+                            do_firstpass(CurrentItem^.Location^);
+                          end
                         else
-                          pnode(lists.locationlist[i])^:=ctemprefnode.create(ttempcreatenode(templist[ptrint(lists.equalto[i])]));
+                          begin
+                            { We can safely free this item now because no other
+                              items refer to it }
+                            if not Assigned(LastItem) then
+                              { It's the first item }
+                              CandidateList.First := NextItem
+                            else
+                              LastItem^.Next := NextItem;
 
-                        { make debugging easier and set temp. location to the original location }
-                        pnode(lists.locationlist[i])^.fileinfo:=tnode(lists.nodelist[i]).fileinfo;
+                            Dispose(CurrentItem);
+                          end;
 
-                        do_firstpass(pnode(lists.locationlist[i])^);
+                        CurrentItem := NextItem;
                       end;
                   end;
-                { clean up unused trees }
-                for i:=0 to lists.nodelist.count-1 do
-                  if lists.equalto[i]<>pointer(-1) then
-                    tnode(lists.nodelist[i]).free;
 {$ifdef csedebug}
-                writeln('nodes: ',lists.nodelist.count);
+                writeln('nodes: ', CandidateList.Count);
                 writeln('==========================================');
 {$endif csedebug}
-                lists.nodelist.free;
-                lists.locationlist.free;
-                lists.equalto.free;
-                lists.refs.free;
-                templist.free;
+
+                { Empty what's left of the linked list }
+                SetLength(CandidateList.Avail, 0);
+                CurrentItem := CandidateList.First;
+                while Assigned(CurrentItem) do
+                  begin
+                    { Clean up the node trees that were replaced }
+                    if Assigned(CurrentItem^.EqualTo) then
+                      CurrentItem^.NodeTree.Free;
+
+                    LastItem := CurrentItem;
+                    CurrentItem := CurrentItem^.Next;
+                    Dispose(LastItem);
+                  end;
+                FillChar(CandidateList, SizeOf(CandidateList), 0);
 
                 if assigned(statements) then
                   begin
