@@ -814,7 +814,10 @@ interface
             (resultdef.typ=floatdef) and
             (location.loc=LOC_CONSTANT)
            ) or
-           ((resultdef.typ=floatdef) xor (location.loc in [LOC_CFPUREGISTER,LOC_FPUREGISTER,LOC_CMMREGISTER,LOC_MMREGISTER])) then
+           (
+             ((resultdef.typ=floatdef) xor (location.loc in [LOC_CFPUREGISTER,LOC_FPUREGISTER,LOC_CMMREGISTER,LOC_MMREGISTER])) and
+             not (is_vector(resultdef) and (location.loc in [LOC_CMMREGISTER,LOC_MMREGISTER]))
+           ) then
           begin
             { check if the CPU supports direct moves between int and fpu registers and take advantage of it }
 {$ifdef cpufloatintregmov}
