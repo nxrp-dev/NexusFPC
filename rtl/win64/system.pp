@@ -31,6 +31,7 @@ interface
 {$define DISABLE_NO_THREAD_MANAGER}
 {$define HAS_WIDESTRINGMANAGER}
 {$define DISABLE_NO_DYNLIBS_MANAGER}
+{$define DISABLE_NO_RESOURCE_MANAGER} { Windows applications always use fpintres. }
 {$define FPC_SYSTEM_HAS_SYSDLH}
 {$define FPC_HAS_SETCTRLBREAKHANDLER}
 
