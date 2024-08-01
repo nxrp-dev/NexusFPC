@@ -660,50 +660,50 @@ end;
 
 
 Procedure InitSystemThreads;public name '_FPC_InitSystemThreads';
-var
-  WinThreadManager : TThreadManager;
+const
+  WinThreadManager : TThreadManager =
+  (
+    InitManager            : Nil;
+    DoneManager            : Nil;
+    BeginThread            : @SysBeginThread;
+    EndThread              : @SysEndThread;
+    SuspendThread          : @SysSuspendThread;
+    ResumeThread           : @SysResumeThread;
+    KillThread             : @SysKillThread;
+    CloseThread            : @SysCloseThread;
+    ThreadSwitch           : @SysThreadSwitch;
+    WaitForThreadTerminate : @SysWaitForThreadTerminate;
+    ThreadSetPriority      : @SysThreadSetPriority;
+    ThreadGetPriority      : @SysThreadGetPriority;
+    GetCurrentThreadId     : @SysGetCurrentThreadId;
+    SetThreadDebugNameA    : @SysSetThreadDebugNameA;
+    SetThreadDebugNameU    : @SysSetThreadDebugNameU;
+    InitCriticalSection    : @SysInitCriticalSection;
+    DoneCriticalSection    : @SysDoneCriticalSection;
+    EnterCriticalSection   : @SysEnterCriticalSection;
+    TryEnterCriticalSection: @SysTryEnterCriticalSection;
+    LeaveCriticalSection   : @SysLeaveCriticalSection;
+    InitThreadVar          : @SysInitThreadVar;
+    RelocateThreadVar      : @SysRelocateThreadVar;
+    AllocateThreadVars     : @SysAllocateThreadVars;
+    ReleaseThreadVars      : @SysReleaseThreadVars;
+    BasicEventCreate       : @intBasicEventCreate;
+    BasicEventDestroy      : @intBasicEventDestroy;
+    BasicEventResetEvent   : @intBasicEventResetEvent;
+    BasicEventSetEvent     : @intBasicEventSetEvent;
+    BasiceventWaitFor      : @intBasiceventWaitFor;
+    RTLEventCreate         : @intRTLEventCreate;
+    RTLEventDestroy        : @intRTLEventDestroy;
+    RTLEventSetEvent       : @intRTLEventSetEvent;
+    RTLEventResetEvent     : @intRTLEventResetEvent;
+    RTLEventWaitFor        : @intRTLEventWaitFor;
+    RTLEventWaitForTimeout : @intRTLEventWaitForTimeout;
+  );
 {$ifndef WINCE}
+var
   KernelHandle : THandle;
 {$endif}
 begin
-  With WinThreadManager do
-    begin
-    InitManager            :=Nil;
-    DoneManager            :=Nil;
-    BeginThread            :=@SysBeginThread;
-    EndThread              :=@SysEndThread;
-    SuspendThread          :=@SysSuspendThread;
-    ResumeThread           :=@SysResumeThread;
-    KillThread             :=@SysKillThread;
-    ThreadSwitch           :=@SysThreadSwitch;
-    CloseThread            :=@SysCloseThread;
-    WaitForThreadTerminate :=@SysWaitForThreadTerminate;
-    ThreadSetPriority      :=@SysThreadSetPriority;
-    ThreadGetPriority      :=@SysThreadGetPriority;
-    GetCurrentThreadId     :=@SysGetCurrentThreadId;
-    SetThreadDebugNameA    :=@SysSetThreadDebugNameA;
-    SetThreadDebugNameU    :=@SysSetThreadDebugNameU;
-    InitCriticalSection    :=@SysInitCriticalSection;
-    DoneCriticalSection    :=@SysDoneCriticalSection;
-    EnterCriticalSection   :=@SysEnterCriticalSection;
-    TryEnterCriticalSection:=@SysTryEnterCriticalSection;
-    LeaveCriticalSection   :=@SysLeaveCriticalSection;
-    InitThreadVar          :=@SysInitThreadVar;
-    RelocateThreadVar      :=@SysRelocateThreadVar;
-    AllocateThreadVars     :=@SysAllocateThreadVars;
-    ReleaseThreadVars      :=@SysReleaseThreadVars;
-    BasicEventCreate       :=@intBasicEventCreate;
-    BasicEventDestroy      :=@intBasicEventDestroy;
-    BasicEventResetEvent   :=@intBasicEventResetEvent;
-    BasicEventSetEvent     :=@intBasicEventSetEvent;
-    BasiceventWaitFor      :=@intBasiceventWaitFor;
-    RTLEventCreate         :=@intRTLEventCreate;
-    RTLEventDestroy        :=@intRTLEventDestroy;
-    RTLEventSetEvent       :=@intRTLEventSetEvent;
-    RTLEventResetEvent     :=@intRTLEventResetEvent;
-    RTLEventWaitFor        :=@intRTLEventWaitFor;
-    RTLEventWaitForTimeout :=@intRTLEventWaitForTimeout;
-    end;
   SetThreadManager(WinThreadManager);
   ThreadID := GetCurrentThreadID;
 {$ifndef FPC_USE_TLS_DIRECTORY}
@@ -712,14 +712,8 @@ begin
     SysInitTLS;
 
 {$ifndef WINCE}
-  KernelHandle:=GetModuleHandle(KernelDLL);
-{$endif}
-
-{$ifndef WINCE}
-  if KernelHandle<>0 then
-  begin
-    WinSetThreadDescription:=TSetThreadDescription(WinGetProcAddress(KernelHandle, 'SetThreadDescription'));
-  end;
+  KernelHandle:=GetModuleHandle(KernelDLL); { Shouldn’t fail because GetModuleHandle is a function from KernelDLL. }
+  WinSetThreadDescription:=TSetThreadDescription(WinGetProcAddress(KernelHandle, 'SetThreadDescription'));
 {$endif WINCE}
 end;
 
