@@ -991,8 +991,7 @@ implementation
               localvarsym :
                 begin
                   vs:=tabstractnormalvarsym(sym);
-                  if is_vector(vs.vardef) and
-                     fits_in_mm_register(vs.vardef) then
+                  if fits_in_mm_register(vs.vardef) then { fits_in_mm_register also calls is_vector }
                     vs.initialloc.size:=def_cgmmsize(vs.vardef)
                   else
                     vs.initialloc.size:=def_cgsize(vs.vardef);
