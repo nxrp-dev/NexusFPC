@@ -4048,7 +4048,7 @@ Z*2Az80asm_Assemble using z80asm
 **1B_Build all modules
 **1C<x>_Code generation options:
 **2C3_Turn on IEEE error checking for constants
-**2Ca<x>_Select ABI; see fpc -i or fpc -ia for possible values
+**2Ca<x>_Select ABI; see `fpc -i` or `fpc -ia` for possible values
 **2Cb_Generate code for a big-endian variant of the target architecture
 **2Cc<x>_Set default calling convention to <x>
 V*2Cd<x>_Discard selected RTL startup sections (use with caution)
@@ -4059,11 +4059,11 @@ V*3Cdz_Discard code initializing the zero register and stack pointer
 **2CD_Create also dynamic library (not supported)
 **2Ce_Compilation with emulated floating point opcodes
 **2CE_Generate FPU code which can raise exceptions
-**2Cf<x>_Select fpu instruction set to use; see fpc -i or fpc -if for possible values
+**2Cf<x>_Select fpu instruction set to use; see `fpc -i` or `fpc -if` for possible values
 **2CF<x>_Minimal floating point constant precision (default, 32, 64)
 **2Cg_Generate PIC code
-**2Ch<n>[,m]_<n> bytes min heap size (between 1023 and 67107840) and optionally [m] max heap size
-**2Ci_IO-checking
+**2Ch<n>[,<m>]_<n> bytes min heap size (between 1023 and 67107840) and optionally <m> max heap size
+**2Ci_input/output-checking
 A*2CI<x>_Select instruction set on ARM: ARM or THUMB
 L*2Cl<x>_LLVM code generation options
 L*3Clflto_Enable Link-time optimisation (needed both when compiling units and programs/libraries)
@@ -4074,8 +4074,8 @@ L*3Clv<x>_LLVM target version: Xcode-10.1, 7.0, 8.0, .., 10.0
 P*2CN_Generate nil-pointer checks (AIX-only)
 **2Co_Check overflow of integer operations
 **2CO_Check for possible overflow of integer operations
-**2Cp<x>_Select instruction set; see fpc -i or fpc -ic for possible values
-**2CP<x>=<y>_ packing settings
+**2Cp<x>_Select instruction set; see `fpc -i` or `fpc -ic` for possible values
+**2CP<x>=<y>_ Packing settings
 **3CPPACKENUM=<y>_ <y> enum packing: 0, 1, 2 and 4 or DEFAULT or NORMAL
 **3CPPACKRECORD=<y>_ <y> record packing: 0 or DEFAULT or NORMAL, 1, 2, 4, 8, 16 and 32
 **3CPPACKSET=<y>_ <y> set allocation: 0, 1 or DEFAULT or NORMAL, 2, 4 and 8
@@ -4123,7 +4123,7 @@ A*2CV<x>_Set section threadvar model to <x>
 **1E_Same as -Cn
 **1fPIC_Same as -Cg
 **1F<x>_Set file names and paths:
-**2Fa<x>[,y]_(for a program) load units <x> and [y] before uses is parsed
+**2Fa<x>[,<y>]_(for a program) load units <x> and <y> before uses is parsed
 **2Fc<x>_Set input codepage to <x>
 **2FC<x>_Set RC compiler binary name to <x>
 **2Fd_Disable the compiler's internal directory cache
@@ -4209,11 +4209,11 @@ L*2il_Return list of supported LLVM/Xcode versions by the LLVM backend
 **2O3_Level 3 optimizations (-O2 + slow optimizations)
 **2O4_Level 4 optimizations (-O3 + optimizations which might have unexpected side effects)
 **2Oa<x>=<y>_Set alignment
-**2Oo[NO]<x>_Enable or disable optimizations; see fpc -i or fpc -io for possible values
-**2Op<x>_Set target cpu for optimizing; see fpc -i or fpc -ic for possible values
+**2Oo[NO]<x>_Enable or disable optimizations; see `fpc -i` or `fpc -io` for possible values
+**2Op<x>_Set target cpu for optimizing; see `fpc -i` or `fpc -ic` for possible values
 **2Os_Optimize for size rather than speed
-**2Ow<x>_Perform whole-program optimization <x>; see fpc -i or fpc -iw for possible values
-**2OW<x>_Generate whole-program optimization feedback for optimization <x>; see fpc -i or fpc -iw for possible values
+**2Ow<x>_Perform whole-program optimization <x>; see `fpc -i` or `fpc -iw` for possible values
+**2OW<x>_Generate whole-program optimization feedback for optimization <x>; see `fpc -i` or `fpc -iw` for possible values
 **1pg_Generate profile code for gprof (defines FPC_PROFILE)
 F*1P<x>_Target CPU / compiler related options:
 F*2PB_Show default compiler binary
@@ -4243,7 +4243,7 @@ F*2P<x>_Set target CPU (aarch64,arm,avr,i386,i8086,jvm,m68k,mips,mipsel,powerpc,
 **3*_h : Compiler also halts after hints
 **3*_n : Compiler also halts after notes
 **3*_w : Compiler also halts after warnings
-**2Sf_Enable certain features in compiler and RTL; see fpc -i or fpc -ir for possible values)
+**2Sf_Enable certain features in compiler and RTL; see `fpc -i` or `fpc -ir` for possible values)
 **2Sg_Enable LABEL and GOTO (default in -Mtp and -Mdelphi)
 **2Sh_Use reference counted strings (ansistring by default) instead of shortstrings
 **2Si_Turn on inlining of procedures/functions declared as "inline"
@@ -4486,11 +4486,11 @@ P*2WM<x>_Minimum Mac OS X deployment version: 10.4, 10.5.1, ... (Darwin)
 3*2WN_Do not generate relocation code, needed for debugging (Windows)
 4*2WN_Do not generate relocation code, needed for debugging (Windows)
 A*2WN_Do not generate relocation code, needed for debugging (Windows)
-A*2Wp<x>_Specify the controller type; see fpc -i or fpc -iu for possible values
-m*2Wp<x>_Specify the controller type; see fpc -i or fpc -iu for possible values
-R*2Wp<x>_Specify the controller type; see fpc -i or fpc -iu for possible values
-V*2Wp<x>_Specify the controller type; see fpc -i or fpc -iu for possible values
-x*2Wp<x>_Specify the controller type; see fpc -i or fpc -iu for possible values
+A*2Wp<x>_Specify the controller type; see `fpc -i` or `fpc -iu` for possible values
+m*2Wp<x>_Specify the controller type; see `fpc -i` or `fpc -iu` for possible values
+R*2Wp<x>_Specify the controller type; see `fpc -i` or `fpc -iu` for possible values
+V*2Wp<x>_Specify the controller type; see `fpc -i` or `fpc -iu` for possible values
+x*2Wp<x>_Specify the controller type; see `fpc -i` or `fpc -iu` for possible values
 3*2WP<x>_Minimum iOS deployment version: 3.0, 5.0.1, ... (iphonesim)
 4*2WP<x>_Minimum iOS deployment version: 8.0, 8.0.2, ... (iphonesim)
 a*2WP<x>_Minimum iOS deployment version: 7.0, 7.1.2, ... (Darwin)

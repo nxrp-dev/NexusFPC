@@ -4061,17 +4061,17 @@ Z*2Az80asm_Assembliere mit Hilfe von z80asm
 **1B_Erzeuge alle Module (Build)
 **1C<x>_Optionen für Code-Erzeugung:
 **2C3<x>_Schalte IEEE-Prüfung von Konstanten ein
-**2Ca<x>_Wähle ABI aus; fpc -i oder fpc -ia geben die möglichen Werte aus
+**2Ca<x>_Wähle ABI aus; `fpc -i` oder `fpc -ia` geben die möglichen Werte aus
 **2Cb_Erzeuge Code für die "big-endian"-Variante der Zielarchitektur
 **2Cc<x>_Setze "default calling convention" zu <x>
 **2CD_Erzeuge auch eine dynamische Bibliothek (nicht unterstützt)
 **2Ce_Übersetze mit emulierten Fliesskomma opcodes
 **2CE_Erzeuge FPU Code, der Ausnahmen (exceptions) auslösen kann
-**2Cf<x>_Wähle den Fliesskomma-Befehlssatz aus; fpc -i oder fpc -if geben die möglichen Werte aus
+**2Cf<x>_Wähle den Fliesskomma-Befehlssatz aus; `fpc -i` oder `fpc -if` geben die möglichen Werte aus
 **2CF<x>_Minimale Präzission von Fliesskommakonstanten (default, 32, 64)
 **2Cg_Erzeuge PIC Code
-**2Ch<n>[,m]_<n> Minimale Größe des Heap in Byte (zwischen 1023 und 67107840) und optional [m] maximale Größe des Heap
-**2Ci_I/O-Prüfung
+**2Ch<n>[,<m>]_<n> Minimale Größe des Heap in Byte (zwischen 1023 und 67107840) und optional <m> maximale Größe des Heap
+**2Ci_Ein-/Ausgabe-Prüfung
 A*2CI<x>_Wähle den Befehlssatz für ARM aus: ARM oder THUMB
 L*2Cl<x>_LLVM Codeerzeugungsoptionen
 L*3Clflto_Schalte Link-time-Optimierungen ein (benötigt, wenn Units oder Programme/Bibliotheken übersetzt werden)
@@ -4082,7 +4082,7 @@ L*3Clv<x>_LLVM Zielversion: Xcode-10.1, 7.0, 8.0, .., 10.0
 P*2CN_Erzeuge Überprüfungen auf Nil-Zeiger (nur AIX)
 **2Co_Prüfe auf Überlauf von Integer-Operationen
 **2CO_Prüfe auf möglichen Überlauf von Integer-Operationen
-**2Cp<x>_Wähle Befehlssatz aus; fpc -i oder fpc -ic geben die möglichen Werte aus
+**2Cp<x>_Wähle Befehlssatz aus; `fpc -i` oder `fpc -ic` geben die möglichen Werte aus
 **2CP<x>=<y>_ Einstellungen für packing
 **3CPPACKENUM=<y>_ <y> Packen von Aufzählungen: 0, 1, 2 und 4 oder DEFAULT oder NORMAL
 **3CPPACKRECORD=<y>_ <y> Packen von Records: 0 oder DEFAULT oder NORMAL, 1, 2, 4, 8, 16 und 32
@@ -4131,7 +4131,7 @@ A*2CV<x>_Setze das Section-Threadvar-Modell auf <x>
 **1E_Genau wie -Cn
 **1fPIC_Genau wie -Cg
 **1F<x>_Dateinamen und Pfade:
-**2Fa<x>[,y]_Ein Program soll die Units <x> und [y] laden, bevor uses analysiert wird
+**2Fa<x>[,<y>]_Ein Program soll die Units <x> und <y> laden, bevor uses analysiert wird
 **2Fc<x>_Setze die Eingabe-Codepage zu <x>
 **2FC<x>_Setze den Namen des RC Compiler-Binärprograms auf <x>
 **2Fd_Schalte den internen Verzeichnis-Cache des Compilers aus
@@ -4216,11 +4216,11 @@ L*2il_Zeige Liste der unterstützten LLVM/Xcode Versionen des LLVM-Backend
 **2O3_Level 3 Optimierung (-O2 + langsame Optimierungen)
 **2O4_Level 4 Optimierung (-O3 + Optimierungen, die unerwartete Nebeneffekte haben können)
 **2Oa<x>=<y>_Ausrichtung (alignment) von Mengen
-**2Oo[NO]<x>_Optimierungen ein- oder ausschalten; fpc -i oder fpc -io geben die möglichen Werte aus
-**2Op<x>_Setze Zielprozessor für die Optimierung; fpc -i oder fpc -ic geben die möglichen Werte aus
+**2Oo[NO]<x>_Optimierungen ein- oder ausschalten; `fpc -i` oder `fpc -io` geben die möglichen Werte aus
+**2Op<x>_Setze Zielprozessor für die Optimierung; `fpc -i` oder `fpc -ic` geben die möglichen Werte aus
 **2Os_Erzeuge kürzeren Code
-**2Ow<x>_Führe die Gesamtprogramm-Optimierung durch <x>; fpc -i oder fpc -iw  geben die möglichen Werte aus
-**2OW<x>_Erzeuge Feedback für die Gesamtprogramm-Optimierung für Optimierung <x>; fpc -i oder fpc -iw geben die möglichen Werte aus
+**2Ow<x>_Führe die Gesamtprogramm-Optimierung durch <x>; `fpc -i` oder `fpc -iw` geben die möglichen Werte aus
+**2OW<x>_Erzeuge Feedback für die Gesamtprogramm-Optimierung für Optimierung <x>; `fpc -i` oder `fpc -iw` geben die möglichen Werte aus
 **1pg_Erzeuge Profiler-Code für gprof
 F*1P<x>_Zielprozessor / Compiler bezogene Optionen:
 F*2PB_Zeige die voreingestellte Compilerbinärdatei
@@ -4250,7 +4250,7 @@ F*2P<x>_Setze den Zielprozessor (aarch64,arm,avr,i386,i8086,jvm,m68k,mips,mipsel
 **3*_h : Compiler hält auch nach Hinweisen
 **3*_n : Compiler hält auch nach Anmerkungen
 **3*_w : Compiler hält auch nach Warnungen
-**2Sf_Schalte bestimmte Feature in Compiler und RTL ein; fpc -i oder fpc -ir geben die möglichen Werte aus
+**2Sf_Schalte bestimmte Feature in Compiler und RTL ein; `fpc -i` oder `fpc -ir` geben die möglichen Werte aus
 **2Sg_Erlaube LABEL und GOTO
 **2Sh_Benutze ANSI-Strings
 **2Si_Benutze C++ artige INLINE
@@ -4477,11 +4477,11 @@ P*2WM<x>_Minimale macOS Deployment Version: 10.4, 10.5.1, ... (Darwin)
 3*2WN_Erzeuge keinen "relocation code" (notwendig für debugging) (Windows)
 4*2WN_Erzeuge keinen "relocation code" (notwendig für debugging) (Windows)
 A*2WN_Erzeuge keinen "relocation code" (notwendig für debugging) (Windows)
-A*2Wp<x>_Spezifiziere den Kontrollertyp; fpc -i oder fpc -iu geben mögliche Werte aus
-m*2Wp<x>_Spezifiziere den Kontrollertyp; fpc -i oder fpc -iu geben mögliche Werte aus
-R*2Wp<x>_Spezifiziere den Kontrollertyp; fpc -i oder fpc -iu geben mögliche Werte aus
-V*2Wp<x>_Spezifiziere den Kontrollertyp; fpc -i oder fpc -iu geben mögliche Werte aus
-x*2Wp<x>_Spezifiziere den Kontrollertyp; fpc -i oder fpc -iu geben mögliche Werte aus
+A*2Wp<x>_Spezifiziere den Kontrollertyp; `fpc -i` oder `fpc -iu` geben mögliche Werte aus
+m*2Wp<x>_Spezifiziere den Kontrollertyp; `fpc -i` oder `fpc -iu` geben mögliche Werte aus
+R*2Wp<x>_Spezifiziere den Kontrollertyp; `fpc -i` oder `fpc -iu` geben mögliche Werte aus
+V*2Wp<x>_Spezifiziere den Kontrollertyp; `fpc -i` oder `fpc -iu` geben mögliche Werte aus
+x*2Wp<x>_Spezifiziere den Kontrollertyp; `fpc -i` oder `fpc -iu` geben mögliche Werte aus
 3*2WP<x>_Minimale iOS Deployment Version: 3.0, 5.0.1, ... (iphonesim)
 4*2WP<x>_Minimale iOS Deployment Version: 8.0, 8.0.2, ... (iphonesim)
 a*2WP<x>_Minimale iOS Deployment Version: 7.0, 7.1.2, ... (Darwin)

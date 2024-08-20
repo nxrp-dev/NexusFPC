@@ -3646,13 +3646,13 @@ S*2Aas_assembler avec GNU AS
 **2Cc<x>_définir les convention d'appel <x> par défaut
 **2CD_créer une bibliothèque dynamique
 **2Ce_compilation avec émulation des opérations à virgule flottante
-**2Cf<x>_sélectionner le jeu d'instructions FPU à utiliser, voir fpc -i pour les valeurs possibles
+**2Cf<x>_sélectionner le jeu d'instructions FPU à utiliser, voir `fpc -i` pour les valeurs possibles
 **2Cg_Générer du code PIC
 **2Ch<n>_<n> taille du tas en bytes (entre 1023 et 67107840)
 **2Ci_IO-checking
 **2Cn_pas de linking
 **2Co_génère des tests d'overflow pour les opérations sur les entiers
-**2Cp<x>_sélectionner le jeu d'instructions, voir fpc -i pour les valeurs possibles
+**2Cp<x>_sélectionner le jeu d'instructions, voir `fpc -i` pour les valeurs possibles
 **2Cr_controle d'intervalles
 **2CR_vérifier la validité de l'appel à la méthode d'objet
 **2Cs<n>_spécifie <n> comme taille de la pile
@@ -3666,7 +3666,7 @@ S*2Aas_assembler avec GNU AS
 **1e<x>_définit le chemin vers l'exécutable
 **1E_comme -Cn
 **1F<x>_définit des chemins et noms de fichiers :
-**2Fa<x>[,y]_Pour un programme charger d'abord les unités <x> et [y] avant que uses ne soit analysé
+**2Fa<x>[,<y>]_Pour un programme charger d'abord les unités <x> et <y> avant que uses ne soit analysé
 **2Fc<x>_Utiliser la page de codes <x> en entrée
 **2FD<x>_définit le répertoire où chercher les utilitaires de compilation
 **2Fe<x>_redirige les erreurs vers le fichier <x>

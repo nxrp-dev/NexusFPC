@@ -3190,12 +3190,12 @@ S*2Aas_Monta usando o GNU AS
 **1B_Constr¢i todos os m¢dulos
 **1C<x>_Op‡äes gera‡Æo de c¢digo:
 **2C3<x>_Ligar verifica‡Æo de erro IEEE para constantes
-**2Ca<x>_Seleciona ABI, veja fpc -i para poss¡veis valores
+**2Ca<x>_Seleciona ABI, veja `fpc -i` para poss¡veis valores
 **2Cb_Gera c¢digo 'big-endian'
 **2Cc<x>_Ajusta conven‡Æo de chamada para <x>
 **2CD_Cria tamb‚m biblioteca dinƒmica (nÆo suportado)
 **2Ce_Compila‡Æo com opcodes de ponto flutuante emulados
-**2Cf<x>_Seleciona conjunto de instru‡äes fpu a usar, veja fpc -i para poss¡veis valores
+**2Cf<x>_Seleciona conjunto de instru‡äes fpu a usar, veja `fpc -i` para poss¡veis valores
 **2CF<x>_PrecisÆo m¡nima constante ponto flutuante (padrÆo, 32, 64)
 **2Cg_Gera c¢digo PIC
 **2Ch<n>_<n> bytes heap (entre 1023 e 67107840)
@@ -3203,7 +3203,7 @@ S*2Aas_Monta usando o GNU AS
 **2Cn_Omite est gio vincula‡Æo
 **2Co_Verifica transbordamento de opera‡äes inteiras
 **2CO_Verifica poss¡vel transbordamento de opera‡äes inteiras
-**2Cp<x>_Seleciona conjunto de instru‡äes, veja fpc -i para poss¡ves valores
+**2Cp<x>_Seleciona conjunto de instru‡äes, veja `fpc -i` para poss¡ves valores
 **2CP<x>=<y>_ Ajustes compacta‡Æo
 **3CPPACKSET=<y>_ <y> conjunto aloca‡Æo: 0, 1 ou DEFAULT ou NORMAL, 2, 4 e 8
 **2Cr_Verifica‡Æo de faixa
@@ -3220,7 +3220,7 @@ S*2Aas_Monta usando o GNU AS
 **1E_Mesmo que -Cn
 **1fPIC_Mesmo que -Cg
 **1F<x>_Ajusta nomes de arquivo e caminhos:
-**2Fa<x>[,y]_(para um programa) carregar unidades <x> e [y] antes de analisar cl usula 'uses'
+**2Fa<x>[,<y>]_(para um programa) carregar unidades <x> e <y> antes de analisar cl usula 'uses'
 **2Fc<x>_Ajusta entrada p gina de c¢digo para <x>
 **2FC<x>_Ajusta nome do compilador RC bin rio para <x>
 **2Fd_Disabilita o cache de diret¢rios interno do compilador
@@ -3280,10 +3280,10 @@ S*2Aas_Monta usando o GNU AS
 **2O2_N¡vel 2 otimiza‡äes (-O1 + otimiza‡äes r pidas)
 **2O3_N¡vel 3 otimiza‡äes (-O2 + otimiza‡äes lentas)
 **2Oa<x>=<y>_Ajusta alinhamento
-**2Oo[NO]<x>_Habilita ou desabilita otimiza‡äes, veja fpc -i para poss¡veis valores
-**2Op<x>_Ajusta cpu alvo para otimiza‡äes, veja fpc -i para poss¡veis valores
-**2OW<x>_Gera retorno otimiza‡Æo completa programa para otimiza‡äes <x>, veja fpc -i para poss¡veis valores
-**2Ow<x>_Realiza otimiza‡Æo completa programa <x>, veja fpc -i para poss¡veis valores
+**2Oo[NO]<x>_Habilita ou desabilita otimiza‡äes, veja `fpc -i` para poss¡veis valores
+**2Op<x>_Ajusta cpu alvo para otimiza‡äes, veja `fpc -i` para poss¡veis valores
+**2OW<x>_Gera retorno otimiza‡Æo completa programa para otimiza‡äes <x>, veja `fpc -i` para poss¡veis valores
+**2Ow<x>_Realiza otimiza‡Æo completa programa <x>, veja `fpc -i` para poss¡veis valores
 **2Os_Otimiza tamanho ao inv‚s de velocidade
 **1pg_Gera perfil c¢digo para 'gprof' (define FPC_PROFILE)
 **1R<x>_Estilo leitura Assembler:
@@ -3417,8 +3417,8 @@ A*2WI_Liga/desliga o uso de se‡äes de importa‡Æo (Windows)
 3*2WN_NÆo gera c¢digo de reloca‡Æo, necess rio para depura‡Æo (Windows)
 4*2WN_NÆo gera c¢digo de reloca‡Æo, necess rio para depura‡Æo (Windows)
 A*2WN_NÆo gera c¢digo de reloca‡Æo, necess rio para depura‡Æo (Windows)
-A*2Wpxxxx_Especifica o tipo de controlador, veja fpc -i para valores poss¡veis
-V*2Wpxxxx_Especifica o tipo de controlador, veja fpc -i para valores poss¡veis
+A*2Wpxxxx_Especifica o tipo de controlador, veja `fpc -i` para valores poss¡veis
+V*2Wpxxxx_Especifica o tipo de controlador, veja `fpc -i` para valores poss¡veis
 3*2WR_Gera c¢digo de reloca‡Æo (Windows)
 4*2WR_Gera c¢digo de reloca‡Æo (Windows)
 A*2WR_Gera c¢digo de reloca‡Æo (Windows)
