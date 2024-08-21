@@ -679,6 +679,9 @@ unit hlcgobj;
           procedure getlocal(list: TAsmList; sym: tsym; size: asizeint; alignment: shortint; def: tdef; out ref : treference);
           { the symbol is stored at this location from now on }
           procedure recordnewsymloc(list: TAsmList; sym: tsym; def: tdef; const ref: treference; initial: boolean); virtual;
+
+          { helper function that deallocates the register used to pass a parameter (note it does not iterate through paraloc.next) }
+          class procedure unget_para(list: TAsmList; paraloc: PCGParaLocation); static;
          protected
           procedure gen_loadfpu_loc_cgpara(list: TAsmList; size: tdef; const l: tlocation;const cgpara: tcgpara;locintsize: longint);virtual;
           procedure init_paras(p:TObject;arg:pointer);
@@ -5590,6 +5593,33 @@ implementation
     begin
       // do nothing
     end;
+
+
+{$PUSH}
+{$warn 4044 off} { The warning about the comparison always being false seems to get falsely triggered sometimes }
+  class procedure thlcgobj.unget_para(list: TAsmList; paraloc: PCGParaLocation);
+    begin
+       case paraloc^.loc of
+         LOC_REGISTER :
+           begin
+             if getsupreg(paraloc^.register)<first_int_imreg then
+               cg.ungetcpuregister(list,paraloc^.register);
+           end;
+         LOC_MMREGISTER :
+           begin
+             if getsupreg(paraloc^.register)<first_mm_imreg then
+               cg.ungetcpuregister(list,paraloc^.register);
+           end;
+         LOC_FPUREGISTER :
+           begin
+             if getsupreg(paraloc^.register)<first_fpu_imreg then
+               cg.ungetcpuregister(list,paraloc^.register);
+           end;
+         else
+           ;
+       end;
+    end;
+{$POP}
 
 
   procedure thlcgobj.gen_loadfpu_loc_cgpara(list: TAsmList; size: tdef; const l: tlocation; const cgpara: tcgpara; locintsize: longint);
