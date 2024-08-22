@@ -2135,7 +2135,7 @@ implementation
                   end
                 else
                   begin
-                    internalerror(200410108);
+                    cg.a_load_cgparaloc_combine_vector(list,paraloc^,destloc,vardef);
                   end;
                 { data could come in two memory locations, for now
                   we simply ignore the sanity check (FK)

@@ -29,7 +29,7 @@ unit cgcpu;
        cgbase,cgutils,cgobj,cgx86,
        aasmbase,aasmtai,aasmdata,aasmcpu,
        cpubase,parabase,
-       symdef,
+       symdef,symtype,
        symconst,rgx86,procinfo;
 
     type
@@ -47,6 +47,7 @@ unit cgcpu;
 
         procedure a_loadmm_intreg_reg(list: TAsmList; fromsize, tosize : tcgsize;intreg, mmreg: tregister; shuffle: pmmshuffle); override;
         procedure a_loadmm_reg_intreg(list: TAsmList; fromsize, tosize : tcgsize;mmreg, intreg: tregister;shuffle : pmmshuffle); override;
+        procedure a_load_cgparaloc_combine_vector(list: TAsmList; const paraloc: TCGParaLocation; var destloc: tlocation; vardef: tdef); override;
 
         function use_ms_abi: boolean;
       private
@@ -62,7 +63,8 @@ unit cgcpu;
        globtype,globals,verbose,systems,cutils,cclasses,
        cpuinfo,
        symtable,paramgr,cpupi,
-       rgcpu,ncgutil;
+       rgcpu,ncgutil,
+       hlcgobj;
 
 
     procedure Tcgx86_64.init_register_allocators;
@@ -541,6 +543,73 @@ unit cgcpu;
            not shufflescalar(shuffle) then
           internalerror(2009112515);
         list.concat(taicpu.op_reg_reg(opc,S_NO,mmreg,intreg));
+      end;
+
+
+    procedure tcgx86_64.a_load_cgparaloc_combine_vector(list: TAsmList; const paraloc: TCGParaLocation; var destloc: tlocation; vardef: tdef);
+
+      var
+        NextParaloc: PCGParaLocation;
+        instr: taicpu;
+        opc: TAsmOp;
+      begin
+        case destloc.size of
+          OS_M128F,
+          OS_M128D:
+            begin
+              { 4 singles contained in 2 XMM registers (2 singles apiece), or
+                2 doubles contained in 2 XMM registers, one each }
+
+              if not Assigned(paraloc.Next) then
+                { Too few locations }
+                InternalError(2024082121);
+
+              if not (paraloc.Loc in [LOC_MMREGISTER, LOC_CMMREGISTER]) or
+                not (paraloc.Size in [OS_F64, OS_M64, OS_M64F]) then
+                { Wrong location information }
+                InternalError(2024082123);
+
+              NextParaloc := paraloc.Next;
+
+              if not (NextParaloc^.Loc in [LOC_MMREGISTER, LOC_CMMREGISTER]) or
+                (NextParaloc^.Size <> paraloc.size) then
+                { Wrong location information }
+                InternalError(2024082124);
+
+              if UseAVX then
+                begin
+                  { We can use a single instruction }
+                  hlcg.unget_para(list, @paraloc);
+                  hlcg.unget_para(list, NextParaloc);
+                  gen_alloc_regloc(list,destloc,vardef); { This ordering will hopefully reuse one of the input registers }
+
+                  if destloc.size = OS_M128D then
+                    list.concat(taicpu.op_reg_reg_reg(A_VUNPCKLPD,S_NO,NextParaloc^.register,paraloc.register,destloc.register))
+                  else
+                    list.concat(taicpu.op_const_reg_reg_reg(A_VSHUFPS,S_NO,%01000100,NextParaloc^.register,paraloc.register,destloc.register));
+                end
+              else
+                begin
+                  hlcg.unget_para(list, @paraloc);
+                  gen_alloc_regloc(list,destloc,vardef); { This ordering will hopefully reuse one of the input registers }
+                  if destloc.size = OS_M128D then
+                    opc:=A_MOVAPD
+                  else
+                    opc:=A_MOVAPS;
+                  instr := taicpu.op_reg_reg(opc,S_NO,paraloc.register,destloc.register);
+                  add_move_instruction(instr);
+                  list.concat(instr);
+
+                  hlcg.unget_para(list, NextParaloc);
+                  if destloc.size = OS_M128D then
+                    list.concat(taicpu.op_reg_reg(A_UNPCKLPD,S_NO,NextParaloc^.register,destloc.register))
+                  else
+                    list.concat(taicpu.op_const_reg_reg(A_SHUFPS,S_NO,%01000100,NextParaloc^.register,destloc.register));
+                end;
+            end;
+          else
+            InternalError(2024082120);
+        end;
       end;
 
 

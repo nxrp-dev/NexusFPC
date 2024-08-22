@@ -1694,7 +1694,131 @@ unit cgx86;
             end;
           end
         else
-          internalerror(200312201);
+          begin
+            { Suppress warnings }
+            instr:=nil;
+            { Note, 256-bit and 512-bit MM shuffling are not yet supported }
+            case fromsize of
+              OS_M128F:
+                { Shuffle singles }
+                begin
+                  case tosize of
+                    OS_M64,
+                    OS_M64F:
+                      { Transfer 2 singles }
+                      begin
+                        if shuffle^.len <> 1 then
+                          InternalError(2024082110);
+
+                        case shuffle^.shuffles[1] of
+                          0:
+                            { lower 64 bite to lower 64-bits - just copy the output }
+                            begin
+                              if UseAVX then
+                                op:=A_VMOVAPS
+                              else
+                                op:=A_MOVAPS;
+
+                              instr:=taicpu.op_reg_reg(op,S_NO,reg1,reg2);
+                              add_move_instruction(instr);
+                            end;
+                          1:
+                            { Upper 64 bits to lower 64 bits }
+                            begin
+                              if UseAVX then
+                                instr:=taicpu.op_const_reg_reg_reg(A_VSHUFPS,S_NO,%11101110,reg1,reg1,reg2)
+                              else
+                                begin
+                                  { Copy to the output first }
+                                  instr:=taicpu.op_reg_reg(A_MOVAPS,S_NO,reg1,reg2);
+                                  add_move_instruction(instr);
+
+                                  list.concat(instr);
+                                  instr:=taicpu.op_const_reg_reg(A_SHUFPS,S_NO,%11101110,reg2,reg2);
+                                end;
+                            end;
+                          else
+                            InternalError(2024082111);
+                        end;
+                      end;
+                    else
+                      InternalError(2024082104);
+                  end;
+                end;
+              OS_M128D:
+                { Shuffle doubles }
+                begin
+                  case tosize of
+                     OS_F64,
+                     OS_M64,
+                     OS_M64D:
+                       { Transfer 1 double }
+                       begin
+                         if shuffle^.len <> 1 then
+                           InternalError(2024082112);
+
+                         case shuffle^.shuffles[1] of
+                           0:
+                             { lower 64 bite to lower 64-bits - just copy the output }
+                             begin
+                               if UseAVX then
+                                 op:=A_VMOVAPD
+                               else
+                                 op:=A_MOVAPD;
+
+                               instr:=taicpu.op_reg_reg(op,S_NO,reg1,reg2);
+                               add_move_instruction(instr);
+                             end;
+                           1:
+                             { Upper 64 bits to lower 64 bits }
+                             begin
+                               if UseAVX then
+                                 instr:=taicpu.op_const_reg_reg_reg(A_VSHUFPD,S_NO,%01,reg1,reg1,reg2)
+                               else
+                                 begin
+                                   { Copy to the output first }
+                                   instr:=taicpu.op_reg_reg(A_MOVAPD,S_NO,reg1,reg2);
+                                   add_move_instruction(instr);
+
+                                   list.concat(instr);
+                                   instr:=taicpu.op_const_reg_reg(A_SHUFPD,S_NO,%01,reg2,reg2);
+                                 end;
+                             end;
+                           else
+                             InternalError(2024082113);
+                         end;
+                       end;
+                    else
+                      InternalError(2024082105);
+                  end;
+                end;
+              OS_M256F:
+                { Shuffle singles }
+                begin
+                  if not UseAVX then
+                    InternalError(2024082101);
+
+//                  case tosize of
+//                    else
+//                      InternalError(2024082106);
+//                  end;
+                end;
+              OS_M256D:
+                { Shuffle doubles }
+
+                begin
+                  if not UseAVX then
+                    InternalError(2024082102);
+
+//                  case tosize of
+//                    else
+//                      InternalError(2024082107);
+//                  end;
+                end;
+              else
+                internalerror(200312201);
+            end;
+          end;
         list.concat(instr);
       end;
 
