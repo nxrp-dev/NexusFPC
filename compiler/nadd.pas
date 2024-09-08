@@ -3557,7 +3557,7 @@ const
                                '_'+symSectionToSectionPostfixName(tmpsymsection);
 {$endif avr}
                   result:=ccallnode.createintern(helpername,para);
-                  include(aktassignmentnode.flags,nf_assign_done_in_right);
+                  include(aktassignmentnode.assignmentnodeflags,anf_assign_done_in_right);
                   firstpass(result);
                 end
               else
