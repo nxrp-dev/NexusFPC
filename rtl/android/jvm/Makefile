@@ -915,13 +915,14 @@ COMMON=$(RTL)/common
 PROCINC=$(RTL)/$(CPU_TARGET)
 UNITPREFIX=rtl
 SYSTEMUNIT=system
+OBJPASDIR=$(RTL)/objpas
 ifdef RELEASE
 override FPCOPT+=-Ur
 endif
 CPU_UNITS=
 SYSINIT_UNITS=
 ifeq ($(CPU_OS_TARGET),jvm-android)
-override TARGET_UNITS+=$(SYSTEMUNIT) uuchar objpas androidr14
+override TARGET_UNITS+=$(SYSTEMUNIT) $(UUCHARUNIT) $(OBJPASUNIT) $(ANDROIDR14UNIT) $(SYSUTILSUNIT) $(SYSCONSTUNIT)
 endif
 override INSTALL_FPCPACKAGE=y y
 ifeq ($(CPU_OS_TARGET),jvm-android)
@@ -2936,47 +2937,8 @@ uuchar$(PPUEXT): $(SYSTEMUNIT)$(PPUEXT) $(INC)/uuchar.pp
 	$(COMPILER) $(INC)/uuchar.pp
 objpas$(PPUEXT): $(RTL)/java/objpas.pp
 	$(COMPILER) $(RTL)/java/objpas.pp $(REDIR)
-strings$(PPUEXT) : $(INC)/strings.pp $(INC)/stringsi.inc \
-	$(PROCINC)/strings.inc $(PROCINC)/stringss.inc \
-	$(SYSTEMUNIT)$(PPUEXT)
-	$(COMPILER) $(INC)/strings.pp
-androidr14$(PPUEXT): $(SYSTEMUNIT)$(PPUEXT) objpas$(PPUEXT) androidr14.pas androidr14.inc
+androidr14$(PPUEXT): $(SYSTEMUNIT)$(PPUEXT) $(OBJPASUNIT)$(PPUEXT) androidr14.pas androidr14.inc
 	$(COMPILER) androidr14.pas
-dos$(PPUEXT) : dos.pp $(INC)/filerec.inc $(INC)/textrec.inc strings$(PPUEXT) \
-	       $(SYSTEMUNIT)$(PPUEXT)
-	$(COMPILER) dos.pp
-objects$(PPUEXT) : $(INC)/objects.pp dos$(PPUEXT) $(SYSTEMUNIT)$(PPUEXT)
-	$(COMPILER) $(INC)/objects.pp
-sysutils$(PPUEXT) : sysutils.pp $(wildcard $(OBJPASDIR)/sysutils/*.inc) \
-		    objpas$(PPUEXT) dos$(PPUEXT) sysconst$(PPUEXT)
-	$(COMPILER) -Fi$(OBJPASDIR)/sysutils sysutils.pp
-classes$(PPUEXT) : classes.pp $(wildcard $(OBJPASDIR)/classes/*.inc) \
-		   sysutils$(PPUEXT) typinfo$(PPUEXT) rtlconsts$(PPUEXT) types$(PPUEXT)
-	$(COMPILER) -Fi$(OBJPASDIR)/classes classes.pp
-typinfo$(PPUEXT): $(OBJPASDIR)/typinfo.pp objpas$(PPUEXT)
-	$(COMPILER) -Sg $(OBJPASDIR)/typinfo.pp $(REDIR)
-math$(PPUEXT): $(OBJPASDIR)/math.pp objpas$(PPUEXT) sysutils$(PPUEXT)
-	$(COMPILER) $(OBJPASDIR)/math.pp $(REDIR)
-varutils$(PPUEXT) : $(OBJPASDIR)/cvarutil.inc $(OBJPASDIR)/varutils.inc \
-		    $(OBJPASDIR)/varutilh.inc varutils.pp
-	$(COMPILER) -I$(OBJPASDIR) varutils.pp $(REDIR)
-fmtbcd$(PPUEXT) : $(OBJPASDIR)/fmtbcd.pp objpas$(PPUEXT) sysutils$(PPUEXT) variants$(PPUEXT) classes$(PPUEXT) system$(PPUEXT)
-	$(COMPILER) $(OBJPASDIR)/fmtbcd.pp
-types$(PPUEXT) : $(OBJPASDIR)/types.pp objpas$(PPUEXT) math$(PPUEXT) $(SYSTEMUNIT)$(PPUEXT)
-	$(COMPILER) $(OBJPASDIR)/types.pp
-rtlconsts$(PPUEXT) : $(OBJPASDIR)/rtlconsts.pp
-	$(COMPILER) $(OBJPASDIR)/rtlconsts.pp
-sysconst$(PPUEXT) : $(OBJPASDIR)/sysconst.pp objpas$(PPUEXT) $(SYSTEMUNIT)$(PPUEXT)
-	$(COMPILER) $(OBJPASDIR)/sysconst.pp
-dateutil$(PPUEXT) : $(OBJPASDIR)/dateutil.pp
-	$(COMPILER) -I$(OBJPASDIR) $(OBJPASDIR)/dateutil.pp
-macpas$(PPUEXT) : $(INC)/macpas.pp objpas$(PPUEXT) math$(PPUEXT)
-	$(COMPILER) $(INC)/macpas.pp $(REDIR)
-ucomplex$(PPUEXT): $(INC)/ucomplex.pp math$(PPUEXT) $(SYSTEMUNIT)$(PPUEXT)
-	$(COMPILER) $(INC)/ucomplex.pp
-getopts$(PPUEXT) : $(INC)/getopts.pp $(SYSTEMUNIT)$(PPUEXT)
-	$(COMPILER) $(INC)/getopts.pp
-heaptrc$(PPUEXT) : $(INC)/heaptrc.pp $(SYSTEMUNIT)$(PPUEXT)
-	$(COMPILER) -Sg $(INC)/heaptrc.pp $(REDIR)
-charset$(PPUEXT) : $(INC)/charset.pp $(SYSTEMUNIT)$(PPUEXT)
-	$(COMPILER) $(INC)/charset.pp
+sysutils$(PPUEXT) : $(RTL)/java/sysutils.pp $(wildcard $(OBJPASDIR)/sysutils/*.inc) \
+		    objpas$(PPUEXT) sysconst$(PPUEXT)
+	$(COMPILER) -Fi$(OBJPASDIR)/sysutils $(RTL)/java/sysutils.pp $(REDIR)
