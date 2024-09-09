@@ -49,8 +49,10 @@ Var
           MemoryManager.InitThread();
 {$endif HAS_MEMORYMANAGER}
 {$ifdef FPC_HAS_FEATURE_WIDESTRINGS}
+{$ifndef CPUJVM}
         if assigned(widestringmanager.ThreadInitProc) then
           widestringmanager.ThreadInitProc;
+{$endif CPUJVM}
 {$endif FPC_HAS_FEATURE_WIDESTRINGS}
 {$ifdef FPC_HAS_FEATURE_EXCEPTIONS}
         { ExceptAddrStack and ExceptObjectStack are threadvars       }
@@ -76,16 +78,19 @@ Var
     procedure DoneThread;
       begin
 {$ifdef FPC_HAS_FEATURE_WIDESTRINGS}
+{$ifndef CPUJVM}
         if assigned(widestringmanager.ThreadFiniProc) then
           widestringmanager.ThreadFiniProc;
+{$endif CPUJVM}
 {$endif FPC_HAS_FEATURE_WIDESTRINGS}
 {$ifndef HAS_MEMORYMANAGER}
 {$ifndef FPC_NO_DEFAULT_HEAP}
         FinalizeHeap;
 {$endif ndef FPC_NO_DEFAULT_HEAP}
-{$endif HAS_MEMORYMANAGER}
+{$else HAS_MEMORYMANAGER}
         if MemoryManager.DoneThread <> nil then
           MemoryManager.DoneThread();
+{$endif HAS_MEMORYMANAGER}
 {$ifdef FPC_HAS_FEATURE_CONSOLEIO}
         { Open all stdio fds again }
         SysFlushStdio;
@@ -104,6 +109,13 @@ Var
         InitThread($1000000);
       end;
 
+{$ifdef CPUJVM}
+    procedure InitThreadVars(RelocProc: TRelocateThreadVarHandler);
+      begin
+        // Do nothing
+      end;
+{$endif}
+
 {*****************************************************************************
                             Overloaded functions
 *****************************************************************************}
@@ -112,6 +124,7 @@ Var
       var
         dummy : TThreadID;
       begin
+        dummy:=0;
         BeginThread:=BeginThread(nil,DefaultStackSize,ThreadFunction,nil,0,dummy);
       end;
 
@@ -120,6 +133,7 @@ Var
       var
         dummy : TThreadID;
       begin
+        dummy:=0;
         BeginThread:=BeginThread(nil,DefaultStackSize,ThreadFunction,p,0,dummy);
       end;
 
@@ -143,7 +157,10 @@ Var
 function BeginThread(sa : Pointer;stacksize : SizeUInt; ThreadFunction : tthreadfunc;p : pointer;creationFlags : dword;  var ThreadId : TThreadID) : TThreadID;
 
 begin
-  Result:=CurrentTM.BeginThread(sa,stacksize,threadfunction,P,creationflags,ThreadID);
+  Result:=CurrentTM.BeginThread(sa,stacksize,threadfunction,P,creationflags{$ifndef CPUJVM},ThreadID{$endif});
+  {$ifdef CPUJVM}
+  ThreadId:=Result;
+  {$endif}
 end;
 
 procedure FlushThread;
@@ -160,17 +177,23 @@ begin
   CurrentTM.EndThread(ExitCode);
 end;
 
+{$ifndef CPUJVM}
+{ JVM Notes: there is no api to suspend a jvm thread }
 function  SuspendThread (threadHandle : TThreadID) : dword;
 
 begin
   Result:=CurrentTM.SuspendThread(ThreadHandle);
 end;
+{$endif}
 
+{$ifndef CPUJVM}
+{ JVM Notes: there is no api to resume a jvm thread }
 function ResumeThread  (threadHandle : TThreadID) : dword;
 
 begin
   Result:=CurrentTM.ResumeThread(ThreadHandle);
 end;
+{$endif}
 
 function CloseThread  (threadHandle : TThreadID):dword;
 
@@ -184,11 +207,14 @@ begin
   CurrentTM.ThreadSwitch;
 end;
 
+{$ifndef CPUJVM}
+{ JVM Notes: there is no api to kill a jvm thread }
 function  KillThread (threadHandle : TThreadID) : dword;
 
 begin
   Result:=CurrentTM.KillThread(ThreadHandle);
 end;
+{$endif}
 
 function  WaitForThreadTerminate (threadHandle : TThreadID; TimeoutMs : longint) : dword;
 
@@ -283,6 +309,7 @@ begin
     end;
 end;
 
+{$ifndef CPUJVM}
 function  BasicEventCreate(EventAttributes : Pointer; AManualReset,InitialState : Boolean;const Name : ansistring):pEventState;
 
 begin
@@ -312,6 +339,7 @@ function  BasicEventWaitFor(Timeout : Cardinal;state:peventstate;FUseComWait : B
 begin
  result:=currenttm.BasicEventWaitFor(Timeout,state,FUseComWait);
 end;
+{$endif}
 
 function  RTLEventCreate :PRTLEvent;
 
@@ -354,6 +382,7 @@ end;
     lazy thread initialization support
   ---------------------------------------------------------------------}
 
+{$ifndef CPUJVM}
 type
   PLazyInitThreadingProcInfo = ^TLazyInitThreadingProcInfo;
   TLazyInitThreadingProcInfo = Record
@@ -406,6 +435,7 @@ begin
     p:=p^.Next;
     end;
 end;
+{$endif CPUJVM}
 
 { ---------------------------------------------------------------------
     ThreadManager which gives run-time error. Use if no thread support.

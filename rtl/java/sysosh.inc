@@ -16,9 +16,18 @@
 }
 
 type
+  TThreadID = PtrUInt;
   TOSTimestamp = Longint;
 
   FpcRunTimeError = class(JLException)
     errornr: longint;
     constructor create(l: longint);
+  end;
+
+  { the fields of this record are os dependent  }
+  { and they shouldn't be used in a program     }
+  { only the type TCriticalSection is important }
+  PRTLCriticalSection = ^TRTLCriticalSection;
+  TRTLCriticalSection = record
+    Handle: Pointer;
   end;

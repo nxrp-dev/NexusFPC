@@ -24,6 +24,9 @@ Unit System;
 
 {$define FPC_IS_SYSTEM}
 
+{$define DISABLE_NO_THREAD_MANAGER}
+{$define FPC_NO_DEFAULT_HEAP}
+
 {$I-,Q-,H-,R-,V-,P+,T+}
 {$implicitexceptions off}
 {$mode objfpc}
@@ -499,11 +502,36 @@ function paramstr(l: longint): ansistring;
                          SystemUnit Initialization
 *****************************************************************************}
 
+{$ifdef FPC_HAS_FEATURE_PROCESSES}
+{ JVM Notes:
+  * no guaranteed standard way to get the process ID, may return zero on some jvm implementations
+  * the call to GetRuntimeMXBean().GetName() may randomly and permanently freeze on haiku }
+function GetProcessID: SizeUInt;
+  var
+    name: shortstring;
+    index: longint;
+  begin
+    result:=0;
+    name:=shortstring(_JLMManagementFactory.GetRuntimeMXBean.GetName);
+    index:=0;
+    while (index<>length(name)) and (name[index+1] in ['0'..'9']) do
+      begin
+        result:=(result*10)+(ord(name[index+1])-ord('0'));
+        inc(index);
+      end;
+    if (index=length(name)) or (name[index+1]<>'@') then
+      result:=0;
+  end;
+{$endif FPC_HAS_FEATURE_PROCESSES}
+
 begin
   InitUnicodeStringManager;
   SetupOSConstants;
   {$ifdef FPC_HAS_FEATURE_COMMANDARGS}
   SetupArguments;
   {$endif FPC_HAS_FEATURE_COMMANDARGS}
+  {$ifdef FPC_HAS_FEATURE_THREADING}
+  InitSystemThreads;
+  {$endif FPC_HAS_FEATURE_THREADING}
 end.
 

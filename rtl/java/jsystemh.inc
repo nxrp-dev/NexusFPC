@@ -14,6 +14,14 @@
  **********************************************************************}
 
 
+{$ifdef FPC_HAS_FEATURE_THREADING}
+ThreadVar
+{$else FPC_HAS_FEATURE_THREADING}
+Var
+{$endif FPC_HAS_FEATURE_THREADING}
+  ThreadID    : TThreadID;
+
+
 {****************************************************************************
                         Processor specific routines
 ****************************************************************************}
@@ -966,9 +974,9 @@ const
 *****************************************************************************}
 
 { Generic threadmanager }
-{$if defined(FPC_HAS_FEATURE_THREADING) and not defined(cpujvm)}
+{$if defined(FPC_HAS_FEATURE_THREADING)}
 {$i threadh.inc}
-{$endif FPC_HAS_FEATURE_THREADING and not cpujvm}
+{$endif FPC_HAS_FEATURE_THREADING}
 
 {*****************************************************************************
                           Resources support

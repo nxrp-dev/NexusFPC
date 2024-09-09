@@ -1068,7 +1068,7 @@ Begin
   IOResult:=HInOutRes^;
   HInOutRes^:=0;
 End;
-
+*)
 
 Function GetThreadID:TThreadID;{$ifdef SYSTEMINLINE}inline;{$endif}
 begin
@@ -1077,7 +1077,7 @@ begin
   GetThreadID := ThreadID;
 end;
 
-
+(*
 function fpc_safecallcheck(res : hresult) : hresult;[public,alias:'FPC_SAFECALLCHECK']; compilerproc; {$ifdef CPU86} register; {$endif}
 begin
   if res<0 then
@@ -1765,7 +1765,7 @@ end;
                           Thread support
 *****************************************************************************}
 
-{$if defined(FPC_HAS_FEATURE_THREADING) and not defined(cpujvm)}
+{$if defined(FPC_HAS_FEATURE_THREADING)}
 { Generic threadmanager }
 {$i thread.inc}
 
@@ -1778,7 +1778,7 @@ end;
 { OS Dependent implementation }
 {$i systhrd.inc}
 {$endif DISABLE_NO_THREAD_MANAGER}
-{$endif FPC_HAS_FEATURE_THREADING and not cpujvm}
+{$endif FPC_HAS_FEATURE_THREADING}
 
 
 {*****************************************************************************

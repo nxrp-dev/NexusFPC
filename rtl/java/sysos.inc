@@ -21,3 +21,8 @@ constructor FpcRunTimeError.create(l: longint);
     errornr:=l;
   end;
 
+{$define HAS_GETCPUCOUNT}
+function GetCPUCount: longword;
+  begin
+    result:=JLRuntime.GetRuntime.AvailableProcessors;
+  end;

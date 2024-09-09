@@ -31,12 +31,24 @@ property CPUCount: LongWord read GetCPUCount;
 
 type
   PEventState = pointer;
+  {$ifndef CPUJVM}
   PRTLEvent   = type pointer;   // Windows=thandle, other=pointer to record.
+  {$else}
+  TRTLEvent = record
+    OuterLock: JLObject;
+    Condition: JLObject;
+    IsSet: Boolean;
+  end;
+  PRTLEvent   = ^TRTLEvent;
+  {$endif}
   TThreadFunc = function(parameter : pointer) : ptrint;
   trtlmethod  = procedure of object;
 
   // Function prototypes for TThreadManager Record.
-  TBeginThreadHandler = Function (sa : Pointer;stacksize : PtrUInt; ThreadFunction : tthreadfunc;p : pointer;creationFlags : dword; var ThreadId : TThreadID) : TThreadID;
+  TInitManagerHandler = Function : boolean;
+  TDoneManagerHandler = Function : boolean;
+  { JVM Notes: on cpujvm using a "var" or "out" parameter here will crash the compiler (internal error 2018042601) }
+  TBeginThreadHandler = Function (sa : Pointer;stacksize : PtrUInt; ThreadFunction : tthreadfunc;p : pointer;creationFlags : dword{$ifndef CPUJVM}; var ThreadId : TThreadID{$endif}) : TThreadID;
   TEndThreadHandler = Procedure (ExitCode : DWord);
   // Used for Suspend/Resume/Kill
   TThreadHandler = Function (threadHandle : TThreadID) : dword;
@@ -49,15 +61,21 @@ type
 {$ifdef FPC_HAS_FEATURE_UNICODESTRINGS}
   TThreadSetThreadDebugNameHandlerU = procedure(threadHandle: TThreadID; const ThreadName: UnicodeString);
 {$endif FPC_HAS_FEATURE_UNICODESTRINGS}
-  TCriticalSectionHandler = Procedure (var cs);
-  TCriticalSectionHandlerTryEnter = function (var cs):longint;
+  { JVM Notes: on cpujvm using an untyped "var" or "out" parameter here will crash the compiler (internal error 2018042601) }
+  TCriticalSectionHandler = Procedure (var cs{$ifdef CPUJVM} : TRTLCriticalSection{$endif});
+  TCriticalSectionHandlerTryEnter = function (var cs{$ifdef CPUJVM} : TRTLCriticalSection{$endif}):longint;
   TInitThreadVarHandler = Procedure(var offset : {$ifdef cpu16}word{$else}dword{$endif};size : dword);
-  TRelocateThreadVarHandler = Function(offset : {$ifdef cpu16}word{$else}dword{$endif}) : pointer;
+  { JVM Notes: on cpujvm mixing a primitive type and a pointer type in the same callback
+      will crash the compiler (internal error 2018042601) so we use JLInteger instead of dword }
+  TRelocateThreadVarHandler = Function(offset : {$ifdef CPUJVM}JLInteger{$else}{$ifdef cpu16}word{$else}dword{$endif}{$endif}) : pointer;
   TAllocateThreadVarsHandler = Procedure;
   TReleaseThreadVarsHandler = Procedure;
+  {$ifndef CPUJVM}
+  { JVM Notes: deprecated so not implemented for cpujvm }
   TBasicEventHandler        = procedure(state:peventstate);
   TBasicEventWaitForHandler = function (timeout:cardinal;state:peventstate;FUseComWait : Boolean=False):longint;
   TBasicEventCreateHandler  = function (EventAttributes :Pointer;  AManualReset,InitialState : Boolean;const Name:ansistring):pEventState;
+  {$endif}
   TRTLEventHandler          = procedure(AEvent:PRTLEvent);
   TRTLEventHandlerTimeout   = procedure(AEvent:PRTLEvent;timeout : longint);
   TRTLCreateEventHandler    = function:PRTLEvent;
@@ -68,9 +86,11 @@ type
   TSemaphoreWaitHandler     = procedure (const sem: Pointer);
 
   // TThreadManager interface.
+  { JVM Notes: predeclare the callback type because using the same inline signature more than once will
+      cause a verifier crash at runtime (ClassFormatError: Duplicate entry in InnerClasses attribute) }
   TThreadManager = Record
-    InitManager            : Function : Boolean;
-    DoneManager            : Function : Boolean;
+    InitManager            : TInitManagerHandler;
+    DoneManager            : TDoneManagerHandler;
     BeginThread            : TBeginThreadHandler;
     EndThread              : TEndThreadHandler;
     SuspendThread          : TThreadHandler;
@@ -95,11 +115,14 @@ type
     RelocateThreadVar      : TRelocateThreadVarHandler;
     AllocateThreadVars     : TAllocateThreadVarsHandler;
     ReleaseThreadVars      : TReleaseThreadVarsHandler;
+    {$ifndef CPUJVM}
+    { JVM Notes: deprecated so not implemented for cpujvm }
     BasicEventCreate       : TBasicEventCreateHandler;      // left in for a while.
     BasicEventDestroy      : TBasicEventHandler;            // we might need BasicEvent
     BasicEventResetEvent   : TBasicEventHandler;            // for a real TEvent
     BasicEventSetEvent     : TBasicEventHandler;
     BasiceventWaitFOr      : TBasicEventWaitForHandler;
+    {$endif}
     RTLEventCreate         : TRTLCreateEventHandler;
     RTLEventDestroy        : TRTLEventHandler;
     RTLEventSetEvent       : TRTLEventHandler;
@@ -147,11 +170,21 @@ procedure EndThread;
 
 {some thread support functions}
 procedure FlushThread;
+{$ifndef CPUJVM}
+{ JVM Notes: there is no api to suspend a jvm thread }
 function  SuspendThread (threadHandle : TThreadID) : dword;
+{$endif}
+{$ifndef CPUJVM}
+{ JVM Notes: there is no api to resume a jvm thread }
 function  ResumeThread  (threadHandle : TThreadID) : dword;
+{$endif}
 function  CloseThread   (threadHandle : TThreadID) : dword;
 procedure ThreadSwitch;                                                                {give time to other threads}
+{$ifndef CPUJVM}
+{ JVM Notes: there is no api to kill a jvm thread but also the program will never exit if any
+    background thread is still running, consider using a process instead for blocking operations }
 function  KillThread (threadHandle : TThreadID) : dword;
+{$endif}
 function  WaitForThreadTerminate (threadHandle : TThreadID; TimeoutMs : longint) : dword;  {0=no timeout}
 function  ThreadSetPriority (threadHandle : TThreadID; Prio: longint): boolean;            {-15..+15, 0=normal}
 function  ThreadGetPriority (threadHandle : TThreadID): longint;
@@ -170,11 +203,14 @@ procedure DoneCriticalSection(var cs : TRTLCriticalSection);
 procedure EnterCriticalSection(var cs : TRTLCriticalSection);
 procedure LeaveCriticalSection(var cs : TRTLCriticalSection);
 function  TryEnterCriticalSection(var cs : TRTLCriticalSection):longint;
+{$ifndef CPUJVM}
+{ JVM Notes: Deprecated so not implemented for cpujvm. }
 function  BasicEventCreate(EventAttributes : Pointer; AManualReset,InitialState : Boolean;const Name : ansistring):pEventState;
 procedure BasicEventDestroy(state:peventstate);
 procedure BasicEventResetEvent(state:peventstate);
 procedure BasicEventSetEvent(state:peventstate);
 function  BasicEventWaitFor(Timeout : Cardinal;state:peventstate;FUseComWait : Boolean=False) : longint;
+{$endif}
 
 function  RTLEventCreate :PRTLEvent;
 procedure RTLEventDestroy(state:pRTLEvent);
@@ -183,7 +219,9 @@ procedure RTLEventResetEvent(state:pRTLEvent);
 procedure RTLEventWaitFor(state:pRTLEvent);
 procedure RTLEventWaitFor(state:pRTLEvent;timeout : longint);
 
+{$ifndef CPUJVM}
 { lazy thread initialization support }
 procedure RegisterLazyInitThreadingProc(const proc: TProcedure);
 { do not call LazyInitThreading directly}
 procedure LazyInitThreading;
+{$endif}
