@@ -31,11 +31,32 @@ interface
 
 operator:=(AString : PShortString): PResStringRec;
 
+
+{*************************************************************************
+                                   Sleep
+*************************************************************************}
+
+procedure Sleep(Milliseconds: Cardinal);
+
+
 implementation
 
 uses sysconst;
 
 {$DEFINE HAS_GETTICKCOUNT64}
+{$DEFINE HAS_SLEEP}
+
+
+{****************************************************************************
+                             Import
+****************************************************************************}
+
+type
+  _JLThread = class external 'java.lang' name 'Thread' (JLObject)
+  public
+    class procedure sleep(para1: jlong); static; overload;
+  end;
+
 
 {****************************************************************************
                              Resource strings.
@@ -62,6 +83,16 @@ operator:=(AResString : TResStringRec): string;
 function GetTickCount64: QWord;
   begin
     result:=JLSystem.NanoTime;
+  end;
+
+
+{*************************************************************************
+                                   Sleep
+*************************************************************************}
+
+procedure Sleep(Milliseconds: Cardinal);
+  begin
+    _JLThread.Sleep(Milliseconds);
   end;
 
 
