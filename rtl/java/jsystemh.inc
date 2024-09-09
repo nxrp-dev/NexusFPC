@@ -22,6 +22,28 @@ Var
   ThreadID    : TThreadID;
   InOutRes    : Word;
 
+{ Standard In- and Output }
+
+{ JVM Notes: if we access a threadvar of type "text" the loader crashes at runtime
+    (illegal class name "Lorg/freepascal/rtl/TextRec;" in class file org/freepascal/rtl/System) }
+{ JVM Notes: we cannot use "absolute" in a threadvar on cpujvm (error: absolute can only be associated with a var or const) }
+{ JVM Notes: the cpujvm parser fails when we try to use an absolute text (error: illegal expression) }
+
+{$ifdef FPC_STDERR_IS_ALIAS_FOR_STDOUT}
+{$fatal FPC_STDERR_IS_ALIAS_FOR_STDOUT is not supported for target CPUJVM}
+{$endif}
+{$ifdef FPC_STDOUT_TRUE_ALIAS}
+{$fatal FPC_STDOUT_TRUE_ALIAS is not supported for target CPUJVM}
+{$endif}
+
+{ JVM Notes: stdio is not thread safe on cpujvm }
+Var
+  ErrOutput,
+  Output,
+  Input,
+  StdOut,
+  StdErr: Text;
+
 const
   { Default filehandles }
   UnusedHandle = JLObject(nil);
@@ -702,19 +724,13 @@ Procedure Append(var t:Text);
 Procedure Flush(var t:Text);
 Procedure Erase(var t:Text);
 Function  EOF(var t:Text):Boolean;
-{$ifndef CPUJVM}
 Function  EOF:Boolean;
-{$endif CPUJVM}
 Function  EOLn(var t:Text):Boolean;
-{$ifndef CPUJVM}
 Function  EOLn:Boolean;
-{$endif CPUJVM}
 Function  SeekEOLn (var t:Text):Boolean;
 Function  SeekEOF (var t:Text):Boolean;
-{$ifndef CPUJVM}
 Function  SeekEOLn:Boolean;
 Function  SeekEOF:Boolean;
-{$endif CPUJVM}
 {$ifndef CPUJVM}
 { JVM Notes: this language feature is not supported on managed vm targets }
 Procedure SetTextBuf(var f:Text; var Buf);[INTERNPROC:fpc_in_settextbuf_file_x];
@@ -894,10 +910,10 @@ Procedure SysInitExceptions;
 {$endif FPC_HAS_FEATURE_EXCEPTIONS}
 *)
 {$ifdef FPC_HAS_FEATURE_CONSOLEIO}
-{$if not defined(EMBEDDED) and not defined(cpujvm)}
+{$ifndef EMBEDDED}
 procedure SysInitStdIO;
 procedure SysFlushStdIO;
-{$endif EMBEDDED or cpujvm}
+{$endif EMBEDDED}
 {$endif FPC_HAS_FEATURE_CONSOLEIO}
 {$ifndef FPUNONE}
 Procedure SysResetFPU;

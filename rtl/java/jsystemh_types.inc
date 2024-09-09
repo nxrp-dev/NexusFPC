@@ -715,27 +715,6 @@ var cmdline:PAnsiChar=nil;
 {$endif}
 *)
 
-(*
-{$ifdef FPC_HAS_FEATURE_THREADING}
-ThreadVar
-{$else FPC_HAS_FEATURE_THREADING}
-Var
-{$endif FPC_HAS_FEATURE_THREADING}
-  ThreadID    : TThreadID;
-  { Standard In- and Output }
-  ErrOutput,
-  Output,
-  Input,
-  StdOut,
-  StdErr      : Text;
-  InOutRes    : Word;
-  { Stack checking }
-  StackBottom : Pointer;
-  StackLength : SizeUInt;
-
-function StackTop: Pointer;
-*)
-
 { Numbers for routines that have compiler magic }
 {$I innr.inc}
 

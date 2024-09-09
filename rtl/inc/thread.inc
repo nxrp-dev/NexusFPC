@@ -61,8 +61,10 @@ Var
 {$endif FPC_HAS_FEATURE_EXCEPTIONS}
 {$ifdef FPC_HAS_FEATURE_CONSOLEIO}
 {$ifndef EMBEDDED}
+{$ifndef CPUJVM} { JVM Notes: stdio is not thread safe on cpujvm }
         { Open all stdio fds again }
         SysInitStdio;
+{$endif CPUJVM}
         InOutRes:=0;
         // ErrNo:=0;
 {$endif EMBEDDED}
@@ -92,8 +94,10 @@ Var
           MemoryManager.DoneThread();
 {$endif HAS_MEMORYMANAGER}
 {$ifdef FPC_HAS_FEATURE_CONSOLEIO}
+{$ifndef CPUJVM} { JVM Notes: stdio is not thread safe on cpujvm }
         { Open all stdio fds again }
         SysFlushStdio;
+{$endif CPUJVM}
 {$endif FPC_HAS_FEATURE_CONSOLEIO}
         { Support platforms where threadvar memory is managed outside of the RTL:
           reset ThreadID and allow ReleaseThreadVars to be unassigned }

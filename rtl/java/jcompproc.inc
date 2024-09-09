@@ -433,10 +433,8 @@ procedure fpc_PWideChar_To_ShortStr(out res : shortstring;const p : pwidechar); 
 
 {$ifdef FPC_HAS_FEATURE_TEXTIO}
 { from text.inc }
-{$ifndef CPUJVM}
 Function fpc_get_input:PText;compilerproc;
 Function fpc_get_output:PText;compilerproc;
-{$endif CPUJVM}
 Procedure fpc_textinit_iso(var t : Text;nr : DWord);compilerproc;
 Procedure fpc_textclose_iso(var t : Text);compilerproc;
 Procedure fpc_Write_End(var f:Text); compilerproc;

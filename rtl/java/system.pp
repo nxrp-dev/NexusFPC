@@ -530,6 +530,10 @@ begin
   {$ifdef FPC_HAS_FEATURE_COMMANDARGS}
   SetupArguments;
   {$endif FPC_HAS_FEATURE_COMMANDARGS}
+  {$ifdef FPC_HAS_FEATURE_CONSOLEIO}
+  SysInitStdIO;
+  InOutRes:=0;
+  {$endif FPC_HAS_FEATURE_CONSOLEIO}
   {$ifdef FPC_HAS_FEATURE_THREADING}
   InitSystemThreads;
   {$endif FPC_HAS_FEATURE_THREADING}

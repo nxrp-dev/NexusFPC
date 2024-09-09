@@ -491,12 +491,10 @@ Begin
 end;
 
 
-{$ifndef CPUJVM}
 Function Eof:Boolean;
 Begin
   Eof:=Eof(Input);
 End;
-{$endif CPUJVM}
 
 
 Function SeekEof (Var t : Text) : Boolean;
@@ -541,12 +539,10 @@ Begin
 End;
 
 
-{$ifndef CPUJVM}
 Function SeekEof : Boolean;
 Begin
   SeekEof:=SeekEof(Input);
 End;
-{$endif CPUJVM}
 
 
 Function Eoln(var t:Text) : Boolean;
@@ -573,12 +569,10 @@ Begin
 End;
 
 
-{$ifndef CPUJVM}
 Function Eoln : Boolean;
 Begin
   Eoln:=Eoln(Input);
 End;
-{$endif CPUJVM}
 
 
 Function SeekEoln (Var t : Text) : Boolean;
@@ -613,12 +607,10 @@ Begin
 End;
 
 
-{$ifndef CPUJVM}
 Function SeekEoln : Boolean;
 Begin
   SeekEoln:=SeekEoln(Input);
 End;
-{$endif CPUJVM}
 
 
 Procedure SetTextBuf(Var F : Text; Var Buf; Size : SizeInt);
@@ -696,20 +688,16 @@ Begin
 End;
 
 
-{$ifndef CPUJVM}
 Function fpc_get_input:PText;compilerproc;
 begin
   fpc_get_input:=@Input;
 end;
-{$endif CPUJVM}
 
 
-{$ifndef CPUJVM}
 Function fpc_get_output:PText;compilerproc;
 begin
   fpc_get_output:=@Output;
 end;
-{$endif CPUJVM}
 
 
 Procedure fpc_textinit_iso(var t : Text;nr : DWord);compilerproc;

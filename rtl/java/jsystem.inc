@@ -1241,6 +1241,24 @@ Procedure FinalizeHeap;forward;
 {$endif FPC_HAS_FEATURE_HEAP}
 
 {$ifdef FPC_HAS_FEATURE_CONSOLEIO}
+procedure OpenStdIO(var f:text;mode:longint;hdl:thandle); forward;
+
+procedure SysInitStdIO;
+begin
+  if StdInputHandle=nil then
+    StdInputHandle:=JLObject(JLSystem.FIn);
+  if StdOutputHandle=nil then
+    StdOutputHandle:=JLObject(JLSystem.FOut);
+  if StdErrorHandle=nil then
+    StdErrorHandle:=JLObject(JLSystem.FErr);
+  IsConsole:=True;
+  OpenStdIO(Text(Input),fmInput,StdInputHandle);
+  OpenStdIO(Text(Output),fmOutput,StdOutputHandle);
+  OpenStdIO(Text(StdOut),fmOutput,StdOutputHandle);
+  OpenStdIO(Text(ErrOutput),fmOutput,StdErrorHandle);
+  OpenStdIO(Text(StdErr),fmOutput,StdErrorHandle);
+end;
+
 procedure SysFlushStdIO;
 begin
   { Make sure that all output is written to the redirected file }
