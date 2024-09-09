@@ -16,6 +16,8 @@
 {$I-,S-}
 unit objpas;
 
+  {$namespace org.freepascal.rtl}
+
   interface
 
     { first, in object pascal, the integer type must be redefined }
