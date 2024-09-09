@@ -132,7 +132,6 @@
 {$endif}
 {$endif CPUJVM}
 
-{$ifndef CPUJVM}
 {$IFNDEF HAS_GETTICKCOUNT}
 function GetTickCount: LongWord;
 begin
@@ -154,7 +153,6 @@ begin
 {$ENDIF}
 end;
 {$ENDIF}
-{$endif CPUJVM}
 
 {$ifndef CPUJVM}
   { Read PAnsiChar handling functions implementation }

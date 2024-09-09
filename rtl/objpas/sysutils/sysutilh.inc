@@ -41,10 +41,8 @@
 {$endif}
 {$endif CPUJVM}
 
-{$ifndef CPUJVM}
 function GetTickCount: LongWord; deprecated 'Use GetTickCount64 instead';
 function GetTickCount64: QWord;
-{$endif CPUJVM}
 
 {$ifndef CPUJVM}
   { Read String Handling functions declaration }
