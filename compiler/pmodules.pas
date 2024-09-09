@@ -413,6 +413,8 @@ implementation
                  CheckAddUnit('lineinfo');
                dbg_stabx:
                  CheckAddUnit('lnfogdb');
+               dbg_jasmin:
+                 CheckAddUnit('lnfojvm')
                else
                  CheckAddUnit('lnfodwrf');
              end;
