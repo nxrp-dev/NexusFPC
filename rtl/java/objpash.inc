@@ -15,19 +15,69 @@
  **********************************************************************
 }
 
+{*****************************************************************************
+                            Basic Types/constants
+*****************************************************************************}
+
 type
-  TObject = class(JLObject)
+  // "Maximum" available stringtype : Shortstring, AnsiString or WideString
+  {$ifdef FPC_HAS_FEATURE_ANSISTRINGS}
+
+  {$IFNDEF UNICODERTL}
+  RTLString = ansistring;
+  {$ELSE UNICODERTL}
+  RTLString = unicodestring;
+  {$ENDIF UNICODERTL}
+
+  {$else FPC_HAS_FEATURE_ANSISTRINGS}
+
+  RTLString = shortstring;
+
+  {$endif FPC_HAS_FEATURE_ANSISTRINGS}
+
+  TObject = class(JLThrowable)
    strict private
     DestructorCalled: Boolean;
    public
     procedure Free;
     destructor Destroy; virtual;
     procedure finalize; override;
+    function ClassName : shortstring;
+    function ToString: RTLString;{$if defined(FPC_HAS_FEATURE_ANSISTRINGS) and defined(UNICODERTL)}override;{$else}virtual;reintroduce;{$endif}
   end;
   TClass = class of TObject;
 
   TJClass = class of jlobject;
 
+type
+  { JVM Notes: compiler crash if we use PCodePointer (Internal error 2011072410) }
+  TExceptProc = Procedure (Obj : TObject; Addr : CodePointer; FrameCount:Longint; Frame: Pointer);
+
+  { Exception object stack }
+  PExceptObject = ^TExceptObject;
+  TExceptObject = record
+    FObject    : TObject;
+    Addr       : codepointer;
+    Next       : PExceptObject;
+    refcount   : Longint;
+    Framecount : Longint;
+    Frames     : PCodePointer;
+  end;
+
+const
+  ExceptProc : TExceptProc = Nil;
+  RaiseProc : TExceptProc = Nil;
+  RaiseMaxFrameCount : Longint = 16;
+
+{$ifdef FPC_HAS_FEATURE_EXCEPTIONS}
+function RaiseList : PExceptObject;
+procedure fpc_RaiseException (Obj : TObject; AnAddr : CodePointer; AFrame : Pointer);
+{$endif FPC_HAS_FEATURE_EXCEPTIONS}
+
+
+{*****************************************************************************
+                              Array of const support
+*****************************************************************************}
 
    const
       vtInteger       = 0;

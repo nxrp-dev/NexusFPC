@@ -25,21 +25,31 @@
 {$inline on}
 {$define SYSUTILSINLINE}
 
+{$ifndef CPUJVM}
   { Read internationalization settings }
   {$i sysinth.inc}
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
   { Read date & Time function declarations }
   {$i osutilsh.inc}
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
 {$ifndef FPUNONE}
   {$i datih.inc}
 {$endif}
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
 function GetTickCount: LongWord; deprecated 'Use GetTickCount64 instead';
 function GetTickCount64: QWord;
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
   { Read String Handling functions declaration }
   {$i sysstrh.inc}
+{$endif CPUJVM}
 
 type
    { some helpful data types }
@@ -81,7 +91,9 @@ type
         2 : (Bytes : Array[0..7] of Byte);
    end;
 
+{$ifndef CPUJVM}
    Int128Rec = System.Int128Rec;
+{$endif CPUJVM}
 
    OWordRec = packed record
       case integer of
@@ -111,8 +123,10 @@ type
     public
       constructor Create(const msg : string);
       constructor CreateFmt(const msg : string; const args : array of const);
-      constructor CreateRes(ResString: PResStringRec);
-      constructor CreateResFmt(ResString: PResStringRec; const Args: array of const);
+      { JVM Notes: called from a TClass so must be virtual }
+      constructor CreateRes(ResString: PResStringRec); {$ifdef CPUJVM}virtual;{$endif}
+      { JVM Notes: called from a TClass so must be virtual }
+      constructor CreateResFmt(ResString: PResStringRec; const Args: array of const); {$ifdef CPUJVM}virtual;{$endif}
       constructor CreateHelp(const Msg: string; AHelpContext: Longint);
       constructor CreateFmtHelp(const Msg: string; const Args: array of const;
         AHelpContext: Longint);
@@ -163,8 +177,10 @@ type
    EHeapMemoryError = class(Exception)
      protected
        AllowFree : boolean;
+{$ifndef CPUJVM}
      public
        procedure FreeInstance;override;
+{$endif CPUJVM}
    end;
 
    EHeapException = EHeapMemoryError;
@@ -175,7 +191,9 @@ type
    EInvalidCast = Class(Exception);
    EVariantError = Class(Exception)
      ErrCode : longint;
+{$ifndef CPUJVM}
      Constructor CreateCode(Code : Longint);
+{$endif CPUJVM}
    end;
 
    EAccessViolation = Class(EExternal);
@@ -239,9 +257,11 @@ type
    EInOutArgumentException = class(EArgumentException)
    public
      Path: string;
+{$ifndef CPUJVM}
      constructor Create(const aMsg, aPath: string); overload;
      constructor CreateRes(ResStringRec: PResStringRec; const aPath: string); overload;
      constructor CreateFmt(const fmt : string;  const args : array of const; const aPath : String); overload;
+{$endif CPUJVM}
    end;
 
    EInvalidOpException = class(Exception);
@@ -251,6 +271,7 @@ type
 
    EOperationCancelled = class(Exception);
 
+{$ifndef CPUJVM}
    { Exception handling routines }
    function ExceptObject: TObject;
    function ExceptAddr: CodePointer;
@@ -265,7 +286,9 @@ type
    function ListIndexErrorMsg(aIndex, aMaxIndex: SizeInt; const aListObjName: string): string; overload;
    function ListIndexErrorMsg(aIndex, aMaxIndex: SizeInt; aListObj: TObject): string; overload;
    procedure RangeIndexError(aIndex, aMaxIndex: SizeInt; aListObj: TObject);
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
 Type
    TBeepHandler = Procedure;
 
@@ -274,59 +297,86 @@ Var
 
    procedure Beep;
    function SysErrorMessage(ErrorCode: Integer): String;
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
 Type
    TCreateGUIDFunc = Function(Out GUID : TGUID) : Integer;
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
 Var
    OnCreateGUID : TCreateGUIDFunc = Nil;
    Function CreateGUID(out GUID : TGUID) : Integer;
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
 type
   TTerminateProc = Function: Boolean;
 
   procedure AddTerminateProc(TermProc: TTerminateProc);
   function CallTerminateProcs: Boolean;
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
 generic function IfThen<T>(val:boolean;const iftrue:T; const iffalse:T) :T; inline; overload;
 generic function Exchange<T>(var target:T; const newvalue:T) :T; inline;
 generic function Extract<T>(var from: T) :T;inline;overload;
 generic procedure Swap<T>(var lhs,rhs: T);inline;overload;
+{$endif CPUJVM}
+
+type
+   TOnShowException = Procedure (Msg : ShortString);
 
 Var
-   OnShowException : Procedure (Msg : ShortString);
+   OnShowException : TOnShowException;
 
+{$ifndef CPUJVM}
 Const
    HexDisplayPrefix : string = '$';
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
 const
 // commenting is VP fix. These idents are in a different unit there.
   PathDelim={System.}DirectorySeparator;
   DriveDelim={System.}DriveSeparator;
   PathSep={System.}PathSeparator;
   MAX_PATH={System.}MaxPathLen;
+{$endif}
 
+{$ifndef CPUJVM}
 Type
    TFileRec=FileRec;
    TTextRec=TextRec;
+{$endif}
 
 
+{$ifndef CPUJVM}
   { Read PAnsiChar handling functions declaration }
   {$i syspchh.inc}
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
   { MCBS functions }
   {$i sysansih.inc}
   {$i syscodepagesh.inc}
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
   { wide string functions }
   {$i syswideh.inc}
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
 {$ifdef FPC_HAS_UNICODESTRING}
   { unicode string functions }
   {$i sysunih.inc}
   {$i sysencodingh.inc}
 {$endif FPC_HAS_UNICODESTRING}
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
 {$macro on}
 {$define PathStr:=UnicodeString}
 {$define PathPChar:=PUnicodeChar}
@@ -338,34 +388,53 @@ Type
   {$i finah.inc}
 {$undef PathStr}
 {$undef PathPChar}
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
   { Read other file handling function declarations }
   {$i filutilh.inc}
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
   { Read disk function declarations }
   {$i diskh.inc}
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
   { read thread handling }
   {$i systhrdh.inc}
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
   { Type Helpers}
   {$i syshelph.inc}
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
   procedure FreeAndNil(var obj);
   procedure FreeMemAndNil(var p);
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
   { interface handling }
   {$i intfh.inc}
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
   { strange Delphi thing }
   {$i sysmarshalh.inc}
 {$ENDIF}
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
   function SafeLoadLibrary(const FileName: AnsiString;
     ErrorMode: DWord = {$ifdef windows}SEM_NOOPENFILEERRORBOX{$else windows}0{$endif windows}): HMODULE;
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
   function GetModuleName(Module: HMODULE): string;
+{$endif CPUJVM}
 
 { some packages and unit related constants for compatibility }
 
@@ -396,11 +465,14 @@ const
 Type
   TUTF8StringDynArray = Array of UTF8String;
 
+{$ifndef CPUJVM}
 Function ArrayOfConstToStr(const Args: array of const ; aSeparator : Char = ','; aQuoteBegin : Char = '"'; aQuoteEnd : Char = '"') : UTF8String;
 Function ArrayOfConstToStrArray(const Args: array of const) : TUTF8StringDynArray;
+{$endif CPUJVM}
 
 { Delphi compatibility }
 
+{$ifndef CPUJVM}
 Type
 
   { TOSVersion }
@@ -466,6 +538,7 @@ Type
 
   Function GetCompiledArchitecture : TOSVersion.TArchitecture;
   Function GetCompiledPlatform : TOSVersion.TPlatform;
+{$endif CPUJVM}
 
 {$IFNDEF HAS_INVALIDHANDLE}
 const

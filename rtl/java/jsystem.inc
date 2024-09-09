@@ -1392,6 +1392,7 @@ type
   end;
 
 
+{ JVM Notes: floating point division by zero returns +INF and does not raise an exception }
 procedure TExceptionHandler.UncaughtException(thread : _JLThread; throwable : _JLThrowable);
 const
   DivByZeroCode = 200;
@@ -1414,7 +1415,11 @@ begin
       if length(tracelist)<>0 then
         addr:=codepointer(tracelist[0]);
       if JLObject(throwable) is TObject then
+{$ifdef FPC_HAS_FEATURE_EXCEPTIONS}
+        fpc_RaiseException(TObject(throwable),addr,pointer(tracelist))
+{$else FPC_HAS_FEATURE_EXCEPTIONS}
         HandleErrorAddrFrame(UnhandledExceptionCode,addr,pointer(tracelist))
+{$endif FPC_HAS_FEATURE_EXCEPTIONS}
       else
         begin
           code:=0;

@@ -36,6 +36,17 @@
     end;
 
 
+  function TObject.ClassName : shortstring;
+    begin
+      Result:=GetClass.GetSimpleName;
+    end;
+
+
+  function TObject.ToString : RTLString;
+    begin
+      result:=inherited ToString;
+    end;
+
 
   procedure tvarrec.init(l: longint);
     begin
@@ -282,3 +293,17 @@
       result:=PQword(Value);
     end;
 
+
+{****************************************************************************
+                             Exception Support
+****************************************************************************}
+
+{$ifdef FPC_HAS_FEATURE_EXCEPTIONS}
+  {$if defined(FPC_WASM_NATIVE_EXCEPTIONS)}
+    {$I except_native.inc}
+  {$elseif defined(FPC_WASM_BRANCHFUL_EXCEPTIONS)}
+    {$I except_branchful.inc}
+  {$else}
+    {$i except.inc}
+  {$endif}
+{$endif FPC_HAS_FEATURE_EXCEPTIONS}

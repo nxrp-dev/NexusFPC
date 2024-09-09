@@ -36,6 +36,7 @@ begin
 end;
 
 
+{$ifndef CPUJVM}
 function AcquireExceptionObject: Pointer;
 var
   _ExceptObjectStack : PExceptObject;
@@ -49,8 +50,10 @@ begin
   else
     RunError(231);
 end;
+{$endif CPUJVM}
 
 
+{$ifndef CPUJVM}
 procedure ReleaseExceptionObject;
 var
   _ExceptObjectStack : PExceptObject;
@@ -64,8 +67,10 @@ begin
   else
     RunError(231);
 end;
+{$endif CPUJVM}
 
 
+{$ifndef CPUJVM}
 Function fpc_PushExceptAddr (Ft: {$ifdef CPU16}SmallInt{$else}Longint{$endif};_buf,_newaddr : pointer): PJmp_buf ;
   [Public, Alias : 'FPC_PUSHEXCEPTADDR'];compilerproc;
 var
@@ -81,6 +86,7 @@ begin
   PExceptAddr(_newaddr)^.FrameType:=ft;
   result:=PJmp_Buf(_buf);
 end;
+{$endif CPUJVM}
 
 
 { This routine is called only from fpc_raiseexception, which uses ExceptTryLevel
@@ -92,31 +98,50 @@ var
   _ExceptObjectStack : ^PExceptObject;
   framebufsize,
   framecount  : PtrInt;
+{$ifndef CPUJVM}
   frames      : PCodePointer;
+{$else CPUJVM}
+  frames      : array of CodePointer;
+{$endif CPUJVM}
   prev_frame,
   curr_frame  : Pointer;
   curr_addr   : CodePointer;
+{$ifdef CPUJVM}
+  ExceptObjectRec : TExceptObject;
+  index : longint;
+{$endif CPUJVM}
 begin
 {$ifdef excdebug}
   writeln ('In PushExceptObject');
 {$endif}
+{$ifndef CPUJVM}
   _ExceptObjectStack:=@ExceptObjectStack;
   NewObj:=AllocMem(sizeof(TExceptObject));
   NewObj^.Next:=_ExceptObjectStack^;
   _ExceptObjectStack^:=NewObj;
+{$else}
+  NewObj:=@ExceptObjectRec;
+  ExceptObjectStack:=NewObj;
+{$endif}
 
   NewObj^.FObject:=Obj;
   NewObj^.Addr:=AnAddr;
-  if assigned(get_frame) then
-    begin
-	  NewObj^.refcount:=0;
 
-	  { Backtrace }
-	  curr_frame:=AFrame;
-	  curr_addr:=AnAddr;
-	  frames:=nil;
-	  framecount:=0;
+{$ifndef CPUJVM}
+  if assigned(get_frame) then
+{$else CPUJVM}
+  if assigned(AFrame) then
+{$endif CPUJVM}
+    begin
+      NewObj^.refcount:=0;
+
+      { Backtrace }
+      curr_frame:=AFrame;
+      curr_addr:=AnAddr;
+      frames:=nil;
+      framecount:=0;
       framebufsize:=0;
+{$ifndef CPUJVM}
       { The frame pointer of this procedure is used as initial stack bottom value. }
       prev_frame:=get_frame;
       while (framecount<RaiseMaxFrameCount) and (curr_frame > prev_frame) and
@@ -135,8 +160,14 @@ begin
           frames[framecount]:=curr_addr;
           inc(framecount);
         End;
-	  NewObj^.framecount:=framecount;
-	  NewObj^.frames:=frames;
+{$else CPUJVM}
+      framecount:=length(Arr1JLStackTraceElement(AFrame))-1;
+      setlength(frames,framecount);
+      for index:=0 to framecount-1 do
+        frames[index]:=Arr1JLStackTraceElement(AFrame)[index+1];
+{$endif CPUJVM}
+      NewObj^.framecount:=framecount;
+      NewObj^.frames:=pcodepointer(frames);
     end;
   Result:=NewObj;
 end;
@@ -159,7 +190,8 @@ begin
 end;
 
 {$ifndef FPC_SYSTEM_HAS_RAISEEXCEPTION}
-procedure fpc_RaiseException (Obj : TObject; AnAddr : CodePointer; AFrame : Pointer);[Public, Alias : 'FPC_RAISEEXCEPTION']; compilerproc;
+{ JVM Notes: compiler crash if we add the compilerproc modifier (fatal: internal error 200411171) }
+procedure fpc_RaiseException (Obj : TObject; AnAddr : CodePointer; AFrame : Pointer);[Public, Alias : 'FPC_RAISEEXCEPTION']; {$ifndef CPUJVM}compilerproc;{$endif}
 var
   _ExceptObjectStack : PExceptObject;
   _ExceptAddrstack : PExceptAddr;
@@ -174,6 +206,7 @@ begin
   { if PushExceptObject causes another exception, the following won't be executed,
     causing halt upon entering this routine recursively. }
   ExceptTryLevel:=0;
+{$ifndef CPUJVM}
   _ExceptAddrstack:=ExceptAddrStack;
   If _ExceptAddrStack=Nil then
     DoUnhandledException;
@@ -182,10 +215,14 @@ begin
     with _ExceptObjectStack^ do
       RaiseProc(FObject,Addr,FrameCount,Frames);
   longjmp(_ExceptAddrStack^.Buf^,FPC_Exception);
+{$else CPUJVM}
+  DoUnhandledException;
+{$endif CPUJVM}
 end;
 {$endif FPC_SYSTEM_HAS_RAISEEXCEPTION}
 
 
+{$ifndef CPUJVM}
 Procedure fpc_PopAddrStack;[Public, Alias : 'FPC_POPADDRSTACK']; compilerproc;
 var
   hp : ^PExceptAddr;
@@ -206,8 +243,10 @@ begin
       hp^:=hp^^.Next;
     end;
 end;
+{$endif CPUJVM}
 
 
+{$ifndef CPUJVM}
 function fpc_PopObjectStack : TObject;[Public, Alias : 'FPC_POPOBJECTSTACK']; compilerproc;
 var
   hp : PExceptObject;
@@ -237,8 +276,10 @@ begin
        erroraddr:=nil;
     end;
 end;
+{$endif CPUJVM}
 
 
+{$ifndef CPUJVM}
 { this is for popping exception objects when a second exception is risen }
 { in an except/on                                                        }
 function fpc_PopSecondObjectStack : TObject;[Public, Alias : 'FPC_POPSECONDOBJECTSTACK']; compilerproc;
@@ -271,7 +312,9 @@ begin
       dispose(hp);
     end;
 end;
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
 {$ifndef FPC_SYSTEM_HAS_RERAISE}
 Procedure fpc_ReRaise;[Public, Alias : 'FPC_RERAISE']; compilerproc;
 var
@@ -287,11 +330,15 @@ begin
   longjmp(_ExceptAddrStack^.Buf^,FPC_Exception);
 end;
 {$endif FPC_SYSTEM_HAS_RERAISE}
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
 function Internal_PopSecondObjectStack : TObject; external name 'FPC_POPSECONDOBJECTSTACK';
 function Internal_PopObjectStack: TObject; external name 'FPC_POPOBJECTSTACK';
 procedure Internal_Reraise; external name 'FPC_RERAISE';
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
 Function fpc_Catches(Objtype : TClass) : TObject;[Public, Alias : 'FPC_CATCHES']; compilerproc;
 var
   _ExceptObjectStack : PExceptObject;
@@ -319,6 +366,7 @@ begin
       PopAddrStack; }
     end;
 end;
+{$endif CPUJVM}
 
 Procedure SysInitExceptions;
 {
@@ -330,13 +378,16 @@ begin
 end;
 
 
+{$ifndef CPUJVM}
 {$ifndef FPC_SYSTEM_HAS_DONEEXCEPTION}
 procedure fpc_doneexception;[public,alias:'FPC_DONEEXCEPTION'] compilerproc;
 begin
   Internal_PopObjectStack.Free;
 end;
 {$endif FPC_SYSTEM_HAS_DONEEXCEPTION}
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
 {$ifndef FPC_SYSTEM_HAS_RAISENESTED}
 procedure fpc_raise_nested;[public,alias:'FPC_RAISE_NESTED']compilerproc;
 begin
@@ -344,7 +395,9 @@ begin
   Internal_Reraise;
 end;
 {$endif FPC_SYSTEM_HAS_RAISENESTED}
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
 {$ifndef FPC_SYSTEM_HAS_SAFECALLHANDLER}
 function fpc_safecallhandler(obj: TObject): HResult; [public,alias:'FPC_SAFECALLHANDLER']; compilerproc;
 var
@@ -365,4 +418,5 @@ begin
   exc.Free;
 end;
 {$endif FPC_SYSTEM_HAS_SAFECALLHANDLER}
+{$endif CPUJVM}
 
