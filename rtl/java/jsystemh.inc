@@ -44,6 +44,9 @@ Var
   StdOut,
   StdErr: Text;
 
+Var
+  WriteErrorsToStdErr : Boolean = True;
+
 const
   { Default filehandles }
   UnusedHandle = JLObject(nil);
@@ -794,15 +797,13 @@ function get_frame:pointer;{$ifdef SYSTEMINLINE}inline;{$endif}
 
 Function Get_pc_addr : CodePointer;
 
-(*
 { Writes at most 'count' caller stack frames to pre-allocated buffer pointed to
   by 'frames', skipping 'skipframes' initial frames. Returns number of frames written. }
-function CaptureBacktrace(skipframes,count:sizeint;frames:PCodePointer):sizeint;
+//function CaptureBacktrace(skipframes,count:sizeint;frames:PCodePointer):sizeint;
 
 function get_caller_addr(framebp:pointer;addr:codepointer=nil):codepointer;
 function get_caller_frame(framebp:pointer;addr:codepointer=nil):pointer;
 procedure get_caller_stackinfo(var framebp : pointer; var addr : codepointer);
-*)
 Function IOResult:Word;
 //Function Sptr:Pointer;[internconst:fpc_in_const_ptr];
 
@@ -888,19 +889,17 @@ Function  ParamStr(l:Longint):Ansistring;
 {$endif FPC_UNICODESTRINGS}
 {$endif FPC_HAS_FEATURE_COMMANDARGS}
 
-{$ifndef CPUJVM}
+{$ifdef FPC_HAS_FEATURE_TEXTIO}
 Procedure Dump_Stack(var f : text;fp:pointer;addr : codepointer = nil);
+{$endif FPC_HAS_FEATURE_TEXTIO}
 {$ifdef FPC_HAS_FEATURE_EXCEPTIONS}
 procedure DumpExceptionBackTrace(var f:text);
 {$endif FPC_HAS_FEATURE_EXCEPTIONS}
-{$endif CPUJVM}
 
 Procedure RunError(w:Word);
 Procedure RunError;{$ifdef SYSTEMINLINE}inline;{$endif}
 Procedure halt(errnum:Longint);
-{$ifdef FPC_HAS_FEATURE_HEAP}
 Procedure AddExitProc(Proc:TProcedure);
-{$endif FPC_HAS_FEATURE_HEAP}
 Procedure halt;{$ifdef SYSTEMINLINE}inline;{$endif}
 
 { Need to be exported for threads unit }
@@ -933,12 +932,10 @@ Function StringToPPChar(S: PAnsiChar;ReserveEntries:integer):PPAnsiChar;
 {$endif FPC_HAS_FEATURE_HEAP}
 
 
-(*
-procedure AbstractError;external name 'FPC_ABSTRACTERROR';
-procedure EmptyMethod;external name 'FPC_EMPTYMETHOD';
+//procedure AbstractError;external name 'FPC_ABSTRACTERROR';
+//procedure EmptyMethod;external name 'FPC_EMPTYMETHOD';
 Function  SysBackTraceStr(Addr:CodePointer): ShortString;
 Procedure SysAssert(const Msg,FName:ShortString;LineNo:Longint;ErrorAddr:Pointer);
-*)
 (* Supposed to return address of previous CtrlBreakHandler *)
 (* (may be nil), returned value of pointer (-1) means that *)
 (* attempt to setup CtrlBreakHandler wasn't successful.    *)
@@ -948,24 +945,18 @@ function SysSetCtrlBreakHandler (Handler: TCtrlBreakHandler): TCtrlBreakHandler;
 
 { Error handlers }
 Type
-(*
   TBackTraceStrFunc = Function (Addr: CodePointer): ShortString;
-*)
   TErrorProc = Procedure (ErrNo : Longint; Address : CodePointer; Frame : Pointer);
-(*
-  TAbstractErrorProc = Procedure;
+  //TAbstractErrorProc = Procedure;
   TAssertErrorProc = Procedure(const msg,fname:ShortString;lineno:longint;erroraddr:pointer);
-  TSafeCallErrorProc = Procedure(error : HResult;addr : pointer);
-*)
+  //TSafeCallErrorProc = Procedure(error : HResult;addr : pointer);
 
 const
-(*
   BackTraceStrFunc  : TBackTraceStrFunc = @SysBackTraceStr;
-*)
   ErrorProc         : TErrorProc = nil;
-(*
-  AbstractErrorProc : TAbstractErrorProc = nil;
+  //AbstractErrorProc : TAbstractErrorProc = nil;
   AssertErrorProc   : TAssertErrorProc = @SysAssert;
+(*
   SafeCallErrorProc : TSafeCallErrorProc = nil;
 {$ifdef FPC_HAS_FEATURE_EXCEPTIONS}
   ExceptObjProc     : Pointer = nil; { Used to convert OS exceptions to FPC exceptions. }

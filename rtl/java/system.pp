@@ -537,5 +537,7 @@ begin
   {$ifdef FPC_HAS_FEATURE_THREADING}
   InitSystemThreads;
   {$endif FPC_HAS_FEATURE_THREADING}
+  InstallShutdownHook;
+  InstallExceptionHandler;
 end.
 

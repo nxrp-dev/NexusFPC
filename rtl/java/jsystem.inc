@@ -48,10 +48,8 @@ const
 { Random / Randomize constants }
   OldRandSeed : Cardinal = 0;
 
-(*
 { For Error Handling.}
   ErrorBase : Pointer = nil;public name 'FPC_ERRORBASE';
-*)
 
 {$ifndef cpujvm}
 { Used by the ansi/widestrings and maybe also other things in the future }
@@ -979,100 +977,127 @@ end;
 *)
 {$endif FPC_SYSTEM_HAS_STACKTOP}
 
+function get_frame_intern(skipcount : longint=2) : pointer;
+  { provides the stacktrace of the function which calls it }
+  { address of this function and of JLThread.GetStracktrace excluded by default }
+var
+  frame : _Arr1JLStackTraceElement;
+begin
+  get_frame_intern:=nil;
+  frame:=_JLThread.CurrentThread.GetStacktrace;
+  get_frame_intern:=pointer(frame);
+  if length(frame)>skipcount then
+  begin
+    frame:=copy(frame,skipcount,length(frame)-skipcount);
+    get_frame_intern:=pointer(frame);
+  end;
+end;
+
 {$ifndef INTERNAL_BACKTRACE}
 function get_frame : pointer;
+  { provides the stacktrace of the function which calls it }
+  { one address is skipped automatically by the compiler
+    (code is auto-generated to modify the result of this function) }
+  { if your build of the compiler defines SUPPORT_GET_FRAME then you will
+    have a dummy version of get_frame which always returns nil }
 begin
-  get_frame:=nil;
+  get_frame:=get_frame_intern(1);
 end;
 {$endif INTERNAL_BACKTRACE}
 
 {$ifndef FPC_SYSTEM_HAS_GET_PC_ADDR}
-  { This provides a dummy implementation
-    of get_pc_addr function, for CPU's that don't need
-    the instruction address to walk the stack. }
 function get_pc_addr : codepointer;
+  { provides the address of the function which calls it }
+  { the address of this function and of JLThread.GetStracktrace are skipped }
+var
+  frame : _Arr1JLStackTraceElement;
 begin
   get_pc_addr:=nil;
+  frame:=_JLThread.CurrentThread.GetStacktrace;
+  if length(frame)>2 then
+    get_pc_addr:=frame[2];
 end;
 {$endif ndef FPC_SYSTEM_HAS_GET_PC_ADDR}
 
 {$ifndef FPC_SYSTEM_HAS_GET_CALLER_STACKINFO}
-  { This provides a simple implementation
-    of get_caller_stackinfo procedure,
-    using get_caller_addr and get_caller_frame
-    functions. }
 procedure get_caller_stackinfo(var framebp : pointer; var addr : codepointer);
+  { adjusts the address to point instead to the address which called it }
 var
-  nextbp : pointer;
-  nextaddr : codepointer;
+  frame : _Arr1JLStackTraceElement;
+  index : longint;
 begin
-  nextbp:=get_caller_frame(framebp,addr);
-  nextaddr:=get_caller_addr(framebp,addr);
-  framebp:=nextbp;
-  addr:=nextaddr;
+  frame:=_Arr1JLStackTraceElement(framebp);
+  index:=0;
+  while (index<>length(frame)) and (not frame[index].equals(jlobject(addr))) do
+    inc(index);
+  inc(index);
+  if index<length(frame) then
+    addr:=frame[index]
+  else
+    begin
+      framebp:=nil;
+      addr:=nil;
+    end;
 end;
 {$endif ndef FPC_SYSTEM_HAS_GET_CALLER_STACKINFO}
 
 
 procedure fpc_rangeerror;[public,alias:'FPC_RANGEERROR']; compilerproc;
 begin
-  HandleErrorAddrFrameInd(201,get_pc_addr,get_frame);
+  HandleErrorAddrFrameInd(201,get_pc_addr,get_frame_intern);
 end;
 
 
 procedure fpc_divbyzero;[public,alias:'FPC_DIVBYZERO']; compilerproc;
 begin
-  HandleErrorAddrFrameInd(200,get_pc_addr,get_frame);
+  HandleErrorAddrFrameInd(200,get_pc_addr,get_frame_intern);
 end;
 
 
 procedure fpc_overflow;[public,alias:'FPC_OVERFLOW']; compilerproc;
 begin
-  HandleErrorAddrFrameInd(215,get_pc_addr,get_frame);
+  HandleErrorAddrFrameInd(215,get_pc_addr,get_frame_intern);
 end;
 
 
 procedure fpc_threaderror; [public,alias:'FPC_THREADERROR'];
 begin
-  HandleErrorAddrFrameInd(236{RuntimeErrorExitCodes[reThreadError]},get_pc_addr,get_frame);
+  HandleErrorAddrFrameInd(236{RuntimeErrorExitCodes[reThreadError]},get_pc_addr,get_frame_intern);
 end;
 
 
 procedure fpc_invalidpointer; [public,alias:'FPC_INVALIDPOINTER']; compilerproc;
 begin
-  HandleErrorAddrFrameInd(216,get_pc_addr,get_frame);
+  HandleErrorAddrFrameInd(216,get_pc_addr,get_frame_intern);
 end;
 
 
 procedure fpc_iocheck;[public,alias:'FPC_IOCHECK']; compilerproc;
 var
   l : longint;
-  HInoutRes : PWord;
+  HInoutRes : Word;
 begin
-  HInOutRes:=@InoutRes;
-  if HInOutRes^<>0 then
+  HInOutRes:=InoutRes;
+  if HInOutRes<>0 then
    begin
-     l:=HInOutRes^;
-     HInOutRes^:=0;
-     HandleErrorAddrFrameInd(l,get_pc_addr,get_frame);
+     l:=HInOutRes;
+     InOutRes:=0;
+     HandleErrorAddrFrameInd(l,get_pc_addr,get_frame_intern);
    end;
 end;
 
 
 Function IOResult:Word;
-var
-  HInoutRes : PWord;
 Begin
-  HInoutRes:=@InoutRes;
-  IOResult:=HInOutRes^;
-  HInOutRes^:=0;
+  IOResult:=InoutRes;
+  InOutRes:=0;
 End;
 
 
 Function GetThreadID:TThreadID;{$ifdef SYSTEMINLINE}inline;{$endif}
 begin
-(* ThreadID is stored in a threadvar and made available in interface *)
-(* to allow setup of this value during thread initialization.        *)
+  { ThreadID is stored in a threadvar and made available in interface }
+  { to allow setup of this value during thread initialization.        }
   GetThreadID := ThreadID;
 end;
 
@@ -1274,20 +1299,14 @@ end;
 {$endif FPC_HAS_FEATURE_CONSOLEIO}
 
 Procedure InternalExit;
-(*
 var
-  current_exit : Procedure;
+  current_exit : tProcedure;
 {$ifdef FPC_HAS_FEATURE_CONSOLEIO}
-  pstdout : ^Text;
+  pstdout : Text;
 {$endif}
-{$if defined(MSWINDOWS) or defined(OS2)}
-  i : longint;
-{$endif}
-*)
 Begin
-(*
 {$ifdef SYSTEMDEBUG}
-  writeln('InternalExit');
+  writeln(stdout,'InternalExit');
 {$endif SYSTEMDEBUG}
   while exitProc<>nil Do
    Begin
@@ -1297,7 +1316,7 @@ Begin
      current_exit();
    End;
   { Finalize units }
-  FinalizeUnits;
+  // FinalizeUnits;
 
 {$ifdef FPC_HAS_FEATURE_CONSOLEIO}
   { the embedded system unit itself contains no routines for console i/o
@@ -1305,56 +1324,21 @@ Begin
     redirection to seriell i/o }
 {$ifndef EMBEDDED}
   { Show runtime error and exit }
-  pstdout:=@stdout;
+  if WriteErrorsToStdErr then
+    pstdout:=stderr
+  else
+    pstdout:=stdout;
   If erroraddr<>nil Then
    Begin
-     Writeln(pstdout^,'Runtime error ',Errorcode,' at $',hexstr(erroraddr));
+     Writeln(pstdout,'Runtime error ',Errorcode,' at $',hexstr(erroraddr));
      { to get a nice symify }
-     Writeln(pstdout^,BackTraceStrFunc(Erroraddr));
-     dump_stack(pstdout^,ErrorBase,ErrorAddr);
-     Writeln(pstdout^,'');
+     Writeln(pstdout,BackTraceStrFunc(Erroraddr));
+     dump_stack(pstdout,ErrorBase,ErrorAddr);
+     Writeln(pstdout,'');
    End;
   SysFlushStdIO;
 {$endif EMBEDDED}
 {$endif FPC_HAS_FEATURE_CONSOLEIO}
-
-{$if defined(MSWINDOWS) or defined(OS2)}
-  { finally release the heap if possible, especially
-    important for DLLs.
-    Reset the array to nil, and finally also argv itself to
-    avoid double freeing problem in case this function gets called twice. }
-  if assigned(argv) then
-    begin
-      for i:=0 to argc-1 do
-        if assigned(argv[i]) then
-          begin
-            sysfreemem(argv[i]);
-            argv[i]:=nil;
-          end;
-      sysfreemem(argv);
-      argv:=nil;
-    end;
-{$endif}
-{$ifdef LINUX}
-  {sysfreemem already checks for nil}
-  { Do not try to do anything if the heap manager already reported an error }
-  if (errorcode<>203) and (errorcode<>204) then
-    sysfreemem(calculated_cmdline);
-{$endif}
-{$ifdef BSD}
-  { Do not try to do anything if the heap manager already reported an error }
-  if (errorcode<>203) and (errorcode<>204) then
-    sysfreemem(cmdline);
-{$endif}
-
-{$ifdef FPC_HAS_FEATURE_HEAP}
-{$ifndef HAS_MEMORYMANAGER}
-{$ifndef FPC_NO_DEFAULT_HEAP}
-  FinalizeHeap;
-{$endif not FPC_NO_DEFAULT_HEAP}
-{$endif not HAS_MEMORYMANAGER}
-{$endif FPC_HAS_FEATURE_HEAP}
-*)
 End;
 
 
@@ -1373,6 +1357,89 @@ begin
 end;
 
 
+type
+  TShutdownThread = class(_JLThread)
+  public
+    procedure Run; override;
+  end;
+
+
+procedure TShutdownThread.Run;
+begin
+  InternalExit;
+end;
+
+
+var
+  ShutdownThread : TShutdownThread = nil;
+
+
+procedure InstallShutdownHook;
+  { fpc does not call the exit proc unless we explicitly call halt,
+    so we install a shutdown hook to call it for us }
+begin
+  ShutdownThread:=TShutdownThread.Create;
+  _JLRuntime.GetRuntime.AddShutdownHook(ShutdownThread);
+end;
+
+
+type
+  TExceptionHandler = class(JLObject, _JLThread.InnerUncaughtExceptionHandler)
+  private
+    FAlreadyRun: Boolean;
+  public
+    procedure UncaughtException(thread : _JLThread; throwable : _JLThrowable);
+  end;
+
+
+procedure TExceptionHandler.UncaughtException(thread : _JLThread; throwable : _JLThrowable);
+const
+  DivByZeroCode = 200;
+  AccessViolationCode = 216;
+  RangeErrorCode = 201;
+  UnhandledExceptionCode = 217;
+  InvalidTypeCastCode = 219;
+var
+  tracelist : _Arr1JLStacktraceElement;
+  code : longint;
+  addr : codepointer;
+begin
+  if not FAlreadyRun then
+    begin
+      FAlreadyRun:=True;
+      while throwable.GetCause<>nil do
+        throwable:=throwable.GetCause;
+      tracelist:=throwable.GetStacktrace;
+      addr:=nil;
+      if length(tracelist)<>0 then
+        addr:=codepointer(tracelist[0]);
+      if JLObject(throwable) is TObject then
+        HandleErrorAddrFrame(UnhandledExceptionCode,addr,pointer(tracelist))
+      else
+        begin
+          code:=0;
+          if throwable is _JLArithmeticException then
+            code:=DivByZeroCode
+          else if throwable is _JLNullpointerException then
+            code:=AccessViolationCode
+          else if throwable is _JLIndexOutOfBoundsException then
+            code:=RangeErrorCode
+          else if throwable is _JLClassCastException then
+            code:=InvalidTypeCastCode;
+          HandleErrorAddrFrame(code,addr,pointer(tracelist));
+        end;
+    end;
+end;
+
+procedure InstallExceptionHandler;
+var
+  ExceptionHandler : TExceptionHandler;
+begin
+  ExceptionHandler:=TExceptionHandler.Create;
+  _JLThread.SetDefaultUncaughtExceptionHandler(ExceptionHandler);
+end;
+
+
 Procedure Halt(ErrNum: Longint);
 Begin
 {$ifdef FPC_HAS_FEATURE_EXITCODE}
@@ -1383,15 +1450,17 @@ Begin
 {$endif FPC_LIMITED_EXITCODE}
     ExitCode:=ErrNum;
 {$endif FPC_HAS_FEATURE_EXITCODE}
+  if ShutdownThread<>nil then
+    _JLRuntime.GetRuntime.RemoveShutdownHook(ShutdownThread);
   internal_do_exit;
 end;
 
-(*
+
 function SysBackTraceStr (Addr: CodePointer): ShortString;
 begin
   SysBackTraceStr:='  $'+hexstr(addr);
 end;
-*)
+
 
 (*
 function CaptureBacktrace(skipframes,count:sizeint;frames:PCodePointer):sizeint;
@@ -1428,17 +1497,10 @@ Procedure HandleErrorAddrFrame (Errno : longint;addr : CodePointer; frame : Poin
 begin
   If pointer(ErrorProc)<>Nil then
     ErrorProc(Errno,addr,frame);
-  raise FpcRunTimeError.Create(Errno);
-(*
   errorcode:=word(Errno);
   erroraddr:=addr;
   errorbase:=frame;
-{$ifdef FPC_HAS_FEATURE_EXCEPTIONS}
-  if ExceptAddrStack <> nil then
-    raise TObject(nil) at addr,frame;
-{$endif FPC_HAS_FEATURE_EXCEPTIONS}
   Halt(errorcode);
-*)
 end;
 
 { This is used internally by system skip first level,
@@ -1467,7 +1529,7 @@ procedure fpc_handleerror (Errno : longint); compilerproc; [public,alias : 'FPC_
   Internal function should ALWAYS call HandleError instead of RunError.
 }
 begin
-  HandleErrorAddrFrameInd(Errno,get_pc_addr,get_frame);
+  HandleErrorAddrFrameInd(Errno,get_pc_addr,get_frame_intern);
 end;
 
 
@@ -1477,13 +1539,11 @@ var
   pcaddr : codepointer;
 begin
   errorcode:=w;
-(*
   pcaddr:=get_pc_addr;
-  bp:=get_frame;
+  bp:=get_frame_intern;
   get_caller_stackinfo(bp,pcaddr);
   erroraddr:=pcaddr;
   errorbase:=bp;
-*)
   Halt(errorcode);
 end;
 
@@ -1506,41 +1566,25 @@ begin
 end;
 
 
-{$ifndef CPUJVM}
+{$ifdef FPC_HAS_FEATURE_TEXTIO}
 Procedure dump_stack(var f : text;fp : Pointer; addr : CodePointer);
-var
-  i : Longint;
-  prevfp : Pointer;
-  is_dev : boolean;
 Begin
 {$ifdef FPC_HAS_FEATURE_EXCEPTIONS}
   try
 {$endif FPC_HAS_FEATURE_EXCEPTIONS}
-    { Frame of this procedure acts as StackBottom, fp values below that are invalid. }
-    prevfp:=get_frame;
-    i:=0;
-    is_dev:=do_isdevice(textrec(f).Handle);
-    { sanity checks, new frame pointer must be always greater than the old one, further
-      it must point into the stack area, else something went wrong }
-    while (fp>prevfp) and (fp<StackTop) do
-     Begin
-       prevfp:=fp;
-       get_caller_stackinfo(fp,addr);
-       if (addr=nil) then
-         break;
-       Writeln(f,BackTraceStrFunc(addr));
-       if (fp=nil) then
-         break;
-       Inc(i);
-       If ((i>max_frame_dump) and is_dev) or (i>256) Then
-         break;
-     End;
+     if (fp<>nil) and (addr<>nil) then
+       begin
+         get_caller_stackinfo(fp,addr);
+         if (addr<>nil) then
+           Writeln(f,BackTraceStrFunc(addr));
+       end;
 {$ifdef FPC_HAS_FEATURE_EXCEPTIONS}
    except
      { prevent endless dump if an exception occurred }
    end;
 {$endif FPC_HAS_FEATURE_EXCEPTIONS}
 End;
+{$endif FPC_HAS_FEATURE_TEXTIO}
 
 
 {$ifdef FPC_HAS_FEATURE_EXCEPTIONS}
@@ -1560,15 +1604,12 @@ begin
 end;
 {$endif FPC_HAS_FEATURE_EXCEPTIONS}
 
-{$endif CPUJVM}
 
-
-{$ifdef FPC_HAS_FEATURE_HEAP}
 Type
   PExitProcInfo = ^TExitProcInfo;
   TExitProcInfo = Record
     Next     : PExitProcInfo;
-    SaveExit : CodePointer;
+    SaveExit : TProcedure;
     Proc     : TProcedure;
   End;
 const
@@ -1583,23 +1624,22 @@ Begin
   ExitProcList:=P^.Next;
   ExitProc:=P^.SaveExit;
   Proc:=P^.Proc;
-  DisPose(P);
   Proc();
 End;
 
 
 Procedure AddExitProc(Proc: TProcedure);
 var
-  P : PExitProcInfo;
+  Rec : TExitProcInfo;
+  P   : PExitProcInfo;
 Begin
-  New(P);
+  P:=@Rec;
   P^.Next:=ExitProcList;
   P^.SaveExit:=ExitProc;
   P^.Proc:=Proc;
   ExitProcList:=P;
   ExitProc:=@DoExitProc;
 End;
-{$endif FPC_HAS_FEATURE_HEAP}
 
 
 {$ifdef FPC_HAS_FEATURE_HEAP}
@@ -1728,19 +1768,16 @@ begin
   If pointer(AbstractErrorProc)<>nil then
     AbstractErrorProc();
 *)
-  HandleErrorAddrFrameInd(211,get_pc_addr,get_frame);
+  HandleErrorAddrFrameInd(211,get_pc_addr,get_frame_intern);
 end;
 
 
 Procedure fpc_assert(Const Msg,FName:unicodestring;LineNo:Longint;ErrorAddr:Pointer); [Public,Alias : 'FPC_ASSERT']; compilerproc;
 begin
-(*
   if pointer(AssertErrorProc)<>nil then
     AssertErrorProc(Msg,FName,LineNo,ErrorAddr)
   else
-    HandleErrorAddrFrameInd(227,get_pc_addr,get_frame);
-*)
-  raise JLAssertionError.Create(JLObject(Fname+'('+unicodestring(JLInteger.valueOf(LineNo).toString)+'): '+Msg));
+    HandleErrorAddrFrameInd(227,get_pc_addr,get_frame_intern);
 end;
 
 

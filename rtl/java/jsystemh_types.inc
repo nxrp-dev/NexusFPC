@@ -648,11 +648,10 @@ const
 
 { max level in dumping on error }
   Max_Frame_Dump : Word = 8;
-(*
+
 { Exit Procedure handling consts and types  }
-  ExitProc : codepointer = nil;
+  ExitProc : TProcedure = nil;
   Erroraddr: codepointer = nil;
-*)
   Errorcode: Word    = 0;
 
 { file input modes }
