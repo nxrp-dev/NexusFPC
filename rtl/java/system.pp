@@ -537,6 +537,10 @@ begin
   {$ifdef FPC_HAS_FEATURE_THREADING}
   InitSystemThreads;
   {$endif FPC_HAS_FEATURE_THREADING}
+  {$ifdef FPC_HAS_FEATURE_RESOURCES}
+  InitResources;
+  SetResourceManager(ExternalResourceManager);
+  {$endif FPC_HAS_FEATURE_RESOURCES}
   InstallShutdownHook;
   InstallExceptionHandler;
 end.

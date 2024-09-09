@@ -472,7 +472,7 @@ type
     code: byte;
     cls:  ExceptClass;
 {$IFDEF FPC_HAS_FEATURE_RESOURCES}  // This is necessary for 2.4.4, which does not have reasources as a separate feature
-    msg:  PResStringRec;
+    msg:  {$ifndef CPUJVM}PResStringRec{$else}PShortString{$endif};
 {$else FPC_HAS_FEATURE_RESOURCES}
     { JVM Notes: cpujvm cannot take the address of an ansistring }
     msg:  {$ifndef CPUJVM}PAnsiString{$else}PShortString{$endif};

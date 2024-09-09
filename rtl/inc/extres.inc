@@ -27,16 +27,43 @@
 {$FATAL EXTRES_MMAP or EXTRES_GENERIC must be defined}
 {$ENDIF}
 
+{$IF defined(EXTRES_MMAP) and defined(CPUJVM)}
+{$FATAL EXTRES_MMAP is not supported for the CPUJVM target}
+{$ENDIF}
+
 const
   FPCRES_MAGIC = 'FPCRES';
   FPCRES_VERSION = 1;
+{$IFNDEF CPUJVM}
   {$IFDEF ENDIAN_BIG}
   FPCRES_ENDIAN = 1;
   {$ENDIF}
   {$IFDEF ENDIAN_LITTLE}
   FPCRES_ENDIAN = 2;
   {$ENDIF}
+{$ELSE CPUJVM}
+  { JVM Notes: endian is only known at runtime (the same file can run on any machine) }
+  FPCRES_ENDIAN : longint = 0;
+{$ENDIF CPUJVM}
   FPCRES_EXT = '.fpcres';
+  FPCRES_NODE_NOT_FOUND = -1;
+
+{$ifdef CPUJVM}
+function GetEndian : longint;
+  { big endian one is stored as $0100, little endian one is stored as $0001 }
+const
+  BIG_ENDIAN = 1;
+  LITTLE_ENDIAN = 2;
+var
+  Number : Word;
+begin
+  Number:=Word(1);
+  if (Number and $00FF)=1 then
+    GetEndian:=LITTLE_ENDIAN
+  else
+    GetEndian:=BIG_ENDIAN;
+end;
+{$endif CPUJVM}
 
 type
   TExtHeader = packed record
@@ -61,9 +88,18 @@ type
   PResInfoNode = ^TResInfoNode;
 
   {$IFDEF EXTRES_GENERIC}
+  {$IFDEF CPUJVM}
+  TResData = record
+    refcount : longword;
+    info : PResInfoNode;
+    data : Arr1JByte;
+  end;
+  PResData = ^TResData;
+  {$ENDIF CPUJVM}
+
   TResHandle = record
     info : PResInfoNode;
-    ptr : Pointer;
+    ptr : {$IFNDEF CPUJVM}Pointer{$ELSE}PResData{$ENDIF};
   end;
   PResHandle = ^TResHandle;
   {$ENDIF}
@@ -77,7 +113,12 @@ var ResHeader : PExtHeader = nil;
     {$ENDIF}
     {$IFDEF EXTRES_GENERIC}
     fd : file;
-    reshandles : PResHandle = nil;
+    reshandles : {$IFNDEF CPUJVM}PResHandle{$ELSE}array of TResHandle{$ENDIF} = nil;
+    {$IFDEF CPUJVM}
+    nodelist : array of TResInfoNode = nil;
+    stringtable : _JUHashTable; { each string in the file with its offset as key }
+    resourcefilebytes : arr1jbyte;
+    {$ENDIF CPUJVM}
     {$ENDIF}
 
 (*****************************************************************************
@@ -110,9 +151,16 @@ var i : integer;
     s : shortstring;
     code : word;
 begin
+{$ifndef CPUJVM}
   InternalIsIntResource:=((PtrUInt(aStr) shr 16)=0);
+{$else}
+  InternalIsIntResource:=False;
+{$endif}
+
+{$ifndef CPUJVM}
   if InternalIsIntResource then aInt:=PtrUInt(aStr)
   else
+{$endif}
   begin
     //a string like #number specifies an integer id
     if aStr[0]='#' then
@@ -122,28 +170,65 @@ begin
         inc(i);
       if i>256 then i:=256;
       s[0]:=chr(i-1);
+{$ifndef CPUJVM}
       Move(aStr[1],s[1],i-1);
+{$else}
+      Move(aStr,1,s,1,i-1);
+{$endif}
       Val(s,aInt,code);
       InternalIsIntResource:=code=0;
     end;
   end;
 end;
 
+{$IFNDEF CPUJVM}
+function GetResInfoPtr(const offset, index : longword) : PResInfoNode; inline;
+begin
+  GetResInfoPtr:=PResInfoNode(PtrUInt(ResHeader)+offset) + index;
+end;
+
 function GetResInfoPtr(const offset : longword) : PResInfoNode; inline;
 begin
   GetResInfoPtr:=PResInfoNode(PtrUInt(ResHeader)+offset);
 end;
+{$ELSE CPUJVM}
+function GetResInfoPtr(const offset, index : longword) : PResInfoNode;
+var baseindex : longword;
+begin
+  baseindex:=(offset-sizeof(TExtHeader)) div sizeof(TResInfoNode);
+  GetResInfoPtr:=@nodelist[baseindex+index];
+end;
 
+function GetResInfoPtr(const offset : longword) : PResInfoNode;
+begin
+  GetResInfoPtr:=GetResInfoPtr(offset,0);
+end;
+{$ENDIF CPUJVM}
+
+{$IFNDEF CPUJVM}
 function GetPchar(const offset : longword) : PAnsiChar; inline;
 begin
   GetPchar:=PAnsiChar(PtrUInt(ResHeader)+offset);
 end;
+{$ELSE CPUJVM}
+function GetPchar(const offset : longword) : PAnsiChar;
+  { get the string we found at this offset from a table prepared at load time }
+var
+  obj : JLObject;
+begin
+  obj:=stringtable.Get(JLInteger.Create(offset));
+  GetPchar:=PAnsiChar(ansistring(obj));
+end;
+{$ENDIF CPUJVM}
 
+{$IFNDEF CPUJVM}
 function GetPtr(const offset : longword) : Pointer; inline;
 begin
   GetPtr:=Pointer(PtrUInt(ResHeader)+offset);
 end;
+{$ENDIF CPUJVM}
 
+{$IFNDEF CPUJVM}
 procedure FixResEndian;
 var ptr : plongword;
     blockend : plongword;
@@ -159,7 +244,41 @@ begin
     inc(ptr);
   end;
 end;
+{$ELSE CPUJVM}
+procedure FixResEndian;
+var index : longword;
+    temp : jbyte;
+begin
+  index:=sizeof(TExtHeader);
+  while index<ResHeader^.nodesize do
+  begin
+    temp:=resourcefilebytes[index+0];
+    resourcefilebytes[index+0]:=resourcefilebytes[index+3];
+    resourcefilebytes[index+3]:=temp;
+    temp:=resourcefilebytes[index+1];
+    resourcefilebytes[index+1]:=resourcefilebytes[index+2];
+    resourcefilebytes[index+2]:=temp;
+    inc(index,sizeof(longword));
+  end;
+end;
+{$ENDIF CPUJVM}
 
+{$IFNDEF CPUJVM}
+function IntAsName(const id : longword): PAnsiChar;
+begin
+  IntAsName:=PAnsiChar(id);
+end;
+{$ELSE CPUJVM}
+function IntAsName(const id : longword): PAnsiChar;
+var s : ansistring;
+begin
+  str(id,s);
+  s:='#'+s;
+  IntAsName:=PAnsiChar(s);
+end;
+{$ENDIF CPUJVM}
+
+{$IFNDEF CPUJVM}
 function GetExtResPath : PAnsiChar;
 var len, i : integer;
     pathstr : shortstring;
@@ -181,87 +300,127 @@ begin
   GetExtResPath[len]:=#0;
   //writeln('Resource file is ',GetExtResPath);
 end;
+{$ELSE CPUJVM}
+function GetExtResPath : shortstring;
+  { the resource file must be placed at this location inside the jar file }
+begin
+  result:='org/freepascal/rawresources/application.fpcres';
+end;
+{$ENDIF CPUJVM}
 
-function BinSearchStr(arr : PResInfoNode; query : PAnsiChar; left, right : integer)
-: PResInfoNode;
+function BinSearchStr(offset : longword; query : PAnsiChar; left, right : integer)
+: longint;
 var pivot, res : integer;
     resstr : PAnsiChar;
 begin
-  BinSearchStr:=nil;
+  BinSearchStr:=FPCRES_NODE_NOT_FOUND;
   while left<=right do
   begin
     pivot:=(left+right) div 2;
-    resstr:=GetPchar(arr[pivot].nameid);
+    resstr:=GetPchar(GetResInfoPtr(offset,pivot)^.nameid);
     res:=ResStrIComp(resstr,query);
     if res<0 then left:=pivot+1
     else if res>0 then right:=pivot-1
     else
     begin
-      BinSearchStr:=@arr[pivot];
+      BinSearchStr:=offset+(pivot*sizeof(TResInfoNode));
       exit;
     end;
   end;
 end;
 
-function BinSearchInt(arr : PResInfoNode; query : PAnsiChar; left, right : integer)
-: PResInfoNode;
+function BinSearchInt(offset : longword; query : PtrUInt; left, right : integer)
+: longint;
 var pivot : integer;
 begin
-  BinSearchInt:=nil;
+  BinSearchInt:=FPCRES_NODE_NOT_FOUND;
   while left<=right do
   begin
     pivot:=(left+right) div 2;
-    if arr[pivot].nameid<PtrUInt(query) then left:=pivot+1
-    else if arr[pivot].nameid>PtrUInt(query) then right:=pivot-1
+    if GetResInfoPtr(offset,pivot)^.nameid<PtrUInt(query) then left:=pivot+1
+    else if GetResInfoPtr(offset,pivot)^.nameid>PtrUInt(query) then right:=pivot-1
     else
     begin
-      BinSearchInt:=@arr[pivot];
+      BinSearchInt:=offset+(pivot*sizeof(TResInfoNode));
       exit;
     end;
   end;
 end;
 
-function BinSearchRes(root : PResInfoNode; aDesc : PAnsiChar) : PResInfoNode;
+function BinSearchRes(offset : longword; aDesc : PAnsiChar) : longint;
 var aID : PtrUint;
+    root : PResInfoNode;
 begin
+  root:=GetResInfoPtr(offset);
+  aID:=0;
   if InternalIsIntResource(aDesc,aID) then
-    BinSearchRes:=BinSearchInt(GetResInfoPtr(root^.subptr),PAnsiChar(aID),
+    BinSearchRes:=BinSearchInt(root^.subptr,aID,
       root^.ncounthandle,root^.ncounthandle+root^.idcountsize-1)
   else
-    BinSearchRes:=BinSearchStr(GetResInfoPtr(root^.subptr),aDesc,0,
+    BinSearchRes:=BinSearchStr(root^.subptr,aDesc,0,
       root^.ncounthandle-1);
 end;
 
 //Returns a pointer to a name node.
 function InternalFindResource(ResourceName, ResourceType: PAnsiChar):
  PResInfoNode;
+var offset : longint;
 begin
   InternalFindResource:=nil;
   if ResHeader=nil then exit;
-  InternalFindResource:=GetResInfoPtr(sizeof(TExtHeader));
+  offset:=sizeof(TExtHeader);
 
-  InternalFindResource:=BinSearchRes(InternalFindResource,ResourceType);
-  if InternalFindResource<>nil then
-    InternalFindResource:=BinSearchRes(InternalFindResource,ResourceName);
+  offset:=BinSearchRes(offset,ResourceType);
+  if offset<>FPCRES_NODE_NOT_FOUND then
+    offset:=BinSearchRes(offset,ResourceName);
+  if offset<>FPCRES_NODE_NOT_FOUND then
+    InternalFindResource:=GetResInfoPtr(offset);
 end;
 
 function FindSubLanguage(aPtr : PResInfoNode; aLangID : word; aMask: word) : PResInfoNode;
-var arr : PResInfoNode;
-    i : longword;
+var offset, i : longword;
 begin
   FindSubLanguage:=nil;
-  arr:=GetResInfoPtr(aPtr^.subptr);
+  offset:=aPtr^.subptr;
   i:=0;
   while i<aPtr^.idcountsize do
   begin
-    if (PtrUInt(arr[i].nameid) and aMask)=(aLangID and aMask) then
+    if (PtrUInt(GetResInfoPtr(offset,i)^.nameid) and aMask)=(aLangID and aMask) then
     begin
-      FindSubLanguage:=@arr[i];
+      FindSubLanguage:=GetResInfoPtr(offset,i);
       exit;
     end;
     inc(i);
   end;
 end;
+
+{$IFDEF CPUJVM}
+function ExtReadResourceFile(P : shortstring) : Arr1JByte;
+  { a resource stream cannot return the size of the resource file, cannot skip
+    bytes and cannot seek, as a workaround we read the entire stream into memory }
+const NoMoreData = -1;
+var ResourceStream : _JIInputStream;
+    ByteStream : _JIByteArrayOutputStream;
+    Buffer : Arr1JByte;
+    NumBytesRead : longint;
+begin
+  ExtReadResourceFile:=nil;
+  ResourceStream:=_JLThread.CurrentThread.GetContextClassLoader.GetResourceAsStream(P);
+  if ResourceStream<>nil then
+  begin
+    Buffer:=nil;
+    SetLength(Buffer,4096);
+    ByteStream:=_JIByteArrayOutputStream.Create;
+    NumBytesRead:=ResourceStream.Read(Buffer,0,Length(Buffer));
+    while NumBytesRead<>NoMoreData do
+    begin
+      ByteStream.Write(Buffer,0,NumBytesRead);
+      NumBytesRead:=ResourceStream.Read(Buffer,0,Length(Buffer));
+    end;
+    ExtReadResourceFile:=ByteStream.ToByteArray;
+  end;
+end;
+{$ENDIF CPUJVM}
 
 {$IFDEF EXTRES_MMAP}
 procedure InitResources;
@@ -321,6 +480,7 @@ end;
 {$ENDIF}
 
 {$IFDEF EXTRES_GENERIC}
+{$IFNDEF CPUJVM}
 procedure InitResources;
 var respath : PAnsiChar;
     tmp : longword;
@@ -374,7 +534,96 @@ begin
     {$I+}
   ExitNoErr:
 end;
+{$ELSE CPUJVM}
+procedure InitResources;
+var rec : TExtHeader;
+    iserror : boolean = false;
+    datasize,
+    index,
+    position,
+    stop : longint;
+    text : AnsistringClass;
+begin
+  FPCRES_ENDIAN:=GetEndian;
+  nodelist:=nil;
+  stringtable:=nil;
+  ResHandles:=nil;
+  datasize:=0;
+  position:=0;
+  resourcefilebytes:=ExtReadResourceFile(GetExtResPath);
+  iserror:=
+    (resourcefilebytes=nil) or
+    (length(resourcefilebytes)<sizeof(TExtHeader));
+  if not iserror then
+  begin
+    ResHeader:=@rec;
+    move(resourcefilebytes,position,ResHeader^,0,sizeof(TExtHeader));
+    inc(position,sizeof(TExtHeader));
+    iserror:=
+      (ResHeader^.magic<>FPCRES_MAGIC) or
+      (ResHeader^.version<>FPCRES_VERSION);
+  end;
+  if not iserror then
+  begin
+    if (ResHeader^.endianess<>FPCRES_ENDIAN) then
+    begin
+      ResHeader^.count:=swapendian(ResHeader^.count);
+      ResHeader^.nodesize:=swapendian(ResHeader^.nodesize);
+      ResHeader^.hdrsize:=swapendian(ResHeader^.hdrsize);
+    end;
+    iserror:=
+      (length(resourcefilebytes)<ResHeader^.hdrsize) or
+      (ResHeader^.nodesize>ResHeader^.hdrsize) or
+      (ResHeader^.nodesize<sizeof(TExtHeader)) or
+      ((ResHeader^.nodesize-sizeof(TExtHeader)) mod sizeof(longword)<>0);
+  end;
+  if not iserror then
+  begin
+    if (ResHeader^.endianess<>FPCRES_ENDIAN) then
+      FixResEndian;
+    setlength(ResHandles,ResHeader^.count);
+    datasize:=ResHeader^.nodesize-sizeof(TExtHeader);
+    iserror:=
+      (datasize<0) or
+      (datasize mod sizeof(TResInfoNode)<>0);
+  end;
+  if not iserror then
+  begin
+    setlength(nodelist,datasize div sizeof(TResInfoNode));
+    move(resourcefilebytes,position,nodelist,0,datasize);
+    inc(position,datasize);
+    stringtable:=_JUHashTable.Create;
+    stop:=position;
+    while (not iserror) and (stop<>ResHeader^.hdrsize) do
+    begin
+      { read each string (terminated with #0) and add it to the stringtable
+        with the offset as the key }
+      while (stop<>ResHeader^.hdrsize) and (resourcefilebytes[stop]<>0) do
+        inc(stop);
+      iserror:=(stop=ResHeader^.hdrsize);
+      if not iserror then
+      begin
+        text:=AnsistringClass.Create(stop-position,CP_UTF8);
+        for index:=0 to text.length-1 do
+          ansistring(Text)[index+1]:=ansichar(resourcefilebytes[position+index]);
+        stringtable.put(JLInteger.Create(position),text);
+        position:=stop+1;
+        stop:=position;
+      end;
+    end;
+  end;
+  if iserror then
+  begin
+    ResHandles:=nil;
+    ResHeader:=nil;
+    nodelist:=nil;
+    stringtable:=nil;
+    resourcefilebytes:=nil;
+  end;
+end;
+{$ENDIF CPUJVM}
 
+{$IFNDEF CPUJVM}
 procedure FinalizeResources;
 begin
   if ResHeader=nil then exit;
@@ -382,6 +631,7 @@ begin
   FreeMem(ResHeader);
   Close(fd);
 end;
+{$ENDIF CPUJVM}
 {$ENDIF}
 
 (*****************************************************************************
@@ -395,7 +645,7 @@ end;
 
 function ExtEnumResourceTypes(ModuleHandle : TFPResourceHMODULE; EnumFunc : EnumResTypeProc; lParam : PtrInt) : LongBool;
 var ptr : PResInfoNode;
-    totn, totid, i : longword;
+    offset, totn, totid, i : longword;
     pc : PAnsiChar;
 begin
   ExtEnumResourceTypes:=False;
@@ -403,77 +653,84 @@ begin
   ptr:=GetResInfoPtr(sizeof(TExtHeader));
   totn:=ptr^.ncounthandle;
   totid:=totn+ptr^.idcountsize;
+  offset:=ptr^.subptr;
   ptr:=GetResInfoPtr(ptr^.subptr);
   ExtEnumResourceTypes:=true;
   i:=0;
   while i<totn do //named entries
   begin
-    pc:=GetPChar(ptr[i].nameid);
+    pc:=GetPChar(GetResInfoPtr(offset,i)^.nameid);
     if not EnumFunc(ModuleHandle,pc,lParam) then exit;
     inc(i);
   end;
   while i<totid do
   begin
-    if not EnumFunc(ModuleHandle,PAnsiChar(ptr[i].nameid),lParam) then exit;
+    if not EnumFunc(ModuleHandle,IntAsName(GetResInfoPtr(offset,i)^.nameid),lParam) then exit;
     inc(i);
   end;
 end;
 
-function ExtEnumResourceNames(ModuleHandle : TFPResourceHMODULE; ResourceType : PAnsiChar; EnumFunc : EnumResNameProc; lParam : PtrInt) : LongBool;
+function ExtEnumResourceNames(ModuleHandle : TFPResourceHMODULE; ResourceType : {$ifndef CPUJVM}PAnsiChar{$else}ansistring{$endif};
+  EnumFunc : EnumResNameProc; lParam : PtrInt) : LongBool;
 var ptr : PResInfoNode;
+    offset : longint;
     totn, totid, i : longword;
     pc : PAnsiChar;
 begin
   ExtEnumResourceNames:=False;
   if ResHeader=nil then exit;
-  ptr:=GetResInfoPtr(sizeof(TExtHeader));
 
-  ptr:=BinSearchRes(ptr,ResourceType);
-  if ptr=nil then exit;
+  offset:=BinSearchRes(sizeof(TExtHeader),PAnsiChar(ResourceType));
+  if offset=FPCRES_NODE_NOT_FOUND then exit;
+  ptr:=GetResInfoPtr(offset);
 
   totn:=ptr^.ncounthandle;
   totid:=totn+ptr^.idcountsize;
+  offset:=ptr^.subptr;
   ptr:=GetResInfoPtr(ptr^.subptr);
   ExtEnumResourceNames:=true;
   i:=0;
   while i<totn do //named entries
   begin
-    pc:=GetPChar(ptr[i].nameid);
+    pc:=GetPChar(GetResInfoPtr(offset,i)^.nameid);
     if not EnumFunc(ModuleHandle,ResourceType,pc,lParam) then exit;
     inc(i);
   end;
   while i<totid do
   begin
-    if not EnumFunc(ModuleHandle,ResourceType,PAnsiChar(ptr[i].nameid),lParam) then exit;
+    if not EnumFunc(ModuleHandle,ResourceType,IntAsName(GetResInfoPtr(offset,i)^.nameid),lParam) then exit;
     inc(i);
   end;
 end;
 
-function ExtEnumResourceLanguages(ModuleHandle : TFPResourceHMODULE; ResourceType, ResourceName : PAnsiChar; EnumFunc : EnumResLangProc; lParam : PtrInt) : LongBool;
+function ExtEnumResourceLanguages(ModuleHandle : TFPResourceHMODULE; ResourceType, ResourceName : {$ifndef CPUJVM}PAnsiChar{$else}ansistring{$endif};
+  EnumFunc : EnumResLangProc; lParam : PtrInt) : LongBool;
 var ptr : PResInfoNode;
+    offset : longword;
     tot, i : integer;
 begin
   ExtEnumResourceLanguages:=False;
-  ptr:=InternalFindResource(ResourceName,ResourceType);
+  ptr:=InternalFindResource(PAnsiChar(ResourceName),PAnsiChar(ResourceType));
   if ptr=nil then exit;
 
   tot:=ptr^.idcountsize;
+  offset:=ptr^.subptr;
   ptr:=GetResInfoPtr(ptr^.subptr);
   ExtEnumResourceLanguages:=true;
   i:=0;
   while i<tot do
   begin
-    if not EnumFunc(ModuleHandle,ResourceType,ResourceName,PtrUInt(ptr[i].nameid),lParam) then exit;
+    if not EnumFunc(ModuleHandle,ResourceType,ResourceName,PtrUInt(GetResInfoPtr(offset,i)^.nameid),lParam) then exit;
     inc(i);
   end;
 end;
 
-Function ExtFindResource(ModuleHandle: TFPResourceHMODULE; ResourceName, ResourceType: PAnsiChar)
+Function ExtFindResource(ModuleHandle: TFPResourceHMODULE; ResourceName, ResourceType: {$ifndef CPUJVM}PAnsiChar{$else}ansistring{$endif})
 : TFPResourceHandle;
 var ptr : PResInfoNode;
 begin
   ExtFindResource:=0;
-  ptr:=InternalFindResource(ResourceName,ResourceType);
+  ptr:=InternalFindResource(PAnsiChar(ResourceName),PAnsiChar(ResourceType));
   if ptr=nil then exit;
 
   //first language id
@@ -493,13 +750,13 @@ begin
 end;
 
 Function ExtFindResourceEx(ModuleHandle: TFPResourceHMODULE; ResourceType,
-  ResourceName: PAnsiChar; Language : word): TFPResourceHandle;
+  ResourceName: {$ifndef CPUJVM}PAnsiChar{$else}ansistring{$endif}; Language : word): TFPResourceHandle;
 const LANG_NEUTRAL = 0;
       LANG_ENGLISH = 9;
 var nameptr,ptr : PResInfoNode;
 begin
   ExtFindResourceEx:=0;
-  nameptr:=InternalFindResource(ResourceName,ResourceType);
+  nameptr:=InternalFindResource(PAnsiChar(ResourceName),PAnsiChar(ResourceType));
   if nameptr=nil then exit;
 
   //try exact match
@@ -562,8 +819,12 @@ Resource data memory layout:
                  0  Resource data
 *)
 Function ExtLoadResource(ModuleHandle: TFPResourceHMODULE; ResHandle: TFPResourceHandle): TFPResourceHGLOBAL;
-var ptr : PPtrUInt;
+var ptr : {$ifndef CPUJVM}PPtrUInt{$else}PResData{$endif};
     tmp : longword;
+{$ifdef CPUJVM}
+    rec : TResData;
+    available : longint;
+{$endif}
 begin
   ExtLoadResource:=0;
   if ResHeader=nil then exit;
@@ -571,6 +832,7 @@ begin
 
   if reshandles[ResHandle-1].ptr=nil then
   begin
+{$ifndef CPUJVM}
     {$I-}
     Seek(fd,reshandles[ResHandle-1].info^.subptr);
     {$I+}
@@ -589,32 +851,63 @@ begin
       FreeMem(ptr);
       exit;
     end;
+{$else CPUJVM}
+    available:=length(resourcefilebytes)-reshandles[ResHandle-1].info^.subptr;
+    if reshandles[ResHandle-1].info^.idcountsize>available then exit;
+    ptr:=@rec;
+    ptr^.data:=nil;
+    setlength(ptr^.data,reshandles[ResHandle-1].info^.idcountsize);
+    ptr^.refcount:=1;
+    ptr^.info:=reshandles[ResHandle-1].info;
+    move(
+      resourcefilebytes,reshandles[ResHandle-1].info^.subptr,
+      ptr^.data,0,
+      reshandles[ResHandle-1].info^.idcountsize);
+{$endif CPUJVM}
     reshandles[ResHandle-1].ptr:=ptr;
   end
   else
   begin
     ptr:=reshandles[ResHandle-1].ptr;
+{$ifndef CPUJVM}
     dec(ptr,2);
     inc(ptr^,1); //increase reference count
+{$else CPUJVM}
+    ptr^.refcount:=ptr^.refcount+1;
+{$endif CPUJVM}
   end;
-  ExtLoadResource:=TFPResourceHGLOBAL(reshandles[ResHandle-1].ptr);
+  ExtLoadResource:={$ifndef CPUJVM}TFPResourceHGLOBAL(reshandles[ResHandle-1].ptr){$else}ResHandle{$endif};
 end;
 
 Function ExtFreeResource(ResData: TFPResourceHGLOBAL): LongBool;
 var ptrinfo : PResInfoNode;
-    ptr : PPtrUInt;
+    ptr : {$ifndef CPUJVM}PPtrUInt{$else}PResData{$endif};
+{$ifdef CPUJVM}
+    reshandle : TFPResourceHandle;
+{$endif}
 begin
   ExtFreeResource:=(ResHeader<>nil);
   if not ExtFreeResource then exit;
+{$ifndef CPUJVM}
   ptr:=PPtrUInt(ResData);
   dec(ptr,2);
   dec(ptr^); //decrease reference count
-  if ptr^=0 then
+{$else}
+  reshandle:=ResData;
+  ptr:=reshandles[reshandle-1].ptr;
+  ptr^.refcount:=ptr^.refcount-1;
+{$endif}
+  if {$ifndef CPUJVM}ptr^{$else}ptr^.refcount{$endif}=0 then
   begin
+{$ifndef CPUJVM}
     inc(ptr);
     ptrinfo:=PResInfoNode(ptr^);
     dec(ptr);
     FreeMem(ptr);
+{$else}
+    ptrinfo:=ptr^.info;
+    ptr^.data:=nil;
+{$endif}
     reshandles[ptrinfo^.ncounthandle-1].ptr:=nil;
   end;
   ExtFreeResource:=true;
@@ -631,11 +924,19 @@ begin
 end;
 {$ENDIF}
 
-Function ExtLockResource(ResData: TFPResourceHGLOBAL): Pointer;
+Function ExtLockResource(ResData: {$ifndef CPUJVM}TFPResourceHGLOBAL{$else}JLInteger{$endif}): Pointer;
+{$ifdef CPUJVM}
+var reshandle : TFPResourceHandle;
+{$endif}
 begin
   ExtLockResource:=Nil;
   if ResHeader=nil then exit;
+{$ifndef CPUJVM}
   ExtLockResource:=Pointer(ResData);
+{$else}
+  reshandle:=ResData.IntValue;
+  ExtLockResource:=Pointer(ResHandles[reshandle-1].Ptr^.Data);
+{$endif}
 end;
 
 Function ExtUnlockResource(ResData: TFPResourceHGLOBAL): LongBool;

@@ -2273,6 +2273,12 @@ end;
 *****************************************************************************}
 
 {$i sysres.inc}
+
+{$ifdef FPC_HAS_FEATURE_RESOURCES}
+{$define EXTRES_GENERIC}
+{$i extres.inc}
+{$endif FPC_HAS_FEATURE_RESOURCES}
+
 (*
 const
   CtrlBreakHandler: TCtrlBreakHandler = nil;
