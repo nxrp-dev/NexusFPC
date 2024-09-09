@@ -342,31 +342,210 @@ begin
   dest:=destObj;
 end;
 
-{$ifndef cpujvm}
-procedure fillchar(var x;count : SizeInt;value : boolean);
+
+procedure fillchar(var x;offset,count : SizeInt;value : boolean);
+var
+  obj: JLObject;
 begin
-  fillchar(x,count,byte(value));
+  obj:=JLObject(x);
+  fillbyte(obj,offset,count,byte(value));
+  x:=obj;
+end;
+
+
+procedure fillchar(var x;count : SizeInt;value : boolean);
+var
+  obj: JLObject;
+begin
+  obj:=JLObject(x);
+  fillbyte(obj,0,count,byte(value));
+  x:=obj;
+end;
+
+
+procedure fillchar(var x;offset,count : SizeInt;value : AnsiChar);
+var
+  obj: JLObject;
+begin
+  obj:=JLObject(x);
+  fillbyte(obj,offset,count,byte(value));
+  x:=obj;
 end;
 
 
 procedure fillchar(var x;count : SizeInt;value : AnsiChar);
+var
+  obj: JLObject;
 begin
-  fillchar(x,count,byte(value));
+  obj:=JLObject(x);
+  fillbyte(obj,0,count,byte(value));
+  x:=obj;
+end;
+
+
+procedure FillByte (var x;offset,count : SizeInt;value : byte );
+var
+  size : longint;
+  wrapped : JLObject;
+  serializer : ISerializer;
+begin
+  if count>0 then
+  begin
+    x:=clonedest(JLObject(x));
+    size:=measureobject(JLObject(x));
+    wrapped:=wrap(x,size,nil);
+    serializer:=newserializer(
+      wrapped,
+      size,
+      newdatawindow(offset,count),
+      nil);
+    while count<>0 do
+    begin
+      serializer.put(value);
+      dec(count);
+    end;
+    x:=unwrap(wrapped,JLObject(x),nil);
+  end;
 end;
 
 
 procedure FillByte (var x;count : SizeInt;value : byte );
+var
+  obj: JLObject;
 begin
-  FillChar (X,Count,VALUE);
+  obj:=JLObject(x);
+  fillbyte(obj,0,count,value);
+  x:=obj;
 end;
 
 
+procedure fillword(var x;offset,count : SizeInt;value : word);
+var
+  size : longint;
+  wrapped : JLObject;
+  serializer : ISerializer;
+begin
+  if count>0 then
+  begin
+    x:=clonedest(JLObject(x));
+    size:=measureobject(JLObject(x));
+    wrapped:=wrap(x,size,nil);
+    serializer:=newserializer(
+      wrapped,
+      size,
+      newdatawindow(offset,count*sizeof(value)),
+      nil);
+    while count<>0 do
+    begin
+      serializer.put(byte(value shr (0*8) and $FF));
+      serializer.put(byte(value shr (1*8) and $FF));
+      dec(count);
+    end;
+    x:=unwrap(wrapped,JLObject(x),nil);
+  end;
+end;
+
+
+procedure fillword(var x;count : SizeInt;value : word);
+var
+  obj: JLObject;
+begin
+  obj:=JLObject(x);
+  fillword(obj,0,count,value);
+  x:=obj;
+end;
+
+
+procedure filldword(var x;offset,count : SizeInt;value : dword);
+var
+  size : longint;
+  wrapped : JLObject;
+  serializer : ISerializer;
+begin
+  if count>0 then
+  begin
+    x:=clonedest(JLObject(x));
+    size:=measureobject(JLObject(x));
+    wrapped:=wrap(x,size,nil);
+    serializer:=newserializer(
+      wrapped,
+      size,
+      newdatawindow(offset,count*sizeof(value)),
+      nil);
+    while count<>0 do
+    begin
+      serializer.put(byte(value shr (0*8) and $FF));
+      serializer.put(byte(value shr (1*8) and $FF));
+      serializer.put(byte(value shr (2*8) and $FF));
+      serializer.put(byte(value shr (3*8) and $FF));
+      dec(count);
+    end;
+    x:=unwrap(wrapped,JLObject(x),nil);
+  end;
+end;
+
+
+procedure filldword(var x;count : SizeInt;value : dword);
+var
+  obj: JLObject;
+begin
+  obj:=JLObject(x);
+  filldword(obj,0,count,value);
+  x:=obj;
+end;
+
+
+procedure fillqword(var x;offset,count : SizeInt;value : qword);
+var
+  size : longint;
+  wrapped : JLObject;
+  serializer : ISerializer;
+begin
+  if count>0 then
+  begin
+    x:=clonedest(JLObject(x));
+    size:=measureobject(JLObject(x));
+    wrapped:=wrap(x,size,nil);
+    serializer:=newserializer(
+      wrapped,
+      size,
+      newdatawindow(offset,count*sizeof(value)),
+      nil);
+    while count<>0 do
+    begin
+      serializer.put(byte(value shr (0*8) and $FF));
+      serializer.put(byte(value shr (1*8) and $FF));
+      serializer.put(byte(value shr (2*8) and $FF));
+      serializer.put(byte(value shr (3*8) and $FF));
+      serializer.put(byte(value shr (4*8) and $FF));
+      serializer.put(byte(value shr (5*8) and $FF));
+      serializer.put(byte(value shr (6*8) and $FF));
+      serializer.put(byte(value shr (7*8) and $FF));
+      dec(count);
+    end;
+    x:=unwrap(wrapped,JLObject(x),nil);
+  end;
+end;
+
+
+procedure fillqword(var x;count : SizeInt;value : qword);
+var
+  obj: JLObject;
+begin
+  obj:=JLObject(x);
+  fillqword(obj,0,count,value);
+  x:=obj;
+end;
+
+{$ifndef cpujvm}
 function IndexChar(Const buf;len:SizeInt;b:AnsiChar):SizeInt;
 begin
   IndexChar:=IndexByte(Buf,Len,byte(B));
 end;
+{$endif cpujvm}
 
 
+{$ifndef cpujvm}
 function CompareChar(Const buf1,buf2;len:SizeInt):SizeInt;
 begin
   CompareChar:=CompareByte(buf1,buf2,len);

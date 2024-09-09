@@ -38,14 +38,19 @@
     between platforms will not work correctly on some jvms. }
 Procedure Move(const source;var dest;count:SizeInt);
 Procedure Move(const source;sourceoffset:SizeInt;var dest;destoffset:SizeInt;count:SizeInt);
-(*
-Procedure FillChar(var x;count:SizeInt;Value:Byte);
+Procedure FillChar(var x;offset,count:SizeInt;Value:Boolean);
 Procedure FillChar(var x;count:SizeInt;Value:Boolean);
+Procedure FillChar(var x;offset,count:SizeInt;Value:AnsiChar);
 Procedure FillChar(var x;count:SizeInt;Value:AnsiChar);
+procedure FillByte(var x;offset,count:SizeInt;value:byte);
 procedure FillByte(var x;count:SizeInt;value:byte);
+Procedure FillWord(var x;offset,count:SizeInt;Value:Word);
 Procedure FillWord(var x;count:SizeInt;Value:Word);
+procedure FillDWord(var x;offset,count:SizeInt;value:DWord);
 procedure FillDWord(var x;count:SizeInt;value:DWord);
+procedure FillQWord(var x;offset,count:SizeInt;value:QWord);
 procedure FillQWord(var x;count:SizeInt;value:QWord);
+(*
 function  IndexChar(const buf;len:SizeInt;b:AnsiChar):SizeInt;
 function  IndexByte(const buf;len:SizeInt;b:byte):SizeInt;
 function  Indexword(const buf;len:SizeInt;b:word):SizeInt;
