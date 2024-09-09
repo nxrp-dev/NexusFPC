@@ -2549,7 +2549,7 @@ unit cgcpu;
           { Add displacement to reference }
           if (ref.base<>NR_NO) and (ref.offset<>0) then
             begin
-              AdjustOffsetToPointerRegs(list,NR_R24,Ref.offset);
+              AdjustOffsetToPointerRegs(list,Ref.base,Ref.offset);
               tmpref.offset:=0;
             end;
 
