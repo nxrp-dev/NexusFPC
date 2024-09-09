@@ -133,6 +133,13 @@ const
   CtrlZMarksEOF: Boolean = False;
   DefaultTextLineBreakStyle: TTextLineBreakStyle = tlbsLF;
 
+{$ifdef FPC_HAS_FEATURE_COMMANDARGS}
+var
+  argc: longint = 0;
+  argv: array of ansistring = nil;
+  argvw: array of unicodestring = nil;
+{$endif FPC_HAS_FEATURE_COMMANDARGS}
+
 {*****************************************************************************}
                                  implementation
 {*****************************************************************************}
@@ -212,6 +219,94 @@ begin
   CtrlZMarksEOF:=os.Contains(JLString('windows'));
 end;
 
+{$ifdef FPC_HAS_FEATURE_COMMANDARGS}
+function TryReadArgument(
+  const s: unicodestring;
+  var index: longint;
+  out first,stop: longint): boolean;
+  begin
+    first:=index;
+    while (first<>length(s)) and (s[first+1]=' ') do
+      inc(first);
+    if first<>length(s) then
+      if (s[first+1]='''') or (s[first+1]='"') then
+        begin
+          stop:=first+1;
+          while (stop<>length(s)) and (s[stop+1]<>s[first+1]) do
+            inc(stop);
+          inc(first);
+          index:=stop;
+        end
+      else
+        begin
+          stop:=first;
+          while (stop<>length(s)) and (s[stop+1]<>' ') do
+            inc(stop);
+          index:=stop;
+        end;
+    result:=(first<>length(s));
+  end;
+
+procedure SetupArguments;
+  const
+    maxArgCount = 128;
+  var
+    s : unicodestring;
+    charIndex,first,stop,argIndex : longint;
+    buffer : array[0..maxArgCount-1] of unicodestring;
+  begin
+    argc:=0;
+    argv:=nil;
+    argvw:=nil;
+    // this property may not be available on every java virtual machine (in which case it will be an empty string)
+    s:=JLSystem.GetProperty('sun.java.command');
+    if length(s)<>0 then
+      begin
+        charIndex:=0;
+        argIndex:=0;
+        while (argIndex<>maxArgCount) and (TryReadArgument(s,charIndex,first,stop)) do
+          begin
+            buffer[argIndex]:=copy(s,first+1,stop-first);
+            inc(argIndex);
+          end;
+        argc:=argIndex;
+        setlength(argv,argc+1);
+        setlength(argvw,argc+1);
+        for argIndex:=0 to argc-1 do
+          begin
+            argv[argIndex]:=ansistring(buffer[argIndex]);
+            argvw[argIndex]:=buffer[argIndex];
+          end;
+        // for consistency follow other platforms and add final empty item to argv
+        argv[argc]:='';
+        argvw[argc]:='';
+      end;
+  end;
+
+function paramcount: longint;
+  begin
+    paramcount:=argc-1;
+  end;
+
+{$ifdef FPC_UNICODESTRINGS}
+function paramstr(l: longint): unicodestring;
+  begin
+    if (l>=0) and (l<argc) then
+      result:=argvw[l]
+    else
+      result:='';
+  end;
+{$else FPC_UNICODESTRINGS}
+function paramstr(l: longint): ansistring;
+  begin
+    if (l>=0) and (l<argc) then
+      result:=argv[l]
+    else
+      result:='';
+  end;
+{$endif FPC_UNICODESTRINGS}
+{$endif FPC_HAS_FEATURE_COMMANDARGS}
+
 {*****************************************************************************
                          SystemUnit Initialization
 *****************************************************************************}
@@ -219,5 +314,8 @@ end;
 begin
   InitUnicodeStringManager;
   SetupOSConstants;
+  {$ifdef FPC_HAS_FEATURE_COMMANDARGS}
+  SetupArguments;
+  {$endif FPC_HAS_FEATURE_COMMANDARGS}
 end.
 

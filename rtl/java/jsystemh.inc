@@ -802,7 +802,11 @@ Const
 Procedure Error(RunTimeError : TRunTimeError);
 {$ifdef FPC_HAS_FEATURE_COMMANDARGS}
 Function  Paramcount:Longint;
-Function  ParamStr(l:Longint):Shortstring;
+{$ifdef FPC_UNICODESTRINGS}
+Function  ParamStr(l:Longint):Unicodestring;
+{$else FPC_UNICODESTRINGS}
+Function  ParamStr(l:Longint):Ansistring;
+{$endif FPC_UNICODESTRINGS}
 {$endif FPC_HAS_FEATURE_COMMANDARGS}
 
 {$ifndef CPUJVM}
