@@ -15,6 +15,8 @@
 
 unit uuchar;
 
+{$mode fpc}
+
 interface
 
   type
