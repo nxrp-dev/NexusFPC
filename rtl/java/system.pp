@@ -119,10 +119,31 @@ const
 {$i jsystemh.inc}
 {$i jtconh.inc}
 
+const
+{$ifdef FPC_UNICODESTRINGS}
+  LineEnding: unicodestring = '';
+  DirectorySeparator: WideChar = #0;
+  PathSeparator: WideChar = #0;
+{$else FPC_UNICODESTRINGS}
+  LineEnding: ansistring = '';
+  DirectorySeparator: AnsiChar = #0;
+  PathSeparator: AnsiChar = #0;
+{$endif FPC_UNICODESTRINGS}
+  AllowDirectorySeparators: set of AnsiChar = ['\','/'];
+  CtrlZMarksEOF: Boolean = False;
+  DefaultTextLineBreakStyle: TTextLineBreakStyle = tlbsLF;
 
 {*****************************************************************************}
                                  implementation
 {*****************************************************************************}
+
+type
+  _JIFile = class external 'java.io' name 'File' (JLObject)
+  public
+    final class var
+      fseparatorChar: jchar; external name 'separatorChar';
+      fpathSeparatorChar: jchar; external name 'pathSeparatorChar';
+  end;
 
 function min(a,b : longint) : longint;
   begin
@@ -173,11 +194,30 @@ procedure fpc_var_copyout_mismatch(line,column: longint); compilerproc;
     raise CopyOutVarModifiedException.create('Var parameter ending at line '+linestr+' column '+columnstr+' in the previous stack frame has been modified to a different value than the returned copyback value');
   end;
 
+procedure SetupOSConstants;
+var
+  os : JLString;
+begin
+  LineEnding:=JLSystem.GetProperty('line.separator');
+  case ansistring(LineEnding) of
+    #13#10: DefaultTextLineBreakStyle:=tlbsCRLF;
+    #13: DefaultTextLineBreakStyle:=tlbsCR;
+  else
+    DefaultTextLineBreakStyle:=tlbsLF;
+  end;
+  DirectorySeparator:=_JIFile.fseparatorChar;
+  PathSeparator:=_JIFile.fpathSeparatorChar;
+  // some constants are not exposed by java
+  os:=JLSystem.GetProperty('os.name').ToLowercase;
+  CtrlZMarksEOF:=os.Contains(JLString('windows'));
+end;
+
 {*****************************************************************************
                          SystemUnit Initialization
 *****************************************************************************}
 
 begin
- initunicodestringmanager
+  InitUnicodeStringManager;
+  SetupOSConstants;
 end.
 
