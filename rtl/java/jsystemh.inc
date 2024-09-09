@@ -26,8 +26,19 @@
     {$define INLINEGENERICS}
   {$endif}
 {$endif}
-(*
+
+{ JVM Notes:
+  * we cannot move to or from a bitset, bitset array or bitset record field
+    (because we cannot determine the size of the set).
+  * we cannot determine the true size of an enum or enum set so we assume
+    it has the minimum size (packset should be 1 and packenum should be 1)
+  * if source or dest is a pointer type (a dynamic array, ansistring or
+    pointer to a record) the content will be moved and not the address.
+  * reflection does not guarantee the correct order of fields so serialization
+    between platforms will not work correctly on some jvms. }
 Procedure Move(const source;var dest;count:SizeInt);
+Procedure Move(const source;sourceoffset:SizeInt;var dest;destoffset:SizeInt;count:SizeInt);
+(*
 Procedure FillChar(var x;count:SizeInt;Value:Byte);
 Procedure FillChar(var x;count:SizeInt;Value:Boolean);
 Procedure FillChar(var x;count:SizeInt;Value:AnsiChar);

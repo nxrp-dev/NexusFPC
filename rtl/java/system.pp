@@ -145,11 +145,183 @@ var
 {*****************************************************************************}
 
 type
-  _JIFile = class external 'java.io' name 'File' (JLObject)
+  _JLStackTraceElement = class sealed external 'java.lang' name 'StackTraceElement' (JLObject)
   public
-    final class var
-      fseparatorChar: jchar; external name 'separatorChar';
-      fpathSeparatorChar: jchar; external name 'pathSeparatorChar';
+    function getFileName(): JLString; overload; virtual;
+    function getLineNumber(): jint; overload; virtual;
+    function getMethodName(): JLString; overload; virtual;
+  end;
+
+  _Arr1JLStackTraceElement = array of _JLStackTraceElement;
+
+  _JLThrowable = class external 'java.lang' name 'Throwable' (JLObject)
+  public
+    function getCause(): _JLThrowable; overload; virtual;
+    function getStackTrace(): _Arr1JLStackTraceElement; overload; virtual;
+    function getMessage(): JLString; overload; virtual;
+  end;
+
+  _JLException = class external 'java.lang' name 'Exception' (_JLThrowable);
+  _JLRuntimeException = class external 'java.lang' name 'RuntimeException' (_JLException);
+  _JIIOException = class external 'java.io' name 'IOException' (_JLException);
+  _JLSecurityException = class external 'java.lang' name 'SecurityException' (_JLRuntimeException);
+  _JNCClosedChannelException = class external 'java.nio.channels' name 'ClosedChannelException' (_JIIOException);
+  _JIFileNotFoundException = class external 'java.io' name 'FileNotFoundException' (_JIIOException);
+  _JLArithmeticException = class external 'java.lang' name 'ArithmeticException' (_JLRuntimeException);
+  _JLNullPointerException = class external 'java.lang' name 'NullPointerException' (_JLRuntimeException);
+  _JLIndexOutOfBoundsException = class external 'java.lang' name 'IndexOutOfBoundsException' (_JLRuntimeException);
+  _JLClassCastException = class external 'java.lang' name 'ClassCastException' (_JLRuntimeException);
+
+  _JIByteArrayOutputStream = class external 'java.io' name 'ByteArrayOutputStream' (JLObject)
+  public
+    constructor create(); overload;
+    procedure write(para1: Arr1jbyte; para2: jint; para3: jint); overload; virtual;
+    function toByteArray(): Arr1jbyte; overload; virtual;
+  end;
+
+  _JNCFileChannel = class abstract external 'java.nio.channels' name 'FileChannel' (JLObject)
+  public
+    function truncate(size: jlong): _JNCFileChannel; overload; virtual; abstract;
+    function position: jlong; overload; virtual; abstract;
+  end;
+
+  _JIRandomAccessFile = class external 'java.io' name 'RandomAccessFile' (JLObject)
+  public
+    constructor create(aFile: JLString; aMode: JLString); overload;
+    function getChannel: _JNCFileChannel; overload; virtual; final;
+    function read(b: Arr1jbyte; off: jint; len: jint): jint; overload; virtual;
+    procedure write(b: Arr1jbyte; off: jint; len: jint); overload; virtual;
+    procedure seek(aPosition: jlong); overload; virtual;
+    function length: jlong; external name 'length'; overload; virtual;
+    procedure setLength(para1: jlong); overload; virtual;
+    procedure close; overload; virtual;
+  end;
+
+  _JIFile = class external 'java.io' name 'File' (JLObject)
+  public final class var
+    fseparatorChar: jchar; external name 'separatorChar';
+    fpathSeparatorChar: jchar; external name 'pathSeparatorChar';
+  public
+    constructor create(para1: JLString); overload;
+    function delete(): jboolean; overload; virtual;
+    function mkdir(): jboolean; overload; virtual;
+    function renameTo(para1: _JIFile): jboolean; overload; virtual;
+    function exists(): jboolean; overload; virtual;
+   end;
+
+  _JIPrintStream = class external 'java.io' name 'PrintStream' (JLObject)
+  public
+    procedure write(buf: Arr1jbyte; off: jint; len: jint); overload; virtual;
+    procedure print(para1: JLString);
+    procedure println(para1: JLString);
+  end;
+
+  _JLSystem = class sealed external 'java.lang' name 'System' (JLObject)
+  public final class var
+    fout: _JIPrintStream; external name 'out';
+    ferr: _JIPrintStream; external name 'err';
+  end;
+
+  _JIInputStream = class abstract external 'java.io' name 'InputStream' (JLObject)
+  public
+    function read(b: Arr1jbyte; off: jint; len: jint): jint; overload; virtual;
+  end;
+
+  _JLClassLoader = class abstract external 'java.lang' name 'ClassLoader' (JLObject)
+  public
+    function getResourceAsStream(name: JLString): _JIInputStream; overload; virtual;
+  end;
+
+  _JLThread = class external 'java.lang' name 'Thread' (JLObject)
+  public type
+    InnerUncaughtExceptionHandler = interface external 'java.lang' name 'UncaughtExceptionHandler'
+      procedure uncaughtException(para1: _JLThread; para2: _JLThrowable); overload;
+    end;
+  public
+    class procedure setDefaultUncaughtExceptionHandler(
+      para1: _JLThread.InnerUncaughtExceptionHandler); static; overload;
+  public const
+    MIN_PRIORITY = 1;
+    NORM_PRIORITY = 5;
+    MAX_PRIORITY = 10;
+  public
+    class function currentThread(): _JLThread; static; overload;
+    class procedure yield(); static; overload;
+    class procedure sleep(para1: jlong); static; overload;
+    constructor create(); overload;
+    procedure start(); overload; virtual;
+    procedure run(); overload; virtual;
+    procedure interrupt(); overload; virtual;
+    function isAlive(): jboolean; overload; virtual; final;
+    procedure setPriority(para1: jint); overload; virtual; final;
+    function getPriority(): jint; overload; virtual; final;
+    procedure setName(para1: JLString); overload; virtual; final;
+    function getName(): JLString; overload; virtual; final;
+    function getStackTrace(): _Arr1JLStackTraceElement; overload; virtual;
+    function getContextClassLoader(): _JLClassLoader; overload; virtual;
+    function getId(): jlong; overload; virtual;
+  end;
+
+  _JLRuntime = class external 'java.lang' name 'Runtime' (JLObject)
+  public
+    class function getRuntime(): _JLRuntime; static; overload;
+    procedure addShutdownHook(para1: _JLThread); overload; virtual;
+    function removeShutdownHook(para1: _JLThread): jboolean; overload; virtual;
+  end;
+
+  _JLMRuntimeMXBean = interface external 'java.lang.management' name 'RuntimeMXBean'
+    function getName(): JLString; overload;
+  end;
+
+  _JLMManagementFactory = class external 'java.lang.management' name 'ManagementFactory' (JLObject)
+  public
+    class function getRuntimeMXBean(): _JLMRuntimeMXBean; static; overload;
+  end;
+
+  _JUCLCondition = interface external 'java.util.concurrent.locks' name 'Condition'
+    procedure await(); overload;
+    function awaitNanos(nanosTimeout: jlong): jlong; overload;
+    procedure signal(); overload;
+    procedure signalAll(); overload;
+  end;
+
+  _JUCLReentrantLock = class external 'java.util.concurrent.locks' name 'ReentrantLock' (JLObject)
+  public
+    constructor create(); overload;
+    procedure lock(); overload; virtual;
+    procedure lockInterruptibly(); overload; virtual;
+    function tryLock(): jboolean; overload; virtual;
+    procedure unlock(); overload; virtual;
+    function newCondition(): _JUCLCondition; overload; virtual;
+    function getHoldCount(): jint; overload; virtual;
+    function isHeldByCurrentThread(): jboolean; overload; virtual;
+    function isLocked(): jboolean; overload; virtual;
+    function isFair(): jboolean; overload; virtual; final;
+  public
+    function hasQueuedThreads(): jboolean; overload; virtual; final;
+    function getQueueLength(): jint; overload; virtual; final;
+  public
+    function hasWaiters(para1: _JUCLCondition): jboolean; overload; virtual;
+    function getWaitQueueLength(para1: _JUCLCondition): jint; overload; virtual;
+  end;
+
+  _JUHashTable = class external 'java.util' name 'Hashtable' (JLObject)
+  public
+    constructor create(); overload;
+    function containsValue(para1: JLObject): jboolean; overload; virtual;
+    function containsKey(para1: JLObject): jboolean; overload; virtual;
+    function get(para1: JLObject): JLObject; overload; virtual;
+    function put(para1: JLObject; para2: JLObject): JLObject; overload; virtual;
+    function remove(para1: JLObject): JLObject; overload; virtual;
+  end;
+
+  _JUCConcurrentHashMap = class external 'java.util.concurrent' name 'ConcurrentHashMap' (JLObject)
+  public
+    constructor create(); overload;
+    function get(para1: JLObject): JLObject; overload; virtual;
+    function containsKey(para1: JLObject): jboolean; overload; virtual;
+    function put(para1: JLObject; para2: JLObject): JLObject; overload; virtual;
+    function remove(para1: JLObject): JLObject; overload; virtual;
   end;
 
   _JLRConstructor = class sealed external 'java.lang.reflect' name 'Constructor' (JLRAccessibleObject)
@@ -160,6 +332,12 @@ type
   _JLClass = class sealed external 'java.lang' name 'Class' (JLObject)
   public
     function getConstructor(para1: Arr1JLClass): _JLRConstructor; overload; virtual;
+  end;
+
+function AsObject(const buf): JLObject;
+  { use this function to box any built-in type as a java object }
+  begin
+    result:=JLObject(buf)
   end;
 
 function min(a,b : longint) : longint;

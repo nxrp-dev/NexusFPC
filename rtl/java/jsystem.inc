@@ -238,6 +238,110 @@ function do_isdevice(handle:thandle):boolean;forward;
   {$Error Can't determine processor type !}
 {$endif}
 
+{$include measure.inc}
+{$include wrap.inc}
+{$include serialize.inc}
+
+function CloneDest(source:JLObject): JLObject;
+  { There is a special case when we have a
+    "var" parameter and the parameter type is:
+    a set, an array of sets, or a record
+    having a field which is a set. In this
+    case we must clone the entire object otherwise
+    the caller will always receive an empty set. }
+type
+  Arr1FpcBaseRecordType = array of FpcBaseRecordType;
+var
+  componentType: JLClass;
+  descendantType: JLClass;
+  arr: Arr1JLObject;
+  index: longint;
+begin
+  result:=source;
+  if source=nil then
+    result:=nil
+  else if source is JUEnumSet then
+    result:=JUEnumSet(source).Clone
+  else if source is FpcBitSet then
+    result:=FpcBitSet(source).Clone
+  else if source is FpcBaseRecordType then
+    result:=FpcBaseRecordType(source).Clone
+  else if source.GetClass.IsArray then
+  begin
+    componentType:=source.GetClass.GetComponentType;
+    descendantType:=componentType;
+    while descendantType.IsArray do
+      descendantType:=descendantType.GetComponentType;
+    if
+      ( JLClass(JUEnumSet).IsAssignableFrom(descendantType) ) or
+      ( JLClass(FpcBitSet).IsAssignableFrom(descendantType) ) or
+      ( JLClass(FpcBaseRecordType).IsAssignableFrom(descendantType) ) then
+    begin
+      result:=JLRArray.NewInstance(componentType, Length(Arr1JLObject(source)));
+      arr:=Arr1JLObject(result);
+      if componentType.IsArray then
+        for index:=0 to high(arr) do
+          arr[index]:=CloneDest(Arr1JLObject(source)[index])
+      else if JLClass(JUEnumSet).IsAssignableFrom(descendantType) then
+        for index:=0 to high(arr) do
+          arr[index]:=Arr1JUEnumSet(source)[index].Clone
+      else if JLClass(FpcBitSet).IsAssignableFrom(descendantType) then
+        for index:=0 to high(arr) do
+          arr[index]:=Arr1JUBitSet(source)[index].Clone
+      else if JLClass(FpcBaseRecordType).IsAssignableFrom(descendantType) then
+        for index:=0 to high(arr) do
+          arr[index]:=Arr1FpcBaseRecordType(source)[index].Clone;
+    end;
+  end;
+end;
+
+procedure Move(const source;sourceoffset:SizeInt;var dest;destoffset:SizeInt;count:SizeInt);
+var
+  sourceSize: longint;
+  wrappedSource: JLObject;
+  sourceSerializer: ISerializer;
+  sourceByte: byte;
+  destSize: longint;
+  wrappedDest: JLObject;
+  destSerializer: ISerializer;
+  destByte: byte;
+  { a java object has a four byte hash, at read time we remember which bytes mean
+    which object, at write time we use the bytes written to lookup the object }
+  pointerLookup: _JUHashTable;
+begin
+  if count>0 then
+  begin
+    pointerLookup:=_JUHashTable.Create;
+    dest:=clonedest(JLObject(dest));
+    sourceSize:=measureobject(JLObject(source));
+    wrappedSource:=wrap(source,sourceSize,pointerLookup);
+    destSize:=measureobject(JLObject(dest));
+    wrappedDest:=wrap(dest,destSize,pointerLookup);
+    sourceSerializer:=newserializer(
+      wrappedSource,
+      sourceSize,
+      newdatawindow(sourceOffset,count),
+      pointerLookup);
+    destSerializer:=newserializer(
+      wrappedDest,
+      destSize,
+      newdatawindow(destOffset,count),
+      pointerLookup);
+    for sourceByte in sourceSerializer do
+      destSerializer.Put(sourceByte);
+    dest:=unwrap(wrappedDest,JLObject(dest),pointerLookup);
+  end;
+end;
+
+procedure Move(const source;var dest;count:SizeInt);
+var
+  destObj: JLObject;
+begin
+  destObj:=JLObject(dest);
+  move(source,0,destObj,0,count);
+  dest:=destObj;
+end;
+
 {$ifndef cpujvm}
 procedure fillchar(var x;count : SizeInt;value : boolean);
 begin
