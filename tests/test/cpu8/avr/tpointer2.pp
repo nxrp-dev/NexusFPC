@@ -5,7 +5,7 @@ program tpointer2;
 
 type
   Byte_e = type Byte; section '.eeprom';
-  PByte_e = type ^byte_e;
+  PByte_e = type PByte; section '.eeprom';
 
 var
   b1: pbyte_e;

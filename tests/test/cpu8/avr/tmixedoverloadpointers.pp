@@ -5,7 +5,7 @@ program tmixedoverload;
 
 type
   Byte_e = type Byte; section '.eeprom';
-  pbyte_e = type ^byte_e;
+  pbyte_e = type PByte; section '.eeprom';
 
 procedure writeTest(a: Pbyte); overload;
 begin

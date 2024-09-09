@@ -5,7 +5,8 @@
 program tarraytest2;
 
 type
-  TWord3 = type array[0..2] of word; section '.eeprom';
+  TWord3 = array[0..2] of word;
+  TWord3_eeprom = type TWord3; section '.eeprom';
 
 procedure checkSecondWordConstRef(constref w: TWord3);
 begin
