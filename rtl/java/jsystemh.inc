@@ -805,12 +805,12 @@ Function  Paramcount:Longint;
 Function  ParamStr(l:Longint):Shortstring;
 {$endif FPC_HAS_FEATURE_COMMANDARGS}
 
-{$ifndef JVM}
+{$ifndef CPUJVM}
 Procedure Dump_Stack(var f : text;fp:pointer;addr : codepointer = nil);
 {$ifdef FPC_HAS_FEATURE_EXCEPTIONS}
 procedure DumpExceptionBackTrace(var f:text);
 {$endif FPC_HAS_FEATURE_EXCEPTIONS}
-{$endif JVM}
+{$endif CPUJVM}
 
 Procedure RunError(w:Word);
 Procedure RunError;{$ifdef SYSTEMINLINE}inline;{$endif}
@@ -827,10 +827,10 @@ Procedure SysInitExceptions;
 {$endif FPC_HAS_FEATURE_EXCEPTIONS}
 *)
 {$ifdef FPC_HAS_FEATURE_CONSOLEIO}
-{$if not defined(EMBEDDED) and not defined(jvm)}
+{$if not defined(EMBEDDED) and not defined(cpujvm)}
 procedure SysInitStdIO;
 procedure SysFlushStdIO;
-{$endif EMBEDDED or jvm}
+{$endif EMBEDDED or cpujvm}
 {$endif FPC_HAS_FEATURE_CONSOLEIO}
 {$ifndef FPUNONE}
 Procedure SysResetFPU;
@@ -937,9 +937,9 @@ const
                                Heap
 *****************************************************************************}
 
-{$ifndef JVM}
+{$ifndef CPUJVM}
 {$i heaph.inc}
-{$endif JVM}
+{$endif CPUJVM}
 
 {*****************************************************************************
                           Thread support
