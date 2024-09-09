@@ -206,6 +206,8 @@ type
     fpathSeparatorChar: jchar; external name 'pathSeparatorChar';
   public
     constructor create(para1: JLString); overload;
+    function getName(): JLString; overload; virtual;
+    function getParent(): JLString; overload; virtual;
     function delete(): jboolean; overload; virtual;
     function mkdir(): jboolean; overload; virtual;
     function renameTo(para1: _JIFile): jboolean; overload; virtual;
@@ -336,6 +338,22 @@ type
   public
     function getConstructor(para1: Arr1JLClass): _JLRConstructor; overload; virtual;
   end;
+
+{$ifdef ANDROID}
+
+type
+  _ACRAssetManager = class sealed external 'android.content.res' name 'AssetManager' (JLObject)
+  public
+    function list(para1: JLString): Arr1JLString; overload; virtual; final;
+    function open(para1: JLString): _JIInputStream; overload; virtual; final;
+  end;
+
+  _ACContext = class abstract external 'android.content' name 'Context' (JLObject)
+  public
+    function getAssets(): _ACRAssetManager; overload; virtual; abstract;
+  end;
+
+{$endif ANDROID}
 
 function AsObject(const buf): JLObject;
   { use this function to box any built-in type as a java object }
@@ -538,7 +556,10 @@ begin
   InitSystemThreads;
   {$endif FPC_HAS_FEATURE_THREADING}
   {$ifdef FPC_HAS_FEATURE_RESOURCES}
-  InitResources;
+  {$ifndef ANDROID}
+  { android must initialise resources manually as a reference to the activity is needed }
+  InitResources(nil);
+  {$endif ANDROID}
   SetResourceManager(ExternalResourceManager);
   {$endif FPC_HAS_FEATURE_RESOURCES}
   InstallShutdownHook;

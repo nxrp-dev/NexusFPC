@@ -172,4 +172,8 @@ type
 
 procedure GetResourceManager (var Manager : TResourceManager);
 procedure SetResourceManager (const New : TResourceManager);
+{$if defined(CPUJVM) and defined(ANDROID)}
+{ android must initialise resources manually as a reference to the activity is needed }
+procedure InitResources(Context : JLObject);
+{$endif}
 

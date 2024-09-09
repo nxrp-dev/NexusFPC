@@ -76,6 +76,10 @@ type
     reserved1 : longword;
     reserved2 : longword;
     reserved3 : longword;
+{$if defined(CPUJVM) and defined(ANDROID)}
+  const
+    FieldOrder='magic,version,endianess,count,nodesize,hdrsize,reserved1,reserved2,reserved3';
+{$endif ANDROIDJVM}
   end;
   PExtHeader = ^TExtHeader;
 
@@ -84,6 +88,10 @@ type
     ncounthandle : longword;    //named sub-entries count/resource handle
     idcountsize : longword;     //id sub-entries count / resource size
     subptr : longword;          //first sub-entry offset
+{$if defined(CPUJVM) and defined(ANDROID)}
+  const
+    FieldOrder='nameid,ncounthandle,idcountsize,subptr';
+{$endif ANDROIDJVM}
   end;
   PResInfoNode = ^TResInfoNode;
 
@@ -395,7 +403,7 @@ begin
 end;
 
 {$IFDEF CPUJVM}
-function ExtReadResourceFile(P : shortstring) : Arr1JByte;
+function ExtReadResourceFile(P : shortstring; Context : JLObject) : Arr1JByte;
   { a resource stream cannot return the size of the resource file, cannot skip
     bytes and cannot seek, as a workaround we read the entire stream into memory }
 const NoMoreData = -1;
@@ -403,9 +411,31 @@ var ResourceStream : _JIInputStream;
     ByteStream : _JIByteArrayOutputStream;
     Buffer : Arr1JByte;
     NumBytesRead : longint;
+{$ifdef ANDROID}
+    Index : longint;
+    ResFile : _JIFile;
+    FileList : Arr1JLString;
+{$endif ANDROID}
 begin
   ExtReadResourceFile:=nil;
+  ResourceStream:=nil;
+{$ifdef ANDROID}
+  ResFile:=_JIFile.Create(P);
+  FileList:=_ACContext(Context).GetAssets.List(ResFile.GetParent);
+  Index:=0;
+  { jlstring equality fails even though the content is equal, we must cast to unicodestring }
+  while
+    (Index<>Length(FileList)) and
+    (unicodestring(FileList[Index])<>unicodestring(ResFile.GetName))
+  do
+    Inc(Index);
+  if Index<>Length(FileList) then
+    ResourceStream:=_ACContext(Context).GetAssets.Open(P)
+  else
+    ResourceStream:=nil;
+{$else ANDROID}
   ResourceStream:=_JLThread.CurrentThread.GetContextClassLoader.GetResourceAsStream(P);
+{$endif ANDROID}
   if ResourceStream<>nil then
   begin
     Buffer:=nil;
@@ -535,7 +565,7 @@ begin
   ExitNoErr:
 end;
 {$ELSE CPUJVM}
-procedure InitResources;
+procedure InitResources(Context : JLObject);
 var rec : TExtHeader;
     iserror : boolean = false;
     datasize,
@@ -550,7 +580,7 @@ begin
   ResHandles:=nil;
   datasize:=0;
   position:=0;
-  resourcefilebytes:=ExtReadResourceFile(GetExtResPath);
+  resourcefilebytes:=ExtReadResourceFile(GetExtResPath,Context);
   iserror:=
     (resourcefilebytes=nil) or
     (length(resourcefilebytes)<sizeof(TExtHeader));
