@@ -550,14 +550,18 @@ function CompareChar(Const buf1,buf2;len:SizeInt):SizeInt;
 begin
   CompareChar:=CompareByte(buf1,buf2,len);
 end;
+{$endif cpujvm}
 
 
 procedure fpc_zeromem(p:pointer;len:ptruint);
+  { Used to initialise records to their default value. The pointer passed in
+    by the compiler is already correctly initialised, so do nothing. }
 begin
-  FillChar(p^,len,0);
+  // do nothing
 end;
 
 
+{$ifndef cpujvm}
 procedure fpc_fillmem(out data;len:ptruint;b : byte);
 begin
   FillByte(data,len,b);
