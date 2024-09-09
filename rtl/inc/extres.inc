@@ -403,7 +403,7 @@ begin
 end;
 
 {$IFDEF CPUJVM}
-function ExtReadResourceFile(P : shortstring; Context : JLObject) : Arr1JByte;
+function ExtReadResourceFile(P : shortstring) : Arr1JByte;
   { a resource stream cannot return the size of the resource file, cannot skip
     bytes and cannot seek, as a workaround we read the entire stream into memory }
 const NoMoreData = -1;
@@ -415,13 +415,15 @@ var ResourceStream : _JIInputStream;
     Index : longint;
     ResFile : _JIFile;
     FileList : Arr1JLString;
+    Context : _ACContext;
 {$endif ANDROID}
 begin
   ExtReadResourceFile:=nil;
   ResourceStream:=nil;
 {$ifdef ANDROID}
   ResFile:=_JIFile.Create(P);
-  FileList:=_ACContext(Context).GetAssets.List(ResFile.GetParent);
+  Context:=_AAAppGlobals.GetInitialApplication.GetApplicationContext;
+  FileList:=Context.GetAssets.List(ResFile.GetParent);
   Index:=0;
   { jlstring equality fails even though the content is equal, we must cast to unicodestring }
   while
@@ -430,7 +432,7 @@ begin
   do
     Inc(Index);
   if Index<>Length(FileList) then
-    ResourceStream:=_ACContext(Context).GetAssets.Open(P)
+    ResourceStream:=Context.GetAssets.Open(P)
   else
     ResourceStream:=nil;
 {$else ANDROID}
@@ -565,7 +567,7 @@ begin
   ExitNoErr:
 end;
 {$ELSE CPUJVM}
-procedure InitResources(Context : JLObject);
+procedure InitResources;
 var rec : TExtHeader;
     iserror : boolean = false;
     datasize,
@@ -580,7 +582,7 @@ begin
   ResHandles:=nil;
   datasize:=0;
   position:=0;
-  resourcefilebytes:=ExtReadResourceFile(GetExtResPath,Context);
+  resourcefilebytes:=ExtReadResourceFile(GetExtResPath);
   iserror:=
     (resourcefilebytes=nil) or
     (length(resourcefilebytes)<sizeof(TExtHeader));

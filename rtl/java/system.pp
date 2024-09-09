@@ -353,6 +353,16 @@ type
     function getAssets(): _ACRAssetManager; overload; virtual; abstract;
   end;
 
+  _AAApplication = class external 'android.app' name 'Application' (JLObject)
+  public
+    function getApplicationContext(): _ACContext; overload; virtual; final;
+  end;
+
+  _AAAppGlobals = class sealed external 'android.app' name 'AppGlobals' (JLObject)
+  public
+    class function getInitialApplication(): _AAApplication; static; overload;
+  end;
+
 {$endif ANDROID}
 
 function AsObject(const buf): JLObject;
@@ -556,10 +566,7 @@ begin
   InitSystemThreads;
   {$endif FPC_HAS_FEATURE_THREADING}
   {$ifdef FPC_HAS_FEATURE_RESOURCES}
-  {$ifndef ANDROID}
-  { android must initialise resources manually as a reference to the activity is needed }
-  InitResources(nil);
-  {$endif ANDROID}
+  InitResources;
   SetResourceManager(ExternalResourceManager);
   {$endif FPC_HAS_FEATURE_RESOURCES}
   InstallShutdownHook;
