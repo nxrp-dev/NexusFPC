@@ -528,6 +528,48 @@ begin
   result:=nil;
 end;
 
+{$ifdef CPUJVM}
+{JVM Notes: using a case statement to avoid using virtual constructors on Exception (as this produces so many generated classes it crashes make)}
+function CreateRes(Entry : PExceptMapEntry): Exception;
+begin
+  case Entry^.code of
+    200 : result:=EDivByZero.CreateRes(Entry^.msg);
+    201 : result:=ERangeError.CreateRes(Entry^.msg);
+    202 : result:=EStackOverflow.CreateRes(Entry^.msg);
+    205 : result:=EOverflow.CreateRes(Entry^.msg);
+    206 : result:=EUnderflow.CreateRes(Entry^.msg);
+    207 : result:=EInvalidOp.CreateRes(Entry^.msg);
+    208 : result:=EZeroDivide.CreateRes(Entry^.msg);
+    210 : result:=EObjectCheck.CreateRes(Entry^.msg);
+    211 : result:=EAbstractError.CreateRes(Entry^.msg);
+    212 : result:=EExternalException.CreateRes(Entry^.msg);
+    214 : result:=EBusError.CreateRes(Entry^.msg);
+    215 : result:=EIntOverflow.CreateRes(Entry^.msg);
+    216 : result:=EAccessViolation.CreateRes(Entry^.msg);
+    217 : result:=EControlC.CreateRes(Entry^.msg);
+    218 : result:=EPrivilege.CreateRes(Entry^.msg);
+    219 : result:=EInvalidCast.CreateRes(Entry^.msg);
+    220 : result:=EVariantError.CreateRes(Entry^.msg);
+    221 : result:=EVariantError.CreateRes(Entry^.msg);
+    222 : result:=EVariantError.CreateRes(Entry^.msg);
+    223 : result:=EVariantError.CreateRes(Entry^.msg);
+    224 : result:=EVariantError.CreateRes(Entry^.msg);
+    225 : result:=EVariantError.CreateRes(Entry^.msg);
+    227 : result:=EAssertionFailed.CreateRes(Entry^.msg);
+    228 : result:=EIntfCastError.CreateRes(Entry^.msg);
+    229 : result:=ESafecallException.CreateRes(Entry^.msg);
+    231 : result:=EConvertError.CreateRes(Entry^.msg);
+    232 : result:=ENoThreadSupport.CreateRes(Entry^.msg);
+    233 : result:=ESigQuit.CreateRes(Entry^.msg);
+    234 : result:=ENoWideStringSupport.CreateRes(Entry^.msg);
+    235 : result:=ENoDynLibsSupport.CreateRes(Entry^.msg);
+    236 : result:=EThreadError.CreateRes(Entry^.msg);
+  else
+    result:=nil;
+  end;
+end;
+{$endif}
+
 Var OutOfMemory : EOutOfMemory;
     InValidPointer : EInvalidPointer;
 
@@ -545,7 +587,11 @@ begin
   else
     Entry:=FindExceptMapEntry(ErrNo);
     if Assigned(Entry) then
+{$ifndef CPUJVM}
       E:=Entry^.cls.CreateRes(Entry^.msg)
+{$else CPUJVM}
+      E:=CreateRes(Entry)
+{$endif CPUJVM}
     else
     begin
      HS:=nil;

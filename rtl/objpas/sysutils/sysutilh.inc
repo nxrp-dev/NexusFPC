@@ -123,10 +123,8 @@ type
     public
       constructor Create(const msg : string);
       constructor CreateFmt(const msg : string; const args : array of const);
-      { JVM Notes: called from a TClass so must be virtual }
-      constructor CreateRes(ResString: PResStringRec); {$ifdef CPUJVM}virtual;{$endif}
-      { JVM Notes: called from a TClass so must be virtual }
-      constructor CreateResFmt(ResString: PResStringRec; const Args: array of const); {$ifdef CPUJVM}virtual;{$endif}
+      constructor CreateRes(ResString: PResStringRec);
+      constructor CreateResFmt(ResString: PResStringRec; const Args: array of const);
       constructor CreateHelp(const Msg: string; AHelpContext: Longint);
       constructor CreateFmtHelp(const Msg: string; const Args: array of const;
         AHelpContext: Longint);
