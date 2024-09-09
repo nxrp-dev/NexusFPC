@@ -58,6 +58,8 @@
 }
 {$S-}
 
+{$define USE_FILEREC_FULLNAME}
+
 {****************************************************************************
                          Global Types and Constants
 ****************************************************************************}
@@ -541,7 +543,7 @@ Type
 
 { platform-dependent defines }
 {$i rtldefs.inc}
-(*
+
 {*****************************************************************************
                    TextRec/FileRec exported to allow compiler to take size
 *****************************************************************************}
@@ -549,7 +551,7 @@ Type
 {$ifdef FPC_HAS_FEATURE_FILEIO}
 {$i filerec.inc}
 {$endif FPC_HAS_FEATURE_FILEIO}
-
+(*
 {$i textrec.inc}
 
 

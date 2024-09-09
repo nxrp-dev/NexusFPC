@@ -41,7 +41,7 @@ type
     UserData  : array[1..32] of byte;
     name      : array[0..filerecnamelength] of TFileTextRecChar;
 {$ifdef USE_FILEREC_FULLNAME}
-    FullName  : Pointer;
+    FullName  : {$ifdef CPUJVM}unicodestring{$else}Pointer{$endif CPUJVM};
 {$endif USE_FILEREC_FULLNAME}
   End;
 

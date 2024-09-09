@@ -796,8 +796,8 @@ procedure fpc_largeset_contains_sets(set1,set2 : pointer; size: longint); compil
 procedure fpc_rangeerror; compilerproc;
 procedure fpc_divbyzero; compilerproc;
 procedure fpc_overflow; compilerproc;
-(*
 procedure fpc_iocheck; compilerproc;
+(*
 {$ifndef FPC_NO_GENERIC_STACK_CHECK}
 procedure fpc_stackcheck(stack_size:SizeUInt); compilerproc;
 {$endif}
@@ -822,11 +822,18 @@ procedure fpc_assert(Const Msg,FName:unicodestring;LineNo:Longint;ErrorAddr:Poin
 {$ifdef FPC_HAS_FEATURE_FILEIO}
 Procedure fpc_reset_typed(var f : TypedFile;Size : Longint); compilerproc;
 Procedure fpc_rewrite_typed(var f : TypedFile;Size : Longint); compilerproc;
+{$ifndef CPUJVM}
 Procedure fpc_reset_typed_iso(var f : TypedFile;Size : Longint); compilerproc;
+{$endif}
+{$ifndef CPUJVM}
 Procedure fpc_rewrite_typed_iso(var f : TypedFile;Size : Longint); compilerproc;
+{$endif}
 Procedure fpc_typed_write(TypeSize : Longint;var f : TypedFile;const Buf); compilerproc;
-Procedure fpc_typed_read(TypeSize : Longint;var f : TypedFile;out Buf); compilerproc;
+{ JVM Notes: we need a "var" modifier for buf as we need information about the object passed in }
+Procedure fpc_typed_read(TypeSize : Longint;var f : TypedFile;{$ifdef CPUJVM}var{$else}out{$endif} Buf); compilerproc;
+{$ifndef CPUJVM}
 Procedure fpc_typed_read_iso(TypeSize : Longint;var f : TypedFile;out Buf); compilerproc;
+{$endif}
 {$endif FPC_HAS_FEATURE_FILEIO}
 
 {$ifdef FPC_INCLUDE_SOFTWARE_INT64_TO_DOUBLE}

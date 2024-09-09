@@ -20,7 +20,9 @@ type
 
 procedure InitFile(var f : file);
 begin
+{$ifndef CPUJVM}
   FillChar(f,SizeOf(FileRec),0);
+{$endif}
   FileRec(f).Handle:=UnusedHandle;
   FileRec(f).mode:=fmClosed;
 end;
@@ -118,6 +120,12 @@ Procedure Rewrite(var f:File;l:Longint);[IOCheck];
 {
   Create file f with recordsize of l
 }
+{$ifdef CPUJVM}
+  function Assigned(s: unicodestring): Boolean;
+    begin
+      Result:=Length(s)<>0
+    end;
+{$endif}
 Begin
   If InOutRes <> 0 then
    exit;
@@ -150,6 +158,12 @@ Procedure Reset(var f:File;l:Longint);[IOCheck];
 {
   Open file f with recordsize of l and filemode
 }
+{$ifdef CPUJVM}
+  function Assigned(s: unicodestring): Boolean;
+    begin
+      Result:=Length(s)<>0
+    end;
+{$endif}
 Begin
   If InOutRes <> 0 then
    Exit;
@@ -209,7 +223,7 @@ Begin
    exit;
   case FileRec(f).Mode of
     fmInOut,fmOutput :
-      Result:=Do_Write(FileRec(f).Handle,@Buf,Count*FileRec(f).RecSize)
+      Result:=Do_Write(FileRec(f).Handle,{$ifndef CPUJVM}@Buf{$else}Buf{$endif},Count*FileRec(f).RecSize)
         div FileRec(f).RecSize;
     fmInPut: inOutRes := 105;
     else InOutRes:=103;
@@ -229,12 +243,14 @@ end;
 var
   l : Int64;
 Begin
+  l:=0;
   BlockWrite(f,Buf,Count,l);
   Result:=longint(l);
 End;
 {$endif EXCLUDE_COMPLEX_PROCS}
 
 
+{$ifndef CPUJVM}
 Procedure BlockWrite(Var f:File;Const Buf;Count:Word;var Result:Word);[IOCheck];
 {
   Write Count records from Buf to file f, return written records in Result
@@ -251,8 +267,10 @@ Begin
   Result:=word(l);
 End;
 {$endif EXCLUDE_COMPLEX_PROCS}
+{$endif CPUJVM}
 
 
+{$ifndef CPUJVM}
 Procedure BlockWrite(Var f:File;Const Buf;Count:Cardinal;var Result:Cardinal);[IOCheck];
 {
   Write Count records from Buf to file f, return written records in Result
@@ -269,8 +287,11 @@ Begin
   Result:=l;
 End;
 {$endif EXCLUDE_COMPLEX_PROCS}
+{$endif CPUJVM}
 
 
+
+{$ifndef CPUJVM}
 Procedure BlockWrite(Var f:File;Const Buf;Count:Word;var Result:Integer);[IOCheck];
 {
   Write Count records from Buf to file f, return written records in Result
@@ -287,6 +308,7 @@ Begin
   Result:=integer(l);
 End;
 {$endif EXCLUDE_COMPLEX_PROCS}
+{$endif CPUJVM}
 
 
 Procedure BlockWrite(Var f:File;Const Buf;Count:Longint);[IOCheck];
@@ -302,6 +324,7 @@ begin
 var
   Result : Int64;
 Begin
+  Result:=0;
   BlockWrite(f,Buf,Count,Result);
   If (InOutRes=0) and (Result<Count) and (Count>0) Then
    InOutRes:=101;
@@ -314,14 +337,27 @@ Procedure BlockRead(var f:File;var Buf;Count:Int64;var Result:Int64);[IOCheck];
   Read Count records from file f ro Buf, return number of read records in
   Result
 }
+{$ifdef CPUJVM}
+var
+  BufObject: JLObject;
+{$endif}
 Begin
   Result:=0;
   If InOutRes <> 0 then
    exit;
   case FileRec(f).Mode of
     fmInOut,fmInput :
-      Result:=Do_Read(FileRec(f).Handle,@Buf,count*FileRec(f).RecSize)
-        div FileRec(f).RecSize;
+      begin
+{$ifndef CPUJVM}
+        Result:=Do_Read(FileRec(f).Handle,@Buf,count*FileRec(f).RecSize)
+          div FileRec(f).RecSize;
+{$else CPUJVM}
+        BufObject:=JLObject(Buf);
+        Result:=Do_Read(FileRec(f).Handle,BufObject,count*FileRec(f).RecSize)
+          div FileRec(f).RecSize;
+        Buf:=BufObject;
+{$endif CPUJVM}
+      end;
     fmOutput: inOutRes := 104;
     else InOutRes:=103;
   end;
@@ -339,13 +375,24 @@ begin
 {$else EXCLUDE_COMPLEX_PROCS}
 var
   l : int64;
+{$ifdef CPUJVM}
+  BufObject: JLObject;
+{$endif CPUJVM}
 Begin
+{$ifndef CPUJVM}
   BlockRead(f,Buf,Count,l);
+{$else CPUJVM}
+  l:=0;
+  BufObject:=JLObject(Buf);
+  BlockRead(f,BufObject,Count,l);
+  Buf:=BufObject;
+{$endif CPUJVM}
   Result:=longint(l);
 End;
 {$endif EXCLUDE_COMPLEX_PROCS}
 
 
+{$ifndef CPUJVM}
 Procedure BlockRead(var f:File;var Buf;count:Word;var Result:Word);[IOCheck];
 {
   Read Count records from file f to Buf, return number of read records in
@@ -363,8 +410,10 @@ Begin
   Result:=word(l);
 End;
 {$endif EXCLUDE_COMPLEX_PROCS}
+{$endif ndef CPUJVM}
 
 
+{$ifndef CPUJVM}
 Procedure BlockRead(var f:File;var Buf;count:Cardinal;var Result:Cardinal);[IOCheck];
 {
   Read Count records from file f to Buf, return number of read records in
@@ -382,8 +431,10 @@ Begin
   Result:=l;
 End;
 {$endif EXCLUDE_COMPLEX_PROCS}
+{$endif ndef CPUJVM}
 
 
+{$ifndef CPUJVM}
 Procedure BlockRead(var f:File;var Buf;count:Word;var Result:Integer);[IOCheck];
 {
   Read Count records from file f to Buf, return number of read records in
@@ -401,6 +452,7 @@ Begin
   Result:=integer(l);
 End;
 {$endif EXCLUDE_COMPLEX_PROCS}
+{$endif ndef CPUJVM}
 
 
 Procedure BlockRead(Var f:File;Var Buf;Count:Int64);[IOCheck];
@@ -415,8 +467,18 @@ begin
 {$else EXCLUDE_COMPLEX_PROCS}
 var
   Result : int64;
+{$ifdef CPUJVM}
+  BufObject: JLObject;
+{$endif CPUJVM}
 Begin
+{$ifndef CPUJVM}
   BlockRead(f,Buf,Count,Result);
+{$else CPUJVM}
+  Result:=0;
+  BufObject:=JLObject(Buf);
+  BlockRead(f,BufObject,Count,Result);
+  Buf:=BufObject;
+{$endif CPUJVM}
   If (InOutRes=0) and (Result<Count) and (Count>0) Then
    InOutRes:=100;
 End;
@@ -562,7 +624,7 @@ Begin
   If InOutRes=0 then
      FileRec(f).Name:=fs
 {$else FPCRTL_FILESYSTEM_SINGLE_BYTE_API}
-  Do_Rename(PFileTextRecChar(@FileRec(f).Name),PUnicodeChar(S),false,false);
+  Do_Rename(PFileTextRecChar(@FileRec(f).Name),{$ifdef CPUJVM}S{$else}PUnicodeChar(S){$endif},false,false);
   If InOutRes=0 then
 {$ifdef FPC_ANSI_TEXTFILEREC}
     FileRec(f).Name:=ToSingleByteFileSystemEncodedFileName(s);
@@ -608,10 +670,12 @@ Begin
    { it's slightly faster to convert the rawbytestring here to unicodestring
      than doing it in do_rename, because here we still know the length }
    fs:=unicodestring(s);
+{$ifndef CPUJVM}
    pdst:=PUnicodeChar(fs);
+{$endif}
    dstchangeable:=true;
 {$endif FPCRTL_FILESYSTEM_SINGLE_BYTE_API}
-  Do_Rename(PFileTextRecChar(@FileRec(f).Name),pdst,false,dstchangeable);
+  Do_Rename(PFileTextRecChar(@FileRec(f).Name),{$ifdef CPUJVM}fs{$else}pdst{$endif},false,dstchangeable);
   If InOutRes=0 then
 {$if defined(FPC_ANSI_TEXTFILEREC) and not defined(FPCRTL_FILESYSTEM_SINGLE_BYTE_API)}
     FileRec(f).Name:=ToSingleByteFileSystemEncodedFileName(fs)
@@ -683,13 +747,23 @@ End;
 
 {$ifdef FPC_HAS_FEATURE_UNICODESTRINGS}
 Function GetFullName(var f:File) : UnicodeString;
+{$ifdef CPUJVM}
+  function Assigned(s: unicodestring): Boolean;
+    begin
+      Result:=Length(s)<>0
+    end;
+{$endif}
   begin
 {$ifdef USE_FILEREC_FULLNAME}
   if Assigned(FileRec(f).FullName) then
     Result:=UnicodeString(FileRec(f).FullName)
   else
 {$endif USE_FILEREC_FULLNAME}
+{$ifndef CPUJVM}
     Result:=PFileTextRecChar(@FileRec(f).Name);
+{$else CPUJVM}
+    Result:=FileRec(f).Name;
+{$endif CPUJVM}
   end;
 {$endif FPC_HAS_FEATURE_UNICODESTRINGS}
 

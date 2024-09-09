@@ -20,6 +20,14 @@ ThreadVar
 Var
 {$endif FPC_HAS_FEATURE_THREADING}
   ThreadID    : TThreadID;
+  InOutRes    : Word;
+
+const
+  { Default filehandles }
+  UnusedHandle = JLObject(nil);
+  StdInputHandle  : THandle = nil;
+  StdOutputHandle : THandle = nil;
+  StdErrorHandle  : THandle = nil;
 
 
 {****************************************************************************
@@ -610,21 +618,33 @@ Procedure Assign(out f:File;const Name: RawByteString);
 Procedure Rename(var f:File;const s : RawByteString);
 {$endif FPC_HAS_FEATURE_ANSISTRINGS}
 Procedure Rewrite(var f:File;l:Longint);
+{$ifndef CPUJVM}
+{ JVM Notes: the compiler cannot overload typed and untyped files }
 Procedure Rewrite(var f:File);
+{$endif CPUJVM}
 Procedure Reset(var f:File;l:Longint);
+{$ifndef CPUJVM}
+{ JVM Notes: the compiler cannot overload typed and untyped files }
 Procedure Reset(var f:File);
+{$endif CPUJVM}
 Procedure Close(var f:File);
 Procedure BlockWrite(var f:File;const Buf;Count:Int64;var Result:Int64);
 Procedure BlockWrite(var f:File;const Buf;Count:Longint;var Result:Longint);
+{$ifndef CPUJVM}
+{ JVM Notes: the compiler cannot overload signed and unsigned types }
 Procedure BlockWrite(var f:File;const Buf;Count:Cardinal;var Result:Cardinal);
 Procedure BlockWrite(var f:File;const Buf;Count:Word;var Result:Word);
 Procedure BlockWrite(var f:File;const Buf;Count:Word;var Result:Integer);
+{$endif CPUJVM}
 Procedure BlockWrite(var f:File;const Buf;Count:Longint);
 Procedure BlockRead(var f:File;var Buf;count:Int64;var Result:Int64);
 Procedure BlockRead(var f:File;var Buf;count:Longint;var Result:Longint);
+{$ifndef CPUJVM}
+{ JVM Notes: the compiler cannot overload signed and unsigned types }
 Procedure BlockRead(var f:File;var Buf;count:Cardinal;var Result:Cardinal);
 Procedure BlockRead(var f:File;var Buf;count:Word;var Result:Word);
 Procedure BlockRead(var f:File;var Buf;count:Word;var Result:Integer);
+{$endif CPUJVM}
 Procedure BlockRead(var f:File;var Buf;count:Int64);
 Function  FilePos(var f:File):Int64;
 Function  FileSize(var f:File):Int64;
@@ -640,6 +660,8 @@ Procedure Truncate (var F:File);
 ****************************************************************************}
 
 {$ifdef FPC_HAS_FEATURE_FILEIO}
+{$ifndef CPUJVM}
+{ JVM Notes: the compiler cannot overload typed and untyped files }
 Procedure Assign(out f:TypedFile;const Name:shortstring);
 Procedure Assign(out f:TypedFile;const p:PAnsiChar);
 Procedure Assign(out f:TypedFile;const c:AnsiChar);
@@ -649,6 +671,7 @@ Procedure Assign(out f:TypedFile;const Name:unicodestring);
 {$ifdef FPC_HAS_FEATURE_ANSISTRINGS}
 Procedure Assign(out f:TypedFile;const Name:rawbytestring);
 {$endif FPC_HAS_FEATURE_ANSISTRINGS}
+{$endif CPUJVM}
 Procedure Reset(var f : TypedFile);   [INTERNPROC: fpc_in_Reset_TypedFile];
 Procedure Rewrite(var f : TypedFile); [INTERNPROC: fpc_in_Rewrite_TypedFile];
 {$endif FPC_HAS_FEATURE_FILEIO}
@@ -698,19 +721,26 @@ procedure SetTextCodePage(var T: Text; CodePage: TSystemCodePage);
 ****************************************************************************}
 
 {$ifdef FPC_HAS_FEATURE_FILEIO}
+{$ifndef CPUJVM}
+{ JVM Notes: changing working directory is only partially supported on the jvm, for the moment leaving chdir unimplemented }
 Procedure chdir(const s:shortstring); overload;
+{$endif CPUJVM}
 Procedure mkdir(const s:shortstring); overload;
 Procedure rmdir(const s:shortstring); overload;
 Procedure getdir(drivenr:byte;var dir:shortstring);overload;
 {$ifdef FPC_HAS_FEATURE_ANSISTRINGS}
+{$ifndef CPUJVM}
 Procedure chdir(const s:rawbytestring); overload;
+{$endif CPUJVM}
 Procedure mkdir(const s:rawbytestring); overload;
 Procedure rmdir(const s:rawbytestring); overload;
 // defaultrtlfilesystemcodepage is returned here
 Procedure getdir(drivenr:byte;var dir: rawbytestring);overload;rtlproc;
 {$endif FPC_HAS_FEATURE_ANSISTRINGS}
 {$ifdef FPC_HAS_FEATURE_WIDESTRINGS}
+{$ifndef CPUJVM}
 Procedure chdir(const s:unicodestring); overload;
+{$endif CPUJVM}
 Procedure mkdir(const s:unicodestring); overload;
 Procedure rmdir(const s:unicodestring); overload;
 Procedure getdir(drivenr:byte;var dir: unicodestring);overload;
@@ -748,7 +778,7 @@ function get_caller_addr(framebp:pointer;addr:codepointer=nil):codepointer;
 function get_caller_frame(framebp:pointer;addr:codepointer=nil):pointer;
 procedure get_caller_stackinfo(var framebp : pointer; var addr : codepointer);
 *)
-//Function IOResult:Word;
+Function IOResult:Word;
 //Function Sptr:Pointer;[internconst:fpc_in_const_ptr];
 
 {$ifdef FPC_HAS_FEATURE_PROCESSES}

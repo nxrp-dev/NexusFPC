@@ -16,6 +16,7 @@
 }
 
 type
+  THandle = JLObject;
   TThreadID = PtrUInt;
   TOSTimestamp = Longint;
 

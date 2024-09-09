@@ -1044,7 +1044,6 @@ begin
 end;
 
 
-(*
 procedure fpc_iocheck;[public,alias:'FPC_IOCHECK']; compilerproc;
 var
   l : longint;
@@ -1068,7 +1067,7 @@ Begin
   IOResult:=HInOutRes^;
   HInOutRes^:=0;
 End;
-*)
+
 
 Function GetThreadID:TThreadID;{$ifdef SYSTEMINLINE}inline;{$endif}
 begin
@@ -1788,6 +1787,7 @@ end;
 
 {$ifdef FPC_HAS_FEATURE_FILEIO}
 { Allow slash and backslash as separators }
+{$ifndef CPUJVM}
 procedure DoDirSeparators(var p: PAnsiChar; inplace: boolean = true);
 var
   i : longint;
@@ -1809,7 +1809,9 @@ begin
         p[i]:=DirectorySeparator;
       end;
 end;
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
 procedure DoDirSeparators(var p: pwidechar; inplace: boolean = true);
 var
   i : longint;
@@ -1832,6 +1834,7 @@ begin
         p[i]:=DirectorySeparator;
       end;
 end;
+{$endif CPUJVM}
 
 procedure DoDirSeparators(var p:shortstring);
 var
@@ -1857,10 +1860,16 @@ begin
         if not unique then
           begin
             uniquestring(ps);
+{$ifndef CPUJVM}
             p:=PAnsiChar(ps);
+{$endif CPUJVM}
             unique:=true;
           end;
+{$ifndef CPUJVM}
         p[i-1]:=DirectorySeparator;
+{$else CPUJVM}
+        ps[i]:=DirectorySeparator;
+{$endif CPUJVM}
       end;
 end;
 {$endif FPC_HAS_FEATURE_ANSISTRINGS}
@@ -1880,10 +1889,16 @@ begin
         if not unique then
           begin
             uniquestring(ps);
+{$ifndef CPUJVM}
             p:=pwidechar(ps);
+{$endif CPUJVM}
             unique:=true;
           end;
+{$ifndef CPUJVM}
         p[i-1]:=DirectorySeparator;
+{$else CPUJVM}
+        ps[i]:=DirectorySeparator;
+{$endif CPUJVM}
       end;
 end;
 {$endif FPC_HAS_FEATURE_UNICODESTRINGS}
@@ -2014,8 +2029,9 @@ procedure do_getdir(drivenr : byte;var dir : rawbytestring);
 var
   u: unicodestring;
 begin
+  u:='';
   Do_getdir(drivenr,u);
-  widestringmanager.Unicode2AnsiMoveProc(pwidechar(u),dir,DefaultRTLFileSystemCodePage,length(u));
+  widestringmanager.Unicode2AnsiMoveProc({$ifdef CPUJVM}pwidechar(JLString(u).toCharArray){$else}pwidechar(u){$endif},dir,DefaultRTLFileSystemCodePage,length(u));
 end;
 {$endif FPCRTL_FILESYSTEM_SINGLE_BYTE_API}
 
@@ -2043,6 +2059,7 @@ Begin
 End;
 
 
+{$ifndef CPUJVM}
 Procedure ChDir(Const s: RawByteString);[IOCheck];
 Begin
   If (s='') or (InOutRes <> 0) then
@@ -2053,6 +2070,7 @@ Begin
   Do_chdir(S);
 {$endif}
 End;
+{$endif CPUJVM}
 
 
 Procedure getdir(drivenr:byte;Var dir:rawbytestring);
@@ -2096,18 +2114,21 @@ Begin
 End;
 
 
+{$ifndef CPUJVM}
 Procedure ChDir(Const s: shortstring);[IOCheck];
 Begin
   If (s='') or (InOutRes <> 0) then
    exit;
   Do_chdir(GetDirStrFromShortstring(S));
 End;
+{$endif CPUJVM}
 
 
 Procedure getdir(drivenr:byte;Var dir:shortstring);
 var
   s: rawbytestring;
 begin
+  s:='';
   Do_getdir(drivenr,s);
   if length(s)<=high(dir) then
     dir:=s
@@ -2134,16 +2155,19 @@ begin
 end;
 
 
+{$ifndef CPUJVM}
 procedure do_chdir(const s: unicodestring); {$ifdef SYSTEMINLINE}inline;{$endif}
 begin
   do_chdir(ToSingleByteFileSystemEncodedFileName(s));
 end;
+{$endif CPUJVM}
 
 
 procedure do_getdir(drivenr : byte;var dir : unicodestring);
 var
   s: rawbytestring;
 begin
+  s:='';
   Do_getdir(drivenr,s);
   dir:=s;
 end;
@@ -2165,12 +2189,14 @@ Begin
 End;
 
 
+{$ifndef CPUJVM}
 Procedure ChDir(Const s: UnicodeString);[IOCheck];
 Begin
   if (s='') or (InOutRes <> 0) then
    exit;
   Do_chdir(S);
 End;
+{$endif CPUJVM}
 
 
 Procedure getdir(drivenr:byte;Var dir:unicodestring);
