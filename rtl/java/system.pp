@@ -152,6 +152,16 @@ type
       fpathSeparatorChar: jchar; external name 'pathSeparatorChar';
   end;
 
+  _JLRConstructor = class sealed external 'java.lang.reflect' name 'Constructor' (JLRAccessibleObject)
+  public
+    function newInstance(para1: Arr1JLObject): JLObject; overload; virtual;
+  end;
+
+  _JLClass = class sealed external 'java.lang' name 'Class' (JLObject)
+  public
+    function getConstructor(para1: Arr1JLClass): _JLRConstructor; overload; virtual;
+  end;
+
 function min(a,b : longint) : longint;
   begin
      if a<=b then

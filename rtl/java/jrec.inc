@@ -26,7 +26,15 @@
 
 
   function FpcBaseRecordType.newEmpty: FpcBaseRecordType;
+    var
+      ctor: _JLRConstructor;
+      accessible: boolean;
     begin
-      result:=FpcBaseRecordType(inherited clone);
+      ctor:=_JLClass(JLObject(GetClass)).GetConstructor(nil);
+      accessible:=ctor.IsAccessible;
+      ctor.SetAccessible(True);
+      result:=FpcBaseRecordType(ctor.NewInstance(nil));
+      if not accessible then
+        ctor.SetAccessible(False);
     end;
 
