@@ -335,7 +335,7 @@ end;
 {$define FPC_HAS_HEXSTR_POINTER_SHORTSTR}
 function hexstr(val : pointer) : shortstring;
 begin
-  hexstr:=hexstr(JLObject(val).hashCode,sizeof(pointer)*2);
+  hexstr:=hexstr(JLSystem.identityHashCode(JLObject(val)),sizeof(pointer)*2);
 end;
 
 
