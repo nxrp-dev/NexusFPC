@@ -1098,7 +1098,7 @@ function TUnicodeStringManager.CharLengthPCharProc(const Str: PAnsiChar; Index: 
   end;
 
 
-function TUnicodeStringManager.CodePointLengthProc(const Str: PAnsiChar; Index, MaxLookAhead: PtrInt): Ptrint;
+function TUnicodeStringManager.CodePointLengthProc(const Str: PAnsiChar; MaxLookAhead, Index: PtrInt): Ptrint;
   var
     localdecoder: JNCCharsetDecoder;
     inbuf: JNByteBuffer;

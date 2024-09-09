@@ -702,14 +702,23 @@ Procedure Append(var t:Text);
 Procedure Flush(var t:Text);
 Procedure Erase(var t:Text);
 Function  EOF(var t:Text):Boolean;
+{$ifndef CPUJVM}
 Function  EOF:Boolean;
+{$endif CPUJVM}
 Function  EOLn(var t:Text):Boolean;
+{$ifndef CPUJVM}
 Function  EOLn:Boolean;
+{$endif CPUJVM}
 Function  SeekEOLn (var t:Text):Boolean;
 Function  SeekEOF (var t:Text):Boolean;
+{$ifndef CPUJVM}
 Function  SeekEOLn:Boolean;
 Function  SeekEOF:Boolean;
+{$endif CPUJVM}
+{$ifndef CPUJVM}
+{ JVM Notes: this language feature is not supported on managed vm targets }
 Procedure SetTextBuf(var f:Text; var Buf);[INTERNPROC:fpc_in_settextbuf_file_x];
+{$endif CPUJVM}
 Procedure SetTextBuf(var f:Text; var Buf; Size:SizeInt);
 Procedure SetTextLineEnding(var f:Text; Ending:Shortstring);
 function GetTextCodePage(var T: Text): TSystemCodePage;

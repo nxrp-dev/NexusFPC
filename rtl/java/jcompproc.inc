@@ -433,8 +433,10 @@ procedure fpc_PWideChar_To_ShortStr(out res : shortstring;const p : pwidechar); 
 
 {$ifdef FPC_HAS_FEATURE_TEXTIO}
 { from text.inc }
+{$ifndef CPUJVM}
 Function fpc_get_input:PText;compilerproc;
 Function fpc_get_output:PText;compilerproc;
+{$endif CPUJVM}
 Procedure fpc_textinit_iso(var t : Text;nr : DWord);compilerproc;
 Procedure fpc_textclose_iso(var t : Text);compilerproc;
 Procedure fpc_Write_End(var f:Text); compilerproc;
@@ -476,7 +478,10 @@ procedure fpc_write_text_smallint_iso(len : longint;var t : text;i : smallint); 
 Procedure fpc_Write_Text_Float(rt,fixkomma,Len : Longint;var t : Text;r : ValReal); compilerproc;
 Procedure fpc_Write_Text_Float_Iso(rt,fixkomma,Len : Longint;var t : Text;r : ValReal); compilerproc;
 {$endif}
+{$ifndef CPUJVM}
+{ JVM Notes: cpujvm parser fails if we try to write an enum (error: illegal expression) }
 procedure fpc_write_text_enum(typinfo,ord2strindex:pointer;len:sizeint;var t:text;ordinal:longint); compilerproc;
+{$endif CPUJVM}
 Procedure fpc_Write_Text_Currency(fixkomma,Len : Longint;var t : Text;c : Currency); compilerproc;
 Procedure fpc_Write_Text_Boolean(Len : Longint;var t : Text;b : Boolean); compilerproc;
 Procedure fpc_Write_Text_Boolean_Iso(Len : Longint;var t : Text;b : Boolean); compilerproc;
@@ -493,7 +498,10 @@ procedure fpc_SetupWriteStr_Shortstr(var ReadWriteStrText: text; var s: shortstr
 procedure fpc_SetupWriteStr_Ansistr(var ReadWriteStrText: text; var s: ansistring; cp: TSystemCodePage); compilerproc;
 {$endif FPC_HAS_FEATURE_ANSISTRINGS}
 {$ifdef FPC_HAS_FEATURE_WIDESTRINGS}
+{$ifndef CPUJVM}
+{ JVM Notes: cannot write to a unicodestring as we do to other strings because the content of a unicodestring is immutable on cpujvm }
 procedure fpc_SetupWriteStr_Unicodestr(var ReadWriteStrText: text; var s: unicodestring); compilerproc;
+{$endif CPUJVM}
 {$endif FPC_HAS_FEATURE_WIDESTRINGS}
 {$ifndef FPC_WIDESTRING_EQUAL_UNICODESTRING}
 procedure fpc_SetupWriteStr_Widestr(var ReadWriteStrText: text; var s: widestring); compilerproc;
@@ -538,7 +546,10 @@ Procedure fpc_Read_End(var f:Text); compilerproc;
 Procedure fpc_ReadLn_End(var f : Text); compilerproc;
 Procedure fpc_ReadLn_End_Iso(var f : Text); compilerproc;
 Procedure fpc_Read_Text_ShortStr(var f : Text;out s : ShortString); compilerproc;
+{$ifndef CPUJVM}
+{ JVM Notes: reading to a pansichar is not allowed by the cpujvm parser }
 Procedure fpc_Read_Text_PChar_As_Pointer(var f : Text; const s : PAnsiChar); compilerproc;
+{$endif CPUJVM}
 Procedure fpc_Read_Text_PChar_As_Array(var f : Text;out s : array of AnsiChar; zerobased: boolean = false); compilerproc;
 {$ifdef FPC_HAS_FEATURE_ANSISTRINGS}
 Procedure fpc_Read_Text_AnsiStr(var f : Text;out s : RawByteString;cp : TSystemCodePage); compilerproc;
@@ -562,7 +573,10 @@ Procedure fpc_Read_Text_UInt_Iso(var f : Text; out u : ValUInt); compilerproc;
 Procedure fpc_Read_Text_Float(var f : Text; out v :ValReal); compilerproc;
 Procedure fpc_Read_Text_Float_Iso(var f : Text; out v : ValReal); compilerproc;
 {$endif}
+{$ifndef CPUJVM}
+{ JVM Notes: cpujvm parser fails if we try to read an enum (error: illegal expression) }
 procedure fpc_read_text_enum(str2ordindex:pointer;var t:text;out ordinal:longint); compilerproc;
+{$endif CPUJVM}
 procedure fpc_Read_Text_Currency(var f : Text; out v : Currency); compilerproc;
 procedure fpc_Read_Text_Currency_Iso(var f : Text; out v : Currency); compilerproc;
 {$ifndef CPU64}
@@ -575,8 +589,10 @@ procedure fpc_Read_Text_Int64_Iso(var f : text; out i : int64); compilerproc;
 Procedure fpc_Read_Text_LongWord(var f : text; out q : longword); compilerproc;
 Procedure fpc_Read_Text_LongInt(var f : text; out i : longint); compilerproc;
 {$endif CPU16 or CPU8}
+{$ifndef CPUJVM}
 function fpc_GetBuf_Text(var f : Text) : PAnsiChar; compilerproc;
 function fpc_GetBuf_TypedFile(var f : TypedFile) : pointer; compilerproc;
+{$endif CPUJVM}
 {$endif FPC_HAS_FEATURE_TEXTIO}
 
 {$ifdef FPC_INCLUDE_SOFTWARE_MOD_DIV}

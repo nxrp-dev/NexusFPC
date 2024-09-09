@@ -43,7 +43,20 @@ Begin
 End;
 
 
+var
+  { JVM Notes: compiler crashes if we take a function address more than once (internal error 2011072405) }
+  FFileCloseFunc : {$ifndef CPUJVM}CodePointer{$else}TextRec.FileFunc{$endif} = @FileCloseFunc;
+  FFileReadFunc : {$ifndef CPUJVM}CodePointer{$else}TextRec.FileFunc{$endif} = @FileReadFunc;
+  FFileWriteFunc : {$ifndef CPUJVM}CodePointer{$else}TextRec.FileFunc{$endif} = @FileWriteFunc;
+
+
 Procedure FileOpenFunc(var t:TextRec);
+{$ifdef CPUJVM}
+  function Assigned(s: unicodestring): Boolean;
+    begin
+      result:=length(s)<>0;
+    end;
+{$endif}
 var
   Flags : Longint;
 Begin
@@ -59,30 +72,39 @@ Begin
   End;
 {$ifdef USE_FILEREC_FULLNAME}
   if Assigned(t.FullName) then
-    Do_Open(t,PFileTextRecChar(t.FullName),Flags,False)
+    Do_Open(t,{$ifndef CPUJVM}PFileTextRecChar{$endif}(t.FullName),Flags,False)
   else
 {$endif USE_FILEREC_FULLNAME}
     Do_Open(t,PFileTextRecChar(@t.Name),Flags,False);
-  t.CloseFunc:=@FileCloseFunc;
+  t.CloseFunc:=FFileCloseFunc;
   t.FlushFunc:=nil;
   if t.Mode=fmInput then
-   t.InOutFunc:=@FileReadFunc
+   t.InOutFunc:=FFileReadFunc
   else
    begin
-     t.InOutFunc:=@FileWriteFunc;
+     t.InOutFunc:=FFileWriteFunc;
      { Only install flushing if its a NOT a file, and only check if there
        was no error opening the file, because else we always get a bad
        file handle error 6 (PFV) }
      if (InOutRes=0) and
         Do_Isdevice(t.Handle) then
-      t.FlushFunc:=@FileWriteFunc;
+      t.FlushFunc:=FFileWriteFunc;
    end;
 End;
 
-Procedure InitText(Var t : Text);
 
+Procedure InitText(Var t : Text);
+{$ifdef CPUJVM}
+var
+  EmptyTextRec : TextRec;
+{$endif}
 begin
+{$ifndef CPUJVM}
   FillChar(t,SizeOf(TextRec),0);
+{$else CPUJVM}
+  TextRec(t):=EmptyTextRec;
+{$endif CPUJVM}
+
 { only set things that are not zero }
   TextRec(t).Handle:=UnusedHandle;
   TextRec(t).mode:=fmClosed;
@@ -299,6 +321,11 @@ End;
 
 {$ifdef FPC_HAS_FEATURE_WIDESTRINGS}
 Procedure Rename(var t : Text;const s : unicodestring);[IOCheck];
+{$ifdef CPUJVM}
+type
+  { JVM Notes: cast to a PUnicodeChar is not neccessary and not possible on cpujvm }
+  PUnicodeChar = UnicodeString;
+{$endif CPUJVM}
 {$ifdef FPCRTL_FILESYSTEM_SINGLE_BYTE_API}
 var
   fs: RawByteString;
@@ -334,6 +361,11 @@ End;
 
 {$ifdef FPC_HAS_FEATURE_ANSISTRINGS}
 Procedure Rename(var t : Text;const s : rawbytestring);[IOCheck];
+{$ifdef CPUJVM}
+type
+  { JVM Notes: cast to a PUnicodeChar is not neccessary and not possible on cpujvm }
+  PUnicodeChar = UnicodeString;
+{$endif CPUJVM}
 var
 {$ifdef FPCRTL_FILESYSTEM_SINGLE_BYTE_API}
   fs: RawByteString;
@@ -459,10 +491,12 @@ Begin
 end;
 
 
+{$ifndef CPUJVM}
 Function Eof:Boolean;
 Begin
   Eof:=Eof(Input);
 End;
+{$endif CPUJVM}
 
 
 Function SeekEof (Var t : Text) : Boolean;
@@ -507,10 +541,12 @@ Begin
 End;
 
 
+{$ifndef CPUJVM}
 Function SeekEof : Boolean;
 Begin
   SeekEof:=SeekEof(Input);
 End;
+{$endif CPUJVM}
 
 
 Function Eoln(var t:Text) : Boolean;
@@ -537,10 +573,12 @@ Begin
 End;
 
 
+{$ifndef CPUJVM}
 Function Eoln : Boolean;
 Begin
   Eoln:=Eoln(Input);
 End;
+{$endif CPUJVM}
 
 
 Function SeekEoln (Var t : Text) : Boolean;
@@ -575,15 +613,25 @@ Begin
 End;
 
 
+{$ifndef CPUJVM}
 Function SeekEoln : Boolean;
 Begin
   SeekEoln:=SeekEoln(Input);
 End;
+{$endif CPUJVM}
 
 
 Procedure SetTextBuf(Var F : Text; Var Buf; Size : SizeInt);
+{$ifdef CPUJVM}
+type
+  PTextBuf = ^TextBuf;
+{$endif CPUJVM}
 Begin
+{$ifndef CPUJVM}
   TextRec(f).BufPtr:=@Buf;
+{$else CPUJVM}
+  TextRec(f).BufPtr:=PTextBuf(Buf);
+{$endif CPUJVM}
   TextRec(f).BufSize:=Size;
   TextRec(f).BufPos:=0;
   TextRec(f).BufEnd:=0;
@@ -648,16 +696,20 @@ Begin
 End;
 
 
+{$ifndef CPUJVM}
 Function fpc_get_input:PText;compilerproc;
 begin
   fpc_get_input:=@Input;
 end;
+{$endif CPUJVM}
 
 
+{$ifndef CPUJVM}
 Function fpc_get_output:PText;compilerproc;
 begin
   fpc_get_output:=@Output;
 end;
+{$endif CPUJVM}
 
 
 Procedure fpc_textinit_iso(var t : Text;nr : DWord);compilerproc;
@@ -706,23 +758,35 @@ end;
 
 Procedure fpc_WriteBuffer(var f:Text;const b;len:SizeInt);
 var
+{$ifndef CPUJVM}
   p   : pansichar;
+{$endif CPUJVM}
   left,
   idx : SizeInt;
 begin
+{$ifndef CPUJVM}
   p:=pansichar(@b);
+{$endif CPUJVM}
   idx:=0;
   left:=TextRec(f).BufSize-TextRec(f).BufPos;
   while len>left do
    begin
+{$ifndef CPUJVM}
      move(p[idx],TextRec(f).Bufptr^[TextRec(f).BufPos],left);
+{$else CPUJVM}
+     move(b,idx,TextRec(f).Bufptr^,TextRec(f).BufPos,left);
+{$endif CPUJVM}
      dec(len,left);
      inc(idx,left);
      inc(TextRec(f).BufPos,left);
      FileFunc(TextRec(f).InOutFunc)(TextRec(f));
      left:=TextRec(f).BufSize-TextRec(f).BufPos;
    end;
+{$ifndef CPUJVM}
   move(p[idx],TextRec(f).Bufptr^[TextRec(f).BufPos],len);
+{$else CPUJVM}
+  move(b,idx,TextRec(f).Bufptr^,TextRec(f).BufPos,len);
+{$endif CPUJVM}
   inc(TextRec(f).BufPos,len);
 end;
 
@@ -730,17 +794,30 @@ end;
 Procedure fpc_WriteBlanks(var f:Text;len:longint);
 var
   left : longint;
+{$ifdef CPUJVM}
+  index : longint;
+{$endif CPUJVM}
 begin
   left:=TextRec(f).BufSize-TextRec(f).BufPos;
   while len>left do
    begin
+{$ifndef CPUJVM}
      FillChar(TextRec(f).Bufptr^[TextRec(f).BufPos],left,' ');
+{$else CPUJVM}
+     for index:=0 to left-1 do
+       TextRec(f).Bufptr^[TextRec(f).BufPos+index]:=' ';
+{$endif CPUJVM}
      dec(len,left);
      inc(TextRec(f).BufPos,left);
      FileFunc(TextRec(f).InOutFunc)(TextRec(f));
      left:=TextRec(f).BufSize-TextRec(f).BufPos;
    end;
+{$ifndef CPUJVM}
   FillChar(TextRec(f).Bufptr^[TextRec(f).BufPos],len,' ');
+{$else CPUJVM}
+  for index:=0 to left-1 do
+    TextRec(f).Bufptr^[TextRec(f).BufPos+index]:=' ';
+{$endif CPUJVM}
   inc(TextRec(f).BufPos,len);
 end;
 
@@ -759,7 +836,11 @@ begin
     fmOutput { fmAppend gets changed to fmOutPut in do_open (JM) }:
       begin
         { Write EOL }
+{$ifndef CPUJVM}
         fpc_WriteBuffer(f,TextRec(f).LineEnd[1],length(TextRec(f).LineEnd));
+{$else CPUJVM}
+        fpc_WriteBuffer(f,shortstringclass(asobject(TextRec(f).LineEnd)).fdata,length(TextRec(f).LineEnd));
+{$endif CPUJVM}
         { Flush }
         if TextRec(f).FlushFunc<>nil then
           FileFunc(TextRec(f).FlushFunc)(TextRec(f));
@@ -770,7 +851,14 @@ begin
 end;
 
 
+
+{$ifndef CPUJVM}
 Procedure fpc_Write_Text_ShortStr(Len : Longint;var f : Text;const s : ShortString); iocheck; [Public,Alias:'FPC_WRITE_TEXT_SHORTSTR']; compilerproc;
+{$else CPUJVM}
+{ provide local access to write_str }
+{ JVM Notes: the original name fpc_write_text_shortstr is special and cannot be called on cpujvm (error: identifier not found) }
+procedure Write_Str(Len : Longint;var f : Text;const s : shortString); iocheck;
+{$endif CPUJVM}
 Begin
   If (InOutRes<>0) then
    exit;
@@ -779,12 +867,24 @@ Begin
       begin
         If Len>Length(s) Then
           fpc_WriteBlanks(f,Len-Length(s));
+{$ifndef CPUJVM}
         fpc_WriteBuffer(f,s[1],Length(s));
+{$else CPUJVM}
+        fpc_WriteBuffer(f,shortstringclass(asobject(s)).fdata,Length(s));
+{$endif CPUJVM}
       end;
     fmInput: InOutRes:=105
     else InOutRes:=103;
   end;
 End;
+
+
+{$ifdef CPUJVM}
+Procedure fpc_Write_Text_ShortStr(Len : Longint;var f : Text;const s : shortString); iocheck; [Public,Alias:'FPC_WRITE_TEXT_SHORTSTR']; compilerproc;
+Begin
+  Write_Str(Len,f,s);
+End;
+{$endif CPUJVM}
 
 
 Procedure fpc_Write_Text_ShortStr_Iso(Len : Longint;var f : Text;const s : ShortString); iocheck; [Public,Alias:'FPC_WRITE_TEXT_SHORTSTR_ISO']; compilerproc;
@@ -812,8 +912,10 @@ Begin
 End;
 
 
+{$ifndef CPUJVM}
 { provide local access to write_str }
 procedure Write_Str(Len : Longint;var f : Text;const s : shortString); iocheck; [external name 'FPC_WRITE_TEXT_SHORTSTR'];
+{$endif}
 
 { provide local access to write_str_iso }
 procedure Write_Str_Iso(Len : Longint;var f : Text;const s : shortString); iocheck; [external name 'FPC_WRITE_TEXT_SHORTSTR_ISO'];
@@ -828,12 +930,20 @@ Begin
   case TextRec(f).mode of
     fmOutput { fmAppend gets changed to fmOutPut in do_open (JM) }:
       begin
+{$ifndef CPUJVM}
         p:=pansichar(@s);
+{$else CPUJVM}
+        p:=pansichar(s);
+{$endif CPUJVM}
         if zerobased then
           begin
+{$ifndef CPUJVM}
             { can't use StrLen, since that one could try to read past the end }
             { of the heap (JM)                                                }
             ArrayLen:=IndexByte(p^,high(s)+1,0);
+{$else CPUJVM}
+            ArrayLen:=length(s);
+{$endif CPUJVM}
             { IndexByte returns -1 if not found (JM) }
             if ArrayLen = -1 then
               ArrayLen := high(s)+1;
@@ -842,7 +952,11 @@ Begin
           ArrayLen := high(s)+1;
         If Len>ArrayLen Then
           fpc_WriteBlanks(f,Len-ArrayLen);
+{$ifndef CPUJVM}
         fpc_WriteBuffer(f,p^,ArrayLen);
+{$else CPUJVM}
+        fpc_WriteBuffer(f,p,ArrayLen);
+{$endif CPUJVM}
       end;
     fmInput: InOutRes:=105
     else InOutRes:=103;
@@ -900,10 +1014,18 @@ Begin
   case TextRec(f).mode of
     fmOutput { fmAppend gets changed to fmOutPut in do_open (JM) }:
       begin
+{$ifndef CPUJVM}
         PCharLen:=StrLen(p);
+{$else CPUJVM}
+        PCharLen:=length(p);
+{$endif CPUJVM}
         If Len>PCharLen Then
           fpc_WriteBlanks(f,Len-PCharLen);
+{$ifndef CPUJVM}
         fpc_WriteBuffer(f,p^,PCharLen);
+{$else CPUJVM}
+        fpc_WriteBuffer(f,p,PCharLen);
+{$endif CPUJVM}
       end;
     fmInput: InOutRes:=105
     else InOutRes:=103;
@@ -933,11 +1055,19 @@ begin
             if TextRec(f).CodePage<>TranslatePlaceholderCP(StringCodePage(S)) then
               begin
                 a:=fpc_AnsiStr_To_AnsiStr(S,TextRec(f).CodePage);
+{$ifndef CPUJVM}
                 fpc_WriteBuffer(f,PAnsiChar(a)^,Length(a));
+{$else CPUJVM}
+                fpc_WriteBuffer(f,ansistringclass(a).fdata,Length(a));
+{$endif CPUJVM}
               end
             else
             {$endif}
+{$ifndef CPUJVM}
             fpc_WriteBuffer(f,PAnsiChar(s)^,SLen);
+{$else CPUJVM}
+            fpc_WriteBuffer(f,ansistringclass(s).fdata,SLen);
+{$endif CPUJVM}
           end;
       end;
     fmInput: InOutRes:=105
@@ -963,9 +1093,17 @@ begin
         SLen:=Length(s);
         If Len>SLen Then
           fpc_WriteBlanks(f,Len-SLen);
+{$ifndef CPUJVM}
         WideStringManager.Unicode2AnsiMoveProc(PUnicodeChar(S),a,TextRec(f).CodePage,SLen);
+{$else CPUJVM}
+        WideStringManager.Unicode2AnsiMoveProc(PUnicodeChar(JLString(S).toCharArray),a,TextRec(f).CodePage,SLen);
+{$endif CPUJVM}
         { length(a) can be > slen, e.g. after utf-16 -> utf-8 }
+{$ifndef CPUJVM}
         fpc_WriteBuffer(f,PAnsiChar(a)^,Length(a));
+{$else CPUJVM}
+        fpc_WriteBuffer(f,ansistringclass(a).fdata,Length(a));
+{$endif CPUJVM}
       end;
     fmInput: InOutRes:=105
     else InOutRes:=103;
@@ -1240,8 +1378,9 @@ Begin
   Str_real_iso(Len,fixkomma,r,treal_type(rt),s);
   Write_Str(Len,t,s);
 End;
-{$endif}
+{$endif FPUNONE}
 
+{$ifndef CPUJVM}
 procedure fpc_write_text_enum(typinfo,ord2strindex:pointer;len:sizeint;var t:text;ordinal:longint); iocheck; compilerproc;
 
 var
@@ -1265,6 +1404,7 @@ begin
   fpc_writeBuffer(t,s[1],length(s));
 {$endif EXCLUDE_COMPLEX_PROCS}
 end;
+{$endif CPUJVM}
 
 Procedure fpc_Write_Text_Currency(fixkomma,Len : Longint;var t : Text;c : Currency); iocheck; compilerproc;
 {$ifdef EXCLUDE_COMPLEX_PROCS}
@@ -1360,6 +1500,9 @@ End;
 Procedure fpc_Write_Text_WideChar(Len : Longint;var t : Text;c : WideChar); iocheck; compilerproc;
 var
   a: RawByteString;
+{$ifdef CPUJVM}
+  p: array[0..0] of WideChar;
+{$endif CPUJVM}
 Begin
   If (InOutRes<>0) then
     exit;
@@ -1376,8 +1519,18 @@ Begin
   If TextRec(t).BufPos>=TextRec(t).BufSize Then
     FileFunc(TextRec(t).InOutFunc)(TextRec(t));
   { a widechar can be translated into more than a single ansichar }
+{$ifndef CPUJVM}
   widestringmanager.Wide2AnsiMoveProc(@c,a,TextRec(t).CodePage,1);
+{$else CPUJVM}
+  { JVM Notes: cpujvm parser cannot take the address of a widechar (error: illegal expression) }
+  p[0]:=c;
+  widestringmanager.Wide2AnsiMoveProc(pwidechar(p),a,TextRec(t).CodePage,1);
+{$endif CPUJVM}
+{$ifndef CPUJVM}
   fpc_WriteBuffer(t,PAnsiChar(a)^,Length(a));
+{$else CPUJVM}
+  fpc_WriteBuffer(t,ansistringclass(a).fdata,Length(a));
+{$endif CPUJVM}
 End;
 {$endif FPC_HAS_FEATURE_WIDESTRINGS}
 
@@ -1710,10 +1863,10 @@ Begin
 End;
 
 
-Function ReadPCharLen(var f:Text;s:pansichar;maxlen:longint):longint;
+Function ReadPCharLen(var f:Text;s:pansichar;maxlen:longint;offset:longint=0):longint;
 var
   sPos,len : Longint;
-  p,startp,maxp : pansichar;
+  p,startp,maxp : Longint;
   end_of_string:boolean;
 Begin
 {$ifdef EXCLUDE_COMPLEX_PROCS}
@@ -1732,20 +1885,20 @@ Begin
        If TextRec(f).BufPos>=TextRec(f).BufEnd Then
          break;
      end;
-    p:=@TextRec(f).Bufptr^[TextRec(f).BufPos];
+    p:=TextRec(f).BufPos;
     if SPos+TextRec(f).BufEnd-TextRec(f).BufPos>MaxLen then
-     maxp:=@TextRec(f).BufPtr^[TextRec(f).BufPos+MaxLen-SPos]
+     maxp:=TextRec(f).BufPos+MaxLen-SPos
     else
-     maxp:=@TextRec(f).Bufptr^[TextRec(f).BufEnd];
+     maxp:=TextRec(f).BufEnd;
     startp:=p;
   { find stop character }
     while p<maxp do
       begin
         { Optimization: Do a quick check for a control character first }
-        if (p^<' ') then
+        if (TextRec(f).BufPtr^[p]<' ') then
           begin
-            if (p^ in [#10,#13]) or
-               (ctrlZmarkseof and (p^=#26)) then
+            if (TextRec(f).BufPtr^[p] in [#10,#13]) or
+               (ctrlZmarkseof and (TextRec(f).BufPtr^[p]=#26)) then
               begin
                 end_of_string:=true;
                 break;
@@ -1756,7 +1909,11 @@ Begin
   { calculate read bytes }
     len:=p-startp;
     inc(TextRec(f).BufPos,Len);
-    Move(startp^,s[sPos],Len);
+{$ifndef CPUJVM}
+    Move(TextRec(f).BufPtr^[startp],s[sPos],Len);
+{$else CPUJVM}
+    Move(TextRec(f).BufPtr^,startp,s,offset+sPos,Len);
+{$endif CPUJVM}
     inc(sPos,Len);
   until (spos=MaxLen) or end_of_string;
   ReadPCharLen:=spos;
@@ -1771,15 +1928,23 @@ var
   Len : Longint;
 
 Begin
+{$ifndef CPUJVM}
   Len:=ReadPCharLen(f,pansichar(@s[1]),high(s));
+{$else CPUJVM}
+  Len:=ReadPCharLen(f,pansichar(shortstringclass(asobject(s)).fdata),high(s));
+{$endif CPUJVM}
   SetLength(S,Len);
 End;
 
 
+{$ifndef CPUJVM}
+{ JVM Notes: reading to a pansichar is not allowed by the cpujvm parser
+  (error: can't read or write variables of this type) }
 Procedure fpc_Read_Text_PChar_As_Pointer(var f : Text; const s : PAnsiChar); iocheck; compilerproc;
 Begin
   pansichar(s+ReadPCharLen(f,s,$7fffffff))^:=#0;
 End;
+{$endif CPUJVM}
 
 
 Procedure fpc_Read_Text_PChar_As_Array(var f : Text;out s : array of ansichar; zerobased: boolean = false); iocheck; compilerproc;
@@ -1796,7 +1961,12 @@ End;
 
 
 {$ifdef FPC_HAS_FEATURE_ANSISTRINGS}
+{$ifndef CPUJVM}
 Procedure fpc_Read_Text_AnsiStr(var f : Text;out s : RawByteString;cp : TSystemCodePage); [public, alias: 'FPC_READ_TEXT_ANSISTR']; iocheck; compilerproc;
+{$else CPUJVM}
+{ JVM Notes: the original name fpc_read_text_ansistr is special and cannot be called on cpujvm (error: identifier not found) }
+Procedure fpc_Read_Text_AnsiStr_Intern(var f : Text;out s : RawByteString;cp : TSystemCodePage);
+{$endif CPUJVM}
 var
   slen,len : SizeInt;
 Begin
@@ -1804,7 +1974,11 @@ Begin
   Repeat
     // SetLength will reallocate the length.
     SetLength(s,slen+255);
+{$ifndef CPUJVM}
     len:=ReadPCharLen(f,pansichar(Pointer(s)+slen),255);
+{$else CPUJVM}
+    len:=ReadPCharLen(f,pansichar(s),255,slen);
+{$endif CPUJVM}
     inc(slen,len);
   Until len<255;
   // Set actual length
@@ -1815,7 +1989,16 @@ Begin
     s:=fpc_AnsiStr_To_AnsiStr(s,cp);
 End;
 
+{$ifdef CPUJVM}
+Procedure fpc_Read_Text_AnsiStr(var f : Text;out s : RawByteString;cp : TSystemCodePage); [public, alias: 'FPC_READ_TEXT_ANSISTR']; iocheck; compilerproc;
+begin
+  fpc_Read_Text_AnsiStr_Intern(f,s,cp);
+end;
+{$endif CPUJVM}
+
+{$ifndef CPUJVM}
 Procedure fpc_Read_Text_AnsiStr_Intern(var f : Text;out s : RawByteString;cp : TSystemCodePage); [external name 'FPC_READ_TEXT_ANSISTR'];
+{$endif CPUJVM}
 {$endif FPC_HAS_FEATURE_ANSISTRINGS}
 
 
@@ -1843,7 +2026,12 @@ Begin
 End;
 {$endif FPC_WIDESTRING_EQUAL_UNICODESTRING}
 
+{$ifndef CPUJVM}
 procedure fpc_Read_Text_Char(var f : Text; out c: AnsiChar); [public, alias: 'FPC_READ_TEXT_CHAR']; iocheck; compilerproc;
+{$else CPUJVM}
+{ JVM Notes: the original name fpc_read_text_char is special and cannot be called on cpujvm (error: identifier not found) }
+procedure fpc_Read_Text_Char_intern(var f : Text; out c: AnsiChar); iocheck;
+{$endif CPUJVM}
 Begin
   c:=#0;
   If not CheckRead(f) then
@@ -1857,9 +2045,19 @@ Begin
   inc(TextRec(f).BufPos);
 end;
 
+{$ifdef CPUJVM}
+procedure fpc_Read_Text_Char(var f : Text; out c: AnsiChar); [public, alias: 'FPC_READ_TEXT_CHAR']; iocheck; compilerproc;
+begin
+  fpc_Read_Text_Char_intern(f,c);
+end;
+{$endif CPUJVM}
+
+{$ifndef CPUJVM}
 procedure fpc_Read_Text_Char_intern(var f : Text; out c: AnsiChar); iocheck; [external name 'FPC_READ_TEXT_CHAR'];
+{$endif CPUJVM}
 
 
+{$ifndef CPUJVM}
 function fpc_GetBuf_Text(var f : Text) : pansichar; iocheck; compilerproc;
 Begin
   Result:=@TextRec(f).Bufptr^[TextRec(f).BufEnd];
@@ -1871,6 +2069,7 @@ Begin
     exit;
   Result:=@TextRec(f).Bufptr^[TextRec(f).BufPos];
 end;
+{$endif}
 
 
 {$ifdef FPC_HAS_FEATURE_WIDESTRINGS}
@@ -1881,7 +2080,9 @@ var
   { maximum code point length is 6 characters (with UTF-8) }
   str: array[0..5] of AnsiChar;
 Begin
+{$ifndef CPUJVM}
   fillchar(str[0],sizeof(str),0);
+{$endif CPUJVM}
   for i:=low(str) to high(str) do
     begin
       fpc_Read_Text_Char_intern(f,str[i]);
@@ -2087,6 +2288,7 @@ begin
 end;
 {$endif}
 
+{$ifndef CPUJVM}
 {$ifdef VER3_2}
 procedure fpc_read_text_enum(str2ordindex:pointer;var t:text;out ordinal:longint); iocheck;compilerproc;
 {$else VER3_2}
@@ -2155,6 +2357,7 @@ begin
    InOutRes:=106;
 end;
 {$endif VER3_2}
+{$endif CPUJVM}
 
 procedure fpc_Read_Text_Currency(var f : Text; out v : Currency); iocheck; compilerproc;
 var
@@ -2345,15 +2548,27 @@ var
   str: pshortstring;
   newbytes,
   oldlen: longint;
+  shortstrlen: longint;
 begin
   if (t.bufpos=0) then
     exit;
+
+{$ifndef CPUJVM}
   str:=pshortstring(ppointer(@t.userdata[TempWriteStrDestIndex])^);
+{$else CPUJVM}
+  str:=pshortstring(t.userdata[TempWriteStrDestIndex]);
+{$endif CPUJVM}
+
   newbytes:=t.BufPos;
   oldlen:=length(str^);
-  if (oldlen+t.bufpos > t.userdata[ShortStrLenIndex]) then
+{$ifndef CPUJVM}
+  shortstrlen:=t.userdata[ShortStrLenIndex];
+{$else CPUJVM}
+  shortstrlen:=pbyte(t.userdata[ShortStrLenIndex])^;
+{$endif CPUJVM}
+  if (oldlen+t.bufpos > shortstrlen) then
     begin
-      newbytes:=t.userdata[ShortStrLenIndex]-oldlen;
+      newbytes:=shortstrlen-oldlen;
 {$ifdef writestr_iolencheck}
       // GPC only gives an io error if {$no-truncate-strings} is active
       // FPC does not have this setting (it never gives errors when a
@@ -2364,7 +2579,11 @@ begin
 {$endif}
     end;
   setlength(str^,length(str^)+newbytes);
+{$ifndef CPUJVM}
   move(t.bufptr^,str^[oldlen+1],newbytes);
+{$else CPUJVM}
+  move(t.bufptr^,0,shortstringclass(str).fdata,oldlen,newbytes);
+{$endif CPUJVM}
   t.bufpos:=0;
 end;
 
@@ -2377,11 +2596,20 @@ begin
     length) }
   WriteStrShort(t);
   { move written data to original shortstring }
+{$ifndef CPUJVM}
   move(PPointer(@t.userdata[TempWriteStrDestIndex])^^,
        PPointer(@t.userdata[StrPtrIndex])^^,
        t.userdata[ShortStrLenIndex]+1);
+{$else CPUJVM}
+  shortstringclass(t.userdata[StrPtrIndex]).fdata:=shortstringclass(t.userdata[TempWriteStrDestIndex]).fdata;
+  shortstringclass(t.userdata[StrPtrIndex]).curlen:=shortstringclass(t.userdata[TempWriteStrDestIndex]).curlen;
+{$endif CPUJVM}
   { free temporary buffer }
+{$ifndef CPUJVM}
   freemem(PPointer(@t.userdata[TempWriteStrDestIndex])^);
+{$else CPUJVM}
+  t.userdata[TempWriteStrDestIndex]:=nil;
+{$endif CPUJVM}
 end;
 
 
@@ -2389,15 +2617,23 @@ end;
 {$ifdef FPC_HAS_FEATURE_ANSISTRINGS}
 procedure WriteStrAnsi(var t: textrec);
 var
+{$ifndef CPUJVM}
   str: pansistring;
+{$endif CPUJVM}
   oldlen: longint;
 begin
   if (t.bufpos=0) then
     exit;
+{$ifndef CPUJVM}
   str:=pansistring(@t.userdata[TempWriteStrDestIndex]);
   oldlen:=length(str^);
   setlength(str^,oldlen+t.bufpos);
   move(t.bufptr^,str^[oldlen+1],t.bufpos);
+{$else CPUJVM}
+  oldlen:=length(ansistring(t.userdata[TempWriteStrDestIndex]));
+  setlength(ansistring(t.userdata[TempWriteStrDestIndex]),oldlen+t.bufpos);
+  move(t.bufptr^,0,ansistringclass(t.userdata[TempWriteStrDestIndex]).fdata,oldlen,t.bufpos);
+{$endif CPUJVM}
   t.bufpos:=0;
 end;
 
@@ -2406,15 +2642,24 @@ procedure WriteStrAnsiFlush(var t: textrec);
 begin
   { see comment in WriteStrShortFlush }
   WriteStrAnsi(t);
+{$ifndef CPUJVM}
   pansistring(ppointer(@t.userdata[StrPtrIndex])^)^:=
     pansistring(@t.userdata[TempWriteStrDestIndex])^;
+{$else CPUJVM}
+  ansistringclass(t.userdata[StrPtrIndex]).fdata:=ansistringclass(t.userdata[TempWriteStrDestIndex]).fdata;
+{$endif CPUJVM}
   { free memory/finalize temp }
+{$ifndef CPUJVM}
   pansistring(@t.userdata[TempWriteStrDestIndex])^:='';
+{$else CPUJVM}
+  t.userdata[TempWriteStrDestIndex]:=nil;
+{$endif CPUJVM}
 end;
 {$endif FPC_HAS_FEATURE_ANSISTRINGS}
 
 
 {$ifdef FPC_HAS_FEATURE_WIDESTRINGS}
+{$ifndef CPUJVM}
 function EndOfLastCompleteUTF8CodePoint(var t: textrec): SizeInt;
 var
   i, codepointlen: sizeint;
@@ -2476,6 +2721,7 @@ begin
   { free memory/finalize temp }
   punicodestring(@t.userdata[TempWriteStrDestIndex])^:='';
 end;
+{$endif CPUJVM}
 {$endif FPC_HAS_FEATURE_WIDESTRINGS}
 
 {$ifndef FPC_WIDESTRING_EQUAL_UNICODESTRING}
@@ -2532,15 +2778,34 @@ end;
 
 
 procedure fpc_SetupWriteStr_Shortstr(var ReadWriteStrText: text; var s: shortstring); compilerproc;
+{$ifdef CPUJVM}
+var
+  arr: array[0..0] of byte;
+{$endif CPUJVM}
 begin
   SetupWriteStrCommon(TextRec(ReadWriteStrText),DefaultSystemCodePage);
+{$ifndef CPUJVM}
   PPointer(@TextRec(ReadWriteStrText).userdata[StrPtrIndex])^:=@s;
+{$else CPUJVM}
+  { store a reference to s, on flush copy the content from the temp string to s }
+  TextRec(ReadWriteStrText).userdata[StrPtrIndex]:=asobject(s);
+{$endif CPUJVM}
 
   { temporary destination (see comments for TempWriteStrDestIndex) }
+{$ifndef CPUJVM}
   getmem(PPointer(@TextRec(ReadWriteStrText).userdata[TempWriteStrDestIndex])^,high(s)+1);
   setlength(pshortstring(ppointer(@TextRec(ReadWriteStrText).userdata[TempWriteStrDestIndex])^)^,0);
+{$else CPUJVM}
+  { each time the buffer is full we append the data to the temp string }
+  TextRec(ReadWriteStrText).userdata[TempWriteStrDestIndex]:=shortstringclass.createempty(high(s));
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
   TextRec(ReadWriteStrText).userdata[ShortStrLenIndex]:=high(s);
+{$else CPUJVM}
+  arr[0]:=high(s);
+  TextRec(ReadWriteStrText).userdata[ShortStrLenIndex]:=pbyte(arr);
+{$endif CPUJVM}
   TextRec(ReadWriteStrText).InOutFunc:=@WriteStrShort;
   TextRec(ReadWriteStrText).FlushFunc:=@WriteStrShortFlush;
 end;
@@ -2553,10 +2818,22 @@ begin
   if cp=CP_NONE then
     cp:=CP_ACP;
   SetupWriteStrCommon(TextRec(ReadWriteStrText),cp);
+{$ifndef CPUJVM}
   PPointer(@TextRec(ReadWriteStrText).userdata[StrPtrIndex])^:=@s;
+{$else CPUJVM}
+  { store a reference to s, on flush copy the content from the temp string to s }
+  if asobject(s)=nil then
+    s:=ansistring(ansistringclass.create(0, cp));
+  TextRec(ReadWriteStrText).userdata[StrPtrIndex]:=asobject(s);
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
   { temp destination ansistring, nil = empty shortstring }
   PPointer(@TextRec(ReadWriteStrText).userdata[TempWriteStrDestIndex])^:=nil;
+{$else CPUJVM}
+  { each time the buffer is full we append the data to the temp string }
+  TextRec(ReadWriteStrText).userdata[TempWriteStrDestIndex]:=ansistringclass.create(0, cp);
+{$endif CPUJVM}
 
   TextRec(ReadWriteStrText).InOutFunc:=@WriteStrAnsi;
   TextRec(ReadWriteStrText).FlushFunc:=@WriteStrAnsiFlush;
@@ -2565,6 +2842,9 @@ end;
 
 
 {$ifdef FPC_HAS_FEATURE_WIDESTRINGS}
+{$ifndef CPUJVM}
+{ JVM Notes: normally we store a reference to "s" and later modify the contents,
+  but on cpujvm we cannot because the content of a unicodestring is immutable }
 procedure fpc_SetupWriteStr_Unicodestr(var ReadWriteStrText: text; var s: unicodestring); compilerproc;
 begin
   SetupWriteStrCommon(TextRec(ReadWriteStrText),CP_UTF8);
@@ -2576,10 +2856,12 @@ begin
   TextRec(ReadWriteStrText).InOutFunc:=@WriteStrUnicode;
   TextRec(ReadWriteStrText).FlushFunc:=@WriteStrUnicodeFlush;
 end;
+{$endif CPUJVM}
 {$endif FPC_HAS_FEATURE_WIDESTRINGS}
 
 
 {$ifndef FPC_WIDESTRING_EQUAL_UNICODESTRING}
+{$ifndef CPUJVM}
 procedure fpc_SetupWriteStr_Widestr(var ReadWriteStrText: text; var s: widestring); compilerproc;
 begin
   SetupWriteStrCommon(TextRec(ReadWriteStrText),CP_UTF8);
@@ -2591,6 +2873,7 @@ begin
   TextRec(ReadWriteStrText).InOutFunc:=@WriteStrWide;
   TextRec(ReadWriteStrText).FlushFunc:=@WriteStrWideFlush;
 end;
+{$endif CPUJVM}
 {$endif FPC_WIDESTRING_EQUAL_UNICODESTRING}
 
 
@@ -2598,7 +2881,11 @@ end;
 procedure ReadAnsiStrFinal(var t: textrec);
 begin
   { finalise the temp ansistring }
+{$ifndef CPUJVM}
   PAnsiString(@t.userdata[StrPtrIndex])^ := '';
+{$else CPUJVM}
+  t.userdata[StrPtrIndex]:=nil;
+{$endif CPUJVM}
 end;
 {$endif FPC_HAS_FEATURE_ANSISTRINGS}
 
@@ -2607,13 +2894,22 @@ procedure ReadStrCommon(var t: textrec; strdata: pansichar; len: sizeint);
 var
   newbytes: sizeint;
 begin
+{$ifndef CPUJVM}
   newbytes := len - PSizeInt(@t.userdata[BytesReadIndex])^;
+{$else CPUJVM}
+  newbytes := len - PSizeInt(t.userdata[BytesReadIndex])^;
+{$endif CPUJVM}
   if (t.BufSize <= newbytes) then
     newbytes := t.BufSize;
   if (newbytes > 0) then
     begin
+{$ifndef CPUJVM}
       move(strdata[PSizeInt(@t.userdata[BytesReadIndex])^],t.BufPtr^,newbytes);
       inc(PSizeInt(@t.userdata[BytesReadIndex])^,newbytes);
+{$else CPUJVM}
+      move(strdata,PSizeInt(t.userdata[BytesReadIndex])^,t.BufPtr^,0,newbytes);
+      inc(PSizeInt(t.userdata[BytesReadIndex])^,newbytes);
+{$endif CPUJVM}
     end;
   t.BufEnd:=newbytes;
   t.BufPos:=0;
@@ -2623,13 +2919,25 @@ end;
 procedure ReadStrAnsi(var t: textrec);
 var
   str: pansistring;
+{$ifdef CPUJVM}
+  arr: array[0..0] of ansistring;
+{$endif CPUJVM}
 begin
+{$ifndef CPUJVM}
   str:=pansistring(@t.userdata[StrPtrIndex]);
-  ReadStrCommon(t,@str^[1],length(str^));
+{$else CPUJVM}
+  arr[0]:=ansistring(t.userdata[StrPtrIndex]);
+  str:=pansistring(arr);
+{$endif CPUJVM}
+  ReadStrCommon(t,PAnsiChar(str^),length(str^));
 end;
 
 
 procedure SetupReadStrCommon(out t: textrec; cp: TSystemCodePage);
+{$ifdef CPUJVM}
+var
+  arr: array[0..0] of SizeInt;
+{$endif CPUJVM}
 begin
   // initialise
   Assign(text(t),'');
@@ -2639,22 +2947,45 @@ begin
 {$if defined(FPC_HAS_FEATURE_ANSISTRINGS)}
   t.CodePage:=TranslatePlaceholderCP(cp);
   {$endif}
+{$ifndef CPUJVM}
   PSizeInt(@t.userdata[BytesReadIndex])^:=0;
+{$else CPUJVM}
+  arr[0]:=0;
+  t.userdata[BytesReadIndex]:=PSizeInt(arr);
+{$endif CPUJVM}
 end;
 
 
 {$ifdef FPC_HAS_FEATURE_ANSISTRINGS}
+{$ifndef CPUJVM}
 procedure fpc_SetupReadStr_Ansistr(var ReadWriteStrText: text; const s: ansistring); [public, alias: 'FPC_SETUPREADSTR_ANSISTR']; compilerproc;
+{$else CPUJVM}
+{ JVM Notes: the original name fpc_setupreadstr_ansistr is special and cannot be called on cpujvm (error: identifier not found) }
+procedure fpc_SetupReadStr_Ansistr_Intern(var ReadWriteStrText: text; const s: ansistring);
+{$endif CPUJVM}
 begin
   SetupReadStrCommon(TextRec(ReadWriteStrText),StringCodePage(s));
   { we need a reference, because 's' may be a temporary expression }
+{$ifndef CPUJVM}
   PAnsiString(@TextRec(ReadWriteStrText).userdata[StrPtrIndex])^:=s;
+{$else CPUJVM}
+  TextRec(ReadWriteStrText).userdata[StrPtrIndex]:=ansistringclass(s);
+{$endif CPUJVM}
   TextRec(ReadWriteStrText).InOutFunc:=@ReadStrAnsi;
   { this is called at the end, by fpc_read_end }
   TextRec(ReadWriteStrText).FlushFunc:=@ReadAnsiStrFinal;
 end;
 
+{$ifdef CPUJVM}
+procedure fpc_SetupReadStr_Ansistr(var ReadWriteStrText: text; const s: ansistring); [public, alias: 'FPC_SETUPREADSTR_ANSISTR']; compilerproc;
+begin
+  fpc_SetupReadStr_Ansistr_Intern(ReadWriteStrText, s);
+end;
+{$endif CPUJVM}
+
+{$ifndef CPUJVM}
 procedure fpc_SetupReadStr_Ansistr_Intern(var ReadWriteStrText: text; const s: rawbytestring); [external name 'FPC_SETUPREADSTR_ANSISTR'];
+{$endif CPUJVM}
 {$endif FPC_HAS_FEATURE_ANSISTRINGS}
 
 
@@ -2711,6 +3042,12 @@ end;
 
 {$ifdef FPC_HAS_FEATURE_UNICODESTRINGS}
 Function GetFullName(var t:Text) : UnicodeString;
+{$ifdef CPUJVM}
+  function Assigned(s: unicodestring): Boolean;
+    begin
+      result:=length(s)<>0;
+    end;
+{$endif}
   begin
 {$ifdef USE_FILEREC_FULLNAME}
   if Assigned(TextRec(t).FullName) then
@@ -2730,23 +3067,27 @@ begin
   Assign(f,'');
   TextRec(f).Handle:=hdl;
   TextRec(f).Mode:=mode;
-  TextRec(f).Closefunc:=@FileCloseFunc;
+  TextRec(f).Closefunc:=FFileCloseFunc;
   case mode of
     fmInput :
       begin
-        TextRec(f).InOutFunc:=@FileReadFunc;
+        TextRec(f).InOutFunc:=FFileReadFunc;
       {$if defined(FPC_HAS_FEATURE_WIDESTRINGS)}
+      {$ifndef CPUJVM} { JVM Notes: GetStandardCodePageProc is not implemented for cpujvm }
         TextRec(f).CodePage:=WideStringManager.GetStandardCodePageProc(scpConsoleInput);
-      {$endif}
+      {$endif CPUJVM}
+      {$endif FPC_HAS_FEATURE_WIDESTRINGS}
       end;
     fmOutput :
       begin
-        TextRec(f).InOutFunc:=@FileWriteFunc;
+        TextRec(f).InOutFunc:=FFileWriteFunc;
         {$if defined(FPC_HAS_FEATURE_WIDESTRINGS)}
+        {$ifndef CPUJVM} { JVM Notes: GetStandardCodePageProc is not implemented for cpujvm }
         TextRec(f).CodePage:=WideStringManager.GetStandardCodePageProc(scpConsoleOutput);
-      {$endif}
+        {$endif CPUJVM}
+        {$endif FPC_HAS_FEATURE_WIDESTRINGS}
         if Do_Isdevice(hdl) then
-          TextRec(f).FlushFunc:=@FileWriteFunc;
+          TextRec(f).FlushFunc:=FFileWriteFunc;
       end;
   else
    HandleError(102);

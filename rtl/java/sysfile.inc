@@ -318,3 +318,15 @@ begin
   FileRec(F).Handle := Handle;
   FileRec(F).Mode := Mode;
 end;
+
+procedure do_open(var T: TextRec; P: unicodestring; Flags: LongInt; PChangeable: Boolean);
+var
+  Handle: JLObject;
+  Mode: LongInt;
+begin
+  Handle := T.Handle;
+  Mode := T.Mode;
+  do_open(Handle, Mode, P, Flags);
+  T.Handle := Handle;
+  T.Mode := Mode;
+end;

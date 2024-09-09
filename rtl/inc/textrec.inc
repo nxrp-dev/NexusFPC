@@ -35,6 +35,11 @@ type
   { using packed makes the compiler to generate ugly code on some CPUs, further
     using packed causes the compiler to handle arrays of text wrongly, see  see tw0754 e.g. on arm  }
   TextRec = Record
+{$ifdef CPUJVM}
+  type
+    FileFunc = procedure(var T: TextRec);
+  public
+{$endif}
     Handle    : THandle;
 {$if defined(CPU8) or defined(CPU16)}
     Mode      : Word;
@@ -49,14 +54,23 @@ type
     openfunc,
     inoutfunc,
     flushfunc,
+{$ifndef CPUJVM}
     closefunc : codepointer;
     UserData  : array[1..32] of byte;
+{$else CPUJVM}
+    closefunc : FileFunc;
+    UserData  : array[1..32] of pointer;
+{$endif CPUJVM}
     name      : array[0..textrecnamelength-1] of TFileTextRecChar;
     LineEnd   : TLineEndStr;
     buffer    : textbuf;
     CodePage  : TSystemCodePage;
 {$ifdef FPC_HAS_FEATURE_UNICODESTRINGS}
+{$ifndef CPUJVM}
     FullName  : Pointer;
+{$else CPUJVM}
+    FullName  : unicodestring;
+{$endif CPUJVM}
 {$endif FPC_HAS_FEATURE_UNICODESTRINGS}
   End;
 

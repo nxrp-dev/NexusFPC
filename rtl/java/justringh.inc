@@ -70,7 +70,7 @@ Type
       Note: different signature compared to version in native targets: extra
         "Index" parameter, since you cannot increment pchars to point to the
         next character here }
-    function CodePointLengthProc(const Str: PAnsiChar; Index, MaxLookAhead: PtrInt): Ptrint; virtual;
+    function CodePointLengthProc(const Str: PAnsiChar; MaxLookAhead: PtrInt; Index: PtrInt = 0): Ptrint; virtual;
 
     function UpperAnsiStringProc(const s : ansistring) : ansistring; virtual;
     function LowerAnsiStringProc(const s : ansistring) : ansistring; virtual;

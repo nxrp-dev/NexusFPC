@@ -40,7 +40,7 @@ Procedure HandleErrorAddrFrameInd (Errno : longint;addr : CodePointer; frame : P
 
 {$ifdef FPC_HAS_FEATURE_TEXTIO}
 type
-  FileFunc = Procedure(var t : TextRec);
+  FileFunc = TextRec.FileFunc;
 {$endif FPC_HAS_FEATURE_TEXTIO}
 
 const
