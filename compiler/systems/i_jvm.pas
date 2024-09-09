@@ -30,15 +30,15 @@ unit i_jvm;
        systems,rescmn;
 
     const
-       res_jvmraw_info : tresinfo =
+       res_jvmext_info : tresinfo =
            (
-             id     : res_jvm_raw;
-             resbin : 'fpcjres';
-             rescmd : '-o $OBJ $DBG';
-             rcbin  : '';
-             rccmd  : '';
+             id     : res_jvm_ext;
+             resbin : 'fpcres';
+             rescmd : '-o $OBJ -of external $DBG';
+             rcbin  : 'fpcres';
+             rccmd  : '--include $INC -of res -D FPC -o $RES $RC';
              resourcefileclass : nil;
-             resflags : [res_no_compile];
+             resflags : [res_external_file];
            );
 
        { The 32 only means that code written for this target behaves
@@ -64,8 +64,8 @@ unit i_jvm;
             unitlibext   : '.ppl';
             asmext       : '.j';
             objext       : '.class';
-            resext       : '';
-            resobjext    : '.jar';
+            resext       : '.res';
+            resobjext    : '.fpcres';
             sharedlibext : '.jar';
             staticlibext : '.jar';
             staticlibprefix : '';
@@ -84,7 +84,7 @@ unit i_jvm;
             link         : ld_none;
             linkextern   : ld_jvm;
             ar           : ar_none;
-            res          : res_jvm_raw;
+            res          : res_jvm_ext;
             dbg          : dbg_jasmin;
             script       : script_unix;
             endian       : endian_big;
@@ -133,8 +133,8 @@ unit i_jvm;
             unitlibext   : '.ppl';
             asmext       : '.j';
             objext       : '.class';
-            resext       : '';
-            resobjext    : '.jar';
+            resext       : '.res';
+            resobjext    : '.fpcres';
             sharedlibext : '.jar';
             staticlibext : '.jar';
             staticlibprefix : '';
@@ -153,7 +153,7 @@ unit i_jvm;
             link         : ld_none;
             linkextern   : ld_jvm;
             ar           : ar_none;
-            res          : res_jvm_raw;
+            res          : res_jvm_ext;
             dbg          : dbg_jasmin;
             script       : script_unix;
             endian       : endian_big;

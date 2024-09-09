@@ -103,5 +103,5 @@ initialization
   RegisterExport(system_jvm_android32,texportlibjvm);
   RegisterTarget(system_jvm_android32_info);
 
-  RegisterRes(res_jvmraw_info,TJVMRawResourceFile);
+  RegisterRes(res_jvmext_info,TWinLikeResourceFile);
 end.
