@@ -300,6 +300,7 @@ begin
   u:=c;
   s:=upcase(u);
   c:=s[1];
+  result:=c;
 end;
 
 
@@ -322,6 +323,7 @@ begin
   u:=c;
   s:=lowercase(u);
   c:=s[1];
+  result:=c;
 end;
 
 
@@ -423,5 +425,6 @@ begin
   s:=enum.toString;
   if length(s)<len then
     s:=space(len-length(s))+s;
+  result:=0;
 end;
 
