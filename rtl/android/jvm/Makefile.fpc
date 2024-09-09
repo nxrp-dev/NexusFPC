@@ -7,7 +7,7 @@ main=rtl
 
 [target]
 loaders=
-units=$(SYSTEMUNIT) $(UUCHARUNIT) $(OBJPASUNIT) $(ANDROIDR14UNIT) $(SYSUTILSUNIT) $(SYSCONSTUNIT)
+units=$(SYSTEMUNIT) $(UUCHARUNIT) $(OBJPASUNIT) $(LNFOJVMUNIT) $(ANDROIDR14UNIT) $(SYSUTILSUNIT) $(SYSCONSTUNIT)
 
 [require]
 nortl=y
@@ -85,6 +85,9 @@ uuchar$(PPUEXT): $(SYSTEMUNIT)$(PPUEXT) $(INC)/uuchar.pp
 
 objpas$(PPUEXT): $(RTL)/java/objpas.pp
         $(COMPILER) $(RTL)/java/objpas.pp $(REDIR)
+
+lnfojvm$(PPUEXT): $(RTL)/java/lnfojvm.pp $(OBJPASUNIT)$(PPUEXT)
+        $(COMPILER) $(RTL)/java/lnfojvm.pp $(REDIR)
 
 androidr14$(PPUEXT): $(SYSTEMUNIT)$(PPUEXT) $(OBJPASUNIT)$(PPUEXT) androidr14.pas androidr14.inc
 	$(COMPILER) androidr14.pas
