@@ -1031,12 +1031,15 @@ function strpas(p:PAnsiChar):shortstring;{$ifdef SYSTEMINLINE}inline;{$endif}
 
   Table built from UnicodeData.txt 15.0.0 (September 2022). }
 
-const
-  IsCombinings: record
+type
+  TUnicodeCombiningTable = record
     L2: array[0 .. 244] of uint8;
     L1: array[0 .. 46, 0 .. 15] of uint8;
     L0: array[0 .. 161] of uint32;
-  end =
+  end;
+
+const
+  IsCombinings: TUnicodeCombiningTable =
   (
     L2: (
       0, 1, 2, 3, 4, 5, 6, 7, 8, 9, {10} 0, 10, 11, 12, 13, 0, 14, 0, 0, 0, {20} 0, 0, 15, 0, 16, 0, 0, 0, 0, 0, {30} 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
