@@ -2949,6 +2949,6 @@ lnfojvm$(PPUEXT): $(RTL)/java/lnfojvm.pp $(OBJPASUNIT)$(PPUEXT)
 	$(COMPILER) $(RTL)/java/lnfojvm.pp $(REDIR)
 androidr14$(PPUEXT): $(SYSTEMUNIT)$(PPUEXT) $(OBJPASUNIT)$(PPUEXT) androidr14.pas androidr14.inc
 	$(COMPILER) androidr14.pas
-sysutils$(PPUEXT) : $(RTL)/java/sysutils.pp $(wildcard $(OBJPASDIR)/sysutils/*.inc) \
+sysutils$(PPUEXT) : $(RTL)/java/sysutils.pp $(RTL)/java/jsysutilh.inc $(RTL)/java/jsysutils.inc \
 		    objpas$(PPUEXT) sysconst$(PPUEXT)
-	$(COMPILER) -Fi$(OBJPASDIR)/sysutils $(RTL)/java/sysutils.pp $(REDIR)
+	$(COMPILER) -Fi$(RTL)/java $(RTL)/java/sysutils.pp $(REDIR)
