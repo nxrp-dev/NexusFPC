@@ -2069,7 +2069,7 @@ function min(v1,v2 : SizeInt) : SizeInt;
 {$i file.inc}
 
 { Typed file }
-{$i typefile.inc}
+{$i jtypefile.inc}
 {$endif FPC_HAS_FEATURE_FILEIO}
 
 
