@@ -1673,6 +1673,11 @@ unit scandir;
           end;
       end;
 
+    procedure dir_variantrtti;
+      begin
+        do_localswitch(cs_variantrtti);
+      end;
+
     procedure dir_varparacopyoutcheck;
       begin
         if not(target_info.system in systems_jvm) then
@@ -2188,6 +2193,7 @@ unit scandir;
         AddDirective('TYPEDADDRESS',directive_all, @dir_typedaddress);
         AddDirective('TYPEINFO',directive_all, @dir_typeinfo);
         AddDirective('UNITPATH',directive_all, @dir_unitpath);
+        AddDirective('VARIANTRTTI',directive_all, @dir_variantrtti);
         AddDirective('VARPARACOPYOUTCHECK',directive_all, @dir_varparacopyoutcheck);
         AddDirective('VARPROPSETTER',directive_all, @dir_varpropsetter);
         AddDirective('VARSTRINGCHECKS',directive_all, @dir_varstringchecks);

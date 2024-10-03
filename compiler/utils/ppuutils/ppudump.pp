@@ -2404,6 +2404,7 @@ const
         'Excess precision', {cs_excessprecision}
         'Check fpu exceptions', {cs_check_fpu_exceptions}
         'Check all case coverage', {cs_check_all_case_coverage}
+        'Enable Variant data in RTTI', {cs_variantrtti}
          { mmx }
         'Allow MMX instructions', {cs_mmx}
         'Use MMX saturation', {cs_mmx_saturation}

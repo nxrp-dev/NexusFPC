@@ -170,7 +170,7 @@ interface
           { for classes (like for Delphi .NET before) only for Delphi NEXTGEN  }
           managementoperators : tmanagementoperators;
           constructor create(const n:string;usealign,recordminalign:shortint);
-          procedure insertunionst(unionst : trecordsymtable;offset : asizeint);
+          procedure insertunionst(unionst : trecordsymtable;offset : asizeint;visibility : tvisibility;add_symrefs:boolean);
           procedure includemanagementoperator(mop:tmanagementoperator);
        end;
 
@@ -1973,7 +1973,7 @@ implementation
     { the offset is the location of the start of the variant
       and datasize and dataalignment corresponds to
       the complete size (see code in pdecl unit) PM }
-    procedure trecordsymtable.insertunionst(unionst : trecordsymtable;offset : asizeint);
+    procedure trecordsymtable.insertunionst(unionst : trecordsymtable;offset : asizeint;visibility : tvisibility;add_symrefs:boolean);
       var
         sym : tsym;
         def : tdef;
@@ -2063,6 +2063,9 @@ implementation
             if (usefieldalignment<>C_alignment) and
                (usefieldalignment<>mac68k_alignment) then
               recordalignment:=max(recordalignment,varalignrecord);
+
+            if add_symrefs then
+              add_composition_references(tfieldvarsym(sym),visibility);
           end;
         { update alignment for C records }
         if (usefieldalignment=C_alignment) and

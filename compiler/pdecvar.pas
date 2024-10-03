@@ -1690,7 +1690,7 @@ implementation
          cf : TFPList;
          sc : TFPObjectList;
          i  : longint;
-         hs,sorg : string;
+         hs,sorg , unionbranchname: string;
          gendef,hdef,casetype : tdef;
          { maxsize contains the max. size of a variant }
          { startvarrec contains the start of the variant part of a record }
@@ -1707,9 +1707,9 @@ implementation
          srsymtable : TSymtable;
          visibility : tvisibility;
          recst : tabstractrecordsymtable;
-         unionsymtable : trecordsymtable;
+         unionsymtable , unionbranchsymtable: trecordsymtable;
          offset : longint;
-         uniondef : trecorddef;
+         uniondef , unionbranchdef : trecorddef;
          hintsymoptions : tsymoptions;
          deprecatedmsg : pshortstring;
          hadgendummy,
@@ -1722,6 +1722,7 @@ implementation
 {$endif powerpc or powerpc64}
          old_block_type: tblock_type;
          typepos : tfileposinfo;
+         old_current_structdef : tabstractrecorddef;
       begin
          old_block_type:=block_type;
          block_type:=bt_var;
@@ -2112,6 +2113,8 @@ implementation
               { else just concat the info to the given one }
               new(variantdesc^);
               fillchar(variantdesc^^,sizeof(tvariantrecdesc),0);
+              variantdesc^^.variantselectorderef.reset;
+              variantdesc^^.rttienabled:=cs_variantrtti in current_settings.localswitches;
 
               { including a field declaration? }
               fieldvs:=nil;
@@ -2148,6 +2151,7 @@ implementation
               UnionDef:=crecorddef.create('',unionsymtable);
               uniondef.isunion:=true;
 
+              variantdesc^^.variantoffset:=recst.datasize;
               startvarrecsize:=UnionSymtable.datasize;
               { align the bitpacking to the next byte }
               UnionSymtable.datasize:=startvarrecsize;
@@ -2163,15 +2167,20 @@ implementation
                   if not(pt.nodetype=ordconstn) then
                     Message(parser_e_illegal_expression);
                   inserttypeconv(pt,casetype);
-                  { iso pascal does not support ranges in variant record definitions }
-                  if (([m_iso,m_extpas]*current_settings.modeswitches)=[]) and try_to_consume(_POINTPOINT) then
-                    pt:=crangenode.create(pt,comp_expr([ef_accept_equal]))
-                  else
+                  with variantdesc^^.branches[high(variantdesc^^.branches)] do
                     begin
-                      with variantdesc^^.branches[high(variantdesc^^.branches)] do
+                      SetLength(values,length(values)+1);
+                      { iso pascal does not support ranges in variant record definitions }
+                      if (([m_iso,m_extpas]*current_settings.modeswitches)=[]) and try_to_consume(_POINTPOINT) then
                         begin
-                          SetLength(values,length(values)+1);
-                          values[high(values)]:=tordconstnode(pt).value;
+                          pt:=crangenode.create(pt,comp_expr([ef_accept_equal]));
+                          values[high(values),0]:=tordconstnode(trangenode(pt).left).value;
+                          values[high(values),1]:=tordconstnode(trangenode(pt).right).value;
+                        end
+                      else
+                        begin
+                          values[high(values),0]:=tordconstnode(pt).value;
+                          values[high(values),1]:=tordconstnode(pt).value;
                         end;
                     end;
                   pt.free;
@@ -2185,13 +2194,48 @@ implementation
                 else
                   block_type:=old_block_type;
                 consume(_COLON);
-                { read the vars }
+                { read the vars into sub record }
                 consume(_LKLAMMER);
+                { make DFA shut up }
+                UnionBranchSymtable:=nil;
+                unionbranchdef:=nil;
+                old_current_structdef:=nil;
+                if variantdesc^^.rttienabled then
+                  begin
+                    old_current_structdef:=current_structdef;
+                    if Assigned(recst.realname) then
+                       unionbranchname:=recst.realname^+'$unionbranch_'+inttostr(high(variantdesc^^.branches))
+                    else
+                      unionbranchname:='';
+                    UnionBranchSymtable:=trecordsymtable.create(unionbranchname,current_settings.packrecords,current_settings.alignment.recordalignmin);
+                    unionbranchdef:=crecorddef.create(unionbranchname,unionbranchsymtable);
+                    current_structdef.apply_rtti_directive(current_module.rtti_directive);
+                    current_structdef:=unionbranchdef;
+                    symtablestack.push(unionbranchsymtable);
+                  end;
+
                 inc(variantrecordlevel);
                 if token<>_RKLAMMER then
-                  read_record_fields([vd_record],nil,@variantdesc^^.branches[high(variantdesc^^.branches)].nestedvariant,hadgendummy,dummyattrelementcount);
+                  if variantdesc^^.rttienabled then
+                    read_record_fields([vd_record],nil,@unionbranchdef.variantrecdesc,hadgendummy,dummyattrelementcount)
+                  else
+                    read_record_fields([vd_record],nil,@variantdesc^^.branches[high(variantdesc^^.branches)].nestedvariant,hadgendummy,dummyattrelementcount);
                 dec(variantrecordlevel);
                 consume(_RKLAMMER);
+
+                if variantdesc^^.rttienabled then
+                  begin
+                    symtablestack.pop(unionbranchsymtable);
+                    current_structdef:=old_current_structdef;
+                    maybe_guarantee_record_typesym(unionbranchdef,unionbranchdef.owner);
+
+                    { create hidden field for union branch }
+                    fieldvs:=cfieldvarsym.create('$unionbranch'+inttostr(high(variantdesc^^.branches)),vs_value,unionbranchdef,[]);
+                    fieldvs.visibility:=vis_hidden;
+                    symtablestack.top.insertsym(fieldvs);
+                    unionsymtable.addfield(fieldvs,vis_hidden);
+                    variantdesc^^.branches[high(variantdesc^^.branches)].branchfield := fieldvs;
+                  end;
 
                 { calculates maximal variant size }
                 maxsize:=max(maxsize,unionsymtable.datasize);
@@ -2242,7 +2286,7 @@ implementation
               if unionsymtable.recordalignment>recst.fieldalignment then
                 recst.fieldalignment:=unionsymtable.recordalignment;
 
-              trecordsymtable(recst).insertunionst(Unionsymtable,offset);
+              trecordsymtable(recst).insertunionst(Unionsymtable,offset,recst.currentvisibility,variantdesc^^.rttienabled);
               uniondef.owner.deletedef(uniondef);
            end;
          { Because of duplication checks add composite symbols after all normal symbols have been read }
