@@ -5515,9 +5515,33 @@ implementation
 
 
     function trecorddef.getcopy : tstoreddef;
+
+      function copyvariantdesc(const vd: pvariantrecdesc): pvariantrecdesc;
+        var
+          i: Integer;
+        begin
+          result:=nil;
+          if not assigned(vd) then
+            exit;
+          new(result);
+          { create shallow copy }
+          result^:=vd^;
+          { make uniqe copy of branches }
+          setlength(result^.branches,length(result^.branches));
+          for i:=0 to length(result^.branches)-1 do
+            begin
+              { make unique copy of values }
+              setlength(result^.branches[i].values,length(result^.branches[i].values));
+              { deep copy of linked list chain }
+              if not  result^.rttienabled then
+                result^.branches[i].nestedvariant:=copyvariantdesc(vd^.branches[i].nestedvariant);
+            end;
+        end;
+
       begin
         result:=crecorddef.create(objrealname^,symtable.getcopy);
         trecorddef(result).isunion:=isunion;
+        trecorddef(result).variantrecdesc:=copyvariantdesc(variantrecdesc);
         include(trecorddef(result).defoptions,df_copied_def);
         if assigned(tcinitcode) then
           trecorddef(result).tcinitcode:=tcinitcode.getcopy;
