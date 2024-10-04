@@ -4819,6 +4819,7 @@ procedure read_arguments(cmd:TCmdStr);
       { abs(int64) is handled internally on all CPUs }
         def_system_macro('FPC_HAS_INTERNAL_ABS_INT64');
 
+        def_system_macro('FPC_HAS_VARIANT_RTTI');
         def_system_macro('FPC_HAS_UNICODESTRING');
         def_system_macro('FPC_RTTI_PACKSET1');
         def_system_macro('FPC_HAS_CPSTRING');

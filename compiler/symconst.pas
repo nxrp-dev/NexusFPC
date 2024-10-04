@@ -838,7 +838,9 @@ type
     itb_objc_fr_class,
     itp_vardisp_calldesc,
     itp_extended_rtti_table,
-    itp_extended_rtti_field
+    itp_extended_rtti_field,
+    itp_rtti_union_info,
+    itp_rtti_union_branch
   );
 
   { The order is from low priority to high priority,
@@ -993,7 +995,9 @@ inherited_objectoptions : tobjectoptions = [oo_has_virtual,oo_has_private,oo_has
        '$objc_fr_class$',
        '$itp_vardisp_calldesc$',
        '$extended_rtti_table$',
-       '$extended_rtti_field$'
+       '$extended_rtti_field$',
+       '$rtti_union_info$',
+       '$rtti_union_branch$'
      );
 
 

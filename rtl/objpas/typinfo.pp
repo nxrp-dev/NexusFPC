@@ -333,6 +333,66 @@ unit TypInfo;
         FldOffset: SizeInt;
       end;
 
+      PVariantBranch = ^TVariantBranch;
+      TVariantBranch =
+      {$ifndef FPC_REQUIRES_PROPER_ALIGNMENT}
+      packed
+      {$endif FPC_REQUIRES_PROPER_ALIGNMENT}
+      record
+      public
+        BranchStart: PManagedField;
+        BranchEnd: PManagedField;
+        BranchField: TManagedField;
+        LabelCount: LongInt;
+        { Case label can be any ordinal so 64bit ensures it always fits in }
+        { Either signed or unsigned (use information about swtich field to determine }
+      case Boolean of
+        True:(Labels: Array[0..(High(SizeInt) div (SizeOf(Int64)*4))-1] of Array[0..1] of Int64);
+        False:(UnsingedLabels: Array[0..(High(SizeInt) div (SizeOf(QWord)*4))-1] of Array[0..1] of QWord);
+      end;
+
+      PVariantInfo = ^TVariantInfo;
+      TVariantInfo =
+      {$ifndef FPC_REQUIRES_PROPER_ALIGNMENT}
+      packed
+      {$endif FPC_REQUIRES_PROPER_ALIGNMENT}
+      record
+      public
+        SwitchField: PManagedField;
+        VariantOffset: SizeInt;
+        BranchCount: LongInt;
+        Branches: Array[0..(High(SizeInt) div (SizeOf(PVariantBranch)*2))-1] of PVariantBranch;
+      end;
+
+      PVariantInitBranch = ^TVariantInitBranch;
+      TVariantInitBranch =
+      {$ifndef FPC_REQUIRES_PROPER_ALIGNMENT}
+      packed
+      {$endif FPC_REQUIRES_PROPER_ALIGNMENT}
+      record
+      public
+        BranchField: TManagedField;
+        LabelCount: LongInt;
+        { Case label can be any ordinal so 64bit ensures it always fits in }
+        { Either signed or unsigned (use information about swtich field to determine }
+      case Boolean of
+        True:(Labels: Array[0..(High(SizeInt) div (SizeOf(Int64)*4))-1] of Array[0..1] of Int64);
+        False:(UnsingedLabels: Array[0..(High(SizeInt) div (SizeOf(QWord)*4))-1] of Array[0..1] of QWord);
+      end;
+
+      PVariantInitInfo = ^TVariantInitInfo;
+      TVariantInitInfo =
+      {$ifndef FPC_REQUIRES_PROPER_ALIGNMENT}
+      packed
+      {$endif FPC_REQUIRES_PROPER_ALIGNMENT}
+      record
+      public
+        SwitchField: TManagedField;
+        VariantOffset: SizeInt;
+        BranchCount: LongInt;
+        Branches: Array[0..(High(SizeInt) div (SizeOf(PVariantInitBranch)*2))-1] of PVariantInitBranch;
+      end;
+
       PInitManagedField = ^TInitManagedField;
       TInitManagedField = TManagedField;
 
@@ -615,6 +675,9 @@ unit TypInfo;
             Size: Longint;
             InitOffsetOp: PRecOpOffsetTable;
             ManagementOp: Pointer;
+            {$ifdef FPC_HAS_VARIANT_RTTI}
+            VariantInfo: PVariantInitInfo;
+            {$endif}
             ManagedFieldCount: Longint;
           { ManagedFields: array[0..ManagedFieldCount - 1] of TInitManagedField ; }
           );
@@ -819,6 +882,7 @@ unit TypInfo;
       TRecordMethodTable = TRecMethodExTable;
 
       PRecordData = ^TRecordData;
+
       TRecordData =
       {$ifndef FPC_REQUIRES_PROPER_ALIGNMENT}
       packed
@@ -829,11 +893,17 @@ unit TypInfo;
         function GetExtendedFieldCount: Longint;
         function GetExtendedFields: PExtendedFieldTable;
         function GetMethodTable: PRecordMethodTable;
+        {$ifdef FPC_HAS_VARIANT_RTTI}
+        function GetVariantBranch(recptr:Pointer): LongInt;
+        {$endif}
       Public
         property ExtendedFields: PExtendedFieldTable read GetExtendedFields;
         property ExtendedFieldCount: Longint read GetExtendedFieldCount;
         property MethodTable: PRecordMethodTable read GetMethodTable;
         property ExRTTITable: PPropDataEx read GetExPropertyTable;
+        {$ifdef FPC_HAS_VARIANT_RTTI}
+        property VariantBranch[RecPtr:Pointer]:LongInt read GetVariantBranch;
+        {$endif}
       public
         {$ifdef PROVIDE_ATTR_TABLE}
         AttributeTable: PAttributeTable;
@@ -843,6 +913,9 @@ unit TypInfo;
         (
           RecInitInfo: Pointer; { points to TTypeInfo followed by init table }
           RecSize: Longint;
+          {$ifdef FPC_HAS_VARIANT_RTTI}
+          VariantInfo: PVariantInfo;
+          {$endif}
           case Boolean of
             False: (ManagedFldCount: Longint deprecated 'Use RecInitData^.ManagedFieldCount or TotalFieldCount depending on your use case');
             True: (TotalFieldCount: Longint);
@@ -965,6 +1038,9 @@ unit TypInfo;
               (
                 RecInitInfo: Pointer; { points to TTypeInfo followed by init table }
                 RecSize: Longint;
+                {$ifdef FPC_HAS_VARIANT_RTTI}
+                VariantInfo: PVariantInfo;
+                {$endif}
                 case Boolean of
                   False: (ManagedFldCount: Longint deprecated 'Use RecInitData^.ManagedFieldCount or TotalFieldCount depending on your use case');
                   True: (TotalFieldCount: Longint);
@@ -4307,6 +4383,89 @@ function TRecordData.GetMethodTable: PRecordMethodTable;
 begin
     Result:=PRecordMethodTable(GetExtendedFields^.Tail);
 end;
+
+{$ifdef FPC_HAS_VARIANT_RTTI}
+
+function TRecordData.GetVariantBranch(recptr: Pointer): LongInt;
+
+  function read_ord_field (dataptr,typeinfo : pointer; out issigned : boolean; out udest : qword): boolean;
+  var
+    sdest: int64 absolute udest;
+  begin
+    result:=PTypeInfo(typeinfo)^.Kind in [tkInt64,tkQWord,tkInteger,tkChar,tkEnumeration,tkBool,tkWChar,tkSet];
+    if not result then
+      exit;
+    case GetTypeData(PTypeInfo(typeinfo))^.OrdType of
+    otSByte:
+      begin
+        issigned:=true;
+        sdest:=pshortint(dataptr)^;
+      end;
+    otUByte:
+      begin
+        issigned:=false;
+        udest:=pbyte(dataptr)^;
+      end;
+    otSWord:
+      begin
+        issigned:=true;
+        sdest:=psmallint(dataptr)^;
+      end;
+    otUWord:
+      begin
+        issigned:=false;
+        udest:=pword(dataptr)^;
+      end;
+    otSLong:
+      begin
+        issigned:=true;
+        sdest:=plongint(dataptr)^;
+      end;
+    otULong:
+      begin
+        issigned:=false;
+        udest:=plongword(dataptr)^;
+      end;
+    otSQWord:
+      begin
+        issigned:=true;
+        sdest:=pint64(dataptr)^;
+      end;
+    otUQWord:
+      begin
+        issigned:=false;
+        udest:=pqword(dataptr)^;
+      end;
+    end;
+  end;
+
+var
+  issigned: boolean;
+  uval: qword;
+  sval: int64 absolute uval;
+  i: sizeint;
+begin
+  result:=-1;
+  if not assigned(VariantInfo) or not assigned(VariantInfo^.SwitchField) or
+     not read_ord_field(PByte(recptr)+VariantInfo^.SwitchField^.FldOffset,
+                        VariantInfo^.SwitchField^.TypeRef,issigned,uval) then
+    exit;
+  for result:=0 to VariantInfo^.BranchCount-1 do
+    for i:=0 to VariantInfo^.Branches[result]^.LabelCount-1 do
+    if (
+         issigned and
+         (sval>=VariantInfo^.Branches[result]^.Labels[i,0]) and
+         (sval<=VariantInfo^.Branches[result]^.Labels[i,1])
+       ) or (
+         not issigned and
+         (uval>=VariantInfo^.Branches[result]^.UnsingedLabels[i,0]) and
+         (uval<=VariantInfo^.Branches[result]^.UnsingedLabels[i,1])
+       ) then
+      exit;
+  result:=-1;
+end;
+
+{$endif FPC_HAS_VARIANT_RTTI}
 
 { TVmtExtendedFieldTable }
 

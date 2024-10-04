@@ -46,7 +46,7 @@ interface
         addcomments : boolean;
         procedure fields_write_rtti(st:tsymtable;rt:trttitype);
         procedure params_write_rtti(def:tabstractprocdef;rt:trttitype;allow_hidden:boolean);
-        procedure fields_write_rtti_data(tcb: ttai_typedconstbuilder; def: tabstractrecorddef; rt: trttitype);
+        procedure fields_write_rtti_data(tcb: ttai_typedconstbuilder; def: tabstractrecorddef; rt: trttitype;const unionlabels:array of tasmlabel);
         procedure methods_write_rtti(st:tsymtable;rt:trttitype;visibilities:tvisibilities;allow_hidden:boolean);
         procedure write_rtti_extrasyms(def:Tdef;rt:Trttitype;mainrtti:Tasmsymbol);
         procedure published_write_rtti(def : tobjectdef;rt:trttitype);
@@ -54,6 +54,7 @@ interface
         procedure write_extended_method_table(tcb:ttai_typedconstbuilder;def:tabstractrecorddef;packrecords:longint);
         procedure write_extended_field_table(tcb:ttai_typedconstbuilder;def:tabstractrecorddef;packrecords:longint);
         procedure collect_propnamelist(propnamelist:TFPHashObjectList;def:tabstractrecorddef;visibilities:tvisibilities);
+        procedure write_union_rtti_data(tcb:ttai_typedconstbuilder;def:trecorddef;rt:trttitype;var datalabels:array of tasmlabel);
         { only use a direct reference if the referenced type can *only* reside
           in the same unit as the current one }
         function ref_rtti(def:tdef;rt:trttitype;indirect:boolean;suffix:tsymstr):tasmsymbol;
@@ -91,7 +92,7 @@ interface
 implementation
 
     uses
-       cutils,
+       sysutils,cutils,
        globals,verbose,systems,
        node,ncal,ncon,
        fmodule, procinfo,
@@ -665,7 +666,8 @@ implementation
 
 
     { writes a 32-bit count followed by array of field infos for given symtable }
-    procedure TRTTIWriter.fields_write_rtti_data(tcb: ttai_typedconstbuilder; def: tabstractrecorddef; rt: trttitype);
+        procedure TRTTIWriter.fields_write_rtti_data(tcb: ttai_typedconstbuilder;
+      def: tabstractrecorddef; rt: trttitype;const unionlabels: array of tasmlabel);
 
       { Returns true if this is a path to a fieldvar which is either directly part of the record
         or is only accessible through this specific symref (all steps on the way are hidden) and
@@ -676,7 +678,7 @@ implementation
                 (tsymrefsym(sym).fieldvs.visibility=vis_hidden) and
                 (tsymrefsym(sym).fieldvs.vardef.typ=recorddef)do
             sym:=tsymrefsym(sym).ref;
-          result:=(sym.typ=fieldvarsym) and
+          result:=is_normal_fieldvarsym(sym) and
                   (sym.visibility<>vis_hidden) and
                   not is_objc_class_or_protocol(tfieldvarsym(sym).vardef);
         end;
@@ -706,11 +708,16 @@ implementation
       var
         i   : longint;
         sym : tsym;
-        fieldcnt: longint;
+        fieldcnt, nextbranch , labelindex : longint;
         st: tsymtable;
         fields: tfplist;
-        parentrtti: boolean;
+        parentrtti , unionrtti : boolean;
+        fieldlab : TAsmLabel;
+        variantoffset : asizeint;
       begin
+        unionrtti:=(def.typ=recorddef) and (length(unionlabels)>0) and
+          assigned(trecorddef(def).variantrecdesc) and
+          trecorddef(def).variantrecdesc^.rttienabled;
         fieldcnt:=0;
         parentrtti:=false;
         st:=def.symtable;
@@ -726,14 +733,23 @@ implementation
              inc(fieldcnt);
            end;
 
+        if (def.typ=recorddef) and assigned(trecorddef(def).variantrecdesc) then
+          variantoffset:=trecorddef(def).variantrecdesc^.variantoffset
+        else
+          variantoffset:=tabstractrecordsymtable(st).datasize;
+
         for i:=0 to st.SymList.Count-1 do
           begin
             sym:=tsym(st.SymList[i]);
             if (
                  is_normal_fieldvarsym(sym) and
                  (
-                  ((rt=fullrtti) and (sym.visibility<>vis_hidden)) or
-                  ((rt=initrtti) and tfieldvarsym(sym).vardef.needs_inittable)
+                   ((rt=fullrtti) and (sym.visibility<>vis_hidden)) or
+                   (
+                     (rt=initrtti) and tfieldvarsym(sym).vardef.needs_inittable and
+                     { do not add variant part }
+                     (tfieldvarsym(sym).fieldoffset<variantoffset)
+                   )
                  ) and
                  not is_objc_class_or_protocol(tfieldvarsym(sym).vardef)
                ) or ((rt=fullrtti) and symref_to_field_hidden_path(sym))
@@ -752,15 +768,39 @@ implementation
             write_rtti_reference(tcb,tobjectdef(def).childof,rt);
             tcb.emit_ord_const(0,ptruinttype);
           end;
+
+        nextbranch:=0;
+        labelindex:=0;
         { fields }
         for i:=0 to fields.count-1 do
           begin
             sym:=tsym(fields[i]);
+            if unionrtti and (labelindex<length(unionlabels)) and (
+                { We add labels at the selector symbol }
+                (trecorddef(def).variantrecdesc^.variantselector=sym) or
+                { at the beginning of each branch }
+                (
+                  (rt=fullrtti) and { Branch starts are not referenced in init table }
+                  (nextbranch<length(trecorddef(def).variantrecdesc^.branches)) and
+                  (sym.typ=symrefsym) and
+                  (tsymrefsym(sym).fieldvs=trecorddef(def).variantrecdesc^.branches[nextbranch].branchfield)
+                )
+              ) then
+              begin
+                { Beginning of new branch }
+                if sym.typ=symrefsym then
+                  inc(nextbranch);
+                tcb.emit_tai(tai_label.Create(unionlabels[labelindex]),voidpointertype);
+                inc(labelindex);
+              end;
             maybe_add_comment(tcb,'RTTI begin field '+tostr(i)+': '+sym.prettyname);
             write_rtti_reference(tcb,reftarget(sym).vardef,rt);
             tcb.emit_ord_const(symoffset(sym),sizeuinttype);
             maybe_add_comment(tcb,'RTTI end field '+tostr(i)+': '+sym.prettyname);
           end;
+        { add end of record label }
+        if unionrtti and (labelindex<length(unionlabels)) then
+          tcb.emit_tai(tai_label.Create(unionlabels[labelindex]),voidpointertype);
         fields.free;
       end;
 
@@ -980,6 +1020,170 @@ implementation
                   end;
              end;
           end;
+      end;
+
+    procedure TRTTIWriter.write_union_rtti_data(tcb: ttai_typedconstbuilder;
+      def: trecorddef; rt: trttitype; var datalabels: array of tasmlabel);
+
+      procedure write_branch(tcb: ttai_typedconstbuilder; branchindex, labelindex: longint);
+        var
+          i : longint;
+        begin
+          { write branches:
+            BranchField: TManagedField;
+            BranchStart: Pointer (label);
+            LabelCount: LongInt;
+            Labels: Array[0..LabelCount-1] of Array[0..1] of Int64;
+          }
+          with def.variantrecdesc^.branches[branchindex] do
+            begin
+              if (rt=fullrtti) then
+                begin { full table: add reference to first field of branch }
+                  { First branch need to start label }
+                  if branchindex=0 then
+                    current_asmdata.getlocaldatalabel(datalabels[labelindex]);
+                  { Emit pointer to said label }
+                  tcb.emit_tai(Tai_const.Createname(
+                    datalabels[labelindex].name,
+                    AT_DATA_FORCEINDIRECT,0),voidpointertype);
+                  { Create end label (doubles as start label for next branch) }
+                  current_asmdata.getlocaldatalabel(datalabels[labelindex+1]);
+                  { Emit pointer to said label }
+                  tcb.emit_tai(Tai_const.Createname(
+                    datalabels[labelindex+1].name,
+                    AT_DATA_FORCEINDIRECT,0),voidpointertype);
+                end;
+              { add reference to sub struct }
+              write_rtti_reference(tcb,tfieldvarsym(branchfield).vardef,rt);
+              tcb.emit_ord_const(tfieldvarsym(branchfield).fieldoffset,sizeuinttype);
+
+              tcb.emit_ord_const(length(values),s32inttype);
+              for i:=0 to length(values)-1 do
+                begin
+                  { each value is array[0..1] of Int64/QWord }
+                  if values[i,0].signed then
+                    begin
+                      tcb.emit_ord_const(values[i,0].svalue,s64inttype);
+                      tcb.emit_ord_const(values[i,1].svalue,s64inttype);
+                    end
+                  else
+                    begin
+                      tcb.emit_ord_const(values[i,0].uvalue,u64inttype);
+                      tcb.emit_ord_const(values[i,1].uvalue,u64inttype);
+                    end
+                end;
+            end;
+        end;
+
+      procedure write_info(tcb: ttai_typedconstbuilder);
+        var
+          branchtcb : ttai_typedconstbuilder;
+          branchlbl : tasmlabel;
+          branchdef : tdef;
+          i , branchcount : longint;
+        begin
+          { write variant info:
+            SwitchField: PManagedField (label);
+            VariantOffset: SizeInt;
+            BranchCount: LongInt;
+            Branches: Array[0..BranchCount-1] of PVariantBranch;
+          }
+
+          if (rt=fullrtti) then
+            begin
+              if assigned(def.variantrecdesc^.variantselector) then
+                begin
+                  { Add label where the data will be found later }
+                  current_asmdata.getlocaldatalabel(datalabels[0]);
+                  { Emit pointer to said label }
+                  tcb.emit_tai(Tai_const.Createname(
+                    datalabels[0].name,
+                    AT_DATA_FORCEINDIRECT,0),voidpointertype);
+                end
+              else
+                { no selector: nil ptr }
+                tcb.emit_tai(tai_const.create_nil_dataptr,voidpointertype);
+            end
+          else { inittable: only called if variant selector is set }
+            begin
+              { init table: add reference to sub struct }
+              write_rtti_reference(tcb,tfieldvarsym(def.variantrecdesc^.variantselector).vardef,rt);
+              tcb.emit_ord_const(tfieldvarsym(def.variantrecdesc^.variantselector).fieldoffset,sizeuinttype);
+            end;
+
+          tcb.emit_ord_const(def.variantrecdesc^.variantoffset,sizesinttype);
+          branchcount:=length(def.variantrecdesc^.branches);
+          if rt=initrtti then { on init table, discard all non managed branches }
+            for i:=branchcount downto 1 do
+              if not is_managed_type(tfieldvarsym(def.variantrecdesc^.branches[i].branchfield).vardef) then
+                dec(branchcount);
+
+          tcb.emit_ord_const(branchcount,s32inttype);
+
+          for i:=0 to length(def.variantrecdesc^.branches)-1 do
+            begin
+              if (rt=initrtti) and not is_managed_type(tfieldvarsym(def.variantrecdesc^.branches[i].branchfield).vardef) then
+                { for init table only managed branches are important }
+                continue;
+              tcb.start_internal_data_builder(current_asmdata.AsmLists[al_rtti],sec_rodata,'',branchtcb,branchlbl);
+
+              branchtcb.begin_anonymous_record('',defaultpacking,min(reqalign,SizeOf(PInt)),
+                targetinfos[target_info.system]^.alignment.recordalignmin);
+              write_branch(branchtcb,i,i+ord(assigned(def.variantrecdesc^.variantselector)));
+              branchdef:=branchtcb.end_anonymous_record;
+
+              tcb.finish_internal_data_builder(branchtcb,branchlbl,branchdef,sizeof(pint));
+
+              tcb.emit_tai(tai_const.Create_sym(branchlbl),voidpointertype);
+            end;
+        end;
+
+        { We only need an init table if at least one branch of the union is managed }
+        function is_managed_union: boolean;inline;
+          var
+            i: Integer;
+          begin
+            result:=false;
+            with def.variantrecdesc^ do
+              for i:=0 to length(branches)-1 do
+                if is_managed_type(tfieldvarsym(branches[i].branchfield).vardef) then
+                  exit(true);
+          end;
+
+      var
+        infotcb : ttai_typedconstbuilder;
+        infolbl : tasmlabel;
+        infodef : tdef;
+      begin
+        if not assigned(def.variantrecdesc) or not def.variantrecdesc^.rttienabled or
+           ((rt=initrtti) and not is_managed_union) then
+          begin
+            { if not an rtti variant simply drop a nil ptr and leave }
+            tcb.emit_tai(tai_const.create_nil_dataptr,voidpointertype);
+            exit;
+          end;
+        { if we have a selector symbol the branch labels start at index 1
+          For each branch one label plus one in the end }
+        if (
+            (rt=fullrtti) and { fullrtti => right size }
+            (length(datalabels)<>length(def.variantrecdesc^.branches) + 1 +
+                                ord(assigned(def.variantrecdesc^.variantselector)))
+           ) or (
+             (rt=initrtti) and { init table => variant selector }
+             not assigned(def.variantrecdesc^.variantselector)
+           )then
+          internalerror(2024041004);
+
+        tcb.start_internal_data_builder(current_asmdata.AsmLists[al_rtti],sec_rodata,'',infotcb,infolbl);
+
+        infotcb.begin_anonymous_record('',defaultpacking,min(reqalign,SizeOf(PInt)),
+          targetinfos[target_info.system]^.alignment.recordalignmin);
+        write_info(infotcb);
+        infodef:=infotcb.end_anonymous_record;
+
+        tcb.finish_internal_data_builder(infotcb,infolbl,infodef,sizeof(pint));
+
+        tcb.emit_tai(tai_const.Create_sym(infolbl),voidpointertype);
       end;
 
 
@@ -1729,6 +1933,7 @@ implementation
 
         var
           oplab : tasmlabel;
+          unionrttilabels : array of tasmlabel;
 
         begin
            write_header(tcb,def,tkRecord);
@@ -1773,7 +1978,14 @@ implementation
                  end;
              end;
 
-           fields_write_rtti_data(tcb,def,rt);
+           { Union RTTI: allocate enough labels: One per branch, one end of record and one for selector }
+           unionrttilabels:=nil;
+           if assigned(def.variantrecdesc) and (rt=fullrtti) then
+             setlength(unionrttilabels, length(def.variantrecdesc^.branches) + 1 +
+                                        ord(assigned(def.variantrecdesc^.variantselector)));
+           write_union_rtti_data(tcb,def,rt,unionrttilabels);
+
+           fields_write_rtti_data(tcb,def,rt,unionrttilabels);
            { write extended rtti }
            if rt=fullrtti then
              begin
@@ -1913,6 +2125,8 @@ implementation
 
             { - for compatiblity with record RTTI we need to write a terminator-
                 Nil pointer for initrtti as well for objects
+              - Additionally a Nil pointer for the variant section is required
+                as objects and classes can't have variant parts
               - for RTTI consistency for objects we need point from fullrtti
                 to initrtti
               - classes are assumed to have the same INIT RTTI as records
@@ -1938,8 +2152,11 @@ implementation
                   tcb.emit_tai(Tai_const.Create_nil_dataptr,voidpointertype);
                 tcb.emit_tai(Tai_const.Create_nil_dataptr,voidpointertype);
               end;
+            { nil ptr for variant part to stay compatible with records }
+            if (rt=initrtti) then
+              tcb.emit_tai(Tai_const.Create_nil_dataptr,voidpointertype);
             { enclosing record takes care of alignment }
-            fields_write_rtti_data(tcb,def,rt);
+            fields_write_rtti_data(tcb,def,rt,[]);
 
             tcb.end_anonymous_record;
             maybe_add_comment(tcb,'RTTI end fields '+def.objname^);
@@ -2533,7 +2750,7 @@ implementation
       end;
     end;
 
-    procedure TRTTIWriter.write_child_rtti_data(def:tdef;rt:trttitype);
+    procedure TRTTIWriter.write_child_rtti_data(def: tdef; rt: trttitype);
       begin
         case def.typ of
           enumdef :

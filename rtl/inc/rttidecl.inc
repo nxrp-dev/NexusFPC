@@ -61,6 +61,9 @@ type
       tkRecord: (
         InitTable: Pointer;
         Size: Longint;
+{$ifdef FPC_HAS_VARIANT_RTTI}
+        VariantInfo: Pointer;
+{$endif}
         Count: Longint;
         { Elements: array[count] of TRecordElement }
       );
@@ -125,6 +128,9 @@ type
         Size: Longint;
         InitRecordOpTable: PRTTIRecordOpOffsetTable;
         RecordOp: PRTTIRecordOpVMT;
+{$ifdef FPC_HAS_VARIANT_RTTI}
+        VariantInfo: Pointer;
+{$endif}
         Count: Longint;
         { Elements: array[count] of TRecordElement }
       );
