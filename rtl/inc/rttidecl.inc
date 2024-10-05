@@ -48,6 +48,37 @@ type
     Offset: SizeInt;
   end;
 
+{$ifdef FPC_HAS_VARIANT_RTTI}
+  TRTTIRecordVariantBranchFull =
+{$ifdef USE_PACKED}
+  packed
+{$endif USE_PACKED}
+  record
+    BranchStart: PRecordElement;
+    BranchEnd: PRecordElement;
+    BranchField: TRecordElement;
+    LabelCount: LongInt;
+    { Case label can be any ordinal so 64bit ensures it always fits in }
+    { Either signed or unsigned (use information about swtich field to determine }
+  case Boolean of
+    True:(Labels: Array[0..0] of Array[0..1] of Int64);
+    False:(UnsingedLabels: Array[0..0] of Array[0..1] of QWord);
+  end;
+  PRTTIRecordVariantBranchFull = ^TRTTIRecordVariantBranchFull;
+
+  TRTTIRecordVariantInfoFull =
+{$ifdef USE_PACKED}
+  packed
+{$endif USE_PACKED}
+  record
+    SwitchField: PRecordElement;
+    VariantOffset: SizeInt;
+    BranchCount: LongInt;
+    Branches: Array[0..0] of PRTTIRecordVariantBranchFull;
+  end;
+  PTTTIRecordVariantInfoFull = ^TRTTIRecordVariantInfoFull;
+{$endif}
+
   PRecordInfoFull=^TRecordInfoFull;
   TRecordInfoFull=
 {$ifdef USE_PACKED}
@@ -62,7 +93,7 @@ type
         InitTable: Pointer;
         Size: Longint;
 {$ifdef FPC_HAS_VARIANT_RTTI}
-        VariantInfo: Pointer;
+        VariantInfo: PTTTIRecordVariantInfoFull;
 {$endif}
         Count: Longint;
         { Elements: array[count] of TRecordElement }
@@ -114,6 +145,35 @@ type
   end;
   PRTTIRecordOpOffsetTable = ^TRTTIRecordOpOffsetTable;
 
+{$ifdef FPC_HAS_VARIANT_RTTI}
+  TRTTIRecordVariantBranchInit =
+{$ifdef USE_PACKED}
+  packed
+{$endif USE_PACKED}
+  record
+    BranchField: TRecordElement;
+    LabelCount: LongInt;
+    { Case label can be any ordinal so 64bit ensures it always fits in }
+    { Either signed or unsigned (use information about swtich field to determine }
+  case Boolean of
+    True:(Labels: Array[0..0] of Array[0..1] of Int64);
+    False:(UnsingedLabels: Array[0..0] of Array[0..1] of QWord);
+  end;
+  PRTTIRecordVariantBranchInit = ^TRTTIRecordVariantBranchInit;
+
+  TRTTIRecordVariantInfoInit =
+{$ifdef USE_PACKED}
+  packed
+{$endif USE_PACKED}
+  record
+    SwitchField: TRecordElement;
+    VariantOffset: SizeInt;
+    BranchCount: LongInt;
+    Branches: Array[0..0] of PRTTIRecordVariantBranchInit;
+  end;
+  PRTTIRecordVariantInfoInit = ^TRTTIRecordVariantInfoInit;
+{$endif}
+
   TRecordInfoInit=
 {$ifdef USE_PACKED}
   packed
@@ -129,7 +189,7 @@ type
         InitRecordOpTable: PRTTIRecordOpOffsetTable;
         RecordOp: PRTTIRecordOpVMT;
 {$ifdef FPC_HAS_VARIANT_RTTI}
-        VariantInfo: Pointer;
+        VariantInfo: PRTTIRecordVariantInfoInit;
 {$endif}
         Count: Longint;
         { Elements: array[count] of TRecordElement }
@@ -159,6 +219,27 @@ type
       );
       { include for proper alignment }
       tkInt64: (
+        dummy : Int64
+      );
+  end;
+
+  POrdInfo=^TOrdInfo;
+  TOrdInfo=
+{$ifdef USE_PACKED}
+  packed
+{$endif USE_PACKED}
+  record
+{$if declared(TRttiDataCommon)}
+    Common: TRttiDataCommon;
+{$endif declared TRttiDataCommon}
+    case TTypeKind of
+      tkInt64,tkQWord,tkInteger,tkChar,tkEnumeration,tkBool,tkWChar,tkSet: (
+        OrdType : TOrdType;
+        { rest ommited as not necessary, see typeinfo for rest of declaration }
+        { (alignment guaranteed through dummy) }
+      );
+      { include for proper alignment }
+      tkFloat: (
         dummy : Int64
       );
   end;

@@ -35,6 +35,8 @@ type
 
   TVisibilityClass = (vcPrivate, vcProtected, vcPublic, vcPublished);
   TVisibilityClasses = set of TVisibilityClass;
+
+  TOrdType  = (otSByte,otUByte,otSWord,otUWord,otSLong,otULong,otSQWord,otUQWord);
  
  {$MINENUMSIZE DEFAULT}
  

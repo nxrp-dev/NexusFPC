@@ -407,3 +407,129 @@ procedure CopyArray(dest, source, typeInfo: Pointer; count: SizeInt);
         fpc_Copy_internal(source+size*i, dest+size*i, typeInfo);
   end;
 
+{$ifdef FPC_HAS_VARIANT_RTTI}
+
+function read_ord_field (dataptr,typeinfo : pointer; out issigned : boolean; out udest : qword): boolean;
+var
+  sdest: int64 absolute udest;
+begin
+  result:=assigned(typeinfo) and
+    (PTypeKind(TypeInfo)^ in [tkInt64,tkQWord,tkInteger,tkChar,tkEnumeration,tkBool,tkWChar,tkSet]);
+  if not result then
+    exit;
+  typeInfo:=aligntoqword(typeInfo+2+PByte(typeInfo)[1]);
+  case POrdInfo(typeinfo)^.OrdType of
+  otSByte:
+    begin
+      issigned:=true;
+      sdest:=pshortint(dataptr)^;
+    end;
+  otUByte:
+    begin
+      issigned:=false;
+      udest:=pbyte(dataptr)^;
+    end;
+  otSWord:
+    begin
+      issigned:=true;
+      sdest:=psmallint(dataptr)^;
+    end;
+  otUWord:
+    begin
+      issigned:=false;
+      udest:=pword(dataptr)^;
+    end;
+  otSLong:
+    begin
+      issigned:=true;
+      sdest:=plongint(dataptr)^;
+    end;
+  otULong:
+    begin
+      issigned:=false;
+      udest:=plongword(dataptr)^;
+    end;
+  otSQWord:
+    begin
+      issigned:=true;
+      sdest:=pint64(dataptr)^;
+    end;
+  otUQWord:
+    begin
+      issigned:=false;
+      udest:=pqword(dataptr)^;
+    end;
+  end;
+end;
+
+function get_variant_branch (vrec,typeinfo : pointer):longint;
+var
+  ri : PRecordInfoFull;
+  issigned : boolean;
+  uval : qword;
+  sval : int64 absolute uval;
+  i : sizeint;
+begin
+  result:=-1;
+  if PTypeKind(TypeInfo)^<>tkRecord then
+    exit;
+  ri:=PRecordInfoFull(aligntoqword(typeInfo+2+PByte(typeInfo)[1]));
+  if not assigned(ri^.VariantInfo) or not assigned(ri^.VariantInfo^.SwitchField) or
+     not assigned(ri^.VariantInfo^.SwitchField^.TypeInfo) or
+     not read_ord_field(PByte(vrec)+ri^.VariantInfo^.SwitchField^.Offset,
+                        ri^.VariantInfo^.SwitchField^.TypeInfo^,issigned,uval) then
+    exit;
+  for result:=0 to ri^.VariantInfo^.BranchCount-1 do
+    for i:=0 to ri^.VariantInfo^.Branches[result]^.LabelCount-1 do
+    if (
+         issigned and
+         (sval>=ri^.VariantInfo^.Branches[result]^.Labels[i,0]) and
+         (sval<=ri^.VariantInfo^.Branches[result]^.Labels[i,1])
+       ) or (
+         not issigned and
+         (uval>=ri^.VariantInfo^.Branches[result]^.UnsingedLabels[i,0]) and
+         (uval<=ri^.VariantInfo^.Branches[result]^.UnsingedLabels[i,1])
+       ) then
+      exit;
+  result:=-1;
+end;
+
+function get_variant_init_branch (vrec,typeinfo : pointer):PRTTIRecordVariantBranchInit;
+var
+  ri : PRecordInfoInit;
+  issigned : boolean;
+  uval : qword;
+  sval : int64 absolute uval;
+  i , j: sizeint;
+begin
+  result:=nil;
+  if PTypeKind(TypeInfo)^<>tkRecord then
+    exit;
+  ri:=PRecordInfoInit(aligntoqword(typeInfo+2+PByte(typeInfo)[1]));
+  if not assigned(ri^.VariantInfo) or not assigned(ri^.VariantInfo^.SwitchField.TypeInfo) or
+     not read_ord_field(PByte(vrec)+ri^.VariantInfo^.SwitchField.Offset,
+                        ri^.VariantInfo^.SwitchField.TypeInfo^,issigned,uval) then
+    exit;
+  for j:=0 to ri^.VariantInfo^.BranchCount-1 do
+    for i:=0 to ri^.VariantInfo^.Branches[j]^.LabelCount-1 do
+    if (
+         issigned and
+         (sval>=ri^.VariantInfo^.Branches[j]^.Labels[i,0]) and
+         (sval<=ri^.VariantInfo^.Branches[j]^.Labels[i,1])
+       ) or (
+         not issigned and
+         (uval>=ri^.VariantInfo^.Branches[j]^.UnsingedLabels[i,0]) and
+         (uval<=ri^.VariantInfo^.Branches[j]^.UnsingedLabels[i,1])
+       ) then
+      exit(ri^.VariantInfo^.Branches[j]);
+end;
+
+procedure fpc_checkvariantbranch (VRec,TypeInfo : pointer;Branch : longint); [public,alias:'FPC_CHECKVARIANTBRANCH']; compilerproc;
+  begin
+    if PTypeKind(TypeInfo)^<>tkRecord then
+      exit;
+    if get_variant_branch (VRec,TypeInfo)<>Branch then
+      HandleErrorAddrFrameInd(237,get_pc_addr,get_frame);
+  end;
+{$endif}
+

@@ -300,6 +300,7 @@ ResourceString
   SUnsupportedCallConv          = 'Unsupported calling convention: %s';
   SUnsupportedPropertyVariantType = 'Unsupported property variant type %d';
   SUntitled                     = '(Untitled)';
+  SVariantAccessError           = 'Access to invalid variant branch';
   SVBitmaps                     = 'Bitmaps';
   SVEnhMetafiles                = 'Enhanced MetaFiles';
   SVIcons                       = 'Icons';

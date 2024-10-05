@@ -74,6 +74,7 @@ Const
    SUnknownErrorCode = 'Unknown error code: %d';
    SVarArrayBounds = 'Variant array bounds error';
    SVarArrayCreate = 'Variant array cannot be created';
+   SVariantAccessError = 'Access to invalid variant branch';
    SVarNotArray = 'Variant doesn''t contain an array';
    SiconvError = 'iconv error';
    SThreadError = 'Thread error';

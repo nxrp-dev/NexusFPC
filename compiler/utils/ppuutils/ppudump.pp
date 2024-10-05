@@ -2405,6 +2405,7 @@ const
         'Check fpu exceptions', {cs_check_fpu_exceptions}
         'Check all case coverage', {cs_check_all_case_coverage}
         'Enable Variant data in RTTI', {cs_variantrtti}
+        'Check access to variant fields', {cs_check_variant_access}
          { mmx }
         'Allow MMX instructions', {cs_mmx}
         'Use MMX saturation', {cs_mmx_saturation}

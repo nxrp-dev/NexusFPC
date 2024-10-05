@@ -183,6 +183,7 @@ type
    EPrivilege = class(EExternal);
    EStackOverflow = class(EExternal);
    EControlC = class(EExternal);
+   EVariantAccessError = class(EExternal);
 
    { String conversion errors }
    EConvertError = class(Exception);

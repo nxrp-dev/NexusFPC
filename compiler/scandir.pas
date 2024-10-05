@@ -424,6 +424,10 @@ unit scandir;
           Message1(scan_e_unsupported_switch,'CHECKPOINTER+');
       end;
 
+    procedure dir_checkvariantaccess;
+      begin
+        do_localswitch(cs_check_variant_access);
+      end;
 
     procedure dir_excessprecision;
       begin
@@ -2094,6 +2098,7 @@ unit scandir;
         AddDirective('CHECKFPUEXCEPTIONS',directive_all, @dir_checkfpuexceptions);
         AddDirective('CHECKLOWADDRLOADS',directive_all, @dir_checklowaddrloads);
         AddDirective('CHECKPOINTER',directive_all, @dir_checkpointer);
+        AddDirective('CHECKVARIANTACCESS',directive_all, @dir_checkvariantaccess);
         AddDirective('CODEALIGN',directive_all, @dir_codealign);
         AddDirective('CODEPAGE',directive_all, @dir_codepage);
         AddDirective('COPERATORS',directive_all, @dir_coperators);

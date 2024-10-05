@@ -371,6 +371,7 @@ interface
           function is_visible_for_rtti(option: trtti_option; vis: tvisibility): boolean; inline;
           function rtti_visibilities_for_option(option: trtti_option): tvisibilities; inline;
           function has_extended_rtti: boolean; inline;
+          function is_on_selectable_union_branch(sym:tsym):longint;
        end;
 
        pvariantrecdesc = ^tvariantrecdesc;
@@ -5231,6 +5232,27 @@ implementation
         result := (rtti.options[ro_fields]<>[]) or
                   (rtti.options[ro_methods]<>[]) or
                   (rtti.options[ro_properties]<>[]);
+      end;
+
+    function tabstractrecorddef.is_on_selectable_union_branch(sym:tsym):longint;
+      begin
+        result:=-1;
+           { only records with variant parts that are rtti enabled }
+        if (typ<>recorddef) or not assigned(trecorddef(self).variantrecdesc) or
+           not trecorddef(self).variantrecdesc^.rttienabled or
+           not assigned(trecorddef(self).variantrecdesc^.variantselector) or
+           { on rtti enabled variants access to branches is through symrefs }
+           not assigned(sym) or (sym.Owner<>symtable) or (sym.typ<>symrefsym) or
+           { and check if the symref references something in the variant part }
+           (tsymrefsym(sym).fieldvs.fieldoffset<trecorddef(self).variantrecdesc^.variantoffset) then
+          exit;
+        { else: iterate until the branch this symbol references to is found }
+        with trecorddef(self).variantrecdesc^ do
+          for result:=0 to length(branches)-1 do
+            if branches[result].branchfield=tsymrefsym(sym).fieldvs then
+              exit;
+        { We are definitely on a branch so why haven't we found it? }
+        internalerror(2024100501);
       end;
 
 {$ifdef DEBUG_NODE_XML}
