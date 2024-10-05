@@ -1689,7 +1689,7 @@ implementation
       var
          cf : TFPList;
          sc : TFPObjectList;
-         i  : longint;
+         i , j  : longint;
          hs,sorg , unionbranchname: string;
          gendef,hdef,casetype : tdef;
          { maxsize contains the max. size of a variant }
@@ -1708,7 +1708,7 @@ implementation
          visibility : tvisibility;
          recst : tabstractrecordsymtable;
          unionsymtable , unionbranchsymtable: trecordsymtable;
-         offset : longint;
+         offset , brindex: longint;
          uniondef , unionbranchdef : trecorddef;
          hintsymoptions : tsymoptions;
          deprecatedmsg : pshortstring;
@@ -1723,6 +1723,8 @@ implementation
          old_block_type: tblock_type;
          typepos : tfileposinfo;
          old_current_structdef : tabstractrecorddef;
+         unioncheckbranches : array of longint;
+         foundduplicate , unionhaszerobranch : boolean;
       begin
          old_block_type:=block_type;
          block_type:=bt_var;
@@ -2147,6 +2149,9 @@ implementation
                 Message(type_e_ordinal_expr_expected);
               consume(_OF);
 
+              unioncheckbranches:=nil;
+              unionhaszerobranch:=false;
+
               UnionSymtable:=trecordsymtable.create('',current_settings.packrecords,current_settings.alignment.recordalignmin);
               UnionDef:=crecorddef.create('',unionsymtable);
               uniondef.isunion:=true;
@@ -2182,6 +2187,41 @@ implementation
                           values[high(values),0]:=tordconstnode(pt).value;
                           values[high(values),1]:=tordconstnode(pt).value;
                         end;
+                      if (cs_strict_variants in current_settings.localswitches) and
+                         (values[high(values),0]<=Tconstexprint(0)) and
+                         (values[high(values),1]>=Tconstexprint(0)) then
+                        unionhaszerobranch:=true;
+                      foundduplicate:=false;
+                      { If we have strict enable for this branch we need to check against all }
+                      if cs_strict_variants in current_settings.localswitches then
+                        for i:=0 to length(variantdesc^^.branches)-2 do
+                          begin
+                            for j:=0 to length(values)-1 do
+                              if (variantdesc^^.branches[i].values[j,0]<=values[high(values),1]) and
+                                 (variantdesc^^.branches[i].values[j,1]>=values[high(values),0]) then
+                                begin
+                                  foundduplicate:=true;
+                                  break;
+                                end;
+                            if foundduplicate then
+                              break;
+                          end
+                      else { if not, only against the strict branches we encountered before }
+                        for i:=0 to length(unioncheckbranches)-1 do
+                          begin
+                            brindex:=unioncheckbranches[i];
+                            for j:=0 to length(values)-1 do
+                              if (variantdesc^^.branches[brindex].values[j,0]<=values[high(values),1]) and
+                                 (variantdesc^^.branches[brindex].values[j,1]>=values[high(values),0]) then
+                                begin
+                                  foundduplicate:=true;
+                                  break;
+                                end;
+                            if foundduplicate then
+                              break;
+                          end;
+                      if foundduplicate then
+                        Message(parser_e_double_caselabel);
                     end;
                   pt.free;
                   if token=_COMMA then
@@ -2189,6 +2229,12 @@ implementation
                   else
                     break;
                 until false;
+                { if strict variant checking is on for this branch, add it to the list }
+                if cs_strict_variants in current_settings.localswitches then
+                  begin
+                    setlength(unioncheckbranches,length(unioncheckbranches)+1);
+                    unioncheckbranches[high(unioncheckbranches)]:=high(variantdesc^^.branches);
+                  end;
                 if m_delphi in current_settings.modeswitches then
                   block_type:=bt_var_type
                 else
@@ -2288,6 +2334,8 @@ implementation
 
               trecordsymtable(recst).insertunionst(Unionsymtable,offset,recst.currentvisibility,variantdesc^^.rttienabled);
               uniondef.owner.deletedef(uniondef);
+              if (cs_strict_variants in current_settings.localswitches) and not unionhaszerobranch then
+                Message1(cg_e_case_missing_value,'0 (Default)');
            end;
          { Because of duplication checks add composite symbols after all normal symbols have been read }
          for i:=0 to cf.count-1 do

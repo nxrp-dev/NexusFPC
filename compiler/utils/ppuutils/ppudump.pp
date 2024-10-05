@@ -2417,6 +2417,7 @@ const
         'Use scoped enums',{cs_scopedenums}
         'Use pointer math', {cs_pointermath}
         'Open string', {cs_openstring}
+        'Use strict checking of variant labels', {cs_strict_variants}
          { macpas specific}
         'MACPAS exteranl variable', {cs_external_var}
         'MACPAS externally visible', {cs_externally_visible}

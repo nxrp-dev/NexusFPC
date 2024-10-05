@@ -163,7 +163,7 @@ interface
          { parser }
          cs_typed_addresses,cs_strict_var_strings,cs_refcountedstrings,
          cs_bitpacking,cs_varpropsetter,cs_scopedenums,cs_pointermath,
-         cs_openstring,
+         cs_openstring,cs_strict_variants,
          { macpas specific}
          cs_external_var, cs_externally_visible,
          { jvm specific }

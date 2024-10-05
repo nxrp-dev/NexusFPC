@@ -1597,6 +1597,11 @@ unit scandir;
         do_message(scan_f_user_defined);
       end;
 
+    procedure dir_strictvariants;
+      begin
+       do_localswitch(cs_strict_variants);
+      end;
+
     procedure dir_stringchecks;
       begin
         // Delphi adds checks that ansistring and unicodestring are correct in
@@ -2186,6 +2191,7 @@ unit scandir;
         AddDirective('STACKCHECKING',directive_all,@dir_stackchecking);
         AddDirective('STACKFRAMES',directive_all, @dir_stackframes);
         AddDirective('STOP',directive_all, @dir_stop);
+        AddDirective('STRICTVARIANTS',directive_all, @dir_strictvariants);
         AddDirective('STRINGCHECKS', directive_all, @dir_stringchecks);
         AddDirective('SYSCALL',directive_all, @dir_syscall);
         AddDirective('TARGETSWITCH',directive_all, @dir_targetswitch);
