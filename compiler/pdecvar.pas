@@ -1970,9 +1970,14 @@ implementation
 
              { types that use init/final are not allowed in variant parts, but
                classes are allowed }
+             { we moved this check to after parsing the union branch
+               while this loses infomration about the locality of the managed field,
+               we do not have access to the variantdesc of the containing union
+               in here.
              if (variantrecordlevel>0) then
                if is_managed_type(hdef) then
                  Message(parser_e_cant_use_inittable_here);
+             }
 
              { try to parse the hint directives }
              hintsymoptions:=[];
@@ -2116,6 +2121,7 @@ implementation
               new(variantdesc^);
               fillchar(variantdesc^^,sizeof(tvariantrecdesc),0);
               variantdesc^^.variantselectorderef.reset;
+              variantdesc^^.ismanaged:=false;
               variantdesc^^.rttienabled:=cs_variantrtti in current_settings.localswitches;
 
               { including a field declaration? }
@@ -2282,6 +2288,21 @@ implementation
                     unionsymtable.addfield(fieldvs,vis_hidden);
                     variantdesc^^.branches[high(variantdesc^^.branches)].branchfield := fieldvs;
                   end;
+
+                {
+                  managed check moved from above down here to make handling of
+                  rtti and manadged variant enabled records possible
+                  this loses locality information about which field is managed.
+                  Maybe fix by iterating to find the (first? last?) occuring
+                  managed field?
+                }
+                if is_managed_type(uniondef) then
+                  if (cs_managed_variants in current_settings.localswitches) and
+                     variantdesc^^.rttienabled and
+                     assigned(variantdesc^^.variantselector) then
+                    variantdesc^^.ismanaged:=true
+                  else
+                    Message(parser_e_cant_use_inittable_here);
 
                 { calculates maximal variant size }
                 maxsize:=max(maxsize,unionsymtable.datasize);

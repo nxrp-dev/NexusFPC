@@ -158,6 +158,7 @@ interface
          cs_check_low_addr_load,cs_imported_data,
          cs_excessprecision,cs_check_fpu_exceptions,
          cs_check_all_case_coverage,cs_variantrtti,cs_check_variant_access,
+         cs_managed_variants,
          { mmx }
          cs_mmx,cs_mmx_saturation,
          { parser }

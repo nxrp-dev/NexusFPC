@@ -743,6 +743,7 @@ Procedure fpc_Copy_proc (Src, Dest, TypeInfo : Pointer); compilerproc; inline;
 
 {$ifdef FPC_HAS_VARIANT_RTTI}
 Procedure fpc_checkvariantbranch (VRec,TypeInfo : pointer;Branch : longint); compilerproc;
+Procedure fpc_updatevariantselector (VRec,TypeInfo : pointer;NewValue : qword); compilerproc;
 {$endif FPC_HAS_VARIANT_RTTI}
 {$endif FPC_HAS_FEATURE_RTTI}
 

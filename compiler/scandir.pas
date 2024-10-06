@@ -802,6 +802,11 @@ unit scandir;
         do_moduleswitch(cs_support_macro);
       end;
 
+    procedure dir_managedvariants;
+      begin
+        do_localswitch(cs_managed_variants);
+      end;
+
     procedure dir_pascalmainname;
       var
         s: string;
@@ -2147,6 +2152,7 @@ unit scandir;
         AddDirective('LONGSTRINGS',directive_all, @dir_longstrings);
         AddDirective('M',directive_all, @dir_memory);
         AddDirective('MACRO',directive_all, @dir_macro);
+        AddDirective('MANAGEDVARIANTS',directive_all, @dir_managedvariants);
         AddDirective('MAXFPUREGISTERS',directive_all, @dir_maxfpuregisters);
         AddDirective('MAXSTACKSIZE',directive_all, @dir_maxstacksize);
         AddDirective('MEMORY',directive_all, @dir_memory);

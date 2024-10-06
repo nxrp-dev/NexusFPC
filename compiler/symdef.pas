@@ -387,6 +387,7 @@ interface
 
        tvariantrecdesc = record
          rttienabled:boolean;
+         ismanaged:boolean;
          variantoffset:asizeint;
          variantselector : tsym;
          variantselectorderef : tderef;
@@ -5452,6 +5453,7 @@ implementation
            begin
              new(variantrecdesc);
              variantrecdesc^.rttienabled:=ppufile.getboolean;
+             variantrecdesc^.ismanaged:=ppufile.getboolean;
              variantrecdesc^.variantoffset:=ppufile.getint64;
              ppufile.getderef(variantrecdesc^.variantselectorderef);
              SetLength(variantrecdesc^.branches,ppufile.getasizeint);
@@ -5678,6 +5680,7 @@ implementation
            begin
              ppufile.putbyte(1);
              ppufile.putboolean(variantrecdesc^.rttienabled);
+             ppufile.putboolean(variantrecdesc^.ismanaged);
              ppufile.putint64(variantrecdesc^.variantoffset);
              ppufile.putderef(variantrecdesc^.variantselectorderef);
              ppufile.putasizeint(length(variantrecdesc^.branches));

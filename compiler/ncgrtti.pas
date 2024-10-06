@@ -1114,7 +1114,7 @@ implementation
           tcb.emit_ord_const(def.variantrecdesc^.variantoffset,sizesinttype);
           branchcount:=length(def.variantrecdesc^.branches);
           if rt=initrtti then { on init table, discard all non managed branches }
-            for i:=branchcount downto 1 do
+            for i:=branchcount-1 downto 0 do
               if not is_managed_type(tfieldvarsym(def.variantrecdesc^.branches[i].branchfield).vardef) then
                 dec(branchcount);
 
@@ -1138,25 +1138,13 @@ implementation
             end;
         end;
 
-        { We only need an init table if at least one branch of the union is managed }
-        function is_managed_union: boolean;inline;
-          var
-            i: Integer;
-          begin
-            result:=false;
-            with def.variantrecdesc^ do
-              for i:=0 to length(branches)-1 do
-                if is_managed_type(tfieldvarsym(branches[i].branchfield).vardef) then
-                  exit(true);
-          end;
-
       var
         infotcb : ttai_typedconstbuilder;
         infolbl : tasmlabel;
         infodef : tdef;
       begin
         if not assigned(def.variantrecdesc) or not def.variantrecdesc^.rttienabled or
-           ((rt=initrtti) and not is_managed_union) then
+           ((rt=initrtti) and not def.variantrecdesc^.ismanaged) then
           begin
             { if not an rtti variant simply drop a nil ptr and leave }
             tcb.emit_tai(tai_const.create_nil_dataptr,voidpointertype);

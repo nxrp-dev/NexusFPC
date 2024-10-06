@@ -1972,12 +1972,24 @@ implementation
 
     function  valid_for_var(p:tnode; report_errors: boolean):boolean;
       begin
+        if p.is_managedvariantselector then
+          begin
+            if report_errors then
+              CGMessagePos(p.fileinfo,type_e_variable_id_expected);
+            exit(false);
+          end;
         valid_for_var:=valid_for_assign(p,[valid_range],report_errors);
       end;
 
 
     function  valid_for_formal_var(p : tnode; report_errors: boolean) : boolean;
       begin
+        if p.is_managedvariantselector then
+          begin
+            if report_errors then
+              CGMessagePos(p.fileinfo,type_e_variable_id_expected);
+            exit(false);
+          end;
         valid_for_formal_var:=valid_for_assign(p,[valid_void,valid_range],report_errors);
       end;
 
@@ -2004,12 +2016,24 @@ implementation
 
     function  valid_for_loopvar(p:tnode; report_errors: boolean):boolean;
       begin
+        if p.is_managedvariantselector then
+          begin
+            if report_errors then
+              CGMessagePos(p.fileinfo,type_e_variable_id_expected);
+            exit(false);
+          end;
         valid_for_loopvar:=valid_for_assign(p,[valid_property],report_errors);
       end;
 
 
     function  valid_for_addr(p : tnode; report_errors: boolean) : boolean;
       begin
+        if p.is_managedvariantselector then
+          begin
+            if report_errors then
+              CGMessagePos(p.fileinfo,type_e_variable_id_expected);
+            exit(false);
+          end;
         result:=valid_for_assign(p,[valid_const,valid_addr,valid_void],report_errors);
       end;
 
