@@ -1689,7 +1689,7 @@ implementation
       var
          cf : TFPList;
          sc : TFPObjectList;
-         i , j  : longint;
+         i , j , k : longint;
          hs,sorg , unionbranchname: string;
          gendef,hdef,casetype : tdef;
          { maxsize contains the max. size of a variant }
@@ -2198,21 +2198,9 @@ implementation
                          (values[high(values),1]>=Tconstexprint(0)) then
                         unionhaszerobranch:=true;
                       foundduplicate:=false;
-                      { If we have strict enable for this branch we need to check against all }
-                      if cs_strict_variants in current_settings.localswitches then
-                        for i:=0 to length(variantdesc^^.branches)-2 do
-                          begin
-                            for j:=0 to length(values)-1 do
-                              if (variantdesc^^.branches[i].values[j,0]<=values[high(values),1]) and
-                                 (variantdesc^^.branches[i].values[j,1]>=values[high(values),0]) then
-                                begin
-                                  foundduplicate:=true;
-                                  break;
-                                end;
-                            if foundduplicate then
-                              break;
-                          end
-                      else { if not, only against the strict branches we encountered before }
+                      { If we have strict enabled we will check later anyway so
+                        now only check against other strict paths }
+                      if not (cs_strict_variants in current_settings.localswitches) then
                         for i:=0 to length(unioncheckbranches)-1 do
                           begin
                             brindex:=unioncheckbranches[i];
@@ -2235,12 +2223,6 @@ implementation
                   else
                     break;
                 until false;
-                { if strict variant checking is on for this branch, add it to the list }
-                if cs_strict_variants in current_settings.localswitches then
-                  begin
-                    setlength(unioncheckbranches,length(unioncheckbranches)+1);
-                    unioncheckbranches[high(unioncheckbranches)]:=high(variantdesc^^.branches);
-                  end;
                 if m_delphi in current_settings.modeswitches then
                   block_type:=bt_var_type
                 else
@@ -2288,6 +2270,35 @@ implementation
                     unionsymtable.addfield(fieldvs,vis_hidden);
                     variantdesc^^.branches[high(variantdesc^^.branches)].branchfield := fieldvs;
                   end;
+                { if strict variant checking is on for this branch, or it's a managed
+                  branch, which needs to be treated as strict to avoid ambiguity for
+                  the management operations: Perform check and add to list }
+                if (cs_strict_variants in current_settings.localswitches) or
+                   (variantdesc^^.rttienabled and is_managed_type(unionbranchdef)) then
+                  begin
+                    setlength(unioncheckbranches,length(unioncheckbranches)+1);
+                    unioncheckbranches[high(unioncheckbranches)]:=high(variantdesc^^.branches);
+                    with variantdesc^^ do
+                      for i:=0 to length(branches)-2 do
+                        begin
+                          for j:=0 to length(branches[i].values)-1 do
+                            begin
+                              for k:=0 to length(branches[high(branches)].values)-1 do
+                                if (branches[i].values[j,0]<=branches[high(branches)].values[k,1]) and
+                                   (branches[i].values[j,1]>=branches[high(branches)].values[k,0]) then
+                                  begin
+                                    foundduplicate:=true;
+                                    break; { I'm really tempted to goto instead of this tripple break }
+                                  end;
+                                if foundduplicate then
+                                  break;
+                            end;
+                          if foundduplicate then
+                            break;
+                        end;
+                      if foundduplicate then
+                        Message(parser_e_double_caselabel);
+                    end;
 
                 {
                   managed check moved from above down here to make handling of
