@@ -225,7 +225,7 @@ implementation
        cutils,verbose,
        symtable,symutil,
        defutil,defcmp,
-       nbas,ncnv,nld,nmem,ncal,nmat,ninl,nutils,procinfo,
+       nbas,ncnv,nld,nmem,ncal,nmat,ninl,nutils,nadd,procinfo,
        pgenutil
        ;
 
@@ -881,6 +881,8 @@ implementation
         ht      : tnode;
         ppn     : tcallparanode;
         cand_cnt : integer;
+        { will be filled with all the best operators in both directions }
+        opcache : array [_EQ.._NE] of array[false..true] of tprocdef;
 
         function search_operator(optoken:ttoken;generror:boolean): integer;
           var
@@ -890,6 +892,17 @@ implementation
             ppn:=ccallparanode.create(tbinarynode(t).right.getcopy,ccallparanode.create(tbinarynode(t).left.getcopy,nil));
             ppn.get_paratype;
             candidates:=tcallcandidates.create_operator(optoken,ppn);
+
+            { Ok... problem as follows: because of the great and tremendous
+              transitive typecast system this does not work for relational
+              (compare) operators... reason is quite simply, that the operators
+              are overloaded for type "variant", and FPC thinks that all types
+              can be converted to variant... They can't, so this will always
+              get candidates which are sorted out later... and the count=0 check
+              always fails :^)
+              I will leave this here as is and build another mechanism on top
+              of the main function... Maybe someone fixes this in the future :j
+            }
 
             { for commutative operators we can swap arguments and try again }
             if (candidates.count=0) and
@@ -958,6 +971,202 @@ implementation
                   call }
               end;
             candidates.free;
+          end;
+
+        function construct_replacement_operator(optoken:ttoken;reverse:boolean):tnode;
+          type
+            tpathop=record
+               { and/or }
+               cop:tnodetype;
+               { need to negate }
+               neg:boolean;
+               { parameters reversed (compared to replacing op) }
+               rev:boolean;
+               { operation }
+               op:ttoken;
+            end;
+          const
+            { This is a map containing possible substitutions. To save me some
+              time, lower levels of the chain can recursively utilizes higer ones.
+              So it will be progressively less to define.
+              Note: this results in non optimal code, as it may create nested
+              trees with more operators than necessary. But it has one big advantage
+              it does not require me to write down all possible combinations in
+              order of efficiancy, because I would never get this right without
+              any mistakes... }
+            alternativepaths : array[_EQ.._NE] of array of array of tpathop = (
+              {_EQ}(
+                { identity }
+                ((cop:emptynode;neg:false;rev:false;op:_EQ)),
+                { a=b := b=a }
+                ((cop:emptynode;neg:false;rev:true;op:_EQ)),
+                { a=b := not a<>b (both directions) }
+                ((cop:emptynode;neg:true;rev:false;op:_NE)),
+                ((cop:emptynode;neg:true;rev:true;op:_NE)),
+                { a=b := a<=b and b<=a }
+                ((cop:emptynode;neg:false;rev:false;op:_LTE),(cop:andn;neg:false;rev:true;op:_LTE)),
+                { a=b := a>=b and b>=a }
+                ((cop:emptynode;neg:false;rev:false;op:_GTE),(cop:andn;neg:false;rev:true;op:_GTE)),
+                { a=b := a<=b and a>=b (both directions)}
+                ((cop:emptynode;neg:false;rev:false;op:_LTE),(cop:andn;neg:false;rev:false;op:_GTE)),
+                ((cop:emptynode;neg:false;rev:true;op:_LTE),(cop:andn;neg:false;rev:true;op:_GTE)),
+                { a=b := not a<b and not b<a}
+                ((cop:emptynode;neg:true;rev:false;op:_LT),(cop:andn;neg:true;rev:true;op:_LT)),
+                { a=b := not a>b and not b>a}
+                ((cop:emptynode;neg:true;rev:false;op:_GT),(cop:andn;neg:true;rev:true;op:_GT)),
+                { a=b := not a<b and not a>b (both directions)}
+                ((cop:emptynode;neg:true;rev:false;op:_LT),(cop:andn;neg:true;rev:false;op:_GT)),
+                ((cop:emptynode;neg:true;rev:true;op:_LT),(cop:andn;neg:true;rev:true;op:_GT)),
+                { a=b := a<=b and not a<b (both directions)}
+                ((cop:emptynode;neg:false;rev:false;op:_LTE),(cop:andn;neg:true;rev:false;op:_LT)),
+                ((cop:emptynode;neg:false;rev:true;op:_LTE),(cop:andn;neg:true;rev:true;op:_LT)),
+                { a=b := a>=b and not a>b (both directions)}
+                ((cop:emptynode;neg:false;rev:false;op:_GTE),(cop:andn;neg:true;rev:false;op:_GT)),
+                ((cop:emptynode;neg:false;rev:true;op:_GTE),(cop:andn;neg:true;rev:true;op:_GT))
+              ),
+              {_GT}(
+                { identity }
+                ((cop:emptynode;neg:false;rev:false;op:_GT)),
+                { a>b := not a<=b }
+                ((cop:emptynode;neg:true;rev:false;op:_LTE)),
+                { a>b := b<a }
+                ((cop:emptynode;neg:false;rev:true;op:_LT)),
+                { a>b := a>=b and not a=b (both directions for eq) }
+                ((cop:emptynode;neg:false;rev:false;op:_GTE),(cop:andn;neg:true;rev:false;op:_EQ)),
+                ((cop:emptynode;neg:false;rev:false;op:_GTE),(cop:andn;neg:true;rev:true;op:_EQ)),
+                { a>b := b<=a and not a=b (both directions for eq) }
+                ((cop:emptynode;neg:false;rev:true;op:_LTE),(cop:andn;neg:true;rev:false;op:_EQ)),
+                ((cop:emptynode;neg:false;rev:true;op:_LTE),(cop:andn;neg:true;rev:true;op:_EQ)),
+                { a>b := not a<b and not a=b (both directions for eq) }
+                ((cop:emptynode;neg:true;rev:false;op:_LT),(cop:andn;neg:true;rev:false;op:_EQ)),
+                ((cop:emptynode;neg:true;rev:false;op:_LT),(cop:andn;neg:true;rev:true;op:_EQ)),
+                { a>b := not b>a and not a=b (both directions for eq) }
+                ((cop:emptynode;neg:true;rev:true;op:_GT),(cop:andn;neg:true;rev:false;op:_EQ)),
+                ((cop:emptynode;neg:true;rev:true;op:_GT),(cop:andn;neg:true;rev:true;op:_EQ))
+              ),
+              {_LT}(
+                { identity }
+                ((cop:emptynode;neg:false;rev:false;op:_LT)),
+                { a<b := not a>=b }
+                ((cop:emptynode;neg:true;rev:false;op:_GTE)),
+                { a<b := b>a }
+                ((cop:emptynode;neg:false;rev:true;op:_GT))
+              ),
+              {_GTE}(
+                { identity }
+                ((cop:emptynode;neg:false;rev:false;op:_GTE)),
+                { a>=b := b<=a }
+                ((cop:emptynode;neg:false;rev:true;op:_LTE)),
+                { a>=b := not a<b }
+                ((cop:emptynode;neg:true;rev:false;op:_LT))
+              ),
+              {_LTE}( 
+                { identity }
+                ((cop:emptynode;neg:false;rev:false;op:_LTE)),
+                { a<=b := not a>b }
+                ((cop:emptynode;neg:true;rev:false;op:_GT))
+              ),
+              {_NE}(
+                { identity }
+                ((cop:emptynode;neg:false;rev:false;op:_NE)),
+                { a<>b := b<>a }
+                ((cop:emptynode;neg:false;rev:true;op:_NE)),
+                { a<>b := not a=b }
+                ((cop:emptynode;neg:true;rev:false;op:_EQ))
+              )
+            );
+          var
+            candidates : tcallcandidates;
+            subst : array of tpathop;
+            currop : tpathop;
+            i , numcandidates: longint;
+            elemnode : tnode;
+          begin
+            Result:=nil;
+
+            for subst in alternativepaths[optoken] do
+              begin
+                result:=nil;
+                for i:=0 to high(subst) do
+                  begin
+                    currop:=subst[i];
+                    { apply reverse across the chain }
+                    currop.rev:=currop.rev xor reverse;
+                    { If it's higher up the chain we do a recursive descent }
+                    if currop.op<optoken then
+                      begin
+                        elemnode:=construct_replacement_operator(currop.op,currop.rev);
+                        if not assigned(elemnode) then
+                          begin
+                            { no candidate to finish the path, so we break }
+                            result.free;
+                            result:=nil;
+                            break;
+                          end;
+                        if currop.neg then
+                          elemnode:=cnotnode.create(elemnode);
+                        if currop.cop=emptynode then
+                          result:=elemnode
+                        else
+                          result:=caddnode.create(currop.cop,result,elemnode);
+                        { skip the rest of this code }
+                        continue;
+                      end;
+                    ppn:=ccallparanode.create(tbinarynode(t).right.getcopy,ccallparanode.create(tbinarynode(t).left.getcopy,nil));
+                    ppn.get_paratype;
+                    if currop.rev then
+                      reverseparameters(ppn);
+                    { if not cached, build cache }
+                    if not assigned(opcache[currop.op,currop.rev]) then
+                      begin
+                        candidates:=tcallcandidates.create_operator(currop.op,ppn);
+                        { stop when there are no operators found }
+                        numcandidates:=0;
+                        if (candidates.count>0) then
+                          begin
+                            { Retrieve information about the candidates }
+                            candidates.get_information;
+                            {$ifdef EXTDEBUG}
+                            { Display info when multiple candidates are found }
+                            candidates.dump_info(V_Debug);
+                            {$endif EXTDEBUG}
+                            numcandidates:=candidates.choose_best(tabstractprocdef(opcache[currop.op,currop.rev]),false);
+                          end;
+                        candidates.free;
+                        { no candidate to finish the path, so we break }
+                        if numcandidates=0 then
+                          begin
+                            ppn.free;
+                            result.free;
+                            result:=nil;
+                            ppn:=nil;
+                            opcache[currop.op,currop.rev]:=nil;
+                            break;
+                          end;
+                      end;
+                    { now cache is built, otherwise we would have broken }
+                    { Increment refcount }
+                    addsymref(opcache[currop.op,currop.rev].procsym,opcache[currop.op,currop.rev]);
+
+                    { the nil as symtable signs firstcalln that this is
+                      an overloaded operator }
+                    elemnode:=ccallnode.create(ppn,Tprocsym(opcache[currop.op,currop.rev].procsym),nil,nil,[],nil);
+
+                    { we already know the procdef to use, so it can
+                      skip the overload choosing in callnode.pass_typecheck }
+                    tcallnode(elemnode).procdefinition:=opcache[currop.op,currop.rev];
+                    { add to chain } 
+                    if currop.neg then
+                      elemnode:=cnotnode.create(elemnode);
+                    if currop.cop=emptynode then
+                      result:=elemnode
+                    else
+                      result:=caddnode.create(currop.cop,result,elemnode);
+                  end;
+                { found a path for substitution }
+                if assigned(result) then
+                  break;
+              end;
           end;
 
       begin
@@ -1029,19 +1238,23 @@ implementation
              end;
         end;
 
-        cand_cnt:=search_operator(optoken,(optoken<>_NE) and not (ocf_check_only in ocf));
+        cand_cnt:=search_operator(optoken,not (optoken in [_EQ.._NE]) and not (ocf_check_only in ocf));
 
-        { no operator found for "<>" then search for "=" operator }
-        if (cand_cnt=0) and (optoken=_NE) and not (ocf_check_only in ocf) then
+        ht:=nil;
+        { no direct operator found, search for replacement }
+        if (cand_cnt=0) and (optoken in [_EQ.._NE]) and not (ocf_check_only in ocf) then
           begin
             ppn.free;
             ppn:=nil;
             operpd:=nil;
-            optoken:=_EQ;
-            cand_cnt:=search_operator(optoken,true);
+            fillchar(opcache,sizeof(opcache),0);
+            ht:=construct_replacement_operator(optoken,false);
+            // just to generate the error:
+            if not assigned(ht) then
+              search_operator(optoken,true);
           end;
 
-        if (cand_cnt=0) then
+        if (cand_cnt=0) and not assigned(ht) then
           begin
             ppn.free;
             if not (ocf_check_only in ocf) then
@@ -1056,20 +1269,18 @@ implementation
             exit;
           end;
 
-        addsymref(operpd.procsym,operpd);
+        if not assigned(ht) then
+          begin
+            addsymref(operpd.procsym,operpd);
 
-        { the nil as symtable signs firstcalln that this is
-          an overloaded operator }
-        ht:=ccallnode.create(ppn,Tprocsym(operpd.procsym),nil,nil,[],nil);
+            { the nil as symtable signs firstcalln that this is
+              an overloaded operator }
+            ht:=ccallnode.create(ppn,Tprocsym(operpd.procsym),nil,nil,[],nil);
 
-        { we already know the procdef to use, so it can
-          skip the overload choosing in callnode.pass_typecheck }
-        tcallnode(ht).procdefinition:=operpd;
-
-        { if we found "=" operator for "<>" expression then use it
-          together with "not" }
-        if (t.nodetype=unequaln) and (optoken=_EQ) then
-          ht:=cnotnode.create(ht);
+            { we already know the procdef to use, so it can
+              skip the overload choosing in callnode.pass_typecheck }
+            tcallnode(ht).procdefinition:=operpd;
+          end;
         t:=ht;
       end;
 
