@@ -900,13 +900,13 @@ implementation
                 { reverse compare operators }
                 case optoken of
                   _LT:
-                    optoken:=_GTE;
-                  _GT:
-                    optoken:=_LTE;
-                  _LTE:
                     optoken:=_GT;
-                  _GTE:
+                  _GT:
                     optoken:=_LT;
+                  _LTE:
+                    optoken:=_GTE;
+                  _GTE:
+                    optoken:=_LTE;
                   else
                     ;
                 end;
