@@ -46,11 +46,11 @@ implementation
        { aasm }
        cpubase,aasmtai,aasmdata,aasmbase,
        { symtable }
-       symconst,symbase,symtype,symdef,symsym,symtable,defutil,defcmp,
+       symconst,symbase,symutil,symtype,symdef,symsym,symtable,defutil,defcmp,
        paramgr,
        { pass 1 }
        pass_1,htypechk,
-       nutils,ngenutil,nbas,ncal,nmem,nset,ncnv,ncon,nld,nflw,
+       nutils,ngenutil,nbas,ncal,nmem,nset,ncnv,ncon,nld,nflw,nadd,
        { parser }
        scanner,
        pbase,ptype,pexpr,
@@ -114,6 +114,286 @@ implementation
       end;
 
 
+    { a helper function which is used both by "with" and "for-in loop" nodes }
+    function skip_nodes_before_load(p: tnode): tnode;
+      begin
+        { ignore nodes that don't add instructions in the tree }
+        while assigned(p) and
+           { equal type conversions }
+           (
+            (p.nodetype=typeconvn) and
+            (ttypeconvnode(p).convtype=tc_equal)
+           ) or
+           { constant array index }
+           (
+            (p.nodetype=vecn) and
+            (tvecnode(p).right.nodetype=ordconstn)
+           ) do
+          p:=tunarynode(p).left;
+        result:=p;
+      end;
+
+
+    function complex_case_statement(caseexpr:tnode;casedef:tabstractrecorddef) : tnode;
+
+      function is_readable_propsysm(sym:tsym) : boolean;
+        begin
+          result:=(sym.typ=propertysym) and not (sp_static in sym.symoptions) and
+            not (ppo_hasparameters in tpropertysym(sym).propoptions) and
+            not tpropertysym(sym).propaccesslist[palt_read].empty;
+        end;
+
+      function read_branch_condition(baseexpr:tnode;basedef:tabstractrecorddef) : tnode;
+        var
+          s , sorg : TIDString;
+          recsym : tsym;
+          cmpvalexpr , cmpexpr , fieldcmp , fieldaccess : tnode;
+          recsymdef : tdef;
+          again : boolean;
+          hl1 , hl2 : tconstexprint;
+        begin
+          result:=nil;
+          repeat
+            fieldcmp:=nil;
+            s:=pattern;
+            sorg:=orgpattern;
+            consume(_ID);
+            consume(_COLON);
+            if basedef.typ=undefineddef then
+              recsym:=nil
+            else
+              recsym:=tsym(basedef.symtable.Find(s));
+            if (basedef.typ<>undefineddef) and (
+                  not assigned(recsym) or not (
+                     is_normal_fieldvarsym(recsym) or
+                     is_readable_propsysm(recsym)
+                  )
+               ) then
+              begin
+                Message1(sym_e_illegal_field,sorg);
+                result:=cerrornode.create;
+                exit;
+              end;
+
+            if assigned(recsym) then
+              begin
+                if recsym.typ=fieldvarsym then
+                  recsymdef:=tfieldvarsym(recsym).vardef
+                else if recsym.typ=propertysym then
+                  recsymdef:=tpropertysym(recsym).propdef
+                else
+                  internalerror(2024101401);
+
+                fieldaccess:=baseexpr.getcopy;
+                do_member_read(basedef,false,recsym,fieldaccess,again,[],nil);
+              end
+            else
+              begin
+                fieldaccess:=cerrornode.create;
+                do_typecheckpass(fieldaccess);
+                recsymdef:=fieldaccess.resultdef;
+              end;
+            repeat
+              { In case field itself is complex, recursive descent }
+              if (recsymdef.typ in [recorddef,objectdef]) or (
+                   (recsymdef.typ=undefineddef) and
+                   (df_generic in current_procinfo.procdef.defoptions)
+                 ) then
+                begin
+                  consume(_LKLAMMER);
+                  cmpexpr:=read_branch_condition(fieldaccess,tabstractrecorddef(recsymdef));
+                  if cmpexpr.nodetype=errorn then
+                    begin
+                      result:=cmpexpr;
+                      exit;
+                    end;
+                end
+              else if (recsymdef.typ=errordef) and (token=_LKLAMMER) then
+                begin
+                  { Generic type and it looks like we are reading a sub record }
+                  consume(_LKLAMMER);
+                  { very dirty hack, but we need an undefineddef here so
+                    we re-use the casedef }
+                  cmpexpr:=read_branch_condition(fieldaccess,casedef);
+                  if cmpexpr.nodetype=errorn then
+                    begin
+                      result:=cmpexpr;
+                      exit;
+                    end;
+                end
+              else if is_ordinal(recsymdef) then
+                begin
+                  cmpvalexpr:=expr(true);
+                  if (cmpvalexpr.nodetype=rangen) then
+                    begin
+                     if not is_subequal(recsymdef,trangenode(cmpvalexpr).left.resultdef) or
+                        not is_subequal(recsymdef,trangenode(cmpvalexpr).right.resultdef) then
+                       begin
+                         CGMessage(parser_e_case_mismatch);
+                         result:=cerrornode.create;
+                         exit;
+                       end;
+                     hl1:=get_ordinal_value(trangenode(cmpvalexpr).left);
+                     hl2:=get_ordinal_value(trangenode(cmpvalexpr).right);
+                     if hl1>hl2 then
+                       begin
+                         CGMessage(parser_e_case_lower_less_than_upper_bound);
+                         result:=cerrornode.create;
+                         exit;
+                       end;
+                     adaptrange(recsymdef,hl1,false,false,cs_check_range in current_settings.localswitches);
+                     adaptrange(recsymdef,hl2,false,false,cs_check_range in current_settings.localswitches);
+                     cmpexpr:=caddnode.create(andn,
+                       caddnode.create(gten,fieldaccess.getcopy,trangenode(cmpvalexpr).left),
+                       caddnode.create(lten,fieldaccess.getcopy,trangenode(cmpvalexpr).right)
+                     );
+                     trangenode(cmpvalexpr).left:=nil;
+                     trangenode(cmpvalexpr).right:=nil;
+                     cmpvalexpr.free;
+                    end
+                  else
+                    begin
+                       if not is_subequal(recsymdef,cmpvalexpr.resultdef) then
+                         begin
+                           CGMessage(parser_e_case_mismatch);
+                           result:=cerrornode.create;
+                           exit;
+                         end;
+                       hl1:=get_ordinal_value(cmpvalexpr);
+                       adaptrange(recsymdef,hl1,false,false,cs_check_range in current_settings.localswitches);
+                       cmpexpr:=caddnode.create(equaln,fieldaccess.getcopy,cmpvalexpr);
+                    end;
+                end
+              else { for any other type just do a simple = comparison }
+                begin
+                  cmpvalexpr:=expr(false);
+                  if (basedef.typ=undefineddef) and (cmpvalexpr.nodetype=rangen) then
+                    begin
+                      cmpvalexpr.free;
+                      cmpvalexpr:=cnothingnode.create;
+                    end;
+                  { because this is not a classical case-of there is no
+                    technical reason to not allow for non const expressions
+                    here... that said, in spirit of a case-of we don't allow
+                    then anyway }
+                  if not is_constnode(cmpvalexpr) and (cmpvalexpr.nodetype<>nothingn) then
+                    begin
+                      Message(type_e_ordinal_expr_expected);
+                      result:=cerrornode.create;
+                      exit;
+                    end;
+                  cmpexpr:=caddnode.create(equaln,fieldaccess.getcopy,cmpvalexpr);
+                  do_typecheckpass(cmpexpr);
+                end;
+
+              if assigned(fieldcmp) then
+                fieldcmp:=caddnode.create(orn,fieldcmp,cmpexpr)
+              else
+                fieldcmp:=cmpexpr;
+
+              if token=_COMMA then
+                consume(_COMMA)
+              else
+                break;
+            until false;
+
+            { Every access to this creates a copy of the node, so we can free
+              the base node afterwards }
+            fieldaccess.free;
+
+            if assigned(result) then
+              result:=caddnode.create(andn,result,fieldcmp)
+            else
+              result:=fieldcmp;
+
+            if token=_SEMICOLON then
+              consume(_SEMICOLON)
+            else
+              break;
+          until false;
+          consume(_RKLAMMER);
+        end;
+      var
+        { each branch is categorized by the condition node followed by the
+          statement node }
+        branches : array of array[0..1] of tnode;
+        i : longint;
+        hp , refnode , newblock : tnode;
+        newstatement : tstatementnode;
+        tempnode : ttempcreatenode;
+      begin
+        result:=nil;
+        branches:=[];
+        consume(_OF);
+
+        { To ensure that if the case statement is the result of a function call
+          we do not call that function on every comparison, we might need to
+          create a temporary object... This code is taken from _with_statement
+          as it has the same issue }
+        newblock:=nil;
+        hp:=skip_nodes_before_load(caseexpr);
+        if (hp.nodetype=loadn) and
+           (
+            (tloadnode(hp).symtable=current_procinfo.procdef.localst) or
+            (tloadnode(hp).symtable=current_procinfo.procdef.parast) or
+            (tloadnode(hp).symtable.symtabletype in [staticsymtable,globalsymtable])
+           ) and
+           { MacPas objects are mapped to classes, and the MacPas compilers
+             interpret with-statements with MacPas objects the same way
+             as records (the object referenced by the with-statement
+             must remain constant)
+           }
+           not(is_class(hp.resultdef) and
+               (m_mac in current_settings.modeswitches)) then
+          begin
+            { simple load, we can reference direct }
+            refnode:=caseexpr;
+          end
+        else
+          begin
+            { complex load, load in temp first }
+            newblock:=internalstatements(newstatement);
+            tempnode:=ctempcreatenode.create(casedef,casedef.size,tt_persistent,true);
+            addstatement(newstatement,tempnode);
+            addstatement(newstatement,cassignmentnode.create(
+                ctemprefnode.create(tempnode),
+                caseexpr));
+            refnode:=ctemprefnode.create(tempnode);
+            typecheckpass(refnode);
+            { with node then takes the pointer to the newly created node. But
+              to my understanding this is because in with you can write to said
+              node, here you can only read, so it should not be necessary... }
+          end;
+
+        repeat
+          consume(_LKLAMMER);
+          setlength(branches,length(branches)+1);
+          branches[high(branches),0]:=read_branch_condition(refnode,casedef);
+          consume(_COLON);
+          branches[high(branches),1]:=statement;
+          if not(token in [_ELSE,_OTHERWISE,_END]) then
+             consume(_SEMICOLON);
+        until (token in [_ELSE,_OTHERWISE,_END]);
+        if try_to_consume(_ELSE) or try_to_consume(_OTHERWISE) then
+          begin
+            result:=statement;
+            try_to_consume(_SEMICOLON);
+          end;
+        consume(_END);
+        { Construct if-then-else tree in reverse order }
+        for i:=high(branches) downto low(branches) do
+          result:=cifnode.create(branches[i,0],branches[i,1],result);
+        if assigned(newblock) then
+          begin
+            addstatement(newstatement,result);
+            addstatement(newstatement,ctempdeletenode.create(tempnode));
+            result:=newblock;
+          end;
+        { Every access to the members creates a copy of the node, so we can free
+          the base node afterwards }
+        refnode.free;
+      end;
+
     function case_statement : tnode;
       var
          casedef : tdef;
@@ -137,6 +417,17 @@ implementation
          set_varstate(caseexpr,vs_read,[vsf_must_be_valid]);
          casedeferror:=false;
          casedef:=caseexpr.resultdef;
+         { if "complex" type (i.e. abstractrecorddef) then go to special parser }
+         if (m_complex_case in current_settings.modeswitches) and
+            ((casedef.typ in [recorddef,objectdef]) or (
+               (casedef.typ=undefineddef) and
+               (df_generic in current_procinfo.procdef.defoptions)
+            )) then
+           begin
+             result:=complex_case_statement(caseexpr,tabstractrecorddef(casedef));
+             exit;
+           end;
+
          { case of string must be rejected in delphi-, }
          { tp7/bp7-, mac-compatibility modes.          }
          caseofstring :=
@@ -335,25 +626,6 @@ implementation
          consume(_DO);
          p_a:=statement;
          result:=cwhilerepeatnode.create(p_e,p_a,true,false);
-      end;
-
-    { a helper function which is used both by "with" and "for-in loop" nodes }
-    function skip_nodes_before_load(p: tnode): tnode;
-      begin
-        { ignore nodes that don't add instructions in the tree }
-        while assigned(p) and
-           { equal type conversions }
-           (
-            (p.nodetype=typeconvn) and
-            (ttypeconvnode(p).convtype=tc_equal)
-           ) or
-           { constant array index }
-           (
-            (p.nodetype=vecn) and
-            (tvecnode(p).right.nodetype=ordconstn)
-           ) do
-          p:=tunarynode(p).left;
-        result:=p;
       end;
 
     function for_statement : tnode;
