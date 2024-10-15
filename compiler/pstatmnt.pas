@@ -133,8 +133,92 @@ implementation
         result:=p;
       end;
 
+    function get_referencable_with_node(var p:tnode;out newblock:tblocknode;
+         out newstatement:tstatementnode; out calltempnode,tempnode:ttempcreatenode) : tnode;
+      var
+        valuenode , hp : tnode;
+        hdef : tdef;
+        hasimplicitderef : boolean;
+      begin
+        newblock:=nil;
+        valuenode:=nil;
+        tempnode:=nil;
+        calltempnode:=nil;
 
-    function complex_case_statement(caseexpr:tnode;casedef:tabstractrecorddef) : tnode;
+        hp:=skip_nodes_before_load(p);
+        if (hp.nodetype=loadn) and
+           (
+            (tloadnode(hp).symtable=current_procinfo.procdef.localst) or
+            (tloadnode(hp).symtable=current_procinfo.procdef.parast) or
+            (tloadnode(hp).symtable.symtabletype in [staticsymtable,globalsymtable])
+           ) and
+           { MacPas objects are mapped to classes, and the MacPas compilers
+             interpret with-statements with MacPas objects the same way
+             as records (the object referenced by the with-statement
+             must remain constant)
+           }
+           not(is_class(hp.resultdef) and
+               (m_mac in current_settings.modeswitches)) then
+          begin
+            { simple load, we can reference direct }
+            result:=p;
+          end
+        else
+          begin
+            { complex load, load in temp first }
+            newblock:=internalstatements(newstatement);
+            { when we can't take the address of p, load it in a temp }
+            { since we may need its address later on                 }
+            if not valid_for_addr(p,false) then
+              begin
+                calltempnode:=ctempcreatenode.create(p.resultdef,p.resultdef.size,tt_persistent,true);
+                addstatement(newstatement,calltempnode);
+                addstatement(newstatement,cassignmentnode.create(
+                    ctemprefnode.create(calltempnode),
+                    p));
+                p:=ctemprefnode.create(calltempnode);
+                typecheckpass(p);
+              end;
+            { several object types have implicit dereferencing }
+            { is_implicit_pointer_object_type() returns true for records
+              on the JVM target because they are implemented as classes
+              there, but we definitely have to take their address here
+              since otherwise a deep copy is made and changes are made to
+              this copy rather than to the original one }
+            hasimplicitderef:=
+              (is_implicit_pointer_object_type(p.resultdef) or
+               (p.resultdef.typ=classrefdef)) and
+              not((target_info.system in systems_jvm) and
+                  ((p.resultdef.typ=recorddef) or
+                   is_object(p.resultdef)));
+            if hasimplicitderef then
+              hdef:=p.resultdef
+            else
+              hdef:=cpointerdef.create(p.resultdef);
+            { load address of the value in a temp }
+            tempnode:=ctempcreatenode.create_withnode(hdef,sizeof(pint),tt_persistent,true,p);
+            typecheckpass(tnode(tempnode));
+            valuenode:=p;
+            result:=ctemprefnode.create(tempnode);
+            fillchar(result.fileinfo,sizeof(tfileposinfo),0);
+            { add address call for valuenode and deref for refnode if this
+              is not done implicitly }
+            if not hasimplicitderef then
+              begin
+                valuenode:=caddrnode.create_internal_nomark(valuenode);
+                include(taddrnode(valuenode).addrnodeflags,anf_typedaddr);
+                result:=cderefnode.create(result);
+                fillchar(result.fileinfo,sizeof(tfileposinfo),0);
+              end;
+            addstatement(newstatement,tempnode);
+            addstatement(newstatement,cassignmentnode.create(
+                ctemprefnode.create(tempnode),
+                valuenode));
+            typecheckpass(result);
+          end;
+      end;
+
+    function complex_case_statement(caseexpr:tnode;casedef:tabstractrecorddef;haswith:boolean) : tnode;
 
       function is_readable_propsysm(sym:tsym) : boolean;
         begin
@@ -313,14 +397,93 @@ implementation
           until false;
           consume(_RKLAMMER);
         end;
+
+      function read_statement(refnode : tnode) : tnode;
+        var
+          withsymtablelist : tfpobjectlist;
+          st : tsymtable;
+          helperdef : tobjectdef;
+          i : longint;
+
+         procedure pushobjchild(withdef,obj:tobjectdef);
+           var
+             parenthelperdef : tobjectdef;
+           begin
+             if not assigned(obj) then
+               exit;
+             pushobjchild(withdef,obj.childof);
+             { we need to look for helpers that were defined for the parent
+               class as well }
+             search_last_objectpascal_helper(obj,current_structdef,parenthelperdef);
+             { push the symtables of the helper's parents in reverse order }
+             if assigned(parenthelperdef) then
+               pushobjchild(withdef,parenthelperdef.childof);
+             { keep the original tobjectdef as owner, because that is used for
+               visibility of the symtable }
+             st:=twithsymtable.create(withdef,obj.symtable.SymList,refnode.getcopy);
+             symtablestack.push(st);
+             withsymtablelist.add(st);
+             { push the symtable of the helper }
+             if assigned(parenthelperdef) then
+               begin
+                 st:=twithsymtable.create(withdef,parenthelperdef.symtable.SymList,refnode.getcopy);
+                 symtablestack.push(st);
+                 withsymtablelist.add(st);
+               end;
+          end;
+        begin
+          if not haswith then
+            begin
+              result:=statement;
+              exit;
+            end;
+
+          withsymtablelist:=TFPObjectList.create(true);
+
+          if casedef.typ=undefineddef then
+            begin
+              helperdef:=nil;
+              st:=twithsymtable.create(casedef,nil,refnode.getcopy);
+            end
+          else
+            begin
+              search_last_objectpascal_helper(tabstractrecorddef(casedef),current_structdef,helperdef);
+              { push symtables of all parents in reverse order }
+              if (casedef.typ=objectdef) then
+                pushobjchild(tobjectdef(casedef),tobjectdef(casedef).childof);
+              { push symtables of all parents of the helper in reverse order }
+              if assigned(helperdef) then
+                pushobjchild(helperdef,helperdef.childof);
+              st:=twithsymtable.create(casedef,tabstractrecorddef(casedef).symtable.symlist,refnode.getcopy);
+            end;
+          symtablestack.push(st);
+          withsymtablelist.add(st);
+
+          { push helper symtable }
+          if assigned(helperdef) then
+            begin
+              st:=twithsymtable.Create(helperdef,helperdef.symtable.SymList,refnode.getcopy);
+              symtablestack.push(st);
+              withsymtablelist.add(st);
+            end;
+
+          result:=statement;
+
+          { remove symtables in reverse order from the stack }
+          for i:=withsymtablelist.count-1 downto 0 do
+            symtablestack.pop(TSymtable(withsymtablelist[i]));
+          withsymtablelist.free;
+        end;
+
       var
         { each branch is categorized by the condition node followed by the
           statement node }
         branches : array of array[0..1] of tnode;
         i : longint;
-        hp , refnode , newblock : tnode;
+        refnode : tnode;
+        newblock : tblocknode;
         newstatement : tstatementnode;
-        tempnode : ttempcreatenode;
+        calltempnode , tempnode : ttempcreatenode;
       begin
         result:=nil;
         branches:=[];
@@ -330,52 +493,21 @@ implementation
           we do not call that function on every comparison, we might need to
           create a temporary object... This code is taken from _with_statement
           as it has the same issue }
-        newblock:=nil;
-        hp:=skip_nodes_before_load(caseexpr);
-        if (hp.nodetype=loadn) and
-           (
-            (tloadnode(hp).symtable=current_procinfo.procdef.localst) or
-            (tloadnode(hp).symtable=current_procinfo.procdef.parast) or
-            (tloadnode(hp).symtable.symtabletype in [staticsymtable,globalsymtable])
-           ) and
-           { MacPas objects are mapped to classes, and the MacPas compilers
-             interpret with-statements with MacPas objects the same way
-             as records (the object referenced by the with-statement
-             must remain constant)
-           }
-           not(is_class(hp.resultdef) and
-               (m_mac in current_settings.modeswitches)) then
-          begin
-            { simple load, we can reference direct }
-            refnode:=caseexpr;
-          end
-        else
-          begin
-            { complex load, load in temp first }
-            newblock:=internalstatements(newstatement);
-            tempnode:=ctempcreatenode.create(casedef,casedef.size,tt_persistent,true);
-            addstatement(newstatement,tempnode);
-            addstatement(newstatement,cassignmentnode.create(
-                ctemprefnode.create(tempnode),
-                caseexpr));
-            refnode:=ctemprefnode.create(tempnode);
-            typecheckpass(refnode);
-            { with node then takes the pointer to the newly created node. But
-              to my understanding this is because in with you can write to said
-              node, here you can only read, so it should not be necessary... }
-          end;
+        refnode:=get_referencable_with_node(caseexpr,newblock,newstatement,calltempnode,tempnode);
 
         repeat
           consume(_LKLAMMER);
           setlength(branches,length(branches)+1);
           branches[high(branches),0]:=read_branch_condition(refnode,casedef);
           consume(_COLON);
-          branches[high(branches),1]:=statement;
+          branches[high(branches),1]:=read_statement(refnode);
           if not(token in [_ELSE,_OTHERWISE,_END]) then
              consume(_SEMICOLON);
         until (token in [_ELSE,_OTHERWISE,_END]);
         if try_to_consume(_ELSE) or try_to_consume(_OTHERWISE) then
           begin
+            { No with for otherwise part, because it seems weird (Check if
+              necessary) }
             result:=statement;
             try_to_consume(_SEMICOLON);
           end;
@@ -383,12 +515,16 @@ implementation
         { Construct if-then-else tree in reverse order }
         for i:=high(branches) downto low(branches) do
           result:=cifnode.create(branches[i,0],branches[i,1],result);
+        { Do the cleanup afterwards }
         if assigned(newblock) then
-          begin
-            addstatement(newstatement,result);
-            addstatement(newstatement,ctempdeletenode.create(tempnode));
-            result:=newblock;
-          end;
+         begin
+           addstatement(newstatement,result);
+           if assigned(tempnode) then
+             addstatement(newstatement,ctempdeletenode.create(tempnode));
+           if assigned(calltempnode) then
+             addstatement(newstatement,ctempdeletenode.create(calltempnode));
+           result:=newblock;
+         end;
         { Every access to the members creates a copy of the node, so we can free
           the base node afterwards }
         refnode.free;
@@ -401,10 +537,13 @@ implementation
          blockid : longint;
          hl1,hl2 : TConstExprInt;
          sl1,sl2 : tstringconstnode;
-         casedeferror, caseofstring : boolean;
+         casedeferror, caseofstring , haswith : boolean;
          casenode : tcasenode;
       begin
          consume(_CASE);
+         haswith:=false;
+         if m_complex_case in current_settings.modeswitches then
+           haswith:=try_to_consume(_WITH);
          caseexpr:=comp_expr([ef_accept_equal]);
          { determines result type }
          do_typecheckpass(caseexpr);
@@ -424,7 +563,7 @@ implementation
                (df_generic in current_procinfo.procdef.defoptions)
             )) then
            begin
-             result:=complex_case_statement(caseexpr,tabstractrecorddef(casedef));
+             result:=complex_case_statement(caseexpr,tabstractrecorddef(casedef),haswith);
              exit;
            end;
 
@@ -852,10 +991,7 @@ implementation
          newstatement : tstatementnode;
          calltempnode,
          tempnode : ttempcreatenode;
-         valuenode,
-         hp,
-         refnode  : tnode;
-         hdef : tdef;
+         hp , refnode  : tnode;
          helperdef : tobjectdef;
          hasimplicitderef : boolean;
          withsymtablelist : TFPObjectList;
@@ -904,81 +1040,7 @@ implementation
          if (p.resultdef.typ in [objectdef,recorddef,classrefdef]) or
            ((p.resultdef.typ=undefineddef) and (df_generic in current_procinfo.procdef.defoptions)) then
           begin
-            newblock:=nil;
-            valuenode:=nil;
-            tempnode:=nil;
-
-            hp:=skip_nodes_before_load(p);
-            if (hp.nodetype=loadn) and
-               (
-                (tloadnode(hp).symtable=current_procinfo.procdef.localst) or
-                (tloadnode(hp).symtable=current_procinfo.procdef.parast) or
-                (tloadnode(hp).symtable.symtabletype in [staticsymtable,globalsymtable])
-               ) and
-               { MacPas objects are mapped to classes, and the MacPas compilers
-                 interpret with-statements with MacPas objects the same way
-                 as records (the object referenced by the with-statement
-                 must remain constant)
-               }
-               not(is_class(hp.resultdef) and
-                   (m_mac in current_settings.modeswitches)) then
-              begin
-                { simple load, we can reference direct }
-                refnode:=p;
-              end
-            else
-              begin
-                { complex load, load in temp first }
-                newblock:=internalstatements(newstatement);
-                { when we can't take the address of p, load it in a temp }
-                { since we may need its address later on                 }
-                if not valid_for_addr(p,false) then
-                  begin
-                    calltempnode:=ctempcreatenode.create(p.resultdef,p.resultdef.size,tt_persistent,true);
-                    addstatement(newstatement,calltempnode);
-                    addstatement(newstatement,cassignmentnode.create(
-                        ctemprefnode.create(calltempnode),
-                        p));
-                    p:=ctemprefnode.create(calltempnode);
-                    typecheckpass(p);
-                  end;
-                { several object types have implicit dereferencing }
-                { is_implicit_pointer_object_type() returns true for records
-                  on the JVM target because they are implemented as classes
-                  there, but we definitely have to take their address here
-                  since otherwise a deep copy is made and changes are made to
-                  this copy rather than to the original one }
-                hasimplicitderef:=
-                  (is_implicit_pointer_object_type(p.resultdef) or
-                   (p.resultdef.typ=classrefdef)) and
-                  not((target_info.system in systems_jvm) and
-                      ((p.resultdef.typ=recorddef) or
-                       is_object(p.resultdef)));
-                if hasimplicitderef then
-                  hdef:=p.resultdef
-                else
-                  hdef:=cpointerdef.create(p.resultdef);
-                { load address of the value in a temp }
-                tempnode:=ctempcreatenode.create_withnode(hdef,sizeof(pint),tt_persistent,true,p);
-                typecheckpass(tnode(tempnode));
-                valuenode:=p;
-                refnode:=ctemprefnode.create(tempnode);
-                fillchar(refnode.fileinfo,sizeof(tfileposinfo),0);
-                { add address call for valuenode and deref for refnode if this
-                  is not done implicitly }
-                if not hasimplicitderef then
-                  begin
-                    valuenode:=caddrnode.create_internal_nomark(valuenode);
-                    include(taddrnode(valuenode).addrnodeflags,anf_typedaddr);
-                    refnode:=cderefnode.create(refnode);
-                    fillchar(refnode.fileinfo,sizeof(tfileposinfo),0);
-                  end;
-                addstatement(newstatement,tempnode);
-                addstatement(newstatement,cassignmentnode.create(
-                    ctemprefnode.create(tempnode),
-                    valuenode));
-                typecheckpass(refnode);
-              end;
+            refnode:=get_referencable_with_node(p,newblock,newstatement,calltempnode,tempnode);
             { Note: the symtable of the helper is pushed after the following
                     "case", the symtables of the helper's parents are passed in
                     the "case" branches }
