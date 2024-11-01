@@ -74,10 +74,95 @@ interface
         packedbitsize: byte;
       end;
 
+      trecordedelementtype=(retpadding,retbase,retdynarray,retstaticarray,retprocvar,
+                            retguidrec,retrec,retobjectref);
+      trecordedelement = class
+      public
+        typ:trecordedelementtype;
+        def:tdef;
+        constructor create(atyp:trecordedelementtype;adef:tdef);
+        function getcopy:trecordedelement;virtual;abstract;
+      end;
+
+      trecordedpadding = class(trecordedelement)
+      public
+        padding:asizeint;
+        constructor create(apadding:asizeint);
+        function getcopy: trecordedelement; override;
+      end;
+
+      trecordedbaseconst = class(trecordedelement)
+      public
+        node:tnode;
+        constructor create(adef:tdef;anode:tnode);
+        destructor destroy; override;
+        function getcopy:trecordedelement;override;
+      end;
+      trecordeddynarray = class(trecordedelement)
+      public
+        elemcount:asizeint;
+        arraydef:trecorddef;
+        arraylbl:tasmlabofs;
+        constructor create(adef:tdef;aelemcount:asizeint;aarraydef:trecorddef;aarraylbl:tasmlabofs);
+        constructor create(adef:tdef);
+        function getcopy:trecordedelement;override;
+      end;
+      trecordedstaticarray = class(trecordedelement)
+      public
+        stringinit:boolean;
+        elements:tfpobjectlist;
+        constructor create(adef:tdef);
+        constructor createstringinit(adef:tdef;stringinitnode:tnode);
+        destructor destroy; override;
+        function getcopy:trecordedelement;override;
+      end;
+      trecordedprocvar = class(trecordedelement)
+      public
+        { not implemented yet }
+        constructor create(adef:tdef);
+      end;
+
+      trecordedguidrec = class(trecordedelement)
+      public
+        guid:tguid;
+        constructor create(adef:tdef;aguid:tguid);
+        function getcopy:trecordedelement; override;
+      end;
+
+      trecordedrec = class(trecordedelement)
+      public
+        fields:tfplist;
+        elements:tfpobjectlist;
+        constructor create(adef:tdef);
+        destructor destroy;override;
+        function getcopy:trecordedelement;override;
+      end;
+
+      trecordedobjectref = class(trecordedelement)
+      public
+        constructor create(adef:tdef);
+        function getcopy:trecordedelement;override;
+      end;
+
       tasmlisttypedconstbuilder = class(ttypedconstbuilder)
+       private type
+         trecordingstate = record
+           recordingstack:array of trecordedelement;
+           currentrecording:trecordedelement;
+           isrecording:boolean;
+         end;
        private
         fsym: tstaticvarsym;
         curoffset: asizeint;
+
+        recordingstate:trecordingstate;
+
+        function isrecording:boolean;inline;
+        procedure record_element(element:trecordedelement);
+        { Records exactly the next element }
+        procedure start_recording;inline;
+        function stop_recording:trecordedelement;inline;
+        procedure replay_recorded(arecord:trecordedelement);
 
         function parse_single_packed_const(def: tdef; var bp: tbitpackedval): boolean;
         procedure flush_packed_value(var bp: tbitpackedval);
@@ -98,6 +183,7 @@ interface
         procedure tc_emit_setdef(def: tsetdef; var node: tnode);override;
         procedure tc_emit_enumdef(def: tenumdef; var node: tnode);override;
         procedure tc_emit_stringdef(def: tstringdef; var node: tnode);override;
+        procedure tc_emit_chararray(def: tarraydef; var node: tnode);
        public
         constructor create(sym: tstaticvarsym);virtual;
         destructor Destroy; override;
@@ -309,6 +395,162 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
         tcsym:=sym;
       end;
 
+    { trecordedelement }
+
+    constructor trecordedelement.create(atyp:trecordedelementtype;adef:tdef);
+      begin
+        typ:=atyp;
+        def:=adef;
+      end;
+
+    { trecordedpadding }
+
+    constructor trecordedpadding.create(apadding: asizeint);
+      begin
+        inherited create(retpadding,nil);
+        padding:=apadding;
+      end;
+
+    function trecordedpadding.getcopy: trecordedelement;
+      begin
+        result:=trecordedpadding.create(padding);
+      end;
+
+    { trecordedbaseconst }
+
+    constructor trecordedbaseconst.create(adef:tdef;anode:tnode);
+      begin
+        inherited create(retbase,adef);
+        node:=anode;
+      end;
+
+    destructor trecordedbaseconst.destroy;
+      begin
+        node.free;
+        inherited destroy;
+      end;
+
+    function trecordedbaseconst.getcopy:trecordedelement;
+      begin
+        result:=trecordedbaseconst.create(def,node.getcopy);
+      end;
+
+    { trecordeddynarray }
+
+    constructor trecordeddynarray.create(adef:tdef;aelemcount:asizeint;
+      aarraydef:trecorddef;aarraylbl:tasmlabofs);
+      begin
+        inherited create(retdynarray,adef);
+        elemcount:=aelemcount;
+        arraydef:=aarraydef;
+        arraylbl:=aarraylbl;
+      end;
+
+    constructor trecordeddynarray.create(adef:tdef);
+      begin
+        create(def,0,nil,default(tasmlabofs));
+      end;
+
+    function trecordeddynarray.getcopy:trecordedelement;
+      begin
+        result:=trecordeddynarray.create(def,elemcount,arraydef,arraylbl);
+      end;
+
+    { trecordedstaticarray }
+
+    constructor trecordedstaticarray.create(adef:tdef);
+      begin
+        inherited create(retstaticarray,adef);
+        if (def.typ=objectdef) and (oo_has_vmt in tobjectdef(def).objectoptions) then
+          internalerror(2024110104);
+        elements:=tfpobjectlist.create(true);
+        stringinit:=false;
+      end;
+
+    constructor trecordedstaticarray.createstringinit(adef:tdef;stringinitnode:tnode);
+      begin
+        create(adef);
+        stringinit:=true;
+        elements.add(stringinitnode);
+      end;
+
+    destructor trecordedstaticarray.destroy;
+      begin
+        elements.free;
+        inherited destroy;
+      end;
+
+    function trecordedstaticarray.getcopy:trecordedelement;
+      var
+        i : longint;
+      begin
+        if stringinit then
+          exit(trecordedstaticarray.createstringinit(def,tnode(elements[0]).getcopy));
+        result:=trecordedstaticarray.create(def);
+        for i:=0 to elements.count-1 do
+          trecordedstaticarray(result).elements.add(trecordedelement(elements[i]).getcopy);
+      end;
+
+    { trecordedprocvar }
+
+    constructor trecordedprocvar.create(adef:tdef);
+      begin
+        inherited create(retprocvar,adef);
+        raise enotimplemented.Create('procvar recording not yet implemented');
+      end;
+
+    { trecordedguidrec }
+
+    constructor trecordedguidrec.create(adef:tdef;aguid:tguid);
+      begin
+        inherited create(retguidrec,adef);
+        guid:=aguid;
+      end;
+
+    function trecordedguidrec.getcopy: trecordedelement;
+      begin
+        result:=trecordedguidrec.create(def,guid);
+      end;
+
+    { trecordedrec }
+
+    constructor trecordedrec.create(adef:tdef);
+      begin
+        inherited create(retrec,adef);
+        fields:=tfplist.create;
+        elements:=tfpobjectlist.create(true);
+      end;
+
+    destructor trecordedrec.destroy;
+      begin
+        fields.free;
+        elements.free;
+        inherited destroy;
+      end;
+
+    function trecordedrec.getcopy: trecordedelement;
+    var
+      i : longint;
+    begin
+      result:=trecordedrec.create(def);
+      for i:=0 to elements.count-1 do
+        trecordedrec(result).elements.add(trecordedelement(elements[i]).getcopy);
+      for i:=0 to fields.count-1 do
+        trecordedrec(result).fields.add(fields[i]);
+    end;
+
+    { trecordedobject }
+
+    constructor trecordedobjectref.create(adef: tdef);
+      begin
+        inherited create(retobjectref,adef);
+      end;
+
+    function trecordedobjectref.getcopy: trecordedelement;
+      begin
+        result:=trecordedobjectref.create(def);
+      end;
+
 
 {*****************************************************************************
                           Bitpacked value helpers
@@ -436,9 +678,18 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
       var
         i  : {$ifdef CPU8BITALU}smallint{$else}aint{$endif};
         bp : tbitpackedval;
+        oldrecording , tmp: trecordedelement;
       begin
         if not(def.elementdef.typ in [orddef,enumdef]) then
           internalerror(2007022010);
+
+        oldrecording:=nil;
+        if isrecording then
+          begin
+            oldrecording:=recordingstate.currentrecording;
+            recordingstate.currentrecording:=trecordedstaticarray.create(def);
+          end;
+
         ftcb.maybe_begin_aggregate(def);
         { begin of the array }
         consume(_LKLAMMER);
@@ -460,6 +711,13 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
         { flush final incomplete value if necessary }
         if (bp.curbitoffset <> 0) then
           flush_packed_value(bp);
+
+        if isrecording then
+          begin
+            tmp:=recordingstate.currentrecording;
+            recordingstate.currentrecording:=oldrecording;
+            record_element(tmp);
+          end;
         ftcb.maybe_end_aggregate(def);
         consume(_RKLAMMER);
       end;
@@ -473,13 +731,20 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
         ftcb:=ctai_typedconstbuilder.create([tcalo_make_dead_strippable,tcalo_apply_constalign]);
         fdatalist:=tasmlist.create;
         curoffset:=0;
+        recordingstate.isrecording:=false;
+        recordingstate.currentrecording:=nil;
       end;
 
 
     destructor tasmlisttypedconstbuilder.Destroy;
+      var
+        rec: trecordedelement;
       begin
         fdatalist.free;
         ftcb.free;
+        for rec in recordingstate.recordingstack do
+          rec.free;
+        recordingstate.currentrecording.free;
         inherited Destroy;
       end;
 
@@ -493,6 +758,8 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
         winlike   : boolean;
         hsym      : tconstsym;
       begin
+        if isrecording then
+          record_element(trecordedbaseconst.create(def,node.getcopy));
         strval:='';
         { load strval and strlength of the constant tree }
         if (node.nodetype=stringconstn) or is_wide_or_unicode_string(def) or is_constwidecharnode(node) or
@@ -629,6 +896,111 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
           end;
       end;
 
+    procedure tasmlisttypedconstbuilder.tc_emit_chararray(def:tarraydef;var node:tnode);
+      var
+        i : longint;
+        char_size : asizeint;
+        len : asizeint;
+        ch  : array[0..1] of char;
+        ca  : pbyte;
+        int_const: tai_const;
+        dummy : byte;
+      begin
+        char_size:=def.elementdef.size;
+        if node.nodetype=stringconstn then
+          begin
+            len:=tstringconstnode(node).len;
+             case char_size of
+               1:
+                begin
+                  if (tstringconstnode(node).cst_type in [cst_unicodestring,cst_widestring]) then
+                    inserttypeconv(node,getansistringdef);
+                  if node.nodetype<>stringconstn then
+                    internalerror(2010033003);
+                  ca:=pointer(tstringconstnode(node).value_str);
+                end;
+               2:
+                 begin
+                   inserttypeconv(node,cunicodestringtype);
+                   if node.nodetype<>stringconstn then
+                     internalerror(2010033009);
+                   ca:=pointer(pcompilerwidestring(tstringconstnode(node).value_str)^.data)
+                 end;
+               else
+                 internalerror(2010033005);
+             end;
+            { For tp7 the maximum lentgh can be 255 }
+            if (m_tp7 in current_settings.modeswitches) and
+               (len>255) then
+             len:=255;
+          end
+        else if is_constcharnode(node) then
+           begin
+             case char_size of
+               1:
+                 ch[0]:=chr(tordconstnode(node).value.uvalue and $ff);
+               2:
+                 begin
+                   inserttypeconv(node,cwidechartype);
+                   if not is_constwidecharnode(node)then
+                     internalerror(2010033001);
+                   widechar(ch):=widechar(tordconstnode(node).value.uvalue and $ffff);
+                 end;
+               else
+                 internalerror(2010033002);
+             end;
+             ca:=@ch;
+             len:=1;
+           end
+        else if is_constwidecharnode(node) and (current_settings.sourcecodepage<>CP_UTF8) then
+           begin
+             case char_size of
+               1:
+                 begin
+                   inserttypeconv(node,cansichartype);
+                   if not is_constcharnode(node) then
+                     internalerror(2010033006);
+                   ch[0]:=chr(tordconstnode(node).value.uvalue and $ff);
+                 end;
+               2:
+                 widechar(ch):=widechar(tordconstnode(node).value.uvalue and $ffff);
+               else
+                 internalerror(2010033008);
+             end;
+             ca:=@ch;
+             len:=1;
+           end
+        else
+          begin
+            Message(parser_e_illegal_expression);
+            len:=0;
+            { avoid crash later on }
+            dummy:=0;
+            ca:=@dummy;
+          end;
+        if len>(def.highrange-def.lowrange+1) then
+          Message(parser_e_string_larger_array);
+        for i:=0 to def.highrange-def.lowrange do
+          begin
+            if i<len then
+              begin
+                case char_size of
+                  1:
+                   int_const:=Tai_const.Create_char(char_size,pbyte(ca)^);
+                  2:
+                   int_const:=Tai_const.Create_char(char_size,pword(ca)^);
+                  else
+                    internalerror(2010033004);
+                end;
+                inc(ca, char_size);
+              end
+            else
+              {Fill the remaining positions with #0.}
+              int_const:=Tai_const.Create_char(char_size,0);
+            ftcb.emit_tai(int_const,def.elementdef)
+          end;
+      end;
+
 
     procedure tasmlisttypedconstbuilder.tc_emit_orddef(def: torddef; var node: tnode);
       var
@@ -643,6 +1015,8 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
         end;
 
       begin
+        if isrecording then
+          record_element(trecordedbaseconst.create(def,node.getcopy));
         case def.ordtype of
            pasbool1,
            pasbool8,
@@ -720,6 +1094,8 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
       var
         value : bestreal;
       begin
+        if isrecording then
+          record_element(trecordedbaseconst.create(def,node.getcopy));
         value:=0.0;
         if is_constrealnode(node) then
           value:=trealconstnode(node).value_real
@@ -757,6 +1133,8 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
 
     procedure tasmlisttypedconstbuilder.tc_emit_classrefdef(def: tclassrefdef; var node: tnode);
       begin
+        if isrecording then
+          record_element(trecordedbaseconst.create(def,node.getcopy));
         case node.nodetype of
           loadvmtaddrn:
             begin
@@ -787,6 +1165,8 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
         datadef   : tdef;
         datatcb   : ttai_typedconstbuilder;
       begin
+        if isrecording then
+          record_element(trecordedbaseconst.create(def,node.getcopy));
         { remove equal typecasts for pointer/nil addresses }
         if (node.nodetype=typeconvn) then
           with Ttypeconvnode(node) do
@@ -1061,6 +1441,8 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
         i: longint;
         setval: cardinal;
       begin
+        if isrecording then
+          record_element(trecordedbaseconst.create(def,node.getcopy));
         if node.nodetype=setconstn then
           begin
             { be sure to convert to the correct result, else
@@ -1135,6 +1517,8 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
       var
         equal: boolean;
       begin
+        if isrecording then
+          record_element(trecordedbaseconst.create(def,node.getcopy));
         if node.nodetype=ordconstn then
           begin
             equal:=equal_defs(node.resultdef,def);
@@ -1161,6 +1545,237 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
           Message(parser_e_illegal_expression);
       end;
 
+    function tasmlisttypedconstbuilder.isrecording:boolean;inline;
+      begin
+        result:=recordingstate.isrecording;
+      end;
+
+    procedure tasmlisttypedconstbuilder.record_element(element:trecordedelement);
+      begin
+        if not isrecording then
+          internalerror(2024110105);
+        if not assigned(recordingstate.currentrecording) then
+          recordingstate.currentrecording:=element
+        else case recordingstate.currentrecording.typ of
+          retstaticarray:
+            trecordedstaticarray(recordingstate.currentrecording).elements.add(element);
+          retrec:
+            trecordedrec(recordingstate.currentrecording).elements.add(element);
+          {retobject:}
+          otherwise
+            internalerror(2024110107);
+        end;
+      end;
+
+    procedure tasmlisttypedconstbuilder.start_recording;
+      begin
+        if isrecording and not assigned(recordingstate.currentrecording) then
+          internalerror(2024103102);
+        recordingstate.isrecording:=true;
+        if assigned(recordingstate.currentrecording) then
+          begin
+            SetLength(recordingstate.recordingstack,length(recordingstate.recordingstack)+1);
+            recordingstate.recordingstack[high(recordingstate.recordingstack)]:=recordingstate.currentrecording;
+          end;
+        recordingstate.currentrecording:=nil;
+      end;
+
+    function tasmlisttypedconstbuilder.stop_recording: trecordedelement;
+      begin
+        if not isrecording or not assigned(recordingstate.currentrecording) then
+          internalerror(2024103103);
+        result:=recordingstate.currentrecording;
+        if length(recordingstate.recordingstack)>0 then
+          begin
+            recordingstate.currentrecording:=recordingstate.recordingstack[high(recordingstate.recordingstack)];
+            setlength(recordingstate.recordingstack,length(recordingstate.recordingstack)-1);
+          end
+        else
+          recordingstate.currentrecording:=nil;
+        recordingstate.isrecording:=assigned(recordingstate.currentrecording);
+        { if we are still recording, append this recording to the next one to
+          have continous recording }
+        if recordingstate.isrecording then
+          record_element(result.getcopy);
+      end;
+
+    procedure tasmlisttypedconstbuilder.replay_recorded(arecord:trecordedelement);
+
+      procedure replay_base(elem:trecordedbaseconst);
+        var
+          n:tnode;
+        begin
+          { n can be changed by the functions, so make a copy and free later }
+          n:=elem.node.getcopy;
+          case elem.def.typ of
+            orddef :
+              tc_emit_orddef(torddef(elem.def),n);
+            floatdef :
+              tc_emit_floatdef(tfloatdef(elem.def),n);
+            classrefdef :
+              tc_emit_classrefdef(tclassrefdef(elem.def),n);
+            pointerdef :
+              tc_emit_pointerdef(tpointerdef(elem.def),n);
+            setdef :
+              tc_emit_setdef(tsetdef(elem.def),n);
+            enumdef :
+              tc_emit_enumdef(tenumdef(elem.def),n);
+            stringdef :
+              tc_emit_stringdef(tstringdef(elem.def),n);
+            otherwise
+              internalerror(2024103105);
+          end;
+          n.free;
+        end;
+
+      procedure replay_dyn_array(elem:trecordeddynarray);
+        begin
+          if elem.elemcount=0 then
+            ftcb.emit_tai(Tai_const.Create_sym(nil),elem.def)
+          else
+            ftcb.emit_dynarray_offset(elem.arraylbl,elem.elemcount,tarraydef(elem.def),elem.arraydef);
+        end;
+
+      procedure replay_packed_array(elem:trecordedstaticarray);
+        var
+          i : longint;
+          bp : tbitpackedval;
+          child: trecordedelement;
+        begin
+          ftcb.maybe_begin_aggregate(elem.def);
+
+          initbitpackval(bp,tarraydef(elem.def).elepackedbitsize);
+          for i:=0 to elem.elements.count-1 do
+            begin
+              child:=trecordedelement(elem.elements[i]);
+              if child.typ<>retbase then
+                internalerror(2024110102);
+              bitpackval(Tordconstnode(trecordedbaseconst(child).node).value.uvalue,bp);
+              if (bp.curbitoffset>=AIntBits) then
+                flush_packed_value(bp);
+            end;
+          if (bp.curbitoffset <> 0) then
+            flush_packed_value(bp);
+
+          ftcb.maybe_end_aggregate(elem.def);
+        end;
+
+      procedure replay_char_array(elem:trecordedstaticarray);
+        var
+          i : longint;
+          bp : tbitpackedval;
+          child: trecordedelement;
+          n : tnode;
+        begin
+          ftcb.maybe_begin_aggregate(elem.def);
+          n:=tnode(elem.elements[0]).getcopy;
+          tc_emit_chararray(tarraydef(elem.def),n);
+          n.free;
+          ftcb.maybe_end_aggregate(elem.def);
+        end;
+
+      procedure replay_static_array(elem:trecordedstaticarray);
+        var
+          i : longint;
+          child: trecordedelement;
+        begin
+          ftcb.maybe_begin_aggregate(elem.def);
+          for i:=0 to elem.elements.count-1 do
+            replay_recorded(trecordedelement(elem.elements[i]));
+          ftcb.maybe_end_aggregate(elem.def);
+        end;
+
+      procedure replay_procvar(elem:trecordedprocvar);
+        begin
+          internalerror(2024110107);
+        end;
+
+      procedure replay_guid_record(elem:trecordedguidrec);
+        begin
+          ftcb.emit_guid_const(elem.guid);
+        end;
+
+      procedure replay_record(elem:trecordedrec);
+        var
+          i , j , fieldidx : longint;
+          child : trecordedelement;
+          is_packed : boolean;
+          bp : tbitpackedval;
+          fieldvs : tfieldvarsym;
+          startoffset : asizeint;
+        begin
+          is_packed:=is_packed_record_or_object(elem.def);
+          ftcb.maybe_begin_aggregate(elem.def);
+
+          if is_packed then
+            initbitpackval(bp,0);
+
+          fieldidx:=0;
+          startoffset:=curoffset;
+
+          for i:=0 to elem.elements.count-1 do
+            begin
+              child:=trecordedelement(elem.elements[i]);
+              if child.typ=retpadding then
+                begin
+                  flush_packed_value(bp);
+                  for j:=1 to trecordedpadding(child).padding do
+                    ftcb.emit_tai(Tai_const.Create_8bit(0),u8inttype);
+                  continue;
+                end;
+              fieldvs:=tfieldvarsym(elem.fields[fieldidx]);
+              inc(fieldidx);
+              ftcb.next_field:=fieldvs;
+              if not(is_packed) or
+                 { only orddefs and enumdefs are bitpacked, as in gcc/gpc }
+                 not(fieldvs.vardef.typ in [orddef,enumdef]) then
+                begin
+                  if is_packed then
+                    flush_packed_value(bp);
+                  curoffset:=startoffset+fieldvs.fieldoffset;
+                  replay_recorded(child);
+                end
+              else
+                begin
+                  bp.packedbitsize:=fieldvs.vardef.packedbitsize;
+                  bitpackval(Tordconstnode(trecordedbaseconst(child).node).value.uvalue,bp);
+                  if (bp.curbitoffset>=AIntBits) then
+                    flush_packed_value(bp);
+                end;
+            end;
+          ftcb.maybe_end_aggregate(elem.def);
+        end;
+
+      procedure replay_objectref(elem:trecordedobjectref);
+        begin
+          ftcb.emit_tai(Tai_const.Create_sym(nil),elem.def);
+        end;
+
+      begin
+        case arecord.typ of
+          retbase:
+            replay_base(trecordedbaseconst(arecord));
+          retdynarray:
+            replay_dyn_array(trecordeddynarray(arecord));
+          retstaticarray:
+            if is_packed_array(arecord.def) then
+              replay_packed_array(trecordedstaticarray(arecord))
+            else if trecordedstaticarray(arecord).stringinit then
+              replay_char_array(trecordedstaticarray(arecord))
+            else
+              replay_static_array(trecordedstaticarray(arecord));
+          retprocvar:
+            replay_procvar(trecordedprocvar(arecord));
+          retguidrec:
+            replay_guid_record(trecordedguidrec(arecord));
+          retrec:
+            replay_record(trecordedrec(arecord));
+          retobjectref:
+            replay_objectref(trecordedobjectref(arecord));
+          otherwise
+            internalerror(2024110103);
+        end;
+      end;
 
     { parse a single constant and add it to the packed const info  }
     { represented by curval etc (see explanation of bitpackval for }
@@ -1187,6 +1802,8 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
           bitpackval(Tordconstnode(node).value.uvalue,bp);
         if (bp.curbitoffset>=AIntBits) then
           flush_packed_value(bp);
+        if isrecording then
+          record_element(trecordedbaseconst.create(def,node.getcopy));
         node.free;
       end;
 
@@ -1243,15 +1860,8 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
         RKlammerToken: array[Boolean] of TToken = (_RKLAMMER, _RECKKLAMMER);
       var
         n : tnode;
-        i : longint;
-        len : asizeint;
-        ch  : array[0..1] of char;
-        ca  : pbyte;
-        int_const: tai_const;
-        char_size: integer;
         dyncount,
         oldoffset: asizeint;
-        dummy : byte;
         sectype : tasmsectiontype;
         oldtcb,
         datatcb : ttai_typedconstbuilder;
@@ -1259,18 +1869,26 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
         dyncountloc : ttypedconstplaceholder;
         llofs : tasmlabofs;
         dynarrdef : tdef;
+        associnit : boolean;
+        nextval , maxval , hl1, hl2 : Tconstexprint;
+        oldrecording , elemrec: trecordedelement;
+        oldrecstate : trecordingstate;
       begin
         { dynamic array }
         if is_dynamic_array(def) then
           begin
             if try_to_consume(_NIL) then
               begin
+                if isrecording then
+                  record_element(trecordeddynarray.create(def));
                 ftcb.emit_tai(Tai_const.Create_sym(nil),def);
               end
             else if try_to_consume(LKlammerToken[m_delphi in current_settings.modeswitches]) then
               begin
                 if try_to_consume(RKlammerToken[m_delphi in current_settings.modeswitches]) then
                   begin
+                    if isrecording then
+                      record_element(trecordeddynarray.create(def));
                     ftcb.emit_tai(tai_const.create_sym(nil),def);
                   end
                 else
@@ -1285,6 +1903,8 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
 
                     dyncount:=0;
 
+                    oldrecstate:=recordingstate;
+                    recordingstate:=default(trecordingstate);
                     oldtcb:=ftcb;
                     ftcb:=datatcb;
                     while true do
@@ -1301,7 +1921,10 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
                     dynarrdef:=datatcb.end_dynarray_const(def,dyncount,dyncountloc,llofs);
 
                     ftcb.finish_internal_data_builder(datatcb,ll,dynarrdef,sizeof(pint));
+                    recordingstate:=oldrecstate;
 
+                    if isrecording then
+                      record_element(trecordeddynarray.create(def,dyncount,trecorddef(dynarrdef),llofs));
                     ftcb.emit_dynarray_offset(llofs,dyncount,def,trecorddef(dynarrdef));
                   end;
               end
@@ -1317,8 +1940,16 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
             parse_packed_array_def(def);
           end
         { normal array const between brackets }
-        else if try_to_consume(_LKLAMMER) then
+        else if token in [_LKLAMMER,_LECKKLAMMER] then
           begin
+            associnit:=token=_LECKKLAMMER;
+            consume(token);
+            oldrecording:=nil;
+            if isrecording then
+              begin
+                oldrecording:=recordingstate.currentrecording;
+                recordingstate.currentrecording:=trecordedstaticarray.create(def);
+              end;
             ftcb.maybe_begin_aggregate(def);
             oldoffset:=curoffset;
             curoffset:=0;
@@ -1328,6 +1959,7 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
               begin
                 while true do
                   begin
+                    { TODO: Implement me for assoc init }
                     read_typed_const_data(def.elementdef);
                     if token=_RKLAMMER then
                       begin
@@ -1340,124 +1972,127 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
               end
             else
               begin
-                for i:=def.lowrange to def.highrange-1 do
-                  begin
-                    read_typed_const_data(def.elementdef);
-                    Inc(curoffset,def.elementdef.size);
-                    if token=_RKLAMMER then
-                      begin
-                        Message1(parser_e_more_array_elements_expected,tostr(def.highrange-i));
-                        consume(_RKLAMMER);
-                        exit;
-                      end
-                    else
-                      consume(_COMMA);
-                  end;
-                read_typed_const_data(def.elementdef);
-                consume(_RKLAMMER);
+                getrange(def.rangedef,nextval,maxval);
+                if def.lowrange<>nextval.svalue then
+                  nextval.svalue:=def.lowrange;
+                if def.highrange<>maxval.svalue then
+                  maxval.svalue:=def.highrange;
+                repeat
+                  n:=nil;
+                  if associnit then
+                    begin
+                      { For assoc init get elem (range) that should be initialized }
+                      n:=comp_expr([ef_accept_equal]);
+                      do_typecheckpass(n);
+                      if not is_subequal(def.rangedef,n.resultdef) then
+                        begin
+                          incompatibletypes(def.rangedef,n.resultdef);
+                          exit;
+                        end;
+                      hl1:=get_ordinal_value(n);
+                      n.free;
+                      if try_to_consume(_POINTPOINT) then
+                        begin
+                          n:=comp_expr([ef_accept_equal]);
+                          do_typecheckpass(n);
+                          if not is_subequal(def.rangedef,n.resultdef) then
+                            begin
+                              incompatibletypes(def.rangedef,n.resultdef);
+                              exit;
+                            end;
+                          hl2:=get_ordinal_value(n);
+                          n.free;
+                        end
+                      else
+                        hl2:=hl1;
+                      if (hl2<hl1) or (hl2>maxval) or (hl1<nextval) then
+                        begin
+                          Message(parser_e_illegal_expression);
+                          exit;
+                        end;
+                      { currently: throw an error if there are "gaps"
+                        alternatively: fill with 0s/Default? }
+                      if hl1<>nextval then
+                        begin
+                          if nextval.signed then
+                            Message1(parser_e_skipped_fields_before,tostr(hl1.svalue))
+                          else
+                            Message1(parser_e_skipped_fields_before,tostr(hl2.uvalue));
+                          exit;
+                        end;
+                      consume(_COLON);
+                    end
+                  else
+                    begin
+                      { for "normal" init, just read 1 element
+                        note: these are bounds like in for loops
+                        so number of iterations is hl2-hl1 + 1 }
+                      hl1:=nextval;
+                      hl2:=nextval;
+                    end;
+                  { if more than one element record the element to replay }
+                  if hl1<hl2 then
+                      start_recording;
+                  read_typed_const_data(def.elementdef);
+                  Inc(curoffset,def.elementdef.size);
+                  if hl1<hl2 then
+                    begin
+                      { now apply the record for each element in the range }
+                      elemrec:=stop_recording;
+                      { note: this while stops when nextval=hl2 which is one
+                        element before hl2 (max bound). This is correct because
+                        we already read one element so we do not overread }
+                      while nextval<hl2 do
+                        begin
+                          replay_recorded(elemrec);
+                          Inc(curoffset,def.elementdef.size);
+                          inc(nextval.uvalue);
+                        end;
+                      elemrec.free;
+                    end;
+                  if nextval=maxval then
+                    break
+                  else
+                    inc(nextval.uvalue);
+                  if (not associnit and (token=_RKLAMMER)) or
+                     (associnit and (token=_RECKKLAMMER)) then
+                    begin
+                      Message1(parser_e_more_array_elements_expected,tostr(def.highrange-(curoffset div def.elesize)));
+                      consume(token);
+                      exit;
+                    end
+                  else if associnit then
+                    consume(_SEMICOLON)
+                  else
+                    consume(_COMMA);
+                until false;
+                { We incremented once to often (for the last element) so revert }
+                Dec(curoffset,def.elementdef.size);
+                if associnit then
+                  consume(_RECKKLAMMER)
+                else
+                  consume(_RKLAMMER);
               end;
             curoffset:=oldoffset;
             if ErrorCount=0 then
-              ftcb.maybe_end_aggregate(def);
+              begin
+                if isrecording then
+                  begin
+                    elemrec:=recordingstate.currentrecording;
+                    recordingstate.currentrecording:=oldrecording;
+                    record_element(elemrec);
+                  end;
+                ftcb.maybe_end_aggregate(def);
+              end;
           end
         { if array of char then we allow also a string }
         else if is_anychar(def.elementdef) then
           begin
              ftcb.maybe_begin_aggregate(def);
-             char_size:=def.elementdef.size;
              n:=comp_expr([ef_accept_equal]);
-             if n.nodetype=stringconstn then
-               begin
-                 len:=tstringconstnode(n).len;
-                  case char_size of
-                    1:
-                     begin
-                       if (tstringconstnode(n).cst_type in [cst_unicodestring,cst_widestring]) then
-                         inserttypeconv(n,getansistringdef);
-                       if n.nodetype<>stringconstn then
-                         internalerror(2010033003);
-                       ca:=pointer(tstringconstnode(n).value_str);
-                     end;
-                    2:
-                      begin
-                        inserttypeconv(n,cunicodestringtype);
-                        if n.nodetype<>stringconstn then
-                          internalerror(2010033009);
-                        ca:=pointer(pcompilerwidestring(tstringconstnode(n).value_str)^.data)
-                      end;
-                    else
-                      internalerror(2010033005);
-                  end;
-                 { For tp7 the maximum lentgh can be 255 }
-                 if (m_tp7 in current_settings.modeswitches) and
-                    (len>255) then
-                  len:=255;
-               end
-             else if is_constcharnode(n) then
-                begin
-                  case char_size of
-                    1:
-                      ch[0]:=chr(tordconstnode(n).value.uvalue and $ff);
-                    2:
-                      begin
-                        inserttypeconv(n,cwidechartype);
-                        if not is_constwidecharnode(n) then
-                          internalerror(2010033001);
-                        widechar(ch):=widechar(tordconstnode(n).value.uvalue and $ffff);
-                      end;
-                    else
-                      internalerror(2010033002);
-                  end;
-                  ca:=@ch;
-                  len:=1;
-                end
-             else if is_constwidecharnode(n) and (current_settings.sourcecodepage<>CP_UTF8) then
-                begin
-                  case char_size of
-                    1:
-                      begin
-                        inserttypeconv(n,cansichartype);
-                        if not is_constcharnode(n) then
-                          internalerror(2010033006);
-                        ch[0]:=chr(tordconstnode(n).value.uvalue and $ff);
-                      end;
-                    2:
-                      widechar(ch):=widechar(tordconstnode(n).value.uvalue and $ffff);
-                    else
-                      internalerror(2010033008);
-                  end;
-                  ca:=@ch;
-                  len:=1;
-                end
-             else
-               begin
-                 Message(parser_e_illegal_expression);
-                 len:=0;
-                 { avoid crash later on }
-                 dummy:=0;
-                 ca:=@dummy;
-               end;
-             if len>(def.highrange-def.lowrange+1) then
-               Message(parser_e_string_larger_array);
-             for i:=0 to def.highrange-def.lowrange do
-               begin
-                 if i<len then
-                   begin
-                     case char_size of
-                       1:
-                        int_const:=Tai_const.Create_char(char_size,pbyte(ca)^);
-                       2:
-                        int_const:=Tai_const.Create_char(char_size,pword(ca)^);
-                       else
-                         internalerror(2010033004);
-                     end;
-                     inc(ca, char_size);
-                   end
-                 else
-                   {Fill the remaining positions with #0.}
-                   int_const:=Tai_const.Create_char(char_size,0);
-                 ftcb.emit_tai(int_const,def.elementdef)
-               end;
+              if isrecording then
+                record_element(trecordedstaticarray.createstringinit(def,n.getcopy));
+             tc_emit_chararray(def,n);
              ftcb.maybe_end_aggregate(def);
              n.free;
           end
@@ -1479,6 +2114,9 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
         selfnode: tnode;
         selfdef: tdef;
       begin
+        { recording of procvars not yet implemented }
+        if isrecording then
+          internalerror(2024110106);
         { Procvars and pointers are no longer compatible.  }
         { under tp:  =nil or =var under fpc: =nil or =@var }
         if try_to_consume(_NIL) then
@@ -1622,7 +2260,11 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
         begin
           hs:=strpas(tstringconstnode(n).value_str);
           if string2guid(hs,tmpguid) then
-            ftcb.emit_guid_const(tmpguid)
+            begin
+              if isrecording then
+                record_element(trecordedguidrec.create(def,tmpguid));
+              ftcb.emit_guid_const(tmpguid);
+            end
           else
             Message(parser_e_improper_guid_syntax);
         end;
@@ -1630,6 +2272,7 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
       var
         i : longint;
         SymList:TFPHashObjectList;
+        oldrecording , tmp : trecordedelement;
       begin
         { GUID }
         if (def=rec_tguid) and (token=_ID) then
@@ -1641,7 +2284,11 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
               begin
                 inserttypeconv(n,rec_tguid);
                 if n.nodetype=guidconstn then
-                  ftcb.emit_guid_const(tguidconstnode(n).value)
+                  begin
+                    if isrecording then
+                      record_element(trecordedguidrec.create(def,tguidconstnode(n).value));
+                    ftcb.emit_guid_const(tguidconstnode(n).value);
+                  end
                 else
                   Message(parser_e_illegal_expression);
               end;
@@ -1658,6 +2305,12 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
               Message(parser_e_illegal_expression);
             n.free;
             exit;
+          end;
+        oldrecording:=nil;
+        if isrecording then
+          begin
+            oldrecording:=recordingstate.currentrecording;
+            recordingstate.currentrecording:=trecordedrec.create(def);
           end;
         ftcb.maybe_begin_aggregate(def);
         { bitpacked record? }
@@ -1747,7 +2400,9 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
                         fillbytes:=(tfieldvarsym(srsym).fieldoffset-recoffset) div 8;
                       end;
                     for i:=1 to fillbytes do
-                      ftcb.emit_tai(Tai_const.Create_8bit(0),u8inttype)
+                      ftcb.emit_tai(Tai_const.Create_8bit(0),u8inttype);
+                    if isrecording and is_packed then
+                      record_element(trecordedpadding.create(fillbytes));
                   end;
 
                 { new position }
@@ -1759,6 +2414,8 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
 
                 { read the data }
                 ftcb.next_field:=tfieldvarsym(srsym);
+                if isrecording then
+                    trecordedrec(recordingstate.currentrecording).fields.add(srsym);
                 if not(is_packed) or
                    { only orddefs and enumdefs are bitpacked, as in gcc/gpc }
                    not(tfieldvarsym(srsym).vardef.typ in [orddef,enumdef]) then
@@ -1814,6 +2471,14 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
               end;
             for i:=1 to fillbytes do
               ftcb.emit_tai(Tai_const.Create_8bit(0),u8inttype);
+            if isrecording then
+              begin
+                if is_packed then
+                  record_element(trecordedpadding.create(fillbytes));
+                tmp:=recordingstate.currentrecording;
+                recordingstate.currentrecording:=oldrecording;
+                record_element(tmp);
+              end;
 
             ftcb.maybe_end_aggregate(def);
           end;
@@ -1832,6 +2497,7 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
         s,sorg : TIDString;
         vmtwritten : boolean;
         startoffset : {$ifdef CPU8BITALU}smallint{$else}aint{$endif};
+        oldrecording, tmp: trecordedelement;
       begin
         { no support for packed object }
         if is_packed_record_or_object(def) then
@@ -1851,6 +2517,8 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
               end
             else
               ftcb.emit_tai(Tai_const.Create_sym(nil),def);
+            if isrecording then
+              record_element(trecordedobjectref.create(def));
             n.free;
             exit;
           end;
@@ -1864,6 +2532,13 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
           end;
 
         ftcb.maybe_begin_aggregate(def);
+
+        oldrecording:=nil;
+        if isrecording then
+          begin
+            oldrecording:=recordingstate.currentrecording;
+            recordingstate.currentrecording:=trecordedrec.create(def);
+          end;
 
         consume(_LKLAMMER);
         startoffset:=curoffset;
@@ -1919,6 +2594,8 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
                     end;
 
                   ftcb.next_field:=tfieldvarsym(srsym);
+                  if isrecording then
+                    trecordedrec(recordingstate.currentrecording).fields.add(srsym);
 
                   { new position }
                   objoffset:=fieldoffset+vardef.size;
@@ -1943,6 +2620,12 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
             objoffset:=def.vmt_offset+tfieldvarsym(def.vmt_field).vardef.size;
           end;
         ftcb.maybe_end_aggregate(def);
+        if isrecording then
+          begin
+            tmp:=recordingstate.currentrecording;
+            recordingstate.currentrecording:=oldrecording;
+            record_element(tmp);
+          end;
         consume(_RKLAMMER);
       end;
 
