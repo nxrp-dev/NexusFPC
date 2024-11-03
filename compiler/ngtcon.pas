@@ -27,6 +27,7 @@ interface
 
     uses
       globtype,cclasses,constexp,
+      tokens,
       aasmbase,aasmdata,aasmtai,aasmcnst,
       node,nbas,
       symconst, symtype, symbase, symdef,symsym;
@@ -154,6 +155,7 @@ interface
        private
         fsym: tstaticvarsym;
         curoffset: asizeint;
+        curplaceholder: ttypedconstplaceholder;
 
         recordingstate:trecordingstate;
 
@@ -166,11 +168,14 @@ interface
 
         function parse_single_packed_const(def: tdef; var bp: tbitpackedval): boolean;
         procedure flush_packed_value(var bp: tbitpackedval);
+        procedure do_emit_tai(t:tai;d:tdef);
+        procedure do_emit_ord_const(value:int64;def:tdef);
        protected
         ftcb: ttai_typedconstbuilder;
         fdatalist: tasmlist;
 
         procedure parse_packed_array_def(def: tarraydef);
+        procedure parse_assoc_array_elems(def:tarraydef;closingtok:ttoken);
         procedure parse_arraydef(def:tarraydef);override;
         procedure parse_procvardef(def:tprocvardef);override;
         procedure parse_recorddef(def:trecorddef);override;
@@ -230,7 +235,7 @@ implementation
 
 uses
    SysUtils,
-   systems,tokens,verbose,compinnr,
+   systems,verbose,compinnr,
    cutils,globals,widestr,scanner,
    symtable,
    defutil,defcmp,
@@ -673,6 +678,38 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
     {$pop}
 
 
+    procedure tasmlisttypedconstbuilder.do_emit_tai(t:tai;d:tdef);
+      begin
+        if assigned(curplaceholder) then
+          begin
+            curplaceholder.replace(t,d);
+            curplaceholder.free;
+            curplaceholder:=nil;
+          end
+        else
+          ftcb.emit_tai(t,d);
+      end;
+
+    procedure tasmlisttypedconstbuilder.do_emit_ord_const(value: int64;
+      def: tdef);
+      begin
+        { copied from ftcb.emit_ord_const();
+          Very hacky... }
+         case def.size of
+          1:
+            do_emit_tai(Tai_const.Create_8bit(byte(value)),def);
+          2:
+            do_emit_tai(Tai_const.Create_16bit(word(value)),def);
+          4:
+            do_emit_tai(Tai_const.Create_32bit(longint(value)),def);
+          8:
+            do_emit_tai(Tai_const.Create_64bit(value),def);
+          else
+            internalerror(2014100501);
+        end;
+      end;
+
+
     { parses a packed array constant }
     procedure tasmlisttypedconstbuilder.parse_packed_array_def(def: tarraydef);
       var
@@ -1031,7 +1068,7 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
                 if is_constboolnode(node) then
                   begin
                     adaptrange(def,tordconstnode(node).value,false,false,cs_check_range in current_settings.localswitches);
-                    ftcb.emit_ord_const(tordconstnode(node).value.svalue,def)
+                    do_emit_ord_const(tordconstnode(node).value.svalue,def)
                   end
                 else
                   do_error;
@@ -1044,7 +1081,7 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
                   ((m_delphi in current_settings.modeswitches) and
                    is_constwidecharnode(node) and
                    (tordconstnode(node).value <= 255)) then
-                  ftcb.emit_ord_const(byte(tordconstnode(node).value.svalue),def)
+                  do_emit_ord_const(byte(tordconstnode(node).value.svalue),def)
                 else
                   do_error;
              end;
@@ -1053,7 +1090,7 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
                 if is_constcharnode(node) then
                   inserttypeconv(node,cwidechartype);
                 if is_constwidecharnode(node) then
-                  ftcb.emit_ord_const(word(tordconstnode(node).value.svalue),def)
+                  do_emit_ord_const(word(tordconstnode(node).value.svalue),def)
                 else
                   do_error;
              end;
@@ -1065,7 +1102,7 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
                 if is_constintnode(node) then
                   begin
                     adaptrange(def,tordconstnode(node).value,false,false,cs_check_range in current_settings.localswitches);
-                    ftcb.emit_ord_const(tordconstnode(node).value.svalue,def);
+                    do_emit_ord_const(tordconstnode(node).value.svalue,def);
                   end
                 else
                   do_error;
@@ -1082,7 +1119,7 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
                     intvalue:=0;
                     IncompatibleTypes(node.resultdef, def);
                   end;
-               ftcb.emit_ord_const(intvalue,def);
+               do_emit_ord_const(intvalue,def);
              end;
            else
              internalerror(200611052);
@@ -1108,7 +1145,7 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
 
         case def.floattype of
            s32real :
-             ftcb.emit_tai(tai_realconst.create_s32real(ts32real(value)),def);
+             do_emit_tai(tai_realconst.create_s32real(ts32real(value)),def);
            s64real :
 {$ifdef ARM}
              if is_double_hilo_swapped then
@@ -1117,16 +1154,16 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
 {$endif ARM}
                ftcb.emit_tai(tai_realconst.create_s64real(ts64real(value)),def);
            s80real :
-             ftcb.emit_tai(tai_realconst.create_s80real(value,s80floattype.size),def);
+             do_emit_tai(tai_realconst.create_s80real(value,s80floattype.size),def);
            sc80real :
-             ftcb.emit_tai(tai_realconst.create_s80real(value,sc80floattype.size),def);
+             do_emit_tai(tai_realconst.create_s80real(value,sc80floattype.size),def);
            s64comp :
              { the round is necessary for native compilers where comp isn't a float }
-             ftcb.emit_tai(tai_realconst.create_s64compreal(round(value)),def);
+             do_emit_tai(tai_realconst.create_s64compreal(round(value)),def);
            s64currency:
-             ftcb.emit_tai(tai_realconst.create_s64compreal(round(value*10000)),def);
+             do_emit_tai(tai_realconst.create_s64compreal(round(value*10000)),def);
            s128real:
-             ftcb.emit_tai(tai_realconst.create_s128real(value),def);
+             do_emit_tai(tai_realconst.create_s128real(value),def);
         end;
       end;
 
@@ -1140,10 +1177,10 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
             begin
               if not def_is_related(tobjectdef(tclassrefdef(node.resultdef).pointeddef),tobjectdef(def.pointeddef)) then
                 IncompatibleTypes(node.resultdef, def);
-              ftcb.emit_tai(Tai_const.Create_sym(current_asmdata.RefAsmSymbol(Tobjectdef(tclassrefdef(node.resultdef).pointeddef).vmt_mangledname,AT_DATA)),def);
+              do_emit_tai(Tai_const.Create_sym(current_asmdata.RefAsmSymbol(Tobjectdef(tclassrefdef(node.resultdef).pointeddef).vmt_mangledname,AT_DATA)),def);
             end;
            niln:
-             ftcb.emit_tai(Tai_const.Create_sym(nil),def);
+             do_emit_tai(Tai_const.Create_sym(nil),def);
            else if is_constnode(node) then
              IncompatibleTypes(node.resultdef, def)
            else
@@ -1218,7 +1255,7 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
           end
         { nil pointer ? }
         else if node.nodetype=niln then
-          ftcb.emit_tai(Tai_const.Create_sym(nil),def)
+          do_emit_tai(Tai_const.Create_sym(nil),def)
         { maybe pchar ? }
         else
           if is_char(def.pointeddef) and
@@ -1421,7 +1458,7 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
               if (tinlinenode(node).left.nodetype=typen) then
                 begin
                   // TODO correct type?
-                  ftcb.emit_tai(Tai_const.createname(
+                  do_emit_tai(Tai_const.createname(
                     tobjectdef(tinlinenode(node).left.resultdef).vmt_mangledname,AT_DATA,0),
                     voidpointertype);
                 end
@@ -1462,12 +1499,12 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
                     if source_info.endian=target_info.endian then
                       begin
                         for i:=0 to node.resultdef.size-1 do
-                          ftcb.emit_tai(tai_const.create_8bit(Psetbytes(tsetconstnode(node).value_set)^[i]),u8inttype);
+                          do_emit_tai(tai_const.create_8bit(Psetbytes(tsetconstnode(node).value_set)^[i]),u8inttype);
                       end
                     else
                       begin
                         for i:=0 to node.resultdef.size-1 do
-                          ftcb.emit_tai(tai_const.create_8bit(reverse_byte(Psetbytes(tsetconstnode(node).value_set)^[i])),u8inttype);
+                          do_emit_tai(tai_const.create_8bit(reverse_byte(Psetbytes(tsetconstnode(node).value_set)^[i])),u8inttype);
                       end;
                   end
                 else
@@ -1488,18 +1525,18 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
                       end;
                     case def.size of
                       1:
-                        ftcb.emit_tai(tai_const.create_8bit(setval),def);
+                        do_emit_tai(tai_const.create_8bit(setval),def);
                       2:
                         begin
                           if target_info.endian=endian_big then
                             setval:=swapendian(word(setval));
-                          ftcb.emit_tai(tai_const.create_16bit(setval),def);
+                          do_emit_tai(tai_const.create_16bit(setval),def);
                         end;
                       4:
                         begin
                           if target_info.endian=endian_big then
                             setval:=swapendian(cardinal(setval));
-                          ftcb.emit_tai(tai_const.create_32bit(longint(setval)),def);
+                          do_emit_tai(tai_const.create_32bit(longint(setval)),def);
                         end;
                       else
                         internalerror(2015112207);
@@ -1531,9 +1568,9 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
                 if not equal then
                   adaptrange(def,tordconstnode(node).value,false,false,cs_check_range in current_settings.localswitches);
                 case node.resultdef.size of
-                  1 : ftcb.emit_tai(Tai_const.Create_8bit(Byte(tordconstnode(node).value.svalue)),def);
-                  2 : ftcb.emit_tai(Tai_const.Create_16bit(Word(tordconstnode(node).value.svalue)),def);
-                  4 : ftcb.emit_tai(Tai_const.Create_32bit(Longint(tordconstnode(node).value.svalue)),def);
+                  1 : do_emit_tai(Tai_const.Create_8bit(Byte(tordconstnode(node).value.svalue)),def);
+                  2 : do_emit_tai(Tai_const.Create_16bit(Word(tordconstnode(node).value.svalue)),def);
+                  4 : do_emit_tai(Tai_const.Create_32bit(Longint(tordconstnode(node).value.svalue)),def);
                   else
                     internalerror(2022040301);
                 end;
@@ -1854,12 +1891,414 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
       end;
 
 
+    procedure tasmlisttypedconstbuilder.parse_assoc_array_elems(def:tarraydef;closingtok:ttoken);
+
+      function recordorreplayatoffset(arrayoffset:Tconstexprint;recorded:trecordedelement):trecordedelement;
+        begin
+          curoffset:=arrayoffset.svalue-def.lowrange;
+          if assigned(recorded) then
+            begin
+              replay_recorded(recorded);
+              result:=recorded;
+            end
+          else
+            begin
+              start_recording;
+              read_typed_const_data(def.elementdef);
+              result:=stop_recording;
+            end;
+          Inc(curoffset,def.elementdef.size);
+        end;
+
+      type
+        ptypedconstplaceholder=^ttypedconstplaceholder;
+        ppplaceholdertree=^pplaceholdertree;
+        pplaceholdertree=^tplaceholdertree;
+        tplaceholdertree=record
+          rngstart,rngend:Tconstexprint;
+          case nodetype: (ptnbranch,ptnleaf) of
+          ptnbranch:(left,right:pplaceholdertree);
+          ptnleaf:(data:ptypedconstplaceholder);
+        end;
+
+      function createbranch(left,right:pplaceholdertree):pplaceholdertree;
+        begin
+          new(result);
+          result^.rngstart:=left^.rngstart;
+          result^.rngend:=right^.rngend;
+          result^.nodetype:=ptnbranch;
+          result^.left:=left;
+          result^.right:=right;
+        end;
+
+      function createleaf(rngstart,rngend:tconstexprint):pplaceholdertree;
+        begin
+          new(result);
+          result^.rngstart:=rngstart;
+          result^.rngend:=rngend;
+          result^.nodetype:=ptnleaf;
+          result^.data:=getmem(((rngend-rngstart).svalue+1)*sizeof(result^.data));
+        end;
+
+      procedure freeplaceholder(p:ptypedconstplaceholder;elemcount:asizeint);inline;
+        begin
+          while elemcount>0 do
+            begin
+              p[elemcount-1].free;
+              dec(elemcount);
+            end;
+          freemem(p);
+        end;
+
+      var
+        root:pplaceholdertree;
+        nextindex:tconstexprint;
+        { indicates overflow }
+        reachedmax:boolean;
+
+      procedure fillplaceholders(toindex:tconstexprint);
+        var
+          newleaf:ppplaceholdertree;
+          node:pplaceholdertree;
+          i:asizeint;
+        begin
+          { assumption here: toindex can never be the maximum, because
+            this will only ever be called when a new range is started
+            so there must be at least one more element after toindex }
+          if (toindex<nextindex) or reachedmax then
+            internalerror(2024110301);
+          newleaf:=@root;
+          if assigned(newleaf^) then
+            begin
+              while newleaf^^.nodetype=ptnbranch do
+                begin
+                  newleaf^^.rngend:=toindex;
+                  newleaf:=@newleaf^^.right;
+                end;
+              node:=newleaf^;
+              new(newleaf^);
+              with newleaf^^ do
+                begin
+                  rngstart:=node^.rngstart;
+                  rngend:=toindex;
+                  nodetype:=ptnbranch;
+                  left:=node;
+                end;
+              newleaf:=@newleaf^^.right;
+            end;
+          newleaf^:=createleaf(nextindex,toindex);
+          i:=0;
+          while nextindex <= toindex do
+            begin
+              newleaf^^.data[i]:=ftcb.emit_placeholder(def.elementdef);
+              nextindex:=nextindex+1;
+              inc(i);
+            end;
+          if nextindex<>toindex+1 then
+            internalerror(2024110302);
+        end;
+
+      { Extracts the placeholders for a given range. If there is no continuous range
+        of placeholders (i.e. there is an index overlap with already written values)
+        return nil and let caller do the error handling }
+      function extractplaceholder(rngstart,rngend:Tconstexprint;out elemcount:asizeint):ptypedconstplaceholder;
+        var
+          node , parent , n2: pplaceholdertree;
+          startidx , remainder : asizeint;
+        begin
+          elemcount:=0;
+          result:=nil;
+          parent:=nil;
+          if not assigned(root) then
+            exit;
+          node:=root;
+          while node^.nodetype=ptnbranch do
+            begin
+              parent:=node;
+              if (node^.left^.rngstart>=rngstart) and (node^.left^.rngend<=rngend) then
+                node:=node^.left
+              else if (node^.right^.rngstart>=rngstart) and (node^.right^.rngend<=rngend) then
+                node:=node^.right
+              else
+                exit;
+            end;
+          if not assigned(node) then
+            exit;
+
+          elemcount:=(rngend-rngstart).svalue+1;
+          { Consumed whole subtree: remove subtree and replace parent with other child }
+          if (node^.rngstart=rngstart) and (node^.rngend=rngend) then
+            begin
+              { return all the children of that node }
+              result:=node^.data;
+              if assigned(parent) then
+                begin
+                  { replace parent with other child }
+                  if parent^.left=node then
+                    n2:=parent^.right
+                  else
+                    n2:=parent^.left;
+                  parent^:=n2^;
+                  { and kill both children }
+                  dispose(n2);
+                end
+              else if node=root then
+                root:=nil
+              else
+                internalerror(2024031103);
+              dispose(node);
+              exit;
+            end;
+          { we extract only a fraction of the elements }
+          result:=GetMem(sizeof(result^)*elemcount);
+          startidx:=(node^.rngstart-rngstart).svalue;
+          move(node^.data[startidx],result^,elemcount*sizeof(result^));
+          if rngend=node^.rngend then
+            begin
+              { extract at the back, just remove the last elements }
+              node^.rngend:=rngstart-1;
+              node^.data:=ReAllocMem(node^.data,startidx*sizeof(node^.data^));
+            end
+          else if rngstart=node^.rngstart then
+            begin
+              { extract at the front: shift last elements to the front }
+              node^.rngstart:=rngend+1;
+              remainder:=(node^.rngend-rngend).svalue;
+              { Assumption: data can overlap and move isn't screwing it up }
+              move(node^.data[elemcount],node^.data^,remainder*sizeof(node^.data^));
+              node^.data:=ReAllocMem(node^.data,remainder*sizeof(node^.data^));
+            end
+          else
+            begin
+              { remove in the middle: create new branch with head (stays in node) and tail (new n2) }
+              { move tail to new n2 }
+              remainder:=(node^.rngend-rngend).svalue;
+              n2:=createleaf(rngend+1,node^.rngend);
+              move(node^.data[startidx+elemcount],n2^.data^,remainder*SizeOf(n2^.data^));
+              { truncate node to only contain the head }
+              node^.rngend:=rngstart-1;
+              node^.data:=reallocmem(node^.data,startidx*SizeOf(node^.data^));
+              { create new branch node }
+              n2:=createbranch(node,n2);
+              if assigned(parent) then
+                begin
+                  { replace the child that was node with the new branch }
+                  if parent^.left=node then
+                    parent^.left:=n2
+                  else
+                    parent^.right:=n2;
+                end
+              else if node=root then
+                root:=n2
+            end;
+        end;
+
+      procedure applyotherwise(var node:pplaceholdertree;var replay:trecordedelement);
+        var
+          i : asizeint;
+        begin
+          if not assigned(node) then
+            exit;
+          if node^.nodetype=ptnbranch then
+            begin
+              applyotherwise(node^.left,replay);
+              applyotherwise(node^.right,replay);
+            end
+          else
+            begin
+              i:=0;
+              repeat
+                curplaceholder:=node^.data[i];
+                replay:=recordorreplayatoffset(node^.rngstart+i,replay);
+                { curplaceholder will be freed and nild when writing }
+                if assigned(curplaceholder) then
+                  internalerror(2024110306);
+                if i=(node^.rngend-node^.rngstart).svalue then
+                  break
+                else
+                  inc(i);
+              until false;
+              freemem(node^.data);
+            end;
+          dispose(node);
+          node:=nil;
+        end;
+
+      var
+        n : tnode;
+        i : longint;
+        minval , maxval , hl1 , hl2: Tconstexprint;
+        ranges : array of array[0..1] of Tconstexprint;
+        elemrec : trecordedelement;
+        phcount : asizeint;
+        placeholders : ptypedconstplaceholder;
+      begin
+        root:=nil;
+        getrange(def.rangedef,minval,maxval);
+        if def.lowrange<>minval.svalue then
+          minval.svalue:=def.lowrange;
+        if def.highrange<>maxval.svalue then
+          maxval.svalue:=def.highrange;
+        nextindex:=minval;
+        reachedmax:=false;
+        repeat
+          ranges:=nil;
+          repeat
+            SetLength(ranges,length(ranges)+1);
+            { For assoc init get elem (range) that should be initialized }
+            n:=comp_expr([ef_accept_equal]);
+            do_typecheckpass(n);
+            if not is_subequal(def.rangedef,n.resultdef) then
+              begin
+                incompatibletypes(def.rangedef,n.resultdef);
+                exit;
+              end;
+            ranges[high(ranges),0]:=get_ordinal_value(n);
+            n.free;
+            if try_to_consume(_POINTPOINT) then
+              begin
+                n:=comp_expr([ef_accept_equal]);
+                do_typecheckpass(n);
+                if not is_subequal(def.rangedef,n.resultdef) then
+                  begin
+                    incompatibletypes(def.rangedef,n.resultdef);
+                    exit;
+                  end;
+                ranges[high(ranges),1]:=get_ordinal_value(n);
+                n.free;
+              end
+            else
+              ranges[high(ranges),1]:=ranges[high(ranges),0];
+
+            if (ranges[high(ranges),1]<ranges[high(ranges),0]) or (ranges[high(ranges),1]>maxval) or (ranges[high(ranges),0]<minval) then
+              begin
+                Message(parser_e_illegal_expression);
+                exit;
+              end;
+
+            if token=_COLON then
+              break;
+            consume(_COMMA);
+          until false;
+          consume(_COLON);
+
+          elemrec:=nil;
+          for i:=0 to high(ranges) do
+            begin
+              hl1:=ranges[i,0];
+              hl2:=ranges[i,1];
+
+              if hl1<nextindex then
+                begin
+                  placeholders:=extractplaceholder(hl1,hl2,phcount);
+                  if not assigned(placeholders) then
+                    begin
+                      Message(parser_e_double_caselabel);
+                      continue;
+                    end;
+                  while phcount>0 do
+                    begin
+                      { Decrease first, so it points to the last not yet used
+                        placeholder of the array }
+                      dec(phcount);
+                      { nested placeholders are not allowed }
+                      if assigned(curplaceholder) then
+                        internalerror(2024110304);
+                      curplaceholder:=placeholders[phcount];
+                      elemrec:=recordorreplayatoffset(hl1+phcount,elemrec);
+                      { curplaceholder will be freed and nild when writing }
+                      if assigned(curplaceholder) then
+                        internalerror(2024110306);
+                    end;
+                  freemem(placeholders);
+                end
+              else
+                begin
+                  { if we've already hit the max value then we are trying to override
+                    the last value, so it's an overlap in labels }
+                  if reachedmax then
+                    begin
+                      Message(parser_e_double_caselabel);
+                      continue;
+                    end;
+                  if hl1>nextindex then
+                    fillplaceholders(hl1-1);
+                  repeat
+                    { we are writing the end of the array, no placeholder! }
+                    if assigned(curplaceholder) then
+                      internalerror(2024110304);
+                    elemrec:=recordorreplayatoffset(nextindex,elemrec);
+                    { hl2 can theoretically be maxsizeint, so to avoid overflow }
+                    if nextindex=hl2 then
+                      break
+                    else
+                      inc(nextindex.uvalue);
+                  until false;
+                  if nextindex=maxval then
+                    reachedmax:=true
+                  else
+                    inc(nextindex.uvalue);
+                end;
+            end;
+
+          elemrec.free;
+          elemrec:=nil;
+
+          if ErrorCount>0 then
+            exit;
+
+          if try_to_consume(_OTHERWISE) then
+            begin
+              { otherwise shouldn't be in a placeholder }
+              if assigned(curplaceholder) then
+                internalerror(2024110304);
+              { Fill the remaining slots }
+              while not reachedmax do
+                begin
+                  elemrec:=recordorreplayatoffset(nextindex,elemrec);
+                  if nextindex=maxval then
+                    reachedmax:=true
+                  else
+                    inc(nextindex.uvalue);
+                end;
+              { fill all placeholders }
+              applyotherwise(root,elemrec);
+              if not assigned(elemrec) then
+                { If there is nothing to fill, we cannot parse the otherwise
+                  part and therefore we cannot progress. So this is an error
+                  (sorry)
+                }
+                Message(parser_e_illegal_expression);
+              elemrec.free;
+              break;
+            end
+          { Graceful exit condition: no placeholders and full range covered }
+          else if reachedmax and not assigned(root) then
+            break;
+
+          if token=closingtok then
+            begin
+              Message1(parser_e_more_array_elements_expected,tostr(def.highrange-(curoffset div def.elesize)));
+              consume(closingtok);
+              exit;
+            end;
+          consume(_SEMICOLON);
+        until false;
+        if assigned(root) then
+          internalerror(2024110305);
+        { We incremented once to often (for the last element) so revert }
+        Dec(curoffset,def.elementdef.size);
+        consume(closingtok);
+      end;
+
+
     procedure tasmlisttypedconstbuilder.parse_arraydef(def:tarraydef);
       const
         LKlammerToken: array[Boolean] of TToken = (_LKLAMMER, _LECKKLAMMER);
         RKlammerToken: array[Boolean] of TToken = (_RKLAMMER, _RECKKLAMMER);
       var
         n : tnode;
+        i : longint;
         dyncount,
         oldoffset: asizeint;
         sectype : tasmsectiontype;
@@ -1970,6 +2409,8 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
                       consume(_COMMA);
                   end;
               end
+            else if associnit and (def.elementdef.typ in [orddef,floatdef,classrefdef,pointerdef,setdef,enumdef]) then
+              parse_assoc_array_elems(def,_RECKKLAMMER)
             else
               begin
                 getrange(def.rangedef,nextval,maxval);
