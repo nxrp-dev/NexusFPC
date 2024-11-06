@@ -50,7 +50,7 @@ implementation
        paramgr,
        { pass 1 }
        pass_1,htypechk,
-       nutils,ngenutil,nbas,ncal,nmem,nset,ncnv,ncon,nld,nflw,
+       nutils,ngenutil,nbas,nadd,ncal,nmem,nset,ncnv,ncon,nld,nflw,
        { parser }
        scanner,
        pbase,ptype,pexpr,
@@ -367,6 +367,206 @@ implementation
               adaptrange(fordef,tordconstnode(hp).value,false,false,true);
           end;
 
+        function non_ord_for_loop(hloopvar: tnode;loopvarsym:tabstractvarsym): tnode;
+
+          procedure subst_continue(var n:tnode;substnode:tnode);
+            var
+              statements: tstatementnode;
+              newblock: tblocknode;
+              i : longint;
+            begin
+              if not assigned(n) then
+                exit;
+              { Only need to traverse blocks, statements, and control flow
+                nodes which are not loops themselves }
+              case n.nodetype of
+                blockn:
+                  subst_continue(tunarynode(n).left,substnode);
+                statementn, onn, tryfinallyn:
+                  begin
+                     subst_continue(tbinarynode(n).left,substnode);
+                     subst_continue(tbinarynode(n).right,substnode);
+                  end;
+                ifn:
+                  begin
+                     subst_continue(tifnode(n).right,substnode);
+                     subst_continue(tifnode(n).t1,substnode);
+                  end;
+                casen:
+                  begin
+                    for i:=0 to tcasenode(n).blocks.count-1 do
+                      subst_continue(pcaseblock(tcasenode(n).blocks[i])^.statement,substnode);
+                    subst_continue(tcasenode(n).elseblock,substnode);
+                  end;
+                tryexceptn:
+                  begin
+                     subst_continue(ttryexceptnode(n).left,substnode);
+                     subst_continue(ttryexceptnode(n).right,substnode);
+                     subst_continue(ttryexceptnode(n).t1,substnode);
+                  end;
+                continuen:
+                  begin
+                     { replace
+                         continue
+                       with
+                         begin
+                           substnode;
+                           continue;
+                         end;
+                     }
+                     newblock:=internalstatements(statements);
+                     addstatement(statements,substnode.getcopy);
+                     addstatement(statements,n);
+                     n:=newblock;
+                  end;
+                otherwise
+                  exit;
+              end;
+            end;
+
+          var
+            hfrom , hto , assgnnode ,
+            ifcmpnode , forbody , incorbreak: tnode;
+            statements, bodystatements: tstatementnode;
+            tmpnode : ttempcreatenode;
+            backward: Boolean;
+            loopbody: tblocknode;
+          begin
+            { For loops in pascal have a few special rules
+              1. the loop can reach the maximum value without overflow, so
+                 a simple
+                   while counter<=maxval do begin
+                     ...
+                     inc(counter);
+                   end;
+                 won't work.
+              2. the target value is evaluated only once, so it must be stored
+                 temporarily
+              3. on continue the loop counter is incremented anyway
+              4. the loop variable is unchangable in the loop
+            }
+
+            { This will compile
+                for i:=low to high do
+                  statment
+              to
+                i:=low;
+                if i<=high then
+                  repeat
+                    subst_continue(statement);
+                    if i>=high then
+                      break
+                    else
+                      i:=i+1;
+                  until false;
+              where subst_continue checks the statement for continue nodes,
+              and replaces them with
+                if i>=high then
+                  break
+                else
+                  i:=i+1;
+                continue;
+            }
+
+            hfrom:=comp_expr([ef_accept_equal]);
+
+            result:=internalstatements(statements);
+            { i:=low }
+            if assigned(loopvarsym) then
+              exclude(loopvarsym.varoptions,vo_is_loop_counter);
+            assgnnode:=cassignmentnode.create(hloopvar,hfrom);
+            typecheckpass(assgnnode);
+            addstatement(statements,assgnnode);
+            { in two steps, because vs_readwritten may turn on vsf_must_be_valid }
+            { for some subnodes                                                  }
+            set_varstate(hloopvar,vs_written,[]);
+            set_varstate(hloopvar,vs_read,[vsf_must_be_valid]);
+
+            backward:=try_to_consume(_DOWNTO);
+            if not backward then
+              consume(_TO);
+
+            hto:=comp_expr([ef_accept_equal]);
+            typecheckpass(hto);
+            { copy high value into temp var to make it persistent }
+            set_varstate(hto,vs_read,[vsf_must_be_valid]);
+            tmpnode:=ctempcreatenode.create(hto.resultdef,hto.resultdef.size,tt_persistent,true);
+            addstatement(statements,tmpnode);
+            addstatement(statements,cassignmentnode.create(ctemprefnode.create(tmpnode),hto));
+            { create if condition early so typechecking can be done now }
+            if backward then
+              ifcmpnode:=caddnode.create(gten,hloopvar.getcopy,ctemprefnode.create(tmpnode))
+            else
+              ifcmpnode:=caddnode.create(lten,hloopvar.getcopy,ctemprefnode.create(tmpnode));
+            typecheckpass(ifcmpnode);
+
+            if backward then
+              { if i<=high then
+                  break
+                else
+                  i:=i-1;
+              }
+              incorbreak:=cifnode.create(
+                caddnode.create(lten,hloopvar.getcopy,ctemprefnode.create(tmpnode)),
+                cbreaknode.create,
+                cassignmentnode.create(
+                  hloopvar.getcopy,
+                  caddnode.create(subn,
+                    hloopvar.getcopy,
+                    cordconstnode.create(1,sinttype,false)
+                  )
+                )
+              )
+            else
+              { if i>=high then
+                  break
+                else
+                  i:=i+1;
+              }
+              incorbreak:=cifnode.create(
+                caddnode.create(gten,hloopvar.getcopy,ctemprefnode.create(tmpnode)),
+                cbreaknode.create,
+                cassignmentnode.create(
+                  hloopvar.getcopy,
+                  caddnode.create(addn,
+                    hloopvar.getcopy,
+                    cordconstnode.create(1,sinttype,false)
+                  )
+                )
+              );
+            typecheckpass(incorbreak);
+
+            consume(_DO);
+
+            { do
+                subst_continue(statement)
+                if i>=high
+                  break
+                else
+                  i:=i+1;
+            }
+            loopbody:=internalstatements(bodystatements);
+            if assigned(loopvarsym) then
+              include(loopvarsym.varoptions,vo_is_loop_counter);
+            forbody:=statement;
+            subst_continue(forbody,incorbreak);
+            addstatement(bodystatements,forbody);
+            addstatement(bodystatements,incorbreak);
+
+            { if i<=high then
+                repeat
+                  loopbody
+                until false
+            }
+            addstatement(statements,cifnode.create(ifcmpnode,
+              cwhilerepeatnode.create(cordconstnode.create(0,pasbool1type,false),
+                loopbody,false,true),
+              nil
+            ));
+            { cleanup temp node }
+            addstatement(statements,ctempdeletenode.create(tmpnode));
+          end;
+
         function for_loop_create(hloopvar: tnode): tnode;
           var
              hp,
@@ -377,20 +577,6 @@ implementation
           begin
              { Check loop variable }
              loopvarsym:=nil;
-
-             { variable must be an ordinal, int64 is not allowed for 32bit targets }
-             if (
-                 not(is_ordinal(hloopvar.resultdef))
-    {$if not defined(cpu64bitaddr) and not defined(cpu64bitalu)}
-                 or is_64bitint(hloopvar.resultdef)
-    {$endif not cpu64bitaddr and not cpu64bitalu}
-               ) and
-               (hloopvar.resultdef.typ<>undefineddef)
-               then
-               begin
-                 MessagePos(hloopvar.fileinfo,type_e_ordinal_expr_expected);
-                 hloopvar.resultdef:=generrordef;
-               end;
 
              hp:=hloopvar;
              while assigned(hp) and
@@ -468,6 +654,21 @@ implementation
                end
              else
                MessagePos(hloopvar.fileinfo,type_e_illegal_count_var);
+
+             { For non ordinal for loop indices, the for loop must be
+               substituted with a generic alternative }
+             if (
+                 not(is_ordinal(hloopvar.resultdef))
+    {$if not defined(cpu64bitaddr) and not defined(cpu64bitalu)}
+                 or is_64bitint(hloopvar.resultdef)
+    {$endif not cpu64bitaddr and not cpu64bitalu}
+               ) and
+               (hloopvar.resultdef.typ<>undefineddef)
+               then
+               begin
+                 result:=non_ord_for_loop(hloopvar,loopvarsym);
+                 exit;
+               end;
 
              hfrom:=comp_expr([ef_accept_equal]);
 
