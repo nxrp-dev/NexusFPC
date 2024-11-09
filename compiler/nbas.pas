@@ -212,7 +212,10 @@ interface
            the allocated memory must be disposed
            If a temp. node has this flag set, the life time of the temp. data must be determined by reg. life, the temp.
            location (in the sense of stack space/register) is never release }
-         ti_cleanup_only
+         ti_cleanup_only,
+         { when the temp will be manually managed, so it does not need to be
+           finalized upon function leaving }
+         ti_noautofini
          );
        ttempinfoflags = set of ttempinfoflag;
 

@@ -576,8 +576,10 @@ implementation
          p   : tnode;
          i   : longint;
          st  : TSymtable;
-         newblock : tblocknode;
-         newstatement : tstatementnode;
+         newblock ,
+         tryblock : tblocknode;
+         newstatement ,
+         oldnewstatement : tstatementnode;
          calltempnode,
          tempnode : ttempcreatenode;
          valuenode,
@@ -635,6 +637,8 @@ implementation
             newblock:=nil;
             valuenode:=nil;
             tempnode:=nil;
+            tryblock:=nil;
+            oldnewstatement:=nil;
 
             hp:=skip_nodes_before_load(p);
             if (hp.nodetype=loadn) and
@@ -664,6 +668,17 @@ implementation
                   begin
                     calltempnode:=ctempcreatenode.create(p.resultdef,p.resultdef.size,tt_persistent,true);
                     addstatement(newstatement,calltempnode);
+                    if is_managed_type(p.resultdef) then
+                      begin
+                        { With with managed type: Avoid making a global scope
+                          with global freeing, but explicitly scope with the with
+                          statement }
+                        calltempnode.tempflags:=calltempnode.tempflags+[ti_noautofini];
+                        addstatement(newstatement,
+                                     cnodeutils.initialize_data_node(ctemprefnode.create(calltempnode),true));
+                        oldnewstatement:=newstatement;
+                        tryblock:=internalstatements(newstatement);
+                      end;
                     addstatement(newstatement,cassignmentnode.create(
                         ctemprefnode.create(calltempnode),
                         p));
@@ -792,12 +807,22 @@ implementation
 
             { Finalize complex withnode with destroy of temp }
             if assigned(newblock) then
-             begin
+              begin
                addstatement(newstatement,p);
                if assigned(tempnode) then
                  addstatement(newstatement,ctempdeletenode.create(tempnode));
                if assigned(calltempnode) then
-                 addstatement(newstatement,ctempdeletenode.create(calltempnode));
+                 begin
+                   if assigned(tryblock) then
+                     begin
+                       newstatement:=oldnewstatement;
+                       addstatement(newstatement,ctryfinallynode.create(
+                         tryblock,
+                         cnodeutils.finalize_data_node(ctemprefnode.create(calltempnode))
+                       ));
+                     end;
+                   addstatement(newstatement,ctempdeletenode.create(calltempnode));
+                 end;
                p:=newblock;
              end;
             result:=p;
