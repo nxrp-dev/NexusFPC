@@ -702,8 +702,10 @@ type
     exportedmacrosymtable, { }
     localmacrosymtable,    { }
     enumsymtable,          { symtable for enum members       }
-    arraysymtable          { used to store parameterised type
+    arraysymtable,         { used to store parameterised type
                              in array                        }
+    nodemacrosymtable      { used to provide symbols that
+                             reference nodes like temprefs   }
   );
 
   { options for symtables }
@@ -732,7 +734,7 @@ type
     staticvarsym,localvarsym,paravarsym,fieldvarsym,
     typesym,procsym,unitsym,constsym,enumsym,
     errorsym,syssym,labelsym,absolutevarsym,propertysym,
-    macrosym,namespacesym,undefinedsym,programparasym
+    macrosym,namespacesym,undefinedsym,programparasym,nodemacrosym
   );
 
   { State of the variable:
@@ -914,7 +916,8 @@ inherited_objectoptions : tobjectoptions = [oo_has_virtual,oo_has_private,oo_has
        'abstractsym','globalvar','localvar','paravar','fieldvar',
        'type','proc','unit','const','enum',
        'errorsym','system sym','label','absolutevar','property',
-       'macrosym','namespace','undefinedsym','programparasym'
+       'macrosym','namespace','undefinedsym','programparasym',
+       'nodemacrosym'
      );
 
      typName : array[tdeftyp] of string[12] = (

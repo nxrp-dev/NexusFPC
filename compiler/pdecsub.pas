@@ -865,7 +865,7 @@ implementation
         { ensure that we don't insert into a withsymtable (can happen with
           anonymous functions) }
         checkstack:=symtablestack.stack;
-        while checkstack^.symtable.symtabletype in [withsymtable] do
+        while checkstack^.symtable.symtabletype in [withsymtable,nodemacrosymtable] do
           checkstack:=checkstack^.next;
         insertst:=checkstack^.symtable;
 

@@ -465,6 +465,18 @@ interface
        end;
        tsyssymclass = class of tsyssym;
 
+       { This is not a TStoredSym because it is a temporary node macro that
+         can only exist during parsing }
+
+       { tnodemacrosym }
+
+       tnodemacrosym = class(tsym)
+         node : tobject; { tnode }
+         constructor create(const aname:TSymStr;anode:tobject{tnode});
+         destructor destroy; override;
+         procedure register_sym;override;
+       end;
+
     const
        maxmacrolen=16*1024;
 
@@ -3088,6 +3100,26 @@ implementation
       begin
         str(l,s);
         result:=tsyssym(syssym_list.find(s));
+      end;
+
+    { tnodemacrosym }
+
+    constructor tnodemacrosym.create(const aname: TSymStr; anode: tobject);
+      begin
+        inherited create(nodemacrosym,aname);
+        node:=anode;
+      end;
+
+    destructor tnodemacrosym.destroy;
+      begin
+        node.free;
+        inherited destroy;
+      end;
+
+    procedure tnodemacrosym.register_sym;
+      begin
+        { This sym should never end up in any ppu file }
+        internalerror(2024110901);
       end;
 
 {*****************************************************************************
