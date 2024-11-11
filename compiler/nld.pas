@@ -962,6 +962,11 @@ implementation
 
          firstpass(left);
 
+         { Must be done before the first pass of right, as otherwise inlining
+           will screw up that check }
+         if (df_non_copiable in right.resultdef.defoptions) and (right.nodetype<>calln) then
+           CGMessagePos(right.fileinfo,parser_e_illegal_expression);
+
          { Optimize the reuse of the destination of the assingment in left.
            Allow the use of the left inside the tree generated on the right.
            This is especially useful for string routines where the destination

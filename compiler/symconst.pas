@@ -253,7 +253,10 @@ type
       of the def can not be determined }
     df_has_generic_fields,
     {  never use the typename for this type, always expand full definition }
-    df_llvm_no_typename
+    df_llvm_no_typename,
+    { variables of this type cannot be copied }
+    df_non_copiable,
+    df_non_addrefable
   );
   tdefoptions=set of tdefoption;
 
