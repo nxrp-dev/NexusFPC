@@ -1703,7 +1703,7 @@ parser_e_cannot_evaluate_expression_at_compile_time=03372_E_Expression cannot be
 %
 # Type Checking
 #
-# 04133 is the last used one
+# 04134 is the last used one
 #
 % \section{Type checking errors}
 % This section lists all errors that can occur when type checking is
@@ -2163,12 +2163,15 @@ type_e_cannot_take_address_of_wasm_externref=04132_E_Cannot take the address of 
 % WebAssembly externref types don't have an in-memory representation and therefore, their address cannot be taken.
 type_e_cannot_determine_size_of_wasm_reference_type=04133_E_WebAssembly reference types don't have an observable size
 % WebAssembly reference types are opaque, meaning neither their size, nor their bit pattern can be observed.
+type_w_taking_address_of_managed_variant_selector=04134_W_Pointer access to managed variant selectors can circumvent management operations
+% By taking a pointer (or var/out reference parameter) of the variant branch selector, the value can be changed without the appropriate calls
+% to ensure the management operations on the branches are executed
 %
 % \end{description}
 #
 # Symtable
 #
-# 05101 is the last used one
+# 05103 is the last used one
 #
 % \section{Symbol handling}
 % This section lists all the messages that concern the handling of symbols.
@@ -2495,6 +2498,10 @@ sym_f_systemunitnotloaded=05100_F_System unit not loaded
 sym_e_wasm_ref_types_cannot_be_used_in_records=05101_E_WebAssembly reference types cannot be used inside records, objects, or classes
 % WebAssembly reference types don't have an in-memory representation and therefore
 % cannot be used inside records, objects or classes.
+sym_e_type_must_be_record=05102_E_Record type expected
+% The variable or expression isn't of the type \var{record}.
+sym_w_overload_not_possible=05103_W_Identifier "$1" cannot be overloaded for type "$2"
+% The identifier is already defined for this type, but cannot be overloaded
 %
 % \end{description}
 #

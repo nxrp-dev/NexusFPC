@@ -76,13 +76,31 @@ implementation
         found : boolean;
         variantselectsymbol : tfieldvarsym;
 
+      function ConstructBranchAccess(branchpath:array of tsym): tnode;
+        var
+          i : longint;
+          recdef : tabstractrecorddef;
+          again : boolean;
+        begin
+          result:=cderefnode.create(ctemprefnode.create(temp));
+          recdef:=trecorddef(tpointerdef(p.resultdef).pointeddef);
+          { yes high -1 because the selector is before the last branch not on it }
+          for i:=0 to high(branchpath)-1 do
+            begin
+              do_member_read(recdef,false,branchpath[i],result,again,[],nil);
+              recdef:=tabstractrecorddef(tfieldvarsym(branchpath[i]).vardef);
+            end;
+        end;
+
       procedure ReadVariantRecordConstants;
         var
           i,j : longint;
+          branchpath : array of tsym;
         begin
           if (([m_iso,m_extpas]*current_settings.modeswitches)<>[]) and (is_record(tpointerdef(p.resultdef).pointeddef)) then
             begin
               variantdesc:=trecorddef(tpointerdef(p.resultdef).pointeddef).variantrecdesc;
+              branchpath:=nil;
               while (token=_COMMA) and assigned(variantdesc) do
                 begin
                   consume(_COMMA);
@@ -96,11 +114,22 @@ implementation
                       for i:=0 to high(variantdesc^.branches) do
                         begin
                           for j:=0 to high(variantdesc^.branches[i].values) do
-                            if variantdesc^.branches[i].values[j]=tordconstnode(p2).value then
+                            { ISO pascal does not allow for ranges, but for robustness we still do a range compare }
+                            if (variantdesc^.branches[i].values[j,0]>=tordconstnode(p2).value) and
+                               (variantdesc^.branches[i].values[j,1]<=tordconstnode(p2).value) then
                               begin
                                 found:=true;
                                 variantselectsymbol:=tfieldvarsym(variantdesc^.variantselector);
-                                variantdesc:=variantdesc^.branches[i].nestedvariant;
+                                { the last leaf on the branch will be empty,
+                                  but this doesn't matter as it is ignored anyhow }
+                                if Assigned(variantdesc) and variantdesc^.rttienabled then
+                                  begin 
+                                    setlength(branchpath, length(branchpath)+1);
+                                    branchpath[high(branchpath)]:=variantdesc^.branches[i].branchfield;
+                                    variantdesc:=trecorddef(tfieldvarsym(variantdesc^.branches[i].branchfield).vardef).variantrecdesc;
+                                  end
+                                else
+                                  variantdesc:=variantdesc^.branches[i].nestedvariant;
                                 break;
                               end;
                           if found then
@@ -115,7 +144,7 @@ implementation
                                 { setup variant selector }
                                 addstatement(newstatement,cassignmentnode.create(
                                     csubscriptnode.create(variantselectsymbol,
-                                      cderefnode.create(ctemprefnode.create(temp))),
+                                      ConstructBranchAccess(branchpath)),
                                     p2));
                             end;
                         end

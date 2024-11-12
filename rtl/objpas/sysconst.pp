@@ -115,6 +115,7 @@ const
   SVarArrayCreate        = 'Variant array cannot be created';
   SVarArrayLocked        = 'Variant array locked';
   SVarBadType            = 'Invalid variant type';
+  SVariantAccessError    = 'Access to invalid variant branch';
   SVarInvalid            = 'Invalid argument';
   SVarInvalid1           = 'Invalid argument: %s';
   SVarNotArray           = 'Variant doesn''t contain an array';

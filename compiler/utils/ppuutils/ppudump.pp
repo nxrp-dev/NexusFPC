@@ -2404,6 +2404,9 @@ const
         'Excess precision', {cs_excessprecision}
         'Check fpu exceptions', {cs_check_fpu_exceptions}
         'Check all case coverage', {cs_check_all_case_coverage}
+        'Enable Variant data in RTTI', {cs_variantrtti}
+        'Check access to variant fields', {cs_check_variant_access}
+        'Enable managed fields in variant records', {cs_managed_variants}
          { mmx }
         'Allow MMX instructions', {cs_mmx}
         'Use MMX saturation', {cs_mmx_saturation}
@@ -2416,6 +2419,7 @@ const
         'Use scoped enums',{cs_scopedenums}
         'Use pointer math', {cs_pointermath}
         'Open string', {cs_openstring}
+        'Use strict checking of variant labels', {cs_strict_variants}
          { macpas specific}
         'MACPAS exteranl variable', {cs_external_var}
         'MACPAS externally visible', {cs_externally_visible}
@@ -2481,7 +2485,8 @@ const
          'm_underscoreisseparator',{ _ can be used as separator to group digits in numbers }
          'm_implicit_function_specialization', { attempt to specialize generic function by inferring types from parameters }
          'm_function_references', { enable Delphi-style function references }
-         'm_anonymous_functions'  { enable Delphi-style anonymous functions }
+         'm_anonymous_functions', { enable Delphi-style anonymous functions }
+         'm_record_composition'   { enables record composition }
        );
        { optimizer }
        optimizerswitchname : array[toptimizerswitch] of string[50] =

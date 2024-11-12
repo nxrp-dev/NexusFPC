@@ -738,6 +738,11 @@ procedure fpc_addref_array(data,typeinfo: pointer; count: SizeInt); compilerproc
 procedure fpc_decref_array(data,typeinfo: pointer; count: sizeint); compilerproc;
 Function fpc_Copy (Src, Dest, TypeInfo : Pointer) : SizeInt; compilerproc;
 Procedure fpc_Copy_proc (Src, Dest, TypeInfo : Pointer); compilerproc; inline;
+
+{$ifdef FPC_HAS_VARIANT_RTTI}
+Procedure fpc_checkvariantbranch (VRec,TypeInfo : pointer;Branch : longint); compilerproc;
+Procedure fpc_updatevariantselector (VRec,TypeInfo : pointer;NewValue : qword); compilerproc;
+{$endif FPC_HAS_VARIANT_RTTI}
 {$endif FPC_HAS_FEATURE_RTTI}
 
 

@@ -732,7 +732,7 @@ type
     staticvarsym,localvarsym,paravarsym,fieldvarsym,
     typesym,procsym,unitsym,constsym,enumsym,
     errorsym,syssym,labelsym,absolutevarsym,propertysym,
-    macrosym,namespacesym,undefinedsym,programparasym
+    macrosym,namespacesym,undefinedsym,programparasym,symrefsym
   );
 
   { State of the variable:
@@ -838,7 +838,9 @@ type
     itb_objc_fr_class,
     itp_vardisp_calldesc,
     itp_extended_rtti_table,
-    itp_extended_rtti_field
+    itp_extended_rtti_field,
+    itp_rtti_union_info,
+    itp_rtti_union_branch
   );
 
   { The order is from low priority to high priority,
@@ -914,7 +916,7 @@ inherited_objectoptions : tobjectoptions = [oo_has_virtual,oo_has_private,oo_has
        'abstractsym','globalvar','localvar','paravar','fieldvar',
        'type','proc','unit','const','enum',
        'errorsym','system sym','label','absolutevar','property',
-       'macrosym','namespace','undefinedsym','programparasym'
+       'macrosym','namespace','undefinedsym','programparasym','symref'
      );
 
      typName : array[tdeftyp] of string[12] = (
@@ -993,7 +995,9 @@ inherited_objectoptions : tobjectoptions = [oo_has_virtual,oo_has_private,oo_has
        '$objc_fr_class$',
        '$itp_vardisp_calldesc$',
        '$extended_rtti_table$',
-       '$extended_rtti_field$'
+       '$extended_rtti_field$',
+       '$rtti_union_info$',
+       '$rtti_union_branch$'
      );
 
 

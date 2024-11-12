@@ -1679,10 +1679,17 @@ implementation
 
 
     procedure read_record_fields(options:Tvar_dec_options; reorderlist: TFPObjectList; variantdesc : ppvariantrecdesc;out had_generic:boolean; out attr_element_count : integer);
+      type
+        tcompositefield=record
+          fieldvs:tfieldvarsym;
+          visibility:tvisibility;
+        end;
+        pcompositefield=^tcompositefield;
       var
+         cf : TFPList;
          sc : TFPObjectList;
-         i  : longint;
-         hs,sorg : string;
+         i , j , k : longint;
+         hs,sorg , unionbranchname: string;
          gendef,hdef,casetype : tdef;
          { maxsize contains the max. size of a variant }
          { startvarrec contains the start of the variant part of a record }
@@ -1692,20 +1699,21 @@ implementation
          maxpadalign, startpadalign: shortint;
          pt : tnode;
          fieldvs   : tfieldvarsym;
+         cfvs : pcompositefield;
          hstaticvs : tstaticvarsym;
          vs    : tabstractvarsym;
          srsym : tsym;
          srsymtable : TSymtable;
          visibility : tvisibility;
          recst : tabstractrecordsymtable;
-         unionsymtable : trecordsymtable;
-         offset : longint;
-         uniondef : trecorddef;
+         unionsymtable , unionbranchsymtable: trecordsymtable;
+         offset , brindex: longint;
+         uniondef , unionbranchdef : trecorddef;
          hintsymoptions : tsymoptions;
          deprecatedmsg : pshortstring;
          hadgendummy,
          semicoloneaten,
-         removeclassoption: boolean;
+         removeclassoption : boolean;
          dummyattrelementcount : integer;
 {$if defined(powerpc) or defined(powerpc64)}
          tempdef: tdef;
@@ -1713,6 +1721,9 @@ implementation
 {$endif powerpc or powerpc64}
          old_block_type: tblock_type;
          typepos : tfileposinfo;
+         old_current_structdef : tabstractrecorddef;
+         unioncheckbranches : array of longint;
+         foundduplicate , unionhaszerobranch : boolean;
       begin
          old_block_type:=block_type;
          block_type:=bt_var;
@@ -1725,6 +1736,7 @@ implementation
            consume(_ID);
          { read vars }
          sc:=TFPObjectList.create(false);
+         cf:=TFPList.create;
          removeclassoption:=false;
          had_generic:=false;
          attr_element_count:=0;
@@ -1738,47 +1750,150 @@ implementation
              visibility:=symtablestack.top.currentvisibility;
              semicoloneaten:=false;
              sc.clear;
-             repeat
-               sorg:=orgpattern;
-               if token=_ID then
-                 begin
-                   vs:=cfieldvarsym.create(sorg,vs_value,generrordef,[]);
+             { Check for composition "contains" }
+             if (m_record_composition in current_settings.modeswitches) and
+               { make sure only usable for records (in case this method is called for other types) }
+                (recst.symtabletype=recordsymtable) and
+                try_to_consume(_CONTAINS) then
+               begin
+                 sorg:='';
+                 srsym:=nil;
+                 { Read alias composition for existing fields }
+                 if try_to_consume(_ALIAS) then
+                   begin
+                     sorg:=orgpattern;
+                     hs:=pattern;
+                     consume(_ID);
+                     searchsym(hs,srsym,srsymtable);
+                     if not assigned(srsym) or (srsym.typ<>fieldvarsym) then
+                       begin
+                         Message(parser_e_illegal_expression);
+                         { try to recover to find more errors }
+                         consume(_ID);
+                         consume(_SEMICOLON);
+                         continue;
+                       end;
+                     { check for duplicates }
+                     for i:=0 to cf.count-1 do
+                       if pcompositefield(cf[i])^.fieldvs=srsym then
+                         begin
+                           Message(sym_e_duplicate_id);
+                           consume(_SEMICOLON);
+                           continue;
+                         end;
 
-                   { normally the visibility is set via addfield, but sometimes
-                     we collect symbols so we can add them in a batch of
-                     potentially mixed visibility, and then the individual
-                     symbols need to have their visibility already set }
-                   vs.visibility:=visibility;
-                   if (vd_check_generic in options) and (idtoken=_GENERIC) then
-                     had_generic:=true;
-                 end
-               else
-                 vs:=nil;
-               consume(_ID);
-               if assigned(vs) and
-                  (
-                    not had_generic or
-                    not (token in [_PROCEDURE,_FUNCTION,_CLASS])
-                  ) then
-                 begin
-                   vs.register_sym;
-                   sc.add(vs);
-                   recst.insertsym(vs);
-                   had_generic:=false;
-                 end
-               else
-                 vs.free;
-             until not try_to_consume(_COMMA);
-             if m_delphi in current_settings.modeswitches then
-               block_type:=bt_var_type
+                     new(cfvs);
+                     cfvs^.visibility:=visibility;
+                     cfvs^.fieldvs:=tfieldvarsym(srsym);
+                     cf.add(cfvs);
+                     { because no new field is added, early "exit" and continue
+                       with the next field }
+                     consume(_SEMICOLON);
+                     continue;
+                   end;
+                 { read field name if named composition }
+                 if token=_ID then
+                   begin
+                     sorg:=orgpattern;
+                     hs:=pattern;
+                     searchsym(hs,srsym,srsymtable);
+                     if assigned(srsym) then
+                       case srsym.typ of
+                       fieldvarsym:
+                         begin
+                           { existing fields must be referenced with alias }
+                           Message1(sym_e_duplicate_id,srsym.realname);
+                           { this is just to allow to find additional errors,
+                             otherwise parsing stop could be forced with consume(_SEMICOLON) }
+                           consume(_ID);
+                           consume(_COLON);
+                           consume(_ID);
+                           consume(_SEMICOLON);
+                           continue;
+                         end;
+                       typesym,unitsym:
+                           { unnamed field: create unique identifier }
+                           sorg:='';
+                       else
+                         begin
+                           Message(parser_e_illegal_expression);
+                           { try to recover to find more errors }
+                           consume(_ID);
+                           consume(_SEMICOLON);
+                           continue;
+                         end;
+                       end
+                     else
+                       begin
+                         { when a new field symbol is read, we need a type }
+                         consume(_ID);
+                         consume(_COLON);
+                       end;
+                   end;
+                 if sorg='' then
+                   { generate a unique name for an unnamed field }
+                   sorg:='$unknown_'+IntToStr(variantrecordlevel)+'_'+inttostr(recst.symlist.count);
+                 fieldvs:=cfieldvarsym.create(sorg,vs_value,generrordef,[]);
+                 { very dirty hack to check if it's a hidden variabel }
+                 if sorg[1]='$' then
+                   fieldvs.visibility:=vis_hidden
+                 else
+                   fieldvs.visibility:=visibility;
+                 fieldvs.register_sym;
+                 sc.add(fieldvs);
+                 recst.insertsym(fieldvs);
+                 had_generic:=false;
+
+                 new(cfvs);
+                 cfvs^.visibility:=visibility;
+                 cfvs^.fieldvs:=fieldvs;
+                 cf.Add(cfvs);
+
+                 block_type:=bt_var_type;
+               end
              else
-               block_type:=old_block_type;
-             if had_generic and (sc.count=0) then
-               break;
-             consume(_COLON);
-             if attr_element_count=0 then
-               attr_element_count:=sc.Count;
+               begin
+                 repeat
+                   sorg:=orgpattern;
+                   if token=_ID then
+                     begin
+                       vs:=cfieldvarsym.create(sorg,vs_value,generrordef,[]);
 
+                       { normally the visibility is set via addfield, but sometimes
+                         we collect symbols so we can add them in a batch of
+                         potentially mixed visibility, and then the individual
+                         symbols need to have their visibility already set }
+                       vs.visibility:=visibility;
+                       if (vd_check_generic in options) and (idtoken=_GENERIC) then
+                         had_generic:=true;
+                     end
+                   else
+                     vs:=nil;
+                   consume(_ID);
+                   if assigned(vs) and
+                      (
+                        not had_generic or
+                        not (token in [_PROCEDURE,_FUNCTION,_CLASS])
+                      ) then
+                     begin
+                       vs.register_sym;
+                       sc.add(vs);
+                       recst.insertsym(vs);
+                       had_generic:=false;
+                     end
+                   else
+                     vs.free;
+                 until not try_to_consume(_COMMA);
+                 if m_delphi in current_settings.modeswitches then
+                   block_type:=bt_var_type
+                 else
+                   block_type:=old_block_type;
+                 if had_generic and (sc.count=0) then
+                   break;
+                 consume(_COLON);
+                 if attr_element_count=0 then
+                   attr_element_count:=sc.Count;
+               end;
              typepos:=current_filepos;
 
              { make sure that the correct genericdef is set up, especially if
@@ -1854,9 +1969,14 @@ implementation
 
              { types that use init/final are not allowed in variant parts, but
                classes are allowed }
+             { we moved this check to after parsing the union branch
+               while this loses infomration about the locality of the managed field,
+               we do not have access to the variantdesc of the containing union
+               in here.
              if (variantrecordlevel>0) then
                if is_managed_type(hdef) then
                  Message(parser_e_cant_use_inittable_here);
+             }
 
              { try to parse the hint directives }
              hintsymoptions:=[];
@@ -1999,6 +2119,9 @@ implementation
               { else just concat the info to the given one }
               new(variantdesc^);
               fillchar(variantdesc^^,sizeof(tvariantrecdesc),0);
+              variantdesc^^.variantselectorderef.reset;
+              variantdesc^^.ismanaged:=false;
+              variantdesc^^.rttienabled:=cs_variantrtti in current_settings.localswitches;
 
               { including a field declaration? }
               fieldvs:=nil;
@@ -2031,10 +2154,14 @@ implementation
                 Message(type_e_ordinal_expr_expected);
               consume(_OF);
 
+              unioncheckbranches:=nil;
+              unionhaszerobranch:=false;
+
               UnionSymtable:=trecordsymtable.create('',current_settings.packrecords,current_settings.alignment.recordalignmin);
               UnionDef:=crecorddef.create('',unionsymtable);
               uniondef.isunion:=true;
 
+              variantdesc^^.variantoffset:=recst.datasize;
               startvarrecsize:=UnionSymtable.datasize;
               { align the bitpacking to the next byte }
               UnionSymtable.datasize:=startvarrecsize;
@@ -2050,16 +2177,44 @@ implementation
                   if not(pt.nodetype=ordconstn) then
                     Message(parser_e_illegal_expression);
                   inserttypeconv(pt,casetype);
-                  { iso pascal does not support ranges in variant record definitions }
-                  if (([m_iso,m_extpas]*current_settings.modeswitches)=[]) and try_to_consume(_POINTPOINT) then
-                    pt:=crangenode.create(pt,comp_expr([ef_accept_equal]))
-                  else
+                  with variantdesc^^.branches[high(variantdesc^^.branches)] do
                     begin
-                      with variantdesc^^.branches[high(variantdesc^^.branches)] do
+                      SetLength(values,length(values)+1);
+                      { iso pascal does not support ranges in variant record definitions }
+                      if (([m_iso,m_extpas]*current_settings.modeswitches)=[]) and try_to_consume(_POINTPOINT) then
                         begin
-                          SetLength(values,length(values)+1);
-                          values[high(values)]:=tordconstnode(pt).value;
+                          pt:=crangenode.create(pt,comp_expr([ef_accept_equal]));
+                          values[high(values),0]:=tordconstnode(trangenode(pt).left).value;
+                          values[high(values),1]:=tordconstnode(trangenode(pt).right).value;
+                        end
+                      else
+                        begin
+                          values[high(values),0]:=tordconstnode(pt).value;
+                          values[high(values),1]:=tordconstnode(pt).value;
                         end;
+                      if (cs_strict_variants in current_settings.localswitches) and
+                         (values[high(values),0]<=Tconstexprint(0)) and
+                         (values[high(values),1]>=Tconstexprint(0)) then
+                        unionhaszerobranch:=true;
+                      foundduplicate:=false;
+                      { If we have strict enabled we will check later anyway so
+                        now only check against other strict paths }
+                      if not (cs_strict_variants in current_settings.localswitches) then
+                        for i:=0 to length(unioncheckbranches)-1 do
+                          begin
+                            brindex:=unioncheckbranches[i];
+                            for j:=0 to length(values)-1 do
+                              if (variantdesc^^.branches[brindex].values[j,0]<=values[high(values),1]) and
+                                 (variantdesc^^.branches[brindex].values[j,1]>=values[high(values),0]) then
+                                begin
+                                  foundduplicate:=true;
+                                  break;
+                                end;
+                            if foundduplicate then
+                              break;
+                          end;
+                      if foundduplicate then
+                        Message(parser_e_double_caselabel);
                     end;
                   pt.free;
                   if token=_COMMA then
@@ -2072,13 +2227,92 @@ implementation
                 else
                   block_type:=old_block_type;
                 consume(_COLON);
-                { read the vars }
+                { read the vars into sub record }
                 consume(_LKLAMMER);
+                { make DFA shut up }
+                UnionBranchSymtable:=nil;
+                unionbranchdef:=nil;
+                old_current_structdef:=nil;
+                if variantdesc^^.rttienabled then
+                  begin
+                    old_current_structdef:=current_structdef;
+                    if Assigned(recst.realname) then
+                       unionbranchname:=recst.realname^+'$unionbranch_'+inttostr(high(variantdesc^^.branches))
+                    else
+                      unionbranchname:='';
+                    UnionBranchSymtable:=trecordsymtable.create(unionbranchname,current_settings.packrecords,current_settings.alignment.recordalignmin);
+                    unionbranchdef:=crecorddef.create(unionbranchname,unionbranchsymtable);
+                    current_structdef.apply_rtti_directive(current_module.rtti_directive);
+                    current_structdef:=unionbranchdef;
+                    symtablestack.push(unionbranchsymtable);
+                  end;
+
                 inc(variantrecordlevel);
                 if token<>_RKLAMMER then
-                  read_record_fields([vd_record],nil,@variantdesc^^.branches[high(variantdesc^^.branches)].nestedvariant,hadgendummy,dummyattrelementcount);
+                  if variantdesc^^.rttienabled then
+                    read_record_fields([vd_record],nil,@unionbranchdef.variantrecdesc,hadgendummy,dummyattrelementcount)
+                  else
+                    read_record_fields([vd_record],nil,@variantdesc^^.branches[high(variantdesc^^.branches)].nestedvariant,hadgendummy,dummyattrelementcount);
                 dec(variantrecordlevel);
                 consume(_RKLAMMER);
+
+                if variantdesc^^.rttienabled then
+                  begin
+                    symtablestack.pop(unionbranchsymtable);
+                    current_structdef:=old_current_structdef;
+                    maybe_guarantee_record_typesym(unionbranchdef,unionbranchdef.owner);
+
+                    { create hidden field for union branch }
+                    fieldvs:=cfieldvarsym.create('$unionbranch'+inttostr(high(variantdesc^^.branches)),vs_value,unionbranchdef,[]);
+                    fieldvs.visibility:=vis_hidden;
+                    symtablestack.top.insertsym(fieldvs);
+                    unionsymtable.addfield(fieldvs,vis_hidden);
+                    variantdesc^^.branches[high(variantdesc^^.branches)].branchfield := fieldvs;
+                  end;
+                { if strict variant checking is on for this branch, or it's a managed
+                  branch, which needs to be treated as strict to avoid ambiguity for
+                  the management operations: Perform check and add to list }
+                if (cs_strict_variants in current_settings.localswitches) or
+                   (variantdesc^^.rttienabled and is_managed_type(unionbranchdef)) then
+                  begin
+                    setlength(unioncheckbranches,length(unioncheckbranches)+1);
+                    unioncheckbranches[high(unioncheckbranches)]:=high(variantdesc^^.branches);
+                    with variantdesc^^ do
+                      for i:=0 to length(branches)-2 do
+                        begin
+                          for j:=0 to length(branches[i].values)-1 do
+                            begin
+                              for k:=0 to length(branches[high(branches)].values)-1 do
+                                if (branches[i].values[j,0]<=branches[high(branches)].values[k,1]) and
+                                   (branches[i].values[j,1]>=branches[high(branches)].values[k,0]) then
+                                  begin
+                                    foundduplicate:=true;
+                                    break; { I'm really tempted to goto instead of this tripple break }
+                                  end;
+                                if foundduplicate then
+                                  break;
+                            end;
+                          if foundduplicate then
+                            break;
+                        end;
+                      if foundduplicate then
+                        Message(parser_e_double_caselabel);
+                    end;
+
+                {
+                  managed check moved from above down here to make handling of
+                  rtti and manadged variant enabled records possible
+                  this loses locality information about which field is managed.
+                  Maybe fix by iterating to find the (first? last?) occuring
+                  managed field?
+                }
+                if is_managed_type(uniondef) then
+                  if (cs_managed_variants in current_settings.localswitches) and
+                     variantdesc^^.rttienabled and
+                     assigned(variantdesc^^.variantselector) then
+                    variantdesc^^.ismanaged:=true
+                  else
+                    Message(parser_e_cant_use_inittable_here);
 
                 { calculates maximal variant size }
                 maxsize:=max(maxsize,unionsymtable.datasize);
@@ -2129,10 +2363,40 @@ implementation
               if unionsymtable.recordalignment>recst.fieldalignment then
                 recst.fieldalignment:=unionsymtable.recordalignment;
 
-              trecordsymtable(recst).insertunionst(Unionsymtable,offset);
+              trecordsymtable(recst).insertunionst(Unionsymtable,offset,recst.currentvisibility,variantdesc^^.rttienabled);
               uniondef.owner.deletedef(uniondef);
+              if (cs_strict_variants in current_settings.localswitches) and not unionhaszerobranch then
+                Message1(cg_e_case_missing_value,'0 (Default)');
            end;
-         { free the list }
+         { Because of duplication checks add composite symbols after all normal symbols have been read }
+         for i:=0 to cf.count-1 do
+           begin
+             visibility:=pcompositefield(cf[i])^.visibility;
+             fieldvs:=pcompositefield(cf[i])^.fieldvs;
+             dispose(pcompositefield(cf[i]));
+             { Only composition with records are allowed }
+             if not (
+               (fieldvs.vardef.typ in [recorddef]) or (
+                 { also allow for generic params that are resolved later }
+                 (fieldvs.vardef.typ=undefineddef) and
+                 (sp_generic_para in fieldvs.vardef.typesym.symoptions)
+               )
+             ) then
+               begin
+                 Message(sym_e_type_must_be_record);
+                 continue;
+               end;
+             { Composition of generic parameters will be deferred to when the
+               type is specialized. Then this same function will be called
+               again and the type is resolved }
+             if not (
+               (fieldvs.vardef.typ=undefineddef) and
+               (sp_generic_para in fieldvs.vardef.typesym.symoptions)
+             ) then
+               recst.add_composition_references(fieldvs,visibility);
+           end;
+         { free the lists }
+         cf.free;
          sc.free;
 {$ifdef powerpc}
          is_first_type := false;

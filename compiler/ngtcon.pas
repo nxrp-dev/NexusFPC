@@ -160,19 +160,44 @@ uses
 
 {$maxfpuregisters 0}
 
-function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectList; var symidx:longint):tsym;inline;
+function symoffset(sym:tsym;out offset:asizeint):boolean;inline;
+  begin
+    offset:=0;
+    while assigned(sym) and (sym.typ=symrefsym) do
+      begin
+        offset:=offset+tsymrefsym(sym).fieldvs.fieldoffset;
+        sym:=tsymrefsym(sym).ref;
+      end;
+    result := assigned(sym) and (sym.typ=fieldvarsym);
+    if result then
+      offset:=offset+tfieldvarsym(sym).fieldoffset;
+  end;
+
+function get_next_var_or_ref_sym(def: tabstractrecorddef; const SymList:TFPHashObjectList; var symidx:longint;out offset:asizeint):tsym;inline;
   begin
     while symidx<SymList.Count do
       begin
         result:=tsym(def.symtable.SymList[symidx]);
         inc(symidx);
-        if (result.typ=fieldvarsym) and
-           not(sp_static in result.symoptions) then
-          exit;
+        if (result.typ=fieldvarsym) and not (sp_static in result.symoptions) then
+          begin
+            offset:=tfieldvarsym(result).fieldoffset;
+            exit;
+          end;
+          if symoffset(result, offset) and not (sp_static in result.symoptions) then
+            exit;
       end;
     result:=nil;
   end;
 
+function resolvefield(sym:tsym):tfieldvarsym;inline;
+  begin
+    while assigned(sym) and (sym.typ=symrefsym) do
+        sym:=tsymrefsym(sym).ref;
+    if not assigned(sym) or (sym.typ<>fieldvarsym) then
+      internalerror(2024100303);
+    result:=tfieldvarsym(sym);
+  end;
 
 {*****************************************************************************
                              read typed const
@@ -1608,11 +1633,12 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
         symidx  : longint;
         recsym,
         srsym   : tsym;
+        fieldvs : tfieldvarsym;
         hs      : string;
         sorg,s  : TIDString;
         tmpguid : tguid;
-        recoffset,
         fillbytes  : {$ifdef CPU8BITALU}smallint{$else}aint{$endif};
+        fieldvsoffset , recoffset , recsymoffset : asizeint;
         bp   : tbitpackedval;
         error,
         is_packed: boolean;
@@ -1668,10 +1694,11 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
         { normal record }
         consume(_LKLAMMER);
         recoffset:=0;
+        recsymoffset:=0;
         sorg:='';
         symidx:=0;
         symlist:=def.symtable.SymList;
-        srsym:=get_next_varsym(def,symlist,symidx);
+        srsym:=get_next_var_or_ref_sym(def,symlist,symidx,fieldvsoffset);
         recsym := nil;
         startoffset:=curoffset;
         error := false;
@@ -1682,7 +1709,9 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
             consume(_ID);
             consume(_COLON);
             recsym := tsym(def.symtable.Find(s));
-            if not assigned(recsym) or (recsym.typ<>fieldvarsym) then
+            if not assigned(recsym)
+               or not (recsym.typ in [fieldvarsym,symrefsym])
+               or not symoffset(recsym,recsymoffset) then
               begin
                 Message1(sym_e_illegal_field,sorg);
                 error := true;
@@ -1696,7 +1725,7 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
                 { Also allow jumping from one variant part to another, }
                 { as long as the offsets match                         }
                 if (assigned(srsym) and
-                    (tfieldvarsym(recsym).fieldoffset = tfieldvarsym(srsym).fieldoffset)) or
+                    (recsymoffset = fieldvsoffset)) or
                    { srsym is not assigned after parsing w2 in the      }
                    { typed const in the next example:                   }
                    {   type tr = record case byte of                    }
@@ -1704,14 +1733,15 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
                    {          2: (w1,w2: word);                         }
                    {        end;                                        }
                    {   const r: tr = (w1:1;w2:1;l2:5);                  }
-                   (tfieldvarsym(recsym).fieldoffset = recoffset) then
+                   (recsymoffset = recoffset) then
                   begin
                     srsym:=recsym;
+                    fieldvsoffset:=recsymoffset;
                     { symidx should contain the next symbol id to search }
                     symidx:=SymList.indexof(srsym)+1;
                   end
                 { going backwards isn't allowed in any mode }
-                else if (tfieldvarsym(recsym).fieldoffset<recoffset) then
+                else if (recsymoffset<recoffset) then
                   begin
                     Message(parser_e_invalid_record_const);
                     error := true;
@@ -1720,7 +1750,8 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
                 else if (m_delphi in current_settings.modeswitches) then
                   begin
                     Message1(parser_w_skipped_fields_before,sorg);
-                    srsym := recsym;
+                    srsym:=recsym;
+                    fieldvsoffset:=recsymoffset;
                   end
                 { FPC and TP don't }
                 else
@@ -1733,8 +1764,9 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
               consume_all_until(_SEMICOLON)
             else
               begin
+                fieldvs:=resolvefield(srsym);
                 { if needed fill (alignment) }
-                if tfieldvarsym(srsym).fieldoffset>recoffset then
+                if fieldvsoffset>recoffset then
                   begin
                     if not(is_packed) then
                       fillbytes:=0
@@ -1744,44 +1776,45 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
                         { curoffset is now aligned to the next byte }
                         recoffset:=align(recoffset,8);
                         { offsets are in bits in this case }
-                        fillbytes:=(tfieldvarsym(srsym).fieldoffset-recoffset) div 8;
+                        fillbytes:=(fieldvsoffset-recoffset) div 8;
                       end;
                     for i:=1 to fillbytes do
                       ftcb.emit_tai(Tai_const.Create_8bit(0),u8inttype)
                   end;
 
                 { new position }
-                recoffset:=tfieldvarsym(srsym).fieldoffset;
+                recoffset:=fieldvsoffset;
                 if not(is_packed) then
-                  inc(recoffset,tfieldvarsym(srsym).vardef.size)
+                  inc(recoffset,fieldvs.vardef.size)
                  else
-                   inc(recoffset,tfieldvarsym(srsym).vardef.packedbitsize);
+                   inc(recoffset,fieldvs.vardef.packedbitsize);
 
                 { read the data }
-                ftcb.next_field:=tfieldvarsym(srsym);
+                ftcb.next_field:=fieldvs;
                 if not(is_packed) or
                    { only orddefs and enumdefs are bitpacked, as in gcc/gpc }
-                   not(tfieldvarsym(srsym).vardef.typ in [orddef,enumdef]) then
+                   not(fieldvs.vardef.typ in [orddef,enumdef]) then
                   begin
                     if is_packed then
                       begin
                         flush_packed_value(bp);
                         recoffset:=align(recoffset,8);
                       end;
-                    curoffset:=startoffset+tfieldvarsym(srsym).fieldoffset;
-                    read_typed_const_data(tfieldvarsym(srsym).vardef);
+                    curoffset:=startoffset+fieldvsoffset;
+                    read_typed_const_data(fieldvs.vardef);
                   end
                 else
                   begin
-                    bp.packedbitsize:=tfieldvarsym(srsym).vardef.packedbitsize;
-                    parse_single_packed_const(tfieldvarsym(srsym).vardef,bp);
+                    bp.packedbitsize:=fieldvs.vardef.packedbitsize;
+                    parse_single_packed_const(fieldvs.vardef,bp);
                   end;
 
                 { keep previous field for checking whether whole }
                 { record was initialized (JM)                    }
                 recsym := srsym;
+                recsymoffset:=fieldvsoffset;
                 { goto next field }
-                srsym:=get_next_varsym(def,SymList,symidx);
+                srsym:=get_next_var_or_ref_sym(def,SymList,symidx,fieldvsoffset);
 
                 if token=_SEMICOLON then
                   consume(_SEMICOLON)
@@ -1798,7 +1831,7 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
         if assigned(srsym) and
            (
             (recsym=nil) or
-            (tfieldvarsym(srsym).fieldoffset > tfieldvarsym(recsym).fieldoffset)
+            (fieldvsoffset > recsymoffset)
            ) then
           Message1(parser_w_skipped_fields_after,sorg);
 
@@ -2020,8 +2053,10 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
         symidx  : longint;
         recsym,
         srsym   : tsym;
+        fieldvs : tfieldvarsym;
         sorg,s  : TIDString;
         recoffset : {$ifdef CPU8BITALU}smallint{$else}aint{$endif};
+        fieldvsoffset , recsymoffset: asizeint;
         error,
         is_packed: boolean;
 
@@ -2071,10 +2106,11 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
         { normal record }
         consume(_LKLAMMER);
         recoffset:=0;
+        recsymoffset:=0;
         sorg:='';
         symidx:=0;
         symlist:=def.symtable.SymList;
-        srsym:=get_next_varsym(def,symlist,symidx);
+        srsym:=get_next_var_or_ref_sym(def,symlist,symidx,fieldvsoffset);
         recsym := nil;
         orgbasenode:=basenode;
         basenode:=nil;
@@ -2086,7 +2122,9 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
             consume(_COLON);
             error := false;
             recsym := tsym(def.symtable.Find(s));
-            if not assigned(recsym) then
+            if not assigned(recsym)
+               or not (recsym.typ in [fieldvarsym, symrefsym])
+               or not symoffset(recsym,recsymoffset) then
               begin
                 Message1(sym_e_illegal_field,sorg);
                 error := true;
@@ -2100,7 +2138,7 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
                 { Also allow jumping from one variant part to another, }
                 { as long as the offsets match                         }
                 if (assigned(srsym) and
-                    (tfieldvarsym(recsym).fieldoffset = tfieldvarsym(srsym).fieldoffset)) or
+                    (recsymoffset = fieldvsoffset)) or
                    { srsym is not assigned after parsing w2 in the      }
                    { typed const in the next example:                   }
                    {   type tr = record case byte of                    }
@@ -2108,14 +2146,15 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
                    {          2: (w1,w2: word);                         }
                    {        end;                                        }
                    {   const r: tr = (w1:1;w2:1;l2:5);                  }
-                   (tfieldvarsym(recsym).fieldoffset = recoffset) then
+                   (recsymoffset = recoffset) then
                   begin
                     srsym:=recsym;
+                    fieldvsoffset:=recsymoffset;
                     { symidx should contain the next symbol id to search }
                     symidx:=SymList.indexof(srsym)+1;
                   end
                 { going backwards isn't allowed in any mode }
-                else if (tfieldvarsym(recsym).fieldoffset<recoffset) then
+                else if (recsymoffset<recoffset) then
                   begin
                     Message(parser_e_invalid_record_const);
                     error := true;
@@ -2125,6 +2164,7 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
                   begin
                     Message1(parser_w_skipped_fields_before,sorg);
                     srsym := recsym;
+                    fieldvsoffset:=recsymoffset;
                   end
                 { FPC and TP don't }
                 else
@@ -2137,28 +2177,30 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
               consume_all_until(_SEMICOLON)
             else
               begin
+                fieldvs:=resolvefield(srsym);
                 { skipping fill bytes happens automatically, since we only
                   initialize the defined fields }
                 { new position }
-                recoffset:=tfieldvarsym(srsym).fieldoffset;
+                recoffset:=fieldvsoffset;
                 if not(is_packed) then
-                  inc(recoffset,tfieldvarsym(srsym).vardef.size)
+                  inc(recoffset,fieldvs.vardef.size)
                  else
-                   inc(recoffset,tfieldvarsym(srsym).vardef.packedbitsize);
+                   inc(recoffset,fieldvs.vardef.packedbitsize);
 
                 { read the data }
                 if is_packed and
                    { only orddefs and enumdefs are bitpacked, as in gcc/gpc }
-                   not(tfieldvarsym(srsym).vardef.typ in [orddef,enumdef]) then
+                   not(fieldvs.vardef.typ in [orddef,enumdef]) then
                   recoffset:=align(recoffset,8);
                 basenode:=csubscriptnode.create(srsym,orgbasenode.getcopy);
-                read_typed_const_data(tfieldvarsym(srsym).vardef);
+                read_typed_const_data(fieldvs.vardef);
 
                 { keep previous field for checking whether whole }
                 { record was initialized (JM)                    }
                 recsym := srsym;
+                recsymoffset:=fieldvsoffset;
                 { goto next field }
-                srsym:=get_next_varsym(def,SymList,symidx);
+                srsym:=get_next_var_or_ref_sym(def,SymList,symidx,fieldvsoffset);
                 if token=_SEMICOLON then
                   consume(_SEMICOLON)
                 else if (token=_COMMA) and (m_mac in current_settings.modeswitches) then
@@ -2173,7 +2215,7 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
         if assigned(srsym) and
            (
             (recsym=nil) or
-            (tfieldvarsym(srsym).fieldoffset > tfieldvarsym(recsym).fieldoffset)
+            (fieldvsoffset > recsymoffset)
            ) then
           Message1(parser_w_skipped_fields_after,sorg);
         orgbasenode.free;

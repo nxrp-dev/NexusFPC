@@ -45,6 +45,9 @@ const
 var
   ri: PRecordInfoInit;
   elem: PRecordElement;
+{$ifdef FPC_HAS_VARIANT_RTTI}
+  branch: PRTTIRecordVariantBranchInit;
+{$endif}
   newMan: TRTTIManagement;
   elemCount,sample,_size: SizeInt;
 begin
@@ -81,14 +84,131 @@ begin
             end;
           inc(elem);
         end;
+
+{$ifdef FPC_HAS_VARIANT_RTTI}
+      { Variant branches are not part of the managed fields }
+      if assigned(ri^.VariantInfo) then
+        for elemCount:=0 to ri^.VariantInfo^.BranchCount-1 do
+          begin
+            branch:=ri^.VariantInfo^.Branches[elemCount];
+            sample:=ManagedSizes[PTypeKind(branch^.BranchField.TypeInfo^)^];
+            if sample<>Special then
+              newMan:=TRTTIManagement(ord(sample<>0)) { Avoid recursive call for simple fields. }
+            else
+              newMan:=RTTIManagementAndSize(branch^.BranchField.TypeInfo^, op, _size, maxInteresting);
+            if newMan>result then
+              begin
+                result:=newMan;
+                if newMan>=maxInteresting then
+                  break;
+              end;
+          end;
+{$endif}
     end;
 end;
+
+{$ifdef FPC_HAS_VARIANT_RTTI}
+function read_ord_field (dataptr,typeinfo : pointer; out issigned : boolean; out udest : qword): boolean;
+var
+  sdest: int64 absolute udest;
+begin
+  result:=assigned(typeinfo) and
+    (PTypeKind(TypeInfo)^ in [tkInt64,tkQWord,tkInteger,tkChar,tkEnumeration,tkBool,tkWChar,tkSet]);
+  if not result then
+    exit;
+  typeInfo:=aligntoqword(typeInfo+2+PByte(typeInfo)[1]);
+  case POrdInfo(typeinfo)^.OrdType of
+  otSByte:
+    begin
+      issigned:=true;
+      sdest:=pshortint(dataptr)^;
+    end;
+  otUByte:
+    begin
+      issigned:=false;
+      udest:=pbyte(dataptr)^;
+    end;
+  otSWord:
+    begin
+      issigned:=true;
+      sdest:=psmallint(dataptr)^;
+    end;
+  otUWord:
+    begin
+      issigned:=false;
+      udest:=pword(dataptr)^;
+    end;
+  otSLong:
+    begin
+      issigned:=true;
+      sdest:=plongint(dataptr)^;
+    end;
+  otULong:
+    begin
+      issigned:=false;
+      udest:=plongword(dataptr)^;
+    end;
+  otSQWord:
+    begin
+      issigned:=true;
+      sdest:=pint64(dataptr)^;
+    end;
+  otUQWord:
+    begin
+      issigned:=false;
+      udest:=pqword(dataptr)^;
+    end;
+  end;
+end;
+
+procedure write_ord_field (dataptr : pointer;const typeinfo : pointer;uval : qword);inline;
+var
+  sval: int64 absolute uval;
+begin
+  case POrdInfo(aligntoqword(typeInfo+2+PByte(typeInfo)[1]))^.OrdType of
+  otSByte: pshortint(dataptr)^:=shortint(sval);
+  otUByte: pbyte(dataptr)^:=byte(uval);
+  otSWord: psmallint(dataptr)^:=smallint(sval);
+  otUWord: pword(dataptr)^:=word(uval);
+  otSLong: plongint(dataptr)^:=longint(sval);
+  otULong: plongword(dataptr)^:=longword(uval);
+  otSQWord: pint64(dataptr)^:=int64(sval);
+  otUQWord: pqword(dataptr)^:=qword(uval);
+  end;
+end;
+
+{ if you modify this, you probably also need to modify get_variant_branch below}
+function get_variant_init_branch (const ri : PRecordInfoInit;uval:qword;issigned:boolean):PRTTIRecordVariantBranchInit;inline;
+var
+  sval : int64 absolute uval;
+  i , j: sizeint;
+begin
+  result:=nil;
+  for j:=0 to ri^.VariantInfo^.BranchCount-1 do
+    for i:=0 to ri^.VariantInfo^.Branches[j]^.LabelCount-1 do
+    if (
+         issigned and
+         (sval>=ri^.VariantInfo^.Branches[j]^.Labels[i,0]) and
+         (sval<=ri^.VariantInfo^.Branches[j]^.Labels[i,1])
+       ) or (
+         not issigned and
+         (uval>=ri^.VariantInfo^.Branches[j]^.UnsingedLabels[i,0]) and
+         (uval<=ri^.VariantInfo^.Branches[j]^.UnsingedLabels[i,1])
+       ) then
+      exit(ri^.VariantInfo^.Branches[j]);
+end;
+{$endif}
 
 { if you modify this procedure, fpc_copy must be probably modified as well }
 procedure RecordRTTI(Data:Pointer;Ri:PRecordInfoInit;rttiproc:TRTTIProc);
 var
   i : longint;
   Re : PRecordElement;
+{$ifdef FPC_HAS_VARIANT_RTTI}
+  branch : PRTTIRecordVariantBranchInit;
+  issigned : boolean;
+  uval : qword;
+{$endif}
 begin
   { Get element info, hacky, but what else can we do? }
   Re:=AlignTypeData(Pointer(@Ri^.Count)+SizeOf(Ri^.Count));
@@ -98,6 +218,18 @@ begin
       rttiproc(Data+Re^.Offset,Re^.TypeInfo^);
       Inc(Re);
     end;
+{$ifdef FPC_HAS_VARIANT_RTTI}
+  { Variant branches are not part of the managed fields }
+  if assigned(ri^.VariantInfo) and
+     assigned(ri^.VariantInfo^.SwitchField.TypeInfo) and
+     read_ord_field(data+ri^.VariantInfo^.SwitchField.Offset,
+                    ri^.VariantInfo^.SwitchField.TypeInfo^,issigned,uval) then
+  begin
+    branch:=get_variant_init_branch(ri,uval,issigned);
+    if assigned(branch) then
+      rttiproc(Data+branch^.BranchField.Offset,branch^.BranchField.TypeInfo^);
+  end;
+{$endif}
 end;
 
 function RTTIRecordMopInitTable(ti: Pointer): PRTTIRecordOpOffsetTable;
@@ -148,6 +280,12 @@ begin
     tkRecord:
       begin
         ri:=RTTIRecordInfoInit(typeinfo);
+{$ifdef FPC_HAS_VARIANT_RTTI}
+        { Variant selector must be ordinal -> not managed, so we set it ourselves }
+        if assigned(ri^.VariantInfo) then
+          write_ord_field(Data+ri^.VariantInfo^.SwitchField.Offset,
+                          ri^.VariantInfo^.SwitchField.TypeInfo^, 0);
+{$endif}
         recordrtti(data,ri,@int_initialize);
         if Assigned(ri^.recordop) and Assigned(ri^.recordop^.Initialize) then
           ri^.recordop^.Initialize(data);
@@ -255,6 +393,7 @@ Function fpc_Copy_internal (Src, Dest, TypeInfo : Pointer) : SizeInt;[external n
 
 Function fpc_Copy (Src, Dest, TypeInfo : Pointer) : SizeInt;[Public,alias : 'FPC_COPY']; compilerproc;
 var
+  ri: PRecordInfoInit;
   copiedsize,
   expectedoffset,
   EleCount,
@@ -262,6 +401,11 @@ var
   i: SizeInt;
   Temp,
   info: pointer;
+{$ifdef FPC_HAS_VARIANT_RTTI}
+  branch : PRTTIRecordVariantBranchInit;
+  issigned : boolean;
+  uval : qword;
+{$endif}
 begin
   result:=sizeof(pointer);
   case PTypeKind(TypeInfo)^ of
@@ -300,15 +444,15 @@ begin
 {$endif FPC_HAS_FEATURE_OBJECTS}
     tkrecord:
       begin
-        Temp:=RTTIRecordInfoInit(typeinfo);
-        Result:=PRecordInfoInit(Temp)^.Size;
-        if Assigned(PRecordInfoInit(Temp)^.recordop) and Assigned(PRecordInfoInit(Temp)^.recordop^.Copy) then
-          PRecordInfoInit(Temp)^.recordop^.Copy(Src,Dest)
+        ri:=RTTIRecordInfoInit(typeinfo);
+        Result:=ri^.Size;
+        if Assigned(ri^.recordop) and Assigned(ri^.recordop^.Copy) then
+          ri^.recordop^.Copy(Src,Dest)
         else
           begin
-            EleCount:=PRecordInfoInit(Temp)^.Count;
+            EleCount:=ri^.Count;
             { Get element info, hacky, but what else can we do? }
-            Temp:=AlignTypeData(Pointer(@PRecordInfoInit(Temp)^.Count)+SizeOf(PRecordInfoInit(Temp)^.Count));
+            Temp:=AlignTypeData(Pointer(@ri^.Count)+SizeOf(ri^.Count));
             expectedoffset:=0;
             { Process elements with rtti }
             for i:=1 to EleCount Do
@@ -319,6 +463,27 @@ begin
                 expectedoffset:=Offset+fpc_Copy_internal(Src+Offset,Dest+Offset,PRecordElement(Temp)^.TypeInfo^);
                 Inc(PRecordElement(Temp));
               end;
+{$ifdef FPC_HAS_VARIANT_RTTI}
+            { Variant branches are not part of the managed fields }
+            if assigned(ri^.VariantInfo) and
+               assigned(ri^.VariantInfo^.SwitchField.TypeInfo) and
+               { read branch from source because dest might not yet have been copied }
+               read_ord_field(src+ri^.VariantInfo^.SwitchField.Offset,
+                              ri^.VariantInfo^.SwitchField.TypeInfo^,issigned,uval) then
+            begin
+              { perform branch switch on dest to ensure the copied fields are initialized }
+              fpc_updatevariantselector(dest,typeinfo,uval);
+              { now check if branch requires copy }
+              branch:=get_variant_init_branch(ri,uval,issigned);
+              if assigned(branch) then
+                begin
+                  Offset:=branch^.BranchField.Offset;
+                  if Offset>expectedoffset then
+                    move((Src+expectedoffset)^,(Dest+expectedoffset)^,Offset-expectedoffset);
+                  expectedoffset:=Offset+fpc_Copy_internal(Src+Offset,Dest+Offset,branch^.BranchField.TypeInfo^);
+                end;
+            end;
+{$endif}
             { elements remaining? }
             if result>expectedoffset then
               move((Src+expectedoffset)^,(Dest+expectedoffset)^,Result-expectedoffset);
@@ -406,4 +571,79 @@ procedure CopyArray(dest, source, typeInfo: Pointer; count: SizeInt);
       for i:=0 to count-1 do
         fpc_Copy_internal(source+size*i, dest+size*i, typeInfo);
   end;
+
+{$ifdef FPC_HAS_VARIANT_RTTI}
+function get_variant_branch (vrec,typeinfo : pointer):longint;
+var
+  ri : PRecordInfoFull;
+  issigned : boolean;
+  uval : qword;
+  sval : int64 absolute uval;
+  i : sizeint;
+begin
+  result:=-1;
+  if PTypeKind(TypeInfo)^<>tkRecord then
+    exit;
+  ri:=PRecordInfoFull(aligntoqword(typeInfo+2+PByte(typeInfo)[1]));
+  if not assigned(ri^.VariantInfo) or not assigned(ri^.VariantInfo^.SwitchField) or
+     not assigned(ri^.VariantInfo^.SwitchField^.TypeInfo) or
+     not read_ord_field(vrec+ri^.VariantInfo^.SwitchField^.Offset,
+                        ri^.VariantInfo^.SwitchField^.TypeInfo^,issigned,uval) then
+    exit;
+  for result:=0 to ri^.VariantInfo^.BranchCount-1 do
+    for i:=0 to ri^.VariantInfo^.Branches[result]^.LabelCount-1 do
+    if (
+         issigned and
+         (sval>=ri^.VariantInfo^.Branches[result]^.Labels[i,0]) and
+         (sval<=ri^.VariantInfo^.Branches[result]^.Labels[i,1])
+       ) or (
+         not issigned and
+         (uval>=ri^.VariantInfo^.Branches[result]^.UnsingedLabels[i,0]) and
+         (uval<=ri^.VariantInfo^.Branches[result]^.UnsingedLabels[i,1])
+       ) then
+      exit;
+  result:=-1;
+end;
+
+procedure fpc_checkvariantbranch (VRec,TypeInfo : pointer;Branch : longint); [public,alias:'FPC_CHECKVARIANTBRANCH']; compilerproc;
+  begin
+    if PTypeKind(TypeInfo)^<>tkRecord then
+      exit;
+    if get_variant_branch (VRec,TypeInfo)<>Branch then
+      HandleErrorAddrFrameInd(237,get_pc_addr,get_frame);
+  end;
+
+procedure fpc_updatevariantselector (VRec,TypeInfo : pointer;NewValue : qword); [public,alias:'FPC_UPDATEVARIANTSELECTOR']; compilerproc;
+  var
+    ri : PRecordInfoInit;
+    oldbranch , newbranch : PRTTIRecordVariantBranchInit;
+    uval : qword;
+    issigned : boolean;
+  begin
+    if PTypeKind(TypeInfo)^<>tkRecord then
+      exit;
+    ri:=RTTIRecordInfoInit(typeinfo);
+    if not assigned(ri^.VariantInfo) then
+      exit;
+    if not read_ord_field(vrec+ri^.VariantInfo^.SwitchField.Offset,
+        ri^.VariantInfo^.SwitchField.TypeInfo^,issigned,uval) then
+      exit;
+    { get the new and the old branch }
+    oldbranch:=get_variant_init_branch(ri,uval,issigned);
+    newbranch:=get_variant_init_branch(ri,NewValue,issigned);
+
+    { perform management operations on branch switch }
+    if oldbranch<>newbranch then
+      begin
+        if assigned(oldbranch) then
+          int_finalize(vrec+oldbranch^.BranchField.Offset,oldbranch^.BranchField.TypeInfo^);
+        if assigned(newbranch) then
+          int_initialize(vrec+newbranch^.BranchField.Offset,newbranch^.BranchField.TypeInfo^);
+      end;
+
+    { update selector value }
+    write_ord_field(vrec+ri^.VariantInfo^.SwitchField.Offset,
+                    ri^.VariantInfo^.SwitchField.TypeInfo^,NewValue);
+  end;
+{$endif}
 

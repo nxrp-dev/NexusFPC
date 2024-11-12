@@ -124,6 +124,8 @@ interface
        end;
        tderefnodeclass = class of tderefnode;
 
+       { tsubscriptnode }
+
        tsubscriptnode = class(tunarynode)
           vs : tfieldvarsym;
           vsderef : tderef;
@@ -1010,7 +1012,7 @@ implementation
           make_not_regable(left,[ra_addr_regable]);
       end;
 
-    procedure Tsubscriptnode.mark_write;
+        procedure tsubscriptnode.mark_write;
       begin
         include(flags,nf_write);
         { if an element of a record is written, then the whole record is changed/it is written to it,

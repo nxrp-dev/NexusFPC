@@ -157,13 +157,14 @@ interface
          cs_do_inline,cs_fpu_fwait,cs_ieee_errors,
          cs_check_low_addr_load,cs_imported_data,
          cs_excessprecision,cs_check_fpu_exceptions,
-         cs_check_all_case_coverage,
+         cs_check_all_case_coverage,cs_variantrtti,cs_check_variant_access,
+         cs_managed_variants,
          { mmx }
          cs_mmx,cs_mmx_saturation,
          { parser }
          cs_typed_addresses,cs_strict_var_strings,cs_refcountedstrings,
          cs_bitpacking,cs_varpropsetter,cs_scopedenums,cs_pointermath,
-         cs_openstring,
+         cs_openstring,cs_strict_variants,
          { macpas specific}
          cs_external_var, cs_externally_visible,
          { jvm specific }
@@ -546,7 +547,8 @@ interface
          m_underscoreisseparator,{ _ can be used as separator to group digits in numbers }
          m_implicit_function_specialization,    { attempt to specialize generic function by inferring types from parameters }
          m_function_references, { enable Delphi-style function references }
-         m_anonymous_functions  { enable Delphi-style anonymous functions }
+         m_anonymous_functions, { enable Delphi-style anonymous functions }
+         m_record_composition   { enables record composition }
        );
        tmodeswitches = set of tmodeswitch;
 
@@ -742,7 +744,8 @@ interface
          'UNDERSCOREISSEPARATOR',
          'IMPLICITFUNCTIONSPECIALIZATION',
          'FUNCTIONREFERENCES',
-         'ANONYMOUSFUNCTIONS'
+         'ANONYMOUSFUNCTIONS',
+         'RECORDCOMPOSITION'
          );
 
 

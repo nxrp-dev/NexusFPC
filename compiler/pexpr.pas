@@ -1406,6 +1406,10 @@ implementation
         isrecordtype:boolean;
         isobjecttype:boolean;
         ishelpertype:boolean;
+        braccess:longint;
+        accesscheckblock:tnode;
+        newstatements:tstatementnode;
+        para:tcallparanode;
       begin
          if sym=nil then
            begin
@@ -1558,6 +1562,38 @@ implementation
                               Message(parser_e_only_class_members_via_class_ref);
                           p1:=csubscriptnode.create(sym,p1);
                         end;
+                   end;
+                 symrefsym:
+                   begin
+                     accesscheckblock:=nil;
+                     if cs_check_variant_access in current_settings.localswitches then
+                       begin
+                         braccess:=structh.is_on_selectable_union_branch(sym);
+                         { trying to access a branch, lets add a check }
+                         if (braccess>=0) then
+                           begin
+                             accesscheckblock:=internalstatements(newstatements);
+                             { params: VRec,TypeInfo : pointer;Branch : longint }
+                             { in reverse order: }
+                             para:=ccallparanode.create(cordconstnode.create(braccess,s32inttype,false), { Branch: LongInt }
+                                   ccallparanode.create(
+                                     caddrnode.create_internal(
+                                     crttinode.create(tstoreddef(structh),
+                                     fullrtti,rdt_normal)
+                                   ), { TypeInfo : Pointer }
+                                   ccallparanode.create(caddrnode.create_internal(p1.getcopy), { VRec: pointer }
+                                   nil)));
+                             addstatement(newstatements,ccallnode.createintern('fpc_checkvariantbranch',para));
+                           end;
+                       end;
+                     do_member_read(structh,getaddr,tsymrefsym(sym).fieldvs,p1,again,callflags,spezcontext);
+                     structh:=tabstractrecorddef(tsymrefsym(sym).fieldvs.vardef);
+                     do_member_read(structh,getaddr,tsymrefsym(sym).ref,p1,again,callflags,spezcontext);
+                     if assigned(accesscheckblock) then
+                       begin
+                         addstatement(newstatements,p1);
+                         p1:=accesscheckblock;
+                       end;
                    end;
                  propertysym:
                    begin
@@ -3017,7 +3053,8 @@ implementation
           staticvarsym,
           localvarsym,
           paravarsym,
-          fieldvarsym :
+          fieldvarsym,
+          symrefsym :
             begin
               { check if we are reading a field of an object/class/   }
               { record. is_member_read() will deal with withsymtables }

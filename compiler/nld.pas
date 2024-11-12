@@ -1020,6 +1020,29 @@ implementation
            right:=nil;
            exit;
          end
+         else if (left.resultdef.typ in [orddef,enumdef]) and
+             left.is_managedvariantselector and
+            not(is_const(left)) and
+            not(target_info.system in systems_garbage_collected_managed_types)  then
+         begin
+           { access to the selector: replace with fpc_updatevariantselector call }
+           hdef:=tsubscriptnode(left).left.resultdef;
+           hp:=ccallparanode.create(ctypeconvnode.create_internal(right,u64inttype), { NewValue: qword(right) }
+                 ccallparanode.create(
+                   caddrnode.create_internal(
+                   crttinode.create(tstoreddef(hdef),
+                   initrtti,rdt_normal)
+                 ), { TypeInfo : Pointer }
+                 ccallparanode.create(caddrnode.create_internal(tsubscriptnode(left).left), { VRec: pointer }
+                 nil)));
+           result:=ccallnode.createintern('fpc_updatevariantselector',hp);
+           firstpass(result);
+           { we steal the parent node for the parameter, so set it to nil so it does not get freed }
+           tsubscriptnode(left).left:=nil;
+           left:=nil;
+           right:=nil;
+           exit;
+         end
         else if not(target_info.system in systems_garbage_collected_managed_types) and
           not(is_const(left)) then
           begin

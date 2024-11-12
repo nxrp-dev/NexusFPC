@@ -1939,12 +1939,16 @@ implementation
 
     function  valid_for_var(p:tnode; report_errors: boolean):boolean;
       begin
+        if p.is_managedvariantselector and report_errors then
+          CGMessagePos(p.fileinfo,type_w_taking_address_of_managed_variant_selector);
         valid_for_var:=valid_for_assign(p,[valid_range],report_errors);
       end;
 
 
     function  valid_for_formal_var(p : tnode; report_errors: boolean) : boolean;
       begin
+        if p.is_managedvariantselector and report_errors then
+          CGMessagePos(p.fileinfo,type_w_taking_address_of_managed_variant_selector);
         valid_for_formal_var:=valid_for_assign(p,[valid_void,valid_range],report_errors);
       end;
 
@@ -1971,12 +1975,16 @@ implementation
 
     function  valid_for_loopvar(p:tnode; report_errors: boolean):boolean;
       begin
+        if p.is_managedvariantselector and report_errors then
+          CGMessagePos(p.fileinfo,type_w_taking_address_of_managed_variant_selector);
         valid_for_loopvar:=valid_for_assign(p,[valid_property],report_errors);
       end;
 
 
     function  valid_for_addr(p : tnode; report_errors: boolean) : boolean;
       begin
+        if p.is_managedvariantselector and report_errors then
+          CGMessagePos(p.fileinfo,type_w_taking_address_of_managed_variant_selector);
         result:=valid_for_assign(p,[valid_const,valid_addr,valid_void],report_errors);
       end;
 

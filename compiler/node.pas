@@ -285,6 +285,7 @@ interface
 
       pnode = ^tnode;
       { basic class for the intermediated representation fpc uses }
+
       tnode = class
       private
          fppuidx : longint;
@@ -381,6 +382,10 @@ interface
          { ensures that the optimizer info record is allocated }
          function allocoptinfo : poptinfo;inline;
          property ppuidx:longint read getppuidx;
+
+         { check if this node is (after type conversions) an access to the
+           type selector of a managed variant record }
+         function is_managedvariantselector:boolean;
       end;
 
       tnodeclass = class of tnode;
@@ -503,8 +508,8 @@ implementation
        cutils,
 {$endif DEBUG_NODE_XML}
        ppu,
-       symconst,
-       nutils,nflw,
+       symconst,symdef,
+       nutils,nflw,nmem,
        defutil;
 
     const
@@ -767,7 +772,7 @@ implementation
         { tnode fields }
         blocktype:=tblock_type(ppufile.getbyte);
         ppufile.getposinfo(fileinfo);
-        ppufile.getset(tppuset5(localswitches));
+        ppufile.getset(tppuset6(localswitches));
         verbosity:=ppufile.getlongint;
         ppufile.getderef(resultdefderef);
         ppufile.getset(tppuset2(flags));
@@ -782,7 +787,7 @@ implementation
       begin
         ppufile.putbyte(byte(block_type));
         ppufile.putposinfo(fileinfo);
-        ppufile.putset(tppuset5(localswitches));
+        ppufile.putset(tppuset6(localswitches));
         ppufile.putlongint(verbosity);
         ppufile.putderef(resultdefderef);
         ppufile.putset(tppuset2(flags));
@@ -1050,6 +1055,25 @@ implementation
           end;
         result:=optinfo;
       end;
+
+  function tnode.is_managedvariantselector: boolean;
+    var
+       node: tnode;
+    begin
+      result:=false;
+      { first resolve any conversions }
+      node:=self;
+      while node.nodetype=typeconvn do
+        node:=tunarynode(node).left;
+      { perform the check }
+      if node.nodetype<>subscriptn then
+        exit;
+      with tsubscriptnode(node) do
+        result:=(left.resultdef.typ=recorddef) and
+                assigned(trecorddef(left.resultdef).variantrecdesc) and
+                trecorddef(left.resultdef).variantrecdesc^.ismanaged and
+                (vs=trecorddef(left.resultdef).variantrecdesc^.variantselector);
+    end;
 
 {****************************************************************************
                                  TUNARYNODE

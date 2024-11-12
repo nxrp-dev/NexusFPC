@@ -424,6 +424,10 @@ unit scandir;
           Message1(scan_e_unsupported_switch,'CHECKPOINTER+');
       end;
 
+    procedure dir_checkvariantaccess;
+      begin
+        do_localswitch(cs_check_variant_access);
+      end;
 
     procedure dir_excessprecision;
       begin
@@ -804,6 +808,11 @@ unit scandir;
     procedure dir_macro;
       begin
         do_moduleswitch(cs_support_macro);
+      end;
+
+    procedure dir_managedvariants;
+      begin
+        do_localswitch(cs_managed_variants);
       end;
 
     procedure dir_pascalmainname;
@@ -1609,6 +1618,11 @@ unit scandir;
         do_message(scan_f_user_defined);
       end;
 
+    procedure dir_strictvariants;
+      begin
+       do_localswitch(cs_strict_variants);
+      end;
+
     procedure dir_stringchecks;
       begin
         // Delphi adds checks that ansistring and unicodestring are correct in
@@ -1684,6 +1698,11 @@ unit scandir;
             current_module.localunitsearchpath.AddPath(unitpath,false);
             Message2(general_t_unitpath_local,current_module.realmodulename^,unitpath);
           end;
+      end;
+
+    procedure dir_variantrtti;
+      begin
+        do_localswitch(cs_variantrtti);
       end;
 
     procedure dir_varparacopyoutcheck;
@@ -2097,6 +2116,7 @@ unit scandir;
         AddDirective('CHECKFPUEXCEPTIONS',directive_all, @dir_checkfpuexceptions);
         AddDirective('CHECKLOWADDRLOADS',directive_all, @dir_checklowaddrloads);
         AddDirective('CHECKPOINTER',directive_all, @dir_checkpointer);
+        AddDirective('CHECKVARIANTACCESS',directive_all, @dir_checkvariantaccess);
         AddDirective('CODEALIGN',directive_all, @dir_codealign);
         AddDirective('CODEPAGE',directive_all, @dir_codepage);
         AddDirective('COPERATORS',directive_all, @dir_coperators);
@@ -2145,6 +2165,7 @@ unit scandir;
         AddDirective('LONGSTRINGS',directive_all, @dir_longstrings);
         AddDirective('M',directive_all, @dir_memory);
         AddDirective('MACRO',directive_all, @dir_macro);
+        AddDirective('MANAGEDVARIANTS',directive_all, @dir_managedvariants);
         AddDirective('MAXFPUREGISTERS',directive_all, @dir_maxfpuregisters);
         AddDirective('MAXSTACKSIZE',directive_all, @dir_maxstacksize);
         AddDirective('MEMORY',directive_all, @dir_memory);
@@ -2194,6 +2215,7 @@ unit scandir;
         AddDirective('STACKCHECKING',directive_all,@dir_stackchecking);
         AddDirective('STACKFRAMES',directive_all, @dir_stackframes);
         AddDirective('STOP',directive_all, @dir_stop);
+        AddDirective('STRICTVARIANTS',directive_all, @dir_strictvariants);
         AddDirective('STRINGCHECKS', directive_all, @dir_stringchecks);
         AddDirective('SYSCALL',directive_all, @dir_syscall);
         AddDirective('TARGETSWITCH',directive_all, @dir_targetswitch);
@@ -2201,6 +2223,7 @@ unit scandir;
         AddDirective('TYPEDADDRESS',directive_all, @dir_typedaddress);
         AddDirective('TYPEINFO',directive_all, @dir_typeinfo);
         AddDirective('UNITPATH',directive_all, @dir_unitpath);
+        AddDirective('VARIANTRTTI',directive_all, @dir_variantrtti);
         AddDirective('VARPARACOPYOUTCHECK',directive_all, @dir_varparacopyoutcheck);
         AddDirective('VARPROPSETTER',directive_all, @dir_varpropsetter);
         AddDirective('VARSTRINGCHECKS',directive_all, @dir_varstringchecks);
