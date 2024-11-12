@@ -88,7 +88,7 @@ Type
   Protected
     function GetPosition: Int64; override;
     procedure InvalidSeek; override;
-    Procedure CreateCryptKey(Const S : String; Out Key : TIDEACryptKey);
+    Procedure CreateCryptKey(Const S : String; Out AKey : TIDEACryptKey);
   Public
     Constructor Create(AKey : TIDEAKey; Dest: TStream); overload;
     Property Key : TIDEAKey Read FKey;
@@ -284,7 +284,7 @@ begin
   Raise EIDEAError.Create(SNoSeekAllowed);
 end;
 
-procedure TIDEAStream.CreateCryptKey(const S: String; out Key: TIDEACryptKey);
+procedure TIDEAStream.CreateCryptKey(const S: String; out AKey: TIDEACryptKey);
 
 Var
   KLen : Integer;
@@ -293,10 +293,10 @@ begin
   KLen:=Length(S);
   If (KLen=0) then
     Raise EIDEAError.Create(SErrEmptyKey);
-  If (Length(S)>SizeOf(Key)) then
-    KLen:=SizeOf(Key);
-  FillChar(Key,SizeOf(Key),0);
-  Move(S[1],Key,KLen);
+  If (Length(S)>SizeOf(AKey)) then
+    KLen:=SizeOf(AKey);
+  FillChar(AKey,SizeOf(AKey),0);
+  Move(S[1],AKey,KLen);
 end;
 
 

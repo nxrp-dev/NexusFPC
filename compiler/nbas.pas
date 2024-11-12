@@ -250,7 +250,7 @@ interface
         protected
           class var tempinfoaccessor: ttempinfoaccessorclass;
         protected
-          procedure settempinfoflags(const tempflags: ttempinfoflags); inline;
+          procedure settempinfoflags(const atempflags: ttempinfoflags); inline;
           function gettempinfoflags: ttempinfoflags; inline;
         public
           tempinfo: ptempinfo;
@@ -1281,9 +1281,9 @@ implementation
                           TEMPBASENODE
 *****************************************************************************}
 
-    procedure ttempbasenode.settempinfoflags(const tempflags: ttempinfoflags);
+    procedure ttempbasenode.settempinfoflags(const atempflags: ttempinfoflags);
       begin
-        ctempinfoaccessor.settempinfoflags(tempinfo,tempflags);
+        ctempinfoaccessor.settempinfoflags(tempinfo,atempflags);
       end;
 
 

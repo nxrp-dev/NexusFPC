@@ -94,7 +94,7 @@ type
     FOriginalException : Exception;
     FPreviousError     : Integer;
   public
-    constructor Create(NativeError, Context : String;
+    constructor Create(NativeError, AContext : String;
       ErrCode, PrevError : integer; E: Exception);
     Destructor Destroy; override;
     property Context : String read FContext;
@@ -1251,7 +1251,7 @@ type
     FOptions : TIndexOptions;
     FSource : String;
   protected
-    procedure Assign(Source: TPersistent); override;
+    procedure Assign(ASource: TPersistent); override;
     function GetExpression: string;
     procedure SetCaseInsFields(const AValue: string); virtual;
     procedure SetDescFields(const AValue: string);
@@ -2132,11 +2132,11 @@ type
     procedure DistributeEvent(Event: TDataEvent; Info: Ptrint);
     function GetLink(AIndex : Integer): TDataLink;
     function GetLinkCount: Integer;
-    procedure RegisterDataLink(DataLink: TDataLink);
+    procedure RegisterDataLink(ADataLink: TDataLink);
     Procedure ProcessEvent(Event : TDataEvent; Info : Ptrint);
     procedure SetDataSet(ADataSet: TDataSet);
     procedure SetEnabled(Value: Boolean);
-    procedure UnregisterDataLink(DataLink: TDataLink);
+    procedure UnregisterDataLink(ADataLink: TDataLink);
   protected
     Procedure DoDataChange (Info : Pointer);virtual;
     Procedure DoStateChange; virtual;
@@ -2579,12 +2579,12 @@ end;
 
 { EUpdateError }
 
-constructor EUpdateError.Create(NativeError, Context : String;
+constructor EUpdateError.Create(NativeError, AContext : String;
                                 ErrCode, PrevError : integer; E: Exception);
                                 
 begin
-  Inherited CreateFmt(NativeError,[Context]);
-  FContext := Context;
+  Inherited CreateFmt(NativeError,[AContext]);
+  FContext := AContext;
   FErrorCode := ErrCode;
   FPreviousError := PrevError;
   FOriginalException := E;
@@ -2679,11 +2679,11 @@ begin
   FDescFields:=AValue;
 end;
 
-procedure TIndexDef.Assign(Source: TPersistent);
+procedure TIndexDef.Assign(ASource: TPersistent);
 var idef : TIndexDef;
 begin
   idef := nil;
-  if Source is TIndexDef then idef := Source as TIndexDef;
+  if ASource is TIndexDef then idef := ASource as TIndexDef;
   if Assigned(idef) then
      begin
      FName := idef.Name;
@@ -2695,7 +2695,7 @@ begin
      FExpression := idef.Expression;
      end
   else
-    inherited Assign(Source);
+    inherited Assign(ASource);
 end;
 
 function TIndexDef.GetExpression: string;

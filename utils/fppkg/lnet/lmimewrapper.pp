@@ -149,8 +149,8 @@ type
     destructor Destroy; override;
     function Seek(Offset: Longint; Origin: Word): Longint; overload; override;
     function Seek(const Offset: Int64; Origin: TSeekOrigin): Int64; overload; override;
-    function Read(var Buffer; Count: Longint): Longint; override;
-    function Write(const Buffer; Count: Longint): Longint; override;
+    function Read(var Buffer; ACount: Longint): Longint; override;
+    function Write(const Buffer; ACount: Longint): Longint; override;
     procedure AddTextSection(const aText: string; const aCharSet: string = 'UTF-8');
     procedure AddFileSection(const aFileName: string);
     procedure AddStreamSection(aStream: TStream; const FreeStream: Boolean = False);
@@ -652,21 +652,21 @@ begin
   Result := Offset;
 end;
 
-function TMimeStream.Read(var Buffer; Count: Longint): Longint;
+function TMimeStream.Read(var Buffer; ACount: Longint): Longint;
 begin
-  if Count <= 0 then
+  if ACount <= 0 then
     Exit(0);
     
   if FCalledWrite then
     raise EAlreadyCalledWriteException.Create;
 
   FCalledRead := True;
-  Result := FOutputStream.Read(Buffer, Count);
+  Result := FOutputStream.Read(Buffer, ACount);
 end;
 
-function TMimeStream.Write(const Buffer; Count: Longint): Longint;
+function TMimeStream.Write(const Buffer; ACount: Longint): Longint;
 begin
-  if Count <= 0 then
+  if ACount <= 0 then
     Exit(0);
 
   if FCalledRead then

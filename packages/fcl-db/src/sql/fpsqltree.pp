@@ -1131,7 +1131,7 @@ Type
     Constructor Create(AParent : TSQLElement); override;
     Destructor Destroy; override;
     Property TableName : TSQLIdentifierName Read FTableName Write FTableName;
-    Function GetAsSQL(Options : TSQLFormatOptions; AIndent : Integer = 0): TSQLStringType; override;
+    Function GetAsSQL(AOptions : TSQLFormatOptions; AIndent : Integer = 0): TSQLStringType; override;
     Property Options : TIndexOptions Read FOptions Write FOptions;
     Property FieldNames : TSQLElementList Read FFieldNames;
   end;
@@ -2855,7 +2855,7 @@ begin
   inherited Destroy;
 end;
 
-function TSQLCreateIndexStatement.GetAsSQL(Options: TSQLFormatOptions;
+function TSQLCreateIndexStatement.GetAsSQL(AOptions: TSQLFormatOptions;
   AIndent: Integer): TSQLStringType;
 
 Var
@@ -2863,26 +2863,26 @@ Var
   S,Sep : TSQLStringType;
 
 begin
-  Result:=SQLKeyWord('CREATE ',Options);
+  Result:=SQLKeyWord('CREATE ',AOptions);
   If (ioUnique in Self.Options) then
-    Result:=Result+SQLKeyWord('UNIQUE ',Options);
+    Result:=Result+SQLKeyWord('UNIQUE ',AOptions);
   If ioAscending in Self.Options then
-    Result:=Result+SQLKeyWord('ASCENDING ',Options)
+    Result:=Result+SQLKeyWord('ASCENDING ',AOptions)
   else If ioDescending in Self.Options then
-    Result:=Result+SQLKeyWord('DESCENDING ',Options);
-  Result:=Result+SQLKeyWord('INDEX ',Options)+inherited GetAsSQL(Options, AIndent);
-  Result:=Result+SQLKeyWord(' ON ',Options);
+    Result:=Result+SQLKeyWord('DESCENDING ',AOptions);
+  Result:=Result+SQLKeyWord('INDEX ',AOptions)+inherited GetAsSQL(AOptions, AIndent);
+  Result:=Result+SQLKeyWord(' ON ',AOptions);
   If Assigned(FTableName) then
-    Result:=Result+FTableName.GetAsSQL(Options,AIndent);
+    Result:=Result+FTableName.GetAsSQL(AOptions,AIndent);
   If (FieldNames.Count>0) then
      begin
-     Sep:=SQLListSeparator(Options);
+     Sep:=SQLListSeparator(AOptions);
      S:='';
      For I:=0 to FieldNames.Count-1 do
        begin
        If (S<>'') then
          S:=S+Sep;
-       S:=S+FieldNames[i].GetAsSQL(Options,AIndent);
+       S:=S+FieldNames[i].GetAsSQL(AOptions,AIndent);
        end;
      S:='('+S+')';
      end;

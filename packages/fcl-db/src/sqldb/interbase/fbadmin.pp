@@ -137,11 +137,11 @@ type
     function RestoreMultiFile(const Database:string;Filenames:TStrings;
       Options:TIBRestoreOptions;const RoleName:string=''):boolean;
     //Add a new user.
-    function AddUser(const UserName,Password:string;const RoleName:string='';
+    function AddUser(const UserName,APassword:string;const RoleName:string='';
       const GroupName:string='';const FirstName:string='';const MiddleName:string='';
       const LastName:string='';UserID: longint = 0; GroupID: longint = 0):boolean;
     //Modify an existing user.
-    function ModifyUser(const UserName,Password:string;const RoleName:string='';
+    function ModifyUser(const UserName,APassword:string;const RoleName:string='';
       const GroupName:string=''; const FirstName:string=''; const MiddleName:string='';
       const LastName:string='';UserID: longint = 0; GroupID: longint = 0):boolean;
     //Delete an existing user.
@@ -647,7 +647,7 @@ begin
     result:=GetOutput('RestoreMultiFile');
 end;
 
-function TFBAdmin.AddUser(const UserName, Password: string; const RoleName: string;
+function TFBAdmin.AddUser(const UserName, APassword: string; const RoleName: string;
   const GroupName: string; const FirstName: string; const MiddleName: string; const LastName: string;
   UserID: longint; GroupID: longint): boolean;
 var
@@ -655,7 +655,7 @@ var
 begin
   result:=CheckConnected('AddUser');
   spb:=chr(isc_action_svc_add_user)+IBSPBParamSerialize(isc_spb_sec_username,copy(UserName,1,31))+
-    IBSPBParamSerialize(isc_spb_sec_password,copy(Password,1,8));
+    IBSPBParamSerialize(isc_spb_sec_password,copy(APassword,1,8));
   if RoleName<>'' then
     spb:=spb+IBSPBParamSerialize(isc_spb_sql_role_name,copy(RoleName,1,31));
   if GroupName<>'' then
@@ -676,7 +676,7 @@ begin
     CheckError('AddUser',FStatus);
 end;
 
-function TFBAdmin.ModifyUser(const UserName, Password: string; const RoleName: string;
+function TFBAdmin.ModifyUser(const UserName, APassword: string; const RoleName: string;
   const GroupName: string; const FirstName: string; const MiddleName: string; const LastName: string;
   UserID: longint; GroupID: longint): boolean;
 var
@@ -684,7 +684,7 @@ var
 begin
   result:=CheckConnected('ModifyUser');
   spb:=chr(isc_action_svc_modify_user)+IBSPBParamSerialize(isc_spb_sec_username,copy(UserName,1,31))+
-    IBSPBParamSerialize(isc_spb_sec_password,copy(Password,1,8));
+    IBSPBParamSerialize(isc_spb_sec_password,copy(APassword,1,8));
   if RoleName<>'' then
     spb:=spb+IBSPBParamSerialize(isc_spb_sql_role_name,copy(RoleName,1,31));
   if GroupName<>'' then

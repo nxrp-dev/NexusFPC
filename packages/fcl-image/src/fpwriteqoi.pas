@@ -29,7 +29,7 @@ type
   TFPWriterQoi = class (TFPCustomImageWriter)
   private
     QoiHeader : TQoiHeader;
-    procedure setUseAlpha(useAlpha:boolean);
+    procedure setUseAlpha(AuseAlpha:boolean);
     function getUseAlpha:boolean;
   protected
     function  SaveHeader(Stream:TStream; Img: TFPCustomImage):boolean; virtual;
@@ -54,9 +54,9 @@ begin
 end;
 
 
-procedure TFPWriterQoi.setUseAlpha(useAlpha:boolean);
+procedure TFPWriterQoi.setUseAlpha(AuseAlpha:boolean);
 begin
-     if useAlpha then QoiHeader.channels := qoChannelRGBA else QoiHeader.channels:=qoChannelRGB;
+     if AuseAlpha then QoiHeader.channels := qoChannelRGBA else QoiHeader.channels:=qoChannelRGB;
 end;
 
 function TFPWriterQoi.getUseAlpha:boolean;

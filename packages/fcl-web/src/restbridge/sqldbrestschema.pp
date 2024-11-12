@@ -308,7 +308,7 @@ Type
     Function GetResolvedSQl(aKind : TSQLKind; Const AWhere : UTF8String; Const aOrderBy : UTF8String = ''; const aLimit : UTF8String = ''; OnlyFields : TSQLDBRestFieldArray = nil) : UTF8String;
     Function ProcessSQl(const aSQL : String; Const AWhere : UTF8String; Const aOrderBy : UTF8String = ''; const aLimit : UTF8String = '') : UTF8String;
     Procedure PopulateFieldsFromFieldDefs(Defs : TFieldDefs; aIndexFields : TStringArray; aProcessIdentifier : TProcessIdentifier; aMinFieldOpts : TRestFieldOptions);
-    Procedure PopulateParametersFromSQL(const SQL : String; DoClear : Boolean = True);
+    Procedure PopulateParametersFromSQL(const aSQL : String; DoClear : Boolean = True);
     function DoCompleteWhere(aContext : TBaseRestContext; aKind: TSQLKind; const aWhere: UTF8String ): UTF8String;
     Property SQL [aKind : TSQLKind] : TStrings Read GetSQLTyped;
     Property BusinessProcessor : TSQLDBRestCustomBusinessProcessor Read FBusinessProcessor;
@@ -1603,7 +1603,7 @@ begin
     end;
 end;
 
-procedure TSQLDBRestResource.PopulateParametersFromSQL(const SQL: String;
+procedure TSQLDBRestResource.PopulateParametersFromSQL(const ASQL: String;
   DoClear: Boolean);
 
 Var
@@ -1616,7 +1616,7 @@ begin
     Parameters.Clear;
   Parms:=TParams.Create(Nil);
   try
-    Parms.ParseSQL(SQL,True);
+    Parms.ParseSQL(ASQL,True);
     for P in Parms do
       If Parameters.IndexOf(P.Name)=-1 then
         begin

@@ -475,8 +475,8 @@ Type
     Procedure ZipFiles(const aFileList : Array of RawbyteString);
     Procedure ZipFiles(FileList : TStrings);
     // Zips specified entries into a zip with name AFileName
-    Procedure ZipFiles(const AZipFileName : RawByteString; Entries : TZipFileEntries);
-    Procedure ZipFiles(Entries : TZipFileEntries);
+    Procedure ZipFiles(const AZipFileName : RawByteString; AEntries : TZipFileEntries);
+    Procedure ZipFiles(AEntries : TZipFileEntries);
     // Easy access method
     // Zip single file
     Class Procedure Zip(const AZipFileName : RawByteString; const aFileToBeZipped: RawByteString);
@@ -2100,15 +2100,15 @@ begin
   ZipAllFiles;
 end;
 
-procedure TZipper.ZipFiles(const AZipFileName: RawByteString; Entries: TZipFileEntries);
+procedure TZipper.ZipFiles(const AZipFileName: RawByteString; AEntries: TZipFileEntries);
 begin
   FFileName:=AZipFileName;
-  ZipFiles(Entries);
+  ZipFiles(AEntries);
 end;
 
-procedure TZipper.ZipFiles(Entries: TZipFileEntries);
+procedure TZipper.ZipFiles(AEntries: TZipFileEntries);
 begin
-  FEntries.Assign(Entries);
+  FEntries.Assign(AEntries);
   ZipAllFiles;
 end;
 

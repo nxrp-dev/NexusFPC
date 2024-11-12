@@ -79,7 +79,7 @@ type
     FCores         : Integer;
     FLocaleID      : Word;
   protected
-    function GetData(const DataName: String; out PathInChm: String; out FileName: String; var Stream: TStream): Boolean;
+    function GetData(const DataName: String; out PathInChm: String; out AFileName: String; var Stream: TStream): Boolean;
     procedure LastFileAdded(Sender: TObject);
     procedure readIniOptions(keyvaluepairs:tstringlist);
     procedure ScanHtml;
@@ -98,7 +98,7 @@ type
     procedure ShowUndefinedAnchors;
     function ProjectDir: String;
     procedure LoadSitemaps;
-    procedure AddFileWithContext(contextid:integer;filename:ansistring;contextname:ansistring='');
+    procedure AddFileWithContext(contextid:integer;afilename:ansistring;contextname:ansistring='');
     procedure Error(errorkind:TChmProjectErrorKind;msg:String;detaillevel:integer=0);
     // though stored in the project file, it is only there for the program that uses the unit
     // since we actually write to a stream
@@ -164,13 +164,13 @@ end;
 { TChmProject }
 
 function TChmProject.GetData(const DataName: String; out PathInChm: String; out
-  FileName: String; var Stream: TStream): Boolean;
+  AFileName: String; var Stream: TStream): Boolean;
 begin
   Result := False; // Return true to abort compressing files
   TMemoryStream(Stream).LoadFromFile(ProjectDir+DataName);
   // clean up the filename
-  FileName := StringReplace(ExtractFileName(DataName), '\', '/', [rfReplaceAll]);
-  FileName := StringReplace(FileName, '//', '/', [rfReplaceAll]);
+  AFileName := StringReplace(ExtractFileName(DataName), '\', '/', [rfReplaceAll]);
+  AFileName := StringReplace(AFileName, '//', '/', [rfReplaceAll]);
 
   PathInChm := '/'+ExtractFilePath(DataName);
   if Assigned(FOnProgress) then FOnProgress(Self, DataName);
@@ -648,7 +648,7 @@ begin
   ScanHtmlContents:=true;
 end;
 
-procedure TChmProject.AddFileWithContext(contextid:integer;filename:ansistring;contextname:ansistring='');
+procedure TChmProject.AddFileWithContext(contextid:integer;afilename:ansistring;contextname:ansistring='');
 var x : integer;
     nd : TChmContextNode;
 begin
@@ -667,7 +667,7 @@ begin
      if not assigned(nd) then
        begin
          nd:=TChmContextNode.Create;
-         nd.urlname:=filename;
+         nd.urlname:=afilename;
          files.objects[x]:=nd;
        end;
       nd.contextnumber:=contextid;

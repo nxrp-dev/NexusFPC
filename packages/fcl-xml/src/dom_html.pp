@@ -159,7 +159,7 @@ type
     FSelectedIndex: Integer;
     function GetType: DOMString;
     function GetValue: DOMString;
-    procedure SetValue(const value: DOMString);
+    procedure SetValue(const Avalue: DOMString);
     function GetOptions: THTMLOptionsCollection;
     function GetLength: Cardinal;
     procedure SetLength(aValue: Cardinal);
@@ -1495,7 +1495,7 @@ begin
   result := '';
 end;
 
-procedure THTMLSelectElement.SetValue(const value: DOMString);
+procedure THTMLSelectElement.SetValue(const Avalue: DOMString);
 begin
 
 end;

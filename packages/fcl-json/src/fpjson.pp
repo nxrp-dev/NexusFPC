@@ -699,7 +699,7 @@ Type
     Function DoFormatJSON(Options : TFormatOptions; CurrentIndent, Indent : Integer) : TJSONStringType; override;
   public
     constructor Create; reintroduce;
-    Constructor Create(const Elements : Array of {$IFDEF PAS2JS}jsvalue{$else}Const{$ENDIF}); overload;
+    Constructor Create(const AElements : Array of {$IFDEF PAS2JS}jsvalue{$else}Const{$ENDIF}); overload;
     destructor Destroy; override;
     class function JSONType: TJSONType; override;
     Class Property UnquotedMemberNames : Boolean Read GetUnquotedMemberNames Write SetUnquotedMemberNames;
@@ -3657,7 +3657,7 @@ begin
   {$ENDIF}
 end;
 
-constructor TJSONObject.Create(const Elements: array of {$IFDEF PAS2JS}jsvalue{$else}Const{$ENDIF});
+constructor TJSONObject.Create(const AElements: array of {$IFDEF PAS2JS}jsvalue{$else}Const{$ENDIF});
 
 Var
   I : integer;
@@ -3666,18 +3666,18 @@ Var
 
 begin
   Create;
-  If ((High(Elements)-Low(Elements)) mod 2)=0 then
+  If ((High(AElements)-Low(AElements)) mod 2)=0 then
     DoError(SErrOddNumber);
-  I:=Low(Elements);
-  While I<=High(Elements) do
+  I:=Low(AElements);
+  While I<=High(AElements) do
     begin
     {$IFDEF PAS2JS}
-    if isString(Elements[I]) then
-      AName:=String(Elements[I])
+    if isString(AElements[I]) then
+      AName:=String(AElements[I])
     else
       DoError(SErrNameMustBeString,[I+1]);
     {$else}
-    With Elements[i] do
+    With AElements[i] do
       Case VType of
         vtChar       : AName:=TJSONUnicodeStringType(VChar);
         vtString     : AName:=TJSONUnicodeStringType(vString^);
@@ -3690,7 +3690,7 @@ begin
     If (AName='') then
       DoError(SErrNameMustBeString,[I+1]);
     Inc(I);
-    J:=VarRecToJSON(Elements[i],'Object');
+    J:=VarRecToJSON(AElements[i],'Object');
     {$IFDEF FPC_HAS_CPSTRING}
     Add(UTF8Encode(AName),J);
     {$ELSE}

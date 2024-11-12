@@ -1621,7 +1621,7 @@ type
   TPasImplCaseOf = class(TPasImplBlock)
   public
     procedure FreeChildren(Prepare: boolean); override;
-    function AddCase(const Expression: TPasExpr): TPasImplCaseStatement;
+    function AddCase(const AExpression: TPasExpr): TPasImplCaseStatement;
     function AddElse: TPasImplCaseElse;
     procedure ForEachCall(const aMethodCall: TOnForEachPasElement;
       const Arg: Pointer); override;
@@ -5459,11 +5459,11 @@ begin
   inherited FreeChildren(Prepare);
 end;
 
-function TPasImplCaseOf.AddCase(const Expression: TPasExpr
+function TPasImplCaseOf.AddCase(const AExpression: TPasExpr
   ): TPasImplCaseStatement;
 begin
   Result:=TPasImplCaseStatement.Create('',Self);
-  Result.AddExpression(Expression);
+  Result.AddExpression(AExpression);
   AddElement(Result);
 end;
 

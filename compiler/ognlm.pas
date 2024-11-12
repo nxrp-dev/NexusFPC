@@ -336,14 +336,14 @@ implementation
 type
   TStringObj = class (TObject)
      fValue : string;
-     constructor create (value:string);
+     constructor create (avalue:string);
      property value : string read fValue write fValue;
   end;
 
-  constructor TStringObj.create(value:string);
+  constructor TStringObj.create(avalue:string);
   begin
     inherited create;
-    fValue := value;
+    fValue := avalue;
   end;
 
 

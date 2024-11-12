@@ -233,7 +233,7 @@ Type
     function IsFloat(const Value: TIDLString; out e: TMaxFloat): boolean;
     procedure NextToken;
     procedure Log(aMsgType: TMessageType; aMsgNumber: integer;
-      const aMsgFmt: TIDLString; const Args: array of const; MsgPos: PChar = nil);
+      const aMsgFmt: TIDLString; const Args: array of const; aMsgPos: PChar = nil);
     procedure LogXExpectedButTokenFound(const X: TIDLString; ErrorPos: PChar = nil);
     procedure ReadOperand(Skip: boolean = false); // unary operators plus one operand
     procedure ReadExpression; // binary operators
@@ -652,10 +652,10 @@ begin
 end;
 
 procedure TDirectiveEvaluator.Log(aMsgType: TMessageType; aMsgNumber: integer;
-  const aMsgFmt: TIDLString; const Args: array of const; MsgPos: PChar);
+  const aMsgFmt: TIDLString; const Args: array of const; AMsgPos: PChar);
 begin
-  if MsgPos=nil then
-    MsgPos:=FTokenEnd;
+  if AMsgPos=nil then
+    AMsgPos:=FTokenEnd;
   MsgType:=aMsgType;
   MsgNumber:=aMsgNumber;
   MsgPattern:=aMsgFmt;
@@ -664,7 +664,7 @@ begin
     OnLog(Self,Args);
     if not (aMsgType in [mtError,mtFatal]) then exit;
     end;
-  raise EWebIDLError.CreateFmt(MsgPattern+' at pos '+IntToStr(PtrInt(MsgPos-FExpr))+' line '+IntToStr(MsgLineNumber),Args);
+  raise EWebIDLError.CreateFmt(MsgPattern+' at pos '+IntToStr(PtrInt(AMsgPos-FExpr))+' line '+IntToStr(MsgLineNumber),Args);
 end;
 
 procedure TDirectiveEvaluator.LogXExpectedButTokenFound(const X: TIDLString;

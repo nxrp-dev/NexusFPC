@@ -1663,7 +1663,7 @@ type
     FOwnership : TStreamOwnership;
     m_bReverted: Boolean;
   public
-    constructor Create(Stream: TStream; Ownership: TStreamOwnership = soReference);
+    constructor Create(AStream: TStream; AOwnership: TStreamOwnership = soReference);
     destructor Destroy; override;
     function Read(pv: Pointer; cb: DWORD; pcbRead: PDWORD): HResult; virtual; stdcall;
     function Write(pv: Pointer; cb: DWORD; pcbWritten: PDWORD): HResult; virtual; stdcall;

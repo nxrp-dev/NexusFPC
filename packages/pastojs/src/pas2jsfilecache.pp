@@ -305,7 +305,7 @@ type
     function ExpandExecutable(const Filename: string): string; override;
     function HandleOptionPaths(C: AnsiChar; aValue: String; FromCmdLine: Boolean): String; override;
     Function AddForeignUnitPath(const aValue: String; FromCmdLine: Boolean): String; override;
-    function TryCreateRelativePath(const Filename, BaseDirectory: String;
+    function TryCreateRelativePath(const Filename, ABaseDirectory: String;
       UsePointDirectory, AlwaysRequireSharedBaseFolder: boolean; out RelPath: String): Boolean; override;
   public
     property BaseDirectory: string read FBaseDirectory write SetBaseDirectory; // includes trailing pathdelim
@@ -1885,10 +1885,10 @@ begin
 end;
 
 function TPas2jsFilesCache.TryCreateRelativePath(const Filename,
-  BaseDirectory: String; UsePointDirectory,
+  ABaseDirectory: String; UsePointDirectory,
   AlwaysRequireSharedBaseFolder: boolean; out RelPath: String): Boolean;
 begin
-  Result:={$IFDEF FPC_DOTTEDUNITS}Pas2js.Files.Utils{$ELSE}Pas2jsFileUtils{$ENDIF}.TryCreateRelativePath(Filename, BaseDirectory,
+  Result:={$IFDEF FPC_DOTTEDUNITS}Pas2js.Files.Utils{$ELSE}Pas2jsFileUtils{$ENDIF}.TryCreateRelativePath(Filename, ABaseDirectory,
     UsePointDirectory, AlwaysRequireSharedBaseFolder, RelPath);
 end;
 

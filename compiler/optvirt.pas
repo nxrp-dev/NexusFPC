@@ -105,7 +105,7 @@ unit optvirt;
         finstantiated: boolean;
         function isstaticvmtentry(vmtindex: longint; out replacementname: pshortstring): boolean;
        public
-        constructor create(hashobjectlist:tfphashobjectlist;const n: shortstring; instantiated: boolean);
+        constructor create(hashobjectlist:tfphashobjectlist;const n: shortstring; ainstantiated: boolean);
         destructor destroy; override;
 
         property instantiated: boolean read finstantiated;
@@ -620,10 +620,10 @@ unit optvirt;
 
    { tclassdevirtinfo }
 
-    constructor tclassdevirtinfo.create(hashobjectlist:tfphashobjectlist;const n: shortstring; instantiated: boolean);
+    constructor tclassdevirtinfo.create(hashobjectlist:tfphashobjectlist;const n: shortstring; ainstantiated: boolean);
       begin
         inherited create(hashobjectlist,n);
-        finstantiated:=instantiated;
+        finstantiated:=ainstantiated;
         fstaticmethodnames:=tfplist.create;
       end;
 

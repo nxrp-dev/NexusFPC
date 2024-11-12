@@ -61,7 +61,7 @@
            function GetKey:TKey;inline;
            function GetValue:TValue;inline;
            function GetMutable:PValue;inline;
-           procedure SetValue(value:TValue);inline;
+           procedure SetValue(avalue:TValue);inline;
            function GetEnumerator : TIntIterator; inline;
            property Data:T read GetData;
            property Key:TKey read GetKey;
@@ -380,9 +380,9 @@ begin
   GetMutable:=@((FData[Fh]).Mutable[Fp]^.Value);
 end;
 
-procedure THashmapIterator.SetValue(value:TValue);
+procedure THashmapIterator.SetValue(avalue:TValue);
 begin
-  ((FData[Fh]).mutable[Fp])^.Value := value;
+  ((FData[Fh]).mutable[Fp])^.Value := avalue;
 end;
 
 function THashmapIterator.getenumerator: TIntIterator;

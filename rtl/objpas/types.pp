@@ -187,7 +187,7 @@ type
           function  Round   : TPoint;
           function  Length  : Single;
  
-          function Rotate(angle: single): TPointF;
+          function Rotate(Aangle: single): TPointF;
           function Reflect(const normal: TPointF): TPointF;
           function MidPoint(const b: TPointF): TPointF;
           class function PointInCircle(const pt, center: TPointF; radius: single): Boolean; static;
@@ -1246,11 +1246,11 @@ begin
   result:=sqrt(sqr(x)+sqr(y));
 end;
 
-function TPointF.Rotate(angle: single): TPointF;
+function TPointF.Rotate(Aangle: single): TPointF;
 var
   sina, cosa: single;
 begin
-  sincos(angle, sina, cosa);
+  sincos(Aangle, sina, cosa);
   result.x := x * cosa - y * sina;
   result.y := x * sina + y * cosa;
 end;

@@ -84,12 +84,12 @@ type
       FEventReceive : TENetEventRecv;
 
     public
-      constructor Create( Port: Word; bServer: Boolean );
+      constructor Create( APort: Word; bServer: Boolean );
       destructor Destroy(); override;
 
       function InitHost(): Boolean;
       procedure DeinitHost();
-      function Connect( const Host: AnsiString; Port: Word ): Boolean;
+      function Connect( const Host: AnsiString; APort: Word ): Boolean;
       function Disconnect( bNow: Boolean ): Boolean;
       function SendMsg( Channel: Byte; Data: Pointer; Length: Integer;
         flag: TENetPacketFlags; WaitResponse: Boolean = False ): Boolean;
@@ -133,9 +133,9 @@ end;
 
 { TENetClass }
 
-constructor TENetClass.Create( Port: word; bServer: Boolean );
+constructor TENetClass.Create( APort: word; bServer: Boolean );
 begin
-  FAddress.port := Port;
+  FAddress.port := APort;
   FMaxPeer := 100;
   FMaxChannels := 255;
   FBandwidthIncoming := 0;
@@ -188,14 +188,14 @@ begin
   FHost := nil;
 end;
 
-function TENetClass.Connect( const Host: AnsiString; Port: Word ): Boolean;
+function TENetClass.Connect( const Host: AnsiString; APort: Word ): Boolean;
 begin
   Result := False;
   if not FIsServer then begin
     Disconnect(True);
     InitHost();
     enet_address_set_host( @FAddress, PAnsiChar(Host) );
-    FAddress.port := Port;
+    FAddress.port := APort;
 
     FClientData := Random(MaxInt);
     FPeer := enet_host_connect( FHost, @FAddress, FMaxChannels, FClientData );

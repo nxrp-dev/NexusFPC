@@ -298,8 +298,8 @@ type
     FPreamble: string;
     function GetP(AIndex : Integer): TMimeItem;
   Protected
-    Procedure CreateUploadFiles(Files : TUploadedFiles; Vars : TStrings); virtual;
-    procedure FormSplit(var Cnt: RawByteString; const boundary: RawByteString); virtual;
+    Procedure CreateUploadFiles(AFiles : TUploadedFiles; Vars : TStrings); virtual;
+    procedure FormSplit(var Cnt: RawByteString; const aboundary: RawByteString); virtual;
     procedure ProcessStreamingMultiPart(const State: TContentStreamingState; const Buf; const Size: Integer); virtual;
     // With streaming is meant that the incoming data is processed in smaller
     // chunks. To support streaming descendents have to implement
@@ -1960,7 +1960,7 @@ begin
   Result:=TMimeItem(Items[Aindex]);
 end;
 
-procedure TMimeItems.CreateUploadFiles(Files: TUploadedFiles; Vars : TStrings);
+procedure TMimeItems.CreateUploadFiles(AFiles: TUploadedFiles; Vars : TStrings);
 
 Var
   I : Integer;
@@ -1995,9 +1995,9 @@ begin
       begin
       Value:=P.FileName;
       if SupportsStreamingProcessing then
-        P.CreateUploadedFileStreaming(Files)
+        P.CreateUploadedFileStreaming(AFiles)
       else
-        P.CreateUploadedFile(Files);
+        P.CreateUploadedFile(AFiles);
       end;
     Vars.Add(Name+'='+Value)
     end;
@@ -2118,7 +2118,7 @@ end;
   certain size is reached.)
 }
 
-procedure TMimeItems.FormSplit(var Cnt : RawByteString; const boundary: RawByteString);
+procedure TMimeItems.FormSplit(var Cnt : RawByteString; const aboundary: RawByteString);
 
 Const
   DashDash : RawByteString = '--';
@@ -2135,10 +2135,10 @@ var
 
 begin
   {$ifdef CGIDEBUG}SendMethodEnter('TMimeItems.FormSplit');{$ENDIF}
-  FBoundary := boundary;
+  FBoundary := aboundary;
   Sep:=DashDash+boundary+CRLF;
   Slen:=length(Sep);
-  CLen:=Pos(DashDash+Boundary+DashDash,Cnt);
+  CLen:=Pos(DashDash+aBoundary+DashDash,Cnt);
   // Cut last marker
   Cnt:=Copy(Cnt,1,Clen-1);
   // Cut first marker

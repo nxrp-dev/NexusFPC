@@ -2146,7 +2146,7 @@ type
     procedure reply(AService: TODataService; Comment: string);
     procedure replyAll(AService: TODataService; Comment: string);
     procedure forward(AService: TODataService; Comment: string; 
-                 ToRecipients: TrecipientArray);
+                 AToRecipients: TrecipientArray);
     procedure send(AService: TODataService);
     class function ObjectRestKind : String;  Override;
     function attachments(AService: TODataService)
@@ -2580,8 +2580,8 @@ type
     function delta(AService: TODataService) : TdriveItemArray;
     function createLink(AService: TODataService; _type: string; 
                    scope: string) : Tpermission;
-    function copy(AService: TODataService; name: string; 
-             parentReference: TitemReference) : TdriveItem;
+    function copy(AService: TODataService; aname: string; 
+             aparentReference: TitemReference) : TdriveItem;
     class function ObjectRestKind : String;  Override;
     class function ExportPropertyName(const AName: String) : String
                                  ;  Override;
@@ -8020,7 +8020,7 @@ begin
 end;
 
 
-Procedure Tmessage.forward(AService: TODataService; Comment: string; ToRecipients: TrecipientArray); 
+Procedure Tmessage.forward(AService: TODataService; Comment: string; AToRecipients: TrecipientArray); 
 
 Var
   _JSON : TJSONObject;
@@ -8030,7 +8030,7 @@ begin
   _JSON:=TJSONObject.Create;
   try
     _JSON.Add('Comment',Comment);
-    _JSON.Add('ToRecipients',DynArrayToJSONArray(Pointer(ToRecipients),'',Trecipient));
+    _JSON.Add('ToRecipients',DynArrayToJSONArray(Pointer(AToRecipients),'',Trecipient));
     _data:=_JSON.AsJSON;
   finally
     FreeAndNil(_JSON);
@@ -9276,7 +9276,7 @@ begin
 end;
 
 
-Function TdriveItem.copy(AService: TODataService; name: string; parentReference: TitemReference) : TdriveItem; 
+Function TdriveItem.copy(AService: TODataService; aname: string; aparentReference: TitemReference) : TdriveItem; 
 
 Var
   _JSON : TJSONObject;
@@ -9285,8 +9285,8 @@ Var
 begin
   _JSON:=TJSONObject.Create;
   try
-    _JSON.Add('name',name);
-    _JSON.Add('parentReference',parentReference.SaveToJSON);
+    _JSON.Add('name',aname);
+    _JSON.Add('parentReference',aparentReference.SaveToJSON);
     _data:=_JSON.AsJSON;
   finally
     FreeAndNil(_JSON);

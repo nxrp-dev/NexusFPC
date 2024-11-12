@@ -217,7 +217,7 @@ type
     function GetD(aIndex : Integer): TIDLDefinition;
     function GetOwnsDefinitions: Boolean;
   Public
-    Constructor Create(AParent : TIDLDefinition; OwnsDefinitions : Boolean = True); virtual; overload;
+    Constructor Create(AParent : TIDLDefinition; AOwnsDefinitions : Boolean = True); virtual; overload;
     Destructor Destroy; override;
     Procedure Clear;
     function AsString(const aSep, aStart, aEnd, aIndent: String; aFull,
@@ -1474,10 +1474,10 @@ begin
   Result:=FList.Count;
 end;
 
-constructor TIDLDefinitionList.Create(AParent: TIDLDefinition; OwnsDefinitions : Boolean = True);
+constructor TIDLDefinitionList.Create(AParent: TIDLDefinition; AOwnsDefinitions : Boolean = True);
 begin
   FParent:=AParent;
-  FList:=TFPObjectList.Create(OwnsDefinitions);
+  FList:=TFPObjectList.Create(AOwnsDefinitions);
 end;
 
 destructor TIDLDefinitionList.Destroy;

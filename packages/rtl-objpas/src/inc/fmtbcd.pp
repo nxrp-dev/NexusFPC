@@ -894,7 +894,7 @@ IMPLEMENTATION
       FBcd : tBCD;
     PUBLIC
       constructor create;
-      constructor create(const BCD : tBCD);
+      constructor create(const ABCD : tBCD);
       PROPERTY BCD : tBCD Read FBcd Write FBcd;
     end;
 
@@ -4185,10 +4185,10 @@ constructor TFMTBcdVarData.create;
     FBcd:=NullBCD;
   end;
 
-constructor TFMTBcdVarData.create(const BCD : tBCD);
+constructor TFMTBcdVarData.create(const ABCD : tBCD);
   begin
     inherited create;
-    FBcd:=BCD;
+    FBcd:=ABCD;
   end;
 
 function TFMTBcdFactory.GetInstance(const v : TVarData): tObject;

@@ -188,7 +188,7 @@ type
     function GetFirst: T; {$ifdef FGLINLINE} inline; {$endif}
     procedure SetFirst(const Value: T); {$ifdef FGLINLINE} inline; {$endif}
   public
-    constructor Create(FreeObjects: Boolean = True);
+    constructor Create(AFreeObjects: Boolean = True);
     function Add(const Item: T): Integer; {$ifdef FGLINLINE} inline; {$endif}
     function Extract(const Item: T): T; {$ifdef FGLINLINE} inline; {$endif}
     property First: T read GetFirst write SetFirst;
@@ -1072,10 +1072,10 @@ end;
 {*                TFPGObjectList                                            *}
 {****************************************************************************}
 
-constructor TFPGObjectList.Create(FreeObjects: Boolean);
+constructor TFPGObjectList.Create(AFreeObjects: Boolean);
 begin
   inherited Create;
-  FFreeObjects := FreeObjects;
+  FFreeObjects := AFreeObjects;
 end;
 
 procedure TFPGObjectList.CopyItem(Src, Dest: Pointer);
