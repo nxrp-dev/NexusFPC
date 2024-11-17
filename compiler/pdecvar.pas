@@ -1799,6 +1799,9 @@ implementation
 
              read_anon_type(hdef,false,tstoreddef(gendef));
              maybe_guarantee_record_typesym(hdef,symtablestack.top);
+             { inherit non copyability from its children }
+             tdef(recst.defowner).defoptions:=tdef(recst.defowner).defoptions +
+                                              hdef.defoptions*[df_non_copiable,df_non_addrefable];
 {$ifdef wasm}
              if is_wasm_reference_type(hdef) then
                messagepos(typepos,sym_e_wasm_ref_types_cannot_be_used_in_records);

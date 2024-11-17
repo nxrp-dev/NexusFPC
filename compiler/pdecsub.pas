@@ -480,6 +480,11 @@ implementation
              not(varspez in [vs_out,vs_var]) then
             CGMessage(cg_e_file_must_call_by_reference);
 
+          { File types are only allowed for var and out parameters }
+          if (df_non_addrefable in hdef.defoptions) and
+             not(varspez in [vs_out,vs_var,vs_const,vs_constref]) then
+            CGMessage(type_e_assignment_not_allowed);
+
           { Dispinterfaces are restricted to using only automatable types }
           if (pd.typ=procdef) and is_dispinterface(tprocdef(pd).struct) and
              not is_automatable(hdef) then
@@ -1760,6 +1765,22 @@ implementation
               block_type:=bt_body;
               consume(_OPERATOR);
               parse_proc_head(astruct,potype_operator,[],nil,nil,pd);
+              if assigned(pd) and (optoken in [_OP_COPY,_OP_ADDREF]) and
+                 try_to_consume(_EQ) then
+                begin
+                  { deletion of copy or addref operator
+                    class operator copy = nil;
+                  }
+                  if optoken=_OP_COPY then
+                    include(astruct.defoptions,df_non_copiable)
+                  else
+                    include(astruct.defoptions,df_non_addrefable);
+                  pd.owner.deletedef(pd);
+                  consume(_NIL);
+                  consume(_SEMICOLON);
+                  result:=nil;
+                  exit;
+                end;
               block_type:=old_block_type;
               if assigned(pd) then
                 parse_proc_dec_finish(pd,flags,astruct)
