@@ -40,12 +40,8 @@ unit objpas;
 
     { Delphi compatibility }
     type
-      { JVM Notes: constructors with the same parameters cause a runtime crash
-        (even if the names are different) so we cannot use a string }
-      PResStringRec = ^TResStringRec;
-      TResStringRec = record
-        Value: shortstring;
-      end;
+      PResStringRec=^RTLString;
+      TResStringRec=RTLString;
 
   implementation
 

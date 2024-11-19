@@ -20,129 +20,124 @@ unit SysConst;
 
 interface
 
-{ JVM Notes: cpujvm does not support resourcestring (error: this language feature is not supported on managed vm targets) }
-{ JVM Notes: cpujvm cannot take the address of an ansistring or unicodestring (error: illegal expression) }
-{ JVM Notes: cpujvm cannot take the address of an untyped constant (error: can't take the address of constant expressions) }
-{ JVM Notes: cpujvm LineEnding is a variable set at runtime (same compiled bytecode can run on different operating systems) }
-
-{$ifdef FPC_HAS_FEATURE_ANSISTRINGS}
+{$if defined(FPC_HAS_FEATURE_ANSISTRINGS) and not defined(CPUJVM)}
 {$H+}
-{$ifndef CPUJVM}
 resourcestring
-{$else CPUJVM}
+{$else FPC_HAS_FEATURE_ANSISTRINGS and not CPUJVM}
 const
-{$endif}
-{$else FPC_HAS_FEATURE_ANSISTRINGS}
-const
-{$endif FPC_HAS_FEATURE_ANSISTRINGS}
+{$endif FPC_HAS_FEATURE_ANSISTRINGS and not CPUJVM}
 
 { from old str*.inc files }
-  SListIndexError        {$ifdef CPUJVM}: shortstring{$endif} = 'List index (%d) out of bounds';
-  SParamIsNegative       {$ifdef CPUJVM}: shortstring{$endif} = 'Parameter "%s" cannot be negative.';
-  SListCapacityError     {$ifdef CPUJVM}: shortstring{$endif} = 'List capacity (%d) exceeded.';
-  SAbortError            {$ifdef CPUJVM}: shortstring{$endif} = 'Operation aborted';
-  SAbstractError         {$ifdef CPUJVM}: shortstring{$endif} = 'Abstract method called';
-  SAccessDenied          {$ifdef CPUJVM}: shortstring{$endif} = 'Access denied';
-  SAccessViolation       {$ifdef CPUJVM}: shortstring{$endif} = 'Access violation';
-  SArgumentMissing       {$ifdef CPUJVM}: shortstring{$endif} = 'Missing argument in format "%s"';
-  SAssertError           {$ifdef CPUJVM}: shortstring{$endif} = '%s (%s, line %d)';
-  SAssertionFailed       {$ifdef CPUJVM}: shortstring{$endif} = 'Assertion failed';
-  SBusError              {$ifdef CPUJVM}: shortstring{$endif} = 'Bus error or misaligned data access';
-  SCannotCreateEmptyDir  {$ifdef CPUJVM}: shortstring{$endif} = 'Cannot create empty directory';
-  SControlC              {$ifdef CPUJVM}: shortstring{$endif} = 'Control-C hit';
-  SDiskFull              {$ifdef CPUJVM}: shortstring{$endif} = 'Disk Full';
-  SDispatchError         {$ifdef CPUJVM}: shortstring{$endif} = 'No variant method call dispatch';
-  SDivByZero             {$ifdef CPUJVM}: shortstring{$endif} = 'Division by zero';
-  SEndOfFile             {$ifdef CPUJVM}: shortstring{$endif} = 'Read past end of file';
-  SErrPosToBigForLongint {$ifdef CPUJVM}: shortstring{$endif} = 'File position %d too big to fit in 32-bit integer; Use Int64 overload instead';
-  SErrInvalidDateMonthWeek {$ifdef CPUJVM}: shortstring{$endif} = 'Year %d, month %d, Week %d and day %d is not a valid date.';
-  SerrInvalidHourMinuteSecMsec {$ifdef CPUJVM}: shortstring{$endif} = '%d:%d:%d.%d is not a valid time specification';
-  SErrInvalidDateWeek    {$ifdef CPUJVM}: shortstring{$endif} = '%d %d %d is not a valid dateweek';
-  SErrInvalidDayOfWeek   {$ifdef CPUJVM}: shortstring{$endif} = '%d is not a valid day of the week';
-  SErrInvalidDayOfWeekInMonth {$ifdef CPUJVM}: shortstring{$endif} = 'Year %d Month %d NDow %d DOW %d is not a valid date';
-  SErrInvalidDayOfYear   {$ifdef CPUJVM}: shortstring{$endif} = 'Year %d does not have a day number %d';
-  SErrInvalidTimeStamp   {$ifdef CPUJVM}: shortstring{$endif} = 'Invalid date/timestamp : "%s"';
-  SInvalidJulianDate            {$ifdef CPUJVM}: shortstring{$endif} = '%f Julian cannot be represented as a DateTime';
-  SErrIllegalDateFormatString   {$ifdef CPUJVM}: shortstring{$endif} = '"%s" is not a valid date format string';
-  SErrInvalidTimeFormat  {$ifdef CPUJVM}: shortstring{$endif} = '"%s" is not a valid time';
-  SExceptionErrorMessage {$ifdef CPUJVM}: shortstring{$endif} = 'Exception at %p: %s';
-  SExceptionStack        {$ifdef CPUJVM}: shortstring{$endif} = 'Exception stack error';
-  SExecuteProcessFailed  {$ifdef CPUJVM}: shortstring{$endif} = 'Failed to execute "%s", error code: %d';
-  SExternalException     {$ifdef CPUJVM}: shortstring{$endif} = 'External exception %x';
-  SFileNotAssigned       {$ifdef CPUJVM}: shortstring{$endif} = 'File not assigned';
-  SFileNotFound          {$ifdef CPUJVM}: shortstring{$endif} = 'File not found';
-  SFileNotOpen           {$ifdef CPUJVM}: shortstring{$endif} = 'File not open';
-  SFileNotOpenForInput   {$ifdef CPUJVM}: shortstring{$endif} = 'File not open for input';
-  SFileNotOpenForOutput  {$ifdef CPUJVM}: shortstring{$endif} = 'File not open for output';
-  SInValidFileName       {$ifdef CPUJVM}: shortstring{$endif} = 'Invalid filename';
-  SIntOverflow           {$ifdef CPUJVM}: shortstring{$endif} = 'Arithmetic overflow';
-  SIntfCastError         {$ifdef CPUJVM}: shortstring{$endif} = 'Interface not supported';
-  SInvalidArgIndex       {$ifdef CPUJVM}: shortstring{$endif} = 'Invalid argument index in format "%s"';
-  SInvalidBCD            {$ifdef CPUJVM}: shortstring{$endif} = '%x is an invalid BCD value';
-  SInvalidBoolean        {$ifdef CPUJVM}: shortstring{$endif} = '"%s" is not a valid boolean.';
-  SInvalidCast           {$ifdef CPUJVM}: shortstring{$endif} = 'Invalid type cast';
-  SinvalidCurrency       {$ifdef CPUJVM}: shortstring{$endif} = 'Invalid currency: "%s"';
-  SInvalidDateTime       {$ifdef CPUJVM}: shortstring{$endif} = '"%s" is not a valid date/time value.';
-  SInvalidDateTimeFloat  {$ifdef CPUJVM}: shortstring{$endif} = '%f is not a valid date/time value.';
-  SInvalidDrive          {$ifdef CPUJVM}: shortstring{$endif} = 'Invalid drive specified';
-  SInvalidFileHandle     {$ifdef CPUJVM}: shortstring{$endif} = 'Invalid file handle';
-  SInvalidFloat          {$ifdef CPUJVM}: shortstring{$endif} = '"%s" is an invalid float';
-  SInvalidFormat         {$ifdef CPUJVM}: shortstring{$endif} = 'Invalid format specifier : "%s"';
-  SInvalidGUID           {$ifdef CPUJVM}: shortstring{$endif} = '"%s" is not a valid GUID value';
-  SInvalidInput          {$ifdef CPUJVM}: shortstring{$endif} = 'Invalid input';
-  SInvalidInteger        {$ifdef CPUJVM}: shortstring{$endif} = '"%s" is an invalid integer';
-  SInvalidOp             {$ifdef CPUJVM}: shortstring{$endif} = 'Invalid floating point operation';
-  SInvalidPointer        {$ifdef CPUJVM}: shortstring{$endif} = 'Invalid pointer operation';
-  SInvalidVarCast        {$ifdef CPUJVM}: shortstring{$endif} = 'Invalid variant type cast';
-  SInvalidVarNullOp      {$ifdef CPUJVM}: shortstring{$endif} = 'Invalid NULL variant operation';
-  SInvalidVarOp          {$ifdef CPUJVM}: shortstring{$endif} = 'Invalid variant operation';
-  SInvalidBinaryVarOp    {$ifdef CPUJVM}: shortstring{$endif} = 'Invalid variant operation %s %s %s';
-  SInvalidUnaryVarOp     {$ifdef CPUJVM}: shortstring{$endif} = 'Invalid variant operation %s %s';
-  SInvalidVarOpWithHResultWithPrefix {$ifdef CPUJVM}: shortstring{$endif} = 'Invalid variant operation (%s%.8x)'+LineEnding+'%s';
-  SNoError               {$ifdef CPUJVM}: shortstring{$endif} = 'No error.';
-  SNoThreadSupport       {$ifdef CPUJVM}: shortstring{$endif} = 'Threads not supported. Recompile program with thread driver.';
-  SNoDynLibsSupport      {$ifdef CPUJVM}: shortstring{$endif} = 'Dynamic libraries not supported. Recompile program with dynamic library driver.';
-  SMissingWStringManager {$ifdef CPUJVM}: shortstring{$endif} = 'Widestring manager not available. Recompile program with appropriate manager.';
-  SSigQuit               {$ifdef CPUJVM}: shortstring{$endif} = 'SIGQUIT signal received.';
-  SObjectCheckError      {$ifdef CPUJVM}: shortstring{$endif} = 'Object reference is Nil or VMT is damaged';
-  SOSError               {$ifdef CPUJVM}: shortstring{$endif} = 'System error, (OS Code %d):'+LineEnding+'%s';
-  SOutOfMemory           {$ifdef CPUJVM}: shortstring{$endif} = 'Out of memory';
-  SOverflow              {$ifdef CPUJVM}: shortstring{$endif} = 'Floating point overflow';
-  SPrivilege             {$ifdef CPUJVM}: shortstring{$endif} = 'Privileged instruction';
-  SRangeError            {$ifdef CPUJVM}: shortstring{$endif} = 'Range check error';
-  SStackOverflow         {$ifdef CPUJVM}: shortstring{$endif} = 'Stack overflow or stack misalignment';
-  SSafecallException     {$ifdef CPUJVM}: shortstring{$endif} = 'Exception in safecall method';
-  SiconvError            {$ifdef CPUJVM}: shortstring{$endif} = 'iconv error';
-  SThreadError           {$ifdef CPUJVM}: shortstring{$endif} = 'Thread error';
-  SSeekFailed            {$ifdef CPUJVM}: shortstring{$endif} = 'Seek operation failed';
+  SListIndexError        = 'List index (%d) out of bounds';
+  SParamIsNegative       = 'Parameter "%s" cannot be negative.';
+  SListCapacityError     = 'List capacity (%d) exceeded.';
+  SAbortError            = 'Operation aborted';
+  SAbstractError         = 'Abstract method called';
+  SAccessDenied          = 'Access denied';
+  SAccessViolation       = 'Access violation';
+  SArgumentMissing       = 'Missing argument in format "%s"';
+  SAssertError           = '%s (%s, line %d)';
+  SAssertionFailed       = 'Assertion failed';
+  SBusError              = 'Bus error or misaligned data access';
+  SCannotCreateEmptyDir  = 'Cannot create empty directory';
+  SControlC              = 'Control-C hit';
+  SDiskFull              = 'Disk Full';
+  SDispatchError         = 'No variant method call dispatch';
+  SDivByZero             = 'Division by zero';
+  SEndOfFile             = 'Read past end of file';
+  SErrPosToBigForLongint = 'File position %d too big to fit in 32-bit integer; Use Int64 overload instead';
+  SErrInvalidDateMonthWeek = 'Year %d, month %d, Week %d and day %d is not a valid date.';
+  SerrInvalidHourMinuteSecMsec = '%d:%d:%d.%d is not a valid time specification';
+  SErrInvalidDateWeek    = '%d %d %d is not a valid dateweek';
+  SErrInvalidDayOfWeek   = '%d is not a valid day of the week';
+  SErrInvalidDayOfWeekInMonth = 'Year %d Month %d NDow %d DOW %d is not a valid date';
+  SErrInvalidDayOfYear   = 'Year %d does not have a day number %d';
+  SErrInvalidTimeStamp   = 'Invalid date/timestamp : "%s"';
+  SInvalidJulianDate            = '%f Julian cannot be represented as a DateTime';
+  SErrIllegalDateFormatString   = '"%s" is not a valid date format string';
+  SErrInvalidTimeFormat  = '"%s" is not a valid time';
+  SExceptionErrorMessage = 'Exception at %p: %s';
+  SExceptionStack        = 'Exception stack error';
+  SExecuteProcessFailed  = 'Failed to execute "%s", error code: %d';
+  SExternalException     = 'External exception %x';
+  SFileNotAssigned       = 'File not assigned';
+  SFileNotFound          = 'File not found';
+  SFileNotOpen           = 'File not open';
+  SFileNotOpenForInput   = 'File not open for input';
+  SFileNotOpenForOutput  = 'File not open for output';
+  SInValidFileName       = 'Invalid filename';
+  SIntOverflow           = 'Arithmetic overflow';
+  SIntfCastError         = 'Interface not supported';
+  SInvalidArgIndex       = 'Invalid argument index in format "%s"';
+  SInvalidBCD            = '%x is an invalid BCD value';
+  SInvalidBoolean        = '"%s" is not a valid boolean.';
+  SInvalidCast           = 'Invalid type cast';
+  SinvalidCurrency       = 'Invalid currency: "%s"';
+  SInvalidDateTime       = '"%s" is not a valid date/time value.';
+  SInvalidDateTimeFloat  = '%f is not a valid date/time value.';
+  SInvalidDrive          = 'Invalid drive specified';
+  SInvalidFileHandle     = 'Invalid file handle';
+  SInvalidFloat          = '"%s" is an invalid float';
+  SInvalidFormat         = 'Invalid format specifier : "%s"';
+  SInvalidGUID           = '"%s" is not a valid GUID value';
+  SInvalidInput          = 'Invalid input';
+  SInvalidInteger        = '"%s" is an invalid integer';
+  SInvalidOp             = 'Invalid floating point operation';
+  SInvalidPointer        = 'Invalid pointer operation';
+  SInvalidVarCast        = 'Invalid variant type cast';
+  SInvalidVarNullOp      = 'Invalid NULL variant operation';
+  SInvalidVarOp          = 'Invalid variant operation';
+  SInvalidBinaryVarOp    = 'Invalid variant operation %s %s %s';
+  SInvalidUnaryVarOp     = 'Invalid variant operation %s %s';
+{$ifndef CPUJVM}
+  SInvalidVarOpWithHResultWithPrefix = 'Invalid variant operation (%s%.8x)'+LineEnding+'%s';
+{$endif CPUJVM}
+  SNoError               = 'No error.';
+  SNoThreadSupport       = 'Threads not supported. Recompile program with thread driver.';
+  SNoDynLibsSupport      = 'Dynamic libraries not supported. Recompile program with dynamic library driver.';
+  SMissingWStringManager = 'Widestring manager not available. Recompile program with appropriate manager.';
+  SSigQuit               = 'SIGQUIT signal received.';
+  SObjectCheckError      = 'Object reference is Nil or VMT is damaged';
+{$ifndef CPUJVM}
+  SOSError               = 'System error, (OS Code %d):'+LineEnding+'%s';
+{$endif CPUJVM}
+  SOutOfMemory           = 'Out of memory';
+  SOverflow              = 'Floating point overflow';
+  SPrivilege             = 'Privileged instruction';
+  SRangeError            = 'Range check error';
+  SStackOverflow         = 'Stack overflow or stack misalignment';
+  SSafecallException     = 'Exception in safecall method';
+  SiconvError            = 'iconv error';
+  SThreadError           = 'Thread error';
+  SSeekFailed            = 'Seek operation failed';
 
-  STooManyOpenFiles      {$ifdef CPUJVM}: shortstring{$endif} = 'Too many open files';
-  SUnKnownRunTimeError   {$ifdef CPUJVM}: shortstring{$endif} = 'Unknown Run-Time error : %3.3d';
-  SUnderflow             {$ifdef CPUJVM}: shortstring{$endif} = 'Floating point underflow';
-  SUnkOSError            {$ifdef CPUJVM}: shortstring{$endif} = 'An operating system call failed.';
-  SUnknown               {$ifdef CPUJVM}: shortstring{$endif} = 'Unknown run-time error code: ';
-  SUnknownErrorCode      {$ifdef CPUJVM}: shortstring{$endif} = 'Unknown error code: %d';
-  SVarArrayBounds        {$ifdef CPUJVM}: shortstring{$endif} = 'Variant array bounds error';
-  SVarArrayCreate        {$ifdef CPUJVM}: shortstring{$endif} = 'Variant array cannot be created';
-  SVarArrayLocked        {$ifdef CPUJVM}: shortstring{$endif} = 'Variant array locked';
-  SVarBadType            {$ifdef CPUJVM}: shortstring{$endif} = 'Invalid variant type';
-  SVarInvalid            {$ifdef CPUJVM}: shortstring{$endif} = 'Invalid argument';
-  SVarInvalid1           {$ifdef CPUJVM}: shortstring{$endif} = 'Invalid argument: %s';
-  SVarNotArray           {$ifdef CPUJVM}: shortstring{$endif} = 'Variant doesn''t contain an array';
-  SVarNotImplemented     {$ifdef CPUJVM}: shortstring{$endif} = 'Operation not supported';
-  SVarOutOfMemory        {$ifdef CPUJVM}: shortstring{$endif} = 'Variant operation ran out memory';
-  SVarOverflow           {$ifdef CPUJVM}: shortstring{$endif} = 'Variant overflow';
-  SVarParamNotFound      {$ifdef CPUJVM}: shortstring{$endif} = 'Variant Parameter not found';
-  SVarTypeAlreadyUsedWithPrefix {$ifdef CPUJVM}: shortstring{$endif} = 'Custom variant type (%s%.4x) already used by %s';
-  SVarTypeConvertOverflow       {$ifdef CPUJVM}: shortstring{$endif} = 'Overflow while converting variant of type (%s) into type (%s)';
-  SVarTypeCouldNotConvert       {$ifdef CPUJVM}: shortstring{$endif} = 'Could not convert variant of type (%s) into type (%s)';
-  SVarTypeNotUsableWithPrefix   {$ifdef CPUJVM}: shortstring{$endif} = 'Custom variant type (%s%.4x) is not usable';
-  SVarTypeOutOfRangeWithPrefix  {$ifdef CPUJVM}: shortstring{$endif} = 'Custom variant type (%s%.4x) is out of range';
-  SVarTypeRangeCheck1           {$ifdef CPUJVM}: shortstring{$endif} = 'Range check error for variant of type (%s)';
-  SVarTypeRangeCheck2           {$ifdef CPUJVM}: shortstring{$endif} = 'Range check error while converting variant of type (%s) into type (%s)';
-  SVarTypeTooManyCustom         {$ifdef CPUJVM}: shortstring{$endif} = 'Too many custom variant types have been registered';
-  SVarUnexpected                {$ifdef CPUJVM}: shortstring{$endif} = 'Unexpected variant error';
-  SZeroDivide                   {$ifdef CPUJVM}: shortstring{$endif} = 'Floating point division by zero';
+  STooManyOpenFiles      = 'Too many open files';
+  SUnKnownRunTimeError   = 'Unknown Run-Time error : %3.3d';
+  SUnderflow             = 'Floating point underflow';
+  SUnkOSError            = 'An operating system call failed.';
+  SUnknown               = 'Unknown run-time error code: ';
+  SUnknownErrorCode      = 'Unknown error code: %d';
+  SVarArrayBounds        = 'Variant array bounds error';
+  SVarArrayCreate        = 'Variant array cannot be created';
+  SVarArrayLocked        = 'Variant array locked';
+  SVarBadType            = 'Invalid variant type';
+  SVarInvalid            = 'Invalid argument';
+  SVarInvalid1           = 'Invalid argument: %s';
+  SVarNotArray           = 'Variant doesn''t contain an array';
+  SVarNotImplemented     = 'Operation not supported';
+  SVarOutOfMemory        = 'Variant operation ran out memory';
+  SVarOverflow           = 'Variant overflow';
+  SVarParamNotFound      = 'Variant Parameter not found';
+  SVarTypeAlreadyUsedWithPrefix = 'Custom variant type (%s%.4x) already used by %s';
+  SVarTypeConvertOverflow       = 'Overflow while converting variant of type (%s) into type (%s)';
+  SVarTypeCouldNotConvert       = 'Could not convert variant of type (%s) into type (%s)';
+  SVarTypeNotUsableWithPrefix   = 'Custom variant type (%s%.4x) is not usable';
+  SVarTypeOutOfRangeWithPrefix  = 'Custom variant type (%s%.4x) is out of range';
+  SVarTypeRangeCheck1           = 'Range check error for variant of type (%s)';
+  SVarTypeRangeCheck2           = 'Range check error while converting variant of type (%s) into type (%s)';
+  SVarTypeTooManyCustom         = 'Too many custom variant types have been registered';
+  SVarUnexpected                = 'Unexpected variant error';
+  SZeroDivide                   = 'Floating point division by zero';
 
   SFallbackError                = 'An error, whose error code is larger than can be returned to the OS, has occurred';
 

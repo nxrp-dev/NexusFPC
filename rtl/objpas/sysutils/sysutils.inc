@@ -13,13 +13,10 @@
 
  **********************************************************************}
 
-{$ifndef CPUJVM}
   { MCBS functions }
   {$i sysansi.inc}
   {$i syscodepages.inc}
-{$endif CPUJVM}
 
-{$ifndef CPUJVM}
 {$macro on}
 {$define PathStr:=UnicodeString}
 {$define PathPChar:=PUnicodeChar}
@@ -37,31 +34,21 @@
   {$i disk.inc}
 {$undef PathStr}
 {$undef PathPChar}
-{$endif CPUJVM}
 
-{$ifndef CPUJVM}
   { Read file utility functions implementation }
   {$i filutil.inc}
-{$endif CPUJVM}
 
-{$ifndef CPUJVM}
   { variant error codes }
   {$i varerror.inc}
-{$endif CPUJVM}
 
-{$ifndef CPUJVM}
   { Type helpers}
   {$i syshelp.inc}
-{$endif CPUJVM}
 
-{$ifndef CPUJVM}
 {$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
   { strange Delphi thing }
   {$i sysmarshal.inc}
 {$ENDIF}
-{$endif CPUJVM}
 
-{$ifndef CPUJVM}
   {$ifndef OS_FILEISREADONLY}
   Function FileIsReadOnly(const FileName: RawByteString): Boolean;
   begin
@@ -118,19 +105,14 @@
   {$endif}
   end;
   {$endif}
-{$endif CPUJVM}
 
-{$ifndef CPUJVM}
   { Read String Handling functions implementation }
   {$i sysstr.inc}
-{$endif CPUJVM}
 
-{$ifndef CPUJVM}
   { Read date & Time function implementations }
 {$ifndef FPUNONE}
   {$i dati.inc}
 {$endif}
-{$endif CPUJVM}
 
 {$IFNDEF HAS_GETTICKCOUNT}
 function GetTickCount: LongWord;
@@ -154,40 +136,27 @@ begin
 end;
 {$ENDIF}
 
-{$ifndef CPUJVM}
   { Read PAnsiChar handling functions implementation }
   {$i syspch.inc}
-{$endif CPUJVM}
 
-{$ifndef CPUJVM}
   { generic internationalisation code }
   {$i sysint.inc}
-{$endif CPUJVM}
 
-{$ifndef CPUJVM}
   { wide string functions }
   {$i syswide.inc}
-{$endif CPUJVM}
 
-{$ifndef CPUJVM}
 {$ifdef FPC_HAS_UNICODESTRING}
   { unicode string functions }
   {$i sysuni.inc}
   {$i sysencoding.inc}
 {$endif FPC_HAS_UNICODESTRING}
-{$endif CPUJVM}
 
-{$ifndef CPUJVM}
   { threading stuff }
   {$i sysuthrd.inc}
-{$endif CPUJVM}
 
-{$ifndef CPUJVM}
   { OS utility code }
   {$i osutil.inc}
-{$endif CPUJVM}
 
-{$ifndef CPUJVM}
     procedure FreeAndNil(var obj);
       var
         temp: tobject;
@@ -196,9 +165,7 @@ end;
         pointer(obj):=nil;
         temp.free;
       end;
-{$endif CPUJVM}
 
-{$ifndef CPUJVM}
     procedure FreeMemAndNil(var p);
 
     var
@@ -208,41 +175,14 @@ end;
       Pointer(P):=nil;
       FreeMem(temp);
     end;
-{$endif CPUJVM}
 
-{$ifndef CPUJVM}
   { Interfaces support }
   {$i sysuintf.inc}
-{$endif CPUJVM}
-
-{$ifdef CPUJVM}
-    function Format(const Fmt : string; const Args : array of const): string; unimplemented;
-      { placeholder function as format is not implemented }
-      var
-        arr : Arr1JLObject;
-        index : longint;
-      begin
-        arr:=nil;
-        setlength(arr,length(Args));
-        for index:=0 to high(Args) do
-          arr[index]:=Args[index].value;
-        try
-          result:=JLString.format(Fmt,arr);
-        except
-          result:=Fmt;
-        end;
-      end;
-{$endif CPUJVM}
-
 
     constructor Exception.Create(const msg : string);
 
       begin
-{$ifndef CPUJVM}
          inherited create;
-{$else CPUJVM}
-         inherited create(unicodestring(msg));
-{$endif CPUJVM}
          fmessage:=msg;
       end;
 
@@ -250,11 +190,7 @@ end;
     constructor Exception.CreateFmt(const msg : string; const args : array of const);
 
       begin
-{$ifndef CPUJVM}
          inherited create;
-{$else CPUJVM}
-         inherited create(unicodestring(msg));
-{$endif CPUJVM}
          fmessage:=Format(msg,args);
       end;
 
@@ -262,11 +198,7 @@ end;
     constructor Exception.CreateRes(ResString: PResStringRec);
 
       begin
-{$ifndef CPUJVM}
          inherited create;
-{$else CPUJVM}
-         inherited create(unicodestring(ResString^.Value));
-{$endif CPUJVM}
          fmessage:=ResString^;
       end;
 
@@ -274,11 +206,7 @@ end;
     constructor Exception.CreateResFmt(ResString: PResStringRec; const Args: array of const);
 
       begin
-{$ifndef CPUJVM}
          inherited create;
-{$else CPUJVM}
-         inherited create(unicodestring(ResString^.Value));
-{$endif CPUJVM}
          fmessage:=Format(ResString^,args);
       end;
 
@@ -286,11 +214,7 @@ end;
     constructor Exception.CreateHelp(const Msg: string; AHelpContext: Longint);
 
       begin
-{$ifndef CPUJVM}
          inherited create;
-{$else CPUJVM}
-         inherited create(unicodestring(msg));
-{$endif CPUJVM}
          fmessage:=Msg;
          fhelpcontext:=AHelpContext;
       end;
@@ -300,11 +224,7 @@ end;
       AHelpContext: Longint);
 
     begin
-{$ifndef CPUJVM}
        inherited create;
-{$else CPUJVM}
-       inherited create(unicodestring(msg));
-{$endif CPUJVM}
        fmessage:=Format(Msg,args);
        fhelpcontext:=AHelpContext;
     end;
@@ -313,11 +233,7 @@ end;
     constructor Exception.CreateResHelp(ResString: PResStringRec; AHelpContext: Longint);
 
     begin
-{$ifndef CPUJVM}
        inherited create;
-{$else CPUJVM}
-       inherited create(unicodestring(ResString^.Value));
-{$endif CPUJVM}
        fmessage:=ResString^;
        fhelpcontext:=AHelpContext;
     end;
@@ -327,11 +243,7 @@ end;
       AHelpContext: Longint);
 
     begin
-{$ifndef CPUJVM}
        inherited create;
-{$else CPUJVM}
-       inherited create(unicodestring(ResString^.Value));
-{$endif CPUJVM}
        fmessage:=Format(ResString^,args);
        fhelpcontext:=AHelpContext;
     end;
@@ -341,20 +253,17 @@ end;
       Result:=ClassName+': '+Message;
     end;
 
-{$ifndef CPUJVM}
     procedure EHeapMemoryError.FreeInstance;
     begin
        if AllowFree then
         inherited FreeInstance;
     end;
-{$endif CPUJVM}
 
 
     function Exception.GetBaseException : Exception;
       var
         _ExceptObjectStack : PExceptObject;
       begin
-        result:=nil;
         _ExceptObjectStack:=RaiseList;
         While Assigned(_ExceptObjectStack) do
           begin
@@ -364,7 +273,6 @@ end;
       end;
 
 
-{$ifndef CPUJVM}
     Constructor EVariantError.CreateCode (Code : longint);
     begin
        case Code of
@@ -396,10 +304,8 @@ end;
        end;
        ErrCode:=Code;
     end;
-{$endif CPUJVM}
 
 
-{$ifndef CPUJVM}
 constructor EInOutArgumentException.Create(const aMsg, aPath: string); overload;
 
 begin
@@ -420,7 +326,6 @@ begin
   Path:=aPath;
   inherited CreateFmt(fmt,args);
 end;
-{$endif CPUJVM}
 
 {$if defined(win32) or defined(win64) or defined (wince)}
 function EExternal.GetExceptionRecord: PExceptionRecord;
@@ -432,36 +337,35 @@ end;
 
 {$push}
 {$S-}
-{ JVM Notes: cpujvm does not allow ptext with writeln (error: illegal expression) }
-Procedure CatchUnhandledException (Obj : TObject; Addr: CodePointer; FrameCount: Longint; Frames: {$ifndef CPUJVM}PCodePointer{$else}Pointer{$endif});[public,alias:'FPC_BREAK_UNHANDLED_EXCEPTION'];
+Procedure CatchUnhandledException (Obj : TObject; Addr: CodePointer; FrameCount: Longint; Frames: PCodePointer);[public,alias:'FPC_BREAK_UNHANDLED_EXCEPTION'];
 Var
   i : longint;
-  hstdout : {$ifndef CPUJVM}ptext{$else}text{$endif};
+  hstdout : ^text;
 
 begin
   if WriteErrorsToStdErr then
-    hstdout:={$ifndef CPUJVM}@stderr{$else}stderr{$endif}
+    hstdout:=@stderr
   else
-    hstdout:={$ifndef CPUJVM}@stdout{$else}stdout{$endif};
-  Writeln({$ifndef CPUJVM}hstdout^{$else}hstdout{$endif},'An unhandled exception occurred at $',HexStr(Addr),':');
+    hstdout:=@stdout;
+  Writeln(hstdout^,'An unhandled exception occurred at $',HexStr(Addr),':');
   if Obj is exception then
-    Writeln({$ifndef CPUJVM}hstdout^{$else}hstdout{$endif},Obj.ClassName,': ',Exception(Obj).Message)
+    Writeln(hstdout^,Obj.ClassName,': ',Exception(Obj).Message)
   else if Obj is TObject then
-    Writeln({$ifndef CPUJVM}hstdout^{$else}hstdout{$endif},'Exception object ',Obj.ClassName,' is not of class Exception.')
+    Writeln(hstdout^,'Exception object ',Obj.ClassName,' is not of class Exception.')
   else
-    Writeln({$ifndef CPUJVM}hstdout^{$else}hstdout{$endif},'Exception object is not a valid class.');
+    Writeln(hstdout^,'Exception object is not a valid class.');
 {$IFDEF HAS_OSERROR}
  {$IFDEF DEBUG_EXCEPTIONS_LASTOSERROR}
-  WriteLn ({$ifndef CPUJVM}HStdOut^{$else}HStdOut{$endif}, 'Last OS error detected in the RTL: ', GetLastOSError);
+  WriteLn (HStdOut^, 'Last OS error detected in the RTL: ', GetLastOSError);
  {$ENDIF DEBUG_EXCEPTIONS_LASTOSERROR}
 {$ENDIF HAS_OSERROR}
-  Writeln({$ifndef CPUJVM}hstdout^{$else}hstdout{$endif},BackTraceStrFunc(Addr));
+  Writeln(hstdout^,BackTraceStrFunc(Addr));
   if (FrameCount>0) then
     begin
       for i:=0 to FrameCount-1 do
-        Writeln({$ifndef CPUJVM}hstdout^{$else}hstdout{$endif},BackTraceStrFunc(PCodePointer(Frames)[i]));
+        Writeln(hstdout^,BackTraceStrFunc(Frames[i]));
     end;
-  Writeln({$ifndef CPUJVM}hstdout^{$else}hstdout{$endif},'');
+  Writeln(hstdout^,'');
 end;
 
 type
@@ -470,10 +374,9 @@ type
     code: byte;
     cls:  ExceptClass;
 {$IFDEF FPC_HAS_FEATURE_RESOURCES}  // This is necessary for 2.4.4, which does not have reasources as a separate feature
-    msg:  {$ifndef CPUJVM}PResStringRec{$else}PShortString{$endif};
+    msg:  PResStringRec;
 {$else FPC_HAS_FEATURE_RESOURCES}
-    { JVM Notes: cpujvm cannot take the address of an ansistring }
-    msg:  {$ifndef CPUJVM}PAnsiString{$else}PShortString{$endif};
+    msg:  PAnsiString;
 {$endif FPC_HAS_FEATURE_RESOURCES}
   end;
 
@@ -526,48 +429,6 @@ begin
   result:=nil;
 end;
 
-{$ifdef CPUJVM}
-{JVM Notes: using a case statement to avoid using virtual constructors on Exception (as this produces so many generated classes it crashes make)}
-function CreateRes(Entry : PExceptMapEntry): Exception;
-begin
-  case Entry^.code of
-    200 : result:=EDivByZero.CreateRes(Entry^.msg);
-    201 : result:=ERangeError.CreateRes(Entry^.msg);
-    202 : result:=EStackOverflow.CreateRes(Entry^.msg);
-    205 : result:=EOverflow.CreateRes(Entry^.msg);
-    206 : result:=EUnderflow.CreateRes(Entry^.msg);
-    207 : result:=EInvalidOp.CreateRes(Entry^.msg);
-    208 : result:=EZeroDivide.CreateRes(Entry^.msg);
-    210 : result:=EObjectCheck.CreateRes(Entry^.msg);
-    211 : result:=EAbstractError.CreateRes(Entry^.msg);
-    212 : result:=EExternalException.CreateRes(Entry^.msg);
-    214 : result:=EBusError.CreateRes(Entry^.msg);
-    215 : result:=EIntOverflow.CreateRes(Entry^.msg);
-    216 : result:=EAccessViolation.CreateRes(Entry^.msg);
-    217 : result:=EControlC.CreateRes(Entry^.msg);
-    218 : result:=EPrivilege.CreateRes(Entry^.msg);
-    219 : result:=EInvalidCast.CreateRes(Entry^.msg);
-    220 : result:=EVariantError.CreateRes(Entry^.msg);
-    221 : result:=EVariantError.CreateRes(Entry^.msg);
-    222 : result:=EVariantError.CreateRes(Entry^.msg);
-    223 : result:=EVariantError.CreateRes(Entry^.msg);
-    224 : result:=EVariantError.CreateRes(Entry^.msg);
-    225 : result:=EVariantError.CreateRes(Entry^.msg);
-    227 : result:=EAssertionFailed.CreateRes(Entry^.msg);
-    228 : result:=EIntfCastError.CreateRes(Entry^.msg);
-    229 : result:=ESafecallException.CreateRes(Entry^.msg);
-    231 : result:=EConvertError.CreateRes(Entry^.msg);
-    232 : result:=ENoThreadSupport.CreateRes(Entry^.msg);
-    233 : result:=ESigQuit.CreateRes(Entry^.msg);
-    234 : result:=ENoWideStringSupport.CreateRes(Entry^.msg);
-    235 : result:=ENoDynLibsSupport.CreateRes(Entry^.msg);
-    236 : result:=EThreadError.CreateRes(Entry^.msg);
-  else
-    result:=nil;
-  end;
-end;
-{$endif}
-
 Var OutOfMemory : EOutOfMemory;
     InValidPointer : EInvalidPointer;
 
@@ -578,18 +439,13 @@ var
   HS: PResStringRec;
   Entry: PExceptMapEntry;
 begin
-  E:=nil;
   Case Errno of
    1,203 : E:=OutOfMemory;
    204 : E:=InvalidPointer;
   else
     Entry:=FindExceptMapEntry(ErrNo);
     if Assigned(Entry) then
-{$ifndef CPUJVM}
       E:=Entry^.cls.CreateRes(Entry^.msg)
-{$else CPUJVM}
-      E:=CreateRes(Entry)
-{$endif CPUJVM}
     else
     begin
      HS:=nil;
@@ -622,15 +478,9 @@ begin
      inoutres:=0;
      end;
   end;
-  {$ifndef CPUJVM}
   Raise E at Address,Frame;
-  {$else CPUJVM}
-  { JVM Notes: cannot raise a new exception or the jvm bypasses our handler to prevent recursion }
-  fpc_RaiseException(E, Address, Frame);
-  {$endif}
 end;
 
-{$ifndef CPUJVM}
 {$IFDEF HAS_OSERROR}
 Procedure RaiseLastOSError;overload;
 begin
@@ -661,15 +511,12 @@ begin
 end;
 
 {$endif}
-{$endif CPUJVM}
 
-{$ifndef CPUJVM}
 procedure CheckOSError(LastError: Integer);
 begin
   if LastError <> 0 then
     RaiseLastOSError(LastError);
 end;
-{$endif CPUJVM}
 
 Procedure AssertErrorHandler (Const Msg,FN : ShortString;LineNo:longint; TheAddr : pointer);
 Var
@@ -679,18 +526,16 @@ begin
     S:=SAssertionFailed
   else
     S:=Msg;
-  Raise EAssertionFailed.Createfmt(SAssertError,[S,Fn,LineNo]) {$ifndef CPUJVM}at get_caller_addr(theAddr), get_caller_frame(theAddr);{$endif CPUJVM}
+  Raise EAssertionFailed.Createfmt(SAssertError,[S,Fn,LineNo]) at get_caller_addr(theAddr), get_caller_frame(theAddr);
 end;
 
 {$pop} //{$S-} for Error handling functions
 
-{$ifndef CPUJVM}
 procedure RangeIndexError(aIndex, aMaxIndex: SizeInt; aListObj: TObject);
 
 begin
   raise ERangeError.Create(ListIndexErrorMsg(aIndex,aMaxIndex,aListObj));
 end;
-{$endif CPUJVM}
 
 Procedure InitExceptions;
 {
@@ -712,7 +557,6 @@ begin
 end;
 
 
-{$ifndef CPUJVM}
 Procedure DoneExceptions;
 begin
   OutOfMemory.AllowFree:=true;
@@ -720,12 +564,10 @@ begin
   InValidPointer.AllowFree:=true;
   InValidPointer.Free;
 end;
-{$endif CPUJVM}
 
 
 { Exception handling routines }
 
-{$ifndef CPUJVM}
 function ExceptObject: TObject;
 
 begin
@@ -849,14 +691,12 @@ begin
     aClassName:='<nil>';
   Raise EListError.CreateFmt(SErrListIndexExt,[aIndex,aClassName,aMax])
 end;
-{$endif CPUJVM}
 
 
 { ---------------------------------------------------------------------
     Initialization/Finalization/exit code
   ---------------------------------------------------------------------}
 
-{$ifndef CPUJVM}
 Type
   PPRecord = ^TPRecord;
   TPRecord = Record
@@ -909,24 +749,20 @@ begin
     TPR1 := TPR2;
   end;
 end;
-{$endif CPUJVM}
 
 { ---------------------------------------------------------------------
     Diskh functions, OS independent.
   ---------------------------------------------------------------------}
 
-{$ifndef CPUJVM}
 Function GetCurrentDir: {$ifdef FPC_UNICODE_RTL}UnicodeString{$else}AnsiString{$endif};
 begin
   GetDir(0,Result);
 end;
-{$endif CPUJVM}
 
 { ---------------------------------------------------------------------
     Other functions, OS independent.
   ---------------------------------------------------------------------}
 
-{$ifndef CPUJVM}
 Var
   GUIDCalledRandomize : Boolean = False;
 
@@ -1449,5 +1285,4 @@ begin
   Result:=FFull;
 end;
 
-{$endif CPUJVM}
 

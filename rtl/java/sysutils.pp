@@ -23,21 +23,9 @@ interface
 {$namespace org.freepascal.rtl}
 
 { Include platform independent interface part }
-{$i sysutilh.inc}
-
-{****************************************************************************
-                             Resource strings.
-****************************************************************************}
-
-operator:=(AString : PShortString): PResStringRec;
-
-
-{*************************************************************************
-                                   Sleep
-*************************************************************************}
+{$i jsysutilh.inc}
 
 procedure Sleep(Milliseconds: Cardinal);
-
 
 implementation
 
@@ -55,24 +43,6 @@ type
   _JLThread = class external 'java.lang' name 'Thread' (JLObject)
   public
     class procedure sleep(para1: jlong); static; overload;
-  end;
-
-
-{****************************************************************************
-                             Resource strings.
-****************************************************************************}
-
-operator:=(AString : PShortString): PResStringRec;
-  var
-    ResStringRec: TResStringRec;
-  begin
-    ResStringRec.Value:=AString^;
-    Result:=@ResStringRec;
-  end;
-
-operator:=(AResString : TResStringRec): string;
-  begin
-    result:=string(AResString.Value);
   end;
 
 
@@ -100,7 +70,7 @@ procedure Sleep(Milliseconds: Cardinal);
                               Cross-Platform Functions
 ****************************************************************************}
 
-{$i sysutils.inc}
+{$i jsysutils.inc}
 
 
 {****************************************************************************
