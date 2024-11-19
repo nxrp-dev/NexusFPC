@@ -2,6 +2,12 @@
 type
   //Obsolete types, kept for backwards compatibility
   TResourceHandle = PtrUint;
+{$ifndef CPUJVM}
+  TResourceId = PAnsiChar;
+{$else CPUJVM}
+  { JVM Notes: using a PAnsiChar crashes the compiler (Internal error 2011072410) }
+  TResourceId = ansistring;
+{$endif CPUJVM}
 {$ifdef Win16}
   HMODULE = THandle; {HINST}
   HGLOBAL = THandle;
@@ -73,13 +79,9 @@ const
 
 // Win32 API compatible Resource callbacks
 type
-  { JVM Notes: using a PAnsiChar crashes the compiler (Internal error 2011072410) }
-  EnumResTypeProc = function(ModuleHandle : TFPResourceHMODULE;
-    ResourceType : {$ifndef CPUJVM}PAnsiChar{$else}ansistring{$endif}; lParam : PtrInt) : LongBool; stdcall;
-  EnumResNameProc = function(ModuleHandle : TFPResourceHMODULE;
-    ResourceType, ResourceName : {$ifndef CPUJVM}PAnsiChar{$else}ansistring{$endif}; lParam : PtrInt) : LongBool; stdcall;
-  EnumResLangProc = function(ModuleHandle : TFPResourceHMODULE;
-    ResourceType, ResourceName : {$ifndef CPUJVM}PAnsiChar{$else}ansistring{$endif}; IDLanguage : word; lParam : PtrInt) : LongBool; stdcall;
+  EnumResTypeProc = function(ModuleHandle : TFPResourceHMODULE; ResourceType : TResourceId; lParam : PtrInt) : LongBool; stdcall;
+  EnumResNameProc = function(ModuleHandle : TFPResourceHMODULE; ResourceType, ResourceName : TResourceId; lParam : PtrInt) : LongBool; stdcall;
+  EnumResLangProc = function(ModuleHandle : TFPResourceHMODULE; ResourceType, ResourceName : TResourceId; IDLanguage : word; lParam : PtrInt) : LongBool; stdcall;
 
 // Useful functions (macros in win32 headers)
 function Is_IntResource(aStr : PAnsiChar) : boolean; {$ifdef SYSTEMINLINE}inline;{$endif}
@@ -115,45 +117,18 @@ Function FindResourceEx(ModuleHandle: TFPResourceHMODULE; const ResourceType: An
 { JVM Notes: predeclare the callback types to prevent a runtime crash (classformaterror: duplicate entry in innerclasses attribute) }
 type
   THINSTANCEFunc = function : TFPResourceHMODULE;
-  TEnumResourceTypesFunc = function (
-    ModuleHandle : TFPResourceHMODULE;
-    EnumFunc : EnumResTypeProc;
-    lParam : PtrInt) : LongBool;
-  { JVM Notes: using a PAnsiChar crashes the compiler (Internal error 2011072410) }
-  TEnumResourceNamesFunc = function (
-    ModuleHandle : TFPResourceHMODULE;
-    ResourceType : {$ifndef CPUJVM}PAnsiChar{$else}ansistring{$endif};
-    EnumFunc : EnumResNameProc;
-    lParam : PtrInt) : LongBool;
-  { JVM Notes: using a PAnsiChar crashes the compiler (Internal error 2011072410) }
-  TEnumResourceLanguagesFunc = function (
-    ModuleHandle : TFPResourceHMODULE;
-    ResourceType, ResourceName : {$ifndef CPUJVM}PAnsiChar{$else}ansistring{$endif};
-    EnumFunc : EnumResLangProc;
-    lParam : PtrInt) : LongBool;
-  { JVM Notes: using a PAnsiChar crashes the compiler (Internal error 2011072410) }
-  TFindResourceFunc = function (
-    ModuleHandle: TFPResourceHMODULE;
-    ResourceName, ResourceType: {$ifndef CPUJVM}PAnsiChar{$else}ansistring{$endif}):
-    TFPResourceHandle;
-  { JVM Notes: using a PAnsiChar crashes the compiler (Internal error 2011072410) }
-  TFindResourceExFunc = function (
-     ModuleHandle: TFPResourceHMODULE;
-     ResourceType, ResourceName: {$ifndef CPUJVM}PAnsiChar{$else}ansistring{$endif};
-     Language : word): TFPResourceHandle;
-  TLoadResourceFunc = function (
-    ModuleHandle: TFPResourceHMODULE;
-    ResHandle: TFPResourceHandle): TFPResourceHGLOBAL;
-  TSizeofResourceFunc = function (
-    ModuleHandle: TFPResourceHMODULE;
-    ResHandle: TFPResourceHandle): LongWord;
-  { JVM Notes: using a PtrUInt crashes the compiler (Internal error 2018042601) }
-  TLockResourceFunc = function (
-    ResData: {$ifndef CPUJVM}TFPResourceHGLOBAL{$else}JLInteger{$endif}): Pointer;
-  TUnlockResourceFunc = function (
-    ResData: TFPResourceHGLOBAL): LongBool;
-  TFreeResourceFunc = function (
-    ResData: TFPResourceHGLOBAL): LongBool;
+  TEnumResourceTypesFunc = function (ModuleHandle : TFPResourceHMODULE; EnumFunc : EnumResTypeProc; lParam : PtrInt) : LongBool;
+  TEnumResourceNamesFunc = function (ModuleHandle : TFPResourceHMODULE; ResourceType : TResourceId; EnumFunc : EnumResNameProc; lParam : PtrInt) : LongBool;
+  TEnumResourceLanguagesFunc = function (ModuleHandle : TFPResourceHMODULE; ResourceType,ResourceName : TResourceId; EnumFunc : EnumResLangProc; lParam : PtrInt) : LongBool;
+  TFindResourceFunc = function (ModuleHandle: TFPResourceHMODULE; ResourceName, ResourceType: TResourceId): TFPResourceHandle;
+  TFindResourceExFunc = function (ModuleHandle: TFPResourceHMODULE; ResourceType, ResourceName: TResourceId; Language : word): TFPResourceHandle;
+  TLoadResourceFunc = function (ModuleHandle: TFPResourceHMODULE; ResHandle: TFPResourceHandle): TFPResourceHGLOBAL;
+  TSizeofResourceFunc = function (ModuleHandle: TFPResourceHMODULE; ResHandle: TFPResourceHandle): LongWord;
+{$if not declared(TLockResourceFunc)}
+  TLockResourceFunc = function (ResData: TFPResourceHGLOBAL): Pointer;
+{$endif not declared}
+  TUnlockResourceFunc = function (ResData: TFPResourceHGLOBAL): LongBool;
+  TFreeResourceFunc = function (ResData: TFPResourceHGLOBAL): LongBool;
 
 type
   TResourceManager = record

@@ -2272,6 +2272,25 @@ end;
                             Resources support
 *****************************************************************************}
 
+
+function Is_IntResource(aStr : PAnsiChar) : boolean;
+var index : longint;
+begin
+  Result:=((aStr[0]='#') and (aStr[1] in ['0'..'9']));
+  index:=2;
+  while Result and (aStr[index]<>#0) do
+    begin
+      Result:=(aStr[index] in ['0'..'9']);
+      inc(index);
+    end;
+end;
+
+
+operator:=(res:TFPResourceHGLOBAL):JLInteger;
+  begin
+    result:=JLInteger.Create(res);
+  end;
+
 {$i sysres.inc}
 
 {$ifdef FPC_HAS_FEATURE_RESOURCES}

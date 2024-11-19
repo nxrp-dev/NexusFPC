@@ -1028,6 +1028,10 @@ const
                           Resources support
 *****************************************************************************}
 
+type
+  { JVM Notes: using a PtrUInt crashes the compiler (Internal error 2018042601) }
+  TLockResourceFunc = function (ResData: JLInteger): Pointer;
+
 {$i resh.inc}
 
 

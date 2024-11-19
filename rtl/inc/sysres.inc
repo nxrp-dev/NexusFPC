@@ -22,18 +22,6 @@ function Is_IntResource(aStr : PAnsiChar) : boolean; {$ifdef SYSTEMINLINE}inline
 begin
   Result:=((PtrUInt(aStr) shr 16)=0);
 end;
-{$else CPUJVM}
-function Is_IntResource(aStr : PAnsiChar) : boolean; {$ifdef SYSTEMINLINE}inline;{$endif}
-var index : longint;
-begin
-  Result:=((aStr[0]='#') and (aStr[1] in ['0'..'9']));
-  index:=2;
-  while Result and (aStr[index]<>#0) do
-    begin
-      Result:=(aStr[index] in ['0'..'9']);
-      inc(index);
-    end;
-end;
 {$endif CPUJVM}
 
 function MakeLangID(primary,sub : word) : word; {$ifdef SYSTEMINLINE}inline;{$endif}
@@ -101,26 +89,22 @@ begin
   Result:=False;
 end;
 
-Function DefaultEnumResourceNames(ModuleHandle : TFPResourceHMODULE;
-  ResourceType : {$ifndef CPUJVM}PAnsiChar{$else}ansistring{$endif}; EnumFunc : EnumResNameProc; lParam : PtrInt) : LongBool;
+Function DefaultEnumResourceNames(ModuleHandle : TFPResourceHMODULE; ResourceType : TResourceId; EnumFunc : EnumResNameProc; lParam : PtrInt) : LongBool;
 begin
   Result:=False;
 end;
 
-Function DefaultEnumResourceLanguages(ModuleHandle : TFPResourceHMODULE;
-  ResourceType, ResourceName : {$ifndef CPUJVM}PAnsiChar{$else}ansistring{$endif}; EnumFunc : EnumResLangProc; lParam : PtrInt) : LongBool;
+Function DefaultEnumResourceLanguages(ModuleHandle : TFPResourceHMODULE; ResourceType, ResourceName : TResourceId; EnumFunc : EnumResLangProc; lParam : PtrInt) : LongBool;
 begin
   Result:=False;
 end;
 
-Function DefaultFindResource(ModuleHandle: TFPResourceHMODULE;
-  ResourceName, ResourceType: {$ifndef CPUJVM}PAnsiChar{$else}ansistring{$endif}): TFPResourceHandle;
+Function DefaultFindResource(ModuleHandle: TFPResourceHMODULE; ResourceName, ResourceType: TResourceId): TFPResourceHandle;
 begin
   Result:=0;
 end;
 
-Function DefaultFindResourceEx(ModuleHandle: TFPResourceHMODULE;
-  ResourceType, ResourceName: {$ifndef CPUJVM}PAnsiChar{$else}ansistring{$endif}; Language : word): TFPResourceHandle;
+Function DefaultFindResourceEx(ModuleHandle: TFPResourceHMODULE; ResourceType, ResourceName: TResourceId; Language : word): TFPResourceHandle;
 begin
   Result:=0;
 end;
@@ -230,11 +214,7 @@ end;
 
 Function LockResource(ResData: TFPResourceHGLOBAL): Pointer;
 begin
-{$ifndef CPUJVM}
   Result:=resourcemanager.LockResourceFunc(ResData);
-{$else CPUJVM}
-  Result:=resourcemanager.LockResourceFunc(JLInteger.Create(ResData));
-{$endif CPUJVM}
 end;
 
 Function UnlockResource(ResData: TFPResourceHGLOBAL): LongBool;
