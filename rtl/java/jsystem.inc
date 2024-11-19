@@ -2276,7 +2276,7 @@ end;
 
 {$ifdef FPC_HAS_FEATURE_RESOURCES}
 {$define EXTRES_GENERIC}
-{$i extres.inc}
+{$i jextres.inc}
 {$endif FPC_HAS_FEATURE_RESOURCES}
 
 (*
