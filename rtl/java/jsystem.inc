@@ -2061,7 +2061,7 @@ function min(v1,v2 : SizeInt) : SizeInt;
 
 {$ifdef FPC_HAS_FEATURE_TEXTIO}
 { Text file }
-{$i text.inc}
+{$i jtext.inc}
 {$endif FPC_HAS_FEATURE_TEXTIO}
 
 {$ifdef FPC_HAS_FEATURE_FILEIO}
