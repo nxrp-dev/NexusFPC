@@ -31,6 +31,12 @@ type
   TLineEndStr = string [3];
   TextBuf = array[0..TextRecBufSize-1] of ansichar;
   TTextBuf = TextBuf;
+{$ifndef CPUJVM}
+  TFileUserData = array[1..32] of byte;
+  TFileFuncHandle = codepointer;
+{$else CPUJVM}
+  TFileUserData = array[1..32] of pointer;
+{$endif CPUJVM}
 
   { using packed makes the compiler to generate ugly code on some CPUs, further
     using packed causes the compiler to handle arrays of text wrongly, see  see tw0754 e.g. on arm  }
@@ -38,6 +44,7 @@ type
 {$ifdef CPUJVM}
   type
     FileFunc = procedure(var T: TextRec);
+    TFileFuncHandle = FileFunc;
   public
 {$endif}
     Handle    : THandle;
@@ -54,23 +61,14 @@ type
     openfunc,
     inoutfunc,
     flushfunc,
-{$ifndef CPUJVM}
-    closefunc : codepointer;
-    UserData  : array[1..32] of byte;
-{$else CPUJVM}
-    closefunc : FileFunc;
-    UserData  : array[1..32] of pointer;
-{$endif CPUJVM}
+    closefunc : TFileFuncHandle;
+    UserData  : TFileUserData;
     name      : array[0..textrecnamelength-1] of TFileTextRecChar;
     LineEnd   : TLineEndStr;
     buffer    : textbuf;
     CodePage  : TSystemCodePage;
 {$ifdef FPC_HAS_FEATURE_UNICODESTRINGS}
-{$ifndef CPUJVM}
-    FullName  : Pointer;
-{$else CPUJVM}
-    FullName  : unicodestring;
-{$endif CPUJVM}
+    FullName  : TFileFullName;
 {$endif FPC_HAS_FEATURE_UNICODESTRINGS}
   End;
 
