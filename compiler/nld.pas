@@ -951,6 +951,47 @@ implementation
         end;
 
       var
+        domove:boolean;
+        unrollstatements: tstatementnode;
+        ltemp,rtemp: ttempcreatenode;
+
+      { TODO: handle move semantics in unrolling }
+      procedure unrollabstractrecord(def:tabstractrecorddef);
+        var
+          i:longint;
+          sym:tsym;
+        begin
+          for i:=0 to def.symtable.symlist.count-1 do
+            begin
+              sym:=tsym(def.symtable.symlist[i]);
+              if sym.typ=fieldvarsym then
+                addstatement(unrollstatements,cassignmentnode.create(
+                  csubscriptnode.create(sym,cderefnode.create(ctemprefnode.create(ltemp))),
+                  csubscriptnode.create(sym,cderefnode.create(ctemprefnode.create(rtemp)))
+                ));
+            end;
+        end;
+
+      procedure unrollarray(def:tarraydef);
+        var
+          i:longint;
+        begin
+          for i:=0 to def.elecount-1 do
+            begin
+              { left^[low(left^)+i] := right^[low(right^)+i] }
+              addstatement(unrollstatements,cassignmentnode.create(
+                cvecnode.create(
+                  cderefnode.create(ctemprefnode.create(ltemp)),
+                  cordconstnode.create(int64(def.lowrange)+i,def.rangedef,true)
+                ), cvecnode.create(
+                  cderefnode.create(ctemprefnode.create(rtemp)),
+                  cordconstnode.create(int64(def.lowrange)+i,def.rangedef,true)
+                )
+              ));
+            end;
+        end;
+
+      var
         hp: tnode;
         oldassignmentnode : tassignmentnode;
         hdef: tdef;
@@ -987,6 +1028,8 @@ implementation
 
          needrtti:=false;
 
+        domove:=tempreturnfromcall;
+
         if (is_shortstring(left.resultdef)) then
           begin
            if right.resultdef.typ=stringdef then
@@ -1008,7 +1051,38 @@ implementation
             end;
             exit;
            end
-        { call helpers for composite types containing automated types }
+        { use helper function for records with custom operator for composite types }
+        else if is_managed_type(left.resultdef) and
+            (left.resultdef.typ in [recorddef,arraydef,objectdef]) and
+            { either if this is a move (not yet handled by unroll) }
+            (domove or (
+              { or it is a copy with custom operator }
+              ((left.resultdef.typ<>recorddef) or (mop_copy in trecordsymtable(trecorddef(left.resultdef).symtable).managementoperators)) and
+              { or it is an array to large to unroll (16 elements as arbitrary cutoff) }
+              ((left.resultdef.typ<>arraydef) or (not is_dynamic_array(left.resultdef) and (tarraydef(left.resultdef).elecount>16)))
+            )) and
+            not is_interfacecom_or_dispinterface(left.resultdef) and
+            not is_dynamic_array(left.resultdef) and
+            not is_const(left) and
+            not(target_info.system in systems_garbage_collected_managed_types) then
+         begin
+           hp:=ccallparanode.create(caddrnode.create_internal(
+                                       crttinode.create(tstoreddef(left.resultdef),initrtti,rdt_normal)),
+                                    ccallparanode.create(ctypeconvnode.create_internal(
+                                      caddrnode.create_internal(left),voidpointertype),
+                                    ccallparanode.create(ctypeconvnode.create_internal(
+                                      caddrnode.create_internal(right),voidpointertype),
+                                    nil)));
+           if domove then
+             result:=ccallnode.createintern('fpc_copy_with_move_semantics_proc',hp)
+           else
+             result:=ccallnode.createintern('fpc_copy_proc',hp);
+           firstpass(result);
+           left:=nil;
+           right:=nil;
+           exit;
+         end
+        { unroll copy operation element by element }
         else if is_managed_type(left.resultdef) and
             (left.resultdef.typ in [arraydef,objectdef,recorddef]) and
             not is_interfacecom_or_dispinterface(left.resultdef) and
@@ -1016,17 +1090,26 @@ implementation
             not is_const(left) and
             not(target_info.system in systems_garbage_collected_managed_types) then
          begin
-           hp:=ccallparanode.create(caddrnode.create_internal(
-                  crttinode.create(tstoreddef(left.resultdef),initrtti,rdt_normal)),
-               ccallparanode.create(ctypeconvnode.create_internal(
-                 caddrnode.create_internal(left),voidpointertype),
-               ccallparanode.create(ctypeconvnode.create_internal(
-                 caddrnode.create_internal(right),voidpointertype),
-               nil)));
-           if tempreturnfromcall then
-             result:=ccallnode.createintern('fpc_copy_with_move_semantics_proc',hp)
+           result:=internalstatements(unrollstatements);
+           hdef:=cpointerdef.create(left.resultdef);
+           ltemp:=ctempcreatenode.create(hdef,hdef.size,tt_persistent,true);
+           addstatement(unrollstatements,ltemp);
+           addstatement(unrollstatements,cassignmentnode.create(
+             ctemprefnode.create(ltemp),caddrnode.create_internal(left)
+           ));
+           rtemp:=ctempcreatenode.create(hdef,hdef.size,tt_persistent,true);
+           addstatement(unrollstatements,rtemp);
+           addstatement(unrollstatements,cassignmentnode.create(
+             ctemprefnode.create(rtemp),caddrnode.create_internal(right)
+           ));
+
+           if left.resultdef.typ=arraydef then
+             unrollarray(tarraydef(left.resultdef))
            else
-             result:=ccallnode.createintern('fpc_copy_proc',hp);
+             unrollabstractrecord(tabstractrecorddef(left.resultdef));
+
+           addstatement(unrollstatements,ctempdeletenode.create(ltemp));
+           addstatement(unrollstatements,ctempdeletenode.create(rtemp));
            firstpass(result);
            left:=nil;
            right:=nil;
