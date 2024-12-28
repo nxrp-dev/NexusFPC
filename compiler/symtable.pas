@@ -309,6 +309,14 @@ interface
           constructor create(adefowner:tdef);
        end;
 
+       { tnodemacrosymtable }
+
+       tnodemacrosymtable = class(TSymtable)
+          constructor create;
+          procedure insertdef(def:TDefEntry);override;
+          procedure insertsym(sym:TSymEntry;checkdup:boolean=true); override;
+        end;
+
     var
        systemunit     : tglobalsymtable; { pointer to the system unit }
 
@@ -2932,6 +2940,29 @@ implementation
         inherited Create('');
         symtabletype:=arraysymtable;
         defowner:=adefowner;
+      end;
+
+    { tnodemacrosymtable }
+
+    constructor tnodemacrosymtable.create;
+      begin
+        inherited create('');
+        symtabletype:=nodemacrosymtable;
+      end;
+
+    procedure tnodemacrosymtable.insertdef(def: TDefEntry);
+      begin
+        { Because this symtable should only ever be temporary, defs cannot be
+          added here. }
+        internalerror(2024110902);
+      end;
+
+    procedure tnodemacrosymtable.insertsym(sym:TSymEntry;checkdup:boolean);
+      begin
+        { only allow nodemacrosyms }
+        if sym.typ<>nodemacrosym then
+          internalerror(2024110903);
+        inherited insertsym(sym,checkdup);
       end;
 
 {*****************************************************************************

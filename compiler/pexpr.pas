@@ -3309,6 +3309,9 @@ implementation
                end;
             end;
 
+          nodemacrosym:
+            result:=tnode(tnodemacrosym(srsym).node).getcopy;
+
           else
             begin
               result:=cerrornode.create;

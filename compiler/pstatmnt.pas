@@ -576,8 +576,10 @@ implementation
          p   : tnode;
          i   : longint;
          st  : TSymtable;
-         newblock : tblocknode;
-         newstatement : tstatementnode;
+         newblock ,
+         tryblock : tblocknode;
+         newstatement ,
+         oldnewstatement : tstatementnode;
          calltempnode,
          tempnode : ttempcreatenode;
          valuenode,
@@ -587,6 +589,7 @@ implementation
          helperdef : tobjectdef;
          hasimplicitderef : boolean;
          withsymtablelist : TFPObjectList;
+         withvarname : tsymstr;
 
          procedure pushobjchild(withdef,obj:tobjectdef);
          var
@@ -618,6 +621,13 @@ implementation
 
       begin
          calltempnode:=nil;
+         withvarname:='';
+         if try_to_consume(_CONST) then
+           begin
+             withvarname:=orgpattern;
+             consume(_ID);
+             consume(_EQ);
+           end;
          p:=comp_expr([ef_accept_equal]);
          do_typecheckpass(p);
 
@@ -635,6 +645,8 @@ implementation
             newblock:=nil;
             valuenode:=nil;
             tempnode:=nil;
+            tryblock:=nil;
+            oldnewstatement:=nil;
 
             hp:=skip_nodes_before_load(p);
             if (hp.nodetype=loadn) and
@@ -664,6 +676,17 @@ implementation
                   begin
                     calltempnode:=ctempcreatenode.create(p.resultdef,p.resultdef.size,tt_persistent,true);
                     addstatement(newstatement,calltempnode);
+                    if is_managed_type(p.resultdef) then
+                      begin
+                        { With with managed type: Avoid making a global scope
+                          with global freeing, but explicitly scope with the with
+                          statement }
+                        calltempnode.tempflags:=calltempnode.tempflags+[ti_noautofini];
+                        addstatement(newstatement,
+                                     cnodeutils.initialize_data_node(ctemprefnode.create(calltempnode),true));
+                        oldnewstatement:=newstatement;
+                        tryblock:=internalstatements(newstatement);
+                      end;
                     addstatement(newstatement,cassignmentnode.create(
                         ctemprefnode.create(calltempnode),
                         p));
@@ -711,67 +734,78 @@ implementation
                     "case", the symtables of the helper's parents are passed in
                     the "case" branches }
             withsymtablelist:=TFPObjectList.create(true);
-            case p.resultdef.typ of
-              objectdef :
-                begin
-                   { do we have a helper for this type? }
-                   search_last_objectpascal_helper(tabstractrecorddef(p.resultdef),current_structdef,helperdef);
-                   { push symtables of all parents in reverse order }
-                   pushobjchild(tobjectdef(p.resultdef),tobjectdef(p.resultdef).childof);
-                   { push symtables of all parents of the helper in reverse order }
-                   if assigned(helperdef) then
-                     pushobjchild(helperdef,helperdef.childof);
-                   { push object symtable }
-                   st:=twithsymtable.Create(tobjectdef(p.resultdef),tobjectdef(p.resultdef).symtable.SymList,refnode);
-                   symtablestack.push(st);
-                   withsymtablelist.add(st);
-                 end;
-              classrefdef :
-                begin
-                   { do we have a helper for this type? }
-                   search_last_objectpascal_helper(tobjectdef(tclassrefdef(p.resultdef).pointeddef),current_structdef,helperdef);
-                   { push symtables of all parents in reverse order }
-                   pushobjchild(tobjectdef(tclassrefdef(p.resultdef).pointeddef),tobjectdef(tclassrefdef(p.resultdef).pointeddef).childof);
-                   { push symtables of all parents of the helper in reverse order }
-                   if assigned(helperdef) then
-                     pushobjchild(helperdef,helperdef.childof);
-                   { push object symtable }
-                   st:=twithsymtable.Create(tobjectdef(tclassrefdef(p.resultdef).pointeddef),tobjectdef(tclassrefdef(p.resultdef).pointeddef).symtable.SymList,refnode);
-                   symtablestack.push(st);
-                   withsymtablelist.add(st);
-                end;
-              recorddef :
-                begin
-                   { do we have a helper for this type? }
-                   search_last_objectpascal_helper(tabstractrecorddef(p.resultdef),current_structdef,helperdef);
-                   { push symtables of all parents of the helper in reverse order }
-                   if assigned(helperdef) then
-                     pushobjchild(helperdef,helperdef.childof);
-                   { push record symtable }
-                   st:=twithsymtable.create(trecorddef(p.resultdef),trecorddef(p.resultdef).symtable.SymList,refnode);
-                   symtablestack.push(st);
-                   withsymtablelist.add(st);
-                end;
-              undefineddef :
-                begin
-                   if not(df_generic in current_procinfo.procdef.defoptions) then
-                     internalerror(2012122802);
-                   helperdef:=nil;
-                   { push record symtable }
-                   st:=twithsymtable.create(p.resultdef,nil,refnode);
-                   symtablestack.push(st);
-                   withsymtablelist.add(st);
-                end;
-              else
-                internalerror(200601271);
-            end;
-
-            { push helper symtable }
-            if assigned(helperdef) then
+            if length(withvarname)>0 then
               begin
-                st:=twithsymtable.Create(helperdef,helperdef.symtable.SymList,refnode.getcopy);
-                symtablestack.push(st);
+                include(refnode.flags,nf_no_lvalue);
+                st:=tnodemacrosymtable.create;
+                st.insertsym(tnodemacrosym.create(withvarname,refnode));
                 withsymtablelist.add(st);
+                symtablestack.push(st);
+              end
+            else
+              begin
+                case p.resultdef.typ of
+                  objectdef :
+                    begin
+                       { do we have a helper for this type? }
+                       search_last_objectpascal_helper(tabstractrecorddef(p.resultdef),current_structdef,helperdef);
+                       { push symtables of all parents in reverse order }
+                       pushobjchild(tobjectdef(p.resultdef),tobjectdef(p.resultdef).childof);
+                       { push symtables of all parents of the helper in reverse order }
+                       if assigned(helperdef) then
+                         pushobjchild(helperdef,helperdef.childof);
+                       { push object symtable }
+                       st:=twithsymtable.Create(tobjectdef(p.resultdef),tobjectdef(p.resultdef).symtable.SymList,refnode);
+                       symtablestack.push(st);
+                       withsymtablelist.add(st);
+                     end;
+                  classrefdef :
+                    begin
+                       { do we have a helper for this type? }
+                       search_last_objectpascal_helper(tobjectdef(tclassrefdef(p.resultdef).pointeddef),current_structdef,helperdef);
+                       { push symtables of all parents in reverse order }
+                       pushobjchild(tobjectdef(tclassrefdef(p.resultdef).pointeddef),tobjectdef(tclassrefdef(p.resultdef).pointeddef).childof);
+                       { push symtables of all parents of the helper in reverse order }
+                       if assigned(helperdef) then
+                         pushobjchild(helperdef,helperdef.childof);
+                       { push object symtable }
+                       st:=twithsymtable.Create(tobjectdef(tclassrefdef(p.resultdef).pointeddef),tobjectdef(tclassrefdef(p.resultdef).pointeddef).symtable.SymList,refnode);
+                       symtablestack.push(st);
+                       withsymtablelist.add(st);
+                    end;
+                  recorddef :
+                    begin
+                       { do we have a helper for this type? }
+                       search_last_objectpascal_helper(tabstractrecorddef(p.resultdef),current_structdef,helperdef);
+                       { push symtables of all parents of the helper in reverse order }
+                       if assigned(helperdef) then
+                         pushobjchild(helperdef,helperdef.childof);
+                       { push record symtable }
+                       st:=twithsymtable.create(trecorddef(p.resultdef),trecorddef(p.resultdef).symtable.SymList,refnode);
+                       symtablestack.push(st);
+                       withsymtablelist.add(st);
+                    end;
+                  undefineddef :
+                    begin
+                       if not(df_generic in current_procinfo.procdef.defoptions) then
+                         internalerror(2012122802);
+                       helperdef:=nil;
+                       { push record symtable }
+                       st:=twithsymtable.create(p.resultdef,nil,refnode);
+                       symtablestack.push(st);
+                       withsymtablelist.add(st);
+                    end;
+                  else
+                    internalerror(200601271);
+                end;
+
+                { push helper symtable }
+                if assigned(helperdef) then
+                  begin
+                    st:=twithsymtable.Create(helperdef,helperdef.symtable.SymList,refnode.getcopy);
+                    symtablestack.push(st);
+                    withsymtablelist.add(st);
+                  end;
               end;
 
             if try_to_consume(_COMMA) then
@@ -792,12 +826,22 @@ implementation
 
             { Finalize complex withnode with destroy of temp }
             if assigned(newblock) then
-             begin
+              begin
                addstatement(newstatement,p);
                if assigned(tempnode) then
                  addstatement(newstatement,ctempdeletenode.create(tempnode));
                if assigned(calltempnode) then
-                 addstatement(newstatement,ctempdeletenode.create(calltempnode));
+                 begin
+                   if assigned(tryblock) then
+                     begin
+                       newstatement:=oldnewstatement;
+                       addstatement(newstatement,ctryfinallynode.create(
+                         tryblock,
+                         cnodeutils.finalize_data_node(ctemprefnode.create(calltempnode))
+                       ));
+                     end;
+                   addstatement(newstatement,ctempdeletenode.create(calltempnode));
+                 end;
                p:=newblock;
              end;
             result:=p;

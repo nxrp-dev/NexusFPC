@@ -513,8 +513,11 @@ interface
               not(ti_const in tempflags) then
               begin
                 location_reset_ref(tempinfo^.location,LOC_REFERENCE,def_cgsize(tempinfo^.typedef),0,[]);
-                tg.gethltempmanaged(current_asmdata.CurrAsmList,tempinfo^.typedef,tempinfo^.temptype,tempinfo^.location.reference);
-                if not(ti_nofini in tempflags) then
+                if ti_noautofini in tempflags then
+                  tg.gethltemp(current_asmdata.CurrAsmList,tempinfo^.typedef,size,tempinfo^.temptype,tempinfo^.location.reference)
+                else
+                  tg.gethltempmanaged(current_asmdata.CurrAsmList,tempinfo^.typedef,tempinfo^.temptype,tempinfo^.location.reference);
+                if tempflags*[ti_nofini,ti_noautofini]=[] then
                   hlcg.g_finalize(current_asmdata.CurrAsmList,tempinfo^.typedef,tempinfo^.location.reference);
               end
             else if (ti_may_be_in_reg in tempflags) then

@@ -1391,6 +1391,7 @@ implementation
         todef    : tdef;
         errmsg,
         temp     : longint;
+        directaccess : boolean;
 
         function constaccessok(vs: tabstractvarsym): boolean;
           begin
@@ -1447,6 +1448,7 @@ implementation
         gotrecord:=false;
         gotstring:=false;
         gottypeconv:=false;
+        directaccess:=true;
         hp:=p;
         if not(valid_void in opts) and
            is_void(hp.resultdef) then
@@ -1513,6 +1515,15 @@ implementation
                        CGMessagePos(hp.fileinfo,errmsg);
                  end;
                mayberesettypeconvs;
+               exit;
+             end;
+           { Check after property, because getting pointer from property
+             can screw this up }
+           if (nf_no_lvalue in hp.flags) and directaccess then
+             begin
+               valid_for_assign:=false;
+               if report_errors then
+                 CGMessagePos(hp.fileinfo,type_e_variable_id_expected);
                exit;
              end;
            case hp.nodetype of
@@ -1618,6 +1629,7 @@ implementation
                end;
              vecn :
                begin
+                 directaccess:=false;
                  if (tvecnode(hp).right.nodetype=rangen) and
                     not(valid_range in opts) then
                   begin
@@ -1672,6 +1684,7 @@ implementation
                end;
              subscriptn :
                begin
+                 directaccess:=false;
                  { only check first (= outermost) subscriptn }
                  if not gotsubscript and
                     not(valid_packed in opts) and
