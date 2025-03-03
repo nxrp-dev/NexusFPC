@@ -1589,6 +1589,7 @@ end;
          sourcecodepage  : tcodepagestring;
 
          minfpconstprec  : tfloattype;
+         maxfpconstprec  : tfloattype;
 
          disabledircache : boolean;
 
@@ -2162,6 +2163,7 @@ var
             sourcecodepage:=tstringEncoding(gettokenbufword);
 
             minfpconstprec:=tfloattype(tokenreadenum(sizeof(tfloattype)));
+            maxfpconstprec:=tfloattype(tokenreadenum(sizeof(tfloattype)));
 
             disabledircache:=boolean(gettokenbufbyte);
 
@@ -2215,6 +2217,7 @@ var
          sourcecodepage  : tstringencoding;
 
          minfpconstprec  : tfloattype;
+         maxfpconstprec  : tfloattype;
 
          disabledircache : boolean;
 

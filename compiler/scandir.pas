@@ -1180,6 +1180,13 @@ unit scandir;
           Message1(scan_e_illegal_minfpconstprec, pattern);
       end;
 
+    procedure dir_maxfpconstprec;
+      begin
+        current_scanner.skipspace;
+        if not SetMaxFPConstPrec(current_scanner.readid,current_settings.maxfpconstprec) then
+          Message1(scan_e_illegal_maxfpconstprec, pattern);
+      end;
+
 
     procedure dir_packrecords;
       var
@@ -2156,6 +2163,7 @@ unit scandir;
         AddDirective('MESSAGE',directive_all, @dir_message);
         AddDirective('MINENUMSIZE',directive_all, @dir_packenum);
         AddDirective('MINFPCONSTPREC',directive_all, @dir_minfpconstprec);
+        AddDirective('MAXFPCONSTPREC',directive_all, @dir_maxfpconstprec);
         AddDirective('MINSTACKSIZE',directive_all, @dir_minstacksize);
         AddDirective('MMX',directive_all, @dir_mmx);
         AddDirective('MODE',directive_all, @dir_mode);

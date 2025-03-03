@@ -477,6 +477,9 @@ scan_e_duplicate_rtti_option=02112_E_A Duplicate RTTI option "$1"
 scan_e_misplaced_rtti_directive=02113_E_A The RTTI directive cannot be used here
 % The \var{\$RTTI} directive can not be used in this location (e.g. before the \var{PROGRAM}
 % or \var{UNIT} headers).
+scan_e_illegal_maxfpconstprec=02114_E_Illegal maximal floating point constant precision "$1"
+% Valid maximal precisions for floating point constants are default, 32 and 64,
+% which mean respectively maximal (80 bit on x86 and 64 bit elsewhere usually), 32 bit and 64 bit precision.
 % \end{description}
 #
 # Parser

@@ -3469,6 +3469,7 @@ type
             sourcecodepage:=tstringEncoding(tokenreadword);
 
             minfpconstprec:=tfloattype(tokenreadenum(sizeof(tfloattype)));
+            maxfpconstprec:=tfloattype(tokenreadenum(sizeof(tfloattype)));
 
             disabledircache:=boolean(tokenreadbyte);
 
@@ -3553,6 +3554,7 @@ type
             tokenwriteword(sourcecodepage);
 
             tokenwriteenum(minfpconstprec,sizeof(tfloattype));
+            tokenwriteenum(maxfpconstprec,sizeof(tfloattype));
 
             recordtokenbuf.write(byte(disabledircache),1);
 

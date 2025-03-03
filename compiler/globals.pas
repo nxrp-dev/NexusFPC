@@ -191,6 +191,7 @@ Const
          sourcecodepage  : tstringencoding;
 
          minfpconstprec  : tfloattype;
+         maxfpconstprec  : tfloattype;
 
          disabledircache : boolean;
 
@@ -666,6 +667,10 @@ Const
         defproccall : pocall_default;
         sourcecodepage : 28591;
         minfpconstprec : s32real;
+        { Currently the parser defaults to bestreal whenever the maximum
+          precision is neither 32 nor 64 bit, so any value other than
+          s32real or s64real will work regardless of actual support }
+        maxfpconstprec : s80real;
 
         disabledircache : false;
 
@@ -717,6 +722,7 @@ Const
     function SetControllerType(const s:string;var a:tcontrollertype):boolean;
     function HandleFeature(const s : string) : boolean;
     function SetMinFPConstPrec(const s: string; var a: tfloattype) : boolean;
+    function SetMaxFPConstPrec(const s: string; var a: tfloattype) : boolean;
 
     {# Routine to get the required alignment for size of data, which will
        be placed in bss segment, according to the current alignment requirements }
@@ -1508,6 +1514,35 @@ implementation
           64: a:=s64real;
           { adding support for 80 bit here is tricky, since we can't really }
           { check whether the target cpu+OS actually supports it            }
+          else
+            exit;
+        end;
+        result:=true;
+      end;
+
+
+    function SetMaxFPConstPrec(const s: string; var a: tfloattype) : boolean;
+      var
+        value, error: longint;
+      begin
+        if (upper(s)='DEFAULT') then
+          begin
+            { it doesn't matter if the target actually supports 80 bit floats }
+            { since the parser only checks that maxfpconstprec is neither     }
+            { s32real nor s64real                                             }
+            a:=s80real;
+            result:=true;
+            exit;
+          end;
+        result:=false;
+        val(s,value,error);
+        if (error<>0) then
+          exit;
+        case value of
+          32: a:=s32real;
+          64: a:=s64real;
+          { guaranteeing 80 bit support here is tricky, since we can't check   }
+          { whether the target actually supports it; need to rely on 'DEFAULT' }
           else
             exit;
         end;
