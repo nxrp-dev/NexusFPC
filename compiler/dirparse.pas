@@ -68,35 +68,19 @@ implementation
           else if tok='LOOP' then
            b.loopalign:=l
           else if tok='CONSTMIN' then
-           begin
-             b.constalignmin:=l;
-             if l>b.constalignmax then
-               b.constalignmax:=l;
-           end
+           b.constalignmin:=l
           else if tok='CONSTMAX' then
            b.constalignmax:=l
           else if tok='VARMIN' then
-           begin
-             b.varalignmin:=l;
-             if l>b.varalignmax then
-               b.varalignmax:=l;
-           end
+           b.varalignmin:=l
           else if tok='VARMAX' then
            b.varalignmax:=l
           else if tok='LOCALMIN' then
-           begin
-             b.localalignmin:=l;
-             if l>b.localalignmax then
-               b.localalignmax:=l;
-           end
+           b.localalignmin:=l
           else if tok='LOCALMAX' then
            b.localalignmax:=l
           else if tok='RECORDMIN' then
-           begin
-             b.recordalignmin:=l;
-             if l>b.recordalignmax then
-               b.recordalignmax:=l;
-           end
+           b.recordalignmin:=l
           else if tok='RECORDMAX' then
            b.recordalignmax:=l
 

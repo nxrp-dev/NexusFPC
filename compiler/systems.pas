@@ -754,57 +754,50 @@ end;
 
 
 function UpdateAlignment(var d:talignmentinfo;const s:talignmentinfo) : boolean;
+  function ValidateAlignmentValue(value:longint;lim:longint=High(longint)): boolean;
+    begin
+      result:=(value>=0) and (value<=lim) and (value and (value-1)=0);
+      UpdateAlignment:=UpdateAlignment and result; { Set outer result to false on bad value, too. }
+    end;
+  procedure UpdateAlignmentValue(var dval:longint;sval:longint);
+    begin
+      if ValidateAlignmentValue(sval,256) and (sval<>0) then
+        dval:=sval;
+    end;
+  { general update rules:
+    minimum: if higher then update
+    maximum: if lower then update or if undefined then update }
+  procedure UpdateMinAlignmentValue(var dval:longint;sval:longint);
+    begin
+      if ValidateAlignmentValue(sval,256) and (sval>dval) then
+        dval:=sval;
+    end;
+  procedure UpdateMaxAlignmentValue(var dval:longint;sval:longint);
+    begin
+      if ValidateAlignmentValue(sval) and
+         ((dval=0) or
+          ((sval>0) and (sval<dval))) then
+        dval:=sval;
+    end;
 begin
   result:=true;
-  with d do
-   begin
-     if (s.procalign in [1,2,4,8,16,32,64,128]) or (s.procalign=256) then
-       procalign:=s.procalign
-     else if s.procalign<>0 then
-       result:=false;
-     if (s.loopalign in [1,2,4,8,16,32,64,128]) or (s.loopalign=256) then
-       loopalign:=s.loopalign
-     else if s.loopalign<>0 then
-       result:=false;
-     if (s.jumpalign in [1,2,4,8,16,32,64,128]) or (s.jumpalign=256) then
-       jumpalign:=s.jumpalign
-     else if s.jumpalign<>0 then
-       result:=false;
-     if (s.coalescealign in [1,2,4,8,16,32,64,128]) or (s.coalescealign=256) then
-       coalescealign:=s.coalescealign
-     else if s.coalescealign<>0 then
-       result:=false;
-     if s.jumpalignskipmax>0 then
-       jumpalignskipmax:=s.jumpalignskipmax;
-     if s.coalescealign>0 then
-       coalescealignskipmax:=s.coalescealignskipmax;
-     { general update rules:
-       minimum: if higher then update
-       maximum: if lower then update or if undefined then update }
-     if s.constalignmin>constalignmin then
-      constalignmin:=s.constalignmin;
-     if (constalignmax=0) or
-        ((s.constalignmax>0) and (s.constalignmax<constalignmax)) then
-      constalignmax:=s.constalignmax;
-     if s.varalignmin>varalignmin then
-      varalignmin:=s.varalignmin;
-     if (varalignmax=0) or
-        ((s.varalignmax>0) and (s.varalignmax<varalignmax)) then
-      varalignmax:=s.varalignmax;
-     if s.localalignmin>localalignmin then
-      localalignmin:=s.localalignmin;
-     if (localalignmax=0) or
-        ((s.localalignmax>0) and (s.localalignmax<localalignmax)) then
-      localalignmax:=s.localalignmax;
-     if s.recordalignmin>recordalignmin then
-      recordalignmin:=s.recordalignmin;
-     if (recordalignmax=0) or
-        ((s.recordalignmax>0) and (s.recordalignmax<recordalignmax)) then
-      recordalignmax:=s.recordalignmax;
-     if (maxCrecordalign=0) or
-        ((s.maxCrecordalign>0) and (s.maxCrecordalign<maxCrecordalign)) then
-      maxCrecordalign:=s.maxCrecordalign;
-   end;
+  UpdateAlignmentValue(d.procalign,s.procalign);
+  UpdateAlignmentValue(d.loopalign,s.loopalign);
+  UpdateAlignmentValue(d.jumpalign,s.jumpalign);
+  UpdateAlignmentValue(d.coalescealign,s.coalescealign);
+  if s.jumpalignskipmax>0 then
+    d.jumpalignskipmax:=s.jumpalignskipmax;
+  if s.coalescealignskipmax>0 then
+    d.coalescealignskipmax:=s.coalescealignskipmax;
+  UpdateMinAlignmentValue(d.constalignmin,s.constalignmin);
+  UpdateMaxAlignmentValue(d.constalignmax,s.constalignmax);
+  UpdateMinAlignmentValue(d.varalignmin,s.varalignmin);
+  UpdateMaxAlignmentValue(d.varalignmax,s.varalignmax);
+  UpdateMinAlignmentValue(d.localalignmin,s.localalignmin);
+  UpdateMaxAlignmentValue(d.localalignmax,s.localalignmax);
+  UpdateMinAlignmentValue(d.recordalignmin,s.recordalignmin);
+  UpdateMaxAlignmentValue(d.recordalignmax,s.recordalignmax);
+  UpdateMaxAlignmentValue(d.maxCrecordalign,s.maxCrecordalign); { There is no external way to set maxCrecordalign, but just for consistency... }
 end;
 
 
