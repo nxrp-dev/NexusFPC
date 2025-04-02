@@ -1158,6 +1158,11 @@ end;
                                TINTERFACEDOBJECT
 ****************************************************************************}
 
+    function TInterfacedObject.GetRefCount : longint;
+      begin
+        result:=FRefCount and High(FRefCount);
+      end;
+
     function TInterfacedObject.QueryInterface(
       {$IFDEF FPC_HAS_CONSTREF}constref{$ELSE}const{$ENDIF} iid : tguid;out obj) : longint;{$IFNDEF WINDOWS}cdecl{$ELSE}stdcall{$ENDIF};
 
@@ -1174,8 +1179,7 @@ end;
          _addref:=frefcount;
          if _addref<>0 then
            begin
-             if _addref>0 then
-               _addref:=interlockedincrement(frefcount);
+             _addref:=interlockedincrement(frefcount) and High(frefcount);
              exit;
            end;
          frefcount:=1; { Work non-atomically in the common case of refcount = 0 (typical state after the complete object construction). }
@@ -1188,15 +1192,13 @@ end;
          _Release:=frefcount;
          if _Release<>1 then
            begin
-             if _Release<=0 then { -1 means recursive call from destructor... 0 is impossible. }
-               exit;
              _Release:=interlockeddecrement(frefcount);
-             if _Release>0 then
-               exit;
+             if _Release<>0 then
+               exit(_Release and High(frefcount));
            end
          else
            _Release:=0; { Work non-atomically in the common case of refcount = 1 (typical state for the last owner... which is often the only owner). }
-         frefcount:=-1; { Prevent recursive _Release from destroying twice (bug 32168). }
+         frefcount:=Low(frefcount); { Highest bit set (destroying flag), remaining bits are zeros (refcount = 0). }
          self.destroy;
       end;
 
@@ -1222,7 +1224,7 @@ end;
     procedure TInterfacedObject.BeforeDestruction;
 
       begin
-         if frefcount>0 then { Legitimate values: -1 if destroying by _Release, 0 if destroying manually. }
+         if frefcount>0 then { Legitimate values: Low(frefcount) if destroying by _Release, 0 if destroying manually. }
            HandleError(204);
       end;
 

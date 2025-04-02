@@ -353,7 +353,8 @@
 
        TInterfacedObject = class(TObject,IUnknown)
        protected
-          FRefCount : longint; { -1 = destroying. }
+          FRefCount : longint; { Highest bit = destroying flag, remaining bits = FRefCount and High(FRefCount) = refcount. }
+          function GetRefCount : longint; inline;
           { implement methods of IUnknown }
           function QueryInterface({$IFDEF FPC_HAS_CONSTREF}constref{$ELSE}const{$ENDIF} iid : tguid;out obj) : longint;{$IFNDEF WINDOWS}cdecl{$ELSE}stdcall{$ENDIF};
           function _AddRef : longint;{$IFNDEF WINDOWS}cdecl{$ELSE}stdcall{$ENDIF};
@@ -363,7 +364,7 @@
           procedure AfterConstruction;override;
           procedure BeforeDestruction;override;
           class function NewInstance : TObject;override;
-          property RefCount : longint read FRefCount;
+          property RefCount : longint read GetRefCount;
        end;
        TInterfacedClass = class of TInterfacedObject;
 
