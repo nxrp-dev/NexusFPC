@@ -1926,39 +1926,8 @@ asm
   bswap %rax
 end;
 
-
-{$ifndef FPC_ABI_WIN64}
-{$define FPC_SYSTEM_HAS_U128_DIV_U64_TO_U64}
-function u128_div_u64_to_u64( const xh, xl: qword; const y: qword; out quotient, remainder: qword ): boolean;nostackframe;assembler;
-{
-  SysV:
-  xh: RDI
-  xl: RSI
-  y: RDX
-  quotient: RCX
-  remainder: R8
-}
-label
-  dodiv;
-asm
-  cmpq %rdi,%rdx
-  ja   dodiv
-  xorl %eax,%eax
-  ret
-dodiv:
-  movq %rdx,%r9
-  movq %rsi,%rax
-  movq %rdi,%rdx
-  divq %r9
-  movq %rax,(%rcx)
-  movq %rdx,(%r8)
-  movl $1,%eax
-end;
-{$endif FPC_ABI_WIN64}
-
-{$ifndef FPC_SYSTEM_HAS_UMUL64X64_128}
-{$define FPC_SYSTEM_HAS_UMUL64X64_128}
-function UMul64x64_128(a,b: uint64; out rHi: uint64): uint64; assembler; nostackframe;
+{$define FPC_SYSTEM_HAS_U64_MUL_U64_TO_U128}
+function u64_mul_u64_to_u128(a,b: uint64; out rHi: uint64): uint64; assembler; nostackframe;
 { Win64: rcx = a, rdx = b, r8 = rHi.
   SysV:  rdi = a, rsi = b, rdx = rHi. }
 asm
@@ -1969,4 +1938,31 @@ asm
   mul b
   mov %rdx, {$ifdef FPC_ABI_WIN64} (%r8) {$else} (%rcx) {$endif}
 end;
-{$endif FPC_SYSTEM_HAS_UMUL64X64_128}
+
+{$define FPC_SYSTEM_HAS_U128_DIV_U64_TO_U64}
+function u128_div_u64_to_u64(xh, xl, y: qword; out quotient, remainder: qword): boolean;nostackframe;assembler;
+{ SysV  xh: RDI, xl: RSI, y: RDX, quotient: RCX, remainder: R8
+  Win64 xh: RCX, xl: RDX, y: R8,  quotient: R9,  remainder: [RSP + 40] }
+asm
+  cmp y, xh
+  jae .Loverflow
+{$ifdef FPC_ABI_WIN64}
+  mov %rdx, %rax
+  mov %rcx, %rdx
+  div %r8
+  mov %rax, (%r9)
+  mov 40(%rsp), %rax
+  mov %rdx, (%rax)
+{$else FPC_ABI_WIN64}
+  movq %rdx,%r9
+  movq %rsi,%rax
+  movq %rdi,%rdx
+  divq %r9
+  movq %rax,(%rcx)
+  movq %rdx,(%r8)
+{$endif FPC_ABI_WIN64}
+  movl $1,%eax
+  ret
+.Loverflow:
+  xor %eax, %eax
+end;
