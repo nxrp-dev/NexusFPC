@@ -3059,9 +3059,9 @@ asm
 end;
 {$endif FPC_SYSTEM_HAS_SAR_QWORD}
 
-{$ifndef FPC_SYSTEM_HAS_UMUL64X64_128}
-{$define FPC_SYSTEM_HAS_UMUL64X64_128}
-function UMul64x64_128(a,b: uint64; out rHi: uint64): uint64; assembler; nostackframe;
+{$ifndef FPC_SYSTEM_HAS_U64_MUL_U64_TO_U128}
+{$define FPC_SYSTEM_HAS_U64_MUL_U64_TO_U128}
+function u64_mul_u64_to_u128(a,b: uint64; out rHi: uint64): uint64; assembler; nostackframe;
 { [esp + 12] = a, [esp + 4] = b, eax = rHi }
 asm
   {                                                   Hi(a)             Lo(a)
@@ -3106,4 +3106,4 @@ asm
   pop %esi
   pop %ebx
 end;
-{$endif FPC_SYSTEM_HAS_UMUL64X64_128}
+{$endif FPC_SYSTEM_HAS_U64_MUL_U64_TO_U128}

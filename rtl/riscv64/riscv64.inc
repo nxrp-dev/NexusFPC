@@ -298,8 +298,8 @@ end;
 {$endif CPURV_HAS_ZBB}
 
 
-{$define FPC_SYSTEM_HAS_UMUL64X64_128}
-function UMul64x64_128(a,b: uint64; out rHi: uint64): uint64; assembler; nostackframe;
+{$define FPC_SYSTEM_HAS_U64_MUL_U64_TO_U128}
+function u64_mul_u64_to_u128(a,b: uint64; out rHi: uint64): uint64; assembler; nostackframe;
 asm
   mulhu a3,a0,a1
   mul a0,a0,a1

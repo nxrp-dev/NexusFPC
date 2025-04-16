@@ -773,14 +773,14 @@ begin
     ul:=-ul-1;
 
   a:=xsr128_32_u32rand;
-  mLo:=UMul64x64_128(uint64(a) shl 32 or xsr128_32_u32rand,ul,uint64(result));
+  mLo:=u64_mul_u64_to_u128(uint64(a) shl 32 or xsr128_32_u32rand,ul,uint64(result));
   if mLo<ul then
     begin
       t:=uint64(-ul) mod ul;
       while mLo<t do
         begin
           a:=xsr128_32_u32rand;
-          mLo:=UMul64x64_128(uint64(a) shl 32 or xsr128_32_u32rand,ul,uint64(result));
+          mLo:=u64_mul_u64_to_u128(uint64(a) shl 32 or xsr128_32_u32rand,ul,uint64(result));
         end;
     end;
 

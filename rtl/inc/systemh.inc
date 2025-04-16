@@ -1060,7 +1060,7 @@ function NtoLE(const AValue: DWord): DWord;{$ifdef SYSTEMINLINE}inline;{$endif}
 function NtoLE(const AValue: Int64): Int64;{$ifdef SYSTEMINLINE}inline;{$endif}
 function NtoLE(const AValue: QWord): QWord;{$ifdef SYSTEMINLINE}inline;{$endif}
 
-function UMul64x64_128(a,b: uint64; out rHi: uint64): uint64;
+function u64_mul_u64_to_u128(a,b: uint64; out rHi: uint64): uint64;
 function u128_div_u64_to_u64(xh, xl, y: qword; out quotient, remainder: qword): boolean;
 
 {$ifdef FPC_HAS_INTERNAL_ROX}
