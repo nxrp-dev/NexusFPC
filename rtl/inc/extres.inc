@@ -419,7 +419,7 @@ begin
   end;
 end;
 
-function ExtEnumResourceNames(ModuleHandle : TFPResourceHMODULE; ResourceType : PAnsiChar; EnumFunc : EnumResNameProc; lParam : PtrInt) : LongBool;
+function ExtEnumResourceNames(ModuleHandle : TFPResourceHMODULE; ResourceType : TResourceId; EnumFunc : EnumResNameProc; lParam : PtrInt) : LongBool;
 var ptr : PResInfoNode;
     totn, totid, i : longword;
     pc : PAnsiChar;
@@ -449,7 +449,7 @@ begin
   end;
 end;
 
-function ExtEnumResourceLanguages(ModuleHandle : TFPResourceHMODULE; ResourceType, ResourceName : PAnsiChar; EnumFunc : EnumResLangProc; lParam : PtrInt) : LongBool;
+function ExtEnumResourceLanguages(ModuleHandle : TFPResourceHMODULE; ResourceType, ResourceName : TResourceId; EnumFunc : EnumResLangProc; lParam : PtrInt) : LongBool;
 var ptr : PResInfoNode;
     tot, i : integer;
 begin
@@ -468,7 +468,7 @@ begin
   end;
 end;
 
-Function ExtFindResource(ModuleHandle: TFPResourceHMODULE; ResourceName, ResourceType: PAnsiChar)
+Function ExtFindResource(ModuleHandle: TFPResourceHMODULE; ResourceName, ResourceType: TResourceId)
 : TFPResourceHandle;
 var ptr : PResInfoNode;
 begin
@@ -493,7 +493,7 @@ begin
 end;
 
 Function ExtFindResourceEx(ModuleHandle: TFPResourceHMODULE; ResourceType,
-  ResourceName: PAnsiChar; Language : word): TFPResourceHandle;
+  ResourceName: TResourceId; Language : word): TFPResourceHandle;
 const LANG_NEUTRAL = 0;
       LANG_ENGLISH = 9;
 var nameptr,ptr : PResInfoNode;

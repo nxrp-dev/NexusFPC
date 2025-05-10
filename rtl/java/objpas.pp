@@ -16,6 +16,8 @@
 {$I-,S-}
 unit objpas;
 
+  {$namespace org.freepascal.rtl}
+
   interface
 
     { first, in object pascal, the integer type must be redefined }
@@ -23,6 +25,23 @@ unit objpas;
        MaxInt  = MaxLongint;
     type
        Integer  = longint;
+
+       { Ansistring are the default }
+       PString = PAnsiString;
+
+    {$ifdef FPC_HAS_FEATURE_CLASSES}
+    var
+       ExceptionClass: TClass; { Exception base class (must actually be Exception, defined in sysutils ) }
+    {$endif FPC_HAS_FEATURE_CLASSES}
+
+{****************************************************************************
+                             Resource strings.
+****************************************************************************}
+
+    { Delphi compatibility }
+    type
+      PResStringRec=^RTLString;
+      TResStringRec=RTLString;
 
   implementation
 

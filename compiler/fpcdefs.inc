@@ -323,7 +323,6 @@
   {$define cpu32bitaddr}
   {$define cpuhighleveltarget}
   {$define symansistr}
-  {$define SUPPORT_GET_FRAME}
 {$endif}
 
 {$ifdef aarch64}

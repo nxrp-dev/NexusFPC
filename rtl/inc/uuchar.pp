@@ -15,6 +15,9 @@
 
 unit uuchar;
 
+{$namespace org.freepascal.rtl}
+{$mode fpc}
+
 interface
 
   type

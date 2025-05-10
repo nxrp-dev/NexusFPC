@@ -2,6 +2,7 @@
 {$IFNDEF FPC_DOTTEDUNITS}
 unit jdk15;
 {$ENDIF FPC_DOTTEDUNITS}
+{$namespace org.freepascal.rtl}
 {$mode delphi}
 
 interface

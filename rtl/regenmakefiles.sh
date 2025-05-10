@@ -55,25 +55,34 @@ popd >/dev/null 2>&1
 #
 # OS-specific
 #
-for d in *
-do
+function GenerateMakefile {
+  local d="$1"
+  local TARGETS="$2"
   if [ -f "$d/Makefile.fpc" ]; then
     echo "Doing directory $d"
-    pushd "$RTLDIR/$d" >/dev/null 2>&1
-    case $d in
-      darwin)
-        TARGETS="darwin,ios,iphonesim" ;;
-      macos)
-        TARGETS="macosclassic" ;;
-      *)
-        TARGETS="$d" ;;
-    esac
+    pushd "$d" >/dev/null 2>&1
     CMD="$FPCMAKE -T$TARGETS -q -x $RTLDIR/inc/Makefile.rtl"
     echo "Command: $CMD"
     $CMD
     popd >/dev/null 2>&1
   fi
+}
+
+for d in *
+do
+  case $d in
+    darwin)
+      TARGETS="darwin,ios,iphonesim" ;;
+    macos)
+      TARGETS="macosclassic" ;;
+    *)
+      TARGETS="$d" ;;
+  esac
+  GenerateMakefile "$d" "$TARGETS"
 done
+
+GenerateMakefile "$RTLDIR/android/jvm" "jvm-android"
+
 #
 # That's all, folks!
 #

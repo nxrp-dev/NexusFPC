@@ -40,7 +40,7 @@ Procedure HandleErrorAddrFrameInd (Errno : longint;addr : CodePointer; frame : P
 
 {$ifdef FPC_HAS_FEATURE_TEXTIO}
 type
-  FileFunc = Procedure(var t : TextRec);
+  FileFunc = TextRec.FileFunc;
 {$endif FPC_HAS_FEATURE_TEXTIO}
 
 const
@@ -48,10 +48,8 @@ const
 { Random / Randomize constants }
   OldRandSeed : Cardinal = 0;
 
-(*
 { For Error Handling.}
   ErrorBase : Pointer = nil;public name 'FPC_ERRORBASE';
-*)
 
 {$ifndef cpujvm}
 { Used by the ansi/widestrings and maybe also other things in the future }
@@ -238,43 +236,330 @@ function do_isdevice(handle:thandle):boolean;forward;
   {$Error Can't determine processor type !}
 {$endif}
 
-{$ifndef cpujvm}
-procedure fillchar(var x;count : SizeInt;value : boolean);
+{$include measure.inc}
+{$include wrap.inc}
+{$include serialize.inc}
+
+function CloneDest(source:JLObject): JLObject;
+  { There is a special case when we have a
+    "var" parameter and the parameter type is:
+    a set, an array of sets, or a record
+    having a field which is a set. In this
+    case we must clone the entire object otherwise
+    the caller will always receive an empty set. }
+type
+  Arr1FpcBaseRecordType = array of FpcBaseRecordType;
+var
+  componentType: JLClass;
+  descendantType: JLClass;
+  arr: Arr1JLObject;
+  index: longint;
 begin
-  fillchar(x,count,byte(value));
+  result:=source;
+  if source=nil then
+    result:=nil
+  else if source is JUEnumSet then
+    result:=JUEnumSet(source).Clone
+  else if source is FpcBitSet then
+    result:=FpcBitSet(source).Clone
+  else if source is FpcBaseRecordType then
+    result:=FpcBaseRecordType(source).Clone
+  else if source.GetClass.IsArray then
+  begin
+    componentType:=source.GetClass.GetComponentType;
+    descendantType:=componentType;
+    while descendantType.IsArray do
+      descendantType:=descendantType.GetComponentType;
+    if
+      ( JLClass(JUEnumSet).IsAssignableFrom(descendantType) ) or
+      ( JLClass(FpcBitSet).IsAssignableFrom(descendantType) ) or
+      ( JLClass(FpcBaseRecordType).IsAssignableFrom(descendantType) ) then
+    begin
+      result:=JLRArray.NewInstance(componentType, Length(Arr1JLObject(source)));
+      arr:=Arr1JLObject(result);
+      if componentType.IsArray then
+        for index:=0 to high(arr) do
+          arr[index]:=CloneDest(Arr1JLObject(source)[index])
+      else if JLClass(JUEnumSet).IsAssignableFrom(descendantType) then
+        for index:=0 to high(arr) do
+          arr[index]:=Arr1JUEnumSet(source)[index].Clone
+      else if JLClass(FpcBitSet).IsAssignableFrom(descendantType) then
+        for index:=0 to high(arr) do
+          arr[index]:=Arr1JUBitSet(source)[index].Clone
+      else if JLClass(FpcBaseRecordType).IsAssignableFrom(descendantType) then
+        for index:=0 to high(arr) do
+          arr[index]:=Arr1FpcBaseRecordType(source)[index].Clone;
+    end;
+  end;
+end;
+
+procedure Move(const source;sourceoffset:SizeInt;var dest;destoffset:SizeInt;count:SizeInt);
+var
+  sourceSize: longint;
+  wrappedSource: JLObject;
+  sourceSerializer: ISerializer;
+  sourceByte: byte;
+  destSize: longint;
+  wrappedDest: JLObject;
+  destSerializer: ISerializer;
+  destByte: byte;
+  { a java object has a four byte hash, at read time we remember which bytes mean
+    which object, at write time we use the bytes written to lookup the object }
+  pointerLookup: _JUHashTable;
+begin
+  if count>0 then
+  begin
+    pointerLookup:=_JUHashTable.Create;
+    dest:=clonedest(JLObject(dest));
+    sourceSize:=measureobject(JLObject(source));
+    wrappedSource:=wrap(source,sourceSize,pointerLookup);
+    destSize:=measureobject(JLObject(dest));
+    wrappedDest:=wrap(dest,destSize,pointerLookup);
+    sourceSerializer:=newserializer(
+      wrappedSource,
+      sourceSize,
+      newdatawindow(sourceOffset,count),
+      pointerLookup);
+    destSerializer:=newserializer(
+      wrappedDest,
+      destSize,
+      newdatawindow(destOffset,count),
+      pointerLookup);
+    for sourceByte in sourceSerializer do
+      destSerializer.Put(sourceByte);
+    dest:=unwrap(wrappedDest,JLObject(dest),pointerLookup);
+  end;
+end;
+
+procedure Move(const source;var dest;count:SizeInt);
+var
+  destObj: JLObject;
+begin
+  destObj:=JLObject(dest);
+  move(source,0,destObj,0,count);
+  dest:=destObj;
+end;
+
+
+procedure fillchar(var x;offset,count : SizeInt;value : boolean);
+var
+  obj: JLObject;
+begin
+  obj:=JLObject(x);
+  fillbyte(obj,offset,count,byte(value));
+  x:=obj;
+end;
+
+
+procedure fillchar(var x;count : SizeInt;value : boolean);
+var
+  obj: JLObject;
+begin
+  obj:=JLObject(x);
+  fillbyte(obj,0,count,byte(value));
+  x:=obj;
+end;
+
+
+procedure fillchar(var x;offset,count : SizeInt;value : AnsiChar);
+var
+  obj: JLObject;
+begin
+  obj:=JLObject(x);
+  fillbyte(obj,offset,count,byte(value));
+  x:=obj;
 end;
 
 
 procedure fillchar(var x;count : SizeInt;value : AnsiChar);
+var
+  obj: JLObject;
 begin
-  fillchar(x,count,byte(value));
+  obj:=JLObject(x);
+  fillbyte(obj,0,count,byte(value));
+  x:=obj;
+end;
+
+
+procedure FillByte (var x;offset,count : SizeInt;value : byte );
+var
+  size : longint;
+  wrapped : JLObject;
+  serializer : ISerializer;
+begin
+  if count>0 then
+  begin
+    x:=clonedest(JLObject(x));
+    size:=measureobject(JLObject(x));
+    wrapped:=wrap(x,size,nil);
+    serializer:=newserializer(
+      wrapped,
+      size,
+      newdatawindow(offset,count),
+      nil);
+    while count<>0 do
+    begin
+      serializer.put(value);
+      dec(count);
+    end;
+    x:=unwrap(wrapped,JLObject(x),nil);
+  end;
 end;
 
 
 procedure FillByte (var x;count : SizeInt;value : byte );
+var
+  obj: JLObject;
 begin
-  FillChar (X,Count,VALUE);
+  obj:=JLObject(x);
+  fillbyte(obj,0,count,value);
+  x:=obj;
 end;
 
 
+procedure fillword(var x;offset,count : SizeInt;value : word);
+var
+  size : longint;
+  wrapped : JLObject;
+  serializer : ISerializer;
+begin
+  if count>0 then
+  begin
+    x:=clonedest(JLObject(x));
+    size:=measureobject(JLObject(x));
+    wrapped:=wrap(x,size,nil);
+    serializer:=newserializer(
+      wrapped,
+      size,
+      newdatawindow(offset,count*sizeof(value)),
+      nil);
+    while count<>0 do
+    begin
+      serializer.put(byte(value shr (0*8) and $FF));
+      serializer.put(byte(value shr (1*8) and $FF));
+      dec(count);
+    end;
+    x:=unwrap(wrapped,JLObject(x),nil);
+  end;
+end;
+
+
+procedure fillword(var x;count : SizeInt;value : word);
+var
+  obj: JLObject;
+begin
+  obj:=JLObject(x);
+  fillword(obj,0,count,value);
+  x:=obj;
+end;
+
+
+procedure filldword(var x;offset,count : SizeInt;value : dword);
+var
+  size : longint;
+  wrapped : JLObject;
+  serializer : ISerializer;
+begin
+  if count>0 then
+  begin
+    x:=clonedest(JLObject(x));
+    size:=measureobject(JLObject(x));
+    wrapped:=wrap(x,size,nil);
+    serializer:=newserializer(
+      wrapped,
+      size,
+      newdatawindow(offset,count*sizeof(value)),
+      nil);
+    while count<>0 do
+    begin
+      serializer.put(byte(value shr (0*8) and $FF));
+      serializer.put(byte(value shr (1*8) and $FF));
+      serializer.put(byte(value shr (2*8) and $FF));
+      serializer.put(byte(value shr (3*8) and $FF));
+      dec(count);
+    end;
+    x:=unwrap(wrapped,JLObject(x),nil);
+  end;
+end;
+
+
+procedure filldword(var x;count : SizeInt;value : dword);
+var
+  obj: JLObject;
+begin
+  obj:=JLObject(x);
+  filldword(obj,0,count,value);
+  x:=obj;
+end;
+
+
+procedure fillqword(var x;offset,count : SizeInt;value : qword);
+var
+  size : longint;
+  wrapped : JLObject;
+  serializer : ISerializer;
+begin
+  if count>0 then
+  begin
+    x:=clonedest(JLObject(x));
+    size:=measureobject(JLObject(x));
+    wrapped:=wrap(x,size,nil);
+    serializer:=newserializer(
+      wrapped,
+      size,
+      newdatawindow(offset,count*sizeof(value)),
+      nil);
+    while count<>0 do
+    begin
+      serializer.put(byte(value shr (0*8) and $FF));
+      serializer.put(byte(value shr (1*8) and $FF));
+      serializer.put(byte(value shr (2*8) and $FF));
+      serializer.put(byte(value shr (3*8) and $FF));
+      serializer.put(byte(value shr (4*8) and $FF));
+      serializer.put(byte(value shr (5*8) and $FF));
+      serializer.put(byte(value shr (6*8) and $FF));
+      serializer.put(byte(value shr (7*8) and $FF));
+      dec(count);
+    end;
+    x:=unwrap(wrapped,JLObject(x),nil);
+  end;
+end;
+
+
+procedure fillqword(var x;count : SizeInt;value : qword);
+var
+  obj: JLObject;
+begin
+  obj:=JLObject(x);
+  fillqword(obj,0,count,value);
+  x:=obj;
+end;
+
+{$ifndef cpujvm}
 function IndexChar(Const buf;len:SizeInt;b:AnsiChar):SizeInt;
 begin
   IndexChar:=IndexByte(Buf,Len,byte(B));
 end;
+{$endif cpujvm}
 
 
+{$ifndef cpujvm}
 function CompareChar(Const buf1,buf2;len:SizeInt):SizeInt;
 begin
   CompareChar:=CompareByte(buf1,buf2,len);
 end;
+{$endif cpujvm}
 
 
 procedure fpc_zeromem(p:pointer;len:ptruint);
+  { Used to initialise records to their default value. The pointer passed in
+    by the compiler is already correctly initialised, so do nothing. }
 begin
-  FillChar(p^,len,0);
+  // do nothing
 end;
 
 
+{$ifndef cpujvm}
 procedure fpc_fillmem(out data;len:ptruint;b : byte);
 begin
   FillByte(data,len,b);
@@ -692,98 +977,131 @@ end;
 *)
 {$endif FPC_SYSTEM_HAS_STACKTOP}
 
+function get_frame_intern(skipcount : longint=2) : pointer;
+  { provides the stacktrace of the function which calls it }
+  { address of this function and of JLThread.GetStracktrace excluded by default }
+var
+  frame : _Arr1JLStackTraceElement;
+begin
+  get_frame_intern:=nil;
+  frame:=_JLThread.CurrentThread.GetStacktrace;
+  get_frame_intern:=pointer(frame);
+  if length(frame)>skipcount then
+  begin
+    frame:=copy(frame,skipcount,length(frame)-skipcount);
+    get_frame_intern:=pointer(frame);
+  end;
+end;
+
+{$ifndef INTERNAL_BACKTRACE}
+function get_frame : pointer;
+  { provides the stacktrace of the function which calls it }
+  { one address is skipped automatically by the compiler
+    (code is auto-generated to modify the result of this function) }
+  { if your build of the compiler defines SUPPORT_GET_FRAME then you will
+    have a dummy version of get_frame which always returns nil }
+begin
+  get_frame:=get_frame_intern(1);
+end;
+{$endif INTERNAL_BACKTRACE}
+
 {$ifndef FPC_SYSTEM_HAS_GET_PC_ADDR}
-  { This provides a dummy implementation
-    of get_pc_addr function, for CPU's that don't need
-    the instruction address to walk the stack. }
 function get_pc_addr : codepointer;
+  { provides the address of the function which calls it }
+  { the address of this function and of JLThread.GetStracktrace are skipped }
+var
+  frame : _Arr1JLStackTraceElement;
 begin
   get_pc_addr:=nil;
+  frame:=_JLThread.CurrentThread.GetStacktrace;
+  if length(frame)>2 then
+    get_pc_addr:=frame[2];
 end;
 {$endif ndef FPC_SYSTEM_HAS_GET_PC_ADDR}
 
 {$ifndef FPC_SYSTEM_HAS_GET_CALLER_STACKINFO}
-  { This provides a simple implementation
-    of get_caller_stackinfo procedure,
-    using get_caller_addr and get_caller_frame
-    functions. }
 procedure get_caller_stackinfo(var framebp : pointer; var addr : codepointer);
+  { adjusts the address to point instead to the address which called it }
 var
-  nextbp : pointer;
-  nextaddr : codepointer;
+  frame : _Arr1JLStackTraceElement;
+  index : longint;
 begin
-  nextbp:=get_caller_frame(framebp,addr);
-  nextaddr:=get_caller_addr(framebp,addr);
-  framebp:=nextbp;
-  addr:=nextaddr;
+  frame:=_Arr1JLStackTraceElement(framebp);
+  index:=0;
+  while (index<>length(frame)) and (not frame[index].equals(jlobject(addr))) do
+    inc(index);
+  inc(index);
+  if index<length(frame) then
+    addr:=frame[index]
+  else
+    begin
+      framebp:=nil;
+      addr:=nil;
+    end;
 end;
 {$endif ndef FPC_SYSTEM_HAS_GET_CALLER_STACKINFO}
 
 
 procedure fpc_rangeerror;[public,alias:'FPC_RANGEERROR']; compilerproc;
 begin
-  HandleErrorAddrFrameInd(201,get_pc_addr,get_frame);
+  HandleErrorAddrFrameInd(201,get_pc_addr,get_frame_intern);
 end;
 
 
 procedure fpc_divbyzero;[public,alias:'FPC_DIVBYZERO']; compilerproc;
 begin
-  HandleErrorAddrFrameInd(200,get_pc_addr,get_frame);
+  HandleErrorAddrFrameInd(200,get_pc_addr,get_frame_intern);
 end;
 
 
 procedure fpc_overflow;[public,alias:'FPC_OVERFLOW']; compilerproc;
 begin
-  HandleErrorAddrFrameInd(215,get_pc_addr,get_frame);
+  HandleErrorAddrFrameInd(215,get_pc_addr,get_frame_intern);
 end;
 
 
 procedure fpc_threaderror; [public,alias:'FPC_THREADERROR'];
 begin
-  HandleErrorAddrFrameInd(236{RuntimeErrorExitCodes[reThreadError]},get_pc_addr,get_frame);
+  HandleErrorAddrFrameInd(236{RuntimeErrorExitCodes[reThreadError]},get_pc_addr,get_frame_intern);
 end;
 
 
 procedure fpc_invalidpointer; [public,alias:'FPC_INVALIDPOINTER']; compilerproc;
 begin
-  HandleErrorAddrFrameInd(216,get_pc_addr,get_frame);
+  HandleErrorAddrFrameInd(216,get_pc_addr,get_frame_intern);
 end;
 
 
-(*
 procedure fpc_iocheck;[public,alias:'FPC_IOCHECK']; compilerproc;
 var
   l : longint;
-  HInoutRes : PWord;
+  HInoutRes : Word;
 begin
-  HInOutRes:=@InoutRes;
-  if HInOutRes^<>0 then
+  HInOutRes:=InoutRes;
+  if HInOutRes<>0 then
    begin
-     l:=HInOutRes^;
-     HInOutRes^:=0;
-     HandleErrorAddrFrameInd(l,get_pc_addr,get_frame);
+     l:=HInOutRes;
+     InOutRes:=0;
+     HandleErrorAddrFrameInd(l,get_pc_addr,get_frame_intern);
    end;
 end;
 
 
 Function IOResult:Word;
-var
-  HInoutRes : PWord;
 Begin
-  HInoutRes:=@InoutRes;
-  IOResult:=HInOutRes^;
-  HInOutRes^:=0;
+  IOResult:=InoutRes;
+  InOutRes:=0;
 End;
 
 
 Function GetThreadID:TThreadID;{$ifdef SYSTEMINLINE}inline;{$endif}
 begin
-(* ThreadID is stored in a threadvar and made available in interface *)
-(* to allow setup of this value during thread initialization.        *)
+  { ThreadID is stored in a threadvar and made available in interface }
+  { to allow setup of this value during thread initialization.        }
   GetThreadID := ThreadID;
 end;
 
-
+(*
 function fpc_safecallcheck(res : hresult) : hresult;[public,alias:'FPC_SAFECALLCHECK']; compilerproc; {$ifdef CPU86} register; {$endif}
 begin
   if res<0 then
@@ -948,6 +1266,24 @@ Procedure FinalizeHeap;forward;
 {$endif FPC_HAS_FEATURE_HEAP}
 
 {$ifdef FPC_HAS_FEATURE_CONSOLEIO}
+procedure OpenStdIO(var f:text;mode:longint;hdl:thandle); forward;
+
+procedure SysInitStdIO;
+begin
+  if StdInputHandle=nil then
+    StdInputHandle:=JLObject(JLSystem.FIn);
+  if StdOutputHandle=nil then
+    StdOutputHandle:=JLObject(JLSystem.FOut);
+  if StdErrorHandle=nil then
+    StdErrorHandle:=JLObject(JLSystem.FErr);
+  IsConsole:=True;
+  OpenStdIO(Text(Input),fmInput,StdInputHandle);
+  OpenStdIO(Text(Output),fmOutput,StdOutputHandle);
+  OpenStdIO(Text(StdOut),fmOutput,StdOutputHandle);
+  OpenStdIO(Text(ErrOutput),fmOutput,StdErrorHandle);
+  OpenStdIO(Text(StdErr),fmOutput,StdErrorHandle);
+end;
+
 procedure SysFlushStdIO;
 begin
   { Make sure that all output is written to the redirected file }
@@ -963,20 +1299,14 @@ end;
 {$endif FPC_HAS_FEATURE_CONSOLEIO}
 
 Procedure InternalExit;
-(*
 var
-  current_exit : Procedure;
+  current_exit : tProcedure;
 {$ifdef FPC_HAS_FEATURE_CONSOLEIO}
-  pstdout : ^Text;
+  pstdout : Text;
 {$endif}
-{$if defined(MSWINDOWS) or defined(OS2)}
-  i : longint;
-{$endif}
-*)
 Begin
-(*
 {$ifdef SYSTEMDEBUG}
-  writeln('InternalExit');
+  writeln(stdout,'InternalExit');
 {$endif SYSTEMDEBUG}
   while exitProc<>nil Do
    Begin
@@ -986,7 +1316,7 @@ Begin
      current_exit();
    End;
   { Finalize units }
-  FinalizeUnits;
+  // FinalizeUnits;
 
 {$ifdef FPC_HAS_FEATURE_CONSOLEIO}
   { the embedded system unit itself contains no routines for console i/o
@@ -994,56 +1324,21 @@ Begin
     redirection to seriell i/o }
 {$ifndef EMBEDDED}
   { Show runtime error and exit }
-  pstdout:=@stdout;
+  if WriteErrorsToStdErr then
+    pstdout:=stderr
+  else
+    pstdout:=stdout;
   If erroraddr<>nil Then
    Begin
-     Writeln(pstdout^,'Runtime error ',Errorcode,' at $',hexstr(erroraddr));
+     Writeln(pstdout,'Runtime error ',Errorcode,' at $',hexstr(erroraddr));
      { to get a nice symify }
-     Writeln(pstdout^,BackTraceStrFunc(Erroraddr));
-     dump_stack(pstdout^,ErrorBase,ErrorAddr);
-     Writeln(pstdout^,'');
+     Writeln(pstdout,BackTraceStrFunc(Erroraddr));
+     dump_stack(pstdout,ErrorBase,ErrorAddr);
+     Writeln(pstdout,'');
    End;
   SysFlushStdIO;
 {$endif EMBEDDED}
 {$endif FPC_HAS_FEATURE_CONSOLEIO}
-
-{$if defined(MSWINDOWS) or defined(OS2)}
-  { finally release the heap if possible, especially
-    important for DLLs.
-    Reset the array to nil, and finally also argv itself to
-    avoid double freeing problem in case this function gets called twice. }
-  if assigned(argv) then
-    begin
-      for i:=0 to argc-1 do
-        if assigned(argv[i]) then
-          begin
-            sysfreemem(argv[i]);
-            argv[i]:=nil;
-          end;
-      sysfreemem(argv);
-      argv:=nil;
-    end;
-{$endif}
-{$ifdef LINUX}
-  {sysfreemem already checks for nil}
-  { Do not try to do anything if the heap manager already reported an error }
-  if (errorcode<>203) and (errorcode<>204) then
-    sysfreemem(calculated_cmdline);
-{$endif}
-{$ifdef BSD}
-  { Do not try to do anything if the heap manager already reported an error }
-  if (errorcode<>203) and (errorcode<>204) then
-    sysfreemem(cmdline);
-{$endif}
-
-{$ifdef FPC_HAS_FEATURE_HEAP}
-{$ifndef HAS_MEMORYMANAGER}
-{$ifndef FPC_NO_DEFAULT_HEAP}
-  FinalizeHeap;
-{$endif not FPC_NO_DEFAULT_HEAP}
-{$endif not HAS_MEMORYMANAGER}
-{$endif FPC_HAS_FEATURE_HEAP}
-*)
 End;
 
 
@@ -1062,6 +1357,94 @@ begin
 end;
 
 
+type
+  TShutdownThread = class(_JLThread)
+  public
+    procedure Run; override;
+  end;
+
+
+procedure TShutdownThread.Run;
+begin
+  InternalExit;
+end;
+
+
+var
+  ShutdownThread : TShutdownThread = nil;
+
+
+procedure InstallShutdownHook;
+  { fpc does not call the exit proc unless we explicitly call halt,
+    so we install a shutdown hook to call it for us }
+begin
+  ShutdownThread:=TShutdownThread.Create;
+  _JLRuntime.GetRuntime.AddShutdownHook(ShutdownThread);
+end;
+
+
+type
+  TExceptionHandler = class(JLObject, _JLThread.InnerUncaughtExceptionHandler)
+  private
+    FAlreadyRun: Boolean;
+  public
+    procedure UncaughtException(thread : _JLThread; throwable : _JLThrowable);
+  end;
+
+
+{ JVM Notes: floating point division by zero returns +INF and does not raise an exception }
+procedure TExceptionHandler.UncaughtException(thread : _JLThread; throwable : _JLThrowable);
+const
+  DivByZeroCode = 200;
+  AccessViolationCode = 216;
+  RangeErrorCode = 201;
+  UnhandledExceptionCode = 217;
+  InvalidTypeCastCode = 219;
+var
+  tracelist : _Arr1JLStacktraceElement;
+  code : longint;
+  addr : codepointer;
+begin
+  if not FAlreadyRun then
+    begin
+      FAlreadyRun:=True;
+      while throwable.GetCause<>nil do
+        throwable:=throwable.GetCause;
+      tracelist:=throwable.GetStacktrace;
+      addr:=nil;
+      if length(tracelist)<>0 then
+        addr:=codepointer(tracelist[0]);
+      if JLObject(throwable) is TObject then
+{$ifdef FPC_HAS_FEATURE_EXCEPTIONS}
+        fpc_RaiseException(TObject(throwable),addr,pointer(tracelist))
+{$else FPC_HAS_FEATURE_EXCEPTIONS}
+        HandleErrorAddrFrame(UnhandledExceptionCode,addr,pointer(tracelist))
+{$endif FPC_HAS_FEATURE_EXCEPTIONS}
+      else
+        begin
+          code:=0;
+          if throwable is _JLArithmeticException then
+            code:=DivByZeroCode
+          else if throwable is _JLNullpointerException then
+            code:=AccessViolationCode
+          else if throwable is _JLIndexOutOfBoundsException then
+            code:=RangeErrorCode
+          else if throwable is _JLClassCastException then
+            code:=InvalidTypeCastCode;
+          HandleErrorAddrFrame(code,addr,pointer(tracelist));
+        end;
+    end;
+end;
+
+procedure InstallExceptionHandler;
+var
+  ExceptionHandler : TExceptionHandler;
+begin
+  ExceptionHandler:=TExceptionHandler.Create;
+  _JLThread.SetDefaultUncaughtExceptionHandler(ExceptionHandler);
+end;
+
+
 Procedure Halt(ErrNum: Longint);
 Begin
 {$ifdef FPC_HAS_FEATURE_EXITCODE}
@@ -1072,15 +1455,17 @@ Begin
 {$endif FPC_LIMITED_EXITCODE}
     ExitCode:=ErrNum;
 {$endif FPC_HAS_FEATURE_EXITCODE}
+  if ShutdownThread<>nil then
+    _JLRuntime.GetRuntime.RemoveShutdownHook(ShutdownThread);
   internal_do_exit;
 end;
 
-(*
+
 function SysBackTraceStr (Addr: CodePointer): ShortString;
 begin
   SysBackTraceStr:='  $'+hexstr(addr);
 end;
-*)
+
 
 (*
 function CaptureBacktrace(skipframes,count:sizeint;frames:PCodePointer):sizeint;
@@ -1117,17 +1502,10 @@ Procedure HandleErrorAddrFrame (Errno : longint;addr : CodePointer; frame : Poin
 begin
   If pointer(ErrorProc)<>Nil then
     ErrorProc(Errno,addr,frame);
-  raise FpcRunTimeError.Create(Errno);
-(*
   errorcode:=word(Errno);
   erroraddr:=addr;
   errorbase:=frame;
-{$ifdef FPC_HAS_FEATURE_EXCEPTIONS}
-  if ExceptAddrStack <> nil then
-    raise TObject(nil) at addr,frame;
-{$endif FPC_HAS_FEATURE_EXCEPTIONS}
   Halt(errorcode);
-*)
 end;
 
 { This is used internally by system skip first level,
@@ -1156,7 +1534,7 @@ procedure fpc_handleerror (Errno : longint); compilerproc; [public,alias : 'FPC_
   Internal function should ALWAYS call HandleError instead of RunError.
 }
 begin
-  HandleErrorAddrFrameInd(Errno,get_pc_addr,get_frame);
+  HandleErrorAddrFrameInd(Errno,get_pc_addr,get_frame_intern);
 end;
 
 
@@ -1166,13 +1544,11 @@ var
   pcaddr : codepointer;
 begin
   errorcode:=w;
-(*
   pcaddr:=get_pc_addr;
-  bp:=get_frame;
+  bp:=get_frame_intern;
   get_caller_stackinfo(bp,pcaddr);
   erroraddr:=pcaddr;
   errorbase:=bp;
-*)
   Halt(errorcode);
 end;
 
@@ -1195,41 +1571,25 @@ begin
 end;
 
 
-{$ifndef CPUJVM}
+{$ifdef FPC_HAS_FEATURE_TEXTIO}
 Procedure dump_stack(var f : text;fp : Pointer; addr : CodePointer);
-var
-  i : Longint;
-  prevfp : Pointer;
-  is_dev : boolean;
 Begin
 {$ifdef FPC_HAS_FEATURE_EXCEPTIONS}
   try
 {$endif FPC_HAS_FEATURE_EXCEPTIONS}
-    { Frame of this procedure acts as StackBottom, fp values below that are invalid. }
-    prevfp:=get_frame;
-    i:=0;
-    is_dev:=do_isdevice(textrec(f).Handle);
-    { sanity checks, new frame pointer must be always greater than the old one, further
-      it must point into the stack area, else something went wrong }
-    while (fp>prevfp) and (fp<StackTop) do
-     Begin
-       prevfp:=fp;
-       get_caller_stackinfo(fp,addr);
-       if (addr=nil) then
-         break;
-       Writeln(f,BackTraceStrFunc(addr));
-       if (fp=nil) then
-         break;
-       Inc(i);
-       If ((i>max_frame_dump) and is_dev) or (i>256) Then
-         break;
-     End;
+     if (fp<>nil) and (addr<>nil) then
+       begin
+         get_caller_stackinfo(fp,addr);
+         if (addr<>nil) then
+           Writeln(f,BackTraceStrFunc(addr));
+       end;
 {$ifdef FPC_HAS_FEATURE_EXCEPTIONS}
    except
      { prevent endless dump if an exception occurred }
    end;
 {$endif FPC_HAS_FEATURE_EXCEPTIONS}
 End;
+{$endif FPC_HAS_FEATURE_TEXTIO}
 
 
 {$ifdef FPC_HAS_FEATURE_EXCEPTIONS}
@@ -1249,15 +1609,12 @@ begin
 end;
 {$endif FPC_HAS_FEATURE_EXCEPTIONS}
 
-{$endif CPUJVM}
 
-
-{$ifdef FPC_HAS_FEATURE_HEAP}
 Type
   PExitProcInfo = ^TExitProcInfo;
   TExitProcInfo = Record
     Next     : PExitProcInfo;
-    SaveExit : CodePointer;
+    SaveExit : TProcedure;
     Proc     : TProcedure;
   End;
 const
@@ -1272,23 +1629,22 @@ Begin
   ExitProcList:=P^.Next;
   ExitProc:=P^.SaveExit;
   Proc:=P^.Proc;
-  DisPose(P);
   Proc();
 End;
 
 
 Procedure AddExitProc(Proc: TProcedure);
 var
-  P : PExitProcInfo;
+  Rec : TExitProcInfo;
+  P   : PExitProcInfo;
 Begin
-  New(P);
+  P:=@Rec;
   P^.Next:=ExitProcList;
   P^.SaveExit:=ExitProc;
   P^.Proc:=Proc;
   ExitProcList:=P;
   ExitProc:=@DoExitProc;
 End;
-{$endif FPC_HAS_FEATURE_HEAP}
 
 
 {$ifdef FPC_HAS_FEATURE_HEAP}
@@ -1417,19 +1773,16 @@ begin
   If pointer(AbstractErrorProc)<>nil then
     AbstractErrorProc();
 *)
-  HandleErrorAddrFrameInd(211,get_pc_addr,get_frame);
+  HandleErrorAddrFrameInd(211,get_pc_addr,get_frame_intern);
 end;
 
 
 Procedure fpc_assert(Const Msg,FName:unicodestring;LineNo:Longint;ErrorAddr:Pointer); [Public,Alias : 'FPC_ASSERT']; compilerproc;
 begin
-(*
   if pointer(AssertErrorProc)<>nil then
     AssertErrorProc(Msg,FName,LineNo,ErrorAddr)
   else
-    HandleErrorAddrFrameInd(227,get_pc_addr,get_frame);
-*)
-  raise JLAssertionError.Create(JLObject(Fname+'('+unicodestring(JLInteger.valueOf(LineNo).toString)+'): '+Msg));
+    HandleErrorAddrFrameInd(227,get_pc_addr,get_frame_intern);
 end;
 
 
@@ -1471,7 +1824,7 @@ end;
                           Thread support
 *****************************************************************************}
 
-{$if defined(FPC_HAS_FEATURE_THREADING) and not defined(cpujvm)}
+{$if defined(FPC_HAS_FEATURE_THREADING)}
 { Generic threadmanager }
 {$i thread.inc}
 
@@ -1484,7 +1837,7 @@ end;
 { OS Dependent implementation }
 {$i systhrd.inc}
 {$endif DISABLE_NO_THREAD_MANAGER}
-{$endif FPC_HAS_FEATURE_THREADING and not cpujvm}
+{$endif FPC_HAS_FEATURE_THREADING}
 
 
 {*****************************************************************************
@@ -1494,6 +1847,7 @@ end;
 
 {$ifdef FPC_HAS_FEATURE_FILEIO}
 { Allow slash and backslash as separators }
+{$ifndef CPUJVM}
 procedure DoDirSeparators(var p: PAnsiChar; inplace: boolean = true);
 var
   i : longint;
@@ -1515,7 +1869,9 @@ begin
         p[i]:=DirectorySeparator;
       end;
 end;
+{$endif CPUJVM}
 
+{$ifndef CPUJVM}
 procedure DoDirSeparators(var p: pwidechar; inplace: boolean = true);
 var
   i : longint;
@@ -1538,6 +1894,7 @@ begin
         p[i]:=DirectorySeparator;
       end;
 end;
+{$endif CPUJVM}
 
 procedure DoDirSeparators(var p:shortstring);
 var
@@ -1563,10 +1920,16 @@ begin
         if not unique then
           begin
             uniquestring(ps);
+{$ifndef CPUJVM}
             p:=PAnsiChar(ps);
+{$endif CPUJVM}
             unique:=true;
           end;
+{$ifndef CPUJVM}
         p[i-1]:=DirectorySeparator;
+{$else CPUJVM}
+        ps[i]:=DirectorySeparator;
+{$endif CPUJVM}
       end;
 end;
 {$endif FPC_HAS_FEATURE_ANSISTRINGS}
@@ -1586,10 +1949,16 @@ begin
         if not unique then
           begin
             uniquestring(ps);
+{$ifndef CPUJVM}
             p:=pwidechar(ps);
+{$endif CPUJVM}
             unique:=true;
           end;
+{$ifndef CPUJVM}
         p[i-1]:=DirectorySeparator;
+{$else CPUJVM}
+        ps[i]:=DirectorySeparator;
+{$endif CPUJVM}
       end;
 end;
 {$endif FPC_HAS_FEATURE_UNICODESTRINGS}
@@ -1692,15 +2061,15 @@ function min(v1,v2 : SizeInt) : SizeInt;
 
 {$ifdef FPC_HAS_FEATURE_TEXTIO}
 { Text file }
-{$i text.inc}
+{$i jtext.inc}
 {$endif FPC_HAS_FEATURE_TEXTIO}
 
 {$ifdef FPC_HAS_FEATURE_FILEIO}
 { Untyped file }
-{$i file.inc}
+{$i jfile.inc}
 
 { Typed file }
-{$i typefile.inc}
+{$i jtypefile.inc}
 {$endif FPC_HAS_FEATURE_FILEIO}
 
 
@@ -1720,8 +2089,9 @@ procedure do_getdir(drivenr : byte;var dir : rawbytestring);
 var
   u: unicodestring;
 begin
+  u:='';
   Do_getdir(drivenr,u);
-  widestringmanager.Unicode2AnsiMoveProc(pwidechar(u),dir,DefaultRTLFileSystemCodePage,length(u));
+  widestringmanager.Unicode2AnsiMoveProc({$ifdef CPUJVM}pwidechar(JLString(u).toCharArray){$else}pwidechar(u){$endif},dir,DefaultRTLFileSystemCodePage,length(u));
 end;
 {$endif FPCRTL_FILESYSTEM_SINGLE_BYTE_API}
 
@@ -1749,6 +2119,7 @@ Begin
 End;
 
 
+{$ifndef CPUJVM}
 Procedure ChDir(Const s: RawByteString);[IOCheck];
 Begin
   If (s='') or (InOutRes <> 0) then
@@ -1759,6 +2130,7 @@ Begin
   Do_chdir(S);
 {$endif}
 End;
+{$endif CPUJVM}
 
 
 Procedure getdir(drivenr:byte;Var dir:rawbytestring);
@@ -1802,18 +2174,21 @@ Begin
 End;
 
 
+{$ifndef CPUJVM}
 Procedure ChDir(Const s: shortstring);[IOCheck];
 Begin
   If (s='') or (InOutRes <> 0) then
    exit;
   Do_chdir(GetDirStrFromShortstring(S));
 End;
+{$endif CPUJVM}
 
 
 Procedure getdir(drivenr:byte;Var dir:shortstring);
 var
   s: rawbytestring;
 begin
+  s:='';
   Do_getdir(drivenr,s);
   if length(s)<=high(dir) then
     dir:=s
@@ -1840,16 +2215,19 @@ begin
 end;
 
 
+{$ifndef CPUJVM}
 procedure do_chdir(const s: unicodestring); {$ifdef SYSTEMINLINE}inline;{$endif}
 begin
   do_chdir(ToSingleByteFileSystemEncodedFileName(s));
 end;
+{$endif CPUJVM}
 
 
 procedure do_getdir(drivenr : byte;var dir : unicodestring);
 var
   s: rawbytestring;
 begin
+  s:='';
   Do_getdir(drivenr,s);
   dir:=s;
 end;
@@ -1871,12 +2249,14 @@ Begin
 End;
 
 
+{$ifndef CPUJVM}
 Procedure ChDir(Const s: UnicodeString);[IOCheck];
 Begin
   if (s='') or (InOutRes <> 0) then
    exit;
   Do_chdir(S);
 End;
+{$endif CPUJVM}
 
 
 Procedure getdir(drivenr:byte;Var dir:unicodestring);
@@ -1892,7 +2272,32 @@ end;
                             Resources support
 *****************************************************************************}
 
+
+function Is_IntResource(aStr : PAnsiChar) : boolean;
+var index : longint;
+begin
+  Result:=((aStr[0]='#') and (aStr[1] in ['0'..'9']));
+  index:=2;
+  while Result and (aStr[index]<>#0) do
+    begin
+      Result:=(aStr[index] in ['0'..'9']);
+      inc(index);
+    end;
+end;
+
+
+operator:=(res:TFPResourceHGLOBAL):JLInteger;
+  begin
+    result:=JLInteger.Create(res);
+  end;
+
 {$i sysres.inc}
+
+{$ifdef FPC_HAS_FEATURE_RESOURCES}
+{$define EXTRES_GENERIC}
+{$i jextres.inc}
+{$endif FPC_HAS_FEATURE_RESOURCES}
+
 (*
 const
   CtrlBreakHandler: TCtrlBreakHandler = nil;

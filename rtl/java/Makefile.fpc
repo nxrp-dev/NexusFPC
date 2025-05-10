@@ -7,7 +7,7 @@ main=rtl
 
 [target]
 loaders=
-units=$(SYSTEMUNIT) $(UUCHARUNIT) $(OBJPASUNIT) jdk15
+units=$(SYSTEMUNIT) $(UUCHARUNIT) $(OBJPASUNIT) $(LNFOJVMUNIT) $(JDK15UNIT) $(SYSUTILSUNIT) $(SYSCONSTUNIT)
 
 [require]
 nortl=y
@@ -28,7 +28,7 @@ INC=$(RTL)/inc
 COMMON=$(RTL)/common
 PROCINC=$(RTL)/$(CPU_TARGET)
 UNITPREFIX=rtl
-OBJPASDIR=.
+OBJPASDIR=$(RTL)/objpas
 
 ifdef RELEASE
 override FPCOPT+=-Ur
@@ -82,3 +82,8 @@ SYSDEPS=$(SYSINCDEPS) $(SYSCPUDEPS)
 
 jdk15$(PPUEXT) : $(SYSTEMUNIT)$(PPUEXT) $(OBJPASUNIT)$(PPUEXT) jdk15.inc jdk15.pas
 
+objpas$(PPUEXT): $(RTL)/java/objpas.pp
+        $(COMPILER) $(RTL)/java/objpas.pp
+
+lnfojvm$(PPUEXT): $(RTL)/java/lnfojvm.pp $(OBJPASUNIT)$(PPUEXT)
+        $(COMPILER) $(RTL)/java/lnfojvm.pp

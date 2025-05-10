@@ -2,6 +2,12 @@
 type
   //Obsolete types, kept for backwards compatibility
   TResourceHandle = PtrUint;
+{$ifndef CPUJVM}
+  TResourceId = PAnsiChar;
+{$else CPUJVM}
+  { JVM Notes: using a PAnsiChar crashes the compiler (Internal error 2011072410) }
+  TResourceId = ansistring;
+{$endif CPUJVM}
 {$ifdef Win16}
   HMODULE = THandle; {HINST}
   HGLOBAL = THandle;
@@ -27,6 +33,7 @@ type
   fit into the classes/sysutils unit but because it is resource
   related, I put it here (FK)
 }
+{$ifndef CPUJVM}
 const
   RT_CURSOR = MAKEINTRESOURCE(1);
   RT_BITMAP = MAKEINTRESOURCE(2);
@@ -46,14 +53,35 @@ const
   RT_ANIICON = MAKEINTRESOURCE(22);
   RT_HTML = MAKEINTRESOURCE(23);
   RT_MANIFEST = MAKEINTRESOURCE(24);
+{$else CPUJVM}
+const
+  RT_CURSOR = '#1';
+  RT_BITMAP = '#2';
+  RT_ICON = '#3';
+  RT_MENU = '#4';
+  RT_DIALOG = '#5';
+  RT_STRING = '#6';
+  RT_FONTDIR = '#7';
+  RT_FONT = '#8';
+  RT_ACCELERATOR = '#9';
+  RT_RCDATA = '#10';
+  RT_MESSAGETABLE = '#11';
+  RT_GROUP_CURSOR = '#12';
+  RT_GROUP_ICON = '#14';
+  RT_VERSION = '#16';
+  RT_ANICURSOR = '#21';
+  RT_ANIICON = '#22';
+  RT_HTML = '#23';
+  RT_MANIFEST = '#24';
+{$endif CPUJVM}
 
 {$endif MSWINDOWS }
 
 // Win32 API compatible Resource callbacks
 type
-  EnumResTypeProc = function(ModuleHandle : TFPResourceHMODULE; ResourceType : PAnsiChar; lParam : PtrInt) : LongBool; stdcall;
-  EnumResNameProc = function(ModuleHandle : TFPResourceHMODULE; ResourceType, ResourceName : PAnsiChar; lParam : PtrInt) : LongBool; stdcall;
-  EnumResLangProc = function(ModuleHandle : TFPResourceHMODULE; ResourceType, ResourceName : PAnsiChar; IDLanguage : word; lParam : PtrInt) : LongBool; stdcall;
+  EnumResTypeProc = function(ModuleHandle : TFPResourceHMODULE; ResourceType : TResourceId; lParam : PtrInt) : LongBool; stdcall;
+  EnumResNameProc = function(ModuleHandle : TFPResourceHMODULE; ResourceType, ResourceName : TResourceId; lParam : PtrInt) : LongBool; stdcall;
+  EnumResLangProc = function(ModuleHandle : TFPResourceHMODULE; ResourceType, ResourceName : TResourceId; IDLanguage : word; lParam : PtrInt) : LongBool; stdcall;
 
 // Useful functions (macros in win32 headers)
 function Is_IntResource(aStr : PAnsiChar) : boolean; {$ifdef SYSTEMINLINE}inline;{$endif}
@@ -86,19 +114,35 @@ Function FindResourceEx(ModuleHandle: TFPResourceHMODULE; const ResourceType: An
 {$endif Win16}
 {$endif}
 
+{ JVM Notes: predeclare the callback types to prevent a runtime crash (classformaterror: duplicate entry in innerclasses attribute) }
+type
+  THINSTANCEFunc = function : TFPResourceHMODULE;
+  TEnumResourceTypesFunc = function (ModuleHandle : TFPResourceHMODULE; EnumFunc : EnumResTypeProc; lParam : PtrInt) : LongBool;
+  TEnumResourceNamesFunc = function (ModuleHandle : TFPResourceHMODULE; ResourceType : TResourceId; EnumFunc : EnumResNameProc; lParam : PtrInt) : LongBool;
+  TEnumResourceLanguagesFunc = function (ModuleHandle : TFPResourceHMODULE; ResourceType,ResourceName : TResourceId; EnumFunc : EnumResLangProc; lParam : PtrInt) : LongBool;
+  TFindResourceFunc = function (ModuleHandle: TFPResourceHMODULE; ResourceName, ResourceType: TResourceId): TFPResourceHandle;
+  TFindResourceExFunc = function (ModuleHandle: TFPResourceHMODULE; ResourceType, ResourceName: TResourceId; Language : word): TFPResourceHandle;
+  TLoadResourceFunc = function (ModuleHandle: TFPResourceHMODULE; ResHandle: TFPResourceHandle): TFPResourceHGLOBAL;
+  TSizeofResourceFunc = function (ModuleHandle: TFPResourceHMODULE; ResHandle: TFPResourceHandle): LongWord;
+{$if not declared(TLockResourceFunc)}
+  TLockResourceFunc = function (ResData: TFPResourceHGLOBAL): Pointer;
+{$endif not declared}
+  TUnlockResourceFunc = function (ResData: TFPResourceHGLOBAL): LongBool;
+  TFreeResourceFunc = function (ResData: TFPResourceHGLOBAL): LongBool;
+
 type
   TResourceManager = record
-    HINSTANCEFunc : function : TFPResourceHMODULE;
-    EnumResourceTypesFunc : function (ModuleHandle : TFPResourceHMODULE; EnumFunc : EnumResTypeProc; lParam : PtrInt) : LongBool;
-    EnumResourceNamesFunc : function (ModuleHandle : TFPResourceHMODULE; ResourceType : PAnsiChar; EnumFunc : EnumResNameProc; lParam : PtrInt) : LongBool;
-    EnumResourceLanguagesFunc : function (ModuleHandle : TFPResourceHMODULE; ResourceType,ResourceName : PAnsiChar; EnumFunc : EnumResLangProc; lParam : PtrInt) : LongBool;
-    FindResourceFunc : function (ModuleHandle: TFPResourceHMODULE; ResourceName, ResourceType: PAnsiChar): TFPResourceHandle;
-    FindResourceExFunc : function (ModuleHandle: TFPResourceHMODULE; ResourceType, ResourceName: PAnsiChar; Language : word): TFPResourceHandle;
-    LoadResourceFunc : function (ModuleHandle: TFPResourceHMODULE; ResHandle: TFPResourceHandle): TFPResourceHGLOBAL;
-    SizeofResourceFunc : function (ModuleHandle: TFPResourceHMODULE; ResHandle: TFPResourceHandle): LongWord;
-    LockResourceFunc : function (ResData: TFPResourceHGLOBAL): Pointer;
-    UnlockResourceFunc : function (ResData: TFPResourceHGLOBAL): LongBool;
-    FreeResourceFunc : function (ResData: TFPResourceHGLOBAL): LongBool;
+    HINSTANCEFunc : THINSTANCEFunc;
+    EnumResourceTypesFunc : TEnumResourceTypesFunc;
+    EnumResourceNamesFunc : TEnumResourceNamesFunc;
+    EnumResourceLanguagesFunc : TEnumResourceLanguagesFunc;
+    FindResourceFunc : TFindResourceFunc;
+    FindResourceExFunc : TFindResourceExFunc;
+    LoadResourceFunc : TLoadResourceFunc;
+    SizeofResourceFunc : TSizeofResourceFunc;
+    LockResourceFunc : TLockResourceFunc;
+    UnlockResourceFunc : TUnlockResourceFunc;
+    FreeResourceFunc : TFreeResourceFunc;
   end;
 
 procedure GetResourceManager (var Manager : TResourceManager);

@@ -16,14 +16,16 @@
 unit SysConst;
 {$ENDIF FPC_DOTTEDUNITS}
 
+{$namespace org.freepascal.rtl}
+
 interface
 
-{$ifdef FPC_HAS_FEATURE_ANSISTRINGS}
+{$if defined(FPC_HAS_FEATURE_ANSISTRINGS) and not defined(CPUJVM)}
 {$H+}
 resourcestring
-{$else FPC_HAS_FEATURE_ANSISTRINGS}
+{$else FPC_HAS_FEATURE_ANSISTRINGS and not CPUJVM}
 const
-{$endif FPC_HAS_FEATURE_ANSISTRINGS}
+{$endif FPC_HAS_FEATURE_ANSISTRINGS and not CPUJVM}
 
 { from old str*.inc files }
   SListIndexError        = 'List index (%d) out of bounds';
@@ -87,14 +89,18 @@ const
   SInvalidVarOp          = 'Invalid variant operation';
   SInvalidBinaryVarOp    = 'Invalid variant operation %s %s %s';
   SInvalidUnaryVarOp     = 'Invalid variant operation %s %s';
+{$ifndef CPUJVM}
   SInvalidVarOpWithHResultWithPrefix = 'Invalid variant operation (%s%.8x)'+LineEnding+'%s';
+{$endif CPUJVM}
   SNoError               = 'No error.';
   SNoThreadSupport       = 'Threads not supported. Recompile program with thread driver.';
   SNoDynLibsSupport      = 'Dynamic libraries not supported. Recompile program with dynamic library driver.';
   SMissingWStringManager = 'Widestring manager not available. Recompile program with appropriate manager.';
   SSigQuit               = 'SIGQUIT signal received.';
   SObjectCheckError      = 'Object reference is Nil or VMT is damaged';
+{$ifndef CPUJVM}
   SOSError               = 'System error, (OS Code %d):'+LineEnding+'%s';
+{$endif CPUJVM}
   SOutOfMemory           = 'Out of memory';
   SOverflow              = 'Floating point overflow';
   SPrivilege             = 'Privileged instruction';

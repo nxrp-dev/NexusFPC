@@ -1098,7 +1098,7 @@ function TUnicodeStringManager.CharLengthPCharProc(const Str: PAnsiChar; Index: 
   end;
 
 
-function TUnicodeStringManager.CodePointLengthProc(const Str: PAnsiChar; Index, MaxLookAhead: PtrInt): Ptrint;
+function TUnicodeStringManager.CodePointLengthProc(const Str: PAnsiChar; MaxLookAhead, Index: PtrInt): Ptrint;
   var
     localdecoder: JNCCharsetDecoder;
     inbuf: JNByteBuffer;
@@ -1106,7 +1106,7 @@ function TUnicodeStringManager.CodePointLengthProc(const Str: PAnsiChar; Index, 
     coderres: JNCCoderResult;
     limit, maxlimit: longint;
   begin
-    localdecoder:=JNCCharsetDecoder(decoder.get);
+    localdecoder:=JNCCharsetDecoder(decoder.getForCodePage(CP_NONE));
     localdecoder.reset;
     localdecoder.onMalformedInput(JNCCodingErrorAction.fREPORT);
     localdecoder.onUnmappableCharacter(JNCCodingErrorAction.fREPORT);

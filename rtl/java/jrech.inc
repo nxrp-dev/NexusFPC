@@ -25,5 +25,6 @@ type
     { create an empty instance of the current type }
     function newEmpty: FpcBaseRecordType;
     procedure fpcDeepCopy(result: FpcBaseRecordType);virtual;abstract;
+    class function getOrderedFields: Arr1JLRField;
   end;
 

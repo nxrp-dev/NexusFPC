@@ -17,10 +17,12 @@
                              Utility functions
 *****************************************************************************)
 
+{$ifndef CPUJVM}
 function Is_IntResource(aStr : PAnsiChar) : boolean; {$ifdef SYSTEMINLINE}inline;{$endif}
 begin
   Result:=((PtrUInt(aStr) shr 16)=0);
 end;
+{$endif CPUJVM}
 
 function MakeLangID(primary,sub : word) : word; {$ifdef SYSTEMINLINE}inline;{$endif}
 begin
@@ -87,22 +89,22 @@ begin
   Result:=False;
 end;
 
-Function DefaultEnumResourceNames(ModuleHandle : TFPResourceHMODULE; ResourceType : PAnsiChar; EnumFunc : EnumResNameProc; lParam : PtrInt) : LongBool;
+Function DefaultEnumResourceNames(ModuleHandle : TFPResourceHMODULE; ResourceType : TResourceId; EnumFunc : EnumResNameProc; lParam : PtrInt) : LongBool;
 begin
   Result:=False;
 end;
 
-Function DefaultEnumResourceLanguages(ModuleHandle : TFPResourceHMODULE; ResourceType, ResourceName : PAnsiChar; EnumFunc : EnumResLangProc; lParam : PtrInt) : LongBool;
+Function DefaultEnumResourceLanguages(ModuleHandle : TFPResourceHMODULE; ResourceType, ResourceName : TResourceId; EnumFunc : EnumResLangProc; lParam : PtrInt) : LongBool;
 begin
   Result:=False;
 end;
 
-Function DefaultFindResource(ModuleHandle: TFPResourceHMODULE; ResourceName, ResourceType: PAnsiChar): TFPResourceHandle;
+Function DefaultFindResource(ModuleHandle: TFPResourceHMODULE; ResourceName, ResourceType: TResourceId): TFPResourceHandle;
 begin
   Result:=0;
 end;
 
-Function DefaultFindResourceEx(ModuleHandle: TFPResourceHMODULE; ResourceType, ResourceName: PAnsiChar; Language : word): TFPResourceHandle;
+Function DefaultFindResourceEx(ModuleHandle: TFPResourceHMODULE; ResourceType, ResourceName: TResourceId; Language : word): TFPResourceHandle;
 begin
   Result:=0;
 end;

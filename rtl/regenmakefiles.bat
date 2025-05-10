@@ -40,23 +40,34 @@ popd
 
 REM OS-specific
 
-FOR /D %%d IN ("%RTLDIR%\*") DO (
-	IF EXIST "%RTLDIR%\%%~nd\Makefile.fpc" (
-		ECHO Doing directory %%~nd
-		PUSHD "%RTLDIR%\%%~nd"
-		IF "%%~nd" EQU "darwin" (
-			SET TARGETS=darwin,ios,iphonesim
-		) ELSE IF "%%~nd" EQU "macos" (
-			SET TARGETS=macosclassic
-		) ELSE (
-			SET TARGETS=%%~nd
-		)
+GOTO :Generate
+
+:GenerateMakefile
+	SET d=%~1
+	SET TARGETS=%~2
+	IF EXIST "!d!\Makefile.fpc" (
+		ECHO Doing directory %d%
+		PUSHD "!d!"
 		SET CMD=%FPCMAKE% -T!TARGETS! -q -x "%RTLDIR%\inc\Makefile.rtl"
 		echo Command: !CMD!
 		!CMD!
 		POPD
 	)
+GOTO :EOF
+
+:Generate
+FOR /D %%d IN ("%RTLDIR%\*") DO (
+	IF "%%~nd" EQU "darwin" (
+		SET TARGETS=darwin,ios,iphonesim
+	) ELSE IF "%%~nd" EQU "macos" (
+		SET TARGETS=macosclassic
+	) ELSE (
+		SET TARGETS=%%~nd
+	)
+ 	CALL :GenerateMakefile %RTLDIR%\%%~nd , "!TARGETS!"
 )
+
+CALL :GenerateMakefile "%RTLDIR%\android\jvm" , "jvm-android"
 
 REM That's all, folks!
 

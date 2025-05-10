@@ -300,6 +300,7 @@ begin
   u:=c;
   s:=upcase(u);
   c:=s[1];
+  result:=c;
 end;
 
 
@@ -322,6 +323,7 @@ begin
   u:=c;
   s:=lowercase(u);
   c:=s[1];
+  result:=c;
 end;
 
 
@@ -333,7 +335,7 @@ end;
 {$define FPC_HAS_HEXSTR_POINTER_SHORTSTR}
 function hexstr(val : pointer) : shortstring;
 begin
-  hexstr:=hexstr(JLObject(val).hashCode,sizeof(pointer)*2);
+  hexstr:=hexstr(JLSystem.identityHashCode(JLObject(val)),sizeof(pointer)*2);
 end;
 
 
@@ -423,5 +425,6 @@ begin
   s:=enum.toString;
   if length(s)<len then
     s:=space(len-length(s))+s;
+  result:=0;
 end;
 

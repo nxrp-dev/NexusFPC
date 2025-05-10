@@ -2511,6 +2511,7 @@ lm3tempest=EmbeddedApi
 lm4f120=EmbeddedApi
 lnfodwrf=*System.LineInfo.Dwarf
 lnfogdb=*System.LineInfo.Gdb
+lnfojvm=*System.LineInfo.Jvm
 lpc11xx=EmbeddedApi
 lpc122x=EmbeddedApi
 lpc13xx=EmbeddedApi

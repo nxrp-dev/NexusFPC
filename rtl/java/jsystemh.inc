@@ -14,6 +14,47 @@
  **********************************************************************}
 
 
+{$ifdef FPC_HAS_FEATURE_THREADING}
+ThreadVar
+{$else FPC_HAS_FEATURE_THREADING}
+Var
+{$endif FPC_HAS_FEATURE_THREADING}
+  ThreadID    : TThreadID;
+  InOutRes    : Word;
+
+{ Standard In- and Output }
+
+{ JVM Notes: if we access a threadvar of type "text" the loader crashes at runtime
+    (illegal class name "Lorg/freepascal/rtl/TextRec;" in class file org/freepascal/rtl/System) }
+{ JVM Notes: we cannot use "absolute" in a threadvar on cpujvm (error: absolute can only be associated with a var or const) }
+{ JVM Notes: the cpujvm parser fails when we try to use an absolute text (error: illegal expression) }
+
+{$ifdef FPC_STDERR_IS_ALIAS_FOR_STDOUT}
+{$fatal FPC_STDERR_IS_ALIAS_FOR_STDOUT is not supported for target CPUJVM}
+{$endif}
+{$ifdef FPC_STDOUT_TRUE_ALIAS}
+{$fatal FPC_STDOUT_TRUE_ALIAS is not supported for target CPUJVM}
+{$endif}
+
+{ JVM Notes: stdio is not thread safe on cpujvm }
+Var
+  ErrOutput,
+  Output,
+  Input,
+  StdOut,
+  StdErr: Text;
+
+Var
+  WriteErrorsToStdErr : Boolean = True;
+
+const
+  { Default filehandles }
+  UnusedHandle = JLObject(nil);
+  StdInputHandle  : THandle = nil;
+  StdOutputHandle : THandle = nil;
+  StdErrorHandle  : THandle = nil;
+
+
 {****************************************************************************
                         Processor specific routines
 ****************************************************************************}
@@ -26,15 +67,31 @@
     {$define INLINEGENERICS}
   {$endif}
 {$endif}
-(*
+
+{ JVM Notes:
+  * we cannot move to or from a bitset, bitset array or bitset record field
+    (because we cannot determine the size of the set).
+  * we cannot determine the true size of an enum or enum set so we assume
+    it has the minimum size (packset should be 1 and packenum should be 1)
+  * if source or dest is a pointer type (a dynamic array, ansistring or
+    pointer to a record) the content will be moved and not the address.
+  * reflection does not guarantee the correct order of fields so serialization
+    between platforms will not work correctly on some jvms. }
 Procedure Move(const source;var dest;count:SizeInt);
-Procedure FillChar(var x;count:SizeInt;Value:Byte);
+Procedure Move(const source;sourceoffset:SizeInt;var dest;destoffset:SizeInt;count:SizeInt);
+Procedure FillChar(var x;offset,count:SizeInt;Value:Boolean);
 Procedure FillChar(var x;count:SizeInt;Value:Boolean);
+Procedure FillChar(var x;offset,count:SizeInt;Value:AnsiChar);
 Procedure FillChar(var x;count:SizeInt;Value:AnsiChar);
+procedure FillByte(var x;offset,count:SizeInt;value:byte);
 procedure FillByte(var x;count:SizeInt;value:byte);
+Procedure FillWord(var x;offset,count:SizeInt;Value:Word);
 Procedure FillWord(var x;count:SizeInt;Value:Word);
+procedure FillDWord(var x;offset,count:SizeInt;value:DWord);
 procedure FillDWord(var x;count:SizeInt;value:DWord);
+procedure FillQWord(var x;offset,count:SizeInt;value:QWord);
 procedure FillQWord(var x;count:SizeInt;value:QWord);
+(*
 function  IndexChar(const buf;len:SizeInt;b:AnsiChar):SizeInt;
 function  IndexByte(const buf;len:SizeInt;b:byte):SizeInt;
 function  Indexword(const buf;len:SizeInt;b:word):SizeInt;
@@ -586,21 +643,33 @@ Procedure Assign(out f:File;const Name: RawByteString);
 Procedure Rename(var f:File;const s : RawByteString);
 {$endif FPC_HAS_FEATURE_ANSISTRINGS}
 Procedure Rewrite(var f:File;l:Longint);
+{$ifndef CPUJVM}
+{ JVM Notes: the compiler cannot overload typed and untyped files }
 Procedure Rewrite(var f:File);
+{$endif CPUJVM}
 Procedure Reset(var f:File;l:Longint);
+{$ifndef CPUJVM}
+{ JVM Notes: the compiler cannot overload typed and untyped files }
 Procedure Reset(var f:File);
+{$endif CPUJVM}
 Procedure Close(var f:File);
 Procedure BlockWrite(var f:File;const Buf;Count:Int64;var Result:Int64);
 Procedure BlockWrite(var f:File;const Buf;Count:Longint;var Result:Longint);
+{$ifndef CPUJVM}
+{ JVM Notes: the compiler cannot overload signed and unsigned types }
 Procedure BlockWrite(var f:File;const Buf;Count:Cardinal;var Result:Cardinal);
 Procedure BlockWrite(var f:File;const Buf;Count:Word;var Result:Word);
 Procedure BlockWrite(var f:File;const Buf;Count:Word;var Result:Integer);
+{$endif CPUJVM}
 Procedure BlockWrite(var f:File;const Buf;Count:Longint);
 Procedure BlockRead(var f:File;var Buf;count:Int64;var Result:Int64);
 Procedure BlockRead(var f:File;var Buf;count:Longint;var Result:Longint);
+{$ifndef CPUJVM}
+{ JVM Notes: the compiler cannot overload signed and unsigned types }
 Procedure BlockRead(var f:File;var Buf;count:Cardinal;var Result:Cardinal);
 Procedure BlockRead(var f:File;var Buf;count:Word;var Result:Word);
 Procedure BlockRead(var f:File;var Buf;count:Word;var Result:Integer);
+{$endif CPUJVM}
 Procedure BlockRead(var f:File;var Buf;count:Int64);
 Function  FilePos(var f:File):Int64;
 Function  FileSize(var f:File):Int64;
@@ -616,6 +685,8 @@ Procedure Truncate (var F:File);
 ****************************************************************************}
 
 {$ifdef FPC_HAS_FEATURE_FILEIO}
+{$ifndef CPUJVM}
+{ JVM Notes: the compiler cannot overload typed and untyped files }
 Procedure Assign(out f:TypedFile;const Name:shortstring);
 Procedure Assign(out f:TypedFile;const p:PAnsiChar);
 Procedure Assign(out f:TypedFile;const c:AnsiChar);
@@ -625,6 +696,7 @@ Procedure Assign(out f:TypedFile;const Name:unicodestring);
 {$ifdef FPC_HAS_FEATURE_ANSISTRINGS}
 Procedure Assign(out f:TypedFile;const Name:rawbytestring);
 {$endif FPC_HAS_FEATURE_ANSISTRINGS}
+{$endif CPUJVM}
 Procedure Reset(var f : TypedFile);   [INTERNPROC: fpc_in_Reset_TypedFile];
 Procedure Rewrite(var f : TypedFile); [INTERNPROC: fpc_in_Rewrite_TypedFile];
 {$endif FPC_HAS_FEATURE_FILEIO}
@@ -662,7 +734,10 @@ Function  SeekEOLn (var t:Text):Boolean;
 Function  SeekEOF (var t:Text):Boolean;
 Function  SeekEOLn:Boolean;
 Function  SeekEOF:Boolean;
+{$ifndef CPUJVM}
+{ JVM Notes: this language feature is not supported on managed vm targets }
 Procedure SetTextBuf(var f:Text; var Buf);[INTERNPROC:fpc_in_settextbuf_file_x];
+{$endif CPUJVM}
 Procedure SetTextBuf(var f:Text; var Buf; Size:SizeInt);
 Procedure SetTextLineEnding(var f:Text; Ending:Shortstring);
 function GetTextCodePage(var T: Text): TSystemCodePage;
@@ -674,19 +749,26 @@ procedure SetTextCodePage(var T: Text; CodePage: TSystemCodePage);
 ****************************************************************************}
 
 {$ifdef FPC_HAS_FEATURE_FILEIO}
+{$ifndef CPUJVM}
+{ JVM Notes: changing working directory is only partially supported on the jvm, for the moment leaving chdir unimplemented }
 Procedure chdir(const s:shortstring); overload;
+{$endif CPUJVM}
 Procedure mkdir(const s:shortstring); overload;
 Procedure rmdir(const s:shortstring); overload;
 Procedure getdir(drivenr:byte;var dir:shortstring);overload;
 {$ifdef FPC_HAS_FEATURE_ANSISTRINGS}
+{$ifndef CPUJVM}
 Procedure chdir(const s:rawbytestring); overload;
+{$endif CPUJVM}
 Procedure mkdir(const s:rawbytestring); overload;
 Procedure rmdir(const s:rawbytestring); overload;
 // defaultrtlfilesystemcodepage is returned here
 Procedure getdir(drivenr:byte;var dir: rawbytestring);overload;rtlproc;
 {$endif FPC_HAS_FEATURE_ANSISTRINGS}
 {$ifdef FPC_HAS_FEATURE_WIDESTRINGS}
+{$ifndef CPUJVM}
 Procedure chdir(const s:unicodestring); overload;
+{$endif CPUJVM}
 Procedure mkdir(const s:unicodestring); overload;
 Procedure rmdir(const s:unicodestring); overload;
 Procedure getdir(drivenr:byte;var dir: unicodestring);overload;
@@ -715,16 +797,14 @@ function get_frame:pointer;{$ifdef SYSTEMINLINE}inline;{$endif}
 
 Function Get_pc_addr : CodePointer;
 
-(*
 { Writes at most 'count' caller stack frames to pre-allocated buffer pointed to
   by 'frames', skipping 'skipframes' initial frames. Returns number of frames written. }
-function CaptureBacktrace(skipframes,count:sizeint;frames:PCodePointer):sizeint;
+//function CaptureBacktrace(skipframes,count:sizeint;frames:PCodePointer):sizeint;
 
 function get_caller_addr(framebp:pointer;addr:codepointer=nil):codepointer;
 function get_caller_frame(framebp:pointer;addr:codepointer=nil):pointer;
 procedure get_caller_stackinfo(var framebp : pointer; var addr : codepointer);
-*)
-//Function IOResult:Word;
+Function IOResult:Word;
 //Function Sptr:Pointer;[internconst:fpc_in_const_ptr];
 
 {$ifdef FPC_HAS_FEATURE_PROCESSES}
@@ -802,22 +882,24 @@ Const
 Procedure Error(RunTimeError : TRunTimeError);
 {$ifdef FPC_HAS_FEATURE_COMMANDARGS}
 Function  Paramcount:Longint;
-Function  ParamStr(l:Longint):Shortstring;
+{$ifdef FPC_UNICODESTRINGS}
+Function  ParamStr(l:Longint):Unicodestring;
+{$else FPC_UNICODESTRINGS}
+Function  ParamStr(l:Longint):Ansistring;
+{$endif FPC_UNICODESTRINGS}
 {$endif FPC_HAS_FEATURE_COMMANDARGS}
 
-{$ifndef JVM}
+{$ifdef FPC_HAS_FEATURE_TEXTIO}
 Procedure Dump_Stack(var f : text;fp:pointer;addr : codepointer = nil);
+{$endif FPC_HAS_FEATURE_TEXTIO}
 {$ifdef FPC_HAS_FEATURE_EXCEPTIONS}
 procedure DumpExceptionBackTrace(var f:text);
 {$endif FPC_HAS_FEATURE_EXCEPTIONS}
-{$endif JVM}
 
 Procedure RunError(w:Word);
 Procedure RunError;{$ifdef SYSTEMINLINE}inline;{$endif}
 Procedure halt(errnum:Longint);
-{$ifdef FPC_HAS_FEATURE_HEAP}
 Procedure AddExitProc(Proc:TProcedure);
-{$endif FPC_HAS_FEATURE_HEAP}
 Procedure halt;{$ifdef SYSTEMINLINE}inline;{$endif}
 
 { Need to be exported for threads unit }
@@ -827,10 +909,10 @@ Procedure SysInitExceptions;
 {$endif FPC_HAS_FEATURE_EXCEPTIONS}
 *)
 {$ifdef FPC_HAS_FEATURE_CONSOLEIO}
-{$if not defined(EMBEDDED) and not defined(jvm)}
+{$ifndef EMBEDDED}
 procedure SysInitStdIO;
 procedure SysFlushStdIO;
-{$endif EMBEDDED or jvm}
+{$endif EMBEDDED}
 {$endif FPC_HAS_FEATURE_CONSOLEIO}
 {$ifndef FPUNONE}
 Procedure SysResetFPU;
@@ -850,12 +932,10 @@ Function StringToPPChar(S: PAnsiChar;ReserveEntries:integer):PPAnsiChar;
 {$endif FPC_HAS_FEATURE_HEAP}
 
 
-(*
-procedure AbstractError;external name 'FPC_ABSTRACTERROR';
-procedure EmptyMethod;external name 'FPC_EMPTYMETHOD';
+//procedure AbstractError;external name 'FPC_ABSTRACTERROR';
+//procedure EmptyMethod;external name 'FPC_EMPTYMETHOD';
 Function  SysBackTraceStr(Addr:CodePointer): ShortString;
 Procedure SysAssert(const Msg,FName:ShortString;LineNo:Longint;ErrorAddr:Pointer);
-*)
 (* Supposed to return address of previous CtrlBreakHandler *)
 (* (may be nil), returned value of pointer (-1) means that *)
 (* attempt to setup CtrlBreakHandler wasn't successful.    *)
@@ -865,24 +945,18 @@ function SysSetCtrlBreakHandler (Handler: TCtrlBreakHandler): TCtrlBreakHandler;
 
 { Error handlers }
 Type
-(*
   TBackTraceStrFunc = Function (Addr: CodePointer): ShortString;
-*)
   TErrorProc = Procedure (ErrNo : Longint; Address : CodePointer; Frame : Pointer);
-(*
-  TAbstractErrorProc = Procedure;
+  //TAbstractErrorProc = Procedure;
   TAssertErrorProc = Procedure(const msg,fname:ShortString;lineno:longint;erroraddr:pointer);
-  TSafeCallErrorProc = Procedure(error : HResult;addr : pointer);
-*)
+  //TSafeCallErrorProc = Procedure(error : HResult;addr : pointer);
 
 const
-(*
   BackTraceStrFunc  : TBackTraceStrFunc = @SysBackTraceStr;
-*)
   ErrorProc         : TErrorProc = nil;
-(*
-  AbstractErrorProc : TAbstractErrorProc = nil;
+  //AbstractErrorProc : TAbstractErrorProc = nil;
   AssertErrorProc   : TAssertErrorProc = @SysAssert;
+(*
   SafeCallErrorProc : TSafeCallErrorProc = nil;
 {$ifdef FPC_HAS_FEATURE_EXCEPTIONS}
   ExceptObjProc     : Pointer = nil; { Used to convert OS exceptions to FPC exceptions. }
@@ -937,25 +1011,39 @@ const
                                Heap
 *****************************************************************************}
 
-{$ifndef JVM}
+{$ifndef CPUJVM}
 {$i heaph.inc}
-{$endif JVM}
+{$endif CPUJVM}
 
 {*****************************************************************************
                           Thread support
 *****************************************************************************}
 
 { Generic threadmanager }
-{$if defined(FPC_HAS_FEATURE_THREADING) and not defined(cpujvm)}
+{$if defined(FPC_HAS_FEATURE_THREADING)}
 {$i threadh.inc}
-{$endif FPC_HAS_FEATURE_THREADING and not cpujvm}
+{$endif FPC_HAS_FEATURE_THREADING}
 
 {*****************************************************************************
                           Resources support
 *****************************************************************************}
-(*
+
+type
+  { JVM Notes: using a PtrUInt crashes the compiler (Internal error 2018042601) }
+  TLockResourceFunc = function (ResData: JLInteger): Pointer;
+
 {$i resh.inc}
-*)
+
+
+{*****************************************************************************
+                          Exception support
+*****************************************************************************}
+
+{ contains the definition of the TExceptAddr type, which is required
+  by the compiler to generate code for any routine containing
+  implicit or explicit exceptions }
+{$i excepth.inc}
+
 {*****************************************************************************
                    FPDoc phony declarations.
 *****************************************************************************}

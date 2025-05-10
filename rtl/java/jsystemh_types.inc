@@ -58,6 +58,8 @@
 }
 {$S-}
 
+{$define USE_FILEREC_FULLNAME}
+
 {****************************************************************************
                          Global Types and Constants
 ****************************************************************************}
@@ -541,7 +543,7 @@ Type
 
 { platform-dependent defines }
 {$i rtldefs.inc}
-(*
+
 {*****************************************************************************
                    TextRec/FileRec exported to allow compiler to take size
 *****************************************************************************}
@@ -557,6 +559,7 @@ type
   { Needed for fpc_get_output }
   PText               = ^Text;
 
+(*
   TEntryInformation = record
     InitFinalTable : Pointer;
     ThreadvarTablesTable : Pointer;
@@ -645,11 +648,10 @@ const
 
 { max level in dumping on error }
   Max_Frame_Dump : Word = 8;
-(*
+
 { Exit Procedure handling consts and types  }
-  ExitProc : codepointer = nil;
+  ExitProc : TProcedure = nil;
   Erroraddr: codepointer = nil;
-*)
   Errorcode: Word    = 0;
 
 { file input modes }
@@ -710,27 +712,6 @@ var
 {Value should be changed during system initialization as appropriate.}
 var cmdline:PAnsiChar=nil;
 {$endif}
-*)
-
-(*
-{$ifdef FPC_HAS_FEATURE_THREADING}
-ThreadVar
-{$else FPC_HAS_FEATURE_THREADING}
-Var
-{$endif FPC_HAS_FEATURE_THREADING}
-  ThreadID    : TThreadID;
-  { Standard In- and Output }
-  ErrOutput,
-  Output,
-  Input,
-  StdOut,
-  StdErr      : Text;
-  InOutRes    : Word;
-  { Stack checking }
-  StackBottom : Pointer;
-  StackLength : SizeUInt;
-
-function StackTop: Pointer;
 *)
 
 { Numbers for routines that have compiler magic }
