@@ -196,8 +196,8 @@ const
      'x86-64-v4'
    );
 
-   sse_singlescalar = [fpu_sse64..fpu_avx512f];
-   sse_doublescalar = [fpu_sse64..fpu_avx512f];
+   sse_singlescalar = [fpu_sse64..fpu_x86_64_v4];
+   sse_doublescalar = [fpu_sse64..fpu_x86_64_v4];
 
    fpu_avx_instructionsets = [fpu_avx,fpu_fma,fpu_avx2,fpu_avx512f];
 
