@@ -50,6 +50,7 @@ interface
 
        tcgsubscriptnode = class(tsubscriptnode)
          protected
+          function handle_platform_subscript_loc: boolean; virtual;
           function handle_platform_subscript: boolean; virtual;
          public
           procedure pass_generate_code;override;
@@ -330,6 +331,11 @@ implementation
                           TCGSUBSCRIPTNODE
 *****************************************************************************}
 
+    function tcgsubscriptnode.handle_platform_subscript_loc: boolean;
+      begin
+        result:=false;
+      end;
+
     function tcgsubscriptnode.handle_platform_subscript: boolean;
       begin
         result:=false;
@@ -421,6 +427,10 @@ implementation
                  fields -> cannot be subscripted (calls are handled via call
                  nodes) }
                internalerror(2011011901);
+           end
+         else if handle_platform_subscript_loc then
+           begin
+             { done }
            end
          else
            begin
