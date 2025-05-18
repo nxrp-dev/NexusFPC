@@ -49,6 +49,9 @@ interface
          LOC_MMREGISTER,
          { Constant multimedia reg which shouldn't be modified }
          LOC_CMMREGISTER,
+         { specific lane in an MM register }
+         LOC_MMLANE,
+         LOC_CMMLANE,
          { contiguous subset of bits of an integer register }
          LOC_SUBSETREG,
          LOC_CSUBSETREG,
@@ -480,6 +483,8 @@ interface
             'LOC_CMMXREG',
             'LOC_MMREG',
             'LOC_CMMREG',
+            'LOC_MMLANE',
+            'LOC_CMMLANE',
             'LOC_SSETREG',
             'LOC_CSSETREG',
             'LOC_SSETREF',
@@ -531,6 +536,9 @@ interface
 
     { return whether op is commutative }
     function commutativeop(op: topcg): boolean;{$ifdef USEINLINE}inline;{$endif}
+
+    { initialises the memory for a new shuffle }
+    procedure Initmms(out p : pmmshuffle;len : ShortInt);
 
     { returns true, if shuffle describes a real shuffle operation and not only a move }
     function realshuffle(shuffle : pmmshuffle) : boolean;
@@ -972,7 +980,7 @@ implementation
       end;
 
 
-   procedure Initmms(var p : pmmshuffle;len : ShortInt);
+   procedure Initmms(out p : pmmshuffle;len : ShortInt);
      var
        i : Integer;
      begin
