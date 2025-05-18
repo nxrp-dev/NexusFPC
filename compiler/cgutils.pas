@@ -115,7 +115,7 @@ unit cgutils;
 
    type
       tmmlane = record
-        reg : tregister;
+        reg : tregister; { This must appear first so it is aliased over location.register }
         laneindex, lanecount: byte;
         lanesize: tcgsize;
       end;

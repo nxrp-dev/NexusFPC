@@ -344,6 +344,13 @@ unit hlcgobj;
           procedure a_loadmm_loc_reg(list: TAsmList; fromsize, tosize: tdef; const loc: tlocation; const reg: tregister; shuffle : pmmshuffle);virtual;
           procedure a_loadmm_reg_loc(list: TAsmList; fromsize, tosize: tdef; const reg: tregister; const loc: tlocation;shuffle : pmmshuffle);virtual;
           procedure a_loadmm_loc_ref(list: TAsmList; fromsize, tosize: tdef; const loc: tlocation; const ref: treference; shuffle : pmmshuffle);virtual;
+          procedure a_loadmm_lane_reg(list: TAsmList; fromsize, tosize: tdef; const mmlane: tmmlane; const reg: tregister;shuffle : pmmshuffle); virtual; abstract;
+          procedure a_loadmm_lane_ref(list: TAsmList; fromsize, tosize: tdef; const mmlane: tmmlane; const ref: treference;shuffle : pmmshuffle); virtual; abstract;
+          procedure a_loadmm_lane_lane(list: TAsmList; fromsize, tosize: tdef; const mmlane1, mmlane2: tmmlane;shuffle : pmmshuffle); virtual; abstract;
+          procedure a_loadmm_lane_loc(list: TAsmList; fromsize, tosize: tdef; const mmlane: tmmlane; const loc: tlocation;shuffle : pmmshuffle); virtual;
+          procedure a_loadmm_reg_lane(list: TAsmList; fromsize, tosize: tdef; const reg: tregister; const mmlane: tmmlane;shuffle : pmmshuffle); virtual; abstract;
+          procedure a_loadmm_ref_lane(list: TAsmList; fromsize, tosize: tdef; const ref: treference; const mmlane: tmmlane;shuffle : pmmshuffle); virtual; abstract;
+          procedure a_loadmm_loc_lane(list: TAsmList; fromsize, tosize: tdef; const loc: tlocation; const mmlane: tmmlane;shuffle : pmmshuffle); virtual;
           procedure a_loadmm_reg_cgpara(list: TAsmList; fromsize: tdef; reg: tregister;const cgpara : TCGPara;shuffle : pmmshuffle); virtual;
           procedure a_loadmm_ref_cgpara(list: TAsmList; fromsize: tdef; const ref: treference;const cgpara : TCGPara;shuffle : pmmshuffle); virtual;
           procedure a_loadmm_loc_cgpara(list: TAsmList; fromsize: tdef; const loc: tlocation; const cgpara : TCGPara;shuffle : pmmshuffle); virtual;
@@ -628,7 +635,7 @@ unit hlcgobj;
           procedure location_force_fpureg(list:TAsmList;var l: tlocation;size: tdef;maybeconst:boolean);virtual;
           procedure location_force_mem(list:TAsmList;var l:tlocation;size:tdef);virtual;
           procedure location_force_mmregscalar(list:TAsmList;var l: tlocation;var size:tdef;maybeconst:boolean);virtual;
-//          procedure location_force_mmreg(list:TAsmList;var l: tlocation;size:tdef;maybeconst:boolean);virtual;abstract;
+          procedure location_force_mmreg(list:TAsmList;var l: tlocation;size:tdef;maybeconst:boolean);virtual;
 
           { Retrieve the location of the data pointed to in location l, when the location is
             a register it is expected to contain the address of the data }
@@ -2953,7 +2960,9 @@ implementation
             tmpreg:=getintregister(list,fromsize);
             a_load_loc_reg(list,fromsize,fromsize,loc,tmpreg);
             a_loadmm_intreg_reg(list,fromsize,tosize,tmpreg,reg,shuffle);
-          end
+          end;
+        LOC_MMLANE,LOC_CMMLANE:
+          a_loadmm_lane_reg(list,fromsize,tosize,loc.mmlane,reg,shuffle);
         else
           internalerror(2010120414);
       end;
@@ -2966,6 +2975,8 @@ implementation
           a_loadmm_reg_reg(list,fromsize,tosize,reg,loc.register,shuffle);
         LOC_REFERENCE,LOC_CREFERENCE:
           a_loadmm_reg_ref(list,fromsize,tosize,reg,loc.reference,shuffle);
+        LOC_MMLANE,LOC_CMMLANE:
+          a_loadmm_reg_lane(list,fromsize,tosize,reg,loc.mmlane,shuffle);
         else
           internalerror(2010120417);
       end;
@@ -2998,9 +3009,39 @@ implementation
             a_load_loc_reg(list,fromsize,fromsize,loc,intreg);
             a_loadmm_intreg_reg(list,fromsize,tosize,intreg,reg,shuffle);
             a_loadmm_reg_ref(list,tosize,tosize,reg,ref,shuffle);
-          end
+          end;
+        LOC_MMLANE,LOC_CMMLANE:
+          a_loadmm_lane_ref(list,fromsize,tosize,loc.mmlane,ref,shuffle);
         else
           internalerror(2014080803);
+      end;
+    end;
+
+  procedure thlcgobj.a_loadmm_lane_loc(list: TAsmList; fromsize, tosize: tdef; const mmlane: tmmlane; const loc: tlocation;shuffle : pmmshuffle);
+    begin
+      case loc.loc of
+        LOC_MMREGISTER,LOC_CMMREGISTER:
+          a_loadmm_lane_reg(list,fromsize,tosize,mmlane,loc.register,shuffle);
+        LOC_REFERENCE,LOC_CREFERENCE:
+          a_loadmm_lane_ref(list,fromsize,tosize,mmlane,loc.reference,shuffle);
+        LOC_MMLANE,LOC_CMMLANE:
+          a_loadmm_lane_lane(list,fromsize,tosize,mmlane,loc.mmlane,shuffle);
+        else
+          internalerror(2010120424);
+      end;
+    end;
+
+  procedure thlcgobj.a_loadmm_loc_lane(list: TAsmList; fromsize, tosize: tdef; const loc: tlocation; const mmlane: tmmlane;shuffle : pmmshuffle);
+    begin
+      case loc.loc of
+        LOC_MMREGISTER,LOC_CMMREGISTER:
+          a_loadmm_reg_lane(list,fromsize,tosize,loc.register,mmlane,shuffle);
+        LOC_REFERENCE,LOC_CREFERENCE:
+          a_loadmm_ref_lane(list,fromsize,tosize,loc.reference,mmlane,shuffle);
+        LOC_MMLANE,LOC_CMMLANE:
+          a_loadmm_lane_lane(list,fromsize,tosize,loc.mmlane,mmlane,shuffle);
+        else
+          internalerror(2010120424);
       end;
     end;
 
@@ -4570,7 +4611,7 @@ implementation
          ((l.loc<>LOC_CFPUREGISTER) or (not maybeconst)) then
         begin
           { if it's in an mm register, store to memory first }
-          if (l.loc in [LOC_MMREGISTER,LOC_CMMREGISTER]) then
+          if (l.loc in [LOC_MMREGISTER,LOC_CMMREGISTER,LOC_MMLANE,LOC_CMMLANE]) then
             location_force_mem(list,l,size);
           reg:=getfpuregister(list,size);
           a_loadfpu_loc_reg(list,size,size,l,reg);
@@ -4599,11 +4640,18 @@ implementation
         LOC_MMREGISTER,
         LOC_CMMREGISTER:
           begin
-            { vectors can't be represented yet using tdef }
             if size.typ<>floatdef then
               internalerror(2012062302);
             tg.gethltemp(list,size,size.size,tt_normal,r);
             a_loadmm_reg_ref(list,size,size,l.register,r,mms_movescalar);
+            location_reset_ref(l,LOC_REFERENCE,l.size,size.alignment,[]);
+            l.reference:=r;
+          end;
+        LOC_MMLANE,
+        LOC_CMMLANE:
+          begin
+            tg.gethltemp(list,size,size.size,tt_normal,r);
+            a_loadmm_lane_ref(list,size,size,l.mmlane,r,mms_movescalar);
             location_reset_ref(l,LOC_REFERENCE,l.size,size.alignment,[]);
             l.reference:=r;
           end;
@@ -4710,6 +4758,12 @@ implementation
           l.register:=reg;
         end;
     end;
+
+    procedure thlcgobj.location_force_mmreg(list:TAsmList;var l: tlocation;size:tdef;maybeconst:boolean);
+      begin
+        { Needs a platform-specific implementation }
+        InternalError(2025051820);
+      end;
 
     procedure thlcgobj.location_get_data_ref(list: TAsmList; def: tdef; const l: tlocation; var ref: treference; loadref: boolean; alignment: longint);
       var
@@ -4830,11 +4884,12 @@ implementation
     var
       rr: treplaceregrec;
       varloc : tai_varloc;
+      mmsize : tcgsize;
     begin
-      if not (n.location.loc in [LOC_CREGISTER,LOC_CFPUREGISTER,LOC_CMMXREGISTER,LOC_CMMREGISTER]) or
+      if not (n.location.loc in [LOC_CREGISTER,LOC_CFPUREGISTER{$ifdef SUPPORT_MMX},LOC_CMMXREGISTER{$endif SUPPORT_MMX},LOC_CMMREGISTER,LOC_CMMLANE]) or
         ([fc_inflowcontrol,fc_gotolabel,fc_lefthandled] * flowcontrol <> []) then
         exit;
-      rr.old := n.location.register;
+      rr.old := n.location.register; { Aliased over location.mmlane.reg for LOC_CMMLANE }
       rr.ressym := nil;
       rr.sym := nil;
       rr.oldhi := NR_NO;
@@ -4871,6 +4926,9 @@ implementation
 {$endif SUPPORT_MMX}
         LOC_CMMREGISTER:
           rr.new := cg.getmmregister(current_asmdata.CurrAsmList,n.location.size);
+        LOC_CMMLANE:
+          { We have to do some slight trickery since we need the full register }
+          rr.new := cg.getmmregister(current_asmdata.CurrAsmList,reg_cgsize(n.location.mmlane.reg));
         else
           exit;
       end;
@@ -4888,7 +4946,8 @@ implementation
       if not foreachnode(n,@do_replace_node_regs,@rr) then
         exit;
 
-      if reload then
+      if reload or (n.location.loc=LOC_CMMLANE) then
+        { We have to copy the entire MM register to preserve values in other lanes}
         case n.location.loc of
           LOC_CREGISTER:
             begin
@@ -4911,6 +4970,71 @@ implementation
 {$endif SUPPORT_MMX}
           LOC_CMMREGISTER:
             a_loadmm_reg_reg(list,n.resultdef,n.resultdef,n.location.register,rr.new,nil);
+          LOC_CMMLANE:
+            begin
+              { We have to do some slight trickery since we need the full
+                register and the correct sub-type, since reg_cgsize alone can't
+                get the sub-type }
+              mmsize:=reg_cgsize(n.location.mmlane.reg);
+              case mmsize of
+                OS_M128:
+                  case n.location.size of
+                    OS_F32,
+                    OS_M64F,
+                    OS_M128F:
+                      mmsize:=OS_M128F;
+                    OS_F64,
+                    OS_M64D,
+                    OS_M128D:
+                      mmsize:=OS_M128D;
+                    else
+                      { Keep as OS_M128 };
+                  end;
+                OS_M256:
+                  case n.location.size of
+                    OS_F32,
+                    OS_M64F,
+                    OS_M128F,
+                    OS_M256F:
+                      mmsize:=OS_M256F;
+                    OS_F64,
+                    OS_M64D,
+                    OS_M128D,
+                    OS_M256D:
+                      mmsize:=OS_M256D;
+                    else
+                      { Keep as OS_M256 };
+                  end;
+                OS_M512:
+                  case n.location.size of
+                    OS_F32,
+                    OS_M64F,
+                    OS_M128F,
+                    OS_M256F,
+                    OS_M512F:
+                      mmsize:=OS_M512F;
+                    OS_F64,
+                    OS_M64D,
+                    OS_M128D,
+                    OS_M256D,
+                    OS_M512D:
+                      mmsize:=OS_M512D;
+                    else
+                      { Keep as OS_M512 };
+                  end;
+                else
+                  internalerror(2006090921);
+              end;
+
+              a_loadmm_reg_reg(
+                list,
+                cgmmsize_def(mmsize),
+                cgmmsize_def(mmsize),
+                n.location.mmlane.reg,
+                rr.new,
+                nil
+              );
+            end;
           else
             internalerror(2006090920);
         end;
@@ -4942,7 +5066,7 @@ implementation
       else
 {$endif cpu64bitalu}
         begin
-          n.location.register := rr.new;
+          n.location.register := rr.new; { Aliased over location.mmlane.reg for LOC_CMMLANE }
           if assigned(rr.sym) then
             begin
               varloc:=tai_varloc.create(rr.sym,rr.new);
@@ -4965,59 +5089,77 @@ implementation
             if (tloadnode(n).symtableentry.typ in [localvarsym,paravarsym,staticvarsym]) and
                (tabstractvarsym(tloadnode(n).symtableentry).varoptions * [vo_is_dll_var, vo_is_thread_var] = []) and
                not assigned(tloadnode(n).left) and
-               ((tloadnode(n).symtableentry <> rr^.ressym) or
+               (
+                (tloadnode(n).symtableentry <> rr^.ressym) or
                 not(fc_exit in flowcontrol)
-               ) and
-               (tabstractnormalvarsym(tloadnode(n).symtableentry).localloc.loc in [LOC_CREGISTER,LOC_CFPUREGISTER,LOC_CMMXREGISTER,LOC_CMMREGISTER]) and
-               (tabstractnormalvarsym(tloadnode(n).symtableentry).localloc.register = rr^.old) then
+               ) then
               begin
+                if (tabstractnormalvarsym(tloadnode(n).symtableentry).localloc.loc in [LOC_CREGISTER,LOC_CFPUREGISTER,LOC_CMMXREGISTER,LOC_CMMREGISTER]) and
+                  (tabstractnormalvarsym(tloadnode(n).symtableentry).localloc.register = rr^.old) then
+                  begin
 {$ifdef cpu64bitalu}
-                { it's possible a 128 bit location was shifted and/xor typecasted }
-                { in a 64 bit value, so only 1 register was left in the location }
-                if (tabstractnormalvarsym(tloadnode(n).symtableentry).localloc.size in [OS_128,OS_S128]) then
-                  if (tabstractnormalvarsym(tloadnode(n).symtableentry).localloc.register128.reghi = rr^.oldhi) then
-                    tabstractnormalvarsym(tloadnode(n).symtableentry).localloc.register128.reghi := rr^.newhi
-                  else
-                    exit;
+                    { it's possible a 128 bit location was shifted and/xor typecasted }
+                    { in a 64 bit value, so only 1 register was left in the location }
+                    if (tabstractnormalvarsym(tloadnode(n).symtableentry).localloc.size in [OS_128,OS_S128]) then
+                      if (tabstractnormalvarsym(tloadnode(n).symtableentry).localloc.register128.reghi = rr^.oldhi) then
+                        tabstractnormalvarsym(tloadnode(n).symtableentry).localloc.register128.reghi := rr^.newhi
+                      else
+                        exit;
 {$else cpu64bitalu}
-                { it's possible a 64 bit location was shifted and/xor typecasted }
-                { in a 32 bit value, so only 1 register was left in the location }
-                if (tabstractnormalvarsym(tloadnode(n).symtableentry).localloc.size in [OS_64,OS_S64]) then
-                  if (tabstractnormalvarsym(tloadnode(n).symtableentry).localloc.register64.reghi = rr^.oldhi) then
-                    tabstractnormalvarsym(tloadnode(n).symtableentry).localloc.register64.reghi := rr^.newhi
-                  else
-                    exit;
+                    { it's possible a 64 bit location was shifted and/xor typecasted }
+                    { in a 32 bit value, so only 1 register was left in the location }
+                    if (tabstractnormalvarsym(tloadnode(n).symtableentry).localloc.size in [OS_64,OS_S64]) then
+                      if (tabstractnormalvarsym(tloadnode(n).symtableentry).localloc.register64.reghi = rr^.oldhi) then
+                        tabstractnormalvarsym(tloadnode(n).symtableentry).localloc.register64.reghi := rr^.newhi
+                      else
+                        exit;
 {$endif cpu64bitalu}
-                tabstractnormalvarsym(tloadnode(n).symtableentry).localloc.register := rr^.new;
-                rr^.sym := tabstractnormalvarsym(tloadnode(n).symtableentry);
-                result := fen_norecurse_true;
+                    tabstractnormalvarsym(tloadnode(n).symtableentry).localloc.register := rr^.new;
+                    rr^.sym := tabstractnormalvarsym(tloadnode(n).symtableentry);
+                    result := fen_norecurse_true;
+                  end
+                else if (tabstractnormalvarsym(tloadnode(n).symtableentry).localloc.loc = LOC_CMMLANE) and
+                  (tabstractnormalvarsym(tloadnode(n).symtableentry).localloc.mmlane.reg = rr^.old) then
+                  begin
+                    tabstractnormalvarsym(tloadnode(n).symtableentry).localloc.mmlane.reg := rr^.new;
+                    rr^.sym := tabstractnormalvarsym(tloadnode(n).symtableentry);
+                    result := fen_norecurse_true;
+                  end;
               end;
           end;
         temprefn:
           begin
-            if (ti_valid in ttemprefnode(n).tempflags) and
-               (ttemprefnode(n).tempinfo^.location.loc in [LOC_CREGISTER,LOC_CFPUREGISTER,LOC_CMMXREGISTER,LOC_CMMREGISTER]) and
-               (ttemprefnode(n).tempinfo^.location.register = rr^.old) then
+            if (ti_valid in ttemprefnode(n).tempflags) then
               begin
+                if (ttemprefnode(n).tempinfo^.location.loc in [LOC_CREGISTER,LOC_CFPUREGISTER,LOC_CMMXREGISTER,LOC_CMMREGISTER]) and
+                  (ttemprefnode(n).tempinfo^.location.register = rr^.old) then
+                  begin
 {$ifdef cpu64bitalu}
-                { it's possible a 128 bit location was shifted and/xor typecasted }
-                { in a 64 bit value, so only 1 register was left in the location }
-                if (ttemprefnode(n).tempinfo^.location.size in [OS_128,OS_S128]) then
-                  if (ttemprefnode(n).tempinfo^.location.register128.reghi = rr^.oldhi) then
-                    ttemprefnode(n).tempinfo^.location.register128.reghi := rr^.newhi
-                  else
-                    exit;
+                    { it's possible a 128 bit location was shifted and/xor typecasted }
+                    { in a 64 bit value, so only 1 register was left in the location }
+                    if (ttemprefnode(n).tempinfo^.location.size in [OS_128,OS_S128]) then
+                      if (ttemprefnode(n).tempinfo^.location.register128.reghi = rr^.oldhi) then
+                        ttemprefnode(n).tempinfo^.location.register128.reghi := rr^.newhi
+                      else
+                        exit;
 {$else cpu64bitalu}
-                { it's possible a 64 bit location was shifted and/xor typecasted }
-                { in a 32 bit value, so only 1 register was left in the location }
-                if (ttemprefnode(n).tempinfo^.location.size in [OS_64,OS_S64]) then
-                  if (ttemprefnode(n).tempinfo^.location.register64.reghi = rr^.oldhi) then
-                    ttemprefnode(n).tempinfo^.location.register64.reghi := rr^.newhi
-                  else
-                    exit;
+                    { it's possible a 64 bit location was shifted and/xor typecasted }
+                    { in a 32 bit value, so only 1 register was left in the location }
+                    if (ttemprefnode(n).tempinfo^.location.size in [OS_64,OS_S64]) then
+                      if (ttemprefnode(n).tempinfo^.location.register64.reghi = rr^.oldhi) then
+                        ttemprefnode(n).tempinfo^.location.register64.reghi := rr^.newhi
+                      else
+                        exit;
 {$endif cpu64bitalu}
-                ttemprefnode(n).tempinfo^.location.register := rr^.new;
-                result := fen_norecurse_true;
+                    ttemprefnode(n).tempinfo^.location.register := rr^.new;
+                    result := fen_norecurse_true;
+                  end
+                else if (ttemprefnode(n).tempinfo^.location.loc = LOC_CMMLANE) and
+                  (ttemprefnode(n).tempinfo^.location.mmlane.reg = rr^.old) then
+                  begin
+                    ttemprefnode(n).tempinfo^.location.mmlane.reg := rr^.new;
+                    result := fen_norecurse_true;
+                  end;
               end;
           end;
         { optimize the searching a bit }
@@ -5034,7 +5176,16 @@ implementation
           { we cannot do SSA during partial writes to arrays which span multiple registers, see also tw39325 }
           if (tvecnode(n).left.location.loc in [LOC_CREGISTER,LOC_CFPUREGISTER,LOC_CMMXREGISTER,LOC_CMMREGISTER]) and
             (tcgsize2size[reg_cgsize(tvecnode(n).left.location.register)]<>tvecnode(n).left.resultdef.size) then
-            result := fen_norecurse_false;
+            result := fen_norecurse_false
+          else if (tvecnode(n).left.location.loc = LOC_CMMLANE) and
+            (tvecnode(n).left.location.mmlane.reg = rr^.old) then
+            begin
+              if (tvecnode(n).location.register<>tvecnode(n).left.location.mmlane.reg) then
+                InternalError(2025052401);
+              tvecnode(n).location.register := rr^.new; { make sure the vec node has its location changed too }
+              tvecnode(n).left.location.mmlane.reg := rr^.new;
+              result := fen_norecurse_true;
+            end;
         else
           ;
       end;
@@ -5751,7 +5902,9 @@ implementation
         LOC_REGISTER,
         LOC_CREGISTER,
         LOC_REFERENCE,
-        LOC_CREFERENCE :
+        LOC_CREFERENCE,
+        LOC_MMLANE,
+        LOC_CMMLANE:
           begin
             a_load_loc_cgpara(list,vardef,l,cgpara);
           end;

@@ -966,7 +966,9 @@ implementation
                           end;
                       end;
                     LOC_MMREGISTER,
-                    LOC_CMMREGISTER:
+                    LOC_CMMREGISTER,
+                    LOC_MMLANE,
+                    LOC_CMMLANE:
                       begin
 {$if defined(x86) and not defined(llvm)}
                         if (right.resultdef.typ=floatdef) and
@@ -987,11 +989,18 @@ implementation
                             right.resultdef:=left.resultdef;
                           end;
 {$endif}
-                        hlcg.a_loadmm_ref_reg(current_asmdata.CurrAsmList,
-                          right.resultdef,
-                          left.resultdef,
-                          right.location.reference,
-                          left.location.register,mms_movescalar);
+                        if (left.location.loc in [LOC_MMREGISTER,LOC_CMMREGISTER]) then
+                          hlcg.a_loadmm_ref_reg(current_asmdata.CurrAsmList,
+                            right.resultdef,
+                            left.resultdef,
+                            right.location.reference,
+                            left.location.register,mms_movescalar)
+                        else
+                          hlcg.a_loadmm_ref_lane(current_asmdata.CurrAsmList,
+                            right.resultdef,
+                            left.resultdef,
+                            right.location.reference,
+                            left.location.mmlane,mms_movescalar);
                       end;
                     LOC_SUBSETREG,
                     LOC_CSUBSETREG:
@@ -1030,11 +1039,31 @@ implementation
                     LOC_CMMREGISTER,
                     LOC_MMREGISTER:
                       hlcg.a_loadmm_reg_reg(current_asmdata.CurrAsmList,right.resultdef,left.resultdef,right.location.register,left.location.register, shuffle);
+                    LOC_CMMLANE,
+                    LOC_MMLANE:
+                      hlcg.a_loadmm_reg_lane(current_asmdata.CurrAsmList,right.resultdef,left.resultdef,right.location.register,left.location.mmlane, shuffle);
                     LOC_REFERENCE,
                     LOC_CREFERENCE:
                       hlcg.a_loadmm_reg_ref(current_asmdata.CurrAsmList,right.resultdef,left.resultdef,right.location.register,left.location.reference, shuffle);
                     else
                       internalerror(2009112601);
+                  end;
+                end;
+              LOC_CMMLANE,
+              LOC_MMLANE:
+                begin
+                  case left.location.loc of
+                    LOC_CMMREGISTER,
+                    LOC_MMREGISTER:
+                      hlcg.a_loadmm_lane_reg(current_asmdata.CurrAsmList,right.resultdef,left.resultdef,right.location.mmlane,left.location.register, nil);
+                    LOC_CMMLANE,
+                    LOC_MMLANE:
+                      hlcg.a_loadmm_lane_lane(current_asmdata.CurrAsmList,right.resultdef,left.resultdef,right.location.mmlane,left.location.mmlane, nil);
+                    LOC_REFERENCE,
+                    LOC_CREFERENCE:
+                      hlcg.a_loadmm_lane_ref(current_asmdata.CurrAsmList,right.resultdef,left.resultdef,right.location.mmlane,left.location.reference, nil);
+                    else
+                      internalerror(2009112603);
                   end;
                 end;
               LOC_REGISTER,
@@ -1071,7 +1100,7 @@ implementation
               LOC_CFPUREGISTER :
                 begin
                   { we can't do direct moves between fpu and mm registers }
-                  if left.location.loc in [LOC_MMREGISTER,LOC_CMMREGISTER] then
+                  if left.location.loc in [LOC_MMREGISTER,LOC_CMMREGISTER,LOC_MMLANE,LOC_CMMLANE] then
                     begin
 {$if defined(x86) and not defined(llvm)}
                       if not use_vectorfpu(right.resultdef) then
@@ -1086,9 +1115,14 @@ implementation
                         end;
 {$endif}
                       hlcg.location_force_mmregscalar(current_asmdata.CurrAsmList,right.location,right.resultdef,false);
-                      hlcg.a_loadmm_reg_reg(current_asmdata.CurrAsmList,
-                          right.resultdef,left.resultdef,
-                          right.location.register,left.location.register,mms_movescalar);
+                      if left.location.loc in [LOC_MMREGISTER,LOC_CMMREGISTER] then
+                        hlcg.a_loadmm_reg_reg(current_asmdata.CurrAsmList,
+                            right.resultdef,left.resultdef,
+                            right.location.register,left.location.register,mms_movescalar)
+                      else
+                        hlcg.a_loadmm_reg_lane(current_asmdata.CurrAsmList,
+                            right.resultdef,left.resultdef,
+                            right.location.register,left.location.mmlane,mms_movescalar);
                     end
                   else
                     hlcg.a_loadfpu_reg_loc(current_asmdata.CurrAsmList,

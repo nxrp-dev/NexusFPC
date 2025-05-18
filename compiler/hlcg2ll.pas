@@ -188,6 +188,13 @@ unit hlcg2ll;
           procedure a_loadmm_reg_ref(list: TAsmList; fromsize, tosize: tdef;reg: tregister; const ref: treference;shuffle : pmmshuffle); override;
           procedure a_loadmm_loc_reg(list: TAsmList; fromsize, tosize: tdef; const loc: tlocation; const reg: tregister;shuffle : pmmshuffle);override;
           procedure a_loadmm_reg_loc(list: TAsmList; fromsize, tosize: tdef; const reg: tregister; const loc: tlocation;shuffle : pmmshuffle);override;
+          procedure a_loadmm_lane_reg(list: TAsmList; fromsize, tosize: tdef; const mmlane: tmmlane; const reg: tregister;shuffle : pmmshuffle); override;
+          procedure a_loadmm_lane_ref(list: TAsmList; fromsize, tosize: tdef; const mmlane: tmmlane; const ref: treference;shuffle : pmmshuffle); override;
+          procedure a_loadmm_lane_lane(list: TAsmList; fromsize, tosize: tdef; const mmlane1, mmlane2: tmmlane;shuffle : pmmshuffle); override;
+          procedure a_loadmm_lane_loc(list: TAsmList; fromsize, tosize: tdef; const mmlane: tmmlane; const loc: tlocation;shuffle : pmmshuffle); override;
+          procedure a_loadmm_reg_lane(list: TAsmList; fromsize, tosize: tdef; const reg: tregister; const mmlane: tmmlane;shuffle : pmmshuffle); override;
+          procedure a_loadmm_ref_lane(list: TAsmList; fromsize, tosize: tdef; const ref: treference; const mmlane: tmmlane;shuffle : pmmshuffle); override;
+          procedure a_loadmm_loc_lane(list: TAsmList; fromsize, tosize: tdef; const loc: tlocation; const mmlane: tmmlane;shuffle : pmmshuffle); override;
           procedure a_loadmm_reg_cgpara(list: TAsmList; fromsize: tdef; reg: tregister;const cgpara : TCGPara;shuffle : pmmshuffle); override;
           procedure a_loadmm_ref_cgpara(list: TAsmList; fromsize: tdef; const ref: treference;const cgpara : TCGPara;shuffle : pmmshuffle); override;
           procedure a_loadmm_loc_cgpara(list: TAsmList; fromsize: tdef; const loc: tlocation; const cgpara : TCGPara;shuffle : pmmshuffle); override;
@@ -309,7 +316,7 @@ unit hlcg2ll;
           procedure location_force_reg(list:TAsmList;var l:tlocation;src_size,dst_size:tdef;maybeconst:boolean);override;
           procedure location_force_mem(list:TAsmList;var l:tlocation;size:tdef);override;
           procedure location_force_mmregscalar(list:TAsmList;var l: tlocation;var size:tdef;maybeconst:boolean);override;
-//          procedure location_force_mmreg(list:TAsmList;var l: tlocation;size:tdef;maybeconst:boolean);override;
+          procedure location_force_mmreg(list:TAsmList;var l: tlocation;size:tdef;maybeconst:boolean);override;
 
           procedure maketojumpboollabels(list: TAsmList; p: tnode; truelabel, falselabel: tasmlabel); override;
 
@@ -708,6 +715,53 @@ implementation
         integer size for them... }
       fromcgsize:=getintmmcgsize(reg,def_cgmmsize(fromsize));
       cg.a_loadmm_reg_loc(list,fromcgsize,reg,loc,shuffle);
+    end;
+
+  procedure thlcg2ll.a_loadmm_lane_reg(list: TAsmList; fromsize, tosize: tdef; const mmlane: tmmlane; const reg: tregister;shuffle : pmmshuffle);
+    var
+      tocgsize: tcgsize;
+    begin
+      tocgsize:=getintmmcgsize(reg,def_cgmmsize(tosize));
+      cg.a_loadmm_lane_reg(list,def_cgmmsize(fromsize),tocgsize,mmlane,reg,shuffle);
+    end;
+
+  procedure thlcg2ll.a_loadmm_lane_ref(list: TAsmList; fromsize, tosize: tdef; const mmlane: tmmlane; const ref: treference;shuffle : pmmshuffle);
+    begin
+      cg.a_loadmm_lane_ref(list,def_cgmmsize(fromsize),def_cgmmsize(tosize),mmlane,ref,shuffle);
+    end;
+
+  procedure thlcg2ll.a_loadmm_lane_lane(list: TAsmList; fromsize, tosize: tdef; const mmlane1, mmlane2: tmmlane;shuffle : pmmshuffle);
+    begin
+      cg.a_loadmm_lane_lane(list,def_cgmmsize(fromsize),def_cgmmsize(tosize),mmlane1,mmlane2,shuffle);
+    end;
+
+  procedure thlcg2ll.a_loadmm_lane_loc(list: TAsmList; fromsize, tosize: tdef; const mmlane: tmmlane; const loc: tlocation;shuffle : pmmshuffle);
+    begin
+      { sanity check }
+      if def_cgmmsize(tosize)<>loc.size then
+        internalerror(2012071221);
+      cg.a_loadmm_lane_loc(list,def_cgmmsize(fromsize),mmlane,loc,shuffle);
+    end;
+
+  procedure thlcg2ll.a_loadmm_reg_lane(list: TAsmList; fromsize, tosize: tdef; const reg: tregister; const mmlane: tmmlane;shuffle : pmmshuffle);
+    var
+      fromcgsize: tcgsize;
+    begin
+      fromcgsize:=getintmmcgsize(reg,def_cgmmsize(fromsize));
+      cg.a_loadmm_reg_lane(list,fromcgsize,def_cgmmsize(tosize),reg,mmlane,shuffle);
+    end;
+
+  procedure thlcg2ll.a_loadmm_ref_lane(list: TAsmList; fromsize, tosize: tdef; const ref: treference; const mmlane: tmmlane;shuffle : pmmshuffle);
+    begin
+      cg.a_loadmm_ref_lane(list,def_cgmmsize(fromsize),def_cgmmsize(tosize),ref,mmlane,shuffle);
+    end;
+
+  procedure thlcg2ll.a_loadmm_loc_lane(list: TAsmList; fromsize, tosize: tdef; const loc: tlocation; const mmlane: tmmlane;shuffle : pmmshuffle);
+    begin
+      { sanity check }
+      if def_cgmmsize(fromsize)<>loc.size then
+        internalerror(2012071222);
+      cg.a_loadmm_loc_lane(list,def_cgmmsize(tosize),loc,mmlane,shuffle);
     end;
 
   procedure thlcg2ll.a_loadmm_reg_cgpara(list: TAsmList; fromsize: tdef; reg: tregister; const cgpara: TCGPara; shuffle: pmmshuffle);
@@ -1331,12 +1385,12 @@ implementation
         end;
     end;
 
-(*
+
   procedure thlcg2ll.location_force_mmreg(list: TAsmList; var l: tlocation; size: tdef; maybeconst: boolean);
     begin
       ncgutil.location_force_mmreg(list,l,maybeconst);
     end;
-*)
+
   procedure thlcg2ll.maketojumpboollabels(list: TAsmList; p: tnode; truelabel, falselabel: tasmlabel);
     begin
       { loadregvars parameter is no longer used, should be removed from
@@ -1449,6 +1503,30 @@ implementation
             LOC_REGISTER,
             LOC_CREGISTER :
               cg.a_loadmm_reg_cgpara(list,locsize,l.register,cgpara,mms_movescalar);
+            LOC_FPUREGISTER,
+            LOC_CFPUREGISTER:
+              begin
+                tmploc:=l;
+                location_force_fpureg(list,tmploc,size,false);
+                cg.a_loadfpu_reg_cgpara(list,tmploc.size,tmploc.register,cgpara);
+              end;
+            else
+              internalerror(200204249);
+          end;
+        LOC_MMLANE,
+        LOC_CMMLANE:
+          case cgpara.location^.loc of
+            LOC_REFERENCE,
+            LOC_CREFERENCE,
+            LOC_MMREGISTER,
+            LOC_CMMREGISTER,
+            LOC_REGISTER,
+            LOC_CREGISTER :
+              begin
+                tmploc:=l;
+                location_force_mmreg(list,tmploc,size,false);
+                cg.a_loadmm_reg_cgpara(list,locsize,tmploc.register,cgpara,mms_movescalar);
+              end;
             LOC_FPUREGISTER,
             LOC_CFPUREGISTER:
               begin
