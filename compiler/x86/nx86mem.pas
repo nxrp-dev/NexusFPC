@@ -39,12 +39,20 @@ interface
         procedure update_reference_reg_mul(maybe_const_reg: tregister; regsize: tdef; l: aint);override;
       end;
 
+      tx86subscriptnode = class(tcgsubscriptnode)
+        protected
+          function is_candidate_record: boolean; virtual;
+          function handle_platform_subscript_loc: boolean; override;
+      end;
+
 implementation
 
     uses
       cutils,verbose,
       aasmdata,
+      defutil,
       cgutils,cgobj,
+      globals,
       symconst,symcpu;
 
 {*****************************************************************************
@@ -142,7 +150,58 @@ implementation
          location.reference.alignment:=newalignment(location.reference.alignment,l);
        end;
 
+{*****************************************************************************
+                             TX86SUBSCRIPTNODE
+*****************************************************************************}
+
+  function tx86subscriptnode.is_candidate_record: boolean;
+    begin
+      result:=(left.location.loc in [LOC_MMREGISTER,LOC_CMMREGISTER]) and
+        (left.resultdef.size=16); { Only handle XMM for now }
+    end;
+
+
+  function tx86subscriptnode.handle_platform_subscript_loc: boolean;
+
+    procedure SetSubsetRegCommon;
+      begin
+        location_copy(location,left.location);
+
+        if (left.location.loc=LOC_MMREGISTER) then
+          location.loc:=LOC_MMLANE
+        else
+          location.loc:=LOC_CMMLANE;
+
+        location.mmlane.reg:=left.location.register;
+        location.mmlane.lanecount:=1;
+      end;
+
+    begin
+      Result:=False;
+      if is_candidate_record then
+        begin
+          if is_single(vs.vardef) and (vs.fieldoffset mod 4=0) then
+            begin
+              SetSubsetRegCommon;
+              location.size:=OS_F32;
+              location.mmlane.lanesize:=OS_F32;
+              location.mmlane.laneindex:=vs.fieldoffset div 4;
+              Result:=True;
+            end
+          else if is_double(vs.vardef) and (vs.fieldoffset mod 8=0) then
+            begin
+              SetSubsetRegCommon;
+              location.size:=OS_F64;
+              location.mmlane.lanesize:=OS_F64;
+              location.mmlane.laneindex:=vs.fieldoffset div 8;
+              Result:=True;
+            end;
+          Exit;
+        end;
+    end;
+
 begin
    cderefnode:=tx86derefnode;
    cvecnode:=tx86vecnode;
+   csubscriptnode:=tx86subscriptnode;
 end.

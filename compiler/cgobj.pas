@@ -316,9 +316,10 @@ unit cgobj;
           procedure a_opmm_lane_reg(list: TAsmList; Op: TOpCG; size : tcgsize;const mmlane: tmmlane; reg: tregister;shuffle : pmmshuffle); virtual;
           procedure a_opmm_loc_reg(list: TAsmList; Op: TOpCG; size : tcgsize;const loc: tlocation; reg: tregister;shuffle : pmmshuffle); virtual;
           procedure a_opmm_reg_ref(list: TAsmList; Op: TOpCG; size : tcgsize;reg: tregister;const ref: treference; shuffle : pmmshuffle); virtual;
-          procedure a_opmm_loc_reg_reg(list: TAsmList;Op : TOpCG;size : tcgsize;const loc : tlocation;src,dst : tregister;shuffle : pmmshuffle); virtual;
+          procedure a_opmm_lane_reg_reg(list: TAsmList; Op: TOpCG; size : tcgsize;const mmlane: tmmlane; src,dst: tregister;shuffle : pmmshuffle); virtual;
           procedure a_opmm_reg_reg_reg(list: TAsmList; Op: TOpCG; size : tcgsize;src1,src2,dst: tregister;shuffle : pmmshuffle); virtual;
           procedure a_opmm_ref_reg_reg(list: TAsmList; Op: TOpCG; size : tcgsize;const ref: treference; src,dst: tregister;shuffle : pmmshuffle); virtual;
+          procedure a_opmm_loc_reg_reg(list: TAsmList;Op : TOpCG;size : tcgsize;const loc : tlocation;src,dst : tregister;shuffle : pmmshuffle); virtual;
 
           procedure a_loadmm_intreg_reg(list: TAsmList; fromsize, tosize : tcgsize; intreg, mmreg: tregister; shuffle: pmmshuffle); virtual;
           procedure a_loadmm_reg_intreg(list: TAsmList; fromsize, tosize : tcgsize; mmreg, intreg: tregister; shuffle : pmmshuffle); virtual;
@@ -2501,7 +2502,8 @@ implementation
       end;
 
 
-    procedure tcg.a_loadmm_lane_lane(list: TAsmList; fromsize, tosize : tcgsize; const mmlane1, mmlane2: tmmlane;shuffle : pmmshuffle);      begin
+    procedure tcg.a_loadmm_lane_lane(list: TAsmList; fromsize, tosize : tcgsize; const mmlane1, mmlane2: tmmlane;shuffle : pmmshuffle);
+      begin
         InternalError(2025051823);
       end;
 
@@ -2770,11 +2772,20 @@ implementation
         case loc.loc of
           LOC_CMMREGISTER,LOC_MMREGISTER:
             a_opmm_reg_reg_reg(list,op,size,loc.register,src,dst,shuffle);
+          LOC_CMMLANE,LOC_MMLANE:
+            a_opmm_lane_reg_reg(list,op,size,loc.mmlane,src,dst,shuffle);
           LOC_CREFERENCE,LOC_REFERENCE:
             a_opmm_ref_reg_reg(list,op,size,loc.reference,src,dst,shuffle);
           else
             internalerror(2003122304);
         end;
+      end;
+
+
+    procedure tcg.a_opmm_lane_reg_reg(list: TAsmList; Op: TOpCG; size : tcgsize;
+      const mmlane: tmmlane; src,dst: tregister;shuffle : pmmshuffle);
+      begin
+        internalerror(2013061103);
       end;
 
 

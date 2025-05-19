@@ -1637,6 +1637,11 @@ unit nx86add;
                   tcgx86(cg).make_simple_ref(current_asmdata.CurrAsmList,left.location.reference);
                   current_asmdata.CurrAsmList.concat(taicpu.op_ref_reg(op,S_NO,left.location.reference,right.location.register));
                 end;
+              LOC_MMLANE,LOC_CMMLANE:
+                begin
+                  hlcg.location_force_mmregscalar(current_asmdata.CurrAsmList,left.location,right.resultdef,true);
+                  current_asmdata.CurrAsmList.concat(taicpu.op_reg_reg(op,S_NO,left.location.register,right.location.register));
+                end;
               LOC_MMREGISTER,LOC_CMMREGISTER:
                 current_asmdata.CurrAsmList.concat(taicpu.op_reg_reg(op,S_NO,left.location.register,right.location.register));
               else
@@ -1652,6 +1657,11 @@ unit nx86add;
                 begin
                   tcgx86(cg).make_simple_ref(current_asmdata.CurrAsmList,right.location.reference);
                   current_asmdata.CurrAsmList.concat(taicpu.op_ref_reg(op,S_NO,right.location.reference,left.location.register));
+                end;
+              LOC_MMLANE,LOC_CMMLANE:
+                begin
+                  hlcg.location_force_mmregscalar(current_asmdata.CurrAsmList,right.location,right.resultdef,true);
+                  current_asmdata.CurrAsmList.concat(taicpu.op_reg_reg(op,S_NO,right.location.register,left.location.register));
                 end;
               LOC_MMREGISTER,LOC_CMMREGISTER:
                 current_asmdata.CurrAsmList.concat(taicpu.op_reg_reg(op,S_NO,right.location.register,left.location.register));
