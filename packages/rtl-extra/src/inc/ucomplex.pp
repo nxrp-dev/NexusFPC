@@ -16,6 +16,9 @@ Unit UComplex;
 {$ENDIF FPC_DOTTEDUNITS}
 {$INLINE ON}
 {$define TEST_INLINE}
+{$IFDEF CPUX86_64}
+{$CALLING vectorcall}
+{$ENDIF CPUX86_64}
 
 { created for FPC by Pierre Muller }
 { inpired from the complex unit from  JD GAYRARD mai 95 }
@@ -34,7 +37,7 @@ Unit UComplex;
     type complex = record
                      re : real;
                      im : real;
-                   end;
+                   end {$IFDEF UCOMPLEX_VECTORED}align 16{$ENDIF UCOMPLEX_VECTORED};
 
     pcomplex = ^complex;
 
@@ -662,4 +665,7 @@ Unit UComplex;
 {$else}
 implementation
 {$endif FPUNONE}
+{$IFDEF CPUX86_64}
+{$CALLING default}
+{$ENDIF CPUX86_64}
 end.
