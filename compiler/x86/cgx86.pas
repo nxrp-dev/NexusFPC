@@ -1777,12 +1777,20 @@ unit cgx86;
                                 instr:=taicpu.op_const_reg_reg_reg(A_VSHUFPS,S_NO,%11101110,reg1,reg1,reg2)
                               else
                                 begin
-                                  { Copy to the output first }
-                                  instr:=taicpu.op_reg_reg(A_MOVAPS,S_NO,reg1,reg2);
-                                  add_move_instruction(instr);
+                                  { Expand the register to the full MM so register
+                                    allocation and spilling doesn't use the wrong
+                                    move instruction later }
+                                  hreg:=getmmregister(list,reg_cgsize(reg1));
 
+                                  { Copy to the output first }
+                                  instr:=taicpu.op_reg_reg(A_MOVAPS,S_NO,reg1,hreg);
+                                  add_move_instruction(instr);
                                   list.concat(instr);
-                                  instr:=taicpu.op_const_reg_reg(A_SHUFPS,S_NO,%11101110,reg2,reg2);
+
+                                  list.concat(taicpu.op_const_reg_reg(A_SHUFPS,S_NO,%11101110,hreg,hreg));
+
+                                  instr:=taicpu.op_reg_reg(A_MOVAPS,S_NO,hreg,reg2);
+                                  add_move_instruction(instr);
                                 end;
                             end;
                           else
@@ -2341,6 +2349,50 @@ unit cgx86;
          hreg, hreg2: tregister;
       begin
         case mmlane.lanesize of
+          OS_F32:
+            begin
+              if (fromsize<>mmlane.lanesize) then
+                InternalError(2025051832);
+
+              if mmlane.lanecount<>1 then
+                { Multi-lane counts not supported }
+                InternalError(2025051837);
+
+              case mmlane.laneindex of
+                0:
+                  { lower 32 bits to lower 32 bits - just copy the output }
+                  mm_maybe_typecast_reg_reg(list,fromsize,tosize,mmlane.reg,reg,false);
+                1..3:
+                  begin
+                    if (mmlane.reg=reg) or (fromsize<>tosize) then
+                      { Expand the register to the full MM so register
+                        allocation and spilling doesn't use the wrong
+                        move instruction later }
+                      hreg:=getmmregister(list,reg_cgsize(mmlane.reg))
+                    else
+                      hreg:=reg;
+
+                    if UseAVX then
+                      list.concat(taicpu.op_const_reg_reg_reg(A_VSHUFPS,S_NO,mmlane.laneindex,mmlane.reg,mmlane.reg,hreg))
+                    else
+                      begin
+                        instr:=taicpu.op_reg_reg(A_MOVAPS,S_NO,mmlane.reg,hreg);
+                        add_move_instruction(instr);
+                        list.concat(instr);
+
+                        list.concat(taicpu.op_const_reg_reg(A_SHUFPS,S_NO,mmlane.laneindex,hreg,hreg));
+                      end;
+
+                    if (mmlane.reg=reg) or (fromsize<>tosize) then
+                      mm_maybe_typecast_reg_reg(list,fromsize,tosize,hreg,reg,false);
+                  end;
+                else
+                  { Anything above 128-bit is not yet supported and should not
+                    be put into a register }
+                  InternalError(2025051851);
+              end;
+            end;
+
           OS_F64:
             begin
               if (fromsize<>mmlane.lanesize) then
@@ -2405,6 +2457,53 @@ unit cgx86;
         make_simple_ref(list,tmpref);
 
         case mmlane.lanesize of
+           OS_F32:
+             begin
+               if mmlane.laneindex>=4 then
+                 { Anything above 128-bit is not yet supported and should not
+                   be put into a register }
+                 InternalError(2025051857);
+
+               if (fromsize<>tosize) or (fromsize<>mmlane.lanesize) then
+                 InternalError(2025051828);
+
+               if mmlane.lanecount<>1 then
+                 { Multi-lane counts not supported }
+                 InternalError(2025051829);
+
+               { Suppress warnings }
+               shufflecode:=%11100100;
+
+               if UseAVX then
+                 op:=A_VMOVSS
+               else
+                 op:=A_MOVSS;
+
+               { Shuffle source lane with lane 0 }
+               if mmlane.laneindex<>0 then
+                 begin
+                   shufflecode:=(Byte(%11100100) and not (Byte(%11) shl (mmlane.laneindex*2))) or mmlane.laneindex;
+                   hreg:=getmmregister(list,tosize);
+                   if UseAVX then
+                     list.concat(taicpu.op_const_reg_reg_reg(A_VSHUFPS,S_NO,shufflecode,mmlane.reg,mmlane.reg,hreg))
+                   else
+                     begin
+                       instr:=taicpu.op_reg_reg(A_MOVAPS,S_NO,mmlane.reg,hreg);
+                       add_move_instruction(instr);
+                       list.concat(instr);
+                       list.concat(taicpu.op_const_reg_reg(A_SHUFPS,S_NO,shufflecode,mmlane.reg,hreg));
+                     end;
+                 end
+               else
+                 hreg:=mmlane.reg;
+
+               list.concat(taicpu.op_reg_ref(op,S_NO,hreg,tmpref));
+
+               { Shuffle lanes back (might make for better optimisations later) }
+               if (mmlane.laneindex<>0) and not UseAVX then
+                 list.concat(taicpu.op_const_reg_reg(A_SHUFPS,S_NO,shufflecode,hreg,hreg));
+             end;
+
           OS_F64:
             begin
               if mmlane.laneindex>=4 then
@@ -2483,6 +2582,110 @@ unit cgx86;
           end;
 
         case mmlane1.lanesize of
+          OS_F32:
+            begin
+              if (fromsize<>mmlane1.lanesize) or (tosize<>mmlane2.lanesize) then
+                InternalError(2025051838);
+
+              if (mmlane1.lanecount<>1) or (mmlane2.lanecount<>1) then
+                { Multi-lane counts not supported }
+                InternalError(2025051839);
+
+              if mmlane1.reg=mmlane2.reg then
+                begin
+                  { Same register, so we can just use a shuffle }
+                  if (mmlane1.laneindex<>mmlane2.laneindex) then
+                    begin
+                      { If the lanes are the same as well, it's a null operation,
+                        so we don't need to do anything }
+
+                      if (mmlane1.laneindex>=4) or (mmlane2.laneindex>=4) then
+                        { Anything above 128-bit is not yet supported and should not
+                          be put into a register }
+                        InternalError(2025051855);
+
+                      shufflecode1:=(%11100100 and not ((%11 shl (mmlane1.laneindex*2)) or (%11 shl (mmlane2.laneindex*2))))
+                        or (mmlane1.laneindex shl (mmlane2.laneindex*2))
+                        or (mmlane2.laneindex shl (mmlane2.laneindex*2));
+
+                      if UseAVX then
+                        list.concat(taicpu.op_const_reg_reg_reg(A_VSHUFPS,S_NO,shufflecode1,mmlane1.reg,mmlane1.reg,mmlane1.reg))
+                      else
+                        list.concat(taicpu.op_const_reg_reg(A_SHUFPS,S_NO,shufflecode1,mmlane1.reg,mmlane1.reg));
+                    end;
+                end
+              else
+                begin
+                  if (mmlane1.laneindex=0) and (mmlane2.laneindex=0) then
+                    begin
+                      { lower 64 bite to lower 64-bits - just copy the output }
+                      if UseAVX then
+                        instr:=taicpu.op_reg_reg_reg(A_VMOVSS,S_NO,mmlane1.reg,mmlane2.reg,mmlane2.reg)
+                      else
+                        instr:=taicpu.op_reg_reg(A_MOVSS,S_NO,mmlane1.reg,mmlane2.reg);
+
+                      add_move_instruction(instr);
+                      list.concat(instr);
+                    end
+                  else
+                    begin
+                      if (mmlane1.laneindex>=4) or (mmlane2.laneindex>=4) then
+                        { Anything above 128-bit is not yet supported and should not
+                          be put into a register }
+                        InternalError(2025051854);
+
+                      { Suppress warnings }
+                      shufflecode1:=%11100100;
+                      shufflecode2:=%11100100;
+
+                      { Shuffle source and target lanes with lane 0 on the respective registers }
+                      if mmlane1.laneindex<>0 then
+                        begin
+                          shufflecode1:=(%11100100 and not (%11 shl (mmlane1.laneindex*2))) or mmlane1.laneindex;
+                          if UseAVX then
+                            list.concat(taicpu.op_const_reg_reg_reg(A_VSHUFPS,S_NO,shufflecode1,mmlane1.reg,mmlane1.reg,mmlane1.reg))
+                          else
+                            list.concat(taicpu.op_const_reg_reg(A_SHUFPS,S_NO,shufflecode1,mmlane1.reg,mmlane1.reg));
+                        end;
+
+                      if mmlane2.laneindex<>0 then
+                        begin
+                          shufflecode2:=(%11100100 and not (%11 shl (mmlane2.laneindex*2))) or mmlane2.laneindex;
+                          if UseAVX then
+                            list.concat(taicpu.op_const_reg_reg_reg(A_VSHUFPS,S_NO,shufflecode2,mmlane2.reg,mmlane2.reg,mmlane2.reg))
+                          else
+                            list.concat(taicpu.op_const_reg_reg(A_SHUFPS,S_NO,shufflecode2,mmlane2.reg,mmlane2.reg));
+                        end;
+
+                      if UseAVX then
+                        instr:=taicpu.op_reg_reg_reg(A_VMOVSS,S_NO,mmlane1.reg,mmlane2.reg,mmlane2.reg)
+                      else
+                        instr:=taicpu.op_reg_reg(A_MOVSS,S_NO,mmlane1.reg,mmlane2.reg);
+
+                      add_move_instruction(instr);
+                      list.concat(instr);
+
+                      { Shuffle lanes back }
+                      if mmlane2.laneindex<>0 then
+                        begin
+                          if UseAVX then
+                            list.concat(taicpu.op_const_reg_reg_reg(A_VSHUFPS,S_NO,shufflecode2,mmlane2.reg,mmlane2.reg,mmlane2.reg))
+                          else
+                            list.concat(taicpu.op_const_reg_reg(A_SHUFPS,S_NO,shufflecode2,mmlane2.reg,mmlane2.reg));
+                        end;
+
+                      if mmlane1.laneindex<>0 then
+                        begin
+                          if UseAVX then
+                            list.concat(taicpu.op_const_reg_reg_reg(A_VSHUFPS,S_NO,shufflecode1,mmlane1.reg,mmlane1.reg,mmlane1.reg))
+                          else
+                            list.concat(taicpu.op_const_reg_reg(A_SHUFPS,S_NO,shufflecode1,mmlane1.reg,mmlane1.reg));
+                        end;
+                    end;
+                end;
+
+            end;
+
           OS_F64:
             begin
               if (fromsize<>mmlane1.lanesize) or (tosize<>mmlane2.lanesize) then
@@ -2604,6 +2807,63 @@ unit cgx86;
         op, full_op: tasmop;
       begin
         case mmlane.lanesize of
+          OS_F32:
+            begin
+              if (tosize<>mmlane.lanesize) then
+                InternalError(2025051848);
+
+              if mmlane.lanecount<>1 then
+                { Multi-lane counts not supported }
+                InternalError(2025051849);
+
+              case mmlane.laneindex of
+                0:
+                  { lower 32 bits to lower 32 bits - just copy the output }
+                  mm_maybe_typecast_reg_reg(list,fromsize,tosize,reg,mmlane.reg,true);
+                1..3:
+                  if UseAVX then
+                    begin
+                      if (fromsize<>tosize) then
+                        begin
+                          hreg:=getmmregister(list,mmlane.lanesize);
+                          mm_maybe_typecast_reg_reg(list,fromsize,tosize,mmlane.reg,hreg,false);
+                        end
+                      else
+                        hreg:=reg;
+
+                      list.concat(taicpu.op_const_reg_reg_reg(A_VINSERTPS,S_NO,mmlane.laneindex shl 4,reg,mmlane.reg,mmlane.reg))
+                    end
+                  else
+                    begin
+                      shufflecode:=(%11100100 and not (%11 shl (mmlane.laneindex*2))) or mmlane.laneindex;
+
+                      if (reg=mmlane.reg) or (fromsize<>tosize) then
+                        begin
+                          { If the source is mapped onto the destination (e.g. via "absolute"),
+                            we need to copy its value to play safe }
+                          hreg:=getmmregister(list,mmlane.lanesize);
+                          mm_maybe_typecast_reg_reg(list,fromsize,tosize,mmlane.reg,hreg,false);
+                        end
+                      else
+                        hreg:=reg;
+
+                      { Swap target lane with lane 0 }
+                      list.concat(taicpu.op_const_reg_reg(A_SHUFPS,S_NO,shufflecode,mmlane.reg,mmlane.reg));
+
+                      instr:=taicpu.op_reg_reg(A_MOVSS,S_NO,hreg,mmlane.reg);
+                      add_move_instruction(instr);
+                      list.concat(instr);
+
+                      { Swap lanes back }
+                      list.concat(taicpu.op_const_reg_reg(A_SHUFPS,S_NO,shufflecode,mmlane.reg,mmlane.reg));
+                    end;
+                else
+                  { Anything above 128-bit is not yet supported and should not
+                    be put into a register }
+                  InternalError(2025051847);
+              end;
+            end;
+
           OS_F64:
             begin
               if (tosize<>mmlane.lanesize) then
