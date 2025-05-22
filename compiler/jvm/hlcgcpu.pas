@@ -122,6 +122,11 @@ uses
       procedure a_opmm_reg_reg(list: TAsmList; Op: TOpCG; size: tdef; src, dst: tregister; shuffle: pmmshuffle); override;
       procedure a_loadmm_intreg_reg(list: TAsmList; fromsize, tosize: tdef; intreg, mmreg: tregister; shuffle: pmmshuffle); override;
       procedure a_loadmm_reg_intreg(list: TAsmList; fromsize, tosize: tdef; mmreg, intreg: tregister; shuffle: pmmshuffle); override;
+      procedure a_loadmm_lane_reg(list: TAsmList; fromsize, tosize: tdef; const mmlane: tmmlane; const reg: tregister;shuffle : pmmshuffle); override;
+      procedure a_loadmm_lane_ref(list: TAsmList; fromsize, tosize: tdef; const mmlane: tmmlane; const ref: treference;shuffle : pmmshuffle); override;
+      procedure a_loadmm_lane_lane(list: TAsmList; fromsize, tosize: tdef; const mmlane1, mmlane3: tmmlane;shuffle : pmmshuffle); override;
+      procedure a_loadmm_reg_lane(list: TAsmList; fromsize, tosize: tdef; const reg: tregister; const mmlane: tmmlane;shuffle : pmmshuffle); override;
+      procedure a_loadmm_ref_lane(list: TAsmList; fromsize, tosize: tdef; const ref: treference; const mmlane: tmmlane;shuffle : pmmshuffle); override;
       procedure g_stackpointer_alloc(list: TAsmList; size: longint); override;
       procedure g_intf_wrapper(list: TAsmList; procdef: tprocdef; const labelname: string; ioffset: longint); override;
       procedure g_adjust_self_value(list: TAsmList; procdef: tprocdef; ioffset: aint); override;
@@ -1937,6 +1942,31 @@ implementation
   procedure thlcgjvm.a_loadmm_reg_intreg(list: TAsmList; fromsize, tosize: tdef; mmreg, intreg: tregister; shuffle: pmmshuffle);
     begin
       internalerror(2012060135);
+    end;
+
+  procedure thlcgjvm.a_loadmm_lane_reg(list: TAsmList; fromsize, tosize: tdef; const mmlane: tmmlane; const reg: tregister;shuffle : pmmshuffle);
+    begin
+      InternalError(2012060136);
+    end;
+
+  procedure thlcgjvm.a_loadmm_lane_ref(list: TAsmList; fromsize, tosize: tdef; const mmlane: tmmlane; const ref: treference;shuffle : pmmshuffle);
+    begin
+      InternalError(2012060137);
+    end;
+
+  procedure thlcgjvm.a_loadmm_lane_lane(list: TAsmList; fromsize, tosize: tdef; const mmlane1, mmlane3: tmmlane;shuffle : pmmshuffle);
+    begin
+      InternalError(2012060138);
+    end;
+
+  procedure thlcgjvm.a_loadmm_reg_lane(list: TAsmList; fromsize, tosize: tdef; const reg: tregister; const mmlane: tmmlane;shuffle : pmmshuffle);
+    begin
+      InternalError(2012060139);
+    end;
+
+  procedure thlcgjvm.a_loadmm_ref_lane(list: TAsmList; fromsize, tosize: tdef; const ref: treference; const mmlane: tmmlane;shuffle : pmmshuffle);
+    begin
+      InternalError(2012060140);
     end;
 
   procedure thlcgjvm.g_stackpointer_alloc(list: TAsmList; size: longint);
