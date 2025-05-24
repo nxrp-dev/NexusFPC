@@ -149,7 +149,9 @@ implementation
              A_VORPS,
              A_VANDPD,
              A_VANDPS,
+             A_VUNPCKLPD,
              A_VUNPCKLPS,
+             A_VUNPCKHPD,
              A_VUNPCKHPS,
              A_VSHUFPD,
              A_VREDUCEPD,
@@ -287,7 +289,9 @@ implementation
                               A_SHUFPD,
                               A_SHUFPS,
                               A_UNPCKLPD,
-                              A_UNPCKLPS :
+                              A_UNPCKLPS,
+                              A_UNPCKHPD,
+                              A_UNPCKHPS:
                                 replaceoper:=-1;
 
                               { movlhps/movhlps requires the second parameter to be XMM registers }
@@ -354,7 +358,9 @@ implementation
                               A_ORPS,
                               A_ANDPD,
                               A_ANDPS,
+                              A_UNPCKLPD,
                               A_UNPCKLPS,
+                              A_UNPCKHPD,
                               A_UNPCKHPS,
                               A_SHUFPD,
                               A_SHUFPS,
