@@ -294,7 +294,63 @@ unit cpupara;
         else
           result:=class2;
         result.typ:=X86_64_SSE_CLASS;
-        result.def:=s64floattype;
+        result.def:=nil;
+
+        { Choose the best floating-point type }
+        case class1.def.typ of
+          arraydef:
+            if (tarraydef(class1.def).elementdef.typ=floatdef) then
+              begin
+                case tfloatdef(tarraydef(class1.def).elementdef).floattype of
+                  s32real, s64real:
+                    result.def:=tfloatdef(tarraydef(class1.def).elementdef);
+                  else
+                    ;
+                end;
+              end;
+
+          floatdef:
+            case tfloatdef(class1.def).floattype of
+              s32real, s64real:
+                result.def:=class1.def;
+              else
+                ;
+            end;
+
+          else
+            ;
+        end;
+
+        if result.def=nil then
+          begin
+            case class2.def.typ of
+              arraydef:
+                if (tarraydef(class2.def).elementdef.typ=floatdef) then
+                  begin
+                    case tfloatdef(tarraydef(class2.def).elementdef).floattype of
+                      s32real, s64real:
+                        result.def:=class2.def;
+                      else
+                        ;
+                    end;
+                  end;
+
+              floatdef:
+                case tfloatdef(class2.def).floattype of
+                  s32real, s64real:
+                    result.def:=class2.def;
+                  else
+                    ;
+                end;
+
+              else
+                ;
+            end;
+
+            if result.def=nil then
+              { Fall back to the double type if it comes to the worst }
+              result.def:=s64floattype;
+          end;
       end;
 
 
