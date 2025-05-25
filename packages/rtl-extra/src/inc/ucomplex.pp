@@ -17,6 +17,7 @@ Unit UComplex;
 {$INLINE ON}
 {$define TEST_INLINE}
 {$IFDEF CPUX86_64}
+{$DEFINE UCOMPLEX_VECTORED}
 {$CALLING vectorcall}
 {$ENDIF CPUX86_64}
 

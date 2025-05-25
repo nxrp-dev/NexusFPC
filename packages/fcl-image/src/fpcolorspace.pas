@@ -25,6 +25,11 @@ unit FPColorSpace;
 {$modeswitch ADVANCEDRECORDS}
 {$modeswitch TYPEHELPERS}
 
+{$IFDEF CPUX86_64}
+{$DEFINE COLORSPACE_VECTORED}
+{$CALLING vectorcall}
+{$ENDIF CPUX86_64}
+
 interface
 
 {$IFDEF FPC_DOTTEDUNITS}
@@ -44,9 +49,15 @@ type
     Illuminant: TIlluminant;
   end;
 
+{$IFDEF COLORSPACE_VECTORED}
   TSpectralLocusPoint = record
     W,X,Y,Z: Single;
   end;
+{$ELSE COLORSPACE_VECTORED}
+  TSpectralLocusPoint = packed record
+    W,X,Y,Z: Single;
+  end align 16;
+{$ENDIF COLORSPACE_VECTORED}
 
   TIlluminantSpectrumPoint = record
     W,Y: Single;
@@ -59,7 +70,7 @@ type
     red,green,blue,alpha: single;
     class function New(const ARed,AGreen,ABlue,AAlpha:single): TStdRGBA;overload;static;
     class function New(const ARed,AGreen,ABlue:single): TStdRGBA;overload;static;
-  end;
+  end{$IFDEF COLORSPACE_VECTORED} align 16{$ENDIF COLORSPACE_VECTORED};
 
   { TAdobeRGBA }
 
@@ -77,7 +88,7 @@ type
     hue,saturation,lightness,alpha: single;
     class function New(const AHue,ASaturation,ALightness,AAlpha:single): TStdHSLA;overload;static;
     class function New(const AHue,ASaturation,ALightness:single): TStdHSLA;overload;static;
-  end;
+  end{$IFDEF COLORSPACE_VECTORED} align 16{$ENDIF COLORSPACE_VECTORED};
 
   { TStdHSVA }
 
@@ -86,7 +97,7 @@ type
     hue,saturation,value,alpha: single;
     class function New(const AHue,ASaturation,AValue,AAlpha:single): TStdHSVA;overload;static;
     class function New(const AHue,ASaturation,AValue:single): TStdHSVA;overload;static;
-  end;
+  end{$IFDEF COLORSPACE_VECTORED} align 16{$ENDIF COLORSPACE_VECTORED};
 
   { TStdCMYK }
 
@@ -94,7 +105,7 @@ type
   TStdCMYK = packed record
     C,M,Y,K: single;
     class function New(const ACyan,AMagenta,AYellow,ABlack:single): TStdCMYK;static;
-  end;
+  end{$IFDEF COLORSPACE_VECTORED} align 16{$ENDIF COLORSPACE_VECTORED};
 
   { TByteMask }
 
@@ -111,7 +122,7 @@ type
     red,green,blue,alpha: single;
     class function New(const ARed,AGreen,ABlue,AAlpha:single): TLinearRGBA;overload;static;
     class function New(const ARed,AGreen,ABlue:single): TLinearRGBA;overload;static;
-  end;
+  end{$IFDEF COLORSPACE_VECTORED} align 16{$ENDIF COLORSPACE_VECTORED};
 
   { TXYZA }
 
@@ -121,7 +132,7 @@ type
     class function New(const AX,AY,AZ,AAlpha:single): TXYZA;overload;static;
     class function New(const AX,AY,AZ:single): TXYZA;overload;static;
     procedure ChromaticAdapt(const AFrom, ATo: TXYZReferenceWhite);
-  end;
+  end{$IFDEF COLORSPACE_VECTORED} align 16{$ENDIF COLORSPACE_VECTORED};
 
   { TWordXYZA }
 
@@ -140,7 +151,7 @@ type
     L,a,b,alpha: single;
     class function New(const ALightness,Aa,Ab,AAlpha:single): TLabA;overload;static;
     class function New(const ALightness,Aa,Ab:single): TLabA;overload;static;
-  end;
+  end{$IFDEF COLORSPACE_VECTORED} align 16{$ENDIF COLORSPACE_VECTORED};
 
   { TLChA }
 
@@ -149,7 +160,7 @@ type
     L,C,h,alpha: single;
     class function New(const ALightness,AChroma,AHue,AAlpha:single): TLChA;overload;static;
     class function New(const ALightness,AChroma,AHue:single): TLChA;overload;static;
-  end;
+  end{$IFDEF COLORSPACE_VECTORED} align 16{$ENDIF COLORSPACE_VECTORED};
 
   { TYCbCr }
 
