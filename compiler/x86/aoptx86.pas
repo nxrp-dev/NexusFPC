@@ -2573,13 +2573,25 @@ unit aoptx86;
                     if not(RegUsedAfterInstruction(taicpu(p).oper[1]^.reg,hp1,TmpUsedRegs)) then
                       begin
                         DebugMsg(SPeepholeOptimization + '(V)MOVA*(V)MOVS*2(V)MOVS* 1',p);
-                        taicpu(p).opcode:=taicpu(hp1).opcode;
-                        taicpu(p).loadoper(1,taicpu(hp1).oper[1]^);
 
-                        TransferUsedRegs(TmpUsedRegs);
-                        AllocRegBetween(taicpu(p).oper[0]^.reg, p, hp1, TmpUsedRegs);
+                        if (taicpu(hp1).oper[1]^.typ=top_reg) and
+                          MMRegistersEqual(taicpu(p).oper[0]^.reg,taicpu(hp1).oper[1]^.reg) then
+                          begin
+                            { if <op>=reg1, then it's a null operation }
+                            DebugMsg(SPeepholeOptimization + '(V)MOVXX2Nop 2',p);
+                            RemoveInstruction(hp1);
+                            RemoveCurrentP(p);
+                          end
+                        else
+                          begin
+                            taicpu(p).opcode:=taicpu(hp1).opcode;
+                            taicpu(p).loadoper(1,taicpu(hp1).oper[1]^);
 
-                        RemoveInstruction(hp1);
+                            TransferUsedRegs(TmpUsedRegs);
+                            AllocRegBetween(taicpu(p).oper[0]^.reg, p, hp1, TmpUsedRegs);
+
+                            RemoveInstruction(hp1);
+                          end;
                         result:=true;
                         exit;
                       end
