@@ -113,6 +113,9 @@ unit aoptx86;
           if no free register could be found }
         function GetMMRegisterBetween(RegSize: TSubRegister; var AUsedRegs: TAllUsedRegs; p, hp: tai; DontAlloc: Boolean = False): TRegister;
 
+        { Checks to see if the MM registers are the same size, accounting for R_SUBMMS and R_SUBMMD }
+        class function MMRegistersEqual(const reg1,reg2: tregister): boolean; static;
+
         { checks whether loading a new value in reg1 overwrites the entirety of reg2 }
         class function Reg1WriteOverwritesReg2Entirely(reg1, reg2: tregister): boolean; static;
         { checks whether reading the value in reg1 depends on the value of reg2. This
@@ -1679,6 +1682,19 @@ unit aoptx86;
       end;
 
 
+    class function TX86AsmOptimizer.MMRegistersEqual(const reg1,reg2: tregister): boolean;
+      begin
+        Result:=SuperRegistersEqual(reg1,reg2) and
+          (
+            (getsubreg(reg1)=getsubreg(reg2)) or
+            (
+              (getsubreg(reg1) in [R_SUBMMS,R_SUBMMD,R_SUBMMX]) and
+              (getsubreg(reg2) in [R_SUBMMS,R_SUBMMD,R_SUBMMX])
+            )
+          );
+      end;
+
+
     class function TX86AsmOptimizer.Reg1WriteOverwritesReg2Entirely(reg1, reg2: tregister): boolean;
       begin
         if not SuperRegistersEqual(reg1,reg2) then
@@ -2519,7 +2535,16 @@ unit aoptx86;
                       vmova* <op>,reg1
                       =>
                       vmova* reg1,<op> }
-                    if MatchOperand(taicpu(p).oper[0]^,taicpu(hp1).oper[1]^) and
+                    if (
+                        (
+                          (taicpu(hp1).oper[1]^.typ=top_reg) and
+                          MMRegistersEqual(taicpu(p).oper[0]^.reg,taicpu(hp1).oper[1]^.reg)
+                        ) or
+                        (
+                          (taicpu(hp1).oper[1]^.typ=top_ref) and
+                          MatchOperand(taicpu(p).oper[0]^,taicpu(hp1).oper[1]^)
+                        )
+                      ) and
                       ((taicpu(p).oper[0]^.typ<>top_ref) or
                        (not(vol_read in taicpu(p).oper[0]^.ref^.volatility))
                       ) then
