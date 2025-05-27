@@ -92,6 +92,9 @@ unit aoptx86;
         function GetNextInstructionUsingRegTrackingUse(Current: tai; out Next: tai; reg: TRegister): Boolean;
         function RegModifiedByInstruction(Reg: TRegister; p1: tai): boolean; override;
 
+        { Returns true if any kind of reference appears between p1 and p2 }
+        function RefsBetween(p1, p2: tai): boolean;
+
         { returns true if any of the registers in ref are modified by any
           instruction between p1 and p2, or if those instructions write to the
           reference }
@@ -1347,6 +1350,21 @@ unit aoptx86;
       end;
 
 
+    function TX86AsmOptimizer.RefsBetween(p1, p2: tai): boolean;
+      var
+        x: Integer;
+      begin
+        Result:=False;
+        while assigned(p1) and assigned(p2) and GetNextInstruction(p1,p1) and (p1<>p2) do
+          if p1.typ=ait_instruction then
+            for x:=0 to taicpu(p1).ops-1 do
+              begin
+                if taicpu(p1).oper[x]^.typ=top_ref then
+                  Exit(True);
+              end;
+      end;
+
+
     function TX86AsmOptimizer.RefModifiedBetween(Ref: TReference; RefSize: ASizeInt; p1, p2: tai): Boolean;
       const
         WriteOps: array[0..3] of set of TInsChange =
@@ -2479,6 +2497,7 @@ unit aoptx86;
     function TX86AsmOptimizer.OptPass1_V_MOVAP(var p : tai) : boolean;
       var
         hp1,hp2 : tai;
+        memsize: ASizeInt;
       begin
         result:=false;
         if MatchOpType(taicpu(p),top_reg,top_reg) then
@@ -2570,6 +2589,42 @@ unit aoptx86;
                       vmovs* reg1,<op> }
                     TransferUsedRegs(TmpUsedRegs);
                     UpdateUsedRegsBetween(TmpUsedRegs, p, hp1);
+
+                    { Get the size of the data just in case we need it for a reference later }
+                    case taicpu(hp1).opcode of
+                      A_MOVSS, A_VMOVSS:
+                        memsize:=4;
+                      A_MOVSD, A_VMOVSD:
+                        memsize:=8;
+                      else
+                        begin
+                          { Find a register to get the size }
+                          if taicpu(hp1).oper[0]^.typ=top_reg then
+                            begin
+                              case getsubreg(taicpu(hp1).oper[0]^.reg) of
+                                R_SUBMMZ:
+                                  memsize:=64;
+                                R_SUBMMY:
+                                  memsize:=32;
+                                else
+                                  memsize:=16;
+                              end;
+                            end
+                          else
+                            begin
+                              case getsubreg(taicpu(hp1).oper[1]^.reg) of
+                                R_SUBMMZ:
+                                  memsize:=64;
+                                R_SUBMMY:
+                                  memsize:=32;
+                                else
+                                  memsize:=16;
+                              end;
+                            end;
+
+                        end;
+                    end;
+
                     if not(RegUsedAfterInstruction(taicpu(p).oper[1]^.reg,hp1,TmpUsedRegs)) then
                       begin
                         if (taicpu(hp1).oper[1]^.typ=top_reg) and
@@ -2607,15 +2662,8 @@ unit aoptx86;
                                 (hp1=hp2)
                               ) or
                               (
-                                (taicpu(hp1).oper[taicpu(hp1).ops-1]^.ref^.refaddr=addr_full) and
-                                (
-                                  (taicpu(hp1).oper[taicpu(hp1).ops-1]^.ref^.base=NR_NO) or
-                                  RegUsedBetween(taicpu(hp1).oper[taicpu(hp1).ops-1]^.ref^.base, p, hp1)
-                                ) and
-                                (
-                                  (taicpu(hp1).oper[taicpu(hp1).ops-1]^.ref^.index=NR_NO) or
-                                  RegUsedBetween(taicpu(hp1).oper[taicpu(hp1).ops-1]^.ref^.index, p, hp1)
-                                )
+                                RefModifiedBetween(taicpu(hp1).oper[taicpu(hp1).ops-1]^.ref^,memsize,p,hp1) and
+                                not RefsBetween(p,hp1)
                               )
                             )
                           ) then
