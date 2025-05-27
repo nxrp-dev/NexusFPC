@@ -2486,8 +2486,9 @@ unit aoptx86;
             { vmova* reg1,reg1
               =>
               <nop> }
-            if taicpu(p).oper[0]^.reg = taicpu(p).oper[1]^.reg then
+            if MMRegistersEqual(taicpu(p).oper[0]^.reg, taicpu(p).oper[1]^.reg) then
               begin
+                DebugMsg(SPeepholeOptimization + '(V)MOVXX2Nop 1',p);
                 RemoveCurrentP(p);
                 result:=true;
                 exit;
