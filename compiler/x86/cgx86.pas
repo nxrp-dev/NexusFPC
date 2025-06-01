@@ -3018,13 +3018,15 @@ unit cgx86;
         );
 
       var
-        resultreg : tregister;
-        asmop : tasmop;
-        hreg : tregister;
+        hreg, resultreg : tregister;
+        asmop, movop : tasmop;
+        need_aligned : boolean;
+        alignment_mask : integer;
       begin
         { this is an internally used procedure so the parameters have
           some constrains
         }
+        alignment_mask:=0;
         if loc.size<>size then
           internalerror(2013061108);
         resultreg:=dst;
@@ -3050,10 +3052,13 @@ unit cgx86;
 
             if size in [OS_M256,OS_M256F,OS_M256D,OS_M512,OS_M512F,OS_M512D] then
               Include(current_procinfo.flags,pi_uses_ymm);
+
+            need_aligned:=true;
           end
         else if shufflescalar(shuffle) then
           begin
             asmop:=opmm2asmop[0,size,op];
+            need_aligned:=false;
             { no scalar operation available? }
             if asmop=A_NOP then
               begin
@@ -3069,7 +3074,29 @@ unit cgx86;
           LOC_CREFERENCE,LOC_REFERENCE:
             begin
               make_simple_ref(current_asmdata.CurrAsmList,loc.reference);
-              list.concat(taicpu.op_ref_reg_reg(asmop,S_NO,loc.reference,src,resultreg));
+              if need_aligned and ((loc.reference.alignment and alignment_mask)<>0) then
+                begin
+                  case reg_cgsize(dst) of
+                    OS_M128:
+                      alignment_mask:=$F;
+                    OS_M256:
+                      alignment_mask:=$1F;
+                    OS_M512:
+                      alignment_mask:=$3F;
+                    else
+                      InternalError(2025060110);
+                  end;
+
+                  if size in [OS_F32,OS_M128F,OS_M256F,OS_M512F] then
+                    movop:=A_VMOVUPS
+                  else
+                    movop:=A_VMOVUPD;
+                  hreg:=getmmregister(current_asmdata.CurrAsmList,reg_cgsize(dst));
+                  list.concat(taicpu.op_ref_reg(movop,S_NO,loc.reference,hreg));
+                  list.concat(taicpu.op_reg_reg_reg(asmop,S_NO,hreg,src,resultreg));
+                end
+              else
+                list.concat(taicpu.op_ref_reg_reg(asmop,S_NO,loc.reference,src,resultreg));
             end;
           LOC_CMMLANE,LOC_MMLANE:
             begin
@@ -3128,6 +3155,8 @@ unit cgx86;
       var
         hreg : tregister;
         instr : taicpu;
+        need_aligned : boolean;
+        alignment_mask : integer;
       const
         opmm2asmop : array[0..1,OS_F32..OS_F64,topcg] of tasmop = (
           ( { scalar }
@@ -3179,7 +3208,7 @@ unit cgx86;
         );
       var
         resultreg : tregister;
-        asmop : tasmop;
+        asmop, movop : tasmop;
       begin
         { this is an internally used procedure so the parameters have
           some constrains
@@ -3187,6 +3216,8 @@ unit cgx86;
         if loc.size<>size then
           internalerror(200312213);
         resultreg:=dst;
+        need_aligned:=false;
+        alignment_mask:=0;
         { deshuffle }
         //!!!
         if (shuffle<>nil) and not(shufflescalar(shuffle)) then
@@ -3212,9 +3243,15 @@ unit cgx86;
             else if size in [OS_F32,OS_F64] then
               asmop:=opmm2asmop[0,size,op]
             else if size in [OS_M128F,OS_M256F,OS_M512F] then
-              asmop:=opmm2asmop[1,OS_F32,op]
+              begin
+                asmop:=opmm2asmop[1,OS_F32,op];
+                need_aligned:=true;
+              end
             else if size in [OS_M128D,OS_M256D,OS_M512D] then
-              asmop:=opmm2asmop[1,OS_F64,op]
+              begin
+                asmop:=opmm2asmop[1,OS_F64,op];
+                need_aligned:=true;
+              end
             else
               asmop:=opmm2asmop_full[op];
           end
@@ -3236,11 +3273,50 @@ unit cgx86;
         case loc.loc of
           LOC_CREFERENCE,LOC_REFERENCE:
             begin
+              if need_aligned then
+                begin
+                  case reg_cgsize(dst) of
+                    OS_M128, OS_M128F, OS_M128D:
+                      alignment_mask:=$F;
+                    OS_M256, OS_M256F, OS_M256D:
+                      alignment_mask:=$1F;
+                    OS_M512, OS_M512F, OS_M512D:
+                      alignment_mask:=$3F;
+                    else
+                      InternalError(2025060111);
+                  end;
+                end;
               make_simple_ref(current_asmdata.CurrAsmList,loc.reference);
-              if UseAVX then
-                list.concat(taicpu.op_ref_reg_reg(asmop,S_NO,loc.reference,resultreg,resultreg))
+              if need_aligned and ((loc.reference.alignment and alignment_mask)<>0) then
+                begin
+                  if size in [OS_F32,OS_M128F,OS_M256F,OS_M512F] then
+                    begin
+                      if UseAVX then
+                        movop:=A_VMOVUPS
+                      else
+                        movop:=A_MOVUPS;
+                    end
+                  else
+                    begin
+                      if UseAVX then
+                        movop:=A_VMOVUPD
+                      else
+                        movop:=A_MOVUPD;
+                    end;
+                  hreg:=getmmregister(current_asmdata.CurrAsmList,reg_cgsize(dst));
+                  list.concat(taicpu.op_ref_reg(movop,S_NO,loc.reference,hreg));
+                  if UseAVX then
+                    list.concat(taicpu.op_reg_reg_reg(asmop,S_NO,hreg,resultreg,resultreg))
+                  else
+                    list.concat(taicpu.op_reg_reg(asmop,S_NO,hreg,resultreg));
+                end
               else
-                list.concat(taicpu.op_ref_reg(asmop,S_NO,loc.reference,resultreg));
+                begin
+                  if UseAVX then
+                    list.concat(taicpu.op_ref_reg_reg(asmop,S_NO,loc.reference,resultreg,resultreg))
+                  else
+                    list.concat(taicpu.op_ref_reg(asmop,S_NO,loc.reference,resultreg));
+                end;
             end;
           LOC_CMMREGISTER,LOC_MMREGISTER:
             if UseAVX then
