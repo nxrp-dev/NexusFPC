@@ -1690,11 +1690,15 @@ unit cgx86;
             case op of
               A_VMOVAPD,
               A_VMOVAPS,
+              A_VMOVUPD,
+              A_VMOVUPS,
               A_VMOVSS,
               A_VMOVSD,
               A_VMOVQ,
               A_MOVAPD,
               A_MOVAPS,
+              A_MOVUPD,
+              A_MOVUPS,
               A_MOVSS,
               A_MOVSD,
               A_MOVQ:
