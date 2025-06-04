@@ -132,6 +132,11 @@ unit aoptx86;
           except where the register is being written }
         class function ReplaceRegisterInInstruction(const p: taicpu; const AOldReg, ANewReg: TRegister): Boolean; static;
 
+        { Returns true if the two registers are the same-sized MM register, taking into account that
+          registers used to store a lone single or double have a different sub-register than an
+          entire 128-bit register and thus equating them. }
+        class function MMRegistersEqual(reg1, reg2: tregister): boolean; static;
+
         { Returns true if the reference only refers to ESP or EBP (or their 64-bit equivalents),
           or writes to a global symbol }
         class function IsRefSafe(const ref: PReference): Boolean; static;
@@ -2865,6 +2870,21 @@ unit aoptx86;
           else if p.oper[OperIdx]^.typ = top_ref then
             { It's okay to replace registers in references that get written to }
             Result := ReplaceRegisterInOper(p, OperIdx, AOldReg, ANewReg) or Result;
+      end;
+
+
+    class function TX86AsmOptimizer.MMRegistersEqual(reg1, reg2: tregister): boolean;
+      begin
+        if reg1 = reg2 then
+          { Simplest case }
+          Exit(True)
+        else if not SuperRegistersEqual(reg1, reg2) then
+          Exit(False);
+
+        { Equate the 128-bit sizes }
+        Result :=
+          (getsubreg(reg1) in [R_SUBMMS, R_SUBMMD, R_SUBMMX]) and
+          (getsubreg(reg2) in [R_SUBMMS, R_SUBMMD, R_SUBMMX]);
       end;
 
 
