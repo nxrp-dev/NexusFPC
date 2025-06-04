@@ -2482,8 +2482,9 @@ unit aoptx86;
             { vmova* reg1,reg1
               =>
               <nop> }
-            if taicpu(p).oper[0]^.reg = taicpu(p).oper[1]^.reg then
+            if MMRegistersEqual(taicpu(p).oper[0]^.reg, taicpu(p).oper[1]^.reg) then
               begin
+                DebugMsg(SPeepholeOptimization + '(V)MovA2Nop 1 done',p);
                 RemoveCurrentP(p);
                 result:=true;
                 exit;
@@ -6025,7 +6026,15 @@ unit aoptx86;
       begin
         Result:=false;
         if taicpu(p).ops <> 2 then
+          { Wrong MOVSS! }
           exit;
+        if MatchOpType(taicpu(p),top_reg,top_reg) and MMRegistersEqual(taicpu(p).oper[0]^.reg,taicpu(p).oper[1]^.reg) then
+          begin
+            DebugMsg(SPeepholeOptimization + 'MovXX2Nop 1 done',p);
+            RemoveCurrentP(p);
+            result:=true;
+            exit;
+          end;
         if (MatchOpType(taicpu(p),top_reg,top_reg) and GetNextInstructionUsingReg(p,hp1,taicpu(p).oper[1]^.reg)) or
           GetNextInstruction(p,hp1) then
           begin
