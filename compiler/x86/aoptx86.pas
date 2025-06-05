@@ -2747,8 +2747,14 @@ unit aoptx86;
           { we mix single and double operations here because we assume that the compiler
             generates vmovapd only after double operations and vmovaps only after single operations }
           MatchInstruction(hp1,A_VMOVAPD,A_VMOVAPS,[S_NO]) and
-          MatchOperand(taicpu(p).oper[2]^,taicpu(hp1).oper[0]^) and
-          (taicpu(hp1).oper[1]^.typ=top_reg) then
+          (taicpu(hp1).oper[0]^.typ=top_reg) and
+          (taicpu(p).oper[2]^.typ=top_reg) and
+          (
+            { One can be a reference, but not both }
+            (taicpu(hp1).oper[1]^.typ=top_reg) or
+            (taicpu(p).oper[0]^.typ=top_reg)
+          ) and
+          MMRegistersEqual(taicpu(p).oper[2]^.reg,taicpu(hp1).oper[0]^.reg) then
           begin
             TransferUsedRegs(TmpUsedRegs);
             UpdateUsedRegs(TmpUsedRegs, tai(p.next));
@@ -6188,15 +6194,16 @@ unit aoptx86;
             generates vmovapd only after double operations and vmovaps only after single operations }
           MatchInstruction(hp1,A_MOVAPD,A_MOVAPS,[S_NO]) and
           MatchOperand(taicpu(p).oper[1]^,taicpu(hp1).oper[0]^) and
-          MatchOperand(taicpu(p).oper[0]^,taicpu(hp1).oper[1]^) and
-          (taicpu(p).oper[0]^.typ=top_reg) then
+          (taicpu(p).oper[0]^.typ=top_reg) and
+          (taicpu(hp1).oper[1]^.typ=top_reg) and
+          MMRegistersEqual(taicpu(p).oper[0]^.reg,taicpu(hp1).oper[1]^.reg) then
           begin
             TransferUsedRegs(TmpUsedRegs);
             UpdateUsedRegs(TmpUsedRegs, tai(p.next));
             if not(RegUsedAfterInstruction(taicpu(p).oper[1]^.reg,hp1,TmpUsedRegs)) then
               begin
                 taicpu(p).loadoper(0,taicpu(hp1).oper[0]^);
-                taicpu(p).loadoper(1,taicpu(hp1).oper[1]^);
+                taicpu(p).loadreg(1,taicpu(hp1).oper[1]^.reg);
                 DebugMsg(SPeepholeOptimization + 'OpMov2Op done',p);
                 RemoveInstruction(hp1);
                 result:=true;
