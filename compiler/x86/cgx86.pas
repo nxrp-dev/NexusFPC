@@ -2212,10 +2212,10 @@ unit cgx86;
         opmm2asmop : array[0..1,OS_F32..OS_F64,topcg] of tasmop = (
           ( { scalar }
             ( { OS_F32 }
-              A_NOP,A_NOP,A_VADDSS,A_NOP,A_VDIVSS,A_NOP,A_NOP,A_VMULSS,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_VSUBSS,A_NOP,A_NOP,A_NOP
+              A_NOP,A_NOP,A_VADDSS,A_VANDPS,A_VDIVSS,A_NOP,A_NOP,A_VMULSS,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_VSUBSS,A_VXORPS,A_NOP,A_NOP
             ),
             ( { OS_F64 }
-              A_NOP,A_NOP,A_VADDSD,A_NOP,A_VDIVSD,A_NOP,A_NOP,A_VMULSD,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_VSUBSD,A_NOP,A_NOP,A_NOP
+              A_NOP,A_NOP,A_VADDSD,A_VANDPD,A_VDIVSD,A_NOP,A_NOP,A_VMULSD,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_VSUBSD,A_VXORPD,A_NOP,A_NOP
             )
           ),
           ( { vectorized/packed }
@@ -2223,12 +2223,15 @@ unit cgx86;
               these
             }
             ( { OS_F32 }
-              A_NOP,A_NOP,A_VADDPS,A_NOP,A_VDIVPS,A_NOP,A_NOP,A_VMULPS,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_VSUBPS,A_VXORPS,A_NOP,A_NOP
+              A_NOP,A_NOP,A_VADDPS,A_VANDPS,A_VDIVPS,A_NOP,A_NOP,A_VMULPS,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_VSUBPS,A_VXORPS,A_NOP,A_NOP
             ),
             ( { OS_F64 }
-              A_NOP,A_NOP,A_VADDPD,A_NOP,A_VDIVPD,A_NOP,A_NOP,A_VMULPD,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_VSUBPD,A_VXORPD,A_NOP,A_NOP
+              A_NOP,A_NOP,A_VADDPD,A_VANDPD,A_VDIVPD,A_NOP,A_NOP,A_VMULPD,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_VSUBPD,A_VXORPD,A_NOP,A_NOP
             )
           )
+        );
+        opmm2asmop_full : array[topcg] of tasmop = (
+          A_NOP,A_NOP,A_NOP,A_VPAND,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_VPOR,A_NOP,A_NOP,A_NOP,A_NOP,A_VPXOR,A_NOP,A_NOP
         );
 
       var
@@ -2248,7 +2251,22 @@ unit cgx86;
             internalerror(2013061107);
           end
         else if (shuffle=nil) then
-          asmop:=opmm2asmop[1,size,op]
+          begin
+            if (loc.loc in [LOC_CMMLANE,LOC_MMLANE]) then
+              { Only valid for full MM registers }
+              InternalError(2025052002);
+            if size in [OS_F32,OS_F64] then
+              asmop:=opmm2asmop[0,size,op]
+            else if size in [OS_M128F,OS_M256F,OS_M512F] then
+              asmop:=opmm2asmop[1,OS_F32,op]
+            else if size in [OS_M128D,OS_M256D,OS_M512D] then
+              asmop:=opmm2asmop[1,OS_F64,op]
+            else
+              asmop:=opmm2asmop_full[op];
+
+            if size in [OS_M256,OS_M256F,OS_M256D,OS_M512,OS_M512F,OS_M512D] then
+              Include(current_procinfo.flags,pi_uses_ymm);
+          end
         else if shufflescalar(shuffle) then
           begin
             asmop:=opmm2asmop[0,size,op];
@@ -2380,7 +2398,7 @@ unit cgx86;
                 if (asmop=A_VPXOR) and (FPUX86_HAS_32MMREGS in fpu_capabilities[current_settings.fputype]) then
                   asmop:=A_VPXORD;
 {$endif x86_64}
-                if size in [OS_M256,OS_M512] then
+                if size in [OS_M256,OS_M256F,OS_M256D,OS_M512,OS_M512F,OS_M512D] then
                   Include(current_procinfo.flags,pi_uses_ymm);
               end
             else if size in [OS_F32,OS_F64] then
