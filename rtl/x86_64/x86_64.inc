@@ -22,9 +22,7 @@
 ****************************************************************************}
 
 {$define move_use_fast_repmovstos}
-{$ifndef FPC_ABI_WIN64}
-  {$define fillxxxx_use_fast_repmovstos} { REP STOS uses nonvolatile RDI and would require a stack frame on Win64 to be SEH-compliant. }
-{$endif}
+{$define fillxxxx_use_fast_repmovstos}
 
 {$if defined(move_use_fast_repmovstos) or defined(fillxxxx_use_fast_repmovstos)}
 var
@@ -86,6 +84,94 @@ end;
 
 {$ifndef FPC_SYSTEM_HAS_MOVE}
 {$define FPC_SYSTEM_HAS_MOVE}
+
+{$ifdef move_use_fast_repmovstos}
+procedure Move_RepMovsF; assembler; nostackframe;
+{ rcx = src - dst, rdx = (dst + 15) and -16, r8 = dst + count - (dst + 15) and -16 - 32, r9 = dst, xmm4 = first 16 bytes of src. }
+asm
+{$ifdef FPC_ABI_WIN64}
+    push   %rsi
+.seh_pushreg %rsi
+    push   %rdi
+.seh_pushreg %rdi
+.seh_endprologue
+{$endif FPC_ABI_WIN64}
+    lea    (%rcx,%rdx), %rsi
+    mov    %rdx, %rdi
+    lea    32(%r8), %rcx
+    rep movsb
+    movups %xmm4, (%r9) { last 16 aren't required }
+{$ifdef FPC_ABI_WIN64}
+    pop    %rdi
+    pop    %rsi
+{$endif FPC_ABI_WIN64}
+end;
+
+procedure Move_RepMovsB; assembler; nostackframe;
+{ rcx = src - dst, rdx = (dst + count) and -16, r8 = (dst + count) and -16 - dst, r9 = dst + count, xmm5 = last 16 bytes of src. }
+asm
+{$ifdef FPC_ABI_WIN64}
+    push   %rsi
+.seh_pushreg %rsi
+    push   %rdi
+.seh_pushreg %rdi
+.seh_endprologue
+{$endif FPC_ABI_WIN64}
+    {         dst = 3
+              v
+      Move(abcdefghijXXX, count=10)
+           ^
+           src = 0
+
+         = abcABCDEFGHIJ
+
+      can be moved right to left in non-overlapping groups of “dst - src”:
+
+      abcdefghijHIJ
+             ^^^
+
+      abcdefgEFGhij
+          ^^^
+
+      abcdBCDefghij
+       ^^^
+
+      abcAbcdefghij <- tail is handled by restarting the Move with corresponding count instead, as it can have 0 to dst - src - 1 bytes.
+      ^
+
+      Only REP MOVs with DF=0 are fast with ERMS, in case you’re wondering why not just use DF=1. }
+
+    movups %xmm5, -16(%r9)       { Write last 16 bytes right away. Unlike in the SSE branch, it is safe here because step is >= 16... assuming ErmsThreshold >= 16 :). }
+    mov    %rcx, %rax            { rax = src - dst = -step; as rcx will be required for rep movsb. }
+    add    $32, %r8              { r8 = remaining }
+    add    %rax, %r8             { remaining -= step }
+    jnc    .LTail                { CF=0 after remaining -= step means that remaining became strictly negative and the loop must be stopped/not performed. }
+.LNextPiece:                     { ^ Because of aligning dest, step > remaining is not guaranteed even for the first time, i.e. the ranges may have stopped overlapping by here. }
+    add    %rax, %rdx            { dst -= step }
+    lea    (%rax,%rdx), %rsi     { rsi = src = rep movsb source }
+    mov    %rdx, %rdi            { rdi = dst = rep movsb dest }
+    mov    %rax, %rcx
+    neg    %rcx                  { rcx = step = rep movsb count }
+    rep movsb
+    add    %rax, %r8             { remaining -= step }
+    jc     .LNextPiece
+.LTail:
+    sub    %rax, %r8             { r8 = remaining }
+    sub    %r8, %rdx             { rdx = dest }
+{$ifdef FPC_ABI_WIN64}           { Jumping to the Move will violate the SEH rules on the function epilogue, so has to rep movsb the tail, too... }
+    lea    (%rax,%rdx), %rsi     { rsi = src = rep movsb source }
+    mov    %rdx, %rdi            { rdi = dst = rep movsb dest }
+    mov    %r8, %rcx             { rcx = remaining = rep movsb count }
+    rep movsb
+    pop    %rdi
+    pop    %rsi
+{$else}
+    lea    (%rax,%rdx), %rcx     { rcx = src }
+    jmp    Move                  { Remaining piece ("a" in the example above). }
+{$endif}
+end;
+{$endif move_use_fast_repmovstos}
+
 procedure Move(const source;var dest;count:SizeInt);[public, alias: 'FPC_MOVE'];assembler;nostackframe;
 { Linux: rdi source, rsi dest, rdx count
   win64: rcx source, rdx dest, r8 count }
@@ -100,16 +186,6 @@ asm
     mov    %rdx, %r8
     mov    %rsi, %rdx
     mov    %rdi, %rcx
-{$elseif defined(move_use_fast_repmovstos)}
-    push   %rsi
-.seh_pushreg %rsi
-    push   %rdi
-.seh_pushreg %rdi
-.seh_endprologue
-{$endif}
-
-{$ifdef move_use_fast_repmovstos}
-.LRe:
 {$endif}
     cmp    $3, %r8
     jle    .L3OrLess
@@ -123,13 +199,8 @@ asm
     jg     .L33OrMore
     movups %xmm4, (%rdx)         { 17–32 bytes }
     movups %xmm5, -16(%rdx,%r8)
-{$if defined(FPC_ABI_WIN64) and defined(move_use_fast_repmovstos)}
-    pop    %rdi
-    pop    %rsi
-{$endif}
     ret
 
-    .balign 16
 .L3OrLess:
     cmp    $1, %r8
     jl     .LZero
@@ -140,10 +211,6 @@ asm
 .LOne:
     mov    %al, (%rdx)
 .LZero:
-{$if defined(FPC_ABI_WIN64) and defined(move_use_fast_repmovstos)}
-    pop    %rdi
-    pop    %rsi
-{$endif}
     ret
 
 .L4to8:
@@ -151,10 +218,6 @@ asm
     mov    -4(%rcx,%r8), %r9d
     mov    %eax, (%rdx)
     mov    %r9d, -4(%rdx,%r8)
-{$if defined(FPC_ABI_WIN64) and defined(move_use_fast_repmovstos)}
-    pop    %rdi
-    pop    %rsi
-{$endif}
     ret
 
 .L9to16:
@@ -163,16 +226,8 @@ asm
     mov    %rax, (%rdx)
     mov    %r9, -8(%rdx,%r8)
 .Lquit:
-{$if defined(FPC_ABI_WIN64) and defined(move_use_fast_repmovstos)}
-    pop    %rdi
-    pop    %rsi
-{$endif}
     ret
-{$if defined(FPC_ABI_WIN64) and defined(move_use_fast_repmovstos)}
-    .byte  102,102,102,102,102,144
-{$else}
-    .byte  102,102,102,102,102,102,102,102,102,102,102,144
-{$endif}                         { Turns .balign 16 before .Lloop32f into a no-op. }
+    .byte  {$ifndef FPC_ABI_WIN64}102,102,102,102,102,102,102,{$endif}144 { Turns .balign 16 before .Lloop32f into a no-op. }
 
 .L33OrMore:
     movups -32(%rcx,%r8), %xmm3  { Second vector from the end. Wasted read if .Lback branch is taken (it uses second vector from the start instead), }
@@ -219,10 +274,6 @@ asm
     movups %xmm3, (%rdx, %r8)
     movups %xmm5, 16(%rdx,%r8)   { Write first and last 16 bytes after everything else. }
     movups %xmm4, (%r9)          { Important for <16-byte step between src and dest. }
-{$if defined(FPC_ABI_WIN64) and defined(move_use_fast_repmovstos)}
-    pop    %rdi
-    pop    %rsi
-{$endif}
     ret
 
 {$ifdef move_use_fast_repmovstos}
@@ -237,16 +288,7 @@ asm
     cmpb   $1, fast_large_repmovstosb(%rip)
 {$endif FPC_PIC}
     jne    .LRepMovsIsNotBetterF
-    lea    (%rcx,%rdx), %rsi
-    mov    %rdx, %rdi
-    lea    32(%r8), %rcx
-    rep movsb
-    movdqu %xmm4, (%r9) { last 16 aren't required }
-{$ifdef FPC_ABI_WIN64}
-    pop    %rdi
-    pop    %rsi
-{$endif}
-    ret
+    jmp    Move_RepMovsF         { Has implicit ret at the end and will return to the caller of the original Move. Same pattern used in the rest of the file. }
 {$endif move_use_fast_repmovstos}
 
     .balign 16
@@ -312,10 +354,6 @@ asm
     movups %xmm3, -16(%rdx)
     movups %xmm4, -32(%rdx)
     movups %xmm5, -16(%r9)
-{$if defined(FPC_ABI_WIN64) and defined(move_use_fast_repmovstos)}
-    pop    %rdi
-    pop    %rsi
-{$endif}
     ret
 
 {$ifdef move_use_fast_repmovstos}
@@ -323,30 +361,6 @@ asm
     cmp    $NtThreshold-32, %r8
     jae    .Lntb
 .LNtIsNotBetterB:
-    {         dst = 3
-              v
-      Move(abcdefghijXXX, count=10)
-           ^
-           src = 0
-
-         = abcABCDEFGHIJ
-
-      can be moved right to left in non-overlapping groups of “dst - src”:
-
-      abcdefghijHIJ
-             ^^^
-
-      abcdefgEFGhij
-          ^^^
-
-      abcdBCDefghij
-       ^^^
-
-      abcAbcdefghij <- tail is handled by restarting the Move with corresponding count instead, as it can have 0 to dst - src - 1 bytes.
-      ^
-
-      Only REP MOVs with DF=0 are fast with ERMS, in case you’re wondering why not just use DF=1. }
-
     cmp    $-ErmsThreshold, %rcx
     jnbe   .LRepMovsIsNotBetterB { Unfortunately this branch can’t benefit the common case of small distance (like inserting 1 array element into the beginning). :( }
 {$ifdef FPC_PIC}
@@ -356,25 +370,7 @@ asm
     cmpb   $1, fast_large_repmovstosb(%rip)
 {$endif FPC_PIC}
     jne    .LRepMovsIsNotBetterB
-    movups %xmm5, -16(%r9)       { Write last 16 bytes right away. Unlike in the SSE branch, it is safe here because step is >= 16... assuming ErmsThreshold >= 16 :). }
-    mov    %rcx, %rax            { rax = src - dst = -step; as rcx will be required for rep movsb. }
-    add    $32, %r8              { r8 = remaining }
-    add    %rax, %r8             { remaining -= step }
-    jnc    .LRepMovsTailB        { CF=0 after remaining -= step means that remaining became strictly negative and the loop must be stopped/not performed. }
-.LRepMovsNextPieceB:             { ^ Because of aligning dest, step > remaining is not guaranteed even for the first time, i.e. the ranges may have stopped overlapping by here. }
-    add    %rax, %rdx            { dst -= step }
-    lea    (%rax,%rdx), %rsi     { rsi = src = rep movsb source }
-    mov    %rdx, %rdi            { rdi = dst = rep movsb dest }
-    mov    %rax, %rcx
-    neg    %rcx                  { rcx = step = rep movsb count }
-    rep movsb
-    add    %rax, %r8             { remaining -= step }
-    jc     .LRepMovsNextPieceB
-.LRepMovsTailB:
-    sub    %rax, %r8             { r8 = remaining }
-    sub    %r8, %rdx             { rdx = dest }
-    lea    (%rax,%rdx), %rcx     { rcx = src }
-    jmp    .LRe                  { Remaining piece ("a" in the example above). }
+    jmp    Move_RepMovsB
 {$endif}
 
     .balign 16
@@ -408,6 +404,27 @@ end;
   or not defined(FPC_SYSTEM_HAS_FILLWORD)
   or not defined(FPC_SYSTEM_HAS_FILLDWORD)
   or not defined(FPC_SYSTEM_HAS_FILLQWORD)}
+
+{$ifdef fillxxxx_use_fast_repmovstos}
+procedure FillXxxx_RepStos; assembler; nostackframe;
+{ rcx = dest, rax = count - 64, xmm0[63:0] = pattern. }
+asm
+{$ifdef FPC_ABI_WIN64}
+    push   %rdi
+.seh_pushreg %rdi
+.seh_endprologue
+{$endif}
+    mov    %rcx, %rdi { rdi = REP STOS destination. }
+    lea    64(%rax), %rcx
+    shr    $3, %rcx { rcx = count of REP STOSQ blocks up to T1 (might be 1 more than strictly required if T1 and UT overlap is 8 or more, don’t care). }
+    movq   %xmm0, %rax { recover pattern for aligned writes back to GPR :) }
+    rep stosq
+{$ifdef FPC_ABI_WIN64}
+    pop    %rdi
+{$endif}
+end;
+{$endif fillxxxx_use_fast_repmovstos}
+
 procedure FillXxxx_MoreThanTwoXmms; assembler; nostackframe;
 { Input:
   rcx = 'x'
@@ -425,7 +442,7 @@ asm
       x = ~~][H1][H2][...][T2][T1]~
           [UH]                 [UT]
 
-      UH (“unaligned head”) potentially overlaps with H1 and is already written with 'movdqu' by the caller.
+      UH (“unaligned head”) potentially overlaps with H1 and is already written with 'movups' by the caller.
       At least 1 of its bytes is exclusive to it, i.e. if x is already aligned, H1 starts at byte 16.
 
       H1 and so on are called “aligned heads” or just “heads”.
@@ -485,18 +502,7 @@ asm
     cmpb   $1, fast_large_repmovstosb(%rip)
 {$endif FPC_PIC}
     jne    .LRepStosIsNotBetter
-{$ifdef FPC_ABI_WIN64}
-    push   %rdi { For tests on Windows; however this is SEH incompliant so the entire fillxxxx_use_fast_repmovstos branch is disabled by default! }
-{$endif}
-    mov    %rcx, %rdi { rdi = REP STOS destination. }
-    lea    64(%rax), %rcx
-    shr    $3, %rcx { rcx = count of REP STOSQ blocks up to T1 (might be 1 more than strictly required if T1 and UT overlap is 8 or more, don’t care). }
-    movq   %xmm0, %rax { recover pattern for aligned writes back to GPR :) }
-    rep stosq
-{$ifdef FPC_ABI_WIN64}
-    pop    %rdi
-{$endif}
-    ret
+    jmp    FillXxxx_RepStos
 {$endif}
 
 .LRepStosIsNotBetter:
