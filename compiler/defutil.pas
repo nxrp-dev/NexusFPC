@@ -371,6 +371,9 @@ interface
     { #Return an orddef (integer) corresponding to a tcgsize }
     function cgsize_orddef(size: tcgsize): torddef;
 
+    { #Return an arraydef corresponding to an MM-based tcgsize }
+    function cgmmsize_def(size: tcgsize): tstoreddef;
+
     {# Same as def_cgsize, except that it will interpret certain arrays as
        vectors and return OS_M* sizes for them }
     function def_cgmmsize(def: tdef): tcgsize;
@@ -1828,6 +1831,28 @@ implementation
             result:=torddef(s64inttype);
           else
             internalerror(2012050401);
+        end;
+      end;
+
+    function cgmmsize_def(size: tcgsize): tstoreddef;
+      begin
+        case size of
+          OS_M64:
+            result:=tstoreddef(x86_m64type);
+          OS_M128:
+            result:=tstoreddef(x86_m128itype);
+          OS_M128F:
+            result:=tstoreddef(x86_m128type);
+          OS_M128D:
+            result:=tstoreddef(x86_m128dtype);
+          OS_M256:
+            result:=tstoreddef(x86_m256itype);
+          OS_M256F:
+            result:=tstoreddef(x86_m256type);
+          OS_M256D:
+            result:=tstoreddef(x86_m256dtype);
+          else
+            internalerror(2012050402);
         end;
       end;
 
