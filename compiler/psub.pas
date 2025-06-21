@@ -148,7 +148,7 @@ implementation
 {$endif}
        { parser }
        scanner,gendef,
-       pbase,pstatmnt,pdecl,pdecsub,pexports,pgenutil,pparautl,
+       pbase,pstatmnt,pdecl,pdecsub,pexports,pgenutil,pparautl,pexpr,
        { codegen }
        tgobj,cgbase,cgobj,hlcgobj,hlcgcpu,dbgbase,
 
@@ -2492,7 +2492,15 @@ implementation
            end;
 
          { parse the code ... }
-         code:=block(current_module.islibrary);
+         if (po_anonymous in procdef.procoptions) and try_to_consume(_IS) then
+           begin
+             code:=cblocknode.create(cstatementnode.create(cassignmentnode.create(
+                ctypeconvnode.create(cloadnode.create(procdef.funcretsym,procdef.funcretsym.owner),procdef.returndef),
+                expr(true)
+              ),nil));
+           end
+         else
+           code:=block(current_module.islibrary);
 
          postprocess_capturer(self);
 
