@@ -1541,6 +1541,9 @@ implementation
                   end;
 
                end
+              { Allow anonymous functions to have return value inference }
+              else if ppf_anonymous in flags then
+                 pd.returndef:=cundefinedtype
               else
                begin
                   if (

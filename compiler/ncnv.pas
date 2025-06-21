@@ -319,13 +319,15 @@ interface
 
     function maybe_global_proc_to_nested(var fromnode: tnode; todef: tdef): boolean;
 
+    function is_funcret_node(node:tnode;out pd: tdef;out ln:tnode): boolean;
+
 
 implementation
 
    uses
       globtype,systems,cclasses,constexp,compinnr,
       cutils,verbose,globals,widestr,ppu,
-      symconst,symdef,symsym,symcpu,symtable,
+      symconst,symdef,symsym,symcpu,symtable,symutil,
       ncon,ncal,nset,nadd,nmem,nmat,nbas,nutils,ninl,nflw,
       psub,pgenutil,
       cgbase,procinfo,
@@ -406,6 +408,18 @@ implementation
 
       begin
         do_inserttypeconv(p,def,tct_internal);
+      end;
+
+    function is_funcret_node(node:tnode;out pd: tdef;out ln:tnode): boolean;
+      begin
+        result:=false;
+        while assigned(node) and (node.nodetype=typeconvn) do
+          node:=ttypeconvnode(node).left;
+          if not assigned(node) or (node.nodetype<>loadn) or not is_funcret_sym(tloadnode(node).symtableentry) or (tloadnode(node).symtable.defowner.typ<>procdef) then
+            exit;
+          result:=true;
+          pd:=tdef(tloadnode(node).symtable.defowner);
+          ln:=tloadnode(node);
       end;
 
 
@@ -2855,6 +2869,7 @@ implementation
         if codegenerror then
          exit;
 
+        { In case it is a non specialized anonymous function, do specialization now }
         if (is_funcref(totypedef) or (totypedef.typ=procvardef)) and
            (left.nodetype=loadn) and assigned(tloadnode(left).procdef) and
            (po_anonymous in tloadnode(left).procdef.procoptions) and
@@ -2874,6 +2889,28 @@ implementation
               exit;
             tloadnode(left).setprocdef(tprocdef(hdef),is_funcref(totypedef));
           end;
+
+        { Check if this is an anonymous function where the result type needs to
+          be inferred. }
+        if is_funcret_node(left,hdef,hp) and (po_anonymous in tprocdef(hdef).procoptions) then
+          { if the type has not yet been inferred, and this is the first type
+            conversion, then we use this to infer the type}
+          if (totypedef.typ<>undefineddef) and (tprocdef(hdef).returndef.typ=undefineddef) and (hp.resultdef.typ=undefineddef) then
+            begin
+              tprocdef(hdef).returndef:=totypedef;
+              tabstractvarsym(tloadnode(hp).symtableentry).vardef:=totypedef;
+              result:=cloadnode.create(tloadnode(hp).symtableentry,tloadnode(hp).symtable);
+              typecheckpass(result);
+              exit;
+            end
+          { if the functype has already been inferred, and this is a reference
+            to the still unknown type, then we update it to the inferred type }
+          else if (totypedef.typ=undefineddef) and (tprocdef(hdef).returndef.typ<>undefineddef) then
+            begin
+              result:=cloadnode.create(tloadnode(hp).symtableentry,tloadnode(hp).symtable);
+              typecheckpass(result);
+              exit;
+            end;
 
         { When absolute force tc_equal }
         if (nf_absolute in flags) then

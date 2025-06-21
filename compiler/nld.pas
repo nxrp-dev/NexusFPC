@@ -704,10 +704,23 @@ implementation
 
 
     function tassignmentnode.pass_typecheck:tnode;
+
+        function rightasreturnddef:tdef;
+          begin
+            typecheckpass(right);
+            if is_char(right.resultdef) or is_chararray(right.resultdef) or is_open_chararray(right.resultdef) then
+              result:=cansistringtype
+            else if is_widechar(right.resultdef) or is_widechararray(right.resultdef) or is_open_chararray(right.resultdef) then
+              result:=cwidechartype
+            else
+              result:=right.resultdef;
+          end;
+
       var
         hp : tnode;
         useshelper : boolean;
         oldassignmentnode : tassignmentnode;
+        hdef: tdef;
       begin
         result:=nil;
         resultdef:=voidtype;
@@ -716,6 +729,17 @@ implementation
         set_unique(left);
 
         typecheckpass(left);
+
+        { First assignment to result gives it it's type }
+        if is_funcret_node(left,hdef,hp) and (po_anonymous in tprocdef(hdef).procoptions) and (tprocdef(hdef).returndef.typ=undefineddef) then
+          begin
+            tprocdef(hdef).returndef:=rightasreturnddef;
+            tabstractvarsym(tloadnode(hp).symtableentry).vardef:=tprocdef(hdef).returndef;
+            hp:=cloadnode.create(tloadnode(hp).symtableentry,tloadnode(hp).symtable);
+            typecheckpass(hp);
+            left.free;
+            left:=hp;
+          end;
 
         left.mark_write;
 
