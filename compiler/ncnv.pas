@@ -323,11 +323,11 @@ interface
 implementation
 
    uses
-      globtype,systems,constexp,compinnr,
+      globtype,systems,cclasses,constexp,compinnr,
       cutils,verbose,globals,widestr,ppu,
       symconst,symdef,symsym,symcpu,symtable,
       ncon,ncal,nset,nadd,nmem,nmat,nbas,nutils,ninl,nflw,
-      psub,
+      psub,pgenutil,
       cgbase,procinfo,
       htypechk,blockutl,pparautl,procdefutil,pass_1,cpuinfo;
 
@@ -2845,6 +2845,8 @@ implementation
         newblock: tblocknode;
         newstatement: tstatementnode;
         tempnode: ttempcreatenode;
+        plist: tfpobjectlist;
+        i: Integer;
       begin
         result:=nil;
         resultdef:=totypedef;
@@ -2852,6 +2854,26 @@ implementation
         typecheckpass(left);
         if codegenerror then
          exit;
+
+        if (is_funcref(totypedef) or (totypedef.typ=procvardef)) and
+           (left.nodetype=loadn) and assigned(tloadnode(left).procdef) and
+           (po_anonymous in tloadnode(left).procdef.procoptions) and
+           (df_generic in tloadnode(left).procdef.defoptions) and
+           assigned(tloadnode(left).procdef.genericparas) then
+          begin
+            if totypedef.typ=procvardef then
+                currprocdef:=tprocdef(totypedef)
+            else
+                currprocdef:=get_invoke_procdef(tobjectdef(totypedef));
+            plist:=tfpobjectlist.create(false);
+            for i:=0 to currprocdef.paras.count-1 do
+              plist.add(tparavarsym(currprocdef.paras[i]).vardef);
+            hdef:=generate_anon_specialization(tloadnode(left).procdef,plist,false);
+            plist.free;
+            if hdef.typ<>procdef then
+              exit;
+            tloadnode(left).setprocdef(tprocdef(hdef),is_funcref(totypedef));
+          end;
 
         { When absolute force tc_equal }
         if (nf_absolute in flags) then

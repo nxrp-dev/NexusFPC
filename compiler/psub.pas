@@ -2621,6 +2621,18 @@ implementation
       begin
         Message1(parser_d_procedure_start,pd.fullprocname(false));
         oldfailtokenmode:=[];
+        if po_anonymous in pd.procoptions then
+          begin
+            if (df_specialization in pd.defoptions) and
+              { I have no idea how a anonymous specialized function can exist
+                without it having a generic def, but somehow it happens in
+                chmsitemap.pas }
+              assigned(pd.genericdef) then
+              pd.parentinfo:=tprocdef(pd.genericdef).parentinfo
+            else
+              pd.parentinfo:=old_current_procinfo;
+            old_current_procinfo:=tprocinfo(pd.parentinfo);
+          end;
 
         { create a new procedure }
         current_procinfo:=cprocinfo.create(old_current_procinfo);
