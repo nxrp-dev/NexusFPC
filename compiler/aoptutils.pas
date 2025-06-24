@@ -44,6 +44,9 @@ unit aoptutils;
     { Set Store and Result to Condition (useful as an inline assignment in a conditional block) }
     function SetAndTest(const Condition: Boolean; out Store: Boolean): Boolean; inline;
 
+    { Ternary operator for instruction selection }
+    function IfThen(Condition: Boolean; TrueRes, FalseRes: TAsmOp): TAsmOp; inline;
+
   implementation
 
     uses
@@ -100,6 +103,16 @@ unit aoptutils;
       begin
         Store := Condition;
         Result := Store;
+      end;
+
+
+    { Ternary operator for instruction selection }
+    function IfThen(Condition: Boolean; TrueRes, FalseRes: TAsmOp): TAsmOp; inline;
+      begin
+        if Condition then
+          Result := TrueRes
+        else
+          Result := FalseRes;
       end;
 
 end.
