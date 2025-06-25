@@ -9210,20 +9210,80 @@ unit aoptx86;
    function TX86AsmOptimizer.OptPass1VPXor(var p: tai): boolean;
      var
        hp1: tai;
+       Size: TOpSize;
      begin
-       {
-         remove the second (v)pxor from
+       { VPXOR shouldn't have even been generated }
+       if not UseAVX then
+         InternalError(2021100502);
 
-           (v)pxor reg,reg
-           ...
-           (v)pxor reg,reg
+       {
+          replace
+             vpxor reg1,reg1,reg2
+
+             by
+
+             vpxor reg2,reg2,reg2
+
+             to avoid unncessary data dependencies
        }
-       Result:=false;
+       Result := False;
+       if MatchOpType(taicpu(p),top_reg,top_reg,top_reg) and
+         (taicpu(p).oper[0]^.reg <> taicpu(p).oper[2]^.reg) and
+         (taicpu(p).oper[0]^.reg = taicpu(p).oper[1]^.reg) then
+         begin
+           DebugMsg(SPeepholeOptimization + 'VPXor2VPXor done',p);
+           { avoid unncessary data dependency }
+           taicpu(p).loadreg(0,taicpu(p).oper[2]^.reg);
+           taicpu(p).loadreg(1,taicpu(p).oper[2]^.reg);
+           Include(OptsToCheck, aoc_ForceNewIteration);
+         end;
+
+       if not GetNextInstructionUsingReg(p, hp1, taicpu(p).oper[2]^.reg) then
+         begin
+           Result := OptPass1VOP(p);
+           Exit;
+         end;
+
+       { Go by the operand size rather than the instruction size to catch
+         more cases (e.g. R_SUBMMS and R_SUBMMD, for example) }
+       Size := subreg2opsize(getsubreg(taicpu(p).oper[2]^.reg));
+       if Size < S_XMM then
+         Size := S_XMM;
+
+       { Though we're technically checking for:
+           vpxor     %ymmreg, %ymmreg, %ymmreg
+           ...
+           vmovdqa/u x(mem), %ymmreg
+
+         Only the last register actually matters.
+       }
+       if MatchInstruction(hp1, A_VMOVDQA, A_VMOVDQU, []) and
+         { TODO: Since AVX is largely RISC-like where the last
+           operands are write-only for many instructions, this can
+           potentially be generalised to cover more instructions (and not
+           just optimising for VPXOR). [Kit]
+         }
+         (taicpu(hp1).opsize >= Size) and
+         (taicpu(hp1).oper[taicpu(hp1).ops - 1]^.typ = top_reg) and
+         SuperRegistersEqual(taicpu(hp1).oper[taicpu(hp1).ops - 1]^.reg, taicpu(p).oper[2]^.reg) then
+         begin
+           DebugMsg(SPeepholeOptimization + 'Removed superfluous VPXOR (Vpxor2Nop 1)', p);
+           RemoveCurrentP(p);
+           Result := True;
+           Exit;
+         end;
+
        if MatchOperand(taicpu(p).oper[0]^,taicpu(p).oper[1]^,taicpu(p).oper[2]^) and
          MatchOpType(taicpu(p),top_reg,top_reg,top_reg) then
          begin
-           if GetNextInstructionUsingReg(p,hp1,taicpu(p).oper[0]^.reg) and
-             MatchInstruction(hp1,taicpu(p).opcode,[taicpu(p).opsize]) and
+           {
+             remove the second (v)pxor from
+
+               (v)pxor reg,reg
+               ...
+               (v)pxor reg,reg
+           }
+           if MatchInstruction(hp1,taicpu(p).opcode,[taicpu(p).opsize]) and
              MatchOperand(taicpu(p).oper[0]^,taicpu(hp1).oper[0]^) and
              MatchOperand(taicpu(hp1).oper[0]^,taicpu(hp1).oper[1]^,taicpu(hp1).oper[2]^) then
              begin
@@ -9242,8 +9302,7 @@ unit aoptx86;
 
                  movq $0,mem
            }
-           if GetNextInstruction(p,hp1) and
-             MatchInstruction(hp1,A_VMOVSD,[]) and
+           if MatchInstruction(hp1,A_VMOVSD,[]) and
              MatchOperand(taicpu(p).oper[2]^,taicpu(hp1).oper[0]^) and
              MatchOpType(taicpu(hp1),top_reg,top_ref) then
              begin
@@ -9261,26 +9320,6 @@ unit aoptx86;
                  end;
              end;
 {$endif x86_64}
-         end
-       {
-          replace
-             vpxor reg1,reg1,reg2
-
-             by
-
-             vpxor reg2,reg2,reg2
-
-             to avoid unncessary data dependencies
-       }
-       else if MatchOperand(taicpu(p).oper[0]^,taicpu(p).oper[1]^) and
-         MatchOpType(taicpu(p),top_reg,top_reg,top_reg) then
-         begin
-           DebugMsg(SPeepholeOptimization + 'VPXor2VPXor done',p);
-           { avoid unncessary data dependency }
-           taicpu(p).loadreg(0,taicpu(p).oper[2]^.reg);
-           taicpu(p).loadreg(1,taicpu(p).oper[2]^.reg);
-           result:=true;
-           exit;
          end;
        Result:=OptPass1VOP(p);
      end;
@@ -9572,7 +9611,7 @@ unit aoptx86;
       SourceRef, TargetRef: TReference;
       CurrentReg: TRegister;
     begin
-      { VMOVDQU/CMOVDQA shouldn't have even been generated }
+      { VMOVDQU/VMOVDQA shouldn't have even been generated }
       if not UseAVX then
         InternalError(2021100501);
 
