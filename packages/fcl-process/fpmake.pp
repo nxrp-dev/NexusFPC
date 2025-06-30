@@ -25,7 +25,7 @@ begin
     P.Description := 'Process (execution) related parts of Free Component Libraries (FCL), FPC''s OOP library.';
     P.Options.Add('-S2h');
     P.NeedLibC:= false;
-    P.OSes:=AllOSes-[embedded,msdos,win16,go32v2,nativent,macosclassic,palmos,atari,zxspectrum,msxdos,amstradcpc,sinclairql,wasip1,wasip1threads,human68k,ps1];
+    P.OSes:=AllOSes-[embedded,msdos,win16,go32v2,nativent,macosclassic,palmos,atari,zxspectrum,msxdos,amstradcpc,sinclairql,wasip1,wasip1threads,human68k,ps1,wasip2];
     if Defaults.CPU=jvm then
       P.OSes := P.OSes - [java,android];
 
@@ -38,6 +38,7 @@ begin
     P.IncludePath.Add('src/$(OS)',AllOSes-[win32,win64]-AllUnixOSes-AllAmigaLikeOSes);
     P.IncludePath.Add('src/dummy',AllOSes-[win32,win64]-AllUnixOSes-AllAmigaLikeOSes);
 
+    P.Dependencies.add('winunits-jedi',[win32,win64]);
     P.Dependencies.add('morphunits',[morphos]);
     P.Dependencies.add('arosunits',[aros]);
     if Defaults.CPU=powerpc then
@@ -52,6 +53,7 @@ begin
       T.Dependencies.AddInclude('processbody.inc');
       T.Dependencies.AddInclude('process.inc');
       T.ResourceStrings:=True;
+    T:=P.Targets.AddUnit('fpsimpleservice.pp',[win32,win64]);
     T:=P.Targets.AddUnit('processunicode.pp',[win32,win64]);
       T.Dependencies.AddInclude('processbody.inc');
       T.Dependencies.AddInclude('process.inc');

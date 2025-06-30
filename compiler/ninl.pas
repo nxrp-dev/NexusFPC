@@ -328,7 +328,8 @@ implementation
            not(is_real or is_enum or
                (source.left.resultdef.typ=orddef)) then
           begin
-            CGMessagePos(fileinfo,parser_e_illegal_expression);
+            CGMessagePos1(source.fileinfo,
+              type_e_integer_expr_expected,source.resultdef.typename);
             exit;
           end;
 
@@ -451,10 +452,18 @@ implementation
             pasbool1,pasbool8,pasbool16,pasbool32,pasbool64,
             bool8bit,bool16bit,bool32bit,bool64bit:
               procname := procname + 'bool';
-            else
+
+            scurrency,s64bit,u64bit,s32bit,u32bit,s16bit,u16bit,s8bit,u8bit:
               begin
                 intrinsiccode := in_str_x_string;
                 procname := procname + get_str_int_func(source.resultdef);
+              end;
+
+            else
+              begin
+                CGMessagePos1(source.fileinfo,
+                  type_e_integer_expr_expected,torddef(source.resultdef).typename);
+                exit;
               end;
           end;
 
@@ -2413,11 +2422,6 @@ implementation
                vl:=0;
                vl2:=0; { second parameter Ex: ptr(vl,vl2) }
                case left.nodetype of
-                 realconstn :
-                   begin
-                     { Real functions are all handled with internproc below }
-                     CGMessage1(type_e_integer_expr_expected,left.resultdef.typename)
-                   end;
                  ordconstn :
                    vl:=tordconstnode(left).value;
                  callparan :
@@ -2427,7 +2431,17 @@ implementation
                      vl2:=tordconstnode(tcallparanode(tcallparanode(left).right).left).value;
                    end;
                  else
-                   CGMessage(parser_e_illegal_expression);
+                   begin
+                     { Real functions are all handled with internproc below, and
+                       unsupported typex are also trapped here }
+                     if is_integer(left.resultdef) then
+                       { Not as informative, but less confusing }
+                       CGMessagePos(left.fileinfo,parser_e_illegal_expression)
+                     else
+                       CGMessagePos1(left.fileinfo,type_e_integer_expr_expected,left.resultdef.typename);
+                     result:=cerrornode.create;
+                     exit;
+                   end;
                end;
                case inlinenumber of
                  in_const_abs :
@@ -3343,7 +3357,7 @@ implementation
           encodedtype:='';
           if not objctryencodetype(left.resultdef,encodedtype,errordef) then
             Message1(type_e_objc_type_unsupported,errordef.typename);
-          result:=cstringconstnode.createpchar(ansistring2pchar(encodedtype),length(encodedtype),nil);
+          result:=cstringconstnode.createpchar(pchar(encodedtype),length(encodedtype),nil);
         end;
 
       var
@@ -5030,7 +5044,8 @@ implementation
              hpp := tcallparanode(tcallparanode(left).right).left;
              tcallparanode(tcallparanode(left).right).left := nil;
              if assigned(tcallparanode(tcallparanode(left).right).right) then
-               CGMessage(parser_e_illegal_expression);
+               { A syntax error should have already been raised }
+               InternalError(2025050601);
            end
          else
            begin

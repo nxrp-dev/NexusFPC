@@ -946,7 +946,7 @@ ifeq ($(CPU_OS_TARGET),x86_64-dragonfly)
 override TARGET_LOADERS+=prt0 cprt0 gprt0 dllprt0
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-dragonfly)
-override TARGET_RSTS+=$(MATHUNIT) $(TYPINFOUNIT) $(CLASSESUNIT) $(SYSCONSTUNIT)
+override TARGET_RSTS+=$(MATHUNIT) $(TYPINFOUNIT) $(CLASSESUNIT) $(SYSCONSTUNIT) $(UNICODEDATAUNIT)
 endif
 override INSTALL_FPCPACKAGE=y y y
 ifeq ($(CPU_OS_TARGET),x86_64-dragonfly)
@@ -1165,7 +1165,7 @@ SHAREDLIBEXT=.so
 SHAREDLIBPREFIX=libfp
 STATICLIBPREFIX=libp
 IMPORTLIBPREFIX=libimp
-RSTEXT=.rst
+RSTEXT=.rsj
 EXEDBGEXT=.dbg
 ifeq ($(OS_TARGET),go32v1)
 STATICLIBPREFIX=
@@ -1382,6 +1382,9 @@ ifeq ($(OS_TARGET),wasip1)
 EXEEXT=.wasm
 endif
 ifeq ($(OS_TARGET),wasip1threads)
+EXEEXT=.wasm
+endif
+ifeq ($(OS_TARGET),wasip2)
 EXEEXT=.wasm
 endif
 ifneq ($(filter $(OS_SOURCE),$(LIMIT83fs)),)
@@ -2318,7 +2321,7 @@ OBJPAS_DEPS= $(OBJPASDIR)/objpas.pp $(INC)/except.inc \
 objpas$(PPUEXT): $(OBJPAS_DEPS)
 	$(COMPILER) $(OBJPAS_OPT) -Fi$(OBJPASDIR) $<
 MACPAS_DEPS=$(INC)/macpas.pp \
-	    $(OBJPASUNIT)$(PPUEXT) $(MATHUNIT)$(PPUEXT) $(SYSTEMUNIT)$(PPUEXT) \
+	    $(OBJPASUNIT)$(PPUEXT) $(MATHUNIT)$(PPUEXT) $(TYPESUNIT)$(PPUEXT) $(SYSTEMUNIT)$(PPUEXT) \
 	    $(MACPAS_DEPS_OS)  $(MACPAS_DEPS_CPU)
 macpas$(PPUEXT) : $(MACPAS_DEPS)
 	$(COMPILER) $(MACPAS_OPT) $<

@@ -1089,7 +1089,12 @@ interface
        tsetdef = class(tstoreddef)
           elementdef : tdef;
           elementdefderef : tderef;
+          { setbase is the value of the lowest value being representable by the set, this could
+            be lower then the lowest value being a valid value from the declaration: a set [3..4] might
+            have a setbase of 0 for code generation/alignment reasons }
           setbase,
+          { setlow is the lowest value valid according to the declaration of a set, i.e. for a set [3..4] it is really 3 }
+          setlow,
           setmax   : asizeint;
           constructor create(def: tdef; low, high: asizeint; doregister: boolean);virtual;
           constructor ppuload(ppufile:tcompilerppufile);
@@ -4228,6 +4233,7 @@ implementation
          elementdef:=def;
          elementdefderef.reset;
          setmax:=high;
+         setlow:=low;
          actual_setalloc:=current_settings.setalloc;
 {$if defined(cpu8bitalu) or defined(cpu16bitalu)}
          if actual_setalloc=0 then
@@ -4263,6 +4269,7 @@ implementation
          ppufile.getderef(elementdefderef);
          savesize:=ppufile.getasizeint;
          setbase:=ppufile.getasizeint;
+         setlow:=ppufile.getasizeint;
          setmax:=ppufile.getasizeint;
          ppuload_platform(ppufile);
       end;
@@ -4282,6 +4289,7 @@ implementation
          ppufile.putderef(elementdefderef);
          ppufile.putasizeint(savesize);
          ppufile.putasizeint(setbase);
+         ppufile.putasizeint(setlow);
          ppufile.putasizeint(setmax);
          writeentry(ppufile,ibsetdef);
       end;
@@ -5938,14 +5946,14 @@ implementation
                     constwresourcestring,
                     constwstring:
                       begin
-                        if pcompilerwidestring(hpc.value.valueptr)^.len>0 then
+                        if hpc.value.valuews.len>0 then
                           begin
-                            setlength(hs,pcompilerwidestring(hpc.value.valueptr)^.len);
-                            for j:=0 to pcompilerwidestring(hpc.value.valueptr)^.len-1 do
+                            setlength(hs,hpc.value.valuews.len);
+                            for j:=0 to hpc.value.valuews.len-1 do
                              begin
-                               if (ord(pcompilerwidestring(hpc.value.valueptr)^.data[j])<127) and
-                                  not(byte(pcompilerwidestring(hpc.value.valueptr)^.data[j]) in [0,10,13]) then
-                                 hs[j+1]:=char(pcompilerwidestring(hpc.value.valueptr)^.data[j])
+                               if (ord(hpc.value.valuews.data[j])<127) and
+                                  not(byte(hpc.value.valuews.data[j]) in [0,10,13]) then
+                                 hs[j+1]:=char(hpc.value.valuews.data[j])
                                else
                                  hs[j+1]:='.';
                              end;

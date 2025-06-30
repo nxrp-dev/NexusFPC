@@ -57,23 +57,17 @@ function  IsMemoryManagerSet: Boolean;
 
 { Variables }
 const
-  MaxKeptOSChunks: DWord = 4; { if more than MaxKeptOSChunks are free, the heap manager will release
-                              chunks back to the OS }
+{$ifdef LEGACYHEAP}
+  { if more than MaxKeptOSChunks are free, the heap manager will release chunks back to the OS }
+  MaxKeptOSChunks: DWord = 4;
   growheapsizesmall : ptruint=32*1024; { fixed-size small blocks will grow with 32k }
   growheapsize1 : ptruint=256*1024;  { < 256k will grow with 256k }
+{$endif LEGACYHEAP}
   growheapsize2 : ptruint=1024*1024; { > 256k will grow with 1m }
 var
   ReturnNilIfGrowHeapFails : boolean;
 
-{$ifdef EMBEDDED}
-  {$define FPC_NO_DEFAULT_MEMORYMANAGER}
-{$endif EMBEDDED}
-
-{$ifdef FREERTOS}
-  {$define FPC_NO_DEFAULT_MEMORYMANAGER}
-{$endif FREERTOS}
-
-{$ifndef FPC_NO_DEFAULT_MEMORYMANAGER}
+{$ifndef FPC_NO_DEFAULT_HEAP}
 { Default MemoryManager functions }
 Function  SysGetmem(Size:ptruint):Pointer;
 Function  SysFreemem(p:pointer):ptruint;
@@ -84,7 +78,7 @@ function  SysTryResizeMem(var p:pointer;size:ptruint):boolean;
 Function  SysReAllocMem(var p:pointer;size:ptruint):Pointer;
 function  SysGetHeapStatus:THeapStatus;
 function  SysGetFPCHeapStatus:TFPCHeapStatus;
-{$endif FPC_NO_DEFAULT_MEMORYMANAGER}
+{$endif FPC_NO_DEFAULT_HEAP}
 
 {$ifdef FPC_HAS_FEATURE_HEAP}
 { Tp7 functions }
@@ -97,12 +91,12 @@ Procedure Freememory(p:pointer;Size:ptruint);
 Function  MemSize(p:pointer):ptruint;
 
 { Delphi functions }
-function GetMem(size:ptruint):pointer;
+function GetMem(size:ptruint):pointer; inline;
 function GetMemory(size:ptruint):pointer; cdecl;
-function Freemem(p:pointer):ptruint;
+function Freemem(p:pointer):ptruint; inline;
 function Freememory(p:pointer):ptruint; cdecl;
 function AllocMem(Size:ptruint):pointer;
-function ReAllocMem(var p:pointer;Size:ptruint):pointer;
+function ReAllocMem(var p:pointer;Size:ptruint):pointer; inline;
 function ReAllocMemory(p:pointer;Size:ptruint):pointer; cdecl;
 function GetHeapStatus:THeapStatus;
 function GetFPCHeapStatus:TFPCHeapStatus;

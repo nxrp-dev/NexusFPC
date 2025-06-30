@@ -515,7 +515,8 @@ implementation
                   message(parser_e_no_property_found_to_override);
                 end;
            end;
-         if ((p.visibility=vis_published) or is_dispinterface(astruct)) then
+         if ((p.visibility=vis_published) or is_dispinterface(astruct))
+             and not (astruct.is_generic and (p.propdef.typ=undefineddef)) then
            begin
              { ignore is_publishable for interfaces (related to $M+ directive).
                $M has effect on visibility of default section for classes.
@@ -1211,7 +1212,7 @@ implementation
               abssym:=cabsolutevarsym.create(vs.realname,vs.vardef);
               abssym.fileinfo:=vs.fileinfo;
               if pt.nodetype=stringconstn then
-                abssym.asmname:=stringdup(strpas(tstringconstnode(pt).value_str))
+                abssym.asmname:=stringdup(tstringconstnode(pt).asrawbytestring)
               else
                 abssym.asmname:=stringdup(chr(tordconstnode(pt).value.svalue));
               abssym.abstyp:=toasm;
@@ -1328,8 +1329,9 @@ implementation
                   { the same size since it refers to the field and not to   }
                   { the whole record -- which is why we use pt and not hp)  }
 
-                  { we can't take the size of an open array }
+                  { we can't take the size of an open array or an array of const }
                   if is_open_array(pt.resultdef) or
+                     is_array_of_const(pt.resultdef) or
                      (vs.vardef.size <> pt.resultdef.size) then
                     make_not_regable(pt,[ra_addr_regable]);
                 end

@@ -166,7 +166,7 @@ Type
     win64,wince,gba,nds,embedded,symbian,haiku,iphonesim,
     aix,java,android,nativent,msdos,wii,aros,dragonfly,
     win16,freertos,zxspectrum,msxdos,ios,amstradcpc,sinclairql,
-    wasip1,human68k,ps1,wasip1threads
+    wasip1,human68k,ps1,wasip1threads,wasip2
   );
   TOSes = Set of TOS;
 
@@ -295,7 +295,8 @@ Const
     { wasip1 }  ( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, true,  false,  false,  false,   false, false, false),
     { human68k }( false, false, true,  false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { ps1 }     ( false, false, false, false, false, false, false, false, false, false, false, true,  false, false,   false, false, false, false, false,  false,  false,   false, false, false),
- {wasip1threads}( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, true,  false,  false,  false,   false, false, false)
+ {wasip1threads}( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, true,  false,  false,  false,   false, false, false),
+    { wasip2 }  ( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, true,  false,  false,  false,   false, false, false)
   );
 
   // Useful
@@ -310,10 +311,12 @@ Const
   RsjExt  = '.rsj';
   LibExt  = '.a';
   SharedLibExt = '.so';
+  WasiSharedLibExt = '';
   DyLibExt = '.dylib';
   DLLExt  = '.dll';
   AIXSharedLibExt = '.a';
   ExeExt  = '.exe';
+  WasiExeExt  = '.wasm';
   DbgExt  = '.dbg';
   ZipExt  = '.zip';
   FpmkExt = '.fpm';
@@ -2957,6 +2960,8 @@ function AddProgramExtension(const ExecutableName: string; AOS : TOS): string;
 begin
   if AOS in [Go32v2,Win32,Win64,Wince,OS2,EMX,Watcom] then
     Result:=ExecutableName+ExeExt
+  else if AOS in [wasip1,wasip1threads,wasip2] then
+    Result:=ExecutableName+WasiExeExt
   else
     Result:=ExecutableName;
 end;
@@ -2969,6 +2974,8 @@ begin
     Result:=LibraryName+DyLibExt
   else if aOS = Aix then
     Result:=LibraryName+AIXSharedLibExt
+  else if AOS in [wasip1,wasip1threads,wasip2] then
+    Result:=LibraryName+WasiSharedLibExt
   else
     Result:=LibraryName+SharedLibExt;
 end;
@@ -7238,7 +7245,7 @@ begin
           CmdCreateDir(ExtractFilePath(DestFileName));
           SysCopyFile(AddPathPrefix(APackage, List.Names[i]),DestFileName)
         end
-      else
+      else if List[i]<>'' then
         SysCopyFile(AddPathPrefix(APackage, List[i]), DestDir);
 end;
 
@@ -8672,14 +8679,15 @@ Var
     L: TStrings;
     F: Text;
     Dep : TDependency;
-    aUnitName : string;
+    aUnitName, aUnitSourceDir : string;
     CompilationFailed: Boolean;
 
   begin
     if (APackage.FBUTarget.Dependencies.Count>0) then
       begin
         Log(vldebug, Format(SDbgGenerateBuildUnit, [APackage.FBUTarget.Name]));
-        system.Assign(F,AddPathPrefix(APackage,APackage.FBUTarget.FTargetSourceFileName));
+        aPath:=AddPathPrefix(APackage,APackage.GetUnitsOutputDir(Defaults.CompileTarget));
+        system.Assign(F,IncludeTrailingPathDelimiter(apath)+APackage.FBUTarget.FTargetSourceFileName);
         Rewrite(F);
         writeln(F,'unit ' + APackage.FBUTarget.Name +';');
         writeln(F,'interface');
@@ -8690,8 +8698,13 @@ Var
               write(F,',');
             Dep:=APackage.FBUTarget.Dependencies.Dependencies[i];
             aUnitName:=Dep.Value;
+	    aUnitSourceDir:=ExtractFileDir(Dep.TargetFileName);
             if aUnitName='' then
               Writeln('Aloha2');
+            if aUnitSourceDir='' then
+              APackage.UnitPath.Add('.')
+            else
+              APackage.UnitPath.Add(aUnitSourceDir);
             writeln(F,aUnitName);
           end;
         writeln(F,';');
@@ -8702,6 +8715,7 @@ Var
 
         APackage.FBuildMode:=bmOneByOne;
         Compilationfailed:=false;
+        APackage.FBUTarget.FTargetSourceFileName:=IncludeTrailingPathDelimiter(APackage.GetUnitsOutputDir(Defaults.CompileTarget))+APackage.FBUTarget.FTargetSourceFileName;
         try
           try
             Compile(APackage,APackage.FBUTarget);

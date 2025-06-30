@@ -353,7 +353,7 @@ end;
       {$i md5x64_sysv.inc}
       {$define MD5ASM}
     {$endif MSWINDOWS}
-  {$elseif defined(CPUARM)}
+  {$elseif defined(CPUARM) and not (defined(CPUTHUMB)) and not (defined(CPUTHUMB2))}
     {$i md5arm.inc}
     {$define MD5ASM}
   {$endif}
@@ -630,17 +630,20 @@ begin
   Reset(F, 1);
   {$pop}
 
-  if IOResult = 0 then
-  begin
-    GetMem(Buf, BufSize);
-    repeat
-      BlockRead(F, Buf^, Bufsize, Count);
-      if Count > 0 then
-        MDUpdate(Context, Buf^, Count);
-    until Count < BufSize;
-    FreeMem(Buf, BufSize);
-    Close(F);
-  end;
+  if IOResult <> 0 then
+    begin
+    Result:=Default(TMDDigest);
+    Exit;
+    end;
+
+  GetMem(Buf, BufSize);
+  repeat
+    BlockRead(F, Buf^, Bufsize, Count);
+    if Count > 0 then
+      MDUpdate(Context, Buf^, Count);
+  until Count < BufSize;
+  FreeMem(Buf, BufSize);
+  Close(F);
 
   MDFinal(Context, Result);
   FileMode := ofm;
@@ -663,17 +666,19 @@ begin
   Reset(F, 1);
   {$pop}
 
-  if IOResult = 0 then
-  begin
-    GetMem(Buf, BufSize);
-    repeat
-      BlockRead(F, Buf^, Bufsize, Count);
-      if Count > 0 then
-        MDUpdate(Context, Buf^, Count);
-    until Count < BufSize;
-    FreeMem(Buf, BufSize);
-    Close(F);
-  end;
+  if IOResult <> 0 then
+    begin
+    Result:=Default(TMDDigest);
+    Exit;
+    end;
+  GetMem(Buf, BufSize);
+  repeat
+    BlockRead(F, Buf^, Bufsize, Count);
+    if Count > 0 then
+      MDUpdate(Context, Buf^, Count);
+  until Count < BufSize;
+  FreeMem(Buf, BufSize);
+  Close(F);
 
   MDFinal(Context, Result);
   FileMode := ofm;
@@ -821,5 +826,5 @@ function StrtoMD5(const MD5String:String):TMDDigest;
        end;
      if not f then
        FillChar(Result, Sizeof(Result), 0);
-   end; 
+   end;
 end.

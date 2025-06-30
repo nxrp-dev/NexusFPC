@@ -737,53 +737,55 @@ var
   // so I doubt an additional check like "if (RandSeed <> OldRandSeed) or not RngInitialized" is justified.
 
 function random(l:longint): longint;
+var
+  t: uint32;
+  m: uint64;
 begin
-  { otherwise we can return values = l (JM) }
-  if (l < 0) then
-    inc(l);
-  random := longint((int64(xsr128_32_u32rand)*l) shr 32);
+  result:=l;
+  if l<0 then
+    result:=-result-1; { from now on, uint32(result) is a bound. }
+
+  { https://lemire.me/blog/2019/06/06/nearly-divisionless-random-integer-generation-on-various-systems/ }
+  m:=uint64(xsr128_32_u32rand)*uint32(result);
+  if Lo(m)<uint32(result) then
+    begin
+      t:=uint32(-result) mod uint32(result);
+      while Lo(m)<t do
+        m:=uint64(xsr128_32_u32rand)*uint32(result);
+    end;
+  result:=Hi(m);
+
+  if l<-1 then
+    result:=-result-1;
 end;
 
 function random(l:int64): int64;
 var
- a, b, c, d: cardinal;
- q, bd, ad, bc, ac: qword;
- carry: qword;
+  t, ul, mLo: uint64;
+  a: uint32;
 begin
-  if (l>=Low(int32)) and (l<=High(int32)) then
-    begin
-      { random(longint(l)), inlined. This makes random(NativeType) on 64-bit platforms match 32-bit when possible. }
-      if (l < 0) then
-        inc(l);
-      exit(longint(int64(xsr128_32_u32rand)*l shr 32));
-    end;
+  if l=int32(l) then
+    { This makes random(NativeType) on 64-bit platforms match 32-bit when possible. }
+    exit(random(longint(l)));
 
-  if (l < 0) then
-    begin
-      inc(l);
-      q:=qword(-l)
-    end
-  else
-    q:=qword(l);
+  ul:=l;
+  if l<0 then
+    ul:=-ul-1;
 
   a:=xsr128_32_u32rand;
-  b:=xsr128_32_u32rand;
+  mLo:=UMul64x64_128(uint64(a) shl 32 or xsr128_32_u32rand,ul,uint64(result));
+  if mLo<ul then
+    begin
+      t:=uint64(-ul) mod ul;
+      while mLo<t do
+        begin
+          a:=xsr128_32_u32rand;
+          mLo:=UMul64x64_128(uint64(a) shl 32 or xsr128_32_u32rand,ul,uint64(result));
+        end;
+    end;
 
-  c:=q shr 32;
-  d:=cardinal(q);
-
-  bd:=qword(b)*d;
-  ad:=qword(a)*d;
-  bc:=qword(b)*c;
-  ac:=qword(a)*c;
-
-  // We only need the carry bit
-  carry:=((bd shr 32)+cardinal(ad)+cardinal(bc)) shr 32;
-
-  // Calculate the final result
-  result:=int64(carry+(ad shr 32)+(bc shr 32)+ac);
-  if l<0 then
-    result:=-result;
+  if l<-1 then
+    result:=-result-1;
 end;
 
 {$ifndef FPUNONE}
@@ -1230,12 +1232,10 @@ end;
 
 Procedure system_exit;forward;{$ifdef FPC_SYSTEM_EXIT_NO_RETURN}noreturn;{$endif}
 
-{$ifdef FPC_HAS_FEATURE_HEAP}
-{$ifndef HAS_MEMORYMANAGER}
+{$if defined(FPC_HAS_FEATURE_HEAP) and not defined(HAS_MEMORYMANAGER)}
 //not needed if independant memory manager
 Procedure FinalizeHeap;forward;
-{$endif HAS_MEMORYMANAGER}
-{$endif FPC_HAS_FEATURE_HEAP}
+{$endif FPC_HAS_FEATURE_HEAP and not HAS_MEMORYMANAGER}
 
 {$ifdef FPC_HAS_FEATURE_CONSOLEIO}
 procedure SysFlushStdIO;
@@ -1331,13 +1331,9 @@ Begin
     sysfreemem(cmdline);
 {$endif}
 
-{$ifdef FPC_HAS_FEATURE_HEAP}
-{$ifndef HAS_MEMORYMANAGER}
-{$ifndef FPC_NO_DEFAULT_HEAP}
+{$if defined(FPC_HAS_FEATURE_HEAP) and not defined(HAS_MEMORYMANAGER)}
   FinalizeHeap;
-{$endif not FPC_NO_DEFAULT_HEAP}
-{$endif not HAS_MEMORYMANAGER}
-{$endif FPC_HAS_FEATURE_HEAP}
+{$endif FPC_HAS_FEATURE_HEAP and not HAS_MEMORYMANAGER}
 End;
 
 
@@ -1774,7 +1770,11 @@ end;
 
 {$i sysheap.inc}
 
+{$IFDEF LEGACYHEAP}
+{$i oldheap.inc}
+{$ELSE}
 {$i heap.inc}
+{$ENDIF LEGACYHEAP}
 
 {*****************************************************************************
                           Thread support

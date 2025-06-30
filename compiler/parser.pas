@@ -200,7 +200,8 @@ implementation
                  heapsize:=65536;
              end;
            system_wasm32_wasip1,
-           system_wasm32_wasip1threads:
+           system_wasm32_wasip1threads,
+           system_wasm32_wasip2:
              begin
                if ts_wasm_threads in init_settings.targetswitches then
                  maxheapsize:=256*1024*1024
@@ -324,7 +325,8 @@ implementation
          set_current_module(tppumodule.create(nil,'',filename,false));
          macrosymtablestack:=TSymtablestack.create;
 
-         current_scanner:=tscannerfile.Create(filename);
+
+         set_current_scanner(tscannerfile.Create(filename));
          current_scanner.firstfile;
          current_module.scanner:=current_scanner;
 
@@ -385,10 +387,10 @@ implementation
            end;
          until false;
        { free scanner }
-         current_scanner.destroy;
-         current_scanner:=nil;
+         current_scanner.free;
+         set_current_scanner(nil);
        { close }
-         preprocfile.destroy;
+         preprocfile.free;
       end;
 {$endif PREPROCWRITE}
 

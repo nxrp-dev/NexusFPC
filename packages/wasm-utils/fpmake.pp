@@ -27,6 +27,8 @@ begin
     P.SourcePath.Add('src');
     // Logger
     T:=P.Targets.AddUnit('wasm.logger.api.pas');
+    // Memutils
+    T:=P.Targets.AddUnit('wasm.memutils.pas');
     
     // Timer
     T:=P.Targets.AddUnit('wasm.timer.shared.pas');
@@ -71,7 +73,16 @@ begin
       T.Dependencies.AddUnit('wasm.regexp.api');
       T.Dependencies.AddUnit('wasm.regexp.shared');
       T.Dependencies.AddUnit('wasm.regexp.objects');
-      
+    T:=P.Targets.AddUnit('wasm.exceptions.pas');
+
+    // Storage
+    T:=P.Targets.AddUnit('wasm.storage.shared.pas');
+    T:=P.Targets.AddUnit('wasm.storage.api.pas');
+      T.Dependencies.AddUnit('wasm.storage.shared');
+    T:=P.Targets.AddUnit('wasm.storage.objects.pas');
+      T.Dependencies.AddUnit('wasm.storage.shared');
+      T.Dependencies.AddUnit('wasm.storage.api');
+    
 {$ifndef ALLPACKAGES}
     Run;
     end;

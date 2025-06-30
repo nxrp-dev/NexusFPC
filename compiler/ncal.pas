@@ -544,7 +544,7 @@ implementation
             if assigned(para.parametername) then
               begin
                 if para.parametername.nodetype=stringconstn then
-                  names:=names+tstringconstnode(para.parametername).value_str+#0
+                  names:=names+tstringconstnode(para.parametername).asconstpchar+#0
                 else
                   internalerror(200611041);
               end;
@@ -592,11 +592,11 @@ implementation
 
         if variantdispatch then
           begin
-            tcb.emit_pchar_const(pchar(methodname),length(methodname),true);
+            tcb.emit_pchar_const(pchar(methodname),length(methodname));
             if names<>'' then
               { length-1 because we added a null terminator to the string itself
                 already }
-              tcb.emit_pchar_const(pchar(names),length(names)-1,true);
+              tcb.emit_pchar_const(pchar(names),length(names)-1);
           end;
 
         { may be referred from other units in case of inlining -> global
@@ -1421,10 +1421,27 @@ implementation
                         else
                           make_not_regable(left,[ra_addr_regable,ra_addr_taken]);
                       end;
-                    vs_var,
-                    vs_constref:
+                    vs_var:
                       begin
                         set_varstate(left,vs_readwritten,[vsf_must_be_valid,vsf_use_hints]);
+                        { compilerprocs never capture the address of their
+                          parameters }
+                        if (po_compilerproc in aktcallnode.procdefinition.procoptions) or
+                        { if we handled already the proc. body and it is not inlined,
+                          we can propagate the information if the address of a parameter is taken or not }
+                        ((aktcallnode.procdefinition.typ=procdef) and
+                         not(po_inline in tprocdef(aktcallnode.procdefinition).procoptions) and
+                         (tprocdef(aktcallnode.procdefinition).is_implemented) and
+                         not(parasym.addr_taken)) then
+                          make_not_regable(left,[ra_addr_regable])
+                        else
+                          make_not_regable(left,[ra_addr_regable,ra_addr_taken]);
+                      end;
+                    vs_constref:
+                      begin
+                        { constref does not mean that the variable is actually written, this might only
+                          happen if it's address is taken, this is handled below }
+                        set_varstate(left,vs_read,[vsf_must_be_valid,vsf_use_hints]);
                         { compilerprocs never capture the address of their
                           parameters }
                         if (po_compilerproc in aktcallnode.procdefinition.procoptions) or
@@ -2939,45 +2956,45 @@ implementation
                             1:
                               if ValOutput.signed then
                                 begin
-                                  Val(TStringConstNode(valnode).value_str, si, ValCode);
+                                  Val(TStringConstNode(valnode).asrawbytestring, si, ValCode);
                                   ValOutput.svalue:=si;
                                 end
                               else
                                 begin
-                                  Val(TStringConstNode(valnode).value_str, b, ValCode);
+                                  Val(TStringConstNode(valnode).asrawbytestring, b, ValCode);
                                   ValOutput.uvalue:=b;
                                 end;
                             2:
                               if ValOutput.signed then
                                 begin
-                                  Val(TStringConstNode(valnode).value_str, i, ValCode);
+                                  Val(TStringConstNode(valnode).asrawbytestring, i, ValCode);
                                   ValOutput.svalue:=i;
                                 end
                               else
                                 begin
-                                  Val(TStringConstNode(valnode).value_str, w, ValCode);
+                                  Val(TStringConstNode(valnode).asrawbytestring, w, ValCode);
                                   ValOutput.uvalue:=w;
                                 end;
                             4:
                               if ValOutput.signed then
                                 begin
-                                  Val(TStringConstNode(valnode).value_str, li, ValCode);
+                                  Val(TStringConstNode(valnode).asrawbytestring, li, ValCode);
                                   ValOutput.svalue:=li;
                                 end
                               else
                                 begin
-                                  Val(TStringConstNode(valnode).value_str, dw, ValCode);
+                                  Val(TStringConstNode(valnode).asrawbytestring, dw, ValCode);
                                   ValOutput.uvalue:=dw;
                                 end;
                             8:
                               if ValOutput.signed then
                                 begin
-                                  Val(TStringConstNode(valnode).value_str, i64, ValCode);
+                                  Val(TStringConstNode(valnode).asrawbytestring, i64, ValCode);
                                   ValOutput.svalue:=i64;
                                 end
                               else
                                 begin
-                                  Val(TStringConstNode(valnode).value_str, qw, ValCode);
+                                  Val(TStringConstNode(valnode).asrawbytestring, qw, ValCode);
                                   ValOutput.uvalue:=qw;
                                 end;
                             else
@@ -5103,7 +5120,7 @@ implementation
                 if value<>nil then
                     begin
                         track_state_pass:=true;
-                        hp.left.destroy;
+                        hp.left.free;
                         hp.left:=value.getcopy;
                         do_typecheckpass(hp.left);
                     end;

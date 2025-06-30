@@ -157,14 +157,30 @@ end;
   { OS utility code }
   {$i osutil.inc}
 
+    {$IFDEF CPULLVM}
+    // LLVM does not like the constref construction. 
+    // So when LLVM is used, we keep the untyped version.
+    // This allows users of other platforms to enjoy the type safety of FreeAndNil.
     procedure FreeAndNil(var obj);
-      var
+      var 
         temp: tobject;
       begin
         temp:=tobject(obj);
         pointer(obj):=nil;
         temp.free;
       end;
+    {$ELSE}
+    procedure FreeAndNil(constref obj: TObject);
+      type
+        PObject = ^TObject;
+      var
+        temp: tobject;
+      begin
+        temp:=obj;
+        PObject(@obj)^:=nil;
+        temp.free;
+      end;
+    {$ENDIF}
 
     procedure FreeMemAndNil(var p);
 
@@ -253,10 +269,13 @@ end;
       Result:=ClassName+': '+Message;
     end;
 
+Var OutOfMemory : EOutOfMemory;
+    InValidPointer : EInvalidPointer;
+
     procedure EHeapMemoryError.FreeInstance;
     begin
-       if AllowFree then
-        inherited FreeInstance;
+       if (pointer(self)<>pointer(OutOfMemory)) and (pointer(self)<>pointer(InvalidPointer)) then
+         inherited FreeInstance;
     end;
 
 
@@ -429,10 +448,6 @@ begin
   result:=nil;
 end;
 
-Var OutOfMemory : EOutOfMemory;
-    InValidPointer : EInvalidPointer;
-
-
 Procedure RunErrorToExcept (ErrNo : Longint; Address : CodePointer; Frame : Pointer);
 var
   E: Exception;
@@ -548,9 +563,7 @@ begin
   ExceptProc:=@CatchUnhandledException;
   // Create objects that may have problems when there is no memory.
   OutOfMemory:=EOutOfMemory.Create(SOutOfMemory);
-  OutOfMemory.AllowFree:=false;
   InvalidPointer:=EInvalidPointer.Create(SInvalidPointer);
-  InvalidPointer.AllowFree:=false;
   AssertErrorProc:=@AssertErrorHandler;
   ErrorProc:=@RunErrorToExcept;
   OnShowException:=Nil;
@@ -559,10 +572,8 @@ end;
 
 Procedure DoneExceptions;
 begin
-  OutOfMemory.AllowFree:=true;
-  OutOfMemory.Free;
-  InValidPointer.AllowFree:=true;
-  InValidPointer.Free;
+  FreeAndNil(OutOfMemory); { These will automatically work as they first set pointer to nil, then free the object. See EHeapMemoryError.FreeInstance. }
+  FreeAndNil(InValidPointer);
 end;
 
 

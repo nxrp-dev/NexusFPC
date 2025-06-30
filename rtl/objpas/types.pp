@@ -514,6 +514,20 @@ type
      function Clone(out stm : IStream) : HRESULT;stdcall;
   end;
 
+  { TScoped }
+  generic TScoped<T:class> = record
+  private
+    obj: T;
+  public  
+    class operator Initialize(var hdl: TScoped);
+    class operator Finalize(var hdl: TScoped);
+    class operator :=(aObj : T) : TScoped; 
+    class operator :=(const aObj : TScoped) : T; 
+    procedure Assign(aObj : T); inline;
+    function Swap(AObj: T): T;
+    function Get : T;
+  end;
+
 function EqualRect(const r1,r2 : TRect) : Boolean;
 function EqualRect(const r1,r2 : TRectF) : Boolean;
 function NormalizeRectF(const Pts: array of TPointF): TRectF; overload;
@@ -1690,20 +1704,37 @@ begin
 end;
 
 function TRectF.FitInto(const Dest: TRectF; out Ratio: Single): TRectF;
+var
+  dw, dh, w, h : Single;
 begin
-  if (Dest.Width<=0) or (Dest.Height<=0) then
+  dw := Dest.Width;
+  dh := Dest.Height;
+  if (dw <= 0) or (dh <= 0) then
   begin
-    Ratio:=1.0;
+    Ratio := 1.0;
     exit(Self);
   end;
-  Ratio:=Max(Self.Width / Dest.Width, Self.Height / Dest.Height);
-  if Ratio=0 then
+
+  w := Self.Width;
+  h := Self.Height;
+
+  if w * dh > h * dw  then
+    Ratio := w / dw
+  else
+    Ratio := h / dh;
+
+  if Ratio = 0 then
     exit(Self);
-  Result.Width:=Self.Width / Ratio;
-  Result.Height:=Self.Height / Ratio;
+
+  w := w / Ratio;
+  h := h / Ratio;
+
   // Center the result within the Dest rectangle
-  Result.Left:=Dest.Left + (Dest.Width - Result.Width) / 2;
-  Result.Top:=Dest.Top + (Dest.Height - Result.Height) / 2;
+  Result.Left := (Dest.Left + Dest.Right - w) * 0.5;
+  Result.Right := Result.Left + w;
+
+  Result.Top := (Dest.Top + Dest.Bottom - h) * 0.5;
+  Result.Bottom := Result.Top + h;
 end;
 
 function TRectF.FitInto(const Dest: TRectF): TRectF;
@@ -2033,6 +2064,50 @@ begin
     System.Error(reRangeError);
 
   Result := TBitConverter.specialize UnsafeInTo<T>(ASource, AOffset);
+end;
+
+{ TScoped }
+
+class operator TScoped.Initialize(var hdl: TScoped);
+begin
+  hdl.obj := nil;
+end;
+
+class operator TScoped.Finalize(var hdl: TScoped);
+begin
+  hdl.obj.free;
+  hdl.obj:=nil;
+end;
+
+procedure TScoped.Assign(aObj : T);
+begin
+  Self.Obj:=aObj;
+end;
+
+function TScoped.Swap(AObj:T):T;
+var
+  LCurrent:T;
+begin
+  LCurrent := self.obj;
+  Assign(AObj);
+  Result := LCurrent;
+end;
+
+function TScoped.Get() : T;
+begin
+  Result :=  self.obj;
+end;
+
+class operator TScoped.:=(aObj : T) : TScoped; 
+
+begin
+  result.assign(aObj);
+end;
+
+class operator TScoped.:=(const aObj : TScoped) : T; 
+
+begin
+  Result:=aObj.Get();
 end;
 
 end.

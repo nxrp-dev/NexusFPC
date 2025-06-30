@@ -1525,8 +1525,12 @@ implementation
   begin
     cn:=ObjDef.GetTypeName;
     for i:=0 to Length(cn) do
+      begin
       if cn[i]='.' then
+        cn[i]:='_'
+      else if (cn[i]='<') or (cn[i]='>') then
         cn[i]:='_';
+      end;
     result:='_t_hidden'+tostr(acount)+cn;
   end;
 
@@ -1815,14 +1819,22 @@ implementation
     recdef : trecorddef absolute def;
     sstate: tscannerstate;
     cn : shortstring;
+    isDelphiMode : boolean;
+    oldsettings: tmodeswitches;
 
   begin
     { skip if any errors have occurred, since then this can only cause more
       errors }
     if ErrorCount<>0 then
       exit;
+    isDelphiMode:=(m_delphi in current_settings.modeswitches);
     replace_scanner('hiddenclass_impl',sstate);
     sstate.new_scanner.allowgenericid:=true;
+    if isDelphiMode then
+      begin
+      oldsettings:=current_settings.modeswitches;
+      current_settings.modeswitches:=current_settings.modeswitches+[m_delphi]-[m_objfpc];
+      end;
     for i:=0 to st.deflist.count-1 do
       begin
       def:=tdef(st.deflist[i]);
@@ -1978,6 +1990,7 @@ implementation
       old_filepos: tfileposinfo;
       symname,
       symrealname: TSymStr;
+      highsym: tabstractvarsym;
     begin
       nestedvarsdef:=tlocalvarsym(pd.parentfpstruct).vardef;
       { redirect all aliases for the function result also to the function
@@ -2032,6 +2045,13 @@ implementation
               tblocknode(pd.parentfpinitblock).left:=cstatementnode.create
                 (initcode,tblocknode(pd.parentfpinitblock).left);
               current_filepos:=old_filepos;
+
+              { also add the associated high para, if any. It may not be accessed
+                during code generation, and we need to catch 'em all (TM) during
+                the typecheck/firstpass }
+              highsym:=get_high_value_sym(tparavarsym(sym));
+              if assigned(highsym) then
+                maybe_add_sym_to_parentfpstruct(pd, highsym, highsym.vardef, false);
             end;
         end;
     end;

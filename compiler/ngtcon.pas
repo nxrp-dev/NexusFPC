@@ -486,12 +486,13 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
 
     procedure tasmlisttypedconstbuilder.tc_emit_stringdef(def: tstringdef; var node: tnode);
       var
-        strlength : {$ifdef CPU8BITALU}smallint{$else}aint{$endif};
+        strlength,
+        defsize   : {$ifdef CPU8BITALU}smallint{$else}aint{$endif};
         strval    : pchar;
         ll        : tasmlabofs;
-        ca        : pchar;
         winlike   : boolean;
         hsym      : tconstsym;
+        paddedstrdata   : shortstring;
       begin
         strval:='';
         { load strval and strlength of the constant tree }
@@ -500,13 +501,17 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
           is_constcharnode(node) then
           begin
             { convert to the expected string type so that
-              for widestrings strval is a pcompilerwidestring }
+              for widestrings strval is a tcompilerwidestring }
             inserttypeconv(node,def);
             if (not codegenerror) and
                (node.nodetype=stringconstn) then
               begin
                 strlength:=tstringconstnode(node).len;
-                strval:=tstringconstnode(node).value_str;
+                if (tstringconstnode(node).cst_type in [cst_unicodestring,cst_widestring]) then
+                  { further on, tstringconstnode(node).valuews is used directly for this case }
+                  strval:=nil
+                else
+                  strval:=tstringconstnode(node).asconstpchar;
                 { the def may have changed from e.g. RawByteString to
                   AnsiString(CP_ACP) }
                 if node.resultdef.typ=stringdef then
@@ -558,20 +563,18 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
               st_shortstring:
                 begin
                   ftcb.maybe_begin_aggregate(def);
-                  if strlength>=def.size then
+                  defsize:=def.size;
+                  if strlength>=defsize then
                    begin
-                     message2(parser_w_string_too_long,strpas(strval),tostr(def.size-1));
-                     strlength:=def.size-1;
+                     message2(parser_w_string_too_long,strval,tostr(defsize-1));
+                     strlength:=defsize-1;
                    end;
-                  ftcb.emit_tai(Tai_const.Create_8bit(strlength),cansichartype);
-                  { room for the string data + terminating #0 }
-                  getmem(ca,def.size);
-                  move(strval^,ca^,strlength);
-                  { zero-terminate and fill with spaces if size is shorter }
-                  fillchar(ca[strlength],def.size-strlength-1,' ');
-                  ca[strlength]:=#0;
-                  ca[def.size-1]:=#0;
-                  ftcb.emit_tai(Tai_string.Create_pchar(ca,def.size-1),carraydef.getreusable(cansichartype,def.size-1));
+                  paddedstrdata[0]:=chr(strlength);
+                  move(strval^,paddedstrdata[1],strlength);
+                  { fill with spaces if size is shorter }
+                  fillchar(paddedstrdata[strlength+1],defsize-strlength-1,' ');
+                  paddedstrdata[strlength+1]:=#0;
+                  ftcb.emit_tai(Tai_string.Create_Data(@paddedstrdata[0],defsize,false),carraydef.getreusable(cansichartype,defsize+1));
                   ftcb.maybe_end_aggregate(def);
                 end;
               st_ansistring:
@@ -600,7 +603,7 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
                      begin
                        winlike:=(def.stringtype=st_widestring) and (tf_winlikewidestring in target_info.flags);
                        ll:=ftcb.emit_unicodestring_const(fdatalist,
-                              strval,
+                              tstringconstnode(node).valuews,
                               def.encoding,
                               winlike);
 
@@ -779,8 +782,7 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
         hp        : tnode;
         srsym     : tsym;
         pd        : tprocdef;
-        ca        : pchar;
-        pw        : pcompilerwidestring;
+        pw        : tcompilerwidestring;
         i,len     : longint;
         ll        : tasmlabel;
         varalign  : shortint;
@@ -872,12 +874,13 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
                   { For tp7 the maximum lentgh can be 255 }
                   if (m_tp7 in current_settings.modeswitches) and
                      (len>255) then
-                   len:=255;
-                  getmem(ca,len+1);
-                  move(tstringconstnode(node).value_str^,ca^,len+1);
+                    len:=255;
                   datadef:=carraydef.getreusable(cansichartype,len+1);
                   datatcb.maybe_begin_aggregate(datadef);
-                  datatcb.emit_tai(Tai_string.Create_pchar(ca,len+1),datadef);
+                  if len>0 then
+                    datatcb.emit_tai(Tai_string.Create_Data(@tstringconstnode(node).valueas[0],len,true),datadef)
+                  else
+                    datatcb.emit_tai(Tai_string.Create_Data(nil,0,true),datadef);
                   datatcb.maybe_end_aggregate(datadef);
                 end
               else if is_constcharnode(node) then
@@ -917,12 +920,12 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
                        asmlist) }
                      ftcb.start_internal_data_builder(fdatalist,sec_rodata,'',datatcb,ll);
                      datatcb:=ctai_typedconstbuilder.create([tcalo_is_lab,tcalo_make_dead_strippable,tcalo_apply_constalign]);
-                     pw:=pcompilerwidestring(tstringconstnode(node).value_str);
+                     pw:=tstringconstnode(node).valuews;
                      { include terminating #0 }
                      datadef:=carraydef.getreusable(cwidechartype,tstringconstnode(node).len+1);
                      datatcb.maybe_begin_aggregate(datadef);
                      for i:=0 to tstringconstnode(node).len-1 do
-                       datatcb.emit_tai(Tai_const.Create_16bit(pw^.data[i]),cwidechartype);
+                       datatcb.emit_tai(Tai_const.Create_16bit(pw.data[i]),cwidechartype);
                      { ending #0 }
                      datatcb.emit_tai(Tai_const.Create_16bit(0),cwidechartype);
                      datatcb.maybe_end_aggregate(datadef);
@@ -1376,14 +1379,17 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
                          inserttypeconv(n,getansistringdef);
                        if n.nodetype<>stringconstn then
                          internalerror(2010033003);
-                       ca:=pointer(tstringconstnode(n).value_str);
+                       ca:=pointer(tstringconstnode(n).valueas);
                      end;
                     2:
                       begin
                         inserttypeconv(n,cunicodestringtype);
                         if n.nodetype<>stringconstn then
                           internalerror(2010033009);
-                        ca:=pointer(pcompilerwidestring(tstringconstnode(n).value_str)^.data)
+                        if tstringconstnode(n).valuews.len>0 then
+                          ca:=pointer(@tstringconstnode(n).valuews.data[0])
+                        else
+                          ca:=nil;
                       end;
                     else
                       internalerror(2010033005);
@@ -1620,7 +1626,10 @@ function get_next_varsym(def: tabstractrecorddef; const SymList:TFPHashObjectLis
 
       procedure handle_stringconstn;
         begin
-          hs:=strpas(tstringconstnode(n).value_str);
+          if length(tstringconstnode(n).valueas)>0 then
+            hs:=strpas(@tstringconstnode(n).valueas[0])
+          else
+            hs:='';
           if string2guid(hs,tmpguid) then
             ftcb.emit_guid_const(tmpguid)
           else

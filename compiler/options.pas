@@ -60,6 +60,7 @@ Type
     parasubtarget    : string;
     LinkTypeSetExplicitly : boolean;
     LinkerSetExplicitly : boolean;
+    MemoryModelSetExplicitly : boolean;
     Constructor Create;
     Destructor Destroy;override;
     procedure WriteLogo;
@@ -2253,6 +2254,16 @@ begin
       Message(option_com_files_require_tiny_model);
       StopOptions(1);
     end;
+  if (target_info.system = system_i8086_win16) and
+     not (init_settings.x86memorymodel in [mm_large,mm_huge]) then
+    begin
+      if MemoryModelSetExplicitly then
+        Message1(option_e_win16_unsupported_memory_model,x86memorymodelstr[init_settings.x86memorymodel])
+      else
+        Message(option_n_win16_set_default_large_memory_model);
+      undef_system_macro('FPC_MM_'+x86memorymodelstr[init_settings.x86memorymodel]);
+      init_settings.x86memorymodel:=mm_large;
+    end;
 {$endif i8086}
 
 {$ifndef i8086_link_intern_debuginfo}
@@ -2337,6 +2348,7 @@ begin
   paratargetdbg:=dbg_none;
   LinkTypeSetExplicitly:=false;
   LinkerSetExplicitly:=false;
+  MemoryModelSetExplicitly:=false;
 end;
 
 
@@ -4035,6 +4047,7 @@ begin
                  else
                    IllegalPara(opt);
                end;
+               MemoryModelSetExplicitly:=true;
                break;
              end
            else
@@ -4832,8 +4845,11 @@ procedure read_arguments(cmd:TCmdStr);
 
       { these cpus have an inline rol/ror implementaion }
       {$ifdef cpurox}
-      {$ifdef m68k}
+      {$if defined(m68k)}
         if CPUM68K_HAS_ROLROR in cpu_capabilities[init_settings.cputype] then
+          def_system_macro('FPC_HAS_INTERNAL_ROX');
+      {$elseif defined(riscv)}
+        if [CPURV_HAS_ZBB,CPURV_HAS_ZBKB]*cpu_capabilities[init_settings.cputype]<>[] then
           def_system_macro('FPC_HAS_INTERNAL_ROX');
       {$else}
         def_system_macro('FPC_HAS_INTERNAL_ROX');

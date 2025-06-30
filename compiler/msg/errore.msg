@@ -168,7 +168,7 @@ general_t_objectpath_local=01033_T_$1: Using local object path: $2
 #
 # Scanner
 #
-# 02112 is the last used one
+# 02115 is the last used one
 #
 % \section{Scanner messages.}
 % This section lists the messages that the scanner emits. The scanner takes
@@ -407,6 +407,10 @@ scanner_w_illegal_warn_identifier=02087_W_Illegal identifier "$1" for $WARN dire
 scanner_e_illegal_alignment_directive=02088_E_Illegal alignment directive
 % The alignment directive is not valid. Either the alignment type is not known or the alignment
 % value is not a power of two.
+scanner_w_alignment_large_than_max=02114_N_Variable "$1" has align directive larger than system maximum alignment for variables
+% The type of the variable has an 'align' directive which is larger than  current maximum
+scanner_w_local_alignment_large_than_max=02115_N_Local variable "$1" has align directive larger than system maximum alignment for local variables
+% The type of the variable has an 'align' directive which is larger than current  maximum.
 scanner_f_illegal_utf8_bom=02089_F_It is not possible to include a file that starts with an UTF-8 BOM in a module that uses a different code page
 % All source code that is part of a single compilation entity (program, library, unit) must be encoded
 % in the same code page
@@ -1701,6 +1705,12 @@ parser_e_coperators_off=03371_E_C styled assignment operators are turned off
 parser_e_cannot_evaluate_expression_at_compile_time=03372_E_Expression cannot be evaluated at compile time
 % Certain operations like the size of an object cannot be determined at compile time,
 % so it cannot be e.g. part of a constant expression.
+parser_e_type_alread_forward=03373_E_Duplicate forward type declaration: $1
+% Types might be defined only once as forward:
+% \var{type myclass = class; myclass = class;} is not allowed
+parser_e_no_suitable_newinstance_method_found=03374_E_No suitable NewInstance method for class instance creation found
+% To create a new instance of a class, a suitable NewInstance (like \var{TObject.NewInstance}) method must be found. The symbol name NewInstance
+% might not be used for other purposes than to create a new instance of a class.
 %
 % \end{description}
 %
@@ -3028,7 +3038,7 @@ asmr_e_a64_regset_too_large=07147_E_Too many registers in register set.
 #
 # Assembler/binary writers
 #
-# 08037 is the last used one
+# 08039 is the last used one
 #
 asmw_f_too_many_asm_files=08000_F_Too many assembler files
 % With smartlinking enabled, there are too many assembler
@@ -3087,6 +3097,8 @@ asmw_e_illegal_use_of_rip=08034_E_Asm: RIP cannot be used as index register or w
 asmw_e_seh_invalid_data_size=08035_F_Illegal function size for SEH function
 asmw_e_illegal_use_of_sp=08036_E_Asm: ESP/RSP cannot be used as index register
 asmw_e_illegal_unset_index=08037_E_Wasm32 symbol $1 without index value error
+asmw_e_destination_and_source_registers_must_be_distinct=08038_E_Asm: $1 destination and source registers must be distinct.
+asmw_e_registers_should_be_distinct=08039_E_Asm: $1 registers should be distinct.
 #
 # Executing linker/assembler
 #
@@ -3332,10 +3344,10 @@ unit_u_ppu_invalid_header=10007_U_PPU Invalid Header (no PPU at the begin)
 unit_u_ppu_invalid_version=10008_U_PPU Invalid Version $1
 % This unit file was compiled with a different version of the compiler, and
 % cannot be read.
-unit_u_ppu_invalid_processor=10009_U_PPU is compiled for another processor
+unit_u_ppu_invalid_processor=10009_U_PPU is compiled for another processor $1
 % This unit file was compiled for a different processor type, and
 % cannot be read.
-unit_u_ppu_invalid_target=10010_U_PPU is compiled for another target
+unit_u_ppu_invalid_target=10010_U_PPU is compiled for another target $1
 % This unit file was compiled for a different target, and
 % cannot be read.
 unit_u_ppu_source=10011_U_PPU Source: $1
@@ -3545,7 +3557,7 @@ unit_w_unsupported_esp_idf_version=10071_W_Unsupported esp-idf version
 #
 #  Options
 #
-# 11068 is the last used one
+# 11070 is the last used one
 #
 # BeginOfTeX
 %
@@ -3715,6 +3727,10 @@ option_x_ignored=11067_N_Ignoring compiler executable suffix $1.
 option_switch_bin_to_src_assembler_cross_endian=11068_N_Switching assembler to default source writing assembler in cross-endian configuration
 % This notifies you that the assembler has been changed because
 % the binary assembler writer is not yet ready for cross-endian configuration.
+option_e_win16_unsupported_memory_model=11069_W_Unsupported memory model $1 for Win16 OS
+% i8086-win16 system only supports large and huge memory models.
+option_n_win16_set_default_large_memory_model=11070_N_Setting memory model for Win16 system to "large"
+% i8086-win16 requires at least large memory model.
 %
 % \end{description}
 # EndOfTeX
@@ -4056,7 +4072,6 @@ s*2Aas_Assemble using GNU AS
 v*2Aas_Assemble using GNU AS
 W*2Awasm_Assemble using the internal object writer for wasm32
 W*2Abinaryen_Assemble using GNU AS for wasm32 (wasm-as) (experimental)
-W*2Allvm-mc-10_Assemble using llvm-mc-10
 W*2Allvm-mc-11_Assemble using llvm-mc-11
 W*2Allvm-mc-12_Assemble using llvm-mc-12
 W*2Allvm-mc-13_Assemble using llvm-mc-13 (broken, due to bugs in LLVM)
@@ -4418,6 +4433,8 @@ Z*2Tzxspectrum_ZX Spectrum
 # wasm32 targets
 W*2Tembedded_Embedded
 W*2Twasip1_The WebAssembly System Interface Preview 1 (WASI 0.1)
+W*2Twasip1threads_The WebAssembly System Interface Preview 1 with Multithreading (WASI 0.1 + wasi-threads)
+W*2Twasip2_The WebAssembly System Interface Preview 2 (WASI 0.2) (experimental)
 # end of targets section
 **1t<x>_Target architecture
 **2*_ * Defines FPC_SUBTARGET_<x> 

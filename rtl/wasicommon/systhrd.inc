@@ -399,12 +399,14 @@ procedure WasiAllocateThreadVars; forward;
 {$push}{$S-}  // no stack checking for this procedure
 procedure FPCWasmThreadStartPascal(tid: longint; start_arg: PWasmThread);
 begin
-  {$IFDEF DEBUGWASMTHREADS}DebugWriteln('FPCWasmThreadStartPascal(...)');{$ENDIF}
+  {$IFDEF DEBUGWASMTHREADS}DebugWriteln('FPCWasmThreadStartPascal('+IntToStr(tid)+','+IntToStr(ptrint(start_arg))+')');{$ENDIF}
 
   start_arg^.ID:=tid;
-  GlobalCurrentThread:=@start_arg;
+  GlobalCurrentThread:=start_arg;
   GlobalIsMainThread:=0;
   GlobalIsWorkerThread:=1;
+  {$IFDEF DEBUGWASMTHREADS}DebugWriteln('Check : TID='+IntToStr(tid)+', start_arg_id='+IntToStr(start_arg^.ID)+', currentthread= '+IntTostr(ptrint(GetCurrentThreadID))+')');{$ENDIF}
+
 {$IFDEF FPC_WASM_WORKER_THREADS_CAN_WAIT}
   GlobalIsThreadBlockable:=1;
 {$ELSE FPC_WASM_WORKER_THREADS_CAN_WAIT}
@@ -560,6 +562,7 @@ end;
 
 function WasiCloseThread(threadHandle : TThreadID) : dword;
 begin
+  FreeStackAndTlsBlock(PWasmThread(threadhandle));
   Result:=0;
 end;
 
@@ -597,7 +600,6 @@ begin
   repeat
   until fpc_wasm32_i32_atomic_load8_u(@TH^.ThreadHasFinished)<>0;
   {$IFDEF DEBUGWASMTHREADS}DebugWriteln('WaitForThreadTerminate('+IntToStr(PtrUINT(TH))+') : FreeStackAndTlsBlock');{$ENDIF}
-  FreeStackAndTlsBlock(TH);
 end;
 
 function WasiThreadSetPriority(threadHandle : TThreadID; Prio: longint): boolean;
@@ -609,6 +611,7 @@ function WasiThreadGetPriority(threadHandle : TThreadID): longint;
 begin
   Result:=0;
 end;
+
 
 function WasiGetCurrentThreadId : TThreadID;
 begin

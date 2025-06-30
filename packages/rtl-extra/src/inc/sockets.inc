@@ -278,8 +278,8 @@ Type array4int = array[1..4] of byte;
 function NetAddrToStr (Entry : in_addr) : AnsiString;
 
 Var Dummy : Ansistring;
-    i,j   : Longint;
-
+    i   : Longint;
+    j   : Cardinal;
 begin
   NetAddrToStr:='';
   j:=entry.s_addr;
@@ -768,3 +768,21 @@ begin
      // 192.168.0.0 – 192.168.255.255
      or ((IP.s_bytes[1]=192) and (IP.s_bytes[2]=168));
 end;
+
+function NetAddrIsPrivate6(const IP: in6_addr): Boolean;
+var
+  W0: Word;
+begin
+  // See https://en.wikipedia.org/wiki/IPv6_address
+  W0 := NToHs(IP.u6_addr16[0]);
+  NetAddrIsPrivate6:=
+     // The original IPv6 Site Local addresses (fec0::/10 - range fec0..feff) - deprecated
+     ((W0>=$FEC0) and (W0<=$FEFF))
+     // Unique Local Addresses (ULA) are used in place of Site Local. fc00..fdff
+     or ((W0>=$FC00) and (W0<=$FDFF))
+     // Link local addresses (prefixed with fe80) are not routable
+     or (W0=$FE80)
+     // Discard prefix 0100
+     or (W0=$0100);
+end;
+

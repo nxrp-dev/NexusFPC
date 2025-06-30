@@ -672,10 +672,10 @@ const
         rd,ld   , inttype: tdef;
         rv,lv,v : tconstexprint;
         rvd,lvd : bestreal;
-        ws1,ws2 : pcompilerwidestring;
+        ws1,ws2 : tcompilerwidestring;
         concatstrings : boolean;
         c1,c2   : array[0..1] of char;
-        s1,s2   : pchar;
+        s1,s2,stmp   : pchar;
         l1,l2   : longint;
         resultset : Tconstset;
         res,
@@ -1153,9 +1153,7 @@ const
                       end;
                   end
                 { optimize a/a and a-a }
-                else if (((cs_opt_level2 in current_settings.optimizerswitches) and (nodetype=subn)) or
-                    (([cs_opt_fastmath,cs_opt_level2]*current_settings.optimizerswitches=[cs_opt_fastmath,cs_opt_level2]) and (nodetype=slashn))
-                  ) and
+                else if ((nodetype in [subn,slashn]) and ([cs_opt_fastmath,cs_opt_level2]*current_settings.optimizerswitches=[cs_opt_fastmath,cs_opt_level2])) and
                   left.isequal(right) and not(might_have_sideeffects(left,[mhs_exceptions])) then
                   begin
                     case nodetype of
@@ -1231,8 +1229,8 @@ const
           begin
              initwidestring(ws1);
              initwidestring(ws2);
-             copywidestring(pcompilerwidestring(tstringconstnode(left).value_str),ws1);
-             copywidestring(pcompilerwidestring(tstringconstnode(right).value_str),ws2);
+             copywidestring(tstringconstnode(left).valuews,ws1);
+             copywidestring(tstringconstnode(right).valuews,ws2);
              case nodetype of
                 addn :
                   begin
@@ -1278,8 +1276,8 @@ const
           end
         else if (lt=stringconstn) and (rt=ordconstn) and is_char(rd) then
           begin
-             s1:=tstringconstnode(left).value_str;
              l1:=tstringconstnode(left).len;
+             s1:=tstringconstnode(left).asconstpchar;
              c2[0]:=char(int64(tordconstnode(right).value));
              c2[1]:=#0;
              s2:=@c2[0];
@@ -1292,15 +1290,15 @@ const
              c1[1]:=#0;
              l1:=1;
              s1:=@c1[0];
-             s2:=tstringconstnode(right).value_str;
+             s2:=tstringconstnode(right).asconstpchar;
              l2:=tstringconstnode(right).len;
              concatstrings:=true;
           end
         else if (lt=stringconstn) and (rt=stringconstn) then
           begin
-             s1:=tstringconstnode(left).value_str;
+             s1:=tstringconstnode(left).asconstpchar;
              l1:=tstringconstnode(left).len;
-             s2:=tstringconstnode(right).value_str;
+             s2:=tstringconstnode(right).asconstpchar;
              l2:=tstringconstnode(right).len;
              concatstrings:=true;
           end;
@@ -1309,7 +1307,9 @@ const
              case nodetype of
                 addn :
                   begin
-                    t:=cstringconstnode.createpchar(concatansistrings(s1,s2,l1,l2),l1+l2,nil);
+                    stmp:=concatansistrings(s1,s2,l1,l2);
+                    t:=cstringconstnode.createpchar(stmp,l1+l2,nil);
+                    Freemem(stmp);
                     typecheckpass(t);
                     if not is_ansistring(resultdef) or
                        (tstringdef(resultdef).encoding<>globals.CP_NONE) then
@@ -1853,6 +1853,9 @@ const
 {$ifdef m68k}
                and (CPUM68K_HAS_ROLROR in cpu_capabilities[current_settings.cputype])
 {$endif m68k}
+{$ifdef riscv}
+               and ([CPURV_HAS_ZBB,CPURV_HAS_ZBKB]*cpu_capabilities[init_settings.cputype]<>[])
+{$endif riscv}
 {$ifndef cpu64bitalu}
                and (ld.typ=orddef) and
                not(torddef(ld).ordtype in [s64bit,u64bit,scurrency])
@@ -2765,13 +2768,13 @@ const
                   begin
                     if assigned(tsetdef(ld).elementdef) then
                       begin
-                        llow:=tsetdef(ld).setbase;
+                        llow:=tsetdef(ld).setlow;
                         lhigh:=tsetdef(ld).setmax;
                       end;
                     if (rd.typ=setdef) then
                       if assigned(tsetdef(rd).elementdef) then
                         begin
-                          rlow:=tsetdef(rd).setbase;
+                          rlow:=tsetdef(rd).setlow;
                           rhigh:=tsetdef(rd).setmax;
                         end
                       else
@@ -4952,7 +4955,7 @@ const
     if factval<>nil then
         begin
         track_state_pass:=true;
-            left.destroy;
+            left.free;
             left:=factval.getcopy;
         end;
     if right.track_state_pass(exec_known) then
@@ -4965,7 +4968,7 @@ const
     if factval<>nil then
         begin
         track_state_pass:=true;
-            right.destroy;
+            right.free;
             right:=factval.getcopy;
         end;
     end;

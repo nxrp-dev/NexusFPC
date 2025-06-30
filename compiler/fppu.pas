@@ -293,6 +293,9 @@ var
     function tppumodule.openppu(ppufiletime:longint):boolean;
 
       function checkheader: boolean;
+        var
+          psi: psysteminfo;
+          system_name: shortstring;
         begin
           result:=false;
           { check for a valid PPU file }
@@ -310,13 +313,18 @@ var
           { check the target processor }
             if tsystemcpu(ppufile.header.common.cpu)<>target_cpu then
              begin
-               Message(unit_u_ppu_invalid_processor,@queuecomment);
+               Message1(unit_u_ppu_invalid_processor,cpu2str[tsystemcpu(ppufile.header.common.cpu)],@queuecomment);
                exit;
              end;
           { check target }
             if tsystem(ppufile.header.common.target)<>target_info.system then
              begin
-               Message(unit_u_ppu_invalid_target,@queuecomment);
+               psi:=targetinfos[tsystem(ppufile.header.common.target)];
+               if assigned(psi) then
+                 system_name:=psi^.shortname
+               else
+                 system_name:='invalid ('+tostr(ppufile.header.common.target)+')';
+               Message1(unit_u_ppu_invalid_target,system_name,@queuecomment);
                exit;
              end;
 {$ifdef cpufpemu}
@@ -1369,8 +1377,7 @@ var
         { Load unit map used for resolving }
         derefmapsize:=ppufile.getlongint;
         derefmapcnt:=derefmapsize;
-        getmem(derefmap,derefmapsize*sizeof(tderefmaprec));
-        fillchar(derefmap^,derefmapsize*sizeof(tderefmaprec),0);
+        setlength(derefmap,derefmapsize);
         for i:=0 to derefmapsize-1 do
           derefmap[i].modulename:=ppufile.getpshortstring;
       end;
@@ -1847,6 +1854,10 @@ var
          if not ppufile.createfile then
            Message(unit_f_ppu_cannot_write);
 
+{$ifdef DEBUG_GENERATE_INTERFACE_PPU}
+        if ppufile.writing_interface_ppu then
+          ppufile.crc_only:=false;
+{$endif DEBUG_GENERATE_INTERFACE_PPU}
 {$ifdef Test_Double_checksum_write}
          if FileExists(ppufilename+'.INT',false) then
            RenameFile(ppufilename+'.INT',ppufilename+'.INT-old');
@@ -1855,18 +1866,19 @@ var
          Writeln(ppufile.CRCFile,'CRC of getppucrc of ',ppufilename,
                  ' defsgeneration=',defsgeneration);
 {$endif def Test_Double_checksum_write}
+         { extra header (sub version, module flags) }
+         writeextraheader;
+
          { first the (JVM) namespace }
          if assigned(namespace) then
            begin
              ppufile.putstring(namespace^);
              ppufile.writeentry(ibjvmnamespace);
            end;
+
          { the unitname }
          ppufile.putstring(realmodulename^);
          ppufile.writeentry(ibmodulename);
-
-         { extra header (sub version, module flags) }
-         writeextraheader;
 
          ppufile.putset(tppuset1(moduleoptions));
          if mo_has_deprecated_msg in moduleoptions then

@@ -3393,9 +3393,6 @@ begin
 end;
 
 function TPasAliasType.FixTypeDecl(aDecl: TPasTreeString): TPasTreeString;
-
-var
-  PasType : TPasType;
 begin
   Result:=aDecl;
   if (Name<>'') then
@@ -6328,6 +6325,7 @@ end;
 
 function TPasLabels.GetDeclaration(full: Boolean): TPasTreeString;
 begin
+  if Full then ;
   Result:=Labels.CommaText;
 end;
 

@@ -161,10 +161,7 @@ type
    end;
 
    EHeapMemoryError = class(Exception)
-     protected
-       AllowFree : boolean;
-     public
-       procedure FreeInstance;override;
+     procedure FreeInstance;override;
    end;
 
    EHeapException = EHeapMemoryError;
@@ -351,7 +348,12 @@ Type
   { Type Helpers}
   {$i syshelph.inc}
 
+  {$IFDEF CPULLVM}
+  // LLVM does not allow the constref use.
   procedure FreeAndNil(var obj);
+  {$else}    
+  procedure FreeAndNil(constref obj : TObject);
+  {$ENDIF}
   procedure FreeMemAndNil(var p);
 
   { interface handling }

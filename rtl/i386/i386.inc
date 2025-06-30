@@ -1187,20 +1187,20 @@ function {$ifdef CPUX86_HAS_SSE4_1} IndexQWord {$else} IndexQWord_SSE41 {$endif}
 asm
     cmp      $6, len
     jle      IndexQWord_Plain
-    movddup  4(%esp), %xmm0 { xmm0 = pattern of 'b's. }
+    {$ifndef OLD_ASSEMBLER} movddup 4(%esp), %xmm0 {$else} .byte 0xF2,0x0F,0x12,0x44,0x24,0x04 {$endif} { xmm0 = pattern of 'b's. }
     mov      %eax, %ecx { ecx = original buf }
     sub      $6, len
 .balign 16
 .L6x_Loop:
     movdqu   (%eax), %xmm1
-    pcmpeqq  %xmm0, %xmm1 { xmm1 = cmpeq(vec 0, pattern) }
+    {$ifndef OLD_ASSEMBLER} pcmpeqq %xmm0, %xmm1 {$else} .byte 0x66,0x0F,0x38,0x29,0xC8 {$endif} { xmm1 = cmpeq(vec 0, pattern) }
     movdqu   16(%eax), %xmm2
-    pcmpeqq  %xmm0, %xmm2
+    {$ifndef OLD_ASSEMBLER} pcmpeqq %xmm0, %xmm2 {$else} .byte 0x66,0x0F,0x38,0x29,0xD0 {$endif}
     por      %xmm1, %xmm2 { xmm2 = cmpeq(vec 0, pattern) or cmpeq(vec 1, pattern) }
     movdqu   32(%eax), %xmm3
-    pcmpeqq  %xmm0, %xmm3
+    {$ifndef OLD_ASSEMBLER} pcmpeqq %xmm0, %xmm3 {$else} .byte 0x66,0x0F,0x38,0x29,0xD8 {$endif}
     por      %xmm2, %xmm3 { xmm3 = cmpeq(vec 0, pattern) or cmpeq(vec 1, pattern) or cmpeq(vec 2, pattern) }
-    ptest    %xmm3, %xmm3
+    {$ifndef OLD_ASSEMBLER} ptest %xmm3, %xmm3 {$else} .byte 0x66,0x0F,0x38,0x17,0xDB {$endif}
     jnz      .LFound
     add      $48, %eax
     sub      $6, len
@@ -1213,9 +1213,9 @@ asm
 
 .LFound:
     sub      %ecx, %eax
-    ptest    %xmm1, %xmm1
+    {$ifndef OLD_ASSEMBLER} ptest %xmm1, %xmm1 {$else} .byte 0x66,0x0F,0x38,0x17,0xC9 {$endif}
     jnz      .LFoundAtXmm1
-    ptest    %xmm2, %xmm2
+    {$ifndef OLD_ASSEMBLER} ptest %xmm2, %xmm2 {$else} .byte 0x66,0x0F,0x38,0x17,0xD2 {$endif}
     jnz      .LFoundAtXmm2
     add      $16, %eax
     movdqa   %xmm3, %xmm2
@@ -1363,26 +1363,7 @@ asm
         pop      %ebx
         ret
 
-.LNothing:
-        pop      %ebx
-        xor      %eax, %eax
-        ret
-
-.LAligned32xLoop_TwoVectorsDiffer:
-        add      %eax, %edx { restore edx = buf2 }
-        pmovmskb %xmm0, %ecx { Is there a difference in the first vector? }
-        inc      %cx
-        jz       .LVec1Differs { No difference in the first vector, xmm0 is all ones, ebx = pmovmskb(pcmpeqb(buf1 + 16, buf2 + 16)) from the loop body. }
-        mov      %ecx, %ebx
-.LVec0Differs:
-        bsf      %ebx, %ebx
-        movzbl   (%eax,%ebx), %eax
-        movzbl   (%edx,%ebx), %edx
-        sub      %edx, %eax
-        pop      %ebx
-        ret
-
-        .byte    144 { Turn .balign 16 before .LAligned32xLoop_Body into a no-op. }
+        .byte    102,102,102,102,102,144 { Turn .balign 16 before .LAligned32xLoop_Body into a no-op. }
 CompareByte_CantOverReadBoth_AVX2:
         cmp      $16, %ecx
         jb       .LCantOverReadBoth
@@ -1410,8 +1391,9 @@ CompareByte_CantOverReadBoth_AVX2:
         jbe      .LLastTwoVectors
 
         { More than four vectors: aligned loop. }
-        lea      -32(%eax,%ecx), %ecx { buffer end - last two vectors handled separately - first two vectors already analyzed (by the fact ecx was still len - 32) }
         sub      %eax, %edx { edx = buf2 - buf1 }
+        jz       .LNothing { Exit if buf1 = buf2. }
+        lea      -32(%eax,%ecx), %ecx { buffer end - last two vectors handled separately - first two vectors already analyzed (by the fact ecx was still len - 32) }
         and      $-16, %eax { Align buf1. First two vectors already analyzed are skipped by +32 on the first loop iteration. }
         sub      %eax, %ecx { ecx = count to be handled with loop }
 .balign 16 { No-op. }
@@ -1444,8 +1426,23 @@ CompareByte_CantOverReadBoth_AVX2:
         pmovmskb %xmm0, %ebx
         inc      %bx
         jnz      .LVecEm1Differs
+.LNothing:
         pop      %ebx
         xor      %eax, %eax
+        ret
+
+.LAligned32xLoop_TwoVectorsDiffer:
+        add      %eax, %edx { restore edx = buf2 }
+        pmovmskb %xmm0, %ecx { Is there a difference in the first vector? }
+        inc      %cx
+        jz       .LVec1Differs { No difference in the first vector, xmm0 is all ones, ebx = pmovmskb(pcmpeqb(buf1 + 16, buf2 + 16)) from the loop body. }
+        mov      %ecx, %ebx
+.LVec0Differs:
+        bsf      %ebx, %ebx
+        movzbl   (%eax,%ebx), %eax
+        movzbl   (%edx,%ebx), %edx
+        sub      %edx, %eax
+        pop      %ebx
         ret
 
 .LVec1Differs:
@@ -1538,7 +1535,7 @@ CompareByte_1OrLess:
         or       $1, %eax
 end;
 
-function {$ifdef CPUX86_HAS_BMI1} CompareByte {$else} CompareByte_AVX2 {$endif} (const buf1, buf2; len: SizeInt): SizeInt; assembler; nostackframe;
+function {$ifdef CPUX86_HAS_BMI2} CompareByte {$else} CompareByte_AVX2 {$endif} (const buf1, buf2; len: SizeInt): SizeInt; assembler; nostackframe;
 asm
         { eax = buf1, edx = buf2, ecx = len }
         cmp       $1, %ecx
@@ -1556,14 +1553,14 @@ asm
         ja        CompareByte_CantOverReadBoth_AVX2
 
         { Over-read both as YMMs. }
-        vmovdqu   (%eax), %ymm0
-        vpcmpeqb  (%edx), %ymm0, %ymm0
-        vpmovmskb %ymm0, %ebx
+        {$ifndef OLD_ASSEMBLER} vmovdqu (%eax), %ymm0 {$else} .byte 0xC5,0xFE,0x6F,0x00 {$endif}
+        {$ifndef OLD_ASSEMBLER} vpcmpeqb (%edx), %ymm0, %ymm0 {$else} .byte 0xC5,0xFD,0x74,0x02 {$endif}
+        {$ifndef OLD_ASSEMBLER} vpmovmskb %ymm0, %ebx {$else} .byte 0xC5,0xFD,0xD7,0xD8 {$endif}
         inc       %ebx
-        { bzhi      %ecx, %ebx, %ecx }
-        .byte     0xc4,0xe2,0x70,0xf5,0xcb { bootstrap compiler doesn't know bzhi }
+        {$if not defined(OLD_ASSEMBLER) and not defined(VER3_2)} bzhi %ecx, %ebx, %ecx {$else} .byte 0xc4,0xe2,0x70,0xf5,0xcb { bootstrap compiler doesn't know bzhi } {$endif}
         jnz       .LVec0Differs
-        vzeroupper
+.LNothing:
+        {$ifndef OLD_ASSEMBLER} vzeroupper {$else} .byte 0xC5,0xF8,0x77 {$endif}
         pop       %ebx
         xor       %eax, %eax
         ret
@@ -1571,76 +1568,17 @@ asm
         .byte     144 { Turn .balign 16 before .LAligned64xLoop_Body into a no-op. }
 .LAligned64xLoop_TwoVectorsDiffer:
         add       %eax, %edx { restore edx = buf2 }
-        vpmovmskb %ymm0, %ecx { Is there a difference in the first vector? }
+        {$ifndef OLD_ASSEMBLER} vpmovmskb %ymm0, %ecx {$else} .byte 0xC5,0xFD,0xD7,0xC8 {$endif} { Is there a difference in the first vector? }
         inc       %ecx
         jz        .LVec1Differs { No difference in the first vector, ymm0 is all ones, ebx = vpmovmskb(vpcmpeqb(buf1 + 32, buf2 + 32)) from the loop body. }
         mov       %ecx, %ebx
 .LVec0Differs:
-        vzeroupper
-        tzcnt     %ebx, %ebx
+        {$ifndef OLD_ASSEMBLER} vzeroupper {$else} .byte 0xC5,0xF8,0x77 {$endif}
+        {$ifndef OLD_ASSEMBLER} tzcnt %ebx, %ebx {$else} .byte 0xF3,0x0F,0xBC,0xDB {$endif}
         movzbl    (%eax,%ebx), %eax
         movzbl    (%edx,%ebx), %edx
         sub       %edx, %eax
         pop       %ebx
-        ret
-
-.LVecOrMore:
-        { Compare first vectors. }
-        vmovdqu   (%eax), %ymm0
-        vpcmpeqb  (%edx), %ymm0, %ymm0
-        vpmovmskb %ymm0, %ebx
-        inc       %ebx
-        jnz       .LVec0Differs
-
-        sub       $64, %ecx { now ecx is len - 64. }
-        jbe       .LLastVec
-
-        { Compare second vectors. }
-        vmovdqu   32(%eax), %ymm0
-        vpcmpeqb  32(%edx), %ymm0, %ymm0
-        vpmovmskb %ymm0, %ebx
-        inc       %ebx
-        jnz       .LVec1Differs
-
-        cmp       $64, %ecx
-        jbe       .LLastTwoVectors
-
-        { More than four vectors: aligned loop. }
-        lea       -64(%eax,%ecx), %ecx { buffer end - last two vectors handled separately - first two vectors already analyzed (by the fact ecx was still len - 64) }
-        sub       %eax, %edx { edx = buf2 - buf1 }
-        and       $-32, %eax { Align buf1. First two vectors already analyzed are skipped by +64 on the first loop iteration. }
-        sub       %eax, %ecx { ecx = count to be handled with loop }
-.balign 16 { No-op. }
-.LAligned64xLoop_Body:
-        add       $64, %eax
-        { Compare two YMMs, reduce the result with 'and'. }
-        vmovdqu   (%edx,%eax), %ymm0
-        vpcmpeqb  (%eax), %ymm0, %ymm0 { ymm0 = vpcmpeqb(buf1, buf2) }
-        vmovdqu   32(%edx,%eax), %ymm1
-        vpcmpeqb  32(%eax), %ymm1, %ymm1
-        vpand     %ymm0, %ymm1, %ymm1 { ymm1 = ymm0 and vpcmpeqb(buf1 + 32, buf2 + 32) }
-        vpmovmskb %ymm1, %ebx
-        inc       %ebx
-        jnz       .LAligned64xLoop_TwoVectorsDiffer
-        sub       $64, %ecx
-        ja        .LAligned64xLoop_Body
-        add       %eax, %edx { restore edx = buf2 }
-        add       $64, %ecx
-.LLastTwoVectors:
-        vmovdqu   (%eax,%ecx), %ymm0
-        vpcmpeqb  (%edx,%ecx), %ymm0, %ymm0
-        vpmovmskb %ymm0, %ebx
-        inc       %ebx
-        jnz       .LVecEm2Differs
-.LLastVec:
-        vmovdqu   32(%eax,%ecx), %ymm0
-        vpcmpeqb  32(%edx,%ecx), %ymm0, %ymm0
-        vpmovmskb %ymm0, %ebx
-        inc       %ebx
-        jnz       .LVecEm1Differs
-        vzeroupper
-        pop       %ebx
-        xor       %eax, %eax
         ret
 
 .LVec1Differs:
@@ -1648,16 +1586,76 @@ asm
 .LVecEm1Differs:
         add      $32, %ecx
 .LVecEm2Differs:
-        vzeroupper
-        tzcnt    %ebx, %ebx
+        {$ifndef OLD_ASSEMBLER} vzeroupper {$else} .byte 0xC5,0xF8,0x77 {$endif}
+        {$ifndef OLD_ASSEMBLER} tzcnt %ebx, %ebx {$else} .byte 0xF3,0x0F,0xBC,0xDB {$endif}
         add      %ecx, %ebx
         movzbl   (%eax,%ebx), %eax
         movzbl   (%edx,%ebx), %edx
         sub      %edx, %eax
         pop      %ebx
+        ret
+
+.LVecOrMore:
+        { Compare first vectors. }
+        {$ifndef OLD_ASSEMBLER} vmovdqu (%eax), %ymm0 {$else} .byte 0xC5,0xFE,0x6F,0x00 {$endif}
+        {$ifndef OLD_ASSEMBLER} vpcmpeqb (%edx), %ymm0, %ymm0 {$else} .byte 0xC5,0xFD,0x74,0x02 {$endif}
+        {$ifndef OLD_ASSEMBLER} vpmovmskb %ymm0, %ebx {$else} .byte 0xC5,0xFD,0xD7,0xD8 {$endif}
+        inc       %ebx
+        jnz       .LVec0Differs
+
+        sub       $64, %ecx { now ecx is len - 64. }
+        jbe       .LLastVec
+
+        { Compare second vectors. }
+        {$ifndef OLD_ASSEMBLER} vmovdqu 32(%eax), %ymm0 {$else} .byte 0xC5,0xFE,0x6F,0x40,0x20 {$endif}
+        {$ifndef OLD_ASSEMBLER} vpcmpeqb 32(%edx), %ymm0, %ymm0 {$else} .byte 0xC5,0xFD,0x74,0x42,0x20 {$endif}
+        {$ifndef OLD_ASSEMBLER} vpmovmskb %ymm0, %ebx {$else} .byte 0xC5,0xFD,0xD7,0xD8 {$endif}
+        inc       %ebx
+        jnz       .LVec1Differs
+
+        cmp       $64, %ecx
+        jbe       .LLastTwoVectors
+
+        { More than four vectors: aligned loop. }
+        sub       %eax, %edx { edx = buf2 - buf1 }
+        jz        .LNothing { Exit if buf1 = buf2. }
+        lea       -64(%eax,%ecx), %ecx { buffer end - last two vectors handled separately - first two vectors already analyzed (by the fact ecx was still len - 64) }
+        and       $-32, %eax { Align buf1. First two vectors already analyzed are skipped by +64 on the first loop iteration. }
+        sub       %eax, %ecx { ecx = count to be handled with loop }
+.balign 16 { No-op. }
+.LAligned64xLoop_Body:
+        add       $64, %eax
+        { Compare two YMMs, reduce the result with 'and'. }
+        {$ifndef OLD_ASSEMBLER} vmovdqu (%edx,%eax), %ymm0 {$else} .byte 0xC5,0xFE,0x6F,0x04,0x02 {$endif}
+        {$ifndef OLD_ASSEMBLER} vpcmpeqb (%eax), %ymm0, %ymm0 {$else} .byte 0xC5,0xFD,0x74,0x00 {$endif} { ymm0 = vpcmpeqb(buf1, buf2) }
+        {$ifndef OLD_ASSEMBLER} vmovdqu 32(%edx,%eax), %ymm1 {$else} .byte 0xC5,0xFE,0x6F,0x4C,0x02,0x20 {$endif}
+        {$ifndef OLD_ASSEMBLER} vpcmpeqb 32(%eax), %ymm1, %ymm1 {$else} .byte 0xC5,0xF5,0x74,0x48,0x20 {$endif}
+        {$ifndef OLD_ASSEMBLER} vpand %ymm0, %ymm1, %ymm1 {$else} .byte 0xC5,0xF5,0xDB,0xC8 {$endif} { ymm1 = ymm0 and vpcmpeqb(buf1 + 32, buf2 + 32) }
+        {$ifndef OLD_ASSEMBLER} vpmovmskb %ymm1, %ebx {$else} .byte 0xC5,0xFD,0xD7,0xD9 {$endif}
+        inc       %ebx
+        jnz       .LAligned64xLoop_TwoVectorsDiffer
+        sub       $64, %ecx
+        ja        .LAligned64xLoop_Body
+        add       %eax, %edx { restore edx = buf2 }
+        add       $64, %ecx
+.LLastTwoVectors:
+        {$ifndef OLD_ASSEMBLER} vmovdqu (%eax,%ecx), %ymm0 {$else} .byte 0xC5,0xFE,0x6F,0x04,0x08 {$endif}
+        {$ifndef OLD_ASSEMBLER} vpcmpeqb (%edx,%ecx), %ymm0, %ymm0 {$else} .byte 0xC5,0xFD,0x74,0x04,0x0A {$endif}
+        {$ifndef OLD_ASSEMBLER} vpmovmskb %ymm0, %ebx {$else} .byte 0xC5,0xFD,0xD7,0xD8 {$endif}
+        inc       %ebx
+        jnz       .LVecEm2Differs
+.LLastVec:
+        {$ifndef OLD_ASSEMBLER} vmovdqu 32(%eax,%ecx), %ymm0 {$else} .byte 0xC5,0xFE,0x6F,0x44,0x08,0x20 {$endif}
+        {$ifndef OLD_ASSEMBLER} vpcmpeqb 32(%edx,%ecx), %ymm0, %ymm0 {$else} .byte 0xC5,0xFD,0x74,0x44,0x0A,0x20 {$endif}
+        {$ifndef OLD_ASSEMBLER} vpmovmskb %ymm0, %ebx {$else} .byte 0xC5,0xFD,0xD7,0xD8 {$endif}
+        inc       %ebx
+        jnz       .LVecEm1Differs
+        {$ifndef OLD_ASSEMBLER} vzeroupper {$else} .byte 0xC5,0xF8,0x77 {$endif}
+        pop       %ebx
+        xor       %eax, %eax
 end;
 
-{$ifndef CPUX86_HAS_BMI1}
+{$ifndef CPUX86_HAS_BMI2}
 function CompareByte_Dispatch(const buf1, buf2; len: SizeInt): SizeInt; forward;
 
 var
@@ -1682,7 +1680,7 @@ function CompareByte(const buf1, buf2; len: SizeInt): SizeInt;
 begin
   result:=CompareByte_Impl(buf1, buf2, len);
 end;
-{$endif ndef CPUX86_HAS_BMI1 (need CompareByte dispatcher)}
+{$endif ndef CPUX86_HAS_BMI2 (need CompareByte dispatcher)}
 {$endif FPC_SYSTEM_HAS_COMPAREBYTE}
 
 
@@ -1795,6 +1793,7 @@ asm
         pop     %ebx
         ret
 
+        .byte    102,102,102,102,102,102,102,102,102,102,102,144
 .LVecOrMore:
         movdqu   (%edx,%eax), %xmm0 { Compare first vectors. }
         movdqu   (%eax), %xmm1
@@ -1807,6 +1806,8 @@ asm
         sub      $32, %ecx { first 16 bytes already analyzed + last 16 bytes analyzed separately }
         jle      .LLastVec
 
+        test     %edx, %edx
+        jz       .LNothing { Exit if buf1 = buf2. }
         push     %eax { save original buf1 to recover word position if byte mismatch found (aligned loop works in bytes to support misaligned buf1). }
         add      %eax, %ecx
         and      $-16, %eax { align buf1; +16 is performed by the loop. }
@@ -1931,6 +1932,8 @@ asm
         sub      $32, %ecx { first 16 bytes already analyzed + last 16 bytes analyzed separately }
         jle      .LLastVec
 
+        test     %edx, %edx
+        jz       .LNothing { Exit if buf1 = buf2. }
         push     %eax { save original buf1 to recover uint32 position if byte mismatch found (aligned loop works in bytes to support misaligned buf1). }
         add      %eax, %ecx
         and      $-16, %eax { align buf1; +16 is performed by the loop. }
@@ -1955,6 +1958,7 @@ asm
         pmovmskb %xmm0, %ebx
         inc      %bx
         jnz      .LVec0Differs
+.LNothing:
         pop      %ebx
         xor      %eax, %eax
         ret
@@ -3054,3 +3058,52 @@ asm
         sarl   %cl,%eax // uses 5 lower bits of cl.
 end;
 {$endif FPC_SYSTEM_HAS_SAR_QWORD}
+
+{$ifndef FPC_SYSTEM_HAS_UMUL64X64_128}
+{$define FPC_SYSTEM_HAS_UMUL64X64_128}
+function UMul64x64_128(a,b: uint64; out rHi: uint64): uint64; assembler; nostackframe;
+{ [esp + 12] = a, [esp + 4] = b, eax = rHi }
+asm
+  {                                                   Hi(a)             Lo(a)
+                                                    x Hi(b)             Lo(b)
+    -------------------------------------------------------------------------
+                                          Hi(Lo(a) * Lo(b)) Lo(Lo(a) * Lo(b))
+    +                   Hi(Hi(a) * Lo(b)) Lo(Hi(a) * Lo(b))
+    +                   Hi(Lo(a) * Hi(b)) Lo(Lo(a) * Hi(b))
+    + Hi(Hi(a) * Hi(b)) Lo(Hi(a) * Hi(b))
+             edi               esi          ebx, then edx          eax        }
+  push %ebx
+  push %esi
+  push %edi
+  mov %eax, %ecx { ecx = rHi. }
+
+  mov 12+16(%esp), %eax
+  mull 12+8(%esp) { edx:eax = Hi(a) * Hi(b). }
+  mov %eax, %esi
+  mov %edx, %edi { edi:esi = Hi(a) * Hi(b). }
+
+  mov 12+16(%esp), %eax
+  mull 12+4(%esp) { edx:eax = Hi(a) * Lo(b). }
+  mov %eax, %ebx
+  add %edx, %esi { edi:esi += Hi(Hi(a) * Lo(b)). }
+  adc $0, %edi
+
+  mov 12+12(%esp), %eax
+  mull 12+8(%esp) { edx:eax = Lo(a) * Hi(b). }
+  add %eax, %ebx // edi:esi:ebx += Lo(a) * Hi(b).
+  adc %edx, %esi
+  adc $0, %edi
+
+  mov 12+12(%esp), %eax
+  mull 12+4(%esp) { edx:eax = Lo(a) * Lo(b). }
+  add %ebx, %edx { edi:esi:edx += Hi(Lo(a) * Lo(b)). }
+  adc $0, %esi
+  adc $0, %edi
+
+  mov %esi, (%ecx)
+  mov %edi, 4(%ecx)
+  pop %edi
+  pop %esi
+  pop %ebx
+end;
+{$endif FPC_SYSTEM_HAS_UMUL64X64_128}
