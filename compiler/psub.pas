@@ -320,6 +320,11 @@ implementation
                     PInteger(arg)^:=NOPURE_GLOBAL_VARIABLE;
                   end;
               end;
+          raisen:
+            begin
+              { Skip over the constructor that often appears in exceptions }
+              result:=fen_norecurse_false;
+            end;
           calln:
             if not(Assigned(TCallNode(n).procdefinition)) or
               { Note that the presence of these options don't guarantee success }

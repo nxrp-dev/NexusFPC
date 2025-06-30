@@ -6780,6 +6780,18 @@ implementation
 
         purestatements:=tstatementnode(tblocknode(pureblock).statements);
 
+        if has_node_of_type(purestatements,[raisen]) then
+          begin
+            MessagePos2(fileinfo,parser_e_pure_ineligible,tprocdef(procdefinition).procsym.realname,'would raise an exception');
+            Exclude(procdefinition.procoptions, po_pure);
+{$ifdef DEBUG_PURE}
+            WriteLn('-- ABORT PURITY ANALYSIS OF ', TProcDef(procdefinition).fulltypename, ' --');
+            WriteLn('Would raises an exception');
+{$endif DEBUG_PURE}
+            pure_cleanup;
+            Exit;
+          end;
+
         if (outputs.Count=0) then
           begin
             { A simple and fast case where only the function result need be considered }
