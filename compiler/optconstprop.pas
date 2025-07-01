@@ -223,7 +223,12 @@ unit optconstprop;
             { constant inc'ed/dec'ed? }
             if (tinlinenode(n).inlinenumber=in_dec_x) or (tinlinenode(n).inlinenumber=in_inc_x) then
               begin
-                if tnode(tassignmentnode(arg).left).isequal(tcallparanode(tinlinenode(n).left).left) and
+                result:=true;
+                if assigned(tcallparanode(tinlinenode(n).left).right) then
+                  result:=replaceBasicAssign(tcallparanode(tinlinenode(n).left).right,arg,tree_modified);
+
+                if result and not tree_modified and
+                  tnode(tassignmentnode(arg).left).isequal(tcallparanode(tinlinenode(n).left).left) and
                   { Internal Inc/Dec flags are created through a tree transformation from
                     a previous ConstProp pass.  Setting it prevents an infinite loop where
                     Inc/Dec nodes are converted into an Add/Sub tree, and then converted
