@@ -4661,8 +4661,82 @@ implementation
 
 
     function trecorddef.getcopy : tstoreddef;
+      var
+        to_copy:tfpobjectlist;
+
+      procedure maybe_add_to_copylist(sym: tprocsym);
+        var
+          i,j:longint;
+          pd:tprocdef;
+          foundparam:boolean;
+        begin
+          { operators have internal names }
+          if sym.RealName[1]<>'$' then
+            exit;
+          for i:=0 to sym.procdeflist.count-1 do
+            begin
+              pd:=tprocdef(sym.procdeflist[i]);
+              { if it's an operator ALL should be operators }
+              if (pd.proctypeoption<>potype_operator) then
+                  exit;
+              { add to copy list if either one of the parameters or the result
+                type is of this type }
+              foundparam:=false;
+              for j:=0 to pd.parast.symlist.count-1 do
+                if (tsym(pd.parast.symlist[j]).typ=paravarsym) and (tparavarsym(pd.parast.symlist[j]).vardef=self) then
+                  begin
+                    foundparam:=true;
+                    break;
+                  end;
+              if foundparam or (pd.returndef=self) then
+                to_copy.add(pd);
+            end;
+        end;
+
+      procedure copy_operator_def(pd:tprocdef;newtyp:tdef);
+        var
+          npd:tprocdef;
+          i:longint;
+        begin
+          npd:=tprocdef(pd.getcopy);
+          if npd.returndef=self then
+            begin
+              npd.returndef:=newtyp;
+              npd.returndefderef.reset;
+            end;
+          for i:=0 to npd.parast.symlist.count-1 do
+            if (tsym(npd.parast.symlist[i]).typ=paravarsym) and (tparavarsym(npd.parast.symlist[i]).vardef=self) then
+                tparavarsym(npd.parast.symlist[i]).vardef:=newtyp;
+          if assigned(pd.implprocdefinfo) then
+            npd.implprocdefinfo^:=pd.implprocdefinfo^;
+          npd.implprocdefinfo^.forwarddef:=false;
+          npd.struct:=pd.struct;
+          npd.procsym:=pd.procsym;
+          tprocsym(pd.procsym).procdeflist.add(npd);
+          { Very dirty hack: Just give it the same name as the original so we
+            do not have to double the code }
+          {$ifdef symansistr}
+           npd._mangledname:=pd.mangledname;
+          {$else symansistr}
+            npd._mangledname:=stringdup(pd.mangledname);
+          {$endif}
+          { Make the mangled name persistent so it is not recomputed }
+          include(npd.procoptions,po_has_mangledname);
+        end;
+
+      var
+        i: longint;
       begin
         result:=crecorddef.create(objrealname^,symtable.getcopy);
+        to_copy:=tfpobjectlist.Create(false);
+        for i:=0 to symtable.symlist.count-1 do
+          if tsym(symtable.symlist[i]).typ=procsym then
+            maybe_add_to_copylist(tprocsym(symtable.symlist[i]));
+        symtablestack.push(trecorddef(result).symtable);
+        for i:=0 to to_copy.count-1 do
+          copy_operator_def(tprocdef(to_copy[i]),result);
+        symtablestack.pop(trecorddef(result).symtable);
+        to_copy.free;
         trecorddef(result).isunion:=isunion;
         include(trecorddef(result).defoptions,df_copied_def);
         if assigned(tcinitcode) then
