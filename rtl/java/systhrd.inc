@@ -277,8 +277,8 @@ end;
 
 procedure SysRTLEventSetEvent(AEvent: PRTLEvent);
 begin
-  AEvent^.IsSet := True;
   _JUCLReentrantLock(AEvent^.OuterLock).Lock;
+  AEvent^.IsSet := True;
   _JUCLCondition(AEvent^.Condition).SignalAll;
   _JUCLReentrantLock(AEvent^.OuterLock).Unlock;
 end;
@@ -298,22 +298,18 @@ end;
 
 procedure SysRTLEventWaitFor(AEvent: PRTLEvent);
 begin
+  _JUCLReentrantLock(AEvent^.OuterLock).Lock;
   if not AEvent^.IsSet then
-  begin
-    _JUCLReentrantLock(AEvent^.OuterLock).Lock;
     _JUCLCondition(AEvent^.Condition).Await;
-    _JUCLReentrantLock(AEvent^.OuterLock).Unlock;
-  end;
+  _JUCLReentrantLock(AEvent^.OuterLock).Unlock;
 end;
 
 procedure SysRTLEventWaitForTimeout(AEvent: PRTLEvent; Timeout: LongInt);
 begin
+  _JUCLReentrantLock(AEvent^.OuterLock).Lock;
   if not AEvent^.IsSet then
-  begin
-    _JUCLReentrantLock(AEvent^.OuterLock).Lock;
     _JUCLCondition(AEvent^.Condition).AwaitNanos(JLong(Timeout) * 1000 * 1000);
-    _JUCLReentrantLock(AEvent^.OuterLock).Unlock;
-  end;
+  _JUCLReentrantLock(AEvent^.OuterLock).Unlock;
 end;
 
 { Thread Manager }
