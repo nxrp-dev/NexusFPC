@@ -1946,10 +1946,11 @@ implementation
             exit;
           end;
         if (current_settings.minfpconstprec=s32real) and
-           (d = single(d)) then
+           ((current_settings.maxfpconstprec=s32real) or (d = single(d))) then
           result:=crealconstnode.create(d,s32floattype)
-        else if (current_settings.minfpconstprec=s64real) and
-                (d = double(d)) then
+        else if (current_settings.minfpconstprec in [s32real,s64real]) and
+                ((current_settings.maxfpconstprec in [s32real,s64real]) or
+                 (d = single(d)) or (d = double(d))) then
           result:=crealconstnode.create(d,s64floattype)
         else
           result:=crealconstnode.create(d,pbestrealtype^);

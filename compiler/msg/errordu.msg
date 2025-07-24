@@ -487,6 +487,9 @@ scan_e_duplicate_rtti_option=02112_E_RTTI-Option "$1" ist ein Duplikat
 scan_e_misplaced_rtti_directive=02113_E_RTTI-Direktive kann hier nicht benutzt werden
 % The \var{\$RTTI} directive can not be used in this location (e.g. before the \var{PROGRAM}
 % or \var{UNIT} headers).
+scan_e_illegal_maxfpconstprec=02114_E_"$1" ist eine ungültige maximale Präzision von Fliesskommakonstanten
+% Valid maximal precisions for floating point constants are default, 32 and 64,
+% which mean respectively maximal (80 bit on x86 and 64 bit elsewhere usually), 32 bit and 64 bit precision.
 %
 % \end{description}
 # EndOfTeX
