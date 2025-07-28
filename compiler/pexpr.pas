@@ -2622,7 +2622,10 @@ implementation
                                end
                              else
                                begin
-                                 Message1(sym_e_id_no_member,orgpattern);
+                                 if oo_composites_generic in tabstractrecorddef(p1.resultdef).objectoptions then
+                                   erroroutp1:=true
+                                 else
+                                   Message1(sym_e_id_no_member,orgpattern);
                                  { try to clean up }
                                  consume(_ID);
                                end;
