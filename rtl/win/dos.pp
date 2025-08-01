@@ -275,18 +275,20 @@ type
     dwThreadId: DWORD;
   end;
 
-function CreateProcess(lpApplicationName: PAnsiChar; lpCommandLine: PAnsiChar;
-            lpProcessAttributes, lpThreadAttributes: Pointer;
-            bInheritHandles: Longbool; dwCreationFlags: DWORD; lpEnvironment: Pointer;
-            lpCurrentDirectory: PAnsiChar; const lpStartupInfo: TStartupInfo;
-            var lpProcessInformation: TProcessInformation): longbool;
-  stdcall; external 'kernel32' name 'CreateProcessA';
 function getExitCodeProcess(h:THandle;var code:longint):longbool;
   stdcall; external 'kernel32' name 'GetExitCodeProcess';
 function WaitForSingleObject(hHandle: THandle; dwMilliseconds: DWORD): DWORD;
   stdcall; external 'kernel32' name 'WaitForSingleObject';
 function CloseHandle(h : THandle) : longint;
   stdcall; external 'kernel32' name 'CloseHandle';
+
+{$ifndef UnicodeFindFiles}
+function CreateProcess(lpApplicationName: PAnsiChar; lpCommandLine: PAnsiChar;
+            lpProcessAttributes, lpThreadAttributes: Pointer;
+            bInheritHandles: Longbool; dwCreationFlags: DWORD; lpEnvironment: Pointer;
+            lpCurrentDirectory: PAnsiChar; const lpStartupInfo: TStartupInfo;
+            var lpProcessInformation: TProcessInformation): longbool;
+  stdcall; external 'kernel32' name 'CreateProcessA';
 
 procedure exec(const path : pathstr;const comline : comstr);
 var
@@ -347,6 +349,58 @@ begin
   CloseHandle(PI.hThread);
   LastDosExitCode:=l;
 end;
+{$else  UnicodeFindFiles }
+
+Type TStartupInfoW = TStartupInfo; { We do not use "W" relevant part. It works here.. }
+
+function CreateProcessW(lpApplicationName: PWideChar; lpCommandLine: PWideChar;
+            lpProcessAttributes, lpThreadAttributes: Pointer;
+            bInheritHandles: Longbool; dwCreationFlags: DWORD; lpEnvironment: Pointer;
+            lpCurrentDirectory: PWideChar; const lpStartupInfo: TStartupInfoW;
+            var lpProcessInformation: TProcessInformation): longbool;
+  stdcall; external 'kernel32' name 'CreateProcessW';
+
+procedure exec(const path : pathstr;const comline : comstr);
+var
+  SI: TStartupInfoW;
+  PI: TProcessInformation;
+  Proc : THandle;
+  l    : LongInt;
+  CommandLine : unicodestring;
+begin
+  FillChar(SI, SizeOf(SI), 0);
+  SI.cb:=SizeOf(SI);
+  SI.wShowWindow:=1;
+  { always surround the name of the application by quotes
+    so that long filenames will always be accepted. But don't
+    do it if there are already double quotes, since Win32 does not
+    like double quotes which are duplicated!
+  }
+  if pos('"',path)=0 then
+    CommandLine:='"'+path+'"'
+  else
+    CommandLine:=path;
+  if ComLine <> '' then
+    CommandLine:=Commandline+' '+ComLine+#0
+  else
+    CommandLine := CommandLine + #0;
+
+  if not CreateProcessW(nil, pwidechar(CommandLine),
+    Nil, Nil, ExecInheritsHandles,$20, Nil, Nil, SI, PI) then
+    begin
+      DosError:=Last2DosError(GetLastError);
+      exit;
+    end;
+  Proc:=PI.hProcess;
+  if WaitForSingleObject(PI.hProcess,dword($ffffffff))<>$ffffffff then
+    GetExitCodeProcess(Proc,l)
+  else
+    l:=-1;
+  CloseHandle(Proc);
+  CloseHandle(PI.hThread);
+  LastDosExitCode:=l;
+end;
+{$endif UnicodeFindFiles }
 
 
 {******************************************************************************
