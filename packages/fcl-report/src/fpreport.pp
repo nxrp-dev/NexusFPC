@@ -1675,7 +1675,7 @@ type
     procedure DoEndReport; virtual;
     procedure InitializeDefaultExpressions; virtual;
     procedure InitializeExpressionVariables; virtual;
-    procedure InitializeAggregates(IsFirstPass: Boolean); virtual;
+    procedure InitializeAggregates(AIsFirstPass: Boolean); virtual;
     procedure CacheMemoExpressions(const APage: TFPReportCustomPage); virtual;
     procedure StartRender; override;
     procedure EndRender; override;
@@ -1973,7 +1973,7 @@ type
     function    GetTextLines: TStrings;
     procedure   SetLineSpacing(AValue: TFPReportUnits);
     procedure   HTMLOnFoundTag(NoCaseTag, ActualTag: string);
-    procedure   HTMLOnFoundText(Text: string);
+    procedure   HTMLOnFoundText(AText: string);
     function    PixelsToMM(APixels: single): single; inline;
     function    mmToPixels(mm: single): integer; inline;
     { Result is in millimeters. }
@@ -4520,7 +4520,7 @@ begin
   end;
 end;
 
-procedure TFPReportCustomMemo.HTMLOnFoundText(Text: string);
+procedure TFPReportCustomMemo.HTMLOnFoundText(AText: string);
 var
   lNewFontName: string;
   lDescender: TFPReportUnits;
@@ -4536,7 +4536,7 @@ begin
   end;
 
   try
-    FCurTextBlock.Text := Text;
+    FCurTextBlock.Text := AText;
 
     if FLastFGColor <> clNone then
       FCurTextBlock.FGColor := FLastFGColor;
@@ -8492,7 +8492,7 @@ begin
     FExpr.Identifiers.AddFunction('PageCount', 'I', '', @BuiltinGetPageCount);
 end;
 
-procedure TFPCustomReport.InitializeAggregates(IsFirstPass : Boolean);
+procedure TFPCustomReport.InitializeAggregates(AIsFirstPass : Boolean);
 
 var
   i: Integer;
@@ -8503,9 +8503,9 @@ begin
     begin
     v:=FVariables[I];
     if (v.Expression<>'') then
-      v.InitializeExpression(FExpr,ReportData,IsFirstPass);
+      v.InitializeExpression(FExpr,ReportData,AIsFirstPass);
     end;
-  if IsFirstPass then
+  if AIsFirstPass then
     For I:=0 to FVariables.Count-1 do
       begin
       v:=FVariables[I];

@@ -2145,11 +2145,11 @@ end;
 {****************************************************************************}
 {*                             TStreamAdapter                               *}
 {****************************************************************************}
-constructor TStreamAdapter.Create(Stream: TStream; Ownership: TStreamOwnership = soReference);
+constructor TStreamAdapter.Create(AStream: TStream; AOwnership: TStreamOwnership = soReference);
 begin
   inherited Create;
-  FStream:=Stream;
-  FOwnership:=Ownership;
+  FStream:=AStream;
+  FOwnership:=AOwnership;
   m_bReverted:=false;   // mantis 15003
 			// http://www.tech-archive.net/Archive/German/microsoft.public.de.vc/2005-08/msg00791.html
 			// http://code.google.com/p/ddab-lib/wiki/TPJIStreamWrapper

@@ -623,10 +623,10 @@ begin
   Result:=FDataLinks.Count;
 end;
 
-procedure TDatasource.RegisterDataLink(DataLink: TDataLink);
+procedure TDatasource.RegisterDataLink(ADataLink: TDataLink);
 
 begin
-  FDatalinks.Add(DataLink);
+  FDatalinks.Add(ADataLink);
   if Assigned(DataSet) then
     DataSet.RecalcBufListSize;
 end;
@@ -682,10 +682,10 @@ begin
 end;
 
 
-procedure TDatasource.UnregisterDataLink(DataLink: TDataLink);
+procedure TDatasource.UnregisterDataLink(ADataLink: TDataLink);
 
 begin
-  FDatalinks.Remove(Datalink);
+  FDatalinks.Remove(ADatalink);
   If Dataset<>Nil then
     DataSet.RecalcBufListSize;
   //Dataset.SetBufListSize(DataLink.BufferCount);

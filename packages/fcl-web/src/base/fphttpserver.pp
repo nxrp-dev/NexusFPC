@@ -376,7 +376,7 @@ Type
     // Override this to create descendent
     Function CreateCertificateData : TCertificateData; virtual;
     // Override this to create descendent
-    Function GetSocketHandler(Const UseSSL : Boolean) : TSocketHandler;  virtual;
+    Function GetSocketHandler(Const AUseSSL : Boolean) : TSocketHandler;  virtual;
     // Override these to create descendents of the request/response instead.
     Function CreateRequest : TFPHTTPConnectionRequest; virtual;
     Function CreateResponse(ARequest : TFPHTTPConnectionRequest) : TFPHTTPConnectionResponse; virtual;
@@ -1775,14 +1775,14 @@ begin
   end;
 end;
 
-function TFPCustomHttpServer.GetSocketHandler(const UseSSL: Boolean): TSocketHandler;
+function TFPCustomHttpServer.GetSocketHandler(const AUseSSL: Boolean): TSocketHandler;
 
 begin
   Result:=Nil;
   if Assigned(FonGetSocketHandler) then
-    FOnGetSocketHandler(Self,UseSSL,Result);
+    FOnGetSocketHandler(Self,AUseSSL,Result);
   if (Result=Nil) then
-    If UseSSL then
+    If AUseSSL then
       Result:=CreateSSLSocketHandler
     else
       Result:=TSocketHandler.Create;

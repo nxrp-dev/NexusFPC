@@ -85,7 +85,7 @@ Type
     function  IdentifierIsLiteral(const aValue : {$IFDEF FPC_DOTTEDUNITS}Js.Base{$ELSE}jsBase{$ENDIF}.TJSString) : Boolean;
     Procedure CheckIdentifierLiteral(const aValue : {$IFDEF FPC_DOTTEDUNITS}Js.Base{$ELSE}jsBase{$ENDIF}.TJSString);
     function ConsumeIdentifierLiteral(const aValue: {$IFDEF FPC_DOTTEDUNITS}Js.Base{$ELSE}jsBase{$ENDIF}.TJSString): TJSToken;
-    function CheckSemiColonInsert(aToken: TJSToken; Consume: Boolean): Boolean;
+    function CheckSemiColonInsert(aToken: TJSToken; AConsume: Boolean): Boolean;
     function EnterLabel(const ALabelName: {$IFDEF FPC_DOTTEDUNITS}Js.Base{$ELSE}jsBase{$ENDIF}.TJSString): TJSLabel;
     // Check that current token is aToken
     procedure Expect(aToken: TJSToken);
@@ -548,14 +548,14 @@ begin
   Result:=GetNextToken;
 end;
 
-function TJSParser.CheckSemiColonInsert(aToken : TJSToken; Consume : Boolean) : Boolean;
+function TJSParser.CheckSemiColonInsert(aToken : TJSToken; AConsume : Boolean) : Boolean;
 
 begin
   Result:=(AToken=tjsSemiColon);
   If Result then
     begin
     Result:=(CurrentToken=tjsCurlyBraceClose) or (FScanner.WasEndOfLine) or (CurrentToken=tjsEOF);
-    If Result and Consume then
+    If Result and AConsume then
       FPrevious:=tjsSemiColon;
     end;
 end;

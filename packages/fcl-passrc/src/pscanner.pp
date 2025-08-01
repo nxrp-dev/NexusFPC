@@ -680,7 +680,7 @@ type
     function IsExtended(const Value: TPasScannerString; out e: TMaxFloat): boolean;
     procedure NextToken;
     procedure Log(aMsgType: TMessageType; aMsgNumber: integer;
-      const aMsgFmt: String; const Args: array of const; MsgPos: integer = 0);
+      const aMsgFmt: String; const Args: array of const; AMsgPos: integer = 0);
     procedure LogXExpectedButTokenFound(const X: TPasScannerString; ErrorPos: integer = 0);
     procedure ReadOperand(Skip: boolean = false); // unary operators plus one operand
     procedure ReadExpression; // binary operators
@@ -2188,10 +2188,10 @@ end;
 procedure TCondDirectiveEvaluator.Log(aMsgType: TMessageType;
   aMsgNumber: integer; const aMsgFmt: String;
   const Args: array of const;
-  MsgPos: integer);
+  AMsgPos: integer);
 begin
-  if MsgPos<1 then
-    MsgPos:=FTokenEnd{$ifdef UsePChar}-PAnsiChar(Expression)+1{$endif};
+  if AMsgPos<1 then
+    AMsgPos:=FTokenEnd{$ifdef UsePChar}-PAnsiChar(Expression)+1{$endif};
   MsgType:=aMsgType;
   MsgNumber:=aMsgNumber;
   MsgPattern:=aMsgFmt;
@@ -2200,7 +2200,7 @@ begin
     OnLog(Self,Args);
     if not (aMsgType in [mtError,mtFatal]) then exit;
     end;
-  raise EScannerError.CreateFmt(MsgPattern+' at pos '+IntToStr(MsgPos)+' line '+IntToStr(MsgCurLine),Args);
+  raise EScannerError.CreateFmt(MsgPattern+' at pos '+IntToStr(AMsgPos)+' line '+IntToStr(MsgCurLine),Args);
 end;
 
 procedure TCondDirectiveEvaluator.LogXExpectedButTokenFound(const X: TPasScannerString;

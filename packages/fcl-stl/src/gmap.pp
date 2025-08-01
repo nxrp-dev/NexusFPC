@@ -41,7 +41,7 @@ type
     function GetKey:TKey;inline;
     function GetValue:TValue;inline;
     function GetMutable:PValue;inline;
-    procedure SetValue(value:TValue);inline;
+    procedure SetValue(avalue:TValue);inline;
     function MoveNext:boolean;inline;
     function Next:boolean;inline;
     function Prev:boolean;inline;
@@ -292,9 +292,9 @@ begin
   GetMutable:=@(FNode^.Data.Value);
 end;
 
-procedure TMapIterator.SetValue(value:TValue);inline;
+procedure TMapIterator.SetValue(avalue:TValue);inline;
 begin
-  FNode^.Data.Value := value;
+  FNode^.Data.Value := avalue;
 end;
 
 function TMapIterator.MoveNext: boolean;

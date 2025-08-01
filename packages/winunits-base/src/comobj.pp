@@ -133,8 +133,8 @@ unit ComObj;
         function InterfaceSupportsErrorInfo(const iid: TIID): HResult; stdcall;
       public
         constructor Create;
-        constructor CreateAggregated(const Controller: IUnknown);
-        constructor CreateFromFactory(Factory: TComObjectFactory; const Controller: IUnknown);
+        constructor CreateAggregated(const AController: IUnknown);
+        constructor CreateFromFactory(AFactory: TComObjectFactory; const AController: IUnknown);
         destructor Destroy; override;
         procedure Initialize; virtual;
         function ObjAddRef: Integer; virtual; stdcall;
@@ -187,12 +187,12 @@ unit ComObj;
         function CreateInstanceLic(const unkOuter: IUnknown; const unkReserved: IUnknown;
           const iid: TIID; const bstrKey: WideString; out vObject): HResult; stdcall;
       public
-        constructor Create(ComServer: TComServerObject; ComClass: TComClass;
-          const ClassID: TGUID; const Name, Description: string;
-          Instancing: TClassInstancing; ThreadingModel: TThreadingModel = tmSingle);
-        constructor Create(ComServer: TComServerObject; ComClass: TComClass;
-          const ClassID: TGUID; const Name, Version, Description: string;
-          Instancing: TClassInstancing; ThreadingModel: TThreadingModel = tmSingle);
+        constructor Create(AComServer: TComServerObject; AComClass: TComClass;
+          const AClassID: TGUID; const Name, ADescription: string;
+          AInstancing: TClassInstancing; AThreadingModel: TThreadingModel = tmSingle);
+        constructor Create(AComServer: TComServerObject; AComClass: TComClass;
+          const AClassID: TGUID; const Name, Version, ADescription: string;
+          AInstancing: TClassInstancing; AThreadingModel: TThreadingModel = tmSingle);
         destructor Destroy; override;
         function CreateComObject(const Controller: IUnknown): TComObject; virtual;
         procedure RegisterClassObject;
@@ -824,18 +824,18 @@ implementation
       end;
 
 
-    constructor TComObject.CreateAggregated(const Controller: IUnknown);
+    constructor TComObject.CreateAggregated(const AController: IUnknown);
       begin
-        CreateFromFactory(ComClassManager.GetFactoryFromClass(ClassType),Controller);
+        CreateFromFactory(ComClassManager.GetFactoryFromClass(ClassType),AController);
       end;
 
 
-    constructor TComObject.CreateFromFactory(Factory: TComObjectFactory;
-      const Controller: IUnknown);
+    constructor TComObject.CreateFromFactory(AFactory: TComObjectFactory;
+      const AController: IUnknown);
       begin
-        FFactory:=Factory;
+        FFactory:=AFactory;
         FRefCount:=1;
-        FController:=Pointer(Controller);
+        FController:=Pointer(AController);
         FFactory.Comserver.CountObject(True);
         FCounted:=true;
         Initialize;
@@ -1004,31 +1004,31 @@ implementation
       end;
 
 
-    constructor TComObjectFactory.Create(ComServer: TComServerObject;
-      ComClass: TComClass; const ClassID: TGUID; const Name,
-      Description: string; Instancing: TClassInstancing;
-      ThreadingModel: TThreadingModel);
+    constructor TComObjectFactory.Create(AComServer: TComServerObject;
+      AComClass: TComClass; const AClassID: TGUID; const Name,
+      ADescription: string; AInstancing: TClassInstancing;
+      AThreadingModel: TThreadingModel);
       begin
-        Create(ComServer, ComClass, ClassID, Name, '', Description, Instancing, ThreadingModel);
+        Create(AComServer, AComClass, AClassID, Name, '', ADescription, AInstancing, AThreadingModel);
       end;
 
-    constructor TComObjectFactory.Create(ComServer: TComServerObject;
-      ComClass: TComClass; const ClassID: TGUID; const Name, Version, Description: string; Instancing: TClassInstancing;
-      ThreadingModel: TThreadingModel);
+    constructor TComObjectFactory.Create(AComServer: TComServerObject;
+      AComClass: TComClass; const AClassID: TGUID; const Name, Version, ADescription: string; AInstancing: TClassInstancing;
+      AThreadingModel: TThreadingModel);
     begin
 {$ifdef DEBUG_COM}
          if printcom then 
         WriteLn('TComObjectFactory.Create');
 {$endif}
         FRefCount := 1;
-        FClassID := ClassID;
-        FThreadingModel := ThreadingModel;
-        FDescription := Description;
+        FClassID := AClassID;
+        FThreadingModel := AThreadingModel;
+        FDescription := ADescription;
         FClassName := Name;
         FClassVersion := Version;
-        FComServer := ComServer;
-        FComClass := ComClass;
-        FInstancing := Instancing;;
+        FComServer := AComServer;
+        FComClass := AComClass;
+        FInstancing := AInstancing;;
         ComClassManager.AddObjectFactory(Self);
         fIsRegistered := dword(-1);
       end;

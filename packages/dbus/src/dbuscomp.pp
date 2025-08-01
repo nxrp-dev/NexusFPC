@@ -441,7 +441,7 @@ Type
     Function GetUnixUser(Var UID : CUlong) : Boolean;
     Function GetWindowsUser(Var SID : AnsiString) : Boolean;
     Function GetSocket(Var SD : cint) : Boolean;
-    Function GetObjectPathData(Const Path : AnsiString; DoCheck : Boolean = False) : TDBUSObjectItem;
+    Function GetObjectPathData(Const APath : AnsiString; DoCheck : Boolean = False) : TDBUSObjectItem;
     Procedure SetAllowAnonymous(AValue : Boolean);
     Procedure SetRoutePeerMessages(AValue : Boolean);
     Procedure ReturnMessage(var AMessage : TDBUSMessage);
@@ -978,7 +978,7 @@ begin
   Result:=dbus_connection_get_socket(FConn,@SD)<>0;
 end;
 
-function TCustomDBUSConnection.GetObjectPathData(const Path : AnsiString; DoCheck : Boolean = False): TDBUSObjectItem;
+function TCustomDBUSConnection.GetObjectPathData(const APath : AnsiString; DoCheck : Boolean = False): TDBUSObjectItem;
 
 Var
   P : Pointer;
@@ -986,7 +986,7 @@ Var
 
 begin
   CheckConnected;
-  dbus_connection_get_object_path_data(FConn,PAnsiChar(Path),@P);
+  dbus_connection_get_object_path_data(FConn,PAnsiChar(APath),@P);
   Result:=Nil;
   If (P<>Nil) then
     if DoCheck then

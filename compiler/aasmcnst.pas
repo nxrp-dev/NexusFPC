@@ -39,7 +39,7 @@ type
    { the type of the element and its def }
    tai_abstracttypedconst = class abstract (tai)
     private
-     procedure setdef(def: tdef);
+     procedure setdef(adef: tdef);
     protected
      fadetyp: ttypedconstkind;
      { the def of this element }
@@ -628,12 +628,12 @@ implementation
                             tai_abstracttypedconst
  ****************************************************************************}
 
-   procedure tai_abstracttypedconst.setdef(def: tdef);
+   procedure tai_abstracttypedconst.setdef(adef: tdef);
      begin
        { should not be changed, rewrite the calling code if this happens }
        if assigned(fdef) then
          Internalerror(2014080203);
-       fdef:=def;
+       fdef:=adef;
      end;
 
    constructor tai_abstracttypedconst.create(_adetyp: ttypedconstkind; _def: tdef);

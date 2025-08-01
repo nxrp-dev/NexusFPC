@@ -750,7 +750,7 @@ interface
           constructor Create_32bit_unaligned(_value : longint);
           constructor Create_16bit_unaligned(_value : word);
           constructor Create_8bit(_value : byte);
-          constructor Create_char(size: integer; _value: dword);
+          constructor Create_char(asize: integer; _value: dword);
           constructor Create_sleb128bit(_value : int64);
           constructor Create_uleb128bit(_value : qword);
           constructor Create_aint(_value : aint);
@@ -786,7 +786,7 @@ interface
           constructor Create_int_dataptr(_value: int64);
           constructor Create_int_dataptr_unaligned(_value: int64);
 {$ifdef avr}
-          constructor Create_int_dataptr_unaligned(_value: int64; size: taiconst_type);
+          constructor Create_int_dataptr_unaligned(_value: int64; asize: taiconst_type);
 {$endif}
 {$ifdef i8086}
           constructor Create_seg_name(const name:string);
@@ -1751,11 +1751,11 @@ implementation
       end;
 
 
-    constructor tai_const.Create_char(size: integer; _value: dword);
+    constructor tai_const.Create_char(asize: integer; _value: dword);
       begin
          inherited Create;
          typ:=ait_const;
-         case size of
+         case asize of
             1:
               begin
                 consttype:=aitconst_8bit;
@@ -2115,11 +2115,11 @@ implementation
 
 {$ifdef avr}
     constructor tai_const.Create_int_dataptr_unaligned(_value: int64;
-      size: taiconst_type);
+      asize: taiconst_type);
       begin
         inherited Create;
         typ:=ait_const;
-        consttype:=size;
+        consttype:=asize;
         sym:=nil;
         endsym:=nil;
         symofs:=0;

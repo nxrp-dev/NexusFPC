@@ -404,25 +404,25 @@ begin
   Result := GetChars(@Bytes[ByteIndex], ByteCount, @Chars[CharIndex], CharLen - CharIndex);
 end;
 
-class function TEncoding.GetEncoding(CodePage: Integer): TEncoding;
+class function TEncoding.GetEncoding(ACodePage: Integer): TEncoding;
 begin
-  case CodePage of
+  case ACodePage of
     CP_UTF16: Result := TUnicodeEncoding.Create;
     CP_UTF16BE: Result := TBigEndianUnicodeEncoding.Create;
     CP_UTF7: Result := TUTF7Encoding.Create;
     CP_UTF8: Result := TUTF8Encoding.Create;
   else
-    Result := TMBCSEncoding.Create(CodePage);
+    Result := TMBCSEncoding.Create(ACodePage);
   end;
 end;
 
-class function TEncoding.GetEncoding(const EncodingName: UnicodeString): TEncoding;
+class function TEncoding.GetEncoding(const AEncodingName: UnicodeString): TEncoding;
 var
   ACodePage: TSystemCodePage;
 begin
-  ACodePage := CodePageNameToCodePage(AnsiString(EncodingName));
+  ACodePage := CodePageNameToCodePage(AnsiString(AEncodingName));
   if ACodePage = $FFFF then
-    raise EEncodingError.CreateFmt(SNotValidCodePageName, [EncodingName]);
+    raise EEncodingError.CreateFmt(SNotValidCodePageName, [AEncodingName]);
   Result := GetEncoding(ACodePage);
 end;
 

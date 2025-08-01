@@ -1459,7 +1459,7 @@ Type
     Procedure Install(APackage : TPackage; AnArchiveFiles: boolean);
     Procedure UnInstall(APackage : TPackage);
     Procedure Archive(APackage : TPackage);
-    Procedure PkgList(PkgList: TStrings; APackage : TPackage);
+    Procedure PkgList(APkgList: TStrings; APackage : TPackage);
     Procedure Clean(APackage : TPackage; AllTargets: boolean);
     procedure Clean(APackage: TPackage; const aTarget: TCompileTarget);
     Procedure CompileDependencies(APackage : TPackage);
@@ -9492,10 +9492,10 @@ begin
 end;
 
 
-procedure TBuildEngine.PkgList(PkgList: TStrings; APackage: TPackage);
+procedure TBuildEngine.PkgList(APkgList: TStrings; APackage: TPackage);
 begin
   Log(vlInfo, Format(SInfoPkgListPackage,[APackage.Name]));
-  APackage.ListPackage(PkgList);
+  APackage.ListPackage(APkgList);
 end;
 
 

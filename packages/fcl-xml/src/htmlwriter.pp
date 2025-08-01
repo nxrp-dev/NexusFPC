@@ -66,7 +66,7 @@ type
     function FormSubmit (aname, avalue: DOMstring) : THTML_Input;
     function FormImage (aname, imagesrc, ausemap: DOMstring) : THTML_Input;
     function FormReset : THTML_Input;
-    function FormButton (aname, caption, aOnClick: DOMstring) : THTML_Input;
+    function FormButton (aname, acaption, aOnClick: DOMstring) : THTML_Input;
     function FormHidden (aname, aValue: DOMstring) : THTML_Input;
     function FormFile (aname, aValue:DOMstring) : THTML_Input;
     { Other useful links to elements }
@@ -337,14 +337,14 @@ begin
   result.thetype := itReset;
 end;
 
-function THTMLwriter.FormButton(aname, caption, aOnClick: DOMstring): THTML_Input;
+function THTMLwriter.FormButton(aname, acaption, aOnClick: DOMstring): THTML_Input;
 begin
   result := input;
   with result do
     begin
     thetype := itButton;
     name := aname;
-    value := caption;
+    value := acaption;
     onclick := aonclick;
     end;
 end;

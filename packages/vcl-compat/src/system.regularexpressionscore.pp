@@ -267,7 +267,7 @@ type
   protected
     procedure UpdateRegEx(const aRegEx: TPerlRegEx);
   public
-    constructor Create(OwnsRegex : Boolean);
+    constructor Create(AOwnsRegex : Boolean);
     destructor Destroy; override;
   public
     function Add(const aRegEx: TPerlRegEx): Integer;
@@ -1397,9 +1397,9 @@ begin
   ARegEx.Stop:=FStop;
 end;
 
-constructor TPerlRegExList.Create(OwnsRegex: Boolean);
+constructor TPerlRegExList.Create(AOwnsRegex: Boolean);
 begin
-  FList:=TFPObjectList.Create(OwnsRegex);
+  FList:=TFPObjectList.Create(AOwnsRegex);
 end;
 
 destructor TPerlRegExList.Destroy;

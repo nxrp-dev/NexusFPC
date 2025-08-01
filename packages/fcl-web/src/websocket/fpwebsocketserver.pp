@@ -56,7 +56,7 @@ type
     procedure SetPort(AValue: Word);
     procedure SetQueueSize(AValue: Word);
     procedure SetUseSSL(AValue: Boolean);
-    function GetSocketHandler(const UseSSL: Boolean): TSocketHandler;
+    function GetSocketHandler(const AUseSSL: Boolean): TSocketHandler;
   Protected
     procedure SetThreadMode(AValue: TWSThreadMode); override;
     Function GetActive : Boolean; override;
@@ -205,14 +205,14 @@ begin
 end;
 
 
-function TWebSocketServer.GetSocketHandler(const UseSSL: Boolean): TSocketHandler;
+function TWebSocketServer.GetSocketHandler(const AUseSSL: Boolean): TSocketHandler;
 
 begin
   Result:=Nil;
   if Assigned(FonGetSocketHandler) then
-    FOnGetSocketHandler(Self,UseSSL,Result);
+    FOnGetSocketHandler(Self,AUseSSL,Result);
   if (Result=Nil) then
-    If UseSSL then
+    If AUseSSL then
       Result:=CreateSSLSocketHandler
     else
       Result:=TSocketHandler.Create;

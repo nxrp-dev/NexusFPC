@@ -87,8 +87,8 @@ type
     function GetChars(const Bytes: TBytes; ByteIndex, ByteCount: Integer): TUnicodeCharArray; overload;
     function GetChars(const Bytes: TBytes; ByteIndex, ByteCount: Integer;
       const Chars: TUnicodeCharArray; CharIndex: Integer): Integer; overload;
-    class function GetEncoding(CodePage: Integer): TEncoding; overload; static;
-    class function GetEncoding(const EncodingName: UnicodeString): TEncoding; overload; static;
+    class function GetEncoding(ACodePage: Integer): TEncoding; overload; static;
+    class function GetEncoding(const AEncodingName: UnicodeString): TEncoding; overload; static;
     function GetMaxByteCount(CharCount: Integer): Integer; virtual; abstract;
     function GetMaxCharCount(ByteCount: Integer): Integer; virtual; abstract;
     function GetPreamble: TBytes; virtual; abstract;

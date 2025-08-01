@@ -104,7 +104,7 @@ Type
     procedure CBFoundTag(NoCaseTag, ActualTag: AnsiString);
     procedure CBFountText(Text: AnsiString);
 
-    procedure EatWords(Words: AnsiString; IsTitle: Boolean);
+    procedure EatWords(AWords: AnsiString; IsTitle: Boolean);
   public
     constructor Create;
     destructor  Destroy; override;
@@ -230,7 +230,7 @@ begin
   EatWords(Text, FInTitle and not FInBody);
 end;
 
-procedure TIndexedWordList.EatWords ( Words: AnsiString; IsTitle: Boolean ) ;
+procedure TIndexedWordList.EatWords ( AWords: AnsiString; IsTitle: Boolean ) ;
 var
   WordPtr: PAnsiChar;
   WordStart: PAnsiChar;
@@ -251,9 +251,9 @@ var
     FPos: Integer;
 begin
   if IsTitle then
-    FDocTitle := Words;
-  Words := LowerCase(Words);
-  WordStart := PAnsiChar(Words);
+    FDocTitle := AWords;
+  AWords := LowerCase(AWords);
+  WordStart := PAnsiChar(AWords);
   WordPtr := WordStart;
   IsNumberWord := False;
   InWord := False;

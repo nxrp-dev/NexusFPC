@@ -199,7 +199,7 @@ type
     procedure WriteBinaryStream(const Section, Name: string; Value: TStream); virtual;
     procedure ReadSection(const Section: string; Strings: TStrings); virtual; abstract;
     procedure ReadSections(Strings: TStrings); virtual; abstract;
-    procedure ReadSectionValues(const Section: string; Strings: TStrings; Options : TSectionValuesOptions); virtual;    overload;
+    procedure ReadSectionValues(const Section: string; Strings: TStrings; AOptions : TSectionValuesOptions); virtual;    overload;
     procedure ReadSectionValues(const Section: string; Strings: TStrings); virtual;overload;
     procedure EraseSection(const Section: string); virtual; abstract;
     procedure DeleteKey(const Section, Ident: String); virtual; abstract;
@@ -924,7 +924,7 @@ begin
   end;
 end;
 
-procedure TCustomIniFile.ReadSectionValues(const Section: string; Strings: TStrings; Options: TSectionValuesOptions);
+procedure TCustomIniFile.ReadSectionValues(const Section: string; Strings: TStrings; AOptions: TSectionValuesOptions);
 
 type
   TOldSectionValues = Procedure (const Section: string; Strings: TStrings) of object;
@@ -935,7 +935,7 @@ var
   CurrClass   : TClass;
 
 begin
-  if (Options<>[]) then
+  if (AOptions<>[]) then
     Raise Exception.Create('Options not supported, options must be empty');
   // Redirect calls to old implementation, if it is overridden.
   CurrSV:=nil;

@@ -32,7 +32,7 @@ interface
       fnum: cardinal;
      public
       { initialise with string and numerical representation of the version }
-      constructor init(const str: string; major: byte; minor: word; patch: byte);
+      constructor init(const astr: string; major: byte; minor: word; patch: byte);
       constructor invalidate;
       function relationto(const other: tversion): shortint;
       function relationto(major: byte; minor: word; patch: byte): shortint;
@@ -50,9 +50,9 @@ implementation
     end;
 
 
-  constructor tversion.init(const str: string; major: byte; minor: word; patch: byte);
+  constructor tversion.init(const astr: string; major: byte; minor: word; patch: byte);
     begin
-      fstr:=str;
+      fstr:=astr;
       fnum:=tonum(major,minor,patch);
     end;
 
