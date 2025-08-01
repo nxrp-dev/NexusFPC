@@ -16,6 +16,7 @@
 unit dos;
 {$ENDIF FPC_DOTTEDUNITS}
 interface
+{$define UnicodeFindFiles} {use FindFirstExW and FindNextW  to find files}
 
 Const
   Max_Path    = 260;
@@ -37,10 +38,15 @@ Type
     nFileSizeLow: DWORD;
     dwReserved0: DWORD;
     dwReserved1: DWORD;
+{$ifndef UnicodeFindFiles}
     cFileName: array[0..MAX_PATH-1] of AnsiChar;
     cAlternateFileName: array[0..15] of AnsiChar;
     // The structure should be 320 bytes long...
     pad : system.integer;
+{$else UnicodeFindFiles }
+    cFileName: array[0..MAX_PATH-1] of WideChar;
+    cAlternateFileName: array[0..15] of WideChar;
+{$endif}
   end;
 
   Searchrec = Record
@@ -438,12 +444,14 @@ end;
 
 { Needed kernel calls }
 
+function FindCloseFile (hFindFile: THandle): LongBool;
+  stdcall; external 'kernel32' name 'FindClose';
+
+{$ifndef UnicodeFindFiles}
 function FindFirstFile (lpFileName: PAnsiChar; var lpFindFileData: TWinFindData): THandle;
   stdcall; external 'kernel32' name 'FindFirstFileA';
 function FindNextFile  (hFindFile: THandle; var lpFindFileData: TWinFindData): LongBool;
   stdcall; external 'kernel32' name 'FindNextFileA';
-function FindCloseFile (hFindFile: THandle): LongBool;
-  stdcall; external 'kernel32' name 'FindClose';
 
 Procedure StringToPchar (Var S : ShortString);
 Var L : Longint;
@@ -529,12 +537,127 @@ begin
 { Find file with correct attribute }
   FindMatch(f);
 end;
+{$else UnicodeFindFiles }
+
+const
+  maxdword = dword(not dword(0));
+
+type
+    _FINDEX_INFO_LEVELS = (FindExInfoStandard,FindExInfoBasic,FindExInfoMaxInfoLevel);
+    _FINDEX_SEARCH_OPS  = (FindExSearchNameMatch, FindExSearchLimitToDirectories,
+ 			   FindExSearchLimitToDevices, FindExSearchMaxSearchOp);
+    TFINDEX_INFO_LEVELS = _FINDEX_INFO_LEVELS;
+
+var
+  FindExInfoDefaults : TFINDEX_INFO_LEVELS = FindExInfoStandard;
+  FindFirstAdditionalFlags : DWord = 0;
+
+{  Needed unicode kernel calls  }
+function FindNextFileW(hFindFile: THandle; var lpFindFileData: TWinFindData): LongBOOL;
+  stdcall;  external 'kernel32' name 'FindNextFileW';
+function FindFirstFileExW(lpfilename : PWideChar;fInfoLevelId:TFINDEX_INFO_LEVELS ;
+  lpFindFileData:pointer;fSearchOp : _FINDEX_SEARCH_OPS;lpSearchFilter:pointer;
+  dwAdditionalFlags:dword):THandle;
+  stdcall; external 'kernel32' name 'FindFirstFileExW';
+
+
+Procedure FindMatch(var f: SearchRec; var Name: UnicodeString);
+var
+  tmpdtime : longint;
+begin
+  { Find file with correct attribute }
+  While (F.WinFindData.dwFileAttributes and cardinal(F.ExcludeAttr))<>0 do
+   begin
+     if not FindNextFileW (F.FindHandle,F.WinFindData) then
+      begin
+        DosError:=Last2DosError(GetLastError);
+        if DosError=2 then
+          DosError:=18;
+        exit;
+      end;
+   end;
+  { Convert some attributes back }
+  WinToDosTime(TWinFileTime(F.WinFindData.ftLastWriteTime),tmpdtime);
+  F.Time:=tmpdtime;
+  f.size:=F.WinFindData.NFileSizeLow+(qword(maxdword)+1)*F.WinFindData.NFileSizeHigh;
+  f.attr:=F.WinFindData.dwFileAttributes;
+  Name:=F.WinFindData.cFileName;
+end;
+
+
+Procedure InternalFindFirst (Const Path : UnicodeString; Attr : Longint; var Rslt : SearchRec; var Name : UnicodeString);
+begin
+  DosError:=0;
+  Name:=Path;
+  Rslt.Attr:=attr;
+  Rslt.ExcludeAttr:=(not Attr) and ($1e);
+                 { $1e = faHidden or faSysFile or faVolumeID or faDirectory }
+  { FindFirstFile is a Win32 Call }
+  Rslt.FindHandle:=FindFirstFileExW(PUnicodeChar(Path), FindExInfoDefaults , @Rslt.WinFindData,
+                      FindExSearchNameMatch, Nil, FindFirstAdditionalFlags);
+  If Rslt.FindHandle=Invalid_Handle_value then
+   begin
+     DosError:=Last2DosError(GetLastError);
+     if DosError=2 then
+       DosError:=18;
+     exit;
+   end;
+  { Find file with correct attribute }
+  FindMatch(Rslt,Name);
+  if (DosError<>0) then
+    FindClose(Rslt);
+end;
+
+
+Procedure InternalFindNext (Var Rslt : SearchRec; var Name: UnicodeString);
+begin
+  if FindNextFileW(Rslt.FindHandle, Rslt.WinFindData) then
+    FindMatch(Rslt, Name)
+  else
+  begin
+    DosError:=Last2DosError(GetLastError);
+    if DosError=2 then
+      DosError:=18;
+  end;
+end;
+
+
+Procedure FindFirst(const path: pathstr; attr: word; var f: searchRec);
+var
+  Name: UnicodeString;
+  RPath,RName: RawByteString;
+begin
+  RPath:=Path;
+  InternalFindFirst(UnicodeString(RPath),Attr,F,Name);
+  if DosError=0 then
+  begin
+    widestringmanager.Unicode2AnsiMoveProc(PUnicodeChar(Name),RName,DefaultRTLFileSystemCodePage,length(Name));
+    F.Name:=RName;
+  end;
+end;
+
+Procedure FindNext(var F: searchRec);
+var
+  Name: UnicodeString;
+  RName: RawByteString;
+begin
+  InternalFindNext(F,Name);
+  if DosError=0 then
+  begin
+    widestringmanager.Unicode2AnsiMoveProc(PUnicodeChar(Name),RName,DefaultRTLFileSystemCodePage,length(Name));
+    F.Name:=RName;
+  end;
+end;
+{$endif UnicodeFindFiles }
 
 
 Procedure FindClose(Var f: SearchRec);
 begin
   If F.FindHandle<>Invalid_Handle_value then
-   FindCloseFile(F.FindHandle);
+  begin
+    FindCloseFile(F.FindHandle);
+    F.FindHandle:=Invalid_Handle_value;
+  end;
 end;
 
 
