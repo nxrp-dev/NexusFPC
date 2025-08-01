@@ -1884,7 +1884,10 @@ BEGIN
 {   InitKeyboard;}
    InitSystemMsg;
 {$ifdef OS_WINDOWS}
-   SetFileApisToOEM;
+   { SetFileApisToOEM;  nowadays is wrong to call }
+   SetMultiByteConversionCodePage(CP_UTF8);
+   { SetMultiByteFileSystemCodePage(CP_UTF8); not needed, this is the default under Windows }
+   SetMultiByteRTLFileSystemCodePage(CP_UTF8);
 {$endif}
 
    SaveExit := ExitProc;                              { Save old exit }
