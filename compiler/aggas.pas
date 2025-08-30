@@ -580,7 +580,8 @@ implementation
              if not(atype in [sec_data,sec_rodata,sec_rodata_norel]) and
                 not(asminfo^.id=as_solaris_as) and
                 not(atype=sec_fpc) and
-                not(target_info.system in (systems_embedded+systems_freertos)) then
+                (not(target_info.system in (systems_embedded+systems_freertos)) or
+                ((target_info.cpu=cpu_avr) and (atype=sec_user))) then
                begin
                  usesectionflags:=true;
                  usesectionprogbits:=true;
