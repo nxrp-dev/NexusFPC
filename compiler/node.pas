@@ -110,7 +110,9 @@ interface
           objcselectorn,    { node for an Objective-C message selector }
           objcprotocoln,    { node for an Objective-C @protocol() expression (returns metaclass associated with protocol) }
           specializen,      { parser-only node to handle Delphi-mode inline specializations }
-          finalizetempsn        { Internal node used to clean up code generator temps (warning: must NOT create additional tepms that may need to be finalised!) }
+          finalizetempsn,       { Internal node used to clean up code generator temps (warning: must NOT create additional tepms that may need to be finalised!) }
+          unpackn,          { represents the unpacking of a composite type }
+          tuplen            { represents a tuple of values }
        );
 
        tnodetypeset = set of tnodetype;
@@ -194,7 +196,9 @@ interface
           'objcselectorn',
           'objcprotocoln',
           'specializen',
-          'finalizetempsn');
+          'finalizetempsn',
+          'unpackn',
+          'tuplen');
 
       { a set containing all const nodes }
       nodetype_const = [niln,

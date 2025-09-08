@@ -192,6 +192,54 @@ interface
        end;
        trttinodeclass = class of trttinode;
 
+       { tunpackiterator }
+
+       tunpackiterator = class
+          readnode:tnode;
+          index:longint;
+          statements:pnode;
+          nested:tunpackiterator;
+
+          function nodedef:tdef;inline;
+
+          constructor create(node:tnode;astatements:pnode);
+          destructor destroy;override;
+          function getcurrent:tnode;
+          function movenext:boolean;
+          function getenumerator:tunpackiterator;
+          procedure nest(node:tnode);
+
+          property current:tnode read getcurrent;
+       end;
+
+       tunpacknode = class(tunarynode)
+         constructor create(child:tnode);virtual;
+         function pass_typecheck : tnode;override;
+         function pass_1 : tnode;override;
+         procedure pass_generate_code; override;
+         procedure printnodetree(var t:text);override;
+         procedure det_temp; override;
+       end;
+       tunpacknodeclass = class of tunpacknode;
+
+       { ttuplenode }
+
+       ttuplenode = class(tbinarynode)
+         constructor create(expr,next : tnode);virtual;
+         function pass_typecheck : tnode;override;
+         function pass_1 : tnode;override;
+         procedure mark_write; override;
+         procedure pass_generate_code; override;
+         procedure printnodetree(var t:text);override;
+         procedure det_temp; override;
+
+         function valueatindex(aindex: longint):tnode;
+
+         property elemvalue : tnode read left write left;
+         property nextelem : tnode read right write right;
+       end;
+       ttuplenodeclass = class of ttuplenode;
+
     var
        cloadnode : tloadnodeclass = tloadnode;
        cassignmentnode : tassignmentnodeclass = tassignmentnode;
@@ -199,6 +247,8 @@ interface
        carrayconstructornode : tarrayconstructornodeclass = tarrayconstructornode;
        ctypenode : ttypenodeclass = ttypenode;
        crttinode : trttinodeclass = trttinode;
+       cunpacknode : tunpacknodeclass = tunpacknode;
+       ctuplenode : ttuplenodeclass = ttuplenode;
 
        { Current assignment node }
        aktassignmentnode : tassignmentnode;
@@ -708,6 +758,8 @@ implementation
         hp : tnode;
         useshelper : boolean;
         oldassignmentnode : tassignmentnode;
+        statements : tstatementnode;
+        lit , rit : tunpackiterator;
       begin
         result:=nil;
         resultdef:=voidtype;
@@ -730,6 +782,38 @@ implementation
         set_varstate(left,vs_written,[]);
         if codegenerror then
           exit;
+
+        if (left.nodetype in [unpackn,tuplen]) and (right.nodetype in [unpackn,tuplen]) then
+          begin
+            result:=internalstatements(statements);
+
+            lit:=tunpackiterator.create(left,@statements);
+            rit:=tunpackiterator.create(right,@statements);
+            while lit.movenext do
+              begin
+                if not rit.movenext then
+                  begin
+                    CGMessagePos(left.fileinfo,parser_e_illegal_expression);
+                    break;
+                  end;
+                hp:=lit.getcurrent;
+                { nil used to skip field }
+                if hp.nodetype=niln then
+                  hp.free
+                else
+                  addstatement(statements,cassignmentnode.create(hp,rit.getcurrent));
+              end;
+            lit.free;
+            rit.free;
+
+            if codegenerror then
+              begin
+                result.free;
+                result:=cerrornode.create;
+              end;
+            { As this node will now die, we don't need the following checks }
+            exit;
+          end;
 
         { just in case the typecheckpass of right optimized something here }
         if anf_assign_done_in_right in assignmentnodeflags then
@@ -1650,6 +1734,266 @@ implementation
           (rttidef = trttinode(p).rttidef) and
           (rttitype = trttinode(p).rttitype) and
           (rttidatatype = trttinode(p).rttidatatype);
+      end;
+
+    { tunpackiterator }
+
+    function tunpackiterator.nodedef: tdef;
+      begin
+        if readnode.nodetype=tempcreaten then
+          result:=ttempcreatenode(readnode).tempinfo^.typedef
+        else
+          result:=readnode.resultdef;
+      end;
+
+    constructor tunpackiterator.create(node: tnode; astatements: pnode);
+
+      function is_direct_read(node:tnode):boolean;
+        begin
+          while assigned(node) and (
+            { Typeconvnodes only if it's between equal types }
+            ((node.nodetype=typeconvn) and (ttypeconvnode(node).convtype=tc_equal)) or
+            { Array access only if the access is provably constant }
+            ((node.nodetype=vecn) and (tvecnode(node).right.nodetype=ordconstn)) or
+            { member access only if it's a field var }
+            ((node.nodetype=subscriptn) and (tsubscriptnode(node).vs.typ=fieldvarsym))
+          ) do
+            node:=tunarynode(node).left;
+          result:=assigned(node) and (node.nodetype=loadn);
+        end;
+
+      begin
+        if not (node.nodetype in [unpackn, tuplen]) or not (astatements^.nodetype=statementn) then
+          internalerror(2025090703);
+        statements:=astatements;
+        if node.nodetype=unpackn then
+          node:=tunpacknode(node).left;
+        if (node.nodetype<>tuplen) and (node.resultdef.typ in [arraydef,recorddef]) and not is_direct_read(node) then
+          begin
+            { Result of a computation: Store in temp }
+            readnode:=ctempcreatenode.create(node.resultdef,node.resultdef.size,tt_persistent,true);
+            addstatement(tstatementnode(statements^),readnode);
+            addstatement(tstatementnode(statements^),cassignmentnode.create(ctemprefnode.create(ttempcreatenode(readnode)),node.getcopy));
+          end
+        else
+          readnode:=node;
+        index:=0;
+        if node.nodetype=tuplen then
+          while assigned(node) do
+            begin
+              inc(index);
+              node:=ttuplenode(node).nextelem;
+            end
+        else
+          dec(self.index);
+      end;
+
+    destructor tunpackiterator.destroy;
+      begin
+        if assigned(nested) then
+          nested.free;
+        if readnode.nodetype=tempcreaten then
+          addstatement(tstatementnode(statements^),ctempdeletenode.create(ttempcreatenode(readnode)));
+        inherited destroy;
+      end;
+
+    function tunpackiterator.getcurrent: tnode;
+      var
+        sym: tsym;
+      begin
+        if assigned(nested) then
+        begin
+          result:=nested.getcurrent;
+          exit;
+        end;
+        if readnode.nodetype=tuplen then
+          result:=ttuplenode(readnode).valueatindex(index).getcopy
+        else if nodedef.typ=recorddef then
+          begin
+            sym:=tsym(trecorddef(nodedef).symtable.symlist[index]);
+            if readnode.nodetype=tempcreaten then
+              result:=ctemprefnode.create(ttempcreatenode(readnode))
+            else
+              result:=readnode.getcopy;
+            result:=csubscriptnode.create(sym,result);
+          end
+        else if nodedef.typ=arraydef then
+          begin
+            if readnode.nodetype=tempcreaten then
+              result:=ctemprefnode.create(ttempcreatenode(readnode))
+            else
+              result:=readnode.getcopy;
+            result:=cvecnode.create(result,cordconstnode.create(index,tarraydef(nodedef).elementdef,true));
+          end
+        else
+          begin
+            result:=cerrornode.create;
+          end;
+      end;
+
+    function tunpackiterator.movenext: boolean;
+      var
+        n: tnode;
+      begin
+        if assigned(nested) then
+          if nested.movenext then
+            begin
+              result:=true;
+              exit;
+            end
+          else
+            begin
+              nested.free;
+              nested:=nil;
+            end;
+        if readnode.nodetype=tuplen then
+          begin
+            dec(index);
+            result:=index>=0;
+            if result then
+              begin
+                n:=ttuplenode(readnode).valueatindex(index);
+                if n.nodetype in [unpackn] then
+                  nest(n);
+              end;
+          end
+        else if nodedef.typ=recorddef then
+          begin
+            repeat
+              inc(index);
+            until (index>=trecorddef(nodedef).symtable.symlist.count) or
+                  (tsym(trecorddef(nodedef).symtable.symlist[index]).typ=fieldvarsym);
+            result:=index<trecorddef(nodedef).symtable.symlist.count;
+          end
+        else if nodedef.typ=arraydef then
+          begin
+            inc(index);
+            result:=index<tarraydef(nodedef).elecount;
+          end
+        else
+          result:=false;
+      end;
+
+    function tunpackiterator.getenumerator: tunpackiterator;
+      begin
+        result:=self;
+      end;
+
+    procedure tunpackiterator.nest(node: tnode);
+      begin
+        if not assigned(nested) then
+          begin
+            nested:=tunpackiterator.create(node,statements);
+            if not nested.movenext then
+              begin
+                nested.free;
+                nested:=nil;
+              end;
+          end
+        else
+          nested.nest(node);
+      end;
+
+    constructor tunpacknode.create(child: tnode);
+      begin
+        inherited create(unpackn,child);
+      end;
+
+    function tunpacknode.pass_typecheck: tnode;
+      begin
+        typecheckpass(left);
+        if not (left.resultdef.typ in [undefineddef,recorddef,arraydef]) then
+          begin
+            cgmessagepos(fileinfo,type_e_record_type_expected);
+            result:=cerrornode.create;
+            exit;
+          end;
+        resultdef:=left.resultdef;
+        result:=nil;
+      end;
+
+    function tunpacknode.pass_1: tnode;
+      begin
+        { Unpacks must be resolved by their parent nodes }
+        CGMessagePos(fileinfo,parser_e_illegal_expression);
+        pass_1:=cerrornode.create;
+      end;
+
+    procedure tunpacknode.pass_generate_code;
+      begin
+        { this node should never make it into the code generation phase }
+        Internalerror(2025090702);
+      end;
+
+    procedure tunpacknode.printnodetree(var t: text);
+      begin
+        inherited printnodetree(t);
+      end;
+
+    procedure tunpacknode.det_temp; begin end;
+
+    constructor ttuplenode.create(expr, next: tnode);
+      begin
+        inherited create(tuplen,expr,next);
+      end;
+
+    function ttuplenode.pass_typecheck: tnode;
+      begin
+        typecheckpass(left);
+        if assigned(right) then
+          typecheckpass(right);
+        resultdef:=cundefinedtype;
+        result:=nil;
+      end;
+
+    function ttuplenode.pass_1: tnode;
+      begin
+        { Right now this is only for record unpacking support, which will be
+          resolved by the pass1 of the assign node...
+          If there is real tuple support instead the following should be done:
+            1. temp node of the tuple type
+            2. assign each fields to the variables of the tuple
+            3. return the temp
+          In any way this node shall never survive this pass
+        }
+        CGMessagePos(fileinfo,parser_e_illegal_expression);
+        pass_1:=cerrornode.create;
+      end;
+
+    procedure ttuplenode.mark_write;
+      begin
+        left.mark_write;
+        if assigned(right) then
+          right.mark_write;
+      end;
+
+    procedure ttuplenode.pass_generate_code;
+      begin
+        { this node should never make it into the code generation phase }
+        Internalerror(2025090701);
+      end;
+
+    procedure ttuplenode.printnodetree(var t: text);
+      begin
+        { TODO: Make me }
+        inherited printnodetree(t);
+      end;
+
+    procedure ttuplenode.det_temp; begin end;
+
+    function ttuplenode.valueatindex(aindex: longint): tnode;
+      var
+        i: longint;
+      begin
+        result:=self;
+        for i:=0 to aindex-1 do
+          if not assigned(result) then
+            break
+          else
+            result:=ttuplenode(result).nextelem;
+        if not assigned(result) then
+          internalerror(2025090901);
+        result:=ttuplenode(result).left;
       end;
 
 end.

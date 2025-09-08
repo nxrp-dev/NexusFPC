@@ -1932,6 +1932,13 @@ implementation
                      end;
                  end;
                end;
+             {tuplen: Not needed because the assignment should be resolved before
+               begin
+                 if valid_for_assign(ttuplenode(p).left,opts,report_errors) then
+                   result:=not assigned(ttuplenode(p).right) or valid_for_assign(ttuplenode(p).right,opts,report_errors);
+                 mayberesettypeconvs;
+                 exit;
+               end;}
              else
                begin
                  if report_errors then

@@ -345,6 +345,7 @@ const
   first_managment_operator = _OP_INITIALIZE;
   last_managment_operator = _OP_COPY;
 
+  lowest_precedence = opcompare;
   highest_precedence = oppower;
 
   { Warning these stay be ordered !! }

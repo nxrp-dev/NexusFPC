@@ -36,7 +36,8 @@ interface
         ef_accept_equal,
         ef_type_only,
         ef_had_specialize,
-        ef_check_attr_suffix
+        ef_check_attr_suffix,
+        ef_accept_tuple
       );
       texprflags = set of texprflag;
 
@@ -3732,7 +3733,7 @@ implementation
          dopostfix,
          again,
          updatefpos,
-         nodechanged  : boolean;
+         nodechanged : boolean;
          oldprocvardef : tprocvardef;
          oldfuncrefdef : tobjectdef;
       begin
@@ -4242,7 +4243,7 @@ implementation
              _LKLAMMER :
                begin
                  consume(_LKLAMMER);
-                 p1:=comp_expr([ef_accept_equal]);
+                 p1:=comp_expr([ef_accept_equal,ef_accept_tuple]);
                  consume(_RKLAMMER);
                  { it's not a good solution
                    but (a+b)^ makes some problems  }
@@ -4312,6 +4313,13 @@ implementation
                  consume(_OP_NOT);
                  p1:=factor(false,[]);
                  p1:=cnotnode.create(p1);
+               end;
+
+             _POINTPOINTPOINT:
+               begin
+                 consume(_POINTPOINTPOINT);
+                 p1:=factor(false,[]);
+                 p1:=cunpacknode.create(p1);
                end;
 
              _NIL :
@@ -4945,6 +4953,23 @@ implementation
                 goto SubExprStart;}
               end else
                 message(parser_e_illegal_expression);
+          end;
+        { Reading tuples has the lowest precendence and only if the flag is set }
+        if (pred_level = lowest_precedence) and (ef_accept_tuple in flags) and (token=_COMMA) then
+          begin
+            if p1.nodetype<>errorn then
+              p1:=ctuplenode.create(p1,nil);
+            while try_to_consume(_COMMA) do
+              begin
+                p2:=sub_expr(lowest_precedence,flags-[ef_accept_tuple],nil);
+                if p2.nodetype=errorn then
+                  begin
+                    p1.free;
+                    p1:=p2;
+                  end;
+                if p1.nodetype<>errorn then
+                  p1:=ttuplenode.create(p2,p1);
+              end;
           end;
         sub_expr:=p1;
       end;
