@@ -11585,15 +11585,28 @@ unit aoptx86;
                     MatchOpType(taicpu(hp1), top_reg, top_reg) and
                     SuperRegistersEqual(taicpu(p).oper[1]^.reg, taicpu(hp1).oper[0]^.reg) then
                     begin
-                      UpdateUsedRegsBetween(TmpUsedRegs, tai(hp2.Next), hp1);
+                      UpdateUsedRegsBetween(TmpUsedRegs, hp2, hp1);
 
-                      taicpu(hp1).opsize := S_L;
-                      taicpu(hp1).loadreg(0, taicpu(p).oper[0]^.reg);
-                      setsubreg(taicpu(hp1).oper[1]^.reg, R_SUBD);
+                      if SuperRegistersEqual(taicpu(p).oper[0]^.reg, taicpu(hp1).oper[1]^.reg) then
+                        begin
+                          { Will become "movl %reg,%reg" otherwise }
+                          AllocRegBetween(taicpu(p).oper[0]^.reg, p, hp1, UsedRegs);
+                          DebugMsg(SPeepholeOptimization + 'Made 32-to-64-bit zero extension more efficient (MovlMovq2MovlNop 1)', hp1);
 
-                      AllocRegBetween(taicpu(p).oper[0]^.reg, p, hp1, TmpUsedRegs);
+                          { Make sure hp1 is set to something valid after the original is removed }
+                          hp2 := tai(hp1.Previous);
+                          RemoveInstruction(hp1);
+                          hp1 := hp2;
+                        end
+                      else
+                        begin
+                          taicpu(hp1).opsize := S_L;
+                          taicpu(hp1).loadreg(0, taicpu(p).oper[0]^.reg);
+                          setsubreg(taicpu(hp1).oper[1]^.reg, R_SUBD);
 
-                      DebugMsg(SPeepholeOptimization + 'Made 32-to-64-bit zero extension more efficient (MovlMovq2MovlMovl 1)', hp1);
+                          AllocRegBetween(taicpu(p).oper[0]^.reg, p, hp1, UsedRegs);
+                          DebugMsg(SPeepholeOptimization + 'Made 32-to-64-bit zero extension more efficient (MovlMovq2MovlMovl 1)', hp1);
+                        end;
 
                       if not RegUsedAfterInstruction(taicpu(p).oper[1]^.reg, hp1, TmpUsedRegs) then
                         begin
