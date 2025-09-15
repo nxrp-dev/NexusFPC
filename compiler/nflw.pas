@@ -653,7 +653,7 @@ implementation
               end;
           end;
 
-        if (node_complexity(expression) > 1) and
+        if (node_complexity(expression,2) > 1) and
           not(is_open_array(expression.resultdef)) and not(is_array_of_const(expression.resultdef)) then
           begin
             { create a temp variable for expression }
@@ -1391,7 +1391,7 @@ implementation
                   end;
               end
             else if not(cs_opt_size in current_settings.optimizerswitches) and
-              (node_complexity(left)<=3) then
+              (node_complexity(left,4)<=3) then
               begin
                 result:=cifnode.create_internal(left.getcopy,cwhilerepeatnode.create(left,right,false,false),nil);
                 left:=nil;
@@ -2108,7 +2108,7 @@ implementation
         ifblock:=internalstatements(ifstatements);
         loopblock:=internalstatements(loopstatements);
 
-        usefromtemp:=(might_have_sideeffects(t1) and not(is_const(right))) or (node_complexity(right)>1);
+        usefromtemp:=(might_have_sideeffects(t1) and not(is_const(right))) or (node_complexity(right,2)>1);
         usetotemp:=not(is_const(t1));
 
         if needsifblock then

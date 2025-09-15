@@ -1847,7 +1847,7 @@ implementation
 
            { This is a shortcutted version of
              "result:=node_count(code)+node_complexity(code)<=25". }
-           complexityAvail:=25-node_complexity(code);
+           complexityAvail:=25-node_complexity(code,25);
            result:=(complexityAvail>0) and (node_count(code,complexityAvail+1)<=dword(complexityAvail));
          end;
 

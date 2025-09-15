@@ -33,7 +33,7 @@ interface
     nbas;
 
   const
-    NODE_COMPLEXITY_INF = 255;
+    DEFAULT_NODE_COMPLEXITY_LIMIT = 260;
 
   type
     { resultdef of functions that process on all nodes in a (sub)tree }
@@ -91,7 +91,10 @@ interface
       interface }
     function load_vmt_for_self_node(self_node: tnode): tnode;
 
-    function node_complexity(p: tnode): cardinal;
+    function node_complexity(p: tnode; max: cardinal=DEFAULT_NODE_COMPLEXITY_LIMIT): cardinal;
+    { >0 if node_complexity(a) > node_complexity(b), <0 if node_complexity(a) < node_complexity(b), =0 if node_complexity(a) = node_complexity(b).
+      TIP: pass the simpler node first. }
+    function compare_node_complexity(a, b: tnode): longint;
     function node_resources_fpu(p: tnode): cardinal;
     procedure node_tree_set_filepos(var n:tnode;const filepos:tfileposinfo);
 
@@ -716,7 +719,7 @@ implementation
     { trees containing a call, the rest can be balanced more or less }
     { at will, probably best mainly in terms of required memory      }
     { accesses                                                       }
-    function node_complexity(p: tnode): cardinal;
+    function node_complexity(p: tnode; max: cardinal=DEFAULT_NODE_COMPLEXITY_LIMIT): cardinal;
 
     {$ifdef x86}
       function in_const_set_complexity(cs: tsetconstnode): cardinal;
@@ -754,8 +757,8 @@ implementation
 {$endif ARM}
       begin
         cv:=0;
-        result:=NODE_COMPLEXITY_INF; { For early exits by default. }
-        while assigned(p) and (cv<NODE_COMPLEXITY_INF) do { break = return cv, exit = return NODE_COMPLEXITY_INF. }
+        result:=max; { For early exits by default. }
+        while assigned(p) and (cv<max) do { break = return cv, exit = return max. }
           begin
             case p.nodetype of
               { floating point constants usually need loading from memory }
@@ -788,7 +791,7 @@ implementation
               loadn:
                 begin
                   if assigned(tloadnode(p).left) then
-                    inc(cv,node_complexity(tloadnode(p).left));
+                    inc(cv,node_complexity(tloadnode(p).left,max-cv));
                   { threadvars need a helper call }
                   if (tloadnode(p).symtableentry.typ=staticvarsym) and
                      (vo_is_thread_var in tstaticvarsym(tloadnode(p).symtableentry).varoptions) then
@@ -800,7 +803,7 @@ implementation
                      not(tabstractvarsym(tloadnode(p).symtableentry).varregable=vr_addr) and
                      tloadnode(p).is_addr_param_load then
                     inc(cv);
-                  p:=nil; { Check for NODE_COMPLEXITY_INF and return cv. }
+                  break;
                 end;
               subscriptn:
                 begin
@@ -841,7 +844,7 @@ implementation
                 end;
               statementn:
                 begin
-                  inc(cv,node_complexity(tbinarynode(p).left));
+                  inc(cv,node_complexity(tbinarynode(p).left,max-cv));
                   p:=tbinarynode(p).right;
                 end;
               addn,subn,orn,andn,xorn,symdifn,
@@ -849,22 +852,33 @@ implementation
               equaln,unequaln,gtn,gten,ltn,lten,
               assignn,vecn:
                 begin
-                  inc(cv,node_complexity(tbinarynode(p).left)+1);
+                  inc(cv);
+                  if cv>=max then
+                    break;
+                  inc(cv,node_complexity(tbinarynode(p).left,max-cv));
                   p:=tbinarynode(p).right;
                 end;
               muln:
                 begin
-                  inc(cv,node_complexity(tbinarynode(p).left)+{$ifdef CPU64BITALU}4{$else}8{$endif});
+                  inc(cv,{$ifdef CPU64BITALU}4{$else}8{$endif});
+                  if cv>=max then
+                    break;
+                  inc(cv,node_complexity(tbinarynode(p).left,max-cv));
                   p:=tbinarynode(p).right;
                 end;
               divn,modn,slashn:
                 begin
-                  inc(cv,node_complexity(tbinarynode(p).left)+{$ifdef CPU64BITALU}10{$else}20{$endif});
+                  inc(cv,{$ifdef CPU64BITALU}10{$else}20{$endif});
+                  if cv>=max then
+                    break;
+                  inc(cv,node_complexity(tbinarynode(p).left,max-cv));
                   p:=tbinarynode(p).right;
                 end;
               inn:
                 begin
-                  inc(cv,node_complexity(tinnode(p).left));
+                  inc(cv,node_complexity(tinnode(p).left,max-cv));
+                  if cv>=max then
+                    break;
 {$if declared(in_const_set_complexity)}
                   if tinnode(p).right.nodetype=setconstn then
                     begin
@@ -986,11 +1000,13 @@ implementation
                       begin
                         { operation (add, sub, or, and }
                         inc(cv);
+                        if cv>=max then
+                          break;
                         { rox_x has no call para node, so check for this }
                         if tunarynode(p).left.nodetype=callparan then
                           begin
                             { left expression }
-                            inc(cv,node_complexity(tcallparanode(tunarynode(p).left).left));
+                            inc(cv,node_complexity(tcallparanode(tunarynode(p).left).left,max-cv));
                             p:=tcallparanode(tunarynode(p).left).right;
                             if assigned(p) then
                               p:=tcallparanode(p).left;
@@ -1005,10 +1021,19 @@ implementation
               else
                 exit;
             end;
-        end;
-        if cv>NODE_COMPLEXITY_INF then
-          cv:=NODE_COMPLEXITY_INF;
+          end;
+        if cv>max then
+          cv:=max;
         result:=cv;
+      end;
+
+
+    function compare_node_complexity(a, b: tnode): longint;
+      begin
+        result:=node_complexity(a,DEFAULT_NODE_COMPLEXITY_LIMIT);
+        { Careful to not increase the limit on b past the limit on node_complexity(a):
+          node_complexity will happily return DEFAULT_NODE_COMPLEXITY_LIMIT + 1 given such a limit and two “infinities” will be unequal. }
+        result:=result-longint(node_complexity(b,result+ord(result<DEFAULT_NODE_COMPLEXITY_LIMIT)));
       end;
 
 

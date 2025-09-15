@@ -578,7 +578,7 @@ implementation
             newblock:=internalstatements(newstatement);
             { store left into a temp since it may contain a function call
               (which must not be evaluated twice) }
-            if node_complexity(left)>4 then
+            if node_complexity(left,5)>4 then
               begin
                 lefttemp:=ctempcreatenode.create_value(stringclass,stringclass.size,tt_persistent,true,ctypeconvnode.create_explicit(left,stringclass));
                 addstatement(newstatement,lefttemp);

@@ -223,7 +223,7 @@ unit optcse;
              ((tloadnode(actualtargetnode(@n)^).symtableentry.typ in [paravarsym,localvarsym,staticvarsym]) and
                not(tabstractvarsym(tloadnode(actualtargetnode(@n)^).symtableentry).is_regvar(true)) and
                not(vo_volatile in tabstractvarsym(tloadnode(actualtargetnode(@n)^).symtableentry).varoptions)) or
-             (node_complexity(n)>1)
+             (node_complexity(n,2)>1)
             ) and
 
             {
@@ -231,7 +231,7 @@ unit optcse;
               This might be the case for the risc architectures if they need
               more than one instruction to load this particular value
             }
-            (not(is_constnode(n)) or (node_complexity(n)>1)))
+            (not(is_constnode(n)) or (node_complexity(n,2)>1)))
 {$if not(defined(i386)) and not(defined(i8086))}
             or
             { store reference of expression? }

@@ -3483,7 +3483,7 @@ implementation
                    the destination is complex, this could lead to lengthy
                    code in case the function result is used often and it is
                    assigned e.g. to a threadvar }
-                 if node_complexity(aktassignmentnode.left)>1 then
+                 if node_complexity(aktassignmentnode.left,2)>1 then
                    exit;
                end;
            end;
@@ -4715,11 +4715,11 @@ implementation
                                 (hpcurr.parasym.paraloc[callerside].location^.reference.offset>
                                  hp.parasym.paraloc[callerside].location^.reference.offset)) or
                                (paramanager.use_fixed_stack and
-                                (node_complexity(hpcurr.left)<node_complexity(hp.left))) then
+                                (compare_node_complexity(hpcurr.left,hp.left)<0)) then
 {$elseif defined(jvm) or defined(wasm)}
                             if (hpcurr.parasym.paraloc[callerside].location^.reference.offset<hp.parasym.paraloc[callerside].location^.reference.offset) then
 {$else jvm}
-                            if (node_complexity(hpcurr.left)<node_complexity(hp.left)) then
+                            if (compare_node_complexity(hpcurr.left,hp.left)<0) then
 {$endif jvm}
                               break;
                           end;
@@ -4736,7 +4736,7 @@ implementation
                   LOC_REGISTER :
                     begin
                       if (hp.parasym.paraloc[callerside].location^.loc<>LOC_REFERENCE) and
-                         (node_complexity(hpcurr.left)>node_complexity(hp.left)) then
+                         (compare_node_complexity(hp.left,hpcurr.left)<0) then
                         break;
                     end;
                   else
@@ -5412,7 +5412,7 @@ implementation
         }
 
         { pre-compute some values }
-        paracomplexity:=node_complexity(para.left);
+        paracomplexity:=node_complexity(para.left,3);
         if para.parasym.varspez=vs_const then
           pushconstaddr:=paramanager.push_addr_param(vs_const,para.parasym.vardef,procdefinition.proccalloption)
         else
