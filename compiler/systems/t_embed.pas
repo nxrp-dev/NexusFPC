@@ -773,7 +773,9 @@ begin
       ct_itzybitzy_rp2040,
       ct_tiny_2040,
       ct_qtpy_rp2040,
-
+      ct_rp2040_pi_zero,
+      ct_rp2350,
+      ct_rppico2,
       ct_thumb2bare:
         begin
          with embedded_controllers[current_settings.controllertype] do
@@ -1920,7 +1922,8 @@ const
     (k:'STM32L5';v:$04240bdf),
     (k:'STM32WB';v:$70d16653),
     (k:'STM32WL';v:$21460ff0),
-    (k:'RP2040' ;v:$e48bff56)
+    (k:'RP2040' ;v:$e48bff56),
+    (k:'RP2350' ;v:$e48bff59)
   );
 
 var
