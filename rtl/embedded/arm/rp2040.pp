@@ -8,11 +8,11 @@ interface
 
 type
   TIRQn_Enum = (
-    NonMaskableInt_IRQn = -14,        
-    HardFault_IRQn = -13,             
-    SVC_IRQn    = -5,                 
-    PendSV_IRQn = -2,                 
-    SysTick_IRQn = -1,                
+    NonMaskableInt_IRQn = -14,
+    HardFault_IRQn = -13,
+    SVC_IRQn    = -5,
+    PendSV_IRQn = -2,
+    SysTick_IRQn = -1,
     TIMER_IRQ_0 = 0,
     TIMER_IRQ_1 = 1,
     TIMER_IRQ_2 = 2,
@@ -88,6 +88,25 @@ type
     clk_usb : TCLOCK_Registers;
     clk_adc : TCLOCK_Registers;
     clk_rtc : TCLOCK_Registers;
+    clk_sys_resus : record
+      ctrl : longWord;
+      status : longWord;
+    end;
+    fc0 : TFC_Registers;
+    wake_en0 : longWord;
+    wake_en1 : longWord;
+    sleep_en0 : longWord;
+    sleep_en1 : longWord;
+    enabled0 : longWord;
+    enabled1 : longWord;
+    intr : longWord;
+    inte : longWord;
+    intf : longWord;
+    ints : longWord;
+  end;
+
+  TCLOCKS_Registers_Alt = record
+    clk : array[0..9] of TCLOCK_Registers;
     clk_sys_resus : record
       ctrl : longWord;
       status : longWord;
@@ -641,6 +660,7 @@ var
   SysInfo : TSysInfo_Registers absolute SYSINFO_BASE;
   SysCfg : TSYSCFG_REGISTERS absolute SYSCFG_BASE;
   Clocks : TCLOCKS_Registers absolute CLOCKS_BASE;
+  _Clocks : TCLOCKS_Registers_Alt absolute CLOCKS_BASE;
   Resets : TRESETS_Registers absolute RESETS_BASE;
   PSM : TPSM_Registers absolute PSM_BASE;
   IOBANK0 : TIOBANK0_Registers absolute IO_BANK0_BASE;
