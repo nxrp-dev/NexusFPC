@@ -317,7 +317,7 @@ type
         watchdog: TTick_Registers;
         riscv: TTick_Registers);
   end;
-(*
+
 type
   TADC_Registers = record
     cs : longWord;
@@ -330,7 +330,7 @@ type
     intf : longWord;
     ints : longWord;
   end;
-
+(*
   TBUSCTRL_Registers = record
     priority : longWord;
     priority_ack : longWord;
@@ -818,6 +818,7 @@ var
   XOSC : TXOSC_Registers absolute XOSC_BASE;
   WATCHDOG : TWATCHDOG_Registers absolute WATCHDOG_BASE;
   TICKS: TTICKS_Registers absolute TICKS_BASE;
+  ADC : TADC_Registers absolute ADC_BASE;
 (*
   SysInfo : TSysInfo_Registers absolute SYSINFO_BASE;
   SysCfg : TSYSCFG_REGISTERS absolute SYSCFG_BASE;
@@ -833,7 +834,6 @@ var
   SPI1 : TSPI_Registers absolute SPI1_BASE;
   I2C0 : TI2C_Registers absolute I2C0_BASE;
   I2C1 : TI2C_Registers absolute I2C1_BASE;
-  ADC : TADC_Registers absolute ADC_BASE;
   PWM : TPWM_Registers absolute PWM_BASE;
   RTC : TRTC_Registers absolute RTC_BASE;
   ROSC : TROSC_Registers absolute ROSC_BASE;
