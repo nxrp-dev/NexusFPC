@@ -73,6 +73,16 @@ const
   CORESIGHT_APB_AP_RISCV_BASE  = $4014a000;
   GLITCH_DETECTOR_BASE         = $40158000;
   TBMAN_BASE                   = $40160000;
+  DMA_BASE                     = $50000000;
+  DMADEBUG_BASE                = $50000800;
+  USBCTRL_DPRAM_BASE           = $50100000;
+  USBCTRL_REGS_BASE            = $50110000;
+  PIO0_BASE                    = $50200000;
+  PIO1_BASE                    = $50300000;
+  PIO2_BASE                    = $50400000;
+  XIP_AUX_BASE                 = $50500000;
+  HSTX_BASE                    = $50600000;
+
 
 const
   clk_gpout0 = 0;
@@ -86,77 +96,75 @@ const
   clk_usb = 8;
   clk_adc = 9;
 
-//type
-//  TIRQn_Enum = (
-    NMI_IRQn          = -14;
-    HardFault_IRQn    = -13;
-    SVC_IRQn          = -5;
-    PendSV_IRQn       = -2;
-    SysTick_IRQn      = -1;
-    TIMER0_IRQ_0      = 0;
-    TIMER0_IRQ_1      = 1;
-    TIMER0_IRQ_2      = 2;
-    TIMER0_IRQ_3      = 3;
-    TIMER1_IRQ_0      = 4;
-    TIMER1_IRQ_1      = 5;
-    TIMER1_IRQ_2      = 6;
-    TIMER1_IRQ_3      = 7;
-    PWM_IRQ_WRAP_0    = 8;
-    PWM_IRQ_WRAP_1    = 9;
-    DMA_IRQ_0         = 10;
-    DMA_IRQ_1         = 11;
-    DMA_IRQ_2         = 12;
-    DMA_IRQ_3         = 13;
-    USBCTRL_IRQ       = 14;
-    PIO0_IRQ_0        = 15;
-    PIO0_IRQ_1        = 16;
-    PIO1_IRQ_0        = 17;
-    PIO1_IRQ_1        = 18;
-    PIO2_IRQ_0        = 19;
-    PIO2_IRQ_1        = 20;
-    IO_IRQ_BANK0      = 21;
-    IO_IRQ_BANK0_NS   = 22;
-    IO_IRQ_QSPI       = 23;
-    IO_IRQ_QSPI_NS    = 24;
-    SIO_IRQ_FIFO      = 25;
-    SIO_IRQ_BELL      = 26;
-    SIO_IRQ_FIFO_NS   = 27;
-    SIO_IRQ_BELL_NS   = 28;
-    SIO_IRQ_MTIMECMP  = 29;
-    CLOCKS_IRQ        = 30;
-    SPI0_IRQ          = 31;
-    SPI1_IRQ          = 32;
-    UART0_IRQ         = 33;
-    UART1_IRQ         = 34;
-    ADC_IRQ_FIFO      = 35;
-    I2C0_IRQ          = 36;
-    I2C1_IRQ          = 37;
-    OTP_IRQ           = 38;
-    TRNG_IRQ          = 39;
-    PROC0_IRQ_CTI     = 40;
-    PROC1_IRQ_CTI     = 41;
-    PLL_SYS_IRQ       = 42;
-    PLL_USB_IRQ       = 43;
-    POWMAN_IRQ_POW    = 44;
-    POWMAN_IRQ_TIMER  = 45;
-//  );
+  NMI_IRQn          = -14;
+  HardFault_IRQn    = -13;
+  SVC_IRQn          = -5;
+  PendSV_IRQn       = -2;
+  SysTick_IRQn      = -1;
+  TIMER0_IRQ_0      = 0;
+  TIMER0_IRQ_1      = 1;
+  TIMER0_IRQ_2      = 2;
+  TIMER0_IRQ_3      = 3;
+  TIMER1_IRQ_0      = 4;
+  TIMER1_IRQ_1      = 5;
+  TIMER1_IRQ_2      = 6;
+  TIMER1_IRQ_3      = 7;
+  PWM_IRQ_WRAP_0    = 8;
+  PWM_IRQ_WRAP_1    = 9;
+  DMA_IRQ_0         = 10;
+  DMA_IRQ_1         = 11;
+  DMA_IRQ_2         = 12;
+  DMA_IRQ_3         = 13;
+  USBCTRL_IRQ       = 14;
+  PIO0_IRQ_0        = 15;
+  PIO0_IRQ_1        = 16;
+  PIO1_IRQ_0        = 17;
+  PIO1_IRQ_1        = 18;
+  PIO2_IRQ_0        = 19;
+  PIO2_IRQ_1        = 20;
+  IO_IRQ_BANK0      = 21;
+  IO_IRQ_BANK0_NS   = 22;
+  IO_IRQ_QSPI       = 23;
+  IO_IRQ_QSPI_NS    = 24;
+  SIO_IRQ_FIFO      = 25;
+  SIO_IRQ_BELL      = 26;
+  SIO_IRQ_FIFO_NS   = 27;
+  SIO_IRQ_BELL_NS   = 28;
+  SIO_IRQ_MTIMECMP  = 29;
+  CLOCKS_IRQ        = 30;
+  SPI0_IRQ          = 31;
+  SPI1_IRQ          = 32;
+  UART0_IRQ         = 33;
+  UART1_IRQ         = 34;
+  ADC_IRQ_FIFO      = 35;
+  I2C0_IRQ          = 36;
+  I2C1_IRQ          = 37;
+  OTP_IRQ           = 38;
+  TRNG_IRQ          = 39;
+  PROC0_IRQ_CTI     = 40;
+  PROC1_IRQ_CTI     = 41;
+  PLL_SYS_IRQ       = 42;
+  PLL_USB_IRQ       = 43;
+  POWMAN_IRQ_POW    = 44;
+  POWMAN_IRQ_TIMER  = 45;
+
 type
 
   TINTERP_Registers = record
-    accum : array[0..1] of longWord;
-    base : array[0..2] of longWord;
-    pop : array[0..2] of longWord;
-    peek : array[0..2] of longWord;
-    ctrl : array[0..1] of longWord;
-    add_raw : array[0..1] of longWord;
-    base01 : longWord;
+    accum : array[0..1] of longword;
+    base : array[0..2] of longword;
+    pop : array[0..2] of longword;
+    peek : array[0..2] of longword;
+    ctrl : array[0..1] of longword;
+    add_raw : array[0..1] of longword;
+    base01 : longword;
   end;
 
   TSIO_Registers = record
     CPUID: longword;
     GPIO_IN: longword;
     GPIO_HI_IN: longword;
-    Reservado1: longword;
+    Reserved1: longword;
     GPIO_OUT: longword;
     GPIO_HI_OUT: longword;
     GPIO_OUT_SET: longword;
@@ -177,18 +185,18 @@ type
     FIFO_WR: longword;
     FIFO_RD: longword;
     SPINLOCK_ST: longword;
-    Reservado2: array[0..7] of longword;
+    Reserved2: array[0..7] of longword;
     INTERP: array[0..1] of TINTERP_Registers;
     SPINLOCK: array[0..31] of longword;
     DOORBELL_OUT_SET: longword;
     DOORBELL_OUT_CLR: longword;
     DOORBELL_IN_SET: longword;
-    DOORBELL_IN_CLR: longword;
+    Reserved3: longword;
     PERI_NONSEC: longword;
-    Reservado3: array[0..3] of longword;
+    Reserved4: array[0..3] of longword;
     RISCV_SOFTIRQ: longword;
     MTIME_CTRL: longword;
-    Reservado4: array[0..1] of longword;
+    Reserved5: array[0..1] of longword;
     MTIME: longword;
     MTIMEH: longword;
     MTIMECMP: longword;
@@ -202,49 +210,126 @@ type
     TMDS_PEEK_DOUBLE_L1: longword;
     TMDS_POP_DOUBLE_L1: longword;
     TMDS_PEEK_DOUBLE_L2: longword;
-    TMDS_POP_DOUBLE_L2: longword;
+    TMDS_POP_DOUBLE_L: longword;
+  end;
+
+  TACCESSCTRL_Registers = record
+    LOCK: longword;
+    FORCE_CORE_NS: longword;
+    CFGRESET: longword;
+    GPIO_NSMASK0: longword;
+    GPIO_NSMASK1: longword;
+    ROM: longword;
+    XIP_MAIN: longword;
+    SRAM: array[0..9] of longword;
+    DMA: longword;
+    USBCTRL: longword;
+    PIO0: longword;
+    PIO1: longword;
+    PIO2: longword;
+    CORESIGHT_TRACE: longword;
+    CORESIGHT_PERIPH: longword;
+    SYSINFO: longword;
+    RESETS: longword;
+    IO_BANK0: longword;
+    IO_BANK1: longword;
+    PADS_BANK0: longword;
+    PADS_QSPI: longword;
+    BUSCTRL: longword;
+    ADC: longword;
+    HSTX: longword;
+    I2C0: longword;
+    I2C1: longword;
+    PWM: longword;
+    SPI0: longword;
+    SPI1: longword;
+    TIMER0: longword;
+    TIMER1: longword;
+    UART0: longword;
+    UART1: longword;
+    OTP: longword;
+    TBMAN: longword;
+    POWMAN: longword;
+    TRNG: longword;
+    SHA256: longword;
+    SYSCFG: longword;
+    CLOCKS: longword;
+    XOSC: longword;
+    ROSC: longword;
+    PLL_SYS: longword;
+    PLL_USB: longword;
+    TICKS: longword;
+    WATCHDOG: longword;
+    PSM: longword;
+    XIP_CTRL: longword;
+    XIP_QMI: longword;
+    XIP_AUX: longword;
   end;
 
   TPADSBANK0_Registers = record
-    voltage_select : longWord;
-    io : array[0..44] of longWord;
+    voltage_select : longword;
+    io : array[0..47] of longword;
+    swclk: longword;
+    swd: longword;
   end;
 
   TIOIRQCTRL_Registers = record
-    inte : array[0..5] of longWord;
-    intf : array[0..5] of longWord;
-    ints : array[0..5] of longWord;
+    inte : array[0..5] of longword;
+    intf : array[0..5] of longword;
+    ints : array[0..5] of longword;
   end;
 
   TIOBANK0_Registers = record
     io : array[0..47] of record
-      status : longWord;
-      ctrl : longWord;
+      status : longword;
+      ctrl : longword;
     end;
-    irq_summary : array[0..11] of longword;
+    irqsummary: array[0..11] of longword;
     intr: array[0..5] of longword;
-    proc0_irq_ctrl : TIOIRQCTRL_Registers;
-    proc1_irq_ctrl : TIOIRQCTRL_Registers;
-    dormant_wake_irq_ctrl : TIOIRQCTRL_Registers;
+    proc: array[0..1] of TIOIRQCTRL_Registers;
+    dormant_wake: TIOIRQCTRL_Registers;
+  end;
+
+  TIOQSPI_Registers = record
+    status: longword;
+    ctrl: longword;
+  end;
+
+  TIOQSPIBANK_Registers = record
+    usbphy_dp: TIOQSPI_Registers;
+    usbphy_dm: TIOQSPI_Registers;
+    gpio_qspi_sclk: TIOQSPI_Registers;
+    gpio_qspi_ss: TIOQSPI_Registers;
+    gpio_qspi_sd: array[0..3] of TIOQSPI_Registers;
+    irqsummary: array[0..5] of longword;
+    proc: array[0..1] of TIOIRQCTRL_Registers;
+    dormant_wake: TIOIRQCTRL_Registers;
+  end;
+
+  TPADSQSPI_Registers = record
+    voltage_select : longword;
+    sclk: longword;
+    sd: array[0..3] of longword;
+    ss: longword;
   end;
 
   PCLOCK_Registers = ^TCLOCK_Registers;
   TCLOCK_Registers = record
-    ctrl : longWord;
-    &div : longWord;
-    selected : longWord;
+    ctrl : longword;
+    &div : longword;
+    selected : longword;
   end;
 
   PFC_Registers = ^TFC_Registers;
   TFC_Registers = record
-    ref_khz : longWord;
-    min_khz : longWord;
-    max_khz : longWord;
-    delay : longWord;
-    interval : longWord;
-    src : longWord;
-    status : longWord;
-    result : longWord;
+    ref_khz : longword;
+    min_khz : longword;
+    max_khz : longword;
+    delay : longword;
+    interval : longword;
+    src : longword;
+    status : longword;
+    result : longword;
   end;
 
   TCLOCKS_Registers = record
@@ -261,20 +346,17 @@ type
       LPOSC_CTRL: longword;
     end;
     clk_sys_resus : record
-      ctrl : longWord;
-      status : longWord;
+      ctrl : longword;
+      status : longword;
     end;
     fc0 : TFC_Registers;
-    wake_en0 : longWord;
-    wake_en1 : longWord;
-    sleep_en0 : longWord;
-    sleep_en1 : longWord;
-    enabled0 : longWord;
-    enabled1 : longWord;
-    intr : longWord;
-    inte : longWord;
-    intf : longWord;
-    ints : longWord;
+    wake_en: array[0..1] of longword;
+    sleep_en: array[0..1] of longword;
+    enabled: array[0..1] of longword;
+    intr : longword;
+    inte : longword;
+    intf : longword;
+    ints : longword;
   end;
 
   TCLOCKS_Registers_alt = record
@@ -285,20 +367,17 @@ type
       LPOSC_CTRL: longword;
     end;
     clk_sys_resus : record
-      ctrl : longWord;
-      status : longWord;
+      ctrl : longword;
+      status : longword;
     end;
     fc0 : TFC_Registers;
-    wake_en0 : longWord;
-    wake_en1 : longWord;
-    sleep_en0 : longWord;
-    sleep_en1 : longWord;
-    enabled0 : longWord;
-    enabled1 : longWord;
-    intr : longWord;
-    inte : longWord;
-    intf : longWord;
-    ints : longWord;
+    wake_en: array[0..1] of longword;
+    sleep_en: array[0..1] of longword;
+    enabled: array[0..1] of longword;
+    intr : longword;
+    inte : longword;
+    intf : longword;
+    ints : longword;
   end;
 
   TTICK_Registers = record
@@ -320,378 +399,352 @@ type
 
 type
   TADC_Registers = record
-    cs : longWord;
-    result : longWord;
-    fcs : longWord;
-    fifo : longWord;
-    &div : longWord;
-    intr : longWord;
-    inte : longWord;
-    intf : longWord;
-    ints : longWord;
+    cs : longword;
+    result : longword;
+    fcs : longword;
+    fifo : longword;
+    &div : longword;
+    intr : longword;
+    inte : longword;
+    intf : longword;
+    ints : longword;
   end;
-(*
+
   TBUSCTRL_Registers = record
-    priority : longWord;
-    priority_ack : longWord;
+    priority : longword;
+    priority_ack : longword;
+    perfctrl_en: longword;
     perf : array[0..3] of record
-      ctr : longWord;
-      sel : longWord;
+      ctr : longword;
+      sel : longword;
     end;
   end;
-*)
-(*
+
   TDMACHANNEL_Registers = record
-    read_addr : longWord;
-    write_addr : longWord;
-    transfer_count : longWord;
-    ctrl_trig : longWord;
-    al1_ctrl : longWord;
-    al1_read_addr : longWord;
-    al1_write_addr : longWord;
-    al1_transfer_count_trig : longWord;
-    al2_ctrl : longWord;
-    al2_transfer_count : longWord;
-    al2_read_addr : longWord;
-    al2_write_addr_trig : longWord;
-    al3_ctrl : longWord;
-    al3_write_addr : longWord;
-    al3_transfer_count : longWord;
-    al3_read_addr_trig : longWord;
+    read_addr : longword;
+    write_addr : longword;
+    transfer_count : longword;
+    ctrl_trig : longword;
+    al1_ctrl : longword;
+    al1_read_addr : longword;
+    al1_write_addr : longword;
+    al1_transfer_count_trig : longword;
+    al2_ctrl : longword;
+    al2_transfer_count : longword;
+    al2_read_addr : longword;
+    al2_write_addr_trig : longword;
+    al3_ctrl : longword;
+    al3_write_addr : longword;
+    al3_transfer_count : longword;
+    al3_read_addr_trig : longword;
   end;
 
   TDMA_Registers = record
-    ch : array[0..11] of TDMACHANNEL_Registers;
-    RESERVED0 : array[0..63] of longWord;
-    intr : longWord;
-    inte0 : longWord;
-    intf0 : longWord;
-    ints0 : longWord;
-    RESERVED1 : longWord;
-    inte1 : longWord;
-    intf1 : longWord;
-    ints1 : longWord;
-    timer : array[0..1] of longWord;
-    RESERVED2 : array[0..1] of longWord;
-    multi_channel_trigger : longWord;
-    sniff_ctrl : longWord;
-    sniff_data : longWord;
-    RESERVED3 : longWord;
-    fifo_levels : longWord;
-    abort : longWord;
+    ch : array[0..15] of TDMACHANNEL_Registers;
+    intr : longword;
+    inte0 : longword;
+    intf0 : longword;
+    ints0 : longword;
+    RESERVED0 : longword;
+    inte1 : longword;
+    intf1 : longword;
+    ints1 : longword;
+    RESERVED1 : longword;
+    inte2 : longword;
+    intf2 : longword;
+    ints2 : longword;
+    RESERVED2 : longword;
+    inte3 : longword;
+    intf3 : longword;
+    ints3 : longword;
+    timer : array[0..3] of longword;
+    multi_channel_trigger : longword;
+    sniff_ctrl : longword;
+    sniff_data : longword;
+    RESERVED3 : longword;
+    fifo_levels : longword;
+    abort : longword;
+    n_channels: longword;
+    seccfg_ch: array[0..15] of longword;
+    seccfg_irq: array[0..3] of longword;
+    seccfg_misc: longword;
+    mpu_ctrl: longword;
+    mpu: array[0..7] of record
+      bar: longword;
+      lar: longword;
+    end;
   end;
 
   TDMADEBUG_Registers = record
-    ch : array[0..11] of record
-      ctrdeq : longWord;
-      tcr : longWord;
-      RESERVED0 : array[0..13] of longWord;
+    ch : array[0..15] of record
+      ctrdeq : longword;
+      tcr : longword;
+      RESERVED0 : array[0..13] of longword;
     end;
   end;
 
   TI2C_Registers = record
-    con : longWord;
-    tar : longWord;
-    sar : longWord;
-    RESERVED0 : longWord;
-    data_cmd : longWord;
-    ss_scl_hcnt : longWord;
-    ss_scl_lcnt : longWord;
-    fs_scl_hcnt : longWord;
-    fs_scl_lcnt : longWord;
-    RESERVED1 : array[0..1] of longWord;
-    intr_stat : longWord;
-    intr_mask : longWord;
-    raw_intr_stat : longWord;
-    rx_tl : longWord;
-    tx_tl : longWord;
-    clr_intr : longWord;
-    clr_rx_under : longWord;
-    clr_rx_over : longWord;
-    clr_tx_over : longWord;
-    clr_rd_req : longWord;
-    clr_tx_abrt : longWord;
-    clr_rx_done : longWord;
-    clr_activity : longWord;
-    clr_stop_det : longWord;
-    clr_start_det : longWord;
-    clr_gen_call : longWord;
-    enable : longWord;
-    status : longWord;
-    txflr : longWord;
-    rxflr : longWord;
-    sda_hold : longWord;
-    tx_abrt_source : longWord;
-    slv_data_nack_only : longWord;
-    dma_cr : longWord;
-    dma_tdlr : longWord;
-    dma_rdlr : longWord;
-    sda_setup : longWord;
-    ack_general_call : longWord;
-    enable_status : longWord;
-    fs_spklen : longWord;
-    RESERVED2 : longWord;
-    clr_restart_det : longWord;
-    RESERVED3 : array[0..17] of longWord;
-    comp_param_1 : longWord;
-    comp_version : longWord;
-    comp_type : longWord;
+    con : longword;
+    tar : longword;
+    sar : longword;
+    RESERVED0 : longword;
+    data_cmd : longword;
+    ss_scl_hcnt : longword;
+    ss_scl_lcnt : longword;
+    fs_scl_hcnt : longword;
+    fs_scl_lcnt : longword;
+    RESERVED1 : array[0..1] of longword;
+    intr_stat : longword;
+    intr_mask : longword;
+    raw_intr_stat : longword;
+    rx_tl : longword;
+    tx_tl : longword;
+    clr_intr : longword;
+    clr_rx_under : longword;
+    clr_rx_over : longword;
+    clr_tx_over : longword;
+    clr_rd_req : longword;
+    clr_tx_abrt : longword;
+    clr_rx_done : longword;
+    clr_activity : longword;
+    clr_stop_det : longword;
+    clr_start_det : longword;
+    clr_gen_call : longword;
+    enable : longword;
+    status : longword;
+    txflr : longword;
+    rxflr : longword;
+    sda_hold : longword;
+    tx_abrt_source : longword;
+    slv_data_nack_only : longword;
+    dma_cr : longword;
+    dma_tdlr : longword;
+    dma_rdlr : longword;
+    sda_setup : longword;
+    ack_general_call : longword;
+    enable_status : longword;
+    fs_spklen : longword;
+    RESERVED2 : longword;
+    clr_restart_det : longword;
+    RESERVED3 : array[0..17] of longword;
+    comp_param_1 : longword;
+    comp_version : longword;
+    comp_type : longword;
   end;
 
-  TIOIRQCTRL_Registers = record
-    inte : array[0..3] of longWord;
-    intf : array[0..3] of longWord;
-    ints : array[0..3] of longWord;
-  end;
-
-  TIOBANK0_Registers = record
-    io : array[0..29] of record
-      status : longWord;
-      ctrl : longWord;
-    end;
-    intr : array[0..3] of longWord;
-    proc0_irq_ctrl : TIOIRQCTRL_Registers;
-    proc1_irq_ctrl : TIOIRQCTRL_Registers;
-    dormant_wake_irq_ctrl : TIOIRQCTRL_Registers;
-  end;
-
-  TIOQSPI_Registers = record
-    io : array[0..5] of record
-      status : longWord;
-      ctrl : longWord;
-    end;
-  end;
-
-  TPADSQSPI_Registers = record
-    voltage_select : longWord;
-    io : array[0..5] of longWord;
-  end;
-
+(*
   TPADSBANK0_Registers = record
-    voltage_select : longWord;
-    io : array[0..29] of longWord;
-  end;
-
-  TPIO_Registers = record
-    ctrl : longWord;
-    fstat : longWord;
-    fdebug : longWord;
-    flevel : longWord;
-    txf : array[0..1] of longWord;
-    rxf : array[0..1] of longWord;
-    irq : longWord;
-    irq_force : longWord;
-    input_sync_bypass : longWord;
-    dbg_padout : longWord;
-    dbg_padoe : longWord;
-    dbg_cfginfo : longWord;
-    instr_mem : array[0..31] of longWord;
-    sm : array[0..1] of record
-      clkdiv : longWord;
-      execctrl : longWord;
-      shiftctrl : longWord;
-      addr : longWord;
-      instr : longWord;
-      pinctrl : longWord;
-    end;
-    intr : longWord;
-    inte0 : longWord;
-    intf0 : longWord;
-    ints0 : longWord;
-    inte1 : longWord;
-    intf1 : longWord;
-    ints1 : longWord;
+    voltage_select : longword;
+    io : array[0..29] of longword;
   end;
 *)
+  TPIO_Registers = record
+    ctrl : longword;
+    fstat : longword;
+    fdebug : longword;
+    flevel : longword;
+    txf : array[0..3] of longword;
+    rxf : array[0..3] of longword;
+    irq : longword;
+    irq_force : longword;
+    input_sync_bypass : longword;
+    dbg_padout : longword;
+    dbg_padoe : longword;
+    dbg_cfginfo : longword;
+    instr_mem : array[0..31] of longword;
+    sm : array[0..3] of record
+      clkdiv : longword;
+      execctrl : longword;
+      shiftctrl : longword;
+      addr : longword;
+      instr : longword;
+      pinctrl : longword;
+    end;
+    rxf_putget: array[0..3,0..3] of longword;
+    gpiobase: longword;
+    intr : longword;
+    inte0 : longword;
+    intf0 : longword;
+    ints0 : longword;
+    inte1 : longword;
+    intf1 : longword;
+    ints1 : longword;
+  end;
+
   TPLL_Registers = record
-    cs : longWord;
-    pwr : longWord;
-    fbdiv_int : longWord;
-    prim : longWord;
+    cs : longword;
+    pwr : longword;
+    fbdiv_int : longword;
+    prim : longword;
     intr: longword;
     inte: longword;
     intf: longword;
     ints: longword;
   end;
-(*
+
   TPSM_Registers = record
-    frce_on : longWord;
-    frce_off : longWord;
-    wdsel : longWord;
-    done : longWord;
+    frce_on : longword;
+    frce_off : longword;
+    wdsel : longword;
+    done : longword;
   end;
 
   TPWMSLICE_Registers = record
-    csr : longWord;
-    &div : longWord;
-    ctr : longWord;
-    cc : longWord;
-    top : longWord;
+    csr : longword;
+    &div : longword;
+    ctr : longword;
+    cc : longword;
+    top : longword;
   end;
 
   TPWM_Registers = record
-    slice : array[0..7] of TPWMSLICE_Registers;
-    en : longWord;
-    intr : longWord;
-    inte : longWord;
-    intf : longWord;
-    ints : longWord;
+    slice : array[0..11] of TPWMSLICE_Registers;
+    en : longword;
+    irq: array[0..1] of record
+      inte : longword;
+      intf : longword;
+      ints : longword;
+    end;
   end;
-*)
+
   TRESETS_Registers = record
-    reset : longWord;
-    wdsel : longWord;
-    reset_done : longWord;
+    reset : longword;
+    wdsel : longword;
+    reset_done : longword;
+  end;
+
+  TROSC_Registers = record
+    ctrl : longword;
+    freqa : longword;
+    freqb : longword;
+    random: longword;
+    dormant : longword;
+    &div : longword;
+    phase : longword;
+    status : longword;
+    randombit : longword;
+    count : longword;
   end;
 (*
-  TROSC_Registers = record
-    ctrl : longWord;
-    freqa : longWord;
-    freqb : longWord;
-    dormant : longWord;
-    &div : longWord;
-    phase : longWord;
-    status : longWord;
-    randombit : longWord;
-    count : longWord;
-    dftx : longWord;
-  end;
-
-  TRTC_Registers = record
-    clkdiv_m1 : longWord;
-    setup_0 : longWord;
-    setup_1 : longWord;
-    ctrl : longWord;
-    irq_setup_0 : longWord;
-    irq_setup_1 : longWord;
-    rtc_1 : longWord;
-    rtc_0 : longWord;
-    intr : longWord;
-    inte : longWord;
-    intf : longWord;
-    ints : longWord;
-  end;
-
   TINTERP_Registers = record
-    accum : array[0..1] of longWord;
-    base : array[0..2] of longWord;
-    pop : array[0..2] of longWord;
-    peek : array[0..2] of longWord;
-    ctrl : array[0..1] of longWord;
-    add_raw : array[0..1] of longWord;
-    base01 : longWord;
+    accum : array[0..1] of longword;
+    base : array[0..2] of longword;
+    pop : array[0..2] of longword;
+    peek : array[0..2] of longword;
+    ctrl : array[0..1] of longword;
+    add_raw : array[0..1] of longword;
+    base01 : longword;
   end;
-
+*)
   TSPI_Registers = record
-    cr0 : longWord;
-    cr1 : longWord;
-    dr : longWord;
-    sr : longWord;
-    cpsr : longWord;
-    imsc : longWord;
-    ris : longWord;
-    mis : longWord;
-    icr : longWord;
-    dmacr : longWord;
+    cr0 : longword;
+    cr1 : longword;
+    dr : longword;
+    sr : longword;
+    cpsr : longword;
+    imsc : longword;
+    ris : longword;
+    mis : longword;
+    icr : longword;
+    dmacr : longword;
   end;
-
+(*
   TSSI_Registers = record
-    ctrlr0 : longWord;
-    ctrlr1 : longWord;
-    ssienr : longWord;
-    mwcr : longWord;
-    ser : longWord;
-    baudr : longWord;
-    txftlr : longWord;
-    rxftlr : longWord;
-    txflr : longWord;
-    rxflr : longWord;
-    sr : longWord;
-    imr : longWord;
-    isr : longWord;
-    risr : longWord;
-    txoicr : longWord;
-    rxoicr : longWord;
-    rxuicr : longWord;
-    msticr : longWord;
-    icr : longWord;
-    dmacr : longWord;
-    dmatdlr : longWord;
-    dmardlr : longWord;
-    idr : longWord;
-    ssi_version_id : longWord;
-    dr0 : longWord;
-    RESERVED0 : array[0..34] of longWord;
-    rx_sample_dly : longWord;
-    spi_ctrlr0 : longWord;
-    txd_drive_edge : longWord;
+    ctrlr0 : longword;
+    ctrlr1 : longword;
+    ssienr : longword;
+    mwcr : longword;
+    ser : longword;
+    baudr : longword;
+    txftlr : longword;
+    rxftlr : longword;
+    txflr : longword;
+    rxflr : longword;
+    sr : longword;
+    imr : longword;
+    isr : longword;
+    risr : longword;
+    txoicr : longword;
+    rxoicr : longword;
+    rxuicr : longword;
+    msticr : longword;
+    icr : longword;
+    dmacr : longword;
+    dmatdlr : longword;
+    dmardlr : longword;
+    idr : longword;
+    ssi_version_id : longword;
+    dr0 : longword;
+    RESERVED0 : array[0..34] of longword;
+    rx_sample_dly : longword;
+    spi_ctrlr0 : longword;
+    txd_drive_edge : longword;
   end;
-
+*)
   TSYSCFG_Registers = record
-    proc0_nmi_mask : longWord;
-    proc1_nmi_mask : longWord;
-    proc_config : longWord;
-    proc_in_sync_bypass : longWord;
-    proc_in_sync_bypass_hi : longWord;
-    dbgforce : longWord;
-    mempowerdown : longWord;
+    proc_config : longword;
+    proc_in_sync_bypass : longword;
+    proc_in_sync_bypass_hi : longword;
+    dbgforce : longword;
+    mempowerdown : longword;
+    auxctrl: longword;
   end;
 
   TSYSINFO_Registers = record
-    chip_id : longWord;
-    platform : longWord;
-    reserved0 : array[0..$3F-$08] of longWord;
-    gitref_rp2040 : longWord;
+    chip_id : longword;
+    package_sel: longword;
+    platform : longword;
+    reserved0 : array[0..1] of longword;
+    gitref_rp2350 : longword;
   end;
-*)
 
   TTIMER_Registers = record
-    timehw : longWord;
-    timelw : longWord;
-    timehr : longWord;
-    timelr : longWord;
-    alarm : array[0..3] of longWord;
-    armed : longWord;
-    timerawh : longWord;
-    timerawl : longWord;
-    dbgpause : longWord;
-    pause : longWord;
+    timehw : longword;
+    timelw : longword;
+    timehr : longword;
+    timelr : longword;
+    alarm : array[0..3] of longword;
+    armed : longword;
+    timerawh : longword;
+    timerawl : longword;
+    dbgpause : longword;
+    pause : longword;
     locked: longword;
     source: longword;
-    intr : longWord;
-    inte : longWord;
-    intf : longWord;
-    ints : longWord;
-  end;
-(*
-  TUART_Registers = record
-    dr : longWord;
-    rsr : longWord;
-    RESERVED0 : array[0..3] of longWord;
-    fr : longWord;
-    RESERVED1 : longWord;
-    ilpr : longWord;
-    ibrd : longWord;
-    fbrd : longWord;
-    lcr_h : longWord;
-    cr : longWord;
-    ifls : longWord;
-    imsc : longWord;
-    ris : longWord;
-    mis : longWord;
-    icr : longWord;
-    dmacr : longWord;
+    intr : longword;
+    inte : longword;
+    intf : longword;
+    ints : longword;
   end;
 
+  TUART_Registers = record
+    dr : longword;
+    rsr : longword;
+    RESERVED0 : array[0..3] of longword;
+    fr : longword;
+    RESERVED1 : longword;
+    ilpr : longword;
+    ibrd : longword;
+    fbrd : longword;
+    lcr_h : longword;
+    cr : longword;
+    ifls : longword;
+    imsc : longword;
+    ris : longword;
+    mis : longword;
+    icr : longword;
+    dmacr : longword;
+  end;
+(*
   TUSBDEVICEDPRAM = record
     setup_packet : array[0..7] of byte;
     ep_ctrl : array[0..14] of record
-      &in : longWord;
-      &out : longWord;
+      &in : longword;
+      &out : longword;
     end;
     ep_buf_ctrl : array[0..15] of record
-      &in : longWord;
-      &out : longWord;
+      &in : longword;
+      &out : longword;
     end;
     ep0_buf_a : array[0..63] of byte;
     ep0_buf_b : array[0..63] of byte;
@@ -701,133 +754,130 @@ type
   TUSBHOSTDPRAM = record
     setup_packet : array[0..7] of byte;
     int_ep_ctrl : array[0..14] of record
-      ctrl : longWord;
-      spare : longWord;
+      ctrl : longword;
+      spare : longword;
     end;
-    epx_buf_ctrl : longWord;
-    _spare0 : longWord;
+    epx_buf_ctrl : longword;
+    _spare0 : longword;
     int_ep_buffer_ctrl : array[0..14] of record
-      ctrl : longWord;
-      spare : longWord;
+      ctrl : longword;
+      spare : longword;
     end;
-    epx_ctrl : longWord;
+    epx_ctrl : longword;
     _spare1 : array[0..123] of byte;
     epx_data : array[0..(4096-$180)-1] of byte;
   end;
-
+*)
   TUSB_Registers = record
-    dev_addr_ctrl : longWord;
-    int_ep_addr_ctrl : array[1..15] of longWord;
-    main_ctrl : longWord;
-    sof_wr : longWord;
-    sof_rd : longWord;
-    sie_ctrl : longWord;
-    sie_status : longWord;
-    int_ep_ctrl : longWord;
-    buf_status : longWord;
-    buf_cpu_should_handle : longWord;
-    abort : longWord;
-    abort_done : longWord;
-    ep_stall_arm : longWord;
-    nak_poll : longWord;
-    ep_nak_stall_status : longWord;
-    muxing : longWord;
-    pwr : longWord;
-    phy_direct : longWord;
-    phy_direct_override : longWord;
-    phy_trim : longWord;
-    linestate_tuning : longWord;
-    intr : longWord;
-    inte : longWord;
-    intf : longWord;
-    ints : longWord;
+    dev_addr_endp: longword;
+    int_ep_addr_ctrl : array[1..15] of longword;
+    main_ctrl : longword;
+    sof_wr : longword;
+    sof_rd : longword;
+    sie_ctrl : longword;
+    sie_status : longword;
+    int_ep_ctrl : longword;
+    buf_status : longword;
+    buf_cpu_should_handle : longword;
+    abort : longword;
+    abort_done : longword;
+    ep_stall_arm : longword;
+    nak_poll : longword;
+    ep_nak_stall_status : longword;
+    muxing : longword;
+    pwr : longword;
+    phy_direct : longword;
+    phy_direct_override : longword;
+    phy_trim : longword;
+    linestate_tuning : longword;
+    intr : longword;
+    inte : longword;
+    intf : longword;
+    ints : longword;
+    sof_timestamp_raw: longword;
+    sof_timestamp_last: longword;
+    sm_state: longword;
+    ep_tx_error: longword;
+    ep_rx_error: longword;
+    dev_sm_watchdog: longword;
   end;
-
+(*
   TVREGANDCHIPRESET_Registers = record
-    vreg : longWord;
-    bod : longWord;
-    chip_reset : longWord;
+    vreg : longword;
+    bod : longword;
+    chip_reset : longword;
   end;
 *)
   TWATCHDOG_Registers = record
-    ctrl : longWord;
-    load : longWord;
-    reason : longWord;
-    scratch : array[0..7] of longWord;
-//    tick : longWord;
+    ctrl : longword;
+    load : longword;
+    reason : longword;
+    scratch : array[0..7] of longword;
+//    tick : longword;
   end;
 (*
   TXIPCTRL_Registers = record
-    ctrl : longWord;
-    flush : longWord;
-    stat : longWord;
-    ctr_hit : longWord;
-    ctr_acc : longWord;
-    stream_addr : longWord;
-    stream_ctr : longWord;
-    stream_fifo : longWord;
+    ctrl : longword;
+    flush : longword;
+    stat : longword;
+    ctr_hit : longword;
+    ctr_acc : longword;
+    stream_addr : longword;
+    stream_ctr : longword;
+    stream_fifo : longword;
   end;
 *)
   TXOSC_Registers = record
-    ctrl : longWord;
-    status : longWord;
-    dormant : longWord;
-    startup : longWord;
-//    RESERVED0 : array[0..2] of longWord;
-    count : longWord;
+    ctrl : longword;
+    status : longword;
+    dormant : longword;
+    startup : longword;
+    count : longword;
   end;
 (*
   TMPU_Registers = record
-    _type : longWord;
-    ctrl : longWord;
-    rnr : longWord;
-    rbar : longWord;
-    rasr : longWord;
+    _type : longword;
+    ctrl : longword;
+    rnr : longword;
+    rbar : longword;
+    rasr : longword;
   end;
 *)
   TSYSTICK_Registers = record
-    csr : longWord;
-    rvr : longWord;
-    cvr : longWord;
-    calib : longWord;
+    csr : longword;
+    rvr : longword;
+    cvr : longword;
+    calib : longword;
   end;
 (*
   TSCB_Reqisters = record
-    cpuid : longWord;
-    icsr : longWord;
-    vtor : longWord;
-    aircr : longWord;
-    scr : longWord;
+    cpuid : longword;
+    icsr : longword;
+    vtor : longword;
+    aircr : longword;
+    scr : longword;
   end;
 *)
 
 
 var
+  SysInfo : TSysInfo_Registers absolute SYSINFO_BASE;
+  SysCfg : TSYSCFG_REGISTERS absolute SYSCFG_BASE;
+  PSM : TPSM_Registers absolute PSM_BASE;
   SIO : TSIO_Registers absolute SIO_BASE;
 //  PPB: array[0..$367] of longword absolute BBP_BASE;
   TICK : TSYSTICK_Registers absolute (PPB_BASE + SYST_CSR);
   PADSBANK0 : TPADSBANK0_Registers absolute PADS_BANK0_BASE;
+  PADSQSPI : TPADSQSPI_Registers absolute PADS_QSPI_BASE;
   IOBANK0 : TIOBANK0_Registers absolute IO_BANK0_BASE;
+  IOQSPI : TIOQSPI_Registers absolute IO_QSPI_BASE;
+  BUSCTRL : TBUSCTRL_Registers absolute BUSCTRL_BASE;
   RESETS : TRESETS_Registers absolute RESETS_BASE;
   PLLSYS : TPLL_Registers absolute PLL_SYS_BASE;
   PLLUSB : TPLL_Registers absolute PLL_USB_BASE;
   CLOCKS : TCLOCKS_Registers absolute CLOCKS_BASE;
   _CLOCKS : TCLOCKS_Registers_ALT absolute CLOCKS_BASE;
-  TIMER0 : TTIMER_Registers absolute TIMER0_BASE;
-  TIMER1 : TTIMER_Registers absolute TIMER1_BASE;
-  XOSC : TXOSC_Registers absolute XOSC_BASE;
-  WATCHDOG : TWATCHDOG_Registers absolute WATCHDOG_BASE;
-  TICKS: TTICKS_Registers absolute TICKS_BASE;
-  ADC : TADC_Registers absolute ADC_BASE;
-(*
-  SysInfo : TSysInfo_Registers absolute SYSINFO_BASE;
-  SysCfg : TSYSCFG_REGISTERS absolute SYSCFG_BASE;
-  PSM : TPSM_Registers absolute PSM_BASE;
-//  IOBANK0 : TIOBANK0_Registers absolute IO_BANK0_BASE;
-  IOQSPI : TIOQSPI_Registers absolute IO_QSPI_BASE;
-//  PADSBANK0 : TPADSBANK0_Registers absolute PADS_BANK0_BASE;
-  PADSQSPI : TPADSQSPI_Registers absolute PADS_QSPI_BASE;
-  BUSCTRL : TBUSCTRL_Registers absolute BUSCTRL_BASE;
+  ROSC : TROSC_Registers absolute ROSC_BASE;
   UART0 : TUART_Registers absolute UART0_BASE;
   UART1 : TUART_Registers absolute UART1_BASE;
   SPI0 : TSPI_Registers absolute SPI0_BASE;
@@ -835,17 +885,21 @@ var
   I2C0 : TI2C_Registers absolute I2C0_BASE;
   I2C1 : TI2C_Registers absolute I2C1_BASE;
   PWM : TPWM_Registers absolute PWM_BASE;
-  RTC : TRTC_Registers absolute RTC_BASE;
-  ROSC : TROSC_Registers absolute ROSC_BASE;
-  VREGANDCHIPRESET : TVREGANDCHIPRESET_Registers absolute VREG_AND_CHIP_RESET_BASE;
+  TIMER0 : TTIMER_Registers absolute TIMER0_BASE;
+  TIMER1 : TTIMER_Registers absolute TIMER1_BASE;
+  XOSC : TXOSC_Registers absolute XOSC_BASE;
+  WATCHDOG : TWATCHDOG_Registers absolute WATCHDOG_BASE;
+  TICKS: TTICKS_Registers absolute TICKS_BASE;
+  ADC : TADC_Registers absolute ADC_BASE;
+  ACCESSCTRL: TACCESSCTRL_Registers absolute ACCESSCTRL_BASE;
   DMA : TDMA_Registers absolute DMA_BASE;
-  //USBCTRL_BASE = $50100000
-  //USBCTRL_DPRAM_BASE = $50100000
+  DMADEBUG : TDMADEBUG_Registers absolute DMADEBUG_BASE;
   USB : TUSB_Registers absolute USBCTRL_REGS_BASE;
   PIO0 : TPIO_Registers absolute PIO0_BASE;
   PIO1 : TPIO_Registers absolute PIO1_BASE;
-  //XIP_AUX_BASE = $50400000
-//  SIO : TSIO_Registers absolute SIO_BASE;
+  PIO2 : TPIO_Registers absolute PIO2_BASE;
+(*
+  VREGANDCHIPRESET : TVREGANDCHIPRESET_Registers absolute VREG_AND_CHIP_RESET_BASE;
 
 *)
 implementation
