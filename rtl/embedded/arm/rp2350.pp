@@ -83,7 +83,6 @@ const
   XIP_AUX_BASE                 = $50500000;
   HSTX_BASE                    = $50600000;
 
-
 const
   clk_gpout0 = 0;
   clk_gpout1 = 1;
