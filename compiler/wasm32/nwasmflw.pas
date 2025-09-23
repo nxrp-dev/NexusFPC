@@ -54,7 +54,7 @@ interface
       twasmraisenode = class(tcgraisenode)
       private
         function pass_1_no_exceptions : tnode;
-        function pass_1_native_exceptions : tnode;
+        function pass_1_native_legacy_exceptions : tnode;
         function pass_1_bf_exceptions : tnode;
       public
         function pass_1 : tnode;override;
@@ -65,8 +65,7 @@ interface
       twasmtryexceptnode = class(tcgtryexceptnode)
       private
         procedure pass_generate_code_no_exceptions;
-        procedure pass_generate_code_js_exceptions;
-        procedure pass_generate_code_native_exceptions;
+        procedure pass_generate_code_native_legacy_exceptions;
         procedure pass_generate_code_bf_exceptions;
       public
         procedure pass_generate_code;override;
@@ -77,8 +76,7 @@ interface
       twasmtryfinallynode = class(tcgtryfinallynode)
       private
         procedure pass_generate_code_no_exceptions;
-        procedure pass_generate_code_js_exceptions;
-        procedure pass_generate_code_native_exceptions;
+        procedure pass_generate_code_native_legacy_exceptions;
         procedure pass_generate_code_bf_exceptions;
       public
         procedure pass_generate_code;override;
@@ -89,8 +87,7 @@ interface
       twasmonnode = class(tcgonnode)
       private
         procedure pass_generate_code_no_exceptions;
-        procedure pass_generate_code_js_exceptions;
-        procedure pass_generate_code_native_exceptions;
+        procedure pass_generate_code_native_legacy_exceptions;
         procedure pass_generate_code_bf_exceptions;
       public
         procedure pass_generate_code;override;
@@ -291,7 +288,7 @@ implementation
       end;
 
 
-    function twasmraisenode.pass_1_native_exceptions : tnode;
+    function twasmraisenode.pass_1_native_legacy_exceptions : tnode;
       var
         statements : tstatementnode;
         //current_addr : tlabelnode;
@@ -410,7 +407,7 @@ implementation
         if ts_wasm_no_exceptions in current_settings.targetswitches then
           result:=pass_1_no_exceptions
         else if ts_wasm_native_legacy_exceptions in current_settings.targetswitches then
-          result:=pass_1_native_exceptions
+          result:=pass_1_native_legacy_exceptions
         else if ts_wasm_bf_exceptions in current_settings.targetswitches then
           result:=pass_1_bf_exceptions
         else
@@ -427,12 +424,7 @@ implementation
         secondpass(left);
       end;
 
-    procedure twasmtryexceptnode.pass_generate_code_js_exceptions;
-      begin
-        internalerror(2021091706);
-      end;
-
-    procedure twasmtryexceptnode.pass_generate_code_native_exceptions;
+    procedure twasmtryexceptnode.pass_generate_code_native_legacy_exceptions;
       var
         trystate,doobjectdestroyandreraisestate: tcgexceptionstatehandler.texceptionstate;
         destroytemps,
@@ -816,10 +808,8 @@ implementation
       begin
         if ts_wasm_no_exceptions in current_settings.targetswitches then
           pass_generate_code_no_exceptions
-        else if ts_wasm_js_exceptions in current_settings.targetswitches then
-          pass_generate_code_js_exceptions
         else if ts_wasm_native_legacy_exceptions in current_settings.targetswitches then
-          pass_generate_code_native_exceptions
+          pass_generate_code_native_legacy_exceptions
         else if ts_wasm_bf_exceptions in current_settings.targetswitches then
           pass_generate_code_bf_exceptions
         else
@@ -1002,12 +992,7 @@ implementation
         flowcontrol:=finallyexceptionstate.oldflowcontrol+(finallyexceptionstate.newflowcontrol-[fc_inflowcontrol,fc_catching_exceptions]);
       end;
 
-    procedure twasmtryfinallynode.pass_generate_code_js_exceptions;
-      begin
-        internalerror(2021091702);
-      end;
-
-    procedure twasmtryfinallynode.pass_generate_code_native_exceptions;
+    procedure twasmtryfinallynode.pass_generate_code_native_legacy_exceptions;
       var
         exitfinallylabel,
         continuefinallylabel,
@@ -1415,10 +1400,8 @@ implementation
       begin
         if ts_wasm_no_exceptions in current_settings.targetswitches then
           pass_generate_code_no_exceptions
-        else if ts_wasm_js_exceptions in current_settings.targetswitches then
-          pass_generate_code_js_exceptions
         else if ts_wasm_native_legacy_exceptions in current_settings.targetswitches then
-          pass_generate_code_native_exceptions
+          pass_generate_code_native_legacy_exceptions
         else if ts_wasm_bf_exceptions in current_settings.targetswitches then
           pass_generate_code_bf_exceptions
         else
@@ -1435,13 +1418,7 @@ implementation
         internalerror(2021092803);
       end;
 
-    procedure twasmonnode.pass_generate_code_js_exceptions;
-      begin
-        { not yet implemented }
-        internalerror(2021092804);
-      end;
-
-    procedure twasmonnode.pass_generate_code_native_exceptions;
+    procedure twasmonnode.pass_generate_code_native_legacy_exceptions;
       var
         exceptvarsym : tlocalvarsym;
         exceptlocdef: tdef;
@@ -1743,10 +1720,8 @@ implementation
       begin
         if ts_wasm_no_exceptions in current_settings.targetswitches then
           pass_generate_code_no_exceptions
-        else if ts_wasm_js_exceptions in current_settings.targetswitches then
-          pass_generate_code_js_exceptions
         else if ts_wasm_native_legacy_exceptions in current_settings.targetswitches then
-          pass_generate_code_native_exceptions
+          pass_generate_code_native_legacy_exceptions
         else if ts_wasm_bf_exceptions in current_settings.targetswitches then
           pass_generate_code_bf_exceptions
         else

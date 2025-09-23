@@ -2240,10 +2240,12 @@ uses
           a_i64_extend8_s,
           a_i64_extend16_s,
           a_i64_extend32_s,
+          a_throw_ref,
           a_else,
           a_end_block,
           a_end_if,
           a_end_loop,
+          a_end_try_table,
           a_end_legacy_try,
           a_end_function,
           a_legacy_catch_all,
@@ -2588,7 +2590,8 @@ uses
                 end;
             end;
           a_legacy_catch,
-          a_legacy_throw:
+          a_legacy_throw,
+          a_throw:
             begin
               if ops<>1 then
                 internalerror(2021092709);
@@ -3001,11 +3004,14 @@ uses
           a_end_block,
           a_end_if,
           a_end_loop,
+          a_end_try_table,
           a_end_legacy_try,
           a_end_function:
             WriteByte($0B);
           a_legacy_catch_all:
             WriteByte($19);
+          a_throw_ref:
+            WriteByte($0A);
           a_i32_const:
             begin
               WriteByte($41);
@@ -3581,12 +3587,14 @@ uses
                 end;
             end;
           a_legacy_catch,
-          a_legacy_throw:
+          a_legacy_throw,
+          a_throw:
             begin
               case opcode of
                 a_legacy_catch:
                   WriteByte($07);
-                a_legacy_throw:
+                a_legacy_throw,
+                a_throw:
                   WriteByte($08);
                 else
                   internalerror(2021092708);
