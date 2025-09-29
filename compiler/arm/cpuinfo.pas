@@ -526,7 +526,7 @@ Type
       ct_itzybitzy_rp2040,
       ct_tiny_2040,
       ct_qtpy_rp2040,
-      ct_rp2040_pi_zero,
+      ct_waveshere_pi_zero,
 
       { Raspberry pi pico2 (rp2350) }
       ct_rp2350,
@@ -1064,13 +1064,13 @@ Const
       (controllertypestr:'RASPI2'; controllerunitstr:'RASPI2'; cputype:cpu_armv7a; fputype:fpu_vfpv4; flashbase:$00000000; flashsize:$00000000; srambase:$00008000; sramsize:$10000000),
 
       { Raspberry rp2040 }
-      (controllertypestr:'RP2040'          ; controllerunitstr:'RP2040'; cputype:cpu_armv6m; fputype:fpu_soft; flashbase:$10000000; flashsize:$00000000;      srambase:$20000000; sramsize:$00042000),
-      (controllertypestr:'RASPI_PICO'      ; controllerunitstr:'RP2040'; cputype:cpu_armv6m; fputype:fpu_soft; flashbase:$10000000; flashsize:$00200000;      srambase:$20000000; sramsize:$00042000),
-      (controllertypestr:'FEATHER_RP2040'  ; controllerunitstr:'RP2040'; cputype:cpu_armv6m; fputype:fpu_soft; flashbase:$10000000; flashsize:$00800000;      srambase:$20000000; sramsize:$00042000),
-      (controllertypestr:'ITZYBITZY_RP2040'; controllerunitstr:'RP2040'; cputype:cpu_armv6m; fputype:fpu_soft; flashbase:$10000000; flashsize:$00400000;      srambase:$20000000; sramsize:$00042000),
-      (controllertypestr:'QTPY_RP2040'     ; controllerunitstr:'RP2040'; cputype:cpu_armv6m; fputype:fpu_soft; flashbase:$10000000; flashsize:$00400000;      srambase:$20000000; sramsize:$00042000),
-      (controllertypestr:'TINY_2040'       ; controllerunitstr:'RP2040'; cputype:cpu_armv6m; fputype:fpu_soft; flashbase:$10000000; flashsize:$00800000;      srambase:$20000000; sramsize:$00042000),
-      (controllertypestr:'RP2040_PI_ZERO'  ; controllerunitstr:'RP2040'; cputype:cpu_armv6m; fputype:fpu_soft; flashbase:$10000000; flashsize:$01000000;      srambase:$20000000; sramsize:$00042000),
+      (controllertypestr:'RP2040'            ; controllerunitstr:'RP2040'; cputype:cpu_armv6m; fputype:fpu_soft; flashbase:$10000000; flashsize:$00000000;      srambase:$20000000; sramsize:$00042000),
+      (controllertypestr:'RASPI_PICO'        ; controllerunitstr:'RP2040'; cputype:cpu_armv6m; fputype:fpu_soft; flashbase:$10000000; flashsize:$00200000;      srambase:$20000000; sramsize:$00042000),
+      (controllertypestr:'FEATHER_RP2040'    ; controllerunitstr:'RP2040'; cputype:cpu_armv6m; fputype:fpu_soft; flashbase:$10000000; flashsize:$00800000;      srambase:$20000000; sramsize:$00042000),
+      (controllertypestr:'ITZYBITZY_RP2040'  ; controllerunitstr:'RP2040'; cputype:cpu_armv6m; fputype:fpu_soft; flashbase:$10000000; flashsize:$00400000;      srambase:$20000000; sramsize:$00042000),
+      (controllertypestr:'QTPY_RP2040'       ; controllerunitstr:'RP2040'; cputype:cpu_armv6m; fputype:fpu_soft; flashbase:$10000000; flashsize:$00400000;      srambase:$20000000; sramsize:$00042000),
+      (controllertypestr:'TINY_2040'         ; controllerunitstr:'RP2040'; cputype:cpu_armv6m; fputype:fpu_soft; flashbase:$10000000; flashsize:$00800000;      srambase:$20000000; sramsize:$00042000),
+      (controllertypestr:'WAVESHARE_PI_ZERO' ; controllerunitstr:'RP2040'; cputype:cpu_armv6m; fputype:fpu_soft; flashbase:$10000000; flashsize:$01000000;      srambase:$20000000; sramsize:$00042000),
 
       { Raspberry rp2350 }
       (controllertypestr:'RP2350'          ; controllerunitstr:'RP2350'; cputype:cpu_armv7m; fputype:fpu_fpv5_sp_d16; flashbase:$10000000; flashsize:$00000000; srambase:$20000000; sramsize:$00082000),
