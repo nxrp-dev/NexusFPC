@@ -52,7 +52,8 @@ asm
 // habilita a FPU
   ldr r0, .L_CPACR
   ldr r1, [r0]          //;  valor atual do CPACR
-  orr r1, r1, #0xF00000 //; Habilita CP10 e CP11 (acesso completo a FPU)
+//  orr r1, r1, #0xF00000 //; Habilita CP10 e CP11 (acesso completo a FPU)
+  orr r1, r1, #0xFFFFFF //; Enables all coprocessors
   str r1, [r0]          //; Escreve de volta no CPACR
 
   bl PASCALMAIN
