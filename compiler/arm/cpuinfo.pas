@@ -526,7 +526,7 @@ Type
       ct_itzybitzy_rp2040,
       ct_tiny_2040,
       ct_qtpy_rp2040,
-      ct_waveshere_pi_zero,
+      ct_waveshare_pi_zero,
 
       { Raspberry pi pico2 (rp2350) }
       ct_rp2350,
