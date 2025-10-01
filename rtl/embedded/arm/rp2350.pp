@@ -283,7 +283,19 @@ type
       status : longword;
       ctrl : longword;
     end;
-    irqsummary: array[0..11] of longword;
+    reserved: array[0..31] of longword;
+    IRQSUMMARY_PROC0_SECURE0: longword;
+    IRQSUMMARY_PROC0_SECURE1: longword;
+    IRQSUMMARY_PROC0_NONSECURE0: longword;
+    IRQSUMMARY_PROC0_NONSECURE1: longword;
+    IRQSUMMARY_PROC1_SECURE0: longword;
+    IRQSUMMARY_PROC1_SECURE1: longword;
+    IRQSUMMARY_PROC1_NONSECURE0: longword;
+    IRQSUMMARY_PROC1_NONSECURE1: longword;
+    IRQSUMMARY_COMA_WAKE_SECURE: longword;
+    IRQSUMMARY_COMA_WAKE_SECURE: longword;
+    IRQSUMMARY_COMA_WAKE_NONSE: longword;
+    IRQSUMMARY_COMA_WAKE_NONSE: longword;
     intr: array[0..5] of longword;
     proc: array[0..1] of TIOIRQCTRL_Registers;
     dormant_wake: TIOIRQCTRL_Registers;
@@ -300,7 +312,9 @@ type
     gpio_qspi_sclk: TIOQSPI_Registers;
     gpio_qspi_ss: TIOQSPI_Registers;
     gpio_qspi_sd: array[0..3] of TIOQSPI_Registers;
+    reserved: array[0..111] of longword;
     irqsummary: array[0..5] of longword;
+    intr: longword;
     proc: array[0..1] of TIOIRQCTRL_Registers;
     dormant_wake: TIOIRQCTRL_Registers;
   end;
@@ -531,12 +545,6 @@ type
     comp_type : longword;
   end;
 
-(*
-  TPADSBANK0_Registers = record
-    voltage_select : longword;
-    io : array[0..29] of longword;
-  end;
-*)
   TPIO_Registers = record
     ctrl : longword;
     fstat : longword;
@@ -562,12 +570,11 @@ type
     rxf_putget: array[0..3,0..3] of longword;
     gpiobase: longword;
     intr : longword;
-    inte0 : longword;
-    intf0 : longword;
-    ints0 : longword;
-    inte1 : longword;
-    intf1 : longword;
-    ints1 : longword;
+    irq: array[0..1] of record
+      inte : longword;
+      intf : longword;
+      ints : longword;
+    end;
   end;
 
   TPLL_Registers = record
@@ -599,6 +606,7 @@ type
   TPWM_Registers = record
     slice : array[0..11] of TPWMSLICE_Registers;
     en : longword;
+    intr: longword;
     irq: array[0..1] of record
       inte : longword;
       intf : longword;
@@ -624,17 +632,7 @@ type
     randombit : longword;
     count : longword;
   end;
-(*
-  TINTERP_Registers = record
-    accum : array[0..1] of longword;
-    base : array[0..2] of longword;
-    pop : array[0..2] of longword;
-    peek : array[0..2] of longword;
-    ctrl : array[0..1] of longword;
-    add_raw : array[0..1] of longword;
-    base01 : longword;
-  end;
-*)
+
   TSPI_Registers = record
     cr0 : longword;
     cr1 : longword;
@@ -647,39 +645,7 @@ type
     icr : longword;
     dmacr : longword;
   end;
-(*
-  TSSI_Registers = record
-    ctrlr0 : longword;
-    ctrlr1 : longword;
-    ssienr : longword;
-    mwcr : longword;
-    ser : longword;
-    baudr : longword;
-    txftlr : longword;
-    rxftlr : longword;
-    txflr : longword;
-    rxflr : longword;
-    sr : longword;
-    imr : longword;
-    isr : longword;
-    risr : longword;
-    txoicr : longword;
-    rxoicr : longword;
-    rxuicr : longword;
-    msticr : longword;
-    icr : longword;
-    dmacr : longword;
-    dmatdlr : longword;
-    dmardlr : longword;
-    idr : longword;
-    ssi_version_id : longword;
-    dr0 : longword;
-    RESERVED0 : array[0..34] of longword;
-    rx_sample_dly : longword;
-    spi_ctrlr0 : longword;
-    txd_drive_edge : longword;
-  end;
-*)
+
   TSYSCFG_Registers = record
     proc_config : longword;
     proc_in_sync_bypass : longword;
@@ -858,13 +824,11 @@ type
   end;
 *)
 
-
 var
   SysInfo : TSysInfo_Registers absolute SYSINFO_BASE;
   SysCfg : TSYSCFG_REGISTERS absolute SYSCFG_BASE;
   PSM : TPSM_Registers absolute PSM_BASE;
   SIO : TSIO_Registers absolute SIO_BASE;
-//  PPB: array[0..$367] of longword absolute BBP_BASE;
   TICK : TSYSTICK_Registers absolute (PPB_BASE + SYST_CSR);
   PADSBANK0 : TPADSBANK0_Registers absolute PADS_BANK0_BASE;
   PADSQSPI : TPADSQSPI_Registers absolute PADS_QSPI_BASE;
