@@ -293,9 +293,7 @@ type
     IRQSUMMARY_PROC1_NONSECURE0: longword;
     IRQSUMMARY_PROC1_NONSECURE1: longword;
     IRQSUMMARY_COMA_WAKE_SECURE: longword;
-    IRQSUMMARY_COMA_WAKE_SECURE: longword;
-    IRQSUMMARY_COMA_WAKE_NONSE: longword;
-    IRQSUMMARY_COMA_WAKE_NONSE: longword;
+    IRQSUMMARY_COMA_WAKE_NONSECURE: longword;
     intr: array[0..5] of longword;
     proc: array[0..1] of TIOIRQCTRL_Registers;
     dormant_wake: TIOIRQCTRL_Registers;
@@ -570,7 +568,12 @@ type
     rxf_putget: array[0..3,0..3] of longword;
     gpiobase: longword;
     intr : longword;
-    irq: array[0..1] of record
+    irq0: record
+      inte : longword;
+      intf : longword;
+      ints : longword;
+    end;
+    irq1: record
       inte : longword;
       intf : longword;
       ints : longword;
