@@ -452,7 +452,10 @@ type
     {$endif FPC_HAS_FEATURE_THREADING}
     end;
 
-    GlobalState = record
+    GlobalState = object
+    const
+      LockInitializedProcessWide = -1; { Special lockUse value to support DLL_PROCESS_ATTACH / DLL_PROCESS_DETACH-like mechanism. }
+    var
       hugeUsed: SizeUint; { Same as non-existing “hugeAllocated” as huge chunks don’t have free space.
                             Atomic, but can be read unprotected if unreliability is tolerable.
                             Huge chunks don’t have thread affinity, so are tracked here. Presently, this value is added to all memory statistics.
@@ -461,6 +464,7 @@ type
     {$ifdef FPC_HAS_FEATURE_THREADING}
       lock: TRTLCriticalSection;
       lockUse: int32;
+      askedForProcessWideLockInitialization: boolean;
 
       { Like ThreadState.varFree but over orphaned OS chunks. Protected by gs.lock. }
       varFree: VarFreeMap;
@@ -514,8 +518,8 @@ type
 
   class function HeapInc.BinIndexToVarSize(binIndex: SizeUint): SizeUint;
   begin
-    result := binIndex div VarSizesPerClass;
-    result := MaxFixedHeaderAndPayload + (SizeUint(1) shl result - 1) shl FirstVarRangeP2 + (1 + binIndex mod VarSizesPerClass) shl (FirstVarStepP2 + result);
+    { Same. }
+    result := (1 shl (FirstVarRangeP2 - FirstVarStepP2) + 1 + binIndex mod VarSizesPerClass) shl (binIndex div VarSizesPerClass + FirstVarStepP2) - (1 shl FirstVarRangeP2 - MaxFixedHeaderAndPayload);
   end;
 
 {$ifndef HAS_SYSOSFREE}
@@ -1603,14 +1607,14 @@ type
       next := toFree;
       p^.next := next;
       WriteBarrier; { Write p after p^.next. }
-    until InterlockedCompareExchange(toFree, p, next) = next;
+    until {$ifdef VER3_2} InterlockedCompareExchange {$else} AtomicCmpExchange {$endif} (toFree, p, next) = next;
   end;
 
   procedure HeapInc.ThreadState.FlushToFree;
   var
     tf, nx: pFreeChunk;
   begin
-    tf := InterlockedExchange(toFree, nil);
+    tf := {$ifdef VER3_2} InterlockedExchange {$else} AtomicExchange {$endif} (toFree, nil);
     while Assigned(tf) do
     begin
       ReadDependencyBarrier; { Read toFree^.next after toFree. }
@@ -1629,7 +1633,7 @@ type
     lastFree, nextFree: pFreeOSChunk;
   {$endif not HAS_SYSOSFREE}
   begin
-    if gs.lockUse > 0 then
+    if gs.lockUse <> 0 then
       EnterCriticalSection(HeapInc.gs.lock);
     FlushToFree; { Performing it under gs.lock guarantees there will be no new toFree requests. }
     FreeEmptyArenas; { Has to free all empty arenas, otherwise the chunk that contains only empty arenas can leak. }
@@ -1666,7 +1670,7 @@ type
       vOs := vOs^.next;
     end;
     varOS := nil;
-    if gs.lockUse > 0 then
+    if gs.lockUse <> 0 then
       LeaveCriticalSection(gs.lock);
 
 {$ifdef HAS_SYSOSFREE}
@@ -1923,15 +1927,34 @@ end;
                                  InitHeap
 *****************************************************************************}
 
+{$ifdef FPC_HAS_FEATURE_THREADING}
+{ DeferInitHeapProcessWide / DoneHeapProcessWide are meant to support DLL_PROCESS_ATTACH / DLL_PROCESS_DETACH.
+  Otherwise InitHeapThread + FinalizeHeap called per thread do their best with refcounting... }
+procedure DeferInitHeapProcessWide;
+begin
+  HeapInc.gs.askedForProcessWideLockInitialization := true; { Called before InitSystemThreads, cannot initialize the lock... }
+end;
+
+procedure DoneHeapProcessWide;
+begin
+  if HeapInc.gs.lockUse = HeapInc.gs.LockInitializedProcessWide then
+  begin
+    HeapInc.gs.lockUse := 0;
+    DoneCriticalSection(HeapInc.gs.lock);
+  end;
+end;
+
 { This function will initialize the Heap manager and need to be called from
   the initialization of the system unit }
-{$ifdef FPC_HAS_FEATURE_THREADING}
 procedure InitHeapThread;
 begin
-  if HeapInc.gs.lockUse>0 then
-    InterlockedIncrement(HeapInc.gs.lockUse);
+  if (HeapInc.gs.lockUse = 0) and HeapInc.gs.askedForProcessWideLockInitialization then
+    HeapInc.gs.lockUse := HeapInc.gs.LockInitializedProcessWide
+  else if not ((HeapInc.gs.lockUse >= 0) and ({$ifdef VER3_2} InterlockedIncrement {$else} AtomicIncrement {$endif} (HeapInc.gs.lockUse) = 1)) then
+    exit;
+  InitCriticalSection(HeapInc.gs.lock);
 end;
-{$endif}
+{$endif FPC_HAS_FEATURE_THREADING}
 
 procedure InitHeap; public name '_FPC_InitHeap';
 begin
@@ -1942,10 +1965,9 @@ end;
 procedure RelocateHeap;
 begin
 {$ifdef FPC_HAS_FEATURE_THREADING}
-  if HeapInc.gs.lockUse > 0 then
+  if HeapInc.gs.lockUse <> 0 then
     exit;
-  HeapInc.gs.lockUse := 1;
-  InitCriticalSection(HeapInc.gs.lock);
+  InitHeapThread; { Initializes the lock and sets lockUse = 1 (or maybe LockInitializedProcessWide). }
 {$ifndef FPC_SECTION_THREADVARS}
   { threadState pointers still point to main thread's thisTs, but they
     have a reference to the global main thisTs, fix them to point
@@ -1966,7 +1988,7 @@ begin
     exit;
 {$if defined(FPC_HAS_FEATURE_THREADING)}
   HeapInc.thisTs.Orphan;
-  if (HeapInc.gs.lockUse > 0) and (InterlockedDecrement(HeapInc.gs.lockUse) = 0) then
+  if (HeapInc.gs.lockUse > 0) and ({$ifdef VER3_2} InterlockedDecrement {$else} AtomicDecrement {$endif} (HeapInc.gs.lockUse) = 0) then
     DoneCriticalSection(HeapInc.gs.lock);
 {$elseif defined(HAS_SYSOSFREE)}
   if Assigned(HeapInc.thisTs.freeOS1) then
