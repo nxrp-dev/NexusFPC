@@ -1698,9 +1698,27 @@ END;
 {---------------------------------------------------------------------------}
 PROCEDURE TInputLine.HandleEvent (Var Event: TEvent);
 CONST PadKeys = [$47, $4B, $4D, $4F, $73, $74];
-VAR WasAppending: Boolean; ExtendBlock: Boolean; OldData: String;
+CONST
+  DelimiterChars: SET OF AnsiChar =
+    [' ', '.', ',', ';', ':', '!', '?', '-', '_', '/', '\',
+     '(', ')', '[', ']', '{', '}', '<', '>',
+     '"', '''', '`', '|', '@', '#', '$', '%', '^', '&',
+     '*', '+', '=', '~', #9, #10, #13];
+VAR WasAppending: Boolean; ExtendBlock: Boolean; OldData: Sw_String;
 Delta, Anchor, OldCurPos, OldFirstPos, OldSelStart, OldSelEnd: Sw_Integer;
 SelectedTextAnsi: AnsiString; // For SetGlobalClipboardData
+S: Sw_String;
+Len, I: Integer;
+
+  FUNCTION IsDelimiter(Ch: Sw_Char): Boolean;
+  BEGIN
+    // Check if the character is in the predefined set of delimiters.
+    // This is safe for Unicode chars as punctuation is in the AnsiChar range.
+    IF Ch <= #255 THEN
+      Result := AnsiChar(Ch) IN DelimiterChars
+    ELSE
+      Result := False;
+  END;
 
    FUNCTION MouseDelta: Sw_Integer;
    VAR Mouse : TPOint;
@@ -1951,19 +1969,47 @@ BEGIN
              Inc(CurPos);                             { Move cursor }
              CheckValid(True);                        { Check if valid }
            End;
+           kbCtrlLeft: Begin
+             if (Data <> Sw_PString_Empty) and (CurPos > 0) then
+             begin
+               S := Data Sw_PString_DeRef;
+               I := CurPos;
+               // Skip any delimiters immediately to the left
+               while (I > 0) and IsDelimiter(S[I]) do Dec(I);
+               // Skip any word characters to the left
+               while (I > 0) and not IsDelimiter(S[I]) do Dec(I);
+               CurPos := I;
+             end;
+           End;
+           kbCtrlRight: Begin
+             if Data <> Sw_PString_Empty then
+             begin
+               S := Data Sw_PString_DeRef;
+               Len := Length(S);
+               I := CurPos;
+               // Skip the word
+               while (I < Len) and not IsDelimiter(S[I+1]) do Inc(I);
+               // Skip trailing delimiters
+               while (I < Len) and IsDelimiter(S[I+1]) do Inc(I);
+               CurPos := I;
+             end;
+           End;
            kbHome: CurPos := 0;                       { Move to line start }
            kbEnd: Begin                               { Move to line end }
              If Data = Sw_PString_Empty Then CurPos := 0  { Invalid data ptr }
                Else CurPos := Length(Data Sw_PString_DeRef);  { Set cursor position }
              CheckValid(True);                        { Check if valid }
            End;
-           kbBack: If (Data <> Sw_PString_Empty) AND (CurPos > 0)  { Not at line start }
-           Then Begin
-             Delete(Data Sw_PString_DeRef, CurPos, 1);  { Backspace over AnsiChar }
-             Dec(CurPos);                             { Move cursor back one }
-             If (FirstPos > 0) Then Dec(FirstPos);    { Move first position }
-             CheckValid(True);                        { Check if valid }
-           End;
+           kbBack: If Data <> Sw_PString_Empty Then
+             Begin
+               If (SelStart = SelEnd) AND (CurPos > 0) Then
+               Begin
+                 SelStart := CurPos - 1;
+                 SelEnd := CurPos;
+               End;
+               DeleteSelect;
+               CheckValid(True);
+             End;
            kbDel: If Data <> Sw_PString_Empty Then Begin  { Delete character }
              If (SelStart = SelEnd) Then              { Select all on }
                If (CurPos < Length(Data Sw_PString_DeRef)) Then Begin { Cursor not at end }
@@ -3701,6 +3747,7 @@ BEGIN
    Inherited Init(Bounds, '', wnNoNumber);            { Call ancestor }
    Flags := wfClose;                                  { Close flag only }
    InitViewer(HistoryId);                             { Create list view }
+   SelectNext(False);
 END;
 
 {--THistoryWindow-----------------------------------------------------------}
