@@ -1717,7 +1717,6 @@ implementation
 {$ifdef i8086}
                        (longint(val)>=-128) and (val<=127) then
 {$else i8086}
-                       (opsize<>S_W) and
                        (aint(val)>=-128) and (val<=127) then
 {$endif not i8086}
                       ot:=OT_IMM8 or OT_SIGNED
