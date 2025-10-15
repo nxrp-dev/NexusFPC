@@ -1,7 +1,7 @@
 {
     Copyright (c) 1998-2002 by Peter Vreman and Florian Klaempfl
 
-    Convert i386ins.dat from Nasm to a .inc file for usage with
+    Convert x86ins.dat from Nasm to a .inc file for usage with
     the Free pascal compiler
 
     See the file COPYING.FPC, included in this distribution,
@@ -298,6 +298,10 @@ begin
               intopcode:=Copy(s,2,j-2);
               { Conditional }
               if (intopcode[length(intopcode)]='c') and
+                 (intopcode[length(intopcode)-1]='c') and
+                 ((length(intopcode)>3) and (intopcode[length(intopcode)-2]='s')) then
+                dec(byte(intopcode[0]),3);
+              if (intopcode[length(intopcode)]='c') and
                  (intopcode[length(intopcode)-1]='c') then
                 dec(byte(intopcode[0]),2);
               attopcode:=intopcode;
@@ -309,6 +313,10 @@ begin
               opcode:='A_'+Copy(s,2,i-2);
               intopcode:=Copy(s,2,i-2);
               { intel conditional }
+              if (intopcode[length(intopcode)]='c') and
+                 (intopcode[length(intopcode)-1]='c') and
+                 ((length(intopcode)>3) and (intopcode[length(intopcode)-2]='s')) then
+                dec(byte(intopcode[0]),3);
               if (intopcode[length(intopcode)]='c') and
                  (intopcode[length(intopcode)-1]='c') then
                 dec(byte(intopcode[0]),2);
@@ -354,6 +362,10 @@ begin
                   attsuffix:='attsufNONE';
               end;
               { att Conditional }
+              if (attopcode[length(attopcode)]='C') and
+                 (attopcode[length(attopcode)-1]='C') and
+                 ((length(attopcode)>3) and (attopcode[length(attopcode)-2]='S')) then
+                dec(byte(attopcode[0]),3);
               if (attopcode[length(attopcode)]='C') and
                  (attopcode[length(attopcode)-1]='C') then
                 dec(byte(attopcode[0]),2);
