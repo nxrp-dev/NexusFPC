@@ -220,7 +220,7 @@ uses
 {$endif}
       );
 
-      regstabs_table : array[tregisterindex] of shortint = (
+      regstabs_table : array[tregisterindex] of smallint = (
 {$if defined(x86_64)}
         {$i r8664stab.inc}
 {$elseif defined(i386)}
@@ -230,7 +230,7 @@ uses
 {$endif}
       );
 
-      regdwarf_table : array[tregisterindex] of shortint = (
+      regdwarf_table : array[tregisterindex] of smallint = (
 {$if defined(x86_64)}
         {$i r8664dwrf.inc}
 {$elseif defined(i386)}
@@ -348,8 +348,8 @@ topsize2memsize: array[topsize] of integer =
     function findreg_by_number(r:Tregister):tregisterindex;
     function std_regnum_search(const s:string):Tregister;
     function std_regname(r:Tregister):string;
-    function dwarf_reg(r:tregister):shortint;
-    function dwarf_reg_no_error(r:tregister):shortint;
+    function dwarf_reg(r:tregister):smallint;
+    function dwarf_reg_no_error(r:tregister):smallint;
     function eh_return_data_regno(nr: longint): longint;
 
     function inverse_cond(const c: TAsmCond): TAsmCond; {$ifdef USEINLINE}inline;{$endif USEINLINE}
@@ -741,14 +741,14 @@ implementation
           end;
       end;
 
-    function dwarf_reg(r:tregister):shortint;
+    function dwarf_reg(r:tregister):smallint;
       begin
         result:=regdwarf_table[findreg_by_number(r)];
         if result=-1 then
           internalerror(200603251);
       end;
 
-    function dwarf_reg_no_error(r:tregister):shortint;
+    function dwarf_reg_no_error(r:tregister):smallint;
       begin
         result:=regdwarf_table[findreg_by_number(r)];
       end;

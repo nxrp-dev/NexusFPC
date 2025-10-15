@@ -27,7 +27,7 @@ var s : string;
     names,numbers,stdnames,intnames,nasmnames,attnames,stabs,dwarf16,dwarf32,dwarf64,ots,ops:
         array[0..max_regcount-1] of string[63];
     regnumber_index,std_regname_index,int_regname_index,att_regname_index,
-    nasm_regname_index:array[0..max_regcount-1] of byte;
+    nasm_regname_index:array[0..max_regcount-1] of longint;
     i8086  : boolean;
     x86_64 : boolean;
     fileprefix : string;
@@ -86,7 +86,7 @@ end;
 
 procedure build_regnum_index;
 
-var h,i,j,p,t:byte;
+var h,i,j,p,t:longint;
 
 begin
   {Build the registernumber2regindex index.
@@ -117,7 +117,7 @@ end;
 
 procedure build_std_regname_index;
 
-var h,i,j,p,t:byte;
+var h,i,j,p,t:longint;
 
 begin
   {Build the registernumber2regindex index.
@@ -148,7 +148,7 @@ end;
 
 procedure build_int_regname_index;
 
-var h,i,j,p,t:byte;
+var h,i,j,p,t:longint;
 
 begin
   {Build the registernumber2regindex index.
@@ -179,7 +179,7 @@ end;
 
 procedure build_att_regname_index;
 
-var h,i,j,p,t:byte;
+var h,i,j,p,t:longint;
 
 begin
   {Build the registernumber2regindex index.
@@ -210,7 +210,7 @@ end;
 
 procedure build_nasm_regname_index;
 
-var h,i,j,p,t:byte;
+var h,i,j,p,t:longint;
 
 begin
   {Build the registernumber2regindex index.
