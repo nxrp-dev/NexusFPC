@@ -4034,7 +4034,8 @@ implementation
              &3: inc(codes,c);
             &10,
             &11,
-            &12: inc(codes, 1);
+            &12,
+            &13: inc(codes, 1);
             &74: opmode := 0;
             &75: opmode := 1;
             &76: opmode := 2;
@@ -4401,6 +4402,10 @@ implementation
               end;
             &13 :
               begin
+{$ifdef x86_64}
+                if not(needed_VEX or needed_EVEX) then
+                  maybewriterex;
+{$endif x86_64}
                 bytes[0]:=ord(codes^)+condval[condition];
                 inc(codes);
                 objdata.writebytes(bytes,1);
