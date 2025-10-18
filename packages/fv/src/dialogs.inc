@@ -77,7 +77,7 @@ USES
 {$endif FV_UNICODE}
    FreeVision.Fvconsts, System.Objects,                       { Standard GFV units }
 {$ifdef FV_UNICODE}
-   FreeVision.Udrivers, FreeVision.Uviews, FreeVision.Uvalidate, System.Unicode.Graphemebreakproperty;
+   FreeVision.Udrivers, FreeVision.Uviews, FreeVision.Uvalidate, System.Unicode.Graphemebreakproperty, System.SysUtils;
 {$else FV_UNICODE}
    FreeVision.Drivers, FreeVision.Views, FreeVision.Validate;
 {$endif FV_UNICODE}
@@ -98,7 +98,7 @@ USES
 {$endif FV_UNICODE}
    FVConsts, Objects,                       { Standard GFV units }
 {$ifdef FV_UNICODE}
-   UDrivers, UViews, UValidate, GraphemeBreakProperty;
+   UDrivers, UViews, UValidate, GraphemeBreakProperty, SysUtils;
 {$else FV_UNICODE}
    Drivers, Views, Validate;
 {$endif FV_UNICODE}
@@ -2370,6 +2370,7 @@ END;
 PROCEDURE TButton.HandleEvent (Var Event: TEvent);
 VAR Down: Boolean; C: AnsiChar; ButRect: TRect;
     Mouse : TPoint;
+    HotkeyMatches: Boolean;
 BEGIN
    ButRect.A.X := 0;                            { Get origin point }
    ButRect.A.Y := 0;                            { Get origin point }
@@ -2407,9 +2408,21 @@ BEGIN
      evKeyDown: Begin
        If Title <> Sw_PString_Empty Then C := HotKey(Title Sw_PString_DeRef)     { Key title hotkey }
          Else C := #0;                                { Invalid title }
-       If (Event.KeyCode = GetAltCode(C)) OR          { Alt AnsiChar }
-       (Owner^.Phase = phPostProcess) AND (C <> #0)
-       AND (Upcase(Event.CharCode) = C) OR            { Matches hotkey }
+       HotkeyMatches := False;
+       if C <> #0 then
+       begin
+         {$ifdef FV_UNICODE}
+         if Event.UnicodeChar <> #0 then HotkeyMatches := (WideUpperCase(Event.UnicodeChar) = WideUpperCase(string(C)));
+         if not HotkeyMatches then
+           HotkeyMatches := (GetAltChar(Event.ScanCode shl 8) = C);
+         {$else}
+         if Event.CharCode <> #0 then HotkeyMatches := (UpCase(Event.CharCode) = C);
+         if not HotkeyMatches then
+           HotkeyMatches := (UpCase(GetAltChar(Event.ScanCode shl 8)) = C);
+         {$endif}
+       end;
+
+       If (HotkeyMatches AND (Owner^.Phase = phPostProcess)) OR
        (State AND sfFocused <> 0) AND                 { View focused }
        ((Event.CharCode = ' ') OR                     { Space bar }
        (Event.KeyCode=kbEnter)) Then Begin            { Enter key }
@@ -2464,8 +2477,16 @@ BEGIN
    Strings.Init(I, 0);                                { Create collection }
    While (AStrings <> Nil) Do Begin
      P := AStrings;                                   { Transfer item ptr }
+   {$ifdef FV_UNICODE}
+     Strings.AtInsert(Strings.Count, AStrings^.Value);
+   {$else}
      Strings.AtInsert(Strings.Count, AStrings^.Value);{ Insert string }
+   {$endif}
      AStrings := AStrings^.Next;                      { Move to next item }
+   {$ifndef FV_UNICODE}
+     { In non-unicode, AStrings^.Value is a PString we own and must dispose }
+     if P^.Value <> nil then DisposeStr(P^.Value);
+   {$endif}
      Dispose(P);                                      { Dispose prior item }
    End;
    Sel := 0;
@@ -2503,6 +2524,7 @@ END;
 {  Done -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 26Jul99 LdB              }
 {---------------------------------------------------------------------------}
 DESTRUCTOR TCluster.Done;
+VAR i: Integer;
 BEGIN
    Strings.Done;                                      { Dispose of strings }
    Inherited Done;                                    { Call ancestor }
@@ -2630,8 +2652,12 @@ BEGIN
            WordRec(B[Col+2]).Lo := Byte(Marker[
              MultiMark(Cur) + 1]);                    { Transfer marker }
 {$endif FV_UNICODE}
+           {$ifdef FV_UNICODE}
+           MoveCStr(B[Col+5], UnicodeString(Strings.At(Cur)), Color);
+           {$else}
            MoveCStr(B[Col+5], Sw_PString(Strings.At(
              Cur)) Sw_PString_Deref, Color);                          { Transfer item string }
+           {$endif}
            If ShowMarkers AND (State AND sfFocused <> 0)
            AND (Cur = Sel) Then Begin                 { Current is selected }
 {$ifdef FV_UNICODE}
@@ -2723,7 +2749,13 @@ END;
 {  HandleEvent -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 04Jun98 LdB       }
 {---------------------------------------------------------------------------}
 PROCEDURE TCluster.HandleEvent (Var Event: TEvent);
-VAR C: AnsiChar; I, S, Vh: Sw_Integer; Key: Word; Mouse: TPoint; Ts: PString;
+VAR C: AnsiChar; I, S, Vh: Sw_Integer; Key: Word; Mouse: TPoint;
+{$ifdef FV_UNICODE}
+TempStr: UnicodeString;
+{$else}
+Ts: PString;
+{$endif}
+HotkeyMatches: Boolean;
 
    PROCEDURE MoveSel;
    BEGIN
@@ -2785,13 +2817,31 @@ BEGIN
        End;
        Else Begin                                     { Not an arrow key }
          For I := 0 To Strings.Count-1 Do Begin       { Scan each item }
+           {$ifdef FV_UNICODE}
+           TempStr := UnicodeString(Strings.At(I));
+           C := HotKey(string(TempStr)); { HotKey expects AnsiString, so we convert }
+           {$else}
            Ts := Strings.At(I);                       { Fetch string pointer }
            If (Ts <> Nil) Then C := HotKey(Ts^)       { Check for hotkey }
              Else C := #0;                            { No valid string }
-           If (GetAltCode(C) = Event.KeyCode) OR      { Hot key for item }
+           {$endif}
+           HotkeyMatches := False;
+           if C <> #0 then
+           begin
+             {$ifdef FV_UNICODE}
+             if Event.UnicodeChar <> #0 then HotkeyMatches := (WideUpperCase(Event.UnicodeChar) = WideUpperCase(string(C)));
+             if not HotkeyMatches then
+               HotkeyMatches := (GetAltChar(Event.ScanCode shl 8) = C);
+             {$else}
+             if Event.CharCode <> #0 then HotkeyMatches := (UpCase(Event.CharCode) = C);
+             if not HotkeyMatches then
+               HotkeyMatches := (UpCase(GetAltChar(Event.ScanCode shl 8)) = C);
+             {$endif}
+           end;
+
+           If HotkeyMatches AND
            (((Owner^.Phase = phPostProcess) OR        { Owner in post process }
-           (State AND sfFocused <> 0)) AND (C <> #0)  { Non zero hotkey }
-           AND (UpCase(Event.CharCode) = C))          { Matches current key }
+           (State AND sfFocused <> 0)) AND (C <> #0))  { Non zero hotkey }
            Then Begin
              If ButtonState(I) Then Begin             { Check mask enabled }
                If Focus Then Begin                    { Check view focus }
@@ -2850,7 +2900,12 @@ END;
 {  Column -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 03Jun98 LdB            }
 {---------------------------------------------------------------------------}
 FUNCTION TCluster.Column (Item: Sw_Integer): Sw_Integer;
-VAR I, Col, Width, L, Vh: Sw_Integer; Ts: PString;
+VAR I, Col, Width, L, Vh: Sw_Integer;
+{$ifdef FV_UNICODE}
+Ts: UnicodeString;
+{$else}
+Ts: PString;
+{$endif}
 BEGIN
    Vh := Size.Y;                              { Vertical size }
    If (Item >= Vh) Then Begin                         { Valid selection }
@@ -2862,9 +2917,14 @@ BEGIN
          Width := 0;                                  { Zero width }
        End;
        If (I < Strings.Count) Then Begin              { Valid string }
+       {$ifdef FV_UNICODE}
+         Ts := UnicodeString(Strings.At(I));
+         L := CTextWidth(Ts);
+       {$else}
          Ts := Strings.At(I);                         { Transfer string }
          If (Ts <> Nil) Then L := CStrLen(Ts^)        { Length of string }
            Else L := 0;                               { No string }
+       {$endif}
        End;
        If (L > Width) Then Width := L;                { Hold longest string }
      End;
@@ -3649,6 +3709,7 @@ END;
 {---------------------------------------------------------------------------}
 PROCEDURE TLabel.HandleEvent (Var Event: TEvent);
 VAR C: AnsiChar;
+HotkeyMatches: Boolean;
 
    PROCEDURE FocusLink;
    BEGIN
@@ -3667,9 +3728,21 @@ BEGIN
          if text<>Sw_PString_Empty then
            begin
              C := HotKey(Text Sw_PString_DeRef);            { Check for hotkey }
-             If (GetAltCode(C) = Event.KeyCode) OR          { Alt plus AnsiChar }
-               ((C <> #0) AND (Owner^.Phase = phPostProcess)  { Post process phase }
-                AND (UpCase(Event.CharCode) = C)) Then         { Upper case match }
+             HotkeyMatches := False;
+             if C <> #0 then
+             begin
+               {$ifdef FV_UNICODE}
+               if Event.UnicodeChar <> #0 then HotkeyMatches := (WideUpperCase(Event.UnicodeChar) = WideUpperCase(string(C)));
+               if not HotkeyMatches then
+                 HotkeyMatches := (GetAltChar(Event.ScanCode shl 8) = C);
+               {$else}
+               if Event.CharCode <> #0 then HotkeyMatches := (UpCase(Event.CharCode) = C);
+               if not HotkeyMatches then
+                 HotkeyMatches := (UpCase(GetAltChar(Event.ScanCode shl 8)) = C);
+               {$endif}
+             end;
+
+             If HotkeyMatches AND (C <> #0) AND (Owner^.Phase = phPostProcess) Then
                FocusLink;                                   { Focus link view }
            end;
        end;
