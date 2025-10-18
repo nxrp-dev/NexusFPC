@@ -77,12 +77,12 @@ function AddSpecialSequence(const St : Shortstring;Proc : Tprocedure) : PTreeEle
 uses
   System.Console.Mouse,  System.Strings,System.Console.Unixkvmbase,
   UnixApi.TermIO,UnixApi.Base
-  {$ifdef Linux},LinuxApi.Vcs{$endif};
+  {$ifdef Linux},LinuxApi.Vcs{$endif},System.Console.Video,System.CharSet;
 {$ELSE FPC_DOTTEDUNITS}
 uses
   Mouse,  Strings,unixkvmbase,
   termio,baseUnix
-  {$ifdef linux},linuxvcs{$endif};
+  {$ifdef linux},linuxvcs{$endif},video,charset;
 {$ENDIF FPC_DOTTEDUNITS}
 
 {$i keyboard.inc}
@@ -139,6 +139,33 @@ const
     );
 
 {$endif Unused}
+
+function UnicodeToSingleByte(CodePoint: Cardinal): AnsiChar;
+var
+  UStr: UnicodeString;
+  TempStr: RawByteString;
+begin
+  if CodePoint > $FFFF then
+  begin
+    UnicodeToSingleByte := '?';
+    Exit;
+  end;
+  UStr := UnicodeString(WideChar(CodePoint));
+
+  TempStr := UTF8Encode(UStr);
+
+  SetCodePage(TempStr, GetLegacyCodePage, True);
+
+  if Length(TempStr) = 1 then
+  begin
+    if (TempStr[1] = '?') and (CodePoint <> ord('?')) then
+      UnicodeToSingleByte := '?'
+    else
+      UnicodeToSingleByte := TempStr[1];
+  end
+  else
+    UnicodeToSingleByte := '?';
+end;
 
 procedure SetRawMode(b:boolean);
 
@@ -1716,9 +1743,26 @@ begin
       ScanValue :=cScanValue[Key];
 
     if essCtrl in SState then
-      nKey:=Ord(k.AsciiChar); { if Ctrl+key then no normal UnicodeChar. Mimic Windows keyboard driver. }
+      begin
+        // For modern protocols (kitty, modifyOtherKeys), Ctrl+<letter> should
+        // generate the letter itself, not a C0 control character.
+        // Therefore, we do not overwrite nKey (which becomes UnicodeChar)
+        // with the control character's code if a letter was pressed.
+        if not (((Key >= $41) and (Key <= $5A)) or ((Key >= $61) and (Key <= $7A))) then
+          nKey := Ord(k.AsciiChar);
+      end;
 
     k.VirtualScanCode := (ScanValue shl 8) or Ord(k.AsciiChar);
+
+    // This is a dirty hack. Unfortunately, our hotkey mapping code
+    // (everywhere except for the recently fixed code for the top menu)
+    // for some reason (this is to be debugged) cannot handle events
+    // with nonzero _character_ codes. So until all those code paths are fixed,
+    // we zero out the character codes here to make Alt hotkeys work properly.
+    // However, we do this only for Latin hotkeys, so that non-Latin ones
+    // can continue working with the new top menu code. Latin hotkeys,
+    // on the other hand, will be recognized by their _key_ codes.
+    if (essAlt in SState) and (nKey < 128) then nKey := 0;
 
     if nKey <= $FFFF then
       begin
@@ -1728,9 +1772,10 @@ begin
     else
       PushUnicodeKey (k,nKey,char(k.AsciiChar));
 
-    if byte(k.AsciiChar) = 27 then PushKey(k);
+    // This line caused duplicate ESC key press events in kitty mode
+    // if byte(k.AsciiChar) = 27 then PushKey(k);
   end else
-    PushUnicodeKey (k,nKey,'?');
+    PushUnicodeKey (k,nKey,UnicodeToSingleByte(nKey));
 end;
 
 procedure xterm_ModifyOtherKeys;
@@ -2220,10 +2265,7 @@ begin
   end else if (essCtrl in CurrentShiftState) then CurrentShiftState:=CurrentShiftState-[essRightCtrl,essCtrl,essLeftCtrl];
 end;
 
-
 function ReadKey:TEnhancedKeyEvent;
-const
-  ReplacementAsciiChar='?';
 var
   store    : array [0..31] of AnsiChar;
   arrayind : byte;
@@ -2348,7 +2390,7 @@ var
       if params[2] <= 127 then
         k.AsciiChar := AnsiChar(params[2])
       else
-        k.AsciiChar := '?';
+        k.AsciiChar := UnicodeToSingleByte(params[2]);
 
       ScanCode := params[1]; // wVirtualScanCode
       if ScanCode = 0 then
@@ -2643,7 +2685,7 @@ begin
       if Utf8KeyboardInputEnabled then
         begin
           UnicodeCodePoint:=ReadUtf8(ch);
-          PushUnicodeKey(k,UnicodeCodePoint,ReplacementAsciiChar);
+          PushUnicodeKey(k,UnicodeCodePoint,UnicodeToSingleByte(UnicodeCodePoint));
         end
       else
         PushKey(k);
@@ -2684,17 +2726,9 @@ begin
           store[arrayind]:=ch;
           inc(arrayind);
 
-          // If we detect a pattern for a complex parameterized sequence (ESC [ <digit>),
-          // which is common for win32-input-mode and Kitty, we switch from a non-blocking
-          // to a blocking read. This ensures we read the entire sequence even if it
-          // arrives in chunks with micro-delays.
-          if
-            (arrayind = 4) and
-            (store[0]=#27) and
-            (store[1]='[') and
-            (store[2] in ['0'..'9']) and
-            ((store[3] in ['0'..'9']) or (store[3] = ';')) and
-            (not ((store[2] = '1') and (store[3] = ';'))) // skip for legacy seqs like ESC[1;something
+          // Switch to blocking read if found win32-input-mode-encoded ESC key
+          // This fixes that key behavior in that mode
+          if (arrayind = 5) and (store[0]=#27) and (store[1]='[') and (store[2]='2') and (store[3]='7') and (store[4]=';')
           then
           begin
             // Enter blocking read loop with a safety break
@@ -2779,7 +2813,7 @@ begin
                 k.ShiftState := [essAlt];
                 k.VirtualScanCode := 0;
 
-                PushUnicodeKey(k, UnicodeCodePoint, ReplacementAsciiChar);
+                PushUnicodeKey(k, UnicodeCodePoint, UnicodeToSingleByte(UnicodeCodePoint));
                 ReadKey := PopKey;
                 exit;
               end
@@ -2792,10 +2826,12 @@ begin
               end;
             end;
           end;
-          RestoreArray;
+          // This line caused duplicate ESC key press events in legacy mode
+          // RestoreArray;
         end
         else
-        NPT:=FoundNPT;
+          NPT:=FoundNPT;
+
         if assigned(NPT) and NPT^.CanBeTerminal then
          begin
            if assigned(NPT^.SpecialHandler) then
@@ -2898,9 +2934,6 @@ begin
   else
     begin
 {$endif}
-      { default for Shift prefix is ^ A}
-      if ShiftPrefix = 0 then
-        ShiftPrefix:=1;
       {default for Alt prefix is ^Z }
       if AltPrefix=0 then
         AltPrefix:=26;
@@ -2916,20 +2949,18 @@ begin
         end;
       {kitty_keys_no:=true;}
       isKittyKeys:=kitty_keys_yes;
-      envInput := fpgetenv('TV_INPUT');
-      if length(envInput) > 0 then
-        envInput[1] := UpCase(envInput[1]);
 
-      if envInput = 'Win32' then
+      envInput := LowerCase(fpgetenv('TV_INPUT'));
+      if envInput = 'win32' then
         begin
           write(#27'[?9001h');
         end
-      else if envInput = 'Kitty' then
+      else if envInput = 'kitty' then
         begin
           write(#27'[>31u');
           KittyKeyAvailability;
         end
-      else if envInput = 'Legacy' then
+      else if envInput = 'legacy' then
         begin
           // Do nothing
         end
@@ -3037,6 +3068,7 @@ var
   MyKey: TEnhancedKeyEvent;
   EscUsed,AltPrefixUsed,CtrlPrefixUsed,ShiftPrefixUsed,Again : boolean;
   SState: TEnhancedShiftState;
+  i: integer;
 
 begin {main}
   if PendingEnhancedKeyEvent<>NilEnhancedKeyEvent then
@@ -3155,6 +3187,34 @@ begin {main}
   until not Again;
   if MyScan = 0 then
       MyScan:=EvalScan(ord(MyChar));
+  // Legacy mode fix: interpret single-byte C0 control characters. This logic
+  // applies only when a raw character was read, not a pre-parsed sequence.
+  if (MyKey.VirtualScanCode and $FF00 = 0) and (Ord(MyChar) >= 1) and (Ord(MyChar) <= 31) and not (essCtrl in SState) then
+  begin
+    case Ord(MyChar) of
+      8, 9, 10, 13, 27: // Backspace, Tab, LF, CR, Esc are their own keys
+        begin
+          // Do not treat these as Ctrl+<key> combinations in this context.
+        end;
+      else // This is a Ctrl+<key> combination (e.g., Ctrl+A = #1).
+      begin
+        Include(SState, essCtrl);
+        // The application expects the actual character ('A'), not the control
+        // code (#1). We must find the original character based on the scan code
+        // to mimic the behavior of the win32 input mode.
+        // Search for the corresponding character in the scan code table.
+        for i := Ord('A') to Ord('Z') do
+        begin
+          if (cScanValue[i] = MyScan) then
+          begin
+            MyChar := AnsiChar(i);
+            MyUniChar := WideChar(i);
+            break;
+          end;
+        end;
+      end;
+    end;
+  end;
   if (essCtrl in SState) and (not (essAlt in SState)) then
     begin
       if (MyChar=#9) and (MyScan <> $17) then
@@ -3192,7 +3252,15 @@ begin {main}
       SysGetEnhancedKeyEvent.AsciiChar:=MyChar;
       SysGetEnhancedKeyEvent.UnicodeChar:=MyUniChar;
       SysGetEnhancedKeyEvent.ShiftState:=SState;
-      SysGetEnhancedKeyEvent.VirtualScanCode:=(MyScan shl 8) or Ord(MyChar);
+
+      // For Ctrl+<letter>, KeyCode must be 1..26 for A..Z.
+      // This ensures backward compatibility with older code.
+      // We check for Ctrl without Alt to avoid interfering with AltGr.
+      if (essCtrl in SState) and not (essAlt in SState) and (UpCase(MyChar) in ['A'..'Z']) then
+        SysGetEnhancedKeyEvent.VirtualScanCode := Ord(UpCase(MyChar)) - Ord('A') + 1
+      else
+        // Default behavior for all other key combinations.
+        SysGetEnhancedKeyEvent.VirtualScanCode := (MyScan shl 8) or Ord(MyChar);
     end;
   LastShiftState:=SysGetEnhancedKeyEvent.ShiftState; {to fake shift state later}
 end;

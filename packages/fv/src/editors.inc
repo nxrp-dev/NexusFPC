@@ -558,7 +558,7 @@ CONST
   { Arrays that hold all the command keys and options. }
   { Editor command constants for new features. }
   cmSelectAll   = 250;
-  FirstKeys : array[0..47 * 2] of Word = (47, Ord (^A),    cmWordLeft,
+  FirstKeys : array[0..46 * 2] of Word = (46, Ord (^A),    cmSelectAll,
                                               Ord (^B),    cmReformPara,
                                               Ord (^C),    cmPageDown,
                                               Ord (^D),    cmCharRight,
@@ -600,7 +600,6 @@ CONST
                                               kbIns,       cmInsMode,
                                               kbDel,       cmDelChar,
                                               kbCtrlBack,  cmDelStart,
-                                              7745,        cmSelectAll,
                                               kbShiftIns,  cmPaste,
                                               kbShiftDel,  cmCut,
                                               kbCtrlIns,   cmCopy,
@@ -3268,7 +3267,32 @@ end; { TEditor.NextLine }
 
 
 function TEditor.NextWord (P : Sw_Word) : Sw_Word;
+var
+  LineStartPtr, LineEndPtr, LastSignificantPtr: Sw_Word;
 begin
+  LineEndPtr   := LineEnd(P);
+
+  // Special case: if cursor is on the last word of the line, jump to the end of the line.
+  if P < LineEndPtr then
+  begin
+    LineStartPtr := LineStart(P);
+    // Find the position of the last significant character on the line.
+    LastSignificantPtr := LineEndPtr;
+    if LastSignificantPtr > LineStartPtr then
+      LastSignificantPtr := PrevChar(LastSignificantPtr); // Move before any EOL characters.
+
+    while (LastSignificantPtr > LineStartPtr) and IsDelimiter(BufChar(LastSignificantPtr)) do
+      LastSignificantPtr := PrevChar(LastSignificantPtr);
+
+    // If cursor is at or after the last significant character, the next word is the end of the line.
+    if P >= LastSignificantPtr then
+    begin
+      NextWord := LineEndPtr;
+      exit;
+    end;
+  end;
+
+  // Default to original behavior (which can cross lines).
   while (P < BufLen) and IsDelimiter(BufChar(P)) do
     P := NextChar(P);
   while (P < BufLen) and not IsDelimiter(BufChar(P)) do
@@ -3342,7 +3366,28 @@ end; { TEditor.PrevLine }
 
 
 function TEditor.PrevWord (P : Sw_Word) : Sw_Word;
+var
+  LineStartPtr, FirstSignificantPtr: Sw_Word;
 begin
+  LineStartPtr := LineStart(P);
+
+  // Special case: if cursor is on the first word of the line, jump to the start of the line.
+  if P > LineStartPtr then
+  begin
+    // Find the first significant character on the current line.
+    FirstSignificantPtr := LineStartPtr;
+    while (FirstSignificantPtr < P) and IsDelimiter(BufChar(FirstSignificantPtr)) do
+      FirstSignificantPtr := NextChar(FirstSignificantPtr);
+
+    // If the cursor is at or before the first significant character, move to the absolute beginning of the line.
+    if P <= FirstSignificantPtr then
+    begin
+      PrevWord := LineStartPtr;
+      exit;
+    end;
+  end;
+
+  // Default to original behavior (which can cross lines).
   // Skip any delimiters immediately to the left
   while (P > 0) and IsDelimiter(BufChar(PrevChar(P))) do
     P := PrevChar(P);
