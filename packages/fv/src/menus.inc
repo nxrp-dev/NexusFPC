@@ -706,12 +706,25 @@ BEGIN
                else
                Begin
                  Target := @Self; // Standard hotkeys target the current menu.
+
+                 // Path 1: Character-based search (for correct layouts like Russian)
                  {$ifdef FV_UNICODE}
                  searchChar := E.UnicodeChar;
                  {$else}
                  searchChar := E.CharCode;
                  {$endif}
                  if searchChar <> #0 then P := Target^.FindItem(searchChar);
+
+                 // Path 2: Scancode-based search (fallback for EN hotkeys in RU layout)
+                 if P = nil then
+                 Begin
+                   {$ifdef FV_UNICODE}
+                   searchChar := WideChar(GetAltChar(E.ScanCode shl 8));
+                   {$else}
+                   searchChar := GetAltChar(E.ScanCode shl 8);
+                   {$endif}
+                   if searchChar <> #0 then P := Target^.FindItem(searchChar);
+                 End;
                End;
 
                // Now, act on the result of the search (P)
