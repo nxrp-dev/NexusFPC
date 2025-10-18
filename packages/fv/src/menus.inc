@@ -1595,14 +1595,15 @@ BEGIN
      evKeyDown: Begin                                 { Key down event }
          T := Items;                                  { Start on first item }
          While (T <> Nil) Do Begin                    { For each valid item }
-           If (Event.KeyCode = T^.KeyCode) AND        { Check for hot key }
+           { Check for hot key (by key or scan code) }
+           If ((Event.KeyCode = T^.KeyCode) OR ((T^.KeyCode shr 8) = Event.ScanCode)) AND
            CommandEnabled(T^.Command) Then Begin      { Check cmd enabled }
              Event.What := evCommand;                 { Change to command }
              Event.Command := T^.Command;             { Set command value }
              Event.InfoPtr := Nil;                    { Clear info ptr }
-             PutEvent(Event);                           { Put event on queue }
-             ClearEvent(Event);                         { Clear the event }
-             Exit;             Exit;                                    { Now exit }
+             PutEvent(Event);                         { Put event on queue }
+             ClearEvent(Event);                       { Clear the event }
+             Exit;
            End;
            T := T^.Next;                              { Next item }
          End;
