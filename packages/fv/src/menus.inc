@@ -140,7 +140,8 @@ TYPE
      Name: SW_PString;                                { Menu item name }
      Command: Word;                                   { Menu item command }
      Disabled: Boolean;                               { Menu item state }
-     KeyCode: Word;                                   { Menu item keycode }
+     KeyCode: Word;                                   { Menu item keycode (global) }
+     ScanCodeHotkey: Word;                            { Local, layout-independent hotkey }
      HelpCtx: Word;                                   { Menu item help ctx }
 {$ifdef FV_UNICODE}
      Param: UnicodeString;
@@ -227,6 +228,7 @@ TYPE
       PROCEDURE GetItemRect (Item: PMenuItem; Var R: TRect); Virtual;
       private
       PROCEDURE GetItemRectX (Item: PMenuItem; Var R: TRect); Virtual;
+      FUNCTION FindItemByKey(const Event: TEvent): PMenuItem;
    END;
 
 {---------------------------------------------------------------------------}
@@ -329,6 +331,13 @@ An error creating will return a nil pointer.
 14May98 LdB
 ---------------------------------------------------------------------}
 FUNCTION NewItem (Name, Param: TMenuStr; KeyCode: Word; Command: Word;
+  AHelpCtx: Word; Next: PMenuItem): PMenuItem;
+
+{-NewItemAdvanced----------------------------------------------------------
+Allocates and returns a pointer to a new TMenuItem record that
+represents a menu item with an explicit layout-independent local hotkey.
+---------------------------------------------------------------------}
+FUNCTION NewItemAdvanced (Name, Param: TMenuStr; KeyCode: Word; ScanCodeHotKey: Word; Command: Word;
   AHelpCtx: Word; Next: PMenuItem): PMenuItem;
 
 {-NewSubMenu---------------------------------------------------------
@@ -680,81 +689,37 @@ BEGIN
                  Action := DoReturn;
                  If (ParentMenu = Nil) OR (ParentMenu^.Size.Y <> 1) Then ClearEvent(E);
                End;
-           Else
-             Begin
-               P := nil;
+              Else
+              Begin
+                if (E.KeyShift and kbAltShift = 0) then // Standard hotkeys target the current menu.
+                  Target := @Self
+                else // Alt-hotkeys always target the top menu bar.
+                  Target := TopMenu;
 
-               // CASE 1: Alt key is pressed. Use the new logic for layout-awareness.
-               if (E.KeyShift and kbAltShift <> 0) then
-               Begin
-                 Target := TopMenu; // Alt-hotkeys always target the top menu bar.
+                P := Target^.FindItemByKey(E);
 
-                 // Path 1: Character-based search (for correct layouts like Russian)
-                 {$ifdef FV_UNICODE}
-                 searchChar := E.UnicodeChar;
-                 {$else}
-                 searchChar := E.CharCode;
-                 {$endif}
-                 if searchChar <> #0 then P := Target^.FindItem(searchChar);
-
-                 // Path 2: Scancode-based search (fallback for EN hotkeys in RU layout)
-                 if P = nil then
-                 Begin
-                   {$ifdef FV_UNICODE}
-                   searchChar := WideChar(GetAltChar(E.ScanCode shl 8));
-                   {$else}
-                   searchChar := GetAltChar(E.ScanCode shl 8);
-                   {$endif}
-                   if searchChar <> #0 then P := Target^.FindItem(searchChar);
-                 End;
-               End
-               // CASE 2: No Alt key. This is a standard menu hotkey (like 'F' for File, or '1' for item 1).
-               else
-               Begin
-                 Target := @Self; // Standard hotkeys target the current menu.
-
-                 // Path 1: Character-based search (for correct layouts like Russian)
-                 {$ifdef FV_UNICODE}
-                 searchChar := E.UnicodeChar;
-                 {$else}
-                 searchChar := E.CharCode;
-                 {$endif}
-                 if searchChar <> #0 then P := Target^.FindItem(searchChar);
-
-                 // Path 2: Scancode-based search (fallback for EN hotkeys in RU layout)
-                 if P = nil then
-                 Begin
-                   {$ifdef FV_UNICODE}
-                   searchChar := WideChar(GetAltChar(E.ScanCode shl 8));
-                   {$else}
-                   searchChar := GetAltChar(E.ScanCode shl 8);
-                   {$endif}
-                   if searchChar <> #0 then P := Target^.FindItem(searchChar);
-                 End;
-               End;
-
-               // Now, act on the result of the search (P)
-               if P <> nil then
-               Begin
-                 // Item was found via FindItem (either with Alt or without)
-                 If Target = @Self Then Begin
-                   If Size.Y = 1 Then AutoSelect := True;
-                   Action := DoSelect;
-                   Current := P;
-                 End Else If (ParentMenu <> Target) OR (ParentMenu^.Current <> P) Then
+                // Now, act on the result of the search (P)
+                if P <> nil then
+                Begin
+                  // Item was found
+                  If Target = @Self Then Begin
+                    If Size.Y = 1 Then AutoSelect := True;
+                    Action := DoSelect;
+                    Current := P;
+                  End Else If (ParentMenu <> Target) OR (ParentMenu^.Current <> P) Then
+                     Action := DoReturn;
+                End
+                else
+                Begin
+                  // CASE 3: Fallback for global shortcuts like F-keys that are not found by character.
+                  P := TopMenu^.HotKey(E.KeyCode);
+                  If (P <> Nil) AND CommandEnabled(P^.Command) Then Begin
+                    Res := P^.Command;
                     Action := DoReturn;
-               End
-               else
-               Begin
-                 // CASE 3: Fallback for global shortcuts like F-keys that are not found by character.
-                 P := TopMenu^.HotKey(E.KeyCode);
-                 If (P <> Nil) AND CommandEnabled(P^.Command) Then Begin
-                   Res := P^.Command;
-                   Action := DoReturn;
-                 End
-               End;
-             End;
-           End;
+                  End
+                End;
+              End;
+            End;
          End;
        evCommand: If (E.Command = cmMenu) Then Begin  { Menu command }
            AutoSelect := False;                       { Dont select item }
@@ -895,7 +860,7 @@ FUNCTION TMenuView.HotKey (KeyCode: Word): PMenuItem;
    VAR T: PMenuItem;
    BEGIN
      While (P <> Nil) Do Begin                      { While item valid }
-       
+
        If NOT P^.Disabled AND                       { Hotkey is enabled }
        (P^.KeyCode <> kbNoKey) AND                  { Valid keycode }
        (P^.KeyCode = KeyCode) Then Begin            { Key matches request }
@@ -1015,17 +980,17 @@ BEGIN
        evKeyDown:
          begin
            P := nil;
-           // Only perform hotkey search (both paths) if Alt is actually pressed.
+           // Only perform Alt-hotkey search if Alt is actually pressed.
            if (Event.KeyShift and kbAltShift <> 0) then
            begin
-             // Path 1: Character-based search
+             // Path 1: Character-based search (legacy but effective for Alt-keys)
              {$ifdef FV_UNICODE}
              if Event.UnicodeChar <> #0 then P := FindItem(Event.UnicodeChar);
              {$else}
              if Event.CharCode <> #0 then P := FindItem(Event.CharCode);
              {$endif}
 
-             // Path 2: Fallback to scancode-based search
+             // Path 2: Fallback to scancode-based character search
              if P = nil then
              begin
                {$ifdef FV_UNICODE}
@@ -1039,7 +1004,7 @@ BEGIN
            if P <> nil then
              DoSelect
            else
-           begin // Fallback for global shortcuts
+           begin // Fallback for global shortcuts (Ctrl+key, F-keys, and our new layout-independent Alt+key)
              P := HotKey(Event.KeyCode);
 
              If (P = Nil) AND (Event.KeyShift AND (kbCtrlShift OR kbAltShift) <> 0) Then
@@ -1047,17 +1012,15 @@ BEGIN
 
              If (P <> Nil) Then
              Begin
-               // CASE 1: Found a top-level submenu. Activate it and simulate a "Down Arrow" press.
+               // CASE 1: Found a top-level submenu (our new Alt+ScanCode mechanism).
                If (P^.Command = 0) AND (ParentMenu = nil) Then
                Begin
                  Current := P;
-                 // We must change the event to something TMenuView.Execute understands
-                 // for opening a submenu. kbDown is the perfect candidate.
                  Event.What := evKeyDown;
                  Event.KeyCode := kbDown;
-                 DoSelect; // DoSelect will put the modified event back and call ExecView.
+                 DoSelect;
                End
-               // CASE 2: Found a regular command item. Execute it.
+               // CASE 2: Found a regular global command (e.g., Ctrl+S).
                Else If CommandEnabled(P^.Command) Then
                Begin
                  Event.What := evCommand;
@@ -1080,6 +1043,86 @@ BEGIN
          End;
      End;
 END;
+
+{--TMenuView----------------------------------------------------------------}
+{  FindItemByKey -> Finds a menu item based on a keyboard event,          }
+{  prioritizing layout-independent scancodes over layout-dependent chars.   }
+{---------------------------------------------------------------------------}
+FUNCTION TMenuView.FindItemByKey(const Event: TEvent): PMenuItem;
+var
+  P: PMenuItem;
+  {$ifdef FV_UNICODE}
+  searchChar: WideChar;
+  {$else}
+  searchChar: AnsiChar;
+  {$endif}
+
+  // Inner function to search by scancode
+  function FindByScanCode(ScanCode: Word): PMenuItem;
+  var
+    Item: PMenuItem;
+  begin
+    Item := Menu^.Items;
+    while Item <> nil do
+    begin
+      if (not Item^.Disabled) and (Item^.ScanCodeHotkey = ScanCode) then
+      begin
+        Result := Item;
+        Exit;
+      end;
+      Item := Item^.Next;
+    end;
+    Result := nil;
+  end;
+
+begin
+  Result := nil;
+  if Menu = nil then Exit;
+
+  // Priority 1: Check for our new layout-independent ScanCode hotkey.
+  // We check the raw scancode from the event.
+  if Event.ScanCode <> 0 then
+  begin
+    P := FindByScanCode(Event.ScanCode);
+    if P <> nil then
+    begin
+      Result := P;
+      Exit;
+    end;
+  end;
+
+  // Priority 2: Standard character-based search (for backward compatibility).
+  {$ifdef FV_UNICODE}
+  searchChar := Event.UnicodeChar;
+  {$else}
+  searchChar := Event.CharCode;
+  {$endif}
+  if searchChar <> #0 then
+  begin
+    P := FindItem(searchChar);
+    if P <> nil then
+    begin
+      Result := P;
+      Exit;
+    end;
+  end;
+
+  // Priority 3: Fallback for EN hotkeys in non-EN layout (legacy behavior).
+  {$ifdef FV_UNICODE}
+  searchChar := WideChar(GetAltChar(Event.ScanCode shl 8));
+  {$else}
+  searchChar := GetAltChar(Event.ScanCode shl 8);
+  {$endif}
+  if searchChar <> #0 then
+  begin
+    P := FindItem(searchChar);
+    if P <> nil then
+    begin
+      Result := P;
+      Exit;
+    end;
+  end;
+end;
 
 {--TMenuView----------------------------------------------------------------}
 {  GetItemRectX -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 08May98 LdB       }
@@ -1796,11 +1839,42 @@ BEGIN
          Dispose(T, Done);                            { Dispose of view }
        End Else P^.Disabled := True;
        P^.KeyCode := KeyCode;                         { Hold item keycode }
+       P^.ScanCodeHotkey := 0;                        { Init new field }
        P^.HelpCtx := AHelpCtx;                        { Hold help context }
        P^.Param := Sw_NewStr(Param);                  { Hold parameter }
      End;
      NewItem := P;                                    { Return item }
    End Else NewItem := Next;                          { Move forward }
+END;
+
+{-NewItemAdvanced----------------------------------------------------------
+Allocates and returns a pointer to a new TMenuItem record that
+represents a menu item with an explicit layout-independent local hotkey.
+---------------------------------------------------------------------}
+FUNCTION NewItemAdvanced (Name, Param: TMenuStr; KeyCode: Word; ScanCodeHotKey: Word; Command: Word;
+  AHelpCtx: Word; Next: PMenuItem): PMenuItem;
+VAR P: PMenuItem; R: TRect; T: PView;
+BEGIN
+   If (Name <> '') AND (Command <> 0) Then Begin
+     New(P);                                          { Allocate memory }
+     FillChar(P^,sizeof(TMenuItem),0);
+     If (P <> Nil) Then Begin                         { Check valid pointer }
+       P^.Next := Next;                               { Hold next item }
+       P^.Name := Sw_NewStr(Name);                    { Hold item name }
+       P^.Command := Command;                         { Hold item command }
+       R.Assign(1, 1, 10, 10);                        { Random assignment }
+       T := New(PView, Init(R));                      { Create a view }
+       If (T <> Nil) Then Begin
+         P^.Disabled := NOT T^.CommandEnabled(Command);
+         Dispose(T, Done);                            { Dispose of view }
+       End Else P^.Disabled := True;
+       P^.KeyCode := KeyCode;                         { Hold item keycode }
+       P^.ScanCodeHotkey := ScanCodeHotKey;           { Hold local scancode hotkey }
+       P^.HelpCtx := AHelpCtx;                        { Hold help context }
+       P^.Param := Sw_NewStr(Param);                  { Hold parameter }
+     End;
+     NewItemAdvanced := P;                            { Return item }
+   End Else NewItemAdvanced := Next;                  { Move forward }
 END;
 
 {---------------------------------------------------------------------------}
@@ -1818,6 +1892,7 @@ BEGIN
        P^.Name := Sw_NewStr(Name);                    { Hold submenu name }
        P^.Command := 0;                               { For comatibility }
        P^.KeyCode := 0;                               { For comatibility }
+       P^.ScanCodeHotkey := 0;
        P^.HelpCtx := AHelpCtx;                        { Set help context }
        P^.SubMenu := SubMenu;                         { Hold next submenu }
      End;
