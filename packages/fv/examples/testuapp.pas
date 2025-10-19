@@ -68,7 +68,7 @@ begin
                       NewItem('~O~pen', '💩', kbF3, cmOpen, hcOpen,
                       NewLine(
                       NewItem('E~x~it', 'ъ́ъ́ъ́打', kbAltX, cmQuit, hcNoContext, nil))))),
-                 NewSubMenu('~E~dit', hcNoContext, NewMenu(
+                 NewSubMenuAdvanced('Пр~а~вка', kbAltF, hcNoContext, NewMenu(
                  NewItem('Window ~3~','',kbNoKey,cmWindow3,hcNoContext,nil)),
                  NewSubMenu('~O~rders', hcNoContext, {NewMenu(GetOrdersMenuItems(nil))}nil,
                  NewSubMenu('O~p~tions', hcNoContext, {NewMenu(GetOptionsMenuItems(nil))}nil,

@@ -340,6 +340,12 @@ An error creating will return a nil pointer.
 FUNCTION NewSubMenu (Name: TMenuStr; AHelpCtx: Word; SubMenu: PMenu;
   Next: PMenuItem): PMenuItem;
 
+{-NewSubMenuAdvanced-------------------------------------------------
+Same as NewSubMenu, but with explicit hotkey definition
+---------------------------------------------------------------------}
+FUNCTION NewSubMenuAdvanced (Name: TMenuStr; KeyCode: Word; AHelpCtx: Word; SubMenu: PMenu;
+  Next: PMenuItem): PMenuItem;
+
 {+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++}
 {                          STATUS INTERFACE ROUTINES                        }
 {+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++}
@@ -621,8 +627,8 @@ BEGIN
    MouseActive := False;                              { Clear mouse flag }
    Res := 0;                                          { Clear result }
    ItemShown := Nil;                                  { Clear item pointer }
-   If (Menu <> Nil) Then Current := Menu^.Default     { Set current item }
-     Else Current := Nil;                             { No menu = no current }
+   If (Current = Nil) and (Menu <> Nil) Then
+     Current := Menu^.Default;                        { Set current item }
    Repeat
      Action := DoNothing;                             { Clear action flag }
      GetEvent(E);                                     { Get next event }
@@ -888,27 +894,30 @@ FUNCTION TMenuView.HotKey (KeyCode: Word): PMenuItem;
    FUNCTION FindHotKey (P: PMenuItem): PMenuItem;
    VAR T: PMenuItem;
    BEGIN
-     While (P <> Nil) Do Begin                        { While item valid }
-       If (P^.Name <> Sw_PString_Empty) Then  { If valid name }
-         If (P^.Command = 0) Then Begin               { Valid command }
-           T := FindHotKey(P^.SubMenu^.Items);        { Search for hot key }
-           If (T <> Nil) Then Begin
-             FindHotKey := T;                         { Return hotkey }
-             Exit;                                    { Now exit }
-           End;
-         End Else If NOT P^.Disabled AND              { Hotkey is enabled }
-         (P^.KeyCode <> kbNoKey) AND                  { Valid keycode }
-         (P^.KeyCode = KeyCode) Then Begin            { Key matches request }
-           FindHotKey := P;                           { Return hotkey code }
-           Exit;                                      { Exit }
+     While (P <> Nil) Do Begin                      { While item valid }
+       
+       If NOT P^.Disabled AND                       { Hotkey is enabled }
+       (P^.KeyCode <> kbNoKey) AND                  { Valid keycode }
+       (P^.KeyCode = KeyCode) Then Begin            { Key matches request }
+         FindHotKey := P;                           { Return hotkey code }
+         Exit;                                      { Exit }
+       End;
+
+       If (P^.Command = 0) AND (P^.SubMenu <> nil) Then Begin
+         T := FindHotKey(P^.SubMenu^.Items);        { Search for hot key }
+         If (T <> Nil) Then Begin
+           FindHotKey := T;                         { Return hotkey }
+           Exit;                                    { Now exit }
          End;
-         P := P^.Next;                                { Next item }
+       End;
+
+       P := P^.Next;                                { Next item }
      End;
-     FindHotKey := Nil;                               { No item found }
+     FindHotKey := Nil;                             { No item found }
    END;
 
 BEGIN
-   HotKey := FindHotKey(Menu^.Items);                 { Hot key function }
+   HotKey := FindHotKey(Menu^.Items);               { Hot key function }
 END;
 
 {--TMenuView----------------------------------------------------------------}
@@ -1036,12 +1045,27 @@ BEGIN
              If (P = Nil) AND (Event.KeyShift AND (kbCtrlShift OR kbAltShift) <> 0) Then
                P := HotKey(Event.ScanCode shl 8);
 
-             If (P <> Nil) AND (CommandEnabled(P^.Command)) Then Begin
-               Event.What := evCommand;
-               Event.Command := P^.Command;
-               Event.InfoPtr := Nil;
-               PutEvent(Event);
-               ClearEvent(Event);
+             If (P <> Nil) Then
+             Begin
+               // CASE 1: Found a top-level submenu. Activate it and simulate a "Down Arrow" press.
+               If (P^.Command = 0) AND (ParentMenu = nil) Then
+               Begin
+                 Current := P;
+                 // We must change the event to something TMenuView.Execute understands
+                 // for opening a submenu. kbDown is the perfect candidate.
+                 Event.What := evKeyDown;
+                 Event.KeyCode := kbDown;
+                 DoSelect; // DoSelect will put the modified event back and call ExecView.
+               End
+               // CASE 2: Found a regular command item. Execute it.
+               Else If CommandEnabled(P^.Command) Then
+               Begin
+                 Event.What := evCommand;
+                 Event.Command := P^.Command;
+                 Event.InfoPtr := Nil;
+                 PutEvent(Event);
+                 ClearEvent(Event);
+               End;
              End;
            end;
          end;
@@ -1792,11 +1816,34 @@ BEGIN
      If (P <> Nil) Then Begin                         { Check valid pointer }
        P^.Next := Next;                               { Hold next item }
        P^.Name := Sw_NewStr(Name);                    { Hold submenu name }
+       P^.Command := 0;                               { For comatibility }
+       P^.KeyCode := 0;                               { For comatibility }
        P^.HelpCtx := AHelpCtx;                        { Set help context }
        P^.SubMenu := SubMenu;                         { Hold next submenu }
      End;
      NewSubMenu := P;                                 { Return submenu }
    End Else NewSubMenu := Next;                       { Return next item }
+END;
+
+{---------------------------------------------------------------------------}
+{  NewSubMenuAdvanced -> Platforms DOS/DPMI/WIN/NT/OS2                      }
+{---------------------------------------------------------------------------}
+FUNCTION NewSubMenuAdvanced (Name: TMenuStr; KeyCode: Word; AHelpCtx: Word; SubMenu: PMenu;
+  Next: PMenuItem): PMenuItem;
+VAR P: PMenuItem;
+BEGIN
+   If (Name <> '') AND (SubMenu <> Nil) Then Begin
+     New(P);                                          { Allocate memory }
+     FillChar(P^,sizeof(TMenuItem),0);
+     If (P <> Nil) Then Begin                         { Check valid pointer }
+       P^.Next := Next;                               { Hold next item }
+       P^.Name := Sw_NewStr(Name);                    { Hold submenu name }
+       P^.KeyCode := KeyCode;                         { Hold item keycode }
+       P^.HelpCtx := AHelpCtx;                        { Set help context }
+       P^.SubMenu := SubMenu;                         { Hold next submenu }
+     End;
+     NewSubMenuAdvanced := P;                         { Return submenu }
+   End Else NewSubMenuAdvanced := Next;               { Return next item }
 END;
 
 {+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++}
