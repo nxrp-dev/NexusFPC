@@ -1030,8 +1030,12 @@ BEGIN
            if P <> nil then
              DoSelect
            else
-           begin // Fallback for global shortcuts (F-keys)
+           begin // Fallback for global shortcuts
              P := HotKey(Event.KeyCode);
+
+             If (P = Nil) AND (Event.KeyShift AND (kbCtrlShift OR kbAltShift) <> 0) Then
+               P := HotKey(Event.ScanCode shl 8);
+
              If (P <> Nil) AND (CommandEnabled(P^.Command)) Then Begin
                Event.What := evCommand;
                Event.Command := P^.Command;
