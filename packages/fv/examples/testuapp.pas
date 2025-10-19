@@ -64,7 +64,8 @@ begin
   GetExtent(R);
   R.B.Y := R.A.Y + 1;
   MenuBar := new (PMenuBar, Init(R, NewMenu(
-                 NewSubMenu('打开', hcNoContext, NewMenu(NewItem('~Н~ов打тест по пъ́тя',  'Еф2', kbF2, cmNew, hcNew,
+                 // $15 is scan code for "Z" key which is also "Н"
+                 NewSubMenu('打开', hcNoContext, NewMenu(NewItemAdvanced('~Н~ов打тест по пъ́тя',  'Еф2', kbF2, $15, cmNew, hcNew,
                       NewItem('~O~pen', '💩', kbF3, cmOpen, hcOpen,
                       NewLine(
                       NewItem('E~x~it', 'ъ́ъ́ъ́打', kbAltX, cmQuit, hcNoContext, nil))))),
