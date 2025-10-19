@@ -1595,8 +1595,7 @@ BEGIN
      evKeyDown: Begin                                 { Key down event }
          T := Items;                                  { Start on first item }
          While (T <> Nil) Do Begin                    { For each valid item }
-           { Check for hot key (by key or scan code) }
-           If ((Event.KeyCode = T^.KeyCode) OR ((T^.KeyCode shr 8) = Event.ScanCode)) AND
+           If (Event.KeyCode = T^.KeyCode) AND
            CommandEnabled(T^.Command) Then Begin      { Check cmd enabled }
              Event.What := evCommand;                 { Change to command }
              Event.Command := T^.Command;             { Set command value }
