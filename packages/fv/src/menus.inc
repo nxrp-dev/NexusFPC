@@ -1108,22 +1108,10 @@ var
   end;
 
 begin
-  Result := nil;
+  FindItemByKey := nil;
   if Menu = nil then Exit;
 
-  // Priority 1: Check for our new layout-independent ScanCode hotkey.
-  // We check the raw scancode from the event.
-  if Event.ScanCode <> 0 then
-  begin
-    P := FindByScanCode(Event.ScanCode);
-    if P <> nil then
-    begin
-      Result := P;
-      Exit;
-    end;
-  end;
-
-  // Priority 2: Standard character-based search (for backward compatibility).
+  // Priority 1: Standard character-based search. This is the most specific match.
   {$ifdef FV_UNICODE}
   searchChar := Event.UnicodeChar;
   {$else}
@@ -1134,12 +1122,12 @@ begin
     P := FindItem(searchChar);
     if P <> nil then
     begin
-      Result := P;
+      FindItemByKey := P;
       Exit;
     end;
   end;
 
-  // Priority 3: Fallback for EN hotkeys in non-EN layout (legacy behavior).
+  // Priority 2: Fallback for EN hotkeys in non-EN layout (legacy behavior).
   {$ifdef FV_UNICODE}
   searchChar := WideChar(GetAltChar(Event.ScanCode shl 8));
   {$else}
@@ -1150,7 +1138,19 @@ begin
     P := FindItem(searchChar);
     if P <> nil then
     begin
-      Result := P;
+      FindItemByKey := P;
+      Exit;
+    end;
+  end;
+
+  // Priority 3: Fallback to our new layout-independent ScanCode hotkey.
+  // This triggers if no character-based match was found.
+  if Event.ScanCode <> 0 then
+  begin
+    P := FindByScanCode(Event.ScanCode);
+    if P <> nil then
+    begin
+      FindItemByKey := P;
       Exit;
     end;
   end;

@@ -2481,12 +2481,6 @@ BEGIN
      End;
      evKeyDown: Begin
        HotkeyMatches := False;
-       {$IFDEF FPC}{$IFNDEF FPC_TP}
-       if (ScanCodeHotkey <> 0) and (Event.ScanCode = ScanCodeHotkey) then
-         HotkeyMatches := True;
-       {$ENDIF}{$ENDIF}
-
-       if not HotkeyMatches then
        begin
          {$ifdef FV_UNICODE}
          begin
@@ -2519,6 +2513,14 @@ BEGIN
              HotkeyMatches := (UpCase(GetAltChar(Event.ScanCode shl 8)) = C);
          end;
          {$endif}
+       end;
+
+       if not HotkeyMatches then
+       begin
+         {$IFDEF FPC}{$IFNDEF FPC_TP}
+         if (ScanCodeHotkey <> 0) and (Event.ScanCode = ScanCodeHotkey) then
+           HotkeyMatches := True;
+         {$ENDIF}{$ENDIF}
        end;
 
        If (HotkeyMatches AND (Owner^.Phase = phPostProcess)) OR
@@ -2976,16 +2978,6 @@ BEGIN
        Else Begin                                     { Not an arrow key }
          For I := 0 To Strings.Count-1 Do Begin       { Scan each item }
            HotkeyMatches := False;
-           {$IFDEF FPC}{$IFNDEF FPC_TP}
-           if (ScanCodeHotkeys <> nil) AND (I < ScanCodeHotkeys^.Count) then
-           begin
-             if (ScanCodeHotkeys^.At(I) <> nil) and (PWord(ScanCodeHotkeys^.At(I))^ <> 0) then
-               if PWord(ScanCodeHotkeys^.At(I))^ = Event.ScanCode then
-                 HotkeyMatches := True;
-           end;
-           {$ENDIF}{$ENDIF}
-
-           if not HotkeyMatches then
            begin
              {$ifdef FV_UNICODE}
              begin
@@ -3020,6 +3012,18 @@ BEGIN
                  HotkeyMatches := (UpCase(GetAltChar(Event.ScanCode shl 8)) = C);
              end;
              {$endif}
+           end;
+
+           if not HotkeyMatches then
+           begin
+             {$IFDEF FPC}{$IFNDEF FPC_TP}
+             if (ScanCodeHotkeys <> nil) AND (I < ScanCodeHotkeys^.Count) then
+             begin
+               if (ScanCodeHotkeys^.At(I) <> nil) and (PWord(ScanCodeHotkeys^.At(I))^ <> 0) then
+                 if PWord(ScanCodeHotkeys^.At(I))^ = Event.ScanCode then
+                   HotkeyMatches := True;
+             end;
+             {$ENDIF}{$ENDIF}
            end;
 
            If HotkeyMatches AND
@@ -3939,12 +3943,6 @@ BEGIN
          if text<>Sw_PString_Empty then
            begin
              HotkeyMatches := False;
-             {$IFDEF FPC}{$IFNDEF FPC_TP}
-             if (ScanCodeHotkey <> 0) and (Event.ScanCode = ScanCodeHotkey) then
-               HotkeyMatches := True;
-             {$ENDIF}{$ENDIF}
-
-             if not HotkeyMatches then
              begin
                {$ifdef FV_UNICODE}
                begin
@@ -3976,6 +3974,14 @@ BEGIN
                    HotkeyMatches := (UpCase(GetAltChar(Event.ScanCode shl 8)) = C);
                end;
                {$endif}
+             end;
+
+             if not HotkeyMatches then
+             begin
+               {$IFDEF FPC}{$IFNDEF FPC_TP}
+               if (ScanCodeHotkey <> 0) and (Event.ScanCode = ScanCodeHotkey) then
+                 HotkeyMatches := True;
+               {$ENDIF}{$ENDIF}
              end;
 
              If HotkeyMatches AND (Owner^.Phase = phPostProcess) Then
