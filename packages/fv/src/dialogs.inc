@@ -199,14 +199,14 @@ TYPE
      Value: Sw_PString;                               { Item string }
      Next: PSItem;                                    { Next item }
    END;
-{$IFDEF FPC}{$IFNDEF FPC_TP}
+{$IFDEF FPC}
 PAdvancedSItem = ^TAdvancedSItem;
 TAdvancedSItem = RECORD
   Value: Sw_PString;
   ScanCode: Word;
   Next: PAdvancedSItem;
 END;
-{$ENDIF}{$ENDIF}
+{$ENDIF}
 
 {***************************************************************************}
 {                            OBJECT DEFINITIONS                             }
@@ -254,11 +254,11 @@ TYPE
          Flags    : Byte;                             { Button flags }
          Command  : Word;                             { Button command }
          Title    : Sw_PString;                       { Button title }
-         {$IFDEF FPC}{$IFNDEF FPC_TP}
+         {$IFDEF FPC}
          ScanCodeHotkey: Word;
-         {$ENDIF}{$ENDIF}
+         {$ENDIF}
       CONSTRUCTOR Init (Var Bounds: TRect; ATitle: TTitleStr; ACommand: Word;
-        AFlags: Word {$IFDEF FPC}{$IFNDEF FPC_TP}; AScanCodeHotkey: Word = 0{$ENDIF}{$ENDIF}); // Optional: See note on hotkey implementation
+        AFlags: Word {$IFDEF FPC}; AScanCodeHotkey: Word = 0{$ENDIF}); // Optional: See note on hotkey implementation
       CONSTRUCTOR Load (Var S: TStream);
       DESTRUCTOR Done; Virtual;
       FUNCTION GetPalette: PPalette; Virtual;
@@ -295,15 +295,15 @@ TYPE
 {$else FV_UNICODE}
          Strings   : TStringCollection;               { String collection }
 {$endif FV_UNICODE}
-         {$IFDEF FPC}{$IFNDEF FPC_TP}
+         {$IFDEF FPC}
          ScanCodeHotkeys: PCollection;
-         {$ENDIF}{$ENDIF}
-      {$IFDEF FPC}{$IFNDEF FPC_TP}
+         {$ENDIF}
+      {$IFDEF FPC}
       CONSTRUCTOR Init (Var Bounds: TRect; AStrings: PSItem); overload;
       CONSTRUCTOR Init (Var Bounds: TRect; AStrings: PAdvancedSItem); overload;
       {$ELSE}
       CONSTRUCTOR Init (Var Bounds: TRect; AStrings: PSItem);
-      {$ENDIF}{$ENDIF}
+      {$ENDIF}
       CONSTRUCTOR Load (Var S: TStream);
       DESTRUCTOR Done; Virtual;
       FUNCTION DataSize: Sw_Word; Virtual;
@@ -345,9 +345,9 @@ TYPE
    TRadioButtons = OBJECT (TCluster)
       FUNCTION Mark (Item: Sw_Integer): Boolean; Virtual;
       PROCEDURE Draw; Virtual;
-      {$IFDEF FPC}{$IFNDEF FPC_TP}
+      {$IFDEF FPC}
       CONSTRUCTOR Init (Var Bounds: TRect; AStrings: PAdvancedSItem); overload;
-      {$ENDIF}{$ENDIF}
+      {$ENDIF}
       PROCEDURE Press (Item: Sw_Integer); Virtual;
       PROCEDURE MovedTo(Item: Sw_Integer); Virtual;
       PROCEDURE SetData (Var Rec); Virtual;
@@ -369,9 +369,9 @@ TYPE
       FUNCTION Mark (Item: Sw_Integer): Boolean; Virtual;
       PROCEDURE Draw; Virtual;
       PROCEDURE Press (Item: Sw_Integer); Virtual;
-      {$IFDEF FPC}{$IFNDEF FPC_TP}
+      {$IFDEF FPC}
       CONSTRUCTOR Init (Var Bounds: TRect; AStrings: PAdvancedSItem); overload;
-      {$ENDIF}{$ENDIF}
+      {$ENDIF}
    END;
    PCheckBoxes = ^TCheckBoxes;
 
@@ -390,12 +390,12 @@ TYPE
          SelRange: Byte;                              { Select item range }
          Flags   : Word;                              { Select flags }
          States  : Sw_PString;                        { Strings }
-      {$IFDEF FPC}{$IFNDEF FPC_TP}
+      {$IFDEF FPC}
       CONSTRUCTOR Init (Var Bounds: TRect; AStrings: PSItem; ASelRange: Byte; AFlags: Word; Const AStates: String); overload;
       CONSTRUCTOR Init (Var Bounds: TRect; AStrings: PAdvancedSItem; ASelRange: Byte; AFlags: Word; Const AStates: String); overload;
       {$ELSE}
       CONSTRUCTOR Init (Var Bounds: TRect; AStrings: PSItem; ASelRange: Byte; AFlags: Word; Const AStates: String);
-      {$ENDIF}{$ENDIF}
+      {$ENDIF}
       CONSTRUCTOR Load (Var S: TStream);
       DESTRUCTOR Done; Virtual;
       FUNCTION DataSize: Sw_Word; Virtual;
@@ -512,10 +512,10 @@ TYPE
    TLabel = OBJECT (TStaticText)
          Light: Boolean;
          Link: PView;                                 { Linked view }
-         {$IFDEF FPC}{$IFNDEF FPC_TP}
+         {$IFDEF FPC}
          ScanCodeHotkey: Word;
-         {$ENDIF}{$ENDIF}
-      CONSTRUCTOR Init (Var Bounds: TRect; CONST AText: Sw_String; ALink: PView {$IFDEF FPC}{$IFNDEF FPC_TP}; AScanCodeHotkey: Word = 0{$ENDIF}{$ENDIF}); // Optional: See note on hotkey implementation
+         {$ENDIF}
+      CONSTRUCTOR Init (Var Bounds: TRect; CONST AText: Sw_String; ALink: PView {$IFDEF FPC}; AScanCodeHotkey: Word = 0{$ENDIF}); // Optional: See note on hotkey implementation
       CONSTRUCTOR Load (Var S: TStream);
       FUNCTION GetPalette: PPalette; Virtual;
       PROCEDURE Draw; Virtual;
@@ -896,7 +896,7 @@ should be nil.
 ---------------------------------------------------------------------}
 FUNCTION NewSItem (Const Str: Sw_String; ANext: PSItem): PSItem;
 
-{$IFDEF FPC}{$IFNDEF FPC_TP}
+{$IFDEF FPC}
 {-------------------------------------------------------------------------}
 { A Note on Hotkey Implementation Strategy for Dialogs                    }
 {-------------------------------------------------------------------------}
@@ -927,7 +927,7 @@ FUNCTION NewSItem (Const Str: Sw_String; ANext: PSItem): PSItem;
 { Support for specifying key scan codes for shortcuts is implemented      }
 { using modern Pascal features: method overloading and optional           }
 { parameters. For backward compatibility reasons, this code will only     }
-{ compile on FPC if it is not in TP compatibility mode.                   }
+{ compile on FPC.                                                         }
 {-------------------------------------------------------------------------}
 
 {-NewAdvancedSItem---------------------------------------------------
@@ -935,7 +935,7 @@ Allocates memory for a new TAdvancedSItem record, setting the text,
 scancode, and the next item in the chain.
 ---------------------------------------------------------------------}
 FUNCTION NewAdvancedSItem (const Str: Sw_String; AScanCode: Word; ANext: PAdvancedSItem): PAdvancedSItem;
-{$ENDIF}{$ENDIF}
+{$ENDIF}
 
 { NewCommandSItem allocates and returns a pointer to a new #TCommandSItem#
  record.  The Value and Next fields of the record are set to NewStr(Str)
@@ -2239,7 +2239,7 @@ END;
 {  Init -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 25Apr98 LdB              }
 {---------------------------------------------------------------------------}
 CONSTRUCTOR TButton.Init (Var Bounds: TRect; ATitle: TTitleStr;
-  ACommand: Word; AFlags: Word {$IFDEF FPC}{$IFNDEF FPC_TP}; AScanCodeHotkey: Word = 0{$ENDIF}{$ENDIF});
+  ACommand: Word; AFlags: Word {$IFDEF FPC}; AScanCodeHotkey: Word = 0{$ENDIF});
 BEGIN
    Inherited Init(Bounds);                            { Call ancestor }
    EventMask := EventMask OR evBroadcast;             { Handle broadcasts }
@@ -2252,9 +2252,9 @@ BEGIN
      Else AmDefault := False;                         { Check if default }
    Title := Sw_NewStr(ATitle);                           { Hold title string }
    Command := ACommand;                               { Hold button command }
-   {$IFDEF FPC}{$IFNDEF FPC_TP}
+   {$IFDEF FPC}
    ScanCodeHotkey := AScanCodeHotkey;
-   {$ENDIF}{$ENDIF}
+   {$ENDIF}
    TabMask := TabMask OR (tmLeft + tmRight +
      tmTab + tmShiftTab + tmUp + tmDown);             { Set tab masks }
 END;
@@ -2273,9 +2273,9 @@ BEGIN
    S.Read(Command, SizeOf(Command));                  { Read command }
    S.Read(Flags, SizeOf(Flags));                      { Read flags }
    S.Read(AmDefault, SizeOf(AmDefault));              { Read if default }
-   {$IFDEF FPC}{$IFNDEF FPC_TP}
+   {$IFDEF FPC}
    ScanCodeHotkey := 0;
-   {$ENDIF}{$ENDIF}
+   {$ENDIF}
    If NOT CommandEnabled(Command) Then                { Check command state }
      State := State OR sfDisabled Else                { Command disabled }
      State := State AND NOT sfDisabled;               { Command enabled }
@@ -2523,10 +2523,10 @@ BEGIN
 
        if not HotkeyMatches then
        begin
-         {$IFDEF FPC}{$IFNDEF FPC_TP}
+         {$IFDEF FPC}
          if (ScanCodeHotkey <> 0) and (Event.ScanCode = ScanCodeHotkey) then
            HotkeyMatches := True;
-         {$ENDIF}{$ENDIF}
+         {$ENDIF}
        end;
 
        If (HotkeyMatches AND (Owner^.Phase = phPostProcess)) OR
@@ -2569,7 +2569,7 @@ CONST TvClusterClassName = 'TVCLUSTER';
 {--TCluster-----------------------------------------------------------------}
 {  Init -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 28May98 LdB              }
 {---------------------------------------------------------------------------}
-{$IFDEF FPC}{$IFNDEF FPC_TP}
+{$IFDEF FPC}
 CONSTRUCTOR TCluster.Init (Var Bounds: TRect; AStrings: PAdvancedSItem);
 VAR
   I: Sw_Integer;
@@ -2609,7 +2609,7 @@ BEGIN
   ShowCursor;
   EnableMask := Sw_Integer($FFFFFFFF);
 END;
-{$ENDIF}{$ENDIF}
+{$ENDIF}
 
 CONSTRUCTOR TCluster.Init (Var Bounds: TRect; AStrings: PSItem);
 VAR I: Sw_Integer; P: PSItem;
@@ -2624,9 +2624,9 @@ BEGIN
      P := P^.Next;                                    { Move to next item }
    End;
    Strings.Init(I, 0);                                { Create collection }
-   {$IFDEF FPC}{$IFNDEF FPC_TP}
+   {$IFDEF FPC}
    ScanCodeHotkeys := nil; // No scancodes in this version
-   {$ENDIF}{$ENDIF}
+   {$ENDIF}
    While (AStrings <> Nil) Do Begin
      P := AStrings;                                   { Transfer item ptr }
    {$ifdef FV_UNICODE}
@@ -2658,9 +2658,9 @@ BEGIN
      Begin
        S.Read(Value, SizeOf(Value));                  { Read value }
        S.Read(Sel, Sizeof(Sel));                      { Read select item }
-       {$IFDEF FPC}{$IFNDEF FPC_TP}
+       {$IFDEF FPC}
        ScanCodeHotkeys := nil;
-       {$ENDIF}{$ENDIF}
+       {$ENDIF}
        S.Read(EnableMask, SizeOf(EnableMask))         { Read enable masks }
      End
    Else
@@ -2681,7 +2681,7 @@ END;
 DESTRUCTOR TCluster.Done;
 VAR i: Integer;
 BEGIN
-   {$IFDEF FPC}{$IFNDEF FPC_TP}
+   {$IFDEF FPC}
    if ScanCodeHotkeys <> nil then
    begin
      for i := 0 to ScanCodeHotkeys^.Count - 1 do
@@ -2690,7 +2690,7 @@ BEGIN
      Dispose(ScanCodeHotkeys);
      ScanCodeHotkeys := nil;
    end;
-   {$ENDIF}{$ENDIF}
+   {$ENDIF}
    Strings.Done;                                      { Dispose of strings }
    Inherited Done;                                    { Call ancestor }
 END;
@@ -3022,14 +3022,14 @@ BEGIN
 
            if not HotkeyMatches then
            begin
-             {$IFDEF FPC}{$IFNDEF FPC_TP}
+             {$IFDEF FPC}
              if (ScanCodeHotkeys <> nil) AND (I < ScanCodeHotkeys^.Count) then
              begin
                if (ScanCodeHotkeys^.At(I) <> nil) and (PWord(ScanCodeHotkeys^.At(I))^ <> 0) then
                  if PWord(ScanCodeHotkeys^.At(I))^ = Event.ScanCode then
                    HotkeyMatches := True;
              end;
-             {$ENDIF}{$ENDIF}
+             {$ENDIF}
            end;
 
            If HotkeyMatches AND
@@ -3127,12 +3127,12 @@ END;
 {                        TRadioButtons OBJECT METHODS                       }
 {+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++}
 
-{$IFDEF FPC}{$IFNDEF FPC_TP}
+{$IFDEF FPC}
 CONSTRUCTOR TRadioButtons.Init(var Bounds: TRect; AStrings: PAdvancedSItem);
 begin
   inherited Init(Bounds, AStrings);
 end;
-{$ENDIF}{$ENDIF}
+{$ENDIF}
 {--TRadioButtons------------------------------------------------------------}
 {  Mark -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 30Apr98 LdB              }
 {---------------------------------------------------------------------------}
@@ -3183,12 +3183,12 @@ END;
 {                        TCheckBoxes OBJECT METHODS                         }
 {+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++}
 
-{$IFDEF FPC}{$IFNDEF FPC_TP}
+{$IFDEF FPC}
 CONSTRUCTOR TCheckBoxes.Init(var Bounds: TRect; AStrings: PAdvancedSItem);
 begin
   inherited Init(Bounds, AStrings);
 end;
-{$ENDIF}{$ENDIF}
+{$ENDIF}
 {--TCheckBoxes--------------------------------------------------------------}
 {  Mark -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 30Apr98 LdB              }
 {---------------------------------------------------------------------------}
@@ -3224,7 +3224,7 @@ END;
 {--TMultiCheckBoxes---------------------------------------------------------}
 {  Init -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 05Jun98 LdB              }
 {---------------------------------------------------------------------------}
-{$IFDEF FPC}{$IFNDEF FPC_TP}
+{$IFDEF FPC}
 CONSTRUCTOR TMultiCheckBoxes.Init (Var Bounds: TRect; AStrings: PAdvancedSItem;
 ASelRange: Byte; AFlags: Word; Const AStates: String);
 BEGIN
@@ -3233,7 +3233,7 @@ BEGIN
    Flags := AFlags;
    States := Sw_NewStr(AStates);
 END;
-{$ENDIF}{$ENDIF}
+{$ENDIF}
 
 CONSTRUCTOR TMultiCheckBoxes.Init (Var Bounds: TRect; AStrings: PSItem;
 ASelRange: Byte; AFlags: Word; Const AStates: String);
@@ -3859,13 +3859,13 @@ END;
 {--TLabel-------------------------------------------------------------------}
 {  Init -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 26Oct99 LdB              }
 {---------------------------------------------------------------------------}
-CONSTRUCTOR TLabel.Init (Var Bounds: TRect; CONST AText: Sw_String; ALink: PView {$IFDEF FPC}{$IFNDEF FPC_TP}; AScanCodeHotkey: Word = 0{$ENDIF}{$ENDIF});
+CONSTRUCTOR TLabel.Init (Var Bounds: TRect; CONST AText: Sw_String; ALink: PView {$IFDEF FPC}; AScanCodeHotkey: Word = 0{$ENDIF});
 BEGIN
    Inherited Init(Bounds, AText);                     { Call ancestor }
    Link := ALink;                                     { Hold link }
-   {$IFDEF FPC}{$IFNDEF FPC_TP}
+   {$IFDEF FPC}
    ScanCodeHotkey := AScanCodeHotkey;
-   {$ENDIF}{$ENDIF}
+   {$ENDIF}
    Options := Options OR (ofPreProcess+ofPostProcess);{ Set pre/post process }
    EventMask := EventMask OR evBroadcast;             { Sees broadcast events }
 END;
@@ -3876,9 +3876,9 @@ END;
 CONSTRUCTOR TLabel.Load (Var S: TStream);
 BEGIN
    Inherited Load(S);                                 { Call ancestor }
-   {$IFDEF FPC}{$IFNDEF FPC_TP}
+   {$IFDEF FPC}
    ScanCodeHotkey := 0;
-   {$ENDIF}{$ENDIF}
+   {$ENDIF}
    GetPeerViewPtr(S, Link);                           { Load link view }
 END;
 
@@ -3984,10 +3984,10 @@ BEGIN
 
              if not HotkeyMatches then
              begin
-               {$IFDEF FPC}{$IFNDEF FPC_TP}
+               {$IFDEF FPC}
                if (ScanCodeHotkey <> 0) and (Event.ScanCode = ScanCodeHotkey) then
                  HotkeyMatches := True;
-               {$ENDIF}{$ENDIF}
+               {$ENDIF}
              end;
 
              If HotkeyMatches AND (Owner^.Phase = phPostProcess) Then
@@ -5044,7 +5044,7 @@ BEGIN
    Item^.Next := ANext;                               { Chain the ptr }
    NewSItem := Item;                                  { Return item }
 END;
-{$IFDEF FPC}{$IFNDEF FPC_TP}
+{$IFDEF FPC}
 FUNCTION NewAdvancedSItem (const Str: Sw_String; AScanCode: Word; ANext: PAdvancedSItem): PAdvancedSItem;
 VAR Item: PAdvancedSItem;
 BEGIN
@@ -5054,7 +5054,7 @@ BEGIN
    Item^.Next := ANext;
    NewAdvancedSItem := Item;
 END;
-{$ENDIF}{$ENDIF}
+{$ENDIF}
 
 {****************************************************************************}
 { NewCommandSItem                                                            }
