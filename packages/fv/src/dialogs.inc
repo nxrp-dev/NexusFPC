@@ -922,6 +922,12 @@ FUNCTION NewSItem (Const Str: Sw_String; ANext: PSItem): PSItem;
 { DEVELOPER'S RESPONSIBILITY:                                             }
 { Choose the method that best serves your target audience. This feature   }
 { is a tool to be used thoughtfully to improve usability.                 }
+{                                                                         }
+{ Special note on compatibility:                                          }
+{ Support for specifying key scan codes for shortcuts is implemented      }
+{ using modern Pascal features: method overloading and optional           }
+{ parameters. For backward compatibility reasons, this code will only     }
+{ compile on FPC if it is not in TP compatibility mode.                   }
 {-------------------------------------------------------------------------}
 
 {-NewAdvancedSItem---------------------------------------------------
