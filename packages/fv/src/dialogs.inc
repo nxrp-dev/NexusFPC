@@ -2417,6 +2417,7 @@ PROCEDURE TButton.HandleEvent (Var Event: TEvent);
 VAR Down: Boolean; C: AnsiChar; ButRect: TRect;
     Mouse : TPoint;
     HotkeyMatches: Boolean;
+    hotkeyChar: WideChar; mypos: Integer;
 BEGIN
    ButRect.A.X := 0;                            { Get origin point }
    ButRect.A.Y := 0;                            { Get origin point }
@@ -2460,20 +2461,37 @@ BEGIN
 
        if not HotkeyMatches then
        begin
+         {$ifdef FV_UNICODE}
+         begin
+           hotkeyChar := #0;
+           if Title <> '' then
+           begin
+             mypos := Pos('~', Title);
+             if (mypos > 0) and (mypos < Length(Title)) then
+               hotkeyChar := Title[mypos + 1];
+           end;
+           if hotkeyChar <> #0 then
+           begin
+             if Event.UnicodeChar <> #0 then
+               HotkeyMatches := (WideUpperCase(Event.UnicodeChar) = WideUpperCase(hotkeyChar));
+           end;
+           // Fallback for EN hotkeys in non-EN layout
+           if not HotkeyMatches then
+           begin
+             C := GetAltChar(Event.ScanCode shl 8);
+             if C <> #0 then HotkeyMatches := (hotkeyChar = WideUpperCase(C));
+           end;
+         end;
+         {$else}
          If Title <> Sw_PString_Empty Then C := HotKey(Title Sw_PString_DeRef)
            Else C := #0;
          if C <> #0 then
          begin
-           {$ifdef FV_UNICODE}
-           if Event.UnicodeChar <> #0 then HotkeyMatches := (WideUpperCase(Event.UnicodeChar) = WideUpperCase(string(C)));
-           if not HotkeyMatches then
-             HotkeyMatches := (GetAltChar(Event.ScanCode shl 8) = C);
-           {$else}
            if Event.CharCode <> #0 then HotkeyMatches := (UpCase(Event.CharCode) = C);
            if not HotkeyMatches then
              HotkeyMatches := (UpCase(GetAltChar(Event.ScanCode shl 8)) = C);
-           {$endif}
          end;
+         {$endif}
        end;
 
        If (HotkeyMatches AND (Owner^.Phase = phPostProcess)) OR
@@ -2868,6 +2886,7 @@ TempStr: UnicodeString;
 Ts: PString;
 {$endif}
 HotkeyMatches: Boolean;
+hotkeyChar: WideChar; mypos: Integer;
 
    PROCEDURE MoveSel;
    BEGIN
@@ -2942,25 +2961,38 @@ BEGIN
            if not HotkeyMatches then
            begin
              {$ifdef FV_UNICODE}
-             TempStr := UnicodeString(Strings.At(I));
-             C := HotKey(string(TempStr)); { HotKey expects AnsiString, so we convert }
+             begin
+               hotkeyChar := #0;
+               TempStr := UnicodeString(Strings.At(I));
+               if TempStr <> '' then
+               begin
+                 mypos := Pos('~', TempStr);
+                 if (mypos > 0) and (mypos < Length(TempStr)) then
+                   hotkeyChar := TempStr[mypos + 1];
+               end;
+               if hotkeyChar <> #0 then
+               begin
+                 if Event.UnicodeChar <> #0 then
+                   HotkeyMatches := (WideUpperCase(Event.UnicodeChar) = WideUpperCase(hotkeyChar));
+               end;
+               // Fallback for EN hotkeys in non-EN layout
+               if not HotkeyMatches then
+               begin
+                 C := GetAltChar(Event.ScanCode shl 8);
+                 if C <> #0 then HotkeyMatches := (hotkeyChar = WideUpperCase(C));
+               end;
+             end;
              {$else}
-             Ts := Strings.At(I);                       { Fetch string pointer }
-             If (Ts <> Nil) Then C := HotKey(Ts^)       { Check for hotkey }
-               Else C := #0;                            { No valid string }
-             {$endif}
+             Ts := Strings.At(I);
+             If (Ts <> Nil) Then C := HotKey(Ts^)
+               Else C := #0;
              if C <> #0 then
              begin
-               {$ifdef FV_UNICODE}
-               if Event.UnicodeChar <> #0 then HotkeyMatches := (WideUpperCase(Event.UnicodeChar) = WideUpperCase(string(C)));
-               if not HotkeyMatches then
-                 HotkeyMatches := (GetAltChar(Event.ScanCode shl 8) = C);
-               {$else}
                if Event.CharCode <> #0 then HotkeyMatches := (UpCase(Event.CharCode) = C);
                if not HotkeyMatches then
                  HotkeyMatches := (UpCase(GetAltChar(Event.ScanCode shl 8)) = C);
-               {$endif}
              end;
+             {$endif}
            end;
 
            If HotkeyMatches AND
@@ -3861,6 +3893,7 @@ END;
 PROCEDURE TLabel.HandleEvent (Var Event: TEvent);
 VAR C: AnsiChar;
 HotkeyMatches: Boolean;
+hotkeyChar: WideChar; mypos: Integer;
 
    PROCEDURE FocusLink;
    BEGIN
@@ -3886,19 +3919,36 @@ BEGIN
 
              if not HotkeyMatches then
              begin
+               {$ifdef FV_UNICODE}
+               begin
+                 hotkeyChar := #0;
+                 if Text <> '' then
+                 begin
+                   mypos := Pos('~', Text);
+                   if (mypos > 0) and (mypos < Length(Text)) then
+                     hotkeyChar := Text[mypos + 1];
+                 end;
+                 if hotkeyChar <> #0 then
+                 begin
+                   if Event.UnicodeChar <> #0 then
+                     HotkeyMatches := (WideUpperCase(Event.UnicodeChar) = WideUpperCase(hotkeyChar));
+                 end;
+                 // Fallback for EN hotkeys in non-EN layout
+                 if not HotkeyMatches then
+                 begin
+                   C := GetAltChar(Event.ScanCode shl 8);
+                   if C <> #0 then HotkeyMatches := (hotkeyChar = WideUpperCase(C));
+                 end;
+               end;
+               {$else}
                C := HotKey(Text Sw_PString_DeRef);
                if C <> #0 then
                begin
-                 {$ifdef FV_UNICODE}
-                 if Event.UnicodeChar <> #0 then HotkeyMatches := (WideUpperCase(Event.UnicodeChar) = WideUpperCase(string(C)));
-                 if not HotkeyMatches then
-                   HotkeyMatches := (GetAltChar(Event.ScanCode shl 8) = C);
-                 {$else}
                  if Event.CharCode <> #0 then HotkeyMatches := (UpCase(Event.CharCode) = C);
                  if not HotkeyMatches then
                    HotkeyMatches := (UpCase(GetAltChar(Event.ScanCode shl 8)) = C);
-                 {$endif}
                end;
+               {$endif}
              end;
 
              If HotkeyMatches AND (Owner^.Phase = phPostProcess) Then
