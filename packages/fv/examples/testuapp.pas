@@ -113,7 +113,7 @@ begin
     P^.Insert(New(PRadioButtons, Init(R,
       NewAdvancedSItem('~T~est', 0,
       NewAdvancedSItem('~Т~ест', $31,       // Т(N) = $31
-      NewAdvancedSItem('~Э~лемент 2', $28, Nil)))))); // Э(') = $28
+      NewAdvancedSItem('~Э~лемент 3', $28, Nil)))))); // Э(') = $28
     R.Assign(5, 2, 20, 3);                           { Assign area }
 
     B := New(PScrollBar, Init(R));                   { Insert scroll bar }
