@@ -90,6 +90,22 @@ uses
       RS_R13        = $0d;      {R13}
       RS_R14        = $0e;      {R14}
       RS_R15        = $0f;      {R15}
+      RS_R16        = $10;      {R16}
+      RS_R17        = $11;      {R17}
+      RS_R18        = $12;      {R18}
+      RS_R19        = $13;      {R19}
+      RS_R20        = $14;      {R20}
+      RS_R21        = $15;      {R21}
+      RS_R22        = $16;      {R22}
+      RS_R23        = $17;      {R23}
+      RS_R24        = $18;      {R24}
+      RS_R25        = $19;      {R25}
+      RS_R26        = $1a;      {R26}
+      RS_R27        = $1b;      {R27}
+      RS_R28        = $1c;      {R28}
+      RS_R29        = $1d;      {R29}
+      RS_R30        = $1e;      {R30}
+      RS_R31        = $1f;      {R31}
       { create aliases to allow code sharing between x86-64 and i386 }
       RS_EAX        = RS_RAX;
       RS_EBX        = RS_RBX;
@@ -110,7 +126,7 @@ uses
       RS_SP        = RS_RSP;
 
       { Number of first imaginary register }
-      first_int_imreg     = $10;
+      first_int_imreg     = $20;
 
       { Float Super registers }
       RS_ST0        = $00;
