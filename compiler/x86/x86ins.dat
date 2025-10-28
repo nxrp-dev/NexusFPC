@@ -98,35 +98,35 @@ reg16|32,mem          \320\1\x62\110                  186,NOX86_64
 
 [BSF,bsfX]
 (Ch_Wop2, Ch_Rop1, Ch_WZeroFlag, Ch_WUCarryFlag, Ch_WUOverflowFlag, Ch_WUSignFlag, Ch_WUAuxiliaryFlag, Ch_WUParityFlag)
-reg16|32|64,regmem    \320\2\x0F\xBC\110              386,SM
+reg16|32|64,regmem    \320\370\1\xBC\110              386,SM
 
 [BSR,bsrX]
 (Ch_Wop2, Ch_Rop1, Ch_WZeroFlag, Ch_WUCarryFlag, Ch_WUOverflowFlag, Ch_WUSignFlag, Ch_WUAuxiliaryFlag, Ch_WUParityFlag)
-reg16|32|64,regmem    \320\2\x0F\xBD\110              386,SM
+reg16|32|64,regmem    \320\370\1\xBD\110              386,SM
 
 [BSWAP,bswapX]
 (Ch_MOp1)
-reg32|64              \320\1\x0F\10\xC8               486
+reg32|64              \320\370\10\xC8                 486
 
 [BT,btX]
 (Ch_Rop1, Ch_Rop2, Ch_WCarryFlag, Ch_WUOverflowFlag, Ch_WUSignFlag, Ch_WUAuxiliaryFlag, Ch_WUParityFlag)
-regmem,reg16|32|64    \320\2\x0F\xA3\101              386,SM
-rm16|32|64,imm        \320\2\x0F\xBA\204\25           386,SB
+regmem,reg16|32|64    \320\370\1\xA3\101              386,SM
+rm16|32|64,imm        \320\370\1\xBA\204\25           386,SB
 
 [BTC,btcX]
 (Ch_Mop2, Ch_Rop1, Ch_WCarryFlag, Ch_WUOverflowFlag, Ch_WUSignFlag, Ch_WUAuxiliaryFlag, Ch_WUParityFlag)
-regmem,reg16|32|64    \320\2\x0F\xBB\101              386,SM
-rm16|32|64,imm        \320\2\x0F\xBA\207\25           386,SB
+regmem,reg16|32|64    \320\370\1\xBB\101              386,SM
+rm16|32|64,imm        \320\370\1\xBA\207\25           386,SB
 
 [BTR,btrX]
 (Ch_Mop2, Ch_Rop1, Ch_WCarryFlag, Ch_WUOverflowFlag, Ch_WUSignFlag, Ch_WUAuxiliaryFlag, Ch_WUParityFlag)
-regmem,reg16|32|64    \320\2\x0F\xB3\101              386,SM
-rm16|32|64,imm        \320\2\x0F\xBA\206\25           386,SB
+regmem,reg16|32|64    \320\370\1\xB3\101              386,SM
+rm16|32|64,imm        \320\370\1\xBA\206\25           386,SB
 
 [BTS,btsX]
 (Ch_Mop2, Ch_Rop1, Ch_WCarryFlag, Ch_WUOverflowFlag, Ch_WUSignFlag, Ch_WUAuxiliaryFlag, Ch_WUParityFlag)
-regmem,reg16|32|64    \320\2\x0F\xAB\101              386,SM
-rm16|32|64,imm        \320\2\x0F\xBA\205\25           386,SB
+regmem,reg16|32|64    \320\370\1\xAB\101              386,SM
+rm16|32|64,imm        \320\370\1\xBA\205\25           386,SB
 
 [CALL,call]
 ; don't know value of any register
@@ -207,7 +207,7 @@ void                  \332\1\xA6                      8086
 [CMPSD,cmpsl]
 (Ch_RWESI, Ch_RMemEDI, Ch_RWEDI, Ch_RDirFlag, Ch_WOverflowFlag, Ch_WSignFlag, Ch_WZeroFlag, Ch_WAuxiliaryFlag, Ch_WCarryFlag, Ch_WParityFlag)
 void                  \332\325\1\xA7                  386
-xmmreg,xmmrm,imm      \334\2\x0F\xC2\110\26           WILLAMETTE,SSE2,SM2,SB,AR2
+xmmreg,xmmrm,imm      \334\370\1\xC2\110\26           WILLAMETTE,SSE2,SM2,SB,AR2
 
 [CMPSW]
 (Ch_RWESI, Ch_RMemEDI, Ch_RWEDI, Ch_RDirFlag, Ch_WOverflowFlag, Ch_WSignFlag, Ch_WZeroFlag, Ch_WAuxiliaryFlag, Ch_WCarryFlag, Ch_WParityFlag)
@@ -215,17 +215,17 @@ void                  \332\324\1\xA7                  8086
 
 [CMPXCHG,cmpxchgX]
 (Ch_All, Ch_WOverflowFlag, Ch_WSignFlag, Ch_WZeroFlag, Ch_WAuxiliaryFlag, Ch_WCarryFlag, Ch_WParityFlag)
-regmem,reg16|32|64    \320\2\x0F\xB1\101              PENT,SM
-rm8,reg8              \2\x0F\xB0\101                  PENT
+regmem,reg16|32|64    \320\370\1\xB1\101              PENT,SM
+rm8,reg8              \370\1\xB0\101                  PENT
 
 [CMPXCHG486,cmpxchg486X]
 (Ch_All, Ch_WOverflowFlag, Ch_WSignFlag, Ch_WZeroFlag, Ch_WAuxiliaryFlag, Ch_WCarryFlag, Ch_WParityFlag)
-regmem,reg16|32|64    \320\2\x0F\xA7\101              486,SM
-rm8,reg8              \2\x0F\xA6\101                  486,UNDOC
+regmem,reg16|32|64    \320\370\1\xA7\101              486,SM
+rm8,reg8              \370\1\xA6\101                  486,UNDOC
 
 [CMPXCHG8B,cmpxchg8b]
 (Ch_All, Ch_WZeroFlag)
-mem                   \2\x0F\xC7\201                  PENT
+mem                   \370\1\xC7\201                  PENT
 
 [CPUID]
 (Ch_All)
@@ -783,7 +783,7 @@ void                  \1\xF4                          8086,PRIV
 
 [IBTS,ibtsX]
 (Ch_All)
-regmem,reg16|32|64    \320\2\x0F\xA7\101              386,SM,UNDOC,ND
+regmem,reg16|32|64    \320\370\1\xA7\101              386,SM,UNDOC,ND
 
 [ICEBP]
 (Ch_All)
@@ -796,7 +796,7 @@ rm8                   \1\xF6\207                      8086
 
 [IMUL,imulX]
 (Ch_RWEAX, Ch_WEDX, Ch_WCarryFlag, Ch_WOverflowFlag, Ch_WUSignFlag, Ch_WUZeroFlag, Ch_WUAuxiliaryFlag, Ch_WUParityFlag)
-reg16|32|64,regmem    \320\2\x0F\xAF\110              386,SM
+reg16|32|64,regmem    \320\370\1\xAF\110              386,SM
 rm16|32|64            \320\1\xF7\205                  8086
 reg32|64,regmem,imm8  \320\1\x6B\110\16               386,SM
 reg32|64,regmem,imm   \320\1\x69\110\42               386,SM,SD,AR2
@@ -866,7 +866,7 @@ void                  \2\x0F\x08                      486,PRIV
 
 [INVLPG,invlpgX]
 (Ch_All)
-mem                   \2\x0F\x01\207                  486,PRIV
+mem                   \370\1\x01\207                  486,PRIV
 
 [IRET]
 (Ch_All)
@@ -923,7 +923,7 @@ void                  \1\x9F                          8086
 
 [LAR,larX]
 (Ch_Wop2, Ch_WZeroFlag)
-reg16|32|64,regmem    \320\2\x0F\x02\110              286,PROT,SM
+reg16|32|64,regmem    \320\370\1\x02\110              286,PROT,SM
 
 [LCALL,lcall]
 ; don't know value of any register
@@ -951,19 +951,19 @@ reg16|32,mem          \320\1\xC4\110                  8086,NOX86_64
 
 [LFS,lfsX]
 (Ch_Wop2, Ch_Rop1)
-reg16|32,mem          \320\2\x0F\xB4\110              386
+reg16|32,mem          \320\370\1\xB4\110              386
 
 [LGDT,lgdtX]
 ()
-mem                   \2\x0F\x01\202                  286,PRIV
+mem                   \370\1\x01\202                  286,PRIV
 
 [LGS,lgsX]
 (Ch_Wop2, Ch_Rop1)
-reg16|32,mem          \320\2\x0F\xB5\110              386
+reg16|32,mem          \320\370\1\xB5\110              386
 
 [LIDT,lidtX]
 ()
-mem                   \2\x0F\x01\203                  286,PRIV
+mem                   \370\1\x01\203                  286,PRIV
 
 [LJMP,ljmp]
 (Ch_ROp1)
@@ -973,11 +973,11 @@ mem16                 \324\1\xFF\205                  8086
 
 [LLDT,lldtX]
 ()
-rm16                  \2\x0F\x00\202                  286,PROT,PRIV
+rm16                  \370\1\x00\202                  286,PROT,PRIV
 
 [LMSW,lmswX]
 ()
-rm16                  \2\x0F\x01\206                  286,PRIV
+rm16                  \370\1\x01\206                  286,PRIV
 
 [LOADALL]
 (Ch_All)
@@ -1035,15 +1035,15 @@ imm,reg_ecx|64        \311\1\xE1\50                   386
 
 [LSL,lslX]
 (Ch_Wop2, Ch_WZeroFlag)
-reg16|32|64,regmem    \320\2\x0F\x03\110              286,PROT,SM
+reg16|32|64,regmem    \320\370\1\x03\110              286,PROT,SM
 
 [LSS,lssX]
 (Ch_Wop2, Ch_ROP1)
-reg16|32|64,mem       \320\2\x0F\xB2\110              386
+reg16|32|64,mem       \320\370\1\xB2\110              386
 
 [LTR,ltrX]
 ()
-rm16                  \2\x0F\x00\203                  286,PROT,PRIV
+rm16                  \370\1\x00\203                  286,PROT,PRIV
 
 [MONITOR]
 ()
@@ -1078,40 +1078,40 @@ rm16|32,reg_dess      \320\1\x8C\101                  8086
 rm16|32,reg_fsgs      \320\1\x8C\101                  386
 reg_dess,rm16|32      \321\1\x8E\110                  8086,SM
 reg_fsgs,rm16|32      \321\1\x8E\110                  386,SM
-reg32,reg_cr4         \2\x0F\x20\204                  PENT,PRIV,NOX86_64
-reg32,reg_creg        \2\x0F\x20\101                  386,PRIV,NOX86_64
-reg32,reg_dreg        \2\x0F\x21\101                  386,PRIV,NOX86_64
-reg32,reg_treg        \2\x0F\x24\101                  386,PRIV,NOX86_64
-reg64,reg_cr4         \2\x0F\x20\204                  PENT,PRIV,X86_64
-reg64,reg_creg        \2\x0F\x20\101                  386,PRIV,X86_64
-reg64,reg_dreg        \2\x0F\x21\101                  386,PRIV,X86_64
-reg64,reg_treg        \2\x0F\x24\101                  386,PRIV,X86_64
-reg_cr4,reg32         \2\x0F\x22\214                  PENT,PRIV,NOX86_64
-reg_creg,reg32        \2\x0F\x22\110                  386,PRIV,NOX86_64
-reg_dreg,reg32        \2\x0F\x23\110                  386,PRIV,NOX86_64
-reg_treg,reg32        \2\x0F\x26\110                  386,PRIV,NOX86_64
-reg_cr4,reg64         \2\x0F\x22\214                  PENT,PRIV,X86_64
-reg_creg,reg64        \2\x0F\x22\110                  386,PRIV,X86_64
-reg_dreg,reg64        \2\x0F\x23\110                  386,PRIV,X86_64
-reg_treg,reg64        \2\x0F\x26\110                  386,PRIV,X86_64
+reg32,reg_cr4         \370\1\x20\204                  PENT,PRIV,NOX86_64
+reg32,reg_creg        \370\1\x20\101                  386,PRIV,NOX86_64
+reg32,reg_dreg        \370\1\x21\101                  386,PRIV,NOX86_64
+reg32,reg_treg        \370\1\x24\101                  386,PRIV,NOX86_64
+reg64,reg_cr4         \370\1\x20\204                  PENT,PRIV,X86_64
+reg64,reg_creg        \370\1\x20\101                  386,PRIV,X86_64
+reg64,reg_dreg        \370\1\x21\101                  386,PRIV,X86_64
+reg64,reg_treg        \370\1\x24\101                  386,PRIV,X86_64
+reg_cr4,reg32         \370\1\x22\214                  PENT,PRIV,NOX86_64
+reg_creg,reg32        \370\1\x22\110                  386,PRIV,NOX86_64
+reg_dreg,reg32        \370\1\x23\110                  386,PRIV,NOX86_64
+reg_treg,reg32        \370\1\x26\110                  386,PRIV,NOX86_64
+reg_cr4,reg64         \370\1\x22\214                  PENT,PRIV,X86_64
+reg_creg,reg64        \370\1\x22\110                  386,PRIV,X86_64
+reg_dreg,reg64        \370\1\x23\110                  386,PRIV,X86_64
+reg_treg,reg64        \370\1\x26\110                  386,PRIV,X86_64
 
 [MOVD,movd]
 (Ch_Rop1, Ch_Wop2)
-mmxreg,rm32           \2\x0F\x6E\110                  PENT,MMX,SD
-rm32,mmxreg           \2\x0F\x7E\101                  PENT,MMX,SD
-xmmreg,rm32           \361\2\x0F\x6E\110              WILLAMETTE,SSE2
-rm32,xmmreg           \361\2\x0F\x7E\101              WILLAMETTE,SSE2
+mmxreg,rm32           \370\1\x6E\110                  PENT,MMX,SD
+rm32,mmxreg           \370\1\x7E\101                  PENT,MMX,SD
+xmmreg,rm32           \361\370\1\x6E\110              WILLAMETTE,SSE2
+rm32,xmmreg           \361\370\1\x7E\101              WILLAMETTE,SSE2
 
 [MOVQ,movq]
 (Ch_Rop1, Ch_Wop2)
-mmxreg,mmxrm          \2\x0F\x6F\110                  PENT,MMX,SM
-mmxrm,mmxreg          \2\x0F\x7F\101                  PENT,MMX,SM
-mmxreg,rm64           \326\2\x0F\x6E\110              X86_64,MMX
-rm64,mmxreg           \326\2\x0F\x7E\101              X86_64,MMX
-xmmreg,xmmrm          \333\2\x0F\x7E\110              WILLAMETTE,SSE2
-xmmrm,xmmreg          \361\2\x0F\xD6\101              WILLAMETTE,SSE2
-xmmreg,reg64          \361\326\2\x0F\x6E\110          WILLAMETTE,SSE2,X86_64
-reg64,xmmreg          \361\326\2\x0F\x7E\101          WILLAMETTE,SSE2,X86_64
+mmxreg,mmxrm          \370\1\x6F\110                  PENT,MMX,SM
+mmxrm,mmxreg          \370\1\x7F\101                  PENT,MMX,SM
+mmxreg,rm64           \326\370\1\x6E\110              X86_64,MMX
+rm64,mmxreg           \326\370\1\x7E\101              X86_64,MMX
+xmmreg,xmmrm          \333\370\1\x7E\110              WILLAMETTE,SSE2
+xmmrm,xmmreg          \361\370\1\xD6\101              WILLAMETTE,SSE2
+xmmreg,reg64          \361\326\370\1\x6E\110          WILLAMETTE,SSE2,X86_64
+reg64,xmmreg          \361\326\370\1\x7E\101          WILLAMETTE,SSE2,X86_64
 
 [MOVSB]
 (Ch_RWESI, Ch_WMemEDI, Ch_RWEDI, Ch_RDirFlag)
@@ -1121,8 +1121,8 @@ void                  \1\xA4                          8086
 ; Change flags aren't correct for the sse move, so it is handled as a special case in the compiler code
 (Ch_RWESI, Ch_WMemEDI, Ch_RWEDI, Ch_RDirFlag)
 void                  \325\1\xA5                      386
-xmmreg,xmmrm          \334\2\x0F\x10\110              WILLAMETTE,SSE2
-xmmrm,xmmreg          \334\2\x0F\x11\101              WILLAMETTE,SSE2
+xmmreg,xmmrm          \334\370\1\x10\110              WILLAMETTE,SSE2
+xmmrm,xmmreg          \334\370\1\x11\101              WILLAMETTE,SSE2
 
 
 [MOVSQ]
@@ -1135,13 +1135,13 @@ void                  \324\1\xA5                      8086
 
 [MOVSX,movsY]
 (Ch_Wop2, Ch_Rop1)
-reg32|64,rm16         \320\2\x0F\xBF\110              386
-reg16|32|64,rm8       \320\2\x0F\xBE\110              386
+reg32|64,rm16         \320\370\1\xBF\110              386
+reg16|32|64,rm8       \320\370\1\xBE\110              386
 
 [MOVZX,movzY]
 (Ch_Wop2, Ch_Rop1)
-reg32|64,rm16         \320\2\x0F\xB7\110              386
-reg16|32|64,rm8       \320\2\x0F\xB6\110              386
+reg32|64,rm16         \320\370\1\xB7\110              386
+reg16|32|64,rm8       \320\370\1\xB6\110              386
 
 [MUL,mulX]
 (Ch_RWEAX, Ch_WEDX, Ch_WCarryFlag, Ch_WOverflowFlag, Ch_WUSignFlag, Ch_WUZeroFlag, Ch_WUAuxiliaryFlag, Ch_WUParityFlag)
@@ -1209,33 +1209,33 @@ void                  \324\1\x6F                      186
 
 [PACKSSDW]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\x6B\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\x6B\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\x6B\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\x6B\110              WILLAMETTE,SSE2,SM
 
 [PACKSSWB]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\x63\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\x63\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\x63\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\x63\110              WILLAMETTE,SSE2,SM
 
 [PACKUSWB]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\x67\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\x67\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\x67\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\x67\110              WILLAMETTE,SSE2,SM
 
 [PADDB]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xFC\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\xFC\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\xFC\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\xFC\110              WILLAMETTE,SSE2,SM
 
 [PADDD]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xFE\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\xFE\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\xFE\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\xFE\110              WILLAMETTE,SSE2,SM
 
 [PADDSB]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xEC\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\xEC\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\xEC\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\xEC\110              WILLAMETTE,SSE2,SM
 
 [PADDSIW]
 (Ch_Mop2, Ch_Rop1)
@@ -1243,33 +1243,33 @@ mmxreg,mmxrm          \2\x0F\x51\110                  PENT,MMX,SM,CYRIX
 
 [PADDSW]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xED\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\xED\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\xED\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\xED\110              WILLAMETTE,SSE2,SM
 
 [PADDUSB]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xDC\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\xDC\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\xDC\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\xDC\110              WILLAMETTE,SSE2,SM
 
 [PADDUSW]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xDD\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\xDD\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\xDD\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\xDD\110              WILLAMETTE,SSE2,SM
 
 [PADDW]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xFD\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\xFD\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\xFD\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\xFD\110              WILLAMETTE,SSE2,SM
 
 [PAND]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xDB\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\xDB\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\xDB\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\xDB\110              WILLAMETTE,SSE2,SM
 
 [PANDN]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xDF\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\xDF\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\xDF\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\xDF\110              WILLAMETTE,SSE2,SM
 
 [PAVEB]
 (Ch_Mop2, Ch_Rop1)
@@ -1281,33 +1281,33 @@ mmxreg,mmxrm          \2\x0F\x0F\110\01\xBF           PENT,3DNOW,SM
 
 [PCMPEQB]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\x74\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\x74\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\x74\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\x74\110              WILLAMETTE,SSE2,SM
 
 [PCMPEQD]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\x76\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\x76\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\x76\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\x76\110              WILLAMETTE,SSE2,SM
 
 [PCMPEQW]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\x75\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\x75\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\x75\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\x75\110              WILLAMETTE,SSE2,SM
 
 [PCMPGTB]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\x64\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\x64\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\x64\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\x64\110              WILLAMETTE,SSE2,SM
 
 [PCMPGTD]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\x66\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\x66\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\x66\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\x66\110              WILLAMETTE,SSE2,SM
 
 [PCMPGTW]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\x65\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\x65\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\x65\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\x65\110              WILLAMETTE,SSE2,SM
 
 [PDISTIB]
 (Ch_All)
@@ -1387,8 +1387,8 @@ mmxreg,mem            \2\x0F\x5E\110                  PENT,MMX,SM,CYRIX
 
 [PMADDWD]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xF5\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\xF5\110              WILLAMETTE,SM,SSE2
+mmxreg,mmxrm          \370\1\xF5\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\xF5\110              WILLAMETTE,SM,SSE2
 
 [PMAGW]
 (Ch_All)
@@ -1408,13 +1408,13 @@ mmxreg,mmxrm          \2\x0F\x59\110                  PENT,MMX,SM,CYRIX
 
 [PMULHW]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xE5\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\xE5\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\xE5\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\xE5\110              WILLAMETTE,SSE2,SM
 
 [PMULLW]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xD5\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\xD5\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\xD5\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\xD5\110              WILLAMETTE,SSE2,SM
 
 [PMVGEZB]
 (Ch_All)
@@ -1476,8 +1476,8 @@ void                  \326\1\x9D                      X86_64
 
 [POR]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xEB\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\xEB\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\xEB\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\xEB\110              WILLAMETTE,SSE2,SM
 
 [PREFETCH,prefetchX]
 (Ch_Rop1)
@@ -1489,78 +1489,78 @@ mem                   \2\x0F\x0D\201                  PENT,3DNOW,SM
 
 [PSLLD]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xF2\110                  PENT,MMX,SM
-mmxreg,imm            \2\x0F\x72\206\25               PENT,MMX,SB,AR1
-xmmreg,xmmrm          \361\2\x0F\xF2\110              WILLAMETTE,SSE2,SM
-xmmreg,imm            \361\2\x0F\x72\206\25           WILLAMETTE,SSE2,SB,AR1
+mmxreg,mmxrm          \370\1\xF2\110                  PENT,MMX,SM
+mmxreg,imm            \370\1\x72\206\25               PENT,MMX,SB,AR1
+xmmreg,xmmrm          \361\370\1\xF2\110              WILLAMETTE,SSE2,SM
+xmmreg,imm            \361\370\1\x72\206\25           WILLAMETTE,SSE2,SB,AR1
 
 [PSLLDQ]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,imm            \361\2\x0F\x73\207\25           WILLAMETTE,SSE2,SB,AR1
+xmmreg,imm            \361\370\1\x73\207\25           WILLAMETTE,SSE2,SB,AR1
 
 [PSLLQ]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xF3\110                  PENT,MMX,SM
-mmxreg,imm            \2\x0F\x73\206\25               PENT,MMX,SB,AR1
-xmmreg,xmmrm          \361\2\x0F\xF3\110              WILLAMETTE,SSE2,SM
-xmmreg,imm            \361\2\x0F\x73\206\25           WILLAMETTE,SSE2,SB,AR1
+mmxreg,mmxrm          \370\1\xF3\110                  PENT,MMX,SM
+mmxreg,imm            \370\1\x73\206\25               PENT,MMX,SB,AR1
+xmmreg,xmmrm          \361\370\1\xF3\110              WILLAMETTE,SSE2,SM
+xmmreg,imm            \361\370\1\x73\206\25           WILLAMETTE,SSE2,SB,AR1
 
 [PSLLW]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xF1\110                  PENT,MMX,SM
-mmxreg,imm            \2\x0F\x71\206\25               PENT,MMX,SB,AR1
-xmmreg,xmmrm          \361\2\x0F\xF1\110              WILLAMETTE,SSE2,SM
-xmmreg,imm            \361\2\x0F\x71\206\25           WILLAMETTE,SSE2,SB,AR1
+mmxreg,mmxrm          \370\1\xF1\110                  PENT,MMX,SM
+mmxreg,imm            \370\1\x71\206\25               PENT,MMX,SB,AR1
+xmmreg,xmmrm          \361\370\1\xF1\110              WILLAMETTE,SSE2,SM
+xmmreg,imm            \361\370\1\x71\206\25           WILLAMETTE,SSE2,SB,AR1
 
 [PSRAD]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xE2\110                  PENT,MMX,SM
-mmxreg,imm            \2\x0F\x72\204\25               PENT,MMX,SB,AR1
-xmmreg,xmmrm          \361\2\x0F\xE2\110              WILLAMETTE,SSE2,SM
-xmmreg,imm            \361\2\x0F\x72\204\25           WILLAMETTE,SSE2,SB,AR1
+mmxreg,mmxrm          \370\1\xE2\110                  PENT,MMX,SM
+mmxreg,imm            \370\1\x72\204\25               PENT,MMX,SB,AR1
+xmmreg,xmmrm          \361\370\1\xE2\110              WILLAMETTE,SSE2,SM
+xmmreg,imm            \361\370\1\x72\204\25           WILLAMETTE,SSE2,SB,AR1
 
 [PSRAW]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xE1\110                  PENT,MMX,SM
-mmxreg,imm            \2\x0F\x71\204\25               PENT,MMX,SB,AR1
-xmmreg,xmmrm          \361\2\x0F\xE1\110              WILLAMETTE,SSE2,SM
-xmmreg,imm            \361\2\x0F\x71\204\25           WILLAMETTE,SSE2,SB,AR1
+mmxreg,mmxrm          \370\1\xE1\110                  PENT,MMX,SM
+mmxreg,imm            \370\1\x71\204\25               PENT,MMX,SB,AR1
+xmmreg,xmmrm          \361\370\1\xE1\110              WILLAMETTE,SSE2,SM
+xmmreg,imm            \361\370\1\x71\204\25           WILLAMETTE,SSE2,SB,AR1
 
 [PSRLD]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xD2\110                  PENT,MMX,SM
-mmxreg,imm            \2\x0F\x72\202\25               PENT,MMX,SB,AR1
-xmmreg,xmmrm          \361\2\x0F\xD2\110              WILLAMETTE,SSE2,SM
-xmmreg,imm            \361\2\x0F\x72\202\25           WILLAMETTE,SSE2,SB,AR1
+mmxreg,mmxrm          \370\1\xD2\110                  PENT,MMX,SM
+mmxreg,imm            \370\1\x72\202\25               PENT,MMX,SB,AR1
+xmmreg,xmmrm          \361\370\1\xD2\110              WILLAMETTE,SSE2,SM
+xmmreg,imm            \361\370\1\x72\202\25           WILLAMETTE,SSE2,SB,AR1
 
 [PSRLQ]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xD3\110                  PENT,MMX,SM
-mmxreg,imm            \2\x0F\x73\202\25               PENT,MMX,SB,AR1
-xmmreg,xmmrm          \361\2\x0F\xD3\110              WILLAMETTE,SSE2,SM
-xmmreg,imm            \361\2\x0F\x73\202\25           WILLAMETTE,SSE2,SB,AR1
+mmxreg,mmxrm          \370\1\xD3\110                  PENT,MMX,SM
+mmxreg,imm            \370\1\x73\202\25               PENT,MMX,SB,AR1
+xmmreg,xmmrm          \361\370\1\xD3\110              WILLAMETTE,SSE2,SM
+xmmreg,imm            \361\370\1\x73\202\25           WILLAMETTE,SSE2,SB,AR1
 
 [PSRLW]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xD1\110                  PENT,MMX,SM
-mmxreg,imm            \2\x0F\x71\202\25               PENT,MMX,SB,AR1
-xmmreg,xmmrm          \361\2\x0F\xD1\110              WILLAMETTE,SSE2,SM
-xmmreg,imm            \361\2\x0F\x71\202\25           WILLAMETTE,SSE2,SB,AR1
+mmxreg,mmxrm          \370\1\xD1\110                  PENT,MMX,SM
+mmxreg,imm            \370\1\x71\202\25               PENT,MMX,SB,AR1
+xmmreg,xmmrm          \361\370\1\xD1\110              WILLAMETTE,SSE2,SM
+xmmreg,imm            \361\370\1\x71\202\25           WILLAMETTE,SSE2,SB,AR1
 
 [PSUBB]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xF8\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\xF8\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\xF8\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\xF8\110              WILLAMETTE,SSE2,SM
 
 [PSUBD]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xFA\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\xFA\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\xFA\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\xFA\110              WILLAMETTE,SSE2,SM
 
 [PSUBSB]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xE8\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\xE8\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\xE8\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\xE8\110              WILLAMETTE,SSE2,SM
 
 [PSUBSIW]
 (Ch_Mop2, Ch_Rop1)
@@ -1569,53 +1569,53 @@ mmxreg,mmxreg         \2\x0F\x55\110                  PENT,MMX,CYRIX
 
 [PSUBSW]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xE9\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\xE9\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\xE9\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\xE9\110              WILLAMETTE,SSE2,SM
 
 [PSUBUSB]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xD8\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\xD8\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\xD8\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\xD8\110              WILLAMETTE,SSE2,SM
 
 [PSUBUSW]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xD9\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\xD9\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\xD9\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\xD9\110              WILLAMETTE,SSE2,SM
 
 [PSUBW]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xF9\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\xF9\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\xF9\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\xF9\110              WILLAMETTE,SSE2,SM
 
 [PUNPCKHBW]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\x68\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\x68\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\x68\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\x68\110              WILLAMETTE,SSE2,SM
 
 [PUNPCKHDQ]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\x6A\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\x6A\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\x6A\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\x6A\110              WILLAMETTE,SSE2,SM
 
 [PUNPCKHWD]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\x69\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\x69\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\x69\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\x69\110              WILLAMETTE,SSE2,SM
 
 [PUNPCKLBW]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\x60\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\x60\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\x60\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\x60\110              WILLAMETTE,SSE2,SM
 
 [PUNPCKLDQ]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\x62\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\x62\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\x62\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\x62\110              WILLAMETTE,SSE2,SM
 
 [PUNPCKLWD]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\x61\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\x61\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\x61\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\x61\110              WILLAMETTE,SSE2,SM
 
 [PUSH,pushX]
 (Ch_Rop1, Ch_RWESP)
@@ -1661,8 +1661,8 @@ void                  \326\1\x9C                      X86_64
 
 [PXOR]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xEF\110                  PENT,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\xEF\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\xEF\110                  PENT,MMX,SM
+xmmreg,xmmrm          \361\370\1\xEF\110              WILLAMETTE,SSE2,SM
 
 [RCL,rclX]
 (Ch_Mop2, Ch_Rop1, Ch_RWCarryFlag, Ch_WOverflowFlag)
@@ -1896,7 +1896,7 @@ void                  \1\x36                          8086,PRE
 
 [SGDT]
 (Ch_Wop1)
-mem                   \2\x0F\x01\200                  286
+mem                   \370\1\x01\200                  286
 
 [SHL,shlX]
 (Ch_Mop2, Ch_Rop1, Ch_WCarryFlag, Ch_WOverflowFlag, Ch_WSignFlag, Ch_WZeroFlag, Ch_WParityFlag, Ch_WUAuxiliaryFlag)
@@ -1909,8 +1909,8 @@ rm8,imm               \1\xC0\204\25                   186,SB
 
 [SHLD,shldX]
 (Ch_MOp3, Ch_Rop2, Ch_WCarryFlag, Ch_WOverflowFlag, Ch_WSignFlag, Ch_WZeroFlag, Ch_WParityFlag, Ch_WUAuxiliaryFlag)
-rm16|32|64,reg16|32|64,imm    \321\2\x0F\xA4\101\26       386,SM2,SB,AR2
-rm16|32|64,reg16|32|64,reg_cl \321\2\x0F\xA5\101          386,SM
+rm16|32|64,reg16|32|64,imm    \321\370\1\xA4\101\26       386,SM2,SB,AR2
+rm16|32|64,reg16|32|64,reg_cl \321\370\1\xA5\101          386,SM
 
 [SHR,shrX]
 (Ch_Mop2, Ch_Rop1, Ch_WCarryFlag, Ch_WOverflowFlag, Ch_WSignFlag, Ch_WZeroFlag, Ch_WParityFlag, Ch_WUAuxiliaryFlag)
@@ -1923,17 +1923,17 @@ rm8,imm               \1\xC0\205\25                   186,SB
 
 [SHRD,shrdX]
 (Ch_MOp3, Ch_Rop2, Ch_WCarryFlag, Ch_WOverflowFlag, Ch_WSignFlag, Ch_WZeroFlag, Ch_WParityFlag, Ch_WUAuxiliaryFlag)
-rm16|32|64,reg16|32|64,imm    \321\2\x0F\xAC\101\26       386,SM2,SB,AR2
-rm16|32|64,reg16|32|64,reg_cl \321\2\x0F\xAD\101          386,SM
+rm16|32|64,reg16|32|64,imm    \321\370\1\xAC\101\26       386,SM2,SB,AR2
+rm16|32|64,reg16|32|64,reg_cl \321\370\1\xAD\101          386,SM
 
 [SIDT,sidtX]
 (Ch_Wop1)
-mem                   \2\x0F\x01\201              286
+mem                   \370\1\x01\201              286
 
 [SLDT,sldtX]
 (Ch_Wop1)
-mem                   \2\x0F\x00\200                  286,PROT
-reg16|32|64           \320\2\x0F\x00\200              286,PROT
+mem                   \370\1\x00\200                  286,PROT
+reg16|32|64           \320\370\1\x00\200              286,PROT
 
 [SMI]
 (Ch_All)
@@ -1949,7 +1949,7 @@ void                  \2\x0F\x7E                      486,CYRIX,ND
 
 [SMSW,smswX]
 (Ch_Wop1)
-rm16|32|64            \320\2\x0F\x01\204              286
+rm16|32|64            \320\370\1\x01\204              286
 
 [STC]
 (Ch_W1CarryFlag)
@@ -1977,8 +1977,8 @@ void                  \324\1\xAB                      8086
 
 [STR,strX]
 (Ch_Wop1)
-mem                   \2\x0F\x00\201                  286,PROT
-reg16|32|64           \320\2\x0F\x00\201              286,PROT
+mem                   \370\1\x00\201                  286,PROT
+reg16|32|64           \320\370\1\x00\201              286,PROT
 
 [SUB,subX]
 (Ch_Mop2, Ch_Rop1, Ch_NoReadIfEqualRegs, Ch_WOverflowFlag, Ch_WSignFlag, Ch_WZeroFlag, Ch_WAuxiliaryFlag, Ch_WCarryFlag, Ch_WParityFlag)
@@ -2056,22 +2056,22 @@ void                  \2\x0F\x0B                      286
 
 [UMOV,umovX]
 (Ch_All)
-regmem,reg16|32|64    \320\2\x0F\x11\101              386,UNDOC,SM
-reg16|32|64,mem       \320\2\x0F\x13\110              386,UNDOC,SM
-rm8,reg8              \2\x0F\x10\101                  386,UNDOC
-reg8,rm8              \2\x0F\x12\110                  386,UNDOC
+regmem,reg16|32|64    \320\370\1\x11\101              386,UNDOC,SM
+reg16|32|64,mem       \320\370\1\x13\110              386,UNDOC,SM
+rm8,reg8              \370\1\x10\101                  386,UNDOC
+reg8,rm8              \370\1\x12\110                  386,UNDOC
 
 [VERR,verrX]
 (Ch_WZeroFlag)
-mem                   \2\x0F\x00\204                  286,PROT
-mem16                 \2\x0F\x00\204                  286,PROT
-reg16                 \2\x0F\x00\204                  286,PROT
+mem                   \370\1\x00\204                  286,PROT
+mem16                 \370\1\x00\204                  286,PROT
+reg16                 \370\1\x00\204                  286,PROT
 
 [VERW]
 (Ch_WZeroFlag)
-mem                   \2\x0F\x00\205                  286,PROT
-mem16                 \2\x0F\x00\205                  286,PROT
-reg16                 \2\x0F\x00\205                  286,PROT
+mem                   \370\1\x00\205                  286,PROT
+mem16                 \370\1\x00\205                  286,PROT
+reg16                 \370\1\x00\205                  286,PROT
 
 [WAIT]
 ()
@@ -2096,19 +2096,19 @@ imm,reg64             \350\362\333\377\1\xF6\210\40   X86_64,PRIV ;MSR_IMM
 
 [XADD,xaddX]
 (Ch_All, Ch_WOverflowFlag, Ch_WSignFlag, Ch_WZeroFlag, Ch_WAuxiliaryFlag, Ch_WCarryFlag, Ch_WParityFlag)
-mem,reg16|32|64       \320\2\x0F\xC1\101              486,SM
-rm8,reg8              \2\x0F\xC0\101                  486
-reg8,reg8             \2\x0F\xC0\101                  486
-reg16,reg16           \320\2\x0F\xC1\101              486
-reg32,reg32           \321\2\x0F\xC1\101              486
-reg64,reg64           \320\2\x0F\xC1\101              X86_64
+mem,reg16|32|64       \320\370\1\xC1\101              486,SM
+rm8,reg8              \370\1\xC0\101                  486
+reg8,reg8             \370\1\xC0\101                  486
+reg16,reg16           \320\370\1\xC1\101              486
+reg32,reg32           \321\370\1\xC1\101              486
+reg64,reg64           \320\370\1\xC1\101              X86_64
 
 [XBTS,xbtsX]
 (Ch_All)
-reg16,mem             \324\2\x0F\xA6\110              386,SW,UNDOC,ND
-reg16,reg16           \324\2\x0F\xA6\110              386,UNDOC,ND
-reg32,mem             \325\2\x0F\xA6\110              386,SD,UNDOC,ND
-reg32,reg32           \325\2\x0F\xA6\110              386,UNDOC,ND
+reg16,mem             \324\370\1\xA6\110              386,SW,UNDOC,ND
+reg16,reg16           \324\370\1\xA6\110              386,UNDOC,ND
+reg32,mem             \325\370\1\xA6\110              386,SD,UNDOC,ND
+reg32,reg32           \325\370\1\xA6\110              386,UNDOC,ND
 
 [XCHG,xchgX]
 (Ch_RWop1, Ch_RWop2, Ch_NoReadIfEqualRegs)
@@ -2172,7 +2172,7 @@ void                  \333\3\x0F\xA7\xE8              P6,CYRIX
 
 [CMOVcc,cmovCCX]
 (Ch_ROp1, Ch_MOp2, Ch_RFLAGScc)
-reg16|32|64,regmem    \320\1\x0F\13\x40\110          P6,SM
+reg16|32|64,regmem    \320\370\13\x40\110            P6,SM
 
 [Jcc]
 (Ch_RFLAGScc)
@@ -2185,7 +2185,7 @@ imm16|near            \23\x70\1\x03\1\xE9\60         8086,PASS2,16BITONLY
 
 [SETcc,setCCX]
 (Ch_RFLAGScc, Ch_WOp1)
-rm8                   \1\x0F\13\x90\200              386
+rm8                   \370\13\x90\200                386
 
 ; Alternate syntax of string instructions (with memory operands)
 [MOVS,movsX]
@@ -2241,83 +2241,83 @@ reg_dx,mem32          \325\1\x6F                      386
 
 [ADDPS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \331\2\x0F\x58\110              KATMAI,SSE
+xmmreg,xmmrm          \331\370\1\x58\110              KATMAI,SSE
 
 [ADDSS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \336\333\2\x0F\x58\110              KATMAI,SSE
+xmmreg,xmmrm          \336\333\370\1\x58\110              KATMAI,SSE
 
 [ANDNPS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \2\x0F\x55\110                  KATMAI,SSE
+xmmreg,xmmrm          \370\1\x55\110                  KATMAI,SSE
 
 [ANDPS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \2\x0F\x54\110                  KATMAI,SSE
+xmmreg,xmmrm          \370\1\x54\110                  KATMAI,SSE
 
 [CMPEQPS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \331\2\x0F\xC2\110\1\x00        KATMAI,SSE
+xmmreg,xmmrm          \331\370\1\xC2\110\1\x00        KATMAI,SSE
 
 [CMPEQSS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \336\333\2\x0F\xC2\110\1\x00        KATMAI,SSE
+xmmreg,xmmrm          \336\333\370\1\xC2\110\1\x00        KATMAI,SSE
 
 [CMPLEPS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \331\2\x0F\xC2\110\1\x02        KATMAI,SSE
+xmmreg,xmmrm          \331\370\1\xC2\110\1\x02        KATMAI,SSE
 
 [CMPLESS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \336\333\2\x0F\xC2\110\1\x02        KATMAI,SSE
+xmmreg,xmmrm          \336\333\370\1\xC2\110\1\x02        KATMAI,SSE
 
 [CMPLTPS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \331\2\x0F\xC2\110\1\x01        KATMAI,SSE
+xmmreg,xmmrm          \331\370\1\xC2\110\1\x01        KATMAI,SSE
 
 [CMPLTSS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \336\333\2\x0F\xC2\110\1\x01        KATMAI,SSE
+xmmreg,xmmrm          \336\333\370\1\xC2\110\1\x01        KATMAI,SSE
 
 [CMPNEQPS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \331\2\x0F\xC2\110\1\x04        KATMAI,SSE
+xmmreg,xmmrm          \331\370\1\xC2\110\1\x04        KATMAI,SSE
 
 [CMPNEQSS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \336\333\2\x0F\xC2\110\1\x04        KATMAI,SSE
+xmmreg,xmmrm          \336\333\370\1\xC2\110\1\x04        KATMAI,SSE
 
 [CMPNLEPS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \331\2\x0F\xC2\110\1\x06        KATMAI,SSE
+xmmreg,xmmrm          \331\370\1\xC2\110\1\x06        KATMAI,SSE
 
 [CMPNLESS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \336\333\2\x0F\xC2\110\1\x06        KATMAI,SSE
+xmmreg,xmmrm          \336\333\370\1\xC2\110\1\x06        KATMAI,SSE
 
 [CMPNLTPS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \331\2\x0F\xC2\110\1\x05        KATMAI,SSE
+xmmreg,xmmrm          \331\370\1\xC2\110\1\x05        KATMAI,SSE
 
 [CMPNLTSS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \336\333\2\x0F\xC2\110\1\x05        KATMAI,SSE
+xmmreg,xmmrm          \336\333\370\1\xC2\110\1\x05        KATMAI,SSE
 
 [CMPORDPS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \331\2\x0F\xC2\110\1\x07        KATMAI,SSE
+xmmreg,xmmrm          \331\370\1\xC2\110\1\x07        KATMAI,SSE
 
 [CMPORDSS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \336\333\2\x0F\xC2\110\1\x07        KATMAI,SSE
+xmmreg,xmmrm          \336\333\370\1\xC2\110\1\x07        KATMAI,SSE
 
 [CMPUNORDPS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \331\2\x0F\xC2\110\1\x03        KATMAI,SSE
+xmmreg,xmmrm          \331\370\1\xC2\110\1\x03        KATMAI,SSE
 
 [CMPUNORDSS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \336\333\2\x0F\xC2\110\1\x03        KATMAI,SSE
+xmmreg,xmmrm          \336\333\370\1\xC2\110\1\x03        KATMAI,SSE
 
 ;
 ; CMPPS/CMPSS must come after the specific ops; that way the disassembler will find the
@@ -2326,183 +2326,183 @@ xmmreg,xmmrm          \336\333\2\x0F\xC2\110\1\x03        KATMAI,SSE
 
 [CMPPS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm,imm      \331\2\x0F\xC2\110\22           KATMAI,SSE,SB,AR2
+xmmreg,xmmrm,imm      \331\370\1\xC2\110\22           KATMAI,SSE,SB,AR2
 
 [CMPSS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm,imm      \336\333\2\x0F\xC2\110\22           KATMAI,SSE,SB,AR2;SCL32
+xmmreg,xmmrm,imm      \336\333\370\1\xC2\110\22           KATMAI,SSE,SB,AR2;SCL32
 
 [COMISS]
 (Ch_Rop1, Ch_Rop2, Ch_WFlags)
-xmmreg,xmmrm          \336\2\x0F\x2F\110                  KATMAI,SSE
+xmmreg,xmmrm          \336\370\1\x2F\110                  KATMAI,SSE
 
 [CVTPI2PS]
 (Ch_Wop2, Ch_Rop1)
-xmmreg,mmxrm         \331\2\x0F\x2A\110             KATMAI,SSE,MMX
+xmmreg,mmxrm         \331\370\1\x2A\110             KATMAI,SSE,MMX
 
 [CVTPS2PI]
 (Ch_Wop2, Ch_Rop1)
-mmxreg,mem64          \331\2\x0F\x2D\110              KATMAI,SSE,MMX
-mmxreg,xmmreg         \331\2\x0F\x2D\110              KATMAI,SSE,MMX
+mmxreg,mem64          \331\370\1\x2D\110              KATMAI,SSE,MMX
+mmxreg,xmmreg         \331\370\1\x2D\110              KATMAI,SSE,MMX
 
 [CVTSI2SS,cvtsi2ssS]
 (Ch_Wop2, Ch_Rop1)
-xmmreg,rm32           \333\321\2\x0F\x2A\110      KATMAI,SSE
-xmmreg,rm64           \333\321\2\x0F\x2A\110      KATMAI,SSE,X86_64
+xmmreg,rm32           \333\321\370\1\x2A\110      KATMAI,SSE
+xmmreg,rm64           \333\321\370\1\x2A\110      KATMAI,SSE,X86_64
 
 [CVTSS2SI]
 (Ch_Wop2, Ch_Rop1)
-reg32|64,mem32	      \333\320\2\x0F\x2D\110          KATMAI,SSE
-reg32|64,xmmreg       \333\320\2\x0F\x2D\110          KATMAI,SSE
+reg32|64,mem32        \333\320\370\1\x2D\110          KATMAI,SSE
+reg32|64,xmmreg       \333\320\370\1\x2D\110          KATMAI,SSE
 
 [CVTTPS2PI]
 (Ch_Wop2, Ch_Rop1)
-mmxreg,mem64          \331\2\x0F\x2C\110              KATMAI,SSE,MMX
-mmxreg,xmmreg         \331\2\x0F\x2C\110              KATMAI,SSE,MMX
+mmxreg,mem64          \331\370\1\x2C\110              KATMAI,SSE,MMX
+mmxreg,xmmreg         \331\370\1\x2C\110              KATMAI,SSE,MMX
 
 [CVTTSS2SI]
 (Ch_Wop2, Ch_Rop1)
-reg32|64,mem32        \333\320\2\x0F\x2C\110          KATMAI,SSE
-reg32|64,xmmreg       \333\320\2\x0F\x2C\110          KATMAI,SSE
+reg32|64,mem32        \333\320\370\1\x2C\110          KATMAI,SSE
+reg32|64,xmmreg       \333\320\370\1\x2C\110          KATMAI,SSE
 
 [DIVPS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \331\2\x0F\x5E\110              KATMAI,SSE
+xmmreg,xmmrm          \331\370\1\x5E\110              KATMAI,SSE
 
 [DIVSS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \336\333\2\x0F\x5E\110              KATMAI,SSE
+xmmreg,xmmrm          \336\333\370\1\x5E\110              KATMAI,SSE
 
 [LDMXCSR]
 (Ch_Rop1)
-mem                   \2\x0F\xAE\202                  KATMAI,SSE,SD
+mem                   \370\1\xAE\202                  KATMAI,SSE,SD
 
 [MAXPS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \331\2\x0F\x5F\110              KATMAI,SSE
+xmmreg,xmmrm          \331\370\1\x5F\110              KATMAI,SSE
 
 [MAXSS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \336\333\2\x0F\x5F\110              KATMAI,SSE
+xmmreg,xmmrm          \336\333\370\1\x5F\110              KATMAI,SSE
 
 [MINPS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \331\2\x0F\x5D\110              KATMAI,SSE
+xmmreg,xmmrm          \331\370\1\x5D\110              KATMAI,SSE
 
 [MINSS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \336\333\2\x0F\x5D\110              KATMAI,SSE
+xmmreg,xmmrm          \336\333\370\1\x5D\110              KATMAI,SSE
 
 [MOVAPS]
 (Ch_ROp1, Ch_WOp2)
-xmmreg,xmmrm          \2\x0F\x28\110                  KATMAI,SSE
-xmmrm,xmmreg          \2\x0F\x29\101                  KATMAI,SSE
+xmmreg,xmmrm          \370\1\x28\110                  KATMAI,SSE
+xmmrm,xmmreg          \370\1\x29\101                  KATMAI,SSE
 
 [MOVHPS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,mem            \2\x0F\x16\110                  KATMAI,SSE
-mem,xmmreg            \2\x0F\x17\101                  KATMAI,SSE
+xmmreg,mem            \370\1\x16\110                  KATMAI,SSE
+mem,xmmreg            \370\1\x17\101                  KATMAI,SSE
 
 [MOVLHPS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmreg         \2\x0F\x16\110                  KATMAI,SSE
+xmmreg,xmmreg         \370\1\x16\110                  KATMAI,SSE
 
 [MOVLPS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,mem            \2\x0F\x12\110                  KATMAI,SSE
-mem,xmmreg            \2\x0F\x13\101                  KATMAI,SSE
+xmmreg,mem            \370\1\x12\110                  KATMAI,SSE
+mem,xmmreg            \370\1\x13\101                  KATMAI,SSE
 
 [MOVHLPS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmreg         \2\x0F\x12\110                  KATMAI,SSE
+xmmreg,xmmreg         \370\1\x12\110                  KATMAI,SSE
 
 [MOVMSKPS]
 (Ch_Mop2, Ch_Rop1)
-reg32,xmmreg          \2\x0F\x50\110                  KATMAI,SSE
+reg32,xmmreg          \370\1\x50\110                  KATMAI,SSE
 
 [MOVNTPS]
 (Ch_Wop2, Ch_Rop1)
-mem,xmmreg            \2\x0F\x2B\101                  KATMAI,SSE
+mem,xmmreg            \370\1\x2B\101                  KATMAI,SSE
 
 [MOVSS]
 (Ch_Wop2, Ch_Rop1)
-xmmreg,xmmreg         \333\2\x0F\x10\110              KATMAI,SSE
-xmmreg,mem32          \333\2\x0F\x10\110              KATMAI,SSE
-xmmreg,xmmreg         \333\2\x0F\x11\101              KATMAI,SSE
-mem32,xmmreg          \333\2\x0F\x11\101              KATMAI,SSE
+xmmreg,xmmreg         \333\370\1\x10\110              KATMAI,SSE
+xmmreg,mem32          \333\370\1\x10\110              KATMAI,SSE
+xmmreg,xmmreg         \333\370\1\x11\101              KATMAI,SSE
+mem32,xmmreg          \333\370\1\x11\101              KATMAI,SSE
 
 [MOVUPS]
 (Ch_Wop2, Ch_Rop1)
-xmmreg,xmmrm          \331\2\x0F\x10\110              KATMAI,SSE
-xmmrm,xmmreg          \331\2\x0F\x11\101              KATMAI,SSE
+xmmreg,xmmrm          \331\370\1\x10\110              KATMAI,SSE
+xmmrm,xmmreg          \331\370\1\x11\101              KATMAI,SSE
 
 [MULPS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \2\x0F\x59\110                  KATMAI,SSE
+xmmreg,xmmrm          \370\1\x59\110                  KATMAI,SSE
 
 [MULSS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \336\333\2\x0F\x59\110              KATMAI,SSE
+xmmreg,xmmrm          \336\333\370\1\x59\110              KATMAI,SSE
 
 [ORPS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \2\x0F\x56\110                  KATMAI,SSE
+xmmreg,xmmrm          \370\1\x56\110                  KATMAI,SSE
 
 [RCPPS]
 (Ch_Wop2, Ch_Rop1)
-xmmreg,xmmrm          \331\2\x0F\x53\110              KATMAI,SSE
+xmmreg,xmmrm          \331\370\1\x53\110              KATMAI,SSE
 
 [RCPSS]
 (Ch_Wop2, Ch_Rop1)
-xmmreg,xmmrm          \336\333\2\x0F\x53\110              KATMAI,SSE
+xmmreg,xmmrm          \336\333\370\1\x53\110              KATMAI,SSE
 
 [RSQRTPS]
 (Ch_Wop2, Ch_Rop1)
-xmmreg,xmmrm          \331\2\x0F\x52\110              KATMAI,SSE
+xmmreg,xmmrm          \331\370\1\x52\110              KATMAI,SSE
 
 [RSQRTSS]
 (Ch_Wop2, Ch_Rop1)
-xmmreg,xmmrm          \336\333\2\x0F\x52\110              KATMAI,SSE
+xmmreg,xmmrm          \336\333\370\1\x52\110              KATMAI,SSE
 
 [SHUFPS]
 (Ch_Mop3, Ch_Rop2)
-xmmreg,xmmrm,imm      \2\x0F\xC6\110\22               KATMAI,SSE,SB,AR2
+xmmreg,xmmrm,imm      \370\1\xC6\110\22               KATMAI,SSE,SB,AR2
 
 [SQRTPS]
 (Ch_Wop2, Ch_Rop1)
-xmmreg,xmmrm          \331\2\x0F\x51\110              KATMAI,SSE
+xmmreg,xmmrm          \331\370\1\x51\110              KATMAI,SSE
 
 [SQRTSS]
 (Ch_Wop2, Ch_Rop1)
-xmmreg,xmmrm          \336\333\2\x0F\x51\110              KATMAI,SSE
+xmmreg,xmmrm          \336\333\370\1\x51\110              KATMAI,SSE
 
 [STMXCSR]
 (Ch_Wop1)
-mem                   \2\x0F\xAE\203                  KATMAI,SSE,SD
+mem                   \370\1\xAE\203                  KATMAI,SSE,SD
 
 [SUBPS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \331\2\x0F\x5C\110              KATMAI,SSE
+xmmreg,xmmrm          \331\370\1\x5C\110              KATMAI,SSE
 
 [SUBSS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \336\333\2\x0F\x5C\110              KATMAI,SSE
+xmmreg,xmmrm          \336\333\370\1\x5C\110              KATMAI,SSE
 
 [UCOMISS]
 (Ch_Rop1, Ch_Rop2, Ch_WZeroFlag, Ch_WParityFlag, Ch_WCarryFlag, Ch_W0OverflowFlag, Ch_W0SignFlag, Ch_W0AuxiliaryFlag)
-xmmreg,xmmrm          \336\2\x0F\x2E\110                  KATMAI,SSE
+xmmreg,xmmrm          \336\370\1\x2E\110                  KATMAI,SSE
 
 [UNPCKHPS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \2\x0F\x15\110                  KATMAI,SSE
+xmmreg,xmmrm          \370\1\x15\110                  KATMAI,SSE
 
 [UNPCKLPS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \2\x0F\x14\110                  KATMAI,SSE
+xmmreg,xmmrm          \370\1\x14\110                  KATMAI,SSE
 
 [XORPS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm          \2\x0F\x57\110                  KATMAI,SSE
+xmmreg,xmmrm          \370\1\x57\110                  KATMAI,SSE
 
 ;
 ; Introduced in Dechutes but necessary for SSE support
@@ -2523,19 +2523,19 @@ mem                   \2\x0F\xAE\200                  P6,SSE,FPU
 
 [PREFETCHNTA]
 (Ch_Rop1)
-mem                   \2\x0F\x18\200                      KATMAI
+mem                   \370\1\x18\200                      KATMAI
 
 [PREFETCHT0]
 (Ch_Rop1)
-mem                   \2\x0F\x18\201                      KATMAI
+mem                   \370\1\x18\201                      KATMAI
 
 [PREFETCHT1]
 (Ch_Rop1)
-mem                   \2\x0F\x18\202                      KATMAI
+mem                   \370\1\x18\202                      KATMAI
 
 [PREFETCHT2]
 (Ch_Rop1)
-mem                   \2\x0F\x18\203                      KATMAI
+mem                   \370\1\x18\203                      KATMAI
 
 [SFENCE]
 (Ch_All)
@@ -2547,26 +2547,26 @@ void                  \3\x0F\xAE\xF8                  KATMAI
 
 [MASKMOVQ]
 (Ch_Rop1, Ch_Rop2, Ch_WMemEDI)
-mmxreg,mmxreg         \2\x0F\xF7\110                  KATMAI,MMX
+mmxreg,mmxreg         \370\1\xF7\110                  KATMAI,MMX
 
 [MOVNTQ]
 (Ch_Wop2, Ch_Rop1)
-mem,mmxreg            \2\x0F\xE7\101                  KATMAI,MMX,SM
+mem,mmxreg            \370\1\xE7\101                  KATMAI,MMX,SM
 
 [PAVGB]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xE0\110                  KATMAI,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\xE0\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\xE0\110                  KATMAI,MMX,SM
+xmmreg,xmmrm          \361\370\1\xE0\110              WILLAMETTE,SSE2,SM
 
 [PAVGW]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xE3\110                  KATMAI,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\xE3\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\xE3\110                  KATMAI,MMX,SM
+xmmreg,xmmrm          \361\370\1\xE3\110              WILLAMETTE,SSE2,SM
 
 [PEXTRW]
 (Ch_Wop3, Ch_Rop2)
-reg32,mmxreg,imm      \2\x0F\xC5\110\22               KATMAI,MMX,SB,AR2
-reg32,xmmreg,imm      \361\2\x0F\xC5\110\26           SSE41
+reg32,mmxreg,imm      \370\1\xC5\110\22               KATMAI,MMX,SB,AR2
+reg32,xmmreg,imm      \361\370\1\xC5\110\26           SSE41
 mem32,xmmreg,imm      \361\3\x0F\x3A\x15\101\26       SSE41
 
 
@@ -2574,53 +2574,53 @@ mem32,xmmreg,imm      \361\3\x0F\x3A\x15\101\26       SSE41
 (Ch_Mop2, Ch_Rop1)
 ; PINSRW is documented as using a reg32, but it's really using only 16 bit
 ; -- accept either, but be truthful in disassembly
-mmxreg,reg16,imm      \2\x0F\xC4\110\22               KATMAI,MMX,SB,AR2
-mmxreg,reg32,imm      \2\x0F\xC4\110\22               KATMAI,MMX,SB,AR2,ND
-mmxreg,mem,imm        \2\x0F\xC4\110\22               KATMAI,MMX,SB,AR2
-mmxreg,mem16,imm      \2\x0F\xC4\110\22               KATMAI,MMX,SB,AR2,ND
-xmmreg,reg16,imm      \361\2\x0F\xC4\110\26           WILLAMETTE,SSE2,SB,AR2
-xmmreg,reg32,imm      \361\2\x0F\xC4\110\26           WILLAMETTE,SSE2,SB,AR2,ND
-xmmreg,mem,imm        \361\2\x0F\xC4\110\26           WILLAMETTE,SSE2,SB,AR2
-xmmreg,mem16,imm      \361\2\x0F\xC4\110\26           WILLAMETTE,SSE2,SB,AR2,ND
+mmxreg,reg16,imm      \370\1\xC4\110\22               KATMAI,MMX,SB,AR2
+mmxreg,reg32,imm      \370\1\xC4\110\22               KATMAI,MMX,SB,AR2,ND
+mmxreg,mem,imm        \370\1\xC4\110\22               KATMAI,MMX,SB,AR2
+mmxreg,mem16,imm      \370\1\xC4\110\22               KATMAI,MMX,SB,AR2,ND
+xmmreg,reg16,imm      \361\370\1\xC4\110\26           WILLAMETTE,SSE2,SB,AR2
+xmmreg,reg32,imm      \361\370\1\xC4\110\26           WILLAMETTE,SSE2,SB,AR2,ND
+xmmreg,mem,imm        \361\370\1\xC4\110\26           WILLAMETTE,SSE2,SB,AR2
+xmmreg,mem16,imm      \361\370\1\xC4\110\26           WILLAMETTE,SSE2,SB,AR2,ND
 
 [PMAXSW]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xEE\110                  KATMAI,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\xEE\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\xEE\110                  KATMAI,MMX,SM
+xmmreg,xmmrm          \361\370\1\xEE\110              WILLAMETTE,SSE2,SM
 
 [PMAXUB]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xDE\110                  KATMAI,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\xDE\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\xDE\110                  KATMAI,MMX,SM
+xmmreg,xmmrm          \361\370\1\xDE\110              WILLAMETTE,SSE2,SM
 
 [PMINSW]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xEA\110                  KATMAI,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\xEA\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\xEA\110                  KATMAI,MMX,SM
+xmmreg,xmmrm          \361\370\1\xEA\110              WILLAMETTE,SSE2,SM
 
 [PMINUB]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xDA\110                  KATMAI,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\xDA\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\xDA\110                  KATMAI,MMX,SM
+xmmreg,xmmrm          \361\370\1\xDA\110              WILLAMETTE,SSE2,SM
 
 [PMOVMSKB]
 (Ch_Mop2, Ch_Rop1)
-reg32,mmxreg          \2\x0F\xD7\110                  KATMAI,MMX
-reg32,xmmreg          \361\2\x0F\xD7\110              WILLAMETTE,SSE2
+reg32,mmxreg          \370\1\xD7\110                  KATMAI,MMX
+reg32,xmmreg          \361\370\1\xD7\110              WILLAMETTE,SSE2
 
 [PMULHUW]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xE4\110                  KATMAI,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\xE4\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\xE4\110                  KATMAI,MMX,SM
+xmmreg,xmmrm          \361\370\1\xE4\110              WILLAMETTE,SSE2,SM
 
 [PSADBW]
 (Ch_Mop2, Ch_Rop1)
-mmxreg,mmxrm          \2\x0F\xF6\110                  KATMAI,MMX,SM
-xmmreg,xmmrm          \361\2\x0F\xF6\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm          \370\1\xF6\110                  KATMAI,MMX,SM
+xmmreg,xmmrm          \361\370\1\xF6\110              WILLAMETTE,SSE2,SM
 
 [PSHUFW]
 (Ch_Wop2, Ch_Rop1)
-mmxreg,mmxrm,imm      \2\x0F\x70\110\22               KATMAI,MMX,SM2,SB,AR2
+mmxreg,mmxrm,imm      \370\1\x70\110\22               KATMAI,MMX,SM2,SB,AR2
 
 ;
 ; New Athlon Instructions
@@ -2653,24 +2653,24 @@ fpureg                \1\xDF\10\xC0                   PENT,3DNOW,FPU
 ; Willamette SSE2 Cacheability Instructions
 [MASKMOVDQU]
 (Ch_Rop1, Ch_Rop2, Ch_WMemEDI)
-xmmreg,xmmreg           \361\2\x0F\xF7\110            WILLAMETTE,SSE2
+xmmreg,xmmreg           \361\370\1\xF7\110            WILLAMETTE,SSE2
 
 ; CLFLUSH needs its own feature flag implemented one day
 [CLFLUSH]
 (Ch_All)
-mem                     \2\x0F\xAE\207                WILLAMETTE,SSE2
+mem                     \370\1\xAE\207                WILLAMETTE,SSE2
 
 [MOVNTDQ]
 (Ch_All)
-mem,xmmreg              \361\2\x0F\xE7\101            WILLAMETTE,SSE2,SM
+mem,xmmreg              \361\370\1\xE7\101            WILLAMETTE,SSE2,SM
 
 [MOVNTI,movntiX]
 (Ch_All)
-mem,reg32|64            \320\2\x0F\xC3\101            WILLAMETTE,SSE2,SM
+mem,reg32|64            \320\370\1\xC3\101            WILLAMETTE,SSE2,SM
 
 [MOVNTPD]
 (Ch_All)
-mem,xmmreg              \361\2\x0F\x2B\101            WILLAMETTE,SSE2,SM
+mem,xmmreg              \361\370\1\x2B\101            WILLAMETTE,SSE2,SM
 
 [PAUSE]
 (Ch_All)
@@ -2689,380 +2689,380 @@ void                    \3\x0F\xAE\xF0                WILLAMETTE,SSE2
 ;
 [MOVDQA]
 (Ch_Rop1, Ch_Wop2)
-xmmrm,xmmreg            \361\2\x0F\x7F\101              WILLAMETTE,SSE2,SM
-xmmreg,xmmrm            \361\2\x0F\x6F\110              WILLAMETTE,SSE2,SM
+xmmrm,xmmreg            \361\370\1\x7F\101              WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\x6F\110              WILLAMETTE,SSE2,SM
 
 [MOVDQU]
 (Ch_Rop1, Ch_Wop2)
-xmmrm,xmmreg            \333\2\x0F\x7F\101              WILLAMETTE,SSE2,SM
-xmmreg,xmmrm            \333\2\x0F\x6F\110              WILLAMETTE,SSE2,SM
+xmmrm,xmmreg            \333\370\1\x7F\101              WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \333\370\1\x6F\110              WILLAMETTE,SSE2,SM
 
 [MOVDQ2Q]
 (Ch_Rop1, Ch_Wop2)
-mmxreg,xmmreg           \334\2\x0F\xD6\110              WILLAMETTE,SSE2
+mmxreg,xmmreg           \334\370\1\xD6\110              WILLAMETTE,SSE2
 
 [MOVQ2DQ]
 (Ch_Rop1, Ch_Wop2)
-xmmreg,mmxreg           \333\2\x0F\xD6\110              WILLAMETTE,SSE2
+xmmreg,mmxreg           \333\370\1\xD6\110              WILLAMETTE,SSE2
 
 [PADDQ]
 (Ch_Rop1, Ch_Mop2)
-mmxreg,mmxrm            \2\x0F\xD4\110                  WILLAMETTE,SSE2,SM
-xmmreg,xmmrm            \361\2\x0F\xD4\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm            \370\1\xD4\110                  WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\xD4\110              WILLAMETTE,SSE2,SM
 
 [PMULUDQ]
 (Ch_Rop1, Ch_Wop2)
-mmxreg,mmxrm            \2\x0F\xF4\110                  WILLAMETTE,SSE2,SM
-xmmreg,xmmrm            \361\2\x0F\xF4\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm            \370\1\xF4\110                  WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\xF4\110              WILLAMETTE,SSE2,SM
 
 [PSHUFD]
 (Ch_Rop1, Ch_Mop2)
-xmmreg,xmmrm,imm        \361\2\x0F\x70\110\22           WILLAMETTE,SSE2,SM2,SB,AR2
+xmmreg,xmmrm,imm        \361\370\1\x70\110\22           WILLAMETTE,SSE2,SM2,SB,AR2
 
 [PSHUFHW]
 (Ch_Rop1, Ch_Mop2)
-xmmreg,xmmrm,imm        \333\2\x0F\x70\110\22           WILLAMETTE,SSE2,SM2,SB,AR2
+xmmreg,xmmrm,imm        \333\370\1\x70\110\22           WILLAMETTE,SSE2,SM2,SB,AR2
 
 [PSHUFLW]
 (Ch_Rop1, Ch_Mop2)
-xmmreg,xmmrm,imm        \334\2\x0F\x70\110\22           WILLAMETTE,SSE2,SM2,SB,AR2
+xmmreg,xmmrm,imm        \334\370\1\x70\110\22           WILLAMETTE,SSE2,SM2,SB,AR2
 
 [PSRLDQ]
 (Ch_Rop1, Ch_Mop2)
-xmmreg,imm              \361\2\x0F\x73\203\25           WILLAMETTE,SSE2,SB,AR1
+xmmreg,imm              \361\370\1\x73\203\25           WILLAMETTE,SSE2,SB,AR1
 
 [PSUBQ]
 (Ch_Rop1, Ch_Mop2)
-mmxreg,mmxrm            \2\x0F\xFB\110                  WILLAMETTE,SSE2,SM
-xmmreg,xmmrm            \361\2\x0F\xFB\110              WILLAMETTE,SSE2,SM
+mmxreg,mmxrm            \370\1\xFB\110                  WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\xFB\110              WILLAMETTE,SSE2,SM
 
 [PUNPCKHQDQ]
 (Ch_Rop1, Ch_Mop2)
-xmmreg,xmmrm            \361\2\x0F\x6D\110              WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\x6D\110              WILLAMETTE,SSE2,SM
 
 [PUNPCKLQDQ]
 (Ch_Rop1, Ch_Mop2)
-xmmreg,xmmrm            \361\2\x0F\x6C\110              WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\x6C\110              WILLAMETTE,SSE2,SM
 
 ;
 ; Willamette Streaming SIMD instructions (SSE2)
 ;
 [ADDPD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \361\2\x0F\x58\110              WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\x58\110              WILLAMETTE,SSE2,SM
 
 [ADDSD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \337\335\334\2\x0F\x58\110      WILLAMETTE,SSE2
+xmmreg,xmmrm            \337\335\334\370\1\x58\110      WILLAMETTE,SSE2
 
 [ANDNPD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \361\2\x0F\x55\110              WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\x55\110              WILLAMETTE,SSE2,SM
 
 [ANDPD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \361\2\x0F\x54\110              WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\x54\110              WILLAMETTE,SSE2,SM
 
 [CMPEQPD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \361\2\x0F\xC2\110\1\x00        WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\xC2\110\1\x00        WILLAMETTE,SSE2,SM
 
 ; note: no SM flag on CMPxxSD, they use 64-bit memory location, not 128-bit
 [CMPEQSD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \337\334\2\x0F\xC2\110\1\x00        WILLAMETTE,SSE2
+xmmreg,xmmrm            \337\334\370\1\xC2\110\1\x00        WILLAMETTE,SSE2
 
 [CMPLEPD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \361\2\x0F\xC2\110\1\x02        WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\xC2\110\1\x02        WILLAMETTE,SSE2,SM
 
 [CMPLESD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \337\334\2\x0F\xC2\110\1\x02        WILLAMETTE,SSE2
+xmmreg,xmmrm            \337\334\370\1\xC2\110\1\x02        WILLAMETTE,SSE2
 
 [CMPLTPD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \361\2\x0F\xC2\110\1\x01        WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\xC2\110\1\x01        WILLAMETTE,SSE2,SM
 
 [CMPLTSD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \337\334\2\x0F\xC2\110\1\x01        WILLAMETTE,SSE2
+xmmreg,xmmrm            \337\334\370\1\xC2\110\1\x01        WILLAMETTE,SSE2
 
 [CMPNEQPD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \361\2\x0F\xC2\110\1\x04        WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\xC2\110\1\x04        WILLAMETTE,SSE2,SM
 
 [CMPNEQSD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \337\334\2\x0F\xC2\110\1\x04        WILLAMETTE,SSE2
+xmmreg,xmmrm            \337\334\370\1\xC2\110\1\x04        WILLAMETTE,SSE2
 
 [CMPNLEPD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \361\2\x0F\xC2\110\1\x06        WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\xC2\110\1\x06        WILLAMETTE,SSE2,SM
 
 [CMPNLESD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \337\334\2\x0F\xC2\110\1\x06        WILLAMETTE,SSE2
+xmmreg,xmmrm            \337\334\370\1\xC2\110\1\x06        WILLAMETTE,SSE2
 
 [CMPNLTPD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \361\2\x0F\xC2\110\1\x05        WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\xC2\110\1\x05        WILLAMETTE,SSE2,SM
 
 [CMPNLTSD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \337\334\2\x0F\xC2\110\1\x05        WILLAMETTE,SSE2
+xmmreg,xmmrm            \337\334\370\1\xC2\110\1\x05        WILLAMETTE,SSE2
 
 [CMPORDPD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \361\2\x0F\xC2\110\1\x07        WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\xC2\110\1\x07        WILLAMETTE,SSE2,SM
 
 [CMPORDSD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \337\334\2\x0F\xC2\110\1\x07        WILLAMETTE,SSE2
+xmmreg,xmmrm            \337\334\370\1\xC2\110\1\x07        WILLAMETTE,SSE2
 
 [CMPUNORDPD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \361\2\x0F\xC2\110\1\x03        WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\xC2\110\1\x03        WILLAMETTE,SSE2,SM
 
 [CMPUNORDSD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \337\334\2\x0F\xC2\110\1\x03        WILLAMETTE,SSE2
+xmmreg,xmmrm            \337\334\370\1\xC2\110\1\x03        WILLAMETTE,SSE2
 
 ; CMPPD/CMPSD must come after the specific ops; that way the disassembler will find the
 ; specific ops first and only disassemble illegal ones as cmppd/cmpsd.
 [CMPPD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm,imm        \361\2\x0F\xC2\110\26           WILLAMETTE,SSE2,SM2,SB,AR2
+xmmreg,xmmrm,imm        \361\370\1\xC2\110\26           WILLAMETTE,SSE2,SM2,SB,AR2
 
 [COMISD]
 (Ch_Rop1, Ch_Rop2, Ch_WFlags)
-xmmreg,xmmrm            \337\361\2\x0F\x2F\110              WILLAMETTE,SSE2
+xmmreg,xmmrm            \337\361\370\1\x2F\110              WILLAMETTE,SSE2
 
 [CVTDQ2PD]
 (Ch_Wop2, Ch_Rop1)
-xmmreg,xmmreg            \333\2\x0F\xE6\110              WILLAMETTE,SSE2
-xmmreg,mem64             \333\2\x0F\xE6\110              WILLAMETTE,SSE2
+xmmreg,xmmreg            \333\370\1\xE6\110              WILLAMETTE,SSE2
+xmmreg,mem64             \333\370\1\xE6\110              WILLAMETTE,SSE2
 
 [CVTDQ2PS]
 (Ch_Wop2, Ch_Rop1)
-xmmreg,xmmrm            \2\x0F\x5B\110                  WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \370\1\x5B\110                  WILLAMETTE,SSE2,SM
 
 [CVTPD2DQ]
 (Ch_Wop2, Ch_Rop1)
-xmmreg,xmmrm            \334\2\x0F\xE6\110              WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \334\370\1\xE6\110              WILLAMETTE,SSE2,SM
 
 [CVTPD2PI]
 (Ch_Wop2, Ch_Rop1)
-mmxreg,xmmrm            \361\2\x0F\x2D\110              WILLAMETTE,SSE2 ;,SO
+mmxreg,xmmrm            \361\370\1\x2D\110              WILLAMETTE,SSE2 ;,SO
 
 [CVTPD2PS]
 (Ch_Wop2, Ch_Rop1)
-xmmreg,xmmrm            \361\2\x0F\x5A\110              WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\x5A\110              WILLAMETTE,SSE2,SM
 
 [CVTPI2PD]
 (Ch_Wop2, Ch_Rop1)
-xmmreg,mmxrm            \361\2\x0F\x2A\110              WILLAMETTE,SSE2 ;,SO
+xmmreg,mmxrm            \361\370\1\x2A\110              WILLAMETTE,SSE2 ;,SO
 
 [CVTPS2DQ]
 (Ch_Wop2, Ch_Rop1)
-xmmreg,xmmrm            \361\2\x0F\x5B\110              WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\x5B\110              WILLAMETTE,SSE2,SM
 
 [CVTPS2PD]
 (Ch_Wop2, Ch_Rop1)
-xmmreg,xmmreg            \2\x0F\x5A\110                WILLAMETTE,SSE2 ;,SQ
-xmmreg,mem64             \2\x0F\x5A\110                WILLAMETTE,SSE2 ;,SQ
+xmmreg,xmmreg            \370\1\x5A\110                WILLAMETTE,SSE2 ;,SQ
+xmmreg,mem64             \370\1\x5A\110                WILLAMETTE,SSE2 ;,SQ
 
 [CVTSD2SI]
 (Ch_Wop2, Ch_Rop1)
-reg32,xmmreg 	        \334\2\x0F\x2D\110        WILLAMETTE,SSE2
-reg32,mem64          	\334\2\x0F\x2D\110        WILLAMETTE,SSE2
-reg64,xmmreg 	        \334\320\2\x0F\x2D\110        WILLAMETTE,SSE2,X86_64
-reg64,mem64 	        \334\320\2\x0F\x2D\110        WILLAMETTE,SSE2,X86_64
+reg32,xmmreg 	        \334\370\1\x2D\110        WILLAMETTE,SSE2
+reg32,mem64          	\334\370\1\x2D\110        WILLAMETTE,SSE2
+reg64,xmmreg 	        \334\320\370\1\x2D\110        WILLAMETTE,SSE2,X86_64
+reg64,mem64 	        \334\320\370\1\x2D\110        WILLAMETTE,SSE2,X86_64
 
 [CVTSD2SS]
 (Ch_Wop2, Ch_Rop1)
-xmmreg,xmmreg           \334\2\x0F\x5A\110              WILLAMETTE,SSE2 ;,SQ
-xmmreg,mem64            \334\2\x0F\x5A\110              WILLAMETTE,SSE2 ;,SQ
+xmmreg,xmmreg           \334\370\1\x5A\110              WILLAMETTE,SSE2 ;,SQ
+xmmreg,mem64            \334\370\1\x5A\110              WILLAMETTE,SSE2 ;,SQ
 
 [CVTSI2SD,cvtsi2sdS]
 (Ch_Wop2, Ch_Rop1)
-xmmreg,rm32             \334\2\x0F\x2A\110        	WILLAMETTE,SSE2
-xmmreg,rm64             \326\334\321\2\x0F\x2A\110      WILLAMETTE,SSE2,X86_64
+xmmreg,rm32             \334\370\1\x2A\110        	WILLAMETTE,SSE2
+xmmreg,rm64             \326\334\321\370\1\x2A\110      WILLAMETTE,SSE2,X86_64
 
 [CVTSS2SD]
 (Ch_Wop2, Ch_Rop1)
-xmmreg,xmmreg            \333\2\x0F\x5A\110            WILLAMETTE,SSE2 ;,SD
-xmmreg,mem32             \333\2\x0F\x5A\110            WILLAMETTE,SSE2 ;,SD
+xmmreg,xmmreg            \333\370\1\x5A\110            WILLAMETTE,SSE2 ;,SD
+xmmreg,mem32             \333\370\1\x5A\110            WILLAMETTE,SSE2 ;,SD
 
 [CVTTPD2PI]
 (Ch_Wop2, Ch_Rop1)
-mmxreg,xmmrm            \361\2\x0F\x2C\110              WILLAMETTE,SSE2
+mmxreg,xmmrm            \361\370\1\x2C\110              WILLAMETTE,SSE2
 
 [CVTTPD2DQ]
 (Ch_Wop2, Ch_Rop1)
-xmmreg,xmmrm            \361\2\x0F\xE6\110              WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\xE6\110              WILLAMETTE,SSE2,SM
 
 [CVTTPS2DQ]
 (Ch_Wop2, Ch_Rop1)
-xmmreg,xmmrm            \333\2\x0F\x5B\110              WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \333\370\1\x5B\110              WILLAMETTE,SSE2,SM
 
 [CVTTSD2SI]
 (Ch_Wop2, Ch_Rop1)
-reg32|64,xmmreg         \334\320\2\x0F\x2C\110        WILLAMETTE,SSE2
-reg32|64,mem64          \334\320\2\x0F\x2C\110        WILLAMETTE,SSE2
+reg32|64,xmmreg         \334\320\370\1\x2C\110        WILLAMETTE,SSE2
+reg32|64,mem64          \334\320\370\1\x2C\110        WILLAMETTE,SSE2
 
 [DIVPD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \361\2\x0F\x5E\110            WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\x5E\110            WILLAMETTE,SSE2,SM
 
 [DIVSD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \337\334\2\x0F\x5E\110          WILLAMETTE,SSE2
+xmmreg,xmmrm            \337\334\370\1\x5E\110          WILLAMETTE,SSE2
 
 [MAXPD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \361\2\x0F\x5F\110          WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\x5F\110          WILLAMETTE,SSE2,SM
 
 [MAXSD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \337\334\2\x0F\x5F\110          WILLAMETTE,SSE2
+xmmreg,xmmrm            \337\334\370\1\x5F\110          WILLAMETTE,SSE2
 
 [MINPD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \361\2\x0F\x5D\110          WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\x5D\110          WILLAMETTE,SSE2,SM
 
 [MINSD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \337\334\2\x0F\x5D\110          WILLAMETTE,SSE2
+xmmreg,xmmrm            \337\334\370\1\x5D\110          WILLAMETTE,SSE2
 
 [MOVAPD]
 (Ch_ROp1, Ch_WOp2)
-xmmrm,xmmreg            \361\2\x0F\x29\101        WILLAMETTE,SSE2,SM
-xmmreg,xmmrm            \361\2\x0F\x28\110        WILLAMETTE,SSE2,SM
+xmmrm,xmmreg            \361\370\1\x29\101        WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\x28\110        WILLAMETTE,SSE2,SM
 
 [MOVHPD]
 (Ch_Mop2, Ch_Rop1)
-mem,xmmreg              \361\2\x0F\x17\101        WILLAMETTE,SSE2
-xmmreg,mem              \361\2\x0F\x16\110        WILLAMETTE,SSE2
+mem,xmmreg              \361\370\1\x17\101        WILLAMETTE,SSE2
+xmmreg,mem              \361\370\1\x16\110        WILLAMETTE,SSE2
 
 [MOVLPD]
 (Ch_Mop2, Ch_Rop1)
-mem,xmmreg              \361\2\x0F\x13\101        WILLAMETTE,SSE2
-xmmreg,mem              \361\2\x0F\x12\110        WILLAMETTE,SSE2
+mem,xmmreg              \361\370\1\x13\101        WILLAMETTE,SSE2
+xmmreg,mem              \361\370\1\x12\110        WILLAMETTE,SSE2
 
 [MOVMSKPD]
 (Ch_Wop2, Ch_Rop1)
-reg32,xmmreg            \361\2\x0F\x50\110        WILLAMETTE,SSE2
+reg32,xmmreg            \361\370\1\x50\110        WILLAMETTE,SSE2
 
 [MOVUPD]
 (Ch_Wop2, Ch_Rop1)
-xmmrm,xmmreg            \361\2\x0F\x11\101        WILLAMETTE,SSE2,SM
-xmmreg,xmmrm            \361\2\x0F\x10\110        WILLAMETTE,SSE2,SM
+xmmrm,xmmreg            \361\370\1\x11\101        WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\x10\110        WILLAMETTE,SSE2,SM
 
 [MULPD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \361\2\x0F\x59\110        WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\x59\110        WILLAMETTE,SSE2,SM
 
 [MULSD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \337\334\2\x0F\x59\110        WILLAMETTE,SSE2
+xmmreg,xmmrm            \337\334\370\1\x59\110        WILLAMETTE,SSE2
 
 [ORPD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \361\2\x0F\x56\110        WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\x56\110        WILLAMETTE,SSE2,SM
 
 [SHUFPD]
 (Ch_Mop3, Ch_Rop2)
-xmmreg,xmmrm,imm        \361\2\x0F\xC6\110\26     WILLAMETTE,SSE2,SM2,SB,AR2
+xmmreg,xmmrm,imm        \361\370\1\xC6\110\26     WILLAMETTE,SSE2,SM2,SB,AR2
 
 [SQRTPD]
 (Ch_Wop2, Ch_Rop1)
-xmmreg,xmmrm            \361\2\x0F\x51\110        WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\x51\110        WILLAMETTE,SSE2,SM
 
 [SQRTSD]
 (Ch_Wop2, Ch_Rop1)
-xmmreg,xmmrm            \337\334\2\x0F\x51\110        WILLAMETTE,SSE2
+xmmreg,xmmrm            \337\334\370\1\x51\110        WILLAMETTE,SSE2
 
 
 [SUBPD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \361\2\x0F\x5C\110        WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\x5C\110        WILLAMETTE,SSE2,SM
 
 [SUBSD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \337\334\2\x0F\x5C\110        WILLAMETTE,SSE2
+xmmreg,xmmrm            \337\334\370\1\x5C\110        WILLAMETTE,SSE2
 
 [UCOMISD]
 (Ch_Rop1, Ch_Rop2, Ch_WZeroFlag, Ch_WParityFlag, Ch_WCarryFlag, Ch_W0OverflowFlag, Ch_W0SignFlag, Ch_W0AuxiliaryFlag)
-xmmreg,xmmrm            \337\361\2\x0F\x2E\110        WILLAMETTE,SSE2
+xmmreg,xmmrm            \337\361\370\1\x2E\110        WILLAMETTE,SSE2
 
 [UNPCKHPD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \361\2\x0F\x15\110        WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\x15\110        WILLAMETTE,SSE2,SM
 
 [UNPCKLPD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \361\2\x0F\x14\110        WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\x14\110        WILLAMETTE,SSE2,SM
 
 [XORPD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \361\2\x0F\x57\110        WILLAMETTE,SSE2,SM
+xmmreg,xmmrm            \361\370\1\x57\110        WILLAMETTE,SSE2,SM
 
 ;
 ; Prescott New Instructions (SSE3)
 ;
 [ADDSUBPD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \361\2\x0F\xD0\110        PRESCOTT,SSE3,SM
+xmmreg,xmmrm            \361\370\1\xD0\110        PRESCOTT,SSE3,SM
 
 [ADDSUBPS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \334\2\x0F\xD0\110        PRESCOTT,SSE3,SM
+xmmreg,xmmrm            \334\370\1\xD0\110        PRESCOTT,SSE3,SM
 
 [HADDPD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \361\2\x0F\x7C\110        PRESCOTT,SSE3,SM
+xmmreg,xmmrm            \361\370\1\x7C\110        PRESCOTT,SSE3,SM
 
 [HADDPS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \334\2\x0F\x7C\110        PRESCOTT,SSE3,SM
+xmmreg,xmmrm            \334\370\1\x7C\110        PRESCOTT,SSE3,SM
 
 [HSUBPD]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \361\2\x0F\x7D\110        PRESCOTT,SSE3,SM
+xmmreg,xmmrm            \361\370\1\x7D\110        PRESCOTT,SSE3,SM
 
 [HSUBPS]
 (Ch_Mop2, Ch_Rop1)
-xmmreg,xmmrm            \334\2\x0F\x7D\110        PRESCOTT,SSE3,SM
+xmmreg,xmmrm            \334\370\1\x7D\110        PRESCOTT,SSE3,SM
 
 [LDDQU]
 (Ch_Wop2, Ch_Rop1)
-xmmreg,mem              \334\2\x0F\xF0\110        PRESCOTT,SSE3
+xmmreg,mem              \334\370\1\xF0\110        PRESCOTT,SSE3
 
 [MOVDDUP]
 (Ch_Rop1, Ch_Wop2)
-xmmreg,xmmrm            \334\2\x0F\x12\110        PRESCOTT,SSE3
+xmmreg,xmmrm            \334\370\1\x12\110        PRESCOTT,SSE3
 
 [MOVSHDUP]
 (Ch_Wop2, Ch_Rop1)
-xmmreg,xmmrm            \333\2\x0F\x16\110        PRESCOTT,SSE3,SM
+xmmreg,xmmrm            \333\370\1\x16\110        PRESCOTT,SSE3,SM
 
 [MOVSLDUP]
 (Ch_Wop2, Ch_Rop1)
-xmmreg,xmmrm            \333\2\x0F\x12\110        PRESCOTT,SSE3,SM
+xmmreg,xmmrm            \333\370\1\x12\110        PRESCOTT,SSE3,SM
 
 ;
 ; Intel VT
 ;
 [VMREAD]
 (Ch_All)
-reg32,reg32           \2\x0F\x78\101              386,PRIV,PROT
-mem,reg32             \2\x0F\x78\101              386,PRIV,PROT,SM
+reg32,reg32           \370\1\x78\101              386,PRIV,PROT
+mem,reg32             \370\1\x78\101              386,PRIV,PROT,SM
 
 [VMWRITE]
 (Ch_All)
-reg32,reg32           \2\x0F\x79\110              386,PRIV,PROT
-reg32,mem             \2\x0F\x79\110              386,PRIV,PROT,SM
+reg32,reg32           \370\1\x79\110              386,PRIV,PROT
+reg32,mem             \370\1\x79\110              386,PRIV,PROT,SM
 
 [VMCALL]
 (Ch_All)
@@ -3084,19 +3084,19 @@ void                  \3\x0F\x01\xC4                  386,PRIV,PROT
 
 [VMXON]
 (Ch_All)
-mem                   \333\2\x0F\xC7\206              PRIV,PROT
+mem                   \333\370\1\xC7\206              PRIV,PROT
 
 [VMCLEAR]
 (Ch_All)
-mem                   \361\2\x0F\xC7\206              PRIV,PROT
+mem                   \361\370\1\xC7\206              PRIV,PROT
 
 [VMPTRLD]
 (Ch_All)
-mem                   \2\x0F\xC7\206                  PRIV,PROT
+mem                   \370\1\xC7\206                  PRIV,PROT
 
 [VMPTRST]
 (Ch_All)
-mem                   \2\x0F\xC7\207                  PRIV,PROT
+mem                   \370\1\xC7\207                  PRIV,PROT
 
 ;
 ; AMD SVM
@@ -3185,33 +3185,33 @@ void                  \326\1\x98                      X86_64
 
 [CMPXCHG16B,cmpxchg16b]
 (Ch_RWRAX, Ch_RWRDX, Ch_WZeroFlag, Ch_RWOp1)
-mem                   \326\2\x0F\xC7\201              X86_64
+mem                   \326\370\1\xC7\201              X86_64
 
 ;
 ; SSE4a (AMD Barcelona CPUs, n/a on Intel)
 ;
 [MOVNTSS]
 (Ch_Wop2, Ch_Rop1)
-mem,xmmreg              \336\333\2\x0F\x2B\101                   SSE4,SD
+mem,xmmreg              \336\333\370\1\x2B\101                   SSE4,SD
 
 [MOVNTSD]
 (Ch_Wop2, Ch_Rop1)
-mem,xmmreg              \337\334\325\2\x0F\x2B\101                SSE4 ;,SQ
+mem,xmmreg              \337\334\325\370\1\x2B\101                SSE4 ;,SQ
 
 [INSERTQ]
 (Ch_All)
-xmmreg,xmmreg           \334\2\x0F\x79\110                        SSE4
-xmmreg,xmmreg,imm,imm   \334\2\x0F\x78\110\26\27          SSE4,SB
+xmmreg,xmmreg           \334\370\1\x79\110                        SSE4
+xmmreg,xmmreg,imm,imm   \334\370\1\x78\110\26\27          SSE4,SB
 
 [EXTRQ]
 (Ch_All)
-xmmreg,imm,imm          \361\2\x0F\x78\200\25\26                  SSE4,SB
-xmmreg,xmmreg           \361\2\x0F\x79\110                        SSE4
+xmmreg,imm,imm          \361\370\1\x78\200\25\26                  SSE4,SB
+xmmreg,xmmreg           \361\370\1\x79\110                        SSE4
 
 [LZCNT,lzcntX]
-(Ch_All)
-reg16,regmem            \320\333\2\x0F\xBD\110                386,SM,SSE4
-reg32|64,regmem         \321\333\2\x0F\xBD\110                386,SM,SSE4
+(Ch_Wop2, Ch_Rop1)
+reg16,rm16              \320\333\370\1\xBD\110                 SSE4,SM ;LZCNT
+reg32|64,regmem         \321\333\370\1\xBD\110                 SSE4,SM ;LZCNT
 
 ;*******************************************************************************
 ;**********SSSE3****************************************************************
@@ -3533,9 +3533,9 @@ xmmreg,xmmrm           \361\3\x0F\x38\x37\110                  SSE42,SM
 
 [POPCNT,popcntX]
 (Ch_Wop2, Ch_Rop1)
-reg16,rm16             \333\320\2\x0F\xB8\110              386,SM,SSE4
-reg32,rm32             \333\320\2\x0F\xB8\110              386,SM,SSE4
-reg64,rm64             \333\320\2\x0F\xB8\110              386,SM,SSE4,X86_64
+reg16,rm16             \333\320\370\1\xB8\110                  SM,SSE4
+reg32,rm32             \333\320\370\1\xB8\110                  SM,SSE4
+reg64,rm64             \333\320\370\1\xB8\110                  SM,SSE4,X86_64
 
 ;*******************************************************************************
 ;********* AES *****************************************************************
@@ -7988,11 +7988,11 @@ void                                 \3\x0F\x01\xD6                       TSX
 ;*******************************************************************************
 [RDRAND]
 (Ch_Wop1, Ch_WFlags)
-reg16|32|64                          \320\2\x0F\xC7\206                   RAND
+reg16|32|64                          \320\370\1\xC7\206                   RAND
 
 [RDSEED]
 (Ch_Wop1, Ch_WFlags)
-reg16|32|64                          \320\2\x0F\xC7\207                   RAND
+reg16|32|64                          \320\370\1\xC7\207                   RAND
 
 ;*******************************************************************************
 ;********** XSAVE **************************************************************
@@ -8035,7 +8035,7 @@ mem                   \326\2\x0F\xAE\206                                  XSAVE,
 ;*******************************************************************************
 [PREFETCHWT1,prefetchwt1X]
 (Ch_All)
-mem                   \2\x0F\x0D\202                                      PREFETCHWT1
+mem                   \370\1\x0D\202                                      PREFETCHWT1
 
 ;*******************************************************************************
 ;********** AVX 512 - MASKRegister *********************************************
@@ -12298,7 +12298,7 @@ mem64,reg64                   \320\3\x0F\x38\xF9\101          MOVDIRI,X86_64,SM
 [PREFETCHRST2] 
 (Ch_Rop1)
 ; memory = mem8
-memory                      \2\x0F\x18\204                    MOVRS
+mem                         \370\1\x18\204                    MOVRS
 
 [MOVRS]
 (Ch_Wop2, Ch_Rop1)
@@ -12450,7 +12450,7 @@ void                       \333\3\x0F\x01\xEE                 UINTR,X86_64
 
 [SENDUIPI]
 (Ch_Rop1)
-reg64                      \335\333\2\x0F\xC7\206             UINTR,X86_64
+reg64                      \335\333\370\1\xC7\206             UINTR,X86_64
 
 [STUI]
 ()
