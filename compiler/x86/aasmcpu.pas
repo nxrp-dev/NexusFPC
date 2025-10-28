@@ -4113,7 +4113,7 @@ implementation
       begin
         { safety check }
         if objdata.currobjsec.size<>longword(insoffset) then
-          internalerror(200130121);
+          internalerror(2001123002);
 
         { those variables are initialized inside local procedures, the dfa cannot handle this yet }
         currsym:=nil;
