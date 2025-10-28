@@ -4511,6 +4511,10 @@ implementation
                       Message(asmw_e_bad_reg_with_evex);
                       break;
                     end;
+                { Register RSP not allowed with POP2, POP2P }
+                if (opcode = A_POP2) or (opcode = A_POP2P) then
+                  if (getsupreg(oper[0]^.reg)=RS_RSP) or (getsupreg(oper[1]^.reg)=RS_RSP) then
+                    Message1(asmw_e_invalid_register,'RSP');
                 { Change byte payload to EVEX extension of legacy instructions }
                 { Do not have: z, ll, b, aaa }
                 { New: nd, nf }
