@@ -1710,6 +1710,9 @@ implementation
                     { further, allow ENTER, AAD and AAM with imm. operand }
                     if (opsize=S_NO) and not((i in [1,2,3])
                       or ((i=0) and (opcode in [A_ENTER]))
+{$ifdef x86_64}
+                      or ((i=0) and (opcode=A_JMPABS))
+{$endif x86_64}
 {$ifndef x86_64}
                       or ((i=0) and (opcode in [A_AAD,A_AAM]))
 {$endif x86_64}
