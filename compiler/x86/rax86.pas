@@ -88,12 +88,12 @@ const
     A_SEGCS,A_SEGES,A_SEGDS,A_SEGFS,A_SEGGS,A_SEGSS
   );
 
-  CondAsmOps=3;
+  CondAsmOps={$ifdef x86_64}4{$else}3{$endif x86_64};
   CondAsmOp:array[0..CondAsmOps-1] of TasmOp=(
-    A_CMOVcc, A_Jcc, A_SETcc
+    A_Jcc, A_CMOVcc, A_SETcc{$ifdef x86_64}, A_CFCMOVcc{$endif x86_64}
   );
-  CondAsmOpStr:array[0..CondAsmOps-1] of string[4]=(
-    'CMOV','J','SET'
+  CondAsmOpStr:array[0..CondAsmOps-1] of string[6]=(
+    'J','CMOV','SET'{$ifdef x86_64},'CFCMOV'{$endif x86_64}
   );
 
 implementation

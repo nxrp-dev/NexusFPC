@@ -211,7 +211,10 @@ Unit Rax86int;
          actopcode:=tasmop(PtrUInt(iasmops.Find(s)));
 	 { We need to exclude opcodes that require a condition suffix }
          if (actopcode<>A_NONE) and (actopcode<>A_Jcc) and
-	    (actopcode<>A_SETcc) and (actopcode<>A_CMOVcc) then
+{$ifdef x86_64}
+           (actopcode<>A_CFCMOVcc) and
+{$endif x86_64}
+           (actopcode<>A_SETcc) and (actopcode<>A_CMOVcc) then
            begin
              actasmtoken:=AS_OPCODE;
              result:=TRUE;
