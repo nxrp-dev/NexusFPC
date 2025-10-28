@@ -668,7 +668,7 @@ interface
          inssize   : shortint;
          EVEXTupleState: TEVEXTupleState; { AVX512 disp8*N }
 {$ifdef x86_64}
-         rex       : byte;
+         rex       : word;
 {$endif x86_64}
          function  InsEnd:longint;
          procedure create_ot(objdata:TObjData);
@@ -1555,7 +1555,7 @@ implementation
         modrm : byte;
         sib   : byte;
 {$ifdef x86_64}
-        rex   : byte;
+        rex   : word;
 {$endif x86_64}
       end;
 
@@ -1772,7 +1772,12 @@ implementation
         i,j,asize,oprs : longint;
         insflags:tinsflags;
         vopext: int64;
+        isEvex, isVex :boolean;
         EvexRegs :boolean;
+        Rex2Regs :boolean; {do we have to deal with r16-r31 registers}
+        ignoreCount:integer;
+        ignoredLen : integer;
+        ignoredBytes : array[0..3] of byte;
         siz : array[0..max_operands-1] of longint;
       begin
         result:=false;
@@ -1793,6 +1798,7 @@ implementation
 {$endif i8086}
 
         EvexRegs:=false;
+        Rex2Regs:=false;
         for i:=0 to p^.ops-1 do
          begin
            insot:=p^.optypes[i];
@@ -1802,6 +1808,22 @@ implementation
               (getregtype(oper[i]^.reg) = R_MMREGISTER) then
             if getsupreg(oper[i]^.reg) and $10 = $10 then
               EvexRegs:=true;
+
+           if (oper[i]^.typ=top_reg) and
+              (getregtype(oper[i]^.reg) = R_INTREGISTER) then
+            if getsupreg(oper[i]^.reg) and $10 = $10 then
+              Rex2Regs:=true;
+
+           if (oper[i]^.typ=top_ref) then
+           begin
+            if (getregtype(oper[i]^.ref^.base) = R_INTREGISTER) then
+              if getsupreg(oper[i]^.ref^.base) and $10 = $10 then
+                Rex2Regs:=true;
+            if (getregtype(oper[i]^.ref^.index) = R_INTREGISTER) then
+              if getsupreg(oper[i]^.ref^.index) and $10 = $10 then
+                Rex2Regs:=true;
+           end;
+
            { Check the operand flags }
            if (insot and (not currot) and OT_NON_SIZE)<>0 then
              exit;
@@ -1824,12 +1846,60 @@ implementation
         { Check Evex support in encoding }
         if EvexRegs then
         begin
+          isEvex:=false;
+          ignoreCount:=0;
+          ignoredLen:=0;
           for i:=0 to  maxinfolen do
           begin
-            if byte(p^.code[i]) = &350 then break;
-            if byte(p^.code[i]) = 0 then break;
+            if ignoreCount>0 then
+            begin
+              dec(ignoreCount);
+              continue;
+            end;
+            case ord(p^.code[i]) of
+              0: exit;  {no evex prefix not found and we were looking for it}
+               1,2,3: ignoreCount:=ord(p^.code[i]);
+              &10..&13: ignoreCount:=1;
+              &350 : begin isEvex:=true; break; end;
+            end;
           end;
-          if byte(p^.code[i]) <> &350 then exit;
+          if not isEvex then
+            exit;
+        end else
+        { Chack Rex2 support in encoding }
+        if Rex2Regs then
+        begin
+          isEvex:=false;
+          isVex:=false;
+          ignoreCount:=0;
+          ignoredLen:=0;
+          for i:=0 to maxinfolen do
+          begin
+            if ignoreCount>0 then
+            begin
+              dec(ignoreCount);
+              { we save ignored bytes to test for hard coded instruction map prefixes }
+              { instruction that have x0F x0F38 x0F38 cannot have APX registers }
+              ignoredBytes[ignoredLen]:=ord(p^.code[i]);
+              inc(ignoredLen);
+              if ignoreCount = 0 then
+                if (ignoredLen>1) and (ignoredBytes[0]=$0f) then
+                  exit;  { well, extended GPR cannot be used }
+              { now ignore }
+              continue;
+            end;
+            ignoredLen:=0;
+
+            case ord(p^.code[i]) of
+              0: break;
+               1,2,3: ignoreCount:=ord(p^.code[i]);
+              &10..&13: ignoreCount:=1;
+              &350 : isEvex:=true;
+              &362 : isVex:=true;
+            end;
+          end;
+          if isVex and not isEvex then
+            exit;  { cannot encode in Vex extended GPR }
         end;
 
         insflags:=p^.flags;
@@ -2059,7 +2129,7 @@ implementation
                 with oper[i]^ do
                   begin
                     nr[i]:=-i-1;
-                    if getregtype(reg) = R_MMREGISTER then
+                    if typ = top_reg then
                       nr[i]:=getsupreg(reg);
                     if aAll and (nr[i]<0) then
                       if (ot and (OT_REGNORM or otf_reg_gpr))=(OT_REGNORM or otf_reg_gpr) then
@@ -2144,10 +2214,19 @@ implementation
       result := false;
       for i := 0 to ops - 1 do
       begin
-        if (oper[i]^.typ=top_reg) and
-           (getregtype(oper[i]^.reg) = R_MMREGISTER) then
-         if getsupreg(oper[i]^.reg)>=16 then
-          result := true;
+        if (oper[i]^.typ=top_reg) then
+        begin
+            if getsupreg(oper[i]^.reg)>=16 then
+              result := true;
+        end;
+
+        if (oper[i]^.typ=top_ref) then
+        begin
+            if getsupreg(oper[i]^.ref^.base)>=16 then
+              result := true;
+            if getsupreg(oper[i]^.ref^.index)>=16 then
+              result := true;
+        end;
 
         if (oper[i]^.vopext and OTVE_VECTOR_MASK) <> 0 then
          result := true;
@@ -2634,7 +2713,7 @@ implementation
           (0, 1, 2, 3, 6, 7, 5, 4);
         maxsupreg: array[tregistertype] of tsuperregister=
 {$ifdef x86_64}
-          (0, 16, 9, 8, 32, 32, 8, 0, 0, 0, 0, 0);
+          (0, 32, 9, 8, 32, 32, 8, 0, 0, 0, 0, 0);
 {$else x86_64}
           (0,  8, 9, 8,  8, 32, 8, 0, 0, 0, 0, 0);
 {$endif x86_64}
@@ -2660,29 +2739,41 @@ implementation
 
 
 {$if defined(x86_64)}
-    function rexbits(r: tregister): byte;
+    function rexbits(r: tregister): word;
+      var supreg : byte;
       begin
         result:=0;
         case getregtype(r) of
           R_INTREGISTER:
-            if (getsupreg(r)>=RS_R8) then
+            begin
+            supreg:=getsupreg(r);
+            if (supreg and $18) > $00 then
+              begin
           { Either B,X or R bits can be set, depending on register role in instruction.
             Set all three bits here, caller will discard unnecessary ones. }
-              result:=result or $47
+                if (supreg and $08) = $08 then
+                  result:=result or $107;     { REX }
+                if (supreg and $10) = $10 then
+                  result:=result or $270;     { REX2 }
+              end
             else if (getsubreg(r)=R_SUBL) and
-              (getsupreg(r) in [RS_RDI,RS_RSI,RS_RBP,RS_RSP]) then
-              result:=result or $40
+              (supreg in [RS_RDI,RS_RSI,RS_RBP,RS_RSP,
+                                //RS_R16,RS_R17,RS_R18,RS_R19,
+                                RS_R20,RS_R21,RS_R22,RS_R23,
+                                RS_R28,RS_R29,RS_R30,RS_R31]) then
+              result:=result or $100   { REX }
             else if (getsubreg(r)=R_SUBH) then
           { Not an actual REX bit, used to detect incompatible usage of
             AH/BH/CH/DH }
-              result:=result or $80;
+              result:=result or $800;
+            end;
           R_MMREGISTER:
             //if getsupreg(r)>=RS_XMM8 then
             // AVX512 = 32 register
             //    rexbit = 0 => MMRegister 0..7  or 16..23
             //    rexbit = 1 => MMRegister 8..15 or 24..31
             if (getsupreg(r) and $08) = $08 then
-              result:=result or $47;
+              result:=result or $107;
           else
             ;
         end;
@@ -2757,7 +2848,7 @@ implementation
            if (ir=NR_ESP) or ((s<>1) and (s<>2) and (s<>4) and (s<>8) and (ir<>NR_NO)) then
             exit;
 
-           output.rex:=output.rex or (rexbits(br) and $F1) or (rexbits(ir) and $F2);
+           output.rex:=output.rex or (rexbits(br) and $b91) or (rexbits(ir) and $bA2);
            result:=true;
 
 
@@ -2766,35 +2857,67 @@ implementation
              NR_R8D,
              NR_EAX,
              NR_R8,
+             NR_R16D,
+             NR_R24D,
+             NR_R16,
+             NR_R24,
              NR_RAX : base:=0;
              NR_R9D,
              NR_ECX,
              NR_R9,
+             NR_R17D,
+             NR_R25D,
+             NR_R17,
+             NR_R25,
              NR_RCX : base:=1;
              NR_R10D,
              NR_EDX,
              NR_R10,
+             NR_R18D,
+             NR_R26D,
+             NR_R18,
+             NR_R26,
              NR_RDX : base:=2;
              NR_R11D,
              NR_EBX,
              NR_R11,
+             NR_R19D,
+             NR_R27D,
+             NR_R19,
+             NR_R27,
              NR_RBX : base:=3;
              NR_R12D,
              NR_ESP,
              NR_R12,
+             NR_R20D,
+             NR_R28D,
+             NR_R20,
+             NR_R28,
              NR_RSP : base:=4;
              NR_R13D,
              NR_EBP,
              NR_R13,
+             NR_R21D,
+             NR_R29D,
+             NR_R21,
+             NR_R29,
              NR_NO,
              NR_RBP : base:=5;
              NR_R14D,
              NR_ESI,
              NR_R14,
+             NR_R22D,
+             NR_R30D,
+             NR_R22,
+             NR_R30,
              NR_RSI : base:=6;
              NR_R15D,
              NR_EDI,
              NR_R15,
+             NR_R23D,
+             NR_R31D,
+             NR_R23,
+             NR_R31,
              NR_RDI : base:=7;
            else
              exit;
@@ -2805,6 +2928,10 @@ implementation
              NR_EAX,
              NR_R8,
              NR_RAX,
+             NR_R16D,
+             NR_R24D,
+             NR_R16,
+             NR_R24,
              NR_XMM0,
              NR_XMM8,
              NR_XMM16,
@@ -2821,6 +2948,10 @@ implementation
              NR_ECX,
              NR_R9,
              NR_RCX,
+             NR_R17D,
+             NR_R25D,
+             NR_R17,
+             NR_R25,
              NR_XMM1,
              NR_XMM9,
              NR_XMM17,
@@ -2837,6 +2968,10 @@ implementation
              NR_EDX,
              NR_R10,
              NR_RDX,
+             NR_R18D,
+             NR_R26D,
+             NR_R18,
+             NR_R26,
              NR_XMM2,
              NR_XMM10,
              NR_XMM18,
@@ -2853,6 +2988,10 @@ implementation
              NR_EBX,
              NR_R11,
              NR_RBX,
+             NR_R19D,
+             NR_R27D,
+             NR_R19,
+             NR_R27,
              NR_XMM3,
              NR_XMM11,
              NR_XMM19,
@@ -2868,6 +3007,10 @@ implementation
              NR_R12D,
              NR_ESP,
              NR_R12,
+             NR_R20D,
+             NR_R28D,
+             NR_R20,
+             NR_R28,
              NR_NO,
              NR_XMM4,
              NR_XMM12,
@@ -2885,6 +3028,10 @@ implementation
              NR_EBP,
              NR_R13,
              NR_RBP,
+             NR_R21D,
+             NR_R29D,
+             NR_R21,
+             NR_R29,
              NR_XMM5,
              NR_XMM13,
              NR_XMM21,
@@ -2901,6 +3048,10 @@ implementation
              NR_ESI,
              NR_R14,
              NR_RSI,
+             NR_R22D,
+             NR_R30D,
+             NR_R22,
+             NR_R30,
              NR_XMM6,
              NR_XMM14,
              NR_XMM22,
@@ -2917,6 +3068,10 @@ implementation
              NR_EDI,
              NR_R15,
              NR_RDI,
+             NR_R23D,
+             NR_R31D,
+             NR_R23,
+             NR_R31,
              NR_XMM7,
              NR_XMM15,
              NR_XMM23,
@@ -2943,7 +3098,8 @@ implementation
            end;
            { If rbp or r13 is used we must always include an offset }
            if (br=NR_NO) or
-              ((br<>NR_RBP) and (br<>NR_R13) and (br<>NR_EBP) and (br<>NR_R13D) and (o=0) and (sym=nil)) then
+              ((br<>NR_RBP) and (br<>NR_R13) and (br<>NR_EBP) and (br<>NR_R13D)
+              and (br<>NR_R21) and (br<>NR_R21D) and (br<>NR_R29) and (br<>NR_R29D) and (o=0) and (sym=nil)) then
             md:=0
            else
             if ((o>=-128) and (o<=127) and (sym=nil) and (not(uselargeoffset) or (o = 0))) then
@@ -2955,7 +3111,8 @@ implementation
            else
             output.bytes:=md;
            { SIB needed ? }
-           if not forceSibByte and (ir=NR_NO) and (br<>NR_RSP) and (br<>NR_R12) and (br<>NR_ESP) and (br<>NR_R12D)  then
+           if not forceSibByte and (ir=NR_NO) and (br<>NR_RSP) and (br<>NR_R12) and (br<>NR_ESP) and (br<>NR_R12D)
+              and (br<>NR_R20) and (br<>NR_R20D) and (br<>NR_R28) and (br<>NR_R28D) then
             begin
               output.sib_present:=false;
               output.modrm:=(md shl 6) or (rfield shl 3) or base;
@@ -3240,7 +3397,7 @@ implementation
             output.modrm:=$c0 or (rfield shl 3) or rv;
             output.size:=1;
 {$ifdef x86_64}
-            output.rex:=output.rex or (rexbits(input.reg) and $F1);
+            output.rex:=output.rex or (rexbits(input.reg) and $b91);
 {$endif x86_64}
             result:=true;
             exit;
@@ -3308,7 +3465,7 @@ implementation
             &10,&11,&12 :
               begin
 {$ifdef x86_64}
-                rex:=rex or (rexbits(oper[c-&10]^.reg) and $F1);
+                rex:=rex or (rexbits(oper[c-&10]^.reg) and $b91);
 {$endif x86_64}
                 inc(codes);
                 inc(len);
@@ -3372,7 +3529,7 @@ implementation
 {$ifdef x86_64}
                   OT_BITS64:
                     begin
-                      rex:=rex or $48;
+                      rex:=rex or $108;  { REX.W=1 }
                     end;
 {$endif x86_64}
                 end;
@@ -3399,7 +3556,7 @@ implementation
             &326 :
               begin
 {$ifdef x86_64}
-                rex:=rex or $48;
+                rex:=rex or $108;  { REX.W=1 }
 {$endif x86_64}
               end;
             &312,
@@ -3444,7 +3601,7 @@ implementation
                   begin
                     if (oper[c and 7]^.typ=top_reg) then
                       begin
-                        rex:=rex or (rexbits(oper[c and 7]^.reg) and $F4);
+                        rex:=rex or (rexbits(oper[c and 7]^.reg) and $BC4);
                       end;
                   end;
 
@@ -3475,9 +3632,14 @@ implementation
             &240..&243:
               begin
 {$ifdef x86_64}
-                rex:=rex or (rexbits(oper[c and 7]^.reg) and $F4);
+                rex:=rex or (rexbits(oper[c and 7]^.reg) and $BC4);
 {$endif x86_64}
                 inc(len);
+              end;
+            &260: begin
+{$ifdef x86_64}
+                rex:=rex or ($200); { REX2 }
+{$endif x86_64}
               end;
             &350:
               begin
@@ -3509,8 +3671,14 @@ implementation
             &366, // operand 2 (ymmreg) encoded immediate byte (bit 4-7)
             &367: inc(len); // operand 3 (ymmreg) encoded immediate byte (bit 4-7)
             &370: // VEX-Extension prefix $0F
-                  // ignore for calculating length
-                  ;
+              begin
+{$ifdef x86_64}
+                rex := rex or $80;  { REX2.M=1 }
+{$else}
+                if not(exists_vex or exists_evex) then
+                  inc(len);
+{$endif x86_64}
+              end;
             &371, // VEX-Extension prefix $0F38
             &372, // VEX-Extension prefix $0F3A
             &375..&377: // opcode map 5,6,7
@@ -3533,19 +3701,23 @@ implementation
           end;
         until false;
 {$ifdef x86_64}
-        if ((rex and $80)<>0) and ((rex and $4F)<>0) then
+        if ((rex and $800)<>0) and ((rex and $300)<>0) then
           Message(asmw_e_bad_reg_with_rex);
-        rex:=rex and $4F;      { reset extra bits in upper nibble }
+        rex:=rex and $3FF;      { reset extra bits in upper nibble }
         if omit_rexw then
           begin
-            if rex=$48 then    { remove rex entirely? }
+            if rex=$108 then    { remove rex entirely? }
               rex:=0
             else
-              rex:=rex and $F7;
+              rex:=rex and $3F7;
           end;
         if not(exists_vex or exists_evex) then
         begin
-          if rex<>0 then
+          if (rex and $300)<>0 then
+            Inc(len);
+          if (rex and $80)<>0 then
+            Inc(len);
+          if ((rex and $200) <> 0) and ((rex and $80)=0) then
             Inc(len);
         end;
 {$endif}
@@ -3666,6 +3838,7 @@ implementation
        *                 field equal to digit b.
        * \24a          - operator a in ModRM.reg. ModRM 11:rrr:000
        * \254,\255,\256 - a signed 32-bit immediate to be extended to 64 bits
+       * \260          - force REX2 (only in 64 bit mode)
        * \300,\301,\302 - might be an 0x67, depending on the address size of
        *                 the memory reference in operand x.
        * \310          - indicates fixed 16-bit address size, i.e. optional 0x67.
@@ -3701,7 +3874,8 @@ implementation
        * \366          - operand 2 (ymmreg,zmmreg) encoded in bit 4-7 of the immediate byte
        * \367          - operand 3 (ymmreg,zmmreg) encoded in bit 4-7 of the immediate byte
 
-       * \370          - VEX 0F-FLAG (map 1)
+       * \370          - VEX 0F-FLAG (map 1), REX2.M=1 or prefix 0x0F for legacy opcode map 1
+       *                 As well incicate that instruction can have rex2 prefix and use registers r16-r31.
        * \371          - VEX 0F38-FLAG (map 2)
        * \372          - VEX 0F3A-FLAG (map 3)
 
@@ -3825,11 +3999,22 @@ implementation
 
 {$ifdef x86_64}
        procedure maybewriterex;
+       var lRex : byte;
        begin
           if (rex<>0) and not(rexwritten) then
             begin
               rexwritten:=true;
-              objdata.writebytes(rex,1);
+              if (rex and $200)<>0 then
+              begin
+                lRex:=$D5;                    { REX2 }
+                objdata.writebytes(lrex,1);
+                lRex:=rex;
+                objdata.writebytes(lrex,1);
+              end else
+              begin
+                lRex:=(rex and $F) or $40;    { REX }
+                objdata.writebytes(lrex,1);
+              end;
             end;
         end;
 {$endif x86_64}
@@ -4084,6 +4269,11 @@ implementation
                 end else EVEXr := 1; // modrm:reg not used =>> 1
                 EVEXx:=1; //-- modrm.rm not used;
               end;
+           &260: begin
+{$ifndef x86_64}
+                InternalError(2025100801);
+{$endif x86_64}
+              end;
            &333: begin
                    VEXvvvv              := VEXvvvv  OR $02; // set SIMD-prefix $F3
                    //VEXpp                := $02;             // set SIMD-prefix $F3
@@ -4126,6 +4316,9 @@ implementation
            &370: begin
                    VEXmmmmm             := VEXmmmmm OR $01; // set leading opcode byte $0F
                    EVEXmmm              := $01;
+{$ifdef x86_64}
+                   rex                  := rex or $80;  { REX2.M=1 }
+{$endif x86_64}
                  end;
            &371: begin
                    needed_VEX_Extension := true;
@@ -4610,6 +4803,11 @@ implementation
                 else
                   objdata.writeInt32LE(int32(currval));
               end;
+            &260: begin
+{$ifdef x86_64}
+                //rex:=rex or ($200); { REX2 }
+{$endif x86_64}
+              end;
             &300,&301,&302:
               begin
 {$if defined(x86_64) or defined(i8086)}
@@ -4716,7 +4914,24 @@ implementation
                   Internalerror(2014032001);
               end;
             &350..&352: ; // EVEX flags =>> nothing todo
-            &370..&377: ; // VEX and EVEX flags =>> nothing todo
+            &370: begin
+                if not(needed_VEX or needed_EVEX) then
+                  begin
+{$ifdef x86_64}
+                    if (rex and $200) = 0 then
+                    begin
+                      rex:=rex and $ff7f; { REX2.M=0, writing actual byte }
+                      maybewriterex;
+                      bytes[0]:=$0f;
+                      objdata.writebytes(bytes,1);
+                    end;
+{$else x86_64}
+                    bytes[0]:=$0f;
+                    objdata.writebytes(bytes,1);
+{$endif x86_64}
+                  end;
+              end;
+            &371..&377: ; // VEX and EVEX flags =>> nothing to do
             &37:
               begin
 {$ifdef i8086}
