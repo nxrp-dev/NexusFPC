@@ -40,6 +40,7 @@ uses
 
     procedure generate_specialization(var tt:tdef;enforce_unit:boolean;parse_class_parent:boolean;const _prettyname:string;parsedtype:tdef;const symname:string;parsedpos:tfileposinfo);inline;
     procedure generate_specialization(var tt:tdef;enforce_unit:boolean;parse_class_parent:boolean;const _prettyname:string);inline;
+    function generate_anon_specialization(pd:tprocdef;paramtypes:tfpobjectlist;skipparentfp:boolean):tdef;
     function generate_specialization_phase1(out context:tspecializationcontext;genericdef:tdef;enforce_unit:boolean):tdef;inline;
     function generate_specialization_phase1(out context:tspecializationcontext;genericdef:tdef;enforce_unit:boolean;const symname:string;symtable:tsymtable):tdef;inline;
     function generate_specialization_phase1(out context:tspecializationcontext;genericdef:tdef;enforce_unit:boolean;parsedtype:tdef;const symname:string;symtable:tsymtable;parsedpos:tfileposinfo):tdef;
@@ -89,6 +90,8 @@ uses
   const
     tgeneric_param_const_types : tdeftypeset = [orddef,stringdef,floatdef,setdef,pointerdef,enumdef];
     tgeneric_param_nodes : tnodetypeset = [typen,ordconstn,stringconstn,realconstn,setconstn,niln];
+
+    procedure process_procdef(def:tprocdef;hmodule:tmodule); forward;
 
     procedure make_prettystring(paramtype:tdef;first:boolean;constprettyname:ansistring;var prettyname,specializename:ansistring);
       var
@@ -1358,6 +1361,75 @@ uses
         callerparams.free;
       end;
 
+    function generate_anon_specialization(pd: tprocdef; paramtypes: tfpobjectlist;skipparentfp:boolean): tdef;
+
+      function dummypos:pfileposinfo;inline;
+        begin
+          new(result);
+          result^:=pd.fileinfo;
+        end;
+
+      var
+        context: tspecializationcontext;
+        genidx,paridx,paroffs : integer;
+        gensym: tsym;
+        state: tspecializationstate;
+        hdef: tdef;
+        genidxstr: String;
+      begin
+        if not (po_anonymous in pd.procoptions) or not (df_generic in pd.defoptions) then
+          internalerror(2025061901);
+        context:=tspecializationcontext.create;
+        context.prettyname:=pd.procsym.name;
+        context.specializename:=pd.procsym.name;
+        context.genname:=pd.procsym.name;
+        paridx:=0;
+        paroffs:=0;
+
+        for genidx:=0 to pd.genericparas.count-1 do
+          begin
+            gensym:=tsym(pd.genericparas[genidx]);
+            if gensym.typ<>typesym then
+              internalerror(2025061903);
+            { Find parameter using this generic type }
+            while (paridx+paroffs<pd.paras.count) and (tparavarsym(pd.paras[paridx+paroffs]).vardef<>ttypesym(gensym).typedef) do
+                if skipparentfp and (vo_is_parentfp in tparavarsym(pd.paras[paridx+paroffs]).varoptions) then
+                  inc(paroffs)
+                else
+                  inc(paridx);
+            if paridx>=paramtypes.count then
+              begin
+                cgmessage1(parser_e_wrong_parameter_size,pd.procsym.name);
+                result:=cerrordef.create;
+                exit;
+              end;
+            hdef:=tdef(paramtypes[paridx]);
+            if not assigned(hdef.typesym) then
+              begin
+                { the type might not yet exist, e.g. for string constants or arrays }
+                str(genidx,genidxstr);
+                pd.parast.insertsym(ctypesym.create(pd.procsym.name+'$unnamedparamtype'+genidxstr,hdef));
+              end;
+            context.paramlist.add(hdef.typesym);
+            context.poslist.add(dummypos);
+            context.specializename:=context.specializename+'$'+hdef.typesym.name;
+            context.genname:=context.genname+'$'+hdef.typesym.name;
+          end;
+        context.sym:=pd.procsym;
+        context.symtable:=pd.owner;
+        result:=generate_specialization_phase2(context,pd,false,context.specializename);
+        if result.typ=procdef then
+          begin
+            tprocdef(result).forwarddef:=false;
+            proc_set_mangledname(tprocdef(result));
+            result.ChangeOwner(pd.owner);
+            specialization_init(result,state);
+            process_procdef(tprocdef(result),current_module);
+            specialization_done(state);
+          end;
+        context.free;
+      end;
+
     function generate_specialization_phase1(out context:tspecializationcontext;genericdef:tdef;enforce_unit:boolean):tdef;
       var
         dummypos : tfileposinfo;
@@ -1714,7 +1786,7 @@ uses
         srsymtable,
         specializest : tsymtable;
         hashedid : thashedidstring;
-        tempst : tglobalsymtable;
+        tempst : tsymtable;
         tsrsym : ttypesym;
         psym,
         srsym : tsym;
@@ -1930,7 +2002,10 @@ uses
               added to the correct symtable; this symtable does not contain
               any other symbols, so that the type resolution can not be
               influenced by symbols in the current unit }
-            tempst:=tspecializesymtable.create(current_module.modulename^,current_module.moduleid);
+            if (genericdef.typ=procdef) and is_nested_pd(tprocdef(genericdef)) then
+              tempst:=tlocalsymtable.create(genericdef,symtablestack.stack^.symtable.symtablelevel+1)
+            else
+              tempst:=tspecializesymtable.create(current_module.modulename^,current_module.moduleid);
             symtablestack.push(tempst);
 
             { Reparse the original type definition }
@@ -2007,14 +2082,16 @@ uses
                 if genericdef.typ=procdef then
                   begin
                     current_scanner.startreplaytokens(tprocdef(genericdef).genericdecltokenbuf,hmodule.change_endian);
-                    parse_proc_head(tprocdef(genericdef).struct,tprocdef(genericdef).proctypeoption,[],genericdef,generictypelist,pd);
+                    ppflags:=[];
+                    if po_anonymous in tprocdef(genericdef).procoptions then
+                      ppflags:=[ppf_anonymous];
+                    parse_proc_head(tprocdef(genericdef).struct,tprocdef(genericdef).proctypeoption,ppflags,genericdef,generictypelist,pd);
                     if assigned(pd) then
                       begin
                         if assigned(psym) then
                           pd.procsym:=psym
                         else
                           pd.procsym:=srsym;
-                        ppflags:=[];
                         if po_classmethod in tprocdef(genericdef).procoptions then
                           include(ppflags,ppf_classmethod);
                         parse_proc_dec_finish(pd,ppflags,tprocdef(genericdef).struct);
@@ -2765,6 +2842,16 @@ uses
 
 
     procedure specialization_init(genericdef:tdef;var state: tspecializationstate);
+
+    procedure pushnestedsymtables(st: psymtablestackitem);
+      begin
+        if not Assigned(st) then
+          exit;
+        pushnestedsymtables(st^.next);
+        if not (st^.symtable.symtabletype in [globalsymtable,staticsymtable]) then
+          symtablestack.push(st^.symtable);
+      end;
+
     var
       pu : tused_unit;
       hmodule : tmodule;
@@ -2852,6 +2939,8 @@ uses
       if ((hmodule<>current_module) or not current_module.in_interface)
           and assigned(hmodule.localsymtable) then
         symtablestack.push(hmodule.localsymtable);
+      if (genericdef.typ=procdef) and is_nested_pd(tprocdef(genericdef)) then
+        pushnestedsymtables(state.oldsymtablestack.stack);
     end;
 
     procedure specialization_done(var state: tspecializationstate);

@@ -217,12 +217,13 @@ implementation
         old_block_type : tblock_type;
         currparast : tparasymtable;
         parseprocvar : tppv;
-        locationstr : string;
-        paranr : integer;
+        locationstr , parasymname: string;
+        paranr , untypedparanr : integer;
         explicit_paraloc,
         need_array,
         is_univ: boolean;
         stoptions : TSingleTypeOptions;
+        srsymtable: TSymtable;
 
         procedure handle_default_para_value;
           var
@@ -284,6 +285,7 @@ implementation
         sc:=TFPObjectList.create(false);
         defaultrequired:=false;
         paranr:=0;
+        untypedparanr:=0;
         block_type:=bt_var;
         is_univ:=false;
         repeat
@@ -363,6 +365,34 @@ implementation
 {$endif}
              hdef:=pv;
            end
+          else
+           if (token<>_COLON) and (varspez=vs_value) and (po_anonymous in pd.procoptions) and
+             { no nested generics allowed so if we are nested, we can't have a replay }
+              (assigned(tprocdef(pd).genericdecltokenbuf) or (df_specialization in pd.defoptions)) then
+             begin
+               { Assumption: Anonymous functions can never be generic }
+               if not assigned(pd.genericparas) or (untypedparanr>=pd.genericparas.count) then
+                 begin
+                   { Initial parsing, make generic }
+                   if not assigned(pd.genericparas) then
+                     pd.genericparas:=tfphashobjectlist.create(false);
+                   include(pd.defoptions,df_generic);
+                   { generate unique, colission free name for type }
+                   parasymname:=tprocdef(pd).procsym.RealName+'$untypedpar'+inttostr(untypedparanr);
+                   srsym:=ctypesym.create(parasymname,cundefineddef.create(true));
+                   ttypesym(srsym).typedef.typesym:=srsym;
+                   { type parameters need to be added as strict private }
+                   srsym.visibility:=vis_strictprivate;
+                   include(srsym.symoptions,sp_generic_para);
+                   pd.parast.insertsym(srsym);
+                   pd.genericparas.add(srsym.name,srsym);
+                 end;
+               srsym:=tsym(pd.genericparas[untypedparanr]);
+               inc(untypedparanr);
+               if srsym.typ<>typesym then
+                 internalerror(2025061601);
+               hdef:=ttypesym(srsym).typedef;
+             end
           else
           { read type declaration, force reading for value paras }
            if (token=_COLON) or (varspez=vs_value) then
@@ -1175,6 +1205,11 @@ implementation
                 (st.defowner.typ=procdef) and
                 ([po_staticmethod,po_classmethod]*tprocdef(st.defowner).procoptions<>[]) then
               pd.procoptions:=pd.procoptions+([po_staticmethod,po_classmethod]*tprocdef(st.defowner).procoptions);
+            if not current_scanner.is_recording_tokens and not assigned(genericdef) then
+              begin
+                tprocdef(pd).init_genericdecl;
+                current_scanner.startrecordtokens(tprocdef(pd).genericdecltokenbuf);
+              end;
           end;
 
         if assigned(genericparams) then
@@ -1506,6 +1541,9 @@ implementation
                   end;
 
                end
+              { Allow anonymous functions to have return value inference }
+              else if ppf_anonymous in flags then
+                 pd.returndef:=cundefinedtype
               else
                begin
                   if (
@@ -1787,9 +1825,16 @@ implementation
 
         { we've parsed the final semicolon, so stop recording tokens }
         if assigned(pd) and
-            (df_generic in pd.defoptions) and
+            ((df_generic in pd.defoptions) or (po_anonymous in pd.procoptions)) and
             assigned(pd.genericdecltokenbuf) then
           current_scanner.stoprecordtokens;
+
+        if assigned(pd) and
+           (po_anonymous in pd.procoptions) and
+           not (df_generic in pd.defoptions) then
+          begin
+            freeandnil(tprocdef(pd).genericdecltokenbuf);
+          end;
 
         result:=pd;
       end;

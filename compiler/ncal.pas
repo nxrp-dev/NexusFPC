@@ -3972,6 +3972,16 @@ implementation
 
     function tcallnode.pass_typecheck:tnode;
 
+      procedure paratypelist(node:tnode;var list:tfpobjectlist);
+        begin
+          if not assigned(node) then exit;
+          if node.nodetype<>callparan then
+            internalerror(2025061902);
+          paratypelist(tcallparanode(node).right,list);
+          tcallparanode(node).get_paratype;
+          list.add(node.resultdef);
+        end;
+
       function is_undefined_recursive(def:tdef):boolean;
         begin
           { might become more refined in the future }
@@ -3999,11 +4009,28 @@ implementation
         converted_result_data : ttempcreatenode;
         calltype: tdispcalltype;
         invokesym : tsym;
+        plist:tfpobjectlist;
+        pd: tdef;
       begin
          result:=nil;
 
          oldcallnode:=aktcallnode;
          aktcallnode:=self;
+
+         { If this is a call to a not yet specialized anonymous function,
+           specialize based on the arguments given to call }
+         if assigned(procdefinition) and
+            (po_anonymous in procdefinition.procoptions) and
+            (df_generic in procdefinition.defoptions) then
+           begin
+             plist:=tfpobjectlist.create(false);
+             paratypelist(left,plist);
+             pd:=generate_anon_specialization(tprocdef(procdefinition),plist,true);
+             plist.free;
+             if pd.typ<>procdef then
+               exit;
+             procdefinition:=tabstractprocdef(pd);
+           end;
 
          try
            { determine length of parameter list }
