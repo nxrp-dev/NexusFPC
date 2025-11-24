@@ -3266,8 +3266,161 @@ unit aoptx86;
         PreMessage, RegName1, RegName2, InputVal, MaskNum: string;
         NewSize: topsize; NewOffset: asizeint;
         SourceRef, TargetRef: TReference;
-        MovAligned, MovUnaligned: TAsmOp;
         JumpTracking: TLinkedList;
+        MovInstr: TAsmOp;
+
+        function MergeMemMove(Step: Integer; NewSize: TSubRegister; const MovAligned, MovUnaligned: TAsmOp): Boolean;
+          var
+            UsingNewReg: Boolean;
+            StepTimesTwo: Integer;
+          begin
+            Result:=False;
+            StepTimesTwo:=Step shl 1;
+
+            Inc(SourceRef.offset, Step);
+
+            if RefsEqual(SourceRef, taicpu(hp2).oper[0]^.ref^) and
+              not RefsMightOverlap(taicpu(p).oper[0]^.ref^, TargetRef, StepTimesTwo) then
+              begin
+                UpdateUsedRegs(TmpUsedRegs, tai(hp2.Next));
+                Inc(TargetRef.offset, Step);
+                if GetNextInstruction(hp2, hp3) and
+                  MatchInstruction(hp3, A_MOV, [taicpu(p).opsize]) and
+                  MatchOpType(taicpu(hp3), top_reg, top_ref) and
+                  (taicpu(hp2).oper[1]^.reg = taicpu(hp3).oper[0]^.reg) and
+                  RefsEqual(TargetRef, taicpu(hp3).oper[1]^.ref^) and
+                  not RegUsedAfterInstruction(taicpu(hp2).oper[1]^.reg, hp3, TmpUsedRegs) then
+                  begin
+                    if NewSize >= R_SUBMMX then
+                      begin
+                        NewMMReg := GetMMRegisterBetween(NewSize, UsedRegs, p, hp3);
+                        UsingNewReg := True;
+                      end
+                    else
+                      begin
+                        NewMMReg := taicpu(p).oper[1]^.reg;
+                        SetSubReg(NewMMReg, NewSize);
+                        UsingNewReg := False;
+                      end;
+
+                    if (NewMMReg <> NR_NO) then
+                      begin
+                        { Remember that the offsets are Step ahead }
+                        if ((SourceRef.offset mod StepTimesTwo) = Step) and
+                          (
+                            { Base pointer is always aligned (stack pointer won't be if there's no stack frame) }
+                            (SourceRef.base = current_procinfo.framepointer) or
+                            ((SourceRef.alignment >= StepTimesTwo) and ((SourceRef.alignment mod StepTimesTwo) = 0))
+                          ) then
+                          taicpu(p).opcode := MovAligned
+                        else
+                          taicpu(p).opcode := MovUnaligned;
+
+                        taicpu(p).opsize := subreg2opsize(NewSize);
+                        taicpu(p).oper[1]^.reg := NewMMReg;
+
+                        if ((TargetRef.offset mod StepTimesTwo) = Step) and
+                          (
+                            { Base pointer is always aligned (stack pointer won't be if there's no stack frame) }
+                            (TargetRef.base = current_procinfo.framepointer) or
+                            ((TargetRef.alignment >= StepTimesTwo) and ((TargetRef.alignment mod StepTimesTwo) = 0))
+                          ) then
+                          taicpu(hp1).opcode := MovAligned
+                        else
+                          taicpu(hp1).opcode := MovUnaligned;
+
+                        taicpu(hp1).opsize := subreg2opsize(NewSize);
+                        taicpu(hp1).oper[0]^.reg := NewMMReg;
+
+                        DebugMsg(SPeepholeOptimization + 'Used ' + debug_regname(NewMMReg) + ' to merge a pair of memory moves (MovMovMovMov2MovMov 1)', p);
+
+                        if UsingNewReg then
+                          begin
+                            TransferUsedRegs(TmpUsedRegs);
+                            AllocRegBetween(NewMMReg, p, hp1, TmpUsedRegs);
+                          end;
+
+                        RemoveInstruction(hp2);
+                        RemoveInstruction(hp3);
+                        Result := True;
+                      end;
+                  end;
+              end
+            else
+              begin
+                { See if the next references are Step less rather than Step greater }
+
+                Dec(SourceRef.offset, StepTimesTwo); { -Step the other way }
+                if RefsEqual(SourceRef, taicpu(hp2).oper[0]^.ref^) then
+                  begin
+                    UpdateUsedRegs(TmpUsedRegs, tai(hp2.Next));
+                    Dec(TargetRef.offset, Step); { Only Step, not 2 * Step, as it wasn't incremented unlike SourceRef }
+                    if not RefsMightOverlap(SourceRef, TargetRef, StepTimesTwo) and
+                      GetNextInstruction(hp2, hp3) and
+                      MatchInstruction(hp3, A_MOV, [taicpu(p).opsize]) and
+                      MatchOpType(taicpu(hp3), top_reg, top_ref) and
+                      (taicpu(hp2).oper[1]^.reg = taicpu(hp3).oper[0]^.reg) and
+                      RefsEqual(TargetRef, taicpu(hp3).oper[1]^.ref^) and
+                      not RegUsedAfterInstruction(taicpu(hp2).oper[1]^.reg, hp3, TmpUsedRegs) then
+                      begin
+                        if NewSize >= R_SUBMMX then
+                          begin
+                            NewMMReg := GetMMRegisterBetween(NewSize, UsedRegs, p, hp3);
+                            UsingNewReg := True;
+                          end
+                        else
+                          begin
+                            NewMMReg := taicpu(p).oper[1]^.reg;
+                            SetSubReg(NewMMReg, NewSize);
+                            UsingNewReg := False;
+                          end;
+
+                        if NewMMReg <> NR_NO then
+                          begin
+                            { hp2 and hp3 are the starting offsets, so mod = 0 this time }
+                            if ((SourceRef.offset mod StepTimesTwo) = 0) and
+                              (
+                                { Base pointer is always aligned (stack pointer won't be if there's no stack frame) }
+                                (SourceRef.base = current_procinfo.framepointer) or
+                                ((SourceRef.alignment >= StepTimesTwo) and ((SourceRef.alignment mod StepTimesTwo) = 0))
+                              ) then
+                              taicpu(hp2).opcode := MovAligned
+                            else
+                              taicpu(hp2).opcode := MovUnaligned;
+
+                            taicpu(hp2).opsize := subreg2opsize(NewSize);
+                            taicpu(hp2).oper[1]^.reg := NewMMReg;
+
+                            if ((TargetRef.offset mod StepTimesTwo) = 0) and
+                              (
+                                { Base pointer is always aligned (stack pointer won't be if there's no stack frame) }
+                                (TargetRef.base = current_procinfo.framepointer) or
+                                ((TargetRef.alignment >= StepTimesTwo) and ((TargetRef.alignment mod StepTimesTwo) = 0))
+                              ) then
+                              taicpu(hp3).opcode := MovAligned
+                            else
+                              taicpu(hp3).opcode := MovUnaligned;
+
+                            taicpu(hp3).opsize := subreg2opsize(NewSize);
+                            taicpu(hp3).oper[0]^.reg := NewMMReg;
+
+                            DebugMsg(SPeepholeOptimization + 'Used ' + debug_regname(NewMMReg) + ' to merge a pair of memory moves (MovMovMovMov2MovMov 2)', p);
+
+                            if UsingNewReg then
+                              begin
+                                TransferUsedRegs(TmpUsedRegs);
+                                AllocRegBetween(NewMMReg, p, hp3, TmpUsedRegs);
+                              end;
+
+                            RemoveInstruction(hp1);
+                            RemoveCurrentP(p);
+                            Result := True;
+                          end;
+                      end;
+                  end;
+              end;
+          end;
+
       begin
         Result:=false;
 
@@ -4260,26 +4413,13 @@ unit aoptx86;
                                       Exit;
                                     end;
                                 top_ref:
+{$ifdef x86_64}
                                   if not RegInRef(p_TargetReg, taicpu(p).oper[0]^.ref^) then
                                     begin
-{$ifdef x86_64}
-                                      { Look for the following to simplify:
-
-                                          mov x(mem1), %reg
-                                          mov %reg, y(mem2)
-                                          mov x+8(mem1), %reg
-                                          mov %reg, y+8(mem2)
-
-                                        Change to:
-                                          movdqu x(mem1), %xmmreg
-                                          movdqu %xmmreg, y(mem2)
-
-                                        ...but only as long as the memory blocks don't overlap
-                                      }
                                       SourceRef := taicpu(p).oper[0]^.ref^;
                                       TargetRef := taicpu(hp1).oper[1]^.ref^;
-                                      if (taicpu(p).opsize = S_Q) and
-                                        not RegUsedAfterInstruction(p_TargetReg, hp1, TmpUsedRegs) and
+
+                                      if not RegUsedAfterInstruction(p_TargetReg, hp1, TmpUsedRegs) and
                                         GetNextInstruction(hp1, hp2) and
                                         MatchInstruction(hp2, A_MOV, [taicpu(p).opsize]) and
                                         MatchOpType(taicpu(hp2), top_ref, top_reg) then
@@ -4288,130 +4428,68 @@ unit aoptx86;
 
                                           UpdateUsedRegs(TmpUsedRegs, tai(hp1.Next));
 
-                                          Inc(SourceRef.offset, 8);
+                                          case taicpu(p).opsize of
+                                            S_L:
+                                              begin
+                                                { Look for the following to simplify:
 
-                                          if UseAVX then
-                                            begin
-                                              MovAligned :=  A_VMOVDQA;
-                                              MovUnaligned := A_VMOVDQU;
-                                            end
-                                          else
-                                            begin
-                                              MovAligned := A_MOVDQA;
-                                              MovUnaligned := A_MOVDQU;
-                                            end;
+                                                    mov x(mem1), %regl
+                                                    mov %regl, y(mem2)
+                                                    mov x+4(mem1), %regl
+                                                    mov %regl, y+4(mem2)
 
-                                          if RefsEqual(SourceRef, taicpu(hp2).oper[0]^.ref^) and
-                                            not RefsMightOverlap(taicpu(p).oper[0]^.ref^, TargetRef, 16) then
-                                            begin
-                                              UpdateUsedRegs(TmpUsedRegs, tai(hp2.Next));
-                                              Inc(TargetRef.offset, 8);
-                                              if GetNextInstruction(hp2, hp3) and
-                                                MatchInstruction(hp3, A_MOV, [taicpu(p).opsize]) and
-                                                MatchOpType(taicpu(hp3), top_reg, top_ref) and
-                                                (taicpu(hp2).oper[1]^.reg = taicpu(hp3).oper[0]^.reg) and
-                                                RefsEqual(TargetRef, taicpu(hp3).oper[1]^.ref^) and
-                                                not RegUsedAfterInstruction(taicpu(hp2).oper[1]^.reg, hp3, TmpUsedRegs) then
-                                                begin
-                                                  NewMMReg := GetMMRegisterBetween(R_SUBMMX, UsedRegs, p, hp3);
-                                                  if NewMMReg <> NR_NO then
-                                                    begin
-                                                      { Remember that the offsets are 8 ahead }
-                                                      if ((SourceRef.offset mod 16) = 8) and
-                                                        (
-                                                          { Base pointer is always aligned (stack pointer won't be if there's no stack frame) }
-                                                          (SourceRef.base = current_procinfo.framepointer) or
-                                                          ((SourceRef.alignment >= 16) and ((SourceRef.alignment mod 16) = 0))
-                                                        ) then
-                                                        taicpu(p).opcode := MovAligned
-                                                      else
-                                                        taicpu(p).opcode := MovUnaligned;
+                                                  Change to:
+                                                    mov x(mem1), %regq
+                                                    mov %regq, y(mem2)
 
-                                                      taicpu(p).opsize := S_XMM;
-                                                      taicpu(p).oper[1]^.reg := NewMMReg;
+                                                  ...but only as long as the memory blocks don't overlap
+                                                }
+                                                if MergeMemMove(
+                                                    4,
+                                                    R_SUBQ,
+                                                    A_MOV,
+                                                    A_MOV
+                                                  ) then
+                                                  begin
+                                                    Result:=True;
+                                                    Exit;
+                                                  end;
+                                              end;
 
-                                                      if ((TargetRef.offset mod 16) = 8) and
-                                                        (
-                                                          { Base pointer is always aligned (stack pointer won't be if there's no stack frame) }
-                                                          (TargetRef.base = current_procinfo.framepointer) or
-                                                          ((TargetRef.alignment >= 16) and ((TargetRef.alignment mod 16) = 0))
-                                                        ) then
-                                                        taicpu(hp1).opcode := MovAligned
-                                                      else
-                                                        taicpu(hp1).opcode := MovUnaligned;
+                                            S_Q:
+                                              begin
+                                                { Look for the following to simplify:
 
-                                                      taicpu(hp1).opsize := S_XMM;
-                                                      taicpu(hp1).oper[0]^.reg := NewMMReg;
+                                                    mov x(mem1), %regq
+                                                    mov %regq, y(mem2)
+                                                    mov x+8(mem1), %regq
+                                                    mov %regq, y+8(mem2)
 
-                                                      DebugMsg(SPeepholeOptimization + 'Used ' + debug_regname(NewMMReg) + ' to merge a pair of memory moves (MovMovMovMov2MovdqMovdq 1)', p);
+                                                  Change to:
+                                                    movdqu x(mem1), %xmmreg
+                                                    movdqu %xmmreg, y(mem2)
 
-                                                      RemoveInstruction(hp2);
-                                                      RemoveInstruction(hp3);
-                                                      Result := True;
-                                                      Exit;
-                                                    end;
-                                                end;
-                                            end
-                                          else
-                                            begin
-                                              { See if the next references are 8 less rather than 8 greater }
+                                                  ...but only as long as the memory blocks don't overlap
+                                                }
 
-                                              Dec(SourceRef.offset, 16); { -8 the other way }
-                                              if RefsEqual(SourceRef, taicpu(hp2).oper[0]^.ref^) then
-                                                begin
-                                                  UpdateUsedRegs(TmpUsedRegs, tai(hp2.Next));
-                                                  Dec(TargetRef.offset, 8); { Only 8, not 16, as it wasn't incremented unlike SourceRef }
-                                                  if not RefsMightOverlap(SourceRef, TargetRef, 16) and
-                                                    GetNextInstruction(hp2, hp3) and
-                                                    MatchInstruction(hp3, A_MOV, [taicpu(p).opsize]) and
-                                                    MatchOpType(taicpu(hp3), top_reg, top_ref) and
-                                                    (taicpu(hp2).oper[1]^.reg = taicpu(hp3).oper[0]^.reg) and
-                                                    RefsEqual(TargetRef, taicpu(hp3).oper[1]^.ref^) and
-                                                    not RegUsedAfterInstruction(taicpu(hp2).oper[1]^.reg, hp3, TmpUsedRegs) then
-                                                    begin
-                                                      NewMMReg := GetMMRegisterBetween(R_SUBMMX, UsedRegs, p, hp3);
-                                                      if NewMMReg <> NR_NO then
-                                                        begin
-                                                          { hp2 and hp3 are the starting offsets, so mod = 0 this time }
-                                                          if ((SourceRef.offset mod 16) = 0) and
-                                                            (
-                                                              { Base pointer is always aligned (stack pointer won't be if there's no stack frame) }
-                                                              (SourceRef.base = current_procinfo.framepointer) or
-                                                              ((SourceRef.alignment >= 16) and ((SourceRef.alignment mod 16) = 0))
-                                                            ) then
-                                                            taicpu(hp2).opcode := MovAligned
-                                                          else
-                                                            taicpu(hp2).opcode := MovUnaligned;
-
-                                                          taicpu(hp2).opsize := S_XMM;
-                                                          taicpu(hp2).oper[1]^.reg := NewMMReg;
-
-                                                          if ((TargetRef.offset mod 16) = 0) and
-                                                            (
-                                                              { Base pointer is always aligned (stack pointer won't be if there's no stack frame) }
-                                                              (TargetRef.base = current_procinfo.framepointer) or
-                                                              ((TargetRef.alignment >= 16) and ((TargetRef.alignment mod 16) = 0))
-                                                            ) then
-                                                            taicpu(hp3).opcode := MovAligned
-                                                          else
-                                                            taicpu(hp3).opcode := MovUnaligned;
-
-                                                          taicpu(hp3).opsize := S_XMM;
-                                                          taicpu(hp3).oper[0]^.reg := NewMMReg;
-
-                                                          DebugMsg(SPeepholeOptimization + 'Used ' + debug_regname(NewMMReg) + ' to merge a pair of memory moves (MovMovMovMov2MovdqMovdq 2)', p);
-
-                                                          RemoveInstruction(hp1);
-                                                          RemoveCurrentP(p);
-                                                          Result := True;
-                                                          Exit;
-                                                        end;
-                                                    end;
-                                                end;
-                                            end;
+                                                if MergeMemMove(
+                                                    8,
+                                                    R_SUBMMX,
+                                                    IfThen(UseAVX, A_VMOVDQA, A_MOVDQA),
+                                                    IfThen(UseAVX, A_VMOVDQU, A_MOVDQU)
+                                                  ) then
+                                                  begin
+                                                    Result:=True;
+                                                    Exit;
+                                                  end;
+                                              end;
+                                            else
+                                              ;
+                                          end;
                                         end;
+                                    end
 {$endif x86_64}
-                                    end;
+                                    ;
                                 else
                                   { The write target should be a reg or a ref }
                                   InternalError(2021091601);
@@ -5669,9 +5747,9 @@ unit aoptx86;
               Also accept sar instead of shr, but convert to movsx instead of movzx
             }
             if taicpu(hp1).opcode = A_SHR then
-              MovUnaligned := A_MOVZX
+              MovInstr := A_MOVZX
             else
-              MovUnaligned := A_MOVSX;
+              MovInstr := A_MOVSX;
 
             NewSize := S_NO;
             NewOffset := 0;
@@ -5707,7 +5785,7 @@ unit aoptx86;
                       if taicpu(hp1).opcode = A_SAR then
                         begin
                           { 32-bit to 64-bit is a distinct instruction }
-                          MovUnaligned := A_MOVSXD;
+                          MovInstr := A_MOVSXD;
                           NewSize := S_LQ;
                           NewOffset := 4;
                         end
@@ -5738,16 +5816,16 @@ unit aoptx86;
               begin
                 PreMessage := 'mov' + debug_opsize2str(taicpu(p).opsize) + ' ' + debug_operstr(taicpu(p).oper[0]^) + ',' + RegName1 + '; ' +
                   'shr' + debug_opsize2str(taicpu(p).opsize) + ' $' + debug_tostr(taicpu(hp1).oper[0]^.val) + ',' + RegName1 + ' -> ' +
-                  debug_op2str(MovUnaligned);
+                  debug_op2str(MovInstr);
 
 {$ifdef x86_64}
-                if MovUnaligned <> A_MOVSXD then
+                if MovInstr <> A_MOVSXD then
                   { Don't add size suffix for MOVSXD }
 {$endif x86_64}
                   PreMessage := PreMessage + debug_opsize2str(NewSize);
 
                 Inc(taicpu(p).oper[0]^.ref^.offset, NewOffset);
-                taicpu(p).opcode := MovUnaligned;
+                taicpu(p).opcode := MovInstr;
                 taicpu(p).opsize := NewSize;
 
                 DebugMsg(SPeepholeOptimization + PreMessage + ' ' +
@@ -9319,20 +9397,80 @@ unit aoptx86;
    function TX86AsmOptimizer.OptPass1VPXor(var p: tai): boolean;
      var
        hp1: tai;
+       Size: TOpSize;
      begin
-       {
-         remove the second (v)pxor from
+       { VPXOR shouldn't have even been generated }
+       if not UseAVX then
+         InternalError(2021100502);
 
-           (v)pxor reg,reg
-           ...
-           (v)pxor reg,reg
+       {
+          replace
+             vpxor reg1,reg1,reg2
+
+             by
+
+             vpxor reg2,reg2,reg2
+
+             to avoid unncessary data dependencies
        }
-       Result:=false;
+       Result := False;
+       if MatchOpType(taicpu(p),top_reg,top_reg,top_reg) and
+         (taicpu(p).oper[0]^.reg <> taicpu(p).oper[2]^.reg) and
+         (taicpu(p).oper[0]^.reg = taicpu(p).oper[1]^.reg) then
+         begin
+           DebugMsg(SPeepholeOptimization + 'VPXor2VPXor done',p);
+           { avoid unncessary data dependency }
+           taicpu(p).loadreg(0,taicpu(p).oper[2]^.reg);
+           taicpu(p).loadreg(1,taicpu(p).oper[2]^.reg);
+           Include(OptsToCheck, aoc_ForceNewIteration);
+         end;
+
+       if not GetNextInstructionUsingReg(p, hp1, taicpu(p).oper[2]^.reg) then
+         begin
+           Result := OptPass1VOP(p);
+           Exit;
+         end;
+
+       { Go by the operand size rather than the instruction size to catch
+         more cases (e.g. R_SUBMMS and R_SUBMMD, for example) }
+       Size := subreg2opsize(getsubreg(taicpu(p).oper[2]^.reg));
+       if Size < S_XMM then
+         Size := S_XMM;
+
+       { Though we're technically checking for:
+           vpxor     %ymmreg, %ymmreg, %ymmreg
+           ...
+           vmovdqa/u x(mem), %ymmreg
+
+         Only the last register actually matters.
+       }
+       if MatchInstruction(hp1, A_VMOVDQA, A_VMOVDQU, []) and
+         { TODO: Since AVX is largely RISC-like where the last
+           operands are write-only for many instructions, this can
+           potentially be generalised to cover more instructions (and not
+           just optimising for VPXOR). [Kit]
+         }
+         (taicpu(hp1).opsize >= Size) and
+         (taicpu(hp1).oper[taicpu(hp1).ops - 1]^.typ = top_reg) and
+         SuperRegistersEqual(taicpu(hp1).oper[taicpu(hp1).ops - 1]^.reg, taicpu(p).oper[2]^.reg) then
+         begin
+           DebugMsg(SPeepholeOptimization + 'Removed superfluous VPXOR (Vpxor2Nop 1)', p);
+           RemoveCurrentP(p);
+           Result := True;
+           Exit;
+         end;
+
        if MatchOperand(taicpu(p).oper[0]^,taicpu(p).oper[1]^,taicpu(p).oper[2]^) and
          MatchOpType(taicpu(p),top_reg,top_reg,top_reg) then
          begin
-           if GetNextInstructionUsingReg(p,hp1,taicpu(p).oper[0]^.reg) and
-             MatchInstruction(hp1,taicpu(p).opcode,[taicpu(p).opsize]) and
+           {
+             remove the second (v)pxor from
+
+               (v)pxor reg,reg
+               ...
+               (v)pxor reg,reg
+           }
+           if MatchInstruction(hp1,taicpu(p).opcode,[taicpu(p).opsize]) and
              MatchOperand(taicpu(p).oper[0]^,taicpu(hp1).oper[0]^) and
              MatchOperand(taicpu(hp1).oper[0]^,taicpu(hp1).oper[1]^,taicpu(hp1).oper[2]^) then
              begin
@@ -9351,8 +9489,7 @@ unit aoptx86;
 
                  movq $0,mem
            }
-           if GetNextInstruction(p,hp1) and
-             MatchInstruction(hp1,A_VMOVSD,[]) and
+           if MatchInstruction(hp1,A_VMOVSD,[]) and
              MatchOperand(taicpu(p).oper[2]^,taicpu(hp1).oper[0]^) and
              MatchOpType(taicpu(hp1),top_reg,top_ref) then
              begin
@@ -9370,26 +9507,6 @@ unit aoptx86;
                  end;
              end;
 {$endif x86_64}
-         end
-       {
-          replace
-             vpxor reg1,reg1,reg2
-
-             by
-
-             vpxor reg2,reg2,reg2
-
-             to avoid unncessary data dependencies
-       }
-       else if MatchOperand(taicpu(p).oper[0]^,taicpu(p).oper[1]^) and
-         MatchOpType(taicpu(p),top_reg,top_reg,top_reg) then
-         begin
-           DebugMsg(SPeepholeOptimization + 'VPXor2VPXor done',p);
-           { avoid unncessary data dependency }
-           taicpu(p).loadreg(0,taicpu(p).oper[2]^.reg);
-           taicpu(p).loadreg(1,taicpu(p).oper[2]^.reg);
-           result:=true;
-           exit;
          end;
        Result:=OptPass1VOP(p);
      end;
@@ -9681,7 +9798,7 @@ unit aoptx86;
       SourceRef, TargetRef: TReference;
       CurrentReg: TRegister;
     begin
-      { VMOVDQU/CMOVDQA shouldn't have even been generated }
+      { VMOVDQU/VMOVDQA shouldn't have even been generated }
       if not UseAVX then
         InternalError(2021100501);
 
