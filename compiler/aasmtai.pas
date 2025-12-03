@@ -311,6 +311,7 @@ interface
 {$if defined(riscv32) or defined(riscv64)}
        ,top_fenceflags
        ,top_roundingmode
+       ,top_realconst
 {$endif defined(riscv32) or defined(riscv64)}
 {$ifdef wasm}
        ,top_functype
@@ -564,6 +565,7 @@ interface
         {$if defined(riscv32) or defined(riscv64)}
             top_fenceflags : (fenceflags : TFenceFlags);
             top_roundingmode : (roundingmode : TRoundingMode);
+            top_realconst : (val_real:bestreal;special_value : TAsmRealSpecialValue);
         {$endif defined(riscv32) or defined(riscv64)}
         {$ifdef wasm}
             top_functype : (functype: TWasmFuncType);
@@ -3011,7 +3013,10 @@ implementation
               and not(r.refaddr in [addr_full,addr_gotpageoffset,addr_gotpage])
 {$endif aarch64}
 {$ifdef riscv}
-              and not(opcode in [A_LA,A_FLD,A_FLQ,A_FLW])
+              and not(opcode=A_LA)
+              and not(opcode=A_FLD)
+              and not(opcode=A_FLQ)
+              and not(opcode=A_FLW)
 {$endif riscv}
               then
               internalerror(200502052);

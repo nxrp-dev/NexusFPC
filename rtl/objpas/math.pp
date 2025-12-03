@@ -162,7 +162,7 @@ Const
        GreaterThanValue = types.GreaterThanValue;
 {$ENDIF FPC_DOTTEDUNITS}
 
-       
+
 {$push}
 {$R-}
 {$Q-}
@@ -1291,7 +1291,10 @@ function cosh(x : Single) : Single;
      temp : ValReal;
   begin
      if (x>8.94159862326326216608E+0001) or (x<-8.94159862326326216608E+0001) then
+{$push}
+{$checkfpuexceptions on}
        exit(huge_single*huge_single);
+{$pop}
     temp:=exp(x);
 {$push}
 {$safefpuexceptions on}
@@ -1307,7 +1310,10 @@ function cosh(x : Double) : Double;
      temp : ValReal;
   begin
      if (x>7.10475860073943942030E+0002) or (x<-7.10475860073943942030E+0002) then
+{$push}
+{$checkfpuexceptions on}
        exit(huge_double*huge_double);
+{$pop}
      temp:=exp(x);
 {$push}
 {$safefpuexceptions on}
@@ -1334,9 +1340,15 @@ function sinh(x : Single) : Single;
      temp : ValReal;
   begin
      if x>8.94159862326326216608E+0001 then
+{$push}
+{$checkfpuexceptions on}
        exit(huge_single*huge_single);
+{$pop}
      if x<-8.94159862326326216608E+0001 then
+{$push}
+{$checkfpuexceptions on}
        exit(-(huge_single*huge_single));
+{$pop}
      temp:=exp(x);
      { gives better behavior around zero, and in particular ensures that sinh(-0.0)=-0.0 }
      if temp=1 then
@@ -1355,9 +1367,15 @@ function sinh(x : Double) : Double;
      temp : ValReal;
   begin
      if x>7.10475860073943942030E+0002 then
+{$push}
+{$checkfpuexceptions on}
        exit(huge_double*huge_double);
+{$pop}
      if x<-7.10475860073943942030E+0002 then
+{$push}
+{$checkfpuexceptions on}
        exit(-(huge_double*huge_double));
+{$pop}
      temp:=exp(x);
      if temp=1 then
        exit(x);
@@ -1387,24 +1405,32 @@ function tanh(x : Single) : Single;
   var
     tmp:ValReal;
   begin
-    if x < 0 then begin
-      tmp:=exp(2*x);
-      if tmp=1 then
-        exit(x);
+    if abs(x)>10 then
+      begin
+        result:=sign(x);
+        exit;
+      end;
+
+    if x < 0 then
+      begin
+        tmp:=exp(2*x);
+        if tmp=1 then
+          exit(x);
 {$push}
 {$safefpuexceptions on}
-      result:=(tmp-1)/(1+tmp)
+        result:=(tmp-1)/(1+tmp)
 {$pop}
-    end
-    else begin
-      tmp:=exp(-2*x);
-      if tmp=1 then
-        exit(x);
+      end
+    else
+      begin
+        tmp:=exp(-2*x);
+        if tmp=1 then
+          exit(x);
 {$push}
 {$safefpuexceptions on}
-      result:=(1-tmp)/(1+tmp)
+        result:=(1-tmp)/(1+tmp)
 {$pop}
-    end;
+      end;
   end;
 {$ENDIF}
 
@@ -1414,22 +1440,30 @@ function tanh(x : Double) : Double;
   var
     tmp:ValReal;
   begin
-    if x < 0 then begin
-      tmp:=exp(2*x);
-      if tmp=1 then
-        exit(x);
+    if abs(x)>20 then
+      begin
+        result:=sign(x);
+        exit;
+      end;
+
+    if x < 0 then
+      begin
+        tmp:=exp(2*x);
+        if tmp=1 then
+          exit(x);
 {$push}
 {$safefpuexceptions on}
-      result:=(tmp-1)/(1+tmp)
+        result:=(tmp-1)/(1+tmp)
 {$pop}
-    end
-    else begin
-      tmp:=exp(-2*x);
-      if tmp=1 then
-        exit(x);
+      end
+    else
+      begin
+        tmp:=exp(-2*x);
+        if tmp=1 then
+          exit(x);
 {$push}
 {$safefpuexceptions on}
-      result:=(1-tmp)/(1+tmp)
+        result:=(1-tmp)/(1+tmp)
 {$pop}
     end;
   end;
@@ -1441,18 +1475,26 @@ function tanh(x : Extended) : Extended;
   var
     tmp:Extended;
   begin
-    if x < 0 then begin
-      tmp:=exp(2*x);
-      if tmp=1 then
-        exit(x);
-      result:=(tmp-1)/(1+tmp)
-    end
-    else begin
-      tmp:=exp(-2*x);
-      if tmp=1 then
-        exit(x);
-      result:=(1-tmp)/(1+tmp)
-    end;
+    if abs(x)>25 then
+      begin
+        result:=sign(x);
+        exit;
+      end;
+
+    if x < 0 then
+      begin
+        tmp:=exp(2*x);
+        if tmp=1 then
+          exit(x);
+        result:=(tmp-1)/(1+tmp)
+      end
+    else
+      begin
+        tmp:=exp(-2*x);
+        if tmp=1 then
+          exit(x);
+        result:=(1-tmp)/(1+tmp)
+      end;
   end;
 {$ENDIF}
 
@@ -1466,6 +1508,7 @@ begin
   //SecH = 2 / (e^X + e^-X)
   Ex:=Exp(X);
 {$push}
+{$checkfpuexceptions on}
 {$safefpuexceptions on}
   SecH:=2/(Ex+1/Ex);
 {$pop}
@@ -1480,6 +1523,7 @@ var
 begin
   Ex:=Exp(X);
 {$push}
+{$checkfpuexceptions on}
 {$safefpuexceptions on}
   SecH:=2/(Ex+1/Ex);
 {$pop}
@@ -1505,6 +1549,7 @@ begin
   //CscH = 2 / (e^X - e^-X)
   Ex:=Exp(X);
 {$push}
+{$checkfpuexceptions on}
 {$safefpuexceptions on}
   CscH:=2/(Ex-1/Ex);
 {$pop}
@@ -1519,6 +1564,7 @@ var
 begin
   Ex:=Exp(X);
 {$push}
+{$checkfpuexceptions on}
 {$safefpuexceptions on}
   CscH:=2/(Ex-1/Ex);
 {$pop}
@@ -1546,6 +1592,7 @@ begin
     if e2=1 then
       exit(1/x);
 {$push}
+{$checkfpuexceptions on}
 {$safefpuexceptions on}
     result:=(1+e2)/(e2-1)
 {$pop}
@@ -1555,6 +1602,7 @@ begin
     if e2=1 then
       exit(1/x);
 {$push}
+{$checkfpuexceptions on}
 {$safefpuexceptions on}
     result:=(1+e2)/(1-e2)
 {$pop}
@@ -1573,6 +1621,7 @@ begin
     if e2=1 then
       exit(1/x);
 {$push}
+{$checkfpuexceptions on}
 {$safefpuexceptions on}
     result:=(1+e2)/(e2-1)
 {$pop}
@@ -1582,6 +1631,7 @@ begin
     if e2=1 then
       exit(1/x);
 {$push}
+{$checkfpuexceptions on}
 {$safefpuexceptions on}
     result:=(1+e2)/(1-e2)
 {$pop}
@@ -1959,7 +2009,7 @@ begin
       else
         res:=0;
       exit;
-    end; 
+    end;
   res:=1;
   while exponent<>0 do
     begin
