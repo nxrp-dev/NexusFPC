@@ -773,9 +773,10 @@ begin
       ct_itzybitzy_rp2040,
       ct_tiny_2040,
       ct_qtpy_rp2040,
-      ct_waveshare_pi_zero,
+      ct_rp2040_pi_zero,
       ct_rp2350,
       ct_rppico2,
+      ct_rp2350_pi_zero,
       ct_thumb2bare:
         begin
          with embedded_controllers[current_settings.controllertype] do
