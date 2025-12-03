@@ -118,6 +118,7 @@ NR_EAPSR = tregister($0500001A);
 NR_PSR = tregister($0500001B);
 NR_MSP = tregister($0500001C);
 NR_PSP = tregister($0500001D);
+NR_PSPLIM = tregister($0500002A);
 NR_PRIMASK = tregister($0500001E);
 NR_BASEPRI = tregister($0500001F);
 NR_BASEPRI_MAX = tregister($05000020);

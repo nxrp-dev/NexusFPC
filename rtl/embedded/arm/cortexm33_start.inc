@@ -19,16 +19,18 @@ asm
    b .Lloop
 end;
 
-procedure Startup; assembler; nostackframe; [public, alias: '_START'];
+procedure Startup; assembler; nostackframe; noreturn; [public, alias: '_START'];
 asm
   ldr r0, .Ltext_start
 {$ifdef REMAP_VECTTAB}
   ldr r1, .Lvtor
   str r0, [r1]
 {$endif REMAP_VECTTAB}
-  ldmia r0!, {r1, r2}
+  ldmia r0!, {r1, r2} // r1=stack pointer, r2=entry point
   msr msp, r1
-//  bx r2
+  mov r2, #0x800
+  sub r1,r1,r2
+  msr psp, r1         // set psp = msp - 2048 bytes
 // copy ram consts
   ldr r1,.L_etext
   ldr r2,.L_data
@@ -40,7 +42,7 @@ asm
   strls r0,[r2],#4
   bls .Lcopyloop
 
-  // clear onboard ram
+// clear onboard ram
   ldr r1,.L_bss_start
   ldr r2,.L_bss_end
   mov r0,#0
@@ -49,18 +51,20 @@ asm
   itt ls
   strls r0,[r1],#4
   bls .Lzeroloop
-// habilita a FPU
+// enable coprocessors
   ldr r0, .L_CPACR
-  ldr r1, [r0]          //;  valor atual do CPACR
-//  orr r1, r1, #0xF00000 //; Habilita CP10 e CP11 (acesso completo a FPU)
+  ldr r1, [r0]
+//  orr r1, r1, #0xF00000 //; Enables CP10 and CP11 (FPU)
   orr r1, r1, #0xFFFFFF //; Enables all coprocessors
-  str r1, [r0]          //; Escreve de volta no CPACR
-
+  str r1, [r0]          //; writes to CPACR
+  mov r0, #6
+  msr CONTROL, r0       // enables PSP as SP and FPU context
+  isb
   bl PASCALMAIN
   b HaltProc
 
 .L_CPACR:
-  .long 0xE000ED88   //; Endereco do registrador CPACR
+  .long 0xE000ED88
 
 .L_bss_start:
   .long _bss_start

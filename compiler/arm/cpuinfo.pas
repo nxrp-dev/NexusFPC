@@ -526,11 +526,12 @@ Type
       ct_itzybitzy_rp2040,
       ct_tiny_2040,
       ct_qtpy_rp2040,
-      ct_waveshare_pi_zero,
+      ct_rp2040_pi_zero,
 
       { Raspberry pi pico2 (rp2350) }
       ct_rp2350,
       ct_rppico2,
+      ct_rp2350_pi_zero,
 
       // generic Thumb2 target
       ct_thumb2bare
@@ -1070,11 +1071,12 @@ Const
       (controllertypestr:'ITZYBITZY_RP2040'  ; controllerunitstr:'RP2040'; cputype:cpu_armv6m; fputype:fpu_soft; flashbase:$10000000; flashsize:$00400000;      srambase:$20000000; sramsize:$00042000),
       (controllertypestr:'QTPY_RP2040'       ; controllerunitstr:'RP2040'; cputype:cpu_armv6m; fputype:fpu_soft; flashbase:$10000000; flashsize:$00400000;      srambase:$20000000; sramsize:$00042000),
       (controllertypestr:'TINY_2040'         ; controllerunitstr:'RP2040'; cputype:cpu_armv6m; fputype:fpu_soft; flashbase:$10000000; flashsize:$00800000;      srambase:$20000000; sramsize:$00042000),
-      (controllertypestr:'WAVESHARE_PI_ZERO' ; controllerunitstr:'RP2040'; cputype:cpu_armv6m; fputype:fpu_soft; flashbase:$10000000; flashsize:$01000000;      srambase:$20000000; sramsize:$00042000),
+      (controllertypestr:'RP2040_PI_ZERO' ; controllerunitstr:'RP2040'; cputype:cpu_armv6m; fputype:fpu_soft; flashbase:$10000000; flashsize:$01000000;      srambase:$20000000; sramsize:$00042000),
 
       { Raspberry rp2350 }
       (controllertypestr:'RP2350'          ; controllerunitstr:'RP2350'; cputype:cpu_armv7m; fputype:fpu_fpv5_sp_d16; flashbase:$10000000; flashsize:$00000000; srambase:$20000000; sramsize:$00082000),
       (controllertypestr:'RASPI_PICO2'     ; controllerunitstr:'RP2350'; cputype:cpu_armv7m; fputype:fpu_fpv5_sp_d16; flashbase:$10000000; flashsize:$00400000; srambase:$20000000; sramsize:$00082000),
+      (controllertypestr:'RP2350_PI_ZERO'  ; controllerunitstr:'RP2350'; cputype:cpu_armv7m; fputype:fpu_fpv5_sp_d16; flashbase:$10000000; flashsize:$01000000; srambase:$20000000; sramsize:$00082000),
 
       { Bare bones }
       (controllertypestr:'THUMB2_BARE';	controllerunitstr:'THUMB2_BARE';	cputype:cpu_armv7m; fputype:fpu_soft; flashbase:$00000000;	flashsize:$00002000;	srambase:$20000000;	sramsize:$00000400)

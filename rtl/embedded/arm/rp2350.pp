@@ -868,8 +868,14 @@ var
   VREGANDCHIPRESET : TVREGANDCHIPRESET_Registers absolute VREG_AND_CHIP_RESET_BASE;
 
 *)
+
+var
+  tics: longword;
+
 implementation
 
+procedure SVC_Handler; external name 'SVC_Handler';
+procedure SysTick_Handler; external name 'Systick_Handler';
 procedure TIMER0_IRQ_0_Handler; external name 'TIMER0_IRQ_0_Handler';
 procedure TIMER0_IRQ_1_Handler; external name 'TIMER0_IRQ_1_Handler';
 procedure TIMER0_IRQ_2_Handler; external name 'TIMER0_IRQ_2_Handler';
@@ -931,22 +937,38 @@ procedure HardFault_Handler; assembler; nostackframe;
 asm
   bkpt #0000
 end;
-
+(*
 procedure SVC_Handler; assembler; nostackframe;
 asm
-  bkpt #0000
+  mrs r12, psp
+  ldr r0,[r12,#24]
+  ldrb r0,[r0, #-2]  // r0 has svc number
+  stmdb r12!, {r4, r5, r6, r7, r8, r9, r10, r11}
+  ldmia r12!, {r4, r5, r6, r7, r8, r9, r10, r11}
+//  bkpt #0000
 end;
-
+*)
 procedure PendSV_Handler; assembler; nostackframe;
 asm
   bkpt #0000
 end;
-
+(*
 procedure SysTick_Handler; assembler; nostackframe;
 asm
-  bkpt #0000
-end;
+  mrs r12, psp
+  stmdb r12!, {r4, r5, r6, r7, r8, r9, r10, r11}
+//  mrs     r0,PSPLIM
+.balign 4
+  .long 0x800BF3EF
+  stmdb r12!, {r0}
 
+  ldmia r12!, {r0}
+//  msr     PSPLIM, r0
+.balign 4
+  .long 0x880BF380
+  ldmia r12!, {r4, r5, r6, r7, r8, r9, r10, r11}
+end;
+*)
 {$I cortexm33_start.inc}
 
 procedure Vectors; assembler; nostackframe; public name '_vectors';
