@@ -1604,6 +1604,12 @@ implementation
                           p1:=csubscriptnode.create(sym,p1);
                         end;
                    end;
+                 symrefsym:
+                   begin
+                     do_member_read(structh,getaddr,tsymrefsym(sym).fieldvs,p1,again,callflags,spezcontext);
+                     structh:=tabstractrecorddef(tsymrefsym(sym).fieldvs.vardef);
+                     do_member_read(structh,getaddr,tsymrefsym(sym).ref,p1,again,callflags,spezcontext);
+                   end;
                  propertysym:
                    begin
                       if isclassref and not (sp_static in sym.symoptions) then
@@ -2611,7 +2617,10 @@ implementation
                                end
                              else
                                begin
-                                 Message1(sym_e_id_no_member,orgpattern);
+                                 if oo_composites_generic in tabstractrecorddef(p1.resultdef).objectoptions then
+                                   erroroutp1:=true
+                                 else
+                                   Message1(sym_e_id_no_member,orgpattern);
                                  { try to clean up }
                                  consume(_ID);
                                end;
@@ -3057,7 +3066,8 @@ implementation
           staticvarsym,
           localvarsym,
           paravarsym,
-          fieldvarsym :
+          fieldvarsym,
+          symrefsym :
             begin
               { check if we are reading a field of an object/class/   }
               { record. is_member_read() will deal with withsymtables }
