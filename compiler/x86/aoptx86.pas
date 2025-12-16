@@ -16557,9 +16557,9 @@ unit aoptx86;
 
                 if (
                     SetAndTest(
-                      (
-                        not RegUsedAfterInstruction(taicpu(p).oper[1]^.reg, hp1, TmpUsedRegs) and
-                        not RegUsedAfterInstruction(NR_DEFAULTFLAGS, hp1, TmpUsedRegs)
+                      not (
+                        RegInUsedRegs(NR_DEFAULTFLAGS, TmpUsedRegs) or
+                        RegUsedAfterInstruction(taicpu(p).oper[1]^.reg, hp1, TmpUsedRegs)
                       ),
                       DoAddMov2Lea
                     ) or
@@ -16839,8 +16839,10 @@ unit aoptx86;
                 if (
                     SetAndTest(
                       (
-                        not RegUsedAfterInstruction(taicpu(p).oper[1]^.reg, hp1, TmpUsedRegs) and
-                        not RegUsedAfterInstruction(NR_DEFAULTFLAGS, hp1, TmpUsedRegs)
+                        not (
+                          RegInUsedRegs(NR_DEFAULTFLAGS, TmpUsedRegs) or
+                          RegUsedAfterInstruction(taicpu(p).oper[1]^.reg, hp1, TmpUsedRegs)
+                        )
                       ),
                       DoSubMov2Lea
                     ) or
