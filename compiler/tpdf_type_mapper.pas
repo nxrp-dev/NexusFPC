@@ -28,7 +28,8 @@ interface
 
 uses
   cclasses,
-  symdef;
+  symdef,
+  symtype;
 
 type
   { Type ID mapping entry }

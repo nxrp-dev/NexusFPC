@@ -28,6 +28,9 @@ interface
 
 uses
   cclasses,
+  aasmtai, aasmdata,
+  systems,
+  symbase,symconst,symtype,symdef,symsym,
   DbgBase,
   tpdf_type_mapper,
   ogopdf, opdf_io, opdf_demangle;
@@ -84,9 +87,6 @@ type
     );
 
 implementation
-
-uses
-  symdef, symbase;
 
 constructor TOPDFDebugWriter.Create;
 begin
