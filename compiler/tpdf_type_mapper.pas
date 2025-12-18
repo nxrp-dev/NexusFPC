@@ -1,5 +1,5 @@
 {
-    Copyright (c) 2025 by Free Pascal Team
+    Copyright (c) 2025 by Graeme Geldenhuys
 
     This unit contains the type mapping functionality for OPDF debug format.
     Maps FPC's type definitions (TDef hierarchy) to OPDF type records.

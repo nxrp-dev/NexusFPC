@@ -1,5 +1,5 @@
 {
-    Copyright (c) 2025 by Free Pascal Team
+    Copyright (c) 2025 by Graeme Geldenhuys
 
     This unit contains OPDF debug format support for the FPC compiler.
     OPDF (Object Pascal Debug Format) is an alternative to DWARF and STABS.
@@ -30,7 +30,7 @@ uses
   cclasses,
   DbgBase,
   tpdf_type_mapper,
-  ogopdf, opdf_io;
+  ogopdf, opdf_io, opdf_demangle;
 
 type
   { OPDF Debug Format Writer }

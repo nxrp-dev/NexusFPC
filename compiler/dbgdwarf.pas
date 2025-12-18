@@ -45,8 +45,7 @@ interface
       aasmbase,aasmtai,aasmdata,
       symbase,symconst,symtype,symdef,symsym,
       finput,
-      DbgBase, dbgdwarfconst,
-      ogopdf, opdf_io, opdf_demangle;
+      DbgBase, dbgdwarfconst;
 
     type
       {$ifdef avr}
