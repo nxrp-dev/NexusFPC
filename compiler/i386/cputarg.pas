@@ -142,6 +142,9 @@ implementation
   {$ifndef NoDbgDwarf}
       ,dbgdwarf
   {$endif NoDbgDwarf}
+  {$ifndef NoDbgOpdf}
+      ,dbgopdf
+  {$endif NoDbgOpdf}
 
       ;
 
