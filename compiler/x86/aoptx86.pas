@@ -11585,15 +11585,28 @@ unit aoptx86;
                     MatchOpType(taicpu(hp1), top_reg, top_reg) and
                     SuperRegistersEqual(taicpu(p).oper[1]^.reg, taicpu(hp1).oper[0]^.reg) then
                     begin
-                      UpdateUsedRegsBetween(TmpUsedRegs, tai(hp2.Next), hp1);
+                      UpdateUsedRegsBetween(TmpUsedRegs, hp2, hp1);
 
-                      taicpu(hp1).opsize := S_L;
-                      taicpu(hp1).loadreg(0, taicpu(p).oper[0]^.reg);
-                      setsubreg(taicpu(hp1).oper[1]^.reg, R_SUBD);
+                      if SuperRegistersEqual(taicpu(p).oper[0]^.reg, taicpu(hp1).oper[1]^.reg) then
+                        begin
+                          { Will become "movl %reg,%reg" otherwise }
+                          AllocRegBetween(taicpu(p).oper[0]^.reg, p, hp1, UsedRegs);
+                          DebugMsg(SPeepholeOptimization + 'Made 32-to-64-bit zero extension more efficient (MovlMovq2MovlNop 1)', hp1);
 
-                      AllocRegBetween(taicpu(p).oper[0]^.reg, p, hp1, TmpUsedRegs);
+                          { Make sure hp1 is set to something valid after the original is removed }
+                          hp2 := tai(hp1.Previous);
+                          RemoveInstruction(hp1);
+                          hp1 := hp2;
+                        end
+                      else
+                        begin
+                          taicpu(hp1).opsize := S_L;
+                          taicpu(hp1).loadreg(0, taicpu(p).oper[0]^.reg);
+                          setsubreg(taicpu(hp1).oper[1]^.reg, R_SUBD);
 
-                      DebugMsg(SPeepholeOptimization + 'Made 32-to-64-bit zero extension more efficient (MovlMovq2MovlMovl 1)', hp1);
+                          AllocRegBetween(taicpu(p).oper[0]^.reg, p, hp1, UsedRegs);
+                          DebugMsg(SPeepholeOptimization + 'Made 32-to-64-bit zero extension more efficient (MovlMovq2MovlMovl 1)', hp1);
+                        end;
 
                       if not RegUsedAfterInstruction(taicpu(p).oper[1]^.reg, hp1, TmpUsedRegs) then
                         begin
@@ -16544,9 +16557,9 @@ unit aoptx86;
 
                 if (
                     SetAndTest(
-                      (
-                        not RegUsedAfterInstruction(taicpu(p).oper[1]^.reg, hp1, TmpUsedRegs) and
-                        not RegUsedAfterInstruction(NR_DEFAULTFLAGS, hp1, TmpUsedRegs)
+                      not (
+                        RegInUsedRegs(NR_DEFAULTFLAGS, TmpUsedRegs) or
+                        RegUsedAfterInstruction(taicpu(p).oper[1]^.reg, hp1, TmpUsedRegs)
                       ),
                       DoAddMov2Lea
                     ) or
@@ -16557,14 +16570,14 @@ unit aoptx86;
                     { Change the MOV instruction to a LEA instruction, and update the
                       first operand }
 
+                    if MatchOperand(taicpu(hp1).oper[0]^,taicpu(hp1).oper[1]^.reg) then
+                      { All "mov %reg,%reg" instructions should have been removed }
+                      InternalError(2025091301);
+
                     reference_reset(NewRef, 1, []);
                     NewRef.base := taicpu(p).oper[1]^.reg;
                     NewRef.scalefactor := 1;
-                    { if the destination reg is the same as the ADD register,
-                      and we keep the ADD instruction, do not add the offset
-                      to LEA instruction, otherwise the reg gets increased by 2 times the offset value }
-                    if DoAddMov2Lea or not MatchOperand(taicpu(hp1).oper[0]^,taicpu(hp1).oper[1]^.reg) then
-                      NewRef.offset := asizeint(taicpu(p).oper[0]^.val);
+                    NewRef.offset := asizeint(taicpu(p).oper[0]^.val);
 
                     taicpu(hp1).opcode := A_LEA;
                     taicpu(hp1).loadref(0, NewRef);
@@ -16826,8 +16839,10 @@ unit aoptx86;
                 if (
                     SetAndTest(
                       (
-                        not RegUsedAfterInstruction(taicpu(p).oper[1]^.reg, hp1, TmpUsedRegs) and
-                        not RegUsedAfterInstruction(NR_DEFAULTFLAGS, hp1, TmpUsedRegs)
+                        not (
+                          RegInUsedRegs(NR_DEFAULTFLAGS, TmpUsedRegs) or
+                          RegUsedAfterInstruction(taicpu(p).oper[1]^.reg, hp1, TmpUsedRegs)
+                        )
                       ),
                       DoSubMov2Lea
                     ) or
@@ -16837,14 +16852,15 @@ unit aoptx86;
                   begin
                     { Change the MOV instruction to a LEA instruction, and update the
                       first operand }
+
+                    if MatchOperand(taicpu(hp1).oper[0]^,taicpu(hp1).oper[1]^.reg) then
+                      { All "mov %reg,%reg" instructions should have been removed }
+                      InternalError(2025091302);
+
                     reference_reset(NewRef, 1, []);
                     NewRef.base := taicpu(p).oper[1]^.reg;
                     NewRef.scalefactor := 1;
-                    { if the destination reg is the same as the SUB register,
-                      and we keep the ADD instruction, do not substract the offset
-                      to LEA instruction, otherwise the reg gets decreased by 2 times the offset value }
-                    if DoSubMov2Lea or not MatchOperand(taicpu(hp1).oper[0]^,taicpu(hp1).oper[1]^.reg) then
-                       NewRef.offset := -taicpu(p).oper[0]^.val;
+                    NewRef.offset := -taicpu(p).oper[0]^.val;
 
                     taicpu(hp1).opcode := A_LEA;
                     taicpu(hp1).loadref(0, NewRef);
