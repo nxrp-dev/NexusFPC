@@ -988,11 +988,17 @@ end;
 function ReadVideoMode(F: PResourceFile;var NewScreenMode : TVideoMode): boolean;
 var
   OK,test : boolean;
+  DV : Longword;
 begin
   test:=F^.ReadResourceEntry(resVideo,langDefault,NewScreenMode,
     sizeof(NewScreenMode));
   if not test then
     NewScreenMode:=ScreenMode;
+  ReadVersion(F,DV);
+  if DV<=$000A then with NewScreenMode do
+  begin
+     DummyFiller[1]:=0;DummyFiller[2]:=0;DummyFiller[3]:=0; {initialize to zero if not version $000B or higher}
+  end;
   OK:=test;
   if OK=false then
     ErrorBox(msg_errorreadingvideomode,nil);
