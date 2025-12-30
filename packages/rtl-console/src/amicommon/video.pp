@@ -923,35 +923,114 @@ begin
 end;
 
 function SysGetVideoModeCount: Word;
+var WinW,WinH : Integer;
+    ScreenW,ScreenH : Integer;
+    Screen: PScreen;
+    Count : Word;
 begin
   {$if defined(AMIGA_V1_2_ONLY)}
   SysGetVideoModeCount := 1;
   {$else}
-  SysGetVideoModeCount := 2;
+  { current dimensions }
+  WinW:=LastW;
+  WinH:=LastH;
+  { screen dimensions }
+  Screen := LockPubScreen('Workbench');
+  ScreenW := Screen^.Width div VideoFontWidth;
+  ScreenH := Screen^.Height div VideoFontHeight;
+  UnlockPubScreen('Workbench', Screen);
+
+  { There should came out 2 or 3 modes in total:
+     1. 80x25
+     2. current if different from 80x25
+     3. full screen }
+
+  Count:=1;  { assume 80x25 is available}
+
+  if (WinW<>80) and (WinH<>25) then
+    inc(Count);
+
+  if (SavedLastW>0) and (SavedLastH>0) then
+    if (SavedLastW<>80) and (SavedLastH<>25) then
+      if (SavedLastW<>WinW) and (SavedLastH<>WinH) then
+       if (SavedLastW<>ScreenW) and (SavedLastH<>ScreenH) then
+         inc(Count);
+
+  if (ScreenW<>80) and (ScreenH<>25) then
+    if (WinW<>ScreenW) and (WinH<>ScreenH) then
+      inc(Count);
+
+  SysGetVideoModeCount := Count;
   {$endif}
 end;
 
 function SysGetVideoModeData(Index: Word; var Mode: TVideoMode): Boolean;
 var
    Screen: PScreen;
+   WinW,WinH : Integer;
+   ScreenW,ScreenH : Integer;
 begin
+{$ifdef AMIGA_V1_2_ONLY}
+  Mode.Col := 80;
+  Mode.Row := 25;
+  Mode.Color := True;
+  Mode.FullScreen := True;
+{$else}
+  { current dimensions }
+  WinW:=LastW;
+  WinH:=LastH;
+
+  { screen dimensions }
+  Screen := LockPubScreen('Workbench');
+  ScreenW := Screen^.Width div VideoFontWidth;
+  ScreenH := Screen^.Height div VideoFontHeight;
+  UnlockPubScreen('Workbench', Screen);
+
   case Index of
     0: begin
          Mode.Col := 80;
          Mode.Row := 25;
-         Mode.Color := True;
+         Mode.FullScreen := (ScreenW=80) and (ScreenH=25);
        end;
-    {$if not defined(AMIGA_V1_2_ONLY)}
-    1: begin
-        Screen := LockPubScreen('Workbench');
-        Mode.Col := Screen^.Width div VideoFontWidth;
-        Mode.Row := Screen^.Height div VideoFontHeight;
-        UnlockPubScreen('Workbench', Screen);
-        Mode.Color := False;
-      end;
-    {$endif}
+    else
+       begin
+         { current mode ? }
+         if (WinW<>80) and (WinH<>25) then
+           begin
+             dec(Index);
+             Mode.Col := WinW;
+             Mode.Row := WinH;
+             Mode.FullScreen := (ScreenW=WinW) and (ScreenH=WinH);
+           end;
+
+         { mode before entering full screen ? }
+         if Index>0 then
+           if (SavedLastW>0) and (SavedLastH>0) then
+             if (SavedLastW<>80) and (SavedLastH<>25) then
+               if (SavedLastW<>WinW) and (SavedLastH<>WinH) then
+                 if (SavedLastW<>ScreenW) and (SavedLastH<>ScreenH) then
+                   begin
+                     dec(Index);
+                     Mode.Col := SavedLastW;
+                     Mode.Row := SavedLastH;
+                     Mode.FullScreen := false;
+                   end;
+
+         { full screen ? }
+         if Index>0 then
+           if (ScreenW<>80) and (ScreenH<>25) then
+             if (WinW<>ScreenW) and (WinH<>ScreenH) then
+               begin
+                 dec(Index);
+                 Mode.Col := ScreenW;
+                 Mode.Row := ScreenH;
+                 Mode.FullScreen := true;
+               end;
+       end;
   end;
-  SysGetVideoModeData := True;
+  Mode.Color:=true; { we set colors to true, but it can be false and it works too }
+  SysGetVideoModeData := (Index=0);
+{$endif}
 end;
 
 
