@@ -107,6 +107,7 @@ begin
       Mode.color:=ScreenMode.Color;
       Mode.col:=x;
       Mode.row:=y;
+      {$IFDEF HASAMIGA}Mode.FullScreen:=false;{$ENDIF}
       SetScreenVideoMode(Mode);
       UpdateRecentFileList; {ensure file menu not go over screen}
       Redraw;

@@ -77,7 +77,6 @@ uses
 
 procedure SysUpdateScreen(Force: Boolean); forward;
 
-{$i video.inc}
 
 {$i videodata.inc}
 
@@ -87,6 +86,8 @@ const
 var
   OS_Screen             : PScreen   = nil;    // Holds optional screen pointer
   FPC_VIDEO_FULLSCREEN  : Boolean   = False;  // Global that defines when we need to attempt opening on own screen
+
+{$i video.inc}
 
 var
   VideoColorMap         : PColorMap;
@@ -117,6 +118,7 @@ var
   GotInactiveWindowMsg  : Boolean;
   LastL, LastT: Integer;
   LastW, LastH: Integer;
+  SavedLastW, SavedLastH: Integer;
   WindowForReqSave: PWindow;
   Process: PProcess;
 
@@ -362,7 +364,6 @@ begin
     // borders or titlebar as intended.
     ScreenWidth := VideoWindow^.GZZWidth div VideoFontWidth;
     ScreenHeight := VideoWindow^.GZZHeight div VideoFontHeight;
-    ScreenColor := False;
 
     {$ifdef VIDEODEBUG}
     Writeln('DEBUG: Fullscreen - windowed - Width * Height = ',ScreenWidth,' * ',ScreenHeight);
@@ -371,7 +372,6 @@ begin
   begin
     ScreenWidth := LastW;
     ScreenHeight := LastH;
-    ScreenColor := True;
   end;
   {$ifdef WITHBUFFERING}
   BufRp^.Bitmap := AllocBitmap(VideoWindow^.Width, VideoWindow^.Height, VideoWindow^.RPort^.Bitmap^.Depth, BMF_CLEAR, VideoWindow^.RPort^.Bitmap);
@@ -537,17 +537,20 @@ var
   dx: integer;
   dy: integer;
 begin
-  if ScreenColor <> Mode.Color then
+  if (SavedLastW<>LastW) and (SavedLastH<>LastH) then
+  begin
+    SavedLastW:=LastW;
+    SavedLastH:=LastH;
+  end;
+  if FPC_VIDEO_FULLSCREEN <> Mode.FullScreen then
   begin
     SysDoneVideo;
-    FPC_VIDEO_FULLSCREEN := not Mode.color;
+    FPC_VIDEO_FULLSCREEN := Mode.FullScreen;
     if not FPC_VIDEO_FULLSCREEN then
     begin
-      LastT := 50;
-      LastL := 50;
-
-      LastW := 80;
-      LastH := 25;
+      LastW := Mode.col;
+      LastH := Mode.row;
+      ScreenColor := Mode.Color;
     end;
     SysInitVideo;
   end else
@@ -1018,6 +1021,7 @@ initialization
   LastL := 50;
   LastW := 80;
   LastH := 25;
+  ScreenColor := True; { By default assume we have colors, if false then no colors shown. }
   {$ifdef WITHBUFFERING}
   BufRp := CreateRastPort;
   BufRp^.Layer := nil;

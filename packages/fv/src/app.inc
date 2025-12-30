@@ -287,6 +287,9 @@ TYPE
       PROCEDURE InitStatusLine; Virtual;
       PROCEDURE SetScreenMode (Mode: Word);
       PROCEDURE SetScreenVideoMode(const Mode: TVideoMode);
+{$IFDEF HASAMIGA}
+      PROCEDURE ToggleFullScreen; platform;
+{$ENDIF}
       PROCEDURE PutEvent (Var Event: TEvent); Virtual;
       PROCEDURE GetEvent (Var Event: TEvent); Virtual;
       PROCEDURE HandleEvent (Var Event: TEvent); Virtual;
@@ -1018,6 +1021,32 @@ begin
   ShowMouse;
 end;
 
+{$IFDEF HASAMIGA}
+{--TProgram-----------------------------------------------------------------}
+{  ToggleFullScreen -> Platforms AROS  - Updated 28Dec2025 M                }
+{---------------------------------------------------------------------------}
+PROCEDURE TProgram.ToggleFullScreen;
+Var CurVM,VM,NextVM: TVideoMode;
+   i : Sw_Integer;
+BEGIN
+   NextVM.Row:=0;
+   NextVM.Col:=0;
+   NextVM.Color:=false;
+   for i:=0 to GetVideoModeCount-1 do
+   begin
+      GetVideoModeData(i,VM);
+      if (VM.Row=ScreenMode.Row) and (VM.Col=ScreenMode.Col) and
+         (VM.Color=ScreenMode.Color) and
+         (VM.FullScreen=ScreenMode.FullScreen) then
+       CurVM:=VM
+      else NextVM:=VM; { Last, that is not current, is our next video mode.
+                 Simplified choice making, but at times it might be wrong. M. }
+   end;
+   if (NextVM.Row>0) and (NextVM.Col>0) then
+     SetScreenVideoMode(NextVM);
+END;
+{$ENDIF}
+
 {--TProgram-----------------------------------------------------------------}
 {  PutEvent -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 12Sep97 LdB          }
 {---------------------------------------------------------------------------}
@@ -1045,6 +1074,17 @@ BEGIN
              if Event.keyCode = kbAltF12 then
                ReDraw;
            End;
+{$IFDEF HASAMIGA}
+         { On Amiga-like systems we handle Window manually and switching
+           to full screen on and off is up to us. It has to be done before
+           reaching normal FV event handler. (M) }
+         { Alt-Enter - toggle full screen. }
+         If (Event.What=evKeyDown) and (Event.KeyCode=kbEnter) and (Event.KeyShift and 8 <>0) Then
+           Begin                                                                    {  ^--kbAlt }
+             ToggleFullScreen;
+             ClearEvent(Event);
+           End;
+{$ENDIF}
          If (Event.What = evNothing) Then Begin       { No mouse event }
 {$ifdef FV_UNICODE}
            {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}Udrivers.GetMouseEvent(Event);              { Load mouse event }
@@ -1287,6 +1327,7 @@ begin
       Mode.color:=ScreenMode.Color;
       Mode.col:=x;
       Mode.row:=y;
+      {$IFDEF HASAMIGA}Mode.FullScreen:=false;{$ENDIF}
       SetScreenVideoMode(Mode);
       Redraw;
     end;

@@ -1164,6 +1164,7 @@ begin
              VM.Col:=Col;
              VM.Row:=Row;
              VM.Color:=Color;
+             {$IFDEF HASAMIGA}VM.FullScreen:=FullScreen;{$ENDIF}
            end;
          if (VM.Col<>ScreenMode.Col) or (VM.Row<>ScreenMode.Row) or (VM.Color<>ScreenMode.Color) then
            Begin
