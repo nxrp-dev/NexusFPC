@@ -302,6 +302,12 @@ begin
   VideoFont:=@vgafont;
   VideoFontHeight:=16;
   VideoFontWidth:=8;
+
+{$ifdef AROS}
+  VideoFont:=@vgafont24DejaVuSansMono;
+  VideoFontHeight:=24;
+  VideoFontWidth:=14;
+{$endif}
   {$endif}
   if GetVar('FPC_VIDEO_BUILTINFONT',@envBuf,sizeof(envBuf),0) > -1 then
     begin
