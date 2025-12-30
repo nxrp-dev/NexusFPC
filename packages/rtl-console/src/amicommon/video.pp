@@ -123,6 +123,11 @@ var
   CharPointers: array[0..255] of Pointer;
   SrcMod: Integer = 1;
 
+{ SetWindowTitles seems not to copy the buffer, at least on AROS.
+  So we better keep a reference of the strings to ourselves... }
+  globWinT: AnsiString;
+  globScreenT: AnsiString;
+
 (*
   GetScreen: pScreen;
 
@@ -321,6 +326,8 @@ begin
   FillDword(OldVideoBuf^, VideoBufSize div 4, $4321BEEF);
 
   VideoWindow := GetWindow;
+  if (globWinT<>'') or (globScreenT<>'') then
+    SetWindowTitle(globWinT,globScreenT);
 
   // nice hardcode values are probably going to mess things up
   // so we need a way to determine how many characters would fit
@@ -824,12 +831,6 @@ begin
   HasInactiveWindow:=GotInactiveWindowMsg;
   GotInactiveWindowMsg:=false;
 end;
-
-{ SetWindowTitles seems not to copy the buffer, at least on AROS.
-  So we better keep a reference of the strings to ourselves... }
-var
-  globWinT: AnsiString;
-  globScreenT: AnsiString;
 
 procedure SetWindowTitle(const winTitle: AnsiString; const screenTitle: AnsiString);
 var
