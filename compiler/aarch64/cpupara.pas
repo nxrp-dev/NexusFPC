@@ -210,6 +210,13 @@ unit cpupara;
                ((varspez=vs_const) or
                 (not is_hfa(def,hfabasedef) and
                  (def.size>16))));
+          procvardef:
+            { method pointers and nested procvars are composites (two pointers),
+              treat them the same as records on aarch64-win64 for consistency }
+            result:=
+              (varspez=vs_const) and
+              (target_info.system=system_aarch64_win64) and
+              not tprocvardef(def).is_addressonly;
           setdef :
             result:=def.size>16;
           stringdef :
