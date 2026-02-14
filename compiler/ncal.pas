@@ -5628,53 +5628,40 @@ implementation
       end;
 
 
-    { this procedure removes the user code flag because it prevents optimizations }
-    function removeusercodeflag(var n : tnode; arg : pointer) : foreachnoderesult;
-      begin
-        result:=fen_false;
-        if nf_usercode_entry in n.flags then
-          begin
-            exclude(n.flags,nf_usercode_entry);
-            result:=fen_norecurse_true;
-          end;
-      end;
-
-
-    function setinlinelevel(var n:tnode; arg:pointer):foreachnoderesult;
-      begin
-        if n.nodetype=calln then
-          tcallnode(n).inlinelevel:=PtrUInt(arg);
-        result:=fen_false;
-      end;
-
-
-    { reference symbols that are imported from another unit }
-    function importglobalsyms(var n:tnode; arg:pointer):foreachnoderesult;
+    function processinlinednode(var n : tnode; arg : pointer) : foreachnoderesult;
       var
         sym : tsym;
       begin
         result:=fen_false;
-        if n.nodetype=loadn then
-          begin
-            sym:=tloadnode(n).symtableentry;
-            if sym.typ=staticvarsym then
-              begin
-                if FindUnitSymtable(tloadnode(n).symtable).moduleid<>current_module.moduleid then
-                  current_module.addimportedsym(sym);
-              end
-            else if (sym.typ=constsym) and (tconstsym(sym).consttyp in [constwresourcestring,constresourcestring]) then
-              begin
-                if tloadnode(n).symtableentry.owner.moduleid<>current_module.moduleid then
-                  current_module.addimportedsym(sym);
-              end;
-          end
-        else if (n.nodetype=calln) then
-          begin
-            if (assigned(tcallnode(n).procdefinition)) and
-               (tcallnode(n).procdefinition.typ=procdef) and
-               (findunitsymtable(tcallnode(n).procdefinition.owner).moduleid<>current_module.moduleid) then
-              current_module.addimportedsym(tprocdef(tcallnode(n).procdefinition).procsym);
-          end;
+        { remove the user code flag because it prevents optimizations }
+        exclude(n.flags,nf_usercode_entry);
+        { reference symbols that are imported from another unit }
+        case n.nodetype of
+          calln:
+            begin
+              { ...and set inlining level. }
+              tcallnode(n).inlinelevel:=tcallnode(arg).inlinelevel+1;
+              if (assigned(tcallnode(n).procdefinition)) and
+                 (tcallnode(n).procdefinition.typ=procdef) and
+                 (findunitsymtable(tcallnode(n).procdefinition.owner).moduleid<>current_module.moduleid) then
+                current_module.addimportedsym(tprocdef(tcallnode(n).procdefinition).procsym);
+            end;
+          loadn:
+            begin
+              sym:=tloadnode(n).symtableentry;
+              if sym.typ=staticvarsym then
+                begin
+                  if FindUnitSymtable(tloadnode(n).symtable).moduleid<>current_module.moduleid then
+                    current_module.addimportedsym(sym);
+                end
+              else if (sym.typ=constsym) and (tconstsym(sym).consttyp in [constwresourcestring,constresourcestring]) then
+                begin
+                  if tloadnode(n).symtableentry.owner.moduleid<>current_module.moduleid then
+                    current_module.addimportedsym(sym);
+                end;
+            end;
+          else { nothing } ;
+        end;
       end;
 
 
@@ -5713,9 +5700,7 @@ implementation
 
         { create a copy of the body and replace parameter loads with the parameter values }
         body:=tprocdef(procdefinition).inlininginfo^.code.getcopy;
-        foreachnodestatic(pm_postprocess,body,@removeusercodeflag,nil);
-        foreachnodestatic(pm_postprocess,body,@importglobalsyms,nil);
-        foreachnodestatic(pm_postprocess,body,@setinlinelevel,pointer(inlinelevel+1));
+        foreachnodestatic(pm_postprocess,body,@processinlinednode,pointer(self));
         foreachnode(pm_preprocess,body,@replaceparaload,@fileinfo);
 
         { Concat the body and finalization parts }
