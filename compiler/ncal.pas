@@ -4019,7 +4019,7 @@ implementation
       var
         candidates : tcallcandidates;
         ccflags : tcallcandidatesflags;
-        hpt: tnode;
+        hpt : tnode;
         pt : tcallparanode;
         lastpara : longint;
         paraidx,
