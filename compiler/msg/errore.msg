@@ -4230,6 +4230,7 @@ A*2CV<x>_Set section threadvar model to <x>
 *g2gw2_Generate DWARFv2 debug information
 *g2gw3_Generate DWARFv3 debug information
 *g2gw4_Generate DWARFv4 debug information (experimental)
+*g2gO_Generate OPDF debug information (experimental)
 **1i_Information
 **2ia_Return list of supported ABI targets
 **2ib_Return the used code generation backend type
