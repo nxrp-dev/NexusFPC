@@ -36,7 +36,7 @@ type
   PTypeMapEntry = ^TTypeMapEntry;
   TTypeMapEntry = record
     Def: TDef;
-    TypeID: Word;
+    TypeID: Cardinal;
   end;
 
   { Type ID allocator for OPDF debug format }
@@ -45,11 +45,11 @@ type
     { Array of type mappings }
     FTypeMap: array of TTypeMapEntry;
     { Current number of entries in map }
-    FTypeCount: Word;
+    FTypeCount: Longint;
     { Allocated capacity of array }
-    FCapacity: Word;
+    FCapacity: Longint;
     { Next available type ID }
-    FNextTypeID: Word;
+    FNextTypeID: Cardinal;
 
     { Expand the type map array }
     procedure Expand;
@@ -58,13 +58,13 @@ type
     destructor Destroy; override;
 
     { Get or allocate a unique TypeID for a definition }
-    function GetTypeID(Def: TDef): Word;
+    function GetTypeID(Def: TDef): Cardinal;
 
     { Check if a type has already been registered }
     function HasType(Def: TDef): Boolean;
 
     { Get total number of types registered }
-    function GetTypeCount: Word;
+    function GetTypeCount: Longint;
 
     { Reset all type mappings }
     procedure Clear;
@@ -93,12 +93,11 @@ end;
 
 procedure TTypeMapper.Expand;
 var
-  NewCapacity: Word;
+  NewCapacity: Longint;
 begin
-  if FCapacity >= $7FFF then
-    NewCapacity := $7FFF
-  else
-    NewCapacity := FCapacity * EXPAND_FACTOR;
+  NewCapacity := FCapacity * EXPAND_FACTOR;
+  if NewCapacity < FCapacity then
+    NewCapacity := MaxInt; { overflow protection }
 
   SetLength(FTypeMap, NewCapacity);
   FCapacity := NewCapacity;
@@ -106,7 +105,7 @@ end;
 
 function TTypeMapper.HasType(Def: TDef): Boolean;
 var
-  I: Word;
+  I: Longint;
 begin
   Result := False;
   if (Def = nil) or (FTypeCount = 0) then
@@ -122,9 +121,9 @@ begin
     end;
 end;
 
-function TTypeMapper.GetTypeID(Def: TDef): Word;
+function TTypeMapper.GetTypeID(Def: TDef): Cardinal;
 var
-  I: Word;
+  I: Longint;
 begin
   if Def = nil then
     begin
@@ -133,36 +132,28 @@ begin
     end;
 
   { Quick check: already in map? }
-  for I := 0 to FTypeCount - 1 do
-    begin
-      if FTypeMap[I].Def = Def then
-        begin
-          Result := FTypeMap[I].TypeID;
-          Exit;
-        end;
-    end;
+  if FTypeCount > 0 then
+    for I := 0 to FTypeCount - 1 do
+      begin
+        if FTypeMap[I].Def = Def then
+          begin
+            Result := FTypeMap[I].TypeID;
+            Exit;
+          end;
+      end;
 
   { Allocate new TypeID }
   if FTypeCount >= FCapacity then
     Expand;
 
-  if FNextTypeID >= High(Word) then
-    begin
-      { Exhausted TypeID space - very rare }
-      WriteLn('Warning: Type ID space exhausted.');
-      Result := High(Word);
-    end
-  else
-    begin
-      FTypeMap[FTypeCount].Def := Def;
-      FTypeMap[FTypeCount].TypeID := FNextTypeID;
-      Result := FNextTypeID;
-      Inc(FTypeCount);
-      Inc(FNextTypeID);
-    end;
+  FTypeMap[FTypeCount].Def := Def;
+  FTypeMap[FTypeCount].TypeID := FNextTypeID;
+  Result := FNextTypeID;
+  Inc(FTypeCount);
+  Inc(FNextTypeID);
 end;
 
-function TTypeMapper.GetTypeCount: Word;
+function TTypeMapper.GetTypeCount: Longint;
 begin
   Result := FTypeCount;
 end;
