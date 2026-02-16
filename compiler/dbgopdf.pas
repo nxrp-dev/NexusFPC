@@ -4,6 +4,10 @@
     This unit contains OPDF debug format support for the FPC compiler.
     OPDF (Object Pascal Debug Format) is an alternative to DWARF and STABS.
 
+    Debug data is emitted into an asm list (al_opdf) which produces an
+    .opdf ELF section in the final binary. This follows the same pattern
+    used by DWARF (dbgdwarf.pas) for label-based address resolution.
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -27,34 +31,31 @@ unit dbgopdf;
 interface
 
 uses
-  cclasses, classes,
-  sysutils,
-  aasmtai, aasmdata,
+  cclasses,
+  aasmbase, aasmtai, aasmdata,
   systems,
-  symbase,symconst,symtype,symdef,symsym,
+  symbase, symconst, symtype, symdef, symsym,
   fmodule,
   globtype,
   DbgBase,
-  tpdf_type_mapper,
-  ogopdf, opdf_io, opdf_demangle;
+  tpdf_type_mapper;
 
 type
-  { OPDF Debug Format Writer }
+  { OPDF Debug Format Writer - emits debug data into asm list }
   TOPDFDebugWriter = class(TDebugInfo)
   private
     { Type mapper for allocating type IDs }
     FTypeMapper: TTypeMapper;
-    { OPDF writer for binary output }
-    FWriter: TOPDFWriter;
-    { Output stream for OPDF file }
-    FStream: TStream;
+
+    { Emit helpers - write raw bytes into asm list }
+    procedure EmitByte(list: TAsmList; value: Byte);
+    procedure EmitWord(list: TAsmList; value: Word);
+    procedure EmitDWord(list: TAsmList; value: Cardinal);
+    procedure EmitQWord(list: TAsmList; value: QWord);
+    procedure EmitString(list: TAsmList; const S: AnsiString);
+    procedure EmitRecordHeader(list: TAsmList; recType: Byte; recSize: Cardinal);
+    procedure EmitOPDFHeader(list: TAsmList);
   protected
-    { Mark types used by all variables in a symbol table }
-    procedure MarkVariableTypesUsed(st: TSymtable);
-
-    { Initialize output stream }
-    procedure SetOutputStream(AStream: TStream);
-
     { Override TDebugInfo virtual methods for type definitions }
     procedure appenddef_ord(list: TAsmList; def: TOrdDef); override;
     procedure appenddef_float(list: TAsmList; def: TFloatDef); override;
@@ -99,107 +100,159 @@ type
 
 implementation
 
+{ OPDF format constants - must match ogopdf.pas definitions }
+const
+  OPDF_MAGIC_0 = Ord('O');
+  OPDF_MAGIC_1 = Ord('P');
+  OPDF_MAGIC_2 = Ord('D');
+  OPDF_MAGIC_3 = Ord('F');
+  OPDF_VERSION  = 1;
+
+  { Record types - must match TOPDFRecordType in ogopdf.pas }
+  REC_PRIMITIVE  = 1;
+  REC_GLOBALVAR  = 2;
+
+{ Emit helpers }
+
+procedure TOPDFDebugWriter.EmitByte(list: TAsmList; value: Byte);
+begin
+  list.concat(tai_const.Create_8bit(value));
+end;
+
+procedure TOPDFDebugWriter.EmitWord(list: TAsmList; value: Word);
+begin
+  list.concat(tai_const.Create_16bit_unaligned(value));
+end;
+
+procedure TOPDFDebugWriter.EmitDWord(list: TAsmList; value: Cardinal);
+begin
+  list.concat(tai_const.Create_32bit_unaligned(longint(value)));
+end;
+
+procedure TOPDFDebugWriter.EmitQWord(list: TAsmList; value: QWord);
+begin
+  { Emit as two 32-bit values in little-endian order }
+  list.concat(tai_const.Create_32bit_unaligned(longint(value and $FFFFFFFF)));
+  list.concat(tai_const.Create_32bit_unaligned(longint(value shr 32)));
+end;
+
+procedure TOPDFDebugWriter.EmitString(list: TAsmList; const S: AnsiString);
+var
+  i: longint;
+begin
+  for i := 1 to Length(S) do
+    list.concat(tai_const.Create_8bit(Ord(S[i])));
+end;
+
+procedure TOPDFDebugWriter.EmitRecordHeader(list: TAsmList; recType: Byte; recSize: Cardinal);
+begin
+  EmitByte(list, recType);
+  EmitDWord(list, recSize);
+end;
+
+procedure TOPDFDebugWriter.EmitOPDFHeader(list: TAsmList);
+var
+  ArchByte: Byte;
+  PtrSize: Byte;
+  i: longint;
+begin
+  { Magic: 'OPDF' (4 bytes) }
+  EmitByte(list, OPDF_MAGIC_0);
+  EmitByte(list, OPDF_MAGIC_1);
+  EmitByte(list, OPDF_MAGIC_2);
+  EmitByte(list, OPDF_MAGIC_3);
+
+  { Version (2 bytes) }
+  EmitWord(list, OPDF_VERSION);
+
+  { BuildID: 16 zero bytes (not needed for embedded sections) }
+  for i := 1 to 16 do
+    EmitByte(list, 0);
+
+  { Target architecture (1 byte) }
+{$if defined(cpu64bitaddr)}
+  ArchByte := 2; { archX86_64 }
+  PtrSize := 8;
+{$elseif defined(cpu32bitaddr)}
+  ArchByte := 1; { archI386 }
+  PtrSize := 4;
+{$else}
+  ArchByte := 0; { archUnknown }
+  PtrSize := 4;
+{$endif}
+  EmitByte(list, ArchByte);
+
+  { Pointer size (1 byte) }
+  EmitByte(list, PtrSize);
+
+  { TotalRecords: 0 = stream-terminated mode (4 bytes) }
+  EmitDWord(list, 0);
+
+  { Flags: reserved (4 bytes) }
+  EmitDWord(list, 0);
+end;
+
+{ Constructor / Destructor }
+
 constructor TOPDFDebugWriter.Create;
 begin
   inherited Create;
   FTypeMapper := TTypeMapper.Create;
-  FWriter := nil; { Will be created when output file is opened }
-  FStream := nil;
 end;
 
 destructor TOPDFDebugWriter.Destroy;
 begin
-  if assigned(FWriter) then
-    FWriter.Free;
   FTypeMapper.Free;
-  { Note: FStream is owned by caller, don't free here }
   inherited Destroy;
 end;
 
-procedure TOPDFDebugWriter.MarkVariableTypesUsed(st: TSymtable);
-var
-  i: Longint;
-  def: TDef;
-begin
-  if not assigned(st) or not assigned(st.DefList) then
-    Exit;
-
-  { For OPDF Phase 1E, mark all types in DefList as used so they get collected }
-  { This is appropriate for collecting debug information }
-  for i := 0 to st.DefList.Count - 1 do
-  begin
-    def := TDef(st.DefList[i]);
-    if assigned(def) and (def.dbg_state = dbg_state_unused) then
-      def.dbg_state := dbg_state_used;
-  end;
-end;
-
-procedure TOPDFDebugWriter.SetOutputStream(AStream: TStream);
-var
-  Arch: TTargetArch;
-  PointerSize: Byte;
-begin
-  FStream := AStream;
-
-  { Determine target architecture }
-  if target_cpu = cpu_x86_64 then
-    Arch := archX86_64
-  else if target_cpu = cpu_i386 then
-    Arch := archI386
-  else if target_cpu = cpu_arm then
-    Arch := archARM
-  else if target_cpu = cpu_aarch64 then
-    Arch := archAArch64
-  else
-    Arch := archUnknown;
-
-  { Determine pointer size based on target }
-  PointerSize := 8; { Default to 64-bit }
-  if target_cpu = cpu_i386 then
-    PointerSize := 4
-  else if target_cpu = cpu_arm then
-    PointerSize := 4;
-
-  { Create the OPDF writer }
-  FWriter := TOPDFWriter.Create(FStream, Arch, PointerSize);
-
-  { Write the header }
-  if assigned(FWriter) then
-    FWriter.WriteHeader;
-end;
-
-{ Type definition handlers - Phase 1E+ implementation }
+{ Type definition handlers }
 
 procedure TOPDFDebugWriter.appenddef_ord(list: TAsmList; def: TOrdDef);
 var
+  opdflist: TAsmList;
   TypeID: Cardinal;
-  TypeName: String;
+  TypeName: AnsiString;
   Size: Integer;
-  IsSigned: Boolean;
+  IsSigned: Byte;
+  NameLen: Word;
+  RecSize: Cardinal;
 begin
-  if not assigned(def) or not assigned(FWriter) then
+  if not assigned(def) then
     Exit;
+
+  opdflist := current_asmdata.asmlists[al_opdf];
 
   { Get or allocate TypeID }
   TypeID := FTypeMapper.GetTypeID(def);
 
   { Determine type name }
   TypeName := def.GetTypeName;
+  NameLen := Word(Length(TypeName));
 
   { Get size in bytes }
   Size := def.size;
   if Size < 1 then
-    Size := 1; { Fallback for unknown sizes }
+    Size := 1;
 
-  { Determine signedness based on ordtype }
-  IsSigned := False;
+  { Determine signedness }
+  IsSigned := 0;
   case def.ordtype of
-    s8bit, s16bit, s32bit, s64bit, s128bit: IsSigned := True;
-    else IsSigned := False;
+    s8bit, s16bit, s32bit, s64bit, s128bit:
+      IsSigned := 1;
+    else
+      IsSigned := 0;
   end;
 
-  { Write primitive type to OPDF }
-  FWriter.WritePrimitive(TypeID, TypeName, Size, IsSigned);
+  { Record payload: TypeID(4) + SizeInBytes(1) + IsSigned(1) + NameLen(2) + Name(variable) }
+  RecSize := 4 + 1 + 1 + 2 + Cardinal(NameLen);
+
+  EmitRecordHeader(opdflist, REC_PRIMITIVE, RecSize);
+  EmitDWord(opdflist, TypeID);
+  EmitByte(opdflist, Byte(Size));
+  EmitByte(opdflist, IsSigned);
+  EmitWord(opdflist, NameLen);
+  EmitString(opdflist, TypeName);
 end;
 
 procedure TOPDFDebugWriter.appenddef_float(list: TAsmList; def: TFloatDef);
@@ -284,28 +337,40 @@ end;
 
 procedure TOPDFDebugWriter.appendsym_staticvar(list: TAsmList; sym: TStaticVarSym);
 var
+  opdflist: TAsmList;
   TypeID: Cardinal;
-  VarName: String;
-  Address: QWord;
+  VarName: AnsiString;
+  NameLen: Word;
+  RecSize: Cardinal;
 begin
-  if not assigned(sym) or not assigned(FWriter) or not assigned(sym.vardef) then
+  if not assigned(sym) or not assigned(sym.vardef) then
     Exit;
 
-  { Skip external variables (their addresses are resolved at link time) }
+  { Skip external variables }
   if vo_is_external in sym.varoptions then
     Exit;
+
+  opdflist := current_asmdata.asmlists[al_opdf];
 
   { Get the variable's type ID }
   TypeID := FTypeMapper.GetTypeID(sym.vardef);
 
-  { Get the variable name }
-  VarName := sym.name;
+  { Use mangled name for the variable }
+  VarName := sym.mangledname;
+  NameLen := Word(Length(VarName));
 
-  { Address 0 - the debugger resolves real addresses using symbol names }
-  Address := 0;
+  { Record payload: TypeID(4) + Address(8) + NameLen(2) + Name(variable) }
+  RecSize := 4 + 8 + 2 + Cardinal(NameLen);
 
-  { Write the global variable to OPDF }
-  FWriter.WriteGlobalVar(VarName, TypeID, Address);
+  EmitRecordHeader(opdflist, REC_GLOBALVAR, RecSize);
+  EmitDWord(opdflist, TypeID);
+
+  { Emit address as a symbol reference - linker resolves the actual address }
+  opdflist.concat(tai_const.Create_type_sym(aitconst_ptr_unaligned,
+    current_asmdata.RefAsmSymbol(sym.mangledname, AT_DATA)));
+
+  EmitWord(opdflist, NameLen);
+  EmitString(opdflist, VarName);
 end;
 
 procedure TOPDFDebugWriter.appendsym_paravar(list: TAsmList; sym: TParaVarSym);
@@ -352,61 +417,41 @@ end;
 
 procedure TOPDFDebugWriter.inserttypeinfo;
 var
-  OPDFFilename: String;
-  DummyList: TAsmList;
+  opdflist: TAsmList;
   i: longint;
   def: tdef;
 begin
-  { Initialize the output stream BEFORE collecting types }
-  if FStream = nil then
-  begin
-    if assigned(current_module) then
-    begin
-      OPDFFilename := ChangeFileExt(current_module.objfilename, '.opdf');
-      try
-        FStream := TFileStream.Create(OPDFFilename, fmCreate);
-        SetOutputStream(FStream);
-      except
-        on E: Exception do
-        begin
-          WriteLn('Warning: Could not create OPDF file ', OPDFFilename);
-          WriteLn('Error: ', E.Message);
-          Exit;
-        end;
-      end;
-    end
-    else
-      Exit; { No module, can't proceed }
-  end;
+  { Get the OPDF asm list }
+  opdflist := current_asmdata.asmlists[al_opdf];
+
+  { Create the .opdf section }
+  new_section(opdflist, sec_user, '.opdf', 0);
+
+  { Emit OPDF file header }
+  EmitOPDFHeader(opdflist);
 
   { Initialize base class lists required by inherited write_symtable_* methods }
   defnumberlist := TFPObjectList.Create(false);
   deftowritelist := TFPObjectList.Create(false);
 
-  { Collect and write all types and symbols }
-  DummyList := TAsmList.create;
-  try
-    { Write types from used units }
-    write_used_unit_type_info(DummyList, current_module);
+  { Write types from used units }
+  write_used_unit_type_info(opdflist, current_module);
 
-    { Write types from global symbol table }
-    if assigned(current_module.globalsymtable) then
-      write_symtable_defs(DummyList, current_module.globalsymtable);
+  { Write types from global symbol table }
+  if assigned(current_module.globalsymtable) then
+    write_symtable_defs(opdflist, current_module.globalsymtable);
 
-    { Write types from local symbol table }
-    if assigned(current_module.localsymtable) then
-      write_symtable_defs(DummyList, current_module.localsymtable);
+  { Write types from local symbol table }
+  if assigned(current_module.localsymtable) then
+    write_symtable_defs(opdflist, current_module.localsymtable);
 
-    { Write symbols (variables) from global symbol table }
-    if assigned(current_module.globalsymtable) then
-      write_symtable_syms(DummyList, current_module.globalsymtable);
+  { Write symbols (variables) from global symbol table }
+  if assigned(current_module.globalsymtable) then
+    write_symtable_syms(opdflist, current_module.globalsymtable);
 
-    { Write symbols (variables) from local symbol table }
-    if assigned(current_module.localsymtable) then
-      write_symtable_syms(DummyList, current_module.localsymtable);
-  finally
-    DummyList.Free;
-  end;
+  { Write symbols (variables) from local symbol table }
+  if assigned(current_module.localsymtable) then
+    write_symtable_syms(opdflist, current_module.localsymtable);
 
   { Reset dbg_state on all tracked defs so they can be reused }
   for i := 0 to defnumberlist.count - 1 do
@@ -424,9 +469,7 @@ end;
 
 procedure TOPDFDebugWriter.insertmoduleinfo;
 begin
-  { Finalize the OPDF output }
-  if assigned(FWriter) then
-    FWriter.Finalize;
+  { Nothing to do - data is in asm list, handled by assembler }
 end;
 
 initialization
