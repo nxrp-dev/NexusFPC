@@ -38,6 +38,8 @@ uses
   finput,
   fmodule,
   globtype,
+  cgbase,
+  defutil,
   DbgBase,
   tpdf_type_mapper;
 
@@ -116,9 +118,21 @@ const
   OPDF_VERSION  = 1;
 
   { Record types - must match TOPDFRecordType in ogopdf.pas }
-  REC_PRIMITIVE  = 1;
-  REC_GLOBALVAR  = 2;
-  REC_LINEINFO   = 14;
+  REC_PRIMITIVE      = 1;
+  REC_GLOBALVAR      = 2;
+  REC_SHORTSTR       = 3;
+  REC_ANSISTR        = 4;
+  REC_UNICODESTR     = 5;
+  REC_POINTER        = 6;
+  REC_ARRAY          = 7;
+  REC_RECORD         = 8;
+  REC_CLASS          = 9;
+  REC_LOCALVAR       = 12;
+  REC_PARAMETER      = 13;
+  REC_LINEINFO       = 14;
+  REC_FUNCSCOPE      = 15;
+  REC_INTERFACE      = 16;
+  REC_ENUM           = 17;
 
 { Emit helpers }
 
@@ -266,9 +280,37 @@ begin
 end;
 
 procedure TOPDFDebugWriter.appenddef_float(list: TAsmList; def: TFloatDef);
+var
+  opdflist: TAsmList;
+  TypeID: Cardinal;
+  TypeName: AnsiString;
+  Size: Integer;
+  NameLen: Word;
+  RecSize: Cardinal;
 begin
-  if assigned(def) then
-    FTypeMapper.GetTypeID(def);
+  if not assigned(def) then
+    Exit;
+
+  opdflist := current_asmdata.asmlists[al_opdf];
+
+  TypeID := FTypeMapper.GetTypeID(def);
+
+  TypeName := def.GetTypeName;
+  NameLen := Word(Length(TypeName));
+
+  Size := def.size;
+  if Size < 1 then
+    Size := 1;
+
+  { All float types are signed }
+  RecSize := 4 + 1 + 1 + 2 + Cardinal(NameLen);
+
+  EmitRecordHeader(opdflist, REC_PRIMITIVE, RecSize);
+  EmitDWord(opdflist, TypeID);
+  EmitByte(opdflist, Byte(Size));
+  EmitByte(opdflist, 1); { IsSigned = 1 for all floats }
+  EmitWord(opdflist, NameLen);
+  EmitString(opdflist, TypeName);
 end;
 
 procedure TOPDFDebugWriter.appenddef_enum(list: TAsmList; def: TEnumDef);
@@ -278,9 +320,56 @@ begin
 end;
 
 procedure TOPDFDebugWriter.appenddef_array(list: TAsmList; def: TArrayDef);
+var
+  opdflist: TAsmList;
+  TypeID: Cardinal;
+  ElemTypeID: Cardinal;
+  TypeName: AnsiString;
+  NameLen: Word;
+  RecSize: Cardinal;
+  IsDyn: Boolean;
 begin
-  if assigned(def) then
-    FTypeMapper.GetTypeID(def);
+  if not assigned(def) then
+    Exit;
+
+  opdflist := current_asmdata.asmlists[al_opdf];
+
+  TypeID := FTypeMapper.GetTypeID(def);
+
+  { Get element type ID }
+  if assigned(def.elementdef) then
+    ElemTypeID := FTypeMapper.GetTypeID(def.elementdef)
+  else
+    ElemTypeID := 0;
+
+  TypeName := def.GetTypeName;
+  NameLen := Word(Length(TypeName));
+
+  IsDyn := is_dynamic_array(def);
+
+  { REC_ARRAY: TypeID(4) + ElementTypeID(4) + Dimensions(1) + IsDynamic(1) + NameLen(2) + Name }
+  { For static arrays, add bounds: LowerBound(8) + UpperBound(8) per dimension }
+  RecSize := 4 + 4 + 1 + 1 + 2 + Cardinal(NameLen);
+  if not IsDyn then
+    RecSize := RecSize + 16; { One dimension: LowerBound(8) + UpperBound(8) }
+
+  EmitRecordHeader(opdflist, REC_ARRAY, RecSize);
+  EmitDWord(opdflist, TypeID);
+  EmitDWord(opdflist, ElemTypeID);
+  EmitByte(opdflist, 1); { Dimensions: always 1 for Pascal arrays }
+  if IsDyn then
+    EmitByte(opdflist, 1)
+  else
+    EmitByte(opdflist, 0);
+  EmitWord(opdflist, NameLen);
+  EmitString(opdflist, TypeName);
+
+  { Write bounds for static arrays }
+  if not IsDyn then
+  begin
+    EmitQWord(opdflist, QWord(def.lowrange));
+    EmitQWord(opdflist, QWord(def.highrange));
+  end;
 end;
 
 procedure TOPDFDebugWriter.appenddef_record(list: TAsmList; def: TRecordDef);
@@ -296,15 +385,93 @@ begin
 end;
 
 procedure TOPDFDebugWriter.appenddef_pointer(list: TAsmList; def: TPointerDef);
+var
+  opdflist: TAsmList;
+  TypeID: Cardinal;
+  TargetTypeID: Cardinal;
+  TypeName: AnsiString;
+  NameLen: Word;
+  RecSize: Cardinal;
 begin
-  if assigned(def) then
-    FTypeMapper.GetTypeID(def);
+  if not assigned(def) then
+    Exit;
+
+  opdflist := current_asmdata.asmlists[al_opdf];
+
+  TypeID := FTypeMapper.GetTypeID(def);
+
+  { Resolve target type - 0 for void pointers }
+  if is_voidpointer(def) then
+    TargetTypeID := 0
+  else if assigned(def.pointeddef) then
+    TargetTypeID := FTypeMapper.GetTypeID(def.pointeddef)
+  else
+    TargetTypeID := 0;
+
+  TypeName := def.GetTypeName;
+  NameLen := Word(Length(TypeName));
+
+  { REC_POINTER: TypeID(4) + TargetTypeID(4) + NameLen(2) + Name }
+  RecSize := 4 + 4 + 2 + Cardinal(NameLen);
+
+  EmitRecordHeader(opdflist, REC_POINTER, RecSize);
+  EmitDWord(opdflist, TypeID);
+  EmitDWord(opdflist, TargetTypeID);
+  EmitWord(opdflist, NameLen);
+  EmitString(opdflist, TypeName);
 end;
 
 procedure TOPDFDebugWriter.appenddef_string(list: TAsmList; def: TStringDef);
+var
+  opdflist: TAsmList;
+  TypeID: Cardinal;
+  TypeName: AnsiString;
+  NameLen: Word;
+  RecSize: Cardinal;
 begin
-  if assigned(def) then
-    FTypeMapper.GetTypeID(def);
+  if not assigned(def) then
+    Exit;
+
+  opdflist := current_asmdata.asmlists[al_opdf];
+
+  TypeID := FTypeMapper.GetTypeID(def);
+
+  TypeName := def.GetTypeName;
+  NameLen := Word(Length(TypeName));
+
+  case def.stringtype of
+    st_shortstring:
+      begin
+        { REC_SHORTSTR: TypeID(4) + MaxLength(1) + NameLen(2) + Name }
+        RecSize := 4 + 1 + 2 + Cardinal(NameLen);
+        EmitRecordHeader(opdflist, REC_SHORTSTR, RecSize);
+        EmitDWord(opdflist, TypeID);
+        EmitByte(opdflist, Byte(def.len and $FF));
+        EmitWord(opdflist, NameLen);
+        EmitString(opdflist, TypeName);
+      end;
+    st_ansistring:
+      begin
+        { REC_ANSISTR: TypeID(4) + NameLen(2) + Name }
+        RecSize := 4 + 2 + Cardinal(NameLen);
+        EmitRecordHeader(opdflist, REC_ANSISTR, RecSize);
+        EmitDWord(opdflist, TypeID);
+        EmitWord(opdflist, NameLen);
+        EmitString(opdflist, TypeName);
+      end;
+    st_unicodestring, st_widestring:
+      begin
+        { REC_UNICODESTR: TypeID(4) + NameLen(2) + Name }
+        RecSize := 4 + 2 + Cardinal(NameLen);
+        EmitRecordHeader(opdflist, REC_UNICODESTR, RecSize);
+        EmitDWord(opdflist, TypeID);
+        EmitWord(opdflist, NameLen);
+        EmitString(opdflist, TypeName);
+      end;
+    else
+      { st_longstring or other: just register type ID }
+      ;
+  end;
 end;
 
 procedure TOPDFDebugWriter.appenddef_procvar(list: TAsmList; def: TProcVarDef);
