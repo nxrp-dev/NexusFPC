@@ -1129,6 +1129,45 @@ end;
 { Main entry points }
 
 procedure TOPDFDebugWriter.inserttypeinfo;
+
+  { Mark all non-procdef definitions in a symbol table as used so
+    write_symtable_defs will process them. The base class only processes
+    defs in dbg_state_used state; DWARF does this in get_def_dwarf_labs.
+    For OPDF we simply mark all defs upfront. Procdefs are excluded
+    because they are handled separately by write_symtable_procdefs. }
+  procedure mark_defs_used(st: TSymtable);
+  var
+    j: longint;
+    d: tdef;
+  begin
+    if not assigned(st) then
+      Exit;
+    for j := 0 to st.DefList.Count - 1 do
+    begin
+      d := tdef(st.DefList[j]);
+      if (d.dbg_state = dbg_state_unused) and (d.typ <> procdef) then
+      begin
+        d.dbg_state := dbg_state_used;
+        deftowritelist.Add(d);
+        defnumberlist.Add(d);
+      end;
+    end;
+  end;
+
+  { Recursively mark defs in used units as used }
+  procedure mark_used_unit_defs(hp: tmodule);
+  var
+    pu: tused_unit;
+  begin
+    pu := tused_unit(hp.used_units.first);
+    while assigned(pu) do
+    begin
+      if assigned(pu.u.globalsymtable) then
+        mark_defs_used(pu.u.globalsymtable);
+      pu := tused_unit(pu.next);
+    end;
+  end;
+
 var
   opdflist: TAsmList;
   i: longint;
@@ -1146,6 +1185,15 @@ begin
   { Initialize base class lists required by inherited write_symtable_* methods }
   defnumberlist := TFPObjectList.Create(false);
   deftowritelist := TFPObjectList.Create(false);
+
+  { Mark all definitions as used so write_symtable_defs will process them.
+    This must include used unit defs, because system types like LongInt
+    are referenced by fields in user records/classes. }
+  mark_used_unit_defs(current_module);
+  if assigned(current_module.globalsymtable) then
+    mark_defs_used(current_module.globalsymtable);
+  if assigned(current_module.localsymtable) then
+    mark_defs_used(current_module.localsymtable);
 
   { Write types from used units }
   write_used_unit_type_info(opdflist, current_module);
