@@ -897,7 +897,7 @@ var
   ParamName: AnsiString;
   NameLen: Word;
   RecSize: Cardinal;
-  IsVar, IsConst: Byte;
+  IsVar, IsConst, IsOut: Byte;
 begin
   if not assigned(sym) or not assigned(sym.vardef) then
     Exit;
@@ -913,25 +913,29 @@ begin
   ParamName := sym.RealName;
   NameLen := Word(Length(ParamName));
 
-  { Determine var/const flags }
+  { Determine var/const/out flags }
   IsVar := 0;
   IsConst := 0;
+  IsOut := 0;
   case sym.varspez of
-    vs_var, vs_out:
+    vs_var:
       IsVar := 1;
+    vs_out:
+      IsOut := 1;
     vs_const, vs_constref:
       IsConst := 1;
     else
       ; { vs_value, vs_final }
   end;
 
-  { REC_PARAMETER: TypeID(4) + IsVar(1) + IsConst(1) + NameLen(2) + Name }
-  RecSize := 4 + 1 + 1 + 2 + Cardinal(NameLen);
+  { REC_PARAMETER: TypeID(4) + IsVar(1) + IsConst(1) + IsOut(1) + NameLen(2) + Name }
+  RecSize := 4 + 1 + 1 + 1 + 2 + Cardinal(NameLen);
 
   EmitRecordHeader(opdflist, REC_PARAMETER, RecSize);
   EmitDWord(opdflist, TypeID);
   EmitByte(opdflist, IsVar);
   EmitByte(opdflist, IsConst);
+  EmitByte(opdflist, IsOut);
   EmitWord(opdflist, NameLen);
   EmitString(opdflist, ParamName);
 end;
