@@ -90,6 +90,9 @@ type
     procedure appendsym_label(list: TAsmList; sym: TLabelSym); override;
     procedure appendsym_absolute(list: TAsmList; sym: TAbsoluteVarSym); override;
     procedure appendsym_property(list: TAsmList; sym: TPropertySym); override;
+
+    { Override proc definition handler for function scope records }
+    procedure appendprocdef(list: TAsmList; def: TProcDef); override;
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -314,9 +317,69 @@ begin
 end;
 
 procedure TOPDFDebugWriter.appenddef_enum(list: TAsmList; def: TEnumDef);
+var
+  opdflist: TAsmList;
+  TypeID: Cardinal;
+  TypeName: AnsiString;
+  NameLen: Word;
+  RecSize: Cardinal;
+  MemberCount: Cardinal;
+  hp: TEnumSym;
+  MemberName: AnsiString;
+  MemberNameLen: Word;
+  i: Longint;
 begin
-  if assigned(def) then
-    FTypeMapper.GetTypeID(def);
+  if not assigned(def) then
+    Exit;
+  if not assigned(def.symtable) then
+    Exit;
+
+  opdflist := current_asmdata.asmlists[al_opdf];
+
+  TypeID := FTypeMapper.GetTypeID(def);
+
+  TypeName := def.GetTypeName;
+  NameLen := Word(Length(TypeName));
+
+  { Count members in range }
+  MemberCount := 0;
+  for i := 0 to def.symtable.SymList.Count - 1 do
+  begin
+    hp := TEnumSym(def.symtable.SymList[i]);
+    if (hp.value >= def.minval) and (hp.value <= def.maxval) then
+      Inc(MemberCount);
+  end;
+
+  { Calculate record size: TypeID(4) + SizeInBytes(1) + MemberCount(4) + NameLen(2) + Name }
+  RecSize := 4 + 1 + 4 + 2 + Cardinal(NameLen);
+  { Add member sizes: Value(8) + MemberNameLen(2) + MemberName per member }
+  for i := 0 to def.symtable.SymList.Count - 1 do
+  begin
+    hp := TEnumSym(def.symtable.SymList[i]);
+    if (hp.value >= def.minval) and (hp.value <= def.maxval) then
+      RecSize := RecSize + 8 + 2 + Cardinal(Length(hp.RealName));
+  end;
+
+  EmitRecordHeader(opdflist, REC_ENUM, RecSize);
+  EmitDWord(opdflist, TypeID);
+  EmitByte(opdflist, Byte(def.size));
+  EmitDWord(opdflist, MemberCount);
+  EmitWord(opdflist, NameLen);
+  EmitString(opdflist, TypeName);
+
+  { Emit enum members }
+  for i := 0 to def.symtable.SymList.Count - 1 do
+  begin
+    hp := TEnumSym(def.symtable.SymList[i]);
+    if (hp.value >= def.minval) and (hp.value <= def.maxval) then
+    begin
+      EmitQWord(opdflist, QWord(hp.value));
+      MemberName := hp.RealName;
+      MemberNameLen := Word(Length(MemberName));
+      EmitWord(opdflist, MemberNameLen);
+      EmitString(opdflist, MemberName);
+    end;
+  end;
 end;
 
 procedure TOPDFDebugWriter.appenddef_array(list: TAsmList; def: TArrayDef);
@@ -373,15 +436,292 @@ begin
 end;
 
 procedure TOPDFDebugWriter.appenddef_record(list: TAsmList; def: TRecordDef);
+var
+  opdflist: TAsmList;
+  TypeID: Cardinal;
+  TypeName: AnsiString;
+  NameLen: Word;
+  RecSize: Cardinal;
+  FieldCount: Cardinal;
+  FieldTypeID: Cardinal;
+  FieldName: AnsiString;
+  FieldNameLen: Word;
+  i: Longint;
+  sym: TSym;
+  fvsym: TFieldVarSym;
 begin
-  if assigned(def) then
-    FTypeMapper.GetTypeID(def);
+  if not assigned(def) then
+    Exit;
+
+  opdflist := current_asmdata.asmlists[al_opdf];
+
+  TypeID := FTypeMapper.GetTypeID(def);
+
+  { Get record name }
+  if assigned(def.objrealname) then
+    TypeName := def.objrealname^
+  else
+    TypeName := def.GetTypeName;
+  NameLen := Word(Length(TypeName));
+
+  { Count non-static fields }
+  FieldCount := 0;
+  if assigned(def.symtable) then
+    for i := 0 to def.symtable.SymList.Count - 1 do
+    begin
+      sym := TSym(def.symtable.SymList[i]);
+      if (sym.typ = fieldvarsym) and
+         not (sp_static in sym.symoptions) then
+        Inc(FieldCount);
+    end;
+
+  { Calculate record size }
+  { Header: TypeID(4) + FieldCount(4) + TotalSize(4) + NameLen(2) + Name }
+  RecSize := 4 + 4 + 4 + 2 + Cardinal(NameLen);
+  { Fields: FieldTypeID(4) + Offset(4) + FieldNameLen(2) + FieldName per field }
+  if assigned(def.symtable) then
+    for i := 0 to def.symtable.SymList.Count - 1 do
+    begin
+      sym := TSym(def.symtable.SymList[i]);
+      if (sym.typ = fieldvarsym) and
+         not (sp_static in sym.symoptions) then
+        RecSize := RecSize + 4 + 4 + 2 + Cardinal(Length(sym.RealName));
+    end;
+
+  EmitRecordHeader(opdflist, REC_RECORD, RecSize);
+  EmitDWord(opdflist, TypeID);
+  EmitDWord(opdflist, FieldCount);
+  EmitDWord(opdflist, Cardinal(def.size));
+  EmitWord(opdflist, NameLen);
+  EmitString(opdflist, TypeName);
+
+  { Emit field descriptors }
+  if assigned(def.symtable) then
+    for i := 0 to def.symtable.SymList.Count - 1 do
+    begin
+      sym := TSym(def.symtable.SymList[i]);
+      if (sym.typ = fieldvarsym) and
+         not (sp_static in sym.symoptions) then
+      begin
+        fvsym := TFieldVarSym(sym);
+
+        if assigned(fvsym.vardef) then
+          FieldTypeID := FTypeMapper.GetTypeID(fvsym.vardef)
+        else
+          FieldTypeID := 0;
+
+        FieldName := fvsym.RealName;
+        FieldNameLen := Word(Length(FieldName));
+
+        EmitDWord(opdflist, FieldTypeID);
+        EmitDWord(opdflist, Cardinal(fvsym.fieldoffset));
+        EmitWord(opdflist, FieldNameLen);
+        EmitString(opdflist, FieldName);
+      end;
+    end;
 end;
 
 procedure TOPDFDebugWriter.appenddef_object(list: TAsmList; def: TObjectDef);
+var
+  opdflist: TAsmList;
+  TypeID: Cardinal;
+  ParentTypeID: Cardinal;
+  TypeName: AnsiString;
+  NameLen: Word;
+  RecSize: Cardinal;
+  FieldCount: Cardinal;
+  FieldTypeID: Cardinal;
+  FieldName: AnsiString;
+  FieldNameLen: Word;
+  i: Longint;
+  sym: TSym;
+  fvsym: TFieldVarSym;
+  IntfTypeByte: Byte;
+  MethodCount: Cardinal;
+  psym: TProcsym;
+  pdef: TProcDef;
+  MtdName: AnsiString;
+  MtdNameLen: Word;
 begin
-  if assigned(def) then
-    FTypeMapper.GetTypeID(def);
+  if not assigned(def) then
+    Exit;
+
+  opdflist := current_asmdata.asmlists[al_opdf];
+
+  TypeID := FTypeMapper.GetTypeID(def);
+
+  { Get parent type ID }
+  if assigned(def.childof) then
+    ParentTypeID := FTypeMapper.GetTypeID(def.childof)
+  else
+    ParentTypeID := 0;
+
+  { Get type name }
+  if assigned(def.objrealname) then
+    TypeName := def.objrealname^
+  else
+    TypeName := def.GetTypeName;
+  NameLen := Word(Length(TypeName));
+
+  case def.objecttype of
+    odt_interfacecom, odt_interfacecorba, odt_dispinterface:
+      begin
+        { Emit REC_INTERFACE }
+
+        { Determine interface type }
+        case def.objecttype of
+          odt_interfacecom:   IntfTypeByte := 0; { COM }
+          odt_interfacecorba: IntfTypeByte := 1; { CORBA }
+          odt_dispinterface:  IntfTypeByte := 2; { Dispatch }
+          else                IntfTypeByte := 0;
+        end;
+
+        { Count methods (procsym entries) }
+        MethodCount := 0;
+        if assigned(def.symtable) then
+          for i := 0 to def.symtable.SymList.Count - 1 do
+          begin
+            sym := TSym(def.symtable.SymList[i]);
+            if sym.typ = procsym then
+              Inc(MethodCount);
+          end;
+
+        { Calculate record size }
+        { TypeID(4) + ParentTypeID(4) + IntfType(1) + GUID(16) + MethodCount(4) + NameLen(2) + Name }
+        RecSize := 4 + 4 + 1 + 16 + 4 + 2 + Cardinal(NameLen);
+        { Methods: ReturnTypeID(4) + ParamCount(1) + MtdNameLen(2) + MtdName per method }
+        if assigned(def.symtable) then
+          for i := 0 to def.symtable.SymList.Count - 1 do
+          begin
+            sym := TSym(def.symtable.SymList[i]);
+            if sym.typ = procsym then
+              RecSize := RecSize + 4 + 1 + 2 + Cardinal(Length(sym.RealName));
+          end;
+
+        EmitRecordHeader(opdflist, REC_INTERFACE, RecSize);
+        EmitDWord(opdflist, TypeID);
+        EmitDWord(opdflist, ParentTypeID);
+        EmitByte(opdflist, IntfTypeByte);
+
+        { Emit GUID - 16 bytes }
+        if assigned(def.iidguid) then
+        begin
+          EmitDWord(opdflist, def.iidguid^.D1);
+          EmitWord(opdflist, def.iidguid^.D2);
+          EmitWord(opdflist, def.iidguid^.D3);
+          for i := 0 to 7 do
+            EmitByte(opdflist, def.iidguid^.D4[i]);
+        end
+        else
+        begin
+          { Null GUID: 16 zero bytes }
+          for i := 0 to 15 do
+            EmitByte(opdflist, 0);
+        end;
+
+        EmitDWord(opdflist, MethodCount);
+        EmitWord(opdflist, NameLen);
+        EmitString(opdflist, TypeName);
+
+        { Emit method descriptors }
+        if assigned(def.symtable) then
+          for i := 0 to def.symtable.SymList.Count - 1 do
+          begin
+            sym := TSym(def.symtable.SymList[i]);
+            if sym.typ = procsym then
+            begin
+              psym := TProcsym(sym);
+              { Use the first procdef for return type and param count }
+              if psym.ProcdefList.Count > 0 then
+              begin
+                pdef := TProcDef(psym.ProcdefList[0]);
+                if assigned(pdef.returndef) and not is_void(pdef.returndef) then
+                  EmitDWord(opdflist, FTypeMapper.GetTypeID(pdef.returndef))
+                else
+                  EmitDWord(opdflist, 0);
+                EmitByte(opdflist, Byte(pdef.paras.Count));
+              end
+              else
+              begin
+                EmitDWord(opdflist, 0);
+                EmitByte(opdflist, 0);
+              end;
+
+              MtdName := sym.RealName;
+              MtdNameLen := Word(Length(MtdName));
+              EmitWord(opdflist, MtdNameLen);
+              EmitString(opdflist, MtdName);
+            end;
+          end;
+      end;
+
+    odt_class, odt_object:
+      begin
+        { Emit REC_CLASS }
+
+        { Count non-static fields }
+        FieldCount := 0;
+        if assigned(def.symtable) then
+          for i := 0 to def.symtable.SymList.Count - 1 do
+          begin
+            sym := TSym(def.symtable.SymList[i]);
+            if (sym.typ = fieldvarsym) and
+               not (sp_static in sym.symoptions) then
+              Inc(FieldCount);
+          end;
+
+        { Calculate record size }
+        { TypeID(4) + ParentTypeID(4) + VMTAddress(8) + InstanceSize(4) + FieldCount(4) + NameLen(2) + Name }
+        RecSize := 4 + 4 + 8 + 4 + 4 + 2 + Cardinal(NameLen);
+        { Fields: FieldTypeID(4) + Offset(4) + FieldNameLen(2) + FieldName per field }
+        if assigned(def.symtable) then
+          for i := 0 to def.symtable.SymList.Count - 1 do
+          begin
+            sym := TSym(def.symtable.SymList[i]);
+            if (sym.typ = fieldvarsym) and
+               not (sp_static in sym.symoptions) then
+              RecSize := RecSize + 4 + 4 + 2 + Cardinal(Length(sym.RealName));
+          end;
+
+        EmitRecordHeader(opdflist, REC_CLASS, RecSize);
+        EmitDWord(opdflist, TypeID);
+        EmitDWord(opdflist, ParentTypeID);
+        EmitQWord(opdflist, 0); { VMTAddress: 0 placeholder }
+        EmitDWord(opdflist, Cardinal(def.size));
+        EmitDWord(opdflist, FieldCount);
+        EmitWord(opdflist, NameLen);
+        EmitString(opdflist, TypeName);
+
+        { Emit field descriptors }
+        if assigned(def.symtable) then
+          for i := 0 to def.symtable.SymList.Count - 1 do
+          begin
+            sym := TSym(def.symtable.SymList[i]);
+            if (sym.typ = fieldvarsym) and
+               not (sp_static in sym.symoptions) then
+            begin
+              fvsym := TFieldVarSym(sym);
+
+              if assigned(fvsym.vardef) then
+                FieldTypeID := FTypeMapper.GetTypeID(fvsym.vardef)
+              else
+                FieldTypeID := 0;
+
+              FieldName := fvsym.RealName;
+              FieldNameLen := Word(Length(FieldName));
+
+              EmitDWord(opdflist, FieldTypeID);
+              EmitDWord(opdflist, Cardinal(fvsym.fieldoffset));
+              EmitWord(opdflist, FieldNameLen);
+              EmitString(opdflist, FieldName);
+            end;
+          end;
+      end;
+
+    else
+      { Other object types (ObjC, Java, etc.) - just register type ID }
+      ;
+  end;
 end;
 
 procedure TOPDFDebugWriter.appenddef_pointer(list: TAsmList; def: TPointerDef);
@@ -551,18 +891,110 @@ begin
 end;
 
 procedure TOPDFDebugWriter.appendsym_paravar(list: TAsmList; sym: TParaVarSym);
+var
+  opdflist: TAsmList;
+  TypeID: Cardinal;
+  ParamName: AnsiString;
+  NameLen: Word;
+  RecSize: Cardinal;
+  IsVar, IsConst: Byte;
 begin
-  { TODO: Implement parameter variable mapping }
+  if not assigned(sym) or not assigned(sym.vardef) then
+    Exit;
+
+  { Skip the hidden self/vmt/result parameters }
+  if vo_is_hidden_para in sym.varoptions then
+    Exit;
+
+  opdflist := current_asmdata.asmlists[al_opdf];
+
+  TypeID := FTypeMapper.GetTypeID(sym.vardef);
+
+  ParamName := sym.RealName;
+  NameLen := Word(Length(ParamName));
+
+  { Determine var/const flags }
+  IsVar := 0;
+  IsConst := 0;
+  case sym.varspez of
+    vs_var, vs_out:
+      IsVar := 1;
+    vs_const, vs_constref:
+      IsConst := 1;
+    else
+      ; { vs_value, vs_final }
+  end;
+
+  { REC_PARAMETER: TypeID(4) + IsVar(1) + IsConst(1) + NameLen(2) + Name }
+  RecSize := 4 + 1 + 1 + 2 + Cardinal(NameLen);
+
+  EmitRecordHeader(opdflist, REC_PARAMETER, RecSize);
+  EmitDWord(opdflist, TypeID);
+  EmitByte(opdflist, IsVar);
+  EmitByte(opdflist, IsConst);
+  EmitWord(opdflist, NameLen);
+  EmitString(opdflist, ParamName);
 end;
 
 procedure TOPDFDebugWriter.appendsym_localvar(list: TAsmList; sym: TLocalVarSym);
+var
+  opdflist: TAsmList;
+  TypeID: Cardinal;
+  VarName: AnsiString;
+  NameLen: Word;
+  RecSize: Cardinal;
+  StackOffset: Longint;
+  FuncName: AnsiString;
 begin
-  { TODO: Implement local variable mapping }
+  if not assigned(sym) or not assigned(sym.vardef) then
+    Exit;
+
+  { Only handle reference-based locations (stack variables) }
+  if not (sym.localloc.loc in [LOC_REFERENCE, LOC_CREFERENCE]) then
+    Exit;
+
+  opdflist := current_asmdata.asmlists[al_opdf];
+
+  TypeID := FTypeMapper.GetTypeID(sym.vardef);
+
+  VarName := sym.RealName;
+  NameLen := Word(Length(VarName));
+
+  StackOffset := sym.localloc.reference.offset;
+
+  { Clamp offset to ShortInt range }
+  if StackOffset > 127 then
+    StackOffset := 127
+  else if StackOffset < -128 then
+    StackOffset := -128;
+
+  { REC_LOCALVAR: TypeID(4) + ScopeID(4) + LocationExpr(1) + NameLen(2) + LocationData(1) + Name }
+  RecSize := 4 + 4 + 1 + 2 + 1 + Cardinal(NameLen);
+
+  EmitRecordHeader(opdflist, REC_LOCALVAR, RecSize);
+  EmitDWord(opdflist, TypeID);
+
+  { ScopeID: use the owning function's address as scope ID }
+  if assigned(sym.owner) and assigned(sym.owner.defowner) and
+     (sym.owner.defowner.typ = procdef) then
+  begin
+    FuncName := TProcDef(sym.owner.defowner).mangledname;
+    opdflist.concat(tai_const.Create_type_sym(aitconst_32bit_unaligned,
+      current_asmdata.RefAsmSymbol(FuncName, AT_FUNCTION)));
+  end
+  else
+    EmitDWord(opdflist, 0);
+
+  EmitByte(opdflist, 1); { LocationExpr: 1 = RBP-relative }
+  EmitWord(opdflist, NameLen);
+  EmitByte(opdflist, Byte(ShortInt(StackOffset))); { LocationData }
+  EmitString(opdflist, VarName);
 end;
 
 procedure TOPDFDebugWriter.appendsym_fieldvar(list: TAsmList; sym: TFieldVarSym);
 begin
-  { TODO: Implement field variable mapping }
+  { Fields are emitted inline within record/class records.
+    No separate field record is needed. }
 end;
 
 procedure TOPDFDebugWriter.appendsym_const(list: TAsmList; sym: TConstSym);
@@ -587,7 +1019,107 @@ end;
 
 procedure TOPDFDebugWriter.appendsym_property(list: TAsmList; sym: TPropertySym);
 begin
-  { TODO: Implement property mapping }
+  { Properties are not emitted as separate records.
+    Property access is resolved via field offsets or method addresses
+    in the class record. }
+end;
+
+procedure TOPDFDebugWriter.appendprocdef(list: TAsmList; def: TProcDef);
+var
+  opdflist: TAsmList;
+  procendlabel: TAsmLabel;
+  FuncName: AnsiString;
+  NameLen: Word;
+  RecSize: Cardinal;
+  in_currentunit: Boolean;
+begin
+  if not assigned(def) then
+    Exit;
+
+  in_currentunit := def.in_currentunit;
+
+  { Only write debug info for procedures defined in the current module,
+    except for methods }
+  if not in_currentunit and
+     not (def.owner.symtabletype in [objectsymtable, recordsymtable]) then
+    Exit;
+
+  { Skip units without init section }
+  if in_currentunit and not assigned(def.procstarttai) then
+    Exit;
+
+  { Skip generics }
+  if df_generic in def.defoptions then
+    Exit;
+
+  { Check if already written }
+  if (def.dbg_state in [dbg_state_writing, dbg_state_written]) then
+    Exit;
+  defnumberlist.Add(def);
+
+  { For methods: only write in scope of their parent objectdef }
+  if (def.owner.symtabletype in [objectsymtable, recordsymtable]) then
+  begin
+    if assigned(def.owner.defowner) and
+       (tdef(def.owner.defowner).dbg_state <> dbg_state_writing) then
+      Exit;
+  end;
+
+  def.dbg_state := dbg_state_writing;
+
+  opdflist := current_asmdata.asmlists[al_opdf];
+
+  FuncName := def.mangledname;
+  NameLen := Word(Length(FuncName));
+
+  if in_currentunit then
+  begin
+    { Create a label for the end of the procedure }
+    current_asmdata.getlabel(procendlabel, alt_dbgtype);
+    current_asmdata.asmlists[al_procedures].insertbefore(
+      tai_label.create(procendlabel), def.procendtai);
+
+    { REC_FUNCSCOPE: ScopeID(4) + LowPC(8) + HighPC(8) + NameLen(2) + Name }
+    RecSize := 4 + 8 + 8 + 2 + Cardinal(NameLen);
+
+    EmitRecordHeader(opdflist, REC_FUNCSCOPE, RecSize);
+
+    { ScopeID: emit as placeholder 0 — will use LowPC address as scope ID
+      at debug time. Emit the function start address as ScopeID too. }
+    opdflist.concat(tai_const.Create_type_sym(aitconst_32bit_unaligned,
+      current_asmdata.RefAsmSymbol(FuncName, AT_FUNCTION)));
+
+    { LowPC - function start address }
+    opdflist.concat(tai_const.Create_type_sym(aitconst_ptr_unaligned,
+      current_asmdata.RefAsmSymbol(FuncName, AT_FUNCTION)));
+
+    { HighPC - function end address }
+    opdflist.concat(tai_const.Create_type_sym(aitconst_ptr_unaligned,
+      procendlabel));
+
+    EmitWord(opdflist, NameLen);
+    EmitString(opdflist, FuncName);
+  end;
+
+  { Write parameter symbols }
+  if assigned(def.paras) then
+    write_symtable_parasyms(opdflist, def.paras);
+
+  { Write local variable symbols }
+  if in_currentunit and
+     assigned(def.localst) and
+     (def.localst.symtabletype = localsymtable) then
+    write_symtable_syms(opdflist, def.localst);
+
+  { Write local type definitions }
+  if assigned(def.parast) then
+    write_symtable_defs(opdflist, def.parast);
+  if in_currentunit and
+     assigned(def.localst) and
+     (def.localst.symtabletype = localsymtable) then
+    write_symtable_defs(opdflist, def.localst);
+
+  def.dbg_state := dbg_state_written;
 end;
 
 { Main entry points }
@@ -629,6 +1161,12 @@ begin
   { Write symbols (variables) from local symbol table }
   if assigned(current_module.localsymtable) then
     write_symtable_syms(opdflist, current_module.localsymtable);
+
+  { Write procedure definitions (function scopes, locals, params) }
+  if assigned(current_module.globalsymtable) then
+    write_symtable_procdefs(opdflist, current_module.globalsymtable);
+  if assigned(current_module.localsymtable) then
+    write_symtable_procdefs(opdflist, current_module.localsymtable);
 
   { Reset dbg_state on all tracked defs so they can be reused }
   for i := 0 to defnumberlist.count - 1 do
