@@ -35,6 +35,7 @@ uses
   aasmbase, aasmtai, aasmdata,
   systems,
   symbase, symconst, symtype, symdef, symsym,
+  finput,
   fmodule,
   globtype,
   DbgBase,
@@ -46,6 +47,11 @@ type
   private
     { Type mapper for allocating type IDs }
     FTypeMapper: TTypeMapper;
+
+    { Accumulated line info records from insertlineinfo calls.
+      These are collected per-procedure and merged into al_opdf
+      during inserttypeinfo, after the section header is emitted. }
+    FLineInfoList: TAsmList;
 
     { Emit helpers - write raw bytes into asm list }
     procedure EmitByte(list: TAsmList; value: Byte);
@@ -89,6 +95,7 @@ type
     { Main OPDF entry points }
     procedure inserttypeinfo; override;
     procedure insertmoduleinfo; override;
+    procedure insertlineinfo(list: TAsmList); override;
   end;
 
   { OPDF debug format info record }
@@ -111,6 +118,7 @@ const
   { Record types - must match TOPDFRecordType in ogopdf.pas }
   REC_PRIMITIVE  = 1;
   REC_GLOBALVAR  = 2;
+  REC_LINEINFO   = 14;
 
 { Emit helpers }
 
@@ -198,10 +206,12 @@ constructor TOPDFDebugWriter.Create;
 begin
   inherited Create;
   FTypeMapper := TTypeMapper.Create;
+  FLineInfoList := TAsmList.Create;
 end;
 
 destructor TOPDFDebugWriter.Destroy;
 begin
+  FLineInfoList.Free;
   FTypeMapper.Free;
   inherited Destroy;
 end;
@@ -461,10 +471,108 @@ begin
       def.dbg_state := dbg_state_unused;
   end;
 
+  { Append accumulated line info records (collected during insertlineinfo calls) }
+  opdflist.concatList(FLineInfoList);
+
   defnumberlist.free;
   defnumberlist := nil;
   deftowritelist.free;
   deftowritelist := nil;
+end;
+
+procedure TOPDFDebugWriter.insertlineinfo(list: TAsmList);
+var
+  currfileinfo,
+  lastfileinfo : tfileposinfo;
+  currsectype  : TAsmSectiontype;
+  hp           : tai;
+  infile       : tinputfile;
+  currlabel    : tasmlabel;
+  nolineinfolevel : Integer;
+  FileName     : AnsiString;
+  FileNameLen  : Word;
+  RecSize      : Cardinal;
+begin
+  FillChar(lastfileinfo, sizeof(lastfileinfo), 0);
+  currsectype := sec_code;
+  nolineinfolevel := 0;
+
+  hp := Tai(list.first);
+  while assigned(hp) do
+  begin
+    case hp.typ of
+      ait_section:
+        currsectype := tai_section(hp).sectype;
+      ait_force_line:
+        lastfileinfo.line := -1;
+      ait_marker:
+        begin
+          case tai_marker(hp).kind of
+            mark_NoLineInfoStart:
+              inc(nolineinfolevel);
+            mark_NoLineInfoEnd:
+              dec(nolineinfolevel);
+            else
+              ;
+          end;
+        end;
+      else
+        ;
+    end;
+
+    if (currsectype = sec_code) and
+       (hp.typ = ait_instruction) then
+    begin
+      currfileinfo := tailineinfo(hp).fileinfo;
+
+      { Set line to 0 for code without line info }
+      if nolineinfolevel > 0 then
+        currfileinfo.line := 0;
+
+      { Emit a record when file or line changes }
+      if (currfileinfo.fileindex <> 0) and
+         (currfileinfo.line <> 0) and
+         ((lastfileinfo.line <> currfileinfo.line) or
+          (lastfileinfo.fileindex <> currfileinfo.fileindex) or
+          (lastfileinfo.moduleindex <> currfileinfo.moduleindex)) then
+      begin
+        { Create a label at this instruction for address resolution }
+        current_asmdata.getlabel(currlabel, alt_dbgline);
+        list.insertbefore(tai_label.create(currlabel), hp);
+
+        { Resolve source file name }
+        infile := get_module(currfileinfo.moduleindex).sourcefiles.get_file(currfileinfo.fileindex);
+        if assigned(infile) then
+        begin
+          FileName := infile.path + infile.name;
+          FileNameLen := Word(Length(FileName));
+
+          { Record payload: Address(8) + LineNumber(4) + ColumnNumber(2) + FileNameLen(2) + FileName }
+          RecSize := 8 + 4 + 2 + 2 + Cardinal(FileNameLen);
+
+          { Write to FLineInfoList — merged into al_opdf during inserttypeinfo }
+          EmitRecordHeader(FLineInfoList, REC_LINEINFO, RecSize);
+
+          { Address - linker resolves the label to final address }
+          FLineInfoList.concat(tai_const.Create_type_sym(aitconst_ptr_unaligned, currlabel));
+
+          { LineNumber (4 bytes) }
+          EmitDWord(FLineInfoList, Cardinal(currfileinfo.line));
+
+          { ColumnNumber (2 bytes) }
+          EmitWord(FLineInfoList, currfileinfo.column);
+
+          { FileNameLen + FileName }
+          EmitWord(FLineInfoList, FileNameLen);
+          EmitString(FLineInfoList, FileName);
+        end;
+
+        lastfileinfo := currfileinfo;
+      end;
+    end;
+
+    hp := tai(hp.next);
+  end;
 end;
 
 procedure TOPDFDebugWriter.insertmoduleinfo;
