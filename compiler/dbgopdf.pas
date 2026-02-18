@@ -1124,7 +1124,8 @@ procedure TOPDFDebugWriter.appendprocdef(list: TAsmList; def: TProcDef);
 var
   opdflist: TAsmList;
   procendlabel: TAsmLabel;
-  FuncName: AnsiString;
+  FuncName: AnsiString;      { Mangled name — used for linker symbol references }
+  FuncDisplayName: AnsiString; { Pascal name — stored in OPDF record for display }
   NameLen: Word;
   RecSize: Cardinal;
   in_currentunit: Boolean;
@@ -1166,7 +1167,14 @@ begin
   opdflist := current_asmdata.asmlists[al_opdf];
 
   FuncName := def.mangledname;
-  NameLen := Word(Length(FuncName));
+
+  { Use the original Pascal name for display; fall back to mangled name }
+  if assigned(def.procsym) then
+    FuncDisplayName := def.procsym.RealName
+  else
+    FuncDisplayName := FuncName;
+
+  NameLen := Word(Length(FuncDisplayName));
 
   if in_currentunit then
   begin
@@ -1180,12 +1188,11 @@ begin
 
     EmitRecordHeader(opdflist, REC_FUNCSCOPE, RecSize);
 
-    { ScopeID: emit as placeholder 0 — will use LowPC address as scope ID
-      at debug time. Emit the function start address as ScopeID too. }
+    { ScopeID: linker symbol reference to function start (uses mangled name) }
     opdflist.concat(tai_const.Create_type_sym(aitconst_32bit_unaligned,
       current_asmdata.RefAsmSymbol(FuncName, AT_FUNCTION)));
 
-    { LowPC - function start address }
+    { LowPC - function start address (uses mangled name for linker) }
     opdflist.concat(tai_const.Create_type_sym(aitconst_ptr_unaligned,
       current_asmdata.RefAsmSymbol(FuncName, AT_FUNCTION)));
 
@@ -1193,8 +1200,9 @@ begin
     opdflist.concat(tai_const.Create_type_sym(aitconst_ptr_unaligned,
       procendlabel));
 
+    { Name: emit the Pascal (display) name, not the mangled linker name }
     EmitWord(opdflist, NameLen);
-    EmitString(opdflist, FuncName);
+    EmitString(opdflist, FuncDisplayName);
   end;
 
   { Write parameter symbols }
