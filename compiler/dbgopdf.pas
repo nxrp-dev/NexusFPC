@@ -130,6 +130,7 @@ const
   REC_ARRAY          = 7;
   REC_RECORD         = 8;
   REC_CLASS          = 9;
+  REC_PROPERTY       = 10;
   REC_LOCALVAR       = 12;
   REC_PARAMETER      = 13;
   REC_LINEINFO       = 14;
@@ -716,6 +717,17 @@ begin
               EmitString(opdflist, FieldName);
             end;
           end;
+
+        { Emit property records for each property in this class.
+          Properties are class members and not visited by write_symtable_syms,
+          so we must emit them here directly after the class record. }
+        if assigned(def.symtable) then
+          for i := 0 to def.symtable.SymList.Count - 1 do
+          begin
+            sym := TSym(def.symtable.SymList[i]);
+            if sym.typ = propertysym then
+              appendsym_property(list, TPropertySym(sym));
+          end;
       end;
 
     else
@@ -1022,10 +1034,90 @@ begin
 end;
 
 procedure TOPDFDebugWriter.appendsym_property(list: TAsmList; sym: TPropertySym);
+var
+  opdflist: TAsmList;
+  ClassTypeID, PropTypeID: Cardinal;
+  PropName: AnsiString;
+  NameLen: Word;
+  RecSize: Cardinal;
+  ReadType, WriteType: Byte;
+  ReadAddr, WriteAddr: QWord;
+  plist: tpropaccesslist;
+  pitem: ppropaccesslistitem;
+  fvsym: tfieldvarsym;
 begin
-  { Properties are not emitted as separate records.
-    Property access is resolved via field offsets or method addresses
-    in the class record. }
+  if not assigned(sym) then Exit;
+  if not assigned(sym.owner) or not assigned(sym.owner.defowner) then Exit;
+  { Only emit for class/object symtables }
+  if not (sym.owner.symtabletype in [objectsymtable, recordsymtable]) then Exit;
+
+  opdflist := current_asmdata.asmlists[al_opdf];
+
+  { Get owning class TypeID }
+  ClassTypeID := FTypeMapper.GetTypeID(tdef(sym.owner.defowner));
+
+  { Get property return type ID }
+  if assigned(sym.propdef) then
+    PropTypeID := FTypeMapper.GetTypeID(sym.propdef)
+  else
+    PropTypeID := 0;
+
+  { Determine read accessor kind }
+  ReadType := 2; { patNone }
+  ReadAddr := 0;
+  if sym.getpropaccesslist(palt_read, plist) and assigned(plist) then
+  begin
+    if not assigned(plist.procdef) then
+    begin
+      { Field-backed read: firstsym is sl_load on a fieldvarsym }
+      pitem := plist.firstsym;
+      if assigned(pitem) and (pitem^.sltype = sl_load) and
+         (pitem^.sym.typ = fieldvarsym) then
+      begin
+        fvsym := tfieldvarsym(pitem^.sym);
+        ReadType := 0; { patField }
+        ReadAddr := QWord(fvsym.fieldoffset);
+      end;
+    end
+    else
+      ReadType := 1; { patMethod }
+  end;
+
+  { Determine write accessor kind }
+  WriteType := 2; { patNone }
+  WriteAddr := 0;
+  if sym.getpropaccesslist(palt_write, plist) and assigned(plist) then
+  begin
+    if not assigned(plist.procdef) then
+    begin
+      pitem := plist.firstsym;
+      if assigned(pitem) and (pitem^.sltype = sl_load) and
+         (pitem^.sym.typ = fieldvarsym) then
+      begin
+        fvsym := tfieldvarsym(pitem^.sym);
+        WriteType := 0; { patField }
+        WriteAddr := QWord(fvsym.fieldoffset);
+      end;
+    end
+    else
+      WriteType := 1; { patMethod }
+  end;
+
+  PropName := sym.RealName;
+  NameLen := Word(Length(PropName));
+  { ClassTypeID(4) + PropTypeID(4) + ReadType(1) + WriteType(1) +
+    ReadAddr(8) + WriteAddr(8) + NameLen(2) + Name }
+  RecSize := 4 + 4 + 1 + 1 + 8 + 8 + 2 + Cardinal(NameLen);
+
+  EmitRecordHeader(opdflist, REC_PROPERTY, RecSize);
+  EmitDWord(opdflist, ClassTypeID);
+  EmitDWord(opdflist, PropTypeID);
+  EmitByte(opdflist, ReadType);
+  EmitByte(opdflist, WriteType);
+  EmitQWord(opdflist, ReadAddr);
+  EmitQWord(opdflist, WriteAddr);
+  EmitWord(opdflist, NameLen);
+  EmitString(opdflist, PropName);
 end;
 
 procedure TOPDFDebugWriter.appendprocdef(list: TAsmList; def: TProcDef);
