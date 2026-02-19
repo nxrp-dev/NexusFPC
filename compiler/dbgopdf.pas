@@ -137,6 +137,7 @@ const
   REC_FUNCSCOPE      = 15;
   REC_INTERFACE      = 16;
   REC_ENUM           = 17;
+  REC_SET            = 18;
 
 { Emit helpers }
 
@@ -839,9 +840,44 @@ begin
 end;
 
 procedure TOPDFDebugWriter.appenddef_set(list: TAsmList; def: TSetDef);
+var
+  opdflist: TAsmList;
+  TypeID: Cardinal;
+  BaseTypeID: Cardinal;
+  TypeName: AnsiString;
+  NameLen: Word;
+  RecSize: Cardinal;
+  LowerBound: LongInt;
 begin
-  if assigned(def) then
-    FTypeMapper.GetTypeID(def);
+  if not assigned(def) then
+    Exit;
+
+  opdflist := current_asmdata.asmlists[al_opdf];
+
+  TypeID := FTypeMapper.GetTypeID(def);
+
+  { Base type ID (the enum/ordinal this is a set of) }
+  if assigned(def.elementdef) then
+    BaseTypeID := FTypeMapper.GetTypeID(def.elementdef)
+  else
+    BaseTypeID := 0;
+
+  { Lowest valid ordinal in the set declaration }
+  LowerBound := LongInt(def.setlow);
+
+  TypeName := def.GetTypeName;
+  NameLen := Word(Length(TypeName));
+
+  { REC_SET: TypeID(4) + BaseTypeID(4) + SizeInBytes(1) + LowerBound(4) + NameLen(2) + Name }
+  RecSize := 4 + 4 + 1 + 4 + 2 + Cardinal(NameLen);
+
+  EmitRecordHeader(opdflist, REC_SET, RecSize);
+  EmitDWord(opdflist, TypeID);
+  EmitDWord(opdflist, BaseTypeID);
+  EmitByte(opdflist, Byte(def.size));
+  EmitDWord(opdflist, Cardinal(LowerBound));
+  EmitWord(opdflist, NameLen);
+  EmitString(opdflist, TypeName);
 end;
 
 procedure TOPDFDebugWriter.appenddef_file(list: TAsmList; def: TFileDef);
