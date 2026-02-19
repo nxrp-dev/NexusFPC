@@ -41,7 +41,7 @@ uses
   cgbase,
   defutil,
   DbgBase,
-  tpdf_type_mapper;
+  dbgopdf_typemap;
 
 type
   { OPDF Debug Format Writer - emits debug data into asm list }
@@ -112,7 +112,7 @@ type
 
 implementation
 
-{ OPDF format constants - must match ogopdf.pas definitions }
+{ OPDF format constants - must match opdf_types.pas (opdf-lib) definitions }
 const
   OPDF_MAGIC_0 = Ord('O');
   OPDF_MAGIC_1 = Ord('P');
@@ -120,7 +120,7 @@ const
   OPDF_MAGIC_3 = Ord('F');
   OPDF_VERSION  = 1;
 
-  { Record types - must match TOPDFRecordType in ogopdf.pas }
+  { Record types - must match TOPDFRecordType in opdf_types.pas (opdf-lib) }
   REC_PRIMITIVE      = 1;
   REC_GLOBALVAR      = 2;
   REC_SHORTSTR       = 3;

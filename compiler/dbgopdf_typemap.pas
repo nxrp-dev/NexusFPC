@@ -20,7 +20,7 @@
 
  ****************************************************************************
 }
-unit tpdf_type_mapper;
+unit dbgopdf_typemap;
 
 {$i fpcdefs.inc}
 

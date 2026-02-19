@@ -1,1 +1,0 @@
-/data/devel/opdebugger/opdf-lib/src/main/pascal/ogopdf.pas
