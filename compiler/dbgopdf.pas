@@ -973,14 +973,16 @@ implementation
 
     procedure TOPDFDebugWriter.appendsym_paravar(list:TAsmList;sym:tparavarsym);
       var
-        opdflist  : TAsmList;
-        typeid    : Cardinal;
-        paramname : AnsiString;
-        namelen   : Word;
-        recsize   : Cardinal;
-        isvar     : Byte;
-        isconst   : Byte;
-        isout     : Byte;
+        opdflist    : TAsmList;
+        typeid      : Cardinal;
+        paramname   : AnsiString;
+        namelen     : Word;
+        recsize     : Cardinal;
+        isvar       : Byte;
+        isconst     : Byte;
+        isout       : Byte;
+        stackoffset : Longint;
+        funcname    : AnsiString;
       begin
         if not assigned(sym) or not assigned(sym.vardef) then
           exit;
@@ -1021,6 +1023,40 @@ implementation
         EmitByte(opdflist,isout);
         EmitWord(opdflist,namelen);
         EmitString(opdflist,paramname);
+
+        { also emit a REC_LOCALVAR so that 'locals' command can find parameters }
+        if sym.localloc.loc in [LOC_REFERENCE,LOC_CREFERENCE] then
+          begin
+            stackoffset:=sym.localloc.reference.offset;
+
+            { clamp offset to ShortInt range }
+            if stackoffset>127 then
+              stackoffset:=127
+            else if stackoffset<-128 then
+              stackoffset:=-128;
+
+            { REC_LOCALVAR: TypeID(4) + ScopeID(4) + LocationExpr(1) + NameLen(2) + LocationData(1) + Name }
+            recsize:=4+4+1+2+1+Cardinal(namelen);
+
+            EmitRecordHeader(opdflist,REC_LOCALVAR,recsize);
+            EmitDWord(opdflist,typeid);
+
+            { ScopeID: use the owning function's address as scope ID }
+            if assigned(sym.owner) and assigned(sym.owner.defowner) and
+               (sym.owner.defowner.typ=procdef) then
+              begin
+                funcname:=tprocdef(sym.owner.defowner).mangledname;
+                opdflist.concat(tai_const.Create_type_sym(aitconst_32bit_unaligned,
+                  current_asmdata.RefAsmSymbol(funcname,AT_FUNCTION)));
+              end
+            else
+              EmitDWord(opdflist,0);
+
+            EmitByte(opdflist,1); { LocationExpr: 1 = RBP-relative }
+            EmitWord(opdflist,namelen);
+            EmitByte(opdflist,Byte(ShortInt(stackoffset))); { LocationData }
+            EmitString(opdflist,paramname);
+          end;
       end;
 
 
@@ -1113,19 +1149,23 @@ implementation
 
     procedure TOPDFDebugWriter.appendsym_property(list:TAsmList;sym:tpropertysym);
       var
-        opdflist    : TAsmList;
-        classtypeid : Cardinal;
-        proptypeid  : Cardinal;
-        propname    : AnsiString;
-        namelen     : Word;
-        recsize     : Cardinal;
-        readtype    : Byte;
-        writetype   : Byte;
-        readaddr    : QWord;
-        writeaddr   : QWord;
-        plist       : tpropaccesslist;
-        pitem       : ppropaccesslistitem;
-        fvsym       : tfieldvarsym;
+        opdflist        : TAsmList;
+        classtypeid     : Cardinal;
+        proptypeid      : Cardinal;
+        propname        : AnsiString;
+        readmethodname  : AnsiString;
+        writemethodname : AnsiString;
+        namelen         : Word;
+        readmnamelen    : Word;
+        writemnamelen   : Word;
+        recsize         : Cardinal;
+        readtype        : Byte;
+        writetype       : Byte;
+        readaddr        : QWord;
+        writeaddr       : QWord;
+        plist           : tpropaccesslist;
+        pitem           : ppropaccesslistitem;
+        fvsym           : tfieldvarsym;
       begin
         if not assigned(sym) then
           exit;
@@ -1149,6 +1189,7 @@ implementation
         { determine read accessor kind }
         readtype:=2; { patNone }
         readaddr:=0;
+        readmethodname:='';
         if sym.getpropaccesslist(palt_read,plist) and assigned(plist) then
           begin
             if not assigned(plist.procdef) then
@@ -1164,12 +1205,16 @@ implementation
                   end;
               end
             else
-              readtype:=1; { patMethod }
+              begin
+                readtype:=1; { patMethod }
+                readmethodname:=tprocdef(plist.procdef).procsym.RealName;
+              end;
           end;
 
         { determine write accessor kind }
         writetype:=2; { patNone }
         writeaddr:=0;
+        writemethodname:='';
         if sym.getpropaccesslist(palt_write,plist) and assigned(plist) then
           begin
             if not assigned(plist.procdef) then
@@ -1184,14 +1229,21 @@ implementation
                   end;
               end
             else
-              writetype:=1; { patMethod }
+              begin
+                writetype:=1; { patMethod }
+                writemethodname:=tprocdef(plist.procdef).procsym.RealName;
+              end;
           end;
 
         propname:=sym.RealName;
         namelen:=Word(Length(propname));
+        readmnamelen:=Word(Length(readmethodname));
+        writemnamelen:=Word(Length(writemethodname));
         { ClassTypeID(4) + PropTypeID(4) + ReadType(1) + WriteType(1) +
-          ReadAddr(8) + WriteAddr(8) + NameLen(2) + Name }
-        recsize:=4+4+1+1+8+8+2+Cardinal(namelen);
+          ReadAddr(8) + WriteAddr(8) + ReadMethodNameLen(2) +
+          WriteMethodNameLen(2) + NameLen(2) +
+          ReadMethodName + WriteMethodName + Name }
+        recsize:=4+4+1+1+8+8+2+2+2+Cardinal(readmnamelen)+Cardinal(writemnamelen)+Cardinal(namelen);
 
         EmitRecordHeader(opdflist,REC_PROPERTY,recsize);
         EmitDWord(opdflist,classtypeid);
@@ -1200,7 +1252,13 @@ implementation
         EmitByte(opdflist,writetype);
         EmitQWord(opdflist,readaddr);
         EmitQWord(opdflist,writeaddr);
+        EmitWord(opdflist,readmnamelen);
+        EmitWord(opdflist,writemnamelen);
         EmitWord(opdflist,namelen);
+        if readmnamelen>0 then
+          EmitString(opdflist,readmethodname);
+        if writemnamelen>0 then
+          EmitString(opdflist,writemethodname);
         EmitString(opdflist,propname);
       end;
 
