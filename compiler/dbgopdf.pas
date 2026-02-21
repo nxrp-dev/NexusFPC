@@ -1048,6 +1048,8 @@ var
         isout       : Byte;
         stackoffset : Longint;
         funcname    : AnsiString;
+        declindex   : Word;
+        j           : Longint;
       begin
         if not assigned(sym) or not assigned(sym.vardef) then
           exit;
@@ -1100,8 +1102,18 @@ var
             else if stackoffset<-128 then
               stackoffset:=-128;
 
-            { REC_LOCALVAR: TypeID(4) + ScopeID(4) + LocationExpr(1) + NameLen(2) + LocationData(1) + Name }
-            recsize:=4+4+1+2+1+Cardinal(namelen);
+            { find declaration index: position in parent procedure's SymList }
+            declindex:=0;
+            if assigned(sym.owner) then
+              for j:=0 to sym.owner.SymList.Count-1 do
+                if sym.owner.SymList[j]=sym then
+                  begin
+                    declindex:=Word(j);
+                    break;
+                  end;
+
+            { REC_LOCALVAR: TypeID(4) + ScopeID(4) + LocationExpr(1) + DeclIndex(2) + NameLen(2) + LocationData(1) + Name }
+            recsize:=4+4+1+2+2+1+Cardinal(namelen);
 
             EmitRecordHeader(opdflist,REC_LOCALVAR,recsize);
             EmitDWord(opdflist,typeid);
@@ -1118,6 +1130,7 @@ var
               EmitDWord(opdflist,0);
 
             EmitByte(opdflist,1); { LocationExpr: 1 = RBP-relative }
+            EmitWord(opdflist,declindex);
             EmitWord(opdflist,namelen);
             EmitByte(opdflist,Byte(ShortInt(stackoffset))); { LocationData }
             EmitString(opdflist,paramname);
@@ -1134,6 +1147,8 @@ var
         recsize     : Cardinal;
         stackoffset : Longint;
         funcname    : AnsiString;
+        declindex   : Word;
+        j           : Longint;
       begin
         if not assigned(sym) or not assigned(sym.vardef) then
           exit;
@@ -1157,8 +1172,18 @@ var
         else if stackoffset<-128 then
           stackoffset:=-128;
 
-        { REC_LOCALVAR: TypeID(4) + ScopeID(4) + LocationExpr(1) + NameLen(2) + LocationData(1) + Name }
-        recsize:=4+4+1+2+1+Cardinal(namelen);
+        { find declaration index: position in parent procedure's SymList }
+        declindex:=0;
+        if assigned(sym.owner) then
+          for j:=0 to sym.owner.SymList.Count-1 do
+            if sym.owner.SymList[j]=sym then
+              begin
+                declindex:=Word(j);
+                break;
+              end;
+
+        { REC_LOCALVAR: TypeID(4) + ScopeID(4) + LocationExpr(1) + DeclIndex(2) + NameLen(2) + LocationData(1) + Name }
+        recsize:=4+4+1+2+2+1+Cardinal(namelen);
 
         EmitRecordHeader(opdflist,REC_LOCALVAR,recsize);
         EmitDWord(opdflist,typeid);
@@ -1175,6 +1200,7 @@ var
           EmitDWord(opdflist,0);
 
         EmitByte(opdflist,1); { LocationExpr: 1 = RBP-relative }
+        EmitWord(opdflist,declindex);
         EmitWord(opdflist,namelen);
         EmitByte(opdflist,Byte(ShortInt(stackoffset))); { LocationData }
         EmitString(opdflist,varname);
@@ -1337,6 +1363,8 @@ var
         namelen         : Word;
         recsize         : Cardinal;
         in_currentunit  : Boolean;
+        declindex       : Word;
+        j               : Longint;
       begin
         if not assigned(def) then
           exit;
@@ -1381,6 +1409,18 @@ var
 
         namelen:=Word(Length(funcdisplayname));
 
+        { find declaration index: procsym's position in parent scope's SymList.
+          for nested procedures, the procsym is in the enclosing procedure's
+          localsymtable. for top-level procedures, declindex=0 (not meaningful). }
+        declindex:=0;
+        if assigned(def.procsym) and assigned(def.procsym.owner) then
+          for j:=0 to def.procsym.owner.SymList.Count-1 do
+            if def.procsym.owner.SymList[j]=def.procsym then
+              begin
+                declindex:=Word(j);
+                break;
+              end;
+
         if in_currentunit then
           begin
             { create a label for the end of the procedure }
@@ -1388,8 +1428,8 @@ var
             current_asmdata.asmlists[al_procedures].insertbefore(
               tai_label.create(procendlabel),def.procendtai);
 
-            { REC_FUNCSCOPE: ScopeID(4) + LowPC(8) + HighPC(8) + NameLen(2) + Name }
-            recsize:=4+8+8+2+Cardinal(namelen);
+            { REC_FUNCSCOPE: ScopeID(4) + LowPC(8) + HighPC(8) + DeclIndex(2) + NameLen(2) + Name }
+            recsize:=4+8+8+2+2+Cardinal(namelen);
 
             EmitRecordHeader(opdflist,REC_FUNCSCOPE,recsize);
 
@@ -1404,6 +1444,9 @@ var
             { HighPC - function end address }
             EmitSymRef(opdflist,tai_const.Create_type_sym(aitconst_ptr_unaligned,
               procendlabel));
+
+            { DeclIndex: declaration order in parent scope }
+            EmitWord(opdflist,declindex);
 
             { Name: emit the Pascal (display) name, not the mangled linker name }
             EmitWord(opdflist,namelen);
