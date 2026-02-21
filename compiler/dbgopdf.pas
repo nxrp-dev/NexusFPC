@@ -1362,13 +1362,10 @@ var
           exit;
         defnumberlist.Add(def);
 
-        { for methods: only write in scope of their parent objectdef }
-        if (def.owner.symtabletype in [objectsymtable,recordsymtable]) then
-          begin
-            if assigned(def.owner.defowner) and
-               (tdef(def.owner.defowner).dbg_state<>dbg_state_writing) then
-              exit;
-          end;
+        { note: DWARF gates method emission on the parent objectdef being in
+          dbg_state_writing, because DWARF nests methods inside class DIEs.
+          OPDF uses flat records, so we emit function scopes and locals for
+          all procedures regardless of parent class dedup state. }
 
         def.dbg_state:=dbg_state_writing;
 
