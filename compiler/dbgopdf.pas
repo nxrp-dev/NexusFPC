@@ -48,11 +48,23 @@ interface
       TOPDFDebugWriter=class(TDebugInfo)
       private
         { type mapper for allocating type IDs }
-        FTypeMapper   : TTypeMapper;
+        FTypeMapper      : TTypeMapper;
         { accumulated line info records from insertlineinfo calls.
           these are collected per-procedure and merged into al_opdf
           during inserttypeinfo, after the section header is emitted. }
-        FLineInfoList : TAsmList;
+        FLineInfoList    : TAsmList;
+        { single header: true after first header emitted }
+        FHeaderEmitted   : Boolean;
+        { type dedup: tracks TypeIDs already emitted }
+        FEmittedTypeIDs  : TFPHashList;
+        { byte counter for unit directory offsets }
+        FByteCounter     : QWord;
+        { per-unit byte sizes (stored as PtrInt via Pointer cast) }
+        FUnitSizes       : TFPList;
+        { per-unit names, parallel to FUnitSizes (PShortString items) }
+        FUnitNames       : TFPList;
+        { FByteCounter at start of current unit }
+        FUnitStartBytes  : QWord;
 
         { emit helpers - write raw bytes into asm list }
         procedure EmitByte(list:TAsmList;value:Byte);
@@ -61,7 +73,10 @@ interface
         procedure EmitQWord(list:TAsmList;value:QWord);
         procedure EmitString(list:TAsmList;const s:AnsiString);
         procedure EmitRecordHeader(list:TAsmList;rectype:Byte;recsize:Cardinal);
+        procedure EmitSymRef(list:TAsmList;symref:tai);
         procedure EmitOPDFHeader(list:TAsmList);
+        { type dedup: returns true if this def's type was already emitted }
+        function TypeAlreadyEmitted(def:tdef):Boolean;
       protected
         { override TDebugInfo virtual methods for type definitions }
         procedure appenddef_ord(list:TAsmList;def:torddef);override;
@@ -120,6 +135,9 @@ implementation
       OPDF_MAGIC_3 = Ord('F');
       OPDF_VERSION = 1;
 
+      { header flags }
+      OPDF_FLAG_HAS_DIRECTORY = 1;
+
       { record types - must match TOPDFRecordType in opdf_types.pas (opdf-lib) }
       REC_PRIMITIVE  = 1;
       REC_GLOBALVAR  = 2;
@@ -138,6 +156,7 @@ implementation
       REC_INTERFACE  = 16;
       REC_ENUM       = 17;
       REC_SET        = 18;
+      REC_UNITDIR    = 19;
 
 
 {*****************************************************************************
@@ -147,18 +166,21 @@ implementation
     procedure TOPDFDebugWriter.EmitByte(list:TAsmList;value:Byte);
       begin
         list.concat(tai_const.Create_8bit(value));
+        inc(FByteCounter,1);
       end;
 
 
     procedure TOPDFDebugWriter.EmitWord(list:TAsmList;value:Word);
       begin
         list.concat(tai_const.Create_16bit_unaligned(value));
+        inc(FByteCounter,2);
       end;
 
 
     procedure TOPDFDebugWriter.EmitDWord(list:TAsmList;value:Cardinal);
       begin
         list.concat(tai_const.Create_32bit_unaligned(longint(value)));
+        inc(FByteCounter,4);
       end;
 
 
@@ -167,6 +189,7 @@ implementation
         { emit as two 32-bit values in little-endian order }
         list.concat(tai_const.Create_32bit_unaligned(longint(value and $FFFFFFFF)));
         list.concat(tai_const.Create_32bit_unaligned(longint(value shr 32)));
+        inc(FByteCounter,8);
       end;
 
 
@@ -176,6 +199,7 @@ implementation
       begin
         for i:=1 to Length(s) do
           list.concat(tai_const.Create_8bit(Ord(s[i])));
+        inc(FByteCounter,QWord(Length(s)));
       end;
 
 
@@ -183,6 +207,34 @@ implementation
       begin
         EmitByte(list,rectype);
         EmitDWord(list,recsize);
+      end;
+
+
+    procedure TOPDFDebugWriter.EmitSymRef(list:TAsmList;symref:tai);
+      begin
+        list.concat(symref);
+        { symbol references are pointer-sized on this target }
+        if tai_const(symref).consttype=aitconst_32bit_unaligned then
+          inc(FByteCounter,4)
+        else
+          inc(FByteCounter,sizeof(pint));
+      end;
+
+
+    function TOPDFDebugWriter.TypeAlreadyEmitted(def:tdef):Boolean;
+      var
+        typeid : Cardinal;
+        key    : shortstring;
+      begin
+        typeid:=FTypeMapper.GetTypeID(def);
+        Str(typeid,key);
+        if FEmittedTypeIDs.Find(key)<>nil then
+          result:=true
+        else
+          begin
+            FEmittedTypeIDs.Add(key,Pointer(PtrInt(typeid)));
+            result:=false;
+          end;
       end;
 
 
@@ -224,8 +276,8 @@ implementation
         { TotalRecords: 0 = stream-terminated mode (4 bytes) }
         EmitDWord(list,0);
 
-        { Flags: reserved (4 bytes) }
-        EmitDWord(list,0);
+        { Flags: has directory (4 bytes) }
+        EmitDWord(list,OPDF_FLAG_HAS_DIRECTORY);
       end;
 
 
@@ -236,15 +288,32 @@ implementation
     constructor TOPDFDebugWriter.Create;
       begin
         inherited Create;
+        writeln('Created TOPDFDebugWriter instance');
         FTypeMapper:=TTypeMapper.Create;
         FLineInfoList:=TAsmList.Create;
+        FHeaderEmitted:=false;
+        FEmittedTypeIDs:=TFPHashList.Create;
+        FByteCounter:=0;
+        FUnitSizes:=TFPList.Create;
+        FUnitNames:=TFPList.Create;
+        FUnitStartBytes:=0;
       end;
 
 
     destructor TOPDFDebugWriter.Destroy;
+      var
+        i : longint;
       begin
         FLineInfoList.Free;
         FTypeMapper.Free;
+        FEmittedTypeIDs.Free;
+        FUnitSizes.Free;
+        if assigned(FUnitNames) then
+          begin
+            for i:=0 to FUnitNames.Count-1 do
+              Dispose(PShortString(FUnitNames[i]));
+            FUnitNames.Free;
+          end;
         inherited Destroy;
       end;
 
@@ -264,6 +333,8 @@ implementation
         sz       : Integer;
       begin
         if not assigned(def) then
+          exit;
+        if TypeAlreadyEmitted(def) then
           exit;
 
         opdflist:=current_asmdata.asmlists[al_opdf];
@@ -312,6 +383,8 @@ implementation
       begin
         if not assigned(def) then
           exit;
+        if TypeAlreadyEmitted(def) then
+          exit;
 
         opdflist:=current_asmdata.asmlists[al_opdf];
 
@@ -352,6 +425,8 @@ implementation
         if not assigned(def) then
           exit;
         if not assigned(def.symtable) then
+          exit;
+        if TypeAlreadyEmitted(def) then
           exit;
 
         opdflist:=current_asmdata.asmlists[al_opdf];
@@ -415,6 +490,8 @@ implementation
       begin
         if not assigned(def) then
           exit;
+        if TypeAlreadyEmitted(def) then
+          exit;
 
         opdflist:=current_asmdata.asmlists[al_opdf];
 
@@ -473,6 +550,8 @@ implementation
         fvsym        : tfieldvarsym;
       begin
         if not assigned(def) then
+          exit;
+        if TypeAlreadyEmitted(def) then
           exit;
 
         opdflist:=current_asmdata.asmlists[al_opdf];
@@ -567,6 +646,8 @@ implementation
         mtdnamelen   : Word;
       begin
         if not assigned(def) then
+          exit;
+        if TypeAlreadyEmitted(def) then
           exit;
 
         opdflist:=current_asmdata.asmlists[al_opdf];
@@ -770,6 +851,8 @@ implementation
       begin
         if not assigned(def) then
           exit;
+        if TypeAlreadyEmitted(def) then
+          exit;
 
         opdflist:=current_asmdata.asmlists[al_opdf];
 
@@ -806,6 +889,8 @@ implementation
         recsize  : Cardinal;
       begin
         if not assigned(def) then
+          exit;
+        if TypeAlreadyEmitted(def) then
           exit;
 
         opdflist:=current_asmdata.asmlists[al_opdf];
@@ -853,15 +938,15 @@ implementation
 
     procedure TOPDFDebugWriter.appenddef_procvar(list:TAsmList;def:tprocvardef);
       begin
-        if assigned(def) then
-          FTypeMapper.GetTypeID(def);
+        if assigned(def) and not TypeAlreadyEmitted(def) then
+          ;
       end;
 
 
     procedure TOPDFDebugWriter.appenddef_variant(list:TAsmList;def:tvariantdef);
       begin
-        if assigned(def) then
-          FTypeMapper.GetTypeID(def);
+        if assigned(def) and not TypeAlreadyEmitted(def) then
+          ;
       end;
 
 
@@ -876,6 +961,8 @@ implementation
         lowerbound : LongInt;
       begin
         if not assigned(def) then
+          exit;
+        if TypeAlreadyEmitted(def) then
           exit;
 
         opdflist:=current_asmdata.asmlists[al_opdf];
@@ -909,22 +996,22 @@ implementation
 
     procedure TOPDFDebugWriter.appenddef_file(list:TAsmList;def:tfiledef);
       begin
-        if assigned(def) then
-          FTypeMapper.GetTypeID(def);
+        if assigned(def) and not TypeAlreadyEmitted(def) then
+          ;
       end;
 
 
     procedure TOPDFDebugWriter.appenddef_formal(list:TAsmList;def:tformaldef);
       begin
-        if assigned(def) then
-          FTypeMapper.GetTypeID(def);
+        if assigned(def) and not TypeAlreadyEmitted(def) then
+          ;
       end;
 
 
     procedure TOPDFDebugWriter.appenddef_undefined(list:TAsmList;def:tundefineddef);
       begin
-        if assigned(def) then
-          FTypeMapper.GetTypeID(def);
+        if assigned(def) and not TypeAlreadyEmitted(def) then
+          ;
       end;
 
 
@@ -963,7 +1050,7 @@ implementation
         EmitDWord(opdflist,typeid);
 
         { emit address as a symbol reference - linker resolves the actual address }
-        opdflist.concat(tai_const.Create_type_sym(aitconst_ptr_unaligned,
+        EmitSymRef(opdflist,tai_const.Create_type_sym(aitconst_ptr_unaligned,
           current_asmdata.RefAsmSymbol(sym.mangledname,AT_DATA)));
 
         EmitWord(opdflist,namelen);
@@ -1046,7 +1133,7 @@ implementation
                (sym.owner.defowner.typ=procdef) then
               begin
                 funcname:=tprocdef(sym.owner.defowner).mangledname;
-                opdflist.concat(tai_const.Create_type_sym(aitconst_32bit_unaligned,
+                EmitSymRef(opdflist,tai_const.Create_type_sym(aitconst_32bit_unaligned,
                   current_asmdata.RefAsmSymbol(funcname,AT_FUNCTION)));
               end
             else
@@ -1103,7 +1190,7 @@ implementation
            (sym.owner.defowner.typ=procdef) then
           begin
             funcname:=tprocdef(sym.owner.defowner).mangledname;
-            opdflist.concat(tai_const.Create_type_sym(aitconst_32bit_unaligned,
+            EmitSymRef(opdflist,tai_const.Create_type_sym(aitconst_32bit_unaligned,
               current_asmdata.RefAsmSymbol(funcname,AT_FUNCTION)));
           end
         else
@@ -1332,15 +1419,15 @@ implementation
             EmitRecordHeader(opdflist,REC_FUNCSCOPE,recsize);
 
             { ScopeID: linker symbol reference to function start (uses mangled name) }
-            opdflist.concat(tai_const.Create_type_sym(aitconst_32bit_unaligned,
+            EmitSymRef(opdflist,tai_const.Create_type_sym(aitconst_32bit_unaligned,
               current_asmdata.RefAsmSymbol(funcname,AT_FUNCTION)));
 
             { LowPC - function start address (uses mangled name for linker) }
-            opdflist.concat(tai_const.Create_type_sym(aitconst_ptr_unaligned,
+            EmitSymRef(opdflist,tai_const.Create_type_sym(aitconst_ptr_unaligned,
               current_asmdata.RefAsmSymbol(funcname,AT_FUNCTION)));
 
             { HighPC - function end address }
-            opdflist.concat(tai_const.Create_type_sym(aitconst_ptr_unaligned,
+            EmitSymRef(opdflist,tai_const.Create_type_sym(aitconst_ptr_unaligned,
               procendlabel));
 
             { Name: emit the Pascal (display) name, not the mangled linker name }
@@ -1414,19 +1501,53 @@ implementation
             end;
         end;
 
+      procedure emit_unit_directory(opdflist:TAsmList);
+        var
+          dirsize : Cardinal;
+          i       : longint;
+          uname   : AnsiString;
+        begin
+          { calculate directory record payload size:
+            UnitCount(2) + per-unit: DataSize(4) + NameLen(2) + Name }
+          dirsize:=2;
+          for i:=0 to FUnitSizes.Count-1 do
+            begin
+              uname:=PShortString(FUnitNames[i])^;
+              dirsize:=dirsize+4+2+Cardinal(Length(uname));
+            end;
+          EmitRecordHeader(opdflist,REC_UNITDIR,dirsize);
+          EmitWord(opdflist,Word(FUnitSizes.Count));
+          for i:=0 to FUnitSizes.Count-1 do
+            begin
+              EmitDWord(opdflist,Cardinal(PtrUInt(FUnitSizes[i])));
+              uname:=PShortString(FUnitNames[i])^;
+              EmitWord(opdflist,Word(Length(uname)));
+              EmitString(opdflist,uname);
+            end;
+        end;
+
       var
         opdflist : TAsmList;
         i        : longint;
         def      : tdef;
+        modname  : AnsiString;
+        ps       : PShortString;
       begin
         { get the OPDF asm list }
         opdflist:=current_asmdata.asmlists[al_opdf];
 
-        { create the .opdf section }
-        new_section(opdflist,sec_user,'.opdf',0);
+        { emit section header and OPDF header only on first call }
+        if not FHeaderEmitted then
+          begin
+            new_section(opdflist,sec_user,'.opdf',0);
+            EmitOPDFHeader(opdflist);
+            FHeaderEmitted:=true;
+            { reset byte counter - header bytes don't count for directory }
+            FByteCounter:=0;
+          end;
 
-        { emit OPDF file header }
-        EmitOPDFHeader(opdflist);
+        { record start of this unit's data }
+        FUnitStartBytes:=FByteCounter;
 
         { initialize base class lists required by inherited write_symtable_* methods }
         defnumberlist:=TFPObjectList.Create(false);
@@ -1476,6 +1597,20 @@ implementation
 
         { append accumulated line info records (collected during insertlineinfo calls) }
         opdflist.concatList(FLineInfoList);
+
+        { record this unit's name and data size for directory }
+        if assigned(current_module.realmodulename) then
+          modname:=current_module.realmodulename^
+        else
+          modname:='?';
+        FUnitSizes.Add(Pointer(PtrUInt(FByteCounter-FUnitStartBytes)));
+        New(ps);
+        ps^:=modname;
+        FUnitNames.Add(ps);
+
+        { if this is the main program (not a unit), emit the directory }
+        if not current_module.is_unit then
+          emit_unit_directory(opdflist);
 
         defnumberlist.free;
         defnumberlist:=nil;
@@ -1558,7 +1693,7 @@ implementation
                         EmitRecordHeader(FLineInfoList,REC_LINEINFO,recsize);
 
                         { address - linker resolves the label to final address }
-                        FLineInfoList.concat(tai_const.Create_type_sym(aitconst_ptr_unaligned,currlabel));
+                        EmitSymRef(FLineInfoList,tai_const.Create_type_sym(aitconst_ptr_unaligned,currlabel));
 
                         { LineNumber (4 bytes) }
                         EmitDWord(FLineInfoList,Cardinal(currfileinfo.line));
