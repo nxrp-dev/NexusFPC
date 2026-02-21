@@ -47,22 +47,10 @@ interface
       { OPDF debug format writer - emits debug data into asm list }
       TOPDFDebugWriter=class(TDebugInfo)
       private
-        { type mapper for allocating type IDs }
-        FTypeMapper      : TTypeMapper;
         { accumulated line info records from insertlineinfo calls.
           these are collected per-procedure and merged into al_opdf
           during inserttypeinfo, after the section header is emitted. }
         FLineInfoList    : TAsmList;
-        { single header: true after first header emitted }
-        FHeaderEmitted   : Boolean;
-        { type dedup: tracks TypeIDs already emitted }
-        FEmittedTypeIDs  : TFPHashList;
-        { byte counter for unit directory offsets }
-        FByteCounter     : QWord;
-        { per-unit byte sizes (stored as PtrInt via Pointer cast) }
-        FUnitSizes       : TFPList;
-        { per-unit names, parallel to FUnitSizes (PShortString items) }
-        FUnitNames       : TFPList;
         { FByteCounter at start of current unit }
         FUnitStartBytes  : QWord;
 
@@ -127,6 +115,14 @@ interface
 
 implementation
 
+var
+  G_TypeMapper     : TTypeMapper;
+  G_EmittedTypeIDs : TFPHashList;
+  G_ByteCounter    : QWord;
+  G_UnitSizes      : TFPList;
+  G_UnitNames      : TFPList;
+  i                : longint;
+
     { OPDF format constants - must match opdf_types.pas (opdf-lib) definitions }
     const
       OPDF_MAGIC_0 = Ord('O');
@@ -166,21 +162,21 @@ implementation
     procedure TOPDFDebugWriter.EmitByte(list:TAsmList;value:Byte);
       begin
         list.concat(tai_const.Create_8bit(value));
-        inc(FByteCounter,1);
+        inc(G_ByteCounter,1);
       end;
 
 
     procedure TOPDFDebugWriter.EmitWord(list:TAsmList;value:Word);
       begin
         list.concat(tai_const.Create_16bit_unaligned(value));
-        inc(FByteCounter,2);
+        inc(G_ByteCounter,2);
       end;
 
 
     procedure TOPDFDebugWriter.EmitDWord(list:TAsmList;value:Cardinal);
       begin
         list.concat(tai_const.Create_32bit_unaligned(longint(value)));
-        inc(FByteCounter,4);
+        inc(G_ByteCounter,4);
       end;
 
 
@@ -189,7 +185,7 @@ implementation
         { emit as two 32-bit values in little-endian order }
         list.concat(tai_const.Create_32bit_unaligned(longint(value and $FFFFFFFF)));
         list.concat(tai_const.Create_32bit_unaligned(longint(value shr 32)));
-        inc(FByteCounter,8);
+        inc(G_ByteCounter,8);
       end;
 
 
@@ -199,7 +195,7 @@ implementation
       begin
         for i:=1 to Length(s) do
           list.concat(tai_const.Create_8bit(Ord(s[i])));
-        inc(FByteCounter,QWord(Length(s)));
+        inc(G_ByteCounter,QWord(Length(s)));
       end;
 
 
@@ -215,9 +211,9 @@ implementation
         list.concat(symref);
         { symbol references are pointer-sized on this target }
         if tai_const(symref).consttype=aitconst_32bit_unaligned then
-          inc(FByteCounter,4)
+          inc(G_ByteCounter,4)
         else
-          inc(FByteCounter,sizeof(pint));
+          inc(G_ByteCounter,sizeof(pint));
       end;
 
 
@@ -226,13 +222,13 @@ implementation
         typeid : Cardinal;
         key    : shortstring;
       begin
-        typeid:=FTypeMapper.GetTypeID(def);
+        typeid:=G_TypeMapper.GetTypeID(def);
         Str(typeid,key);
-        if FEmittedTypeIDs.Find(key)<>nil then
+        if G_EmittedTypeIDs.Find(key)<>nil then
           result:=true
         else
           begin
-            FEmittedTypeIDs.Add(key,Pointer(PtrInt(typeid)));
+            G_EmittedTypeIDs.Add(key,Pointer(PtrInt(typeid)));
             result:=false;
           end;
       end;
@@ -288,32 +284,14 @@ implementation
     constructor TOPDFDebugWriter.Create;
       begin
         inherited Create;
-        writeln('Created TOPDFDebugWriter instance');
-        FTypeMapper:=TTypeMapper.Create;
         FLineInfoList:=TAsmList.Create;
-        FHeaderEmitted:=false;
-        FEmittedTypeIDs:=TFPHashList.Create;
-        FByteCounter:=0;
-        FUnitSizes:=TFPList.Create;
-        FUnitNames:=TFPList.Create;
         FUnitStartBytes:=0;
       end;
 
 
     destructor TOPDFDebugWriter.Destroy;
-      var
-        i : longint;
       begin
         FLineInfoList.Free;
-        FTypeMapper.Free;
-        FEmittedTypeIDs.Free;
-        FUnitSizes.Free;
-        if assigned(FUnitNames) then
-          begin
-            for i:=0 to FUnitNames.Count-1 do
-              Dispose(PShortString(FUnitNames[i]));
-            FUnitNames.Free;
-          end;
         inherited Destroy;
       end;
 
@@ -340,7 +318,7 @@ implementation
         opdflist:=current_asmdata.asmlists[al_opdf];
 
         { get or allocate TypeID }
-        typeid:=FTypeMapper.GetTypeID(def);
+        typeid:=G_TypeMapper.GetTypeID(def);
 
         { determine type name }
         typename:=def.GetTypeName;
@@ -388,7 +366,7 @@ implementation
 
         opdflist:=current_asmdata.asmlists[al_opdf];
 
-        typeid:=FTypeMapper.GetTypeID(def);
+        typeid:=G_TypeMapper.GetTypeID(def);
 
         typename:=def.GetTypeName;
         namelen:=Word(Length(typename));
@@ -431,7 +409,7 @@ implementation
 
         opdflist:=current_asmdata.asmlists[al_opdf];
 
-        typeid:=FTypeMapper.GetTypeID(def);
+        typeid:=G_TypeMapper.GetTypeID(def);
 
         typename:=def.GetTypeName;
         namelen:=Word(Length(typename));
@@ -495,11 +473,11 @@ implementation
 
         opdflist:=current_asmdata.asmlists[al_opdf];
 
-        typeid:=FTypeMapper.GetTypeID(def);
+        typeid:=G_TypeMapper.GetTypeID(def);
 
         { get element type ID }
         if assigned(def.elementdef) then
-          elemtypeid:=FTypeMapper.GetTypeID(def.elementdef)
+          elemtypeid:=G_TypeMapper.GetTypeID(def.elementdef)
         else
           elemtypeid:=0;
 
@@ -556,7 +534,7 @@ implementation
 
         opdflist:=current_asmdata.asmlists[al_opdf];
 
-        typeid:=FTypeMapper.GetTypeID(def);
+        typeid:=G_TypeMapper.GetTypeID(def);
 
         { get record name }
         if assigned(def.objrealname) then
@@ -607,7 +585,7 @@ implementation
                   fvsym:=tfieldvarsym(sym);
 
                   if assigned(fvsym.vardef) then
-                    fieldtypeid:=FTypeMapper.GetTypeID(fvsym.vardef)
+                    fieldtypeid:=G_TypeMapper.GetTypeID(fvsym.vardef)
                   else
                     fieldtypeid:=0;
 
@@ -652,11 +630,11 @@ implementation
 
         opdflist:=current_asmdata.asmlists[al_opdf];
 
-        typeid:=FTypeMapper.GetTypeID(def);
+        typeid:=G_TypeMapper.GetTypeID(def);
 
         { get parent type ID }
         if assigned(def.childof) then
-          parenttypeid:=FTypeMapper.GetTypeID(def.childof)
+          parenttypeid:=G_TypeMapper.GetTypeID(def.childof)
         else
           parenttypeid:=0;
 
@@ -740,7 +718,7 @@ implementation
                           begin
                             pdef:=tprocdef(psym.ProcdefList[0]);
                             if assigned(pdef.returndef) and not is_void(pdef.returndef) then
-                              EmitDWord(opdflist,FTypeMapper.GetTypeID(pdef.returndef))
+                              EmitDWord(opdflist,G_TypeMapper.GetTypeID(pdef.returndef))
                             else
                               EmitDWord(opdflist,0);
                             EmitByte(opdflist,Byte(pdef.paras.Count));
@@ -807,7 +785,7 @@ implementation
                         fvsym:=tfieldvarsym(sym);
 
                         if assigned(fvsym.vardef) then
-                          fieldtypeid:=FTypeMapper.GetTypeID(fvsym.vardef)
+                          fieldtypeid:=G_TypeMapper.GetTypeID(fvsym.vardef)
                         else
                           fieldtypeid:=0;
 
@@ -856,13 +834,13 @@ implementation
 
         opdflist:=current_asmdata.asmlists[al_opdf];
 
-        typeid:=FTypeMapper.GetTypeID(def);
+        typeid:=G_TypeMapper.GetTypeID(def);
 
         { resolve target type - 0 for void pointers }
         if is_voidpointer(def) then
           targettypeid:=0
         else if assigned(def.pointeddef) then
-          targettypeid:=FTypeMapper.GetTypeID(def.pointeddef)
+          targettypeid:=G_TypeMapper.GetTypeID(def.pointeddef)
         else
           targettypeid:=0;
 
@@ -895,7 +873,7 @@ implementation
 
         opdflist:=current_asmdata.asmlists[al_opdf];
 
-        typeid:=FTypeMapper.GetTypeID(def);
+        typeid:=G_TypeMapper.GetTypeID(def);
 
         typename:=def.GetTypeName;
         namelen:=Word(Length(typename));
@@ -967,11 +945,11 @@ implementation
 
         opdflist:=current_asmdata.asmlists[al_opdf];
 
-        typeid:=FTypeMapper.GetTypeID(def);
+        typeid:=G_TypeMapper.GetTypeID(def);
 
         { base type ID (the enum/ordinal this is a set of) }
         if assigned(def.elementdef) then
-          basetypeid:=FTypeMapper.GetTypeID(def.elementdef)
+          basetypeid:=G_TypeMapper.GetTypeID(def.elementdef)
         else
           basetypeid:=0;
 
@@ -1037,7 +1015,7 @@ implementation
         opdflist:=current_asmdata.asmlists[al_opdf];
 
         { get the variable's type ID }
-        typeid:=FTypeMapper.GetTypeID(sym.vardef);
+        typeid:=G_TypeMapper.GetTypeID(sym.vardef);
 
         { use mangled name for the variable }
         varname:=sym.mangledname;
@@ -1080,7 +1058,7 @@ implementation
 
         opdflist:=current_asmdata.asmlists[al_opdf];
 
-        typeid:=FTypeMapper.GetTypeID(sym.vardef);
+        typeid:=G_TypeMapper.GetTypeID(sym.vardef);
 
         paramname:=sym.RealName;
         namelen:=Word(Length(paramname));
@@ -1166,7 +1144,7 @@ implementation
 
         opdflist:=current_asmdata.asmlists[al_opdf];
 
-        typeid:=FTypeMapper.GetTypeID(sym.vardef);
+        typeid:=G_TypeMapper.GetTypeID(sym.vardef);
 
         varname:=sym.RealName;
         namelen:=Word(Length(varname));
@@ -1265,11 +1243,11 @@ implementation
         opdflist:=current_asmdata.asmlists[al_opdf];
 
         { get owning class TypeID }
-        classtypeid:=FTypeMapper.GetTypeID(tdef(sym.owner.defowner));
+        classtypeid:=G_TypeMapper.GetTypeID(tdef(sym.owner.defowner));
 
         { get property return type ID }
         if assigned(sym.propdef) then
-          proptypeid:=FTypeMapper.GetTypeID(sym.propdef)
+          proptypeid:=G_TypeMapper.GetTypeID(sym.propdef)
         else
           proptypeid:=0;
 
@@ -1510,17 +1488,17 @@ implementation
           { calculate directory record payload size:
             UnitCount(2) + per-unit: DataSize(4) + NameLen(2) + Name }
           dirsize:=2;
-          for i:=0 to FUnitSizes.Count-1 do
+          for i:=0 to G_UnitSizes.Count-1 do
             begin
-              uname:=PShortString(FUnitNames[i])^;
+              uname:=PShortString(G_UnitNames[i])^;
               dirsize:=dirsize+4+2+Cardinal(Length(uname));
             end;
           EmitRecordHeader(opdflist,REC_UNITDIR,dirsize);
-          EmitWord(opdflist,Word(FUnitSizes.Count));
-          for i:=0 to FUnitSizes.Count-1 do
+          EmitWord(opdflist,Word(G_UnitSizes.Count));
+          for i:=0 to G_UnitSizes.Count-1 do
             begin
-              EmitDWord(opdflist,Cardinal(PtrUInt(FUnitSizes[i])));
-              uname:=PShortString(FUnitNames[i])^;
+              EmitDWord(opdflist,Cardinal(PtrUInt(G_UnitSizes[i])));
+              uname:=PShortString(G_UnitNames[i])^;
               EmitWord(opdflist,Word(Length(uname)));
               EmitString(opdflist,uname);
             end;
@@ -1536,18 +1514,12 @@ implementation
         { get the OPDF asm list }
         opdflist:=current_asmdata.asmlists[al_opdf];
 
-        { emit section header and OPDF header only on first call }
-        if not FHeaderEmitted then
-          begin
-            new_section(opdflist,sec_user,'.opdf',0);
-            EmitOPDFHeader(opdflist);
-            FHeaderEmitted:=true;
-            { reset byte counter - header bytes don't count for directory }
-            FByteCounter:=0;
-          end;
+        { create the .opdf section and emit header for this module }
+        new_section(opdflist,sec_user,'.opdf',0);
+        EmitOPDFHeader(opdflist);
 
         { record start of this unit's data }
-        FUnitStartBytes:=FByteCounter;
+        FUnitStartBytes:=G_ByteCounter;
 
         { initialize base class lists required by inherited write_symtable_* methods }
         defnumberlist:=TFPObjectList.Create(false);
@@ -1603,10 +1575,10 @@ implementation
           modname:=current_module.realmodulename^
         else
           modname:='?';
-        FUnitSizes.Add(Pointer(PtrUInt(FByteCounter-FUnitStartBytes)));
+        G_UnitSizes.Add(Pointer(PtrUInt(G_ByteCounter-FUnitStartBytes)));
         New(ps);
         ps^:=modname;
-        FUnitNames.Add(ps);
+        G_UnitNames.Add(ps);
 
         { if this is the main program (not a unit), emit the directory }
         if not current_module.is_unit then
@@ -1723,5 +1695,21 @@ implementation
 
 initialization
   RegisterDebugInfo(dbg_opdf_info,TOPDFDebugWriter);
+  G_TypeMapper := TTypeMapper.Create;
+  G_EmittedTypeIDs := TFPHashList.Create;
+  G_ByteCounter := 0;
+  G_UnitSizes := TFPList.Create;
+  G_UnitNames := TFPList.Create;
 
+finalization
+  G_TypeMapper.Free;
+  G_EmittedTypeIDs.Free;
+  if assigned(G_UnitNames) then
+    begin
+      for i:=0 to G_UnitNames.Count-1 do
+        Dispose(PShortString(G_UnitNames[i]));
+      G_UnitNames.Free;
+    end;
+  if assigned(G_UnitSizes) then
+    G_UnitSizes.Free;
 end.
