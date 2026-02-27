@@ -41,6 +41,7 @@ interface
       cgbase,
       defutil,
       DbgBase,
+      widestr,
       dbgopdf_typemap;
 
     type
@@ -153,6 +154,14 @@ var
       REC_ENUM       = 17;
       REC_SET        = 18;
       REC_UNITDIR    = 19;
+      REC_CONSTANT   = 20;  { must match recConstant in opdf_types.pas }
+
+      { constant kind — must match TConstantKind in opdf_types.pas }
+      CKIND_ORD      = 0;
+      CKIND_STRING   = 1;
+      CKIND_REAL     = 2;
+      CKIND_NIL      = 3;
+      CKIND_WIDESTR  = 4;
 
 
 {*****************************************************************************
@@ -1215,8 +1224,118 @@ var
 
 
     procedure TOPDFDebugWriter.appendsym_const(list:TAsmList;sym:tconstsym);
+      var
+        opdflist  : TAsmList;
+        typeid    : Cardinal;
+        constname : AnsiString;
+        namelen   : Word;
+        recsize   : Cardinal;
+        valuelen  : Word;
+        orddata   : array[0..7] of Byte;
+        dbldata   : array[0..7] of Byte;
+        i         : Longint;
+        dval      : Double;
+        wlen      : Longint;
+        wch       : Word;
       begin
-        { TODO: implement constant symbol mapping }
+        if not assigned(sym) then
+          exit;
+
+        { skip unsupported constant kinds }
+        if sym.consttyp in [constnone,constresourcestring,constwresourcestring,
+                            constset,constguid,constpointer] then
+          exit;
+
+        opdflist:=current_asmdata.asmlists[al_opdf];
+        constname:=sym.RealName;
+        namelen:=Word(Length(constname));
+
+        { get the constant's type ID }
+        if assigned(sym.constdef) then
+          typeid:=G_TypeMapper.GetTypeID(sym.constdef)
+        else
+          typeid:=0;
+
+        { payload fixed part: TypeID(4) + ConstKind(1) + ValueLen(2) + NameLen(2) = 9 }
+        case sym.consttyp of
+          constord:
+            begin
+              valuelen:=8;
+              PInt64(@orddata)^:=sym.value.valueord.svalue;
+              recsize:=9+valuelen+Cardinal(namelen);
+              EmitRecordHeader(opdflist,REC_CONSTANT,recsize);
+              EmitDWord(opdflist,typeid);
+              EmitByte(opdflist,CKIND_ORD);
+              EmitWord(opdflist,valuelen);
+              EmitWord(opdflist,namelen);
+              for i:=0 to 7 do
+                EmitByte(opdflist,orddata[i]);
+              EmitString(opdflist,constname);
+            end;
+
+          conststring:
+            begin
+              valuelen:=Word(sym.value.len);
+              recsize:=9+valuelen+Cardinal(namelen);
+              EmitRecordHeader(opdflist,REC_CONSTANT,recsize);
+              EmitDWord(opdflist,typeid);
+              EmitByte(opdflist,CKIND_STRING);
+              EmitWord(opdflist,valuelen);
+              EmitWord(opdflist,namelen);
+              for i:=0 to sym.value.len-1 do
+                EmitByte(opdflist,pbyte(sym.value.valueptr+i)^);
+              EmitString(opdflist,constname);
+            end;
+
+          constreal:
+            begin
+              valuelen:=8;
+              dval:=Double(PExtended(sym.value.valueptr)^);
+              PDouble(@dbldata)^:=dval;
+              recsize:=9+valuelen+Cardinal(namelen);
+              EmitRecordHeader(opdflist,REC_CONSTANT,recsize);
+              EmitDWord(opdflist,typeid);
+              EmitByte(opdflist,CKIND_REAL);
+              EmitWord(opdflist,valuelen);
+              EmitWord(opdflist,namelen);
+              for i:=0 to 7 do
+                EmitByte(opdflist,dbldata[i]);
+              EmitString(opdflist,constname);
+            end;
+
+          constnil:
+            begin
+              valuelen:=0;
+              recsize:=9+Cardinal(namelen);
+              EmitRecordHeader(opdflist,REC_CONSTANT,recsize);
+              EmitDWord(opdflist,typeid);
+              EmitByte(opdflist,CKIND_NIL);
+              EmitWord(opdflist,0);
+              EmitWord(opdflist,namelen);
+              EmitString(opdflist,constname);
+            end;
+
+          constwstring:
+            begin
+              wlen:=getlengthwidestring(sym.value.valuews);
+              valuelen:=Word(wlen*2);
+              recsize:=9+valuelen+Cardinal(namelen);
+              EmitRecordHeader(opdflist,REC_CONSTANT,recsize);
+              EmitDWord(opdflist,typeid);
+              EmitByte(opdflist,CKIND_WIDESTR);
+              EmitWord(opdflist,valuelen);
+              EmitWord(opdflist,namelen);
+              for i:=0 to wlen-1 do
+                begin
+                  wch:=getcharwidestring(sym.value.valuews,i);
+                  EmitByte(opdflist,wch and $FF);
+                  EmitByte(opdflist,(wch shr 8) and $FF);
+                end;
+              EmitString(opdflist,constname);
+            end;
+          else
+            ; { remaining kinds (constset, constguid, etc.) not yet supported }
+        end;
       end;
 
 
