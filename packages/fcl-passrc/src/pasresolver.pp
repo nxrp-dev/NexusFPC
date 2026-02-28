@@ -1470,7 +1470,8 @@ type
   TPRResolveAlias = (
     prraNone, // do not resolve alias
     prraSimple, // resolve alias, but not type alias
-    prraAlias // resolve alias and type alias
+    prraAlias, // resolve alias and type alias
+    prraHighType
     );
 
   TPRProcTypeDescFlag = (
@@ -24331,6 +24332,11 @@ begin
     if IsSameType(Arg1Resolved.HiTypeEl,Arg2Resolved.HiTypeEl,prraSimple) then
       exit(cExact);
     end
+  else if ResolveAlias=prraHighType then
+    begin
+    if IsSameType(Arg1Resolved.HiTypeEl,Arg2Resolved.HiTypeEl,prraNone) then
+      exit(cExact);
+    end
   else
     begin
     if IsSameType(Arg1Resolved.LoTypeEl,Arg2Resolved.LoTypeEl,prraNone) then
@@ -29255,8 +29261,8 @@ begin
     begin
     Param:=TPasElement(Params[i]);
     ComputeElement(Param,ResolvedEl,[rcType]);
-    ParamsResolved[i]:=ResolvedEl.LoTypeEl;
-    if ResolvedEl.LoTypeEl<>TPasType(GenericTemplateList[i]) then
+    ParamsResolved[i]:=ResolvedEl.HiTypeEl;
+    if ResolvedEl.HiTypeEl<>TPasType(GenericTemplateList[i]) then
       IsSelf:=false;
     end;
   if IsSelf then
@@ -29279,7 +29285,7 @@ begin
     while j>=0 do
       begin
       if not IsSameType(Item.Params[j],ParamsResolved[j],prraNone)
-          and (CheckElTypeCompatibility(Item.Params[j],ParamsResolved[j],prraNone)>cExact) then
+          and (CheckElTypeCompatibility(Item.Params[j],ParamsResolved[j],prraHighType)>cExact) then
         break;
       dec(j);
       end;
