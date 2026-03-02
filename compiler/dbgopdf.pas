@@ -1176,11 +1176,11 @@ var
           begin
             stackoffset:=sym.localloc.reference.offset;
 
-            { clamp offset to ShortInt range }
-            if stackoffset>127 then
-              stackoffset:=127
-            else if stackoffset<-128 then
-              stackoffset:=-128;
+            { clamp offset to SmallInt range }
+            if stackoffset>32767 then
+              stackoffset:=32767
+            else if stackoffset<-32768 then
+              stackoffset:=-32768;
 
             { find declaration index: position in parent procedure's SymList }
             declindex:=0;
@@ -1192,8 +1192,8 @@ var
                     break;
                   end;
 
-            { REC_LOCALVAR: TypeID(4) + ScopeID(4) + LocationExpr(1) + DeclIndex(2) + NameLen(2) + LocationData(1) + Name }
-            recsize:=4+4+1+2+2+1+Cardinal(namelen);
+            { REC_LOCALVAR: TypeID(4) + ScopeID(4) + LocationExpr(1) + DeclIndex(2) + NameLen(2) + LocationData(2) + Name }
+            recsize:=4+4+1+2+2+2+Cardinal(namelen);
 
             EmitRecordHeader(opdflist,REC_LOCALVAR,recsize);
             EmitDWord(opdflist,typeid);
@@ -1212,7 +1212,7 @@ var
             EmitByte(opdflist,1); { LocationExpr: 1 = RBP-relative }
             EmitWord(opdflist,declindex);
             EmitWord(opdflist,namelen);
-            EmitByte(opdflist,Byte(ShortInt(stackoffset))); { LocationData }
+            EmitWord(opdflist,Word(SmallInt(stackoffset))); { LocationData }
             EmitString(opdflist,paramname);
           end;
       end;
@@ -1246,11 +1246,11 @@ var
 
         stackoffset:=sym.localloc.reference.offset;
 
-        { clamp offset to ShortInt range }
-        if stackoffset>127 then
-          stackoffset:=127
-        else if stackoffset<-128 then
-          stackoffset:=-128;
+        { clamp offset to SmallInt range }
+        if stackoffset>32767 then
+          stackoffset:=32767
+        else if stackoffset<-32768 then
+          stackoffset:=-32768;
 
         { find declaration index: position in parent procedure's SymList }
         declindex:=0;
@@ -1262,8 +1262,8 @@ var
                 break;
               end;
 
-        { REC_LOCALVAR: TypeID(4) + ScopeID(4) + LocationExpr(1) + DeclIndex(2) + NameLen(2) + LocationData(1) + Name }
-        recsize:=4+4+1+2+2+1+Cardinal(namelen);
+        { REC_LOCALVAR: TypeID(4) + ScopeID(4) + LocationExpr(1) + DeclIndex(2) + NameLen(2) + LocationData(2) + Name }
+        recsize:=4+4+1+2+2+2+Cardinal(namelen);
 
         EmitRecordHeader(opdflist,REC_LOCALVAR,recsize);
         EmitDWord(opdflist,typeid);
@@ -1282,7 +1282,7 @@ var
         EmitByte(opdflist,1); { LocationExpr: 1 = RBP-relative }
         EmitWord(opdflist,declindex);
         EmitWord(opdflist,namelen);
-        EmitByte(opdflist,Byte(ShortInt(stackoffset))); { LocationData }
+        EmitWord(opdflist,Word(SmallInt(stackoffset))); { LocationData }
         EmitString(opdflist,varname);
       end;
 
