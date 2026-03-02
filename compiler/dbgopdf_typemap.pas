@@ -4,6 +4,10 @@
     This unit contains the type mapping functionality for OPDF debug format.
     Maps FPC's type definitions (TDef hierarchy) to OPDF type records.
 
+    Cross-unit type deduplication uses mangled type names (like DWARF) rather
+    than tdef pointer comparison, because PPU loading creates new tdef
+    instances for each compilation unit.
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -32,7 +36,7 @@ interface
       symtype;
 
     type
-      { type ID mapping entry }
+      { type ID mapping entry — used for pointer-based cache }
       PTypeMapEntry=^TTypeMapEntry;
       TTypeMapEntry=record
         Def    : tdef;
@@ -42,17 +46,21 @@ interface
       { type ID allocator for OPDF debug format }
       TTypeMapper=class
       private
-        { array of type mappings }
-        FTypeMap    : array of TTypeMapEntry;
-        { current number of entries in map }
-        FTypeCount  : Longint;
-        { allocated capacity of array }
-        FCapacity   : Longint;
+        { pointer-based cache for fast within-unit lookups }
+        FPtrMap     : array of TTypeMapEntry;
+        FPtrCount   : Longint;
+        FPtrCapacity: Longint;
+        { name-based map for cross-unit dedup (key=mangled name, val=TypeID) }
+        FNameMap    : TFPHashList;
         { next available type ID }
         FNextTypeID : Cardinal;
 
-        { expand the type map array }
-        procedure Expand;
+        { expand the pointer cache array }
+        procedure ExpandPtrMap;
+        { build a name-based key for cross-unit dedup; empty for anonymous types }
+        function GetTypeKey(def:tdef):AnsiString;
+        { add entry to pointer cache }
+        procedure AddToPtrCache(def:tdef;typeid:Cardinal);
       public
         constructor Create;
         destructor Destroy;override;
@@ -80,53 +88,90 @@ implementation
     constructor TTypeMapper.Create;
       begin
         inherited Create;
-        FTypeCount:=0;
-        FCapacity:=INITIAL_CAPACITY;
+        FPtrCount:=0;
+        FPtrCapacity:=INITIAL_CAPACITY;
         FNextTypeID:=1; { start TypeIDs from 1; 0 is reserved for "no type" }
-        SetLength(FTypeMap,FCapacity);
+        SetLength(FPtrMap,FPtrCapacity);
+        FNameMap:=TFPHashList.Create;
       end;
 
 
     destructor TTypeMapper.Destroy;
       begin
-        SetLength(FTypeMap,0);
+        SetLength(FPtrMap,0);
+        FNameMap.Free;
         inherited Destroy;
       end;
 
 
-    procedure TTypeMapper.Expand;
+    procedure TTypeMapper.ExpandPtrMap;
       var
         newcapacity : Longint;
       begin
-        newcapacity:=FCapacity*EXPAND_FACTOR;
-        if newcapacity<FCapacity then
+        newcapacity:=FPtrCapacity*EXPAND_FACTOR;
+        if newcapacity<FPtrCapacity then
           newcapacity:=MaxInt; { overflow protection }
-        SetLength(FTypeMap,newcapacity);
-        FCapacity:=newcapacity;
+        SetLength(FPtrMap,newcapacity);
+        FPtrCapacity:=newcapacity;
+      end;
+
+
+    function TTypeMapper.GetTypeKey(def:tdef):AnsiString;
+      begin
+        result:='';
+        if not assigned(def) then
+          exit;
+        { named types: use mangled name for globally unique key }
+        if assigned(def.typesym) and assigned(def.typesym.owner) then
+          begin
+            result:=make_mangledname('',def.typesym.owner,def.typesym.RealName);
+          end;
+      end;
+
+
+    procedure TTypeMapper.AddToPtrCache(def:tdef;typeid:Cardinal);
+      begin
+        if FPtrCount>=FPtrCapacity then
+          ExpandPtrMap;
+        FPtrMap[FPtrCount].Def:=def;
+        FPtrMap[FPtrCount].TypeID:=typeid;
+        inc(FPtrCount);
       end;
 
 
     function TTypeMapper.HasType(Def:tdef):Boolean;
       var
-        i : Longint;
+        i   : Longint;
+        key : AnsiString;
       begin
         result:=false;
-        if (Def=nil) or (FTypeCount=0) then
+        if Def=nil then
           exit;
-        for i:=0 to FTypeCount-1 do
+
+        key:=GetTypeKey(def);
+        if key<>'' then
           begin
-            if FTypeMap[i].Def=Def then
-              begin
-                result:=true;
-                exit;
-              end;
+            { named type: check name-based map only }
+            result:=FNameMap.Find(key)<>nil;
+          end
+        else
+          begin
+            { anonymous type: check pointer cache }
+            for i:=0 to FPtrCount-1 do
+              if FPtrMap[i].Def=Def then
+                begin
+                  result:=true;
+                  exit;
+                end;
           end;
       end;
 
 
     function TTypeMapper.GetTypeID(Def:tdef):Cardinal;
       var
-        i : Longint;
+        i   : Longint;
+        key : AnsiString;
+        p   : Pointer;
       begin
         if Def=nil then
           begin
@@ -134,40 +179,57 @@ implementation
             exit;
           end;
 
-        { quick check: already in map? }
-        if FTypeCount>0 then
-          for i:=0 to FTypeCount-1 do
-            begin
-              if FTypeMap[i].Def=Def then
+        { build name-based key; non-empty for named types }
+        key:=GetTypeKey(def);
+
+        if key<>'' then
+          begin
+            { named type: use name-based map exclusively.
+              Do NOT use pointer cache — stale pointers from previous
+              units can match unrelated types due to memory reuse. }
+            p:=FNameMap.Find(key);
+            if p<>nil then
+              begin
+                result:=Cardinal(PtrUInt(p));
+                exit;
+              end;
+
+            { allocate new TypeID }
+            result:=FNextTypeID;
+            inc(FNextTypeID);
+            FNameMap.Add(key,Pointer(PtrUInt(result)));
+          end
+        else
+          begin
+            { anonymous type: use pointer-based lookup (unit-local only) }
+            for i:=0 to FPtrCount-1 do
+              if FPtrMap[i].Def=Def then
                 begin
-                  result:=FTypeMap[i].TypeID;
+                  result:=FPtrMap[i].TypeID;
                   exit;
                 end;
-            end;
 
-        { allocate new TypeID }
-        if FTypeCount>=FCapacity then
-          Expand;
-
-        FTypeMap[FTypeCount].Def:=Def;
-        FTypeMap[FTypeCount].TypeID:=FNextTypeID;
-        result:=FNextTypeID;
-        inc(FTypeCount);
-        inc(FNextTypeID);
+            { allocate new TypeID }
+            result:=FNextTypeID;
+            inc(FNextTypeID);
+            AddToPtrCache(def,result);
+          end;
       end;
 
 
     function TTypeMapper.GetTypeCount:Longint;
       begin
-        result:=FTypeCount;
+        { total unique TypeIDs allocated }
+        result:=Longint(FNextTypeID)-1;
       end;
 
 
     procedure TTypeMapper.Clear;
       begin
-        FTypeCount:=0;
+        FPtrCount:=0;
         FNextTypeID:=1;
-        SetLength(FTypeMap,FCapacity);
+        SetLength(FPtrMap,FPtrCapacity);
+        FNameMap.Clear;
       end;
 
 
