@@ -34,7 +34,7 @@ interface
       cclasses,
       aasmbase,aasmtai,aasmdata,
       systems,
-      symbase,symconst,symtype,symdef,symsym,
+      symbase,symconst,symtype,symdef,symsym,symtable,
       finput,
       fmodule,
       globtype,
@@ -746,7 +746,78 @@ var
                   end;
             end;
 
-          odt_class,odt_object:
+          odt_object:
+            begin
+              { emit REC_RECORD for old-style 'object' types — value types
+                stored inline on the stack, like records with methods }
+
+              { count non-static fields }
+              fieldcount:=0;
+              if assigned(def.symtable) then
+                for i:=0 to def.symtable.SymList.Count-1 do
+                  begin
+                    sym:=tsym(def.symtable.SymList[i]);
+                    if (sym.typ=fieldvarsym) and
+                       not (sp_static in sym.symoptions) then
+                      inc(fieldcount);
+                  end;
+
+              { calculate record size }
+              { TypeID(4) + FieldCount(4) + TotalSize(4) + NameLen(2) + Name }
+              recsize:=4+4+4+2+Cardinal(namelen);
+              { fields: FieldTypeID(4) + Offset(4) + FieldNameLen(2) + FieldName per field }
+              if assigned(def.symtable) then
+                for i:=0 to def.symtable.SymList.Count-1 do
+                  begin
+                    sym:=tsym(def.symtable.SymList[i]);
+                    if (sym.typ=fieldvarsym) and
+                       not (sp_static in sym.symoptions) then
+                      recsize:=recsize+4+4+2+Cardinal(Length(sym.RealName));
+                  end;
+
+              EmitRecordHeader(opdflist,REC_RECORD,recsize);
+              EmitDWord(opdflist,typeid);
+              EmitDWord(opdflist,fieldcount);
+              EmitDWord(opdflist,Cardinal(tobjectsymtable(def.symtable).datasize));
+              EmitWord(opdflist,namelen);
+              EmitString(opdflist,typename);
+
+              { emit field descriptors }
+              if assigned(def.symtable) then
+                for i:=0 to def.symtable.SymList.Count-1 do
+                  begin
+                    sym:=tsym(def.symtable.SymList[i]);
+                    if (sym.typ=fieldvarsym) and
+                       not (sp_static in sym.symoptions) then
+                      begin
+                        fvsym:=tfieldvarsym(sym);
+
+                        if assigned(fvsym.vardef) then
+                          fieldtypeid:=G_TypeMapper.GetTypeID(fvsym.vardef)
+                        else
+                          fieldtypeid:=0;
+
+                        fieldname:=fvsym.RealName;
+                        fieldnamelen:=Word(Length(fieldname));
+
+                        EmitDWord(opdflist,fieldtypeid);
+                        EmitDWord(opdflist,Cardinal(fvsym.fieldoffset));
+                        EmitWord(opdflist,fieldnamelen);
+                        EmitString(opdflist,fieldname);
+                      end;
+                  end;
+
+              { emit property records for object types }
+              if assigned(def.symtable) then
+                for i:=0 to def.symtable.SymList.Count-1 do
+                  begin
+                    sym:=tsym(def.symtable.SymList[i]);
+                    if sym.typ=propertysym then
+                      appendsym_property(list,tpropertysym(sym));
+                  end;
+            end;
+
+          odt_class:
             begin
               { emit REC_CLASS }
 
