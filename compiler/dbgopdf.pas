@@ -156,6 +156,14 @@ var
       REC_UNITDIR    = 19;
       REC_CONSTANT   = 20;  { must match recConstant in opdf_types.pas }
 
+      { primitive SubKind — must match TOPDFPrimitiveSubKind in opdf_types.pas }
+      SUBKIND_INTEGER  = 0;
+      SUBKIND_BOOLEAN  = 1;
+      SUBKIND_CHAR     = 2;
+      SUBKIND_WIDECHAR = 3;
+      SUBKIND_FLOAT    = 4;
+      SUBKIND_CURRENCY = 5;
+
       { constant kind — must match TConstantKind in opdf_types.pas }
       CKIND_ORD      = 0;
       CKIND_STRING   = 1;
@@ -315,6 +323,7 @@ var
         typeid   : Cardinal;
         typename : AnsiString;
         issigned : Byte;
+        subkind  : Byte;
         namelen  : Word;
         recsize  : Cardinal;
         sz       : Integer;
@@ -347,13 +356,29 @@ var
             issigned:=0;
         end;
 
-        { record payload: TypeID(4) + SizeInBytes(1) + IsSigned(1) + NameLen(2) + Name }
-        recsize:=4+1+1+2+Cardinal(namelen);
+        { determine SubKind from ordtype }
+        case def.ordtype of
+          pasbool1,pasbool8,pasbool16,pasbool32,pasbool64,
+          bool8bit,bool16bit,bool32bit,bool64bit:
+            subkind:=SUBKIND_BOOLEAN;
+          uchar:
+            subkind:=SUBKIND_CHAR;
+          uwidechar:
+            subkind:=SUBKIND_WIDECHAR;
+          scurrency:
+            subkind:=SUBKIND_CURRENCY;
+          else
+            subkind:=SUBKIND_INTEGER;
+        end;
+
+        { record payload: TypeID(4) + SizeInBytes(1) + IsSigned(1) + SubKind(1) + NameLen(2) + Name }
+        recsize:=4+1+1+1+2+Cardinal(namelen);
 
         EmitRecordHeader(opdflist,REC_PRIMITIVE,recsize);
         EmitDWord(opdflist,typeid);
         EmitByte(opdflist,Byte(sz));
         EmitByte(opdflist,issigned);
+        EmitByte(opdflist,subkind);
         EmitWord(opdflist,namelen);
         EmitString(opdflist,typename);
       end;
@@ -385,12 +410,13 @@ var
           sz:=1;
 
         { all float types are signed }
-        recsize:=4+1+1+2+Cardinal(namelen);
+        recsize:=4+1+1+1+2+Cardinal(namelen);
 
         EmitRecordHeader(opdflist,REC_PRIMITIVE,recsize);
         EmitDWord(opdflist,typeid);
         EmitByte(opdflist,Byte(sz));
         EmitByte(opdflist,1); { IsSigned = 1 for all floats }
+        EmitByte(opdflist,SUBKIND_FLOAT);
         EmitWord(opdflist,namelen);
         EmitString(opdflist,typename);
       end;
