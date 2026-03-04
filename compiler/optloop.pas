@@ -285,7 +285,7 @@ unit optloop;
                 { no aliasing? }
                 result:=(([nf_write,nf_modify]*expr.flags)=[]) and not(tabstractvarsym(tloadnode(expr).symtableentry).addr_taken) and
                 { no definition in the loop? }
-                  not(DynSetIn(tfornode(loop).t2.optinfo^.defsum,expr.optinfo^.index));
+                  not(expr.optinfo^.index in tfornode(loop).t2.optinfo^.defsum);
             end;
           vecn:
             begin
@@ -672,8 +672,8 @@ unit optloop;
               Internalerror(2017122801);
             if not(assigned(tfornode(n).left.optinfo)) then
               exit;
-            if not(DynSetIn(tfornode(n).t2.optinfo^.usesum,tfornode(n).left.optinfo^.index)) and
-              not(DynSetIn(tfornode(n).t2.optinfo^.defsum,tfornode(n).left.optinfo^.index))  then
+            if not(tfornode(n).left.optinfo^.index in tfornode(n).t2.optinfo^.usesum) and
+              not(tfornode(n).left.optinfo^.index in tfornode(n).t2.optinfo^.defsum)  then
               begin
                 { convert the loop from i:=a to b into i:=b-a+1 to 1 as this simplifies the
                   abort condition }
