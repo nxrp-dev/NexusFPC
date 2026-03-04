@@ -1134,44 +1134,60 @@ var
         if not assigned(sym) or not assigned(sym.vardef) then
           exit;
 
-        { skip the hidden self/vmt/result parameters }
+        { skip the hidden vmt/result parameters, but let Self through }
         if vo_is_hidden_para in sym.varoptions then
-          exit;
+        begin
+          if not (vo_is_self in sym.varoptions) then
+            exit;
+          { Self: skip the REC_PARAMETER record but fall through to
+            emit REC_LOCALVAR below so the debugger can find it }
+        end
+        else
+        begin
+          opdflist:=current_asmdata.asmlists[al_opdf];
 
-        opdflist:=current_asmdata.asmlists[al_opdf];
+          typeid:=G_TypeMapper.GetTypeID(sym.vardef);
 
-        typeid:=G_TypeMapper.GetTypeID(sym.vardef);
+          paramname:=sym.RealName;
+          namelen:=Word(Length(paramname));
 
-        paramname:=sym.RealName;
-        namelen:=Word(Length(paramname));
+          { determine var/const/out flags }
+          isvar:=0;
+          isconst:=0;
+          isout:=0;
+          case sym.varspez of
+            vs_var:
+              isvar:=1;
+            vs_out:
+              isout:=1;
+            vs_const,vs_constref:
+              isconst:=1;
+            else
+              ; { vs_value, vs_final }
+          end;
 
-        { determine var/const/out flags }
-        isvar:=0;
-        isconst:=0;
-        isout:=0;
-        case sym.varspez of
-          vs_var:
-            isvar:=1;
-          vs_out:
-            isout:=1;
-          vs_const,vs_constref:
-            isconst:=1;
-          else
-            ; { vs_value, vs_final }
+          { REC_PARAMETER: TypeID(4) + IsVar(1) + IsConst(1) + IsOut(1) + NameLen(2) + Name }
+          recsize:=4+1+1+1+2+Cardinal(namelen);
+
+          EmitRecordHeader(opdflist,REC_PARAMETER,recsize);
+          EmitDWord(opdflist,typeid);
+          EmitByte(opdflist,isvar);
+          EmitByte(opdflist,isconst);
+          EmitByte(opdflist,isout);
+          EmitWord(opdflist,namelen);
+          EmitString(opdflist,paramname);
         end;
 
-        { REC_PARAMETER: TypeID(4) + IsVar(1) + IsConst(1) + IsOut(1) + NameLen(2) + Name }
-        recsize:=4+1+1+1+2+Cardinal(namelen);
-
-        EmitRecordHeader(opdflist,REC_PARAMETER,recsize);
-        EmitDWord(opdflist,typeid);
-        EmitByte(opdflist,isvar);
-        EmitByte(opdflist,isconst);
-        EmitByte(opdflist,isout);
-        EmitWord(opdflist,namelen);
-        EmitString(opdflist,paramname);
-
         { also emit a REC_LOCALVAR so that 'locals' command can find parameters }
+        { For Self, initialise variables that were skipped above (no REC_PARAMETER) }
+        if vo_is_self in sym.varoptions then
+          begin
+            opdflist:=current_asmdata.asmlists[al_opdf];
+            typeid:=G_TypeMapper.GetTypeID(sym.vardef);
+            paramname:='Self';
+            namelen:=Word(Length(paramname));
+          end;
+
         if sym.localloc.loc in [LOC_REFERENCE,LOC_CREFERENCE] then
           begin
             stackoffset:=sym.localloc.reference.offset;
