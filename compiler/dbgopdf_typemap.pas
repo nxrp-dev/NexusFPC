@@ -84,13 +84,30 @@ implementation
       INITIAL_CAPACITY = 256;
       EXPAND_FACTOR    = 2;
 
+    function FNV1aHash(const S: AnsiString): Cardinal;
+    const
+      FNV_OFFSET_BASIS = Cardinal(2166136261);
+      FNV_PRIME        = Cardinal(16777619);
+    var
+      I: Integer;
+    begin
+      Result := FNV_OFFSET_BASIS;
+      for I := 1 to Length(S) do
+      begin
+        Result := Result xor Ord(S[I]);
+        Result := Result * FNV_PRIME;
+      end;
+      if Result = 0 then
+        Result := 1;  { reserve 0 for "no type" }
+    end;
+
 
     constructor TTypeMapper.Create;
       begin
         inherited Create;
         FPtrCount:=0;
         FPtrCapacity:=INITIAL_CAPACITY;
-        FNextTypeID:=1; { start TypeIDs from 1; 0 is reserved for "no type" }
+        FNextTypeID:=$F0000000; { fallback sequential range for anonymous types without names }
         SetLength(FPtrMap,FPtrCapacity);
         FNameMap:=TFPHashList.Create;
       end;
@@ -194,9 +211,8 @@ implementation
                 exit;
               end;
 
-            { allocate new TypeID }
-            result:=FNextTypeID;
-            inc(FNextTypeID);
+            { allocate new TypeID via FNV-1a hash of canonical name }
+            result:=FNV1aHash(key);
             FNameMap.Add(key,Pointer(PtrUInt(result)));
           end
         else
@@ -209,9 +225,16 @@ implementation
                   exit;
                 end;
 
-            { allocate new TypeID }
-            result:=FNextTypeID;
-            inc(FNextTypeID);
+            { allocate new TypeID — hash the type name if available,
+              otherwise fall back to sequential from reserved range }
+            key:=def.GetTypeName;
+            if (key<>'') and (key[1]<>'<') then
+              result:=FNV1aHash(key)
+            else
+              begin
+                result:=FNextTypeID;
+                inc(FNextTypeID);
+              end;
             AddToPtrCache(def,result);
           end;
       end;
@@ -219,15 +242,15 @@ implementation
 
     function TTypeMapper.GetTypeCount:Longint;
       begin
-        { total unique TypeIDs allocated }
-        result:=Longint(FNextTypeID)-1;
+        { total unique TypeIDs: named types in FNameMap + anonymous types in FPtrCache }
+        result:=FNameMap.Count+FPtrCount;
       end;
 
 
     procedure TTypeMapper.Clear;
       begin
         FPtrCount:=0;
-        FNextTypeID:=1;
+        FNextTypeID:=$F0000000;
         SetLength(FPtrMap,FPtrCapacity);
         FNameMap.Clear;
       end;
