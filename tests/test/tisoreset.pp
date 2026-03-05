@@ -1,6 +1,6 @@
 { %delfiles=EMPTY_TYPED_FILE}
 { %OPT=-Sr }
-{ $mode iso }
+{$mode iso }
 { test that reset(file) sets eof if the file is empty
   and no runtime error occurs }
 program test(output, empty_typed_file);
