@@ -1737,7 +1737,12 @@ var
             end;
         end;
 
-      { recursively mark defs in used units as used }
+      { recursively mark defs in used units as used, including
+        transitive dependencies (e.g. RTL types like TPoint that are
+        referenced by parameters/fields but defined in indirect units).
+        Uses is_dbginfo_written as a visited guard to prevent infinite
+        loops from circular unit dependencies, then resets it so the
+        subsequent write_used_unit_type_info pass can still traverse. }
       procedure mark_used_unit_defs(hp:tmodule);
         var
           pu : tused_unit;
@@ -1745,8 +1750,31 @@ var
           pu:=tused_unit(hp.used_units.first);
           while assigned(pu) do
             begin
-              if assigned(pu.u.globalsymtable) then
-                mark_defs_used(pu.u.globalsymtable);
+              if not pu.u.is_dbginfo_written and not assigned(pu.u.package) then
+                begin
+                  pu.u.is_dbginfo_written:=true;
+                  mark_used_unit_defs(pu.u);
+                  if assigned(pu.u.globalsymtable) then
+                    mark_defs_used(pu.u.globalsymtable);
+                end;
+              pu:=tused_unit(pu.next);
+            end;
+        end;
+
+      { reset is_dbginfo_written flags set by mark_used_unit_defs so
+        write_used_unit_type_info can traverse the same units again }
+      procedure reset_dbginfo_written(hp:tmodule);
+        var
+          pu : tused_unit;
+        begin
+          pu:=tused_unit(hp.used_units.first);
+          while assigned(pu) do
+            begin
+              if pu.u.is_dbginfo_written then
+                begin
+                  pu.u.is_dbginfo_written:=false;
+                  reset_dbginfo_written(pu.u);
+                end;
               pu:=tused_unit(pu.next);
             end;
         end;
@@ -1801,6 +1829,7 @@ var
           this must include used unit defs, because system types like LongInt
           are referenced by fields in user records/classes. }
         mark_used_unit_defs(current_module);
+        reset_dbginfo_written(current_module);
         if assigned(current_module.globalsymtable) then
           mark_defs_used(current_module.globalsymtable);
         if assigned(current_module.localsymtable) then
