@@ -22370,6 +22370,8 @@ begin
       Evaluated:=TResEvalUTF16.CreateValue(#0)
     else if bt in btAllFloats then
       Evaluated:=TResEvalFloat.CreateValue(0.0)
+    else if bt = btPointer then
+      Evaluated:=TResEvalPointer.Create
     else
       begin
       {$IFDEF VerbosePasResolver}
