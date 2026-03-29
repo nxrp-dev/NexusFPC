@@ -228,6 +228,16 @@ implementation
 
 
      function gen_c_style_operator(ntyp:tnodetype;p1,p2:tnode) : tnode;
+       function create_c_style_math_node(ntyp: tnodetype; left,right: tnode): tnode;
+         begin
+           case ntyp of
+             divn,
+             modn:
+               result:=cmoddivnode.create(ntyp,left,right);
+             else
+               result:=caddnode.create(ntyp,left,right);
+           end;
+         end;
        var
          hdef  : tdef;
          temp  : ttempcreatenode;
@@ -243,6 +253,18 @@ implementation
                result can be wrong }
            end;
 
+         { /= should behave like integer division when both operands are integer
+           typed, rather than forcing the operation through the real "/" path. }
+         if ntyp=slashn then
+           begin
+             if not assigned(p1.resultdef) then
+               do_typecheckpass(p1);
+             if not assigned(p2.resultdef) then
+               do_typecheckpass(p2);
+             if is_integer(p1.resultdef) and is_integer(p2.resultdef) then
+               ntyp:=divn;
+           end;
+
          if might_have_sideeffects(p1,[]) then
            begin
              typecheckpass(p1);
@@ -253,13 +275,13 @@ implementation
              addstatement(newstatement,cassignmentnode.create(ctemprefnode.create(temp),caddrnode.create_internal(p1)));
              addstatement(newstatement,cassignmentnode.create(
                  cderefnode.create(ctemprefnode.create(temp)),
-                 caddnode.create(ntyp,
+                 create_c_style_math_node(ntyp,
                      cderefnode.create(ctemprefnode.create(temp)),
                      p2)));
              addstatement(newstatement,ctempdeletenode.create(temp));
            end
          else
-           result:=cassignmentnode.create(p1,caddnode.create(ntyp,p1.getcopy,p2));
+           result:=cassignmentnode.create(p1,create_c_style_math_node(ntyp,p1.getcopy,p2));
        end;
 
 
