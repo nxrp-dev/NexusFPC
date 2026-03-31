@@ -673,11 +673,16 @@ begin
 end;
 
 
-Procedure fpc_textinit_filename_iso(var t : Text;nr : DWord;const filename : shortstring);compilerproc;
+Procedure fpc_textinit_filename_iso(var t : Text;nr : DWord;const filename : shortstring;const extension : shortstring);compilerproc;
 begin
 {$ifdef FPC_HAS_FEATURE_COMMANDARGS}
   if Length(paramstr(nr))=0 then
-    assign(t,filename+'.txt')
+    begin
+      if extension<>'' then
+        assign(t,filename+'.'+extension)
+      else
+        assign(t,filename)
+    end
   else
     assign(t,paramstr(nr));
 {$else FPC_HAS_FEATURE_COMMANDARGS}
@@ -687,7 +692,6 @@ begin
   assign(t,chr((nr mod 16)+65));
 {$endif FPC_HAS_FEATURE_COMMANDARGS}
 end;
-
 
 
 Procedure fpc_textclose_iso(var t : Text);compilerproc;
