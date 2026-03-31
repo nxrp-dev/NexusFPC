@@ -76,6 +76,7 @@ type
     function check_cycle_wait_for_pas(scc_root: tmodule): boolean;
     function recompile_pending(scc_root: tmodule): boolean;
     procedure recompile_scc(scc_root: tmodule);
+    function check_compiled_uses(dst: tmodule): tmodule;
   public
     constructor create;
     destructor destroy; override;
@@ -96,6 +97,7 @@ type
     { get number of modules in a scc }
     function get_scc_count(scc_root: tmodule): integer;
     function has_scc_another_unfinished_module(m: tmodule): boolean;
+    procedure check_scc_tree(curr_scc: tmodule);
   end;
 
 
@@ -237,8 +239,14 @@ procedure ttask_handler.finishmodule(m: tmodule);
     if root.cycle_search_stamp=tmodule.cycle_stamp then exit;
     root.cycle_search_stamp:=tmodule.cycle_stamp;
 
-    if root.do_recompile
-        or not (root.state in [ms_registered,ms_load,ms_compiled,ms_processed]) then
+    if root.do_recompile then
+      begin
+        // e.g. system.ppu not found
+        tppumodule(root).check_sources_for_recompile;
+        writeln('ttask_handler.finishmodule ',root.modulename^,' ',root.statestr);
+        Internalerror(2026032615);
+      end
+    else if not (root.state in [ms_registered,ms_load,ms_compiled,ms_processed]) then
       begin
         writeln('ttask_handler.finishmodule ',root.modulename^,' ',root.statestr);
         Internalerror(2026030401);
@@ -391,6 +399,7 @@ var
   t : ttask;
 
 begin
+  set_current_module(m);
   t:=findtask(m,true);
   if Assigned(t.state) then
     t.RestoreState;
@@ -409,7 +418,7 @@ begin
     ms_load: (m as tppumodule).continueloadppu;
     ms_compile :
       begin
-        if m=main_module then
+        if (m=main_module) and (macrosymtablestack<>nil) then
           begin
             macrosymtablestack.clear;
             FreeAndNil(macrosymtablestack);
@@ -440,12 +449,10 @@ begin
     end
   else if m.state=ms_compiled then
     begin
-    parsing_done(m);
+    if not m.fromppu then
+      parsing_done(m);
     if (m.state=ms_compiled) and m.is_unit then
-      begin
-        set_current_module(m);
-        tppumodule(m).post_load_or_compile(m,m.compilecount>1);
-      end;
+      tppumodule(m).post_load_or_compile(m);
     m.state:=ms_processed;
     end;
   Result:=m.state=ms_processed;
@@ -476,7 +483,7 @@ procedure ttask_handler.search_finished_scc(m: tmodule{$IFDEF DEBUG_PPU_CYCLES};
   returns an unfinished scc root, which sub sccs are all finished }
 var
   uu: tused_unit;
-  um: tmodule;
+  um, alt_scc_tree_crc_wait: tmodule;
 begin
   if m.cycle_search_stamp=tmodule.cycle_stamp then
     exit;
@@ -486,9 +493,16 @@ begin
   writeln(Indent,'ttask_handler.search_finished_scc ',m.modulename^,' ',m.statestr);
   {$ENDIF}
 
-  m.scc_tree_unfinished:=m.do_reload or (m.state<>ms_processed);
+  if m.scc_finished then
+    Internalerror(2026032903);
+
+  m.scc_tree_unfinished:=m.state<>ms_processed;
   m.other_scc_unfinished:=false;
   m.scc_tree_crc_wait:=nil;
+  if m.do_reload
+      or not m.crc_final
+      or ((m.state=ms_load) and not m.ppu_waitingfor_crc) then
+    m.scc_tree_crc_wait:=m;
 
   uu:=tused_unit(m.used_units.First);
   while assigned(uu) do
@@ -497,6 +511,7 @@ begin
       if not um.scc_finished then
         begin
           search_finished_scc(um{$IFDEF DEBUG_PPU_CYCLES},Indent+'  '{$ENDIF});
+          { Note: if um is in m' scc, um's values might be incomplete }
           if um.scc_tree_unfinished then
             begin
               m.scc_tree_unfinished:=true;
@@ -505,36 +520,78 @@ begin
                 m.other_scc_unfinished:=true;
             end
           else if um.other_scc_unfinished then
-            Internalerror(2026022201);
-          if m.scc_tree_crc_wait=nil then
-            m.scc_tree_crc_wait:=um.scc_tree_crc_wait;
+            Internalerror(2026022201); { this finished and other unfinished }
+          if (um.scc_tree_crc_wait<>nil)
+              and ((m.scc_tree_crc_wait=nil)
+                  { Note: do not "or m.scc_tree_crc_wait=m" here, so the below alt_scc_tree_crc_wait can find m }
+                  or (m.scc_root<>um.scc_tree_crc_wait.scc_root)) then
+                m.scc_tree_crc_wait:=um.scc_tree_crc_wait; { prefer pointing to a sub scc, helps debugging }
         end;
       uu:=tused_unit(uu.Next);
     end;
 
-  if (m.scc_tree_crc_wait=nil)
-      and (m.do_reload or not m.crc_final or not m.interface_compiled) then
-    m.scc_tree_crc_wait:=m;
-
   if m.scc_root=m then
     begin
-      um:=m;
+      { backtrack from scc root -> the scc was completely searched }
+
+      { copy scc_tree_unfinished and other_scc_unfinished to all scc nodes }
+      um:=m.scc_next;
       while assigned(um) do
         begin
-          if (not m.scc_tree_unfinished) then
+          um.scc_tree_unfinished:=m.scc_tree_unfinished;
+          um.other_scc_unfinished:=m.other_scc_unfinished;
+          um:=um.scc_next;
+        end;
+
+      if (not m.scc_tree_unfinished) then
+        begin
+          { scc finished }
+          um:=m;
+          while assigned(um) do
             begin
-              { scc finished }
               {$IFDEF DEBUG_CTASK}
               writeln('CTASK finished scc: ',um.modulename^,' ',um.statestr);
               {$ENDIF}
               um.scc_finished:=true;
               um.scc_lowindex:=0;
               um.scc_index:=0;
+              if um.scc_tree_crc_wait<>nil then
+                Internalerror(2026032901);
+              um:=um.scc_next;
             end;
-          if um.scc_tree_crc_wait=nil then
-            um.scc_tree_crc_wait:=m.scc_tree_crc_wait;
-          um:=um.scc_next;
-        end;
+        end
+      else if m.scc_tree_crc_wait<>nil then
+        begin
+          { scc has at least one module without finished crc }
+
+          { scc_tree_crc_wait should point to an unfinished used unit.
+            In a scc it might point to itself. Check for another unfinished unit. }
+          alt_scc_tree_crc_wait:=nil;
+          um:=m;
+          while assigned(um) do
+            begin
+              if um.scc_tree_crc_wait=nil then
+                um.scc_tree_crc_wait:=m.scc_tree_crc_wait
+              else if um.scc_tree_crc_wait<>m.scc_tree_crc_wait then
+                alt_scc_tree_crc_wait:=um.scc_tree_crc_wait;
+              um:=um.scc_next;
+            end;
+
+          um:=m;
+          while assigned(um) do
+            begin
+              if um.scc_tree_crc_wait=um then
+                begin
+                  if um=alt_scc_tree_crc_wait then
+                    um.scc_tree_crc_wait:=m.scc_tree_crc_wait
+                  else
+                    um.scc_tree_crc_wait:=alt_scc_tree_crc_wait; { if um is the only unfinished module, this sets it to nil }
+                end;
+              um:=um.scc_next;
+            end;
+        end
+      else
+        ; { all modules of the scc have their crc, now the ppus can be be written }
     end;
 
   {$IFDEF DEBUG_PPU_CYCLES}
@@ -552,9 +609,8 @@ begin
     exit(nil);
   m.cycle_search_stamp:=tmodule.cycle_stamp;
 
-  if (m=m.scc_root)                  { m is a scc root }
-      and not m.other_scc_unfinished { scc has no unfinished sub scc }
-      and m.scc_tree_unfinished      { scc has at least one unfinished module }
+  if not m.other_scc_unfinished { scc has no unfinished sub scc }
+      and m.scc_tree_unfinished { scc has at least one unfinished module }
       then
     exit(m);
 
@@ -825,6 +881,70 @@ begin
   until not changed;
 end;
 
+function ttask_handler.check_compiled_uses(dst: tmodule): tmodule;
+
+  function search_dest(compiled_module: tmodule): boolean;
+  var
+    visited: array of boolean;
+
+    function search(m: tmodule): boolean;
+    var
+      uu: tused_unit;
+    begin
+      Result:=false;
+      if m=dst then
+        exit(true);
+      if m.scc_finished then exit;
+      if visited[m.moduleid] then exit;
+      visited[m.moduleid]:=true;
+
+      uu:=tused_unit(m.used_units.First);
+      while assigned(uu) do
+        begin
+          if search(uu.u) then exit(true);
+          uu:=tused_unit(uu.Next);
+        end;
+    end;
+
+  begin
+    visited:=nil;
+    SetLength(visited,length(all_modules));
+    Result:=search(compiled_module);
+  end;
+
+  function search_compiled(m: tmodule): boolean;
+  var
+    uu: tused_unit;
+  begin
+    Result:=false;
+    if m.scc_finished then exit;
+
+    if m.cycle_search_stamp=tmodule.cycle_stamp then exit;
+    m.cycle_search_stamp:=tmodule.cycle_stamp;
+
+    if m.state in [ms_compiled,ms_processed] then
+      begin
+        if search_dest(m) then
+          begin
+            check_compiled_uses:=m;
+            exit(true);
+          end;
+      end;
+
+    uu:=tused_unit(m.used_units.First);
+    while assigned(uu) do
+      begin
+        if search_compiled(uu.u) then exit;
+        uu:=tused_unit(uu.Next);
+      end;
+  end;
+
+begin
+  Result:=nil;
+  tmodule.increase_cycle_stamp;
+  search_compiled(main_module);
+end;
+
 function ttask_handler.restore_state(m: tmodule): ttask;
 begin
   Result:=findtask(m);
@@ -838,12 +958,33 @@ begin
 end;
 
 function ttask_handler.reload_module(m: tmodule): ttask;
+{$IFDEF Debug41677}
+var
+  cm: tmodule;
+{$ENDIF}
 begin
   if m.state in [ms_compiled,ms_processed] then
     begin
+      write_scc;
       writeln('ttask_handler.reload_module ',m.modulename^,' ',m.statestr);
       Internalerror(2026022410);
     end;
+  if m.scc_finished then
+    begin
+      write_scc;
+      writeln('ttask_handler.reload_module ',m.modulename^,' ',m.statestr);
+      Internalerror(2026022411);
+    end;
+
+  {$IFDEF Debug41677}
+  cm:=check_compiled_uses(m);
+  if cm<>nil then
+    begin
+      write_scc;
+      writeln('INVALID RELOAD ',m.modulename^,' ',m.statestr,' is used by ',cm.modulename^,' ',cm.statestr);
+      Internalerror(2026022412);
+    end;
+  {$ENDIF}
 
   Result:=restore_state(m);
   tppumodule(m).reload;
@@ -852,12 +993,39 @@ begin
 end;
 
 function ttask_handler.recompile_module(m: tmodule): ttask;
+{$IFDEF Debug41677}
+var
+  cm: tmodule;
+{$ENDIF}
 begin
   if m.state in [ms_compiled,ms_processed] then
     begin
+      write_scc;
       writeln('ttask_handler.recompile_module ',m.modulename^,' ',m.statestr);
-      Internalerror(2026022411);
+      Internalerror(2026022413);
     end;
+  if m.scc_finished then
+    begin
+      write_scc;
+      writeln('ttask_handler.recompile_module ',m.modulename^,' ',m.statestr);
+      Internalerror(2026022414);
+    end;
+  {$IFDEF DEBUG_UR_RECOMPILE}
+  if (mf_release in m.moduleflags) and not m.is_initial then begin
+    writeln('ttask_handler.recompile_module UR ',m.modulename^,' ',m.statestr);
+    Internalerror(2026030915);
+  end;
+  {$ENDIF}
+
+  {$IFDEF Debug41677}
+  cm:=check_compiled_uses(m);
+  if cm<>nil then
+    begin
+      write_scc;
+      writeln('INVALID RECOMPILE ',m.modulename^,' ',m.statestr,' is used by ',cm.modulename^,' ',cm.statestr);
+      Internalerror(2026022415);
+    end;
+  {$ENDIF}
 
   Result:=restore_state(m);
   if m.recompile_reason=rr_unknown then
@@ -951,6 +1119,7 @@ var
       m.scc_index:=0;
       m.scc_lowindex:=0;
       m.scc_onstack:=false;
+      m.scc_tree_crc_wait:=nil;
       uu:=tused_unit(m.used_units.First);
       while assigned(uu) do
         begin
@@ -1026,6 +1195,11 @@ begin
     writeln('ttask_handler.processqueue scc_root: ',scc_root.modulename^,' ',scc_root.statestr);
     {$ENDIF}
 
+    {$IFDEF Debug41677}
+    check_scc_tree(scc_root);
+    {$ENDIF}
+
+    { recompile marked modules }
     if recompile_pending(scc_root) then
       continue;
 
@@ -1232,6 +1406,147 @@ begin
         exit(true);
       scc_root:=scc_root.scc_next;
     end;
+end;
+
+procedure ttask_handler.check_scc_tree(curr_scc: tmodule);
+var
+  Visited: array of boolean;
+
+  procedure mark_reachable(m: tmodule);
+
+    procedure mark(sub: tmodule);
+    var
+      uu: tused_unit;
+    begin
+      if sub.scc_finished then exit;
+      if sub.cycle_search_stamp=tmodule.cycle_stamp then exit;
+      sub.cycle_search_stamp:=tmodule.cycle_stamp;
+
+      uu:=tused_unit(sub.used_units.First);
+      while assigned(uu) do
+        begin
+          mark(uu.u);
+          uu:=tused_unit(uu.Next);
+        end;
+    end;
+
+  begin
+    tmodule.increase_cycle_stamp;
+    mark(m);
+  end;
+
+  function can_reach(src, dst: tmodule): boolean;
+
+    function search(m: tmodule): boolean;
+    var
+      uu: tused_unit;
+    begin
+      Result:=false;
+      if m.cycle_search_stamp=tmodule.cycle_stamp then exit;
+      m.cycle_search_stamp:=tmodule.cycle_stamp;
+
+      uu:=tused_unit(m.used_units.First);
+      while assigned(uu) do
+        begin
+          if uu.u=dst then exit(true);
+          if search(uu.u) then exit(true);
+          uu:=tused_unit(uu.Next);
+        end;
+    end;
+
+  begin
+    tmodule.increase_cycle_stamp;
+    Result:=search(src);
+  end;
+
+  procedure check(m: tmodule);
+  var
+    um: tmodule;
+    uu: tused_unit;
+  begin
+    if Visited[m.moduleid] then exit;
+    Visited[m.moduleid]:=true;
+
+    um:=m.find_used_unit_compiling;
+
+    if m.scc_finished or (m.state in [ms_compiled,ms_processed]) then
+      begin
+        if um<>nil then
+          begin
+            write_scc;
+            writeln(m.modulename^,' ',m.statestr,' scc_finished=',m.scc_finished,' uses ',um.modulename^,' ',um.statestr);
+            Internalerror(2026032905);
+          end;
+        exit;
+      end;
+
+    // the scc_tree_crc_wait is only valid for the current scc
+    if curr_scc=m.scc_root then
+      begin
+        if (m.scc_tree_crc_wait<>nil) and (um=nil) then
+          begin
+            write_scc;
+            writeln('INVALID scc_tree_crc_wait: ',m.modulename^,' ',m.statestr,' scc_tree_crc_wait=',m.scc_tree_crc_wait.modulename^,' ',m.scc_tree_crc_wait.statestr);
+            Internalerror(2026032906);
+          end;
+
+        if (m.scc_tree_crc_wait=nil) and (um<>nil) then
+          begin
+            write_scc;
+            writeln('INVALID scc_tree_crc_wait: ',m.modulename^,' ',m.statestr,' scc_tree_crc_wait=nil uses ',um.modulename^,' ',um.statestr);
+            Internalerror(2026032907);
+          end;
+      end;
+
+    if m.scc_root=nil then
+      begin
+        writeln('INVALID scc_root: ',m.modulename^,' ',m.statestr);
+        Internalerror(2026032908);
+      end;
+
+    if m.scc_root=m then
+      begin
+        { check if scc root uses all modules in the scc_next list  }
+        tmodule.increase_cycle_stamp;
+        mark_reachable(m);
+        um:=m.scc_next;
+        while assigned(um) do
+          begin
+            if um.cycle_search_stamp<>tmodule.cycle_stamp then
+              begin
+                write_scc;
+                writeln('INVALID scc_next: ',m.modulename^,' ',m.statestr,' um=',um.modulename^,' ',um.statestr);
+                Internalerror(2026032909);
+              end;
+            um:=um.scc_next;
+          end;
+      end
+    else
+      begin
+        { check if all scc_next can reach their scc_root }
+        if not can_reach(m,m.scc_root) then
+          begin
+            write_scc;
+            writeln('INVALID scc_root: ',m.modulename^,' ',m.statestr,' m.scc_root=',m.scc_root.modulename^,' ',m.scc_root.statestr);
+            Internalerror(2026032910);
+          end;
+      end;
+
+    // check recursively
+    uu:=tused_unit(m.used_units.First);
+    while Assigned(uu) do
+      begin
+        check(uu.u);
+        uu:=tused_unit(uu.Next);
+      end;
+
+  end;
+
+begin
+  Visited:=nil;
+  SetLength(Visited,length(all_modules));
+
+  check(main_module);
 end;
 
 end.

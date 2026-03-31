@@ -103,7 +103,10 @@ const
   CSSKeywordRevert = CSSKeywordUnset+1;
   CSSKeywordRevertLayer = CSSKeywordRevert+1;
   CSSKeywordAuto = CSSKeywordRevertLayer+1;
-  CSSKeyword_LastResolver = CSSKeywordAuto;
+  CSSKeywordAnd = CSSKeywordAuto+1;
+  CSSKeywordOr = CSSKeywordAnd+1;
+  CSSKeywordNot = CSSKeywordOr+1;
+  CSSKeyword_LastResolver = CSSKeywordNot;
 
   // attribute functions
   CSSAttrFuncVar = 1;
@@ -514,7 +517,7 @@ type
   end;
 
   TCSSResValueKind = (
-    rvkNone,
+    rvkNone, // end of value
     rvkInvalid,
     rvkSymbol,
     rvkFloat,
@@ -524,6 +527,8 @@ type
     rvkFunction,
     rvkFunctionUnknown,
     rvkString,
+    rvkBrackets, // []
+    rvkParenthesis, // ()
     rvkHexColor
     );
 
@@ -551,11 +556,23 @@ type
     function Fits(const ResValue: TCSSResCompValue): boolean; overload;
   end;
 
+  TCSSHasMediaBoolEvent = function(aResolver: TCSSBaseResolver; KW: TCSSNumericalID): boolean of object;
+  TCSSIsMediaPlainEvent = function(aResolver: TCSSBaseResolver; KW: TCSSNumericalID;
+    const aValue: TCSSResCompValue): boolean of object;
+  TCSSMediaCompareEvent = function(aResolver: TCSSBaseResolver; KW: TCSSNumericalID;
+    const aValue: TCSSResCompValue;
+    out Cmp: integer // 0=equal, 1=KW is bigger, -1 aValue is bigger
+    ): boolean of object; // false = comparing apples with oranges
+
+
   { TCSSBaseResolver }
 
   TCSSBaseResolver = class(TComponent)
   private
     FCSSRegistry: TCSSRegistry;
+    FHasMediaBoolean: TCSSHasMediaBoolEvent;
+    FIsMediaPlain: TCSSIsMediaPlainEvent;
+    FMediaCompare: TCSSMediaCompareEvent;
   protected
     procedure SetCSSRegistry(const AValue: TCSSRegistry); virtual;
   public
@@ -567,7 +584,7 @@ type
     procedure InitParseAttr(const Value: TCSSString); virtual;
     // check whole attribute, skipping invalid values, emit warnings:
     function CheckAttribute_Keyword(const AllowedKeywordIDs: TCSSNumericalIDArray): boolean; virtual;
-    function CheckAttribute_CommaList_Keyword(const AllowedKeywordIDs: TCSSNumericalIDArray): boolean; virtual;
+    function CheckAttribute_Keyword_List(const AllowedKeywordIDs: TCSSNumericalIDArray): boolean; virtual;
     function CheckAttribute_Dimension(const Params: TCSSCheckAttrParams_Dimension): boolean; virtual;
     function CheckAttribute_Color(const AllowedKeywordIDs: TCSSNumericalIDArray): boolean; virtual;
     // parse whole attribute, skipping invalid values:
@@ -602,6 +619,10 @@ type
     function GetPseudoFunctionID(const aName: TCSSString): TCSSNumericalID; virtual;
 
     property CSSRegistry: TCSSRegistry read FCSSRegistry write SetCSSRegistry;
+    // @media
+    property HasMediaBoolean: TCSSHasMediaBoolEvent read FHasMediaBoolean write FHasMediaBoolean;
+    property IsMediaPlain: TCSSIsMediaPlainEvent read FIsMediaPlain write FIsMediaPlain;
+    property MediaCompare: TCSSMediaCompareEvent read FMediaCompare write FMediaCompare;
   end;
 
   { TCSSResolverParser
@@ -619,10 +640,13 @@ type
     function ResolvePseudoElement(El: TCSSResolvedIdentifierElement): TCSSNumericalID; virtual;
     function ResolvePseudoElementFunction(El: TCSSResolvedCallElement): TCSSNumericalID; virtual;
     function ResolvePseudoFunction(El: TCSSResolvedCallElement): TCSSNumericalID; virtual;
+    function ResolveMediaIdentifier(El: TCSSResolvedIdentifierElement): TCSSNumericalID; virtual;
+    procedure CheckMediaSelector(El: TCSSElement); virtual;
     function ParseCall(aName: TCSSString; IsSelector: boolean): TCSSCallElement; override;
     function ParseDeclaration(aIsAt: Boolean): TCSSDeclarationElement; override;
     function ParsePseudoElement: TCSSElement; override;
     function ParseSelector: TCSSElement; override;
+    function ParseAtMediaRule: TCSSAtRuleElement; override;
     procedure CheckSelector(El: TCSSElement); virtual;
     procedure CheckSelectorArray(anArray: TCSSArrayElement); virtual;
     procedure CheckSelectorArrayBinary(aBinary: TCSSBinaryElement); virtual;
@@ -723,74 +747,80 @@ procedure TCSSRegistry.Init;
 begin
   // init attributes
   if AddAttribute('id').Index<>CSSAttributeID_ID then
-    raise Exception.Create('20240617191749');
+    raise ECSSParser.Create('20240617191749');
   if AddAttribute('class').Index<>CSSAttributeID_Class then
-    raise Exception.Create('20240617191801');
+    raise ECSSParser.Create('20240617191801');
   if AddAttribute('all').Index<>CSSAttributeID_All then
-    raise Exception.Create('20240617191816');
+    raise ECSSParser.Create('20240617191816');
 
   // init pseudo classes
   if AddPseudoClass('root').Index<>CSSPseudoID_Root then
-    raise Exception.Create('20240623165848');
+    raise ECSSParser.Create('20240623165848');
   if AddPseudoClass('empty').Index<>CSSPseudoID_Empty then
-    raise Exception.Create('20240623170450');
+    raise ECSSParser.Create('20240623170450');
   if AddPseudoClass('first-child').Index<>CSSPseudoID_FirstChild then
-    raise Exception.Create('20240623170508');
+    raise ECSSParser.Create('20240623170508');
   if AddPseudoClass('last-child').Index<>CSSPseudoID_LastChild then
-    raise Exception.Create('20240623170521');
+    raise ECSSParser.Create('20240623170521');
   if AddPseudoClass('only-child').Index<>CSSPseudoID_OnlyChild then
-    raise Exception.Create('20240623170534');
+    raise ECSSParser.Create('20240623170534');
   if AddPseudoClass('first-of-type').Index<>CSSPseudoID_FirstOfType then
-    raise Exception.Create('20240623170547');
+    raise ECSSParser.Create('20240623170547');
   if AddPseudoClass('last-of-type').Index<>CSSPseudoID_LastOfType then
-    raise Exception.Create('20240623170558');
+    raise ECSSParser.Create('20240623170558');
   if AddPseudoClass('only-of-type').Index<>CSSPseudoID_OnlyOfType then
-    raise Exception.Create('20240623170609');
+    raise ECSSParser.Create('20240623170609');
 
   // init pseudo elements
   // none by default
 
   // init pseudo functions
   if AddPseudoFunction('not')<>CSSCallID_Not then
-    raise Exception.Create('20240625183757');
+    raise ECSSParser.Create('20240625183757');
   if AddPseudoFunction('is')<>CSSCallID_Is then
-    raise Exception.Create('20240625142038');
+    raise ECSSParser.Create('20240625142038');
   if AddPseudoFunction('where')<>CSSCallID_Where then
-    raise Exception.Create('20240625142049');
+    raise ECSSParser.Create('20240625142049');
   if AddPseudoFunction('has')<>CSSCallID_Has then
-    raise Exception.Create('20240625142104');
+    raise ECSSParser.Create('20240625142104');
   if AddPseudoFunction('nth-child')<>CSSCallID_NthChild then
-    raise Exception.Create('20240625142124');
+    raise ECSSParser.Create('20240625142124');
   if AddPseudoFunction('nth-last-child')<>CSSCallID_NthLastChild then
-    raise Exception.Create('20240625142136');
+    raise ECSSParser.Create('20240625142136');
   if AddPseudoFunction('nth-of-type')<>CSSCallID_NthOfType then
-    raise Exception.Create('20240625142156');
+    raise ECSSParser.Create('20240625142156');
   if AddPseudoFunction('nth-last-of-type')<>CSSCallID_NthLastOfType then
-    raise Exception.Create('20240625142212');
+    raise ECSSParser.Create('20240625142212');
 
   // init types
   if AddType('*').Index<>CSSTypeID_Universal then
-    raise Exception.Create('20240617190914');
+    raise ECSSParser.Create('20240617190914');
 
   // init keywords
   if AddKeyword('none')<>CSSKeywordNone then
-    raise Exception.Create('20240623184021');
+    raise ECSSParser.Create('20240623184021');
   if AddKeyword('initial')<>CSSKeywordInitial then
-    raise Exception.Create('20240623184030');
+    raise ECSSParser.Create('20240623184030');
   if AddKeyword('inherit')<>CSSKeywordInherit then
-    raise Exception.Create('20240623184042');
+    raise ECSSParser.Create('20240623184042');
   if AddKeyword('unset')<>CSSKeywordUnset then
-    raise Exception.Create('20240623184053');
+    raise ECSSParser.Create('20240623184053');
   if AddKeyword('revert')<>CSSKeywordRevert then
-    raise Exception.Create('20240623184104');
+    raise ECSSParser.Create('20240623184104');
   if AddKeyword('revert-layer')<>CSSKeywordRevertLayer then
-    raise Exception.Create('20240623184114');
+    raise ECSSParser.Create('20240623184114');
   if AddKeyword('auto')<>CSSKeywordAuto then
-    raise Exception.Create('20240625182731');
+    raise ECSSParser.Create('20240625182731');
+  if AddKeyword('and')<>CSSKeywordAnd then
+    raise ECSSParser.Create('20260327000001');
+  if AddKeyword('or')<>CSSKeywordOr then
+    raise ECSSParser.Create('20260327000002');
+  if AddKeyword('not')<>CSSKeywordNot then
+    raise ECSSParser.Create('20260327000003');
 
   // init attribute functions
   if AddAttrFunction('var')<>CSSAttrFuncVar then
-    raise Exception.Create('20240716124054');
+    raise ECSSParser.Create('20240716124054');
 end;
 
 destructor TCSSRegistry.Destroy;
@@ -838,7 +868,7 @@ begin
   if Kind in nikAllDescriptors then
     Result:=TCSSRegistryNamedItem(FHashLists[Kind].Find(aName))
   else
-    raise Exception.Create('20240625141820');
+    raise ECSSParser.Create('20240625141820');
 end;
 
 function TCSSRegistry.IndexOfNamedItem(Kind: TCSSNumericalIDKind;
@@ -874,24 +904,24 @@ var
   PseudoElementDesc: TCSSPseudoElementDesc;
 begin
   if AttributeCount>length(Attributes) then
-    raise Exception.Create('20240629102438');
+    raise ECSSParser.Create('20240629102438');
   for ID:=1 to AttributeCount-1 do
   begin
     AttrDesc:=Attributes[ID];
     if AttrDesc=nil then
-      raise Exception.Create('20240629102530 attr ID='+IntToStr(ID)+' Desc=nil');
+      raise ECSSParser.Create('20240629102530 attr ID='+IntToStr(ID)+' Desc=nil');
     aName:=AttrDesc.Name;
     if aName='' then
-      raise Exception.Create('20240629100056 attr ID='+IntToStr(ID)+' missing name');
+      raise ECSSParser.Create('20240629100056 attr ID='+IntToStr(ID)+' missing name');
     if length(aName)>255 then
-      raise Exception.Create('20240629100143 attr ID='+IntToStr(ID)+' name too long "'+aName+'"');
+      raise ECSSParser.Create('20240629100143 attr ID='+IntToStr(ID)+' name too long "'+aName+'"');
     if aName[1]=':' then
-      raise Exception.Create('20240701231211 attr ID='+IntToStr(ID)+' invalid name "'+aName+'"');
+      raise ECSSParser.Create('20240701231211 attr ID='+IntToStr(ID)+' invalid name "'+aName+'"');
     if AttrDesc.Index<>ID then
-      raise Exception.Create('20240629095849 attr ID='+IntToStr(ID)+' Desc.Index='+IntToStr(AttrDesc.Index)+' "'+aName+'"');
+      raise ECSSParser.Create('20240629095849 attr ID='+IntToStr(ID)+' Desc.Index='+IntToStr(AttrDesc.Index)+' "'+aName+'"');
     ID2:=IndexOfAttributeName(aName);
     if ID2<>ID then
-      raise Exception.Create('20240629101227 attr ID='+IntToStr(ID)+' "'+aName+'" IndexOf failed: '+IntToStr(ID2));
+      raise ECSSParser.Create('20240629101227 attr ID='+IntToStr(ID)+' "'+aName+'" IndexOf failed: '+IntToStr(ID2));
 
     if length(AttrDesc.CompProps)>0 then
     begin
@@ -900,108 +930,108 @@ begin
       begin
         SubAttrDesc:=AttrDesc.CompProps[i];
         if SubAttrDesc=nil then
-          raise Exception.Create('20240629102701 attr ID='+IntToStr(ID)+' Shorthand="'+aName+'" CompDesc=nil '+IntToStr(i));
+          raise ECSSParser.Create('20240629102701 attr ID='+IntToStr(ID)+' Shorthand="'+aName+'" CompDesc=nil '+IntToStr(i));
         if (SubAttrDesc.Index<=0) then
-          raise Exception.Create('20240629100345 attr ID='+IntToStr(ID)+' Shorthand="'+aName+'" invalid CompAttr '+IntToStr(SubAttrDesc.Index));
+          raise ECSSParser.Create('20240629100345 attr ID='+IntToStr(ID)+' Shorthand="'+aName+'" invalid CompAttr '+IntToStr(SubAttrDesc.Index));
         if (SubAttrDesc.Index>=ID) then
-          raise Exception.Create('20240629100345 attr ID='+IntToStr(ID)+' Shorthand="'+aName+'" CompAttr after Shorthand: SubID='+IntToStr(SubAttrDesc.Index)+' SubName='+SubAttrDesc.Name);
+          raise ECSSParser.Create('20240629100345 attr ID='+IntToStr(ID)+' Shorthand="'+aName+'" CompAttr after Shorthand: SubID='+IntToStr(SubAttrDesc.Index)+' SubName='+SubAttrDesc.Name);
       end;
     end;
   end;
 
   if PseudoClassCount>length(PseudoClasses) then
-    raise Exception.Create('20240629102438');
+    raise ECSSParser.Create('20240629102438');
   for ID:=1 to PseudoClassCount-1 do
   begin
     PseudoClassDesc:=PseudoClasses[ID];
     if PseudoClassDesc=nil then
-      raise Exception.Create('20240629102605 pseudo class ID='+IntToStr(ID)+' Desc=nil');
+      raise ECSSParser.Create('20240629102605 pseudo class ID='+IntToStr(ID)+' Desc=nil');
     aName:=PseudoClassDesc.Name;
     if aName='' then
-      raise Exception.Create('20240629100652 pseudo class ID='+IntToStr(ID)+' missing name');
+      raise ECSSParser.Create('20240629100652 pseudo class ID='+IntToStr(ID)+' missing name');
     if length(aName)>255 then
-      raise Exception.Create('20240629100657 pseudo class ID='+IntToStr(ID)+' name too long "'+aName+'"');
+      raise ECSSParser.Create('20240629100657 pseudo class ID='+IntToStr(ID)+' name too long "'+aName+'"');
     if aName[1]=':' then
-      raise Exception.Create('20240701231235 pseudo class ID='+IntToStr(ID)+' invalid name "'+aName+'"');
+      raise ECSSParser.Create('20240701231235 pseudo class ID='+IntToStr(ID)+' invalid name "'+aName+'"');
     if PseudoClassDesc.Index<>ID then
-      raise Exception.Create('20240629100659 pseudo class ID='+IntToStr(ID)+' Desc.Index='+IntToStr(PseudoClassDesc.Index)+' "'+aName+'"');
+      raise ECSSParser.Create('20240629100659 pseudo class ID='+IntToStr(ID)+' Desc.Index='+IntToStr(PseudoClassDesc.Index)+' "'+aName+'"');
     ID2:=IndexOfPseudoClassName(PseudoClassDesc.Name);
     if ID2<>ID then
-      raise Exception.Create('20240629101227 pseudo class ID='+IntToStr(ID)+' "'+aName+'" IndexOf failed: '+IntToStr(ID2));
+      raise ECSSParser.Create('20240629101227 pseudo class ID='+IntToStr(ID)+' "'+aName+'" IndexOf failed: '+IntToStr(ID2));
   end;
 
   if PseudoElementCount>length(PseudoElements) then
-    raise Exception.Create('20250220140108');
+    raise ECSSParser.Create('20250220140108');
   for ID:=1 to PseudoElementCount-1 do
   begin
     PseudoElementDesc:=PseudoElements[ID];
     if PseudoElementDesc=nil then
-      raise Exception.Create('20250220140126 pseudo element ID='+IntToStr(ID)+' Desc=nil');
+      raise ECSSParser.Create('20250220140126 pseudo element ID='+IntToStr(ID)+' Desc=nil');
     aName:=PseudoElementDesc.Name;
     if aName='' then
-      raise Exception.Create('20250220140201 pseudo element ID='+IntToStr(ID)+' missing name');
+      raise ECSSParser.Create('20250220140201 pseudo element ID='+IntToStr(ID)+' missing name');
     if length(aName)>255 then
-      raise Exception.Create('20250220140202 pseudo element ID='+IntToStr(ID)+' name too long "'+aName+'"');
+      raise ECSSParser.Create('20250220140202 pseudo element ID='+IntToStr(ID)+' name too long "'+aName+'"');
     if aName[1]=':' then
-      raise Exception.Create('20250220140204 pseudo element ID='+IntToStr(ID)+' invalid name "'+aName+'"');
+      raise ECSSParser.Create('20250220140204 pseudo element ID='+IntToStr(ID)+' invalid name "'+aName+'"');
     if PseudoElementDesc.Index<>ID then
-      raise Exception.Create('20250220140205 pseudo element ID='+IntToStr(ID)+' Desc.Index='+IntToStr(PseudoElementDesc.Index)+' "'+aName+'"');
+      raise ECSSParser.Create('20250220140205 pseudo element ID='+IntToStr(ID)+' Desc.Index='+IntToStr(PseudoElementDesc.Index)+' "'+aName+'"');
     ID2:=IndexOfPseudoElementName(PseudoElementDesc.Name);
     if ID2<>ID then
-      raise Exception.Create('20250220140207 pseudo element ID='+IntToStr(ID)+' "'+aName+'" IndexOf failed: '+IntToStr(ID2));
+      raise ECSSParser.Create('20250220140207 pseudo element ID='+IntToStr(ID)+' "'+aName+'" IndexOf failed: '+IntToStr(ID2));
   end;
 
   if PseudoFunctionCount>length(PseudoFunctions) then
-    raise Exception.Create('20240629103430');
+    raise ECSSParser.Create('20240629103430');
   for ID:=1 to PseudoFunctionCount-1 do
   begin
     aName:=PseudoFunctions[ID];
     if aName='' then
-      raise Exception.Create('20240629103431 pseudo function ID='+IntToStr(ID)+' missing name');
+      raise ECSSParser.Create('20240629103431 pseudo function ID='+IntToStr(ID)+' missing name');
     if length(aName)>255 then
-      raise Exception.Create('20240629103433 pseudo function ID='+IntToStr(ID)+' name too long "'+aName+'"');
+      raise ECSSParser.Create('20240629103433 pseudo function ID='+IntToStr(ID)+' name too long "'+aName+'"');
     if aName[1]=':' then
-      raise Exception.Create('20240701231235 pseudo function ID='+IntToStr(ID)+' invalid name "'+aName+'"');
+      raise ECSSParser.Create('20240701231235 pseudo function ID='+IntToStr(ID)+' invalid name "'+aName+'"');
     ID2:=IndexOfPseudoFunction(aName);
     if ID2<>ID then
-      raise Exception.Create('20240629103434 pseudo function ID='+IntToStr(ID)+' "'+aName+'" IndexOf failed: '+IntToStr(ID2));
+      raise ECSSParser.Create('20240629103434 pseudo function ID='+IntToStr(ID)+' "'+aName+'" IndexOf failed: '+IntToStr(ID2));
   end;
 
   if TypeCount>length(Types) then
-    raise Exception.Create('20240629102438');
+    raise ECSSParser.Create('20240629102438');
   for ID:=1 to TypeCount-1 do
   begin
     TypeDesc:=Types[ID];
     if TypeDesc=nil then
-      raise Exception.Create('20240629102620 type ID='+IntToStr(ID)+' Desc=nil');
+      raise ECSSParser.Create('20240629102620 type ID='+IntToStr(ID)+' Desc=nil');
     aName:=TypeDesc.Name;
     if aName='' then
-      raise Exception.Create('20240629100812 type ID='+IntToStr(ID)+' missing name');
+      raise ECSSParser.Create('20240629100812 type ID='+IntToStr(ID)+' missing name');
     if length(aName)>255 then
-      raise Exception.Create('20240629100825 type ID='+IntToStr(ID)+' name too long "'+aName+'"');
+      raise ECSSParser.Create('20240629100825 type ID='+IntToStr(ID)+' name too long "'+aName+'"');
     if aName[1]=':' then
-      raise Exception.Create('20240701231645 type ID='+IntToStr(ID)+' invalid name "'+aName+'"');
+      raise ECSSParser.Create('20240701231645 type ID='+IntToStr(ID)+' invalid name "'+aName+'"');
     if TypeDesc.Index<>ID then
-      raise Exception.Create('20240629101013 type ID='+IntToStr(ID)+' Desc.Index='+IntToStr(TypeDesc.Index)+' "'+aName+'"');
+      raise ECSSParser.Create('20240629101013 type ID='+IntToStr(ID)+' Desc.Index='+IntToStr(TypeDesc.Index)+' "'+aName+'"');
     ID2:=IndexOfTypeName(aName);
     if ID2<>ID then
-      raise Exception.Create('20240629101529 type ID='+IntToStr(ID)+' "'+aName+'" IndexOf failed: '+IntToStr(ID2));
+      raise ECSSParser.Create('20240629101529 type ID='+IntToStr(ID)+' "'+aName+'" IndexOf failed: '+IntToStr(ID2));
   end;
 
   if KeywordCount>length(Keywords) then
-    raise Exception.Create('20240629103200');
+    raise ECSSParser.Create('20240629103200');
   for ID:=1 to KeywordCount-1 do
   begin
     aName:=Keywords[ID];
     if aName='' then
-      raise Exception.Create('20240629103223 keyword ID='+IntToStr(ID)+' missing name');
+      raise ECSSParser.Create('20240629103223 keyword ID='+IntToStr(ID)+' missing name');
     if length(aName)>255 then
-      raise Exception.Create('20240629103242 keyword ID='+IntToStr(ID)+' name too long "'+aName+'"');
+      raise ECSSParser.Create('20240629103242 keyword ID='+IntToStr(ID)+' name too long "'+aName+'"');
     if aName[1]=':' then
-      raise Exception.Create('20240701231656 keyword ID='+IntToStr(ID)+' invalid name "'+aName+'"');
+      raise ECSSParser.Create('20240701231656 keyword ID='+IntToStr(ID)+' invalid name "'+aName+'"');
     ID2:=IndexOfKeyword(aName);
     if ID2<>ID then
-      raise Exception.Create('20240629103303 keyword ID='+IntToStr(ID)+' "'+aName+'" IndexOf failed: '+IntToStr(ID2));
+      raise ECSSParser.Create('20240629103303 keyword ID='+IntToStr(ID)+' "'+aName+'" IndexOf failed: '+IntToStr(ID2));
   end;
 end;
 
@@ -1432,7 +1462,7 @@ begin
   end;
   for i:=0 to length(Names)-1 do
     if IndexOfKeyword(Names[i])>CSSIDNone then
-      raise Exception.Create('20240712215853');
+      raise ECSSParser.Create('20240712215853');
 
   NewCnt:=KeywordCount+length(Names);
   if NewCnt>length(Keywords) then
@@ -1594,11 +1624,7 @@ begin
   CurComp:=Default(TCSSResCompValue);
   CurComp.EndP:=PCSSChar(CurValue);
   if not ReadNext then
-  begin
-    if CurAttrData<>nil then
-      CurAttrData.Invalid:=true;
     exit;
-  end;
   if (CurAttrData<>nil) and (CurComp.Kind=rvkKeyword)
       and IsBaseKeyword(CurComp.KeywordID) then
   begin
@@ -1625,17 +1651,21 @@ end;
 
 function TCSSBaseResolver.CheckAttribute_Keyword(const AllowedKeywordIDs: TCSSNumericalIDArray
   ): boolean;
+var
+  Invalid: Boolean;
 begin
-  Result:=ReadAttribute_Keyword(CurAttrData.Invalid,AllowedKeywordIDs);
+  if CurAttrData<>nil then
+    Result:=ReadAttribute_Keyword(CurAttrData.Invalid,AllowedKeywordIDs)
+  else
+    Result:=ReadAttribute_Keyword(Invalid,AllowedKeywordIDs);
 end;
 
-function TCSSBaseResolver.CheckAttribute_CommaList_Keyword(
+function TCSSBaseResolver.CheckAttribute_Keyword_List(
   const AllowedKeywordIDs: TCSSNumericalIDArray): boolean;
 var
   i: Integer;
   Fits: Boolean;
 begin
-  CurAttrData.Invalid:=true;
   repeat
     Fits:=false;
     case CurComp.Kind of
@@ -1652,30 +1682,32 @@ begin
         Fits:=true;
       end;
     end;
-    if not Fits then exit;
-
-    if not ReadNext then
-    begin
-      // ok
-      CurAttrData.Invalid:=false;
-      exit(true);
-    end;
-    if (CurComp.Kind<>rvkSymbol) or (CurComp.Symbol=ctkCOMMA) then
-      exit;
+    if not Fits then
+      exit(false);
   until not ReadNext;
-  Result:=false;
+  Result:=CurComp.Kind=rvkNone;
 end;
 
 function TCSSBaseResolver.CheckAttribute_Dimension(const Params: TCSSCheckAttrParams_Dimension
   ): boolean;
+var
+  Invalid: boolean;
 begin
-  Result:=ReadAttribute_Dimension(CurAttrData.Invalid,Params);
+  if CurAttrData<>nil then
+    Result:=ReadAttribute_Dimension(CurAttrData.Invalid,Params)
+  else
+    Result:=ReadAttribute_Dimension(Invalid,Params);
 end;
 
 function TCSSBaseResolver.CheckAttribute_Color(const AllowedKeywordIDs: TCSSNumericalIDArray
   ): boolean;
+var
+  Invalid: boolean;
 begin
-  Result:=ReadAttribute_Color(CurAttrData.Invalid,AllowedKeywordIDs);
+  if CurAttrData<>nil then
+    Result:=ReadAttribute_Color(CurAttrData.Invalid,AllowedKeywordIDs)
+  else
+    Result:=ReadAttribute_Color(Invalid,AllowedKeywordIDs);
 end;
 
 function TCSSBaseResolver.ReadNext: boolean;
@@ -1901,6 +1933,27 @@ begin
         end;
       end;
     end;
+  '''','"':
+    if SkipString(p) then
+    begin
+      aComp.Kind:=rvkString;
+      aComp.EndP:=p;
+      exit;
+    end;
+  '[':
+    if SkipBrackets(p) then
+    begin
+      aComp.Kind:=rvkBrackets;
+      aComp.EndP:=p;
+      exit;
+    end;
+  '(':
+    if SkipBrackets(p) then
+    begin
+      aComp.Kind:=rvkParenthesis;
+      aComp.EndP:=p;
+      exit;
+    end;
   end;
 
   // skip unknown aComp
@@ -1914,6 +1967,7 @@ begin
     end;
   until false;
   aComp.EndP:=p;
+  Result:=false;
 end;
 
 class function TCSSBaseResolver.ReadNumber(var aComp: TCSSResCompValue): boolean;
@@ -2179,9 +2233,7 @@ begin
       inc(p);
       exit(true);
     end else if c=#0 then
-      exit
-    else
-      inc(p);
+      exit;
   until false;
 end;
 
@@ -2272,7 +2324,7 @@ var
   aName: TCSSString;
 begin
   if El.NumericalID<>CSSIDNone then
-    raise Exception.Create('20240701143234');
+    raise ECSSParser.Create('20240701143234');
   aName:=El.Name;
   El.Kind:=nikAttribute;
   Result:=Resolver.GetAttributeID(aName,true);
@@ -2289,7 +2341,7 @@ var
   aName: TCSSString;
 begin
   if El.NumericalID<>CSSIDNone then
-    raise Exception.Create('20240822133813');
+    raise ECSSParser.Create('20240822133813');
   aName:=El.Name;
   El.Kind:=nikType;
   Result:=Resolver.GetTypeID(aName);
@@ -2312,7 +2364,7 @@ begin
   aName:=lowercase(aName);
 
   if El.NumericalID<>CSSIDNone then
-    raise Exception.Create('20240701143234');
+    raise ECSSParser.Create('20240701143234');
 
   El.Kind:=nikPseudoClass;
   Result:=Resolver.GetPseudoClassID(aName);
@@ -2334,7 +2386,7 @@ begin
   aName:=lowercase(El.Name);
 
   if El.NumericalID<>CSSIDNone then
-    raise Exception.Create('20250224203646');
+    raise ECSSParser.Create('20250224203646');
 
   El.Kind:=nikPseudoElement;
   Result:=Resolver.GetPseudoElementID(aName);
@@ -2356,7 +2408,7 @@ begin
   aName:=lowercase(El.Name);
 
   if El.NameNumericalID<>CSSIDNone then
-    raise Exception.Create('20250224210628');
+    raise ECSSParser.Create('20250224210628');
 
   El.Kind:=nikPseudoElement;
   Result:=Resolver.GetPseudoElFuncID(aName);
@@ -2375,10 +2427,10 @@ var
   aName: TCSSString;
 begin
   if El.NameNumericalID<>CSSIDNone then
-    raise Exception.Create('20240701143035');
+    raise ECSSParser.Create('20240701143035');
   aName:=El.Name;
   if aName[1]<>':' then
-    raise Exception.Create('20240701143650');
+    raise ECSSParser.Create('20240701143650');
 
   // pseudo functions are ASCII case insensitive
   System.Delete(aName,1,1);
@@ -2393,6 +2445,53 @@ begin
     Log(etWarning,20240822172830,'unknown pseudo function "'+aName+'"',El);
   end else
     El.NameNumericalID:=Result;
+end;
+
+function TCSSResolverParser.ResolveMediaIdentifier(El: TCSSResolvedIdentifierElement
+  ): TCSSNumericalID;
+var
+  aName: TCSSString;
+begin
+  if El.NumericalID<>CSSIDNone then
+    raise ECSSParser.Create('20260323130501');
+  aName:=El.Name;
+  El.Kind:=nikKeyword;
+  Result:=Resolver.CSSRegistry.IndexOfKeyword(aName);
+  if Result<=CSSIDNone then
+  begin
+    El.NumericalID:=-1;
+    Log(etWarning,20260323130502,'unknown media keyword "'+aName+'"',El);
+  end else
+    El.NumericalID:=Result;
+end;
+
+procedure TCSSResolverParser.CheckMediaSelector(El: TCSSElement);
+var
+  i: Integer;
+  Bin: TCSSBinaryElement;
+begin
+  if El=nil then exit;
+  if El.ClassType=TCSSResolvedIdentifierElement then
+    ResolveMediaIdentifier(TCSSResolvedIdentifierElement(El))
+  else if El.ClassType=TCSSListElement then
+    for i:=0 to TCSSListElement(El).ChildCount-1 do
+      CheckMediaSelector(TCSSListElement(El).Children[i])
+  else if El.ClassType=TCSSBinaryElement then
+  begin
+    Bin:=TCSSBinaryElement(El);
+    CheckMediaSelector(Bin.Left);
+    CheckMediaSelector(Bin.Right);
+  end;
+end;
+
+function TCSSResolverParser.ParseAtMediaRule: TCSSAtRuleElement;
+var
+  i: Integer;
+begin
+  Result:=inherited ParseAtMediaRule;
+  if Result=nil then exit;
+  for i:=0 to Result.SelectorCount-1 do
+    CheckMediaSelector(Result.Selectors[i]);
 end;
 
 function TCSSResolverParser.ParseCall(aName: TCSSString; IsSelector: boolean
@@ -2441,7 +2540,7 @@ begin
     AttrId:=ResolveAttribute(TCSSResolvedIdentifierElement(aKey));
 
     if aKey.CustomData<>nil then
-      raise Exception.Create('20240626113536');
+      raise ECSSParser.Create('20240626113536');
     AttrData:=CSSAttributeKeyDataClass.Create;
     aKey.CustomData:=AttrData;
 
@@ -2688,7 +2787,7 @@ var
   Params: TCSSNthChildParams;
 begin
   if aCall.Params<>nil then
-    raise Exception.Create('20240625150639');
+    raise ECSSParser.Create('20240625150639');
   ArgCount:=aCall.ArgCount;
   {$IFDEF VerboseCSSResolver}
   writeln('TCSSResolverParser.CheckSelectorCall_NthChild ArgCount=',aCall.ArgCount);

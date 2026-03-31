@@ -52,7 +52,6 @@ interface
           sourcefn   : TPathStr; { Source specified with "uses .. in '..'" }
           comments   : TCmdStrList;
           nsprefix   : TCmdStr; { Namespace prefix the unit was found with }
-          loadedfrommodule: tmodule;
 {$ifdef Test_Double_checksum}
           interface_read_crc_index,
           interface_write_crc_index,
@@ -73,6 +72,8 @@ interface
           function  openppufile:boolean;
           function  openppustream(strm:TCStream):boolean;
           procedure getppucrc;
+          function dependent_module_has_our_crc: boolean;
+          function dependent_module_crc_mismatch: boolean;
           procedure writeppu;
           function loadppu(from_module : tmodule) : boolean;
           function get_check_uses(out check_impl_uses, check_crc: boolean): boolean;
@@ -85,7 +86,7 @@ interface
           procedure store_state;
           procedure recompile_from_sources;
           procedure check_sources_for_recompile;
-          procedure post_load_or_compile(from_module : tmodule; second_time: boolean);
+          procedure post_load_or_compile(from_module : tmodule);
           procedure discardppu;
           procedure setdefgeneration;
           procedure end_of_parsing;override;
@@ -172,7 +173,6 @@ var
     constructor tppumodule.create(LoadedFrom:TModule;const amodulename: string; const afilename:TPathStr;_is_unit:boolean);
       begin
         inherited create(LoadedFrom,amodulename,afilename,_is_unit);
-        loadedfrommodule:=LoadedFrom;
         ppufile:=nil;
         sourcefn:=afilename;
         unitimportsymsderefs:=tfplist.create;
@@ -2024,7 +2024,61 @@ var
          discardppu;
       end;
 
-      function tppumodule.load_usedunits: boolean;
+    function tppumodule.dependent_module_has_our_crc: boolean;
+      { returns true, if any dependent module has crc for this module }
+      var
+        pu: tdependent_unit;
+        m: fmodule.tmodule;
+      begin
+        pu:=tdependent_unit(dependent_units.First);
+        while Assigned(pu) do
+          begin
+            m:=pu.u;
+            if m.fromppu or (m.state in [ms_compiled,ms_processed]) then
+              exit(true);
+            pu:=tdependent_unit(pu.Next);
+          end;
+        Result:=false;
+      end;
+
+    function tppumodule.dependent_module_crc_mismatch: boolean;
+      { called after an interface crc or crc was computed.
+        Checks if any dependent module needs a recompile.
+        The compile goes back to the ctask scheduler which recompiles. }
+      var
+        pu: tdependent_unit;
+        m: tmodule;
+        uu: tused_unit;
+        check_crc: boolean;
+      begin
+        pu:=tdependent_unit(dependent_units.First);
+        while Assigned(pu) do
+          begin
+            m:=pu.u;
+            check_crc:=m.fromppu or (m.state in [ms_compiled,ms_processed]);
+            if m.interface_compiled or check_crc then
+              begin
+                uu:=tused_unit(m.used_units.First);
+                while assigned(uu) do
+                  begin
+                    if uu.u=self then
+                      begin
+                        if (uu.interface_checksum<>interface_crc)
+                            or (uu.indirect_checksum<>indirect_crc)
+                            or (crc_final and check_crc and (uu.checksum<>crc) ) then
+                          begin
+                            exit(true);
+                          end;
+                      end;
+                    uu:=tused_unit(uu.Next);
+                  end;
+              end;
+            pu:=tdependent_unit(pu.Next);
+          end;
+        Result:=false;
+      end;
+
+    function tppumodule.load_usedunits: boolean;
       { self is a ppu (or in a package) }
       begin
         Result:=true;
@@ -2093,13 +2147,14 @@ var
 
             remove_waitforunit_cycles;
 
-            { the implementation uses were just connected,
-              the scc_tree_crc_wait is outdated.
-              If all used units are compiled, continue.
-              otherwise some used units might still change }
-            if not are_all_used_units_compiled then
-              exit(false);
           end;
+
+        { the implementation uses were just connected,
+          the scc_tree_crc_wait is outdated.
+          If all used units are compiled, continue.
+          otherwise some used units might still change }
+        if find_used_unit_compiling<>nil then
+          exit(false);
 
         { check that all used units have their crc and checksums match }
         if not ppu_check_used_crcs then
@@ -2162,7 +2217,7 @@ var
                      ((pu.u.interface_crc<>pu.interface_checksum) or
                       (pu.u.indirect_crc<>pu.indirect_checksum)))
                 or (CRCValid and
-                  {$IFNDEF EnableUrCRC}
+                  {$IFNDEF DisableUrCRC}
                   (not (mf_release in moduleflags)) and
                   {$ENDIF}
                   (pu.u.crc<>pu.checksum)
@@ -2177,12 +2232,10 @@ var
               else
                 Comment(V_Normal,'  implcrc change: '+hexstr(pu.u.crc,8)+' for '+pu.u.ppufilename+' <> '+hexstr(pu.checksum,8)+' in unit '+realmodulename^);
   {$endif DEBUG_UNIT_CRC_CHANGES}
-              recompile_reason:=rr_crcchanged;
               {$IFDEF DEBUG_PPU_CYCLES}
               writeln('PPUALGO tppumodule.load_usedunits_section ',modulename^,' ',BoolToStr(in_interface,'interface','implementation'),' uses "',pu.u.modulename^,'" old=',statestr,' new=',ms_compile);
               {$ENDIF}
-              { Note: the recompile_from_sources is invoked by the caller }
-              state:=ms_compile;
+              mark_recompile_needed(rr_crcchanged);
               exit(false);
             end;
 
@@ -2205,6 +2258,7 @@ var
       end;
 
     function tppumodule.ppu_check_used_crcs: boolean;
+    // check crcs
     var
       pu: tused_unit;
     begin
@@ -2221,11 +2275,10 @@ var
             {$ifdef DEBUG_UNIT_CRC_CHANGES}
             Comment(V_Normal,'  implcrc change: '+hexstr(pu.u.crc,8)+' for '+pu.u.ppufilename+' <> '+hexstr(pu.checksum,8)+' in unit '+realmodulename^);
             {$endif DEBUG_UNIT_CRC_CHANGES}
-            recompile_reason:=rr_crcchanged;
             {$IFDEF DEBUG_PPU_CYCLES}
             writeln('PPUALGO tppumodule.ppu_check_used_crcs ',modulename^,' interface uses "',pu.u.modulename^,'" old=',statestr,' new=',ms_compile);
             {$ENDIF}
-            state:=ms_compile;
+            mark_recompile_needed(rr_crcchanged);
             exit;
           end;
         end else begin
@@ -2234,9 +2287,6 @@ var
         end;
         pu:=tused_unit(pu.next);
       end;
-
-      if (scc_tree_crc_wait<>nil) and (scc_tree_crc_wait<>self) then
-        exit;
 
       Result:=true;
     end;
@@ -2253,7 +2303,7 @@ var
       if do_reload and not interface_compiled then
         exit(true);
 
-      if ppu_waitingfor_crc and (scc_tree_crc_wait<>nil) and (scc_tree_crc_wait<>self) then
+      if ppu_waitingfor_crc and (scc_tree_crc_wait<>nil) then
         exit; { the final load step needs all used units and their used units }
 
       pu:=tused_unit(used_units.first);
@@ -2264,7 +2314,7 @@ var
           if pu.u.do_reload
               or not pu.u.interface_compiled
               or (ppu_waitingfor_crc and not pu.u.crc_final
-                 {$IFNDEF EnableUrCRC}and not (mf_release in moduleflags){$ENDIF} ) then
+                 {$IFNDEF DisableUrCRC}and not (mf_release in moduleflags){$ENDIF} ) then
           begin
             firstwaiting:=pu.u;
             exit;
@@ -2278,7 +2328,7 @@ var
     function tppumodule.is_reload_needed(pu: tdependent_unit): boolean;
       begin
         if pu.u.state=ms_load then
-          Result:=tppumodule(pu.u).ppu_waitingfor_crc
+          Result:=pu.u.ppu_waitingfor_crc
                 or (pu.in_interface and pu.u.interface_compiled)
         else
           Result:=inherited is_reload_needed(pu);
@@ -2307,9 +2357,6 @@ var
 
     procedure tppumodule.end_of_parsing;
       begin
-        { module is now compiled }
-        state:=ms_compiled;
-
         { free ppu }
         discardppu;
 
@@ -2411,13 +2458,11 @@ var
         recompile_reason:=reason;
         do_recompile:=true;
         do_reload:=true;
+        state:=ms_compile;
       end;
 
-    procedure tppumodule.post_load_or_compile(from_module : tmodule; second_time : boolean);
+    procedure tppumodule.post_load_or_compile(from_module : tmodule);
       begin
-        if current_module<>self then
-          internalerror(200212282);
-
         if in_interface then
           internalerror(200212283);
 
@@ -2427,7 +2472,6 @@ var
             assigned(tppumodule(from_module).ppufile) then
            tppumodule(from_module).ppufile.tempopen;
   {$endif SHORT_ON_FILE_HANDLES}
-        state:=ms_processed;
       end;
 
     function tppumodule.loadppu(from_module : tmodule) : boolean;
@@ -2516,7 +2560,7 @@ var
           check_impl_uses:=state in [ms_compiling_waitfinish..ms_compiled,ms_processed];
 
         { if the crc(s) of used unit are known }
-        check_crc:={$IFNDEF EnableUrCRC}not (mf_release in moduleflags) and{$ENDIF}
+        check_crc:={$IFNDEF DisableUrCRC}not (mf_release in moduleflags) and{$ENDIF}
                    (fromppu or (state in [ms_load,ms_compiled,ms_processed]));
       end;
 
@@ -2560,12 +2604,14 @@ var
         if state=ms_compiled then
         begin
           Result:=true;
-          post_load_or_compile(loadedfrommodule,false);
+          post_load_or_compile(loadedfrommodule);
         end else if state=ms_compile then
           mark_recompile_needed(recompile_reason);
 
+        { finished or recompile: no need to store state }
+        FreeAndNil(stored_state);
+
         { we are back, restore current_module }
-        store_state;
         set_current_module(old_module);
       end;
 
