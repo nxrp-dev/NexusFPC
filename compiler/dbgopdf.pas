@@ -1160,6 +1160,11 @@ var
         if not assigned(sym) or not assigned(sym.vardef) then
           exit;
 
+        opdflist:=current_asmdata.asmlists[al_opdf];
+        typeid:=G_TypeMapper.GetTypeID(sym.vardef);
+        paramname:=sym.RealName;
+        namelen:=Word(Length(paramname));
+
         { skip the hidden vmt/result parameters, but let Self through }
         if vo_is_hidden_para in sym.varoptions then
         begin
@@ -1170,13 +1175,6 @@ var
         end
         else
         begin
-          opdflist:=current_asmdata.asmlists[al_opdf];
-
-          typeid:=G_TypeMapper.GetTypeID(sym.vardef);
-
-          paramname:=sym.RealName;
-          namelen:=Word(Length(paramname));
-
           { determine var/const/out flags }
           isvar:=0;
           isconst:=0;
@@ -1205,11 +1203,9 @@ var
         end;
 
         { also emit a REC_LOCALVAR so that 'locals' command can find parameters }
-        { For Self, initialise variables that were skipped above (no REC_PARAMETER) }
+        { For Self, override the name so it appears as 'Self' in the debugger }
         if vo_is_self in sym.varoptions then
           begin
-            opdflist:=current_asmdata.asmlists[al_opdf];
-            typeid:=G_TypeMapper.GetTypeID(sym.vardef);
             paramname:='Self';
             namelen:=Word(Length(paramname));
           end;
