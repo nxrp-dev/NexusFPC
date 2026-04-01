@@ -169,7 +169,9 @@ implementation
         if key<>'' then
           begin
             { named type: check name-based map only }
+            {$push}{$warn 6058 off}
             result:=FNameMap.Find(key)<>nil;
+            {$pop}
           end
         else
           begin
@@ -204,7 +206,9 @@ implementation
             { named type: use name-based map exclusively.
               Do NOT use pointer cache — stale pointers from previous
               units can match unrelated types due to memory reuse. }
+            {$push}{$warn 6058 off}
             p:=FNameMap.Find(key);
+            {$pop}
             if p<>nil then
               begin
                 result:=Cardinal(PtrUInt(p));
