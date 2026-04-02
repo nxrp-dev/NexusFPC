@@ -192,6 +192,7 @@ interface
          procedure read_relocs(s:TCoffObjSection);
          procedure read_symbols(objdata:TObjData);
          procedure ObjSections_read_relocs(p:TObject;arg:pointer);
+         procedure ParseDirectiveSection(objdata:TObjData);
        public
          constructor createcoff(awin32:boolean);
          destructor destroy;override;
@@ -327,9 +328,10 @@ implementation
        COFF_SYM_GLOBAL   = 2;
        COFF_SYM_LOCAL    = 3;
        COFF_SYM_LABEL    = 6;
-       COFF_SYM_FUNCTION = 101;
-       COFF_SYM_FILE     = 103;
-       COFF_SYM_SECTION  = 104;
+       COFF_SYM_FUNCTION      = 101;
+       COFF_SYM_FILE          = 103;
+       COFF_SYM_SECTION       = 104;
+       COFF_SYM_WEAK_EXTERNAL = 105;
 
        COFF_STYP_REG    = $0000; { "regular": allocated, relocated, loaded }
        COFF_STYP_DSECT  = $0001; { "dummy":  relocated only }
@@ -2496,6 +2498,9 @@ const pemagic : array[0..3] of byte = (
         strname   : ansistring;
         auxrec    : array[0..sizeof(coffsymbol)-1] of byte;
         boauxrec  : array[0..sizeof(coffbigobjsymbol)-1] of byte;
+        weakidx, weakdefidx : longint;
+        weakaliases : array of array[0..1] of longint;
+        weakcount : longint;
         psecrec   : pcoffsectionrec;
         secrec    : coffsectionrec;
         objsec    : TObjSection;
@@ -2523,6 +2528,8 @@ const pemagic : array[0..3] of byte = (
            { Load the Symbols }
            FCoffSyms.Seek(0);
            symidx:=0;
+           weakcount:=0;
+           SetLength(weakaliases,0);
            while (symidx<nsyms) do
             begin
               if bigobj then
@@ -2648,6 +2655,16 @@ const pemagic : array[0..3] of byte = (
                         objsym.size:=size;
                       end;
                   end;
+                COFF_SYM_WEAK_EXTERNAL :
+                  begin
+                    { Weak external: treat as a regular external.
+                      The aux record specifies the default symbol,
+                      but we just treat it as undefined and let the
+                      linker resolve it normally. }
+                    objsym:=CreateSymbol(strname);
+                    objsym.bind:=AB_WEAK_EXTERNAL;
+                    objsym.typ:=AT_FUNCTION;
+                  end;
                 COFF_SYM_FUNCTION,
                 COFF_SYM_FILE :
                   ;
@@ -2717,6 +2734,34 @@ const pemagic : array[0..3] of byte = (
                   inc(symidx);
                 end;
 
+              { handle weak external aux record (alias/default symbol) }
+              if (symcls=COFF_SYM_WEAK_EXTERNAL) and (auxcount>=1) then
+                begin
+                  if bigobj then
+                    begin
+                      FCoffSyms.Read(boauxrec,sizeof(boauxrec));
+                      weakdefidx:=plongint(@boauxrec[0])^;
+                    end
+                  else
+                    begin
+                      FCoffSyms.Read(auxrec,sizeof(auxrec));
+                      weakdefidx:=plongint(@auxrec[0])^;
+                    end;
+                  { First 4 bytes of aux record = TagIndex (default symbol index).
+                    Store for deferred resolution after all symbols are read. }
+                  if assigned(objsym) and (weakdefidx>=0) and
+                     (weakdefidx<nsyms) then
+                    begin
+                      if weakcount>=length(weakaliases) then
+                        SetLength(weakaliases,weakcount+16);
+                      weakaliases[weakcount][0]:=symidx;
+                      weakaliases[weakcount][1]:=weakdefidx;
+                      inc(weakcount);
+                    end;
+                  dec(auxcount);
+                  inc(symidx);
+                end;
+
               for i:=1 to auxcount do
                begin
                  if bigobj then
@@ -2727,6 +2772,18 @@ const pemagic : array[0..3] of byte = (
                end;
               inc(symidx);
             end;
+
+           { Resolve weak external aliases now that all symbols are read }
+           for i:=0 to weakcount-1 do
+             begin
+               weakidx:=weakaliases[i][0];
+               weakdefidx:=weakaliases[i][1];
+               if assigned(FSymTbl[weakidx]) and assigned(FSymTbl[weakdefidx]) then
+                 begin
+                   FSymTbl[weakidx].DefaultSym:=FSymTbl[weakdefidx];
+                 end;
+             end;
+           weakaliases:=nil;
          end;
       end;
 
@@ -2747,6 +2804,129 @@ const pemagic : array[0..3] of byte = (
                 read_relocs(TCoffObjSection(p));
               end;
           end;
+      end;
+
+
+    procedure TCoffObjInput.ParseDirectiveSection(objdata:TObjData);
+      var
+        drectve : TObjSection;
+        buf     : ansistring;
+        p,start,eq : longint;
+        directive,symname,defname : ansistring;
+        objsym,defsym : TObjSymbol;
+      begin
+        drectve:=TObjSection(objdata.ObjSectionList.Find('.drectve'));
+        if not assigned(drectve) then
+          exit;
+        if not assigned(drectve.data) or (drectve.size=0) then
+          exit;
+        { Read .drectve content }
+        SetLength(buf,drectve.size);
+        drectve.data.seek(0);
+        drectve.data.read(buf[1],drectve.size);
+        { Parse space-separated directives }
+        p:=1;
+        while p<=length(buf) do
+          begin
+            { skip whitespace and nulls }
+            while (p<=length(buf)) and (buf[p] in [' ',#9,#0,#10,#13]) do
+              inc(p);
+            if p>length(buf) then
+              break;
+            { read token }
+            start:=p;
+            while (p<=length(buf)) and not (buf[p] in [' ',#9,#0,#10,#13]) do
+              inc(p);
+            directive:=copy(buf,start,p-start);
+            { Handle /include:SYMBOL - force the linker to resolve this
+              symbol, pulling in the archive member that defines it.
+              Used by MSVC UCRT to pull in CRT initializer objects. }
+            if (length(directive)>9) and
+               (CompareText(copy(directive,1,9),'/include:')=0) then
+              begin
+                symname:=copy(directive,10,length(directive)-9);
+                if symname<>'' then
+                  begin
+                    { Create the symbol as undefined external if not already present }
+                    objsym:=TObjSymbol(objdata.ObjSymbolList.Find(symname));
+                    if not assigned(objsym) then
+                      begin
+                        objsym:=objdata.CreateSymbol(symname);
+                        objsym.bind:=AB_EXTERNAL;
+                        objsym.typ:=AT_FUNCTION;
+                      end;
+                  end;
+              end
+            { Handle /alternatename:X=Y  (prefix is 15 chars) }
+            else if (length(directive)>15) and
+               (CompareText(copy(directive,1,15),'/alternatename:')=0) then
+              begin
+                directive:=copy(directive,16,length(directive)-15);
+                eq:=pos('=',directive);
+                if eq>1 then
+                  begin
+                    symname:=copy(directive,1,eq-1);
+                    defname:=copy(directive,eq+1,length(directive)-eq);
+                    if (symname<>'') and (defname<>'') then
+                      begin
+                        { Find the symbol in this object and set its alternate name.
+                          The target may be in a different object, so store by name. }
+                        objsym:=TObjSymbol(objdata.ObjSymbolList.Find(symname));
+                        if assigned(objsym) then
+                          begin
+                            defsym:=TObjSymbol(objdata.ObjSymbolList.Find(defname));
+                            if assigned(defsym) then
+                              objsym.DefaultSym:=defsym
+                            else
+                              begin
+                                objsym.DefaultSymName:=defname;
+                              end;
+                          end;
+                      end;
+                  end;
+              end
+            { Handle /DEFAULTLIB:name - auto-load a static library }
+            else if (length(directive)>12) and
+               (CompareText(copy(directive,1,12),'/DEFAULTLIB:')=0) then
+              begin
+                symname:=copy(directive,13,length(directive)-12);
+                { strip optional quotes }
+                if (length(symname)>=2) and (symname[1]='"') and (symname[length(symname)]='"') then
+                  symname:=copy(symname,2,length(symname)-2);
+                if symname<>'' then
+                  objdata.DefaultLibs.Insert(symname);
+              end
+            { Handle /NODEFAULTLIB:name - suppress a default library }
+            else if (length(directive)>14) and
+               (CompareText(copy(directive,1,14),'/NODEFAULTLIB:')=0) then
+              begin
+                symname:=copy(directive,15,length(directive)-14);
+                if (length(symname)>=2) and (symname[1]='"') and (symname[length(symname)]='"') then
+                  symname:=copy(symname,2,length(symname)-2);
+                if symname<>'' then
+                  objdata.NoDefaultLibs.Insert(symname);
+              end
+            { Handle /DISALLOWLIB:name - same semantics as /NODEFAULTLIB }
+            else if (length(directive)>13) and
+               (CompareText(copy(directive,1,13),'/DISALLOWLIB:')=0) then
+              begin
+                symname:=copy(directive,14,length(directive)-13);
+                if (length(symname)>=2) and (symname[1]='"') and (symname[length(symname)]='"') then
+                  symname:=copy(symname,2,length(symname)-2);
+                if symname<>'' then
+                  objdata.NoDefaultLibs.Insert(symname);
+              end;
+          end;
+      end;
+
+
+    function ReadNullTermString(AReader: TObjectReader): ansistring;
+      var
+        b: byte;
+      begin
+        result:='';
+        while AReader.read(b,1) and (b<>0) do
+          result:=result+chr(b);
       end;
 
 
@@ -2947,6 +3127,8 @@ const pemagic : array[0..3] of byte = (
            ReadSectionContent(objdata);
            { Relocs }
            ObjSectionList.ForEachCall(@objsections_read_relocs,nil);
+           { Parse .drectve section for MSVC linker directives }
+           ParseDirectiveSection(objdata);
          end;
         FCoffStrs:=nil;
         FCoffSyms.Free;

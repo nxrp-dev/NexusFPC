@@ -268,6 +268,11 @@ interface
        { Darwin asm is using indirect symbols resolving }
        indsymbol  : TObjSymbol;
 
+       { COFF weak external alias: default symbol to resolve to }
+       DefaultSym : TObjSymbol;
+       { MSVC /alternatename: alternate symbol name (cross-object) }
+       DefaultSymName : ansistring;
+
        { Used by the OMF object format and its complicated relocation records }
        group: TObjSectionGroup;
 {$ifdef ARM}
@@ -426,6 +431,8 @@ interface
        FStabStrObjSec : TObjSection;
        FGroupsList : TFPHashObjectList;
        FCPUType : tcputype;
+       FDefaultLibs : TCmdStrList;
+       FNoDefaultLibs : TCmdStrList;
        procedure section_reset(p:TObject;arg:pointer);
        procedure section_afteralloc(p:TObject;arg:pointer);
        procedure section_afterwrite(p:TObject;arg:pointer);
@@ -495,6 +502,8 @@ interface
        property GroupsList:TFPHashObjectList read FGroupsList;
        property StabsSec:TObjSection read FStabsObjSec write FStabsObjSec;
        property StabStrSec:TObjSection read FStabStrObjSec write FStabStrObjSec;
+       property DefaultLibs:TCmdStrList read FDefaultLibs;
+       property NoDefaultLibs:TCmdStrList read FNoDefaultLibs;
        property CObjSymbol: TObjSymbolClass read FCObjSymbol write FCObjSymbol;
        { Current CPU type for the internal asm writer.
          Instructions, not supported by the given CPU should produce an error.
@@ -1427,6 +1436,8 @@ implementation
         { section class type for creating of new sections }
         FCObjSection:=TObjSection;
         FCObjSectionGroup:=TObjSectionGroup;
+        FDefaultLibs:=TCmdStrList.Create;
+        FNoDefaultLibs:=TCmdStrList.Create;
 {$ifdef ARM}
         ThumbFunc:=false;
 {$endif ARM}
@@ -1449,6 +1460,10 @@ implementation
 {$endif}
         FGroupsList.free;
         FGroupsList := nil;
+        FDefaultLibs.free;
+        FDefaultLibs := nil;
+        FNoDefaultLibs.free;
+        FNoDefaultLibs := nil;
 
         { Sections }
 {$ifdef MEMDEBUG}
