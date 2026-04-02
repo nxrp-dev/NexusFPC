@@ -2601,6 +2601,13 @@ const pemagic : array[0..3] of byte = (
                        if assigned(objsec) and (symvalue>=objsec.mempos) then
                          address:=symvalue-objsec.mempos;
                        objsym:=CreateSymbol(strname);
+                       { If an existing symbol with this name already points to a
+                         different section, create a new unique symbol. This happens
+                         when LLVM/Clang generates multiple COMDAT sections with the
+                         same name (e.g., 1000+ '.rdata' sections). Each section
+                         needs its own symbol so relocations resolve correctly. }
+                       if assigned(objsym.objsection) and (objsym.objsection<>objsec) then
+                         objsym:=CObjSymbol.Create(ObjSymbolList,strname);
                        objsym.bind:=AB_LOCAL;
                        objsym.typ:=AT_FUNCTION;
                        objsym.objsection:=objsec;
@@ -2617,6 +2624,13 @@ const pemagic : array[0..3] of byte = (
                         if symvalue>=objsec.mempos then
                           address:=symvalue-objsec.mempos;
                         objsym:=CreateSymbol(strname);
+                        { If an existing symbol with this name already points to a
+                          different section, create a new unique symbol. This happens
+                          when LLVM/Clang generates multiple COMDAT sections with the
+                          same name (e.g., 1000+ '.rdata' sections). Each section
+                          needs its own symbol so relocations resolve correctly. }
+                        if assigned(objsym.objsection) and (objsym.objsection<>objsec) then
+                          objsym:=CObjSymbol.Create(ObjSymbolList,strname);
                         objsym.bind:=AB_LOCAL;
                         objsym.typ:=AT_FUNCTION;
                         objsym.objsection:=objsec;
