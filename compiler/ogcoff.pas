@@ -1412,9 +1412,16 @@ const pemagic : array[0..3] of byte = (
                 end
             else
               internalerror(200205183);
-            { Only debug sections are allowed to have relocs pointing to unused sections }
-            if not relocsec.used and not (oso_debug in objsec.secoptions) then
-              internalerror(200603061);
+            { Handle relocations to unresolved weak externals or discarded
+              COMDAT sections: zero out the relocation value }
+            if (relocsec=nil) or
+               (not relocsec.used and not (oso_debug in objsec.secoptions)) then
+              begin
+                address:=0;
+                data.Seek(objreloc.dataoffset);
+                data.Write(address,address_size);
+                continue;
+              end;
 
             if relocsec.used then
               case objreloc.typ of
@@ -1438,8 +1445,11 @@ const pemagic : array[0..3] of byte = (
                   end;
                 RELOC_SECREL32 :
                   begin
-                    { fixup address when the symbol was known in defined object }
-                    if (relocsec.objdata=objsec.objdata) then
+                    { Compute section-relative offset. For same-object refs (FPC)
+                      the initial value includes the symbol address; for cross-object
+                      refs (MSVC) the initial value is 0. In both cases subtracting
+                      ExeSection.MemPos is needed to get a section-relative result. }
+                    if Assigned(relocsec.ExeSection) then
                       dec(address,relocsec.ExeSection.MemPos);
                     inc(address,relocval);
                   end;
