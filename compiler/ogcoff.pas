@@ -2308,7 +2308,13 @@ const pemagic : array[0..3] of byte = (
     function TCoffObjInput.GetSection(secidx:longint):TObjSection;
       begin
         result:=nil;
-        if (secidx<1) or (secidx>FSecCount) then
+        { COFF special section indices: -1 (IMAGE_SYM_ABSOLUTE) for
+          symbols with fixed values not in any section (e.g. __tls_array
+          at TEB offset 0x2C on i386), -2 (IMAGE_SYM_DEBUG) for debug
+          symbols. Return nil for these valid special values. }
+        if secidx<1 then
+          exit;
+        if secidx>FSecCount then
           begin
             InputError('Failed reading coff file, invalid section index');
             exit;
@@ -2560,7 +2566,7 @@ const pemagic : array[0..3] of byte = (
                      begin
                        bind:=AB_GLOBAL;
                        objsec:=GetSection(secidx);
-                       if symvalue>=objsec.mempos then
+                       if assigned(objsec) and (symvalue>=objsec.mempos) then
                          address:=symvalue-objsec.mempos;
                      end;
                     objsym:=CreateSymbol(strname);
@@ -2577,7 +2583,7 @@ const pemagic : array[0..3] of byte = (
                     if secidx<>-1 then
                      begin
                        objsec:=GetSection(secidx);
-                       if symvalue>=objsec.mempos then
+                       if assigned(objsec) and (symvalue>=objsec.mempos) then
                          address:=symvalue-objsec.mempos;
                        objsym:=CreateSymbol(strname);
                        objsym.bind:=AB_LOCAL;
