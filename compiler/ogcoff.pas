@@ -478,8 +478,10 @@ implementation
 {$endif arm}
 
 {$ifdef i386}
+       IMAGE_REL_I386_ABSOLUTE = 0;
        IMAGE_REL_I386_DIR32 = 6;
        IMAGE_REL_I386_IMAGEBASE = 7;
+       IMAGE_REL_I386_SECTION = 10;
        IMAGE_REL_I386_SECREL32 = 11;
        IMAGE_REL_I386_PCRLONG = 20;
 {$endif i386}
@@ -1439,6 +1441,19 @@ const pemagic : array[0..3] of byte = (
                       dec(address,relocsec.ExeSection.MemPos);
                     inc(address,relocval);
                   end;
+                RELOC_SECTION :
+                  begin
+                    { IMAGE_REL_AMD64_SECTION: 16-bit PE section index of the
+                      target. Primarily used in MSVC .debug$S sections (SECREL +
+                      SECTION pairs) but can appear in any section. }
+                    if Assigned(relocsec.ExeSection) then
+                      address:=relocsec.ExeSection.secsymidx
+                    else
+                      address:=0;
+                    data.Seek(objreloc.dataoffset);
+                    data.Write(address,2);
+                    continue;
+                  end;
 {$ifdef arm}
                 RELOC_RELATIVE_24,
                 RELOC_RELATIVE_CALL:
@@ -1951,12 +1966,16 @@ const pemagic : array[0..3] of byte = (
                 rel.reloctype:=IMAGE_REL_ARM_BLX23T;
 {$endif arm}
 {$ifdef i386}
+              RELOC_NONE :
+                rel.reloctype:=IMAGE_REL_I386_ABSOLUTE;
               RELOC_RELATIVE :
                 rel.reloctype:=IMAGE_REL_I386_PCRLONG;
               RELOC_ABSOLUTE :
                 rel.reloctype:=IMAGE_REL_I386_DIR32;
               RELOC_RVA :
                 rel.reloctype:=IMAGE_REL_I386_IMAGEBASE;
+              RELOC_SECTION :
+                rel.reloctype:=IMAGE_REL_I386_SECTION;
               RELOC_SECREL32 :
                 rel.reloctype:=IMAGE_REL_I386_SECREL32;
 {$endif i386}
@@ -1983,6 +2002,8 @@ const pemagic : array[0..3] of byte = (
                 rel.reloctype:=IMAGE_REL_AMD64_REL32_5;
               RELOC_SECREL32 :
                 rel.reloctype:=IMAGE_REL_AMD64_SECREL;
+              RELOC_SECTION :
+                rel.reloctype:=IMAGE_REL_AMD64_SECTION;
 {$endif x86_64}
 {$ifdef aarch64}
               RELOC_NONE :
@@ -2343,12 +2364,16 @@ const pemagic : array[0..3] of byte = (
                rel_type:=RELOC_RELATIVE_24_THUMB;
 {$endif arm}
 {$ifdef i386}
+             IMAGE_REL_I386_ABSOLUTE :
+               rel_type:=RELOC_NONE;
              IMAGE_REL_I386_PCRLONG :
                rel_type:=RELOC_RELATIVE;
              IMAGE_REL_I386_DIR32 :
                rel_type:=RELOC_ABSOLUTE;
              IMAGE_REL_I386_IMAGEBASE :
                rel_type:=RELOC_RVA;
+             IMAGE_REL_I386_SECTION :
+               rel_type:=RELOC_SECTION;
              IMAGE_REL_I386_SECREL32 :
                rel_type:=RELOC_SECREL32;
 {$endif i386}
@@ -2376,6 +2401,8 @@ const pemagic : array[0..3] of byte = (
                rel_type:=RELOC_RELATIVE_5;
              IMAGE_REL_AMD64_SECREL:
                rel_type:=RELOC_SECREL32;
+             IMAGE_REL_AMD64_SECTION:
+               rel_type:=RELOC_SECTION;
 {$endif x86_64}
 {$ifdef aarch64}
              IMAGE_REL_ARM64_ABSOLUTE:

@@ -126,6 +126,10 @@ interface
          RELOC_RVA,
          { PECoff (Windows) section relocation, required by DWARF2 debug info }
          RELOC_SECREL32,
+         { IMAGE_REL_AMD64_SECTION: 16-bit PE section index of the target.
+           Primarily used in MSVC .debug$S sections (SECREL + SECTION pairs)
+           but can appear in any section. Not present in FPC-generated objects. }
+         RELOC_SECTION,
          { Generate a 0 value at the place of the relocation,
            this is used to remove unused vtable entries }
          RELOC_ZERO,
