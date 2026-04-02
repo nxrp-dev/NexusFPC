@@ -1219,6 +1219,8 @@ const pemagic : array[0..3] of byte = (
         8192 : result:=result or PE_SCN_ALIGN_8192BYTES;
           else result:=result or PE_SCN_ALIGN_16BYTES;
         end;
+        if oso_comdat in aoptions then
+          result:=result or PE_SCN_LNK_COMDAT;
       end;
 
 
@@ -1896,6 +1898,19 @@ const pemagic : array[0..3] of byte = (
               secrec.nrelocs:=ObjRelocations.count
             else
               secrec.nrelocs:=65535;
+            if oso_comdat in SecOptions then
+              begin
+                case ComdatSelection of
+                  oscs_none:          secrec.select:=IMAGE_COMDAT_SELECT_NODUPLICATES;
+                  oscs_any:           secrec.select:=IMAGE_COMDAT_SELECT_ANY;
+                  oscs_same_size:     secrec.select:=IMAGE_COMDAT_SELECT_SAME_SIZE;
+                  oscs_exact_match:   secrec.select:=IMAGE_COMDAT_SELECT_EXACT_MATCH;
+                  oscs_associative:   secrec.select:=IMAGE_COMDAT_SELECT_ASSOCIATIVE;
+                  oscs_largest:       secrec.select:=IMAGE_COMDAT_SELECT_LARGEST;
+                end;
+                if assigned(AssociativeSection) then
+                  secrec.assoc:=AssociativeSection.index;
+              end;
             inc(symidx);
 	    MaybeSwap(secrec);
             FCoffSyms.write(secrec,sizeof(secrec));
@@ -2657,10 +2672,7 @@ const pemagic : array[0..3] of byte = (
                     end;
                   end;
 
-                  if comdatsel in [oscs_associative] then
-                    { only temporary }
-                    Comment(V_Error,'Associative COMDAT sections are not yet supported (symbol: '+objsym.objsection.Name+')')
-                  else if (comdatsel=oscs_associative) and (secrec.assoc=0) then
+                  if (comdatsel=oscs_associative) and (secrec.assoc=0) then
                     Message1(link_e_comdat_associative_section_expected,objsym.objsection.name)
                   else if (objsym.objsection.ComdatSelection<>oscs_none) and (comdatsel<>oscs_none) and (objsym.objsection.ComdatSelection<>comdatsel) then
                     Message2(link_e_comdat_not_matching,objsym.objsection.Name,objsym.Name)
@@ -2668,9 +2680,10 @@ const pemagic : array[0..3] of byte = (
                     begin
                       objsym.objsection.ComdatSelection:=comdatsel;
 
-                      if (secrec.assoc<>0) and not assigned(objsym.objsection.AssociativeSection) then
+                      if (comdatsel=oscs_associative) and (secrec.assoc<>0) and
+                         not assigned(objsym.objsection.AssociativeSection) then
                         begin
-                          objsym.objsection.AssociativeSection:=GetSection(secrec.assoc-1);
+                          objsym.objsection.AssociativeSection:=GetSection(secrec.assoc);
                           if not assigned(objsym.objsection.AssociativeSection) then
                             Message1(link_e_comdat_associative_section_not_found,objsym.objsection.Name);
                         end;
