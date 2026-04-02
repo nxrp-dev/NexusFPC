@@ -77,7 +77,7 @@ type
     constructor create;
     constructor createAr(const Aarfn:string;allow_nonar:boolean=false);virtual;
     destructor  destroy;override;
-    function  openfile(const fn:string):boolean;virtual;
+    function  openfile(const fn:TPathStr):boolean;virtual;
     procedure closefile;virtual;
     procedure seek(len:longint);virtual;
     function  read(out b;len:longint):boolean;virtual;
@@ -269,7 +269,7 @@ begin
 end;
 
 
-function tobjectreader.openfile(const fn:string):boolean;
+function tobjectreader.openfile(const fn:TPathStr):boolean;
 begin
   openfile:=false;
   f:=CFileStreamClass.Create(fn,fmOpenRead);

@@ -82,7 +82,7 @@ type
   public
     constructor createAr(const Aarfn:string;allow_nonar:boolean=false);override;
     destructor  destroy;override;
-    function  openfile(const fn:string):boolean;override;
+    function  openfile(const fn:TPathStr):boolean;override;
     procedure closefile;override;
     procedure seek(len:longint);override;
     property MemberPos: longint read CurrMemberPos;
@@ -546,7 +546,7 @@ implementation
       end;
 
 
-    function  tarobjectreader.openfile(const fn:string):boolean;
+    function  tarobjectreader.openfile(const fn:TPathStr):boolean;
       var
         arsym : TArSymbol;
         arhdr : TArHdr;
