@@ -188,7 +188,7 @@ interface
          win32     : boolean;
          bigobj    : boolean;
          function  GetSection(secidx:longint):TObjSection;
-         function  Read_str(strpos:longword):string;
+         function  Read_str(strpos:longword):ansistring;
          procedure read_relocs(s:TCoffObjSection);
          procedure read_symbols(objdata:TObjData);
          procedure ObjSections_read_relocs(p:TObject;arg:pointer);
@@ -2296,11 +2296,11 @@ const pemagic : array[0..3] of byte = (
       end;
 
 
-    function TCoffObjInput.Read_str(strpos:longword):string;
+    function TCoffObjInput.Read_str(strpos:longword):ansistring;
       begin
         if (FCoffStrs=nil) or (strpos>=FCoffStrSize) or (FCoffStrs[strpos]=#0) then
           Internalerror(200205172);
-        result:=string(PChar(@FCoffStrs[strpos]));
+        result:=ansistring(PChar(@FCoffStrs[strpos]));
       end;
 
 
@@ -2435,7 +2435,7 @@ const pemagic : array[0..3] of byte = (
         bosym     : coffbigobjsymbol;
         objsym    : TObjSymbol;
         bind      : Tasmsymbind;
-        strname   : string;
+        strname   : ansistring;
         auxrec    : array[0..sizeof(coffsymbol)-1] of byte;
         boauxrec  : array[0..sizeof(coffbigobjsymbol)-1] of byte;
         psecrec   : pcoffsectionrec;
@@ -2473,12 +2473,13 @@ const pemagic : array[0..3] of byte = (
 		  MaybeSwap(bosym);
                   if bosym.Name.Offset.Zeroes<>0 then
                     begin
-                      { Added for sake of global data analysis }
-                      strname[0]:=#0;
+                      { Short name: up to 8 chars stored inline in symbol record.
+                        Copy to temp buffer and null-terminate since the field
+                        may not be null-terminated if the name is exactly 8 chars. }
+                      SetLength(strname,8);
                       move(bosym.Name.ShortName,strname[1],8);
-                      strname[9]:=#0;
-                      strname[0]:=chr(strlen(@strname[1]));
-                      if strname='' then
+                      SetLength(strname,strlen(@strname[1]));
+                      if length(strname)=0 then
                         internalerror(2017020301);
                     end
                   else
@@ -2494,12 +2495,13 @@ const pemagic : array[0..3] of byte = (
 		  MaybeSwap(sym);
                   if plongint(@sym.name)^<>0 then
                     begin
-                      { Added for sake of global data analysis }
-                      strname[0]:=#0;
+                      { Short name: up to 8 chars stored inline in symbol record.
+                        Copy to temp buffer and null-terminate since the field
+                        may not be null-terminated if the name is exactly 8 chars. }
+                      SetLength(strname,8);
                       move(sym.name,strname[1],8);
-                      strname[9]:=#0;
-                      strname[0]:=chr(strlen(@strname[1]));
-                      if strname='' then
+                      SetLength(strname,strlen(@strname[1]));
+                      if length(strname)=0 then
                         Internalerror(200205171);
                     end
                   else
@@ -2694,6 +2696,7 @@ const pemagic : array[0..3] of byte = (
         boheader : tcoffbigobjheader;
         sechdr   : tcoffsechdr;
         secname  : string;
+        secname  : ansistring;
         secnamebuf : array[0..15] of char;
       begin
         FReader:=AReader;
