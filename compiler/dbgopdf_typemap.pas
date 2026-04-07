@@ -229,16 +229,16 @@ implementation
                   exit;
                 end;
 
-            { allocate new TypeID — hash the type name if available,
-              otherwise fall back to sequential from reserved range }
-            key:=def.GetTypeName;
-            if (key<>'') and (key[1]<>'<') then
-              result:=FNV1aHash(key)
-            else
-              begin
-                result:=FNextTypeID;
-                inc(FNextTypeID);
-              end;
+            { allocate new TypeID sequentially from the reserved range.
+              Anonymous types have no stable identity beyond their declaration
+              site, so hashing GetTypeName is unsafe — distinct anonymous sets,
+              arrays or records routinely share display names like
+              "Set Of <enumeration type>" or "Array Of LongInt", which would
+              collide and (via TypeAlreadyEmitted's TypeID-keyed dedup) cause
+              the second type's record to be silently dropped. The pointer
+              cache above guarantees within-unit dedup for the same tdef. }
+            result:=FNextTypeID;
+            inc(FNextTypeID);
             AddToPtrCache(def,result);
           end;
       end;
