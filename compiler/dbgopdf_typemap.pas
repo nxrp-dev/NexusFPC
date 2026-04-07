@@ -137,34 +137,17 @@ implementation
 
 
     function TTypeMapper.GetTypeKey(def:tdef):AnsiString;
-      var
-        elemkey : AnsiString;
-        setdef  : tsetdef;
       begin
         result:='';
         if not assigned(def) then
           exit;
-        { named types: use mangled name for globally unique key }
+        { named types: use mangled name for globally unique key.
+          Structural keys for anonymous compound types live in GetTypeID
+          itself, where the side effects of recursive ID allocation are
+          expected. GetTypeKey must stay free of side effects so HasType
+          can call it cheaply. }
         if assigned(def.typesym) and assigned(def.typesym.owner) then
-          begin
-            result:=make_mangledname('',def.typesym.owner,def.typesym.RealName);
-            exit;
-          end;
-        { Anonymous compound types whose element type is named: derive a
-          stable structural key so identical compound types declared inline
-          across different units dedup to a single OPDF type record. Truly
-          anonymous compounds (e.g. set of an anonymous enum) fall through
-          and are allocated sequentially by GetTypeID. }
-        if def is tsetdef then
-          begin
-            setdef:=tsetdef(def);
-            elemkey:=GetTypeKey(setdef.elementdef);
-            if elemkey<>'' then
-              result:='set:'+elemkey+':'+
-                      tostr(setdef.setbase)+':'+
-                      tostr(setdef.setmax)+':'+
-                      tostr(setdef.size);
-          end;
+          result:=make_mangledname('',def.typesym.owner,def.typesym.RealName);
       end;
 
 
@@ -210,9 +193,11 @@ implementation
 
     function TTypeMapper.GetTypeID(Def:tdef):Cardinal;
       var
-        i   : Longint;
-        key : AnsiString;
-        p   : Pointer;
+        i      : Longint;
+        key    : AnsiString;
+        p      : Pointer;
+        setdef : tsetdef;
+        elemid : Cardinal;
       begin
         if Def=nil then
           begin
@@ -240,29 +225,55 @@ implementation
             { allocate new TypeID via FNV-1a hash of canonical name }
             result:=FNV1aHash(key);
             FNameMap.Add(key,Pointer(PtrUInt(result)));
-          end
-        else
-          begin
-            { anonymous type: use pointer-based lookup (unit-local only) }
-            for i:=0 to FPtrCount-1 do
-              if FPtrMap[i].Def=Def then
-                begin
-                  result:=FPtrMap[i].TypeID;
-                  exit;
-                end;
+            exit;
+          end;
 
-            { allocate new TypeID sequentially from the reserved range.
-              Anonymous types have no stable identity beyond their declaration
-              site, so hashing GetTypeName is unsafe — distinct anonymous sets,
-              arrays or records routinely share display names like
-              "Set Of <enumeration type>" or "Array Of LongInt", which would
-              collide and (via TypeAlreadyEmitted's TypeID-keyed dedup) cause
-              the second type's record to be silently dropped. The pointer
-              cache above guarantees within-unit dedup for the same tdef. }
+        { anonymous type: pointer cache fast path }
+        for i:=0 to FPtrCount-1 do
+          if FPtrMap[i].Def=Def then
+            begin
+              result:=FPtrMap[i].TypeID;
+              exit;
+            end;
+
+        { Anonymous compound types: try structural dedup before allocating
+          a fresh sequential TypeID. Two distinct tsetdef instances are
+          routinely created within a single compilation — once for the
+          declared variable type and once for each set-constant expression
+          like [a, b] — even though they share the same elementdef. Use
+          the elementdef's already-allocated TypeID as the structural
+          anchor so they collapse to a single OPDF type record. The same
+          mechanism handles cross-unit dedup of "set of TNamedType". }
+        if def is tsetdef then
+          begin
+            setdef:=tsetdef(def);
+            elemid:=GetTypeID(setdef.elementdef);
+            key:='set:'+tostr(elemid)+':'+
+                 tostr(setdef.setbase)+':'+
+                 tostr(setdef.setmax)+':'+
+                 tostr(setdef.size);
+            {$push}{$warn 6058 off}
+            p:=FNameMap.Find(key);
+            {$pop}
+            if p<>nil then
+              begin
+                result:=Cardinal(PtrUInt(p));
+                AddToPtrCache(def,result);
+                exit;
+              end;
             result:=FNextTypeID;
             inc(FNextTypeID);
+            FNameMap.Add(key,Pointer(PtrUInt(result)));
             AddToPtrCache(def,result);
+            exit;
           end;
+
+        { Truly anonymous type with no structural anchor: allocate
+          sequentially from the reserved range. The pointer cache above
+          guarantees within-unit dedup for the same tdef instance. }
+        result:=FNextTypeID;
+        inc(FNextTypeID);
+        AddToPtrCache(def,result);
       end;
 
 
