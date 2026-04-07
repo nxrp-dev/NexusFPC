@@ -80,6 +80,9 @@ interface
 
 implementation
 
+    uses
+      cutils;
+
     const
       INITIAL_CAPACITY = 256;
       EXPAND_FACTOR    = 2;
@@ -134,6 +137,9 @@ implementation
 
 
     function TTypeMapper.GetTypeKey(def:tdef):AnsiString;
+      var
+        elemkey : AnsiString;
+        setdef  : tsetdef;
       begin
         result:='';
         if not assigned(def) then
@@ -142,6 +148,22 @@ implementation
         if assigned(def.typesym) and assigned(def.typesym.owner) then
           begin
             result:=make_mangledname('',def.typesym.owner,def.typesym.RealName);
+            exit;
+          end;
+        { Anonymous compound types whose element type is named: derive a
+          stable structural key so identical compound types declared inline
+          across different units dedup to a single OPDF type record. Truly
+          anonymous compounds (e.g. set of an anonymous enum) fall through
+          and are allocated sequentially by GetTypeID. }
+        if def is tsetdef then
+          begin
+            setdef:=tsetdef(def);
+            elemkey:=GetTypeKey(setdef.elementdef);
+            if elemkey<>'' then
+              result:='set:'+elemkey+':'+
+                      tostr(setdef.setbase)+':'+
+                      tostr(setdef.setmax)+':'+
+                      tostr(setdef.size);
           end;
       end;
 
