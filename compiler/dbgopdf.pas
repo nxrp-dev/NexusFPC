@@ -971,6 +971,18 @@ var
         typename : AnsiString;
         namelen  : Word;
         recsize  : Cardinal;
+        { AnsiString / UnicodeString header layout, computed for the target.
+          FPC stores the header below the data pointer in this order:
+            CodePage(2) ElementSize(2) RefCount(4) Length(sizesinttype.size)
+          RefCount is always 4 bytes (s32inttype). Length is SizeInt, so it
+          tracks the target pointer width. The same layout is used for
+          UnicodeString/WideString on non-Windows targets — Windows BSTR-like
+          WideString is not yet emitted by this writer. }
+        hdr_size : SmallInt;
+        cp_off   : SmallInt;
+        es_off   : SmallInt;
+        rc_off   : SmallInt;
+        len_off  : SmallInt;
       begin
         if not assigned(def) then
           exit;
@@ -983,6 +995,13 @@ var
 
         typename:=def.GetTypeName;
         namelen:=Word(Length(typename));
+
+        { Header layout shared by AnsiString / UnicodeString / WideString }
+        hdr_size := SmallInt(2 + 2 + 4 + sizesinttype.size);
+        cp_off   := -hdr_size;
+        es_off   := cp_off + 2;
+        rc_off   := es_off + 2;
+        len_off  := rc_off + 4;
 
         case def.stringtype of
           st_shortstring:
@@ -997,19 +1016,29 @@ var
             end;
           st_ansistring:
             begin
-              { REC_ANSISTR: TypeID(4) + NameLen(2) + Name }
-              recsize:=4+2+Cardinal(namelen);
+              { REC_ANSISTR: TypeID(4) + LengthOff(2) + RefCountOff(2) +
+                CodePageOff(2) + ElementSizeOff(2) + NameLen(2) + Name }
+              recsize:=4+2+2+2+2+2+Cardinal(namelen);
               EmitRecordHeader(opdflist,REC_ANSISTR,recsize);
               EmitDWord(opdflist,typeid);
+              EmitWord(opdflist,Word(len_off));
+              EmitWord(opdflist,Word(rc_off));
+              EmitWord(opdflist,Word(cp_off));
+              EmitWord(opdflist,Word(es_off));
               EmitWord(opdflist,namelen);
               EmitString(opdflist,typename);
             end;
           st_unicodestring,st_widestring:
             begin
-              { REC_UNICODESTR: TypeID(4) + NameLen(2) + Name }
-              recsize:=4+2+Cardinal(namelen);
+              { REC_UNICODESTR: TypeID(4) + LengthOff(2) + RefCountOff(2) +
+                CodePageOff(2) + ElementSizeOff(2) + NameLen(2) + Name }
+              recsize:=4+2+2+2+2+2+Cardinal(namelen);
               EmitRecordHeader(opdflist,REC_UNICODESTR,recsize);
               EmitDWord(opdflist,typeid);
+              EmitWord(opdflist,Word(len_off));
+              EmitWord(opdflist,Word(rc_off));
+              EmitWord(opdflist,Word(cp_off));
+              EmitWord(opdflist,Word(es_off));
               EmitWord(opdflist,namelen);
               EmitString(opdflist,typename);
             end;
