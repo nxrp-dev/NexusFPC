@@ -59,7 +59,7 @@ unit optconstprop;
       pass_1,procinfo,compinnr,
       symsym, symconst,
       nutils, nbas, ncnv, nld, nflw, ncal, ninl,
-      optbase, optutils;
+      optbase, optutils, verbose;
 
     function check_written(var n: tnode; arg: pointer): foreachnoderesult;
       begin
@@ -126,8 +126,6 @@ unit optconstprop;
 
             tree_modified:=true;
           end
-        else if n.nodetype=statementn then
-          result:=replaceBasicAssign(tstatementnode(n).left, arg, tree_modified)
         else if n.nodetype=forn then
           begin
             result:=replaceBasicAssign(tfornode(n).right, arg, tree_modified);
@@ -170,7 +168,7 @@ unit optconstprop;
                   oldnode:=st2;
 
                   tree_modified2:=false;
-                  if not replaceBasicAssign(st2, arg, tree_modified2) then
+                  if not replaceBasicAssign(tstatementnode(st2).left, arg, tree_modified2) then
                     begin
                       old^:=st2;
                       oldnode:=nil;
@@ -189,6 +187,10 @@ unit optconstprop;
                 old:=@tstatementnode(st2).next;
                 st2:=tstatementnode(st2).next;
               end;
+
+            if assigned(st2) then
+              { Make sure the updated statement gets reprocessed }
+              exclude(st2.transientflags,tnf_pass1_done);
 
             tree_modified:=changed;
           end
@@ -283,6 +285,10 @@ unit optconstprop;
           end
         else if n.InheritsFrom(tbinarynode) then
           begin
+            if n.nodetype=statementn then
+              { Statement nodes should be skipped, instead directly executing their left node }
+              InternalError(2026040801);
+
             result:=replaceBasicAssign(tbinarynode(n).left, arg, tree_modified);
             if result then
               result:=replaceBasicAssign(tbinarynode(n).right, arg, tree_modified2);
@@ -373,7 +379,7 @@ unit optconstprop;
 
                               { Simple assignment of constant found }
                               tree_mod:=false;
-                              if not replaceBasicAssign(st2, a, tree_mod) then
+                              if not replaceBasicAssign(tstatementnode(st2).left, a, tree_mod) then
                                 begin
                                   old^:=st2;
                                   oldnode:=nil;
