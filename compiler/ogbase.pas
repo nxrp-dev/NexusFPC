@@ -4216,11 +4216,19 @@ implementation
           while ObjSectionWorkList.Count>0 do
             begin
               objsec:=TObjSection(ObjSectionWorkList.Last);
+              ObjSectionWorkList.Delete(ObjSectionWorkList.Count-1);
+              { Sections discovered through relocations may not have been
+                matched by any linker script pattern, so they have no
+                ExeSection. We still follow their relocations to mark
+                further referenced sections, but skip layout processing. }
               if not assigned(objsec.exesection) then
-                internalerror(202102001);
+                begin
+                  for i:=0 to objsec.ObjRelocations.count-1 do
+                    DoReloc(TObjRelocation(objsec.ObjRelocations[i]));
+                  continue;
+                end;
               if assigned(exemap) then
                 exemap.Add('Keeping '+objsec.FullName+' '+ToStr(objsec.ObjRelocations.Count)+' references');
-              ObjSectionWorkList.Delete(ObjSectionWorkList.Count-1);
 
               { Process Relocations }
               for i:=0 to objsec.ObjRelocations.count-1 do
@@ -4297,6 +4305,32 @@ implementation
         repeat
           MarkTargetSpecificSections(ObjSectionWorkList);
           if (ObjSectionWorkList.Count=0) then
+            break;
+          ProcessWorkList;
+        until False;
+
+        { Cascade Used flag along associative COMDAT chains.
+          Loop handles deep chains (A->B->C) where multiple
+          passes may be needed to propagate the Used flag. }
+        repeat
+          ObjSectionWorkList.Clear;
+          for i:=0 to ObjDataList.Count-1 do
+            begin
+              ObjData:=TObjData(ObjDataList[i]);
+              for j:=0 to ObjData.ObjSectionList.Count-1 do
+                begin
+                  objsec:=TObjSection(ObjData.ObjSectionList[j]);
+                  if objsec.Used then
+                    continue;
+                  if (oso_comdat in objsec.SecOptions) and
+                     (objsec.ComdatSelection=oscs_associative) and
+                     assigned(objsec.AssociativeSection) and
+                     assigned(objsec.ExeSection) and
+                     objsec.AssociativeSection.Used then
+                    AddToObjSectionWorkList(objsec);
+                end;
+            end;
+          if ObjSectionWorkList.Count=0 then
             break;
           ProcessWorkList;
         until False;

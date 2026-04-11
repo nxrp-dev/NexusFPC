@@ -3880,6 +3880,25 @@ const pemagic : array[0..3] of byte = (
                   inc(j,3);
               end;
           end;
+        { Handle generic associative COMDAT sections }
+        for i:=0 to ExeSectionList.Count-1 do
+          begin
+            exesec:=TExeSection(ExeSectionList[i]);
+            for j:=0 to exesec.ObjSectionList.Count-1 do
+              begin
+                objsec:=TObjSection(exesec.ObjSectionList[j]);
+                if objsec.Used then
+                  continue;
+                if (oso_comdat in objsec.SecOptions) and
+                   (objsec.ComdatSelection=oscs_associative) and
+                   assigned(objsec.AssociativeSection) and
+                   objsec.AssociativeSection.Used then
+                  begin
+                    objsec.Used:=true;
+                    WorkList.Add(objsec);
+                  end;
+              end;
+          end;
       end;
 
 
