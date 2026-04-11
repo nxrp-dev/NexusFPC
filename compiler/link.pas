@@ -2109,7 +2109,7 @@ Implementation
         ParseScript_Load;
         if ErrorCount>0 then
           goto myexit;
-        exeoutput.ResolveSymbols(StaticLibraryList);
+        exeoutput.ResolveSymbols(StaticLibraryList,ImportLibraryList);
         { Generate symbols and code to do the importing }
         exeoutput.GenerateLibraryImports(ImportLibraryList);
         { Fill external symbols data }
