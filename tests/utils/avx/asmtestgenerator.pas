@@ -340,8 +340,10 @@ type
       IF_THVM,
       IF_TOVM,
       IF_DISTINCT,            { destination and source registers must be distinct }
-      IF_DALL                 { destination, index and mask registers should be distinct }
-
+      IF_DALL,                { destination, index and mask registers should be distinct }
+      IF_MAYBESHORTER         { skip this entry if ahead is better one                               }
+                              {   whenever possible chose 2 byte VEX encoded version for VMOV* rv,rv }
+                              {   position "load" version of VMOV* first (code silently expects this) }
     );
     tinsflags=set of tinsflag;
 
