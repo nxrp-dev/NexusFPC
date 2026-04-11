@@ -123,7 +123,7 @@ type
   public
     constructor createAr(const Aarfn:string;allow_nonar:boolean=false);override;
     destructor  destroy;override;
-    function  openfile(const fn:string):boolean;override;
+    function  openfile(const fn:TPathStr):boolean;override;
     procedure closefile;override;
     procedure seek(len:longint);override;
     property IsCaseSensitive: Boolean read FIsCaseSensitive;
@@ -589,7 +589,7 @@ implementation
       inherited Destroy;
     end;
 
-  function TOmfLibObjectReader.openfile(const fn: string): boolean;
+  function TOmfLibObjectReader.openfile(const fn: TPathStr): boolean;
     var
       libsym: TOmfLibDictionaryEntry;
       RawRec: TOmfRawRecord;
