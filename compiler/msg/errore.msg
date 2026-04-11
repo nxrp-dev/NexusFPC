@@ -3054,7 +3054,7 @@ asmr_e_a64_regset_too_large=07147_E_Too many registers in register set.
 #
 # Assembler/binary writers
 #
-# 08040 is the last used one
+# 08041 is the last used one
 #
 asmw_f_too_many_asm_files=08000_F_Too many assembler files
 % With smartlinking enabled, there are too many assembler
@@ -3116,6 +3116,7 @@ asmw_e_illegal_unset_index=08037_E_Wasm32 symbol $1 without index value error
 asmw_e_destination_and_source_registers_must_be_distinct=08038_E_Asm: $1 destination and source registers must be distinct.
 asmw_e_registers_should_be_distinct=08039_E_Asm: $1 registers should be distinct.
 asmw_e_rip_cannot_be_encoded=08040_E_Asm: RIP cannot be encoded with this instruction
+asmw_e_bad_reg_with_evex=08041_E_Asm: AH,BH,CH or DH cannot be used in an instruction requiring EVEX prefix
 #
 # Executing linker/assembler
 #

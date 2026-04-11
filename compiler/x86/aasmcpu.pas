@@ -497,6 +497,7 @@ interface
         IF_USERMSR,     { USER_MSR }
         IF_AVXVNNI,     { AVX-VNNI }
         IF_AMX,         { AMX-BF16, AMX-TILE, AMX-INT8, AMX-FP16, AMX-FP8, AMX-TF32, AMX-COMPLEX, AMX-MOVRS, AMX-TRANSPOSE, AMX-AVX512 }
+        IF_APX,         { APX_F }
 
         { mask for processor level }
         { please keep these in order and in sync with IF_PLEVEL }
@@ -557,6 +558,7 @@ interface
         IF_TOVM,
         IF_DISTINCT,            { destination and source registers must be distinct }
         IF_DALL,                { destination, index and mask registers should be distinct (use together with IF_DISTINCT) }
+        IF_NF,                  { instruction support NF (status flags update suppression, hence "no flags") }
         IF_MAYBESHORTER         { skip this entry if ahead is better one                               }
                                 {   whenever possible chose 2 byte VEX encoded version for VMOV* rv,rv }
                                 {   position "load" version of VMOV* first (code silently expects this) }
@@ -3641,6 +3643,7 @@ implementation
                 rex:=rex or ($200); { REX2 }
 {$endif x86_64}
               end;
+            &261..&262:; { len not affected, do nothing }
             &350:
               begin
                 exists_evex := true;
@@ -3689,6 +3692,7 @@ implementation
                   exists_vex_extension := true;
                 end;
               end;
+            &374: EVEXTupleState:=etsIsTuple; // opcode  map 4  (Tuple: no scale)
             &300,&301,&302:
               begin
 {$if defined(x86_64) or defined(i8086)}
@@ -3839,6 +3843,8 @@ implementation
        * \24a          - operator a in ModRM.reg. ModRM 11:rrr:000
        * \254,\255,\256 - a signed 32-bit immediate to be extended to 64 bits
        * \260          - force REX2 (only in 64 bit mode)
+       * \261          - set EVEX.ZU=1 (only in 64 bit mode)
+       * \262          - set EVEX.NF=1 (only in 64 bit mode)
        * \300,\301,\302 - might be an 0x67, depending on the address size of
        *                 the memory reference in operand x.
        * \310          - indicates fixed 16-bit address size, i.e. optional 0x67.
@@ -3879,6 +3885,7 @@ implementation
        * \371          - VEX 0F38-FLAG (map 2)
        * \372          - VEX 0F3A-FLAG (map 3)
 
+       * \374          - EVEX map 4  (extension of legacy instructions)
        * \375          - EVEX map 5
        * \376          - EVEX map 6
        * \377          - EVEX map 7
@@ -4088,6 +4095,7 @@ implementation
         EVEXpp: byte;
         EVEXr: byte;
         EVEXx: byte;
+        EVEXb4: byte;
         EVEXv: byte;
         EVEXll: byte;
         EVEXw1: byte;
@@ -4096,6 +4104,8 @@ implementation
         EVEXb   : byte;
         EVEXu   : byte;
         EVEXmmm : byte;
+        EVEXnf  : byte;
+        EVEXnd  : byte;
 
       begin
         { safety check }
@@ -4198,6 +4208,7 @@ implementation
         EVEXvvvv := 0;
         EVEXr    := 0;
         EVEXx    := 0;
+        EVEXb4   := 0;
         EVEXv    := 0;
         EVEXll   := 0;
         EVEXw1   := 0;
@@ -4206,6 +4217,8 @@ implementation
         EVEXb    := 0;
         EVEXu    := 1;
         EVEXmmm  := 0;
+        EVEXnd   := 0;
+        EVEXnf   := 0;
 
         repeat
           c:=ord(codes^);
@@ -4220,7 +4233,7 @@ implementation
             &11,
             &12,
             &13: inc(codes, 1);
-            &74: opmode := 0;
+            &74: begin opmode := 0; EVEXnd:=1; end;
             &75: opmode := 1;
             &76: opmode := 2;
      &100..&227: begin
@@ -4241,9 +4254,18 @@ implementation
                    opidx := (c shr 3) and 7;
                    if ops > opidx then
                     case oper[opidx]^.typ of
-                      top_reg: if getsupreg(oper[opidx]^.reg) and $10 = $0 then EVEXx := 1;
+                      top_reg:
+                          if getsupreg(oper[opidx]^.reg) and $10 = $0 then
+                            EVEXx := 1     { Evex.X3 have not set for vector register, EGPR does not use Evex.X3 here }
+                          else
+                            if not( getsubreg(oper[opidx]^.reg) in [R_SUBMMX,R_SUBMMY,R_SUBMMZ]) then
+                            begin
+                              EVEXb4 := 1; { EGPR Evex.B4, Evex.B3, modrm.r/m }
+                              EVEXx := 1;  { Evex.X3 not used for EGPR here }
+                            end;
                       top_ref: begin
-                                 if getsupreg(oper[opidx]^.ref^.index) and $08 = $0 then EVEXx := 1;
+                                 if getsupreg(oper[opidx]^.ref^.base) and $10 = $10 then EVEXb4 := 1;  // Base EGPR
+                                 if getsupreg(oper[opidx]^.ref^.index) and $08 = $0 then EVEXx := 1;   // Evex.X3
                                  if getsubreg(oper[opidx]^.ref^.index) in [R_SUBMMX,R_SUBMMY,R_SUBMMZ] then
                                  begin
                                    // VSIB memory addressing
@@ -4251,7 +4273,8 @@ implementation
                                    {$ifdef x86_64}
                                    needed_VSIB := true;
                                    {$endif x86_64}
-                                 end;
+                                 end else
+                                   if getsupreg(oper[opidx]^.ref^.index) and $10 = $10 then EVEXu := 0; // EGPR-Index (inverted Evex.X4)
                                end;
                       else
                         Internalerror(2019081014);
@@ -4272,6 +4295,20 @@ implementation
            &260: begin
 {$ifndef x86_64}
                 InternalError(2025100801);
+{$endif x86_64}
+              end;
+           &261: begin
+{$ifdef x86_64}
+                EVEXnd:=1;  { EVEX.zu=1 }
+{$else}
+                InternalError(2025100802);
+{$endif x86_64}
+              end;
+           &262: begin
+{$ifdef x86_64}
+                EVEXnf:=1;  { EVEX.nf=1 }
+{$else}
+                InternalError(2025100803);
 {$endif x86_64}
               end;
            &333: begin
@@ -4330,6 +4367,11 @@ implementation
                    VEXmmmmm             := VEXmmmmm OR $03; // set leading opcode byte $0F3A
                    EVEXmmm              := $03;
                  end;
+           &374: begin
+                   //needed_VEX_Extension := true;
+                   //VEXmmmmm             := VEXmmmmm OR $04;  does not make sense to have map 4 in VEX space
+                   EVEXmmm              := $04; // set opcode map 4 (EVEX extension of legacy instructions)
+                 end;
            &375: begin
                    needed_VEX_Extension := true;
                    VEXmmmmm             := VEXmmmmm OR $05;
@@ -4375,9 +4417,9 @@ implementation
             EVEXvvvv := not(regval(oper[opmode]^.reg)) and $07;
 
             {$ifdef x86_64}
-              if rexbits(oper[opmode]^.reg) = 0 then VEXvvvv := VEXvvvv or (1 shl 6);
+              if (getsupreg(oper[opmode]^.reg) and 8) = 0 then  VEXvvvv := VEXvvvv or (1 shl 6);
 
-              if rexbits(oper[opmode]^.reg) = 0 then EVEXvvvv := EVEXvvvv or (1 shl 3);
+              if (getsupreg(oper[opmode]^.reg) and 8) = 0 then EVEXvvvv := EVEXvvvv or (1 shl 3);
               if getsupreg(oper[opmode]^.reg) and $10 = 0 then EVEXv := 1;
             {$else}
               VEXvvvv := VEXvvvv or (1 shl 6);
@@ -4455,10 +4497,31 @@ implementation
                end;
              end;
 
+{$ifdef x86_64}
+            if EVEXmmm = 4 then
+              begin
+                { Do not allow AH, CH, DH, BH registers }
+                for i := 0 to ops - 1 do
+                  if oper[i]^.typ = top_reg then
+                    if getsubreg(oper[i]^.reg) in [R_SUBH] then
+                    begin
+                      Message(asmw_e_bad_reg_with_evex);
+                      break;
+                    end;
+                { Change byte payload to EVEX extension of legacy instructions }
+                { Do not have: z, ll, b, aaa }
+                { New: nd, nf }
+                EVEXb:=EVEXnd;
+                EVEXaaa:=EVEXnf shl 2;
+              end;
+{$endif x86_64}
 
             bytes[0] := $62;
 
             bytes[1] := ((EVEXmmm  and $07) shl 0)  or
+                      {$ifdef x86_64}
+                        ((EVEXb4   and $01) shl 3)  or  { EVEX.b4 }
+                      {$endif x86_64}
                       {$ifdef x86_64}
                         ((not(rex) and $05) shl 5)  or
                       {$else}
@@ -4808,6 +4871,7 @@ implementation
                 //rex:=rex or ($200); { REX2 }
 {$endif x86_64}
               end;
+            &261..&262:; { nothing }
             &300,&301,&302:
               begin
 {$if defined(x86_64) or defined(i8086)}
