@@ -68,6 +68,16 @@ interface
          PointerToSymbolTable : longword;
          NumberOfSymbols : longword;
        end;
+       tcoffshortimportheader = packed record
+         Sig1       : word;  { 0x0000 }
+         Sig2       : word;  { 0xFFFF }
+         Version    : word;
+         Machine    : word;
+         TimeDateStamp : longword;
+         SizeOfData : longword;
+         OrdinalHint: word;
+         ImpType    : word;  { bits 0-1: import type, bits 2-4: name type }
+       end;
        tcoffpeoptheader = packed record
          Magic : word;
          MajorLinkerVersion : byte;
@@ -294,6 +304,17 @@ interface
 {$endif aarch64}
        COFF_BIG_OBJ_MAGIC: array[0..15] of byte = ($C7, $A1, $BA, $D1, $EE, $BA, $A9, $4B, $AF, $20, $FA, $F6, $6A, $A4, $DC, $B8);
        COFF_BIG_OBJ_VERSION = 2;
+
+       { Import Type }
+       IMPORT_OBJECT_CODE     = 0;
+       IMPORT_OBJECT_DATA     = 1;
+       IMPORT_OBJECT_CONST    = 2;
+
+       { Import Name Type }
+       IMPORT_OBJECT_ORDINAL         = 0;
+       IMPORT_OBJECT_NAME            = 1;
+       IMPORT_OBJECT_NAME_NOPREFIX   = 2;
+       IMPORT_OBJECT_NAME_UNDECORATE = 3;
 
     function ReadDLLImports(const dllname:string;readdllproc:Treaddllproc):boolean;
     procedure MaybeSwap(var v : tcoffsechdr);
@@ -2959,10 +2980,16 @@ const pemagic : array[0..3] of byte = (
         secoptions : TObjSectionOptions;
         header   : tcoffheader;
         boheader : tcoffbigobjheader;
+        shorthdr : tcoffshortimportheader;
         sechdr   : tcoffsechdr;
-        secname  : string;
-        secname  : ansistring;
+        secname,
+        symname,
+        dllname,
+        exportname : ansistring;
         secnamebuf : array[0..15] of char;
+        imptype,
+        nametype : word;
+        atpos    : longint;
       begin
         FReader:=AReader;
         InputFileName:=AReader.FileName;
@@ -2979,35 +3006,109 @@ const pemagic : array[0..3] of byte = (
                exit;
              end;
            MaybeSwap(header);
+           if (header.mach=0) and (header.nsects<>$ffff) and
+              (header.nsects=0) and (header.syms=0) then
+             begin
+               { MSVC anonymous object (LTCG intermediate format),
+                 not a standard COFF object - skip it.
+                 Note: mach=0 with valid nsects/syms is a machine-independent
+                 COFF object (e.g. MSVC weak external alias stubs). }
+               FreeAndNil(objdata);
+               FCoffSyms.Free;
+               FCoffSyms:=nil;
+               exit;
+             end;
            if (header.mach=0) and (header.nsects=$ffff) then
              begin
-               { either a library or big obj COFF }
+               { Could be a big obj COFF or a short import object. }
                AReader.seek(0);
-               if not AReader.read(boheader,sizeof(boheader)) then
+               if not AReader.read(shorthdr,sizeof(shorthdr)) then
                  begin
-                   InputError('Can''t read Big Obj COFF Header');
+                   InputError('Can''t read COFF header');
                    exit;
                  end;
-               MaybeSwap(boheader);
-               if CompareByte(boheader.UUID,COFF_BIG_OBJ_MAGIC,length(boheader.uuid))<>0 then
+               { Try to read as big obj COFF }
+               AReader.seek(0);
+               if AReader.read(boheader,sizeof(boheader)) then
                  begin
-                   { ToDo: this should be treated as a library }
-                   InputError('Illegal Big Obj COFF Magic');
+                   MaybeSwap(boheader);
+                   if CompareByte(boheader.UUID,COFF_BIG_OBJ_MAGIC,length(boheader.uuid))=0 then
+                     begin
+                       if boheader.Version<>COFF_BIG_OBJ_VERSION then
+                         begin
+                           InputError('Illegal Big Obj COFF Version');
+                           exit;
+                         end;
+                       if boheader.Machine<>COFF_MAGIC then
+                         begin
+                           InputError('Illegal COFF Machine type');
+                           exit;
+                         end;
+                       bigobj:=true;
+                     end;
+                 end;
+               { Not a big obj - parse as short import object }
+               if not bigobj then
+                 begin
+                   FreeAndNil(objdata);
+                   FCoffSyms.Free;
+                   FCoffSyms:=nil;
+                   { shorthdr was already read successfully above }
+                   { Read symbol name and DLL name (both null-terminated) }
+                   AReader.seek(sizeof(shorthdr));
+                   symname := ReadNullTermString(AReader);
+                   dllname := ReadNullTermString(AReader);
+                   { Populate TObjInput fields }
+                   FIsShortImport := true;
+                   FImportLibName := dllname;
+                   imptype := shorthdr.ImpType and $3;
+                   nametype := (shorthdr.ImpType shr 2) and $7;
+                   FImportIsVar := (imptype = IMPORT_OBJECT_DATA) or
+                                   (imptype = IMPORT_OBJECT_CONST);
+                   FImportMangledName := symname; { must match ExeSymbolList entry }
+                   if nametype = IMPORT_OBJECT_ORDINAL then
+                     begin
+                       FImportOrdinal := shorthdr.OrdinalHint;
+                       FImportSymName := symname;
+                     end
+                   else
+                     begin
+                       FImportOrdinal := -shorthdr.OrdinalHint; { negative = hint }
+                       { Derive export name based on name type }
+                       case nametype of
+                         IMPORT_OBJECT_NAME_NOPREFIX:
+                           begin
+                             { Strip leading _, @, or ? from symname }
+                             exportname := symname;
+                             if (length(exportname) > 0) and
+                                (exportname[1] in ['_','@','?']) then
+                               delete(exportname, 1, 1);
+                             FImportSymName := exportname;
+                           end;
+                         IMPORT_OBJECT_NAME_UNDECORATE:
+                           begin
+                             { Strip leading _, @, or ? AND truncate at first @ }
+                             exportname := symname;
+                             if (length(exportname) > 0) and
+                                (exportname[1] in ['_','@','?']) then
+                               delete(exportname, 1, 1);
+                             atpos := pos('@', exportname);
+                             if atpos > 0 then
+                               FImportSymName := copy(exportname, 1, atpos - 1)
+                             else
+                               FImportSymName := exportname;
+                           end;
+                         else { IMPORT_OBJECT_NAME }
+                           FImportSymName := symname;
+                       end;
+                     end;
                    exit;
                  end;
-               if boheader.Version<>COFF_BIG_OBJ_VERSION then
-                 begin
-                   InputError('Illegal Big Obj COFF Version');
-                   exit;
-                 end;
-               if boheader.Machine<>COFF_MAGIC then
-                 begin
-                   InputError('Illegal COFF Machine type');
-                   exit;
-                 end;
-               bigobj:=true;
              end
-           else if header.mach<>COFF_MAGIC then
+           { mach=0 is allowed: MSVC produces machine-independent COFF
+             objects (e.g. vsnprintf.obj in libcmt.a) with mach=0 but
+             valid nsects/syms. These are legitimate and must be accepted. }
+           else if (header.mach<>COFF_MAGIC) and (header.mach<>0) then
              begin
                InputError('Illegal COFF Magic');
                exit;

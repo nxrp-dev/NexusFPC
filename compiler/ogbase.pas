@@ -536,6 +536,13 @@ interface
       private
         FCObjData : TObjDataClass;
       protected
+        { Short import object results }
+        FIsShortImport : boolean;
+        FImportLibName : ansistring;
+        FImportSymName : ansistring;
+        FImportMangledName : ansistring;
+        FImportOrdinal : longint;
+        FImportIsVar : boolean;
         { reader }
         FReader    : TObjectReader;
         InputFileName : string;
@@ -546,6 +553,12 @@ interface
         function  ReadObjData(AReader:TObjectreader;out Data:TObjData):boolean;virtual;abstract;
         class function CanReadObjData(AReader:TObjectreader):boolean;virtual;
         procedure inputerror(const s : string);
+        property IsShortImport: boolean read FIsShortImport;
+        property ImportLibName: ansistring read FImportLibName;
+        property ImportSymName: ansistring read FImportSymName;
+        property ImportMangledName: ansistring read FImportMangledName;
+        property ImportOrdinal: longint read FImportOrdinal;
+        property ImportIsVar: boolean read FImportIsVar;
       end;
       TObjInputClass=class of TObjInput;
 
@@ -668,8 +681,8 @@ interface
       public
         constructor create(AList:TFPHashObjectList;const AName,AMangledName:string;AOrdNr:longint;AIsVar:boolean);
         property OrdNr: longint read FOrdNr;
-        property MangledName: string read FMangledName;
-        property IsVar: boolean read FIsVar;
+        property MangledName: string read FMangledName write FMangledName;
+        property IsVar: boolean read FIsVar write FIsVar;
         property CachedExeSymbol: TExeSymbol read FCachedExeSymbol write FCachedExeSymbol;
       end;
 
