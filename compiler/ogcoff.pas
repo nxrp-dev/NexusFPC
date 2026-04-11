@@ -4105,6 +4105,18 @@ const pemagic : array[0..3] of byte = (
                     ImportSymbol.CachedExeSymbol:=exesym;
                     exesym.State:=symstate_defined;
                   end;
+                { Also resolve __imp_+name if it exists as a separate
+                  unresolved symbol. MSVC archives map both name and
+                  __imp_+name to the same short import member. The __imp_
+                  variant needs a direct IAT pointer (IsVar=true). }
+                exesym:=TExeSymbol(ExeSymbolList.Find('__imp_'+ImportSymbol.MangledName));
+                if assigned(exesym) and
+                   (exesym.State<>symstate_defined) then
+                  begin
+                    ImportSymbol.CachedExeSymbol:=exesym;
+                    ImportSymbol.IsVar:=true;
+                    exesym.State:=symstate_defined;
+                  end;
               end;
           end;
         PackUnresolvedExeSymbols('after DLL imports');
