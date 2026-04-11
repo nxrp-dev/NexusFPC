@@ -784,7 +784,8 @@ unit scandir;
         if linkModeStr='' then
          begin
            libext:=ExtractFileExt(libname);
-           if libext=target_info.staticClibext then
+           if (libext=target_info.staticClibext) or
+              ((target_info.system in systems_windows) and (CompareText(libext,'.lib')=0)) then
              linkMode:=lm_static;
          end
         else if linkModeStr='STATIC' then
