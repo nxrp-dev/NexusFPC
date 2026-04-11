@@ -22649,7 +22649,7 @@
     opcode  : A_TZCNT;
     ops     : 2;
     optypes : (ot_reg16 or ot_bits32 or ot_bits64,ot_rm_gpr,ot_none,ot_none);
-    code    : #208#219#2#15#188#72;
+    code    : #208#219#248#1#188#72;
     flags   : [if_bmi1,if_sm]
   ),
   (
@@ -26680,22 +26680,8 @@
   (
     opcode  : A_KMOVQ;
     ops     : 2;
-    optypes : (ot_kreg,ot_reg64,ot_none,ot_none);
-    code    : #220#242#243#248#1#146#72;
-    flags   : [if_avx512]
-  ),
-  (
-    opcode  : A_KMOVQ;
-    ops     : 2;
     optypes : (ot_memory or ot_bits64,ot_kreg,ot_none,ot_none);
     code    : #242#243#248#1#145#65;
-    flags   : [if_avx512]
-  ),
-  (
-    opcode  : A_KMOVQ;
-    ops     : 2;
-    optypes : (ot_reg64,ot_kreg,ot_none,ot_none);
-    code    : #220#242#243#248#1#147#72;
     flags   : [if_avx512]
   ),
   (

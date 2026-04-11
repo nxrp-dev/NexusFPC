@@ -1760,6 +1760,7 @@
 'vsubsh',
 'vucomish',
 'movdiri',
+'movdir64b',
 'prefetchrst2',
 'movrs',
 'vmovrsb',
@@ -1962,5 +1963,13 @@
 'vminmaxsd',
 'vminmaxsh',
 'vminmaxss',
-'vdpphps'
+'vdpphps',
+'pop2',
+'pop2p',
+'push2',
+'push2p',
+'popp',
+'pushp',
+'jmpabs',
+'cfcmov'
 );

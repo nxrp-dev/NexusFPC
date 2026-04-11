@@ -1760,6 +1760,7 @@
 (Ch: [Ch_Wop3, Ch_Rop2, Ch_Rop1]),
 (Ch: [Ch_Wop2, Ch_Rop1]),
 (Ch: [Ch_Wop2, Ch_Rop1]),
+(Ch: [Ch_Rop2, Ch_Rop1]),
 (Ch: [Ch_Rop1]),
 (Ch: [Ch_Wop2, Ch_Rop1]),
 (Ch: [Ch_Wop3, Ch_Rop2, Ch_Rop1]),
@@ -1962,5 +1963,13 @@
 (Ch: [Ch_Wop4, Ch_Rop3, Ch_Rop2]),
 (Ch: [Ch_Wop4, Ch_Rop3, Ch_Rop2]),
 (Ch: [Ch_Wop4, Ch_Rop3, Ch_Rop2]),
-(Ch: [Ch_Wop3, Ch_Rop2, Ch_Rop1])
+(Ch: [Ch_Wop3, Ch_Rop2, Ch_Rop1]),
+(Ch: [Ch_Wop2, Ch_Wop1]),
+(Ch: [Ch_Wop2, Ch_Wop1]),
+(Ch: [Ch_Wop2, Ch_Wop1]),
+(Ch: [Ch_Wop2, Ch_Wop1]),
+(Ch: [Ch_Wop2, Ch_Wop1]),
+(Ch: [Ch_Wop2, Ch_Wop1]),
+(Ch: [Ch_Wop2, Ch_Wop1]),
+(Ch: [Ch_ROp1, Ch_WOp2, Ch_RFLAGScc])
 );
