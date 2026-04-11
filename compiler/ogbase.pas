@@ -894,7 +894,9 @@ implementation
         if assigned(objsection) then
           result:=offset+objsection.mempos
         else
-          result:=0;
+          { Absolute symbols (COFF section=-1) have no section but
+            carry their value in offset (e.g. __tls_array = 0x2C) }
+          result:=offset;
       end;
 
 

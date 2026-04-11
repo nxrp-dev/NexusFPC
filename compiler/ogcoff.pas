@@ -1414,6 +1414,17 @@ const pemagic : array[0..3] of byte = (
                 end
             else
               internalerror(200205183);
+
+            { Absolute symbols (COFF section=-1) have relocsec=nil but a
+              valid relocval (e.g. __tls_array=0x2C). Apply directly. }
+            if (relocsec=nil) and (relocval<>0) then
+              begin
+                address:=address+relocval;
+                data.Seek(objreloc.dataoffset);
+                data.Write(address,address_size);
+                continue;
+              end;
+
             { Handle relocations to unresolved weak externals or discarded
               COMDAT sections: zero out the relocation value }
             if (relocsec=nil) or
@@ -2599,7 +2610,11 @@ const pemagic : array[0..3] of byte = (
                        bind:=AB_GLOBAL;
                        objsec:=GetSection(secidx);
                        if assigned(objsec) and (symvalue>=objsec.mempos) then
-                         address:=symvalue-objsec.mempos;
+                         address:=symvalue-objsec.mempos
+                       else
+                         { Absolute symbols (COFF section=-1) have no section
+                           use the raw value directly (e.g. __tls_array=0x2C) }
+                         address:=symvalue;
                      end;
                     objsym:=CreateSymbol(strname);
                     objsym.bind:=bind;
