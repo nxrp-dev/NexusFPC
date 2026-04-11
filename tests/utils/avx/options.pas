@@ -30,6 +30,7 @@ type
 
   TOptions = class(TObject)
   private
+    FAPX: boolean;  { use registers r16-r31 for testing }
     FAVX512: boolean;
     FHelp: boolean;
     FX64: boolean;
@@ -37,6 +38,8 @@ type
     FPath: string;
     FMemRef: boolean;
     FFilemask: string;
+
+    function ReadAPX:boolean; inline;
   public
     constructor Create;
 
@@ -46,6 +49,7 @@ type
     property OutputFormat: Char read FOutputFormat write FOutputFormat;
     property X64: boolean read FX64 write FX64;
     property AVX512: boolean read FAVX512 write FAVX512;
+    property APX: boolean read ReadAPX write FAPX;
     property Path: string read FPath write FPath;
     property MemRef: boolean read FMemref write FMemRef;
     property Filemask: string read FFilemask write FFilemask;
@@ -62,10 +66,16 @@ begin
   FHelp          := false;
   FX64           := false;
   FAVX512        := false;
+  FAPX           := false;
   FOutputFormat  := '?';
   FPath          := '';
   FMemRef        := false;
   FFilemask      := '';
+end;
+
+function TOptions.ReadAPX:boolean;
+begin
+  ReadAPX:= FAPX and FX64;  { apx register are avalable only for x86_64 platform }
 end;
 
 procedure TOptions.LoadParams;
@@ -108,6 +118,7 @@ begin
               else IsInvalidParam := true;
          'l': FOutputFormat := 'l';
          'z': FAVX512 := true;
+         'a': FAPX := true;
 	 'm': FFilemask := sValue;
          'o': if sValue <> '' then
               begin

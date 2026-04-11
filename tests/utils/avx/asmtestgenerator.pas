@@ -28,8 +28,8 @@ uses BaseList, Classes;
 
 type
   TOpType = (otUnknown, otTMMReg, otXMMReg, otXMMRM, otXMMRM16, otXMMRM8, otYMMReg, otYMMRM, otZMMReg, otZMMRM, otEAX, otRAX, otMem32,
-             otMem8, otMem16, otMem64, otMem128, otMem256, otMem512, otREG64, otREG32, otREG16, otREG8, otRM16, otRM32, otRM64, otIMM8,
-             otXMEM32, otXMEM64, otYMEM32, otYMEM64, otZMEM32, otZMEM64,
+             otMem8, otMem16, otMem64, otMem128, otMem256, otMem512, otREG64, otREG32, otREG16, otREG8, otRM8, otRM16, otRM32, otRM64,
+             otIMM8, otXMEM32, otXMEM64, otYMEM32, otYMEM64, otZMEM32, otZMEM64,
              otB16, otB32, otB64, otKREG);
 
   TOpMemType = Set of TOpType;
@@ -88,6 +88,7 @@ type
 
   TAsmTestGenerator = class(TObject)
   private
+    FRegCL         : TStringList;
     FReg8          : TStringList;
     FReg16         : TStringList;
     FReg32Base     : TStringList;
@@ -106,6 +107,7 @@ type
 
     Fx64: boolean;
     FAVX512: boolean;
+    FAPX: boolean;
     FSAE: boolean;
     FGas : boolean;
 
@@ -120,12 +122,12 @@ type
 
     function ConvertToGasReg( aRegStr : string):string;
   public
-    constructor Create(aGas:boolean);
+    constructor Create(aGas,aAPX:boolean);
     destructor Destroy; override;
 
-    class procedure CalcTestData(aGas, aX64, aAVX512, aSAE: boolean; const aInst, aOp1, aOp2, aOp3, aOp4: String; aSL: TStringList);
-    class procedure CalcTestDataMREF(aGas, aX64, aAVX512, aSAE: boolean; const aInst, aOp1, aOp2, aOp3, aOp4: String; aSL: TStringList);
-    class procedure CalcTestDataCDisp8(aGas, aX64, aAVX512, aSAE: boolean; const aInst, aOp1, aOp2, aOp3, aOp4: String; aSL: TStringList);
+    class procedure CalcTestData(aGas, aX64, aAVX512, aAPX, aSAE: boolean; const aInst, aOp1, aOp2, aOp3, aOp4: String; aSL: TStringList);
+    class procedure CalcTestDataMREF(aGas, aX64, aAVX512, aAPX, aSAE: boolean; const aInst, aOp1, aOp2, aOp3, aOp4: String; aSL: TStringList);
+    class procedure CalcTestDataCDisp8(aGas, aX64, aAVX512, aAPX, aSAE: boolean; const aInst, aOp1, aOp2, aOp3, aOp4: String; aSL: TStringList);
 
 
     class procedure CalcTestInstFile;
@@ -196,7 +198,7 @@ const
 
   MEMTYPES: TOpMemType = [otXMMRM, otXMMRM16, otXMMRM8, otYMMRM, otZMMRM,
                           otMem8, otMem16, otMem32, otMem64, otMem128, otMem256, otMem512,
-                          otRM16, otRM32, otRM64];
+                          otRM8, otRM16, otRM32, otRM64];
   BMEMTYPES: TOpMemType = [otB16, otB32, otB64];
 
 var
@@ -341,6 +343,7 @@ type
       IF_TOVM,
       IF_DISTINCT,            { destination and source registers must be distinct }
       IF_DALL,                { destination, index and mask registers should be distinct }
+      IF_NF,                  { instruction support NF (status flags update suppression, hence "no flags") }
       IF_MAYBESHORTER         { skip this entry if ahead is better one                               }
                               {   whenever possible chose 2 byte VEX encoded version for VMOV* rv,rv }
                               {   position "load" version of VMOV* first (code silently expects this) }
@@ -638,15 +641,29 @@ const
     if po>0 then
     begin
       ch:=' ';
-      if po>1 then
+      if po>=1 then
       begin
-        ch:=aRegs[po-1];
-        if ch in ['z','o','y','d','q'] then
+        if po>1 then
+          ch:=aRegs[po-1]
+        else
+          ch :=' ';
+
+        if ch in ['z','o','y','d','q',' '] then
         begin
           if ch = 'o' then ch:='x';
+          if ch = ' ' then ch:='w';
+          if ch = 'd' then ch:='l';
           pt:=ch;
           aRegs:=copy(aRegs,1,po-2)+copy(aRegs,po+4,length(aRegs));
         end;
+      end;
+    end else
+    begin
+      po:=PosEx('byte',aRegs,1);
+      if po>0 then
+      begin
+        pt:='b';
+        aRegs:=copy(aRegs,1,po-2)+copy(aRegs,po+4,length(aRegs));
       end;
     end;
     MemPtr:=pt;
@@ -675,6 +692,28 @@ const
             c2:=aReg[po+3];
             if c2 in ['0'..'9'] then
               reg:=reg+c2;
+          end;
+        end;
+      end;
+    end else
+    begin
+      po:=PosEx('R',aReg,su);
+      if (po >=1) then
+      begin
+        ch:=aReg[po];
+        c2:=' ';c3:=' ';
+        if (ch in ['R']) and (length(aReg)>=po+1) then
+        begin
+          c2:=aReg[po+1];
+          if c2 in ['1'..'9','A','B','C','D','S'] then
+          begin
+            reg:={ch+}'R'+c2; {don't care about vector length just about it's number}
+            if (length(aReg)>=po+2) then
+            begin
+              c2:=aReg[po+2];
+              if c2 in ['0'..'9','I','P','X'] then
+                reg:=reg+c2;
+            end;
           end;
         end;
       end;
@@ -713,9 +752,9 @@ const
           begin
             newStr:=newStr+'%';
           end;
-          if ch in ['R'] then
+          if ch in ['R','S'] then
           begin
-            if pr<>'{' then
+            if (pr<>'{') and (pr<>'-') then
               newStr:=newStr+'%';
           end;
           if ch in ['D','X','Y','Z','T'] then
@@ -1492,6 +1531,35 @@ begin
                        (UpperCase(aInst) = 'VCVTPH2BF8S') or
                        (UpperCase(aInst) = 'VCVTPH2HF8S') or
                        (UpperCase(aInst) = 'VCVTPH2BF8') or
+                       (UpperCase(aInst) = 'ADC') or
+                       (UpperCase(aInst) = 'ADD') or
+                       (UpperCase(aInst) = 'AND') or
+                       (UpperCase(aInst) = 'DEC') or
+                       (UpperCase(aInst) = 'INC') or
+                       (UpperCase(aInst) = 'DIV') or
+                       (UpperCase(aInst) = 'IDIV') or
+                       (UpperCase(aInst) = 'IMUL') or
+                       (UpperCase(aInst) = 'MUL') or
+                       (UpperCase(aInst) = 'NEG') or
+                       (UpperCase(aInst) = 'NOT') or
+                       (UpperCase(aInst) = 'OR') or
+                       (UpperCase(aInst) = 'RCL') or
+                       (UpperCase(aInst) = 'RCR') or
+                       (UpperCase(aInst) = 'ROL') or
+                       (UpperCase(aInst) = 'ROR') or
+                       (UpperCase(aInst) = 'SAL') or
+                       (UpperCase(aInst) = 'SAR') or
+                       (UpperCase(aInst) = 'SHL') or
+                       (UpperCase(aInst) = 'SHR') or
+                       (UpperCase(aInst) = 'SBB') or
+                       (UpperCase(aInst) = 'SUB') or
+                       (UpperCase(aInst) = 'XOR') or
+                       (UpperCase(aInst) = 'SETC') or
+                       (UpperCase(aInst) = 'SETG') or
+                       //(UpperCase(aInst) = 'SETZUC') or
+                       //(UpperCase(aInst) = 'SETZUG') or
+                       (UpperCase(aInst) = 'CRC32') or
+                       //(UpperCase(aInst) = 'CFCMOVE') or
                        (UpperCase(aInst) = '') or
                        (UpperCase(aInst) = '') or
                        (UpperCase(aInst) = '')
@@ -1560,6 +1628,8 @@ begin
                        (UpperCase(aInst) = 'TDPBSUD') OR
                        (UpperCase(aInst) = 'TDPBSSD') OR
                        (UpperCase(aInst) = 'TDPBF16PS') OR
+                       (UpperCase(aInst) = 'POP2P') OR
+                       (UpperCase(aInst) = 'POP2') OR
                        (UpperCase(aInst) = '') OR
                        (UpperCase(aInst) = '') OR
                        (UpperCase(aInst) = '')
@@ -1584,6 +1654,8 @@ begin
                        (UpperCase(aInst) = 'TDPBSUD') OR
                        (UpperCase(aInst) = 'TDPBSSD') OR
                        (UpperCase(aInst) = 'TDPBF16PS') OR
+                       (UpperCase(aInst) = 'POP2P') OR
+                       (UpperCase(aInst) = 'POP2') OR
                        (UpperCase(aInst) = '') OR
                        (UpperCase(aInst) = '')
                        ;
@@ -2371,6 +2443,18 @@ begin
               end
               else MemRegBaseIndexCombi(sl_prefix, sSuffix, FReg32Base, FReg32Index, Item.Values);
             end
+            else if AnsiSameText(sl_Operand, 'REG_CL') then
+            begin
+              Item.OpNumber := il_Op;
+              Item.OpTyp    := otREG8;
+              Item.OpActive := true;
+
+              if x64 then
+              begin
+                Item.Values.AddStrings(FRegCL);
+              end
+              else Item.Values.AddStrings(FRegCL);
+            end
             else if AnsiSameText(sl_Operand, 'REG8') then
             begin
               Item.OpNumber := il_Op;
@@ -2417,6 +2501,23 @@ begin
               begin
                 Item.Values.AddStrings(FReg64Base);
               end;
+            end
+            else if AnsiSameText(sl_Operand, 'RM8') then
+            begin
+              Item.OpNumber := il_Op;
+              Item.OpTyp    := otRM8;
+              Item.OpActive := true;
+
+              Item.Values.AddStrings(FReg8);
+
+              if UsePrefix then sl_Prefix := 'byte ';
+
+              if x64 then
+              begin
+                MemRegBaseIndexCombi(sl_Prefix, '', FReg64Base, FReg64Index, Item.Values);
+                //MemRegBaseIndexCombi(FReg6432Base, FReg6432Index, Item.Values);
+              end
+              else MemRegBaseIndexCombi(sl_prefix, '', FReg32Base, FReg32Index, Item.Values);
             end
             else if AnsiSameText(sl_Operand, 'RM16') then
             begin
@@ -2471,6 +2572,14 @@ begin
               end
               else MemRegBaseIndexCombi(sl_prefix, '', FReg32Base, FReg32Index, Item.Values);
             end
+            else if AnsiSameText(sl_Operand, 'IMM1') then
+            begin
+              Item.OpNumber := il_Op;
+              Item.OpTyp    := otIMM8;
+              Item.OpActive := true;
+
+              if FGas then Item.Values.Add('$1') else Item.Values.Add('1');
+            end
             else if AnsiSameText(sl_Operand, 'IMM8') then
             begin
               Item.OpNumber := il_Op;
@@ -2478,6 +2587,14 @@ begin
               Item.OpActive := true;
 
               if FGas then Item.Values.Add('$0') else Item.Values.Add('0');
+            end
+            else if AnsiSameText(sl_Operand, 'IMM16') then
+            begin
+              Item.OpNumber := il_Op;
+              Item.OpTyp    := otIMM8;
+              Item.OpActive := true;
+
+              if FGas then Item.Values.Add('$512') else Item.Values.Add('512');
             end
             else if AnsiSameText(sl_Operand, 'IMM32') then
             begin
@@ -4203,6 +4320,8 @@ var
          otREG32,
          otREG16,
           otREG8: result := 'R';
+           otRM8,
+          otRM16,
           otRM32,
           otRM64,
          otXMMRM,
@@ -6202,14 +6321,16 @@ begin
 end;
 
 
-constructor TAsmTestGenerator.Create(aGas:boolean);
+constructor TAsmTestGenerator.Create(aGas,aAPX:boolean);
 begin
   inherited Create();
 
   FX64 := true;
   FAVX512 := false;
+  FAPX := aAPX and Fx64;
   FGas := aGas;
 
+  FRegCL         := TStringList.Create;
   FReg8          := TStringList.Create;
   FReg16         := TStringList.Create;
 
@@ -6227,18 +6348,31 @@ begin
   FReg64ZMMIndex := TStringList.Create;
   FRegKREG       := TStringList.Create;
 
+  FRegCL.Add('CL');
 
   FReg8.Add('AL');
   FReg8.Add('BL');
   FReg8.Add('CL');
   FReg8.Add('DL');
-
+  if FAPX then
+  begin
+    FReg8.Add('SIL');
+    FReg8.Add('R13b');
+    FReg8.Add('R16b');
+    FReg8.Add('R31b');
+  end;
 
   FReg16.Add('AX');
   FReg16.Add('BX');
   FReg16.Add('CX');
-  FReg16.Add('DX');
-
+  FReg16.Add('SI');
+  if FAPX then
+  begin
+    FReg16.Add('R9w');
+    FReg16.Add('R12w');
+    FReg16.Add('R17w');
+    FReg16.Add('R29w');
+  end;
 
   FReg32Base.Add('EAX');
   FReg32Base.Add('EBX');
@@ -6248,6 +6382,11 @@ begin
   //FReg32Base.Add('EBP');
   FReg32Base.Add('EDI');
   FReg32Base.Add('ESI');
+  if FAPX then
+  begin
+    FReg32Base.Add('R22d');
+    FReg32Base.Add('R24d');
+  end;
 
 
   FReg32Index.Add('EAX');
@@ -6257,7 +6396,11 @@ begin
   FReg32Index.Add('EBP');
   FReg32Index.Add('EDI');
   FReg32Index.Add('ESI');
-
+  if FAPX then
+  begin
+    FReg32Index.Add('R23d');
+    FReg32Index.Add('R17d');
+  end;
 
   FReg64Base.Add('RAX');
   FReg64Base.Add('RBX');
@@ -6273,8 +6416,16 @@ begin
   FReg64Base.Add('R11');
   FReg64Base.Add('R12');
   //FReg64Base.Add('R13');
-  FReg64Base.Add('R14');
-  FReg64Base.Add('R15');
+  if not FAPX then
+  begin
+    FReg64Base.Add('R14');
+    FReg64Base.Add('R15');
+  end;
+  if FAPX then
+  begin
+    FReg64Base.Add('R18');
+    FReg64Base.Add('R28');
+  end;
 
   FReg64Index.Add('RAX');
   FReg64Index.Add('RBX');
@@ -6289,8 +6440,16 @@ begin
   FReg64Index.Add('R11');
   FReg64Index.Add('R12');
   FReg64Index.Add('R13');
-  FReg64Index.Add('R14');
-  FReg64Index.Add('R15');
+  if not FAPX then
+  begin
+    FReg64Index.Add('R14');
+    FReg64Index.Add('R15');
+  end;
+  if FAPX then
+  begin
+    FReg64Index.Add('R19');
+    FReg64Index.Add('R27');
+  end;
 
   FReg6432Base.Add('EAX');
   FReg6432Base.Add('EBX');
@@ -6306,8 +6465,16 @@ begin
   FReg6432Base.Add('R11D');
   FReg6432Base.Add('R12D');
   //FReg6432Base.Add('R13D');
-  FReg6432Base.Add('R14D');
-  FReg6432Base.Add('R15D');
+  if not FAPX then
+  begin
+    FReg6432Base.Add('R14D');
+    FReg6432Base.Add('R15D');
+  end;
+  if FAPX then
+  begin
+    FReg6432Base.Add('R20d');
+    FReg6432Base.Add('R26d');
+  end;
 
   FReg6432Index.Add('EAX');
   FReg6432Index.Add('EBX');
@@ -6322,8 +6489,16 @@ begin
   FReg6432Index.Add('R11D');
   FReg6432Index.Add('R12D');
   FReg6432Index.Add('R13D');
-  FReg6432Index.Add('R14D');
-  FReg6432Index.Add('R15D');
+  if not FAPX then
+  begin
+    FReg6432Index.Add('R14D');
+    FReg6432Index.Add('R15D');
+  end;
+  if FAPX then
+  begin
+    FReg6432Index.Add('R21d');
+    FReg6432Index.Add('R25d');
+  end;
 
   FReg32XMMIndex.ADD('XMM0');
   FReg32XMMIndex.ADD('XMM1');
@@ -6434,6 +6609,7 @@ end;
 
 destructor TAsmTestGenerator.Destroy;
 begin
+  FreeAndNil(FRegCL);
   FreeAndNil(FReg8);
   FreeAndNil(FReg16);
 
@@ -6639,15 +6815,16 @@ begin
   end;
 end;
 
-class procedure TAsmTestGenerator.CalcTestData(aGas, aX64, aAVX512, aSAE: boolean; const aInst, aOp1, aOp2, aOp3,
+class procedure TAsmTestGenerator.CalcTestData(aGas, aX64, aAVX512, aAPX, aSAE: boolean; const aInst, aOp1, aOp2, aOp3,
   aOp4: String; aSL: TStringList);
 var
   sl: TStringList;
 begin
-  with TAsmTestGenerator.Create(aGas) do
+  with TAsmTestGenerator.Create(aGas,aAPX) do
   try
     Fx64 := aX64;
     FAVX512 := aAVX512;
+    FAPX := aAPX and Fx64;
     FSAE    := aSAE;
 
     sl := InternalCalcTestData(aInst, aOp1, aOp2, aOp3, aOp4);
@@ -6661,15 +6838,16 @@ begin
   end;
 end;
 
-class procedure TAsmTestGenerator.CalcTestDataMREF(aGas, aX64, aAVX512, aSAE: boolean; const aInst, aOp1, aOp2, aOp3,
+class procedure TAsmTestGenerator.CalcTestDataMREF(aGas, aX64, aAVX512, aAPX, aSAE: boolean; const aInst, aOp1, aOp2, aOp3,
   aOp4: String;  aSL: TStringList);
 var
   sl: TStringList;
 begin
-  with TAsmTestGenerator.Create(aGas) do
+  with TAsmTestGenerator.Create(aGas,aAPX) do
   try
     Fx64 := aX64;
     FAVX512 := aAVX512;
+    FAPX := aAPX and Fx64;
     FSAE    := aSAE;
 
     sl := InternalCalcTestDataMREF(aInst, aOp1, aOp2, aOp3, aOp4);
@@ -6683,15 +6861,16 @@ begin
   end;
 end;
 
-class procedure TAsmTestGenerator.CalcTestDataCDisp8(aGas, aX64, aAVX512,
+class procedure TAsmTestGenerator.CalcTestDataCDisp8(aGas, aX64, aAVX512, aAPX,
   aSAE: boolean; const aInst, aOp1, aOp2, aOp3, aOp4: String; aSL: TStringList);
 var
   sl: TStringList;
 begin
-  with TAsmTestGenerator.Create(aGas) do
+  with TAsmTestGenerator.Create(aGas,aAPX) do
   try
     Fx64 := aX64;
     FAVX512 := aAVX512;
+    FAPX := aAPX and Fx64;
     FSAE    := aSAE;
 
     sl := InternalCalcTestDataCDisp8(aInst, aOp1, aOp2, aOp3, aOp4);
@@ -6710,6 +6889,7 @@ end;
 class procedure TAsmTestGenerator.CalcTestInstFile;
 var
   i,j: integer;
+  sAPX: string;
   sInst: string;
   sI386: string;
   sX8664: string;
@@ -6726,7 +6906,20 @@ var
   bEVEX: boolean;
   b256 : boolean;
   b512 : boolean;
+  bAPX : boolean;
   ignoreCount:integer;
+  ignoredLen : integer;
+  ignoredBytes : array[0..3] of byte;
+  adc: boolean;
+
+  optypes : array[0..63,0..3] of qword;
+  ty : qword;
+  typ  : array[0..3] of qword;
+  typCount : integer;
+  k : integer;
+
+  iTyp : integer;
+  OpTypesCount : integer;
 begin
   sl := TStringList.Create;
   try
@@ -6747,34 +6940,84 @@ begin
       bEVEX := false;
       b256 := false;
       b512 := false;
+      bAPX := true; { assume best and later check if it holds the water }
 
       sImmSize:='IMM8,';
       ignoreCount:=0;
+      ignoredLen:=0;
 
       //TG TODO delete
+
       if instab[i].opcode = a_vtestps then
       begin
         b512 := b512;
       end;
+
+      adc:=false;
+
+      {exception part to select some non sse/vex/evex instruction into the list }
+      if (instab[i].opcode = a_cvttsd2si)
+        or (instab[i].opcode = a_cvttss2si)
+        or (instab[i].opcode = a_cvtss2si)
+        or (instab[i].opcode = a_cvtsd2si)
+        or (instab[i].opcode = a_popcnt)
+        or (instab[i].opcode = a_LZCNT)
+        or (instab[i].opcode = a_TZCNT)
+        or (instab[i].opcode = a_adcx)
+        or (instab[i].opcode = a_adox)
+        or (instab[i].opcode = a_MOVBE)
+        or (instab[i].opcode = a_crc32)
+        or (instab[i].opcode = a_cmovcc)
+        or (instab[i].opcode = a_setcc)
+        or (instab[i].opcode = a_movdiri)
+        or (instab[i].opcode = a_MOVDIR64B)
+        or (instab[i].opcode = a_movrs)
+        or (instab[i].opcode = a_aadd)
+        or (instab[i].opcode = a_aand)
+        or (instab[i].opcode = a_aor)
+        or (instab[i].opcode = a_axor)
+        //or (instab[i].opcode = a_)
+      then
+        begin
+         bSSE:=true;
+         //adc:=true;
+         //writeln;
+         //writeln(instab[i].opcode);
+        end;
 
       for j := 0 to length(InsTab[i].code) - 1 do
       begin
         if ignoreCount>0 then
         begin
           dec(ignoreCount);
+          { we save ignored bytes to test for hard coded instruction map prefixes }
+          { instruction that have x0F x0F38 x0F38 cannot have APX registers }
+          ignoredBytes[ignoredLen]:=byte(InsTab[i].code[j]);
+          inc(ignoredLen);
+          if ignoreCount = 0 then
+            if (ignoredLen>1) and (ignoredBytes[0]=$0f) then
+              bAPX := false;  { well, no APX registers then }
+          { now ignore }
           continue;
         end;
+        ignoredLen:=0;
+
         case ord(InsTab[i].code[j]) of
             0: break;
              1,2,3: ignoreCount:=ord(InsTab[i].code[j]);
           &10..&13: ignoreCount:=1;
+          &30..&32: sImmSize:='IMM16,';
           &40..&43: sImmSize:='IMM32,';
+          &254..&256: sImmSize:='IMM32,';
           232: bEVEX := true;
           233: b512 := true;
           242: bVEX := true;
           244: b256 := true;
         end;
       end;
+
+      if bVEX and not bEVEX then
+        bAPX := false; {cannot encode APX registers in VEX}
 
       if not bVEX and not bEVEX then
         for j := 0 to InsTab[i].ops-1 do
@@ -6785,18 +7028,117 @@ begin
         sInst  :=  std_op2str[InsTab[i].opcode];
         sI386  := '1';
         sX8664 := '1';
+
+        if IF_NOX86_64 in InsTab[i].flags then
+          sX8664 :='0'; {this probably should not happen for SSE, VEX or EVEX encoded instructions}
+
         if IF_X86_64 in InsTab[i].flags then
-        begin
           sI386  := '0';
-        end;
 
         if bEVEX then sAVX512 := '1'
          else sAVX512 := '0';
 
+        if bAPX then sAPX := '1'
+         else sAPX := '0';
+
+        {unwind reg16|32 alike defines }
+        iTyp:=0;
+        OpTypesCount:=1;
+        for j := 0 to 3 do
+        begin
+          ty:=InsTab[i].optypes[j] and (not OT_SIGNED);
+          typCount:=0;
+          if (ty <> OT_REG_CL)
+            and (ty <> OT_XMEM32)
+            and (ty <> OT_YMEM32)
+            and (ty <> OT_ZMEM32)
+            and (ty <> OT_XMEM32_M)
+            and (ty <> OT_YMEM32_M)
+            and (ty <> OT_ZMEM32_M)
+            and (ty <> OT_XMEM64)
+            and (ty <> OT_YMEM64)
+            and (ty <> OT_ZMEM64)
+            and (ty <> OT_XMEM64_M)
+            and (ty <> OT_YMEM64_M)
+            and (ty <> OT_ZMEM64_M)
+            and (ty <> OT_MEM16_M)
+            and (ty <> OT_MEM32_M)
+            and (ty <> OT_MEM64_M)
+            and (ty <> OT_SIBMEM)
+            and (ty <> OT_BMEM16)
+            and (ty <> OT_BMEM32)
+            and (ty <> OT_BMEM64)
+            then
+          begin
+            if (ty and OT_MEM8)= OT_MEM8 then
+            begin
+              typ[typCount]:=OT_MEM8;
+              inc(typCount);
+            end;
+            if (ty and OT_MEM16)= OT_MEM16 then
+            begin
+              typ[typCount]:=OT_MEM16;
+              inc(typCount);
+            end;
+            if (ty and OT_MEM32)= OT_MEM32 then
+            begin
+              typ[typCount]:=OT_MEM32;
+              inc(typCount);
+            end;
+            if (ty and OT_MEM64)= OT_MEM64 then
+            begin
+              typ[typCount]:=OT_MEM64;
+              inc(typCount);
+            end;
+            if (ty and OT_REG8)= OT_REG8 then
+            begin
+              typ[typCount]:=OT_REG8;
+              inc(typCount);
+            end;
+            if (ty and OT_REG16)= OT_REG16 then
+            begin
+              typ[typCount]:=OT_REG16;
+              inc(typCount);
+            end;
+            if (ty and OT_REG32)= OT_REG32 then
+            begin
+              typ[typCount]:=OT_REG32;
+              inc(typCount);
+            end;
+            if (ty and OT_REG64)= OT_REG64 then
+            begin
+              typ[typCount]:=OT_REG64;
+              inc(typCount);
+            end;
+          end; {if}
+          if typCount=0 then
+          begin
+            typ[typCount]:=ty;
+            inc(typCount);
+          end;
+
+          if (typCount>0) and (j>0) then
+          begin
+            for iTyp := OpTypesCount to OpTypesCount*typCount-1 do
+              for k:= 0 to j-1 do
+                optypes[iTyp,k]:=optypes[iTyp mod typCount,k];
+          end;
+          OpTypesCount:=OpTypesCount*typCount;
+
+          for iTyp := 0 to OpTypesCount-1 do
+          begin
+            optypes[iTyp,j]:=typ[iTyp mod typCount];
+          end;
+
+        end; {for}
+
+        {build paramer part for instruction}
+        for iTyp := 0 to OpTypesCount-1 do
+        begin
         sOperands := '';
         for j := 0 to 3 do
         begin
-          case InsTab[i].optypes[j] of
+          case (optypes[iTyp,j]) of
                OT_XMMREG: sOperands := sOperands + 'XMMREG,';
              OT_XMMREG_M: sOperands := sOperands + 'XMMREG_M,';
             OT_XMMREG_MZ: sOperands := sOperands + 'XMMREG_MZ,';
@@ -6839,9 +7181,13 @@ begin
                OT_SIBMEM: sOperands := sOperands + 'SIBMEM,';
                OT_MEMORY: sOperands := sOperands + 'MEM128,'; {any memory}
 
+               OT_REG_CL: sOperands := sOperands + 'REG_CL,';
+                 OT_REG8: sOperands := sOperands + 'REG8,';
                 OT_REG16: sOperands := sOperands + 'REG16,';
                 OT_REG32: sOperands := sOperands + 'REG32,';
                 OT_REG64: sOperands := sOperands + 'REG64,';
+                 ot_rm_gpr or ot_bits8:
+                          sOperands := sOperands + 'RM8,';
                  ot_rm_gpr or ot_bits16:
                           sOperands := sOperands + 'RM16,';
                  ot_rm_gpr or ot_bits32:
@@ -6863,6 +7209,7 @@ begin
              OT_ZMEM64_M: sOperands := sOperands + 'ZMEM64_M,';
 
                  OT_IMM8: sOperands := sOperands + 'IMM8,';
+                OT_UNITY: sOperands := sOperands + 'IMM1,'; { imm8 with value 1 }
             OT_IMMEDIATE: sOperands := sOperands + sImmSize;
                  OT_NONE: sOperands := sOperands + ',';
 {
@@ -6947,11 +7294,13 @@ begin
 
             else  sOperands := sOperands;
           end;
+          if adc then writeln(' operands ',sOperands);
         end;
 
         sOperands := copy(sOperands, 1, length(sOperands) - 1);
 
-        sl.Add(format('FOpCodeList.Add(''%s,%s,%s,%s,%s'');', [sInst, sI386, sX8664, sAVX512, sOperands]));
+        sl.Add(format('FOpCodeList.Add(''%s,%s,%s,%s,%s,%s'');', [sInst, sI386, sX8664, sAVX512, sAPX, sOperands]));
+        end;
       end;
 
     end;
