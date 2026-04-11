@@ -3763,8 +3763,45 @@ implementation
       var
         i      : longint;
         objsym : TObjSymbol;
-        exesym : TExeSymbol;
+        exesym,
+        altexesym : TExeSymbol;
       begin
+        { Resolve weak external aliases and /alternatename fallbacks BEFORE
+          reporting unresolved symbols, so alternates get a chance to resolve. }
+        for i:=0 to FExeSymbolList.Count-1 do
+          begin
+            exesym:=TExeSymbol(FExeSymbolList.Items[i]);
+            if not (exesym.state in [symstate_defweak,symstate_undefined,
+                                     symstate_undefweak]) then
+              continue;
+            if not assigned(exesym.ObjSymbol) then
+              continue;
+            { Try DefaultSym (same-object alias) first }
+            if assigned(exesym.ObjSymbol.DefaultSym) then
+              begin
+                if assigned(exesym.ObjSymbol.DefaultSym.ExeSymbol) then
+                  begin
+                    if exesym.ObjSymbol.DefaultSym.ExeSymbol.state in
+                       [symstate_defined,symstate_defweak] then
+                      begin
+                        exesym.ObjSymbol:=exesym.ObjSymbol.DefaultSym.ExeSymbol.ObjSymbol;
+                        exesym.state:=symstate_defined;
+                      end;
+                  end;
+              end
+            { Try DefaultSymName (cross-object /alternatename) }
+            else if exesym.ObjSymbol.DefaultSymName<>'' then
+              begin
+                altexesym:=TExeSymbol(FExeSymbolList.Find(exesym.ObjSymbol.DefaultSymName));
+                if assigned(altexesym) and (altexesym.state in
+                   [symstate_defined,symstate_defweak]) then
+                  begin
+                    exesym.ObjSymbol:=altexesym.ObjSymbol;
+                    exesym.state:=symstate_defined;
+                  end;
+              end;
+          end;
+
         { Print list of Unresolved External symbols }
         if not AllowUndefinedSymbols then
           for i:=0 to UnresolvedExeSymbols.count-1 do
@@ -3809,14 +3846,22 @@ implementation
               internalerror(200606242);
             UpdateSymbol(objsym);
             { Collect symbols that resolve to indirect functions,
-              they will need additional target-specific processing. }
+              they will need additional target-specific processing.
+              Symbols with objsection<>nil are removed, remaining ones
+              will be processed again when FixupSymbols is called after
+              import thunk generation. Also remove symbols that resolved
+              to absolute values (bind changed but objsection stays nil)
+              since they won't benefit from a second pass. }
             if objsym.typ=AT_GNU_IFUNC then
               IndirectObjSymbols.Add(objsym)
-            else if assigned(objsym.objsection) then
+            else if assigned(objsym.objsection) or
+                    (objsym.bind<>AB_EXTERNAL) then
               ExternalObjSymbols[i]:=nil;
           end;
         CommonObjSymbols.Clear;
         ExternalObjSymbols.Pack;
+
+        { alias resolution already done above, before error reporting }
       end;
 
 
