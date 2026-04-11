@@ -1034,6 +1034,13 @@ implementation
             Concat('  OBJSECTION .rdata*');
             Concat('  OBJSECTION .rodata*');
             Concat('  OBJSECTION .xdata*');
+            { MSVC-specific read-only data and metadata sections }
+            Concat('  OBJSECTION _RDATA*');
+            Concat('  OBJSECTION .00cfg*');
+            Concat('  OBJSECTION .rtc$*');
+            Concat('  OBJSECTION .fptable*');
+            Concat('  OBJSECTION .gfids$*');
+            Concat('  OBJSECTION .giats$*');
             Concat('ENDEXESECTION');
             Concat('EXESECTION .pdata');
             Concat('  OBJSECTION .pdata*');
