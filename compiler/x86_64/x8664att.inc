@@ -1379,7 +1379,7 @@
 'vpcmpleud',
 'vpcmpnequd',
 'vpcmpnltud',
-'vpcmpmleud',
+'vpcmpnleud',
 'vpcmpequq',
 'vpcmpltuq',
 'vpcmpleuq',
