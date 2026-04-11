@@ -2566,6 +2566,11 @@ implementation
         objsym:=internalObjData.SymbolDefine('__image_base__',AB_GLOBAL,AT_DATA);
         exesym:=texesymbol.Create(FExeSymbolList,objsym.name);
         exesym.ObjSymbol:=objsym;
+        { Define __ImageBase (MSVC/Clang style) as an alias
+          and use Cprefix as prefix, so i386 MSVC objects can reference ___ImageBase }
+        objsym:=internalObjData.SymbolDefine(target_info.Cprefix + '__ImageBase',AB_GLOBAL,AT_DATA);
+        exesym:=texesymbol.Create(FExeSymbolList,objsym.name);
+        exesym.ObjSymbol:=objsym;
       end;
 
 
