@@ -3208,7 +3208,7 @@ const pemagic : array[0..3] of byte = (
                    secoptions:=djdecodesechdrflags(secname,sechdr.flags);
                    secalign:=sizeof(pint);
                  end;
-               if (Length(secname)>3) and (secname[2] in ['e','f','i','p','r']) then
+               if (Length(secname)>3) and (secname[2] in ['C','c','d','e','f','i','p','r','t']) then
                  begin
                    if (Pos('.edata',secname)=1) or
                       (Pos('.rsrc',secname)=1) or
@@ -3221,6 +3221,16 @@ const pemagic : array[0..3] of byte = (
                        include(secoptions,oso_keep);
                        secname:=secname + '.' + ExtractFileName(InputFileName);
                      end;
+                   { Keep C/C++ static constructor/destructor sections and their
+                   code so they survive RemoveUnreferencedSections }
+                   if (Pos('.ctors',secname)=1) or
+                      (Pos('.dtors',secname)=1) or
+                      (Pos('.text.startup',secname)=1) then
+                     include(secoptions,oso_keep);
+                   { Keep MSVC CRT initializer sections so they survive
+                   RemoveUnreferencedSections (same rationale as .ctors) }
+                   if (Pos('.CRT$',secname)=1) then
+                     include(secoptions,oso_keep);
                  end;
                objsec:=TCoffObjSection(createsection(secname,secalign,secoptions,false));
                FSecTbl[i]:=objsec;
