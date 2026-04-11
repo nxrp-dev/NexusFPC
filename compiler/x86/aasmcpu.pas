@@ -556,8 +556,10 @@ interface
         IF_THVM,
         IF_TOVM,
         IF_DISTINCT,            { destination and source registers must be distinct }
-        IF_DALL                 { destination, index and mask registers should be distinct (use together with IF_DISTINCT) }
-
+        IF_DALL,                { destination, index and mask registers should be distinct (use together with IF_DISTINCT) }
+        IF_MAYBESHORTER         { skip this entry if ahead is better one                               }
+                                {   whenever possible chose 2 byte VEX encoded version for VMOV* rv,rv }
+                                {   position "load" version of VMOV* first (code silently expects this) }
       );
       tinsflags=set of tinsflag;
 
@@ -1831,8 +1833,39 @@ implementation
           if byte(p^.code[i]) <> &350 then exit;
         end;
 
-        { Check operand sizes }
         insflags:=p^.flags;
+        if IF_MAYBESHORTER in insflags then
+        begin
+          { This branch selects best suited VEX version for VMOV* rv,rv instructions.
+            It capitalise on fact that 2 byte VEX have ModRM.reg + Rex.R that's 4 bits,
+            but ModRM.r/m have only 3 bits. Thus in 2 byte VEX version one parameter can
+            have 16 registers while other only 8. For VMOV* there  are "load" and "store"
+            forms, chose shortest of them. Assume that "load" form is positioned first for
+            sake of less complicated code }
+          j:=0;  { initialize variable just for compiler warning to go away }
+          i:=-1; { default, no registers selected }
+          if (p^.ops=2) then { 2 parameters, exchange ModRM.r/m with ModRM.reg + Rex.R }
+            if (oper[0]^.typ=top_reg) and (oper[1]^.typ=top_reg) then  {reg to reg only}
+            if (getregtype(oper[0]^.reg) = getregtype(oper[1]^.reg)) then  { same type }
+            begin
+              i:=getsupreg(oper[0]^.reg);
+              j:=getsupreg(oper[1]^.reg);
+            end;
+          if (p^.ops=3) then { 3 parameters, exchange ModRM.r/m with ModRM.reg + Rex.R }
+            if (oper[0]^.typ=top_reg) and (oper[2]^.typ=top_reg) then  {reg to reg only}
+            if (getregtype(oper[0]^.reg) = getregtype(oper[2]^.reg)) then  { same type }
+            if (oper[1]^.typ=top_reg) and (getsupreg(oper[1]^.reg)<16) then  { no evex }
+            begin
+              i:=getsupreg(oper[0]^.reg);
+              j:=getsupreg(oper[2]^.reg);
+            end;
+          if i>=0 then  { eligible registers selected }
+            if (j>=8) and (j<=15) and (i<8) then  { 2nd parameter reg nr 8-15 while 1st 0-7 }
+              if not((oper[0]^.vopext and OTVE_VECTOR_WRITEMASK) = OTVE_VECTOR_WRITEMASK) then
+                exit;   { decline current in favour for following (better) encoding }
+        end;
+
+        { Check operand sizes }
         if (insflags*IF_SMASK)<>[] then
           begin
             { as default an untyped size can get all the sizes, this is different
