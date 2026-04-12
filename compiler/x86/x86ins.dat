@@ -5475,26 +5475,26 @@ xmmreg_mz,xmmreg,xmmreg_sae               \333\350\362\370\1\x5D\75\120         
 
 [VMOVAPD]
 (Ch_Wop2, Ch_Rop1)
+xmmreg_mz,xmmrm                           \350\352\361\362\370\1\x28\110            AVX,SANDYBRIDGE,TFVM,MAYBESHORTER
+ymmreg_mz,ymmrm                           \350\352\361\362\364\370\1\x28\110        AVX,SANDYBRIDGE,TFVM,MAYBESHORTER
+zmmreg_mz,zmmrm                           \350\351\352\361\370\1\x28\110            AVX512,TFVM
 zmmrm_mz,zmmreg                           \350\351\352\361\370\1\x29\101            AVX512,TFVM
 ymmrm_mz,ymmreg                           \350\352\361\362\364\370\1\x29\101        AVX,SANDYBRIDGE,TFVM
 xmmrm_mz,xmmreg                           \350\352\361\362\370\1\x29\101            AVX,SANDYBRIDGE,TFVM
-xmmreg_mz,xmmrm                           \350\352\361\362\370\1\x28\110            AVX,SANDYBRIDGE,TFVM
-ymmreg_mz,ymmrm                           \350\352\361\362\364\370\1\x28\110        AVX,SANDYBRIDGE,TFVM
-zmmreg_mz,zmmrm                           \350\351\352\361\370\1\x28\110            AVX512,TFVM
 
 [VMOVAPS]
 (Ch_Wop2, Ch_Rop1)
+xmmreg_mz,xmmrm                           \350\362\370\1\x28\110                    AVX,SANDYBRIDGE,TFVM,MAYBESHORTER
+ymmreg_mz,ymmrm                           \350\362\364\370\1\x28\110                AVX,SANDYBRIDGE,TFVM,MAYBESHORTER
+zmmreg_mz,zmmrm                           \350\351\370\1\x28\110                    AVX512,TFVM
 xmmrm_mz,xmmreg                           \350\362\370\1\x29\101                    AVX,SANDYBRIDGE,TFVM
 ymmrm_mz,ymmreg                           \350\362\364\370\1\x29\101                AVX,SANDYBRIDGE,TFVM
 zmmrm_mz,zmmreg                           \350\351\370\1\x29\101                    AVX512,TFVM
-xmmreg_mz,xmmrm                           \350\362\370\1\x28\110                    AVX,SANDYBRIDGE,TFVM
-ymmreg_mz,ymmrm                           \350\362\364\370\1\x28\110                AVX,SANDYBRIDGE,TFVM
-zmmreg_mz,zmmrm                           \350\351\370\1\x28\110                    AVX512,TFVM
 
 [VMOVD]
 (Ch_Wop2, Ch_Rop1)
+xmmreg,rm32                               \350\361\362\370\1\x6E\110                AVX,SANDYBRIDGE,T1S,MAYBESHORTER
 rm32,xmmreg                               \350\361\362\370\1\x7E\101                AVX,SANDYBRIDGE,T1S
-xmmreg,rm32                               \350\361\362\370\1\x6E\110                AVX,SANDYBRIDGE,T1S
 xmmreg,xmmreg                             \350\333\370\1\x7E\110                    AVX102
 xmmreg,mem32                              \350\333\370\1\x7E\110                    AVX102,T1S
 xmmreg,xmmreg                             \350\361\370\1\xD6\101                    AVX102
@@ -5509,16 +5509,16 @@ zmmreg_mz,zmmrm                           \334\350\351\352\370\1\x12\110        
 
 [VMOVDQA]
 (Ch_Wop2, Ch_Rop1)
-ymmrm,ymmreg                         \361\362\364\370\1\x7F\101           AVX,SANDYBRIDGE
-xmmreg,xmmrm                         \361\362\370\1\x6F\110               AVX,SANDYBRIDGE
+xmmreg,xmmrm                         \361\362\370\1\x6F\110               AVX,SANDYBRIDGE,MAYBESHORTER
 xmmrm,xmmreg                         \361\362\370\1\x7F\101               AVX,SANDYBRIDGE
-ymmreg,ymmrm                         \361\362\364\370\1\x6F\110           AVX,SANDYBRIDGE
+ymmreg,ymmrm                         \361\362\364\370\1\x6F\110           AVX,SANDYBRIDGE,MAYBESHORTER
+ymmrm,ymmreg                         \361\362\364\370\1\x7F\101           AVX,SANDYBRIDGE
 
 [VMOVDQU]
 (Ch_Wop2, Ch_Rop1)
-ymmreg,ymmrm                         \333\362\364\370\1\x6F\110           AVX,SANDYBRIDGE
-xmmreg,xmmrm                         \333\362\370\1\x6F\110               AVX,SANDYBRIDGE
+xmmreg,xmmrm                         \333\362\370\1\x6F\110               AVX,SANDYBRIDGE,MAYBESHORTER
 xmmrm,xmmreg                         \333\362\370\1\x7F\101               AVX,SANDYBRIDGE
+ymmreg,ymmrm                         \333\362\364\370\1\x6F\110           AVX,SANDYBRIDGE,MAYBESHORTER
 ymmrm,ymmreg                         \333\362\364\370\1\x7F\101           AVX,SANDYBRIDGE
 
 [VMOVHLPS]
@@ -5597,11 +5597,11 @@ mem512,zmmreg                             \350\351\370\1\x2B\101                
 
 [VMOVQ]
 (Ch_Wop2, Ch_Rop1)
-mem64,xmmreg                              \350\352\361\362\370\1\xD6\101            AVX,SANDYBRIDGE,T1S
+mem64,xmmreg                              \361\362\370\1\xD6\101                    AVX,SANDYBRIDGE ; this is promoted to evex space, but to fall in line with Gas keep it strictly VEX
+xmmreg,mem64                              \333\362\370\1\x7E\110                    AVX,SANDYBRIDGE ; this is promoted to evex space, but to fall in line with Gas keep it strictly VEX
+xmmreg,rm64                               \350\352\361\362\363\370\1\x6E\110        AVX,SANDYBRIDGE,X86_64,T1S,MAYBESHORTER
 rm64,xmmreg                               \350\352\361\362\363\370\1\x7E\101        AVX,SANDYBRIDGE,X86_64,T1S
-xmmreg,mem64                              \333\350\352\362\370\1\x7E\110            AVX,SANDYBRIDGE,T1S
-xmmreg,rm64                               \350\352\361\362\363\370\1\x6E\110        AVX,SANDYBRIDGE,X86_64,T1S
-xmmreg,xmmreg                             \333\350\352\362\370\1\x7E\110            AVX,SANDYBRIDGE
+xmmreg,xmmreg                             \333\350\352\362\370\1\x7E\110            AVX,SANDYBRIDGE,MAYBESHORTER 
 xmmreg,xmmreg                             \350\352\361\362\370\1\xD6\101            AVX,SANDYBRIDGE
 
 
@@ -5610,8 +5610,8 @@ xmmreg,xmmreg                             \350\352\361\362\370\1\xD6\101        
 (Ch_Wop2, Ch_Rop1)
 mem64_m,xmmreg                            \334\350\352\362\370\1\x11\101            AVX,SANDYBRIDGE,T1S
 xmmreg_mz,mem64                           \334\350\352\362\370\1\x10\110            AVX,SANDYBRIDGE,T1S
+xmmreg_mz,xmmreg,xmmreg                   \334\350\352\362\370\1\x10\75\120         AVX,SANDYBRIDGE,MAYBESHORTER  ; Gas prefer this encoding
 xmmreg_mz,xmmreg,xmmreg                   \334\350\352\362\370\1\x11\75\102         AVX,SANDYBRIDGE
-xmmreg_mz,xmmreg,xmmreg                   \334\350\352\362\370\1\x10\75\120         AVX,SANDYBRIDGE
 
 
 [VMOVSHDUP]
@@ -5633,28 +5633,28 @@ zmmreg_mz,zmmrm                           \333\350\351\370\1\x12\110            
 (Ch_Wop2, Ch_Rop1)
 mem32_m,xmmreg                            \333\350\362\370\1\x11\101                AVX,SANDYBRIDGE,T1S
 xmmreg_mz,mem32                           \333\350\362\370\1\x10\110                AVX,SANDYBRIDGE,T1S
+xmmreg_mz,xmmreg,xmmreg                   \333\350\362\370\1\x10\75\120             AVX,SANDYBRIDGE,MAYBESHORTER  ; Gas prefer this encoding
 xmmreg_mz,xmmreg,xmmreg                   \333\350\362\370\1\x11\75\102             AVX,SANDYBRIDGE
-xmmreg_mz,xmmreg,xmmreg                   \333\350\362\370\1\x10\75\120             AVX,SANDYBRIDGE
 
 
 [VMOVUPD]
 (Ch_Wop2, Ch_Rop1)
+xmmreg_mz,xmmrm                           \350\352\361\362\370\1\x10\110            AVX,SANDYBRIDGE,TFVM,MAYBESHORTER
+ymmreg_mz,ymmrm                           \350\352\361\362\364\370\1\x10\110        AVX,SANDYBRIDGE,TFVM,MAYBESHORTER
+zmmreg_mz,zmmrm                           \350\351\352\361\370\1\x10\110            AVX512,TFVM
 xmmrm_mz,xmmreg                           \350\352\361\362\370\1\x11\101            AVX,SANDYBRIDGE,TFVM
 ymmrm_mz,ymmreg                           \350\352\361\362\364\370\1\x11\101        AVX,SANDYBRIDGE,TFVM
 zmmrm_mz,zmmreg                           \350\351\352\361\370\1\x11\101            AVX512,TFVM
-xmmreg_mz,xmmrm                           \350\352\361\362\370\1\x10\110            AVX,SANDYBRIDGE,TFVM
-ymmreg_mz,ymmrm                           \350\352\361\362\364\370\1\x10\110        AVX,SANDYBRIDGE,TFVM
-zmmreg_mz,zmmrm                           \350\351\352\361\370\1\x10\110            AVX512,TFVM
 
 
 [VMOVUPS]
 (Ch_Wop2, Ch_Rop1)
+xmmreg_mz,xmmrm                           \350\362\370\1\x10\110                    AVX,SANDYBRIDGE,TFVM,MAYBESHORTER
+ymmreg_mz,ymmrm                           \350\362\364\370\1\x10\110                AVX,SANDYBRIDGE,TFVM,MAYBESHORTER
+zmmreg_mz,zmmrm                           \350\351\370\1\x10\110                    AVX512,TFVM
 xmmrm_mz,xmmreg                           \350\362\370\1\x11\101                    AVX,SANDYBRIDGE,TFVM
 ymmrm_mz,ymmreg                           \350\362\364\370\1\x11\101                AVX,SANDYBRIDGE,TFVM
 zmmrm_mz,zmmreg                           \350\351\370\1\x11\101                    AVX512,TFVM
-xmmreg_mz,xmmrm                           \350\362\370\1\x10\110                    AVX,SANDYBRIDGE,TFVM
-ymmreg_mz,ymmrm                           \350\362\364\370\1\x10\110                AVX,SANDYBRIDGE,TFVM
-zmmreg_mz,zmmrm                           \350\351\370\1\x10\110                    AVX512,TFVM
 
 
 [VMPSADBW]
