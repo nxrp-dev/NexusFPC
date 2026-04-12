@@ -1106,6 +1106,17 @@ implementation
                   ttemprefnode(p).excludetempflag(ti_may_be_in_reg);
                 break;
               end;
+            inlinen :
+              begin
+                { volatile/aligned/unaligned are pure passthrough wrappers,
+                  walk through them to reach the underlying lvalue }
+                if (tinlinenode(p).inlinenumber in [in_volatile_x,in_aligned_x,in_unaligned_x]) and
+                   assigned(tinlinenode(p).left) and
+                   (tinlinenode(p).left.nodetype=callparan) then
+                  p:=tcallparanode(tinlinenode(p).left).left
+                else
+                  break;
+              end;
             else
               break;
           end;
