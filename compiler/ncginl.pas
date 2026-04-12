@@ -171,8 +171,11 @@ implementation
               begin
                 secondpass(tcallparanode(left).left);
                 location:=tcallparanode(left).left.location;
-                if location.loc in [LOC_CREFERENCE,LOC_REFERENCE,LOC_SUBSETREF,LOC_CSUBSETREF] then
-                  location.reference.volatility:=[vol_read,vol_write];
+                { make_not_regable should have forced the operand to memory in
+                  pass_typecheck; if not, something went wrong before }
+                if not(location.loc in [LOC_CREFERENCE,LOC_REFERENCE,LOC_SUBSETREF,LOC_CSUBSETREF]) then
+                  internalerror(2026041001);
+                location.reference.volatility:=[vol_read,vol_write];
               end;
 {$ifdef SUPPORT_MMX}
             in_mmx_pcmpeqb..in_mmx_pcmpgtw:
