@@ -56,8 +56,6 @@ unit JwaTlHelp32;
 {$IFNDEF JWA_OMIT_SECTIONS}
 {$I jediapilib.inc}
 
-// switch back to default (natural alignment), bug 16361
-{$ifdef FPC} {$ifdef cpu64}{$packrecords 8} {$endif} {$endif}
 interface
 
 {$IFDEF FPC_DOTTEDUNITS}
@@ -69,6 +67,7 @@ uses
 {$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
+{$ifdef FPC} {$packrecords DEFAULT} {$endif}
 
 {$IFNDEF JWA_IMPLEMENTATIONSECTION}
 
