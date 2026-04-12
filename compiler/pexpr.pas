@@ -1987,9 +1987,11 @@ implementation
                end
              else if try_to_consume(_LKLAMMER) then
                begin
-                 repeat
-                   comp_expr([ef_accept_equal]);
-                 until not try_to_consume(_COMMA);
+                 { accept empty parameter list like foo() }
+                 if current_scanner.token<>_RKLAMMER then
+                   repeat
+                     comp_expr([ef_accept_equal]);
+                   until not try_to_consume(_COMMA);
                  consume(_RKLAMMER);
                end
              else
