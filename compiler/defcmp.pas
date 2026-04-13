@@ -282,6 +282,7 @@ implementation
          diff : boolean;
          symfrom,symto : tsym;
          genconstrfrom,genconstrto : tgenericconstraintdata;
+         paramdef1,paramdef2 : tdef;
       begin
          eq:=te_incompatible;
          doconv:=tc_not_possible;
@@ -460,8 +461,23 @@ implementation
                        diff:=true
                      else if (symfrom.typ=constsym) and (symto.typ=constsym) and not equal_constsym(tconstsym(symfrom),tconstsym(symto),true) then
                        diff:=true
-                     else if not equal_defs(ttypesym(symfrom).typedef,ttypesym(symto).typedef) then
-                       diff:=true;
+                     else
+                       begin
+                         if symfrom.typ=constsym then
+                           paramdef1:=tconstsym(symfrom).constdef
+                         else
+                           paramdef1:=ttypesym(symfrom).typedef;
+                         if symto.typ=constsym then
+                           paramdef2:=tconstsym(symto).constdef
+                         else
+                           paramdef2:=ttypesym(symto).typedef;
+                         { equal_defs() is directional for some compatible types
+                           such as ordinal subranges, but generic specialization
+                           identity must not depend on argument order. }
+                         if not (equal_defs(paramdef1,paramdef2) and
+                                 equal_defs(paramdef2,paramdef1)) then
+                           diff:=true;
+                       end;
                      if diff then
                        break;
                    end;
