@@ -83,7 +83,8 @@ interface
 
       TDwarfHashSetItem = record
         HashSetItem: THashSetItem;
-        lab, ref_lab: tasmsymbol;
+        lab, ref_lab: tasmsymbol;  // DW_TAG_typedef,  DW_TAG_reference_type
+        type_lab: tasmsymbol;
         struct_lab: tasmsymbol;
       end;
       PDwarfHashSetItem = ^TDwarfHashSetItem;
@@ -127,6 +128,7 @@ interface
         function FinishAbbrevSearch: longint;
 
         function def_dwarf_lab(def:tdef) : tasmsymbol;
+        function def_dwarf_type_lab(def:tdef) : tasmsymbol;
         function def_dwarf_ref_lab(def:tdef) : tasmsymbol;
         function def_dwarf_class_struct_lab(def:tobjectdef) : tasmsymbol;
         function get_file_index(afile: tinputfile): Integer;
@@ -677,6 +679,7 @@ implementation
                     if not assigned(def.typesym) then
                       internalerror(200610011);
                     result^.lab:=current_asmdata.RefAsmSymbol(make_mangledname('DBG',def.typesym.owner,symname(def.typesym, true)),AT_METADATA);
+                    result^.type_lab:=current_asmdata.RefAsmSymbol(make_mangledname('DBGTYPE',def.typesym.owner,symname(def.typesym, true)),AT_METADATA);
                     result^.ref_lab:=current_asmdata.RefAsmSymbol(make_mangledname('DBGREF',def.typesym.owner,symname(def.typesym, true)),AT_METADATA);
                     if needstructdeflab then
                       result^.struct_lab:=current_asmdata.RefAsmSymbol(make_mangledname('DBG2',def.typesym.owner,symname(def.typesym, true)),AT_METADATA);
@@ -691,6 +694,7 @@ implementation
                        (def.owner.iscurrentunit) then
                       begin
                         result^.lab:=current_asmdata.DefineAsmSymbol(make_mangledname('DBG',def.typesym.owner,symname(def.typesym, true)),AB_GLOBAL,AT_METADATA,voidpointertype);
+                        result^.type_lab:=current_asmdata.DefineAsmSymbol(make_mangledname('DBGTYPE',def.typesym.owner,symname(def.typesym, true)),AB_GLOBAL,AT_METADATA,voidpointertype);
                         result^.ref_lab:=current_asmdata.DefineAsmSymbol(make_mangledname('DBGREF',def.typesym.owner,symname(def.typesym, true)),AB_GLOBAL,AT_METADATA,voidpointertype);
                         if needstructdeflab then
                           result^.struct_lab:=current_asmdata.DefineAsmSymbol(make_mangledname('DBG2',def.typesym.owner,symname(def.typesym, true)),AB_GLOBAL,AT_METADATA,voidpointertype);
@@ -701,6 +705,7 @@ implementation
                         { The pointer typecast is needed to prevent a problem with range checking
                           on when the typecast is changed to 'as' }
                         current_asmdata.getglobaldatalabel(TAsmLabel(pointer(result^.lab)));
+                        current_asmdata.getglobaldatalabel(TAsmLabel(pointer(result^.type_lab)));
                         current_asmdata.getglobaldatalabel(TAsmLabel(pointer(result^.ref_lab)));
                         if needstructdeflab then
                           current_asmdata.getglobaldatalabel(TAsmLabel(pointer(result^.struct_lab)));
@@ -713,6 +718,7 @@ implementation
                   on when the typecast is changed to 'as' }
                 { addrlabel instead of datalabel because it must be a local one }
                 current_asmdata.getaddrlabel(TAsmLabel(pointer(result^.lab)));
+                current_asmdata.getaddrlabel(TAsmLabel(pointer(result^.type_lab)));
                 current_asmdata.getaddrlabel(TAsmLabel(pointer(result^.ref_lab)));
                 if needstructdeflab then
                   current_asmdata.getaddrlabel(TAsmLabel(pointer(result^.struct_lab)));
@@ -738,6 +744,11 @@ implementation
     function TDebugInfoDwarf.def_dwarf_lab(def: tdef): tasmsymbol;
       begin
         result:=get_def_dwarf_labs(def)^.lab;
+      end;
+
+    function TDebugInfoDwarf.def_dwarf_type_lab(def: tdef): tasmsymbol;
+      begin
+        result:=get_def_dwarf_labs(def)^.type_lab;
       end;
 
     function TDebugInfoDwarf.def_dwarf_class_struct_lab(def: tobjectdef): tasmsymbol;
@@ -1965,10 +1976,10 @@ implementation
             current_asmdata.asmlists[al_dwarf_info].concat(tai_symbol.create(labsym,0));
           end;
 
+        labsym:=def_dwarf_type_lab(def);
         if assigned(def.typesym) and
            not(df_generic in def.defoptions) then
           begin
-            current_asmdata.getaddrlabel(TAsmLabel(pointer(labsym)));
             append_entry(DW_TAG_typedef,false,[
               DW_AT_name,DW_FORM_string,symname(def.typesym, false)+#0
             ]);
@@ -1976,8 +1987,16 @@ implementation
               append_attribute(DW_AT_external,DW_FORM_flag,[true]); }
             append_labelentry_ref(DW_AT_type,labsym);
             finish_entry;
-            current_asmdata.asmlists[al_dwarf_info].concat(tai_symbol.create(labsym,0));
-          end
+          end;
+
+          case labsym.bind of
+            AB_GLOBAL:
+              current_asmdata.asmlists[al_dwarf_info].concat(tai_symbol.create_global(labsym,0));
+            AB_LOCAL:
+              current_asmdata.asmlists[al_dwarf_info].concat(tai_symbol.create(labsym,0));
+            else
+              internalerror(2013082001);
+          end;
       end;
 
 
