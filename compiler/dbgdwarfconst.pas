@@ -67,6 +67,11 @@ type
     DW_TAG_rvalue_reference_type := $42,
     DW_TAG_template_alias := $43,
 
+    { DWARF 6 }
+    DW_TAG_property := $4c,
+    DW_TAG_property_getter := $4d,
+    DW_TAG_property_setter := $4e,
+    DW_TAG_property_stored := $4f,
 
     { SGI/MIPS Extensions.   }
     DW_TAG_MIPS_loop := $4081,
@@ -168,6 +173,9 @@ type
     DW_AT_const_expr := $6c,      { flag }
     DW_AT_enum_class := $6d,      { flag }
     DW_AT_linkage_name := $6e,    { string }
+
+    { DWARF 6 values }
+    DW_AT_property_forward := $95,{ reference }
 
 
     { SGI/MIPS extensions.   }
@@ -354,6 +362,9 @@ type
 
     { DWARF 4 extensions.   }
     DW_OP_implicit_value := $9e, DW_OP_stack_value := $9f,
+
+    { DWARF 6 extensions.   }
+    DW_OP_bit_offset := $AD,
 
     { GNU extensions.   }
     DW_OP_GNU_push_tls_address := $e0,

@@ -54,6 +54,8 @@ interface
       pint = longint;
       {$endif avr}
 
+      TTaiarr = array of tai;
+
       TDwarfFile = record
         Index: integer;
         Name: PChar;
@@ -145,10 +147,13 @@ interface
         generated_lineinfo: boolean;
 
         vardatadef: trecorddef;
+        appending_variant: boolean;
+
 
         procedure set_use_64bit_headers(state: boolean);
         property use_64bit_headers: Boolean read _use_64bit_headers write set_use_64bit_headers;
 
+        function get_sym_dwarf_labs(def:tsym): PDwarfHashSetItem;
         function get_def_dwarf_labs(def:tdef): PDwarfHashSetItem;
 
         function is_fbreg(reg:tregister):boolean;
@@ -165,6 +170,7 @@ interface
         procedure append_labelentry_dataptr_abs(attr : tdwarf_attribute;sym : tasmsymbol);
         procedure append_labelentry_dataptr_rel(attr : tdwarf_attribute;sym,endsym : tasmsymbol);
         procedure append_labelentry_dataptr_common(attr : tdwarf_attribute);
+        procedure append_tai_tai_entry(attr: tdwarf_attribute; form: tdwarf_form; tai: array of tai);
         procedure append_pointerclass(list:TAsmList;def:tpointerdef);
         procedure append_proc_frame_base(list:TAsmList;def:tprocdef);
 {$ifdef i8086}
@@ -186,6 +192,7 @@ interface
         procedure appendprocdef(list:TAsmList;def:tprocdef);override;
 
         function  get_symlist_sym_offset(symlist: ppropaccesslistitem; out sym: tabstractvarsym; out offset: pint): boolean;
+        function  get_symlist_sym_locexpr(src_sym: tsym; symlist: ppropaccesslistitem; out sym: tabstractvarsym; out locexpr: TTaiarr): boolean;
         procedure appendsym_var(list:TAsmList;sym:tabstractnormalvarsym);
         procedure appendsym_var_with_name_type_offset(list:TAsmList; sym:tabstractnormalvarsym; const name: string; def: tdef; offset: pint; const flags: tdwarfvarsymflags);
         { used for fields and properties mapped to fields }
@@ -201,7 +208,10 @@ interface
         procedure appendsym_type(list:TAsmList;sym:ttypesym);override;
         procedure appendsym_label(list:TAsmList;sym:tlabelsym);override;
         procedure appendsym_absolute(list:TAsmList;sym:tabsolutevarsym);override;
+        function appendsym_property_d6(list:TAsmList;sym:tpropertysym): boolean;
         procedure appendsym_property(list:TAsmList;sym:tpropertysym);override;
+
+        procedure appendtai(list:TAsmList; tai: array of tai);
 
         function symdebugname(sym:tsym): String; virtual;
         function symname(sym: tsym; manglename: boolean): String; virtual;
@@ -654,6 +664,16 @@ implementation
            end;
       end;
 
+      function TDebugInfoDwarf.get_sym_dwarf_labs(def: tsym): PDwarfHashSetItem;
+        begin
+        result:=PDwarfHashSetItem(dwarflabels.FindOrAdd(@def,sizeof(def)));
+        if not assigned(result^.HashSetItem.Data) then
+          begin
+            result^.HashSetItem.Data:=self;
+            current_asmdata.getaddrlabel(TAsmLabel(pointer(result^.lab)));
+          end;
+        end;
+
 
     function TDebugInfoDwarf.get_def_dwarf_labs(def:tdef): PDwarfHashSetItem;
       var
@@ -796,7 +816,27 @@ implementation
 
 
     procedure TDebugInfoDwarf.enum_membersyms_callback(p:TObject; arg: pointer);
+      var
+        labsym: TAsmSymbol;
       begin
+        if (not appending_variant) and
+           (tsym(p).typ in [fieldvarsym]) and
+           (tsym(p).owner.symtabletype in [objectsymtable,recordsymtable]) and
+           (not (sp_static in tsym(p).symoptions) or (tsym(p).visibility=vis_hidden))
+           then
+          begin
+          labsym:=get_sym_dwarf_labs(tsym(p))^.lab;
+
+          case labsym.bind of
+            AB_GLOBAL:
+              current_asmdata.asmlists[al_dwarf_info].concat(tai_symbol.create_global(labsym,0));
+            AB_LOCAL:
+              current_asmdata.asmlists[al_dwarf_info].concat(tai_symbol.create(labsym,0));
+            else
+              internalerror(2013082001);
+          end;
+          end;
+
         case tsym(p).typ of
           fieldvarsym:
             appendsym_fieldvar(TAsmList(arg),tfieldvarsym(p));
@@ -2070,6 +2110,7 @@ implementation
         st             : tsymtable;
         vmtoffset      : pint;
         in_currentunit : boolean;
+        labsym: tasmsymbol;
       begin
         { only write debug info for procedures defined in the current module,
           except in case of methods (gcc-compatible)
@@ -2109,6 +2150,20 @@ implementation
             if assigned(st) and
                (tdef(st.defowner).dbg_state<>dbg_state_writing) then
               exit;
+
+            if not(def.procsym.visibility=vis_hidden) then
+              begin
+              labsym:=def_dwarf_lab(def);
+              case labsym.bind of
+                AB_GLOBAL:
+                  current_asmdata.asmlists[al_dwarf_info].concat(tai_symbol.create_global(labsym,0));
+                AB_LOCAL:
+                  current_asmdata.asmlists[al_dwarf_info].concat(tai_symbol.create(labsym,0));
+                else
+                  internalerror(2013082001);
+              end;
+              end;
+
          end;
 
         def.dbg_state:=dbg_state_writing;
@@ -2262,10 +2317,143 @@ implementation
           end;
 
         finish_children;
+        if def.dbg_state=dbg_state_writing then
+          def.dbg_state:=dbg_state_written;
       end;
 
 
-    function TDebugInfoDwarf.get_symlist_sym_offset(symlist: ppropaccesslistitem; out sym: tabstractvarsym; out offset: pint): boolean;
+      function TDebugInfoDwarf.get_symlist_sym_locexpr(src_sym: tsym; symlist: ppropaccesslistitem;
+      out sym: tabstractvarsym; out locexpr: TTaiarr): boolean;
+      var
+        elesize : pint;
+        currdef : tdef;
+        currpacked, in_array: boolean;
+        bitoffset: longint;
+      begin
+        result:=false;
+        locexpr:=nil;
+        sym:=nil;
+        if not assigned(symlist) then
+          exit;
+        currdef:=nil;
+        bitoffset := 0;
+        in_array := false;
+        currpacked := (src_sym.Owner is tabstractrecordsymtable) and
+           (tabstractrecordsymtable(src_sym.owner).usefieldalignment=bit_alignment);
+
+        repeat
+          case symlist^.sltype of
+            sl_load:
+              begin
+                if assigned(sym) then
+                  internalerror(2009031203);
+                if not(symlist^.sym.typ in [fieldvarsym]) then
+                  { can't handle... }
+                  exit;
+                sym:=tabstractvarsym(symlist^.sym);
+                currdef:=tabstractvarsym(sym).vardef;
+                in_array := false;
+              end;
+            sl_subscript:
+              begin
+                if not assigned(currdef) then
+                  internalerror(2009031301);
+                if (symlist^.sym.typ<>fieldvarsym) then
+                  internalerror(2009031202);
+                if sym <> nil then  // if this is in an array we only have currdef
+                  begin
+                  if currpacked then
+                    bitoffset := bitoffset + tfieldvarsym(sym).fieldoffset
+                  else
+                    bitoffset := bitoffset + tfieldvarsym(sym).fieldoffset * 8;
+                  end;
+                currpacked := is_packed_record_or_object(currdef);
+                sym:=tfieldvarsym(symlist^.sym);
+                currdef:=sym.vardef;
+                in_array := false;
+              end;
+            sl_absolutetype,
+            sl_typeconv:
+              begin
+                currdef:=symlist^.def;
+                { ignore, these don't change the address }
+              end;
+            sl_vec:
+              begin
+                if not assigned(currdef) then
+                  internalerror(2009031201);
+                if not in_array then
+                  begin
+                  if bitoffset mod 8 <> 0 then // the outer array always starts on a full boundary
+                    internalerror(2026042900);
+                  { add offset to array }
+                  if currpacked then
+                    bitoffset := bitoffset + tfieldvarsym(sym).fieldoffset
+                  else
+                    bitoffset := bitoffset + tfieldvarsym(sym).fieldoffset * 8;
+                  currpacked := false;
+                  sym := nil;
+                  end;
+                case currdef.typ of
+                  arraydef:
+                    begin
+                      in_array := true;
+                      if not is_packed_array(currdef) then
+                        elesize:=tarraydef(currdef).elesize * 8
+                      else
+                        begin
+                          elesize:=tarraydef(currdef).elepackedbitsize;
+                        end;
+                      inc(bitoffset,(symlist^.value.svalue-tarraydef(currdef).lowrange)*elesize);
+                      currdef:=tarraydef(currdef).elementdef;
+                      currpacked := is_packed_record_or_object(currdef);
+                    end;
+                  stringdef:
+                    begin
+                      sym := nil;
+                      exit;
+                    end;
+                  else
+                    internalerror(2022070501);
+                end;
+              end;
+            else
+              internalerror(2009031403);
+          end;
+          symlist:=symlist^.next;
+        until not assigned(symlist);
+
+        if in_array then
+          begin
+          sym:=nil;
+          exit;
+          end;
+
+        if not assigned(sym) then
+          internalerror(2009031205);
+
+        if bitoffset <> 0 then begin
+          if bitoffset mod 8 <> 0 then begin
+          SetLength(locexpr, 1);
+          locexpr[0] := tai_const.create_8bit(ord(DW_OP_push_object_address));
+          locexpr[1] := tai_const.create_8bit(ord(DW_OP_const1u));
+          locexpr[2] := tai_const.create_uleb128bit(bitoffset);
+          locexpr[3] := tai_const.create_8bit(ord(DW_OP_bit_offset));
+          end
+        else
+          begin
+          SetLength(locexpr, 3);
+          locexpr[0] := tai_const.create_8bit(ord(DW_OP_push_object_address));
+          locexpr[1] := tai_const.create_8bit(ord(DW_OP_plus_uconst));
+          locexpr[2] := tai_const.create_uleb128bit(bitoffset div 8);
+          end;
+        end;
+
+        result:=true;
+        end;
+
+      function TDebugInfoDwarf.get_symlist_sym_offset(symlist: ppropaccesslistitem; out
+          sym: tabstractvarsym; out offset: pint): boolean;
       var
         elesize : pint;
         currdef : tdef;
@@ -2969,12 +3157,150 @@ implementation
       end;
 
 
+    function TDebugInfoDwarf.appendsym_property_d6(list:TAsmList;sym: tpropertysym): boolean;
+      var
+        read_sym, write_sym: tsym;
+        labsym: tasmsymbol;
+        read_locexpr, write_locexpr: ttaiarr;
+        proc_def: tprocdef;
+        has_index: boolean;
+        c,i: integer;
+      begin
+        Result := False;
+        read_sym := nil;
+        write_sym := nil;
+        read_locexpr := nil;
+        write_locexpr := nil;
+
+        if assigned(sym.propaccesslist[palt_read]) then
+          begin
+          if not assigned(sym.propaccesslist[palt_read].procdef) then
+            get_symlist_sym_locexpr(sym,sym.propaccesslist[palt_read].firstsym,tabstractvarsym(read_sym),read_locexpr)
+          else
+            if (sym.propaccesslist[palt_read].firstsym^.sltype = sl_call) and
+               (sym.propaccesslist[palt_read].firstsym^.sym <> nil) and
+               (sym.propaccesslist[palt_read].firstsym^.sym.typ = procsym)
+            then
+              read_sym := sym.propaccesslist[palt_read].firstsym^.sym;
+
+          if (read_sym <> nil) and (
+             (not (read_sym.owner.symtabletype in [objectsymtable,recordsymtable])) or
+             (not (read_sym.typ in [fieldvarsym,procsym])) or
+             // check that read_sym is eligible to be added
+             (sp_static in read_sym.symoptions) or
+             (read_sym.visibility=vis_hidden)
+             ) then
+            { there is a getter but we can't write it. return false. Don't check for setter }
+            exit;
+        end;
+
+        if assigned(sym.propaccesslist[palt_write]) then
+          begin
+          if not assigned(sym.propaccesslist[palt_write].procdef) then
+            get_symlist_sym_locexpr(sym,sym.propaccesslist[palt_write].firstsym,tabstractvarsym(write_sym),write_locexpr)
+          else
+            if (sym.propaccesslist[palt_write].firstsym^.sltype = sl_call) and
+               (sym.propaccesslist[palt_write].firstsym^.sym <> nil) and
+               (sym.propaccesslist[palt_write].firstsym^.sym.typ = procsym)
+            then
+              write_sym := sym.propaccesslist[palt_write].firstsym^.sym;
+
+          if (write_sym <> nil) and (
+             (not (write_sym.owner.symtabletype in [objectsymtable,recordsymtable])) or
+             (not (write_sym.typ in [fieldvarsym,procsym])) or
+             // check that write_sym is eligible to be added
+             (sp_static in write_sym.symoptions) or
+             (write_sym.visibility=vis_hidden)
+             ) then
+            write_sym := nil;
+        end;
+
+        if (read_sym = nil) and (write_sym = nil) then
+          exit;
+        Result:= True;
+
+        { write property }
+        append_entry(DW_TAG_property,true,
+          [DW_AT_name,DW_FORM_string,symname(sym, false)+#0]);
+        append_visibility(sym.visibility);
+        append_labelentry_ref(DW_AT_type,def_dwarf_lab(sym.propdef));
+        finish_entry;
+
+        { getter }
+        if read_sym <> nil then
+          begin
+          proc_def := tprocdef(sym.propaccesslist[palt_read].procdef);
+          has_index := (read_sym.typ = procsym) and (sym.indexdef <> nil);
+          if read_sym.typ = procsym then
+            labsym:=def_dwarf_lab(proc_def)
+          else
+            labsym:=get_sym_dwarf_labs(read_sym)^.lab;
+          append_entry(DW_TAG_property_getter,has_index,[]);
+          append_labelentry_ref(DW_AT_property_forward,labsym);
+          if Length(read_locexpr) > 0 then
+            append_tai_tai_entry(DW_AT_location,DW_FORM_block,read_locexpr);
+          finish_entry;
+
+          if has_index then
+            begin
+            c := proc_def.paras.count-1;
+            for i:=0 to c do
+              begin
+                if i < c then
+                  append_entry(DW_TAG_formal_parameter,false,[])
+                else
+                  append_entry(DW_TAG_formal_parameter,false,[
+                    DW_AT_default_value, DW_FORM_data4, sym.index]);
+                finish_entry;
+              end;
+            finish_children;
+            end;
+          end;
+
+        { setter }
+        if write_sym <> nil then
+          begin
+          proc_def := tprocdef(sym.propaccesslist[palt_write].procdef);
+          has_index := (write_sym.typ = procsym) and (sym.indexdef <> nil);
+          if write_sym.typ = procsym then
+            labsym:=def_dwarf_lab(proc_def)
+          else
+            labsym:=get_sym_dwarf_labs(write_sym)^.lab;
+          append_entry(DW_TAG_property_setter,has_index,[]);
+          append_labelentry_ref(DW_AT_property_forward,labsym);
+          if Length(write_locexpr) > 0 then
+            append_tai_tai_entry(DW_AT_location,DW_FORM_block,write_locexpr);
+          finish_entry;
+
+          if has_index then
+            begin
+            c := proc_def.paras.count-1;
+            for i:=0 to c do
+              begin
+                if i <> c-1 then
+                  append_entry(DW_TAG_formal_parameter,false,[])
+                else
+                  append_entry(DW_TAG_formal_parameter,false,[
+                    DW_AT_default_value, DW_FORM_data4, sym.index]);
+                finish_entry;
+              end;
+            finish_children;
+            end;
+          end;
+
+        finish_children;
+      end;
+
+
     procedure TDebugInfoDwarf.appendsym_property(list:TAsmList;sym: tpropertysym);
       var
         symlist: ppropaccesslistitem;
         tosym: tabstractvarsym;
         offset: pint;
       begin
+        if appendsym_property_d6(list, sym) then
+          exit;
+
         if assigned(sym.propaccesslist[palt_read]) and
            not assigned(sym.propaccesslist[palt_read].procdef) then
           symlist:=sym.propaccesslist[palt_read].firstsym
@@ -2993,7 +3319,45 @@ implementation
           end
         else
           appendsym_fieldvar_with_name_offset(list,tfieldvarsym(tosym),symname(sym, false),sym.propdef,offset)
+    end;
+
+
+    procedure TDebugInfoDwarf.appendtai(list: TAsmList; tai: array of tai);
+    var
+      i: Integer;
+    begin
+      for i := 0 to Length(tai) - 1 do
+        list.Concat(tai[i]);
+    end;
+
+    procedure TDebugInfoDwarf.append_tai_tai_entry(attr: tdwarf_attribute; form: tdwarf_form;
+      tai: array of tai);
+    var
+      labsym, labsym2: TAsmLabel;
+    begin
+      { attribute }
+      AddConstToAbbrev(cardinal(attr));
+
+      { form }
+      AddConstToAbbrev(cardinal(form));
+
+      current_asmdata.getaddrlabel(labsym);
+      case form of
+        DW_FORM_block:
+          begin
+            current_asmdata.getaddrlabel(labsym2);
+            current_asmdata.asmlists[al_dwarf_info].concat(tai_const.Create_rel_sym_offset(aitconst_uleb128bit, labsym2, labsym, 0));
+            current_asmdata.asmlists[al_dwarf_info].concat(tai_symbol.create(labsym2,0));
+          end;
+        DW_FORM_block1: current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_type_sym_offset(aitconst_8bit, labsym, -1));
+        DW_FORM_block2: current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_type_sym_offset(aitconst_16bit_unaligned, labsym, -2));
+        DW_FORM_block4: current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_type_sym_offset(aitconst_32bit_unaligned, labsym, -4));
+        else internalerror(2028042600);
       end;
+
+      appendtai(current_asmdata.asmlists[al_dwarf_info], tai);
+      current_asmdata.asmlists[al_dwarf_info].concat(tai_symbol.create(labsym,0));
+    end;
 
 
     function TDebugInfoDwarf.symdebugname(sym: tsym): String;
@@ -4082,8 +4446,10 @@ implementation
     procedure TDebugInfoDwarf2.appenddef_variant(list:TAsmList;def: tvariantdef);
       begin
         { variants aren't known to dwarf2 but writting tvardata should be enough }
+        appending_variant:=true;
         if assigned(vardatadef) then
           appenddef_record_named(list,trecorddef(vardatadef),'Variant');
+        appending_variant := False;
       end;
 
     function TDebugInfoDwarf2.dwarf_version: Word;
