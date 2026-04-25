@@ -1856,7 +1856,7 @@ implementation
             else
               current_asmdata.getaddrlabel(proc);
             append_entry(DW_TAG_structure_type,true,[
-              DW_AT_byte_size,DW_FORM_data1,2*sizeof(pint)
+              DW_AT_byte_size,DW_FORM_data1,2*voidpointertype.size
             ]);
             finish_entry;
 
@@ -1873,10 +1873,10 @@ implementation
             { self entry }
             append_entry(DW_TAG_member,false,[
               DW_AT_name,DW_FORM_string,'Self'#0,
-              DW_AT_data_member_location,DW_FORM_block1,1+lengthuleb128(sizeof(pint))
+              DW_AT_data_member_location,DW_FORM_block1,1+lengthuleb128(voidpointertype.size)
               ]);
             current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_8bit(ord(DW_OP_plus_uconst)));
-            current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_uleb128bit(sizeof(pint)));
+            current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_uleb128bit(voidpointertype.size));
             append_labelentry_ref(DW_AT_type,def_dwarf_lab(class_tobject));
             finish_entry;
 
@@ -2481,8 +2481,8 @@ implementation
                               in only one thread is present PM 2014-11-21, like for stabs format }
                             templist.concat(tai_const.create_8bit(ord(DW_OP_addr)));
                             templist.concat(tai_const.Create_type_name(aitconst_ptr_unaligned,sym.mangledname,
-                              offset+sizeof(pint)));
-                            blocksize:=1+sizeof(puint);
+                              offset+voidpointertype.size));
+                            blocksize:=1+voidpointertype.size;
                           end;
 {$endif wasm}
                       end
@@ -2490,7 +2490,7 @@ implementation
                       begin
                         templist.concat(tai_const.create_8bit(ord(DW_OP_addr)));
                         templist.concat(tai_const.Create_type_name(aitconst_ptr_unaligned,sym.mangledname,offset));
-                        blocksize:=1+sizeof(puint);
+                        blocksize:=1+voidpointertype.size;
 {$ifdef i8086}
                         segment_sym_name:=sym.mangledname;
                         has_segment_sym_name:=true;
@@ -2716,7 +2716,7 @@ implementation
             { possible, i.e., equivalent to gcc's                    }
             { __attribute__((__packed__)), which is also what gpc    }
             { does.                                                  }
-            fieldnatsize:=max(sizeof(pint),sym.vardef.size);
+            fieldnatsize:=max(voidpointertype.size,sym.vardef.size);
             fieldoffset:=(sym.fieldoffset div (fieldnatsize*8)) * fieldnatsize;
             inc(fieldoffset,offset);
             bitoffset:=sym.fieldoffset mod (fieldnatsize*8);
@@ -2998,13 +2998,13 @@ implementation
                {$else}
                templist.concat(tai_const.create_int_dataptr_unaligned(sym.addroffset));
                {$endif}
-               blocksize:=1+sizeof(puint);
+               blocksize:=1+voidpointertype.size;
             end;
           toasm :
             begin
               templist.concat(tai_const.create_8bit(3));
               templist.concat(tai_const.create_type_name(aitconst_ptr_unaligned,sym.mangledname,0));
-              blocksize:=1+sizeof(puint);
+              blocksize:=1+voidpointertype.size;
             end;
           tovar:
             begin
@@ -3314,7 +3314,7 @@ implementation
             { no alignment/padding bytes on i8086 for Open Watcom compatibility }
 {$else i8086}
             { address_size }
-            current_asmdata.asmlists[al_dwarf_aranges].concat(tai_const.create_8bit(sizeof(pint)));
+            current_asmdata.asmlists[al_dwarf_aranges].concat(tai_const.create_8bit(voidpointertype.size));
             { segment_size }
             current_asmdata.asmlists[al_dwarf_aranges].concat(tai_const.create_8bit(0));
             { alignment }
@@ -3346,7 +3346,7 @@ implementation
             current_asmdata.DefineAsmSymbol(target_asm.labelprefix+'debug_abbrev0',AB_LOCAL,AT_METADATA,voidpointertype)));
 
         { address size }
-        current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_8bit(sizeof(pint)));
+        current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_8bit(voidpointertype.size));
 
         if (ds_dwarf_cpp in current_settings.debugswitches) then
           lang:=DW_LANG_C_plus_plus
@@ -3694,7 +3694,7 @@ implementation
                        (target_asm.id=as_solaris_as) then
                       begin
                         asmline.concat(tai_const.create_8bit(DW_LNS_extended_op));
-                        asmline.concat(tai_const.create_uleb128bit(1+sizeof(pint)));
+                        asmline.concat(tai_const.create_uleb128bit(1+voidpointertype.size));
                         asmline.concat(tai_const.create_8bit(DW_LNE_set_address));
                         asmline.concat(tai_const.create_type_sym(aitconst_ptr_unaligned,currlabel));
 {$ifdef i8086}
@@ -3767,7 +3767,7 @@ implementation
             current_asmdata.getlabel(currlabel, alt_dbgline);
             list.insertafter(tai_label.create(currlabel), hpend);
             asmline.concat(tai_const.create_8bit(DW_LNS_extended_op));
-            asmline.concat(tai_const.create_uleb128bit(1+sizeof(pint)));
+            asmline.concat(tai_const.create_uleb128bit(1+voidpointertype.size));
             asmline.concat(tai_const.create_8bit(DW_LNE_set_address));
             asmline.concat(tai_const.create_type_sym(aitconst_ptr_unaligned,currlabel));
           end;
@@ -3806,7 +3806,7 @@ implementation
         asmline.concat(tai_const.create_uleb128bit(get_file_index(infile)));
 
         asmline.concat(tai_const.create_8bit(DW_LNS_extended_op));
-        asmline.concat(tai_const.create_uleb128bit(1+sizeof(pint)));
+        asmline.concat(tai_const.create_uleb128bit(1+voidpointertype.size));
         asmline.concat(tai_const.create_8bit(DW_LNE_set_address));
         asmline.concat(tai_const.create_type_sym(aitconst_ptr_unaligned,nil));
         asmline.concat(tai_const.create_8bit(DW_LNS_extended_op));
