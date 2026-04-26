@@ -155,6 +155,8 @@ var
       REC_SET        = 18;
       REC_UNITDIR    = 19;
       REC_CONSTANT   = 20;  { must match recConstant in opdf_types.pas }
+      REC_CLASSVAR   = 21;  { must match recClassVar in opdf_types.pas }
+      REC_CLASSCONST = 22;  { must match recClassConst in opdf_types.pas }
 
       { primitive SubKind — must match TOPDFPrimitiveSubKind in opdf_types.pas }
       SUBKIND_INTEGER  = 0;
@@ -651,6 +653,9 @@ var
         i            : Longint;
         sym          : tsym;
         fvsym        : tfieldvarsym;
+        staticvs     : tstaticvarsym;
+        avarsym      : tabsolutevarsym;
+        csym         : tconstsym;
         intftypebyte : Byte;
         methodcount  : Cardinal;
         psym         : tprocsym;
@@ -915,6 +920,57 @@ var
                     if sym.typ=propertysym then
                       appendsym_property(list,tpropertysym(sym));
                   end;
+
+              { emit class variable records — found via absolutevarsym entries in the
+                class symtable; each points to a tstaticvarsym whose fieldvarsym gives
+                the user-visible field name }
+              if assigned(def.symtable) then
+                for i:=0 to def.symtable.SymList.Count-1 do
+                  begin
+                    sym:=tsym(def.symtable.SymList[i]);
+                    if (sym.typ=absolutevarsym) then
+                      begin
+                        avarsym:=tabsolutevarsym(sym);
+                        if assigned(avarsym.ref) and assigned(avarsym.ref.firstsym) and
+                           (avarsym.ref.firstsym^.sym.typ=staticvarsym) then
+                          begin
+                            staticvs:=tstaticvarsym(avarsym.ref.firstsym^.sym);
+                            { only process class var statics (those with a back-reference fieldvarsym) }
+                            if not assigned(staticvs.fieldvarsym) then
+                              continue;
+                            if assigned(staticvs.vardef) then
+                              fieldtypeid:=G_TypeMapper.GetTypeID(staticvs.vardef)
+                            else
+                              fieldtypeid:=0;
+                            fieldname:=staticvs.fieldvarsym.RealName;
+                            fieldnamelen:=Word(Length(fieldname));
+                            { payload: ClassTypeID(4) + VarTypeID(4) + Address(8) + NameLen(2) + Name }
+                            recsize:=4+4+8+2+Cardinal(fieldnamelen);
+                            EmitRecordHeader(opdflist,REC_CLASSVAR,recsize);
+                            EmitDWord(opdflist,typeid);
+                            EmitDWord(opdflist,fieldtypeid);
+                            EmitSymRef(opdflist,tai_const.Create_type_sym(aitconst_ptr_unaligned,
+                              current_asmdata.RefAsmSymbol(staticvs.mangledname,AT_DATA)));
+                            EmitWord(opdflist,fieldnamelen);
+                            EmitString(opdflist,fieldname);
+                          end;
+                      end;
+                  end;
+
+              { emit class constant records — tconstsym entries in the class symtable }
+              if assigned(def.symtable) then
+                for i:=0 to def.symtable.SymList.Count-1 do
+                  begin
+                    sym:=tsym(def.symtable.SymList[i]);
+                    if sym.typ=constsym then
+                      begin
+                        csym:=tconstsym(sym);
+                        { reuse appendsym_const logic — but it needs class context.
+                          The check sym.owner.symtabletype=objectsymtable will now
+                          be true for these syms since they live in def.symtable. }
+                        appendsym_const(list,csym);
+                      end;
+                  end;
             end;
 
           else
@@ -1134,11 +1190,12 @@ var
 
     procedure TOPDFDebugWriter.appendsym_staticvar(list:TAsmList;sym:tstaticvarsym);
       var
-        opdflist : TAsmList;
-        typeid   : Cardinal;
-        varname  : AnsiString;
-        namelen  : Word;
-        recsize  : Cardinal;
+        opdflist     : TAsmList;
+        typeid       : Cardinal;
+        classtypeid  : Cardinal;
+        varname      : AnsiString;
+        namelen      : Word;
+        recsize      : Cardinal;
       begin
         if not assigned(sym) or not assigned(sym.vardef) then
           exit;
@@ -1152,7 +1209,26 @@ var
         { get the variable's type ID }
         typeid:=G_TypeMapper.GetTypeID(sym.vardef);
 
-        { use mangled name for the variable }
+        { check if this static var is a class variable (owner is an object/class symtable) }
+        if assigned(sym.owner) and assigned(sym.owner.defowner) and
+           (sym.owner.symtabletype in [objectsymtable]) then
+          begin
+            classtypeid:=G_TypeMapper.GetTypeID(tdef(sym.owner.defowner));
+            varname:=sym.RealName;
+            namelen:=Word(Length(varname));
+            { payload: ClassTypeID(4) + VarTypeID(4) + Address(8) + NameLen(2) + Name }
+            recsize:=4+4+8+2+Cardinal(namelen);
+            EmitRecordHeader(opdflist,REC_CLASSVAR,recsize);
+            EmitDWord(opdflist,classtypeid);
+            EmitDWord(opdflist,typeid);
+            EmitSymRef(opdflist,tai_const.Create_type_sym(aitconst_ptr_unaligned,
+              current_asmdata.RefAsmSymbol(sym.mangledname,AT_DATA)));
+            EmitWord(opdflist,namelen);
+            EmitString(opdflist,varname);
+            exit;
+          end;
+
+        { regular global variable }
         varname:=sym.mangledname;
         namelen:=Word(Length(varname));
 
@@ -1363,18 +1439,22 @@ var
 
     procedure TOPDFDebugWriter.appendsym_const(list:TAsmList;sym:tconstsym);
       var
-        opdflist  : TAsmList;
-        typeid    : Cardinal;
-        constname : AnsiString;
-        namelen   : Word;
-        recsize   : Cardinal;
-        valuelen  : Word;
-        orddata   : array[0..7] of Byte;
-        dbldata   : array[0..7] of Byte;
-        i         : Longint;
-        dval      : Double;
-        wlen      : Longint;
-        wch       : Word;
+        opdflist      : TAsmList;
+        typeid        : Cardinal;
+        classtypeid   : Cardinal;
+        constname     : AnsiString;
+        namelen       : Word;
+        recsize       : Cardinal;
+        valuelen      : Word;
+        fixedpartsize : Cardinal;
+        rectype       : Byte;
+        orddata       : array[0..7] of Byte;
+        dbldata       : array[0..7] of Byte;
+        i             : Longint;
+        dval          : Double;
+        wlen          : Longint;
+        wch           : Word;
+        is_class_const: Boolean;
       begin
         if not assigned(sym) then
           exit;
@@ -1394,14 +1474,32 @@ var
         else
           typeid:=0;
 
-        { payload fixed part: TypeID(4) + ConstKind(1) + ValueLen(2) + NameLen(2) = 9 }
+        { detect class constant — owner symtable is an object/class symtable }
+        is_class_const:=assigned(sym.owner) and assigned(sym.owner.defowner) and
+                        (sym.owner.symtabletype in [objectsymtable]);
+        if is_class_const then
+          begin
+            classtypeid:=G_TypeMapper.GetTypeID(tdef(sym.owner.defowner));
+            rectype:=REC_CLASSCONST;
+            { payload header: ClassTypeID(4) + TypeID(4) + ConstKind(1) + ValueLen(2) + NameLen(2) = 13 }
+            fixedpartsize:=13;
+          end
+        else
+          begin
+            classtypeid:=0;
+            rectype:=REC_CONSTANT;
+            { payload header: TypeID(4) + ConstKind(1) + ValueLen(2) + NameLen(2) = 9 }
+            fixedpartsize:=9;
+          end;
+
         case sym.consttyp of
           constord:
             begin
               valuelen:=8;
               PInt64(@orddata)^:=sym.value.valueord.svalue;
-              recsize:=9+valuelen+Cardinal(namelen);
-              EmitRecordHeader(opdflist,REC_CONSTANT,recsize);
+              recsize:=fixedpartsize+valuelen+Cardinal(namelen);
+              EmitRecordHeader(opdflist,rectype,recsize);
+              if is_class_const then EmitDWord(opdflist,classtypeid);
               EmitDWord(opdflist,typeid);
               EmitByte(opdflist,CKIND_ORD);
               EmitWord(opdflist,valuelen);
@@ -1414,8 +1512,9 @@ var
           conststring:
             begin
               valuelen:=Word(sym.value.len);
-              recsize:=9+valuelen+Cardinal(namelen);
-              EmitRecordHeader(opdflist,REC_CONSTANT,recsize);
+              recsize:=fixedpartsize+valuelen+Cardinal(namelen);
+              EmitRecordHeader(opdflist,rectype,recsize);
+              if is_class_const then EmitDWord(opdflist,classtypeid);
               EmitDWord(opdflist,typeid);
               EmitByte(opdflist,CKIND_STRING);
               EmitWord(opdflist,valuelen);
@@ -1430,8 +1529,9 @@ var
               valuelen:=8;
               dval:=Double(PExtended(sym.value.valueptr)^);
               PDouble(@dbldata)^:=dval;
-              recsize:=9+valuelen+Cardinal(namelen);
-              EmitRecordHeader(opdflist,REC_CONSTANT,recsize);
+              recsize:=fixedpartsize+valuelen+Cardinal(namelen);
+              EmitRecordHeader(opdflist,rectype,recsize);
+              if is_class_const then EmitDWord(opdflist,classtypeid);
               EmitDWord(opdflist,typeid);
               EmitByte(opdflist,CKIND_REAL);
               EmitWord(opdflist,valuelen);
@@ -1444,8 +1544,9 @@ var
           constnil:
             begin
               valuelen:=0;
-              recsize:=9+Cardinal(namelen);
-              EmitRecordHeader(opdflist,REC_CONSTANT,recsize);
+              recsize:=fixedpartsize+Cardinal(namelen);
+              EmitRecordHeader(opdflist,rectype,recsize);
+              if is_class_const then EmitDWord(opdflist,classtypeid);
               EmitDWord(opdflist,typeid);
               EmitByte(opdflist,CKIND_NIL);
               EmitWord(opdflist,0);
@@ -1457,8 +1558,9 @@ var
             begin
               wlen:=getlengthwidestring(sym.value.valuews);
               valuelen:=Word(wlen*2);
-              recsize:=9+valuelen+Cardinal(namelen);
-              EmitRecordHeader(opdflist,REC_CONSTANT,recsize);
+              recsize:=fixedpartsize+valuelen+Cardinal(namelen);
+              EmitRecordHeader(opdflist,rectype,recsize);
+              if is_class_const then EmitDWord(opdflist,classtypeid);
               EmitDWord(opdflist,typeid);
               EmitByte(opdflist,CKIND_WIDESTR);
               EmitWord(opdflist,valuelen);
