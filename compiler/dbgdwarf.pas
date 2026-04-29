@@ -1670,6 +1670,10 @@ implementation
 
     procedure TDebugInfoDwarf.appenddef_record(list:TAsmList;def:trecorddef);
       begin
+        if assigned(def.orgdef) then begin
+          def.dbg_state:=dbg_state_written;
+          exit;
+        end;
         if assigned(def.objname) then
           appenddef_record_named(list,def,def.objname^)
         else
@@ -1976,7 +1980,16 @@ implementation
             current_asmdata.asmlists[al_dwarf_info].concat(tai_symbol.create(labsym,0));
           end;
 
-        labsym:=def_dwarf_type_lab(def);
+        if (def.typ in [recorddef, objectdef]) and (def is tstoreddef) and assigned(tstoreddef(def).orgdef) then
+          begin
+            labsym := def_dwarf_type_lab(tstoreddef(def).orgdef);
+            get_def_dwarf_labs(def)^.type_lab := labsym;
+          end
+        else
+          begin
+            labsym:=def_dwarf_type_lab(def);
+          end;
+
         if assigned(def.typesym) and
            not(df_generic in def.defoptions) then
           begin
@@ -1987,15 +2000,20 @@ implementation
               append_attribute(DW_AT_external,DW_FORM_flag,[true]); }
             append_labelentry_ref(DW_AT_type,labsym);
             finish_entry;
+            if (def.typ in [recorddef, objectdef]) and (def is tstoreddef) and assigned(tstoreddef(def).orgdef) then
+              exit;
           end;
 
-          case labsym.bind of
-            AB_GLOBAL:
-              current_asmdata.asmlists[al_dwarf_info].concat(tai_symbol.create_global(labsym,0));
-            AB_LOCAL:
-              current_asmdata.asmlists[al_dwarf_info].concat(tai_symbol.create(labsym,0));
-            else
-              internalerror(2013082001);
+        if not ((def.typ in [recorddef, objectdef]) and (def is tstoreddef) and assigned(tstoreddef(def).orgdef)) then
+          begin
+            case labsym.bind of
+              AB_GLOBAL:
+                current_asmdata.asmlists[al_dwarf_info].concat(tai_symbol.create_global(labsym,0));
+              AB_LOCAL:
+                current_asmdata.asmlists[al_dwarf_info].concat(tai_symbol.create(labsym,0));
+              else
+                internalerror(2013082001);
+            end;
           end;
       end;
 
@@ -3945,6 +3963,10 @@ implementation
     procedure TDebugInfoDwarf2.appenddef_object(list:TAsmList;def: tobjectdef);
 
       begin
+        if assigned(def.orgdef) then begin
+          def.dbg_state:=dbg_state_written;
+          exit;
+        end;
         case def.objecttype of
           odt_cppclass,
           odt_object:
@@ -4381,6 +4403,10 @@ implementation
         n: integer;
 
       begin
+        if assigned(def.orgdef) then begin
+          def.dbg_state:=dbg_state_written;
+          exit;
+        end;
         case def.objecttype of
           odt_objcclass,
           odt_objcprotocol:
