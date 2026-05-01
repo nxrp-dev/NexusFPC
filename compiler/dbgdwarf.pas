@@ -153,7 +153,7 @@ interface
         procedure set_use_64bit_headers(state: boolean);
         property use_64bit_headers: Boolean read _use_64bit_headers write set_use_64bit_headers;
 
-        function get_sym_dwarf_labs(def:tsym): PDwarfHashSetItem;
+        function get_sym_dwarf_labs(sym:tsym): PDwarfHashSetItem;
         function get_def_dwarf_labs(def:tdef): PDwarfHashSetItem;
 
         function is_fbreg(reg:tregister):boolean;
@@ -664,13 +664,41 @@ implementation
            end;
       end;
 
-      function TDebugInfoDwarf.get_sym_dwarf_labs(def: tsym): PDwarfHashSetItem;
+      function TDebugInfoDwarf.get_sym_dwarf_labs(sym: tsym): PDwarfHashSetItem;
+        var
+          def: tdef;
         begin
-        result:=PDwarfHashSetItem(dwarflabels.FindOrAdd(@def,sizeof(def)));
+        result:=PDwarfHashSetItem(dwarflabels.FindOrAdd(@sym,sizeof(sym)));
+
         if not assigned(result^.HashSetItem.Data) then
           begin
             result^.HashSetItem.Data:=self;
-            current_asmdata.getaddrlabel(TAsmLabel(pointer(result^.lab)));
+
+            if not( (sym is tfieldvarsym) and (sym.owner.symtabletype in [objectsymtable,recordsymtable]) ) then
+              Internalerror(2026050100);
+
+            if not(tf_dwarf_only_local_labels in target_info.flags) then
+              begin
+                def := tdef(sym.owner.defowner);
+                if (sym.visibility = vis_private) or
+                   not(ds_dwarf_dbg_info_written in def.defstates) then
+                  begin
+                    current_asmdata.getglobaldatalabel(TAsmLabel(pointer(result^.lab)));
+                  end
+                else
+                if (def.owner.iscurrentunit) then
+                  begin
+                    result^.lab:=current_asmdata.DefineAsmSymbol(make_mangledname('DBG',sym.owner,symname(sym, true)),AB_GLOBAL,AT_METADATA,voidpointertype);
+                  end
+                else
+                  begin
+                    result^.lab:=current_asmdata.RefAsmSymbol(make_mangledname('DBG',sym.owner,symname(sym, true)),AT_METADATA);
+                  end;
+              end
+            else
+              begin
+                current_asmdata.getaddrlabel(TAsmLabel(pointer(result^.lab)));
+              end;
           end;
         end;
 
