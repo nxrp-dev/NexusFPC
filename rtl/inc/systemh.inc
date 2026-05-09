@@ -973,6 +973,26 @@ Function  Random(l:int64):int64;
 Function  Random: extended;
 {$endif}
 Procedure Randomize;
+
+{$ifndef FPC_USE_SIMPLE_RANDOM}
+type
+  PXoshiro128ss_32 = ^TXoshiro128ss_32;
+  TXoshiro128ss_32 = object
+    state: array[0 .. 3] of longword; // Public for easy serialization / deserialization.
+    procedure Init(seed: uint64);
+    procedure Init(seedBuf: pointer; nSeedBuf: SizeUint); // Seed with the contents of an arbitrary buffer.
+    procedure Init(const s: ansistring);
+    function Next: uint32;
+  end;
+  PRandomEngine = ^TRandomEngine;
+  TRandomEngine = TXoshiro128ss_32;
+
+Function  Random(l:longint; var rng:TRandomEngine):longint;
+Function  Random(l:int64; var rng:TRandomEngine):int64;
+{$ifndef FPUNONE}
+Function  Random(var rng:TRandomEngine): extended;
+{$endif}
+{$endif ndef FPC_USE_SIMPLE_RANDOM}
 {$endif FPC_HAS_FEATURE_RANDOM}
 
 {$if defined(CPUINT8)}
