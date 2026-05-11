@@ -978,11 +978,32 @@ Procedure Randomize;
 type
   PXoshiro128ss_32 = ^TXoshiro128ss_32;
   TXoshiro128ss_32 = object
-    state: array[0 .. 3] of longword; // Public for easy serialization / deserialization.
+  type
+    TStateVec = array[0 .. 3] of longword;
+  var
+    state: TStateVec; // Public for easy serialization / deserialization.
     procedure Init(seed: uint64);
     procedure Init(seedBuf: pointer; nSeedBuf: SizeUint); // Seed with the contents of an arbitrary buffer.
     procedure Init(const s: ansistring);
     function Next: uint32;
+
+    // Skips an arbitrary amount of Nexts. Distance is uint128 made from four uint32, least significant ones first.
+    // For example:
+    // Jump([1, 0, 0, 0]) jumps by 1.
+    // Jump([100, 1, 0, 0]) jumps by 2^32 + 100.
+    // Jump([High(uint32), High(uint32), High(uint32), High(uint32)]) jumps by 2^128 - 1, which is a no-op as the period is exactly 2^128 - 1.
+    // Jump([High(uint32) - 5, High(uint32), High(uint32), High(uint32)]) jumps forward by 2^128 - 6, or back by 5.
+    procedure Jump(const distance: TStateVec);
+
+  const
+    // Period divided by the golden ratio is a good distance to jump; see https://numpy.org/doc/stable/reference/random/parallel.html.
+    PeriodDivGoldenRatio: TStateVec = ($05cedc833, $f39cc06, $7f4a7c15, $9e3779b9); // $9e3779b9_7f4a7c15_$f39cc06_05cedc833
+
+  private const
+    CharPoly: TStateVec = ($de18fc01, $1b489db6, $006254b1, $00fc65a2); // $(1)00fc65a2_006254b1_1b489db6_de18fc01; characteristic polynomial of the next-state transition matrix.
+    class function GF2Mul(a, b, poly: TStateVec): TStateVec; static;
+    class function GF2Pow(x, p, poly: TStateVec): TStateVec; static;
+    class procedure Shr1(var a: TStateVec); static;
   end;
   PRandomEngine = ^TRandomEngine;
   TRandomEngine = TXoshiro128ss_32;

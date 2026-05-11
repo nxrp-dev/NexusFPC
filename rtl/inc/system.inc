@@ -819,6 +819,70 @@ type
     state[3] := RolDWord(s3, 11);
   end;
 
+  procedure TXoshiro128ss_32.Jump(const distance: TStateVec);
+  const
+    Two: TStateVec = (2, 0, 0, 0);
+  var
+    poly, ns: TStateVec;
+    ip, iSt: SizeUint;
+  begin
+    // Calculate the jump polynomial.
+    poly := GF2Pow(Two, distance, CharPoly);
+    // Jump using the polynomial.
+    FillChar(ns, sizeof(ns), 0);
+    for ip := 0 to bitsizeof(poly) - 1 do
+    begin
+      if poly[ip div bitsizeof(poly[0])] shr (ip mod bitsizeof(poly[0])) and 1 <> 0 then
+        for iSt := 0 to High(ns) do
+          ns[iSt] := ns[iSt] xor state[iSt];
+      Next;
+    end;
+    state := ns;
+  end;
+
+  class function TXoshiro128ss_32.GF2Mul(a, b, poly: TStateVec): TStateVec;
+  var
+    hi, iSt: SizeUint;
+  begin
+    FillChar(result, sizeof(result), 0);
+    while (a[0] <> 0) or (a[1] <> 0) or (a[2] <> 0) or (a[3] <> 0) do
+    begin
+      if a[0] and 1 <> 0 then
+        for iSt := 0 to High(result) do result[iSt] := result[iSt] xor b[iSt];
+      Shr1(a);
+      hi := b[High(b)] shr (bitsizeof(b[0]) - 1);
+
+      // b := b shl 1;
+      for iSt := High(b) downto 1 do
+        b[iSt] := b[iSt] shl 1 or b[iSt - 1] shr (bitsizeof(b[0]) - 1);
+      b[0] := b[0] shl 1;
+
+      if hi <> 0 then
+        for iSt := 0 to High(b) do b[iSt] := b[iSt] xor poly[iSt];
+    end;
+  end;
+
+  class function TXoshiro128ss_32.GF2Pow(x, p, poly: TStateVec): TStateVec;
+  begin
+    result[0] := 1;
+    FillChar(result[1], sizeof(result) - sizeof(result[0]), 0);
+    while (p[0] <> 0) or (p[1] <> 0) or (p[2] <> 0) or (p[3] <> 0) do
+    begin
+      if p[0] and 1 <> 0 then result := GF2Mul(result, x, poly);
+      Shr1(p);
+      x := GF2Mul(x, x, poly);
+    end;
+  end;
+
+  class procedure TXoshiro128ss_32.Shr1(var a: TStateVec);
+  var
+    iSt: SizeUint;
+  begin
+    for iSt := 0 to High(a) - 1 do
+      a[iSt] := a[iSt] shr 1 or a[iSt + 1] shl (bitsizeof(a[0]) - 1);
+    a[High(a)] := a[High(a)] shr 1;
+  end;
+
 var
   // Just in case user sets RandSeed := not Cardinal(0) (RandSeed := $FFFFFFFF) from the start,
   // thus bypassing first-time RandSeed <> OldRandSeed check,
