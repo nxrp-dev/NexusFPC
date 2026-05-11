@@ -4072,9 +4072,12 @@ const pemagic : array[0..3] of byte = (
     procedure TPECoffexeoutput.GenerateLibraryImports(ImportLibraryList:TFPHashObjectList);
       var
         i,j: longint;
+        origCount: longint;
         ImportLibrary: TImportLibrary;
-        ImportSymbol: TImportSymbol;
-        exesym: TExeSymbol;
+        ImportSymbol,
+        impImportSymbol: TImportSymbol;
+        baseExeSym,
+        impExeSym: TExeSymbol;
       begin
         { Here map import symbols to exe symbols and create necessary sections.
           Actual import generation is done after unused sections (and symbols) are removed. }
@@ -4095,27 +4098,50 @@ const pemagic : array[0..3] of byte = (
         for i:=0 to ImportLibraryList.Count-1 do
           begin
             ImportLibrary:=TImportLibrary(ImportLibraryList[i]);
-            for j:=0 to ImportLibrary.ImportSymbolList.Count-1 do
+            { Snapshot original count - we may add new entries below }
+            origCount:=ImportLibrary.ImportSymbolList.Count;
+            for j:=0 to origCount-1 do
               begin
                 ImportSymbol:=TImportSymbol(ImportLibrary.ImportSymbolList[j]);
-                exesym:=TExeSymbol(ExeSymbolList.Find(ImportSymbol.MangledName));
-                if assigned(exesym) and
-                   (exesym.State<>symstate_defined) then
+                baseExeSym:=TExeSymbol(ExeSymbolList.Find(ImportSymbol.MangledName));
+                impExeSym:=TExeSymbol(ExeSymbolList.Find('__imp_'+ImportSymbol.MangledName));
+                if assigned(baseExeSym) and
+                   (baseExeSym.State<>symstate_defined) then
                   begin
-                    ImportSymbol.CachedExeSymbol:=exesym;
-                    exesym.State:=symstate_defined;
+                    ImportSymbol.CachedExeSymbol:=baseExeSym;
+                    baseExeSym.State:=symstate_defined;
                   end;
-                { Also resolve __imp_+name if it exists as a separate
-                  unresolved symbol. MSVC archives map both name and
-                  __imp_+name to the same short import member. The __imp_
-                  variant needs a direct IAT pointer (IsVar=true). }
-                exesym:=TExeSymbol(ExeSymbolList.Find('__imp_'+ImportSymbol.MangledName));
-                if assigned(exesym) and
-                   (exesym.State<>symstate_defined) then
+                { When both base name and __imp_+name are unresolved (MSVC
+                  archives map both to the same short import member), we need
+                  TWO import entries: a jmp thunk for the base name, and a
+                  direct IAT pointer for __imp_. If only __imp_ is unresolved,
+                  morph this entry to IsVar=true. }
+                if assigned(impExeSym) and
+                   (impExeSym.State<>symstate_defined) then
                   begin
-                    ImportSymbol.CachedExeSymbol:=exesym;
-                    ImportSymbol.IsVar:=true;
-                    exesym.State:=symstate_defined;
+                    if ImportSymbol.CachedExeSymbol=baseExeSym then
+                      begin
+                        { Base is being handled - add a second entry for __imp_.
+                          Name must keep the original DLL export (used by the
+                          PE loader to look up the function in the DLL); only
+                          MangledName carries the __imp_ prefix so the internal
+                          FPC symbol matches the COFF relocation target. }
+                        impImportSymbol:=TImportSymbol.Create(
+                          ImportLibrary.ImportSymbolList,
+                          ImportSymbol.Name,
+                          '__imp_'+ImportSymbol.MangledName,
+                          ImportSymbol.OrdNr,
+                          true);
+                        impImportSymbol.CachedExeSymbol:=impExeSym;
+                        impExeSym.State:=symstate_defined;
+                      end
+                    else
+                      begin
+                        { No base reference - just morph this entry }
+                        ImportSymbol.CachedExeSymbol:=impExeSym;
+                        ImportSymbol.IsVar:=true;
+                        impExeSym.State:=symstate_defined;
+                      end;
                   end;
               end;
           end;
