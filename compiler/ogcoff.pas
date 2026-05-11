@@ -262,6 +262,7 @@ interface
          procedure MarkTargetSpecificSections(WorkList:TFPObjectList);override;
          procedure AfterUnusedSectionRemoval;override;
          procedure GenerateLibraryImports(ImportLibraryList:TFPHashObjectList);override;
+         procedure Order_End;override;
          procedure MemPos_Start;override;
          procedure MemPos_ExeSection(const aname:string);override;
        end;
@@ -3897,6 +3898,59 @@ const pemagic : array[0..3] of byte = (
                     objsec.Used:=true;
                     WorkList.Add(objsec);
                   end;
+              end;
+          end;
+      end;
+
+
+    procedure TPECoffexeoutput.Order_End;
+      var
+        i, j: longint;
+        objdata: TObjData;
+        objsec: TObjSection;
+        exesec: TExeSection;
+        targetname: string;
+      begin
+        inherited Order_End;
+        { Fallback for input sections whose names are not matched by any
+          OBJSECTION pattern in the link script (e.g. .detourc from MSVC's
+          Detours library). MSVC link.exe merges unrecognised sections into
+          one of the standard output sections based on the COFF flags; we
+          mirror that behaviour here so symbols defined in such sections
+          land at valid addresses instead of being emitted as ABSOLUTE with
+          the raw section-relative offset as their value. }
+        for i:=0 to ObjDataList.Count-1 do
+          begin
+            objdata:=TObjData(ObjDataList[i]);
+            for j:=0 to objdata.ObjSectionList.Count-1 do
+              begin
+                objsec:=TObjSection(objdata.ObjSectionList[j]);
+                if assigned(objsec.ExeSection) then
+                  continue;
+                if oso_debug in objsec.SecOptions then
+                  continue;
+                if not (oso_load in objsec.SecOptions) then
+                  continue;
+                { Associative COMDAT sections follow their parent; let
+                  MarkTargetSpecificSections handle them. }
+                if (oso_comdat in objsec.SecOptions) and
+                   (objsec.ComdatSelection=oscs_associative) then
+                  continue;
+                if oso_executable in objsec.SecOptions then
+                  targetname:='.text'
+                else if oso_data in objsec.SecOptions then
+                  begin
+                    if oso_write in objsec.SecOptions then
+                      targetname:='.data'
+                    else
+                      targetname:='.rdata';
+                  end
+                else
+                  targetname:='.bss';
+                exesec:=FindExeSection(targetname);
+                if not assigned(exesec) then
+                  continue;
+                exesec.AddObjSection(objsec);
               end;
           end;
       end;
