@@ -1,0 +1,296 @@
+{
+    Copyright (c) 2025 by Graeme Geldenhuys
+
+    This unit contains the type mapping functionality for OPDF debug format.
+    Maps FPC's type definitions (TDef hierarchy) to OPDF type records.
+
+    Cross-unit type deduplication uses mangled type names (like DWARF) rather
+    than tdef pointer comparison, because PPU loading creates new tdef
+    instances for each compilation unit.
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+ ****************************************************************************
+}
+unit dbgopdf_typemap;
+
+{$i fpcdefs.inc}
+
+interface
+
+    uses
+      cclasses,
+      symdef,
+      symtype;
+
+    type
+      { type ID mapping entry — used for pointer-based cache }
+      PTypeMapEntry=^TTypeMapEntry;
+      TTypeMapEntry=record
+        Def    : tdef;
+        TypeID : Cardinal;
+      end;
+
+      { type ID allocator for OPDF debug format }
+      TTypeMapper=class
+      private
+        { pointer-based cache for fast within-unit lookups }
+        FPtrMap     : array of TTypeMapEntry;
+        FPtrCount   : Longint;
+        FPtrCapacity: Longint;
+        { name-based map for cross-unit dedup (key=mangled name, val=TypeID) }
+        FNameMap    : TFPHashList;
+        { next available type ID }
+        FNextTypeID : Cardinal;
+
+        { expand the pointer cache array }
+        procedure ExpandPtrMap;
+        { build a name-based key for cross-unit dedup; empty for anonymous types }
+        function GetTypeKey(def:tdef):AnsiString;
+        { add entry to pointer cache }
+        procedure AddToPtrCache(def:tdef;typeid:Cardinal);
+      public
+        constructor Create;
+        destructor Destroy;override;
+
+        { get or allocate a unique TypeID for a definition }
+        function GetTypeID(Def:tdef):Cardinal;
+
+        { check if a type has already been registered }
+        function HasType(Def:tdef):Boolean;
+
+        { get total number of types registered }
+        function GetTypeCount:Longint;
+
+        { reset all type mappings }
+        procedure Clear;
+      end;
+
+implementation
+
+    uses
+      cutils;
+
+    const
+      INITIAL_CAPACITY = 256;
+      EXPAND_FACTOR    = 2;
+
+    function FNV1aHash(const S: AnsiString): Cardinal;
+    const
+      FNV_OFFSET_BASIS = Cardinal(2166136261);
+      FNV_PRIME        = Cardinal(16777619);
+    var
+      I: Integer;
+    begin
+      Result := FNV_OFFSET_BASIS;
+      for I := 1 to Length(S) do
+      begin
+        Result := Result xor Ord(S[I]);
+        Result := Result * FNV_PRIME;
+      end;
+      if Result = 0 then
+        Result := 1;  { reserve 0 for "no type" }
+    end;
+
+
+    constructor TTypeMapper.Create;
+      begin
+        inherited Create;
+        FPtrCount:=0;
+        FPtrCapacity:=INITIAL_CAPACITY;
+        FNextTypeID:=$F0000000; { fallback sequential range for anonymous types without names }
+        SetLength(FPtrMap,FPtrCapacity);
+        FNameMap:=TFPHashList.Create;
+      end;
+
+
+    destructor TTypeMapper.Destroy;
+      begin
+        SetLength(FPtrMap,0);
+        FNameMap.Free;
+        inherited Destroy;
+      end;
+
+
+    procedure TTypeMapper.ExpandPtrMap;
+      var
+        newcapacity : Longint;
+      begin
+        newcapacity:=FPtrCapacity*EXPAND_FACTOR;
+        if newcapacity<FPtrCapacity then
+          newcapacity:=MaxInt; { overflow protection }
+        SetLength(FPtrMap,newcapacity);
+        FPtrCapacity:=newcapacity;
+      end;
+
+
+    function TTypeMapper.GetTypeKey(def:tdef):AnsiString;
+      begin
+        result:='';
+        if not assigned(def) then
+          exit;
+        { named types: use mangled name for globally unique key.
+          Structural keys for anonymous compound types live in GetTypeID
+          itself, where the side effects of recursive ID allocation are
+          expected. GetTypeKey must stay free of side effects so HasType
+          can call it cheaply. }
+        if assigned(def.typesym) and assigned(def.typesym.owner) then
+          result:=make_mangledname('',def.typesym.owner,def.typesym.RealName);
+      end;
+
+
+    procedure TTypeMapper.AddToPtrCache(def:tdef;typeid:Cardinal);
+      begin
+        if FPtrCount>=FPtrCapacity then
+          ExpandPtrMap;
+        FPtrMap[FPtrCount].Def:=def;
+        FPtrMap[FPtrCount].TypeID:=typeid;
+        inc(FPtrCount);
+      end;
+
+
+    function TTypeMapper.HasType(Def:tdef):Boolean;
+      var
+        i   : Longint;
+        key : AnsiString;
+      begin
+        result:=false;
+        if Def=nil then
+          exit;
+
+        key:=GetTypeKey(def);
+        if key<>'' then
+          begin
+            { named type: check name-based map only }
+            {$push}{$warn 6058 off}
+            result:=FNameMap.Find(key)<>nil;
+            {$pop}
+          end
+        else
+          begin
+            { anonymous type: check pointer cache }
+            for i:=0 to FPtrCount-1 do
+              if FPtrMap[i].Def=Def then
+                begin
+                  result:=true;
+                  exit;
+                end;
+          end;
+      end;
+
+
+    function TTypeMapper.GetTypeID(Def:tdef):Cardinal;
+      var
+        i      : Longint;
+        key    : AnsiString;
+        p      : Pointer;
+        setdef : tsetdef;
+        elemid : Cardinal;
+      begin
+        if Def=nil then
+          begin
+            result:=0;
+            exit;
+          end;
+
+        { build name-based key; non-empty for named types }
+        key:=GetTypeKey(def);
+
+        if key<>'' then
+          begin
+            { named type: use name-based map exclusively.
+              Do NOT use pointer cache — stale pointers from previous
+              units can match unrelated types due to memory reuse. }
+            {$push}{$warn 6058 off}
+            p:=FNameMap.Find(key);
+            {$pop}
+            if p<>nil then
+              begin
+                result:=Cardinal(PtrUInt(p));
+                exit;
+              end;
+
+            { allocate new TypeID via FNV-1a hash of canonical name }
+            result:=FNV1aHash(key);
+            FNameMap.Add(key,Pointer(PtrUInt(result)));
+            exit;
+          end;
+
+        { anonymous type: pointer cache fast path }
+        for i:=0 to FPtrCount-1 do
+          if FPtrMap[i].Def=Def then
+            begin
+              result:=FPtrMap[i].TypeID;
+              exit;
+            end;
+
+        { Anonymous compound types: try structural dedup before allocating
+          a fresh sequential TypeID. Two distinct tsetdef instances are
+          routinely created within a single compilation — once for the
+          declared variable type and once for each set-constant expression
+          like [a, b] — even though they share the same elementdef. Use
+          the elementdef's already-allocated TypeID as the structural
+          anchor so they collapse to a single OPDF type record. The same
+          mechanism handles cross-unit dedup of "set of TNamedType". }
+        if def is tsetdef then
+          begin
+            setdef:=tsetdef(def);
+            elemid:=GetTypeID(setdef.elementdef);
+            key:='set:'+tostr(elemid)+':'+
+                 tostr(setdef.setbase)+':'+
+                 tostr(setdef.setmax)+':'+
+                 tostr(setdef.size);
+            {$push}{$warn 6058 off}
+            p:=FNameMap.Find(key);
+            {$pop}
+            if p<>nil then
+              begin
+                result:=Cardinal(PtrUInt(p));
+                AddToPtrCache(def,result);
+                exit;
+              end;
+            result:=FNextTypeID;
+            inc(FNextTypeID);
+            FNameMap.Add(key,Pointer(PtrUInt(result)));
+            AddToPtrCache(def,result);
+            exit;
+          end;
+
+        { Truly anonymous type with no structural anchor: allocate
+          sequentially from the reserved range. The pointer cache above
+          guarantees within-unit dedup for the same tdef instance. }
+        result:=FNextTypeID;
+        inc(FNextTypeID);
+        AddToPtrCache(def,result);
+      end;
+
+
+    function TTypeMapper.GetTypeCount:Longint;
+      begin
+        { total unique TypeIDs: named types in FNameMap + anonymous types in FPtrCache }
+        result:=FNameMap.Count+FPtrCount;
+      end;
+
+
+    procedure TTypeMapper.Clear;
+      begin
+        FPtrCount:=0;
+        FNextTypeID:=$F0000000;
+        SetLength(FPtrMap,FPtrCapacity);
+        FNameMap.Clear;
+      end;
+
+
+end.
