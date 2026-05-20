@@ -68,6 +68,16 @@ interface
          PointerToSymbolTable : longword;
          NumberOfSymbols : longword;
        end;
+       tcoffshortimportheader = packed record
+         Sig1       : word;  { 0x0000 }
+         Sig2       : word;  { 0xFFFF }
+         Version    : word;
+         Machine    : word;
+         TimeDateStamp : longword;
+         SizeOfData : longword;
+         OrdinalHint: word;
+         ImpType    : word;  { bits 0-1: import type, bits 2-4: name type }
+       end;
        tcoffpeoptheader = packed record
          Magic : word;
          MajorLinkerVersion : byte;
@@ -188,10 +198,11 @@ interface
          win32     : boolean;
          bigobj    : boolean;
          function  GetSection(secidx:longint):TObjSection;
-         function  Read_str(strpos:longword):string;
+         function  Read_str(strpos:longword):ansistring;
          procedure read_relocs(s:TCoffObjSection);
          procedure read_symbols(objdata:TObjData);
          procedure ObjSections_read_relocs(p:TObject;arg:pointer);
+         procedure ParseDirectiveSection(objdata:TObjData);
        public
          constructor createcoff(awin32:boolean);
          destructor destroy;override;
@@ -251,6 +262,7 @@ interface
          procedure MarkTargetSpecificSections(WorkList:TFPObjectList);override;
          procedure AfterUnusedSectionRemoval;override;
          procedure GenerateLibraryImports(ImportLibraryList:TFPHashObjectList);override;
+         procedure Order_End;override;
          procedure MemPos_Start;override;
          procedure MemPos_ExeSection(const aname:string);override;
        end;
@@ -294,6 +306,17 @@ interface
        COFF_BIG_OBJ_MAGIC: array[0..15] of byte = ($C7, $A1, $BA, $D1, $EE, $BA, $A9, $4B, $AF, $20, $FA, $F6, $6A, $A4, $DC, $B8);
        COFF_BIG_OBJ_VERSION = 2;
 
+       { Import Type }
+       IMPORT_OBJECT_CODE     = 0;
+       IMPORT_OBJECT_DATA     = 1;
+       IMPORT_OBJECT_CONST    = 2;
+
+       { Import Name Type }
+       IMPORT_OBJECT_ORDINAL         = 0;
+       IMPORT_OBJECT_NAME            = 1;
+       IMPORT_OBJECT_NAME_NOPREFIX   = 2;
+       IMPORT_OBJECT_NAME_UNDECORATE = 3;
+
     function ReadDLLImports(const dllname:string;readdllproc:Treaddllproc):boolean;
     procedure MaybeSwap(var v : tcoffsechdr);
     procedure MaybeSwap(var v : tcoffheader);
@@ -327,9 +350,10 @@ implementation
        COFF_SYM_GLOBAL   = 2;
        COFF_SYM_LOCAL    = 3;
        COFF_SYM_LABEL    = 6;
-       COFF_SYM_FUNCTION = 101;
-       COFF_SYM_FILE     = 103;
-       COFF_SYM_SECTION  = 104;
+       COFF_SYM_FUNCTION      = 101;
+       COFF_SYM_FILE          = 103;
+       COFF_SYM_SECTION       = 104;
+       COFF_SYM_WEAK_EXTERNAL = 105;
 
        COFF_STYP_REG    = $0000; { "regular": allocated, relocated, loaded }
        COFF_STYP_DSECT  = $0001; { "dummy":  relocated only }
@@ -478,8 +502,10 @@ implementation
 {$endif arm}
 
 {$ifdef i386}
+       IMAGE_REL_I386_ABSOLUTE = 0;
        IMAGE_REL_I386_DIR32 = 6;
        IMAGE_REL_I386_IMAGEBASE = 7;
+       IMAGE_REL_I386_SECTION = 10;
        IMAGE_REL_I386_SECREL32 = 11;
        IMAGE_REL_I386_PCRLONG = 20;
 {$endif i386}
@@ -1217,6 +1243,8 @@ const pemagic : array[0..3] of byte = (
         8192 : result:=result or PE_SCN_ALIGN_8192BYTES;
           else result:=result or PE_SCN_ALIGN_16BYTES;
         end;
+        if oso_comdat in aoptions then
+          result:=result or PE_SCN_LNK_COMDAT;
       end;
 
 
@@ -1408,9 +1436,27 @@ const pemagic : array[0..3] of byte = (
                 end
             else
               internalerror(200205183);
-            { Only debug sections are allowed to have relocs pointing to unused sections }
-            if not relocsec.used and not (oso_debug in objsec.secoptions) then
-              internalerror(200603061);
+
+            { Absolute symbols (COFF section=-1) have relocsec=nil but a
+              valid relocval (e.g. __tls_array=0x2C). Apply directly. }
+            if (relocsec=nil) and (relocval<>0) then
+              begin
+                address:=address+relocval;
+                data.Seek(objreloc.dataoffset);
+                data.Write(address,address_size);
+                continue;
+              end;
+
+            { Handle relocations to unresolved weak externals or discarded
+              COMDAT sections: zero out the relocation value }
+            if (relocsec=nil) or
+               (not relocsec.used and not (oso_debug in objsec.secoptions)) then
+              begin
+                address:=0;
+                data.Seek(objreloc.dataoffset);
+                data.Write(address,address_size);
+                continue;
+              end;
 
             if relocsec.used then
               case objreloc.typ of
@@ -1434,10 +1480,26 @@ const pemagic : array[0..3] of byte = (
                   end;
                 RELOC_SECREL32 :
                   begin
-                    { fixup address when the symbol was known in defined object }
-                    if (relocsec.objdata=objsec.objdata) then
+                    { Compute section-relative offset. For same-object refs (FPC)
+                      the initial value includes the symbol address; for cross-object
+                      refs (MSVC) the initial value is 0. In both cases subtracting
+                      ExeSection.MemPos is needed to get a section-relative result. }
+                    if Assigned(relocsec.ExeSection) then
                       dec(address,relocsec.ExeSection.MemPos);
                     inc(address,relocval);
+                  end;
+                RELOC_SECTION :
+                  begin
+                    { IMAGE_REL_AMD64_SECTION: 16-bit PE section index of the
+                      target. Primarily used in MSVC .debug$S sections (SECREL +
+                      SECTION pairs) but can appear in any section. }
+                    if Assigned(relocsec.ExeSection) then
+                      address:=relocsec.ExeSection.secsymidx
+                    else
+                      address:=0;
+                    data.Seek(objreloc.dataoffset);
+                    data.Write(address,2);
+                    continue;
                   end;
 {$ifdef arm}
                 RELOC_RELATIVE_24,
@@ -1881,6 +1943,19 @@ const pemagic : array[0..3] of byte = (
               secrec.nrelocs:=ObjRelocations.count
             else
               secrec.nrelocs:=65535;
+            if oso_comdat in SecOptions then
+              begin
+                case ComdatSelection of
+                  oscs_none:          secrec.select:=IMAGE_COMDAT_SELECT_NODUPLICATES;
+                  oscs_any:           secrec.select:=IMAGE_COMDAT_SELECT_ANY;
+                  oscs_same_size:     secrec.select:=IMAGE_COMDAT_SELECT_SAME_SIZE;
+                  oscs_exact_match:   secrec.select:=IMAGE_COMDAT_SELECT_EXACT_MATCH;
+                  oscs_associative:   secrec.select:=IMAGE_COMDAT_SELECT_ASSOCIATIVE;
+                  oscs_largest:       secrec.select:=IMAGE_COMDAT_SELECT_LARGEST;
+                end;
+                if assigned(AssociativeSection) then
+                  secrec.assoc:=AssociativeSection.index;
+              end;
             inc(symidx);
 	    MaybeSwap(secrec);
             FCoffSyms.write(secrec,sizeof(secrec));
@@ -1951,12 +2026,16 @@ const pemagic : array[0..3] of byte = (
                 rel.reloctype:=IMAGE_REL_ARM_BLX23T;
 {$endif arm}
 {$ifdef i386}
+              RELOC_NONE :
+                rel.reloctype:=IMAGE_REL_I386_ABSOLUTE;
               RELOC_RELATIVE :
                 rel.reloctype:=IMAGE_REL_I386_PCRLONG;
               RELOC_ABSOLUTE :
                 rel.reloctype:=IMAGE_REL_I386_DIR32;
               RELOC_RVA :
                 rel.reloctype:=IMAGE_REL_I386_IMAGEBASE;
+              RELOC_SECTION :
+                rel.reloctype:=IMAGE_REL_I386_SECTION;
               RELOC_SECREL32 :
                 rel.reloctype:=IMAGE_REL_I386_SECREL32;
 {$endif i386}
@@ -1983,6 +2062,8 @@ const pemagic : array[0..3] of byte = (
                 rel.reloctype:=IMAGE_REL_AMD64_REL32_5;
               RELOC_SECREL32 :
                 rel.reloctype:=IMAGE_REL_AMD64_SECREL;
+              RELOC_SECTION :
+                rel.reloctype:=IMAGE_REL_AMD64_SECTION;
 {$endif x86_64}
 {$ifdef aarch64}
               RELOC_NONE :
@@ -2287,7 +2368,13 @@ const pemagic : array[0..3] of byte = (
     function TCoffObjInput.GetSection(secidx:longint):TObjSection;
       begin
         result:=nil;
-        if (secidx<1) or (secidx>FSecCount) then
+        { COFF special section indices: -1 (IMAGE_SYM_ABSOLUTE) for
+          symbols with fixed values not in any section (e.g. __tls_array
+          at TEB offset 0x2C on i386), -2 (IMAGE_SYM_DEBUG) for debug
+          symbols. Return nil for these valid special values. }
+        if secidx<1 then
+          exit;
+        if secidx>FSecCount then
           begin
             InputError('Failed reading coff file, invalid section index');
             exit;
@@ -2296,11 +2383,11 @@ const pemagic : array[0..3] of byte = (
       end;
 
 
-    function TCoffObjInput.Read_str(strpos:longword):string;
+    function TCoffObjInput.Read_str(strpos:longword):ansistring;
       begin
         if (FCoffStrs=nil) or (strpos>=FCoffStrSize) or (FCoffStrs[strpos]=#0) then
           Internalerror(200205172);
-        result:=string(PChar(@FCoffStrs[strpos]));
+        result:=ansistring(PChar(@FCoffStrs[strpos]));
       end;
 
 
@@ -2343,12 +2430,16 @@ const pemagic : array[0..3] of byte = (
                rel_type:=RELOC_RELATIVE_24_THUMB;
 {$endif arm}
 {$ifdef i386}
+             IMAGE_REL_I386_ABSOLUTE :
+               rel_type:=RELOC_NONE;
              IMAGE_REL_I386_PCRLONG :
                rel_type:=RELOC_RELATIVE;
              IMAGE_REL_I386_DIR32 :
                rel_type:=RELOC_ABSOLUTE;
              IMAGE_REL_I386_IMAGEBASE :
                rel_type:=RELOC_RVA;
+             IMAGE_REL_I386_SECTION :
+               rel_type:=RELOC_SECTION;
              IMAGE_REL_I386_SECREL32 :
                rel_type:=RELOC_SECREL32;
 {$endif i386}
@@ -2376,6 +2467,8 @@ const pemagic : array[0..3] of byte = (
                rel_type:=RELOC_RELATIVE_5;
              IMAGE_REL_AMD64_SECREL:
                rel_type:=RELOC_SECREL32;
+             IMAGE_REL_AMD64_SECTION:
+               rel_type:=RELOC_SECTION;
 {$endif x86_64}
 {$ifdef aarch64}
              IMAGE_REL_ARM64_ABSOLUTE:
@@ -2435,9 +2528,12 @@ const pemagic : array[0..3] of byte = (
         bosym     : coffbigobjsymbol;
         objsym    : TObjSymbol;
         bind      : Tasmsymbind;
-        strname   : string;
+        strname   : ansistring;
         auxrec    : array[0..sizeof(coffsymbol)-1] of byte;
         boauxrec  : array[0..sizeof(coffbigobjsymbol)-1] of byte;
+        weakidx, weakdefidx : longint;
+        weakaliases : array of array[0..1] of longint;
+        weakcount : longint;
         psecrec   : pcoffsectionrec;
         secrec    : coffsectionrec;
         objsec    : TObjSection;
@@ -2465,6 +2561,8 @@ const pemagic : array[0..3] of byte = (
            { Load the Symbols }
            FCoffSyms.Seek(0);
            symidx:=0;
+           weakcount:=0;
+           SetLength(weakaliases,0);
            while (symidx<nsyms) do
             begin
               if bigobj then
@@ -2473,12 +2571,13 @@ const pemagic : array[0..3] of byte = (
 		  MaybeSwap(bosym);
                   if bosym.Name.Offset.Zeroes<>0 then
                     begin
-                      { Added for sake of global data analysis }
-                      strname[0]:=#0;
+                      { Short name: up to 8 chars stored inline in symbol record.
+                        Copy to temp buffer and null-terminate since the field
+                        may not be null-terminated if the name is exactly 8 chars. }
+                      SetLength(strname,8);
                       move(bosym.Name.ShortName,strname[1],8);
-                      strname[9]:=#0;
-                      strname[0]:=chr(strlen(@strname[1]));
-                      if strname='' then
+                      SetLength(strname,strlen(@strname[1]));
+                      if length(strname)=0 then
                         internalerror(2017020301);
                     end
                   else
@@ -2494,12 +2593,13 @@ const pemagic : array[0..3] of byte = (
 		  MaybeSwap(sym);
                   if plongint(@sym.name)^<>0 then
                     begin
-                      { Added for sake of global data analysis }
-                      strname[0]:=#0;
+                      { Short name: up to 8 chars stored inline in symbol record.
+                        Copy to temp buffer and null-terminate since the field
+                        may not be null-terminated if the name is exactly 8 chars. }
+                      SetLength(strname,8);
                       move(sym.name,strname[1],8);
-                      strname[9]:=#0;
-                      strname[0]:=chr(strlen(@strname[1]));
-                      if strname='' then
+                      SetLength(strname,strlen(@strname[1]));
+                      if length(strname)=0 then
                         Internalerror(200205171);
                     end
                   else
@@ -2531,8 +2631,12 @@ const pemagic : array[0..3] of byte = (
                      begin
                        bind:=AB_GLOBAL;
                        objsec:=GetSection(secidx);
-                       if symvalue>=objsec.mempos then
-                         address:=symvalue-objsec.mempos;
+                       if assigned(objsec) and (symvalue>=objsec.mempos) then
+                         address:=symvalue-objsec.mempos
+                       else
+                         { Absolute symbols (COFF section=-1) have no section
+                           use the raw value directly (e.g. __tls_array=0x2C) }
+                         address:=symvalue;
                      end;
                     objsym:=CreateSymbol(strname);
                     objsym.bind:=bind;
@@ -2548,9 +2652,16 @@ const pemagic : array[0..3] of byte = (
                     if secidx<>-1 then
                      begin
                        objsec:=GetSection(secidx);
-                       if symvalue>=objsec.mempos then
+                       if assigned(objsec) and (symvalue>=objsec.mempos) then
                          address:=symvalue-objsec.mempos;
                        objsym:=CreateSymbol(strname);
+                       { If an existing symbol with this name already points to a
+                         different section, create a new unique symbol. This happens
+                         when LLVM/Clang generates multiple COMDAT sections with the
+                         same name (e.g., 1000+ '.rdata' sections). Each section
+                         needs its own symbol so relocations resolve correctly. }
+                       if assigned(objsym.objsection) and (objsym.objsection<>objsec) then
+                         objsym:=CObjSymbol.Create(ObjSymbolList,strname);
                        objsym.bind:=AB_LOCAL;
                        objsym.typ:=AT_FUNCTION;
                        objsym.objsection:=objsec;
@@ -2567,12 +2678,29 @@ const pemagic : array[0..3] of byte = (
                         if symvalue>=objsec.mempos then
                           address:=symvalue-objsec.mempos;
                         objsym:=CreateSymbol(strname);
+                        { If an existing symbol with this name already points to a
+                          different section, create a new unique symbol. This happens
+                          when LLVM/Clang generates multiple COMDAT sections with the
+                          same name (e.g., 1000+ '.rdata' sections). Each section
+                          needs its own symbol so relocations resolve correctly. }
+                        if assigned(objsym.objsection) and (objsym.objsection<>objsec) then
+                          objsym:=CObjSymbol.Create(ObjSymbolList,strname);
                         objsym.bind:=AB_LOCAL;
                         objsym.typ:=AT_FUNCTION;
                         objsym.objsection:=objsec;
                         objsym.offset:=address;
                         objsym.size:=size;
                       end;
+                  end;
+                COFF_SYM_WEAK_EXTERNAL :
+                  begin
+                    { Weak external: treat as a regular external.
+                      The aux record specifies the default symbol,
+                      but we just treat it as undefined and let the
+                      linker resolve it normally. }
+                    objsym:=CreateSymbol(strname);
+                    objsym.bind:=AB_WEAK_EXTERNAL;
+                    objsym.typ:=AT_FUNCTION;
                   end;
                 COFF_SYM_FUNCTION,
                 COFF_SYM_FILE :
@@ -2622,10 +2750,7 @@ const pemagic : array[0..3] of byte = (
                     end;
                   end;
 
-                  if comdatsel in [oscs_associative] then
-                    { only temporary }
-                    Comment(V_Error,'Associative COMDAT sections are not yet supported (symbol: '+objsym.objsection.Name+')')
-                  else if (comdatsel=oscs_associative) and (secrec.assoc=0) then
+                  if (comdatsel=oscs_associative) and (secrec.assoc=0) then
                     Message1(link_e_comdat_associative_section_expected,objsym.objsection.name)
                   else if (objsym.objsection.ComdatSelection<>oscs_none) and (comdatsel<>oscs_none) and (objsym.objsection.ComdatSelection<>comdatsel) then
                     Message2(link_e_comdat_not_matching,objsym.objsection.Name,objsym.Name)
@@ -2633,14 +2758,43 @@ const pemagic : array[0..3] of byte = (
                     begin
                       objsym.objsection.ComdatSelection:=comdatsel;
 
-                      if (secrec.assoc<>0) and not assigned(objsym.objsection.AssociativeSection) then
+                      if (comdatsel=oscs_associative) and (secrec.assoc<>0) and
+                         not assigned(objsym.objsection.AssociativeSection) then
                         begin
-                          objsym.objsection.AssociativeSection:=GetSection(secrec.assoc-1);
+                          objsym.objsection.AssociativeSection:=GetSection(secrec.assoc);
                           if not assigned(objsym.objsection.AssociativeSection) then
                             Message1(link_e_comdat_associative_section_not_found,objsym.objsection.Name);
                         end;
                     end;
 
+                  dec(auxcount);
+                  inc(symidx);
+                end;
+
+              { handle weak external aux record (alias/default symbol) }
+              if (symcls=COFF_SYM_WEAK_EXTERNAL) and (auxcount>=1) then
+                begin
+                  if bigobj then
+                    begin
+                      FCoffSyms.Read(boauxrec,sizeof(boauxrec));
+                      weakdefidx:=plongint(@boauxrec[0])^;
+                    end
+                  else
+                    begin
+                      FCoffSyms.Read(auxrec,sizeof(auxrec));
+                      weakdefidx:=plongint(@auxrec[0])^;
+                    end;
+                  { First 4 bytes of aux record = TagIndex (default symbol index).
+                    Store for deferred resolution after all symbols are read. }
+                  if assigned(objsym) and (weakdefidx>=0) and
+                     (weakdefidx<nsyms) then
+                    begin
+                      if weakcount>=length(weakaliases) then
+                        SetLength(weakaliases,weakcount+16);
+                      weakaliases[weakcount][0]:=symidx;
+                      weakaliases[weakcount][1]:=weakdefidx;
+                      inc(weakcount);
+                    end;
                   dec(auxcount);
                   inc(symidx);
                 end;
@@ -2655,6 +2809,18 @@ const pemagic : array[0..3] of byte = (
                end;
               inc(symidx);
             end;
+
+           { Resolve weak external aliases now that all symbols are read }
+           for i:=0 to weakcount-1 do
+             begin
+               weakidx:=weakaliases[i][0];
+               weakdefidx:=weakaliases[i][1];
+               if assigned(FSymTbl[weakidx]) and assigned(FSymTbl[weakdefidx]) then
+                 begin
+                   FSymTbl[weakidx].DefaultSym:=FSymTbl[weakdefidx];
+                 end;
+             end;
+           weakaliases:=nil;
          end;
       end;
 
@@ -2678,6 +2844,129 @@ const pemagic : array[0..3] of byte = (
       end;
 
 
+    procedure TCoffObjInput.ParseDirectiveSection(objdata:TObjData);
+      var
+        drectve : TObjSection;
+        buf     : ansistring;
+        p,start,eq : longint;
+        directive,symname,defname : ansistring;
+        objsym,defsym : TObjSymbol;
+      begin
+        drectve:=TObjSection(objdata.ObjSectionList.Find('.drectve'));
+        if not assigned(drectve) then
+          exit;
+        if not assigned(drectve.data) or (drectve.size=0) then
+          exit;
+        { Read .drectve content }
+        SetLength(buf,drectve.size);
+        drectve.data.seek(0);
+        drectve.data.read(buf[1],drectve.size);
+        { Parse space-separated directives }
+        p:=1;
+        while p<=length(buf) do
+          begin
+            { skip whitespace and nulls }
+            while (p<=length(buf)) and (buf[p] in [' ',#9,#0,#10,#13]) do
+              inc(p);
+            if p>length(buf) then
+              break;
+            { read token }
+            start:=p;
+            while (p<=length(buf)) and not (buf[p] in [' ',#9,#0,#10,#13]) do
+              inc(p);
+            directive:=copy(buf,start,p-start);
+            { Handle /include:SYMBOL - force the linker to resolve this
+              symbol, pulling in the archive member that defines it.
+              Used by MSVC UCRT to pull in CRT initializer objects. }
+            if (length(directive)>9) and
+               (CompareText(copy(directive,1,9),'/include:')=0) then
+              begin
+                symname:=copy(directive,10,length(directive)-9);
+                if symname<>'' then
+                  begin
+                    { Create the symbol as undefined external if not already present }
+                    objsym:=TObjSymbol(objdata.ObjSymbolList.Find(symname));
+                    if not assigned(objsym) then
+                      begin
+                        objsym:=objdata.CreateSymbol(symname);
+                        objsym.bind:=AB_EXTERNAL;
+                        objsym.typ:=AT_FUNCTION;
+                      end;
+                  end;
+              end
+            { Handle /alternatename:X=Y  (prefix is 15 chars) }
+            else if (length(directive)>15) and
+               (CompareText(copy(directive,1,15),'/alternatename:')=0) then
+              begin
+                directive:=copy(directive,16,length(directive)-15);
+                eq:=pos('=',directive);
+                if eq>1 then
+                  begin
+                    symname:=copy(directive,1,eq-1);
+                    defname:=copy(directive,eq+1,length(directive)-eq);
+                    if (symname<>'') and (defname<>'') then
+                      begin
+                        { Find the symbol in this object and set its alternate name.
+                          The target may be in a different object, so store by name. }
+                        objsym:=TObjSymbol(objdata.ObjSymbolList.Find(symname));
+                        if assigned(objsym) then
+                          begin
+                            defsym:=TObjSymbol(objdata.ObjSymbolList.Find(defname));
+                            if assigned(defsym) then
+                              objsym.DefaultSym:=defsym
+                            else
+                              begin
+                                objsym.DefaultSymName:=defname;
+                              end;
+                          end;
+                      end;
+                  end;
+              end
+            { Handle /DEFAULTLIB:name - auto-load a static library }
+            else if (length(directive)>12) and
+               (CompareText(copy(directive,1,12),'/DEFAULTLIB:')=0) then
+              begin
+                symname:=copy(directive,13,length(directive)-12);
+                { strip optional quotes }
+                if (length(symname)>=2) and (symname[1]='"') and (symname[length(symname)]='"') then
+                  symname:=copy(symname,2,length(symname)-2);
+                if symname<>'' then
+                  objdata.DefaultLibs.Insert(symname);
+              end
+            { Handle /NODEFAULTLIB:name - suppress a default library }
+            else if (length(directive)>14) and
+               (CompareText(copy(directive,1,14),'/NODEFAULTLIB:')=0) then
+              begin
+                symname:=copy(directive,15,length(directive)-14);
+                if (length(symname)>=2) and (symname[1]='"') and (symname[length(symname)]='"') then
+                  symname:=copy(symname,2,length(symname)-2);
+                if symname<>'' then
+                  objdata.NoDefaultLibs.Insert(symname);
+              end
+            { Handle /DISALLOWLIB:name - same semantics as /NODEFAULTLIB }
+            else if (length(directive)>13) and
+               (CompareText(copy(directive,1,13),'/DISALLOWLIB:')=0) then
+              begin
+                symname:=copy(directive,14,length(directive)-13);
+                if (length(symname)>=2) and (symname[1]='"') and (symname[length(symname)]='"') then
+                  symname:=copy(symname,2,length(symname)-2);
+                if symname<>'' then
+                  objdata.NoDefaultLibs.Insert(symname);
+              end;
+          end;
+      end;
+
+
+    function ReadNullTermString(AReader: TObjectReader): ansistring;
+      var
+        b: byte;
+      begin
+        result:='';
+        while AReader.read(b,1) and (b<>0) do
+          result:=result+chr(b);
+      end;
+
+
     function  TCoffObjInput.ReadObjData(AReader:TObjectreader;out objdata:TObjData):boolean;
       var
         secalign : longint;
@@ -2692,9 +2981,16 @@ const pemagic : array[0..3] of byte = (
         secoptions : TObjSectionOptions;
         header   : tcoffheader;
         boheader : tcoffbigobjheader;
+        shorthdr : tcoffshortimportheader;
         sechdr   : tcoffsechdr;
-        secname  : string;
+        secname,
+        symname,
+        dllname,
+        exportname : ansistring;
         secnamebuf : array[0..15] of char;
+        imptype,
+        nametype : word;
+        atpos    : longint;
       begin
         FReader:=AReader;
         InputFileName:=AReader.FileName;
@@ -2711,35 +3007,109 @@ const pemagic : array[0..3] of byte = (
                exit;
              end;
            MaybeSwap(header);
+           if (header.mach=0) and (header.nsects<>$ffff) and
+              (header.nsects=0) and (header.syms=0) then
+             begin
+               { MSVC anonymous object (LTCG intermediate format),
+                 not a standard COFF object - skip it.
+                 Note: mach=0 with valid nsects/syms is a machine-independent
+                 COFF object (e.g. MSVC weak external alias stubs). }
+               FreeAndNil(objdata);
+               FCoffSyms.Free;
+               FCoffSyms:=nil;
+               exit;
+             end;
            if (header.mach=0) and (header.nsects=$ffff) then
              begin
-               { either a library or big obj COFF }
+               { Could be a big obj COFF or a short import object. }
                AReader.seek(0);
-               if not AReader.read(boheader,sizeof(boheader)) then
+               if not AReader.read(shorthdr,sizeof(shorthdr)) then
                  begin
-                   InputError('Can''t read Big Obj COFF Header');
+                   InputError('Can''t read COFF header');
                    exit;
                  end;
-               MaybeSwap(boheader);
-               if CompareByte(boheader.UUID,COFF_BIG_OBJ_MAGIC,length(boheader.uuid))<>0 then
+               { Try to read as big obj COFF }
+               AReader.seek(0);
+               if AReader.read(boheader,sizeof(boheader)) then
                  begin
-                   { ToDo: this should be treated as a library }
-                   InputError('Illegal Big Obj COFF Magic');
+                   MaybeSwap(boheader);
+                   if CompareByte(boheader.UUID,COFF_BIG_OBJ_MAGIC,length(boheader.uuid))=0 then
+                     begin
+                       if boheader.Version<>COFF_BIG_OBJ_VERSION then
+                         begin
+                           InputError('Illegal Big Obj COFF Version');
+                           exit;
+                         end;
+                       if boheader.Machine<>COFF_MAGIC then
+                         begin
+                           InputError('Illegal COFF Machine type');
+                           exit;
+                         end;
+                       bigobj:=true;
+                     end;
+                 end;
+               { Not a big obj - parse as short import object }
+               if not bigobj then
+                 begin
+                   FreeAndNil(objdata);
+                   FCoffSyms.Free;
+                   FCoffSyms:=nil;
+                   { shorthdr was already read successfully above }
+                   { Read symbol name and DLL name (both null-terminated) }
+                   AReader.seek(sizeof(shorthdr));
+                   symname := ReadNullTermString(AReader);
+                   dllname := ReadNullTermString(AReader);
+                   { Populate TObjInput fields }
+                   FIsShortImport := true;
+                   FImportLibName := dllname;
+                   imptype := shorthdr.ImpType and $3;
+                   nametype := (shorthdr.ImpType shr 2) and $7;
+                   FImportIsVar := (imptype = IMPORT_OBJECT_DATA) or
+                                   (imptype = IMPORT_OBJECT_CONST);
+                   FImportMangledName := symname; { must match ExeSymbolList entry }
+                   if nametype = IMPORT_OBJECT_ORDINAL then
+                     begin
+                       FImportOrdinal := shorthdr.OrdinalHint;
+                       FImportSymName := symname;
+                     end
+                   else
+                     begin
+                       FImportOrdinal := -shorthdr.OrdinalHint; { negative = hint }
+                       { Derive export name based on name type }
+                       case nametype of
+                         IMPORT_OBJECT_NAME_NOPREFIX:
+                           begin
+                             { Strip leading _, @, or ? from symname }
+                             exportname := symname;
+                             if (length(exportname) > 0) and
+                                (exportname[1] in ['_','@','?']) then
+                               delete(exportname, 1, 1);
+                             FImportSymName := exportname;
+                           end;
+                         IMPORT_OBJECT_NAME_UNDECORATE:
+                           begin
+                             { Strip leading _, @, or ? AND truncate at first @ }
+                             exportname := symname;
+                             if (length(exportname) > 0) and
+                                (exportname[1] in ['_','@','?']) then
+                               delete(exportname, 1, 1);
+                             atpos := pos('@', exportname);
+                             if atpos > 0 then
+                               FImportSymName := copy(exportname, 1, atpos - 1)
+                             else
+                               FImportSymName := exportname;
+                           end;
+                         else { IMPORT_OBJECT_NAME }
+                           FImportSymName := symname;
+                       end;
+                     end;
                    exit;
                  end;
-               if boheader.Version<>COFF_BIG_OBJ_VERSION then
-                 begin
-                   InputError('Illegal Big Obj COFF Version');
-                   exit;
-                 end;
-               if boheader.Machine<>COFF_MAGIC then
-                 begin
-                   InputError('Illegal COFF Machine type');
-                   exit;
-                 end;
-               bigobj:=true;
              end
-           else if header.mach<>COFF_MAGIC then
+           { mach=0 is allowed: MSVC produces machine-independent COFF
+             objects (e.g. vsnprintf.obj in libcmt.a) with mach=0 but
+             valid nsects/syms. These are legitimate and must be accepted. }
+           else if (header.mach<>COFF_MAGIC) and (header.mach<>0) then
              begin
                InputError('Illegal COFF Magic');
                exit;
@@ -2839,7 +3209,7 @@ const pemagic : array[0..3] of byte = (
                    secoptions:=djdecodesechdrflags(secname,sechdr.flags);
                    secalign:=sizeof(pint);
                  end;
-               if (Length(secname)>3) and (secname[2] in ['e','f','i','p','r']) then
+               if (Length(secname)>3) and (secname[2] in ['C','c','d','e','f','i','p','r','t']) then
                  begin
                    if (Pos('.edata',secname)=1) or
                       (Pos('.rsrc',secname)=1) or
@@ -2852,6 +3222,16 @@ const pemagic : array[0..3] of byte = (
                        include(secoptions,oso_keep);
                        secname:=secname + '.' + ExtractFileName(InputFileName);
                      end;
+                   { Keep C/C++ static constructor/destructor sections and their
+                   code so they survive RemoveUnreferencedSections }
+                   if (Pos('.ctors',secname)=1) or
+                      (Pos('.dtors',secname)=1) or
+                      (Pos('.text.startup',secname)=1) then
+                     include(secoptions,oso_keep);
+                   { Keep MSVC CRT initializer sections so they survive
+                   RemoveUnreferencedSections (same rationale as .ctors) }
+                   if (Pos('.CRT$',secname)=1) then
+                     include(secoptions,oso_keep);
                  end;
                objsec:=TCoffObjSection(createsection(secname,secalign,secoptions,false));
                FSecTbl[i]:=objsec;
@@ -2874,6 +3254,8 @@ const pemagic : array[0..3] of byte = (
            ReadSectionContent(objdata);
            { Relocs }
            ObjSectionList.ForEachCall(@objsections_read_relocs,nil);
+           { Parse .drectve section for MSVC linker directives }
+           ParseDirectiveSection(objdata);
          end;
         FCoffStrs:=nil;
         FCoffSyms.Free;
@@ -3499,6 +3881,78 @@ const pemagic : array[0..3] of byte = (
                   inc(j,3);
               end;
           end;
+        { Handle generic associative COMDAT sections }
+        for i:=0 to ExeSectionList.Count-1 do
+          begin
+            exesec:=TExeSection(ExeSectionList[i]);
+            for j:=0 to exesec.ObjSectionList.Count-1 do
+              begin
+                objsec:=TObjSection(exesec.ObjSectionList[j]);
+                if objsec.Used then
+                  continue;
+                if (oso_comdat in objsec.SecOptions) and
+                   (objsec.ComdatSelection=oscs_associative) and
+                   assigned(objsec.AssociativeSection) and
+                   objsec.AssociativeSection.Used then
+                  begin
+                    objsec.Used:=true;
+                    WorkList.Add(objsec);
+                  end;
+              end;
+          end;
+      end;
+
+
+    procedure TPECoffexeoutput.Order_End;
+      var
+        i, j: longint;
+        objdata: TObjData;
+        objsec: TObjSection;
+        exesec: TExeSection;
+        targetname: string;
+      begin
+        inherited Order_End;
+        { Fallback for input sections whose names are not matched by any
+          OBJSECTION pattern in the link script (e.g. .detourc from MSVC's
+          Detours library). MSVC link.exe merges unrecognised sections into
+          one of the standard output sections based on the COFF flags; we
+          mirror that behaviour here so symbols defined in such sections
+          land at valid addresses instead of being emitted as ABSOLUTE with
+          the raw section-relative offset as their value. }
+        for i:=0 to ObjDataList.Count-1 do
+          begin
+            objdata:=TObjData(ObjDataList[i]);
+            for j:=0 to objdata.ObjSectionList.Count-1 do
+              begin
+                objsec:=TObjSection(objdata.ObjSectionList[j]);
+                if assigned(objsec.ExeSection) then
+                  continue;
+                if oso_debug in objsec.SecOptions then
+                  continue;
+                if not (oso_load in objsec.SecOptions) then
+                  continue;
+                { Associative COMDAT sections follow their parent; let
+                  MarkTargetSpecificSections handle them. }
+                if (oso_comdat in objsec.SecOptions) and
+                   (objsec.ComdatSelection=oscs_associative) then
+                  continue;
+                if oso_executable in objsec.SecOptions then
+                  targetname:='.text'
+                else if oso_data in objsec.SecOptions then
+                  begin
+                    if oso_write in objsec.SecOptions then
+                      targetname:='.data'
+                    else
+                      targetname:='.rdata';
+                  end
+                else
+                  targetname:='.bss';
+                exesec:=FindExeSection(targetname);
+                if not assigned(exesec) then
+                  continue;
+                exesec.AddObjSection(objsec);
+              end;
+          end;
       end;
 
 
@@ -3672,9 +4126,12 @@ const pemagic : array[0..3] of byte = (
     procedure TPECoffexeoutput.GenerateLibraryImports(ImportLibraryList:TFPHashObjectList);
       var
         i,j: longint;
+        origCount: longint;
         ImportLibrary: TImportLibrary;
-        ImportSymbol: TImportSymbol;
-        exesym: TExeSymbol;
+        ImportSymbol,
+        impImportSymbol: TImportSymbol;
+        baseExeSym,
+        impExeSym: TExeSymbol;
       begin
         { Here map import symbols to exe symbols and create necessary sections.
           Actual import generation is done after unused sections (and symbols) are removed. }
@@ -3695,15 +4152,50 @@ const pemagic : array[0..3] of byte = (
         for i:=0 to ImportLibraryList.Count-1 do
           begin
             ImportLibrary:=TImportLibrary(ImportLibraryList[i]);
-            for j:=0 to ImportLibrary.ImportSymbolList.Count-1 do
+            { Snapshot original count - we may add new entries below }
+            origCount:=ImportLibrary.ImportSymbolList.Count;
+            for j:=0 to origCount-1 do
               begin
                 ImportSymbol:=TImportSymbol(ImportLibrary.ImportSymbolList[j]);
-                exesym:=TExeSymbol(ExeSymbolList.Find(ImportSymbol.MangledName));
-                if assigned(exesym) and
-                   (exesym.State<>symstate_defined) then
+                baseExeSym:=TExeSymbol(ExeSymbolList.Find(ImportSymbol.MangledName));
+                impExeSym:=TExeSymbol(ExeSymbolList.Find('__imp_'+ImportSymbol.MangledName));
+                if assigned(baseExeSym) and
+                   (baseExeSym.State<>symstate_defined) then
                   begin
-                    ImportSymbol.CachedExeSymbol:=exesym;
-                    exesym.State:=symstate_defined;
+                    ImportSymbol.CachedExeSymbol:=baseExeSym;
+                    baseExeSym.State:=symstate_defined;
+                  end;
+                { When both base name and __imp_+name are unresolved (MSVC
+                  archives map both to the same short import member), we need
+                  TWO import entries: a jmp thunk for the base name, and a
+                  direct IAT pointer for __imp_. If only __imp_ is unresolved,
+                  morph this entry to IsVar=true. }
+                if assigned(impExeSym) and
+                   (impExeSym.State<>symstate_defined) then
+                  begin
+                    if ImportSymbol.CachedExeSymbol=baseExeSym then
+                      begin
+                        { Base is being handled - add a second entry for __imp_.
+                          Name must keep the original DLL export (used by the
+                          PE loader to look up the function in the DLL); only
+                          MangledName carries the __imp_ prefix so the internal
+                          FPC symbol matches the COFF relocation target. }
+                        impImportSymbol:=TImportSymbol.Create(
+                          ImportLibrary.ImportSymbolList,
+                          ImportSymbol.Name,
+                          '__imp_'+ImportSymbol.MangledName,
+                          ImportSymbol.OrdNr,
+                          true);
+                        impImportSymbol.CachedExeSymbol:=impExeSym;
+                        impExeSym.State:=symstate_defined;
+                      end
+                    else
+                      begin
+                        { No base reference - just morph this entry }
+                        ImportSymbol.CachedExeSymbol:=impExeSym;
+                        ImportSymbol.IsVar:=true;
+                        impExeSym.State:=symstate_defined;
+                      end;
                   end;
               end;
           end;

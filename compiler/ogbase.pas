@@ -126,6 +126,10 @@ interface
          RELOC_RVA,
          { PECoff (Windows) section relocation, required by DWARF2 debug info }
          RELOC_SECREL32,
+         { IMAGE_REL_AMD64_SECTION: 16-bit PE section index of the target.
+           Primarily used in MSVC .debug$S sections (SECREL + SECTION pairs)
+           but can appear in any section. Not present in FPC-generated objects. }
+         RELOC_SECTION,
          { Generate a 0 value at the place of the relocation,
            this is used to remove unused vtable entries }
          RELOC_ZERO,
@@ -263,6 +267,11 @@ interface
 
        { Darwin asm is using indirect symbols resolving }
        indsymbol  : TObjSymbol;
+
+       { COFF weak external alias: default symbol to resolve to }
+       DefaultSym : TObjSymbol;
+       { MSVC /alternatename: alternate symbol name (cross-object) }
+       DefaultSymName : ansistring;
 
        { Used by the OMF object format and its complicated relocation records }
        group: TObjSectionGroup;
@@ -422,6 +431,8 @@ interface
        FStabStrObjSec : TObjSection;
        FGroupsList : TFPHashObjectList;
        FCPUType : tcputype;
+       FDefaultLibs : TCmdStrList;
+       FNoDefaultLibs : TCmdStrList;
        procedure section_reset(p:TObject;arg:pointer);
        procedure section_afteralloc(p:TObject;arg:pointer);
        procedure section_afterwrite(p:TObject;arg:pointer);
@@ -491,6 +502,8 @@ interface
        property GroupsList:TFPHashObjectList read FGroupsList;
        property StabsSec:TObjSection read FStabsObjSec write FStabsObjSec;
        property StabStrSec:TObjSection read FStabStrObjSec write FStabStrObjSec;
+       property DefaultLibs:TCmdStrList read FDefaultLibs;
+       property NoDefaultLibs:TCmdStrList read FNoDefaultLibs;
        property CObjSymbol: TObjSymbolClass read FCObjSymbol write FCObjSymbol;
        { Current CPU type for the internal asm writer.
          Instructions, not supported by the given CPU should produce an error.
@@ -523,6 +536,13 @@ interface
       private
         FCObjData : TObjDataClass;
       protected
+        { Short import object results }
+        FIsShortImport : boolean;
+        FImportLibName : ansistring;
+        FImportSymName : ansistring;
+        FImportMangledName : ansistring;
+        FImportOrdinal : longint;
+        FImportIsVar : boolean;
         { reader }
         FReader    : TObjectReader;
         InputFileName : string;
@@ -533,6 +553,12 @@ interface
         function  ReadObjData(AReader:TObjectreader;out Data:TObjData):boolean;virtual;abstract;
         class function CanReadObjData(AReader:TObjectreader):boolean;virtual;
         procedure inputerror(const s : string);
+        property IsShortImport: boolean read FIsShortImport;
+        property ImportLibName: ansistring read FImportLibName;
+        property ImportSymName: ansistring read FImportSymName;
+        property ImportMangledName: ansistring read FImportMangledName;
+        property ImportOrdinal: longint read FImportOrdinal;
+        property ImportIsVar: boolean read FImportIsVar;
       end;
       TObjInputClass=class of TObjInput;
 
@@ -635,6 +661,7 @@ interface
         property ObjData:TObjData read GetObjData;
         property AsNeeded:Boolean read FAsNeeded write FAsNeeded;
         property Kind:TLibKind read FKind;
+        property Name:TCmdStr read FName;
       end;
 
       TImportLibrary = class(TFPHashObject)
@@ -655,8 +682,8 @@ interface
       public
         constructor create(AList:TFPHashObjectList;const AName,AMangledName:string;AOrdNr:longint;AIsVar:boolean);
         property OrdNr: longint read FOrdNr;
-        property MangledName: string read FMangledName;
-        property IsVar: boolean read FIsVar;
+        property MangledName: string read FMangledName write FMangledName;
+        property IsVar: boolean read FIsVar write FIsVar;
         property CachedExeSymbol: TExeSymbol read FCachedExeSymbol write FCachedExeSymbol;
       end;
 
@@ -683,6 +710,9 @@ interface
         FExeVTableList     : TFPObjectList;
         { Objects }
         FObjDataList  : TFPObjectList;
+        { MSVC /DEFAULTLIB and /NODEFAULTLIB directives }
+        FDefaultLibs      : TCmdStrList;
+        FNoDefaultLibs    : TCmdStrList;
         { Position calculation }
         FImageBase    : qword;
         FCurrMemPos       : qword;
@@ -748,7 +778,7 @@ interface
         procedure DataPos_Symbols;virtual;
         procedure BuildVTableTree(VTInheritList,VTEntryList:TFPObjectList);
         procedure PackUnresolvedExeSymbols(const s:string);
-        procedure ResolveSymbols(StaticLibraryList:TFPObjectList);
+        procedure ResolveSymbols(StaticLibraryList:TFPObjectList;ImportLibraryList:TFPHashObjectList);
         procedure PrintMemoryMap;
         procedure FixupSymbols;
         procedure FixupRelocations;virtual;
@@ -797,10 +827,12 @@ implementation
     uses
       SysUtils,
       globals,verbose,
+      fmodule,
 {$ifdef OMFOBJSUPPORT}
       omfbase,
 {$endif OMFOBJSUPPORT}
-      ogmap;
+      ogmap,
+      owar;
 
 {$ifdef MEMDEBUG}
     var
@@ -881,7 +913,9 @@ implementation
         if assigned(objsection) then
           result:=offset+objsection.mempos
         else
-          result:=0;
+          { Absolute symbols (COFF section=-1) have no section but
+            carry their value in offset (e.g. __tls_array = 0x2C) }
+          result:=offset;
       end;
 
 
@@ -1423,6 +1457,8 @@ implementation
         { section class type for creating of new sections }
         FCObjSection:=TObjSection;
         FCObjSectionGroup:=TObjSectionGroup;
+        FDefaultLibs:=TCmdStrList.Create;
+        FNoDefaultLibs:=TCmdStrList.Create;
 {$ifdef ARM}
         ThumbFunc:=false;
 {$endif ARM}
@@ -1445,6 +1481,10 @@ implementation
 {$endif}
         FGroupsList.free;
         FGroupsList := nil;
+        FDefaultLibs.free;
+        FDefaultLibs := nil;
+        FNoDefaultLibs.free;
+        FNoDefaultLibs := nil;
 
         { Sections }
 {$ifdef MEMDEBUG}
@@ -2390,6 +2430,8 @@ implementation
         FIndirectObjSymbols:=TFPObjectList.Create(false);
         FExeVTableList:=TFPObjectList.Create(false);
         ComdatGroups:=TFPHashList.Create;
+        FDefaultLibs:=TCmdStrList.Create;
+        FNoDefaultLibs:=TCmdStrList.Create;
         { sections }
         FExeSectionList:=TFPHashObjectList.Create(true);
         FImageBase:=0;
@@ -2427,6 +2469,10 @@ implementation
         FExeSectionList := nil;
         ComdatGroups.free;
         ComdatGroups := nil;
+        FDefaultLibs.free;
+        FDefaultLibs := nil;
+        FNoDefaultLibs.free;
+        FNoDefaultLibs := nil;
         FObjDatalist.free;
         FObjDatalist := nil;
         FWriter.free;
@@ -2530,6 +2576,11 @@ implementation
         objsec:=internalObjData.createsection('*__image_base__',0,[]);
         internalObjData.setsection(objsec);
         objsym:=internalObjData.SymbolDefine('__image_base__',AB_GLOBAL,AT_DATA);
+        exesym:=texesymbol.Create(FExeSymbolList,objsym.name);
+        exesym.ObjSymbol:=objsym;
+        { Define __ImageBase (MSVC/Clang style) as an alias
+          and use Cprefix as prefix, so i386 MSVC objects can reference ___ImageBase }
+        objsym:=internalObjData.SymbolDefine(target_info.Cprefix + '__ImageBase',AB_GLOBAL,AT_DATA);
         exesym:=texesymbol.Create(FExeSymbolList,objsym.name);
         exesym.ObjSymbol:=objsym;
       end;
@@ -2966,17 +3017,77 @@ implementation
       end;
 
 
-    procedure TExeOutput.ResolveSymbols(StaticLibraryList:TFPObjectList);
+    procedure TExeOutput.ResolveSymbols(StaticLibraryList:TFPObjectList;ImportLibraryList:TFPHashObjectList);
       var
         ObjData   : TObjData;
-        exesym    : TExeSymbol;
+        exesym,
+        altexesym : TExeSymbol;
         objsym,
         commonsym : TObjSymbol;
         firstarchive,
         firstcommon : boolean;
         i         : longint;
+        oldcount  : longint;
+        loadedmembers : TFPHashList;
+        processeddefaultlibs : TCmdStrList;
+        defaultlibname,
+        defaultlibfound : TCmdStr;
+        defaultlibreader : TObjectReader;
+        defaultlib : TStaticLibrary;
+        defaultlibObjInput : TObjInputClass;
         VTEntryList,
         VTInheritList : TFPObjectList;
+
+        function FindDefaultLibInPaths(const fname:TCmdStr;var foundfile:TCmdStr):boolean;
+          begin
+            result:=current_module.locallibrarysearchpath.FindFile(fname,false,foundfile) or
+                    librarysearchpath.FindFile(fname,false,foundfile);
+          end;
+
+        function FindDefaultLibFile(const libname:TCmdStr;var foundfile:TCmdStr):boolean;
+          var
+            basename : TCmdStr;
+            hasprefix : boolean;
+          begin
+            result:=false;
+            foundfile:='';
+            hasprefix:=(target_info.staticClibprefix<>'') and
+                       (copy(libname,1,length(target_info.staticClibprefix))=target_info.staticClibprefix);
+            { Try the name as-is (DEFAULTLIB names typically include extension) }
+            if FindDefaultLibInPaths(libname,foundfile) then
+              begin result:=true; exit; end;
+            { Try with staticClibprefix (e.g. ucrt.lib -> libucrt.lib) }
+            if (not hasprefix) and (target_info.staticClibprefix<>'') then
+              if FindDefaultLibInPaths(target_info.staticClibprefix+libname,foundfile) then
+                begin result:=true; exit; end;
+            { Try replacing extension with staticClibext }
+            basename:=ChangeFileExt(libname,'');
+            if basename<>libname then
+              begin
+                { e.g. libucrt.lib -> libucrt.a, or ucrt.lib -> ucrt.a }
+                if FindDefaultLibInPaths(basename+target_info.staticClibext,foundfile) then
+                  begin result:=true; exit; end;
+                { e.g. ucrt.lib -> libucrt.a (add prefix if not already present) }
+                if (not hasprefix) and (target_info.staticClibprefix<>'') then
+                  if FindDefaultLibInPaths(target_info.staticClibprefix+basename+target_info.staticClibext,foundfile) then
+                    begin result:=true; exit; end;
+              end
+            else
+              begin
+                { Name has no extension (e.g. "legacy_stdio_wide_specifiers").
+                  Try appending .lib, then .a, with and without prefix. }
+                if FindDefaultLibInPaths(libname+'.lib',foundfile) then
+                  begin result:=true; exit; end;
+                if (not hasprefix) and (target_info.staticClibprefix<>'') then
+                  if FindDefaultLibInPaths(target_info.staticClibprefix+libname+'.lib',foundfile) then
+                    begin result:=true; exit; end;
+                if FindDefaultLibInPaths(libname+target_info.staticClibext,foundfile) then
+                  begin result:=true; exit; end;
+                if (not hasprefix) and (target_info.staticClibprefix<>'') then
+                  if FindDefaultLibInPaths(target_info.staticClibprefix+libname+target_info.staticClibext,foundfile) then
+                    begin result:=true; exit; end;
+              end;
+          end;
 
         procedure LoadObjDataSymbols(ObjData:TObjData);
         var
@@ -3047,7 +3158,7 @@ implementation
                 end
               else
                 begin
-                  if assigned(objsym.objsection) and assigned(exesym.objsymbol.objsection) then
+                  if assigned(objsym.objsection) and assigned(exesym.objsymbol) and assigned(exesym.objsymbol.objsection) then
                     begin
                       if (oso_comdat in exesym.ObjSymbol.objsection.SecOptions) and
                          (oso_comdat in objsym.objsection.SecOptions) then
@@ -3121,12 +3232,13 @@ implementation
                   end;
                 AB_EXTERNAL :
                   begin
+                    { /alternatename externals are treated as normal externals
+                      so the archive scanner can find the real definition.
+                      The alternate is only used as a fallback in FixupSymbols
+                      if the symbol remains unresolved after all libraries. }
                     ExternalObjSymbols.add(objsym);
-                    { Register unresolved symbols only the first time they
-                      are registered }
                     if exesym.ObjSymbol=objsym then
                       UnresolvedExeSymbols.Add(exesym)
-                    { Normal reference removes any existing "weakness" }
                     else if exesym.state=symstate_undefweak then
                       begin
                         exesym.state:=symstate_undefined;
@@ -3151,13 +3263,38 @@ implementation
                   end;
                 AB_WEAK_EXTERNAL :
                   begin
-                    if objsym.objsection=nil then          { a weak reference }
+                    if objsym.objsection=nil then
                       begin
-                        ExternalObjSymbols.add(objsym);
-                        if exesym.ObjSymbol=objsym then
+                        if assigned(objsym.DefaultSym) then
                           begin
-                            UnresolvedExeSymbols.Add(exesym);
-                            exesym.state:=symstate_undefweak;
+                            { Weak external alias (COFF): this symbol is a weak
+                              alias for DefaultSym. Treat as a weak definition so
+                              the symbol is considered resolved. The actual address
+                              comes from DefaultSym during FixupSymbols. }
+                            ExternalObjSymbols.add(objsym);
+                            if exesym.State in [symstate_undefined,symstate_undefweak] then
+                              begin
+                                exesym.ObjSymbol:=objsym;
+                                exesym.state:=symstate_defweak;
+                              end;
+                            { Ensure the default target gets loaded from archives.
+                              Register it as undefined (not undefweak) so the
+                              archive scanner will search for it. }
+                            if assigned(objsym.DefaultSym.ExeSymbol) then
+                              begin
+                                if objsym.DefaultSym.ExeSymbol.state=symstate_undefweak then
+                                  objsym.DefaultSym.ExeSymbol.state:=symstate_undefined;
+                              end;
+                          end
+                        else
+                          begin
+                            { a weak reference }
+                            ExternalObjSymbols.add(objsym);
+                            if exesym.ObjSymbol=objsym then
+                              begin
+                                UnresolvedExeSymbols.Add(exesym);
+                                exesym.state:=symstate_undefweak;
+                              end;
                           end;
                       end
                     else                                   { a weak definition }
@@ -3173,6 +3310,11 @@ implementation
                   internalerror(2019050510);
               end;
             end;
+          { Collect DEFAULTLIB/NODEFAULTLIB directives from this object }
+          while not ObjData.DefaultLibs.Empty do
+            FDefaultLibs.Insert(ObjData.DefaultLibs.GetFirst);
+          while not ObjData.NoDefaultLibs.Empty do
+            FNoDefaultLibs.Insert(ObjData.NoDefaultLibs.GetFirst);
         end;
 
         procedure LoadLibrary(lib:TStaticLibrary);
@@ -3181,6 +3323,8 @@ implementation
             members: TFPObjectList;
             exesym: TExeSymbol;
             objinput: TObjInput;
+            ImportLib: TImportLibrary;
+            memberkey: ansistring;
           begin
             case lib.Kind of
               lkArchive:
@@ -3192,11 +3336,29 @@ implementation
                   while (j<UnresolvedExeSymbols.count) do
                     begin
                       exesym:=TExeSymbol(UnresolvedExeSymbols[j]);
-                      { Check first if the symbol is still undefined }
-                      if (exesym.State=symstate_undefined) then
+                      { Check if the symbol is undefined, or weakly defined
+                        (e.g. via /alternatename fallback) so a strong
+                        definition from an archive can override it }
+                      if (exesym.State in [symstate_undefined,symstate_defweak]) then
                         begin
-                          if lib.ArReader.OpenFile(exesym.name) then
+                          if lib.ArReader.OpenFile(exesym.name) or
+                             lib.ArReader.OpenFile('__imp_'+exesym.name) then
                             begin
+                              { Build unique key: archive path + member file offset }
+                              memberkey:=lib.ArReader.FileName+'#'+tostr(tarobjectreader(lib.ArReader).MemberPos);
+                              { Skip members already loaded on a previous pass to prevent
+                                duplicate COMDAT sections and avoid wasteful re-parsing }
+                              if loadedmembers.FindIndexOf(memberkey)>=0 then
+                                begin
+                                  lib.ArReader.CloseFile;
+                                  inc(j);
+                                  continue;
+                                end;
+                              { Use pointer(1) instead of nil because TFPHashList
+                                (TViHashList) InternalFind skips entries with nil
+                                Data due to its Assigned(it^.Data) check, making
+                                both Find and FindIndexOf unable to locate them. }
+                              loadedmembers.Add(memberkey,pointer(1));
                               if assigned(exemap) then
                                 begin
                                   if firstarchive then
@@ -3211,11 +3373,35 @@ implementation
                                     '('+exesym.Name+')');
                                 end;
                               objinput:=lib.ObjInputClass.Create;
-                              objinput.ReadObjData(lib.ArReader,objdata);
+                              if objinput.ReadObjData(lib.ArReader,objdata) then
+                                begin
+                                  AddObjData(objdata);
+                                  LoadObjDataSymbols(objdata);
+                                end
+                              else if objinput.IsShortImport then
+                                begin
+                                  { Register DLL import from short import object }
+                                  ImportLib:=TImportLibrary(ImportLibraryList.Find(
+                                    objinput.ImportLibName));
+                                  if not assigned(ImportLib) then
+                                    ImportLib:=TImportLibrary.Create(ImportLibraryList,
+                                      objinput.ImportLibName);
+                                  if not assigned(ImportLib.ImportSymbolList.Find(
+                                      objinput.ImportSymName)) then
+                                    TImportSymbol.Create(
+                                      ImportLib.ImportSymbolList,
+                                      objinput.ImportSymName,
+                                      objinput.ImportMangledName,
+                                      objinput.ImportOrdinal,
+                                      objinput.ImportIsVar);
+                                  { Mark as weakly defined so later static libraries
+                                    don't override the DLL import, but allow a strong
+                                    definition to take precedence if needed }
+                                  if exesym.State=symstate_undefined then
+                                    exesym.State:=symstate_defweak;
+                                end;
                               objinput.free;
-                              objinput := nil;
-                              AddObjData(objdata);
-                              LoadObjDataSymbols(objdata);
+                              objinput:=nil;
                               lib.ArReader.CloseFile;
                             end;
                          end;
@@ -3266,10 +3452,91 @@ implementation
           end;
         PackUnresolvedExeSymbols('in objects');
 
-        { Step 2, Find unresolved symbols in the libraries }
+        { Step 2, Find unresolved symbols in the libraries.
+          Rescan all archives until no new symbols are resolved,
+          to handle circular dependencies between static libraries.
+          Also process /DEFAULTLIB: directives from MSVC objects. }
         firstarchive:=true;
+        loadedmembers:=TFPHashList.Create;
+        processeddefaultlibs:=TCmdStrList.Create_No_Double;
+        { Pre-populate with basenames of libraries already loaded by the user,
+          so DEFAULTLIB directives for them are skipped without filesystem searches.
+          Also pick up ObjInputClass from the first archive for DEFAULTLIB loading. }
+        defaultlibObjInput:=nil;
         for i:=0 to StaticLibraryList.Count-1 do
-          LoadLibrary(TStaticLibrary(StaticLibraryList[i]));
+          begin
+            defaultlib:=TStaticLibrary(StaticLibraryList[i]);
+            if defaultlib.Kind=lkArchive then
+              begin
+                if not assigned(defaultlibObjInput) then
+                  defaultlibObjInput:=defaultlib.ObjInputClass;
+                defaultlibname:=LowerCase(ExtractFileName(defaultlib.Name));
+                processeddefaultlibs.Insert(defaultlibname);
+                { Also add without extension so "ucrt" matches "ucrt.lib" and "ucrt.a" }
+                defaultlibfound:=LowerCase(ChangeFileExt(ExtractFileName(defaultlib.Name),''));
+                processeddefaultlibs.Insert(defaultlibfound);
+              end;
+          end;
+        repeat
+          oldcount:=UnresolvedExeSymbols.count;
+          for i:=0 to StaticLibraryList.Count-1 do
+            LoadLibrary(TStaticLibrary(StaticLibraryList[i]));
+          { Process /DEFAULTLIB: directives - filter by /NODEFAULTLIB: and load.
+            Only search for DEFAULTLIB libraries when there are unresolved
+            symbols remaining, to avoid unnecessary filesystem searches and
+            archive loading. }
+          if assigned(defaultlibObjInput) and (UnresolvedExeSymbols.count>0) then
+            while not FDefaultLibs.Empty do
+              begin
+                defaultlibname:=FDefaultLibs.GetFirst;
+                { Check if suppressed by /NODEFAULTLIB: or /DISALLOWLIB: }
+                if FNoDefaultLibs.Find(defaultlibname)<>nil then
+                  continue;
+                { Skip if already processed (check both full name and basename) }
+                if processeddefaultlibs.Find(LowerCase(defaultlibname))<>nil then
+                  continue;
+                defaultlibfound:=LowerCase(ChangeFileExt(defaultlibname,''));
+                if processeddefaultlibs.Find(defaultlibfound)<>nil then
+                  continue;
+                processeddefaultlibs.Insert(LowerCase(defaultlibname));
+                if defaultlibfound<>LowerCase(defaultlibname) then
+                  processeddefaultlibs.Insert(defaultlibfound);
+                { Find the library file }
+                if FindDefaultLibFile(defaultlibname,defaultlibfound) then
+                  begin
+                    Comment(V_Tried,'DEFAULTLIB: loading '+defaultlibfound);
+                    defaultlibreader:=TArObjectReader.createAr(defaultlibfound,true);
+                    if (ErrorCount=0) and defaultlibreader.isarchive then
+                      begin
+                        defaultlib:=TStaticLibrary.Create(defaultlibfound,defaultlibreader,defaultlibObjInput);
+                        StaticLibraryList.Add(defaultlib);
+                      end
+                    else
+                      defaultlibreader.Free;
+                  end;
+              end;
+          { Ensure /alternatename: targets are registered so the archive
+            scanner can find members that define them. If an unresolved
+            symbol has DefaultSymName set and that target is not yet in
+            ExeSymbolList, register it as undefined so the next rescan
+            iteration will search archives for it. }
+          for i:=0 to UnresolvedExeSymbols.count-1 do
+            begin
+              exesym:=TExeSymbol(UnresolvedExeSymbols[i]);
+              if (exesym.State=symstate_undefined) and
+                 assigned(exesym.ObjSymbol) and
+                 (exesym.ObjSymbol.DefaultSymName<>'') then
+                begin
+                  if not assigned(TExeSymbol(FExeSymbolList.Find(exesym.ObjSymbol.DefaultSymName))) then
+                    begin
+                      altexesym:=TExeSymbol.Create(FExeSymbolList,exesym.ObjSymbol.DefaultSymName);
+                      UnresolvedExeSymbols.Add(altexesym);
+                    end;
+                end;
+            end;
+        until UnresolvedExeSymbols.count=oldcount;
+        loadedmembers.Free;
+        processeddefaultlibs.Free;
 
         PackUnresolvedExeSymbols('after static libraries');
 
@@ -3496,8 +3763,45 @@ implementation
       var
         i      : longint;
         objsym : TObjSymbol;
-        exesym : TExeSymbol;
+        exesym,
+        altexesym : TExeSymbol;
       begin
+        { Resolve weak external aliases and /alternatename fallbacks BEFORE
+          reporting unresolved symbols, so alternates get a chance to resolve. }
+        for i:=0 to FExeSymbolList.Count-1 do
+          begin
+            exesym:=TExeSymbol(FExeSymbolList.Items[i]);
+            if not (exesym.state in [symstate_defweak,symstate_undefined,
+                                     symstate_undefweak]) then
+              continue;
+            if not assigned(exesym.ObjSymbol) then
+              continue;
+            { Try DefaultSym (same-object alias) first }
+            if assigned(exesym.ObjSymbol.DefaultSym) then
+              begin
+                if assigned(exesym.ObjSymbol.DefaultSym.ExeSymbol) then
+                  begin
+                    if exesym.ObjSymbol.DefaultSym.ExeSymbol.state in
+                       [symstate_defined,symstate_defweak] then
+                      begin
+                        exesym.ObjSymbol:=exesym.ObjSymbol.DefaultSym.ExeSymbol.ObjSymbol;
+                        exesym.state:=symstate_defined;
+                      end;
+                  end;
+              end
+            { Try DefaultSymName (cross-object /alternatename) }
+            else if exesym.ObjSymbol.DefaultSymName<>'' then
+              begin
+                altexesym:=TExeSymbol(FExeSymbolList.Find(exesym.ObjSymbol.DefaultSymName));
+                if assigned(altexesym) and (altexesym.state in
+                   [symstate_defined,symstate_defweak]) then
+                  begin
+                    exesym.ObjSymbol:=altexesym.ObjSymbol;
+                    exesym.state:=symstate_defined;
+                  end;
+              end;
+          end;
+
         { Print list of Unresolved External symbols }
         if not AllowUndefinedSymbols then
           for i:=0 to UnresolvedExeSymbols.count-1 do
@@ -3542,14 +3846,22 @@ implementation
               internalerror(200606242);
             UpdateSymbol(objsym);
             { Collect symbols that resolve to indirect functions,
-              they will need additional target-specific processing. }
+              they will need additional target-specific processing.
+              Symbols with objsection<>nil are removed, remaining ones
+              will be processed again when FixupSymbols is called after
+              import thunk generation. Also remove symbols that resolved
+              to absolute values (bind changed but objsection stays nil)
+              since they won't benefit from a second pass. }
             if objsym.typ=AT_GNU_IFUNC then
               IndirectObjSymbols.Add(objsym)
-            else if assigned(objsym.objsection) then
+            else if assigned(objsym.objsection) or
+                    (objsym.bind<>AB_EXTERNAL) then
               ExternalObjSymbols[i]:=nil;
           end;
         CommonObjSymbols.Clear;
         ExternalObjSymbols.Pack;
+
+        { alias resolution already done above, before error reporting }
       end;
 
 
@@ -3904,11 +4216,19 @@ implementation
           while ObjSectionWorkList.Count>0 do
             begin
               objsec:=TObjSection(ObjSectionWorkList.Last);
+              ObjSectionWorkList.Delete(ObjSectionWorkList.Count-1);
+              { Sections discovered through relocations may not have been
+                matched by any linker script pattern, so they have no
+                ExeSection. We still follow their relocations to mark
+                further referenced sections, but skip layout processing. }
               if not assigned(objsec.exesection) then
-                internalerror(202102001);
+                begin
+                  for i:=0 to objsec.ObjRelocations.count-1 do
+                    DoReloc(TObjRelocation(objsec.ObjRelocations[i]));
+                  continue;
+                end;
               if assigned(exemap) then
                 exemap.Add('Keeping '+objsec.FullName+' '+ToStr(objsec.ObjRelocations.Count)+' references');
-              ObjSectionWorkList.Delete(ObjSectionWorkList.Count-1);
 
               { Process Relocations }
               for i:=0 to objsec.ObjRelocations.count-1 do
@@ -3985,6 +4305,32 @@ implementation
         repeat
           MarkTargetSpecificSections(ObjSectionWorkList);
           if (ObjSectionWorkList.Count=0) then
+            break;
+          ProcessWorkList;
+        until False;
+
+        { Cascade Used flag along associative COMDAT chains.
+          Loop handles deep chains (A->B->C) where multiple
+          passes may be needed to propagate the Used flag. }
+        repeat
+          ObjSectionWorkList.Clear;
+          for i:=0 to ObjDataList.Count-1 do
+            begin
+              ObjData:=TObjData(ObjDataList[i]);
+              for j:=0 to ObjData.ObjSectionList.Count-1 do
+                begin
+                  objsec:=TObjSection(ObjData.ObjSectionList[j]);
+                  if objsec.Used then
+                    continue;
+                  if (oso_comdat in objsec.SecOptions) and
+                     (objsec.ComdatSelection=oscs_associative) and
+                     assigned(objsec.AssociativeSection) and
+                     assigned(objsec.ExeSection) and
+                     objsec.AssociativeSection.Used then
+                    AddToObjSectionWorkList(objsec);
+                end;
+            end;
+          if ObjSectionWorkList.Count=0 then
             break;
           ProcessWorkList;
         until False;

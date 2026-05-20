@@ -128,6 +128,7 @@
   {$define cpucapabilities}
   {$define fpucapabilities}
   {$define cpucg64shiftsupport}
+  {$define symansistr}
 {$endif i386}
 
 {$ifdef x86_64}
@@ -147,6 +148,7 @@
   {$define cpucapabilities}
   {$define fpucapabilities}
   {$define support_rodata}
+  {$define symansistr}
 {$endif x86_64}
 
 {$ifdef sparc}

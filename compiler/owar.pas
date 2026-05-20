@@ -82,9 +82,10 @@ type
   public
     constructor createAr(const Aarfn:string;allow_nonar:boolean=false);override;
     destructor  destroy;override;
-    function  openfile(const fn:string):boolean;override;
+    function  openfile(const fn:TPathStr):boolean;override;
     procedure closefile;override;
     procedure seek(len:longint);override;
+    property MemberPos: longint read CurrMemberPos;
   end;
 
 
@@ -420,7 +421,7 @@ implementation
               end;
             p:=@LFNStrs[lfnidx];
             hsp:=@result[1];
-            while p^<>#10 do
+            while (p^<>#10) and (p^<>#0) do
               begin
                 hsp^:=p^;
                 inc(p);
@@ -467,7 +468,7 @@ implementation
         relocsize,
         symsize     : longint;
         arsym       : TArSymbol;
-        s           : string;
+        s           : ansistring;
         currp,
         endp,
         startp      : integer;
@@ -488,7 +489,7 @@ implementation
             exit;
           end;
         { Read relocs }
-        setlength(Relocs,relocsize);
+        setlength(Relocs,nrelocs);
         Read(relocs[0],relocsize);
         { Read symbols, force terminating #0 to prevent overflow }
         setlength(syms,symsize+1);
@@ -516,9 +517,27 @@ implementation
           end;
         relocs:=nil;
         syms:=nil;
-        { LFN names }
+        { AR format requires each member to be aligned to a 2-byte boundary.
+          If the first symbol table member has an odd size, there is a 1-byte
+          padding before the next member header. }
+        if odd(currfilesize) then
+          inherited Seek(inherited GetPos + 1);
+
+        { LFN names - handle archives with optional second linker member }
         Read(currarhdr,sizeof(currarhdr));
-        if DecodeMemberName(currarhdr)='/' then
+
+        { Second linker member '/' (Windows/LLVM style) - skip it }
+        if (currarhdr.name[0]='/') and (currarhdr.name[1]=' ') then
+          begin
+            currfilesize:=DecodeMemberSize(currarhdr);
+            inherited Seek(inherited GetPos + currfilesize);
+            if odd(currfilesize) then
+              inherited Seek(inherited GetPos + 1);
+            Read(currarhdr,sizeof(currarhdr));
+          end;
+
+        { Long filename table '//' }
+        if (currarhdr.name[0]='/') and (currarhdr.name[1]='/') then
           begin
             lfnsize:=DecodeMemberSize(currarhdr);
             setLength(lfnstrs,lfnsize);
@@ -527,7 +546,7 @@ implementation
       end;
 
 
-    function  tarobjectreader.openfile(const fn:string):boolean;
+    function  tarobjectreader.openfile(const fn:TPathStr):boolean;
       var
         arsym : TArSymbol;
         arhdr : TArHdr;

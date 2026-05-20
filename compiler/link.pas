@@ -587,7 +587,11 @@ Implementation
       begin
         if s='' then
          exit;
-        found:=FindLibraryFile(s,target_info.staticclibprefix,target_info.staticclibext,ns);
+        { On Windows, .lib files should be found as-is without prefix/extension mangling }
+        if (target_info.system in systems_windows) and (CompareText(ExtractFileExt(s),'.lib')=0) then
+          found:=FindLibraryFile(s,'','',ns)
+        else
+          found:=FindLibraryFile(s,target_info.staticclibprefix,target_info.staticclibext,ns);
         if not(cs_link_nolink in current_settings.globalswitches) and (not found) then
          Message1(exec_w_libfile_not_found,s);
         StaticLibFiles.Concat(ns);
@@ -2110,7 +2114,7 @@ Implementation
         ParseScript_Load;
         if ErrorCount>0 then
           goto myexit;
-        exeoutput.ResolveSymbols(StaticLibraryList);
+        exeoutput.ResolveSymbols(StaticLibraryList,ImportLibraryList);
         { Generate symbols and code to do the importing }
         exeoutput.GenerateLibraryImports(ImportLibraryList);
         { Fill external symbols data }
