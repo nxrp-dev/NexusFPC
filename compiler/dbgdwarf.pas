@@ -275,6 +275,7 @@ interface
         procedure insert_cu_header_after_version; override;
       public
         function  dwarf_version: Word; override;
+        function dwarf_line_version: Word; override;
       end;
 
 
@@ -4634,6 +4635,11 @@ implementation
     function TDebugInfoDwarf5.dwarf_version: Word;
     begin
       Result:=5;
+    end;
+
+    function TDebugInfoDwarf5.dwarf_line_version: Word;
+    begin
+      Result := 5;
     end;
 
 
