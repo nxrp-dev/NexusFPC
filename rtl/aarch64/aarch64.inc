@@ -149,8 +149,15 @@ procedure SysInitFPU;
     setfpcr(getfpcr and $ff3fffff);
     { clear all "exception happened" flags we care about}
     setfpsr(getfpsr and not(fpu_exception_mask shr fpu_exception_mask_to_status_mask_shift));
-    { enable invalid operations, overflow and division by zero exceptions. }
+    { On Darwin/AArch64 (Apple Silicon) the FPCR trap-enable bits are
+      functional, unlike other AArch64 where they are RAZ/WI. Enabling
+      them causes EXC_BAD_INSTRUCTION inside AppKit during NSWindow
+      initialisation (_NSGetCGFloatAppConfig performs FP ops that trap).
+      Leave the bits CLEAR; somehow soft-float exception masking still works. }
+{$IFNDEF DARWIN}
+    { enable invalid operations and division by zero exceptions. }
     setfpcr(((getfpcr and not(fpu_exception_mask)) or fpu_dze or fpu_ofe or fpu_ioe));
+{$ENDIF}
     softfloat_exception_mask:=[float_flag_underflow,float_flag_inexact,float_flag_denormal];
     softfloat_exception_flags:=[];
   end;
