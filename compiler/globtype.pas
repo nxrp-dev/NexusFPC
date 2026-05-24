@@ -272,6 +272,9 @@ interface
           { Simulate C++ debug information in DWARF. It can be used for }
           { debuggers, which do not support Pascal.                     }
           ds_dwarf_cpp,
+          { Write dwarf info that may not be supported by gdb/lldb,     }
+          { but can be used by FpDebug.                                 }
+          ds_dwarf_fpd,
           { emit line number information in LINNUM/LINNUM32 records,    }
           { using the MS LINK format, for targets that use the OMF      }
           { object format. This option is useful for compatibility with }
@@ -461,7 +464,7 @@ interface
        );
 
        DebugSwitchStr : array[tdebugswitch] of string[22] = ('',
-         'DWARFSETS','STABSABSINCLUDES','DWARFMETHODCLASSPREFIX','DWARFCPP','DWARFOMFLINNUM');
+         'DWARFSETS','STABSABSINCLUDES','DWARFMETHODCLASSPREFIX','DWARFCPP','DWARFFPD','DWARFOMFLINNUM');
 
        TargetSwitchStr : array[ttargetswitch] of ttargetswitchinfo = (
          (name: '';                    hasvalue: false; isglobal: true ; define: ''),

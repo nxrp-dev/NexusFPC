@@ -4783,7 +4783,7 @@ implementation
 
     procedure TDebugInfoDwarf4.appenddef_string(list: TAsmList; def: tstringdef);
       begin
-        if (ds_dwarf_cpp in current_settings.debugswitches) then
+        if not(ds_dwarf_fpd in current_settings.debugswitches) then
           begin
             // At least LLDB 6.0.0 does not like this implementation of string types.
             // And GDB also does not handle it correct
@@ -4840,7 +4840,7 @@ implementation
 
     procedure TDebugInfoDwarf5.appenddef_string(list: TAsmList; def: tstringdef);
       begin
-        if (ds_dwarf_cpp in current_settings.debugswitches) then
+        if not(ds_dwarf_fpd in current_settings.debugswitches) then
           begin
             // At least LLDB 6.0.0 does not like this implementation of string types.
             // And GDB also does not handle it correct
