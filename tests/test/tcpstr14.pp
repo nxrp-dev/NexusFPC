@@ -9,5 +9,9 @@ var
 begin
   Str(123, s866);
   if StringCodePage(s866) <> 866 then
-    halt(1);
+    begin
+      WriteLn('FAILED: Expected 866 but got ', StringCodePage(s866));
+      halt(1);
+    end;
+  WriteLn('ok');
 end.
