@@ -109,6 +109,14 @@ type
     procedure TestWPO_RTTI_PublishedField;
     procedure TestWPO_RTTI_TypeInfo;
     procedure TestWPO_RTTI_PrivateField;
+
+    // TruncateIntegersOnOverflow
+    procedure TestOptTruncateIntegersOnOverflow_OperatorsByte;
+    procedure TestOptTruncateIntegersOnOverflow_OperatorsShortInt;
+    procedure TestOptTruncateIntegersOnOverflow_OperatorsWord;
+    procedure TestOptTruncateIntegersOnOverflow_OperatorsSmallInt;
+    procedure TestOptTruncateIntegersOnOverflow_OperatorsLongWord;
+    procedure TestOptTruncateIntegersOnOverflow_OperatorsLongInt;
   end;
 
 implementation
@@ -2671,6 +2679,188 @@ begin
     '});',
     '']);
   CheckDiff('TestWPO_RTTI_PrivateField',ExpectedSrc,ActualSrc);
+end;
+
+procedure TTestOptimizations.TestOptTruncateIntegersOnOverflow_OperatorsByte;
+begin
+  StartProgram(false);
+  Add([
+  '{$optimization JSTruncateIntegersOnOverflow ON}',
+  'var',
+  '  a, b: Byte;',
+  'begin',
+  '  a := b + 1;',
+  '  a := b - 1;',
+  '  a := b * 2;',
+  '  a := not b;',
+  '  Inc(a);',
+  '']);
+  ConvertProgram;
+  CheckSource('TestOptTruncateIntegersOnOverflow_OperatorsByte',
+    LinesToStr([
+    'this.a = 0;',
+    'this.b = 0;',
+    '']),
+    LinesToStr([
+    '$mod.a = ($mod.b + 1) & 255;',
+    '$mod.a = ($mod.b - 1) & 255;',
+    '$mod.a = ($mod.b * 2) & 255;',
+    '$mod.a = $mod.b ^ 255;',
+    '$mod.a = ($mod.a + 1) & 255;',
+    '']));
+end;
+
+procedure TTestOptimizations.TestOptTruncateIntegersOnOverflow_OperatorsShortInt;
+begin
+  StartProgram(false);
+  Add([
+  '{$optimization JSTruncateIntegersOnOverflow ON}',
+  'var',
+  '  a, b: ShortInt;',
+  'begin',
+  '  a := b + 1;',
+  '  a := b - 1;',
+  '  a := b * 2;',
+  '  a := not b;',
+  '  Dec(a);',
+  '']);
+  ConvertProgram;
+  CheckSource('TestOptTruncateIntegersOnOverflow_OperatorsShortInt',
+    LinesToStr([
+    'this.a = 0;',
+    'this.b = 0;',
+    '']),
+    LinesToStr([
+    '$mod.a = ((($mod.b + 1) & 255) << 24) >> 24;',
+    '$mod.a = ((($mod.b - 1) & 255) << 24) >> 24;',
+    '$mod.a = ((($mod.b * 2) & 255) << 24) >> 24;',
+    '$mod.a = ~$mod.b;',
+    '$mod.a = ((($mod.a - 1) & 255) << 24) >> 24;',
+    '']));
+end;
+
+procedure TTestOptimizations.TestOptTruncateIntegersOnOverflow_OperatorsWord;
+begin
+  StartProgram(false);
+  Add([
+  '{$optimization JSTruncateIntegersOnOverflow ON}',
+  'var',
+  '  a, b: Word;',
+  'begin',
+  '  a := b + 1;',
+  '  a := b * 2;',
+  '  a := b shl 1;',
+  '  a := not b;',
+  '  Inc(a, 10);',
+  '']);
+  ConvertProgram;
+  CheckSource('TestOptTruncateIntegersOnOverflow_OperatorsWord',
+    LinesToStr([
+    'this.a = 0;',
+    'this.b = 0;',
+    '']),
+    LinesToStr([
+    '$mod.a = ($mod.b + 1) & 65535;',
+    '$mod.a = ($mod.b * 2) & 65535;',
+    '$mod.a = ($mod.b << 1) & 65535;',
+    '$mod.a = $mod.b ^ 65535;',
+    '$mod.a = ($mod.a + 10) & 65535;',
+    '']));
+end;
+
+procedure TTestOptimizations.TestOptTruncateIntegersOnOverflow_OperatorsSmallInt;
+begin
+  StartProgram(false);
+  Add([
+  '{$optimization JSTruncateIntegersOnOverflow ON}',
+  'var',
+  '  a, b: SmallInt;',
+  'begin',
+  '  a := b + 1;',
+  '  a := b * 2;',
+  '  a := b shl 1;',
+  '  a := not b;',
+  '  Dec(a, 10);',
+  '']);
+  ConvertProgram;
+  CheckSource('TestOptTruncateIntegersOnOverflow_OperatorsSmallInt',
+    LinesToStr([
+    'this.a = 0;',
+    'this.b = 0;',
+    '']),
+    LinesToStr([
+    '$mod.a = ((($mod.b + 1) & 65535) << 16) >> 16;',
+    '$mod.a = ((($mod.b * 2) & 65535) << 16) >> 16;',
+    '$mod.a = ((($mod.b << 1) & 65535) << 16) >> 16;',
+    '$mod.a = ~$mod.b;',
+    '$mod.a = ((($mod.a - 10) & 65535) << 16) >> 16;',
+    '']));
+end;
+
+procedure TTestOptimizations.TestOptTruncateIntegersOnOverflow_OperatorsLongWord;
+begin
+  StartProgram(false);
+  Add([
+  '{$optimization JSTruncateIntegersOnOverflow ON}',
+  'var',
+  '  a, b, c: LongWord;',
+  'begin',
+  '  a := b + 1;',
+  '  a := b - 1;',
+  '  a := b * c;',
+  '  a := b shl 1;',
+  '  a := b or c;',
+  '  a := not b;',
+  '  Inc(a);',
+  '']);
+  ConvertProgram;
+  CheckSource('TestOptTruncateIntegersOnOverflow_OperatorsLongWord',
+    LinesToStr([
+    'this.a = 0;',
+    'this.b = 0;',
+    'this.c = 0;',
+    '']),
+    LinesToStr([
+    '$mod.a = ($mod.b + 1) >>> 0;',
+    '$mod.a = ($mod.b - 1) >>> 0;',
+    '$mod.a = ($mod.b * $mod.c) >>> 0;',
+    '$mod.a = ($mod.b << 1) >>> 0;',
+    '$mod.a = ($mod.b | $mod.c) >>> 0;',
+    '$mod.a = ~$mod.b >>> 0;',
+    '$mod.a = ($mod.a + 1) >>> 0;',
+    '']));
+end;
+
+procedure TTestOptimizations.TestOptTruncateIntegersOnOverflow_OperatorsLongInt;
+begin
+  StartProgram(false);
+  Add([
+  '{$optimization JSTruncateIntegersOnOverflow ON}',
+  'var',
+  '  a, b, c: LongInt;',
+  'begin',
+  '  a := b + 1;',
+  '  a := b - 1;',
+  '  a := b * c;',
+  '  a := b + -c;',
+  '  a := not b;',
+  '  Inc(a);',
+  '']);
+  ConvertProgram;
+  CheckSource('TestOptTruncateIntegersOnOverflow_OperatorsLongInt',
+    LinesToStr([
+    'this.a = 0;',
+    'this.b = 0;',
+    'this.c = 0;',
+    '']),
+    LinesToStr([
+    '$mod.a = ($mod.b + 1) | 0;',
+    '$mod.a = ($mod.b - 1) | 0;',
+    '$mod.a = ($mod.b * $mod.c) | 0;',
+    '$mod.a = ($mod.b + -$mod.c) | 0;',
+    '$mod.a = ~$mod.b;',
+    '$mod.a = ($mod.a + 1) | 0;',
+    '']));
 end;
 
 Initialization
