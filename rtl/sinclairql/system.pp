@@ -42,7 +42,7 @@ const
     FileNameCaseSensitive = false;
     FileNameCasePreserving = false;
     maxExitCode = 255;
-    MaxPathLen = 255;
+    MaxPathLen = 42;
     AllFilesMask = '*.*';
 
     sLineBreak = LineEnding;
@@ -78,7 +78,6 @@ type
     errorHandle: longint;
     userData: pointer;
   end;
-
 
 
 function SetQLJobName(const s: shortstring): longint;

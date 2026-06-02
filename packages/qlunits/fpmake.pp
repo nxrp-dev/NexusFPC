@@ -34,11 +34,22 @@ begin
     T:=P.Targets.AddUnit('qlutil.pas');
     T:=P.Targets.AddUnit('sms.pas');
     T:=P.Targets.AddUnit('qsound.pas');
+    T:=P.Targets.AddUnit('qscreen.pas');
+    T:=P.Targets.AddUnit('qmemory.pas');
+    T:=P.Targets.AddUnit('qjobs.pas');
+
+    T:=P.Targets.AddUnit('qsuperbasic.pas');    { Must be last in this list!}
+
 
     P.ExamplePath.Add('examples');
     T:=P.Targets.AddExampleProgram('qlcube.pas');
     T:=P.Targets.AddExampleProgram('mtinf.pas');
     T:=P.Targets.AddExampleProgram('sms_info.pas');
+    T:=P.Targets.AddExampleProgram('papers.pas');
+    T:=P.Targets.AddExampleProgram('strips.pas');
+    T:=P.Targets.AddExampleProgram('inks.pas');
+    T:=P.Targets.AddExampleProgram('modes.pas');
+    T:=P.Targets.AddExampleProgram('csizes.pas');
 
     P.ExamplePath.Add('tests');
     T:=P.Targets.AddExampleProgram('tsysvars.pas');

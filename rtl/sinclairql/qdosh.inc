@@ -75,3 +75,20 @@ type
   end;
   PWindowDef = ^TWindowDef;
 
+type 
+  {$PackRecords 1}
+  TFileHeader = record
+    file_length: longword;
+    file_access: Byte;
+    file_type: Byte;
+    file_data: longword;
+    file_unused: longword;
+    file_name_size: word;
+    file_name: array [1..36] of Char;
+    file_update: longword;
+    file_version: word;
+    file_unknown: word;
+    file_backup: longword;
+  end;
+  {$PackRecords default}
+  PFileHeader = ^TFileHeader;
