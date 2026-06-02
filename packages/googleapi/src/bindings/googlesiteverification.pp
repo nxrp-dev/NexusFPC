@@ -1,13 +1,19 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit googlesiteVerification;
+{$ENDIF FPC_DOTTEDUNITS}
 {$MODE objfpc}
 {$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils, System.Classes, GoogleApi.Service, FpWeb.Rest.Base, GoogleApi.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses sysutils, classes, googleservice, restbase, googlebase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
-  
+
   //Top-level schema types
   TSiteVerificationWebResourceGettokenRequest = Class;
   TSiteVerificationWebResourceGettokenResponse = Class;
@@ -21,11 +27,11 @@ type
   TSiteVerificationWebResourceGettokenRequestTypesite = Class;
   TSiteVerificationWebResourceResourceTypesite = Class;
   TSiteVerificationWebResourceListResponseTypeitemsArray = Array of TSiteVerificationWebResourceResource;
-  
+
   { --------------------------------------------------------------------
     TSiteVerificationWebResourceGettokenRequestTypesite
     --------------------------------------------------------------------}
-  
+
   TSiteVerificationWebResourceGettokenRequestTypesite = Class(TGoogleBaseObject)
   Private
     Fidentifier : String;
@@ -41,11 +47,11 @@ type
     Property _type : String Index 8 Read F_type Write Set_type;
   end;
   TSiteVerificationWebResourceGettokenRequestTypesiteClass = Class of TSiteVerificationWebResourceGettokenRequestTypesite;
-  
+
   { --------------------------------------------------------------------
     TSiteVerificationWebResourceGettokenRequest
     --------------------------------------------------------------------}
-  
+
   TSiteVerificationWebResourceGettokenRequest = Class(TGoogleBaseObject)
   Private
     Fsite : TSiteVerificationWebResourceGettokenRequestTypesite;
@@ -60,11 +66,11 @@ type
     Property verificationMethod : String Index 8 Read FverificationMethod Write SetverificationMethod;
   end;
   TSiteVerificationWebResourceGettokenRequestClass = Class of TSiteVerificationWebResourceGettokenRequest;
-  
+
   { --------------------------------------------------------------------
     TSiteVerificationWebResourceGettokenResponse
     --------------------------------------------------------------------}
-  
+
   TSiteVerificationWebResourceGettokenResponse = Class(TGoogleBaseObject)
   Private
     Fmethod : String;
@@ -79,11 +85,11 @@ type
     Property token : String Index 8 Read Ftoken Write Settoken;
   end;
   TSiteVerificationWebResourceGettokenResponseClass = Class of TSiteVerificationWebResourceGettokenResponse;
-  
+
   { --------------------------------------------------------------------
     TSiteVerificationWebResourceListResponse
     --------------------------------------------------------------------}
-  
+
   TSiteVerificationWebResourceListResponse = Class(TGoogleBaseObject)
   Private
     Fitems : TSiteVerificationWebResourceListResponseTypeitemsArray;
@@ -99,11 +105,11 @@ type
     Property items : TSiteVerificationWebResourceListResponseTypeitemsArray Index 0 Read Fitems Write Setitems;
   end;
   TSiteVerificationWebResourceListResponseClass = Class of TSiteVerificationWebResourceListResponse;
-  
+
   { --------------------------------------------------------------------
     TSiteVerificationWebResourceResourceTypesite
     --------------------------------------------------------------------}
-  
+
   TSiteVerificationWebResourceResourceTypesite = Class(TGoogleBaseObject)
   Private
     Fidentifier : String;
@@ -119,11 +125,11 @@ type
     Property _type : String Index 8 Read F_type Write Set_type;
   end;
   TSiteVerificationWebResourceResourceTypesiteClass = Class of TSiteVerificationWebResourceResourceTypesite;
-  
+
   { --------------------------------------------------------------------
     TSiteVerificationWebResourceResource
     --------------------------------------------------------------------}
-  
+
   TSiteVerificationWebResourceResource = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -145,18 +151,18 @@ type
     Property site : TSiteVerificationWebResourceResourceTypesite Index 16 Read Fsite Write Setsite;
   end;
   TSiteVerificationWebResourceResourceClass = Class of TSiteVerificationWebResourceResource;
-  
+
   { --------------------------------------------------------------------
     TWebResourceResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TWebResourceResource, method Insert
-  
+
   TWebResourceInsertOptions = Record
     verificationMethod : String;
   end;
-  
+
   TWebResourceResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -170,12 +176,12 @@ type
     Function Patch(id: string; aSiteVerificationWebResourceResource : TSiteVerificationWebResourceResource) : TSiteVerificationWebResourceResource;
     Function Update(id: string; aSiteVerificationWebResourceResource : TSiteVerificationWebResourceResource) : TSiteVerificationWebResourceResource;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TSiteVerificationAPI
     --------------------------------------------------------------------}
-  
+
   TSiteVerificationAPI = Class(TGoogleAPI)
   Private
     FWebResourceInstance : TWebResourceResource;
@@ -217,7 +223,7 @@ implementation
   --------------------------------------------------------------------}
 
 
-Procedure TSiteVerificationWebResourceGettokenRequestTypesite.Setidentifier(AIndex : Integer; const AValue : String); 
+Procedure TSiteVerificationWebResourceGettokenRequestTypesite.Setidentifier(AIndex : Integer; const AValue : String);
 
 begin
   If (Fidentifier=AValue) then exit;
@@ -227,7 +233,7 @@ end;
 
 
 
-Procedure TSiteVerificationWebResourceGettokenRequestTypesite.Set_type(AIndex : Integer; const AValue : String); 
+Procedure TSiteVerificationWebResourceGettokenRequestTypesite.Set_type(AIndex : Integer; const AValue : String);
 
 begin
   If (F_type=AValue) then exit;
@@ -255,7 +261,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSiteVerificationWebResourceGettokenRequest.Setsite(AIndex : Integer; const AValue : TSiteVerificationWebResourceGettokenRequestTypesite); 
+Procedure TSiteVerificationWebResourceGettokenRequest.Setsite(AIndex : Integer; const AValue : TSiteVerificationWebResourceGettokenRequestTypesite);
 
 begin
   If (Fsite=AValue) then exit;
@@ -265,7 +271,7 @@ end;
 
 
 
-Procedure TSiteVerificationWebResourceGettokenRequest.SetverificationMethod(AIndex : Integer; const AValue : String); 
+Procedure TSiteVerificationWebResourceGettokenRequest.SetverificationMethod(AIndex : Integer; const AValue : String);
 
 begin
   If (FverificationMethod=AValue) then exit;
@@ -282,7 +288,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSiteVerificationWebResourceGettokenResponse.Setmethod(AIndex : Integer; const AValue : String); 
+Procedure TSiteVerificationWebResourceGettokenResponse.Setmethod(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmethod=AValue) then exit;
@@ -292,7 +298,7 @@ end;
 
 
 
-Procedure TSiteVerificationWebResourceGettokenResponse.Settoken(AIndex : Integer; const AValue : String); 
+Procedure TSiteVerificationWebResourceGettokenResponse.Settoken(AIndex : Integer; const AValue : String);
 
 begin
   If (Ftoken=AValue) then exit;
@@ -309,7 +315,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSiteVerificationWebResourceListResponse.Setitems(AIndex : Integer; const AValue : TSiteVerificationWebResourceListResponseTypeitemsArray); 
+Procedure TSiteVerificationWebResourceListResponse.Setitems(AIndex : Integer; const AValue : TSiteVerificationWebResourceListResponseTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -320,7 +326,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TSiteVerificationWebResourceListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TSiteVerificationWebResourceListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -339,7 +345,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSiteVerificationWebResourceResourceTypesite.Setidentifier(AIndex : Integer; const AValue : String); 
+Procedure TSiteVerificationWebResourceResourceTypesite.Setidentifier(AIndex : Integer; const AValue : String);
 
 begin
   If (Fidentifier=AValue) then exit;
@@ -349,7 +355,7 @@ end;
 
 
 
-Procedure TSiteVerificationWebResourceResourceTypesite.Set_type(AIndex : Integer; const AValue : String); 
+Procedure TSiteVerificationWebResourceResourceTypesite.Set_type(AIndex : Integer; const AValue : String);
 
 begin
   If (F_type=AValue) then exit;
@@ -377,7 +383,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSiteVerificationWebResourceResource.Setid(AIndex : Integer; const AValue : String); 
+Procedure TSiteVerificationWebResourceResource.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -387,7 +393,7 @@ end;
 
 
 
-Procedure TSiteVerificationWebResourceResource.Setowners(AIndex : Integer; const AValue : TStringArray); 
+Procedure TSiteVerificationWebResourceResource.Setowners(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Fowners=AValue) then exit;
@@ -397,7 +403,7 @@ end;
 
 
 
-Procedure TSiteVerificationWebResourceResource.Setsite(AIndex : Integer; const AValue : TSiteVerificationWebResourceResourceTypesite); 
+Procedure TSiteVerificationWebResourceResource.Setsite(AIndex : Integer; const AValue : TSiteVerificationWebResourceResourceTypesite);
 
 begin
   If (Fsite=AValue) then exit;
@@ -408,7 +414,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TSiteVerificationWebResourceResource.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TSiteVerificationWebResourceResource.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -660,7 +666,7 @@ begin
   Result[0].Description:='Manage the list of sites and domains you control';
   Result[1].Name:='https://www.googleapis.com/auth/siteverification.verify_only';
   Result[1].Description:='Manage your new site verifications with Google';
-  
+
 end;
 
 Class Function TSiteVerificationAPI.APINeedsAuth : Boolean;

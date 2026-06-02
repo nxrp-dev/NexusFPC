@@ -1,17 +1,17 @@
 {
      File:       QuickTime/QuickTimeVRFormat.h
- 
+
      Contains:   QuickTime VR interfaces
- 
+
      Version:    QuickTime 7.7.1
- 
+
      Copyright:  © 1997-2012 by Apple Inc., all rights reserved.
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 {  Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2009 }
 {  Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2012 }
@@ -29,7 +29,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit QuickTimeVRFormat;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -214,7 +216,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.Movies,MacOsApi.QuickTimeVR;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,Movies,QuickTimeVR;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -623,7 +629,7 @@ type
 }
 
 {
-   ComponentDescription constants for QTVR Export components   
+   ComponentDescription constants for QTVR Export components
     (componentType = MovieExportType; componentSubType = MovieFileType)
 }
 const

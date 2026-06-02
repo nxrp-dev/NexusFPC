@@ -20,7 +20,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CGColorSpace;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -205,7 +207,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CFBase,MacOsApi.CFData,MacOsApi.CFString,MacOsApi.CGBase,MacOsApi.CGDataProvider;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CFBase,CFData,CFString,CGBase,CGDataProvider;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 {$ALIGN POWER}
@@ -329,7 +335,7 @@ function CGColorSpaceCreateCalibratedGray( const (*var*) whitePoint: Tristimulus
 
 function CGColorSpaceCreateCalibratedRGB( const (*var*) whitePoint: TristimulusValue; const (*var*) blackPoint: TristimulusValue; const (*var*) gamma: RedGreenBlueValue; const (*var*) matrix: Single9 ): CGColorSpaceRef; external name '_CGColorSpaceCreateCalibratedRGB';
 (* CG_AVAILABLE_STARTING(__MAC_10_0, __IPHONE_2_0) *)
-    
+
 { Create an L*a*b* color space. `whitePoint' is an array of 3 numbers
    specifying the tristimulus value, in the CIE 1931 XYZ-space, of the
    diffuse white point. `blackPoint' is an array of 3 numbers specifying the

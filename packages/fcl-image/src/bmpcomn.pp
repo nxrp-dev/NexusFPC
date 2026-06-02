@@ -14,7 +14,9 @@
 }
 {*****************************************************************************}
 {$mode objfpc}{$h+}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit BMPcomn;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
@@ -40,13 +42,13 @@ type
       bfSize:longint;
 {06+04 : Reserved}
       bfReserved:longint;
-{10+04 : Offset of image data : size if the file hieder + the info header + palette}
+{10+04 : Offset of image data : size of the file header + the info header + palette}
       bfOffset:longint;
    end;
    PBitMapFileHeader = ^TBitMapFileHeader;
 
    TBitMapInfoHeader = packed record
-{14+04 : Size of the bitmap info header : sould be 40=$28}
+{14+04 : Size of the bitmap info header : should be 40=$28}
       Size:longint;
 {18+04 : Image width in pixels}
       Width:longint;
@@ -66,7 +68,7 @@ type
       YPelsPerMeter:Longint;
 {46+04 : Number of colors used}
       ClrUsed:longint;
-{50+04 : Number of imprtant colors used : useful for displaying on VGA256}
+{50+04 : Number of important colors used : useful for displaying on VGA256}
       ClrImportant:longint;
    end;
    PBitMapInfoHeader = ^TBitMapInfoHeader;
@@ -91,7 +93,11 @@ procedure SwapBMPInfoHeader(var BFI : TBitMapInfoHeader);
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses FpImage.Common;
+{$ELSE FPC_DOTTEDUNITS}
 uses FPImgCmn;
+{$ENDIF FPC_DOTTEDUNITS}
 
 procedure SwapBMPFileHeader(var BFH : TBitMapFileHeader);
 begin

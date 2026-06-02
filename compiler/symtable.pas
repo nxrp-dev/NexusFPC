@@ -36,9 +36,14 @@ interface
 ****************************************************************************}
 
     type
+
+       { tstoredsymtable }
+
        tstoredsymtable = class(TSymtable)
        private
           init_final_check_done : boolean;
+          deref_built : boolean;
+          derefimpl_built : boolean;
           procedure _needs_init_final(sym:TObject;arg:pointer);
           procedure do_init_final_check;
           procedure check_forward(sym:TObject;arg:pointer);
@@ -73,6 +78,8 @@ interface
           procedure checklabels;
           function  needs_init_final : boolean; virtual;
           function  has_non_trivial_init:boolean;virtual;
+          function is_derefimpl_built: boolean;
+          function is_deref_built: boolean;
           procedure testfordefaultproperty(sym:TObject;arg:pointer);
           procedure register_children;
        end;
@@ -106,6 +113,7 @@ interface
        public
           usefieldalignment,     { alignment to use for fields (PACKRECORDS value), C_alignment is C style }
           recordalignment,       { alignment desired when inserting this record }
+          explicitrecordalignment, { explicit alignment for inserting this record, given by align XX at end of declaration }
           fieldalignment,        { alignment current alignment used when fields are inserted }
           padalignment : shortint;   { size to a multiple of which the symtable has to be rounded up }
           recordalignmin: shortint; { local equivalentsof global settings, so that records can be created with custom settings internally }
@@ -421,7 +429,7 @@ interface
 {$endif UNITALIASES}
 
 {*** Init / Done ***}
-    procedure IniTSymtable;
+    procedure InitSymtable;
     procedure DoneSymtable;
 
     const
@@ -697,6 +705,15 @@ implementation
         ppufile.writeentry(ibendsyms);
       end;
 
+    function tstoredsymtable.is_deref_built: boolean;
+    begin
+      Result:=deref_built;
+    end;
+
+    function tstoredsymtable.is_derefimpl_built: boolean;
+    begin
+      Result:=derefimpl_built;
+    end;
 
     procedure tstoredsymtable.buildderef;
       var
@@ -716,6 +733,7 @@ implementation
             sym:=tstoredsym(SymList[i]);
             sym.buildderef;
           end;
+        deref_built:=True;
       end;
 
 
@@ -730,6 +748,7 @@ implementation
             def:=tstoreddef(DefList[i]);
             def.buildderefimpl;
           end;
+        derefimpl_built:=True;
       end;
 
 
@@ -805,7 +824,7 @@ implementation
         { stop when no new defs or syms have been registered while processing
           the currently registered ones (defs/syms get added to the module's
           deflist/symlist when they are registered) }
-        until not changed and 
+        until not changed and
           (defidmax=current_module.deflist.count) and
           (symidmax=current_module.symlist.count);
       end;
@@ -817,7 +836,7 @@ implementation
         def : tstoreddef;
         sym : tstoredsym;
       begin
-        { first deref the interface ttype symbols. This is needs
+        { first deref the interface ttype symbols. This needs
           to be done before the interface defs are derefed, because
           the interface defs can contain references to the type symbols
           which then already need to contain a resolved typedef field (PFV) }
@@ -1175,6 +1194,7 @@ implementation
         _datasize:=0;
         databitsize:=0;
         recordalignment:=1;
+        explicitrecordalignment:=0;
         usefieldalignment:=usealign;
         recordalignmin:=recordminalign;
         padalignment:=1;
@@ -1193,46 +1213,17 @@ implementation
 
 
     destructor tabstractrecordsymtable.destroy;
-
-      { for some reason a compiler built with 3.3.1 fails building the libxml2
-        package if the below define is not defined and thus the code snippet is
-        part of the destructor itself and not a nested procedure; until that bug
-        is fixed this is used as a workaround :/ }
-{$define codegen_workaround}
-{$ifdef codegen_workaround}
-      procedure free_mop_list(mop:tmanagementoperator);
-        var
-          i : longint;
-        begin
-          if assigned(mop_list[mop]) then
-            for i:=0 to mop_list[mop].count-1 do
-              dispose(pmanagementoperator_offset_entry(mop_list[mop][i]));
-          mop_list[mop].free;
-        end;
-{$endif codegen_workaround}
-
       var
         mop : tmanagementoperator;
-{$ifndef codegen_workaround}
-        i : longint;
-{$endif codegen_workaround}
       begin
         if refcount>1 then
           exit;
 {$ifdef llvm}
         fllvmst.free;
+        fllvmst := nil;
 {$endif llvm}
         for mop:=low(tmanagementoperator) to high(tmanagementoperator) do
-          begin
-{$ifdef codegen_workaround}
-            free_mop_list(mop);
-{$else codegen_workaround}
-            if assigned(mop_list[mop]) then
-              for i:=0 to mop_list[mop].count-1 do
-                dispose(pmanagementoperator_offset_entry(mop_list[mop][i]));
-            mop_list[mop].free;
-{$endif codegen_workaround}
-          end;
+          TFPList.FreeAndNilDisposing(mop_list[mop],TypeInfo(tmanagementoperator_offset_entry));
         inherited destroy;
       end;
 
@@ -1242,6 +1233,7 @@ implementation
         if ppufile.readentry<>ibrecsymtableoptions then
           Message(unit_f_ppu_read_error);
         recordalignment:=shortint(ppufile.getbyte);
+        explicitrecordalignment:=shortint(ppufile.getbyte);
         usefieldalignment:=shortint(ppufile.getbyte);
         recordalignmin:=shortint(ppufile.getbyte);
         if (usefieldalignment=C_alignment) then
@@ -1260,6 +1252,7 @@ implementation
          { in case of classes using C alignment, the alignment of the parent
            affects the alignment of fields of the childs }
          ppufile.putbyte(byte(recordalignment));
+         ppufile.putbyte(byte(explicitrecordalignment));
          ppufile.putbyte(byte(usefieldalignment));
          ppufile.putbyte(byte(recordalignmin));
          if (usefieldalignment=C_alignment) then
@@ -1624,11 +1617,11 @@ implementation
         result:=usefieldalignment=bit_alignment;
       end;
 
+
     function tabstractrecordsymtable.has_double_field(out def1,def2:tdef; out offset:integer): integer;
       var
         i,cnt: longint;
         currentsymlist: TFPHashObjectList;
-        currentdef: tdef;
         sym: tfieldvarsym;
       begin
         has_double_field := 0;
@@ -1641,7 +1634,6 @@ implementation
           exit;
         if currentsymlist.Count <> 2 then
           exit;
-        currentdef := nil;
         if is_normal_fieldvarsym(tsym(currentsymlist[0])) then
           begin
             sym:=tfieldvarsym(currentsymlist[0]);
@@ -1657,14 +1649,15 @@ implementation
         else
           exit;
         offset := sym.fieldoffset;
-        if(def2.typ = def1.typ)then
+        if def2.typ = def1.typ then
           cnt := 2
         else
           cnt := 1;
-        if((offset = 0))then
+        if offset = 0 then
           cnt := 0;
         has_double_field := cnt;
       end;
+
 
     function tabstractrecordsymtable.has_single_field(out def:tdef): boolean;
       var
@@ -1684,55 +1677,57 @@ implementation
         { a record/object can contain other things than fields }
         currentsymlist:=symlist;
         { recurse in arrays and records }
-        repeat
-          sym:=nil;
-          { record has one field? }
-          for i:=0 to currentsymlist.Count-1 do
-            begin
-              if is_normal_fieldvarsym(tsym(currentsymlist[i])) then
-                begin
-                  if result then
-                    begin
-                      result:=false;
-                      exit;
-                    end;
-                  result:=true;
-                  sym:=tfieldvarsym(currentsymlist[i]);
-                end;
-            end;
-          if assigned(sym) then
-            begin
-              { if the field is an array, does it contain one element? }
-              currentdef:=sym.vardef;
-              while (currentdef.typ=arraydef) and
-                    not is_special_array(currentdef) do
-                begin
-                  if tarraydef(currentdef).elecount<>1 then
-                    begin
-                      result:=false;
-                      exit;
-                    end;
-                  currentdef:=tarraydef(currentdef).elementdef;
-                end;
-              { if the array element is again a record, continue descending }
-              if currentdef.typ=recorddef then
-                begin
-                  { the record might be empty, so reset the result until we've
-                    really found something }
-                  result:=false;
-                  currentsymlist:=trecorddef(currentdef).symtable.SymList
-                end
-              else
-                begin
-                  { otherwise we found the type of the single element }
-                  def:=currentdef;
-                  exit;
-                end;
-            end
-          else
-            exit
-        until false;
+        while true do
+          begin
+            sym:=nil;
+            { record has one field? }
+            for i:=0 to currentsymlist.Count-1 do
+              begin
+                if is_normal_fieldvarsym(tsym(currentsymlist[i])) then
+                  begin
+                    if result then
+                      begin
+                        result:=false;
+                        exit;
+                      end;
+                    result:=true;
+                    sym:=tfieldvarsym(currentsymlist[i]);
+                  end;
+              end;
+            if assigned(sym) then
+              begin
+                { if the field is an array, does it contain one element? }
+                currentdef:=sym.vardef;
+                while (currentdef.typ=arraydef) and
+                      not is_special_array(currentdef) do
+                  begin
+                    if tarraydef(currentdef).elecount<>1 then
+                      begin
+                        result:=false;
+                        exit;
+                      end;
+                    currentdef:=tarraydef(currentdef).elementdef;
+                  end;
+                { if the array element is again a record, continue descending }
+                if currentdef.typ=recorddef then
+                  begin
+                    { the record might be empty, so reset the result until we've
+                      really found something }
+                    result:=false;
+                    currentsymlist:=trecorddef(currentdef).symtable.SymList
+                  end
+                else
+                  begin
+                    { otherwise we found the type of the single element }
+                    def:=currentdef;
+                    exit;
+                  end;
+              end
+            else
+              exit
+          end;
       end;
+
 
     procedure tabstractrecordsymtable.do_get_managementoperator_offset_list(data:tobject;arg:pointer);
       var
@@ -1766,6 +1761,7 @@ implementation
 
         sublist:=tfplist.create;
         tabstractrecordsymtable(tabstractrecorddef(fsym.vardef).symtable).get_managementoperator_offset_list(mop,sublist);
+        mop_list[mop].capacity:=mop_list[mop].count+sublist.count;
         for i:=0 to sublist.count-1 do
           begin
             entry:=pmanagementoperator_offset_entry(sublist[i]);
@@ -1774,6 +1770,7 @@ implementation
           end;
         { we don't need to remove the entries as they become part of list }
         sublist.free;
+        sublist := nil;
       end;
 
     procedure tabstractrecordsymtable.get_managementoperator_offset_list(mop:tmanagementoperator;list:tfplist);
@@ -2043,7 +2040,7 @@ implementation
                   ) or
                   (
                    { In Delphi, you can repeat members of a parent class. You can't }
-                   { do this for objects however, and you (obviouly) can't          }
+                   { do this for objects however, and you (obviously) can't         }
                    { declare two fields with the same name in a single class        }
                    (m_delphi in current_settings.modeswitches) and
                    (
@@ -2111,6 +2108,7 @@ implementation
     destructor tllvmshadowsymtable.destroy;
       begin
         symdeflist.free;
+        symdeflist := nil;
       end;
 
 
@@ -2411,7 +2409,9 @@ implementation
         buildmapping(tempsymlist, variantstarts);
 
         variantstarts.free;
+        variantstarts := nil;
         tempsymlist.free;
+        tempsymlist := nil;
       end;
 
 {$endif llvm}
@@ -2831,6 +2831,7 @@ implementation
         if refcount>1 then
           exit;
         withrefnode.free;
+        withrefnode := nil;
         { Disable SymList because we don't Own it }
         SymList:=nil;
         inherited destroy;
@@ -3246,9 +3247,122 @@ implementation
     }
     function is_visible_for_object(symst:tsymtable;symvisibility:tvisibility;contextobjdef:tabstractrecorddef):boolean;
       var
+        curstruct : tabstractrecorddef;
+
+      function is_current_unit(st:tsymtable):boolean;
+        begin
+          result :=
+            (
+              (
+                assigned(curstruct) and
+                (st.moduleid=curstruct.symtable.moduleid)
+              ) or
+              (
+                not assigned(curstruct) and
+                st.iscurrentunit
+              )
+            );
+        end;
+
+      var
+        orgcontextobjdef,
+        orgsymownerdef,
         symownerdef : tabstractrecorddef;
         nonlocalst : tsymtable;
         isspezproc : boolean;
+
+      function check_strict_private:boolean;
+        begin
+          result:=assigned(curstruct) and
+                  is_owned_by(curstruct,symownerdef);
+        end;
+
+      function check_strict_protected:boolean;
+        function is_childof(child, potentialparent: tdef):boolean;
+          begin
+            result:=true;
+            if def_is_related(child, potentialparent) then
+              exit;
+            if (child.typ=objectdef) and
+               (potentialparent.typ=objectdef) and
+               (tobjectdef(potentialparent).defoptions*[df_generic,df_specialization]=[df_generic]) then
+              begin
+                 repeat
+                   if tobjectdef(child).genericdef<>nil then
+                     begin
+                       if tobjectdef(child).genericdef.typ<>objectdef then
+                         break;
+                       child:=tobjectdef(child).genericdef as tobjectdef
+                     end
+                   else
+                     child:=tobjectdef(child).childof;
+                   if (child<>nil) and equal_defs(child, potentialparent) then
+                     exit;
+                 until child=nil;
+              end;
+
+            result:=false;
+          end;
+
+        function owner_hierarchy_related(nested,check:tabstractrecorddef):boolean;
+          var
+            owner:tabstractrecorddef;
+          begin
+            result:=true;
+            repeat
+              if is_childof(nested,check) then
+                exit;
+              if nested.owner.symtabletype in [recordsymtable,objectsymtable] then
+                nested:=tabstractrecorddef(nested.owner.defowner)
+              else
+                break;
+            until not assigned(nested);
+            result:=false;
+          end;
+
+        begin
+          result:=(
+                    { access from nested class (specialization case) }
+                    assigned(curstruct) and
+                    is_owned_by(curstruct,symownerdef)
+                  ) or
+                  (
+                    { access from nested class (non-specialization case) }
+                    (orgsymownerdef<>symownerdef) and
+                    assigned(curstruct) and
+                    is_owned_by(curstruct,orgsymownerdef)
+                  ) or
+                  (
+                    { access from child class (specialization case) }
+                    assigned(contextobjdef) and
+                    assigned(curstruct) and
+                    owner_hierarchy_related(contextobjdef,symownerdef) and
+                    is_childof(curstruct,contextobjdef)
+                  ) or
+                  (
+                    { access from child class (non-specialization case) }
+                    assigned(orgcontextobjdef) and
+                    (
+                      (orgcontextobjdef<>contextobjdef) or
+                      (orgsymownerdef<>symownerdef)
+                    ) and
+                    assigned(curstruct) and
+                    owner_hierarchy_related(orgcontextobjdef,orgsymownerdef) and
+                    is_childof(curstruct,orgcontextobjdef)
+                  ) or
+                  (
+                    { helpers can access strict protected symbols }
+                    is_objectpascal_helper(contextobjdef) and
+                    is_childof(tobjectdef(contextobjdef).extendeddef,symownerdef)
+                  ) or
+                  (
+                    { same as above, but from context of call node inside
+                      helper method }
+                    is_objectpascal_helper(curstruct) and
+                    is_childof(tobjectdef(curstruct).extendeddef,symownerdef)
+                  );
+        end;
+
       begin
         result:=false;
 
@@ -3257,9 +3371,42 @@ implementation
            not (symst.symtabletype in [objectsymtable,recordsymtable]) then
           internalerror(200810285);
         symownerdef:=tabstractrecorddef(symst.defowner);
+        orgsymownerdef:=symownerdef;
+        orgcontextobjdef:=contextobjdef;
+        { for specializations we need to check the visibility of the generic,
+          not the specialization (at least when comparing outside of the
+          specialization }
+        if df_specialization in symownerdef.defoptions then
+          begin
+            if not assigned(symownerdef.genericdef) then
+              internalerror(2024041201);
+            if not (symownerdef.genericdef.typ in [objectdef,recorddef]) then
+              internalerror(2024020901);
+            orgsymownerdef:=symownerdef;
+            symownerdef:=tabstractrecorddef(symownerdef.genericdef);
+          end;
+        if assigned(contextobjdef) and (df_specialization in contextobjdef.defoptions) then
+          begin
+            if not assigned(contextobjdef.genericdef) then
+              internalerror(2024041202);
+            if not (contextobjdef.genericdef.typ in [objectdef,recorddef]) then
+              internalerror(2024020902);
+            orgcontextobjdef:=contextobjdef;
+            contextobjdef:=tabstractrecorddef(contextobjdef.genericdef);
+          end;
+        if assigned(current_structdef) and (df_specialization in current_structdef.defoptions) then
+          begin
+            if not assigned(current_structdef.genericdef) then
+              internalerror(2024041203);
+            if not (current_structdef.genericdef.typ in [objectdef,recorddef]) then
+              internalerror(2024030903);
+            curstruct:=tabstractrecorddef(current_structdef.genericdef)
+          end
+        else
+          curstruct:=current_structdef;
         { specializations might belong to a localsymtable or parasymtable }
         nonlocalst:=symownerdef.owner;
-        if tstoreddef(symst.defowner).is_specialization then
+        if tstoreddef(symownerdef).is_specialization then
           while nonlocalst.symtabletype in [localsymtable,parasymtable] do
             nonlocalst:=nonlocalst.defowner.owner;
         isspezproc:=false;
@@ -3274,116 +3421,104 @@ implementation
             begin
               { private symbols are allowed when we are in the same
                 module as they are defined }
-              result:=(
+              result:=check_strict_private or
+                      (
                        (nonlocalst.symtabletype in [globalsymtable,staticsymtable]) and
-                       (nonlocalst.iscurrentunit)
+                       is_current_unit(nonlocalst)
                       ) or
                       ( // the case of specialize inside the generic declaration and nested types
                        (nonlocalst.symtabletype in [objectsymtable,recordsymtable]) and
                        (
-                         assigned(current_structdef) and
+                         assigned(curstruct) and
                          (
-                           (current_structdef=symownerdef) or
-                           (current_structdef.owner.iscurrentunit)
+                           (curstruct=symownerdef) or
+                           (curstruct.owner.moduleid=symownerdef.symtable.moduleid)
                          )
                        ) or
                        (
-                         not assigned(current_structdef) and
+                         not assigned(curstruct) and
                          (symownerdef.owner.iscurrentunit)
                        ) or
                        { access from a generic method that belongs to the class
-                         but that is specialized elsewere }
+                         but that is specialized elsewhere }
                        (
                          isspezproc and
-                         (current_procinfo.procdef.struct=current_structdef)
+                         (current_procinfo.procdef.struct=curstruct)
                        ) or
                        { specializations may access private symbols that their
                          generics are allowed to access }
                        (
-                         assigned(current_structdef) and
-                         (df_specialization in current_structdef.defoptions) and
-                         (symst.moduleid=current_structdef.genericdef.owner.moduleid)
+                         assigned(curstruct) and
+                         (df_specialization in curstruct.defoptions) and
+                         (symst.moduleid=curstruct.genericdef.owner.moduleid)
                        )
                       );
             end;
           vis_strictprivate :
             begin
-              result:=assigned(current_structdef) and
-                      is_owned_by(current_structdef,symownerdef);
+              result:=check_strict_private;
             end;
           vis_strictprotected :
             begin
-               result:=(
-                         { access from nested class }
-                         assigned(current_structdef) and
-                         is_owned_by(current_structdef,symownerdef)
-                       ) or
-                       (
-                         { access from child class }
-                         assigned(contextobjdef) and
-                         assigned(current_structdef) and
-                         def_is_related(contextobjdef,symownerdef) and
-                         def_is_related(current_structdef,contextobjdef)
-                       ) or
-                       (
-                         { helpers can access strict protected symbols }
-                         is_objectpascal_helper(contextobjdef) and
-                         def_is_related(tobjectdef(contextobjdef).extendeddef,symownerdef)
-                       ) or
-                       (
-                         { same as above, but from context of call node inside
-                           helper method }
-                         is_objectpascal_helper(current_structdef) and
-                         def_is_related(tobjectdef(current_structdef).extendeddef,symownerdef)
-                       );
+              result:=check_strict_protected;
             end;
           vis_protected :
             begin
               { protected symbols are visible in the module that defines them and
                 also visible to related objects. The related object must be defined
                 in the current module }
-              result:=(
+              result:=check_strict_protected or
+                      (
                        (
                         (nonlocalst.symtabletype in [globalsymtable,staticsymtable]) and
-                        (nonlocalst.iscurrentunit)
+                        is_current_unit(nonlocalst)
                        ) or
                        (
+                        { context object is inside the current unit and related to
+                          the symbol owner (specialization case) }
                         assigned(contextobjdef) and
                         (contextobjdef.owner.symtabletype in [globalsymtable,staticsymtable,ObjectSymtable,recordsymtable,localsymtable]) and
-                        (contextobjdef.owner.iscurrentunit) and
+                        is_current_unit(contextobjdef.owner) and
                         def_is_related(contextobjdef,symownerdef)
+                       ) or
+                       (
+                        { context object is inside the current unit and related to
+                          the symbol owner (non-specialization case) }
+                        assigned(orgcontextobjdef) and
+                        (
+                          (orgcontextobjdef<>contextobjdef) or
+                          (orgsymownerdef<>symownerdef)
+                        ) and
+                        (orgcontextobjdef.owner.symtabletype in [globalsymtable,staticsymtable,ObjectSymtable,recordsymtable,localsymtable]) and
+                        is_current_unit(orgcontextobjdef.owner) and
+                        def_is_related(orgcontextobjdef,orgsymownerdef)
                        ) or
                        ( // the case of specialize inside the generic declaration and nested types
                         (nonlocalst.symtabletype in [objectsymtable,recordsymtable]) and
                         (
-                          assigned(current_structdef) and
+                          assigned(curstruct) and
                           (
-                            (current_structdef=symownerdef) or
-                            (current_structdef.owner.iscurrentunit)
+                            (curstruct=symownerdef) or
+                            (curstruct.owner.moduleid=symownerdef.symtable.moduleid)
                           )
                         ) or
                         (
-                          not assigned(current_structdef) and
+                          not assigned(curstruct) and
                           (symownerdef.owner.iscurrentunit)
-                        ) or
-                        (
-                          { helpers can access protected symbols }
-                          is_objectpascal_helper(contextobjdef) and
-                          def_is_related(tobjectdef(contextobjdef).extendeddef,symownerdef)
                         )
                        ) or
                        { access from a generic method that belongs to the class
-                         but that is specialized elsewere }
+                         but that is specialized elsewhere }
                        (
                          isspezproc and
-                         (current_procinfo.procdef.struct=current_structdef)
+                         (current_procinfo.procdef.struct=curstruct)
                        ) or
                        { specializations may access private symbols that their
                          generics are allowed to access }
                        (
-                         assigned(current_structdef) and
-                         (df_specialization in current_structdef.defoptions) and
-                         (symst.moduleid=current_structdef.genericdef.owner.moduleid)
+                         assigned(curstruct) and
+                         (df_specialization in curstruct.defoptions) and
+                         (symst.moduleid=curstruct.genericdef.owner.moduleid)
                        )
                       );
             end;
@@ -3398,9 +3533,9 @@ implementation
           begin
             { capturers have access to anything as we assume checks were done
               before the procdef was inserted into the capturer }
-            result:=assigned(current_structdef) and
-                    (current_structdef.typ=objectdef) and
-                    (oo_is_capturer in tobjectdef(current_structdef).objectoptions);
+            result:=assigned(curstruct) and
+                    (curstruct.typ=objectdef) and
+                    (oo_is_capturer in tobjectdef(curstruct).objectoptions);
           end;
       end;
 
@@ -3430,7 +3565,7 @@ implementation
                     exit;
                   end;
               end;
-            { check dummy sym visbility by following associated procsyms }
+            { check dummy sym visibility by following associated procsyms }
             if tprocsym(sym).could_be_implicitly_specialized then
               begin
                 for i:=0 to tprocsym(sym).genprocsymovlds.count-1 do
@@ -4111,7 +4246,7 @@ implementation
                     break;
                   end;
                 { independently of the operator being better count if we encountered
-                  multpile String[x] operators }
+                  multiple String[x] operators }
                 if checkshortstring and assigned(currpd) and is_shortstring(currpd.returndef) then
                   inc(shortstringcount);
                 if curreq>besteq then
@@ -4149,6 +4284,16 @@ implementation
           result:=nil;
         if result=nil then
           result:=search_specific_assignment_operator(_ASSIGNMENT,from_def,to_def);
+
+        { if we're assigning to a typed pointer, but we did not find a suitable assignment
+          operator then we also check for a untyped pointer assignment operator }
+        if not assigned(result) and is_pointer(to_def) and not is_voidpointer(to_def) then
+          begin
+            if explicit then
+              result:=search_specific_assignment_operator(_OP_EXPLICIT,from_def,voidpointertype);
+            if not assigned(result) then
+              result:=search_specific_assignment_operator(_ASSIGNMENT,from_def,voidpointertype);
+          end;
 
         { restore symtable stack }
         if to_def.typ in [recorddef,objectdef] then
@@ -4444,7 +4589,7 @@ implementation
               dec(i);
             until result or (i<0);
             if not result then
-              { just to be sure that noone uses odef }
+              { just to be sure that none uses odef }
               odef:=nil;
           end;
       end;
@@ -4796,13 +4941,11 @@ implementation
          else
            begin
              mac.is_compiler_var:=false;
-             if assigned(mac.buftext) then
-               freemem(mac.buftext,mac.buflen);
+             mac.free_buftext;
            end;
+           mac.is_c_macro:=true;
          Message2(parser_c_macro_set_to,mac.name,value);
-         mac.buflen:=length(value);
-         getmem(mac.buftext,mac.buflen);
-         move(value[1],mac.buftext^,mac.buflen);
+         move(value[1],mac.allocate_buftext(length(value))^,length(value));
          mac.defined:=true;
       end;
 
@@ -4826,15 +4969,9 @@ implementation
                initialmacrosymtable.insertsym(mac);
            end
          else
-           begin
-             mac.is_compiler_var:=true;
-             if assigned(mac.buftext) then
-               freemem(mac.buftext,mac.buflen);
-           end;
+           mac.is_compiler_var:=true;
          Message2(parser_c_macro_set_to,mac.name,value);
-         mac.buflen:=length(value);
-         getmem(mac.buftext,mac.buflen);
-         move(value[1],mac.buftext^,mac.buflen);
+         move(value[1],mac.allocate_buftext(length(value))^,length(value));
          mac.defined:=true;
       end;
 
@@ -4856,11 +4993,7 @@ implementation
              mac.defined:=false;
              mac.is_compiler_var:=false;
              { delete old definition }
-             if assigned(mac.buftext) then
-               begin
-                  freemem(mac.buftext,mac.buflen);
-                  mac.buftext:=nil;
-               end;
+             mac.free_buftext;
            end;
       end;
 
@@ -4928,19 +5061,6 @@ implementation
        { unit aliases }
        unitaliases:=TFPHashObjectList.create;
 {$endif}
-       { set some global vars to nil, might be important for the ide }
-       class_tobject:=nil;
-       class_tcustomattribute:=nil;
-       interface_iunknown:=nil;
-       interface_idispatch:=nil;
-       rec_tguid:=nil;
-       rec_jmp_buf:=nil;
-       rec_exceptaddr:=nil;
-       objc_metaclasstype:=nil;
-       objc_superclasstype:=nil;
-       objc_idtype:=nil;
-       objc_seltype:=nil;
-       objc_objecttype:=nil;
        dupnr:=0;
      end;
 
@@ -4949,12 +5069,17 @@ implementation
       begin
         generrorsym.owner:=nil;
         generrorsym.free;
+        generrorsym := nil;
         generrordef.owner:=nil;
         generrordef.free;
+        generrordef := nil;
         initialmacrosymtable.free;
+        initialmacrosymtable := nil;
         macrosymtablestack.free;
+        macrosymtablestack := nil;
 {$ifdef UNITALIASES}
         unitaliases.free;
+        unitaliases := nil;
 {$endif}
      end;
 

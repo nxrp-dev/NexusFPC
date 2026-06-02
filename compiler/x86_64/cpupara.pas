@@ -478,7 +478,7 @@ unit cpupara;
                 Exit(0);
               end;
           end;
-		
+
         (* Final merger cleanup.  *)
         (* The first one must never be X86_64_SSEUP_CLASS or
            X86_64_X87UP_CLASS.  *)
@@ -752,7 +752,7 @@ unit cpupara;
 
       end;
 
-	
+
     function classify_record(calloption: tproccalloption; def: tdef; parentdef: tdef; varspez: tvarspez; var classes: tx64paraclasses; byte_offset: aint): longint;
       var
         vs: tfieldvarsym;
@@ -908,7 +908,7 @@ unit cpupara;
 	  rounded_offset := byte_offset mod 8
         else
           rounded_offset := byte_offset;
-		
+
         case def.typ of
           orddef,
           enumdef,
@@ -1314,7 +1314,7 @@ unit cpupara;
             end;
           arraydef :
             begin
-              { cdecl array of const need to be ignored and therefor be puhsed
+              { cdecl array of const need to be ignored and therefor be pushed
                 as value parameter with length 0 }
               if ((calloption in cdecl_pocalls) and
                   is_array_of_const(def)) or
@@ -1333,7 +1333,7 @@ unit cpupara;
             end;
           objectdef :
             begin
-              { don't treat objects like records, because we only know wheter
+              { don't treat objects like records, because we only know whether
                 or not they'll have a VMT after the entire object is parsed
                 -> if they are used as function result from one of their own
                 methods, their size can still change after we've determined
@@ -1641,7 +1641,7 @@ unit cpupara;
         pushaddr   : boolean;
         paracgsize : tcgsize;
         { loc[2] onwards are only used for _m256 under vectorcall/SysV, and
-          homogeneous vector aggregates and homogeneous float aggreates under
+          homogeneous vector aggregates and homogeneous float aggregates under
           the vectorcall calling convention. [Kit] }
         loc        : tx64paraclasses;
         needintloc,
@@ -1650,10 +1650,11 @@ unit cpupara;
         locidx,
         i,j,
         varalign,
+        procparaalign,
         paraalign  : longint;
         use_ms_abi : boolean;
       begin
-        paraalign:=get_para_align(p.proccalloption);
+        procparaalign:=get_para_align(p.proccalloption);
         use_ms_abi:=x86_64_use_ms_abi(p.proccalloption);
         { Register parameters are assigned from left to right }
         for i:=0 to paras.count-1 do
@@ -1695,6 +1696,7 @@ unit cpupara;
                 paralen:=sizeof(pint);
                 paradef:=cpointerdef.getreusable_no_free(paradef);
                 paralocdef:=paradef;
+                paraalign:=procparaalign;
                 loc[0].def:=paralocdef;
                 loc[1].def:=nil;
                 for j:=2 to high(loc) do
@@ -1707,7 +1709,7 @@ unit cpupara;
               begin
                 getvalueparaloc(p.proccalloption,hp.varspez,paralocdef,loc);
                 paralen:=push_size(hp.varspez,paralocdef,p.proccalloption);
-                paraalign:=max(paraalign,paradef.alignment);
+                paraalign:=max(procparaalign,paradef.alignment);
                 if p.proccalloption = pocall_vectorcall then
                   begin
                     { TODO: Can this set of instructions be put into 'defutil' without it relying on the argument classification? [Kit] }
@@ -1853,7 +1855,7 @@ unit cpupara;
                                 end;
 {$endif not LLVM}
                               paraloc^.size:=def_cgsize(paraloc^.def);
-                              { s64comp is pushed in an int register }
+                              { s64comp/s64currency is pushed in an int register }
                               if paraloc^.size=OS_C64 then
                                 begin
                                   paraloc^.size:=OS_64;
@@ -1970,6 +1972,15 @@ unit cpupara;
                           paraloc:=hp.paraloc[side].add_location;
                           paraloc^.loc:=LOC_REFERENCE;
                           paraloc^.def:=loc[locidx].def;
+
+                          { s64comp/s64currency are passed as integer types
+                            (important for LLVM here) }
+                          if paracgsize=OS_C64 then
+                            begin
+                              paraloc^.size:=OS_64;
+                              paraloc^.def:=u64inttype;
+                            end;
+
                           {Hack alert!!! We should modify int_cgsize to handle OS_128,
                            however, since int_cgsize is called in many places in the
                            compiler where only a few can already handle OS_128, fixing it
@@ -1990,7 +2001,7 @@ unit cpupara;
                           else
                             paraloc^.reference.index:=NR_FRAME_POINTER_REG;
                           varalign:=used_align(size_2_align(paralen),paraalign,paraalign);
-                          paraloc^.reference.offset:=parasize;
+                          paraloc^.reference.offset:=align(parasize,varalign);
                           parasize:=align(parasize+paralen,varalign);
                           paralen:=0;
                         end;

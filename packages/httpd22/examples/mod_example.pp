@@ -83,8 +83,8 @@ type
                                  * here?
                                  }
     congenital: Integer;             { Boolean: did we inherit an "Example"? }
-    trace: PChar;                { Pointer to trace string. }
-    loc: PChar;                  { Location to which this record applies. }
+    trace: PAnsiChar;                { Pointer to trace string. }
+    loc: PAnsiChar;                  { Location to which this record applies. }
   end;
 
   Px_cfg = ^x_cfg;
@@ -98,7 +98,7 @@ type
  * the same routine/environment.
  }
 var
-  trace: PChar = nil;
+  trace: PAnsiChar = nil;
   static_calls_made: Papr_table_t = nil;
 
 {
@@ -126,7 +126,7 @@ var
  * list with
  *   AP_INIT_NO_ARGS("directive", function, mconfig, where, help)
  *
- * static const char *handle_NO_ARGS(cmd_parms *cmd, void *mconfig);
+ * static const AnsiChar *handle_NO_ARGS(cmd_parms *cmd, void *mconfig);
  }
 
 {
@@ -135,8 +135,8 @@ var
  * command_rec list with
  *   AP_INIT_RAW_ARGS("directive", function, mconfig, where, help)
  *
- * static const char *handle_RAW_ARGS(cmd_parms *cmd, void *mconfig,
- *                                    const char *args);
+ * static const AnsiChar *handle_RAW_ARGS(cmd_parms *cmd, void *mconfig,
+ *                                    const AnsiChar *args);
  }
 
 {
@@ -145,7 +145,7 @@ var
  * Declared in the command_rec list with
  *   AP_INIT_FLAG("directive", function, mconfig, where, help)
  *
- * static const char *handle_FLAG(cmd_parms *cmd, void *mconfig, int bool);
+ * static const AnsiChar *handle_FLAG(cmd_parms *cmd, void *mconfig, int bool);
  }
 
 {
@@ -153,8 +153,8 @@ var
  * "word1".  Declared in the command_rec list with
  *   AP_INIT_TAKE1("directive", function, mconfig, where, help)
  *
- * static const char *handle_TAKE1(cmd_parms *cmd, void *mconfig,
- *                                 char *word1);
+ * static const AnsiChar *handle_TAKE1(cmd_parms *cmd, void *mconfig,
+ *                                 AnsiChar *word1);
  }
 
 {
@@ -162,8 +162,8 @@ var
  * exactly two arguments.  Declared in the command_rec list with
  *   AP_INIT_TAKE2("directive", function, mconfig, where, help)
  *
- * static const char *handle_TAKE2(cmd_parms *cmd, void *mconfig,
- *                                 char *word1, char *word2);
+ * static const AnsiChar *handle_TAKE2(cmd_parms *cmd, void *mconfig,
+ *                                 AnsiChar *word1, AnsiChar *word2);
  }
 
 {
@@ -172,8 +172,8 @@ var
  * Declared in the command_rec list with
  *   AP_INIT_TAKE3("directive", function, mconfig, where, help)
  *
- * static const char *handle_TAKE3(cmd_parms *cmd, void *mconfig,
- *                                 char *word1, char *word2, char *word3);
+ * static const AnsiChar *handle_TAKE3(cmd_parms *cmd, void *mconfig,
+ *                                 AnsiChar *word1, AnsiChar *word2, AnsiChar *word3);
  }
 
 {
@@ -183,8 +183,8 @@ var
  * Declared in the command_rec list with
  *   AP_INIT_TAKE12("directive", function, mconfig, where, help)
  *
- * static const char *handle_TAKE12(cmd_parms *cmd, void *mconfig,
- *                                  char *word1, char *word2);
+ * static const AnsiChar *handle_TAKE12(cmd_parms *cmd, void *mconfig,
+ *                                  AnsiChar *word1, AnsiChar *word2);
  }
 
 {
@@ -195,8 +195,8 @@ var
  * Declared in the command_rec list with
  *   AP_INIT_TAKE123("directive", function, mconfig, where, help)
  *
- * static const char *handle_TAKE123(cmd_parms *cmd, void *mconfig,
- *                                   char *word1, char *word2, char *word3);
+ * static const AnsiChar *handle_TAKE123(cmd_parms *cmd, void *mconfig,
+ *                                   AnsiChar *word1, AnsiChar *word2, AnsiChar *word3);
  }
 
 {
@@ -206,8 +206,8 @@ var
  * Declared in the command_rec list with
  *   AP_INIT_TAKE13("directive", function, mconfig, where, help)
  *
- * static const char *handle_TAKE13(cmd_parms *cmd, void *mconfig,
- *                                  char *word1, char *word2, char *word3);
+ * static const AnsiChar *handle_TAKE13(cmd_parms *cmd, void *mconfig,
+ *                                  AnsiChar *word1, AnsiChar *word2, AnsiChar *word3);
  }
 
 {
@@ -217,8 +217,8 @@ var
  * Declared in the command_rec list with
  *   AP_INIT_TAKE23("directive", function, mconfig, where, help)
  *
- * static const char *handle_TAKE23(cmd_parms *cmd, void *mconfig,
- *                                  char *word1, char *word2, char *word3);
+ * static const AnsiChar *handle_TAKE23(cmd_parms *cmd, void *mconfig,
+ *                                  AnsiChar *word1, AnsiChar *word2, AnsiChar *word3);
  }
 
 {
@@ -228,8 +228,8 @@ var
  * Declared in the command_rec list with
  *   AP_INIT_ITERATE("directive", function, mconfig, where, help)
  *
- * static const char *handle_ITERATE(cmd_parms *cmd, void *mconfig,
- *                                   char *word1);
+ * static const AnsiChar *handle_ITERATE(cmd_parms *cmd, void *mconfig,
+ *                                   AnsiChar *word1);
  }
 
 {
@@ -242,8 +242,8 @@ var
  * Declared in the command_rec list with
  *   AP_INIT_ITERATE2("directive", function, mconfig, where, help)
  *
- * static const char *handle_ITERATE2(cmd_parms *cmd, void *mconfig,
- *                                    char *word1, char *word2);
+ * static const AnsiChar *handle_ITERATE2(cmd_parms *cmd, void *mconfig,
+ *                                    AnsiChar *word1, AnsiChar *word2);
  }
 
 {--------------------------------------------------------------------------}
@@ -328,9 +328,9 @@ const
 
   EXAMPLE_LOG_EACH = 0;
 
-procedure trace_add(s: Pserver_rec; r: Prequest_rec; mconfig: Px_cfg; const note: PChar); cdecl;
+procedure trace_add(s: Pserver_rec; r: Prequest_rec; mconfig: Px_cfg; const note: PAnsiChar); cdecl;
 var
-  sofar, addon, where, trace_copy, key: PChar;
+  sofar, addon, where, trace_copy, key: PAnsiChar;
   p: Papr_pool_t;
 begin
     {
@@ -391,7 +391,7 @@ begin
      }
     if (r = nil) then
     begin
-        key := apr_pstrcat(p, [note, PChar(':'), where, nil]);
+        key := apr_pstrcat(p, [note, PAnsiChar(':'), where, nil]);
 
         if (apr_table_get(static_calls_made, key) <> nil) then
             {
@@ -406,16 +406,16 @@ begin
             apr_table_set(static_calls_made, key, 'been here');
     end;
     addon := apr_pstrcat(p, [
-                        PChar('   <li>' + LineEnding +
+                        PAnsiChar('   <li>' + LineEnding +
                         '    <dl>' + LineEnding +
-                        '     <dt><samp>'), note, PChar('</samp></dt>' + LineEnding +
-                        '     <dd><samp>['), where, PChar(']</samp></dd>' + LineEnding +
+                        '     <dt><samp>'), note, PAnsiChar('</samp></dt>' + LineEnding +
+                        '     <dd><samp>['), where, PAnsiChar(']</samp></dd>' + LineEnding +
                         '    </dl>' + LineEnding +
                         '   </li>' + LineEnding),
                         nil]);
 
     if (trace_copy = nil) then sofar := '' else sofar := trace_copy;
-    
+
     trace_copy := apr_pstrcat(p, [sofar, addon, nil]);
     if (r <> nil) then apr_table_set(r^.notes, TRACE_NOTE, trace_copy)
     else trace := trace_copy;
@@ -453,7 +453,7 @@ end;
  * call in the trace log, and flag the applicability of the directive to the
  * current location in that location's configuration record.
  }
-function cmd_example(cmd: Pcmd_parms; mconfig: Pointer): PChar; cdecl;
+function cmd_example(cmd: Pcmd_parms; mconfig: Pointer): PAnsiChar; cdecl;
 var
   cfg: Px_cfg;
 begin
@@ -477,7 +477,7 @@ end;
 { intervention by other parts of the server, they need to make             }
 { sure any accumulated HTTP headers are sent first.  This is done by       }
 { calling send_http_header().  Otherwise, no header will be sent at all,   }
-{ and the output sent to the client will actually be HTTP-uncompliant.     }
+{ and the output sent to the client will actually be HTTP-noncompliant.    }
 {--------------------------------------------------------------------------}
 {
  * Sample content handler.  All this does is display the call list that has
@@ -492,7 +492,7 @@ end;
 function x_handler(r: Prequest_rec): Integer; cdecl;
 var
   dcfg: Px_cfg;
-  tempstr: PChar;
+  tempstr: PAnsiChar;
 begin
     tempstr := 'Undefined';
 
@@ -666,10 +666,10 @@ end;
  * The return value is a pointer to the created module-specific
  * structure.
  }
-function x_create_dir_config(p: Papr_pool_t; dirspec: PChar): Pointer; cdecl;
+function x_create_dir_config(p: Papr_pool_t; dirspec: PAnsiChar): Pointer; cdecl;
 var
   cfg: Px_cfg;
-  dname: PChar;
+  dname: PAnsiChar;
 begin
   dname := dirspec;
 
@@ -688,7 +688,7 @@ begin
      * Finally, add our trace to the callback list.
      }
     if dname = nil then dname := '';
-    cfg^.loc := apr_pstrcat(p, [PChar('DIR('), dname, PChar(')'), nil]);
+    cfg^.loc := apr_pstrcat(p, [PAnsiChar('DIR('), dname, PAnsiChar(')'), nil]);
     trace_add(nil, nil, cfg, 'x_create_dir_config()');
     Result := Pointer(cfg);
 end;
@@ -712,7 +712,7 @@ function x_merge_dir_config(p: Papr_pool_t;
  parent_conf, newloc_conf: Pointer): Pointer; cdecl;
 var
   merged_config, pconf, nconf: Px_cfg;
-  note: PChar;
+  note: PAnsiChar;
 begin
     merged_config := Px_cfg(apr_pcalloc(p, sizeof(x_cfg)));
     pconf := Px_cfg(parent_conf);
@@ -742,8 +742,8 @@ begin
      * Now just record our being called in the trace list.  Include the
      * locations we were asked to merge.
      }
-    note := apr_pstrcat(p, [PChar('x_merge_dir_config("'), pconf^.loc, PChar('","'),
-     nconf^.loc, PChar('")'), nil]);
+    note := apr_pstrcat(p, [PAnsiChar('x_merge_dir_config("'), pconf^.loc, PAnsiChar('","'),
+     nconf^.loc, PAnsiChar('")'), nil]);
     trace_add(nil, nil, merged_config, note);
     Result := Pointer(merged_config);
 end;
@@ -758,12 +758,12 @@ end;
 function x_create_server_config(p: Papr_pool_t; s: Pserver_rec): Pointer; cdecl;
 var
   cfg: Px_cfg;
-  sname: PChar;
+  sname: PAnsiChar;
 begin
     sname := s^.server_hostname;
 
     {
-     * As with the x_create_dir_config() reoutine, we allocate and fill
+     * As with the x_create_dir_config() routine, we allocate and fill
      * in an empty record.
      }
     cfg := Px_cfg(apr_pcalloc(p, sizeof(x_cfg)));
@@ -774,7 +774,7 @@ begin
      * Note that we were called in the trace list.
      }
     if sname = nil then sname := '';
-    cfg^.loc := apr_pstrcat(p, [PChar('SVR('), sname, PChar(')'), nil]);
+    cfg^.loc := apr_pstrcat(p, [PAnsiChar('SVR('), sname, PAnsiChar(')'), nil]);
     trace_add(s, nil, cfg, 'x_create_server_config()');
     Result := Pointer(cfg);
 end;
@@ -796,7 +796,7 @@ function x_merge_server_config(p: Papr_pool_t;
  server1_conf, server2_conf: Pointer): Pointer; cdecl;
 var
   merged_config, s1conf, s2conf: Px_cfg;
-  note: PChar;
+  note: PAnsiChar;
 begin
     merged_config := Px_cfg(apr_pcalloc(p, sizeof(x_cfg)));
     s1conf := Px_cfg(server1_conf);
@@ -809,15 +809,15 @@ begin
     if s1conf^.cmode = s2conf^.cmode then
      merged_config^.cmode := s1conf^.cmode
     else merged_config^.cmode := CONFIG_MODE_COMBO;
-    
+
     merged_config^.local := s2conf^.local;
     merged_config^.congenital := (s1conf^.congenital or s1conf^.local);
     merged_config^.loc := apr_pstrdup(p, s2conf^.loc);
     {
      * Trace our call, including what we were asked to merge.
      }
-    note := apr_pstrcat(p, [PChar('x_merge_server_config("'), s1conf^.loc, PChar('","'),
-     s2conf^.loc, PChar('")'), nil]);
+    note := apr_pstrcat(p, [PAnsiChar('x_merge_server_config("'), s1conf^.loc, PAnsiChar('","'),
+     s2conf^.loc, PAnsiChar('")'), nil]);
     trace_add(nil, nil, merged_config, note);
     Result := Pointer(merged_config);
 end;
@@ -875,7 +875,7 @@ end;
  }
 function x_child_exit(data: Pointer): apr_status_t; cdecl;
 var
-  note, sname: PChar;
+  note, sname: PAnsiChar;
   s: Pserver_rec;
 begin
     s := data;
@@ -886,7 +886,7 @@ begin
      * we're being called.
      }
     if sname = nil then sname := '';
-    note := apr_pstrcat(s^.process^.pool, [PChar('x_child_exit('), sname, PChar(')'), nil]);
+    note := apr_pstrcat(s^.process^.pool, [PAnsiChar('x_child_exit('), sname, PAnsiChar(')'), nil]);
     trace_add(s, nil, nil, note);
     Result := APR_SUCCESS;
 end;
@@ -896,7 +896,7 @@ end;
  }
 procedure x_child_init(p: Papr_pool_t; s: Pserver_rec); cdecl;
 var
-  note, sname: PChar;
+  note, sname: PAnsiChar;
 begin
   sname := s^.server_hostname;
 
@@ -909,7 +909,7 @@ begin
      * we're being called.
      }
     if sname = nil then sname := '';
-    note := apr_pstrcat(p, [PChar('x_child_init('), sname, PChar(')'), nil]);
+    note := apr_pstrcat(p, [PAnsiChar('x_child_init('), sname, PAnsiChar(')'), nil]);
     trace_add(s, nil, nil, note);
 
     apr_pool_cleanup_register(p, s, @x_child_exit, @x_child_exit);
@@ -923,7 +923,7 @@ end;
  * phase.
  }
 //#if 0
-function x_http_method(const r: Prequest_rec): PChar; cdecl;
+function x_http_method(const r: Prequest_rec): PAnsiChar; cdecl;
 var
   cfg: Px_cfg;
 begin
@@ -985,11 +985,11 @@ var
   cfg: Px_cfg;
 begin
   cfg := our_dconfig(r);
-  
+
   { Log the call and exit. }
-  
+
   trace_add(r^.server, nil, cfg, 'x_post_config()');
-    
+
   Result := DECLINED;
 end;
 
@@ -1073,7 +1073,7 @@ begin
    * called.
    }
   trace_add(r^.server, r, cfg, 'x_translate_handler()');
-    
+
   Result := DECLINED;
 end;
 
@@ -1099,7 +1099,7 @@ begin
    * called.
    }
   trace_add(r^.server, r, cfg, 'header_parser_handler()');
-  
+
   Result := DECLINED;
 end;
 
@@ -1120,7 +1120,7 @@ begin
   cfg := our_dconfig(r);
 
   { Don't do anything except log the call. }
-  
+
   trace_add(r^.server, r, cfg, 'x_check_user_id()');
 
   Result := DECLINED;
@@ -1141,12 +1141,12 @@ var
   cfg: Px_cfg;
 begin
   cfg := our_dconfig(r);
-    
+
   { * Log the call and return OK, or access will be denied (even though we
     * didn't actually do anything). }
-      
+
   trace_add(r^.server, r, cfg, 'x_auth_checker()');
-  
+
   Result := DECLINED;
 end;
 
@@ -1165,7 +1165,7 @@ var
 begin
   cfg := our_dconfig(r);
   trace_add(r^.server, r, cfg, 'x_access_checker()');
-    
+
   Result := DECLINED;
 end;
 
@@ -1185,9 +1185,9 @@ begin
 
   {  * Log the call, but don't do anything else - and report truthfully that
      * we didn't do anything. }
-     
+
   trace_add(r^.server, r, cfg, 'x_type_checker()');
-    
+
   Result := DECLINED;
 end;
 
@@ -1208,7 +1208,7 @@ begin
   { Log the call and exit. }
 
   trace_add(r^.server, r, cfg, 'x_fixer_upper()');
-    
+
   Result := OK;
 end;
 
@@ -1313,11 +1313,11 @@ var
 begin
   default_module_ptr := @example_module;
   FillChar(default_module_ptr^, SizeOf(default_module_ptr^), 0);
-  
+
   STANDARD20_MODULE_STUFF(default_module_ptr^);
-  
+
   { List of directives specific to our module. }
-  
+
   with x_cmds do
   begin
     name := 'Example';

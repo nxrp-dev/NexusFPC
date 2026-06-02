@@ -122,9 +122,9 @@
   {
    * control characters form Xenix termio.h
     }
-  { RESERVED true EOF char (V7 compatability)  }
+  { RESERVED true EOF AnsiChar (V7 compatibility)  }
      VCEOF = NCC;
-  { RESERVED true EOL char  }
+  { RESERVED true EOL AnsiChar  }
      VCEOL = NCC+1;
      CNUL = 0;
      CDEL = 0177;
@@ -498,7 +498,7 @@
   { copy parameters in }
   IOC_IN = culong($80000000);
 
-  { copy paramters in and out }
+  { copy parameters in and out }
   IOC_INOUT = (IOC_IN or IOC_OUT);
 
   { mask for IN/OUT/VOID }
@@ -512,7 +512,7 @@
   FIOSETOWN = (IOC_IN or (sizeof(cint) and IOCPARM_MASK) << 16) or ((ord('f') << 8) or 124);
   FIOGETOWN = (IOC_OUT or (sizeof(cint) and IOCPARM_MASK) << 16) or ((ord('f') << 8) or 123);
   FIODTYPE = (IOC_OUT or (sizeof(cint) and IOCPARM_MASK) << 16) or ((ord('f') << 8) or 122);
-  
+
   const
      B0 = 0;
      B50 = 1;

@@ -21,7 +21,9 @@
                    TextMode, Sound and NoSound are dummys, don't know how to
                    implement that for netware
 }
+{$IFNDEF FPC_DOTTEDUNITS}
 unit crt;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
@@ -234,7 +236,7 @@ begin
   fil:=32 or (textattr shl 8);
   if FullWin then
   begin
-    _clrscr;  {seems to swich cursor off}
+    _clrscr;  {seems to switch cursor off}
     _DisplayInputCursor;
   end else
    begin
@@ -305,9 +307,9 @@ End;
 var
    is_last : boolean;
 
-function readkey : char;
+function readkey : AnsiChar;
 var
-  char1 : char;
+  char1 : AnsiChar;
 begin
   if is_last then
   begin
@@ -449,7 +451,7 @@ end;
 var
   CurrX,CurrY : longint;
 
-Procedure WriteChar(c:char);
+Procedure WriteChar(c:AnsiChar);
 var
   w    : word;
 begin
@@ -511,7 +513,7 @@ Function CrtRead(Var F: TextRec): Integer;
   end;
 
 var
-  ch : Char;
+  ch : AnsiChar;
 Begin
   GetScreenCursor(CurrX,CurrY);
   f.bufpos:=0;

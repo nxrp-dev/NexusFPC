@@ -42,7 +42,9 @@
 
 // $Id: JwaUserEnv.pas,v 1.12 2007/09/05 11:58:52 dezipaitor Exp $
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaUserEnv;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -66,8 +68,13 @@ unit JwaUserEnv;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Activex, WinApi.Jedi.Profinfo, WinApi.Jedi.Wbemcli, WinApi.Jedi.Wintype, WinApi.Jedi.Winbase, WinApi.Jedi.Winnt;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaActiveX, JwaProfInfo, JwaWbemCli, JwaWinType, JWaWinBase, JwaWinNT;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 //=============================================================================
@@ -572,7 +579,7 @@ const
 //
 // Calling this function with an hToken ensures the list of Group Policy
 // Objects is correct for the user or machine since security access checking
-// can be perfomed.  If hToken is not supplied, the security of the caller
+// can be performed.  If hToken is not supplied, the security of the caller
 // is used instead which means that list may or may not be 100% correct
 // for the intended user / machine.  However, this is the fastest way
 // to call this function.
@@ -645,7 +652,7 @@ type
     lpDSPath: LPSTR;              // Path to the Active Directory portion of the GPO
     lpFileSysPath: LPSTR;         // Path to the file system portion of the GPO
     lpDisplayName: LPSTR;         // Friendly display name
-    szGPOName: array [0..49] of CHAR; // Unique name
+    szGPOName: array [0..49] of AnsiChar; // Unique name
     GPOLink: GPO_LINK;            // Link information
     lParam: LPARAM;               // Free space for the caller to store GPO specific information
     pNext: PGROUP_POLICY_OBJECTA; // Next GPO in the list
@@ -812,7 +819,7 @@ function GetAppliedGPOList(dwFlags: DWORD; pMachineName: LPCTSTR; pSidUser: PSID
 //     NoUserPolicy                 REG_DWORD    True, if extension does not have to be called when
 //                                                 user policies are being processed.
 //     NoSlowLink                   REG_DWORD    True, if extension does not have to be called on a slow link
-//     NoBackgroundPolicy           REG_DWORD    True, if extension does not have to be called 
+//     NoBackgroundPolicy           REG_DWORD    True, if extension does not have to be called
 //                                                 for background policy processing.
 //     NoGPOListChanges             REG_DWORD    True, if extension does not have to be called when
 //                                                 there are no changes between cached and current GPO lists.
@@ -937,7 +944,7 @@ type
   PRSOP_TARGET = ^RSOP_TARGET;
   {$EXTERNALSYM PRSOP_TARGET}
   TRsopTarget = RSOP_TARGET;
-  PRsopTarget = PRSOP_TARGET;  
+  PRsopTarget = PRSOP_TARGET;
 
   PFNGENERATEGROUPPOLICY = function(
     dwFlags: DWORD;                              // GPO_INFO_FLAGS

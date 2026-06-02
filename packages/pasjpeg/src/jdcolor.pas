@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 Unit JdColor;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { This file contains output colorspace conversion routines. }
 
@@ -8,6 +10,15 @@ interface
 
 {$I jconfig.inc}
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Jpeg.Jmorecfg,
+  System.Jpeg.Jinclude,
+  System.Jpeg.Jutils,
+  System.Jpeg.Jdeferr,
+  System.Jpeg.Jerror,
+  System.Jpeg.Jpeglib;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   jmorecfg,
   jinclude,
@@ -15,6 +26,7 @@ uses
   jdeferr,
   jerror,
   jpeglib;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { Module initialization routine for output colorspace conversion. }
 
@@ -290,7 +302,7 @@ begin
   begin
     inptr := JSAMPLE_PTR(input_buf^[0]^[input_row]);
     Inc(input_row);
-    outptr := JSAMPLE_PTR(@output_buf^[0]);
+    outptr := JSAMPLE_PTR(output_buf^[0]);
     Inc(JSAMPROW_PTR(output_buf));
     for col := 0 to pred(num_cols) do
     begin

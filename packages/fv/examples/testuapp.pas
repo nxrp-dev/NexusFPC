@@ -1,8 +1,10 @@
 program testuapp;
 
 {$codepage UTF8}
+{$h-}
 
 uses
+  {$ifdef UNIX}fpwidestring,{$endif}
   Objects, UDrivers, UViews, UMenus, UDialogs, UApp, UMsgBox, UInpLong, UTabs, SysUtils;
 
 const

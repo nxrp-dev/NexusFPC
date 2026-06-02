@@ -12,7 +12,9 @@
 **********************************************************************}
 {$mode objfpc}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit gdeque;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {
   Implements a generic double ended queue.
@@ -218,6 +220,8 @@ procedure TDeque.ClearData;
 var
   i: SizeInt;
 begin
+  if Length(FData)=0 then
+    exit;
   if IsManagedType(T) then
     for i := Low(FData) to High(FData) do
       Finalize(FData[i]);

@@ -26,7 +26,9 @@
 //  Microsoft Windows Mobile 6.0 for PocketPC SDK.
 //
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit wininet;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$IFNDEF NO_SMART_LINK}
 {$SMARTLINK ON}
@@ -40,7 +42,11 @@ unit wininet;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses WinApi.Windows;
+{$ELSE FPC_DOTTEDUNITS}
 uses Windows;
+{$ENDIF FPC_DOTTEDUNITS}
 
 // *
 // * Set up Structure Packing to be 4 bytes
@@ -452,7 +458,7 @@ const
       AUTO_PROXY_FLAG_DETECTION_RUN                   = $00000004;   // detection has been run
       AUTO_PROXY_FLAG_MIGRATED                        = $00000008;   // migration has just been done
       AUTO_PROXY_FLAG_DONT_CACHE_PROXY_RESULT         = $00000010;   // don't cache result of host=proxy name
-      AUTO_PROXY_FLAG_CACHE_INIT_RUN                  = $00000020;   // don't initalize and run unless URL expired
+      AUTO_PROXY_FLAG_CACHE_INIT_RUN                  = $00000020;   // don't initialize and run unless URL expired
       AUTO_PROXY_FLAG_DETECTION_SUSPECT               = $00000040;   // if we're on a LAN & Modem, with only one IP, bad?!?
 
 //
@@ -603,7 +609,7 @@ type
        lpszSubjectInfo:LPTSTR;
 
       //
-      // lpszIssuerInfo - the name of orgainzation, site, and server
+      // lpszIssuerInfo - the name of organization, site, and server
       //   the cert was issues by.
       //
        lpszIssuerInfo:LPTSTR;
@@ -1358,7 +1364,7 @@ const
       SECURITY_FLAG_PCT4                      = $00000010;
       SECURITY_FLAG_IETFSSL4                  = $00000020;
 
-// The following are for backwards compatability only.
+// The following are for backwards compatibility only.
 const
       SECURITY_FLAG_40BIT                     = SECURITY_FLAG_STRENGTH_WEAK;
       SECURITY_FLAG_128BIT                    = SECURITY_FLAG_STRENGTH_STRONG;
@@ -1522,7 +1528,7 @@ type
        cDowngraded:longint;   //               ... converted to session-cookies
        cBlocked:longint;      //               ... rejected
 
-       pszLocation:PChar;   // Optional: URL associated with reported cookie events
+       pszLocation:PAnsiChar;   // Optional: URL associated with reported cookie events
                             // This can be used to override request URL
      end;
 
@@ -1531,7 +1537,7 @@ type
        cSent:longint;
        cSuppressed:longint;
 
-       pszLocation:PChar;   // Optional: URL associated with reported cookie events
+       pszLocation:PAnsiChar;   // Optional: URL associated with reported cookie events
                             // This can be used to override request URL
      end;
 
@@ -1903,12 +1909,12 @@ const
 
 type
      GOPHER_FIND_DATAA = record
-        DisplayString:array[0..MAX_GOPHER_DISPLAY_TEXT] of char;
+        DisplayString:array[0..MAX_GOPHER_DISPLAY_TEXT] of AnsiChar;
         GopherType:DWORD; // GOPHER_TYPE_, if known
         SizeLow:DWORD;
         SizeHigh:DWORD;
         LastModificationTime:FILETIME;
-        Locator:array[0..MAX_GOPHER_LOCATOR_LENGTH] of char;
+        Locator:array[0..MAX_GOPHER_LOCATOR_LENGTH] of AnsiChar;
      end;
      LPGOPHER_FIND_DATAA = ^GOPHER_FIND_DATAA;
 
@@ -2575,7 +2581,7 @@ const
       HTTP_STATUS_PARTIAL             = 203; // partial completion
       HTTP_STATUS_NO_CONTENT          = 204; // no info to return
       HTTP_STATUS_RESET_CONTENT       = 205; // request completed, but clear form
-      HTTP_STATUS_PARTIAL_CONTENT     = 206; // partial GET furfilled
+      HTTP_STATUS_PARTIAL_CONTENT     = 206; // partial GET fulfilled
 
       HTTP_STATUS_AMBIGUOUS           = 300; // server couldn't decide what to return
       HTTP_STATUS_MOVED               = 301; // object permanently moved
@@ -3242,7 +3248,7 @@ type
         LastSyncTime:FILETIME;    // last time the URL was synchronized with the source
         lpHeaderInfo:LPSTR;    // embedded pointer to the header info.
         dwHeaderInfoSize:DWORD;   // size of the above header.
-        lpszFileExtension:LPSTR;  // File extension used to retrive the urldata as a file.
+        lpszFileExtension:LPSTR;  // File extension used to retrieve the urldata as a file.
        case longint of // Exemption delta from last access time.
            0: (dwReserved:DWORD);
          1: (dwExemptDelta:DWORD);
@@ -3265,7 +3271,7 @@ type
         LastSyncTime:FILETIME;    // last time the URL was synchronized with the source
         lpHeaderInfo:LPWSTR;     // embedded pointer to the header info.
         dwHeaderInfoSize:DWORD;   // size of the above header.
-        lpszFileExtension:LPWSTR; // File extension used to retrive the urldata as a file.
+        lpszFileExtension:LPWSTR; // File extension used to retrieve the urldata as a file.
        case longint of // Exemption delta from last access time.
            0: (dwReserved:DWORD);
          1: (dwExemptDelta:DWORD);
@@ -3348,7 +3354,7 @@ type
         dwDiskUsage:DWORD;  // in KB
         dwDiskQuota:DWORD;  // in KB
         dwOwnerStorage:array[0..GROUP_OWNER_STORAGE_SIZE-1] of DWORD;
-        szGroupName:array[0..GROUPNAME_MAX_LENGTH-1] of char;
+        szGroupName:array[0..GROUPNAME_MAX_LENGTH-1] of AnsiChar;
      end;
      INTERNET_CACHE_GROUP_INFOA = _INTERNET_CACHE_GROUP_INFOA;
      LPINTERNET_CACHE_GROUP_INFOA = ^INTERNET_CACHE_GROUP_INFOA;

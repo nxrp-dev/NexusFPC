@@ -15,6 +15,7 @@ unit WHTMLHlp;
 {$ifdef cpullvm}
 {$modeswitch nestedprocvars}
 {$endif}
+{$H-}
 
 interface
 
@@ -76,7 +77,7 @@ type
     THTMLTopicRenderer = object(THTMLParser)
       function  BuildTopic(P: PTopic; AURL: string; HTMLFile: PTextFile; ATopicLinks: PTopicLinkCollection): boolean;
     public
-      function  DocAddTextChar(C: char): boolean; virtual;
+      function  DocAddTextChar(C: AnsiChar): boolean; virtual;
       procedure DocSoftBreak; virtual;
       procedure DocTYPE; virtual;
       procedure DocHTML(Entered: boolean); virtual;
@@ -140,13 +141,13 @@ type
       LinkIndexes: array[0..MaxTopicLinks] of sw_integer;
       FileIDLinkIndexes: array[0..MaxTopicLinks] of sw_integer;
       LinkPtr: sw_integer;
-      LastTextChar: char;
+      LastTextChar: AnsiChar;
 {      Anchor: TAnchor;}
       { Table stuff }
       CurrentTable : PTable;
       procedure AddText(const S: string);
-      procedure AddChar(C: char);
-      procedure AddCharAt(C: char;AtPtr : sw_word);
+      procedure AddChar(C: AnsiChar);
+      procedure AddCharAt(C: AnsiChar;AtPtr : sw_word);
       function AddTextAt(const S: string;AtPtr : sw_word) : sw_word;
       function ComputeTextLength(TStart,TEnd : sw_word) : sw_word;
     end;
@@ -508,7 +509,7 @@ end;
 procedure THTMLAnsiView.CopyToHTML;
 var
   Attr,NewAttr : byte;
-  c : char;
+  c : AnsiChar;
   X,Y,Pos : longint;
 begin
    Attr:=(Buffer^[1] shr 8);
@@ -548,7 +549,7 @@ begin
   DefHTMLGetSectionColor:=false;
 end;
 
-function CharStr(C: char; Count: byte): string;
+function CharStr(C: AnsiChar; Count: byte): string;
 var S: string;
 begin
   setlength(s,count);
@@ -557,7 +558,7 @@ begin
 end;
 
 
-function THTMLTopicRenderer.DocAddTextChar(C: char): boolean;
+function THTMLTopicRenderer.DocAddTextChar(C: AnsiChar): boolean;
 var Added: boolean;
 begin
   Added:=false;
@@ -733,7 +734,7 @@ begin
  CanonicalizeURL:=CompleteURL(Base,relative);
 end;
 
-procedure THTMLTopicRenderer.Resolve( href: ansistring; var AFileId,ALinkId : sw_integer); 
+procedure THTMLTopicRenderer.Resolve( href: ansistring; var AFileId,ALinkId : sw_integer);
 begin
 {$IFDEF WDEBUG}
               DebugMessageS({$i %file%},' htmlresolve "'+HRef+'"',{$i %line%},'1',0,0);
@@ -791,7 +792,7 @@ begin
         begin
 {$IFDEF WDEBUG}
           DebugMessage(GetFileName,' Found '+SuppressUntil+'comment "'
-            +Comment+'" SuppressOuput reset to false',Line,1);
+            +Comment+'" SuppressOutput reset to false',Line,1);
 {$endif WDEBUG}
           SuppressOutput:=false;
           SuppressUntil:='';
@@ -1188,7 +1189,7 @@ begin
   PAlign:=OAlign;
 end;
 
-procedure THTMLTopicRenderer.AddChar(C: char);
+procedure THTMLTopicRenderer.AddChar(C: AnsiChar);
 begin
   if (Topic=nil) or (TextPtr=MaxBytes) or SuppressOutput then Exit;
   Topic^.Text^[TextPtr]:=ord(C);
@@ -1197,7 +1198,7 @@ begin
     AnyCharsInLine:=true;
 end;
 
-procedure THTMLTopicRenderer.AddCharAt(C: char;AtPtr : sw_word);
+procedure THTMLTopicRenderer.AddCharAt(C: AnsiChar;AtPtr : sw_word);
 begin
   if (Topic=nil) or (TextPtr=MaxBytes) or SuppressOutput then Exit;
   if AtPtr>TextPtr then
@@ -1361,14 +1362,14 @@ begin
    CanonicalizeUrl:=relative;
 end;
 
-procedure TCHMTopicRenderer.Resolve( href: ansistring; var AFileId,ALinkId : sw_integer); 
+procedure TCHMTopicRenderer.Resolve( href: ansistring; var AFileId,ALinkId : sw_integer);
 var resolved:boolean;
 begin
 {$IFDEF WDEBUG}
   DebugMessageS({$i %file%},' chmresolve "'+HRef+'"',{$i %line%},'1',0,0);
 {$ENDIF WDEBUG}
-  resolved:=false; AFileID:=0; ALinkID:=0;	
-  href:=stringreplace(href,'%20',' '); 
+  resolved:=false; AFileID:=0; ALinkID:=0;
+  href:=stringreplace(href,'%20',' ');
   if copy(href,1,7)='ms-its:' then
     resolved:=CHMResolve(Href,AFileId,ALinkID);
   if not resolved then

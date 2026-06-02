@@ -2,7 +2,7 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses {$ifdef unix}cthreads,{$endif} fpmkunit;
 
 Var
   P : TPackage;
@@ -26,9 +26,9 @@ begin
     P.Email := '';
     P.Description := 'This package provides an interface with Common UNIX Printing System.';
     P.NeedLibC:= false;  // true for headers that indirectly link to libc?
-    
+
     P.Dependencies.Add('rtl-extra');
-    
+
     P.SourcePath.Add('src');
 
     T:=P.Targets.AddUnit('cupsdyn.pp');
@@ -37,6 +37,9 @@ begin
 //    P.Targets.AddExampleProgram('testcups.pp');
 //    P.Sources.AddExampleFiles('examples/*',P.Directory,false,'.');
 
+
+
+    P.NamespaceMap:='namespaces.lst';
 
 {$ifndef ALLPACKAGES}
     Run;

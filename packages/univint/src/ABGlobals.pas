@@ -6,7 +6,7 @@
  *
  }
 {	  Pascal Translation:  Peter N Lewis, <peter@stairways.com.au>, 2004 }
-{   Pascal Translation Updated:  Peter N Lewis, <peter@stairways.com.au>, Feburary 2006 }
+{   Pascal Translation Updated:  Peter N Lewis, <peter@stairways.com.au>, February 2006 }
 {	  Pascal Translation Updated:  Gorazd Krosl, <gorazd_1957@yahoo.ca>, November 2009 }
 {     Pascal Translation Updated:  Gale R Paeper, <gpaeper@empirenet.com>, 2018 }
 
@@ -24,7 +24,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit ABGlobals;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -209,7 +211,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CFBase;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CFBase;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -374,11 +380,11 @@ var kABDepartmentProperty: CFStringRef; external name '_kABDepartmentProperty'; 
 var kABPersonFlags: CFStringRef; external name '_kABPersonFlags'; (* attribute const *)
 (* AVAILABLE_MAC_OS_X_VERSION_10_3_AND_LATER *)     // Various flags - kABIntegerProperty - (Person)
 
-const	
+const
 	kABShowAsMask = 7;
 	kABShowAsPerson = 0;
 	kABShowAsCompany = 1;
-	
+
 	kABNameOrderingMask = 7 shl 3;
 	kABDefaultNameOrdering = 0 shl 3;
 	kABFirstNameFirst = 4 shl 3;

@@ -2,7 +2,7 @@
     This file is part of the Free Pascal run time library.
     Copyright (c) 1999-2000 by the Free Pascal development team.
 
-    Implemtents some stuff of OLE2, tries to be Delphi compatible
+    Implements some stuff of OLE2, tries to be Delphi compatible
 
     See the file COPYING.FPC, included in this distribution,
     for details about the copyright.
@@ -13,12 +13,19 @@
 
  **********************************************************************}
 {$MODE OBJFPC}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit Ole2;
+{$ENDIF FPC_DOTTEDUNITS}
 
   interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+    uses
+      WinApi.Windows;
+{$ELSE FPC_DOTTEDUNITS}
     uses
       windows;
+{$ENDIF FPC_DOTTEDUNITS}
 
     const
       GUID_NULL: TGUID = (D1:$00000000;D2:$0000;D3:$0000;D4:($00,$00,$00,$00,$00,$00,$00,$00));

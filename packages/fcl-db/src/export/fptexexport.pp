@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fptexexport;
+{$ENDIF FPC_DOTTEDUNITS}
 {
     This file is part of the Free Pascal run time library.
     Copyright (c) 1999-2022 by Michael van Canney and other members of the
@@ -18,15 +20,20 @@ unit fptexexport;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, Data.Db, Data.Export.Db;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, DB, fpdbexport;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
   TTeXExportOption = (teHeaderRow,teTableEnvironment,teHeaderLine,teTopLine,teBottomLine,teUseWidths,teCreateDocument);
   TTeXExportOptions = Set of TTeXExportOption;
   TTexTabularEnvironment = (ttTabular,ttTabularX,ttLongtable,ttSuperTabular);
   TTexUnits = (tuEm,tuMM);
-  
+
   { TTeXExportFormatSettings }
 
   TTeXExportFormatSettings = Class(TExportFormatSettings)
@@ -109,7 +116,7 @@ Procedure UnRegisterTexExportFormat;
 Const
   STeXExport    = 'TeX export';
   STeXExportExt = '.tex';
-  
+
   TabularPackageNames  : Array[TTexTabularEnvironment] of string
                        = ('array','tabularx','longtable','supertabular');
   TabularNames : Array[TTexTabularEnvironment] of string
@@ -136,14 +143,14 @@ function TCustomTexExporter.EscapeLaTeX(const S: String): String;
 
 Var
   I,J,L : Integer;
-  P : Pchar;
+  P : PAnsiChar;
 
 begin
   I:=1;
   J:=1;
   Result:='';
   L:=Length(S);
-  P:=PChar(S);
+  P:=PAnsiChar(S);
   While I<=L do
     begin
     if (P^ in ['&','{','}','#','_','$','%']) then
@@ -195,7 +202,7 @@ Var
   FL : TTexExportFieldItem;
   F : TField;
   W : Integer;
-  
+
 begin
   inherited BuildDefaultFieldMap(AMap);
   For I:=0 to AMap.Count-1 do
@@ -224,14 +231,14 @@ end;
 procedure TCustomTeXExporter.DoDataHeader;
 
 Const
-  AlChars : Array[TAlignment] of char = 'lcr';
+  AlChars : Array[TAlignment] of AnsiChar = 'lcr';
 
 Var
   I,TW : Integer;
   B1,B2 : Boolean;
   EF : TTeXExportFieldItem;
   UN,S,FTW : String;
-  
+
 begin
   B1:=teUseWidths in FEO;
   B2:=teHeaderRow in FEO;
@@ -339,7 +346,7 @@ procedure TCustomTeXExporter.OpenDocument;
 
 Var
   S : string;
-  
+
 begin
   OutputRow(Format('\documentclass%s{%s}',['','article']));
   S:=TabularPackageNames[FormatSettings.Tabular];
@@ -372,7 +379,7 @@ procedure TCustomTeXExporter.ExportField(EF: TExportFieldItem);
 
 Var
   S : String;
-  
+
 begin
   S:=FormatField(EF.Field);
   If (FCurrentRow<>'') then

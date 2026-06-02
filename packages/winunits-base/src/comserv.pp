@@ -14,12 +14,19 @@
 {$mode objfpc}
 {$H+}
 {$inline on}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit ComServ;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, WinApi.Comobj, WinApi.Activex;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, comobj, ActiveX;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { $define DEBUG_COM}
 
@@ -89,9 +96,10 @@ type
     procedure RegisterServer;
     procedure UnRegisterServer;
     property IsInprocServer: Boolean read FIsInproc write FIsInproc;
-    property IsInteractive: Boolean read fIsInteractive;
+    property IsInteractive: Boolean read fIsInteractive write fIsInteractive;
     property StartMode: TStartMode read FStartMode;
     property ServerObjects:integer read fCountObject;
+    property OnLastRelease: TLastReleaseEvent read FOnLastRelease write FOnLastRelease;
   end;
 
 var
@@ -121,8 +129,13 @@ function DllUnregisterServer: HResult; stdcall;
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Windows;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Windows;
+{$ENDIF FPC_DOTTEDUNITS}
 
 function DllCanUnloadNow: HResult; stdcall;
 begin
@@ -209,7 +222,7 @@ var
   FileName: WideString;
 begin
   SetLength(FileName, MAX_PATH_SIZE);
-  SetLength(FileName, Windows.GetModuleFileNameW(HInstance, @FileName[1], MAX_PATH_SIZE));
+  SetLength(FileName, {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.GetModuleFileNameW(HInstance, @FileName[1], MAX_PATH_SIZE));
   Result := FileName;
 end;
 
@@ -225,7 +238,7 @@ var
 begin
   FullPath := ModuleName;
   //according to MSDN helpdir can be null
-  OleCheck(ActiveX.RegisterTypeLib(TypeLib, @FullPath[1], nil));
+  OleCheck({$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}ActiveX.RegisterTypeLib(TypeLib, @FullPath[1], nil));
 end;
 
 procedure UnRegisterTypeLib(TypeLib: ITypeLib);
@@ -235,7 +248,7 @@ begin
   //http://www.experts-exchange.com/Programming/Misc/Q_20634807.html
   OleCheck(TypeLib.GetLibAttr(ptla));
   try
-    ActiveX.UnRegisterTypeLib(ptla^.guid, ptla^.wMajorVerNum, ptla^.wMinorVerNum, ptla^.lcid, ptla^.syskind);
+    {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}ActiveX.UnRegisterTypeLib(ptla^.guid, ptla^.wMajorVerNum, ptla^.wMinorVerNum, ptla^.lcid, ptla^.syskind);
   finally
     TypeLib.ReleaseTLibAttr(ptla);
   end;
@@ -250,16 +263,16 @@ begin
   begin
     Result := InterlockedIncrement(FCountObject);
     if (not IsInProcServer) and (StartMode = smAutomation)
-      and Assigned(ComObj.CoAddRefServerProcess) then
-      ComObj.CoAddRefServerProcess;
+      and Assigned({$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}ComObj.CoAddRefServerProcess) then
+      {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}ComObj.CoAddRefServerProcess;
   end
   else
   begin
     Result := InterlockedDecrement(FCountObject);
     if (not IsInProcServer) and (StartMode = smAutomation)
-      and Assigned(ComObj.CoReleaseServerProcess) then
+      and Assigned({$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}ComObj.CoReleaseServerProcess) then
     begin
-      if ComObj.CoReleaseServerProcess() = 0 then
+      if {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}ComObj.CoReleaseServerProcess() = 0 then
         CheckReleased;
     end
     else if Result = 0 then
@@ -432,10 +445,10 @@ class procedure TComServer.AutomationStart;
 begin
   if orgInitProc <> nil then TProcedure(orgInitProc)();
   ComServer.FStartSuspended := (CoInitFlags <> -1) and
-    Assigned(ComObj.CoInitializeEx) and Assigned(ComObj.CoResumeClassObjects);
+    Assigned({$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}ComObj.CoInitializeEx) and Assigned({$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}ComObj.CoResumeClassObjects);
   ComServer.Start;
   if ComServer.FStartSuspended then
-    ComObj.CoResumeClassObjects;
+    {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}ComObj.CoResumeClassObjects;
 end;
 
 class function TComServer.AutomationDone: Boolean;
@@ -443,8 +456,8 @@ begin
   Result := True;
   if (ComServer <> nil) and (ComServer.ServerObjects > 0) and ComServer.IsInteractive then
   begin
-    Result := MessageBox(0, PChar('COM server is in use'),
-      PChar('OLE Automation'), MB_YESNO or MB_TASKMODAL or
+    Result := MessageBoxA(0, PAnsiChar('COM server is in use'),
+      PAnsiChar('OLE Automation'), MB_YESNO or MB_TASKMODAL or
       MB_ICONWARNING or MB_DEFBUTTON2) = IDYES;
   end;
 end;

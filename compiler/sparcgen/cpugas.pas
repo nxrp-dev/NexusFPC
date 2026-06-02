@@ -69,7 +69,7 @@ implementation
          // Note for casual readers: gas (GNU as) uses -Av7, -Av8, -Av9 etc. on SPARC,
          // rather than variants of the -m option used by most other CPUs. Solaris as
          // uses -xarch=v7, -xarch=v8 etc., that form is not supported here since there
-         // are probably other incompatibilties between the GNU and Solaris binutils
+         // are probably other incompatibilities between the GNU and Solaris binutils
          // that need to be reviewed.
          //
          // v9 is required as the default since the RTL started using membar at 2.2.2.
@@ -246,7 +246,7 @@ implementation
            id     : as_ggas;
            idtxt  : 'GAS';
            asmbin : 'gas';
-           asmcmd : '$ARCH $PIC -o $OBJ $EXTRAOPT $ASM';
+           asmcmd : '$ARCH $PIC -32 -o $OBJ $EXTRAOPT $ASM';
            supported_targets : [system_sparc_solaris,system_sparc_linux,system_sparc_embedded];
            flags : [af_needar,af_smartlink_sections];
            labelprefix : '.L';
@@ -263,7 +263,7 @@ implementation
 {$ifdef FPC_SPARC_V8_ONLY}
            asmcmd : '$PIC -o $OBJ $EXTRAOPT $ASM';
 {$else}
-           asmcmd : '$ARCH $PIC -o $OBJ $EXTRAOPT $ASM';
+           asmcmd : '$ARCH $PIC -64 -o $OBJ $EXTRAOPT $ASM';
 {$endif}
            supported_targets : [system_sparc64_linux];
            flags : [af_needar,af_smartlink_sections];
@@ -278,7 +278,7 @@ implementation
            id     : as_ggas;
            idtxt  : 'GAS';
            asmbin : 'gas';
-           asmcmd : '$ARCH $PIC -o $OBJ $EXTRAOPT $ASM';
+           asmcmd : '$ARCH $PIC -64 -o $OBJ $EXTRAOPT $ASM';
            supported_targets : [system_sparc64_linux];
            flags : [af_needar,af_smartlink_sections];
            labelprefix : '.L';

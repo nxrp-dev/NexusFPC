@@ -1,5 +1,7 @@
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit lpc1768;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$goto on}
 {$define lpc1768}
@@ -967,7 +969,7 @@ Const
 Var
  LPC_SC                : TSCRegisters  Absolute (LPC_SC_BASE);
   LPC_SCB    : TSCBRegisters Absolute (LPC_SCB_BASE);
- 
+
  LPC_GPIO0             : TGPIORegisters Absolute (LPC_GPIO0_BASE);
  LPC_GPIO1             : TGPIORegisters Absolute (LPC_GPIO1_BASE);
  LPC_GPIO2             : TGPIORegisters Absolute (LPC_GPIO2_BASE);
@@ -1092,7 +1094,7 @@ interrupt_vectors:
   .long 0
   .long PendingSV_interrupt
   .long SysTick_interrupt
-  
+
   .long Watchdog_Interrupt
   .long Timer0_Interrupt
   .long Timer1_Interrupt
@@ -1128,7 +1130,7 @@ interrupt_vectors:
   .long PLL1_Interrupt
   .long USBActivity_Interrupt
   .long CanActivity_Interrupt
-  
+
   .weak NMI_interrupt
   .weak Hardfault_interrupt
   .weak MemManage_interrupt
@@ -1173,7 +1175,7 @@ interrupt_vectors:
   .weak PLL1_Interrupt
   .weak USBActivity_Interrupt
   .weak CanActivity_Interrupt
-  
+
     .set NMI_interrupt, Startup
   .set Hardfault_interrupt, Startup
   .set MemManage_interrupt, Startup
@@ -1218,7 +1220,7 @@ interrupt_vectors:
   .set PLL1_Interrupt, Startup
   .set USBActivity_Interrupt, Startup
   .set CanActivity_Interrupt, Startup
-  
+
   .text
 end;
 

@@ -7,15 +7,21 @@
 (*                                                                     *)
 (********************************************************************* *)
 
-unit
-  imm;
+{$IFNDEF FPC_DOTTEDUNITS}
+unit imm;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode delphi}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Windows;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Windows;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$PACKRECORDS C}
 
@@ -122,7 +128,7 @@ type
 {$ifdef UNICODE}
   PtagREGISTERWORD = PtagREGISTERWORDW;
   tagREGISTERWORD  = tagREGISTERWORDW;
-  REGISTERWORD     = REGISTERWORDW;     
+  REGISTERWORD     = REGISTERWORDW;
   TREGISTERWORD    = TREGISTERWORDW;
   PREGISTERWORD    = PREGISTERWORDW;
   NPREGISTERWORD   = NPREGISTERWORDW;
@@ -826,7 +832,7 @@ const
   IMFS_DEFAULT   = MFS_DEFAULT;
 
   // type of soft keyboard
-  // for Windows Tranditional Chinese Edition
+  // for Windows Traditional Chinese Edition
   SOFTKEYBOARD_TYPE_T1 = $0001;
 
   // for Windows Simplified Chinese Edition

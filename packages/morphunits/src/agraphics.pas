@@ -20,12 +20,19 @@
  **********************************************************************}
 {$PACKRECORDS 2}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit agraphics;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  Amiga.Core.Exec, Amiga.Core.Hardware, Amiga.Core.Utility;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   exec, hardware, utility;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   BITSET = $8000;
@@ -71,7 +78,7 @@ type
     xln_Pred: PNode;
     xln_Type: Byte;          // NT_GRAPHICS
     xln_Pri: ShortInt;
-    xln_Name: PChar;
+    xln_Name: PAnsiChar;
     xln_Subsystem: Byte;     // see below
     xln_Subtype: Byte;       // SS_GRAPHICS
     xln_Library : Longint;
@@ -171,7 +178,7 @@ type
     Scroll_Y        : Word;
     Cr,
     Cr2,
-    CrNew           : PClipRect;    // used by dedice
+    CrNew           : PClipRect;    // used by device
     SuperSaveClipRects: PClipRect;  // preallocated cr's
     _ClipRects      : PClipRect;    // system use during refresh
     LayerInfo       : Pointer;      // PLayer_Info points to head of the list
@@ -215,7 +222,7 @@ type
     tf_Style: Byte;       // font style      |    match a font
     tf_Flags: Byte;       // preferences and flags /    request.
     tf_XSize: Word;       // nominal font width
-    tf_Baseline: Word;    // distance from the top of char to baseline
+    tf_Baseline: Word;    // distance from the top of AnsiChar to baseline
     tf_BoldSmear: Word;   // smear to affect a bold enhancement
     tf_Accessors: Word;   // access count
     tf_LoChar: Byte;      // the first character described here
@@ -785,14 +792,14 @@ const
   CT_COLORMASK = $000F; // mask to get to following color styles
   CT_COLORFONT = $0001; // color map contains designer's colors }
   CT_GREYFONT  = $0002; // color map describes even-stepped brightnesses from low to high
-  CT_ANTIALIAS = $0004; // zero background thru fully saturated char
+  CT_ANTIALIAS = $0004; // zero background thru fully saturated AnsiChar
 
   CTB_MAPCOLOR = 0;                  // map ctf_FgColor to the rp_FgPen IF it's }
   CTF_MAPCOLOR = 1 shl CTB_MAPCOLOR; // is a valid color within ctf_Low..ctf_High
 
 // graphics copper list instruction definitions
 const
-  COPPER_MOVE = 0; // pseude opcode for move #XXXX,dir
+  COPPER_MOVE = 0; // pseudo opcode for move #XXXX,dir
   COPPER_WAIT = 1; // pseudo opcode for wait y,x
   CPRNXTBUF   = 2; // continue processing with next buffer
   CPR_NT_LOF  = $8000; // copper instruction only for Longint frames
@@ -985,11 +992,11 @@ const
   REQUEST_SPECIAL       =  1 shl MSB_REQUEST_SPECIAL;
   REQUEST_A2024         =  1 shl MSB_REQUEST_A2024;
 
-  DEFAULT_MONITOR_NAME  : PChar = 'default.monitor';
-  NTSC_MONITOR_NAME     : PChar = 'ntsc.monitor';
-  PAL_MONITOR_NAME      : PChar = 'pal.monitor';
-  VGA_MONITOR_NAME      : PChar = 'vga.monitor';
-  VGA70_MONITOR_NAME    : PChar = 'vga70.monitor';
+  DEFAULT_MONITOR_NAME  : PAnsiChar = 'default.monitor';
+  NTSC_MONITOR_NAME     : PAnsiChar = 'ntsc.monitor';
+  PAL_MONITOR_NAME      : PAnsiChar = 'pal.monitor';
+  VGA_MONITOR_NAME      : PAnsiChar = 'vga.monitor';
+  VGA70_MONITOR_NAME    : PAnsiChar = 'vga70.monitor';
   STANDARD_MONITOR_MASK = REQUEST_NTSC or REQUEST_PAL;
 
   STANDARD_NTSC_ROWS    =  262;
@@ -1126,7 +1133,7 @@ const
   MVP_OK         = 0; // you want to see this one
   MVP_NO_MEM     = 1; // insufficient memory for intermediate workspace
   MVP_NO_VPE     = 2; // ViewPort does not have a ViewPortExtra, and insufficient memory to allocate a temporary one.
-  MVP_NO_DSPINS  = 3; // insufficient memory for intermidiate copper instructions.
+  MVP_NO_DSPINS  = 3; // insufficient memory for intermediate copper instructions.
   MVP_NO_DISPLAY = 4; // BitMap data is misaligned for this viewport's mode and depth - see AllocBitMap().
   MVP_OFF_BOTTOM = 5; // PRIVATE - you will never see this.
 
@@ -1619,7 +1626,7 @@ type
   PNameInfo = ^TNameInfo;
   TNameInfo = record
     Header: TQueryHeader;
-    Name: array[0..DISPLAYNAMELEN - 1] of Char;
+    Name: array[0..DISPLAYNAMELEN - 1] of AnsiChar;
     Reserved: array[0..1] of LongWord; // terminator
   end;
 
@@ -1675,7 +1682,7 @@ const
   VTAG_USERCLIP_GET      = $80000023;
   VTAG_USERCLIP_SET      = $80000024;
   VTAG_USERCLIP_CLR      = $80000025;
-  // The following tags are V39 specific. They will be ignored (returing error -3) by earlier versions
+  // The following tags are V39 specific. They will be ignored (returning error -3) by earlier versions
   VTAG_PF1_BASE_GET          = $80000026;
   VTAG_PF2_BASE_GET          = $80000027;
   VTAG_SPEVEN_BASE_GET       = $80000028;
@@ -1975,7 +1982,7 @@ const
 // GfxFlags (private)
   NEW_DATABASE = 1;
 
-  GRAPHICSNAME: PChar  = 'graphics.library';
+  GRAPHICSNAME: PAnsiChar  = 'graphics.library';
 
 var
   GfxBase : PGfxBase = nil;
@@ -2094,7 +2101,7 @@ function TextExtent(Rp: PRastPort location 'a1'; String1: STRPTR location 'a0'; 
 function TextFit(Rp: PRastPort location 'a1'; String1: STRPTR location 'a0'; StrLen: LongWord location 'd0'; TextExtent: PTextExtent location 'a2'; ConstrainingExtent: PTextExtent location 'a3'; StrDirection: LongInt location 'd1'; ConstrainingBitWidth: LongWord location 'd2'; constrainingBitHeight: LongWord location 'd3'): LongWord; SysCall GfxBase 696;
 function GfxLookUp(associateNode: APTR location 'a0'): APTR; SysCall GfxBase 702;
 function VideoControl(ColorMap: PColorMap location 'a0'; TagArray: PTagItem location 'a1'): LongBool; SysCall GfxBase 708;
-function OpenMonitor(MonitorName: PChar location 'a1'; DisplayID: LongWord location 'd0'): PMonitorSpec; SysCall GfxBase 714;
+function OpenMonitor(MonitorName: PAnsiChar location 'a1'; DisplayID: LongWord location 'd0'): PMonitorSpec; SysCall GfxBase 714;
 function CloseMonitor(MonitorSpec: PMonitorSpec location 'a0'): LongBool; SysCall GfxBase 720;
 function FindDisplayInfo(DisplayID: LongWord location 'd0'): DisplayInfoHandle; SysCall GfxBase 726;
 function NextDisplayInfo(DisplayID: LongWord location 'd0'): LongWord; SysCall GfxBase 732;

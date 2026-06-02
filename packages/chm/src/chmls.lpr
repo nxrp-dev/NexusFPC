@@ -29,11 +29,16 @@ program chmls;
 
 {$mode objfpc}{$H+}
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.GetOpts, System.SysUtils, System.Types,
+  Fcl.Streams.Extra, Chm.Reader, Chm.Base, Chm.Sitemap;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, GetOpts, SysUtils, Types,
   StreamEx,
   chmreader, chmbase, chmsitemap;
-
+{$ENDIF FPC_DOTTEDUNITS}
 {$R-} // CHM spec puts "-1" in dwords etc.
 type
 
@@ -44,14 +49,14 @@ type
     count    : integer;
     donotpage: boolean;
     nameonly : boolean;
-    procedure OnFileEntry(Name: String; Offset, UncompressedSize, ASection: Integer);
+    procedure OnFileEntry(Name: RTLString; Offset, UncompressedSize, ASection: Integer);
   end;
 
    TExtractAllObject = class
     basedir : string;
     r       : TChmReader;
     lastone_was_point : boolean;
-    procedure OnFileEntry(Name: String; Offset, UncompressedSize, ASection: Integer);
+    procedure OnFileEntry(Name: RTLString; Offset, UncompressedSize, ASection: Integer);
   end;
 
 Type
@@ -192,7 +197,7 @@ end;
 
 var donotshowoffset : boolean=false;
 
-procedure TListObject.OnFileEntry(Name: String; Offset, UncompressedSize,
+procedure TListObject.OnFileEntry(Name: RTLString; Offset, UncompressedSize,
   ASection: Integer);
 begin
   Inc(Count);
@@ -220,7 +225,7 @@ begin
   WriteLn(Name);
 end;
 
-procedure TExtractAllObject.OnFileEntry(Name: String; Offset, UncompressedSize,
+procedure TExtractAllObject.OnFileEntry(Name: RTLString; Offset, UncompressedSize,
   ASection: Integer);
 var mem : TMemoryStream;
     s   : String;
@@ -574,7 +579,7 @@ var s,
 begin
   symbolname:='helpid';
   chm:=filespec[0];
-  prefixfn:=changefileext(chm,'');
+  prefixfn:=changefileext(chm,RTLString(''));
   if not Fileexists(chm) then
     begin
       writeln(stderr,' Can''t find file ',chm);
@@ -633,7 +638,7 @@ end;
 
 begin
   chm:=filespec[0];
-  prefixfn:=changefileext(chm,'');
+  prefixfn:=changefileext(chm,RTLString(''));
   if not Fileexists(chm) then
     begin
       writeln(stderr,' Can''t find file ',chm);
@@ -721,7 +726,7 @@ var s,
     entries : integer;
 begin
   chm:=filespec[0];
-  prefixfn:=changefileext(chm,'');
+  prefixfn:=changefileext(chm,RTLString(''));
   if not Fileexists(chm) then
     begin
       writeln(stderr,' Can''t find file ',chm);
@@ -854,7 +859,7 @@ var dx : dword;
 begin
   symbolname:='helpid';
   chm:=filespec[0];
-  prefixfn:=changefileext(chm,'');
+  prefixfn:=changefileext(chm,RTLString(''));
   if not Fileexists(chm) then
     begin
       writeln(stderr,' Can''t find file ',chm);

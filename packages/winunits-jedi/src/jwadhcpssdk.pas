@@ -42,7 +42,9 @@
 
 // $Id: JwaDhcpSSdk.pas,v 1.8 2007/09/05 11:58:49 dezipaitor Exp $
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaDhcpSSdk;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -58,8 +60,13 @@ unit JwaDhcpSSdk;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Winnt, WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaWinNT, JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$ENDIF JWA_OMIT_SECTIONS}
 
@@ -86,12 +93,12 @@ type
     Server: LPDHCP_IP_ADDRESS;
     ParameterRequestList: LPBYTE;
     ParameterRequestListLength: DWORD;
-    MachineName: PCHAR;
+    MachineName: PAnsiChar;
     MachineNameLength: DWORD;
     ClientHardwareAddressType: BYTE;
     ClientHardwareAddressLength: BYTE;
     ClientHardwareAddress: LPBYTE;
-    ClassIdentifier: PCHAR;
+    ClassIdentifier: PAnsiChar;
     ClassIdentifierLength: DWORD;
     VendorClass: LPBYTE;
     VendorClassLength: DWORD;
@@ -99,7 +106,7 @@ type
     DNSNameLength: DWORD;
     DNSName: LPBYTE;
     DSDomainNameRequested: LongBool;
-    DSDomainName: PCHAR;
+    DSDomainName: PAnsiChar;
     DSDomainNameLen: DWORD;
     ScopeId: LPDWORD;
   end;
@@ -275,7 +282,7 @@ Routine Description:
     * DHCP_DROP_DUPLICATE - This packet is a duplicate of another
       received by the server.
     * DHCP_DROP_NOMEM - Not enough memory to process the packet.
-    * DHCP_DROP_INTERNAL_ERROR - Unexpected nternal error occurred.
+    * DHCP_DROP_INTERNAL_ERROR - Unexpected internal error occurred.
     * DHCP_DROP_TIMEOUT - The packet is too old to process.
     * DHCP_DROP_UNAUTH - The server is not authorized.
     * DHCP_DROP_PAUSED - The server is paused.
@@ -518,7 +525,7 @@ Arguments:
 
     CalloutTbl - This is the cumulative set of Hooks that is needed by
     the current DLLs as well as all the DLLs in ChainDlls.   It is the
-    responsibility of the current DLL to retrive the cumulative set of
+    responsibility of the current DLL to retrieve the cumulative set of
     Hooks and merge that with its own set of hooks and return that in
     this table structure.  The table structure is defined above.
 }

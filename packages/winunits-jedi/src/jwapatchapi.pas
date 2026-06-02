@@ -42,7 +42,9 @@
 
 // $Id: JwaPatchApi.pas,v 1.12 2007/09/05 11:58:51 dezipaitor Exp $
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaPatchApi;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -56,8 +58,13 @@ unit JwaPatchApi;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 {$IFNDEF JWA_IMPLEMENTATIONSECTION}
@@ -383,7 +390,7 @@ function ApplyPatchToFileByHandlesEx(PatchFileHandle: HANDLE; OldFileHandle: HAN
 //  foo.dll files.  Rather than creating a single large patch file that can
 //  update any of the three older foo.dll files, three separate smaller patch
 //  files can be created and "named" according to the patch signature of the
-//  old file.  Then the patch applyer application can determine at runtime
+//  old file.  Then the patch applier application can determine at runtime
 //  which of the three foo.dll patch files is necessary given the specific
 //  foo.dll to be updated.  If patch files are being downloaded over a slow
 //  network connection (Internet over a modem), this signature scheme provides

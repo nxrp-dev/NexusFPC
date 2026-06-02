@@ -20,14 +20,21 @@
     An own memory manager is somewhat faster and makes debugging and
     profiling easier.
 }
-unit pooledmm;
+{$IFNDEF FPC_DOTTEDUNITS}
+unit PooledMM;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   PPooledMemManagerItem = ^TPooledMemManagerItem;
@@ -36,7 +43,7 @@ type
   end;
 
   { memory manager template }
-  
+
   TPooledMemManager = class
   private
     procedure SetMaxFreeRatio(NewValue: integer);
@@ -64,10 +71,10 @@ type
     constructor Create;
     destructor Destroy; override;
   end;
-  
-  
+
+
   { TNonFreePooledMemManager - a memory manager for records without freeing }
-  
+
   TEnumItemsMethod = procedure(Item: Pointer) of object;
 
   TNonFreePooledMemManager = class

@@ -4,7 +4,7 @@
 
     Low level directory functions for Nintendo Wii
     Copyright (c) 2011 by Francesco Lombardi
-    
+
     See the file COPYING.FPC, included in this distribution,
     for details about the copyright.
 
@@ -36,7 +36,7 @@ procedure do_chdir(const s: rawbytestring);
 begin
   { TODO: convert callback to use rawbytestring to avoid conversion }
   if FileIODevice.DirIO.DoChdir <> nil then
-    FileIODevice.DirIO.DoChdir(pchar(s));
+    FileIODevice.DirIO.DoChdir(PAnsiChar(s));
 end;
 
 procedure do_GetDir(DriveNr: byte; var Dir: RawByteString);

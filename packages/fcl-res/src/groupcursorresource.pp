@@ -13,15 +13,22 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit groupcursorresource;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$MODE OBJFPC}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, System.Resources.Resource, System.Resources.Group;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, resource, groupresource;
-  
+{$ENDIF FPC_DOTTEDUNITS}
+
 type
 
   { TGroupCursorResource }
@@ -48,9 +55,14 @@ type
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Resources.Factory, System.Resources.DataStream, System.Resources.GroupTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   resfactory, resdatastream, icocurtypes;
-  
+{$ENDIF FPC_DOTTEDUNITS}
+
 type
   TCurInfo = record
     res : TAbstractResource;

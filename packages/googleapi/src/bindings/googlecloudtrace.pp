@@ -1,13 +1,19 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit googlecloudtrace;
+{$ENDIF FPC_DOTTEDUNITS}
 {$MODE objfpc}
 {$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils, System.Classes, GoogleApi.Service, FpWeb.Rest.Base, GoogleApi.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses sysutils, classes, googleservice, restbase, googlebase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
-  
+
   //Top-level schema types
   TListTracesResponse = Class;
   TTrace = Class;
@@ -24,11 +30,11 @@ type
   TListTracesResponseTypetracesArray = Array of TTrace;
   TTraceTypespansArray = Array of TTraceSpan;
   TTracesTypetracesArray = Array of TTrace;
-  
+
   { --------------------------------------------------------------------
     TListTracesResponse
     --------------------------------------------------------------------}
-  
+
   TListTracesResponse = Class(TGoogleBaseObject)
   Private
     Ftraces : TListTracesResponseTypetracesArray;
@@ -47,11 +53,11 @@ type
     Property nextPageToken : String Index 8 Read FnextPageToken Write SetnextPageToken;
   end;
   TListTracesResponseClass = Class of TListTracesResponse;
-  
+
   { --------------------------------------------------------------------
     TTrace
     --------------------------------------------------------------------}
-  
+
   TTrace = Class(TGoogleBaseObject)
   Private
     FprojectId : String;
@@ -73,11 +79,11 @@ type
     Property spans : TTraceTypespansArray Index 16 Read Fspans Write Setspans;
   end;
   TTraceClass = Class of TTrace;
-  
+
   { --------------------------------------------------------------------
     TTraceSpanTypelabels
     --------------------------------------------------------------------}
-  
+
   TTraceSpanTypelabels = Class(TGoogleBaseObject)
   Private
   Protected
@@ -87,11 +93,11 @@ type
   Published
   end;
   TTraceSpanTypelabelsClass = Class of TTraceSpanTypelabels;
-  
+
   { --------------------------------------------------------------------
     TTraceSpan
     --------------------------------------------------------------------}
-  
+
   TTraceSpan = Class(TGoogleBaseObject)
   Private
     FspanId : String;
@@ -121,11 +127,11 @@ type
     Property labels : TTraceSpanTypelabels Index 48 Read Flabels Write Setlabels;
   end;
   TTraceSpanClass = Class of TTraceSpan;
-  
+
   { --------------------------------------------------------------------
     TTraces
     --------------------------------------------------------------------}
-  
+
   TTraces = Class(TGoogleBaseObject)
   Private
     Ftraces : TTracesTypetracesArray;
@@ -141,11 +147,11 @@ type
     Property traces : TTracesTypetracesArray Index 0 Read Ftraces Write Settraces;
   end;
   TTracesClass = Class of TTraces;
-  
+
   { --------------------------------------------------------------------
     TEmpty
     --------------------------------------------------------------------}
-  
+
   TEmpty = Class(TGoogleBaseObject)
   Private
   Protected
@@ -154,14 +160,14 @@ type
   Published
   end;
   TEmptyClass = Class of TEmpty;
-  
+
   { --------------------------------------------------------------------
     TProjectsTracesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TProjectsTracesResource, method List
-  
+
   TProjectsTracesListOptions = Record
     view : String;
     pageSize : integer;
@@ -171,7 +177,7 @@ type
     filter : String;
     orderBy : String;
   end;
-  
+
   TProjectsTracesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -180,12 +186,12 @@ type
     Function List(projectId: string; AQuery : TProjectsTraceslistOptions) : TListTracesResponse;
     Function Get(projectId: string; traceId: string) : TTrace;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TProjectsResource
     --------------------------------------------------------------------}
-  
+
   TProjectsResource = Class(TGoogleResource)
   Private
     FTracesInstance : TProjectsTracesResource;
@@ -198,12 +204,12 @@ type
     Function CreateTracesResource : TProjectsTracesResource;virtual;overload;
     Property TracesResource : TProjectsTracesResource Read GetTracesInstance;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TCloudtraceAPI
     --------------------------------------------------------------------}
-  
+
   TCloudtraceAPI = Class(TGoogleAPI)
   Private
     FProjectsTracesInstance : TProjectsTracesResource;
@@ -250,7 +256,7 @@ implementation
   --------------------------------------------------------------------}
 
 
-Procedure TListTracesResponse.Settraces(AIndex : Integer; const AValue : TListTracesResponseTypetracesArray); 
+Procedure TListTracesResponse.Settraces(AIndex : Integer; const AValue : TListTracesResponseTypetracesArray);
 
 begin
   If (Ftraces=AValue) then exit;
@@ -260,7 +266,7 @@ end;
 
 
 
-Procedure TListTracesResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TListTracesResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -271,7 +277,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TListTracesResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TListTracesResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -290,7 +296,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTrace.SetprojectId(AIndex : Integer; const AValue : String); 
+Procedure TTrace.SetprojectId(AIndex : Integer; const AValue : String);
 
 begin
   If (FprojectId=AValue) then exit;
@@ -300,7 +306,7 @@ end;
 
 
 
-Procedure TTrace.SettraceId(AIndex : Integer; const AValue : String); 
+Procedure TTrace.SettraceId(AIndex : Integer; const AValue : String);
 
 begin
   If (FtraceId=AValue) then exit;
@@ -310,7 +316,7 @@ end;
 
 
 
-Procedure TTrace.Setspans(AIndex : Integer; const AValue : TTraceTypespansArray); 
+Procedure TTrace.Setspans(AIndex : Integer; const AValue : TTraceTypespansArray);
 
 begin
   If (Fspans=AValue) then exit;
@@ -321,7 +327,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTrace.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTrace.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -353,7 +359,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTraceSpan.SetspanId(AIndex : Integer; const AValue : String); 
+Procedure TTraceSpan.SetspanId(AIndex : Integer; const AValue : String);
 
 begin
   If (FspanId=AValue) then exit;
@@ -363,7 +369,7 @@ end;
 
 
 
-Procedure TTraceSpan.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TTraceSpan.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -373,7 +379,7 @@ end;
 
 
 
-Procedure TTraceSpan.Setname(AIndex : Integer; const AValue : String); 
+Procedure TTraceSpan.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -383,7 +389,7 @@ end;
 
 
 
-Procedure TTraceSpan.SetstartTime(AIndex : Integer; const AValue : String); 
+Procedure TTraceSpan.SetstartTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FstartTime=AValue) then exit;
@@ -393,7 +399,7 @@ end;
 
 
 
-Procedure TTraceSpan.SetendTime(AIndex : Integer; const AValue : String); 
+Procedure TTraceSpan.SetendTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FendTime=AValue) then exit;
@@ -403,7 +409,7 @@ end;
 
 
 
-Procedure TTraceSpan.SetparentSpanId(AIndex : Integer; const AValue : String); 
+Procedure TTraceSpan.SetparentSpanId(AIndex : Integer; const AValue : String);
 
 begin
   If (FparentSpanId=AValue) then exit;
@@ -413,7 +419,7 @@ end;
 
 
 
-Procedure TTraceSpan.Setlabels(AIndex : Integer; const AValue : TTraceSpanTypelabels); 
+Procedure TTraceSpan.Setlabels(AIndex : Integer; const AValue : TTraceSpanTypelabels);
 
 begin
   If (Flabels=AValue) then exit;
@@ -430,7 +436,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTraces.Settraces(AIndex : Integer; const AValue : TTracesTypetracesArray); 
+Procedure TTraces.Settraces(AIndex : Integer; const AValue : TTracesTypetracesArray);
 
 begin
   If (Ftraces=AValue) then exit;
@@ -441,7 +447,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTraces.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTraces.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -703,7 +709,7 @@ begin
   Result[1].Description:='Write Trace data for a project or application';
   Result[2].Name:='https://www.googleapis.com/auth/trace.readonly';
   Result[2].Description:='Read Trace data for a project or application';
-  
+
 end;
 
 Class Function TCloudtraceAPI.APINeedsAuth : Boolean;

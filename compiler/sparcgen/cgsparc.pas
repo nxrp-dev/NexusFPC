@@ -90,7 +90,6 @@ interface
         procedure g_save_registers(list : TAsmList);override;
         procedure g_concatcopy(list : TAsmList;const source,dest : treference;len : tcgint);override;
         procedure g_concatcopy_unaligned(list : TAsmList;const source,dest : treference;len : tcgint);override;
-        procedure g_concatcopy_move(list : TAsmList;const source,dest : treference;len : tcgint);
         procedure g_adjust_self_value(list:TAsmList;procdef: tprocdef;ioffset: tcgint);override;
       protected
         use_unlimited_pic_mode : boolean;
@@ -814,7 +813,7 @@ implementation
       end;
 
 
-  {*************** compare instructructions ****************}
+  {*************** compare instructions ****************}
 
     procedure TCGSparcGen.a_cmp_const_reg_label(list:TAsmList;size:tcgsize;cmp_op:topcmp;a:tcgint;reg:tregister;l:tasmlabel);
       begin
@@ -997,13 +996,13 @@ implementation
       begin
         if nostackframe then
           exit;
-        { Althogh the SPARC architecture require only word alignment, software
+        { Although the SPARC architecture require only word alignment, software
           convention and the operating system require every stack frame to be double word
           aligned }
         LocalSize:=align(LocalSize,8);
         { Execute the SAVE instruction to get a new register window and create a new
           stack frame. In the "SAVE %i6,size,%i6" the first %i6 is related to the state
-          before execution of the SAVE instrucion so it is the caller %i6, when the %i6
+          before execution of the SAVE instruction so it is the caller %i6, when the %i6
           after execution of that instruction is the called function stack pointer}
         { constant can be 13 bit signed, since it's negative, size can be max. 4096 }
         if LocalSize>4096 then
@@ -1047,7 +1046,7 @@ implementation
 
     procedure TCGSparcGen.g_restore_registers(list:TAsmList);
       begin
-        { The sparc port uses the sparc standard calling convetions so this function has no used }
+        { The sparc port uses the sparc standard calling conventions so this function has no used }
       end;
 
 
@@ -1098,40 +1097,11 @@ implementation
 
     procedure TCGSparcGen.g_save_registers(list : TAsmList);
       begin
-        { The sparc port uses the sparc standard calling convetions so this function has no used }
+        { The sparc port uses the sparc standard calling conventions so this function has no used }
       end;
 
 
     { ************* concatcopy ************ }
-
-    procedure TCGSparcGen.g_concatcopy_move(list : TAsmList;const source,dest : treference;len : tcgint);
-      var
-        paraloc1,paraloc2,paraloc3 : TCGPara;
-        pd : tprocdef;
-      begin
-        pd:=search_system_proc('MOVE');
-        paraloc1.init;
-        paraloc2.init;
-        paraloc3.init;
-        paramanager.getcgtempparaloc(list,pd,1,paraloc1);
-        paramanager.getcgtempparaloc(list,pd,2,paraloc2);
-        paramanager.getcgtempparaloc(list,pd,3,paraloc3);
-        a_load_const_cgpara(list,OS_SINT,len,paraloc3);
-        a_loadaddr_ref_cgpara(list,dest,paraloc2);
-        a_loadaddr_ref_cgpara(list,source,paraloc1);
-        paramanager.freecgpara(list,paraloc3);
-        paramanager.freecgpara(list,paraloc2);
-        paramanager.freecgpara(list,paraloc1);
-        alloccpuregisters(list,R_INTREGISTER,paramanager.get_volatile_registers_int(pocall_default));
-        alloccpuregisters(list,R_FPUREGISTER,paramanager.get_volatile_registers_fpu(pocall_default));
-        a_call_name(list,'FPC_MOVE',false);
-        dealloccpuregisters(list,R_FPUREGISTER,paramanager.get_volatile_registers_fpu(pocall_default));
-        dealloccpuregisters(list,R_INTREGISTER,paramanager.get_volatile_registers_int(pocall_default));
-        paraloc3.done;
-        paraloc2.done;
-        paraloc1.done;
-      end;
-
 
     procedure TCGSparcGen.g_concatcopy(list:TAsmList;const source,dest:treference;len:tcgint);
       var
@@ -1155,6 +1125,9 @@ implementation
         { anybody wants to determine a good value here :)? }
         if len>100 then
           g_concatcopy_move(list,source,dest,len)
+        else if ((source.alignment>0) and (source.alignment<4)) or
+                ((dest.alignment>0) and (dest.alignment<4)) then
+          g_concatcopy_unaligned(list,source,dest,len)
         else
           begin
             count:=len div 4;

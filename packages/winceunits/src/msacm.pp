@@ -21,14 +21,20 @@
 //  Microsoft Windows Mobile 6.0 for PocketPC SDK.
 //
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit msacm;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$CALLING cdecl}
 {$PACKRECORDS 1} // #pragma pack(1)         /* Assume byte packing throughout */
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses WinApi.Windows, WinceAPI.Mmreg;
+{$ELSE FPC_DOTTEDUNITS}
 uses Windows, mmreg;
+{$ENDIF FPC_DOTTEDUNITS}
 
 //
 //  there are four types of 'handles' used by the ACM. the first three
@@ -70,7 +76,7 @@ type
      PHACMOBJ = ^HACMOBJ;
      LPHACMOBJ = ^HACMOBJ;
 
-     
+
 // - Module: msacmdrv.h
 // -----------------------------------------------------------------------------
 //
@@ -354,7 +360,7 @@ const
 //
 //  acmGetVersion()
 //
-//  the ACM version is a 32 bit number that is broken into three parts as 
+//  the ACM version is a 32 bit number that is broken into three parts as
 //  follows:
 //
 //      bits 24 - 31:   8 bit _major_ version number
@@ -364,7 +370,7 @@ const
 //  this is then displayed as follows:
 //
 //      bMajor = (BYTE)(dwVersion >> 24)
-//      bMinor = (BYTE)(dwVersion >> 16) & 
+//      bMinor = (BYTE)(dwVersion >> 16) &
 //      wBuild = LOWORD(dwVersion)
 //
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ;
@@ -492,7 +498,7 @@ const
       ACM_DRIVERPRIORITYF_END         = $00020000;
       ACM_DRIVERPRIORITYF_DEFERMASK   = $00030000;
 
-      
+
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ;
 //
 //  acmDriverDetails()
@@ -565,7 +571,7 @@ const
       ACMDRIVERDETAILS_FCCCOMP_UNDEFINED  = FOURCC(byte(AnsiChar(#0)) or
                                                    (byte(AnsiChar(#0)) shl 8) or
                                                    (byte(AnsiChar(#0)) shl 16) or
-                                                   (byte(AnsiChar(#0)) shl 24) 
+                                                   (byte(AnsiChar(#0)) shl 24)
                                                   );
 
 //
@@ -618,7 +624,7 @@ function acmDriverDetails(hadid:HACMDRIVERID;
                           padd:LPACMDRIVERDETAILS;
                           fdwDetails:DWORD):MMRESULT; external KernelDLL name 'acmDriverDetails'; // index 28D
 
-                          
+
 
 //--------------------------------------------------------------------------;
 //
@@ -861,7 +867,7 @@ type
 
 function acmFilterTagDetails(had:HACMDRIVER;
                              paftd:LPACMFILTERTAGDETAILS;
-                             fdwDetails:DWORD):MMRESULT; external KernelDLL name 'acmFilterTagDetails'; // index 296 
+                             fdwDetails:DWORD):MMRESULT; external KernelDLL name 'acmFilterTagDetails'; // index 296
 
 const
       ACM_FILTERTAGDETAILSF_INDEX         = $00000000;
@@ -884,7 +890,7 @@ function acmFilterTagEnum(had:HACMDRIVER;
                           paftd:LPACMFILTERTAGDETAILS;
                           fnCallback:ACMFILTERTAGENUMCB;
                           dwInstance:DWORD;
-                          fdwEnum:DWORD):MMRESULT; external KernelDLL name 'acmFilterTagEnum'; // index 297 
+                          fdwEnum:DWORD):MMRESULT; external KernelDLL name 'acmFilterTagEnum'; // index 297
 
 
 //--------------------------------------------------------------------------;
@@ -931,7 +937,7 @@ const
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ;
 type
      ACMFILTERENUMCB = function(hadid:HACMDRIVERID;
-                                pafd:LPACMFILTERDETAILS;      
+                                pafd:LPACMFILTERDETAILS;
                                 dwInstance:DWORD;
                                 fdwSupport:DWORD):BOOL; cdecl;
 
@@ -965,7 +971,7 @@ const
 
 type
      ACMFILTERCHOOSEHOOKPROC = function(hwnd:HWND;
-                                        uMsg:UINT;                    
+                                        uMsg:UINT;
                                         wParam:WPARAM;
                                         lParam:LPARAM):UINT; cdecl;
 
@@ -1120,7 +1126,7 @@ function acmStreamConvert(has:HACMSTREAM;
                           pash:LPACMSTREAMHEADER;
                           fdwConvert:DWORD):MMRESULT; external KernelDLL name 'acmStreamConvert'; // index 29E
 
-const                          
+const
       ACM_STREAMCONVERTF_BLOCKALIGN   = $00000004;
       ACM_STREAMCONVERTF_START        = $00000010;
       ACM_STREAMCONVERTF_END          = $00000020;

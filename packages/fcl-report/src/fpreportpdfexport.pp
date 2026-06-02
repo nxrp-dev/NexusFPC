@@ -12,18 +12,29 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fpreportpdfexport;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes,
+  System.SysUtils,
+  FpImage,
+  FpReport.Report,
+  FpPdf.Pdf;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes,
   SysUtils,
   fpImage,
   fpreport,
   fpPDF;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$IF FPC_FULLVERSION>=30101}
 {$DEFINE PDF_HASISSTANDARDPDFFONT}
@@ -77,10 +88,17 @@ type
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  FpImage.Canvas,
+  FpPdf.Ttf,
+  FpPdf.Ttf.Parser;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   FPCanvas,
   fpTTF,
   fpparsettf;
+{$ENDIF FPC_DOTTEDUNITS}
 
 
 { TFPReportExportPDF }
@@ -128,7 +146,13 @@ begin
         fnt:=gTTFontCache.FindFont(AFontName);
       if fnt=Nil then
         raise Exception.CreateFmt('fpreport: Could not find the font <%s> in the font cache.', [AFontName]);
-      Result := Document.AddFont(fnt.FileName, AFontName)
+      if fnt.FileName <> EmptyStr then
+        Result := Document.AddFont(fnt.FileName, AFontName)
+      else if Assigned(fnt.Stream) then
+      begin
+        fnt.Stream.Position := 0;
+        Result := Document.AddFont(fnt.Stream, AFontName);
+      end;
     end;
   end;
 end;

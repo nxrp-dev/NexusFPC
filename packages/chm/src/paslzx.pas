@@ -38,22 +38,29 @@
  *              x86(Linux and Windows). Only tested on little endian pc's. *
  ***************************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit paslzx;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}{$R+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils;
-  
+{$ENDIF FPC_DOTTEDUNITS}
+
 const
   DECR_OK = 0;
   DECR_DATAFORMAT =  1;
   DECR_ILLEGALDATA = 2;
   DECR_NOMEMORY = 3;
-  
-  
+
+
   // some constants defined by the LZX specification
   LZX_MIN_MATCH             =   2;
   LZX_MAX_MATCH             =   257;
@@ -66,7 +73,7 @@ const
   LZX_ALIGNED_NUM_ELEMENTS  =   8;  // aligned offset tree #elements
   LZX_NUM_PRIMARY_LENGTHS   =   7;  // this one missing from spec!
   LZX_NUM_SECONDARY_LENGTHS =   249;// length tree #elements
-  
+
   // LZX huffman defines: tweak tablebits as desired
   LZX_PRETREE_MAXSYMBOLS    = LZX_PRETREE_NUM_ELEMENTS;
   LZX_PRETREE_TABLEBITS     = 6;
@@ -78,14 +85,14 @@ const
   LZX_ALIGNED_TABLEBITS     = 7;
 
   LZX_LENTABLE_SAFETY       = 64; // we allow length table decoding overruns
-  
+
   extra_bits: array [0..50] of Byte = (
     0,  0,  0,  0,  1,  1,  2,  2,  3,  3,  4,  4,  5,  5,  6,  6,
     7,  7,  8,  8,  9,  9,  10, 10, 11, 11, 12, 12, 13, 13, 14, 14,
     15, 15, 16, 16, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
     17, 17, 17
   );
-  
+
   position_base: array [0..50] of dword = (
           0,       1,       2,      3,      4,      6,      8,     12,     16,     24,     32,       48,      64,      96,     128,     192,
         256,     384,     512,    768,   1024,   1536,   2048,   3072,   4096,   6144,   8192,    12288,   16384,   24576,   32768,   49152,
@@ -149,23 +156,23 @@ type
     LengthTable: TLZX_LENGTH_TABLE;
     AlignedTAble: TLZX_ALIGNED_TABLE;
   end;
-  
+
   // create an lzx state object
   function LZXinit(window: LongInt): PLZXState;
-  
+
   // destroy an lzx state object
   procedure LZXteardown(pState: PLZXState);
-  
+
   // reset an lzx stream
   function LZXreset(pState: PLZXState): LongInt;
-  
+
   function LZXdecompress(pState: PLZXstate; inpos, outpos: PByte; inlen, outlen: LongInt): LongInt;
 
 implementation
 
 const
   ULONG_BITS = sizeof(LongInt)shl 3;
-  
+
 function make_decode_table(nsyms: dword; nbits: dword; length: PByte; table: PWord): LongInt;
 var
   Sym: Word;
@@ -311,7 +318,7 @@ begin
     bits := TBufBits.Create;
     bits.bitbuf := lb^.bb;
     bits.bitsleft := lb^.bl;
-    
+
     inpos := lb^.ip;
 
 
@@ -349,7 +356,7 @@ begin
         else if (z = 18) then begin
             y := bits.read(5, inpos);
             Inc(y, 20);
-            while y > 0 do begin 
+            while y > 0 do begin
               dec(y);
               lens[x] := 0;
               inc(x);
@@ -387,8 +394,8 @@ begin
     Result := 0;
     bits.Free;
 end;
-  
-  
+
+
 //////////////////////////////////////////////////////////////////////////////////////
 
 function LZXinit(window: LongInt): PLZXState;
@@ -431,7 +438,7 @@ begin
     pState^.R0 := 1;
     pState^.R1 := 1;
     pState^.R2 := 1;
-    
+
     pState^.main_elements   := LZX_NUM_CHARS + (posn_slots shl 3);
     pState^.header_read     := 0;
     pState^.frames_read     := 0;
@@ -570,7 +577,7 @@ var
          Exit;
       end;
     end;
-    
+
 begin
     endinp := inpos + inlen;
     window := pState^.window;
@@ -580,7 +587,7 @@ begin
     R0 := pState^.R0;
     R1 := pState^.R1;
     R2 := pState^.R2;
-    
+
     togo := outlen;//, this_run, main_element, aligned_bits;
     bits := TBufBits.Create;
     bits.Init;
@@ -609,7 +616,7 @@ begin
             pState^.block_type := Word(bits.read(3, inpos));
             i := bits.read(16, inpos);
             j := bits.read(8, inpos);
-            
+
             pState^.block_length := (i shl 8) or j;
             pState^.block_remaining :=  pState^.block_length;
 

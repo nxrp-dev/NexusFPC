@@ -562,15 +562,15 @@ Type
 {
  *        TTYDEFCHARS to include an array of default control characters.
 }
-    ttydefchars : array[0..NCCS-1] OF char =(
+    ttydefchars : array[0..NCCS-1] OF AnsiChar =(
         CEOF,   CEOL,   CEOL,   CERASE, CWERASE, CKILL, CREPRINT,
         chr(_POSIX_VDISABLE), CINTR,  CQUIT,  CSUSP,  CDSUSP, CSTART, CSTOP,  CLNEXT,
         CDISCARD, CMIN, CTIME,  CSTATUS, chr(_POSIX_VDISABLE));
 
 
 // from /usr/include/sys/iocomm.h
-  { parameter length, at most 13 bits } 
-  IOCPARM_MASK = $1fff; 
+  { parameter length, at most 13 bits }
+  IOCPARM_MASK = $1fff;
 
   {  max size of ioctl args  }
   IOCPARM_MAX = IOCPARM_MASK + 1;
@@ -584,7 +584,7 @@ Type
   { copy parameters in }
   IOC_IN = culong($80000000);
 
-  { copy paramters in and out }
+  { copy parameters in and out }
   IOC_INOUT = (IOC_IN or IOC_OUT);
 
   { mask for IN/OUT/VOID }

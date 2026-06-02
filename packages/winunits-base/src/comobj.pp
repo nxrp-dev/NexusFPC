@@ -14,7 +14,9 @@
 {$mode objfpc}
 {$H+}
 {$inline on}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit ComObj;
+{$ENDIF FPC_DOTTEDUNITS}
 
   interface
 
@@ -24,13 +26,18 @@ unit ComObj;
 {$ifdef wince}
   {$define DUMMY_REG}
 {$endif}
+{$IFDEF FPC_DOTTEDUNITS}
+    uses
+      WinApi.Windows,System.Types,System.Variants,System.SysUtils,WinApi.Activex,System.Classes;
+{$ELSE FPC_DOTTEDUNITS}
     uses
       Windows,Types,Variants,Sysutils,ActiveX,classes;
+{$ENDIF FPC_DOTTEDUNITS}
 
     type
       EOleError = class(Exception);
-     
-      // apparantly used by axctrls.
+
+      // apparently used by axctrls.
       // http://lazarus.freepascal.org/index.php/topic,11612.0.html
       TConnectEvent = procedure(const Sink: IUnknown; Connecting: Boolean) of object;
 
@@ -232,10 +239,10 @@ unit ComObj;
       TAutoObject = class(TTypedComObject, IDispatch)
       protected
         { IDispatch }
-        function GetTypeInfoCount(out count : longint) : HResult;stdcall;
-        function GetTypeInfo(Index,LocaleID : longint; out TypeInfo): HResult;stdcall;
-        function GetIDsOfNames(const iid: TGUID; names: Pointer; NameCount, LocaleID: LongInt; DispIDs: Pointer) : HResult;stdcall;
-        function Invoke(DispID: LongInt;const iid : TGUID; LocaleID : longint; Flags: Word;var params; VarResult,ExcepInfo,ArgErr : pointer) : HResult;stdcall;
+        function GetTypeInfoCount(out count : longint) : HResult; virtual; stdcall;
+        function GetTypeInfo(Index,LocaleID : longint; out TypeInfo): HResult; virtual; stdcall;
+        function GetIDsOfNames(const iid: TGUID; names: Pointer; NameCount, LocaleID: LongInt; DispIDs: Pointer) : HResult; virtual; stdcall;
+        function Invoke(DispID: LongInt;const iid : TGUID; LocaleID : longint; Flags: Word;var params; VarResult,ExcepInfo,ArgErr : pointer) : HResult; virtual; stdcall;
       public
 
       end;
@@ -332,8 +339,13 @@ unit ComObj;
   {$endif}
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+    uses
+      WinApi.Comconst, WinApi.Ole2, {$ifndef dummy_reg} System.Registry, {$endif} System.RtlConsts;
+{$ELSE FPC_DOTTEDUNITS}
     uses
       ComConst, Ole2, {$ifndef dummy_reg} Registry, {$endif} RtlConsts;
+{$ENDIF FPC_DOTTEDUNITS}
 
     var
       Uninitializing : boolean;
@@ -429,7 +441,7 @@ implementation
 
        { actually a remote call? }
 {$ifndef wince}
-       //roozbeh although there is a way to retrive computer name...HKLM\Ident\Name..but are they same?
+       //roozbeh although there is a way to retrieve computer name...HKLM\Ident\Name..but are they same?
 	     size:=sizeof(localhost);
        if (MachineName<>'') and
           (not(GetComputerNameW(localhost,size)) or
@@ -474,7 +486,7 @@ implementation
 {$endif}
       begin
 {$ifdef DEBUG_COM}
-         if printcom then 
+         if printcom then
         WriteLn('CreateRegKey: ', Key, ': ', ValueName, ': ', Value );
 {$endif}
 {$ifndef DUMMY_REG}
@@ -496,7 +508,7 @@ implementation
         end;
 {$endif}
 {$ifdef DEBUG_COM}
-         if printcom then 
+         if printcom then
         WriteLn('CreateRegKey exit: ', Key, ': ', ValueName, ': ', Value );
 {$endif}
       end;
@@ -509,7 +521,7 @@ implementation
 {$endif}
       begin
 {$ifdef DEBUG_COM}
-         if printcom then 
+         if printcom then
         WriteLn('DeleteRegKey: ', Key);
 {$endif}
 {$ifndef DUMMY_REG}
@@ -683,7 +695,7 @@ implementation
     procedure TComClassManager.AddObjectFactory(factory: TComObjectFactory);
       begin
 {$ifdef DEBUG_COM}
-         if printcom then 
+         if printcom then
         WriteLn('AddObjectFactory: ', GUIDToString(factory.FClassID), ' ', factory.FClassName);
 {$endif}
         fClassFactoryList.Add(factory);
@@ -702,7 +714,7 @@ implementation
         obj: TComObjectFactory;
       begin
 {$ifdef DEBUG_COM}
-         if printcom then 
+         if printcom then
         WriteLn('ForEachFactory');
 {$endif}
         if not bBackward then
@@ -728,7 +740,7 @@ implementation
         i: Integer;
       begin
 {$ifdef DEBUG_COM}
-         if printcom then 
+         if printcom then
         WriteLn('GetFactoryFromClass: ', ComClass.ClassName);
 {$endif}
         for i := 0 to fClassFactoryList.Count - 1 do
@@ -747,7 +759,7 @@ implementation
         i: Integer;
       begin
 {$ifdef DEBUG_COM}
-         if printcom then 
+         if printcom then
         WriteLn('GetFactoryFromClassID: ', GUIDToString(ClassId));
 {$endif}
         for i := 0 to fClassFactoryList.Count - 1 do
@@ -757,7 +769,7 @@ implementation
             Exit();
         end;
 {$ifdef DEBUG_COM}
-         if printcom then 
+         if printcom then
         WriteLn('GetFactoryFromClassID not found: ', GUIDToString(ClassId));
 {$endif}
         Result := nil;
@@ -930,7 +942,7 @@ implementation
         comObject: TComObject;
       begin
 {$ifdef DEBUG_COM}
-         if printcom then 
+         if printcom then
         WriteLn('CreateInstance: ', GUIDToString(IID));
 {$endif}
         comObject := CreateComObject(UnkOuter);
@@ -944,7 +956,7 @@ implementation
     function TComObjectFactory.LockServer(fLock: BOOL): HResult; stdcall;
       begin
 {$ifdef DEBUG_COM}
-         if printcom then 
+         if printcom then
         WriteLn('LockServer: ', fLock);
 {$endif}
 {$ifndef wince}
@@ -960,7 +972,7 @@ implementation
     function TComObjectFactory.GetLicInfo(var licInfo: TLicInfo): HResult; stdcall;
       begin
 {$ifdef DEBUG_COM}
-         if printcom then 
+         if printcom then
         WriteLn('GetLicInfo');
 {$endif}
         RunError(217);
@@ -971,7 +983,7 @@ implementation
     function TComObjectFactory.RequestLicKey(dwResrved: DWORD; out bstrKey: WideString): HResult; stdcall;
       begin
 {$ifdef DEBUG_COM}
-         if printcom then 
+         if printcom then
         WriteLn('RequestLicKey');
 {$endif}
         RunError(217);
@@ -984,7 +996,7 @@ implementation
       vObject): HResult; stdcall;
       begin
 {$ifdef DEBUG_COM}
-         if printcom then 
+         if printcom then
         WriteLn('CreateInstanceLic');
 {$endif}
         RunError(217);
@@ -1005,7 +1017,7 @@ implementation
       ThreadingModel: TThreadingModel);
     begin
 {$ifdef DEBUG_COM}
-         if printcom then 
+         if printcom then
         WriteLn('TComObjectFactory.Create');
 {$endif}
         FRefCount := 1;
@@ -1035,7 +1047,7 @@ implementation
       ): TComObject;
       begin
 {$ifdef DEBUG_COM}
-         if printcom then 
+         if printcom then
         WriteLn('TComObjectFactory.CreateComObject');
 {$endif}
         Result := TComClass(FComClass).Create();
@@ -1055,7 +1067,7 @@ implementation
     procedure TComObjectFactory.RegisterClassObject;
     begin
       {$ifdef DEBUG_COM}
-         if printcom then 
+         if printcom then
         WriteLn('TComObjectFactory.RegisterClassObject');
       {$endif}
 {$ifndef wince}
@@ -1116,7 +1128,7 @@ HKCR
       begin
 {$ifndef DUMMY_REG}
 {$ifdef DEBUG_COM}
-         if printcom then 
+         if printcom then
         WriteLn('UpdateRegistry begin');
 {$endif}
         if Instancing = ciInternal then Exit;
@@ -1169,7 +1181,7 @@ HKCR
           DeleteRegKey('CLSID\' + classidguid);
         end;
 {$ifdef DEBUG_COM}
-         if printcom then 
+         if printcom then
         WriteLn('UpdateRegistry end');
 {$endif}
 {$endif DUMMY_REG}
@@ -1199,14 +1211,14 @@ HKCR
         fillchar(dispparams,sizeof(dispparams),0);
         try
 {$ifdef DEBUG_COMDISPATCH}
-         if printcom then 
+         if printcom then
           writeln('DispatchInvoke: Got ',CallDesc^.ArgCount,' arguments   NamedArgs = ',CallDesc^.NamedArgCount);
 {$endif DEBUG_COMDISPATCH}
           { copy and prepare arguments }
           for i:=0 to CallDesc^.ArgCount-1 do
             begin
 {$ifdef DEBUG_COMDISPATCH}
-         if printcom then 
+         if printcom then
               writeln('DispatchInvoke: Params = ',hexstr(Params));
 {$endif DEBUG_COMDISPATCH}
               { get plain type }
@@ -1225,11 +1237,11 @@ HKCR
                     varStrArg:
                       begin
 {$ifdef DEBUG_COMDISPATCH}
-                        if printcom then 
+                        if printcom then
                         writeln('Translating var ansistring argument ',PString(Params^)^);
 {$endif DEBUG_COMDISPATCH}
-                        StringMap[NextString].ComStr:=StringToOleStr(PString(Params^)^);
-                        StringMap[NextString].PasStr:=PString(Params^);
+                        StringMap[NextString].ComStr:=StringToOleStr(PAnsiString(Params^)^);
+                        StringMap[NextString].PasStr:=PAnsiString(Params^);
                         StringMap[NextString].PasWStr:=Nil;
                         Arguments[i].VType:=varOleStr or varByRef;
                         Arguments[i].VPointer:=@StringMap[NextString].ComStr;
@@ -1253,13 +1265,13 @@ HKCR
                     varVariant:
                       begin
 {$ifdef DEBUG_COMDISPATCH}
-                        if printcom then 
+                        if printcom then
                         writeln('Got ref. variant containing type: ',PVarData(PPointer(Params)^)^.VType);
 {$endif DEBUG_COMDISPATCH}
                         if PVarData(PPointer(Params)^)^.VType=varString then
                           begin
 {$ifdef DEBUG_COMDISPATCH}
-                            if printcom then   
+                            if printcom then
                             writeln('  Casting nested varString: ',Ansistring(PVarData(Params^)^.vString));
 {$endif DEBUG_COMDISPATCH}
                             VarCast(PVariant(Params^)^,PVariant(Params^)^,varOleStr);
@@ -1272,13 +1284,13 @@ HKCR
                     else
                       begin
 {$ifdef DEBUG_COMDISPATCH}
-                                 if printcom then 
+                                 if printcom then
                         write('DispatchInvoke: Got ref argument with type = ',CurrType);
                         case CurrType of
-                          varOleStr:         if printcom then 
+                          varOleStr:         if printcom then
                             write(' Value = ',pwidestring(PPointer(Params)^)^);
                         end;
-                        if printcom then 
+                        if printcom then
                         writeln;
 {$endif DEBUG_COMDISPATCH}
                         Arguments[i].VType:=CurrType or VarByRef;
@@ -1292,7 +1304,7 @@ HKCR
                   varStrArg:
                     begin
 {$ifdef DEBUG_COMDISPATCH}
-                    if printcom then 
+                    if printcom then
                       writeln('Translating ansistring argument ',PString(Params)^);
 {$endif DEBUG_COMDISPATCH}
                       StringMap[NextString].ComStr:=StringToOleStr(PString(Params)^);
@@ -1322,7 +1334,7 @@ HKCR
                   varVariant:
                     begin
 {$ifdef DEBUG_COMDISPATCH}
-		   if printcom then 	
+		   if printcom then
                       writeln('By-value Variant, making a copy');
 {$endif DEBUG_COMDISPATCH}
                       { Codegen always passes a pointer to variant,
@@ -1337,7 +1349,7 @@ HKCR
                   varDate:
                     begin
 {$ifdef DEBUG_COMDISPATCH}
-                      if printcom then 
+                      if printcom then
                       writeln('Got 8 byte argument');
 {$endif DEBUG_COMDISPATCH}
                       Arguments[i].VType:=CurrType;
@@ -1347,13 +1359,13 @@ HKCR
                   else
                     begin
 {$ifdef DEBUG_COMDISPATCH}
-                      if printcom then 
+                      if printcom then
                       write('DispatchInvoke: Got argument with type ',CurrType);
                       case CurrType of
-                        varOleStr:         if printcom then 
+                        varOleStr:         if printcom then
                           write(' Value = ',pwidestring(Params)^);
                         else
-                          if printcom then 
+                          if printcom then
                           write(' Value = ',hexstr(PtrInt(PPointer(Params)^),SizeOf(Pointer)*2));
                       end;
                       writeln;
@@ -1388,7 +1400,7 @@ HKCR
                       ((Arguments[0].VType and varTypeMask) in [varVariant]) and
                       ((CallDesc^.argtypes[0] and $80) <> 0)
                     ) then
-                  InvokeKind:=DISPATCH_PROPERTYPUTREF;
+                  InvokeKind:=DISPATCH_PROPERTYPUTREF or DISPATCH_PROPERTYPUT;
                 { first name is actually the name of the property to set }
                 DispIDs^[0]:=DISPID_PROPERTYPUT;
                 DispParams.rgdispidNamedArgs:=@DispIDs^[0];
@@ -1401,7 +1413,7 @@ HKCR
                 InvokeKind:=DISPATCH_METHOD or DISPATCH_PROPERTYGET;
           end;
 {$ifdef DEBUG_COMDISPATCH}
-         if printcom then 
+         if printcom then
           writeln('DispatchInvoke: MethodID: ',MethodID,' InvokeKind: ',InvokeKind);
 {$endif DEBUG_COMDISPATCH}
           { do the call and check the result }
@@ -1423,13 +1435,13 @@ HKCR
       end;
 
 
-    procedure SearchIDs(const DispatchInterface : IDispatch; Names: PChar;
+    procedure SearchIDs(const DispatchInterface : IDispatch; Names: PAnsiChar;
       Count: Integer; IDs: PDispIDList);
       var
       	res : HRESULT;
       	NamesArray : ^PWideChar;
       	NamesData : PWideChar;
-      	OrigNames : PChar;
+      	OrigNames : PAnsiChar;
         NameCount,
       	NameLen,
       	NewNameLen,
@@ -1443,15 +1455,15 @@ HKCR
       	getmem(NamesData,CurrentNameDataSize);
         NameCount:=0;
    	    OrigNames:=Names;
-{$ifdef DEBUG_COMDISPATCH} 
-                if printcom then 
+{$ifdef DEBUG_COMDISPATCH}
+                if printcom then
         writeln('SearchIDs: Searching ',Count,' IDs');
 {$endif DEBUG_COMDISPATCH}
       	for i:=1 to Count do
       	  begin
        	    NameLen:=strlen(Names);
 {$ifdef DEBUG_COMDISPATCH}
-                     if printcom then 
+                     if printcom then
             writeln('SearchIDs: Original name: ',Names,' Len: ',NameLen);
 {$endif DEBUG_COMDISPATCH}
       	    NewNameLen:=MultiByteToWideChar(0,0,Names,NameLen,nil,0)+1;
@@ -1464,7 +1476,7 @@ HKCR
       	    MultiByteToWideChar(0,0,Names,NameLen,@NamesData[CurrentNameDataUsed],NewNameLen);
       	    NamesData[CurrentNameDataUsed+NewNameLen-1]:=#0;
 {$ifdef DEBUG_COMDISPATCH}
-                   if printcom then 
+                   if printcom then
             writeln('SearchIDs: Translated name: ',WideString(PWideChar(@NamesData[CurrentNameDataUsed])));
 {$endif DEBUG_COMDISPATCH}
       	    inc(CurrentNameDataUsed,NewNameLen);
@@ -1479,17 +1491,17 @@ HKCR
 {$endif wince}
          ,IDs);
 {$ifdef DEBUG_COMDISPATCH}
-                 if printcom then 
+                 if printcom then
         writeln('SearchIDs: GetIDsOfNames result = ',hexstr(res,SizeOf(HRESULT)*2));
         for i:=0 to Count-1 do
           writeln('SearchIDs: ID[',i,'] = ',ids^[i]);
 {$endif DEBUG_COMDISPATCH}
+      	freemem(NamesArray);
+      	freemem(NamesData);
       	if res=DISP_E_UNKNOWNNAME then
       	  raise EOleError.createresfmt(@snomethod,[OrigNames])
       	else
       	  OleCheck(res);
-      	freemem(NamesArray);
-      	freemem(NamesData);
       end;
 
 
@@ -1501,9 +1513,9 @@ HKCR
       begin
         fillchar(ids,sizeof(ids),0);
 {$ifdef DEBUG_COMDISPATCH}
-         if printcom then 
+         if printcom then
         writeln('ComObjDispatchInvoke called');
-         if printcom then 
+         if printcom then
         writeln('ComObjDispatchInvoke: @CallDesc = $',hexstr(PtrInt(CallDesc),SizeOf(Pointer)*2),' CallDesc^.ArgCount = ',CallDesc^.ArgCount);
 {$endif DEBUG_COMDISPATCH}
       	if tvardata(source).vtype=VarDispatch then
@@ -1607,7 +1619,7 @@ HKCR
             begin
               inc(dispparams.cNamedArgs);
               if (Arguments[0].VType and varTypeMask) = varDispatch then
-                flags:=DISPATCH_PROPERTYPUTREF;
+                flags:=DISPATCH_PROPERTYPUTREF or DISPATCH_PROPERTYPUT;
               dispidNamed:=DISPID_PROPERTYPUT;
               DispParams.rgdispidNamedArgs:=@dispidNamed;
             end;
@@ -1626,10 +1638,10 @@ HKCR
                 dispparams, { var params; }
                 res,@exceptioninfo,nil { VarResult,ExcepInfo,ArgErr : pointer) }
           );
-        if invokeresult<>0 then
-          DispatchInvokeError(invokeresult,exceptioninfo);
         if desc^.calldesc.argcount>Length(preallocateddata) then
           FreeMem(Arguments);
+        if invokeresult<>0 then
+          DispatchInvokeError(invokeresult,exceptioninfo);
       end;
 
     { TTypedComObject }
@@ -1726,7 +1738,7 @@ HKCR
     function TAutoIntfObject.GetTypeInfoCount(out count: longint): HResult; stdcall;
       begin
 {$ifdef DEBUG_COM}
-                if printcom then 
+                if printcom then
         WriteLn('TAutoIntfObject.GetTypeInfoCount');
 {$endif}
         count := 1;
@@ -1737,7 +1749,7 @@ HKCR
       ): HResult; stdcall;
       begin
 {$ifdef DEBUG_COM}
-         if printcom then 
+         if printcom then
         WriteLn('TAutoIntfObject.GetTypeInfo: ', Index);
 {$endif}
         if Index <> 0 then
@@ -1753,7 +1765,7 @@ HKCR
       NameCount, LocaleID: LongInt; DispIDs: Pointer): HResult; stdcall;
       begin
 {$ifdef DEBUG_COM}
-         if printcom then 
+         if printcom then
         WriteLn('TAutoIntfObject.GetIDsOfNames: ', GUIDToString(iid));
 {$endif}
         //return typeinfo->GetIDsOfNames(names, n, dispids);
@@ -1765,7 +1777,7 @@ HKCR
       ArgErr: pointer): HResult; stdcall;
       begin
 {$ifdef DEBUG_COM}
-         if printcom then 
+         if printcom then
         WriteLn('TAutoIntfObject.Invoke: ', DispID, ': ', Flags, ': ', TDispParams(params).cArgs, ': ', GUIDToString(iid));
         //WriteLn('TAutoIntfObject.Invoke: ', DispID, ': ', Flags, ': ', TDispParams(params).cArgs, ': ', TDispParams(params).rgvarg^, ': ', GUIDToString(iid));
 {$endif}
@@ -1781,7 +1793,7 @@ HKCR
       StdCall;
       begin
 {$ifdef DEBUG_COM}
-         if printcom then 
+         if printcom then
         WriteLn('TAutoIntfObject.InterfaceSupportsErrorInfo: ', GUIDToString(riid));
 {$endif}
         if assigned(GetInterfaceEntry(riid)) then
@@ -1797,7 +1809,7 @@ HKCR
         Handled: Integer;
       begin
 {$ifdef DEBUG_COM}
-         if printcom then 
+         if printcom then
         WriteLn('TAutoIntfObject.SafeCallException');
 {$endif}
         Handled:=0;
@@ -1820,7 +1832,7 @@ HKCR
     constructor TAutoIntfObject.Create(TypeLib: ITypeLib; const Guid: TGuid);
       begin
 {$ifdef DEBUG_COM}
-         if printcom then 
+         if printcom then
         WriteLn('TAutoIntfObject.Create: ', GUIDToString(Guid));
 {$endif}
         OleCheck(TypeLib.GetTypeInfoOfGuid(Guid, fTypeInfo));
@@ -1832,7 +1844,7 @@ HKCR
     function TAutoObject.GetTypeInfoCount(out count: longint): HResult; stdcall;
       begin
 {$ifdef DEBUG_COM}
-         if printcom then 
+         if printcom then
         WriteLn('TAutoObject.GetTypeInfoCount');
 {$endif}
         count := 1;
@@ -1843,14 +1855,14 @@ HKCR
       ): HResult; stdcall;
       begin
 {$ifdef DEBUG_COM}
-         if printcom then 
+         if printcom then
         WriteLn('TAutoIntfObject.GetTypeInfo: ', Index);
 {$endif}
         if Index <> 0 then
           Result := DISP_E_BADINDEX
         else
         begin
-          ITypeInfo(TypeInfo) := TAutoObjectFactory(Factory).ClassInfo;
+          ITypeInfo(TypeInfo) := TAutoObjectFactory(Factory).DispTypeInfo;
           Result := S_OK;
         end;
       end;
@@ -1859,7 +1871,7 @@ HKCR
       LocaleID: LongInt; DispIDs: Pointer): HResult; stdcall;
       begin
 {$ifdef DEBUG_COM}
-         if printcom then 
+         if printcom then
         WriteLn('TAutoIntfObject.GetIDsOfNames: ', GUIDToString(iid));
 {$endif}
         //return typeinfo->GetIDsOfNames(names, n, dispids);
@@ -1871,7 +1883,7 @@ HKCR
       ArgErr: pointer): HResult; stdcall;
       begin
 {$ifdef DEBUG_COM}
-         if printcom then 
+         if printcom then
         WriteLn('TAutoIntfObject.Invoke: ', DispID, ': ', Flags, ': ', TDispParams(params).cArgs, ': ', GUIDToString(iid));
         //WriteLn('TAutoIntfObject.Invoke: ', DispID, ': ', Flags, ': ', TDispParams(params).cArgs, ': ', TDispParams(params).rgvarg^, ': ', GUIDToString(iid));
 {$endif}
@@ -1926,11 +1938,11 @@ begin
     TProcedure(SaveInitProc)();
   if not CoInitDisable then
 {$ifndef wince}
-    if (CoInitFlags=-1) or not(assigned(ComObj.CoInitializeEx)) then
+    if (CoInitFlags=-1) or not(assigned({$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}ComObj.CoInitializeEx)) then
       Initialized:=Succeeded(CoInitialize(nil))
     else
 {$endif wince}
-      Initialized:=Succeeded(ComObj.CoInitializeEx(nil, CoInitFlags));
+      Initialized:=Succeeded({$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}ComObj.CoInitializeEx(nil, CoInitFlags));
 end;
 
 initialization

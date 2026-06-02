@@ -1,3 +1,4 @@
+{%MainUnit sysutils.pp}
 {
     This file is part of the Free Pascal run time library.
     Copyright (c) 1999-2000 by the Free Pascal development team
@@ -30,6 +31,8 @@ type
   TMonthNameArray = array[1..12] of string;
   TWeekNameArray = array[1..7] of string;
 
+  { TFormatSettings }
+
   TFormatSettings = record
     CurrencyFormat: Byte;
     NegCurrFormat: Byte;
@@ -51,7 +54,13 @@ type
     ShortDayNames: TWeekNameArray;
     LongDayNames: TWeekNameArray;
     TwoDigitYearCenturyWindow: Word;
+    class function Invariant : TFormatSettings; static;
+    class function Create: TFormatSettings; overload; static; inline;
+    //  class function Create(Locale: TLocaleID): TFormatSettings; overload; platform; static;
+    class function Create(const LocaleName: string): TFormatSettings; overload; static;
   end;
+
+  TInitFormatSettingsHook = Procedure(const aLocale : string; var aSettings : TFormatSettings);
 
 var
   DefaultFormatSettings : TFormatSettings = (
@@ -70,7 +79,7 @@ var
     TimePMString: 'PM';
     ShortTimeFormat: 'hh:nn';
     LongTimeFormat: 'hh:nn:ss';
-    ShortMonthNames: ('Jan','Feb','Mar','Apr','May','Jun', 
+    ShortMonthNames: ('Jan','Feb','Mar','Apr','May','Jun',
                       'Jul','Aug','Sep','Oct','Nov','Dec');
     LongMonthNames: ('January','February','March','April','May','June',
                      'July','August','September','October','November','December');
@@ -79,7 +88,10 @@ var
     TwoDigitYearCenturyWindow: 50;
   );
 
+
   FormatSettings : TFormatSettings absolute DefaultFormatSettings;
+  InitFormatSettingsHook : TInitFormatSettingsHook;
+
 { ---------------------------------------------------------------------
     Date formatting settings
   ---------------------------------------------------------------------}
@@ -87,7 +99,7 @@ var
 Var
 
    { Character to be put between date, month and year }
-   DateSeparator: char absolute DefaultFormatSettings.DateSeparator deprecated;
+   DateSeparator: AnsiChar absolute DefaultFormatSettings.DateSeparator deprecated;
 
    { Format used for short date notation }
    ShortDateFormat: string absolute DefaultFormatSettings.ShortDateFormat deprecated;
@@ -115,7 +127,7 @@ Var
    LongTimeFormat: string absolute DefaultFormatSettings.LongTimeFormat deprecated;
 
    { Character to be put between hours and minutes }
-   TimeSeparator: char absolute DefaultFormatSettings.TimeSeparator deprecated;
+   TimeSeparator: AnsiChar absolute DefaultFormatSettings.TimeSeparator deprecated;
 
    { String to indicate AM time when using 12 hour clock. }
    TimeAMString: string absolute DefaultFormatSettings.TimeAMString deprecated;
@@ -131,10 +143,10 @@ Var
 
 
   { Character that comes between integer and fractional part of a number }
-  DecimalSeparator : Char absolute DefaultFormatSettings.DecimalSeparator deprecated;
+  DecimalSeparator : AnsiChar absolute DefaultFormatSettings.DecimalSeparator deprecated;
 
   { Character that is put every 3 numbers in a currency }
-  ThousandSeparator : Char absolute DefaultFormatSettings.ThousandSeparator deprecated;
+  ThousandSeparator : AnsiChar absolute DefaultFormatSettings.ThousandSeparator deprecated;
 
   { Number of decimals to use when formatting a currency.  }
   CurrencyDecimals : Byte absolute DefaultFormatSettings.CurrencyDecimals deprecated;
@@ -166,7 +178,7 @@ Var
   { Currency notation. Default is $ for dollars. }
   CurrencyString : String absolute DefaultFormatSettings.CurrencyString deprecated;
 
-  ListSeparator: Char absolute DefaultFormatSettings.ListSeparator deprecated;
+  ListSeparator: AnsiChar absolute DefaultFormatSettings.ListSeparator deprecated;
 
 type
   TSysLocale = record

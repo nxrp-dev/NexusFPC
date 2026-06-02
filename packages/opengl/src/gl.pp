@@ -6,21 +6,21 @@
 ** this file except in compliance with the License. You may obtain a copy
 ** of the License at Silicon Graphics, Inc., attn: Legal Services, 1600
 ** Amphitheatre Parkway, Mountain View, CA 94043-1351, or at:
-** 
+**
 ** http://oss.sgi.com/projects/FreeB
-** 
+**
 ** Note that, as provided in the License, the Software is distributed on an
 ** "AS IS" basis, with ALL EXPRESS AND IMPLIED WARRANTIES AND CONDITIONS
 ** DISCLAIMED, INCLUDING, WITHOUT LIMITATION, ANY IMPLIED WARRANTIES AND
 ** CONDITIONS OF MERCHANTABILITY, SATISFACTORY QUALITY, FITNESS FOR A
 ** PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
-** 
+**
 ** Original Code. The Original Code is: OpenGL Sample Implementation,
 ** Version 1.2.1, released January 26, 2000, developed by Silicon Graphics,
 ** Inc. The Original Code is Copyright (c) 1991-2000 Silicon Graphics, Inc.
 ** Copyright in any portions created by third parties is as indicated
 ** elsewhere herein. All Rights Reserved.
-** 
+**
 ** Additional Notice Provisions: This software was created using the
 ** OpenGL(R) version 1.2.1 Sample Implementation published by SGI, but has
 ** not been independently verified as being compliant with the OpenGL(R)
@@ -50,21 +50,41 @@
   {$ENDIF}
 {$ENDIF}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit GL;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
 uses
+  {$IFNDEF MORPHOS}
+  System.SysUtils,
+  {$ENDIF}
+  {$IFDEF Windows}
+  WinApi.Windows, System.DynLibs
+  {$ELSE WinApi.Windows}
+  {$IFDEF MorphOS}
+  MorphApi.Exec, MorphApi.Tinygl
+  {$ELSE MorphOS}
+  System.DynLibs
+  {$ENDIF MorphOS}
+  {$ENDIF Windows};
+{$ELSE FPC_DOTTEDUNITS}
+uses
+  {$IFNDEF MORPHOS}
   SysUtils,
+  {$ENDIF}
   {$IFDEF Windows}
   Windows, dynlibs
   {$ELSE Windows}
   {$IFDEF MorphOS}
-  TinyGL
+  exec, TinyGL
   {$ELSE MorphOS}
   dynlibs
   {$ENDIF MorphOS}
   {$ENDIF Windows};
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$IFNDEF MORPHOS}
 var
@@ -1242,7 +1262,7 @@ var
   glGetPixelMapusv: procedure(map: GLenum; values: PGLushort); extdecl;
   glGetPointerv: procedure(pname: GLenum; params: Pointer); extdecl;
   glGetPolygonStipple: procedure(mask: PGLubyte); extdecl;
-  glGetString: function(name: GLenum): PChar; extdecl;
+  glGetString: function(name: GLenum): PAnsiChar; extdecl;
   glGetTexEnvfv: procedure(target, pname: GLenum; params: PGLfloat); extdecl;
   glGetTexEnviv: procedure(target, pname: GLenum; params: PGLint); extdecl;
   glGetTexGendv: procedure(coord, pname: GLenum; params: PGLdouble); extdecl;
@@ -1504,8 +1524,13 @@ procedure FreeOpenGL;
 implementation
 
 {$if defined(cpui386) or defined(cpux86_64)}
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Math;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   math;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endif}
 
 {$ifdef windows}
@@ -1881,7 +1906,7 @@ end;
 var
   MethodName: string = '';
 
-  function GetGLProcAddress(Lib: PtrInt; ProcName: PChar): Pointer;
+  function GetGLProcAddress(Lib: PtrInt; ProcName: PAnsiChar): Pointer;
   begin
     MethodName:=ProcName;
     Result:=GetProcAddress(Lib, ProcName);
@@ -1891,7 +1916,7 @@ begin
 
   FreeOpenGL;
 
-  LibGL := LoadLibrary(PChar(dll));
+  LibGL := LoadLibrary(PAnsiChar(dll));
   if LibGL = 0 then raise Exception.Create('Could not load OpenGL from ' + dll);
   try
     @glAccum := GetGLProcAddress(LibGL, 'glAccum');
@@ -2263,7 +2288,7 @@ initialization
   LoadOpenGL('/System/Library/Frameworks/OpenGL.framework/Libraries/libGL.dylib');
   {$elseif defined(MorphOS)}
   InitTinyGLLibrary;
-  {$elseif defined(haiku) or defined(OpenBSD)}
+  {$elseif defined(haiku) or defined(OpenBSD) or defined(NetBSD)}
   LoadOpenGL('libGL.so');
   {$else}
   LoadOpenGL('libGL.so.1');

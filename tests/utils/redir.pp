@@ -32,28 +32,24 @@ Interface
 {$ifdef OS2}
 {$define implemented}
 {$endif}
+
 {$ifdef windows}
 {$define implemented}
+{$if (FPC_FULLVERSION > 30300)}
+{$define EXECUTEREDIR_USES_PROCESS}
+{$ENDIF}
 {$define USES_UNIT_PROCESS}
 {$endif}
-{$ifdef linux}
+
+{$IFDEF UNIX}
 {$define implemented}
+{$ifndef MACOS}
+{$if (FPC_FULLVERSION > 30300)}
+{$define EXECUTEREDIR_USES_PROCESS}
+{$ENDIF}
+{$define USES_UNIT_PROCESS}
 {$endif}
-{$ifdef BSD}
-{$define implemented}
-{$endif}
-{$ifdef BEOS}
-{$define implemented}
-{$endif}
-{$ifdef macos}
-{$define shell_implemented}
-{$endif}
-{$ifdef sunos}
-{$define implemented}
-{$endif}
-{$ifdef aix}
-{$define implemented}
-{$endif}
+{$ENDIF}
 
 Var
   IOStatus                   : Integer;
@@ -799,6 +795,60 @@ function ChangeRedirError(Const Redir : String; AppendToFile : Boolean) : Boolea
 
 {............................................................................}
 
+{$ifdef EXECUTEREDIR_USES_PROCESS}
+function ExecuteRedir (Const ProgName, ComLine : String; RedirStdIn, RedirStdOut, RedirStdErr: String): boolean;
+
+const
+  max_count = 60000;
+
+var
+  P : TProcess;
+
+begin
+  Result:=false;
+  IOstatus:=0;
+  P := TProcess.Create(nil);
+  try
+    P.CommandLine:=Progname + ' ' + ComLine;
+    P.InputDescriptor.FileName:=RedirStdIn;
+    P.OutputDescriptor.FileName:=RedirStdOut;
+    if RedirStdErr='stdout' then
+      P.Options:=P.options+[poStdErrToOutput]
+    else
+      P.ErrorDescriptor.FileName:=RedirStdErr;
+    try
+      P.Execute;
+      Result:=P.WaitOnExit(max_count);
+    except
+      on e : exception do
+        begin
+          IOStatus:=2;
+          writeln(stderr,'ExecuteRedir generated an exception: ',E.Message);
+        end;
+      end;
+    if Result then
+      ExecuteResult:=P.ExitCode
+    else if (IOStatus<>0) then
+      ExecuteResult:=IOStatus*1000
+    else
+      begin
+      Writeln(stderr,'Terminate requested for ',Progname,' ',ComLine);
+      { Issue it also to output, so it gets added to log file
+                  if ExecuteRedir is in use }
+      Writeln('Terminate requested for ',Progname,' ',ComLine);
+      Repeat
+        P.Terminate(255);
+        Sleep(10);
+      Until not P.Running;
+      ExecuteResult:=1000+P.ExitCode;
+      end;
+    Result:=ExecuteResult=0;
+  finally
+    P.Free;
+  end;
+end;
+{$ELSE}
+
 function ExecuteRedir (Const ProgName, ComLine : String; RedirStdIn, RedirStdOut, RedirStdErr: String): boolean;
 Begin
   RedirErrorOut:=0; RedirErrorIn:=0; RedirErrorError:=0;
@@ -818,6 +868,7 @@ Begin
                 (RedirErrorIn=0) and (RedirErrorError=0) and
                 (ExecuteResult=0);
 End;
+{$ENDIF}
 
 {............................................................................}
 
@@ -896,11 +947,11 @@ begin
   Fsplit(Filename,d,n,e);
 
   if (e='') and FileExist(FileName+exeext) then
-    begin
+     begin
       FileName:=FileName+exeext;
       LocateExeFile:=true;
       Exit;
-    end;
+     end;
 {$ifdef macos}
   S:=GetEnv('Commands');
 {$else}
@@ -916,7 +967,8 @@ begin
         Delete(S,1,i)
       else
         S:='';
-      if FileExist(Dir+FileName) then
+
+       if FileExist(Dir+FileName) then
         Begin
            FileName:=Dir+FileName;
            LocateExeFile:=true;
@@ -1054,7 +1106,7 @@ end;
 {............................................................................}
 {$ifdef UNIX}
 function TransformfpSystemToShell(s:cint):cint;
-// transforms standarized (fp)System(3) result to the conventions of the old Unix.shell function.
+// transforms standardized (fp)System(3) result to the conventions of the old Unix.shell function.
 begin
  if s=-1 then exit(-1);
  if wifexited(s) then

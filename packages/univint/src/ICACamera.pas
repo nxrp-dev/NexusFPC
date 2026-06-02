@@ -4,7 +4,7 @@
  *
  *  Copyright (c) 2000-2006 Apple Computer, Inc. All rights reserved.
  *
- *  For bug reports, consult the following page onthe World Wide Web:
+ *  For bug reports, consult the following page on the World Wide Web:
  *  http://bugs.freepascal.org
  *
  *----------------------------------------------------------------------------------------------------------------------------}
@@ -24,7 +24,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit ICACamera;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -209,7 +211,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -224,13 +230,13 @@ uses MacTypes;
 {!
     @header ICACamera.h
     @discussion
-        ICACamera.h defines digital still cameras specific constants used with the Image Capture framework APIs. 
+        ICACamera.h defines digital still cameras specific constants used with the Image Capture framework APIs.
 }
 
 //-------------------------------------------------------------------------------------------------------- Constant Descriptions
 
-{! 
-    @enum Fields in StorageInfo Dataset 
+{!
+    @enum Fields in StorageInfo Dataset
     @discussion
         Refer to section 5.5.3 of the PIMA 15740 (PTP) specification for descriptions and usage notes.
     @constant kICAPropertyCameraStorageType
@@ -261,7 +267,7 @@ const
 	kICAPropertyCameraVolumeLabel = FourCharCode('voll');
 
 {!
-    @enum Values for kICAPropertyCameraStorageType 
+    @enum Values for kICAPropertyCameraStorageType
     @discussion
         Values for kICAPropertyCameraStorageType.
     @constant kICAStorageUndefined
@@ -283,7 +289,7 @@ const
 	kICAStorageRemovableRAM = $0004;
 
 {!
-    @enum Values for kICAPropertyCameraFilesystemType 
+    @enum Values for kICAPropertyCameraFilesystemType
     @discussion
         Values for kICAPropertyCameraFilesystemType.
     @constant kICAFileystemUndefined
@@ -301,8 +307,8 @@ const
 	kICAFileystemGenericHierarchical = $0002;
 	kICAFileystemDCF = $0003;
 
-{! 
-    @enum Values for kICAPropertyCameraAccessCapability 
+{!
+    @enum Values for kICAPropertyCameraAccessCapability
     @discussion
         Values for kICAPropertyCameraAccessCapability.
     @constant kICAAccessReadWrite
@@ -418,7 +424,7 @@ const
 	kICAPropertyCameraCopyrightInfo = FourCharCode('501F');
 
 {!
-    @enum ImageCapture framework specific camera properties 
+    @enum ImageCapture framework specific camera properties
     @discussion
         ImageCapture framework specific camera properties.
     @constant kICAPropertyCameraIcon
@@ -431,7 +437,7 @@ const
 	kICAPropertyCameraSupportedMessages = FourCharCode('msgs');
 
 {!
-    @enum Camera messages 
+    @enum Camera messages
     @discussion
         Messages that can be sent to digital still cameras.
     @constant kICAMessageCameraCaptureNewImage
@@ -453,7 +459,7 @@ const
 	kICAMessageCameraUploadData = FourCharCode('load');
 
 {!
-    @enum Camera capabilities 
+    @enum Camera capabilities
     @discussion
         Capabilities of digital still cameras.
     @constant kICAMessageCameraCaptureNewImage

@@ -1,4 +1,6 @@
-unit singleinstance;
+{$IFNDEF FPC_DOTTEDUNITS}
+unit SingleInstance;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {
     This file is part of the Free Component Library (FCL)
@@ -18,8 +20,13 @@ unit singleinstance;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.SysUtils, System.Classes;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   SysUtils, Classes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
 
@@ -36,12 +43,12 @@ type
     FTimeOutMessages: Integer;
     FTimeOutWaitForInstances: Integer;
     FOnServerReceivedParams: TSingleInstanceParamsEvent;
-  Protected  
+  Protected
     function GetIsClient: Boolean; virtual; abstract;
     function GetIsServer: Boolean; virtual; abstract;
     function GetStartResult: TSingleInstanceStart; virtual;
-    procedure DoServerReceivedParams(const aParamsDelimitedText: string);
-    Procedure SetStartResult(AValue : TSingleInstanceStart); 
+    procedure DoServerReceivedParams(const aParamsDelimitedText: AnsiString);
+    Procedure SetStartResult(AValue : TSingleInstanceStart);
   public
     constructor Create(aOwner: TComponent); override;
     destructor Destroy; override;
@@ -91,7 +98,7 @@ begin
 end;
 
 procedure TBaseSingleInstance.DoServerReceivedParams(
-  const aParamsDelimitedText: string);
+  const aParamsDelimitedText: AnsiString);
 var
   xSL: TStringList;
 begin
@@ -116,7 +123,7 @@ Procedure TBaseSingleInstance.SetStartResult(AValue : TSingleInstanceStart);
 
 begin
   FStartResult:=AValue;
-end;   
+end;
 
 end.
 

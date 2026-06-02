@@ -4,13 +4,13 @@ and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
 
                         All Rights Reserved
 
-Permission to use, copy, modify, and distribute this software and its 
-documentation for any purpose and without fee is hereby granted, 
+Permission to use, copy, modify, and distribute this software and its
+documentation for any purpose and without fee is hereby granted,
 provided that the above copyright notice appear in all copies and that
-both that copyright notice and this permission notice appear in 
+both that copyright notice and this permission notice appear in
 supporting documentation, and that the names of Digital or MIT not be
 used in advertising or publicity pertaining to distribution of the
-software without specific, written prior permission.  
+software without specific, written prior permission.
 
 DIGITAL DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING
 ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL
@@ -24,11 +24,11 @@ SOFTWARE.
 { $XFree86: xc/include/extensions/Xvlib.h,v 1.3 1999/12/11 19:28:48 mvojkovi Exp $ }
 
 {*
-** File: 
+** File:
 **
 **   Xvlib.h --- Xv library public header file
 **
-** Author: 
+** Author:
 **
 **   David Carver (Digital Workstation Engineering/Project Athena)
 **
@@ -51,12 +51,19 @@ SOFTWARE.
 **
 *}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit xvlib;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.CTypes, Api.X11.X, Api.X11.Xlib, Api.X11.Xshm, Api.X11.Xv;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   ctypes, x, xlib, xshm, xv;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$PACKRECORDS c}
 
@@ -75,14 +82,14 @@ type
     flags : cint; { XvGettable, XvSettable }
     min_value : cint;
     max_value : cint;
-    name : pchar;
+    name : PAnsiChar;
   end;
 
   PPXvEncodingInfo = ^PXvEncodingInfo;
   PXvEncodingInfo = ^TXvEncodingInfo;
   TXvEncodingInfo = record
     encoding_id : TXvEncodingID;
-    name : pchar;
+    name : PAnsiChar;
     width : culong;
     height : culong;
     rate : TXvRational;
@@ -101,7 +108,7 @@ type
     base_id : TXvPortID;
     num_ports : culong;
     _type : cchar;
-    name : pchar;
+    name : PAnsiChar;
     num_formats : culong;
     formats : PXvFormat;
     num_adaptors : culong;
@@ -174,7 +181,7 @@ type
     vert_y_period : cuint;
     vert_u_period : cuint;
     vert_v_period : cuint;
-    component_order : array[0..31] of char; { eg. UYVY }
+    component_order : array[0..31] of AnsiChar; { eg. UYVY }
     scanline_order : cint;                  { XvTopToBottom, XvBottomToTop }
   end;
 

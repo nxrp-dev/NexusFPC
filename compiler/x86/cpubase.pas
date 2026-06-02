@@ -53,7 +53,7 @@ uses
 {$endif}
 
       { This should define the array of instructions as string }
-        op2strtable=array[tasmop] of string[16];
+        op2strtable=array[tasmop] of string[17];
 
 {$ifdef i8086}
       ImmInt = SmallInt;
@@ -338,6 +338,7 @@ topsize2memsize: array[topsize] of integer =
 
     function cgsize2subreg(regtype: tregistertype; s:Tcgsize):Tsubregister;
     function reg2opsize(r:Tregister):topsize;
+    function subreg2opsize(sr : tsubregister):topsize;
     function reg_cgsize(const reg: tregister): tcgsize;
     function is_calljmp(o:tasmop):boolean;
     function is_calljmpuncondret(o:tasmop):boolean;
@@ -488,7 +489,7 @@ implementation
 
     function reg_cgsize(const reg: tregister): tcgsize;
       const subreg2cgsize:array[Tsubregister] of Tcgsize =
-            (OS_NO,OS_8,OS_8,OS_16,OS_32,OS_64,OS_NO,OS_NO,OS_NO,OS_F32,OS_F64,OS_NO,OS_M128,OS_M256,OS_M512,OS_NO,OS_NO,OS_NO,OS_NO,OS_NO,OS_NO,OS_NO,OS_NO,OS_NO);
+            (OS_NO,OS_8,OS_8,OS_16,OS_32,OS_64,OS_NO,OS_NO,OS_NO,OS_F32,OS_F64,OS_NO,OS_M128,OS_M256,OS_M512,OS_NO,OS_NO,OS_NO,OS_NO,OS_NO,OS_NO,OS_NO,OS_NO,OS_NO,OS_NO);
       begin
         case getregtype(reg) of
           R_INTREGISTER :
@@ -521,15 +522,21 @@ implementation
         end;
 
 
-    function reg2opsize(r:Tregister):topsize;
+    function subreg2opsize(sr : tsubregister):topsize;
       const
-        subreg2opsize : array[tsubregister] of topsize =
-          (S_NO,S_B,S_B,S_W,S_L,S_Q,S_NO,S_NO,S_NO,S_NO,S_NO,S_NO,S_NO,S_NO,S_NO,S_NO,S_NO,S_NO,S_NO,S_NO,S_NO,S_NO,S_NO,S_NO);
+        _subreg2opsize : array[tsubregister] of topsize =
+          (S_NO,S_B,S_B,S_W,S_L,S_Q,S_NO,S_NO,S_NO,S_NO,S_NO,S_NO,S_NO,S_NO,S_NO,S_NO,S_NO,S_NO,S_NO,S_NO,S_NO,S_NO,S_NO,S_NO,S_NO);
+      begin
+        result:=_subreg2opsize[sr];
+      end;
+
+
+    function reg2opsize(r:Tregister):topsize;
       begin
         reg2opsize:=S_L;
         case getregtype(r) of
           R_INTREGISTER :
-            reg2opsize:=subreg2opsize[getsubreg(r)];
+            reg2opsize:=subreg2opsize(getsubreg(r));
           R_FPUREGISTER :
             reg2opsize:=S_FL;
           R_MMXREGISTER,
@@ -636,6 +643,7 @@ implementation
         { for the name the sub reg doesn't matter }
         hr:=r;
         if (getregtype(hr)=R_MMREGISTER) and
+           (getsubreg(hr)<>R_SUBMMT) and
            (getsubreg(hr)<>R_SUBMMY) and
            (getsubreg(hr)<>R_SUBMMZ) then
           setsubreg(hr,R_SUBMMX);

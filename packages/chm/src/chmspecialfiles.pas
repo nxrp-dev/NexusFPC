@@ -18,24 +18,31 @@
   See the file COPYING.FPC, included in this distribution,
   for details about the copyright.
 }
+{$IFNDEF FPC_DOTTEDUNITS}
 unit chmspecialfiles;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, Chm.Types;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, chmtypes;
-  
+{$ENDIF FPC_DOTTEDUNITS}
 
-  
+
+
   function WriteNameListToStream(const AStream: TStream; SectionNames: TSectionNames): Integer;
   function WriteControlDataToStream(const AStream: TStream; const LZXResetInterval, WindowSize, CacheSize: DWord): Integer;
   function WriteSpanInfoToStream(const AStream: TStream; UncompressedSize: QWord): Integer;
   function WriteTransformListToStream(const AStream: TStream): Integer;
   function WriteResetTableToStream(const AStream: TStream; ResetTableStream: TMemoryStream): Integer;
   function WriteContentToStream(const AStream: TStream; ContentStream: TStream): Integer;
-  
+
 implementation
 
 function WriteNameListToStream(const AStream: TStream; SectionNames: TSectionNames): Integer;
@@ -65,7 +72,7 @@ begin
     Inc(Size, 14);
     Inc(NEntries);
   end;
-  
+
   AStream.WriteWord(NToLE(Size));
   AStream.WriteWord(NToLE(NEntries));
   if snUnCompressed in SectionNames then begin
@@ -76,14 +83,14 @@ begin
     AStream.WriteWord(NToLE(Word(12)));
     AStream.Write(MSCompressedName[1], 13*2);
   end;
-  
+
   Result := Size * SizeOf(Word);
 end;
 
 function WriteControlDataToStream(const AStream: TStream; const LZXResetInterval,
   WindowSize, CacheSize: DWord): Integer;
 var
-  LZXC: array [0..3] of char = 'LZXC';
+  LZXC: array [0..3] of AnsiChar = 'LZXC';
 begin
   //  ::DataSpace/Storage/MSCompressed/ControlData
   Result := AStream.Position;

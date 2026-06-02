@@ -29,7 +29,9 @@
 }
 
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit DOM;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$ifdef fpc}
 {$MODE objfpc}{$H+}
@@ -37,8 +39,13 @@ unit DOM;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.SysUtils, System.Classes, Xml.Utils, Xml.DtdModel;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   SysUtils, Classes, xmlutils, dtdmodel;
+{$ENDIF FPC_DOTTEDUNITS}
 
 // -------------------------------------------------------
 //   DOMException
@@ -114,7 +121,7 @@ type
 //   DOMString
 // -------------------------------------------------------
 
-  TSetOfChar = xmlutils.TSetOfChar;  { to be removed: not used in DOM unit }
+  TSetOfChar = {$IFDEF FPC_DOTTEDUNITS}Xml.Utils{$ELSE}xmlutils{$ENDIF}.TSetOfChar;  { to be removed: not used in DOM unit }
   DOMString = XMLString;
   DOMPChar = PXMLChar;
   PDOMString = ^DOMString;
@@ -269,7 +276,7 @@ type
     function CloneNode(deep: Boolean; ACloneOwner: TDOMDocument): TDOMNode; overload; virtual;
     function FindNode(const ANodeName: DOMString): TDOMNode; virtual;
     function CompareName(const name: DOMString): Integer; virtual;
-    procedure SetReadOnly(Value: Boolean);    
+    procedure SetReadOnly(Value: Boolean);
     property Flags: TNodeFlags read FFlags;
   end;
 
@@ -515,6 +522,8 @@ type
     // Extensions to DOM interface:
     constructor Create; virtual;
     destructor Destroy; override;
+    procedure RebuildIDsOfElement(aRoot: TDOMElement);
+    procedure RebuildIDList;
     function CloneNode(deep: Boolean): TDOMNode; overload; override;
     property Names: THashTable read FNames;
     property IDs: THashTable read FIDList write FIDList;
@@ -548,7 +557,7 @@ type
 //   Attr
 // -------------------------------------------------------
 
-  TAttrDataType = xmlutils.TAttrDataType;
+  TAttrDataType = {$IFDEF FPC_DOTTEDUNITS}Xml.Utils{$ELSE}xmlutils{$ENDIF}.TAttrDataType;
 
   TDOMNode_NS = class(TDOMNode_WithChildren)
   protected
@@ -808,8 +817,13 @@ function LoadElement(doc: TDOMDocument; src: PNodeData; attrCount: Integer): TDO
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  Fcl.UriParser;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   UriParser;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { a namespace-enabled NamedNodeMap }
 type
@@ -2151,7 +2165,7 @@ begin
         Exit;
       end;
     // Name validity has already been checked by IsXmlName() call above.
-    // So just check that colon isn't first or last char, and that it is follwed by NameStartChar.
+    // So just check that colon isn't first or last AnsiChar, and that it is followed by NameStartChar.
     if ((Result = 1) or (Result = L) or not IsXmlName(@QName[Result+1], 1)) then
     begin
       Result := -NAMESPACE_ERR;
@@ -2248,6 +2262,43 @@ begin
   FNames.Free;           // free the nametable after inherited has destroyed the children
                          // (because children reference the nametable)
 end;
+
+procedure TDOMDocument.RebuildIDsOfElement(aRoot: TDOMElement);
+var
+  i: Integer;
+  AttribNode: TDOMNode;
+  id: DOMString;
+  Item: PHashItem;
+begin
+  if aRoot=Nil then
+    exit;
+  for i := 0 to aRoot.Attributes.Length - 1 do
+  begin
+    AttribNode := aRoot.Attributes.Item[i];
+    if LowerCase(AttribNode.NodeName) = 'id' then
+    begin
+      id := AttribNode.TextContent;
+      Item := FIDList.FindOrAdd(PWideChar(id), Length(id));
+      Item^.Data := aRoot;
+      break;
+    end;
+  end;
+
+  for i := 0 to aRoot.ChildNodes.Count - 1 do
+  begin
+    if aroot.ChildNodes[i] is TDOMElement then
+      RebuildIDsOfElement(TDOMElement(aroot.ChildNodes[i]));
+  end;
+end;
+
+procedure TDOMDocument.RebuildIDList;
+begin
+  if not Assigned(FIDList) then
+    FIDList := THashTable.Create(256, False);
+  FIDList.Clear;
+  RebuildIDsOfElement(Self.DocumentElement);
+end;
+
 
 function TDOMDocument.CloneNode(deep: Boolean): TDOMNode;
 type

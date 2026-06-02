@@ -14,12 +14,19 @@
 
  **********************************************************************}
 {$mode ObjFPC}{$H+}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fpwebsocketclient;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.SysUtils, System.Classes, FpWeb.WebSocket.Protocol, System.Net.Ssockets, System.Net.Sslsockets;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   sysutils, classes, fpwebsocket, ssockets, sslsockets;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
   EWebSocketClient = Class(EWebSocket);
@@ -213,7 +220,11 @@ Type
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.Hash.Sha1;
+{$ELSE FPC_DOTTEDUNITS}
 uses sha1;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { TWebSocketClientConnection }
 
@@ -392,7 +403,7 @@ end;
 
 Function TCustomWebsocketClient.CheckHandShakeResponse(aHeaders : TStrings) : Boolean;
 
-Var 
+Var
   K : String;
   {%H-}hash : TSHA1Digest;
   B : TBytes;
@@ -402,7 +413,7 @@ begin
   FreeAndNil(FHandshakeResponse);
   FHandshakeResponse:=CreateHandshakeResponse(aHeaders);
   k := Trim(FHandshake.Key) + SSecWebSocketGUID;
-  hash:=sha1.SHA1String(k);
+  hash:=SHA1String(k);
   SetLength(B,SizeOf(hash));
   Move(hash[0],B[0],SizeOf(hash));
   k:=EncodeBytesBase64(B);
@@ -646,7 +657,7 @@ begin
   FList:=TThreadList.Create;
   FReads:=[];
   FExceptions:=[];
-  Finterval:=50;
+  Finterval:=25;
 end;
 
 destructor TWSMessagePump.Destroy;
@@ -697,10 +708,31 @@ begin
 end;
 
 procedure TWSThreadMessagePump.Terminate;
+var
+  lThread: TThread;
+  lCounter: Integer;
 begin
-  FThread.Terminate;
-  if Assigned(FThread) then
-    FThread.WaitFor;
+  lThread := FThread;
+  if Assigned(lThread) then
+  begin
+    lThread.Terminate;
+
+    // Wait till it stops
+    lCounter := 0;
+    while Assigned(FThread) and (lCounter < 200) do // 5 second timeout
+    begin
+      Sleep(10);
+      Inc(lCounter);
+    end;
+
+    // If thread still hasn't finished, there's a serious problem
+    if Assigned(FThread) then
+    begin
+      FThread.OnTerminate:=Nil;
+      // Force cleanup as last resort
+      FThread := nil;
+    end;
+  end;
 end;
 
 { TWSThreadMessagePump.TMessageDriverThread }
@@ -710,6 +742,7 @@ constructor TWSThreadMessagePump.TMessageDriverThread.Create(aPump: TWSThreadMes
 begin
   FPump:=aPump;
   OnTerminate:=aTerminate;
+  FreeOnTerminate:=True;
   Inherited Create(False);
 end;
 
@@ -720,7 +753,16 @@ begin
     if FPump.CheckConnections then
       FPump.ReadConnections
     else
+      begin
       TThread.Sleep(FPump.Interval);
+      end;
+  // OnTerminate is called in a synchronize. However, if no-one calls CheckSynchronize, it is never called.
+  // So we call it ourselves.
+  if assigned(OnTerminate) then
+    begin
+    OnTerminate(Self);
+    OnTerminate:=Nil;
+    end;
 end;
 
 end.

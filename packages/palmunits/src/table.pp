@@ -15,11 +15,17 @@
  *
  *****************************************************************************)
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit table;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses PalmApi.Palmos, PalmApi.Coretraps, PalmApi.Rect, PalmApi.Font, PalmApi.Field, PalmApi.Control;
+{$ELSE FPC_DOTTEDUNITS}
 uses palmos, coretraps, rect, font, field, control;
+{$ENDIF FPC_DOTTEDUNITS}
 
 //-------------------------------------------------------------------
 // Table structures
@@ -29,7 +35,7 @@ const
   tableDefaultColumnSpacing = 1;
   tableNoteIndicatorWidth   = 7;
   tableNoteIndicatorHeight  = 11;
-  tableMaxTextItemSize      = 255; // does not incude terminating null
+  tableMaxTextItemSize      = 255; // does not include terminating null
 
   tblUnusableRow            = $ffff;
 
@@ -60,7 +66,7 @@ type
     itemType: TableItemStyleType;
     fontID: FontID; // font for drawing text
     intValue: Int16;
-    ptr: PChar;
+    ptr: PAnsiChar;
   {$endif}
   end;
   TableItemTag = TableItemType;

@@ -24,16 +24,22 @@
 
 {$mode objfpc}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit gtkglext;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses Api.Glib2, Api.Gdk2, Api.Gtk2.Gtk2, Api.Gtk2.Gdkglext;
+{$ELSE FPC_DOTTEDUNITS}
 uses Glib2, Gdk2, Gtk2, GdkGLExt;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
-  GtkGLExtLib = 
+  GtkGLExtLib =
     {$ifdef WINDOWS} 'libgtkglext-win32-1.0-0.dll'
-    {$else}        
+    {$else}
       {$ifdef DARWIN}
         'gtkglext-x11-1.0'
         {$linklib gtkglext-x11-1.0}

@@ -1,15 +1,15 @@
 {
      File:       CarbonCore/TextCommon.h
- 
+
      Contains:   TextEncoding-related types and constants, and prototypes for related functions
- 
+
      Copyright:  © 1995-2017 Apple Inc. All rights reserved.
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 {     Pascal Translation Updated:  Gale R Paeper, <gpaeper@empirenet.com>, June 2018 }
 
@@ -27,7 +27,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit TextCommon;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -212,7 +214,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -222,7 +228,7 @@ uses MacTypes;
 
 {
  *  Generic Text Alignment Constants
- *  
+ *
  *  Summary:
  *    These constants are implemented to supplant the old TextEdit
  *    Manager constants ( teFlushDefault, teCenter teFlushRight,
@@ -453,7 +459,7 @@ const
 	kTextEncodingBig5 = $0A03; { Big-5 (has variants)}
 	kTextEncodingMacRomanLatin1 = $0A04; { Mac OS Roman permuted to align with ISO Latin-1}
 	kTextEncodingHZ_GB_2312 = $0A05; { HZ (RFC 1842, for Chinese mail & news)}
-	kTextEncodingBig5_HKSCS_1999 = $0A06; { Big-5 with Hong Kong special char set supplement}
+	kTextEncodingBig5_HKSCS_1999 = $0A06; { Big-5 with Hong Kong special AnsiChar set supplement}
 	kTextEncodingVISCII = $0A07; { RFC 1456, Vietnamese}
 	kTextEncodingKOI8_U = $0A08; { RFC 2319, Ukrainian}
 	kTextEncodingBig5_E = $0A09; { Taiwan Big-5E standard}
@@ -712,7 +718,7 @@ const
                                         { - An array of UTF16Char (UniChar) or UTF32Char is normally understood to use "internal" or}
                                         { platform-native byte ordering for kUnicodeUTF16Format and kUnicodeUTF32Format; the array MAY}
                                         { begin with byte-order mark (BOM), but the BOM should match the internal ordering.}
-                                        { - If an array of bytes (such as char *) that can be in various encodings is specified to be}
+                                        { - If an array of bytes (such as AnsiChar *) that can be in various encodings is specified to be}
                                         { in Unicode with kUnicodeUTF16Format or kUnicodeUTF32Format (not explicitly BE or LE), then it}
                                         { is assumed to use "external" byte ordering, which means: If there is a BOM at the beginning}
                                         { of text, the BOM specifies the byte ordering, otherwise big-endian is assumed.}
@@ -764,7 +770,7 @@ type
 	UniCharArrayHandle = ^UniCharArrayPtr;
 {
    UniCharArrayOffset is used to indicate an edge offset in an array
-   of UniChars (UInt16s).  
+   of UniChars (UInt16s).
 }
 type
 	UniCharArrayOffset = UNSIGNEDLONG;
@@ -868,9 +874,9 @@ const
 const
 	kUnicodeByteOrderMark = $FEFF;
 	kUnicodeObjectReplacement = $FFFC; { placeholder for non-text object}
-	kUnicodeReplacementChar = $FFFD; { Unicode replacement for unconvertable input char}
-	kUnicodeSwappedByteOrderMark = $FFFE; { not a Unicode char; byte-swapped version of FEFF}
-	kUnicodeNotAChar = $FFFF; { not a Unicode char; may be used as a terminator}
+	kUnicodeReplacementChar = $FFFD; { Unicode replacement for nonconvertible input AnsiChar}
+	kUnicodeSwappedByteOrderMark = $FFFE; { not a Unicode AnsiChar; byte-swapped version of FEFF}
+	kUnicodeNotAChar = $FFFF; { not a Unicode AnsiChar; may be used as a terminator}
 
 
 {
@@ -967,7 +973,7 @@ const
 
 {
  *  CreateTextEncoding()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -979,7 +985,7 @@ function CreateTextEncoding( encodingBase: TextEncodingBase; encodingVariant: Te
 
 {
  *  GetTextEncodingBase()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -991,7 +997,7 @@ function GetTextEncodingBase( encoding: TextEncoding ): TextEncodingBase; extern
 
 {
  *  GetTextEncodingVariant()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1003,7 +1009,7 @@ function GetTextEncodingVariant( encoding: TextEncoding ): TextEncodingVariant; 
 
 {
  *  GetTextEncodingFormat()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1015,7 +1021,7 @@ function GetTextEncodingFormat( encoding: TextEncoding ): TextEncodingFormat; ex
 
 {
  *  ResolveDefaultTextEncoding()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1027,7 +1033,7 @@ function ResolveDefaultTextEncoding( encoding: TextEncoding ): TextEncoding; ext
 
 {
  *  GetTextEncodingName()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1039,7 +1045,7 @@ function GetTextEncodingName( iEncoding: TextEncoding; iNamePartSelector: TextEn
 
 {
  *  TECGetInfo()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1051,7 +1057,7 @@ function TECGetInfo( var tecInfo: TECInfoHandle ): OSStatus; external name '_TEC
 
 {
  *  UpgradeScriptInfoToTextEncoding()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1063,7 +1069,7 @@ function UpgradeScriptInfoToTextEncoding( iTextScriptID: ScriptCode; iTextLangua
 
 {
  *  RevertTextEncodingToScriptInfo()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1075,18 +1081,18 @@ function RevertTextEncodingToScriptInfo( iEncoding: TextEncoding; var oTextScrip
 
 {
  *  GetTextEncodingFromScriptInfo()
- *  
+ *
  *  Summary:
  *    Converts any combination of a Mac OS script code, a language
  *    code, and a region code to a text encoding.
- *  
+ *
  *  Discussion:
  *    This function is almost identical to
  *    UpgradeScriptInfoToTextEncoding except it doesn't take a font
  *    name and it is available in CoreServices.
- *  
+ *
  *  Parameters:
- *    
+ *
  *    iTextScriptID:
  *      A valid Script Manager script code. The Mac OS Script Manager
  *      defines constants for script codes using this format: smXxx. To
@@ -1094,25 +1100,25 @@ function RevertTextEncodingToScriptInfo( iEncoding: TextEncoding; var oTextScrip
  *      smSystemScript. To indicate that you do not want to provide a
  *      script code for this parameter, specify the constant
  *      kTextScriptDontCare.
- *    
+ *
  *    iTextLanguageID:
  *      A valid Script Manager language code. The Mac OS Script Manager
  *      defines constants for language codes using this format:
  *      langXxx. To indicate that you do not want to provide a language
  *      code for this parameter, specify the constant
  *      kTextLanguageDontCare.
- *    
+ *
  *    iTextRegionID:
  *      A valid Script Manager region code. The Mac OS Script Manager
  *      defines constants for region codes using this format: verXxx.
  *      To indicate that you do not want to provide a region code for
  *      this parameter, specify the constant kTextRegionDontCare.
- *    
+ *
  *    oEncoding:
  *      A pointer to a value of type TextEncoding. On return, this
  *      value holds the text encoding specification that the function
  *      created from the other values you provided.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.2 and later in CoreServices.framework
  *    CarbonLib:        not available in CarbonLib 1.x, is available on Mac OS X version 10.2 and later
@@ -1124,28 +1130,28 @@ function GetTextEncodingFromScriptInfo( iTextScriptID: ScriptCode; iTextLanguage
 
 {
  *  GetScriptInfoFromTextEncoding()
- *  
+ *
  *  Summary:
  *    Converts the given Mac OS text encoding specification to the
  *    corresponding script code and, if possible, language code.
- *  
+ *
  *  Discussion:
  *    This function is almost identical to
  *    RevertTextEncodingToScriptInfo except it doesn't return a font
  *    name and it is available in CoreServices.
- *  
+ *
  *  Parameters:
- *    
+ *
  *    iEncoding:
  *      The text encoding specification to be converted.
- *    
+ *
  *    oTextScriptID:
  *      A pointer to a value of type ScriptCode. On return, a Mac OS
  *      script code that corresponds to the text encoding specification
  *      you identified in the iEncoding parameter. If you do not pass a
  *      pointer for this parameter, the function returns a paramErr
  *      result code.
- *    
+ *
  *    oTextLanguageID:
  *      A pointer to a value of type LangCode. On input, if you do not
  *      want the function to return the language code, specify NULL as
@@ -1157,7 +1163,7 @@ function GetTextEncodingFromScriptInfo( iTextScriptID: ScriptCode; iTextLanguage
  *      the function cannot accurately derive it from the text encoding
  *      specification—the function returns a value of
  *      kTextLanguageDontCare.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.2 and later in CoreServices.framework
  *    CarbonLib:        not available in CarbonLib 1.x, is available on Mac OS X version 10.2 and later
@@ -1169,7 +1175,7 @@ function GetScriptInfoFromTextEncoding( iEncoding: TextEncoding; var oTextScript
 
 {
  *  NearestMacTextEncodings()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1181,7 +1187,7 @@ function NearestMacTextEncodings( generalEncoding: TextEncoding; var bestMacEnco
 
 {
  *  UCGetCharProperty()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later

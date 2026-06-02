@@ -13,15 +13,22 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit externalreader;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$MODE OBJFPC} {$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, System.Resources.Resource, System.Resources.Tree, System.Resources.External.Types;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, resource, resourcetree, externaltypes;
-  
+{$ENDIF FPC_DOTTEDUNITS}
+
 type
 
   { TExternalResourceReader }
@@ -56,21 +63,26 @@ type
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Resources.DataStream, System.Resources.Factory;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   resdatastream, resfactory;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { TExternalResourceReader }
 
 function TExternalResourceReader.ReadString(aStream: TStream; aOfs: longword
   ): string;
 var oldpos : int64;
-    c : char;
+    c : AnsiChar;
     maxleft : int64;
 begin
   Result:='';
   oldpos:=aStream.Position;
   aStream.Position:=aOfs;
-  
+
   aStream.ReadBuffer(c,1);
   maxleft:=aStream.Size-aStream.Position;
   while (c<>#0) and (maxleft>=0) do
@@ -92,7 +104,7 @@ begin
   except
     on e : EReadError do exit;
   end;
-  
+
   if hdr.magic<>EXTERNAL_RESMAGIC then exit;
   if hdr.version<>EXT_CURRENT_VERSION then exit;
   if hdr.endianess<>fNativeEndianess then

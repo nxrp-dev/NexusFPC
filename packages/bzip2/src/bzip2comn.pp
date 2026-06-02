@@ -1,8 +1,10 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit bzip2comn;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
-const 
+const
   max_groups     = 6;
   max_alpha_size = 258;
   max_code_len   = 23;
@@ -25,7 +27,7 @@ type
 const bzip2_stream_magic='BZh';
 
 {Error codes for stream errorinfo.}
-const 
+const
   bzip2_bad_header_magic        = 1;
   bzip2_bad_block_magic         = 2;
   bzip2_endoffile               = 3;

@@ -1,5 +1,7 @@
 {$goto on}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit lm4f120;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
@@ -8,7 +10,7 @@ const
  ROM_Base               = $01000000;
  SRAM_Base              = $20000000;
  Bitband_Base           = $22000000;
- 
+
  // FiRM Peripherals
  Watchdog0_Base         = $40000000;
  Watchdog1_Base         = $40001000;
@@ -28,7 +30,7 @@ const
  UART5_Base             = $40011000;
  UART6_Base             = $40012000;
  UART7_Base             = $40013000;
- 
+
  // Peripherals
  I2C0_Base              = $40020000;
  I2C1_Base              = $40021000;

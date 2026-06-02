@@ -325,14 +325,14 @@ implementation
                 ordint:=ordnr;
                 if target_info.system in systems_peoptplus then
                   begin
-                    objdata.writebytes(ordint,sizeof(ordint));
+                    objdata.writeUInt32LE(ordint);
                     ordint:=$80000000;
-                    objdata.writebytes(ordint,sizeof(ordint));
+                    objdata.writeUInt32LE(ordint);
                   end
                 else
                   begin
                     ordint:=ordint or $80000000;
-                    objdata.writebytes(ordint,sizeof(ordint));
+                    objdata.writeUInt32LE(ordint);
                   end;
               end;
           end;
@@ -359,7 +359,7 @@ implementation
           idata6label:=objdata.SymbolDefine(asmprefix+'_'+tostr(idatalabnr),AB_LOCAL,AT_DATA);
           absordnr:=Abs(ordnr);
           { write index hint }
-          objdata.writebytes(absordnr,2);
+          objdata.writeUInt16LE(absordnr);
           if ordnr <= 0 then
             objdata.writebytes(afuncname[1],length(afuncname));
           objdata.writebytes(emptyint,1);
@@ -995,25 +995,25 @@ implementation
             Concat('  SYMBOL ___CTOR_LIST__');
             Concat('  SYMBOL __CTOR_LIST__');
             Concat('  LONG -1');
-{$ifdef x86_64}
+{$ifdef cpu64}
             Concat('  LONG -1');
-{$endif x86_64}
+{$endif cpu64}
             Concat('  OBJSECTION .ctor*');
             Concat('  LONG 0');
-{$ifdef x86_64}
+{$ifdef cpu64}
             Concat('  LONG 0');
-{$endif x86_64}
+{$endif cpu64}
             Concat('  SYMBOL ___DTOR_LIST__');
             Concat('  SYMBOL __DTOR_LIST__');
             Concat('  LONG -1');
-{$ifdef x86_64}
+{$ifdef cpu64}
             Concat('  LONG -1');
-{$endif x86_64}
+{$endif cpu64}
             Concat('  OBJSECTION .dtor*');
             Concat('  LONG 0');
-{$ifdef x86_64}
+{$ifdef cpu64}
             Concat('  LONG 0');
-{$endif x86_64}
+{$endif cpu64}
             Concat('  SYMBOL etext');
             Concat('ENDEXESECTION');
             Concat('EXESECTION .data');
@@ -1061,9 +1061,9 @@ implementation
             Concat('  PROVIDE ___crt_xl_end__');
             { Add a nil pointer as last element }
             Concat('  LONG 0');
-{$ifdef x86_64}
+{$ifdef cpu64}
             Concat('  LONG 0');
-{$endif x86_64}
+{$endif cpu64}
             Concat('  SYMBOL ___crt_xp_start__');
             Concat('  OBJSECTION .CRT$XP*'); {  /* Pre-termination */');}
             Concat('  SYMBOL ___crt_xp_end__');
@@ -1157,15 +1157,15 @@ implementation
 {$ifdef arm}
            targetopts:='-m arm_wince_pe';
 {$endif arm}
-           ExeCmd[1]:='ld '+targetopts+' $OPT $GCSECTIONS $MAP $STRIP $APPTYPE $ENTRY  $IMAGEBASE $RELOC -o $EXE $RES';
-           DllCmd[1]:='ld '+targetopts+' $OPT $GCSECTIONS $MAP $STRIP --dll $APPTYPE $ENTRY  $IMAGEBASE $RELOC -o $EXE $RES';
+           ExeCmd[1]:='ld '+targetopts+' $OPT $GCSECTIONS $MAP $STRIP $APPTYPE $ENTRY  $IMAGEBASE $RELOC -o $EXE -T $RES';
+           DllCmd[1]:='ld '+targetopts+' $OPT $GCSECTIONS $MAP $STRIP --dll $APPTYPE $ENTRY  $IMAGEBASE $RELOC -o $EXE -T $RES';
            { ExeCmd[2]:='dlltool --as $ASBIN --dllname $EXE --output-exp exp.$$$ $RELOC $DEF';
              use short forms to avoid 128 char limitation problem }
            ExeCmd[2]:='dlltool -S $ASBIN -D $EXE -e exp.$$$ $RELOC $DEF';
-           ExeCmd[3]:='ld '+targetopts+' $OPT $STRIP $APPTYPE $ENTRY $IMAGEBASE -o $EXE $RES exp.$$$';
+           ExeCmd[3]:='ld '+targetopts+' $OPT $STRIP $APPTYPE $ENTRY $IMAGEBASE -o $EXE -T $RES exp.$$$';
            { DllCmd[2]:='dlltool --as $ASBIN --dllname $EXE --output-exp exp.$$$ $RELOC $DEF'; }
            DllCmd[2]:='dlltool -S $ASBIN -D $EXE -e exp.$$$ $RELOC $DEF';
-           DllCmd[3]:='ld '+targetopts+' $OPT $STRIP --dll $APPTYPE $ENTRY  $IMAGEBASE -o $EXE $RES exp.$$$';
+           DllCmd[3]:='ld '+targetopts+' $OPT $STRIP --dll $APPTYPE $ENTRY  $IMAGEBASE -o $EXE -T $RES exp.$$$';
          end;
       end;
 
@@ -1255,7 +1255,9 @@ implementation
              end;
 
             Add('SEARCH_DIR("/usr/i686-pc-cygwin/lib"); SEARCH_DIR("/usr/lib"); SEARCH_DIR("/usr/lib/w32api");');
-{$ifdef x86_64}
+{$if defined(aarch64)}
+            Add('OUTPUT_FORMAT(pei-aarch64-little)');
+{$elseif defined(x86_64)}
             Add('OUTPUT_FORMAT(pei-x86-64)');
 {$else not 86_64}
             Add('OUTPUT_FORMAT(pei-i386)');
@@ -1276,22 +1278,22 @@ implementation
             Add('    . = ALIGN(8);');
             Add('     ___CTOR_LIST__ = .; __CTOR_LIST__ = . ;');
             Add('    LONG (-1);');
-{$ifdef x86_64}
+{$ifdef cpu64}
             Add('    LONG (-1);');
-{$endif x86_64}
+{$endif cpu64}
             Add('    *(.ctors); *(.ctor); *(SORT(.ctors.*));  LONG (0);');
-{$ifdef x86_64}
+{$ifdef cpu64}
             Add('    LONG (0);');
-{$endif x86_64}
+{$endif cpu64}
             Add('     ___DTOR_LIST__ = .; __DTOR_LIST__ = . ;');
             Add('    LONG (-1);');
-{$ifdef x86_64}
+{$ifdef cpu64}
             Add('    LONG (-1);');
-{$endif x86_64}
+{$endif cpu64}
             Add('    *(.dtors); *(.dtor); *(SORT(.dtors.*));  LONG (0);');
-{$ifdef x86_64}
+{$ifdef cpu64}
             Add('    LONG (0);');
-{$endif x86_64}
+{$endif cpu64}
             Add('     *(.fini)');
             Add('    PROVIDE (etext = .);');
             Add('    *(.gcc_except_table)');
@@ -1360,6 +1362,7 @@ implementation
             Add('    ___crt_xt_start__ = . ;');
             Add('    *(SORT(.CRT$XT*))  /* Termination */');
             Add('    ___crt_xt_end__ = . ;');
+            Add('    . = . ; /* This forces GNU linker to keep the section even if it is empty */');
             Add('  }');
             Add('  .tls BLOCK(__section_alignment__) :');
             Add('  {');
@@ -1368,6 +1371,7 @@ implementation
             Add('    *(.tls$)');
             Add('    *(SORT(.tls$*))');
             Add('    ___tls_end__ = . ;');
+            Add('    . = . ; /* This forces GNU linker to keep the section even if it is empty */');
             Add('  }');
             Add('  .rsrc BLOCK(__section_alignment__) :');
             Add('  {');
@@ -1497,7 +1501,7 @@ implementation
         if success then
          success:=PostProcessExecutable(current_module.exefilename,false);
 
-      { Remove ReponseFile }
+      { Remove ResponseFile }
         if (success) and not(cs_link_nolink in current_settings.globalswitches) then
          begin
            DeleteFile(outputexedir+Info.ResName);
@@ -1603,7 +1607,7 @@ implementation
         if success then
          success:=PostProcessExecutable(current_module.sharedlibfilename,true);
 
-      { Remove ReponseFile }
+      { Remove ResponseFile }
         if (success) and not(cs_link_nolink in current_settings.globalswitches) then
          begin
            DeleteFile(outputexedir+Info.ResName);
@@ -1688,11 +1692,15 @@ implementation
           Message1(execinfo_f_cant_open_executable,fn);
         { read headers }
         blockread(f,dosheader,sizeof(tdosheader));
+        if source_info.endian<>target_info.endian then
+          dosheader.e_lfanew:=SwapEndian(dosheader.e_lfanew);
         peheaderpos:=dosheader.e_lfanew;
         { skip to headerpos and skip pe magic }
         seek(f,peheaderpos+4);
         blockread(f,peheader,sizeof(tcoffheader));
+	maybeswap(peheader);
         blockread(f,peoptheader,sizeof(tcoffpeoptheader));
+	maybeswap(peoptheader);
         { write info }
         Message1(execinfo_x_codesize,tostr(peoptheader.tsize));
         Message1(execinfo_x_initdatasize,tostr(peoptheader.dsize));
@@ -1735,16 +1743,20 @@ implementation
         peheader.time:=0;
         { write header back, skip pe magic }
         seek(f,peheaderpos+4);
+	maybeswap(peheader);
         blockwrite(f,peheader,sizeof(tcoffheader));
         if ioresult<>0 then
           Message1(execinfo_f_cant_process_executable,fn);
+	maybeswap(peoptheader);
         blockwrite(f,peoptheader,sizeof(tcoffpeoptheader));
         if ioresult<>0 then
           Message1(execinfo_f_cant_process_executable,fn);
         { skip to headerpos and skip pe magic }
         seek(f,peheaderpos+4);
         blockread(f,peheader,sizeof(tcoffheader));
+	maybeswap(peheader);
         blockread(f,peoptheader,sizeof(tcoffpeoptheader));
+	maybeswap(peoptheader);
         { write the value after the change }
         Message1(execinfo_x_stackreserve,tostr(peoptheader.SizeOfStackReserve));
         Message1(execinfo_x_stackcommit,tostr(peoptheader.SizeOfStackCommit));
@@ -1755,6 +1767,7 @@ implementation
         for l:=1 to peheader.nsects do
          begin
            blockread(f,coffsec,sizeof(tcoffsechdr));
+	   maybeswap(coffsec);
            if coffsec.datapos>0 then
             begin
               if secroot=nil then
@@ -1793,7 +1806,7 @@ implementation
         freemem(zerobuf,maxfillsize);
         close(f);
         {$pop}
-        if ioresult<>0 then;
+        if ioresult<>0 then
           postprocessexecutable:=true;
       end;
 

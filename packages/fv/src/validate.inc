@@ -9,7 +9,7 @@
 {                                                          }
 {****************[ THIS CODE IS FREEWARE ]*****************}
 {                                                          }
-{     This sourcecode is released for the purpose to       }
+{     This source code is released for the purpose to      }
 {   promote the pascal language on all platforms. You may  }
 {   redistribute it and/or modify with the following       }
 {   DISCLAIMER.                                            }
@@ -42,11 +42,13 @@
 {  1.41     03 Nov 99   FPC windows code added             }
 {**********************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 {$ifdef FV_UNICODE}
 UNIT UValidate;
 {$else FV_UNICODE}
 UNIT Validate;
 {$endif FV_UNICODE}
+{$ENDIF FPC_DOTTEDUNITS}
 
 {<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>}
                                   INTERFACE
@@ -77,6 +79,15 @@ UNIT Validate;
 {$V-} { Turn off strict VAR strings }
 {====================================================================}
 
+{$IFDEF FPC_DOTTEDUNITS}
+USES
+{$ifdef FV_UNICODE}
+  FreeVision.Ufvcommon,
+{$else FV_UNICODE}
+  FreeVision.Fvcommon,
+{$endif FV_UNICODE}
+  System.Objects, FreeVision.Fvconsts;                      { GFV standard units }
+{$ELSE FPC_DOTTEDUNITS}
 USES
 {$ifdef FV_UNICODE}
   UFVCommon,
@@ -84,6 +95,7 @@ USES
   FVCommon,
 {$endif FV_UNICODE}
   Objects, fvconsts;                      { GFV standard units }
+{$ENDIF FPC_DOTTEDUNITS}
 
 {***************************************************************************}
 {                              PUBLIC CONSTANTS                             }
@@ -94,7 +106,7 @@ USES
 {---------------------------------------------------------------------------}
 CONST
    vsOk     = 0;                                      { Validator ok }
-   vsSyntax = 1;                                      { Validator sytax err }
+   vsSyntax = 1;                                      { Validator syntax err }
 
 {---------------------------------------------------------------------------}
 {                           VALIDATOR OPTION MASKS                          }
@@ -171,10 +183,9 @@ TYPE CharSet = TCharSet;
 {---------------------------------------------------------------------------}
 TYPE
    TFilterValidator = OBJECT (TValidator)
-         ValidChars: CharSet;                         { Valid char set }
+         ValidChars: CharSet;                         { Valid AnsiChar set }
       CONSTRUCTOR Init (AValidChars: CharSet);
       CONSTRUCTOR Load (Var S: TStream);
-      FUNCTION IsValid (CONST S: Sw_String): Boolean; Virtual;
       FUNCTION IsValidInput (Var S: Sw_String;
         SuppressFill: Boolean): Boolean; Virtual;
       PROCEDURE Error; Virtual;
@@ -306,11 +317,19 @@ CONST
                                 IMPLEMENTATION
 {<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>}
 
+{$IFDEF FPC_DOTTEDUNITS}
+{$ifdef FV_UNICODE}
+USES FreeVision.Umsgbox;                                         { GFV standard unit }
+{$else FV_UNICODE}
+USES FreeVision.Msgbox;                                          { GFV standard unit }
+{$endif FV_UNICODE}
+{$ELSE FPC_DOTTEDUNITS}
 {$ifdef FV_UNICODE}
 USES UMsgBox;                                         { GFV standard unit }
 {$else FV_UNICODE}
 USES MsgBox;                                          { GFV standard unit }
 {$endif FV_UNICODE}
+{$ENDIF FPC_DOTTEDUNITS}
 
 {***************************************************************************}
 {                              PRIVATE ROUTINES                             }
@@ -319,9 +338,9 @@ USES MsgBox;                                          { GFV standard unit }
 {---------------------------------------------------------------------------}
 {  IsLetter -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 18May98 LdB          }
 {---------------------------------------------------------------------------}
-FUNCTION IsLetter (Chr: Char): Boolean;
+FUNCTION IsLetter (Chr: AnsiChar): Boolean;
 BEGIN
-   Chr := Char(Ord(Chr) AND $DF);                     { Lower to upper case }
+   Chr := AnsiChar(Ord(Chr) AND $DF);                     { Lower to upper case }
    If (Chr >= 'A') AND (Chr <='Z') Then               { Check if A..Z }
      IsLetter := True Else IsLetter := False;         { Return result }
 END;
@@ -346,19 +365,19 @@ END;
 {---------------------------------------------------------------------------}
 {  NumChar -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 18May98 LdB           }
 {---------------------------------------------------------------------------}
-FUNCTION NumChar (Chr: Char; Const S: String): Byte;
+FUNCTION NumChar (Chr: AnsiChar; Const S: String): Byte;
 VAR I, Total: Byte;
 BEGIN
    Total := 0;                                        { Zero total }
    For I := 1 To Length(S) Do                         { For entire string }
      If (S[I] = Chr) Then Inc(Total);                 { Count matches of Chr }
-   NumChar := Total;                                  { Return char count }
+   NumChar := Total;                                  { Return AnsiChar count }
 END;
 
 {---------------------------------------------------------------------------}
 {  IsSpecial -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 18May98 LdB         }
 {---------------------------------------------------------------------------}
-FUNCTION IsSpecial (Chr: Char; Const Special: String): Boolean;
+FUNCTION IsSpecial (Chr: AnsiChar; Const Special: String): Boolean;
 VAR Rslt: Boolean; I: Byte;
 BEGIN
    Rslt := False;                                     { Preset false result }
@@ -509,7 +528,7 @@ VAR I, J: Byte; Rslt: TPicResult; Reprocess: Boolean;
    FUNCTION Process (TermCh: Byte): TPicResult;
    VAR Rslt: TPicResult; Incomp: Boolean; OldI, OldJ, IncompJ, IncompI: Byte;
 
-     PROCEDURE Consume (Ch: Char);
+     PROCEDURE Consume (Ch: AnsiChar);
      BEGIN
        Input[J] := Ch;                                { Return character }
        Inc(J);                                        { Inc count J }
@@ -630,7 +649,7 @@ VAR I, J: Byte; Rslt: TPicResult; Reprocess: Boolean;
      END;
 
      FUNCTION Scan: TPicResult;
-     VAR Ch: Char; Rslt: TPicResult;
+     VAR Ch: AnsiChar; Rslt: TPicResult;
      BEGIN
        Scan := prError;                               { Preset return error }
        Rslt := prEmpty;                               { Preset empty result }
@@ -826,7 +845,7 @@ END;
 CONSTRUCTOR TFilterValidator.Init (AValidChars: CharSet);
 BEGIN
    Inherited Init;                                    { Call ancestor }
-   ValidChars := AValidChars;                         { Hold valid char set }
+   ValidChars := AValidChars;                         { Hold valid AnsiChar set }
 END;
 
 {--TFilterValidator---------------------------------------------------------}
@@ -835,19 +854,7 @@ END;
 CONSTRUCTOR TFilterValidator.Load (Var S: TStream);
 BEGIN
    Inherited Load(S);                                 { Call ancestor }
-   S.Read(ValidChars, SizeOf(ValidChars));            { Read valid char set }
-END;
-
-{--TFilterValidator---------------------------------------------------------}
-{  IsValid -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 18May98 LdB           }
-{---------------------------------------------------------------------------}
-FUNCTION TFilterValidator.IsValid (Const S: Sw_String): Boolean;
-VAR I: SmallInt;
-BEGIN
-   I := 1;                                            { Start at position 1 }
-   While S[I] In ValidChars Do Inc(I);                { Check each char }
-   If (I > Length(S)) Then IsValid := True Else       { All characters valid }
-     IsValid := False;                                { Invalid characters }
+   S.Read(ValidChars, SizeOf(ValidChars));            { Read valid AnsiChar set }
 END;
 
 {--TFilterValidator---------------------------------------------------------}
@@ -857,7 +864,7 @@ FUNCTION TFilterValidator.IsValidInput (Var S: Sw_String; SuppressFill: Boolean)
 VAR I: SmallInt;
 BEGIN
    I := 1;                                            { Start at position 1 }
-   While S[I] In ValidChars Do Inc(I);                { Check each char }
+   While(Length(S)>=I)and(S[I]In ValidChars)Do Inc(I);{ Check each AnsiChar }
    If (I > Length(S)) Then IsValidInput := True       { All characters valid }
      Else IsValidInput := False;                      { Invalid characters }
 END;
@@ -877,7 +884,7 @@ END;
 PROCEDURE TFilterValidator.Store (Var S: TStream);
 BEGIN
    TValidator.Store(S);                               { TValidator.Store call }
-   S.Write(ValidChars, SizeOf(ValidChars));           { Write valid char set }
+   S.Write(ValidChars, SizeOf(ValidChars));           { Write valid AnsiChar set }
 END;
 
 {+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++}
@@ -926,7 +933,7 @@ END;
 FUNCTION TRangeValidator.Transfer (Var S: Sw_String; Buffer: Pointer; Flag: TVTransfer): Word;
 VAR Value: LongInt; Code: Sw_Integer;
 BEGIN
-   If (Options AND voTransfer <> 0) Then Begin        { Tranfer mask set }
+   If (Options AND voTransfer <> 0) Then Begin        { Transfer mask set }
      Transfer := SizeOf(Value);                       { Transfer a longint }
      Case Flag Of
        vtGetData: Begin
@@ -1000,7 +1007,7 @@ END;
 CONSTRUCTOR TStringLookUpValidator.Load (Var S: TStream);
 BEGIN
    Inherited Load(S);                                 { Call ancestor }
-   Strings := PStringCollection(S.Get);               { Fecth string list }
+   Strings := PStringCollection(S.Get);               { Fetch string list }
 END;
 
 {--TStringLookUpValidator---------------------------------------------------}
@@ -1008,7 +1015,7 @@ END;
 {---------------------------------------------------------------------------}
 DESTRUCTOR TStringLookUpValidator.Done;
 BEGIN
-   NewStringList(Nil);                                { Dispsoe string list }
+   NewStringList(Nil);                                { Dispose string list }
    Inherited Done;                                    { Call ancestor }
 END;
 

@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit multiboot;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
@@ -7,7 +9,7 @@ type
  TMBModule = packed record
   mod_start,
   mod_end: PtrUInt;
-  name: pchar;
+  name: PAnsiChar;
   reserved: DWord;
  end;
 
@@ -53,7 +55,7 @@ const
  MULTIBOOT_PAGE_ALIGN = 1; // Align modules on a 4kB boundary
  MULTIBOOT_MEMORY_INFO = 2; // Memory info table is valid
  MULTIBOOT_AOUT_KLUDGE = 1 shl 16; // A.OUT kludge follows the header
- 
+
  MultibootSig = $1BADB002;
  MultibootFlags = MULTIBOOT_MEMORY_INFO;
  MultibootChksum = -(MultibootSig + MultibootFlags);
@@ -76,9 +78,9 @@ procedure PASCALMAIN; external name 'PASCALMAIN';
 procedure Start; assembler; nostackframe; public name '_START';
 asm
    cli
-   
+
    movl %ebx, MultibootTable
-   
+
    jmp PASCALMAIN
 end;
 

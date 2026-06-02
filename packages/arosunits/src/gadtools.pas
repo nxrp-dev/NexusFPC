@@ -13,12 +13,19 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit gadtools;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  Amiga.Core.Exec, Amiga.Core.Intuition, Amiga.Core.Agraphics, Amiga.Core.Utility;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   exec, intuition, agraphics, utility;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {------------------------------------------------------------------------}
 
@@ -43,7 +50,7 @@ CONST
 
  NUM_KINDS     =  14;
 
- GADTOOLSNAME   : PChar = 'gadtools.library';
+ GADTOOLSNAME   : PAnsiChar = 'gadtools.library';
 
 
 {------------------------------------------------------------------------}
@@ -313,7 +320,7 @@ CONST
  GTMN_SecondaryError =  GT_TagBase+63; { ti_Data is a pointer
                 to a LongWord to receive error reports from CreateMenus() }
  GT_Underscore     =   GT_TagBase+64; { ti_Data points to the symbol
-                that preceeds the character you'd like to underline in a
+                that precedes the character you'd like to underline in a
                 gadget label }
 
 { New to V39 GadTools.  Ignored by GadTools V36 and V37 }
@@ -475,7 +482,7 @@ initialization
   GadToolsBase := OpenLibrary('gadtools.library', 36);
 finalization
   CloseLibrary(GadToolsBase);
-end. 
+end.
 
 
 

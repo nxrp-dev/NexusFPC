@@ -23,12 +23,18 @@
 {$mode objfpc}{$H+}
 {$modeswitch nestedprocvars}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit spe;
+{$ENDIF FPC_DOTTEDUNITS}
 {$I DIRECT.INC}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses NumLib.Typ;
+{$ELSE FPC_DOTTEDUNITS}
 uses typ;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {  Calculate modified Besselfunction "of the first kind" I0(x) }
 function spebi0(x: ArbFloat): ArbFloat;
@@ -54,7 +60,7 @@ function speby0(x: ArbFloat): ArbFloat;
 {  Calculate Besselfunction "of the second kind" Y1(x) }
 function speby1(x: ArbFloat): ArbFloat;
 
-{  Entier function, calculates first integer greater or equal than X}
+{  Entire function, calculates first integer greater or equal than X}
 function speent(x: ArbFloat): longint;
 
 {  Errorfunction ( 2/sqrt(pi)* Int(t,0,pi,exp(sqr(t)) )}
@@ -174,8 +180,13 @@ function speath(x: ArbFloat): ArbFloat; deprecated 'Use arctanh(x) in unit math'
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Math, NumLib.Roo;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   math, roo;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   SQRT2 = 1.4142135623730950488016887242097;   // sqrt(2)
@@ -1761,7 +1772,7 @@ var exitsave : pointer;
 
 procedure MyExit;
 {
-const ErrorS : array[400..408,1..6] of char =
+const ErrorS : array[400..408,1..6] of AnsiChar =
      ('spepow',
       'spebk0',
       'spebk1',

@@ -1,10 +1,11 @@
 {$ifndef ALLPACKAGES}
+
 {$mode objfpc}{$H+}
 program fpmake;
 
 uses
-  fpmkunit,
-  sysutils;
+  {$ifdef unix}cthreads,{$endif} fpmkunit,
+  sysutils, classes;
 {$endif ALLPACKAGES}
 
 const
@@ -12,9 +13,41 @@ const
   GDBMIOption: boolean = false;
   GDBMI_Disabled: boolean = false;
   LLVM_Disabled: boolean = false;
-  GDBMI_DEFAULT_OSes = [aix, darwin, freebsd, haiku,linux, netbsd, openbsd, solaris, win32, win64];
+  GDBMI_DEFAULT_OSes = [aix, darwin, freebsd, haiku, linux, netbsd, openbsd, solaris, win32, win64];
+
+const
+  CompilerGitDate : ansistring = '';
 
 procedure ide_check_gdb_availability(Sender: TObject);
+
+  procedure GetCompilerGitDate;
+    var
+     Cmd : string;
+      Opts : TStringList;
+    begin
+      Cmd:=ExeSearch(AddProgramExtension('git',Defaults.SourceOS),{$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SysUtils.GetEnvironmentVariable('PATH'));
+      if Cmd <> '' then
+        begin
+          Opts:=TStringList.Create;
+          try
+            try
+              Opts.Add('log');
+              Opts.Add('-1');
+              Opts.Add('--pretty=%cd');
+              Opts.Add('--date=format:%Y/%m/%d');
+              CompilerGitDate:=Installer.BuildEngine.GetExecuteCommandOutput(Cmd,Opts);
+              while (length(CompilerGitDate)>0) and (CompilerGitDate[length(CompilerGitDate)] in [#10,#13]) do
+                SetLength(CompilerGitDate,length(CompilerGitDate)-1);
+            except
+              CompilerGitDate:={$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SysUtils.GetEnvironmentVariable('COMPDATESTR');
+	    end;
+          finally
+            Opts.Free;
+          end;
+        end
+      else
+        CompilerGitDate:={$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SysUtils.GetEnvironmentVariable('COMPDATESTR');
+    end;
 
   function DetectLibGDBDir: string;
 
@@ -71,13 +104,56 @@ procedure ide_check_gdb_availability(Sender: TObject);
   end;
 
 var
-  GDBLibDir: string;
+  CompilerDir, GDBLibDir: string;
   P: TPackage;
+
+  procedure maybe_regenerate_msg_files;
+  var
+    cmd, msgfile, msgidxfile, msgtxtfile, fpclang : string;
+    Opts : TStringList;
+  begin
+    msgidxfile:=CompilerDir+PathDelim+'msgidx.inc';
+    msgtxtfile:=CompilerDir+PathDelim+'msgtxt.inc';
+    if FileExists(msgidxfile) and FileExists(msgtxtfile) then
+      Exit;
+    fpclang:=GetEnvironmentVariable('FPCLANG');
+    if fpclang='' then
+      fpclang:='e';
+    msgfile:=CompilerDir+PathDelim+'msg/error'+fpclang+'.msg';
+    if not FileExists(msgfile) and (fpclang<>'e') then
+      begin
+        fpclang:='e';
+        msgfile:=CompilerDir+PathDelim+'msg/error'+fpclang+'.msg';
+      end;
+    if not FileExists(msgfile) then
+      Exit;
+    Cmd:=CompilerDir+PathDelim+AddProgramExtension('msg2inc',Defaults.BuildOS);
+    if not FileExists(Cmd) then
+       Cmd:=FileSearch(AddProgramExtension('msg2inc',Defaults.BuildOS),GetEnvironmentVariable('PATH'),False);
+    if not FileExists(Cmd) then
+      begin
+        Installer.BuildEngine.log(vlWarning, 'msg2inc utility not found');
+        exit;
+      end;
+    Opts:=TStringList.Create;
+    try
+      Opts.Add(msgfile);
+      Opts.Add(CompilerDir+PathDelim+'msg');
+      Opts.Add('msg');
+      Installer.BuildEngine.log(vlCommand, 'Regenerating msg files');
+      Installer.BuildEngine.ExecuteCommand(Cmd,Opts);
+    finally
+      Opts.Free;
+    end;
+  end;
 
 begin
   P := sender as TPackage;
   with installer do
     begin
+      CompilerDir:=P.Directory +'../../compiler';
+      maybe_regenerate_msg_files;
+
     if GDBMIOption then
       begin
         BuildEngine.log(vlCommand, 'Compiling IDE with GDB/MI debugger support, LibGDB is not needed');
@@ -141,7 +217,11 @@ begin
       P.Options.Add('-dNODEBUG');
       end;
     end;
+  GetCompilerGitDate;
+  if (CompilerGitDate<>'') then
+    P.Options.Add('-DD'+CompilerGitDate);
 end;
+
 
 procedure add_ide_comandlineoptions();
 begin
@@ -166,6 +246,11 @@ Var
   llvm: boolean;
 
 begin
+  if SameText(Defaults.SubTarget,'unicodertl') then
+    exit;
+  if Defaults.Namespaces then
+    exit;
+
   With Installer do
     begin
     s := GetCustomFpmakeCommandlineOptionValue('NoIDE');
@@ -252,7 +337,7 @@ begin
         P.Options.Add('-dGDB');
         if CompilerTarget=wasm32 then
           P.Options.Add('-dNOOPT');
-        
+
         CompilerDir:=P.Directory +'../../compiler';
 
         P.Options.Add('-d'+CPUToString(CompilerTarget));
@@ -262,10 +347,10 @@ begin
         P.Options.Add('-Fu'+CompilerDir+'/systems');
         P.Options.Add('-Fi'+CompilerDir+'/'+CPUToString(CompilerTarget));
         P.Options.Add('-Fi'+CompilerDir);
-        
+
         if CompilerTarget in [x86_64, i386, i8086] then
           P.Options.Add('-Fu'+CompilerDir+'/x86');
-        
+
         if CompilerTarget in [powerpc, powerpc64] then
           P.Options.Add('-Fu'+CompilerDir+'/ppcgen');
 
@@ -281,7 +366,7 @@ begin
           begin
               P.Options.Add('-Fu'+CompilerDir+'/riscv');
           end;
-        
+
         if CompilerTarget = mipsel then
           P.Options.Add('-Fu'+CompilerDir+'/mips');
 
@@ -297,12 +382,12 @@ begin
         { powerpc64-aix compiled IDE needs -CTsmalltoc option }
         if (Defaults.OS=aix) and (Defaults.CPU=powerpc64) then
         P.Options.Add('-CTsmalltoc');
-        
+
         { Handle SPECIALLINK environment variable if available }
         s:=GetEnvironmentVariable('SPECIALLINK');
         if s<>'' then
           P.Options.Add(s);
-        
+
         P.Options.Add('-Sg');
         P.IncludePath.Add('compiler');
 
@@ -336,7 +421,7 @@ begin
           P.InstallFiles.Add('cvsup.tdf','$(bininstalldir)');
           P.InstallFiles.Add('grep.tdf','$(bininstalldir)');
           P.InstallFiles.Add('tpgrep.tdf','$(bininstalldir)');
-          P.InstallFiles.Add('fp32.ico', [win32, win64], '$(bininstalldir)');
+          P.InstallFiles.Add('fp.ico', [win32, win64], '$(bininstalldir)');
         end;
 
         with P.Sources do
@@ -366,15 +451,20 @@ begin
         P.CleanFiles.Add('$(UNITSOUTPUTDIR)browcol.o');
 
         P.BeforeCompileProc:=@ide_check_gdb_availability;
+
+        P.NamespaceMap:='namespaces.lst';
       end;
   end;
 end;
 
 {$ifndef ALLPACKAGES}
 begin
-  add_ide_comandlineoptions();
-  add_ide('');
-  Installer.Run;
+  If Assigned(Installer) and not Defaults.Namespaces then
+    begin
+    add_ide_comandlineoptions();
+    add_ide('');
+    Installer.Run;
+    end;
 end.
 {$endif ALLPACKAGES}
 

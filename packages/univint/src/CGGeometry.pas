@@ -19,7 +19,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CGGeometry;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -204,7 +206,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CFBase,MacOsApi.CFDictionary,MacOsApi.CGBase;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CFBase,CFDictionary,CGBase;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 {$ALIGN POWER}
@@ -259,17 +265,17 @@ const
 	CGRectMaxXEdge = 2;
 	CGRectMaxYEdge = 3;
 
-{ The "zero" point -- equivalent to CGPointMake(0, 0). } 
+{ The "zero" point -- equivalent to CGPointMake(0, 0). }
 
 var CGPointZero: CGPoint; external name '_CGPointZero'; (* attribute const *)
 (* CG_AVAILABLE_STARTING(__MAC_10_0, __IPHONE_2_0) *)
 
-{ The "zero" size -- equivalent to CGSizeMake(0, 0). } 
+{ The "zero" size -- equivalent to CGSizeMake(0, 0). }
 
 var CGSizeZero: CGSize; external name '_CGSizeZero'; (* attribute const *)
 (* CG_AVAILABLE_STARTING(__MAC_10_0, __IPHONE_2_0) *)
 
-{ The "zero" rectangle -- equivalent to CGRectMake(0, 0, 0, 0). } 
+{ The "zero" rectangle -- equivalent to CGRectMake(0, 0, 0, 0). }
 
 var CGRectZero: CGRect; external name '_CGRectZero'; (* attribute const *)
 (* CG_AVAILABLE_STARTING(__MAC_10_0, __IPHONE_2_0) *)

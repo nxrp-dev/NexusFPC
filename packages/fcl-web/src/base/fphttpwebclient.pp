@@ -1,25 +1,32 @@
 { **********************************************************************
   This file is part of the Free Component Library (FCL)
   Copyright (c) 2015 by the Free Pascal development team
-        
-  FPHTTPClient implementation of TFPWebclient.
-            
+
+  FPHTTPClient implementation of TFpWebclient.
+
   See the file COPYING.FPC, included in this distribution,
   for details about the copyright.
-                   
+
   This program is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
   **********************************************************************}
-                                 
+
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fphttpwebclient;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, FpWeb.Client, FpWeb.Http.Client;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, fpwebclient, fphttpclient;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
 
@@ -30,11 +37,13 @@ Type
     FHTTP : TFPHTTPClient;
   Public
     function GetHeaders: TStrings;override;
-    Constructor Create(AHTTP : TFPHTTPClient);
+    Constructor Create(AHTTP : TFPHTTPClient; aAsync: Boolean; const aRequestID : String=''); reintroduce;
     Destructor Destroy; override;
   end;
 
   { TFPHTTPRequest }
+
+  { TFPHTTPResponse }
 
   TFPHTTPResponse = Class(TWebClientResponse)
   Private
@@ -44,20 +53,24 @@ Type
     Function GetStatusCode : Integer; override;
     Function GetStatusText : String; override;
   Public
-    Constructor Create(AHTTP : TFPHTTPRequest);
+    Constructor Create(ARequest : TFPHTTPRequest); reintroduce;
   end;
 
   { TFPHTTPWebClient }
 
   TFPHTTPWebClient = Class(TAbstractWebClient)
   Protected
-    Function DoCreateRequest: TWebClientRequest; override;
+    Function DoCreateRequest(aIsAsync : Boolean; const aRequestID : String): TWebClientRequest; override;
     Function DoHTTPMethod(Const AMethod,AURL : String; ARequest : TWebClientRequest) : TWebClientResponse; override;
   end;
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.DateUtils;
+{$ELSE FPC_DOTTEDUNITS}
 uses dateutils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { TFPHTTPRequest }
 
@@ -66,8 +79,9 @@ begin
   Result:=FHTTP.RequestHeaders;
 end;
 
-constructor TFPHTTPRequest.Create(AHTTP: TFPHTTPClient);
+constructor TFPHTTPRequest.Create(AHTTP: TFPHTTPClient; aAsync: Boolean; const aRequestID : String = '');
 begin
+  Inherited Create(aAsync,aRequestID);
   FHTTP:=AHTTP;
 end;
 
@@ -103,16 +117,16 @@ begin
     Result:='';
 end;
 
-Constructor TFPHTTPResponse.Create(AHTTP: TFPHTTPRequest);
+constructor TFPHTTPResponse.Create(ARequest: TFPHTTPRequest);
 begin
-  Inherited Create(AHTTP);
-  FHTTP:=AHTTP.FHTTP;
+  Inherited Create(ARequest);
+  FHTTP:=ARequest.FHTTP;
 end;
 
 
 { TFPHTTPWebClient }
 
-Function TFPHTTPWebClient.DoCreateRequest: TWebClientRequest;
+function TFPHTTPWebClient.DoCreateRequest(aIsAsync: Boolean; const aRequestID: String): TWebClientRequest;
 
 Var
   C : TFPHTTPClient;
@@ -122,7 +136,7 @@ begin
   C.RequestHeaders.NameValueSeparator:=':';
   C.ResponseHeaders.NameValueSeparator:=':';
 //  C.HTTPversion:='1.0';
-  Result:=TFPHTTPRequest.Create(C);
+  Result:=TFPHTTPRequest.Create(C,aIsAsync,aRequestID);
 end;
 
 Function TFPHTTPWebClient.DoHTTPMethod(Const AMethod, AURL: String;
@@ -145,12 +159,15 @@ begin
     end;
   Result:=TFPHTTPResponse.Create(ARequest as TFPHTTPRequest);
   try
-    if Assigned(ARequest.Content) and (ARequest.Headers.IndexOfName('Content-length')<0) then
-      H.AddHeader('Content-length',IntToStr(ARequest.Content.size));
-    if ARequest.Content.Size>0 then
+    if Assigned(ARequest.Content) then
       begin
-      H.RequestBody:=ARequest.Content;
-      H.RequestBody.Position:=0;
+      if (ARequest.Headers.IndexOfName('Content-length')<0) then
+        H.AddHeader('Content-length',IntToStr(ARequest.Content.size));
+      if ARequest.Content.Size>0 then
+        begin
+        H.RequestBody:=ARequest.Content;
+        H.RequestBody.Position:=0;
+        end;
       end;
     H.HTTPMethod(AMethod,U,Result.Content,[]); // Will raise an exception
   except

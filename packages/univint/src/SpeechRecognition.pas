@@ -1,17 +1,17 @@
 {
      File:       SpeechRecognition/SpeechRecognition.h
- 
+
      Contains:   Apple Speech Recognition Toolbox Interfaces.
- 
+
      Version:    SpeechRecognition-4.1.5~11
- 
+
      Copyright:  © 1992-2008 by Apple Computer, Inc., all rights reserved.
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 {  Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2009 }
 {  Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2012 }
@@ -29,7 +29,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit SpeechRecognition;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -214,7 +216,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.Files,MacOsApi.AEDataModel;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,Files,AEDataModel;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -301,7 +307,7 @@ type
 	SRCallBackUPP = SRCallBackProcPtr;
 {
  *  NewSRCallBackUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0.2 and later
@@ -312,7 +318,7 @@ function NewSRCallBackUPP( userRoutine: SRCallBackProcPtr ): SRCallBackUPP; exte
 
 {
  *  DisposeSRCallBackUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0.2 and later
@@ -323,7 +329,7 @@ procedure DisposeSRCallBackUPP( userUPP: SRCallBackUPP ); external name '_Dispos
 
 {
  *  InvokeSRCallBackUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0.2 and later
@@ -478,7 +484,7 @@ const
 { Opening and Closing of the SRRecognitionSystem }
 {
  *  SROpenRecognitionSystem()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -490,7 +496,7 @@ function SROpenRecognitionSystem( var system: SRRecognitionSystem; systemID: OST
 
 {
  *  SRCloseRecognitionSystem()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -503,7 +509,7 @@ function SRCloseRecognitionSystem( system: SRRecognitionSystem ): OSErr; externa
 { Accessing Properties of any Speech Object }
 {
  *  SRSetProperty()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -515,7 +521,7 @@ function SRSetProperty( srObject: SRSpeechObject; selector: OSType; proprty: {co
 
 {
  *  SRGetProperty()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -528,7 +534,7 @@ function SRGetProperty( srObject: SRSpeechObject; selector: OSType; proprty: Uni
 { Any object obtained via New or Get type calls must be released }
 {
  *  SRReleaseObject()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -540,7 +546,7 @@ function SRReleaseObject( srObject: SRSpeechObject ): OSErr; external name '_SRR
 
 {
  *  SRGetReference()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -553,7 +559,7 @@ function SRGetReference( srObject: SRSpeechObject; var newObjectRef: SRSpeechObj
 { SRRecognizer Instance Functions }
 {
  *  SRNewRecognizer()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -565,7 +571,7 @@ function SRNewRecognizer( system: SRRecognitionSystem; var recognizer: SRRecogni
 
 {
  *  SRStartListening()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -577,7 +583,7 @@ function SRStartListening( recognizer: SRRecognizer ): OSErr; external name '_SR
 
 {
  *  SRStopListening()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -589,7 +595,7 @@ function SRStopListening( recognizer: SRRecognizer ): OSErr; external name '_SRS
 
 {
  *  SRSetLanguageModel()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -601,7 +607,7 @@ function SRSetLanguageModel( recognizer: SRRecognizer; languageModel: SRLanguage
 
 {
  *  SRGetLanguageModel()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -613,7 +619,7 @@ function SRGetLanguageModel( recognizer: SRRecognizer; var languageModel: SRLang
 
 {
  *  SRContinueRecognition()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -625,7 +631,7 @@ function SRContinueRecognition( recognizer: SRRecognizer ): OSErr; external name
 
 {
  *  SRCancelRecognition()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -637,7 +643,7 @@ function SRCancelRecognition( recognizer: SRRecognizer ): OSErr; external name '
 
 {
  *  SRIdle()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -650,7 +656,7 @@ function SRIdle: OSErr; external name '_SRIdle';
 { Language Model Building and Manipulation Functions }
 {
  *  SRNewLanguageModel()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -662,7 +668,7 @@ function SRNewLanguageModel( system: SRRecognitionSystem; var model: SRLanguageM
 
 {
  *  SRNewPath()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -674,7 +680,7 @@ function SRNewPath( system: SRRecognitionSystem; var path: SRPath ): OSErr; exte
 
 {
  *  SRNewPhrase()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -686,7 +692,7 @@ function SRNewPhrase( system: SRRecognitionSystem; var phrase: SRPhrase; text: {
 
 {
  *  SRNewWord()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -699,7 +705,7 @@ function SRNewWord( system: SRRecognitionSystem; var word: SRWord; text: {const}
 { Operations on any object of the SRLanguageObject family }
 {
  *  SRPutLanguageObjectIntoHandle()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -711,7 +717,7 @@ function SRPutLanguageObjectIntoHandle( languageObject: SRLanguageObject; lobjHa
 
 {
  *  SRPutLanguageObjectIntoDataFile()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -723,7 +729,7 @@ function SRPutLanguageObjectIntoDataFile( languageObject: SRLanguageObject; fRef
 
 {
  *  SRNewLanguageObjectFromHandle()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -735,7 +741,7 @@ function SRNewLanguageObjectFromHandle( system: SRRecognitionSystem; var languag
 
 {
  *  SRNewLanguageObjectFromDataFile()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -747,7 +753,7 @@ function SRNewLanguageObjectFromDataFile( system: SRRecognitionSystem; var langu
 
 {
  *  SREmptyLanguageObject()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -759,7 +765,7 @@ function SREmptyLanguageObject( languageObject: SRLanguageObject ): OSErr; exter
 
 {
  *  SRChangeLanguageObject()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -771,7 +777,7 @@ function SRChangeLanguageObject( languageObject: SRLanguageObject; text: {const}
 
 {
  *  SRAddLanguageObject()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -783,7 +789,7 @@ function SRAddLanguageObject( base: SRLanguageObject; addon: SRLanguageObject ):
 
 {
  *  SRAddText()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -795,7 +801,7 @@ function SRAddText( base: SRLanguageObject; text: {const} UnivPtr; textLength: S
 
 {
  *  SRRemoveLanguageObject()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -808,7 +814,7 @@ function SRRemoveLanguageObject( base: SRLanguageObject; toRemove: SRLanguageObj
 { Traversing SRRecognitionResults or SRLanguageObjects }
 {
  *  SRCountItems()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -820,7 +826,7 @@ function SRCountItems( container: SRSpeechObject; var count: SIGNEDLONG ): OSErr
 
 {
  *  SRGetIndexedItem()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -832,7 +838,7 @@ function SRGetIndexedItem( container: SRSpeechObject; var item: SRSpeechObject; 
 
 {
  *  SRSetIndexedItem()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -844,7 +850,7 @@ function SRSetIndexedItem( container: SRSpeechObject; item: SRSpeechObject; inde
 
 {
  *  SRRemoveIndexedItem()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -857,7 +863,7 @@ function SRRemoveIndexedItem( container: SRSpeechObject; index: SIGNEDLONG ): OS
 { Utilizing the System Feedback Window }
 {
  *  SRDrawText()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -869,7 +875,7 @@ function SRDrawText( recognizer: SRRecognizer; dispText: {const} UnivPtr; dispLe
 
 {
  *  SRDrawRecognizedText()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -881,7 +887,7 @@ function SRDrawRecognizedText( recognizer: SRRecognizer; dispText: {const} UnivP
 
 {
  *  SRSpeakText()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -893,7 +899,7 @@ function SRSpeakText( recognizer: SRRecognizer; speakText: {const} UnivPtr; spea
 
 {
  *  SRSpeakAndDrawText()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -905,7 +911,7 @@ function SRSpeakAndDrawText( recognizer: SRRecognizer; text: {const} UnivPtr; te
 
 {
  *  SRStopSpeech()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -917,7 +923,7 @@ function SRStopSpeech( recognizer: SRRecognizer ): OSErr; external name '_SRStop
 
 {
  *  SRSpeechBusy()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -929,7 +935,7 @@ function SRSpeechBusy( recognizer: SRRecognizer ): Boolean; external name '_SRSp
 
 {
  *  SRProcessBegin()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -941,7 +947,7 @@ function SRProcessBegin( recognizer: SRRecognizer; failed: Boolean ): OSErr; ext
 
 {
  *  SRProcessEnd()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later

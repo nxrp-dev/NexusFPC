@@ -1,18 +1,20 @@
-{ ********************************************************************* 
+{ *********************************************************************
     This file is part of the Free Component Library (FCL)
     Copyright (c) 2016 Michael Van Canneyt.
-       
+
     Javascript minifier
-            
+
     See the file COPYING.FPC, included in this distribution,
     for details about the copyright.
-                   
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-                                
+
   **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit jswriter;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$i fcl-js.inc}
 
@@ -20,19 +22,26 @@ unit jswriter;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  {$ifdef pas2js}
+  JS,
+  {$endif}
+  System.SysUtils, System.Classes, Js.Base, Js.Tree;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   {$ifdef pas2js}
   JS,
   {$endif}
   SysUtils, Classes, jsbase, jstree;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
   {$ifdef pas2js}
   TJSWriterString = UnicodeString;
-  TJSWriterChar = WideChar;
+  AnsiChar = char;
   {$else}
   TJSWriterString = AnsiString;
-  TJSWriterChar = AnsiChar;
   {$endif}
 
   TTextWriter = class;
@@ -68,7 +77,7 @@ Type
     Function Write(Const Args : Array of const) : Integer;
     Function WriteLn(Const Args : Array of const) : Integer;
     Property CurLine: integer read FCurLine write FCurLine;
-    Property CurColumn: integer read FCurColumn write FCurColumn;// char index, not codepoint
+    Property CurColumn: integer read FCurColumn write FCurColumn;// AnsiChar index, not codepoint
     Property CurElement: TJSElement read FCurElement write SetCurElement;
     Property OnWriting: TTextWriterWriting read FOnWriting write FOnWriting;
     Property LineBreak: string read FLineBreak write FLineBreak;
@@ -97,7 +106,7 @@ Type
   end;
   {$endif}
 
-  TBufferWriter_Buffer = Array of {$ifdef fpc}byte{$else}string{$endif};
+  TBufferWriter_Buffer = Array of {$IFDEF PAS2JS}String{$ELSE}Byte{$ENDIF};
 
   { TBufferWriter }
 
@@ -166,7 +175,7 @@ Type
   private
     FCurIndent : Integer;
     FFreeWriter : Boolean;
-    FIndentChar : Char;
+    FIndentChar : AnsiChar;
     FIndentSize: Byte;
     FLastChar: WideChar;
     FLinePos : Integer;
@@ -248,7 +257,7 @@ Type
   EJSWriter = Class(Exception);
 
 {$ifdef FPC_HAS_CPSTRING}
-Function UTF16ToUTF8(const S: UnicodeString): string;
+Function UTF16ToUTF8(const S: UnicodeString): ansistring;
 {$endif}
 Function QuoteJSString(const S: TJSString; Quote: TJSChar = #0): TJSString;
 
@@ -259,7 +268,7 @@ Resourcestring
   SErrNilNode = 'Nil node in Javascript';
 
 {$ifdef FPC_HAS_CPSTRING}
-function HexDump(p: PChar; Count: integer): string;
+function HexDump(p: PAnsiChar; Count: integer): string;
 var
   i: Integer;
 begin
@@ -268,12 +277,19 @@ begin
     Result:=Result+HexStr(ord(p[i]),2);
 end;
 
-function UTF16ToUTF8(const S: UnicodeString): string;
+function UTF16ToUTF8(const S: UnicodeString): ansistring;
 begin
   Result:=UTF8Encode(S);
   // prevent UTF8 codepage appear in the strings - we don't need codepage
   // conversion magic
   SetCodePage(RawByteString(Result), CP_ACP, False);
+end;
+{$endif}
+
+{$ifndef FPC_DOTTEDUNITS}
+function LeftStr(const s: UnicodeString; Count: SizeInt): UnicodeString; overload;
+begin
+  Result:=copy(s,1,Count);
 end;
 {$endif}
 
@@ -367,9 +383,14 @@ end;
 procedure TBufferWriter.SetCapacity(AValue: Cardinal);
 begin
   if FCapacity=AValue then Exit;
+  {$ifdef pas2js}
+  // capacity not needed, FBuffer is an JS array
+  FCapacity:=AValue;
+  {$else}
   SetLength(FBuffer,AValue);
   if (FBufPos>Capacity) then
     FBufPos:=Capacity;
+  {$endif}
 end;
 
 function TBufferWriter.DoWrite(const S: TJSWriterString): integer;
@@ -382,22 +403,24 @@ begin
   FCapacity:=FBufPos;
 end;
 {$else}
-Var
-  DesLen,MinLen : Integer;
+var
+  DesLen,MinLen : Cardinal;
 
 begin
-  Result:=Length(S)*SizeOf(TJSWriterChar);
-  if Result=0 then exit;
-  MinLen:=Result+integer(FBufPos);
-  If (MinLen>integer(Capacity)) then
+  Result := Length(S);
+  if Result = 0 then
+    Exit;
+
+  MinLen:=Result + FBufPos;
+  if MinLen > Capacity then
     begin
-    DesLen:=(FCapacity*3) div 2;
-    if DesLen>MinLen then
-      MinLen:=DesLen;
-    Capacity:=MinLen;
+    DesLen:=(FCapacity * 3) div 2;
+    if DesLen > MinLen then
+      MinLen := DesLen;
+    Capacity := MinLen;
     end;
-  Move(S[1],FBuffer[FBufPos],Result);
-  FBufPos:=integer(FBufPos)+Result;
+  Move(S[1], FBuffer[FBufPos], Result);
+  FBufPos:=FBufPos + Result;
 end;
 {$endif}
 
@@ -501,17 +524,17 @@ end;
 procedure TJSWriter.Write(const U: UnicodeString);
 
 Var
-  S : String;
+  s : TJSWriterString;
 
 begin
   //system.writeln('TJSWriter.Write unicodestring=',U);
   WriteIndent;
   if UseUTF8 then
     begin
-    S:=UTF16ToUTF8(U);
-    if S='' then exit;
-    FLinePos:=FLinePos+Writer.Write(S);
-    FLastChar:=WideChar(S[length(S)]);
+    s:=UTF16ToUTF8(U);
+    if s='' then exit;
+    FLinePos:=FLinePos+Writer.Write(s);
+    FLastChar:=AnsiChar(s[length(s)]);
     end
   else if U<>'' then
     begin
@@ -533,7 +556,7 @@ begin
     WriteIndent;
     if s='' then exit;
     FLinePos:=FLinePos+Writer.Write(S);
-    FLastChar:=WideChar(S[length(S)]);
+    FLastChar:=Char(S[length(S)]);
     end;
 end;
 
@@ -547,7 +570,7 @@ begin
     begin
     WriteIndent;
     Writer.WriteLn(S);
-    FLastChar:=WideChar(#10);
+    FLastChar:=Char(#10);
     FLinePos:=0;
     end;
 end;
@@ -555,7 +578,7 @@ end;
 {$ifdef FPC_HAS_CPSTRING}
 procedure TJSWriter.WriteLn(const U: UnicodeString);
 Var
-  S : String;
+  S : AnsiString;
 
 begin
   if UseUTF8 then
@@ -580,7 +603,7 @@ function TJSWriter.EscapeString(const S: TJSString; Quote: TJSEscapeQuote
 Var
   I,J,L : Integer;
   R: TJSString;
-  c: WideChar;
+  c: Word;
 begin
   //system.writeln('TJSWriter.EscapeString "',S,'"');
   I:=1;
@@ -589,39 +612,52 @@ begin
   L:=Length(S);
   While I<=L do
     begin
-    c:=S[I];
-    if (c in [#0..#31,'"','''','\'])
-        or (c>=#$ff00) or ((c>=#$D800) and (c<=#$DFFF)) then
+    c:=ord(S[I]);
+    if (c in [0..31,ord('"'),ord(''''),ord('\')])
+        or (c>=$ff00)
+        or ((c>=$D800) and (c<=$DFFF))
+        or (c=$1680) or ((c>=$2000) and (c<=$200A)) or (c=$2028) or (c=$205F) or (c=$3000) // whitespaces
+    then
       begin
       R:=R+Copy(S,J,I-J);
       Case c of
-        '\' : R:=R+'\\';
-        '"' : if Quote=jseqSingle then R:=R+'"' else R:=R+'\"';
-        '''': if Quote=jseqDouble then R:=R+'''' else R:=R+'\''';
-        #0..#7,#11,#14..#31: R:=R+'\x'+TJSString(hexStr(ord(c),2));
-        #8  : R:=R+'\b';
-        #9  : R:=R+'\t';
-        #10 : R:=R+'\n';
-        #12 : R:=R+'\f';
-        #13 : R:=R+'\r';
-        #$D800..#$DFFF:
+        ord('\') : R:=R+'\\';
+        ord('"') : if Quote=jseqSingle then R:=R+'"' else R:=R+'\"';
+        ord(''''): if Quote=jseqDouble then R:=R+'''' else R:=R+'\''';
+        0..7,11,14..31: R:=R+'\x'+TJSString(hexStr(ord(c),2));
+        8  : R:=R+'\b';
+        9  : R:=R+'\t';
+        10 : R:=R+'\n';
+        12 : R:=R+'\f';
+        13 : R:=R+'\r';
+        $D800..$DBFF:
           begin
           if (I<L) then
             begin
-            c:=S[I+1];
-            if (c>=#$D000) and (c<=#$DFFF) then
+            c:=ord(S[I+1]);
+            if (c>=$DC00) and (c<=$DFFF) then
               begin
-              inc(I,2); // surrogate, two char codepoint
-              continue;
+              // surrogate, two WideChar codepoint
+              R:=R+Copy(S,I,2);
+              inc(I);
+              end
+            else
+              begin
+              // invalid UTF-16, cannot be encoded as UTF-8 -> encode as hex
+              R:=R+'\u'+TJSString(HexStr(ord(S[i]),4));
               end;
-            // invalid UTF-16, cannot be encoded as UTF-8 -> encode as hex
-            R:=R+'\u'+TJSString(HexStr(ord(S[i]),4));
             end
           else
-            // invalid UTF-16 at end of string, cannot be encoded as UTF-8 -> encode as hex
-            R:=R+'\u'+TJSString(HexStr(ord(c),4));
+            // high surrogate without low surrogate at end of string, cannot be encoded as UTF-8 -> encode as hex
+            R:=R+'\u'+TJSString(HexStr(c,4));
           end;
-        #$FF00..#$FFFF: R:=R+'\u'+TJSString(HexStr(ord(c),4));
+        $DC00..$DFFF:
+          begin
+            // low surrogate without high surrogate, cannot be encoded as UTF-8 -> encode as hex
+            R:=R+'\u'+TJSString(HexStr(c,4));
+          end;
+      else
+        R:=R+'\u'+TJSString(HexStr(c,4));
       end;
       J:=I+1;
       end;
@@ -687,7 +723,7 @@ const
   end;
 
 Var
-  S , S2: String;
+  S , S2: TJSString;
   JS: TJSString;
   p, StartP: Integer;
   MinIndent, CurLineIndent, j, Exp, Code: Integer;
@@ -803,7 +839,7 @@ begin
                 val(copy(S,i+1,length(S)),Exp,Code);
                 if Code=0 then
                   begin
-                  S2:='1E'+IntToStr(Exp+1);
+                  S2:='1E'+TJSString(IntToStr(Exp+1));
                   if S[1]='-' then
                     S2:='-'+S2;
                   end;
@@ -843,7 +879,7 @@ begin
                 Delete(S,length(S),1);
               if S[length(S)]='.' then
                 Delete(S,length(S),1);
-              S2:=S+'E'+IntToStr(Exp);
+              S2:=S+'E'+TJSString(IntToStr(Exp));
               j:=Pos('.',S);
               if j>0 then
                 begin
@@ -890,7 +926,7 @@ begin
             else
               begin
               // e.g. 1.1E+0010  -> 1.1E10
-              S:=LeftStr(S,i)+IntToStr(Exp);
+              S:=LeftStr(S,i)+TJSString(IntToStr(Exp));
               if (i >= 4) and (s[i-1] = '0') and (s[i-2] = '.') then
                 // e.g. 1.0E22 -> 1E22
                 Delete(S, i-2, 2);
@@ -966,7 +1002,7 @@ begin
     end
   else
     begin
-    OldParams:=FD.Params;
+    OldParams:=FD.{%H-}Params;
     For I:=0 to OldParams.Count-1 do
       begin
       write(OldParams[i]);
@@ -2190,18 +2226,20 @@ end;
 {$ifdef FPC_HAS_CPSTRING}
 function TTextWriter.Write(const S: UnicodeString): Integer;
 var
-  p: PWideChar;
+  p,pend: PWideChar;
   c: WideChar;
 begin
   if S='' then exit;
   Writing;
   Result:=DoWrite(S);
   p:=PWideChar(S);
+  pend:=p;
+  inc(PEnd,Length(S));
   repeat
     c:=p^;
     case c of
     #0:
-      if p-PWideChar(S)=length(S)*2 then
+      if p>=pend then
         break
       else
         inc(FCurColumn);
@@ -2214,7 +2252,7 @@ begin
       continue;
       end;
     else
-      // ignore low/high surrogate, CurColumn is char index, not codepoint
+      // ignore low/high surrogate, CurColumn is WideChar index, not codepoint
       inc(FCurColumn);
     end;
     inc(p);
@@ -2224,7 +2262,7 @@ end;
 
 function TTextWriter.Write(const S: TJSWriterString): Integer;
 var
-  c: Char;
+  c: AnsiChar;
   l, p: Integer;
 begin
   if S='' then exit;
@@ -2244,7 +2282,7 @@ begin
       if (p<=l) and (S[p] in [#10,#13]) and (c<>S[p]) then inc(p);
       end;
     else
-      // Note about UTF-8 multibyte chars: CurColumn is char index, not codepoint
+      // Note about UTF-8 multibyte chars: CurColumn is AnsiChar index, not codepoint
       inc(FCurColumn);
       inc(p);
     end;
@@ -2253,7 +2291,16 @@ end;
 
 function TTextWriter.WriteLn(const S: TJSWriterString): Integer;
 begin
-  Result:=Write(S)+Write(LineBreak);
+  Result:=Write(S);
+{$IFDEF PAS2JS}
+  Result:=Result+Write(LineBreak);
+{$ELSE}
+{$IF SIZEOF(Char)=1}
+  Result:=Result+Write(LineBreak);
+{$else}
+  Result:=Result+Write(UTF8Encode(LineBreak));
+{$ENDIF}
+{$ENDIF}
 end;
 
 function TTextWriter.Write(const Fmt: TJSWriterString;
@@ -2313,7 +2360,7 @@ begin
        vtString        : S:=V.VString^;
        vtPChar         : S:=V.VPChar;
        vtPWideChar     : U:=V.VPWideChar;
-       vtAnsiString    : S:=PChar(V.VAnsiString);
+       vtAnsiString    : S:=PAnsiChar(V.VAnsiString);
        vtCurrency      : Str(V.VCurrency^,S);
        vtVariant       : S:=V.VVariant^;
        vtWideString    : U:=PWideChar(V.VWideString);

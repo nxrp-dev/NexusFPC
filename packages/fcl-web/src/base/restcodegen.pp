@@ -1,25 +1,32 @@
 { **********************************************************************
-  This file is part of the Free Component Library (FCL)
+  This file is part of the Free Component Library (Fcl)
   Copyright (c) 2015 by the Free Pascal development team
-        
+
   REST classes code generator base.
-            
+
   See the file COPYING.FPC, included in this distribution,
   for details about the copyright.
-                   
+
   This program is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
   **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit restcodegen;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, Pascal.CodeGenerator;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, pascodegen;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
   { TRestCodeGenerator }

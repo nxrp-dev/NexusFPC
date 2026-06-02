@@ -1,17 +1,17 @@
 {
      File:       HIToolbox/HIToolbox.h
- 
+
      Contains:   Master include for HIToolbox private framework
- 
+
      Version:    HIToolbox-624~3
- 
+
      Copyright:  © 1999-2008 by Apple Computer, Inc., all rights reserved.
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 {       Pascal Translation:  Peter N Lewis, <peter@stairways.com.au>, August 2005 }
 {       Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2009 }
@@ -30,7 +30,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit HIToolbox;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -215,7 +217,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.HIObject,MacOsApi.HIArchive,MacOsApi.HIGeometry,MacOsApi.HIToolbar,MacOsApi.HIView,MacOsApi.HITextUtils,MacOsApi.HIAccessibility,MacOsApi.Events,MacOsApi.Notification,MacOsApi.Drag,MacOsApi.Controls,MacOsApi.Appearance,MacOsApi.HITheme,MacOsApi.MacWindows,MacOsApi.Menus,MacOsApi.Dialogs,MacOsApi.CarbonEventsCore,MacOsApi.CarbonEvents,MacOsApi.TextServices,MacOsApi.Scrap,MacOsApi.MacTextEditor,MacOsApi.MacHelp,MacOsApi.HIButtonViews,MacOsApi.HIClockView,MacOsApi.HIComboBox,MacOsApi.HIContainerViews,MacOsApi.HIDataBrowser,MacOsApi.HIDisclosureViews,MacOsApi.HIImageViews,MacOsApi.HILittleArrows,MacOsApi.HIMenuView,MacOsApi.HIPopupButton,MacOsApi.HIProgressViews,MacOsApi.HIRelevanceBar,MacOsApi.HIScrollView,MacOsApi.HISearchField,MacOsApi.HISegmentedView,MacOsApi.HISeparator,MacOsApi.HISlider,MacOsApi.HITabbedView,MacOsApi.HITextViews,MacOsApi.HIWindowViews,MacOsApi.HITextLengthFilter,MacOsApi.ControlDefinitions,MacOsApi.TranslationExtensions,MacOsApi.Translation,MacOsApi.AEInteraction,MacOsApi.TypeSelect,MacOsApi.MacApplication,MacOsApi.Keyboards,MacOsApi.IBCarbonRuntime,MacOsApi.TextInputSources,MacOsApi.HIToolboxDebugging,MacOsApi.Lists,MacOsApi.TextEdit,MacOsApi.TSMTE;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,HIObject,HIArchive,HIGeometry,HIToolbar,HIView,HITextUtils,HIAccessibility,Events,Notification,Drag,Controls,Appearance,HITheme,MacWindows,Menus,Dialogs,CarbonEventsCore,CarbonEvents,TextServices,Scrap,MacTextEditor,MacHelp,HIButtonViews,HIClockView,HIComboBox,HIContainerViews,HIDataBrowser,HIDisclosureViews,HIImageViews,HILittleArrows,HIMenuView,HIPopupButton,HIProgressViews,HIRelevanceBar,HIScrollView,HISearchField,HISegmentedView,HISeparator,HISlider,HITabbedView,HITextViews,HIWindowViews,HITextLengthFilter,ControlDefinitions,TranslationExtensions,Translation,AEInteraction,TypeSelect,MacApplication,Keyboards,IBCarbonRuntime,TextInputSources,HIToolboxDebugging,Lists,TextEdit,TSMTE;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 {$ALIGN POWER}

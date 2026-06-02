@@ -3,7 +3,7 @@
    Copyright (c) 2004 by Marco van de Voort
    member of the Free Pascal development team.
 
-   An implementation for unit stdconv, 
+   An implementation for unit stdconv,
 
    Based on list of function of delphibasics.co.uk and #7482.
 
@@ -15,7 +15,9 @@
 
 **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit StdConvs;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
@@ -23,7 +25,11 @@ interface
 {$H+}
 
 {$ifndef FPUNONE}
+{$IFDEF FPC_DOTTEDUNITS}
+Uses System.ConvUtils;
+{$ELSE FPC_DOTTEDUNITS}
 Uses convutils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   // Powers of 10

@@ -24,7 +24,6 @@ Unit System;
 
 Interface
 
-
 {$define FPC_USE_SIGPROCMASK}
 {$define FPC_USE_SIGALTSTACK}
 
@@ -38,8 +37,8 @@ Interface
 
 {$ifdef Darwin}
 var argc:longint;
-    argv:PPchar;
-    envp:PPchar;
+    argv:PPAnsiChar;
+    envp:PPAnsiChar;
 {$endif}
 
 CONST SIGSTKSZ = 40960;
@@ -75,6 +74,9 @@ Implementation
 
 {$endif defined(CPUARM) or defined(CPUM68K)}
 
+{$ifdef darwin}
+{$define HAS_GETCPUCOUNT}
+{$endif darwin}
 
 {$ifdef FPC_HAS_INDIRECT_ENTRY_INFORMATION}
 {$define FPC_SYSTEM_HAS_OSSETUPENTRYINFORMATION}
@@ -103,6 +105,19 @@ end;
 
 {$ifdef darwin}
 procedure normalexit(status: cint); cdecl; external 'c' name 'exit';
+
+function sysctlbyname (Name: PAnsiChar; oldp:pointer;oldlenp:psize_t; newp:pointer;newlen:size_t):cint; cdecl; external name 'sysctlbyname';
+
+function GetCPUCount: LongWord;
+var
+  oldp: int64;
+  oldlenp: size_t;
+begin
+  oldlenp:=sizeof(oldp);
+  sysctlbyname('machdep.cpu.core_count',@oldp,@oldlenp,nil,0);
+  Result:=oldp;
+end;
+
 {$endif}
 
 {$if defined(openbsd)}
@@ -132,7 +147,7 @@ Begin
 End;
 
 
-function BackPos(c:char; const s: shortstring): integer;
+function BackPos(c:AnsiChar; const s: shortstring): integer;
 var
  i: integer;
 Begin
@@ -150,9 +165,9 @@ end;
 //var
 // execpathstr : shortstring;
 
-function paramstr(l: longint) : string;
+function paramstr(l: longint) : shortstring;
  begin
-   { stricly conforming POSIX applications  }
+   { strictly conforming POSIX applications }
    { have the executing filename as argv[0] }
 //   if l=0 then
 //     begin
@@ -190,15 +205,18 @@ begin
   e[j]:=1 shl i;
   { this routine is called from a signal handler, so must not change errno }
   olderrno:=geterrno;
-  fpsigprocmask(SIG_UNBLOCK,@e,@oe);
-  reenable_signal:=geterrno=0;
+  seterrno(0);
+  if fpsigprocmask(SIG_UNBLOCK,@e,@oe)<>0 then
+    reenable_signal:=geterrno=0
+  else
+    reenable_signal:=true;
   seterrno(olderrno);
 end;
 
 {$ifdef DEBUG}
   { Declare InstallDefaultSignalHandler as forward to be able
     to test aclling fpsigaction again within SignalToRunError
-    function implemented within sighnd.inc inlcude file }
+    function implemented within sighnd.inc include file }
 procedure InstallDefaultSignalHandler(signum: longint; out oldact: SigActionRec); forward;
 {$endif}
 
@@ -250,11 +268,11 @@ var
   len,j,
   size,i : longint;
   found  : boolean;
-  buf    : pchar;
+  buf    : PAnsiChar;
 
   procedure AddBuf;
   begin
-    reallocmem(cmdline,size+bufsize);
+    sysreallocmem(cmdline,size+bufsize);
     move(buf^,cmdline[size],bufsize);
     inc(size,bufsize);
     bufsize:=0;
@@ -330,7 +348,7 @@ end;
 
 procedure pascalmain;external name '_PASCALMAIN';
 
-procedure FPC_SYSTEMMAIN(argcparam: Longint; argvparam: ppchar; envpparam: ppchar); cdecl; [public];
+procedure FPC_SYSTEMMAIN(argcparam: Longint; argvparam: PPAnsiChar; envpparam: PPAnsiChar); cdecl; [public];
 
 begin
   argc:= argcparam;

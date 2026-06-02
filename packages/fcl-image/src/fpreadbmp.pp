@@ -18,16 +18,25 @@
    - If we have bpp <= 8 make an indexed image instead of converting it to RGB
    - Support for RLE4 and RLE8 decoding
    - Support for top-down bitmaps
+
+  2023-07  - Massimo Magnano
+           - added Resolution support
 }
 
 {$mode objfpc}
 {$h+}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit FPReadBMP;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
-uses FPImage, classes, sysutils, BMPcomn;
+{$IFDEF FPC_DOTTEDUNITS}
+uses FpImage, System.Types, System.Classes, System.SysUtils, FpImage.Common.Bitmap;
+{$ELSE FPC_DOTTEDUNITS}
+uses FpImage, types, classes, sysutils, BMPcomn;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   TFPReaderBMP = class (TFPCustomImageReader)
@@ -59,6 +68,7 @@ type
       // required by TFPCustomImageReader
       procedure InternalRead  (Stream:TStream; Img:TFPCustomImage); override;
       function  InternalCheck (Stream:TStream) : boolean; override;
+      class function  InternalSize  (Stream:TStream) : TPoint; override;
     public
       constructor Create; override;
       destructor Destroy; override;
@@ -135,22 +145,9 @@ end;
   highest in the color, so we must shr (5-(8-6))=3, and we have XXXX XX00.
   A negative value means "shift left"  }
 function TFPReaderBMP.ShiftCount(Mask : longword) : shortint;
-var tmp : shortint;
 begin
-  tmp:=0;
-  if Mask=0 then
-  begin
-    Result:=0;
-    exit;
-  end;
-
-  while (Mask mod 2)=0 do { rightmost bit is 0 }
-  begin
-    inc(tmp);
-    Mask:= Mask shr 1;
-  end;
-  tmp:=tmp-(8-popcnt(byte(Mask and $FF)));
-  Result:=tmp;
+  Result:=BsfDWord(Mask or ord(Mask = 0) shl 8); { Also makes the function return 0 on Mask = 0. }
+  Result:=Result-(8-popcnt(byte(Mask shr Result)));
 end;
 
 function TFPReaderBMP.ExpandColor(value : longword) : TFPColor;
@@ -201,6 +198,8 @@ begin
   end
   else if nPalette>0 then
     begin
+    if (BFI.ClrUsed > 0) and (Integer(BFI.ClrUsed) > nPalette) then
+      raise FPImageException.Create('Invalid BMP ClrUsed value');
     GetMem(FPalette, nPalette*SizeOf(TFPColor));
     SetLength(ColInfo, nPalette);
     if BFI.ClrUsed>0 then
@@ -217,7 +216,7 @@ begin
 end;
 
 procedure TFPReaderBMP.InternalRead(Stream:TStream; Img:TFPCustomImage);
-// NOTE: Assumes that BMP header already has been read
+// NOTE: Assumes that BMP header & Info Header already has been read in InternalCheck
 Var
   Row, i, pallen : Integer;
   BadCompression : boolean;
@@ -226,10 +225,6 @@ begin
   continue:=true;
   Progress(psStarting,0,false,Rect,'',continue);
   if not continue then exit;
-  Stream.Read(BFI,SizeOf(BFI));
-  {$IFDEF ENDIAN_BIG}
-  SwapBMPInfoHeader(BFI);
-  {$ENDIF}
   { This will move past any junk after the BFI header }
   Stream.Position:=Stream.Position-SizeOf(BFI)+BFI.Size;
   with BFI do
@@ -243,6 +238,8 @@ begin
       raise FPImageException.Create('Bad BMP compression mode');
     TopDown:=(Height<0);
     Height:=abs(Height);
+    if (Width <= 0) or (Width > 65535) or (Height <= 0) or (Height > 65535) then
+      raise FPImageException.Create('Invalid BMP dimensions');
     if (TopDown and (not (Compression in [BI_RGB,BI_BITFIELDS]))) then
       raise FPImageException.Create('Top-down bitmaps cannot be compressed');
     Img.SetSize(0,0);
@@ -281,6 +278,10 @@ begin
         Img.Palette.Color[i]:=FPalette[i];
     end;
     Img.SetSize(BFI.Width,BFI.Height);
+
+    Img.ResolutionUnit:=ruPixelsPerCentimeter;
+    Img.ResolutionX :=BFI.XPelsPerMeter/100;
+    Img.ResolutionY :=BFI.YPelsPerMeter/100;
 
     percent:=0;
     percentinterval:=(Img.Height*4) div 100;
@@ -344,7 +345,7 @@ begin
       end;
     end
     else
-      case b1 of 
+      case b1 of
         0: break; { end of line }
         1: break; { end of file }
         2: begin  { Next pixel position. Skipped pixels should be left untouched, but we set them to zero }
@@ -358,7 +359,7 @@ begin
                inc(i,b1);
                { aligned on 2 bytes boundary: every group starts on a 2 bytes boundary, but absolute group
                  could end on odd address if there is a odd number of elements, so we pad it  }
-               if (b1 mod 2)<>0 then Stream.Seek(1,soFromCurrent); 
+               if (b1 mod 2)<>0 then Stream.Seek(1,soFromCurrent);
              end;
       end;
   end;
@@ -410,7 +411,7 @@ begin
         end;
       end
       else
-        case b1 of 
+        case b1 of
           0: break; { end of line }
           1: break; { end of file }
           2: begin  { Next pixel position. Skipped pixels should be left untouched, but we set them to zero }
@@ -497,23 +498,63 @@ begin
 end;
 
 function  TFPReaderBMP.InternalCheck (Stream:TStream) : boolean;
-// NOTE: Does not rewind the stream!
+// Reads bitmap file header and bitmap info header
 var
-  BFH:TBitMapFileHeader;
-  n: Int64;
+  lBFH:TBitMapFileHeader;
+  lPos,n: Int64;
 begin
   Result:=False;
   if Stream=nil then
     exit;
-  n:=SizeOf(BFH);
-  Result:=Stream.Read(BFH,n)=n;
-  if Result then 
-    begin
-   {$IFDEF ENDIAN_BIG}
-    SwapBMPFileHeader(BFH);
-   {$ENDIF}
-    Result := BFH.bfType = BMmagic; // Just check magic number
-    end;
+  n:=SizeOf(lBFH);
+  if Stream.Read(lBFH,n)<>n then
+    exit;
+  {$IFDEF ENDIAN_BIG}
+  SwapBMPFileHeader(lBFH);
+  {$ENDIF}
+  if lBFH.bfType<>BMmagic then
+    exit;
+  if lBFH.bfReserved<>0 then
+    exit;
+  n:=SizeOf(BFI);
+  if Stream.Read(BFI,n)<>n then
+    exit;
+  {$IFDEF ENDIAN_BIG}
+  SwapBMPInfoHeader(BFI);
+  {$ENDIF}
+  if not (BFI.Size in [12, 40, 52, 56, 108, 124]) then
+    exit;
+  if not (BFI.BitCount in [1, 4, 8, 16, 24, 32]) then
+    exit;
+  if not (BFI.Compression in [BI_RGB..BI_ALPHABITFIELDS]) then
+    exit;
+  Result:=True;
+end;
+
+class function TFPReaderBMP.InternalSize (Stream: TStream): TPoint;
+var
+  fileHdr: TBitmapFileHeader;
+  infoHdr: TBitmapInfoHeader;
+  n: Int64;
+  StartPos: Int64;
+begin
+  Result := Point(0, 0);
+
+  StartPos := Stream.Position;
+  try
+    n := Stream.Read(fileHdr, SizeOf(fileHdr));
+    if n <> SizeOf(fileHdr) then exit;
+    if {$IFDEF ENDIAN_BIG}swap(fileHdr.bfType){$ELSE}fileHdr.bfType{$ENDIF} <> BMmagic then exit;
+    n := Stream.Read(infoHdr, SizeOf(infoHdr));
+    if n <> SizeOf(infoHdr) then exit;
+    {$IFDEF ENDIAN_BIG}
+    Result := Point(swap(infoHdr.Width), swap(infoHdr.Height));
+    {$ELSE}
+    Result := Point(infoHdr.Width, infoHdr.Height);
+    {$ENDIF}
+  finally
+    Stream.Position := StartPos;
+  end;
 end;
 
 initialization

@@ -46,14 +46,20 @@
  *
  *}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit IniFiles;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}
 {$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.Classes, System.SysUtils, System.Contnrs;
+{$ELSE FPC_DOTTEDUNITS}
 uses classes, sysutils, contnrs;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
 
@@ -1020,7 +1026,7 @@ begin
       UpdateFile;
     except
       // Eat exception. Compatible to D7 behaviour, see comments to bug 19046
-    end;  
+    end;
   inherited destroy;
 end;
 
@@ -1170,16 +1176,16 @@ var
   oSection: TIniFileSection;
   oKey: TIniFileKey;
 begin
-  if (Section > '') and (Ident > '') then 
+  if (Section > '') and (Ident > '') then
     begin
     // update or add key
     oSection := FSectionList.SectionByName(Section,CaseSensitive);
-    if (oSection = nil) then 
+    if (oSection = nil) then
       begin
       oSection := TIniFileSection.Create(Section);
       FSectionList.Add(oSection);
       end;
-    with oSection.KeyList do 
+    with oSection.KeyList do
       begin
       oKey := KeyByName(Ident,CaseSensitive);
       if oKey <> nil then
@@ -1345,7 +1351,7 @@ var
   slLines: TStringList;
   i, j: integer;
   D : String;
-  
+
 begin
   slLines := TStringList.Create;
   try

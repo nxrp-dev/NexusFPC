@@ -13,7 +13,9 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit cmem;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
@@ -60,7 +62,7 @@ implementation
 
 const
   { poor man's max function for constants:
-    headersize = max(sizeof(ptruint),FPC_STACKALIGNMENT); }    
+    headersize = max(sizeof(ptruint),FPC_STACKALIGNMENT); }
   headersize = ord(sizeof(ptruint)>FPC_STACKALIGNMENT)*sizeof(ptruint)+ord(sizeof(ptruint)<=FPC_STACKALIGNMENT)*FPC_STACKALIGNMENT;
 
 {$macro off}

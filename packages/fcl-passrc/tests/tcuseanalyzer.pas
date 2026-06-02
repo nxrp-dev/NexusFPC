@@ -87,6 +87,7 @@ type
     procedure TestM_Class_MethodOverride;
     procedure TestM_Class_MethodOverride2;
     procedure TestM_Class_NestedClass;
+    procedure TestM_Class_Function;
     procedure TestM_ClassInterface_Corba;
     procedure TestM_ClassInterface_NoHintsForMethod;
     procedure TestM_ClassInterface_NoHintsForImpl;
@@ -99,6 +100,7 @@ type
     procedure TestM_Hint_UnitNotUsed_No_OnlyExternal;
     procedure TestM_Hint_UnitUsed;
     procedure TestM_Hint_UnitUsedVarArgs;
+    procedure TestM_Hint_UnitNotUsed_ClassInterfaceAliasType; // todo
     procedure TestM_Hint_ParameterNotUsed;
     procedure TestM_Hint_ParameterNotUsedOff;
     procedure TestM_Hint_ParameterInOverrideNotUsed;
@@ -1359,6 +1361,42 @@ begin
   CheckUseAnalyzerUnexpectedHints;
 end;
 
+procedure TTestUseAnalyzer.TestM_Class_Function;
+begin
+  Parser.Options:=Parser.Options+[po_CheckDirectiveRTTI];
+  StartUnit(true,[supTObject]);
+  Add([
+  '{$mode objfpc}',
+  '{$RTTI explicit methods([vcPublic])}',
+  'interface',
+  'type',
+  '  TInterfacedObject = class',
+  '  end;',
+  '  IUnknown = interface',
+  '  end;',
+  '  ITestInterface = interface',
+  '    procedure Test1;',
+  '    function Test2: word;',
+  '  end;',
+  '  TTestInterfaceClass = class(TInterfacedObject, ITestInterface)',
+  '  public',
+  '    procedure Test1;',
+  '    function Test2: word;',
+  '  end;',
+  'implementation',
+  'procedure TTestInterfaceClass.Test1;',
+  'begin',
+  'end;',
+  'function TTestInterfaceClass.Test2: word;',
+  'begin',
+  '  Result:=0;',
+  '  if typeinfo(Result)<>nil then ;',
+  'end;',
+  '']);
+  AnalyzeUnit;
+  CheckUseAnalyzerUnexpectedHints;
+end;
+
 procedure TTestUseAnalyzer.TestM_ClassInterface_Corba;
 begin
   StartProgram(false);
@@ -1629,6 +1667,41 @@ begin
   CheckUseAnalyzerUnexpectedHints;
 end;
 
+procedure TTestUseAnalyzer.TestM_Hint_UnitNotUsed_ClassInterfaceAliasType;
+begin
+  exit;
+
+  AddModuleWithIntfImplSrc('unit2.pp',
+    LinesToStr([
+    'type',
+    '  IUnknown = interface',
+    '  end;',
+    '  IBird = interface(IUnknown)',
+    '  end;',
+    '']),
+    LinesToStr(['']));
+
+  AddModuleWithIntfImplSrc('unit3.pp',
+    LinesToStr([
+    'uses unit2;',
+    'type',
+    '  IBird2 = unit2.IBird;',
+    '']),
+    LinesToStr(['']));
+
+  StartUnit(true,[supTObject]);
+  Add([
+  'interface',
+  'uses unit3;',
+  'type',
+  '  TBird = class(TObject,IBird2)',
+  '  end;',
+  'implementation',
+  '']);
+  AnalyzeUnit;
+  CheckUseAnalyzerUnexpectedHints;
+end;
+
 procedure TTestUseAnalyzer.TestM_Hint_ParameterNotUsed;
 begin
   StartProgram(true);
@@ -1850,7 +1923,7 @@ begin
   '  a = 13;',
   '  b: longint = 14;',
   'var',
-  '  c: char;',
+  '  c: AnsiChar;',
   '  d: longint = 15;',
   'begin',
   'end;',
@@ -1873,7 +1946,7 @@ begin
   '  a = 13;',
   '  b: longint = 14;',
   'var',
-  '  c: char;',
+  '  c: AnsiChar;',
   '  d: longint = 15;',
   'begin',
   '{$Hints off}',
@@ -1954,7 +2027,7 @@ begin
   Add('const');
   Add('  a: longint = 14;');
   Add('var');
-  Add('  b: char;');
+  Add('  b: AnsiChar;');
   Add('  c: longint = 15;');
   Add('begin');
   Add('  a:=16;');
@@ -2280,7 +2353,7 @@ begin
   Add('  {#a_notused}a = 13;');
   Add('  {#b_notused}b: longint = 14;');
   Add('var');
-  Add('  {#c_notused}c: char;');
+  Add('  {#c_notused}c: AnsiChar;');
   Add('  {#d_notused}d: longint = 15;');
   Add('  procedure {#sub_notused}Sub; begin end;');
   Add('asm end;');
@@ -2305,7 +2378,7 @@ begin
   '  {#a_notused}a = 13;',
   '  {#b_notused}b: longint = 14;',
   'var',
-  '  {#c_notused}c: char;',
+  '  {#c_notused}c: AnsiChar;',
   '  {#d_notused}d: longint = 15;',
   '  procedure {#sub_notused}Sub; begin end;',
   'asm end;',
@@ -3485,8 +3558,6 @@ begin
   '  end;',
   '  {#TBirdHelper_used}TBirdHelper = class helper for TBird',
   '    procedure {#TBirdHelper_Fly_used}Fly;',
-  '    class constructor {#TBirdHelper_Init_used}Init;',
-  '    class destructor {#TBirdHelper_Done_used}Done;',
   '  end;',
   '  TAnt = class',
   '    class constructor {#TAnt_Init_notused}Init;',
@@ -3505,12 +3576,6 @@ begin
   'begin',
   'end;',
   'procedure TBirdHelper.Fly;',
-  'begin',
-  'end;',
-  'class constructor TBirdHelper.Init;',
-  'begin',
-  'end;',
-  'class destructor TBirdHelper.Done;',
   'begin',
   'end;',
   'class constructor TAnt.Init;',

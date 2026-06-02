@@ -2,7 +2,11 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses
+  {$ifdef unix}
+  cthreads,
+  {$endif}
+  fpmkunit;
 {$endif ALLPACKAGES}
 
 procedure add_tply(const ADirectory: string);
@@ -17,21 +21,21 @@ begin
     begin
     P:=AddPackage('utils-lexyacc');
     P.ShortName:='tply';
-    { java and jvm-android do not support 
+    { java and jvm-android do not support
       fpc_get_output used in these sources }
     if Defaults.CPU=jvm then
       P.OSes := P.OSes - [java,android];
     { palmos does not support command line parameters }
     P.OSes := P.OSes - [palmos];
     { Program does not fit in 16-bit memory constraints }
-    P.OSes := P.OSes - [msdos,win16,zxspectrum,msxdos,amstradcpc,sinclairql];
+    P.OSes := P.OSes - [msdos,win16,zxspectrum,msxdos,amstradcpc,sinclairql,human68k];
     { avr-embedded and i8086-embedded do not meet needed requirements }
     if Defaults.CPU in [avr,i8086,z80] then
       P.OSes := P.OSes - [embedded];
     { wasm32 CPU does not support
       goto used in these sources }
     if Defaults.CPU=wasm32 then
-      P.OSes := P.OSes - [wasi,embedded];
+      P.OSes := P.OSes - [wasip1,wasip1threads,wasip2,embedded];
 
     P.Author := '<various>';
     P.License := 'LGPL with modification';

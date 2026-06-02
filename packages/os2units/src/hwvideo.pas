@@ -27,18 +27,27 @@
 @created(29 Nov 2002)
 @lastmod(19 Jan 2003)
 This is Video Acceleration Interface.
-Warning: This code is alfa. Future versions of this unit will propably
+Warning: This code is alfa. Future versions of this unit will probably
 not be compatible.
 }
 
+{$IFNDEF FPC_DOTTEDUNITS}
 Unit HWVideo;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+Uses
+  OS2Api.os2def,
+  OS2Api.pmwin,
+  OS2Api.pmgpi;
+{$ELSE FPC_DOTTEDUNITS}
 Uses
   Os2Def,
   PMWin,
   PMGpi;
+{$ENDIF FPC_DOTTEDUNITS}
 
 // GRADD function class
 Const
@@ -51,7 +60,7 @@ Type
     szlSrcMax: SIZEL;          //maximum source size (pixels)
     rctlDstMargin: RECTL;      //destination rectangle margins
     fccDstColor: Cardinal;     //screen FOURCC
-    ulScanAlign: Cardinal;     //requered scanline aligment-1
+    ulScanAlign: Cardinal;     //required scanline alignment-1
     ulNumColors: Cardinal;     //count of supported source FOURCC
     fccColorType: ^Cardinal;   //array of supported FOURCC
     ulAttrCount: Cardinal;     //count of viewport attributes
@@ -72,7 +81,7 @@ Const
 Type
   THWATTRIBUTE=record
     ulLength: Cardinal;                //size of structure in bytes
-    szAttrDesc: Array[0..64] of Char;  //string, describing attribute
+    szAttrDesc: Array[0..64] of AnsiChar;  //string, describing attribute
     ulAttrType: Cardinal;              //type of attribute, check ATTRTYPE_* const
     ulValueSize: Cardinal;             //size in bytes of each value member
     ulValueCount: Cardinal;            //count of value members
@@ -147,7 +156,7 @@ Const
   HWVIDEO_ERROR_USED = 9;
 
 //Init HWVideo subsystem
-//check for presence and avilability of accelerated HW, if present and
+//check for presence and availability of accelerated HW, if present and
 //available - lock it for this process.
 Function HWVIDEOInit: Cardinal; cdecl;
 

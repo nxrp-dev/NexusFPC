@@ -13,15 +13,22 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit machoreader;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$MODE OBJFPC} {$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, System.Resources.Resource, System.Resources.Macho.Types;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, resource, machotypes;
-  
+{$ENDIF FPC_DOTTEDUNITS}
+
 type
 
   { TMachOResourceReader }
@@ -56,7 +63,11 @@ type
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.CTypes, System.Resources.Macho.Consts, System.Resources.Factory, System.Resources.Tree, System.Resources.DataStream, System.Resources.Types;
+{$ELSE FPC_DOTTEDUNITS}
 uses ctypes, machoconsts, resfactory, resourcetree, resdatastream, fpcrestypes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
 
@@ -82,7 +93,7 @@ type
       const aOppositeEndianess : boolean); virtual;
     destructor Destroy; override;
   end;
-  
+
 (*
 Almost all differences in 32 and 64 bit mach-o files lie in record sizes.
 Generics don't work with record types, so use macros to do this task
@@ -121,7 +132,7 @@ Generics don't work with record types, so use macros to do this task
 function TAbstractMachOSubReader.ReadString(aStream: TStream; aPos: longword
   ): string;
 var oldpos : int64;
-    c : char;
+    c : AnsiChar;
     maxleft : int64;
 begin
   Result:='';
@@ -236,7 +247,7 @@ begin
     else
       exit;
   end;
-  
+
   if fOppositeEndianess then
     case fNativeEndianess of
       MACH_BIG_ENDIAN    : fEndianess:=MACH_LITTLE_ENDIAN;
@@ -244,7 +255,7 @@ begin
     end
   else
     fEndianess:=fNativeEndianess;
-  
+
   if fOppositeEndianess then
     begin
       fHeader.magic:=SwapEndian(fHeader.magic);
@@ -255,7 +266,7 @@ begin
       fHeader.sizeofcmds:=SwapEndian(fHeader.sizeofcmds);
       fHeader.flags:=SwapEndian(fHeader.flags);
     end;
-  
+
   if not MachOMachineTypesToPas(fHeader.cpuType,fheader.cpusubtype,fMachineType,fSubMachineType) then
     exit;
 
@@ -285,7 +296,7 @@ var subreader : TAbstractMachOSubReader;
 begin
   if not ReadMachOHeader(aStream) then
     raise EResourceReaderWrongFormatException.Create('');
-    
+
   case fBits of
     MACH_32BIT : subreader:=TMachO32SubReader.Create(self,fHeader,fOppositeEndianess);
     MACH_64BIT : subreader:=TMachO64SubReader.Create(self,fHeader,fOppositeEndianess);

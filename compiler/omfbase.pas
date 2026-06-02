@@ -27,6 +27,7 @@ unit omfbase;
 interface
 {$H+}
   uses
+    sysutils,
     cclasses,
     aasmbase,
     owbase;
@@ -46,7 +47,7 @@ interface
       'stabstr',
       'idata2','idata4','idata5','idata6','idata7','edata',
       'eh_frame',
-      '.debug_frame','.debug_info','.debug_line','.debug_abbrev','.debug_aranges','.debug_ranges',
+      '.debug_frame','.debug_info','.debug_line','.debug_abbrev','.debug_aranges','.debug_ranges','.debug_loc','.debug_loclists',
       'fpc',
       '',
       'init',
@@ -88,7 +89,8 @@ interface
       'stack',
       'heap',
       'gcc_except_table',
-      'ARM_attributes'
+      'ARM_attributes',
+      'note'
     );
 
     { OMF record types }
@@ -2395,6 +2397,7 @@ implementation
   destructor TOmfSubRecord_LINNUM_MsLink_LineNumberList.Destroy;
     begin
       FLineNumbers.Free;
+      FLineNumbers := nil;
       inherited Destroy;
     end;
 
@@ -2514,8 +2517,8 @@ implementation
     begin
       for t in TOmfFixupThread do
         begin
-          FTargetThreads[t].Free;
-          FFrameThreads[t].Free;
+          FreeAndNil(FTargetThreads[t]);
+          FreeAndNil(FFrameThreads[t]);
         end;
       inherited Destroy;
     end;
@@ -2923,6 +2926,8 @@ implementation
         {debug_abbrev} 'DWARF',
         {debug_aranges} 'DWARF',
         {debug_ranges} 'DWARF',
+        {debug_loc} 'DWARF',
+        {debug_loclists} 'DWARF',
         {fpc} 'DATA',
         {toc} 'DATA',
         {init} 'CODE',
@@ -2964,7 +2969,8 @@ implementation
         {stack} 'STACK',
         {heap} 'HEAP',
         {gcc_except_table} 'DATA',
-        {ARM_attributes} 'DATA'
+        {ARM_attributes} 'DATA',
+        {note} 'DATA'
       );
     begin
       result:=segclass[atype];

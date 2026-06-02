@@ -18,17 +18,33 @@
    MA 02110-1301, USA.
 
  ****************************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 {$ifdef FV_UNICODE}
 unit utabs;
 {$else FV_UNICODE}
 unit tabs;
 {$endif FV_UNICODE}
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$I platform.inc}    (* Multi-platform support defines *)
 {$CODEPAGE cp437}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Objects,
+{$ifdef FV_UNICODE}
+  FreeVision.Ufvcommon,
+  FreeVision.Udrivers,
+  FreeVision.Uviews,
+{$else FV_UNICODE}
+  FreeVision.Fvcommon,
+  FreeVision.Drivers,
+  FreeVision.Views,
+{$endif FV_UNICODE}
+  FreeVision.Fvconsts;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   objects,
 {$ifdef FV_UNICODE}
@@ -41,6 +57,7 @@ uses
   views,
 {$endif FV_UNICODE}
   fvconsts;
+{$ENDIF FPC_DOTTEDUNITS}
 
 
 type
@@ -57,7 +74,7 @@ type
       Name     : Sw_PString;
       Items    : PTabItem;
       DefItem  : PView;
-      ShortCut : char;
+      ShortCut : AnsiChar;
     end;
 
     PTab = ^TTab;
@@ -109,12 +126,21 @@ const
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+{$ifdef FV_UNICODE}
+  FreeVision.Udialogs;
+{$else FV_UNICODE}
+  FreeVision.Dialogs;
+{$endif FV_UNICODE}
+{$ELSE FPC_DOTTEDUNITS}
 uses
 {$ifdef FV_UNICODE}
   Udialogs;
 {$else FV_UNICODE}
   dialogs;
 {$endif FV_UNICODE}
+{$ENDIF FPC_DOTTEDUNITS}
 
 constructor TTab.Init(var Bounds: TRect; ATabDef: PTabDef);
 begin
@@ -321,27 +347,42 @@ procedure DoCalcChange(P: PView); {$ifndef FPC}far;{$endif}
 var
   R: TRect;
 begin
-  if P^.Owner=nil then Exit; { it think this is a bug in TV }
   P^.CalcBounds(R, D);
   P^.ChangeBounds(R);
 end;
 var
     P: PTabItem;
     I: SmallInt;
+    oOwner: PGroup;
 begin
+  Lock;                                            { Lock drawing }
   D.X := Bounds.B.X - Bounds.A.X - Size.X;
   D.Y := Bounds.B.Y - Bounds.A.Y - Size.Y;
   inherited ChangeBounds(Bounds);
+  if (D.X<>0) or (D.Y<>0) then
   for I:=0 to TabCount-1 do
   if I<>ActiveDef then
     begin
       P:=AtTab(I)^.Items;
       while P<>nil do
         begin
-          if P^.View<>nil then DoCalcChange(P^.View);
+          if P^.View<>nil then
+          begin
+            { If it is not active Tab page,
+              then none of Views have Owner.
+              Have to have this dirty trick
+              with adding and removing Self
+              directly to Owner, because without
+              Owner Bounds cannot be calculated. }
+            oOwner:=P^.View^.Owner;
+            P^.View^.Owner:=@self;
+            DoCalcChange(P^.View);
+            P^.View^.Owner:=oOwner;
+          end;
           P:=P^.Next;
         end;
     end;
+  UnLock;                                          { Unlock drawing }
 end;
 
 
@@ -496,7 +537,7 @@ var B     : TDrawBuffer;
     Name       : Sw_PString;
     ActiveKPos : SmallInt;
     ActiveVPos : SmallInt;
-    FC   : char;
+    FC   : AnsiChar;
 procedure SWriteBuf(X,Y,W,H: SmallInt; var Buf);
 var i: SmallInt;
 begin
@@ -534,7 +575,6 @@ begin
   { --- 1. sor --- }
   ClearBuf;
   MoveChar(B[0],{$ifdef FV_UNICODE}#$2502{$else}#179{$endif},C1,1);
-  MoveChar(B[HeaderLen+1],{$ifdef FV_UNICODE}#$2502{$else}#179{$endif},C1,1);
   X:=1;
   for i:=0 to DefCount-1 do
       begin
@@ -550,6 +590,7 @@ begin
         X:=X+X2+3;
         MoveChar(B[X-1],{$ifdef FV_UNICODE}#$2502{$else}#179{$endif},C1,1);
       end;
+  MoveChar(B[HeaderLen+1],{$ifdef FV_UNICODE}#$2502{$else}#179{$endif},C1,1);
   SWriteBuf(0,1,Size.X,1,B);
 
   { --- 0. sor --- }

@@ -1,12 +1,12 @@
 {
   Copyright 1999-2009 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
-  
+
   You may not use this file except in compliance with the License.
   obtain a copy of the License at
-  
+
     http://www.imagemagick.org/script/license.php
-  
+
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,7 +42,7 @@ extern MagickExport MagickBooleanType
   GetOneAuthenticPixel(Image *,const long,const long,PixelPacket *,
     ExceptionInfo *),
   InstantiateCacheComponent(void),
-  PersistPixelCache(Image *,const char *,const MagickBooleanType,
+  PersistPixelCache(Image *,const AnsiChar *,const MagickBooleanType,
     MagickOffsetType *,ExceptionInfo *),
   SyncAuthenticPixels(Image *,ExceptionInfo *);
 
@@ -62,5 +62,5 @@ function GetAuthenticPixels(_image: PImage; const x, y: clong;
   SetPixelCacheVirtualMethod(const Image *,const VirtualPixelMethod);
 
 extern MagickExport void
-  DestroyCacheFaclity(void);}
+  DestroyCacheFacility(void);}
 

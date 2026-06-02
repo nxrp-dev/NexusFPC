@@ -1,10 +1,17 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fpwidestring;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}
 
 interface
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.CodePages.unicodedata;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   unicodedata;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$i rtldefs.inc}
 
@@ -16,6 +23,16 @@ var
   DefaultCollationName : UnicodeString = '';
 
 implementation
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+{$ifdef MSWINDOWS}
+  WinApi.Windows,
+{$endif MSWINDOWS}
+{$ifdef Unix}
+  UnixApi.CP,
+{$endif}
+  System.CharSet;
+{$ELSE FPC_DOTTEDUNITS}
 uses
 {$ifdef MSWINDOWS}
   Windows,
@@ -24,6 +41,7 @@ uses
   unixcp,
 {$endif}
   charset;
+{$ENDIF FPC_DOTTEDUNITS}
 
 procedure fpc_rangeerror; [external name 'FPC_RANGEERROR'];
 {$ifdef MSWINDOWS}
@@ -143,7 +161,7 @@ begin
     end;
   //Test for the "CharLen" conforms UTF-8 string
   //This means the 10xxxxxx pattern.
-  if SizeUInt(CharLen-1)>MaxLookAead then //Insuficient chars in string to decode UTF-8 array
+  if SizeUInt(CharLen-1)>MaxLookAead then //Insufficient chars in string to decode UTF-8 array
     exit(-1);
   for LookAhead := 1 to CharLen-1 do
     begin
@@ -287,7 +305,7 @@ begin
         begin
           destLen:=destLen + 3*(1+len-i);
           SetLength(dest,destLen);
-          destBuffer:=@dest[1];
+          destBuffer:=@dest[1+actualLen];
           blockLen:=getascii(tunicodechar(locSource^),locMap,destBuffer,(destLen-actualLen));
         end;
       Inc(destBuffer,blockLen);
@@ -727,14 +745,14 @@ function CompareStrAnsiString(const S1, S2: ansistring): PtrInt;
 var
   l1, l2 : PtrInt;
 begin
-  if (current_Collation.DataPtr=nil) then
-    exit(OldManager.CompareStrAnsiStringProc(s1,s2));
+  if (current_Collation.DataPtr=nil) and Assigned(OldManager.CompareStrAnsiStringProc) then
+    Exit(OldManager.CompareStrAnsiStringProc(s1,s2));
   if (Pointer(S1)=Pointer(S2)) then
-    exit(0);
+    Exit(0);
   l1:=Length(S1);
   l2:=Length(S2);
   if (l1=0) or (l2=0) then
-    exit(l1-l2);
+    Exit(l1-l2);
   Result := InternalCompareStrAnsiString(@S1[1],@S2[1],l1,l2);
 end;
 
@@ -747,7 +765,7 @@ begin
   Result:=CompareStrAnsiString(a,b);
 end;
 
-function StrCompAnsiString(S1, S2: PChar): PtrInt;
+function StrCompAnsiString(S1, S2: PAnsiChar): PtrInt;
 var
   l1,l2 : PtrInt;
 begin
@@ -758,7 +776,7 @@ begin
   Result := InternalCompareStrAnsiString(S1,S2,l1,l2);
 end;
 
-function StrLICompAnsiString(S1, S2: PChar; MaxLen: PtrUInt): PtrInt;
+function StrLICompAnsiString(S1, S2: PAnsiChar; MaxLen: PtrUInt): PtrInt;
 var
   a, b: ansistring;
 begin
@@ -771,12 +789,12 @@ begin
   Result:=CompareTextAnsiString(a,b);
 end;
 
-function StrICompAnsiString(S1, S2: PChar): PtrInt;
+function StrICompAnsiString(S1, S2: PAnsiChar): PtrInt;
 begin
   Result:=CompareTextAnsiString(ansistring(s1),ansistring(s2));
 end;
 
-function StrLowerAnsiString(Str: PChar): PChar;
+function StrLowerAnsiString(Str: PAnsiChar): PAnsiChar;
 var
   temp: ansistring;
 begin
@@ -784,7 +802,7 @@ begin
   ansi2pchar(temp,str,result);
 end;
 
-function StrUpperAnsiString(Str: PChar): PChar;
+function StrUpperAnsiString(Str: PAnsiChar): PAnsiChar;
 var
   temp: ansistring;
 begin
@@ -843,10 +861,9 @@ begin
   SetUnicodeStringManager(locWideStringManager);
 
   DefaultUnicodeCodePage:=CP_UTF16;
-{$ifdef MSWINDOWS}
+{$if defined(MSWINDOWS)}
   DefaultSystemCodePage:=GetACP();
-{$ELSE MSWINDOWS}
- {$ifdef UNIX}
+{$elseif defined(UNIX)}
   DefaultSystemCodePage:=GetSystemCodepage;
   if (DefaultSystemCodePage = CP_NONE) then
     DefaultSystemCodePage:=CP_UTF8;
@@ -856,15 +873,14 @@ begin
   DefaultFileSystemCodePage:=DefaultSystemCodepage;
   {$endif}
   DefaultRTLFileSystemCodePage:=DefaultFileSystemCodePage;
- {$ELSE UNIX}
+{$else}
   if Assigned (WideStringManager.GetStandardCodePageProc) then
    DefaultSystemCodePage := WideStringManager.GetStandardCodePageProc (scpAnsi)
   else
    DefaultSystemCodePage := CP_NONE;
   DefaultFileSystemCodePage := DefaultSystemCodePage;
   DefaultRTLFileSystemCodePage := DefaultSystemCodePage;
- {$endif UNIX}
-{$endif MSWINDOWS}
+{$endif}
 end;
 
 

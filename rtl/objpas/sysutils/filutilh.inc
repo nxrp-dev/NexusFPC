@@ -1,3 +1,4 @@
+{%MainUnit sysutils.pp}
 {
     This file is part of the Free Pascal run time library.
     Copyright (c) 1999-2000 by the Free Pascal development team
@@ -155,7 +156,7 @@ Type
     {$IFDEF USE_STATX}
     data : tstatx platform;
     {$ELSE}
-    data : baseunix.stat platform;
+    data : BU.stat platform;
     {$ENDIF USE_STATX}
   {$ELSE}
     data : TSearchRec;
@@ -186,7 +187,7 @@ Const
   faEncrypted  = $00004000 platform;
   faVirtual    = $00010000 platform;
   faAnyFile    = $000001FF;
-             
+
 
   { File open modes }
   fmOpenRead       = $0000;
@@ -198,6 +199,8 @@ Const
   fmShareDenyWrite = $0020;
   fmShareDenyRead  = $0030;
   fmShareDenyNone  = $0040;
+  // internal to FPC
+  fmShareNoLocking = $0080;
 
   { File seek origins }
   fsFromBeginning = 0;
@@ -270,7 +273,7 @@ Function FileRead (Handle : THandle; out Buffer; Count : longint) : Longint;
 Function FileWrite (Handle : THandle; const Buffer; Count : Longint) : Longint;
 Function FileSeek (Handle : THandle; FOffset, Origin: Longint) : Longint;
 Function FileSeek (Handle : THandle; FOffset: Int64; Origin: Longint) : Int64;
-function FileFlush(Handle: THandle): Boolean; 
+function FileFlush(Handle: THandle): Boolean;
 Procedure FileClose (Handle : THandle);
 Function FileTruncate (Handle : THandle;Size: Int64) : boolean;
 Function FindNext (Var Rslt : TRawByteSearchRec) : Longint;

@@ -9,7 +9,7 @@ uses
 var
    r         : tregexprengine;
    index,len : longint;
-   S         : String;
+   S         : AnsiString;
    Dest	     : AnsiString;
 
 procedure do_error(i : longint);
@@ -286,7 +286,7 @@ begin
      do_error(103);
    DestroyregExprEngine(r);
 
-   { start and end of string handling }
+   { start and end of AnsiString handling }
    initok:=GenerateRegExprEngine('^TEST1(ANOTHER)$',[],r);
    if not initok then
      do_error(103);
@@ -696,7 +696,7 @@ begin
      do_error(1101);
    DestroyregExprEngine(r);
 
-   { with parenthsis }
+   { with parenthesis }
    GenerateRegExprEngine('(foo)1234',[],r);
    if not(RegExprPos(r,'1234   foo1234XXXX',index,len)) or
      (index<>7) or (len<>7) then

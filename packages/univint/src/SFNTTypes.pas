@@ -1,17 +1,17 @@
 {
      File:       ATS/SFNTTypes.h
- 
+
      Contains:   Font file structures.
- 
+
      Version:    ATS
- 
+
      Copyright:  © 1994-2012 by Apple Inc., all rights reserved.
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 
 {  Pascal Translation Updated: Gorazd Krosl <gorazd_1957@yahoo.ca>, October 2009 }
@@ -32,7 +32,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit SFNTTypes;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -217,7 +219,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -648,7 +654,7 @@ const
 	nonGlyphID = 65535;
 
 
-{   Deprecated "don't care" values - use kFontNoPlatformCode, kFontNoScriptCode, 
+{   Deprecated "don't care" values - use kFontNoPlatformCode, kFontNoScriptCode,
      kFontNoLanguageCode, kFontNoName instead
 }
 
@@ -668,10 +674,10 @@ type
 { Data types for encoding components as used in interfaces }
 	FontPlatformCode = UInt32;
 	FontPlatformCodePtr = ^FontPlatformCode;
-	
+
 	FontScriptCode = UInt32;
 	FontScriptCodePtr = ^FontScriptCode;
-	
+
 	FontLanguageCode = UInt32;
 	FontLanguageCodePtr = ^FontLanguageCode;
 {

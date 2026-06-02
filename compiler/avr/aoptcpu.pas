@@ -55,6 +55,7 @@ Type
     function OptPass1IN(var p : tai) : boolean;
     function OptPass1LDI(var p : tai) : boolean;
     function OptPass1LDS(var p : tai) : boolean;
+    function OptPass1LDD(var p: tai): boolean;
     function OptPass1MOV(var p : tai) : boolean;
     function OptPass1PUSH(var p : tai) : boolean;
     function OptPass1RCALL(var p : tai) : boolean;
@@ -401,6 +402,8 @@ Implementation
 
 
   function TCpuAsmOptimizer.OptPass1LDS(var p : tai) : boolean;
+    var
+      hp1, hp2, hp3, alloc, dealloc: tai;
     begin
       Result:=false;
       if (taicpu(p).oper[1]^.ref^.symbol=nil) and
@@ -424,6 +427,133 @@ Implementation
           taicpu(p).loadconst(1,taicpu(p).oper[1]^.ref^.offset-32);
 
         result:=true;
+      end
+
+      { turn
+          alloc reg0
+          alloc reg1
+          lds reg0, label
+          lds reg1, label
+          mov reg2, reg0
+          mov reg3, reg1
+          dealloc reg0
+          dealloc reg1
+
+        into
+          lds reg2, label
+          lds reg3, label
+      }
+      else if not(cs_opt_level3 in current_settings.optimizerswitches) and
+      (taicpu(p).oper[0]^.typ=top_reg) and
+      assigned(FindRegAllocBackward(taicpu(p).oper[0]^.reg,tai(p.Previous))) and
+      (GetNextInstruction(p,hp1)) and MatchInstruction(hp1,A_LDS) and
+      (taicpu(hp1).oper[0]^.typ=top_reg) and
+      assigned(FindRegAllocBackward(taicpu(hp1).oper[0]^.reg,tai(hp1.Previous))) and
+      (GetNextInstruction(hp1, hp2)) and MatchInstruction(hp2,A_MOV) and
+      (taicpu(hp2).oper[1]^.reg=taicpu(p).oper[0]^.reg) and
+      assigned(FindRegDeAlloc(taicpu(p).oper[0]^.reg,tai(hp2.Next))) and
+      (GetNextInstruction(hp2, hp3)) and MatchInstruction(hp3,A_MOV) and
+      (taicpu(hp3).oper[1]^.reg=taicpu(hp1).oper[0]^.reg) and
+      assigned(FindRegDeAlloc(taicpu(hp1).oper[0]^.reg,tai(hp3.Next))) then
+      begin
+        DebugMsg('Peephole LdsLdsMovMov2LdsLds performed', p);
+
+        alloc:=FindRegAllocBackward(taicpu(p).oper[0]^.reg,tai(p.Previous));
+        dealloc:=FindRegDeAlloc(taicpu(p).oper[0]^.reg,tai(hp2.Next));
+        if assigned(alloc) and assigned(dealloc) then
+          begin
+            asml.Remove(alloc);
+            alloc.Free;
+            asml.Remove(dealloc);
+            dealloc.Free;
+          end;
+        taicpu(p).oper[0]^.reg:=taicpu(hp2).oper[0]^.reg;
+        RemoveInstruction(hp2);
+
+        alloc:=FindRegAllocBackward(taicpu(hp1).oper[0]^.reg,tai(hp1.Previous));
+        dealloc:=FindRegDeAlloc(taicpu(hp1).oper[0]^.reg,tai(hp3.Next));
+        if assigned(alloc) and assigned(dealloc) then
+          begin
+            asml.Remove(alloc);
+            alloc.Free;
+            asml.Remove(dealloc);
+            dealloc.Free;
+          end;
+
+        taicpu(hp1).oper[0]^.reg:=taicpu(hp3).oper[0]^.reg;
+        RemoveInstruction(hp3);
+        Result:=true;
+      end
+
+      { turn
+          alloc reg0
+          lds reg0, label
+          ...
+          mov reg1, reg0
+          dealloc reg0
+
+        into
+          lds reg1, label
+      }
+      else if (cs_opt_level3 in current_settings.optimizerswitches) and
+      (taicpu(p).oper[0]^.typ=top_reg) and
+      (GetNextInstructionUsingReg(p,hp1,taicpu(p).oper[0]^.reg)) and
+      MatchInstruction(hp1,A_MOV) and
+      (taicpu(hp1).oper[1]^.reg=taicpu(p).oper[0]^.reg) and
+      (not RegModifiedBetween(taicpu(p).oper[0]^.reg, p, hp1)) and
+      (not RegUsedBetween(taicpu(hp1).oper[0]^.reg, p, hp1)) then
+      begin
+        alloc:=FindRegAllocBackward(taicpu(p).oper[0]^.reg,tai(p.Previous));
+        dealloc:=FindRegDeAlloc(taicpu(p).oper[0]^.reg,tai(hp1.Next));
+        if assigned(alloc) and assigned(dealloc) then
+          begin
+            DebugMsg('Peephole LdsMov2Lds performed', p);
+            asml.Remove(alloc);
+            alloc.Free;
+            asml.Remove(dealloc);
+            dealloc.Free;
+            taicpu(p).oper[0]^.reg:=taicpu(hp1).oper[0]^.reg;
+            RemoveInstruction(hp1);
+            result:=true;
+          end;
+      end;
+    end;
+
+
+  function TCpuAsmOptimizer.OptPass1LDD(var p : tai) : boolean;
+    var
+      hp1, alloc, dealloc: tai;
+    begin
+      Result:=false;
+      { turn
+          alloc reg0
+          ldd reg0, <mem>
+          ...
+          mov reg1, reg0
+          dealloc reg0
+
+        into
+          lds reg1, <mem>
+      }
+      if (GetNextInstructionUsingReg(p,hp1,taicpu(p).oper[0]^.reg)) and
+      MatchInstruction(hp1,A_MOV) and
+      (taicpu(hp1).oper[1]^.reg=taicpu(p).oper[0]^.reg) and
+      (not RegModifiedBetween(taicpu(p).oper[0]^.reg, p, hp1)) and
+      (not RegUsedBetween(taicpu(hp1).oper[0]^.reg, p, hp1)) then
+      begin
+        alloc:=FindRegAllocBackward(taicpu(p).oper[0]^.reg,tai(p.Previous));
+        dealloc:=FindRegDeAlloc(taicpu(p).oper[0]^.reg,tai(hp1.Next));
+        if assigned(alloc) and assigned(dealloc) then
+          begin
+            DebugMsg('Peephole LddMov2Ldd performed', p);
+            asml.Remove(alloc);
+            alloc.Free;
+            asml.Remove(dealloc);
+            dealloc.Free;
+            taicpu(p).oper[0]^.reg:=taicpu(hp1).oper[0]^.reg;
+            RemoveInstruction(hp1);
+            result:=true;
+          end;
       end;
     end;
 
@@ -1358,6 +1488,8 @@ Implementation
                   Result:=OptPass1STS(p);
                 A_LDS:
                   Result:=OptPass1LDS(p);
+                A_LDD:
+                  Result:=OptPass1LDD(p);
                 A_IN:
                   Result:=OptPass1IN(p);
                 A_SBRS,

@@ -23,14 +23,21 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  *)
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit multibuf;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$PACKRECORDS c}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.CTypes, Api.X11.X, Api.X11.Xlib;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   ctypes, x, xlib;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   libXext = 'Xext';
@@ -116,7 +123,7 @@ type
   PPXmbufBufferInfo = ^PXmbufBufferInfo;
   PXmbufBufferInfo = ^TXmbufBufferInfo;
   TXmbufBufferInfo = record
-    visualid: TVisualID;  { visual usuable at this depth }
+    visualid: TVisualID;  { visual usable at this depth  }
     max_buffers: cint;    { most buffers for this visual }
     depth: cint;          { depth of buffers to be created }
   end;

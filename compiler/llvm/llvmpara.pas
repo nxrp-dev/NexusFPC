@@ -37,7 +37,7 @@ unit llvmpara;
         aggregate parameters into multiple simple parameters in case they have
         to be passed in special registers (such as floating point or SSE), and
         also for indicating whether e.g. 8 bit parameters need to be sign or
-        zero exntended. This corresponds to pretty much what we do when creating
+        zero extended. This corresponds to pretty much what we do when creating
         parameter locations, so we reuse the original parameter manager and then
         process its output.
 
@@ -163,7 +163,12 @@ unit llvmpara;
         paralocs }
       while assigned(paraloc) do
         begin
-          if (vo_is_funcret in parasym.varoptions)
+          if (vo_is_funcret in parasym.varoptions) and
+             { sret attribute is only valid for the first parameter; sometimes
+               FPC will place other parameters first (e.g. self), and then
+               we can't use it; we use other attributes in that case to
+               approximate the optimisations that LLVM can do for sret }
+             (tabstractprocdef(parasym.owner.defowner).paras[0] = parasym)
  {$ifdef aarch64}
              { see AArch64's tcpuparamanager.create_paraloc_info_intern() }
              and not is_managed_type(parasym.vardef)

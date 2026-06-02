@@ -13,14 +13,21 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit coffwriter;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$MODE OBJFPC} {$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, System.Resources.Resource, System.Resources.Tree, System.Resources.Coff.Types;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, resource, resourcetree, cofftypes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
 
@@ -65,7 +72,7 @@ type
     _type : word;
   end;
   PCoffRelocation = ^TCoffRelocation;
-  
+
   { TCoffRelocations }
 
   TCoffRelocations = class
@@ -144,7 +151,11 @@ type
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.Resources.Coff.Consts;
+{$ELSE FPC_DOTTEDUNITS}
 uses coffconsts;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { TCoffStringTable }
 
@@ -423,6 +434,7 @@ begin
   st.SectionNumber:=1;
   st._type:=0;
   st.StorageClass:=fSymStorageClass;
+  st.NumAuxSymbol:=0;
   if OppositeEndianess then
     begin
       st.Value:=SwapEndian(st.Value);
@@ -484,7 +496,7 @@ begin
       hdr.characteristics:=SwapEndian(hdr.characteristics);
     end;
   aStream.WriteBuffer(hdr,sizeof(hdr));
-  
+
   aStream.Position:=oldpos;
 
 end;

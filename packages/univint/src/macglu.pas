@@ -17,7 +17,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit macglu;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -202,7 +204,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes, MacOsApi.Macgl;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes, macgl;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -338,7 +344,7 @@ const GLU_NURBS_ERROR24                    = 100274;   { nurbscurve and pwlcurve
 const GLU_NURBS_ERROR25                    = 100275;   { nurbssurface referenced twice }
 const GLU_NURBS_ERROR26                    = 100276;   { invalid property }
 const GLU_NURBS_ERROR27                    = 100277;   { endsurface() must follow bgnsurface() }
-const GLU_NURBS_ERROR28                    = 100278;   { intersecting or misoriented trim curves }
+const GLU_NURBS_ERROR28                    = 100278;   { intersecting or disoriented trim curves }
 const GLU_NURBS_ERROR29                    = 100279;   { intersecting trim curves }
 const GLU_NURBS_ERROR30                    = 100280;   { UNUSED }
 const GLU_NURBS_ERROR31                    = 100281;   { unconnected trim curves }
@@ -401,7 +407,7 @@ const
 const
 	GLU_MAP1_TRIM_3 = 100211;
 
-{ QuadricDrawStyle } 
+{ QuadricDrawStyle }
 const
 	GLU_POINT = 100010;
 const
@@ -410,7 +416,7 @@ const
 	GLU_FILL = 100012;
 const
 	GLU_SILHOUETTE = 100013;
-  
+
 { QuadricCallback }
 {      GLU_ERROR }
 
@@ -421,7 +427,7 @@ const
 	GLU_FLAT = 100001;
 const
 	GLU_NONE = 100002;
- 
+
 { QuadricOrientation }
 const
 	GLU_OUTSIDE = 100020;
@@ -531,22 +537,22 @@ const
 type
   GLUnurbs = record end;
   PGLUnurbs = ^GLUnurbs;
-  
+
   GLUquadric = record end;
   PGLUquadric = ^GLUquadric;
-  
+
   GLUtesselator = record end;
   PGLUtesselator = ^GLUtesselator;
 
   GLUnurbsObj = GLUnurbs;
   PGLUnurbsObj = PGLUnurbs;
-  
+
   GLUquadricObj = GLUquadric;
   PGLUquadricObj = PGLUquadric;
-  
+
   GLUtesselatorObj = GLUtesselator;
   PGLUtesselatorObj = PGLUtesselator;
-  
+
   GLUtriangulatorObj = GLUtesselator;
   PGLUtriangulatorObj = PGLUtesselator;
 
@@ -562,7 +568,7 @@ function gluBuild2DMipmapLevels( target: GLenum; internalFormat: GLint; width: G
 function gluBuild2DMipmaps( target: GLenum; internalFormat: GLint; width: GLsizei; height: GLsizei; format: GLenum; typ: GLenum; data: {const} UnivPtr ): GLint; external name '_gluBuild2DMipmaps';
 function gluBuild3DMipmapLevels( target: GLenum; internalFormat: GLint; width: GLsizei; height: GLsizei; depth: GLsizei; format: GLenum; typ: GLenum; level: GLint; base: GLint; max: GLint; data: {const} UnivPtr ): GLint; external name '_gluBuild3DMipmapLevels';
 function gluBuild3DMipmaps( target: GLenum; internalFormat: GLint; width: GLsizei; height: GLsizei; depth: GLsizei; format: GLenum; typ: GLenum; data: {const} UnivPtr ): GLint; external name '_gluBuild3DMipmaps';
-function gluCheckExtension( const extName: PChar; const extString: PChar ): GLboolean; external name '_gluCheckExtension';
+function gluCheckExtension( const extName: PAnsiChar; const extString: PAnsiChar ): GLboolean; external name '_gluCheckExtension';
 procedure gluCylinder( quad: PGLUquadric; base: GLdouble; top: GLdouble; height: GLdouble; slices: GLint; stacks: GLint ); external name '_gluCylinder';
 procedure gluDeleteNurbsRenderer( nurb: PGLUnurbs ); external name '_gluDeleteNurbsRenderer';
 procedure gluDeleteQuadric( quad: PGLUquadric ); external name '_gluDeleteQuadric';
@@ -572,9 +578,9 @@ procedure gluEndCurve( nurb: PGLUnurbs ); external name '_gluEndCurve';
 procedure gluEndPolygon( tess: PGLUtesselator ); external name '_gluEndPolygon';
 procedure gluEndSurface( nurb: PGLUnurbs ); external name '_gluEndSurface';
 procedure gluEndTrim( nurb: PGLUnurbs ); external name '_gluEndTrim';
-function gluErrorString( error: GLenum ): PChar; external name '_gluErrorString';
+function gluErrorString( error: GLenum ): PAnsiChar; external name '_gluErrorString';
 procedure gluGetNurbsProperty( nurb: pGLUnurbs; property: GLenum; data: PGLfloat ); external name '_gluGetNurbsProperty';
-function gluGetString( name: GLenum ): PChar; external name '_gluGetString';
+function gluGetString( name: GLenum ): PAnsiChar; external name '_gluGetString';
 procedure gluGetTessProperty( tess: PGLUtesselator; which: GLenum; data: PGLdouble ); external name '_gluGetTessProperty';
 procedure gluLoadSamplingMatrices( nurb: PGLUnurbs; const model: PGLfloat; const perspective: PGLfloat; const view: PGLint ); external name '_gluLoadSamplingMatrices';
 procedure gluLookAt( eyeX: GLdouble; eyeY: GLdouble; eyeZ: GLdouble; centerX: GLdouble; centerY: GLdouble; centerZ: GLdouble; upX: GLdouble; upY: GLdouble; upZ: GLdouble ); external name '_gluLookAt';
@@ -585,7 +591,7 @@ procedure gluNextContour( tess: PGLUtesselator; typ: GLenum ); external name '_g
 
 type
 	GLUCallBackFunc = procedure;
-	
+
 procedure gluNurbsCallback(nurb : PGLUnurbs; which : GLenum; CallBackFunc : GLUCallBackFunc); external name '_gluNurbsCallback';
 procedure gluNurbsCallbackData( nurb: PGLUnurbs; userData: UnivPtr ); external name '_gluNurbsCallbackData';
 procedure gluNurbsCallbackDataEXT( nurb: PGLUnurbs; userData: UnivPtr ); external name '_gluNurbsCallbackDataEXT';

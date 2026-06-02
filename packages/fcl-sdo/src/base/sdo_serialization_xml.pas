@@ -14,9 +14,23 @@
 
  **********************************************************************}
 {$INCLUDE sdo_global.inc}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit sdo_serialization_xml;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.SysUtils, System.Classes, System.Contnrs,
+  Sdo.Types, Sdo.Base, Sdo.Consts, Sdo.Serialization.Utils
+{$IFDEF DELPHI}
+  , xmldom, sdo_win_xml
+{$ENDIF DELPHI}
+{$IFDEF FPC}
+  , Xml.Dom, Sdo.Fpc.Xml, Xml.Read, Xml.Writer
+{$ENDIF FPC}
+  ;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   SysUtils, Classes, Contnrs,
   sdo_types, sdo, sdo_consts, sdo_serialization_utils
@@ -27,6 +41,7 @@ uses
   , DOM, sdo_fpc_xml, XMLRead, XMLWrite
 {$ENDIF FPC}
   ;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
 
@@ -104,7 +119,7 @@ type
   protected
     function CreateList(const ANodeName : string):TDOMNodeList;override;
   public
-    destructor Destroy();override;  
+    destructor Destroy();override;
   end;
 
   { TEmbeddedArrayStackItem }
@@ -175,7 +190,7 @@ type
   private
     function InternalPutData(
       const AName : string;
-      const AData : TSDOString; 
+      const AData : TSDOString;
       const ANameSpace : string
     ) : TDOMNode;
     function PutBoolean(const AName : string; const AData : TSDOBoolean; const ANameSpace : string):TDOMNode;{$IFDEF USE_INLINE}inline;{$ENDIF}
@@ -309,7 +324,7 @@ type
 
     function GetBookMark() : TStreamBookmark;
     function GotoBookmark(const AValue : TStreamBookmark) : Boolean;
-    
+
     // This procedures will raise exceptions!!!
     procedure Error(Const AMsg:string);overload;
     procedure Error(Const AMsg:string; Const AArgs : array of const);overload;
@@ -324,8 +339,13 @@ resourcestring
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  Sdo.Impl.Utils;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   sdo_imp_utils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 function ExtractNameSpaceShortName(const ANameSpaceDeclaration : string):string;
 var
@@ -502,11 +522,11 @@ end;
 
 { TScopedArrayStackItem }
 
-destructor TScopedArrayStackItem.Destroy();  
+destructor TScopedArrayStackItem.Destroy();
 begin
   if ( FItemList <> nil ) then
     FItemList := nil;
-  inherited Destroy();  
+  inherited Destroy();
 end;
 
 function TScopedArrayStackItem.CreateList(const ANodeName : string): TDOMNodeList;
@@ -1200,7 +1220,7 @@ end;
 
 function TSDOSerializerStreamXML.InternalPutData(
   const AName : string;
-  const AData : TSDOString; 
+  const AData : TSDOString;
   const ANameSpace : string
 ): TDOMNode;
 var

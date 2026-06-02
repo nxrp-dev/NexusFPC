@@ -15,7 +15,7 @@ Const
   MaxDataSet = 35;
   // Number of records in a trace dataset:
   NForTraceDataset = 15;
-  
+
 type
 
   { TDBConnector }
@@ -30,6 +30,7 @@ type
      protected
        FChangedDatasets : array[0..MaxDataSet] of boolean;
        FUsedDatasets : TFPList;
+       procedure ClearDatasets; virtual;
        procedure SetTestUniDirectional(const AValue: boolean); virtual;
        function GetTestUniDirectional: boolean; virtual;
        // These methods should be implemented by all descendents
@@ -50,7 +51,7 @@ type
        // They should reset all data to their right/initial values.
        procedure ResetNDatasets; virtual;
        procedure ResetFieldDataset; virtual;
-       
+
        // These methods are called e.g. in the destructor.
        // They should clean up all mess, like tables on disk or on a DB server
        procedure DropNDatasets; virtual; abstract;
@@ -280,11 +281,18 @@ begin
   CreateNDatasets;
 end;
 
-destructor TDBConnector.Destroy;
+Procedure TDBConnector.ClearDatasets;
+
 begin
-  if assigned(FUsedDatasets) then FUsedDatasets.Destroy;
   DropNDatasets;
   DropFieldDataset;
+end;
+
+destructor TDBConnector.Destroy;
+begin
+  if assigned(FUsedDatasets) then
+    FUsedDatasets.Destroy;
+  ClearDatasets;
   Inherited;
 end;
 
@@ -549,10 +557,10 @@ var DBConnectorClass : TPersistentClass;
     FormatSettings   : TFormatSettings;
 begin
   if DBConnectorRefCount>0 then exit;
-  
+
   FormatSettings.DecimalSeparator:='.';
   FormatSettings.ThousandSeparator:=#0;
-  
+
   testValues[ftString] := testStringValues;
   testValues[ftFixedChar] := testStringValues;
   testValues[ftTime] := testTimeValues;

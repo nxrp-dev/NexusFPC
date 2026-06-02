@@ -2,7 +2,7 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses {$ifdef unix}cthreads,{$endif} fpmkunit;
 
 Var
   P : TPackage;
@@ -27,7 +27,7 @@ begin
       P.OSes := P.OSes - [java,android];
 
     P.Dependencies.Add('rtl-extra'); // winsock2
-    
+
     T:=P.Targets.AddUnit('enet.pp');
     T:=P.Targets.AddUnit('uenetclass.pp');
     with T.Dependencies do
@@ -36,6 +36,9 @@ begin
     P.ExamplePath.Add('examples');
       P.Targets.AddExampleProgram('serverapp.pp');
       P.Targets.AddExampleProgram('clientapp.pp');
+
+
+    P.NamespaceMap:='namespaces.lst';
 
 {$ifndef ALLPACKAGES}
     Run;

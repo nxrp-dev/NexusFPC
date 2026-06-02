@@ -86,7 +86,7 @@ begin
   Writeln('-t --indent=N         Number of characters for indent (default 2)');
   Writeln('-c --config=filename  Read ini file with configuration');
   Writeln('-H --header=filename  Add file header using contents of file "filename"');
-  Writeln('--no-implementation   Skip generation of executeable code');
+  Writeln('--no-implementation   Skip generation of executable code');
   Writeln('--no-externalclass    Skip generation of external classes (write as regular class)');
   Writeln('--no-externalvar      Skip generation of external variables (write as regular variables)');
   Writeln('--no-externalfunction Skip generation of external functions (write as regular functions)');
@@ -177,7 +177,7 @@ Var
   FileResolver: TFileResolver;
   InputFileName : string;
   Parser: TPasParser;
-  Start, CurPos: PChar;
+  Start, CurPos: PAnsiChar;
   Scanner: TPascalScanner;
 
   procedure ProcessCmdLinePart;

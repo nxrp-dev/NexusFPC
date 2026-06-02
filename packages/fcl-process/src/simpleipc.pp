@@ -13,14 +13,21 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
-unit simpleipc;
+{$IFNDEF FPC_DOTTEDUNITS}
+unit SimpleIPC;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Contnrs, System.SyncObjs, System.Classes, System.SysUtils;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Contnrs, SyncObjs, Classes, SysUtils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   MsgVersion = 1;
@@ -48,7 +55,7 @@ type
   private type
     TStreamClass = class of TStream;
   private const
-    // TMemoryStream uses an effecient grow algorithm.
+    // TMemoryStream uses an efficient grow algorithm.
     DefaultStreamClass: TStreamClass = TMemoryStream;
   strict private
     FStream: TStream;
@@ -89,7 +96,7 @@ type
   TIPCServerComm = Class(TObject)
   Private
     FOwner  : TSimpleIPCServer;
-  Protected  
+  Protected
     Function  GetInstanceID : String; virtual; abstract;
     Procedure DoError(const Msg : String; const Args : Array of const);
     Procedure PushMessage(Const Hdr : TMsgHeader; AStream : TStream);
@@ -112,10 +119,13 @@ type
   Private
     procedure SetActive(const AValue: Boolean);
     procedure SetServerID(const AValue: String);
+    procedure SetSystemGlobal(const AValue: Boolean);
   Protected
     FBusy: Boolean;
     FActive : Boolean;
+    FSystemGlobal : Boolean;
     FServerID : String;
+    procedure CheckServerID(aValue : string);
     procedure PrepareServerID;
     Procedure DoError(const Msg: String; const Args: array of const);
     Procedure CheckInactive;
@@ -126,6 +136,7 @@ type
     Property Busy : Boolean Read FBusy;
   Published
     Property Active : Boolean Read FActive Write SetActive;
+    Property SystemGlobal : Boolean Read FSystemGlobal Write SetSystemGlobal;
     Property ServerID : String Read FServerID Write SetServerID;
   end;
 
@@ -140,6 +151,7 @@ type
     DefaultMaxAction = ipcmoaNone;
     DefaultMaxQueue = 0;
   private
+    FGlobal: Boolean;
     FOnMessageError: TMessageQueueEvent;
     FOnMessageQueued: TNotifyEvent;
     FOnMessage: TNotifyEvent;
@@ -147,7 +159,6 @@ type
     FQueue: TIPCServerMsgQueue;
     FQueueLock: TCriticalSection;
     FQueueAddEvent: TSimpleEvent;
-    FGlobal: Boolean;
     // Access to the message is not locked by design!
     // In the threaded mode, it must be accessed only during event callbacks.
     FMessage: TIPCServerMsg;
@@ -171,10 +182,10 @@ type
     function GetMaxAction: TIPCMessageOverflowAction;
     function GetMaxQueue: Integer;
     function GetStringMessage: String;
-    procedure SetGlobal(const AValue: Boolean);
     procedure SetMaxAction(AValue: TIPCMessageOverflowAction);
     procedure SetMaxQueue(AValue: Integer);
     procedure SetThreaded(AValue: Boolean);
+    procedure SetGlobal(AValue: Boolean);
     procedure SetThreadTimeout(AValue: Integer);
     procedure SetSynchronizeEvents(AValue: Boolean);
     function WaitForReady(Timeout: Integer = -1): Boolean;
@@ -211,7 +222,7 @@ type
     property  ThreadExecuting: Boolean read FThreadExecuting;
     property  ThreadError: String read FThreadError;
   Published
-    Property Global : Boolean Read FGlobal Write SetGlobal;
+    Property Global : Boolean Read FGlobal write SetGlobal default false;
     // Called during ReadMessage
     Property OnMessage : TNotifyEvent Read FOnMessage Write FOnMessage;
     // Called when a message is pushed on the queue.
@@ -247,7 +258,7 @@ type
     Procedure SendMessage(MsgType : TMessageType; Stream : TStream);virtual;Abstract;
   end;
   TIPCClientCommClass = Class of TIPCClientComm;
-  
+
   { TSimpleIPCClient }
   TSimpleIPCClient = Class(TSimpleIPC)
   Private
@@ -269,6 +280,7 @@ type
     Procedure SendStringMessage(MsgType : TMessageType; const Msg : String);
     Procedure SendStringMessageFmt(const Msg : String; Args : Array of const);
     Procedure SendStringMessageFmt(MsgType : TMessageType; const Msg : String; Args : Array of const);
+  published
     Property  ServerInstance : String Read FServerInstance Write SetServerInstance;
   end;
 
@@ -294,10 +306,10 @@ resourcestring
 implementation
 
 { ---------------------------------------------------------------------
-  Include platform specific implementation. 
-  Should implement the CommClass method of both server and client component, 
+  Include platform specific implementation.
+  Should implement the CommClass method of both server and client component,
   as well as the communication class itself.
-  
+
   This comes first, to allow the uses clause to be set.
   If the include file defines OSNEEDIPCINITDONE then the unit will
   call IPCInit and IPCDone in the initialization/finalization code.
@@ -356,7 +368,7 @@ begin
   if Timeout >= 0 then
     Result := Timeout
   else
-    Result := SyncObjs.INFINITE;
+    Result := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SyncObjs.INFINITE;
 end;
 
 // Timeout values:
@@ -516,7 +528,7 @@ end;
 {$ENDREGION}
 
 {$REGION 'TIPCClientComm'}
-  
+
 constructor TIPCClientComm.Create(AOwner: TSimpleIPCClient);
 begin
   FOwner:=AOwner;
@@ -526,13 +538,13 @@ Procedure TIPCClientComm.DoError(const Msg : String; const Args : Array of const
 
 begin
   FOwner.DoError(Msg,Args);
-end;  
+end;
 
 {$ENDREGION}
 
 {$REGION 'TSimpleIPC'}
 
-Procedure TSimpleIPC.DoError(const Msg: String; const Args: array of const);
+procedure TSimpleIPC.DoError(const Msg: String; const Args: array of const);
 var
   FullMsg: String;
 begin
@@ -563,7 +575,7 @@ begin
   begin
     if ([]<>([csLoading,csDesigning]*ComponentState)) then
       FActive:=AValue
-    else  
+    else
       If AValue then
         Activate
       else
@@ -576,6 +588,7 @@ begin
   if (FServerID<>AValue) then
   begin
     CheckInactive;
+    CheckServerID(aValue);
     FServerID:=AValue;
   end;
 end;
@@ -599,6 +612,21 @@ begin
     FActive:=False;
     Activate;
   end;
+end;
+
+procedure TSimpleIPC.SetSystemGlobal(const AValue: Boolean);
+begin
+  CheckInactive;
+  FSystemGlobal:=AValue;
+end;
+
+procedure TSimpleIPC.CheckServerID(aValue: string);
+var
+  OK : Boolean;
+begin
+  OK:=(Pos('\',aValue)=0) and (Pos('/',aValue)=0) and (Pos(':',aValue)=0);
+  if not OK then
+    Raise EIPCError.Create('Characters / \ and : not allowed in server ID');
 end;
 
 {$ENDREGION}
@@ -674,16 +702,17 @@ begin
   inherited Destroy;
 end;
 
-procedure TSimpleIPCServer.SetGlobal(const AValue: Boolean);
-begin
-  CheckInactive;
-  FGlobal:=AValue;
-end;
 
 procedure TSimpleIPCServer.SetThreaded(AValue: Boolean);
 begin
   CheckInactive;
   FThreaded:=AValue;
+end;
+
+procedure TSimpleIPCServer.SetGlobal(AValue: Boolean);
+begin
+  CheckInactive;
+  FGlobal:=AValue;
 end;
 
 procedure TSimpleIPCServer.SetThreadTimeout(AValue: Integer);
@@ -745,9 +774,9 @@ end;
 function TSimpleIPCServer.StartThread: Boolean;
 begin
   FThreadError := '';
-  FQueueLock := SyncObjs.TCriticalSection.Create;
-  FQueueAddEvent := SyncObjs.TSimpleEvent.Create;
-  FThreadReadyEvent := SyncObjs.TSimpleEvent.Create;
+  FQueueLock := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SyncObjs.TCriticalSection.Create;
+  FQueueAddEvent := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SyncObjs.TSimpleEvent.Create;
+  FThreadReadyEvent := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SyncObjs.TSimpleEvent.Create;
   FThread := TIPCServerThread.Create(Self);
   FThread.Start;
   Result := WaitForReady;
@@ -1078,7 +1107,7 @@ begin
     Except
       FreeAndNil(FIPCComm);
       Raise;
-    end;  
+    end;
     FActive:=True;
   end;
 end;
@@ -1091,7 +1120,7 @@ begin
     Finally
       FActive:=False;
       FreeAndNil(FIPCComm);
-    end;  
+    end;
 end;
 
 function TSimpleIPCClient.ServerRunning: Boolean;

@@ -14,12 +14,19 @@
 
  **********************************************************************}
 {$INCLUDE sdo_global.inc}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit sdo_cursor_intf;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, Sdo.Types;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, sdo_types;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
 
@@ -37,11 +44,11 @@ type
     ['{2B7756B1-E239-4B6F-A7A3-4B57B98FAD4F}']
     procedure Reset();
     function MoveNext() : Boolean;
-    //It is just the cursor that is cloned, the underliying datas are shared
+    //It is just the cursor that is cloned, the underlying datas are shared
     function Clone():ICursor;
     function GetCount() : PtrInt;
   end;
-  
+
   IObjectFilter = interface
     ['{3DFB1A26-ED2D-428A-9F62-2091A076D97B}']
     function Evaluate(const AObject : TObject) : Boolean;
@@ -83,7 +90,7 @@ type
     AInputCursor : IObjectCursor;
     AFilter      : IObjectFilter
   ) : IFilterableObjectCursor ;
-  
+
 implementation
 
 type

@@ -1,3 +1,4 @@
+{%MainUnit sysutils.pp}
 {
     This file is part of the Free Pascal run time library.
     Copyright (c) 1999-2000 by Florian Klaempfl
@@ -42,6 +43,11 @@
 
   { Type helpers}
   {$i syshelp.inc}
+
+{$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
+  { strange Delphi thing }
+  {$i sysmarshal.inc}
+{$ENDIF}
 
   {$ifndef OS_FILEISREADONLY}
   Function FileIsReadOnly(const FileName: RawByteString): Boolean;
@@ -130,7 +136,7 @@ begin
 end;
 {$ENDIF}
 
-  { Read pchar handling functions implementation }
+  { Read PAnsiChar handling functions implementation }
   {$i syspch.inc}
 
   { generic internationalisation code }
@@ -151,6 +157,10 @@ end;
   { OS utility code }
   {$i osutil.inc}
 
+    {$IFDEF CPULLVM}
+    // LLVM does not like the constref construction.
+    // So when LLVM is used, we keep the untyped version.
+    // This allows users of other platforms to enjoy the type safety of FreeAndNil.
     procedure FreeAndNil(var obj);
       var
         temp: tobject;
@@ -159,6 +169,18 @@ end;
         pointer(obj):=nil;
         temp.free;
       end;
+    {$ELSE}
+    procedure FreeAndNil(constref obj: TObject);
+      type
+        PObject = ^TObject;
+      var
+        temp: tobject;
+      begin
+        temp:=obj;
+        PObject(@obj)^:=nil;
+        temp.free;
+      end;
+    {$ENDIF}
 
     procedure FreeMemAndNil(var p);
 
@@ -189,7 +211,7 @@ end;
       end;
 
 
-    constructor Exception.CreateRes(ResString: PString);
+    constructor Exception.CreateRes(ResString: PResStringRec);
 
       begin
          inherited create;
@@ -197,7 +219,7 @@ end;
       end;
 
 
-    constructor Exception.CreateResFmt(ResString: PString; const Args: array of const);
+    constructor Exception.CreateResFmt(ResString: PResStringRec; const Args: array of const);
 
       begin
          inherited create;
@@ -224,7 +246,7 @@ end;
     end;
 
 
-    constructor Exception.CreateResHelp(ResString: PString; AHelpContext: Longint);
+    constructor Exception.CreateResHelp(ResString: PResStringRec; AHelpContext: Longint);
 
     begin
        inherited create;
@@ -233,7 +255,7 @@ end;
     end;
 
 
-    constructor Exception.CreateResFmtHelp(ResString: PString; const Args: array of const;
+    constructor Exception.CreateResFmtHelp(ResString: PResStringRec; const Args: array of const;
       AHelpContext: Longint);
 
     begin
@@ -242,15 +264,18 @@ end;
        fhelpcontext:=AHelpContext;
     end;
 
-    Function Exception.ToString : String;
+    Function Exception.ToString : RTLString;
     begin
       Result:=ClassName+': '+Message;
     end;
 
+Var OutOfMemory : EOutOfMemory;
+    InValidPointer : EInvalidPointer;
+
     procedure EHeapMemoryError.FreeInstance;
     begin
-       if AllowFree then
-        inherited FreeInstance;
+       if (pointer(self)<>pointer(OutOfMemory)) and (pointer(self)<>pointer(InvalidPointer)) then
+         inherited FreeInstance;
     end;
 
 
@@ -298,6 +323,28 @@ end;
        end;
        ErrCode:=Code;
     end;
+
+
+constructor EInOutArgumentException.Create(const aMsg, aPath: string); overload;
+
+begin
+  Path:=aPath;
+  Inherited Create(aMsg);
+end;
+
+constructor EInOutArgumentException.CreateRes(ResStringRec: PResStringRec; const aPath: string); overload;
+
+begin
+  Path:=aPath;
+  Inherited CreateRes(ResStringRec);
+end;
+
+constructor EInOutArgumentException.CreateFmt(const fmt: string;  const args : array of const; const aPath : String);
+
+begin
+  Path:=aPath;
+  inherited CreateFmt(fmt,args);
+end;
 
 {$if defined(win32) or defined(win64) or defined (wince)}
 function EExternal.GetExceptionRecord: PExceptionRecord;
@@ -348,7 +395,7 @@ type
 {$IFDEF FPC_HAS_FEATURE_RESOURCES}  // This is necessary for 2.4.4, which does not have reasources as a separate feature
     msg:  PResStringRec;
 {$else FPC_HAS_FEATURE_RESOURCES}
-    msg:  PString;
+    msg:  PAnsiString;
 {$endif FPC_HAS_FEATURE_RESOURCES}
   end;
 
@@ -401,15 +448,12 @@ begin
   result:=nil;
 end;
 
-Var OutOfMemory : EOutOfMemory;
-    InValidPointer : EInvalidPointer;
-
-
 Procedure RunErrorToExcept (ErrNo : Longint; Address : CodePointer; Frame : Pointer);
 var
   E: Exception;
-  HS: PString;
+  HS: PResStringRec;
   Entry: PExceptMapEntry;
+  CastFrom,CastTo : ShortString;
 begin
   Case Errno of
    1,203 : E:=OutOfMemory;
@@ -417,7 +461,14 @@ begin
   else
     Entry:=FindExceptMapEntry(ErrNo);
     if Assigned(Entry) then
-      E:=Entry^.cls.CreateRes(Entry^.msg)
+    begin
+      E:=Entry^.cls.CreateRes(Entry^.msg);
+      if (ErrNo=219) then
+        begin
+        TObject.GetLastCastErrorInfo(CastFrom,CastTo);
+        E.Message:=E.Message+Format(SInstanceIsNotA,[CastFrom,CastTo]);
+        end;
+    end
     else
     begin
      HS:=nil;
@@ -503,6 +554,12 @@ end;
 
 {$pop} //{$S-} for Error handling functions
 
+procedure RangeIndexError(aIndex, aMaxIndex: SizeInt; aListObj: TObject);
+
+begin
+  raise ERangeError.Create(ListIndexErrorMsg(aIndex,aMaxIndex,aListObj));
+end;
+
 Procedure InitExceptions;
 {
   Must install uncaught exception handler (ExceptProc)
@@ -514,9 +571,7 @@ begin
   ExceptProc:=@CatchUnhandledException;
   // Create objects that may have problems when there is no memory.
   OutOfMemory:=EOutOfMemory.Create(SOutOfMemory);
-  OutOfMemory.AllowFree:=false;
   InvalidPointer:=EInvalidPointer.Create(SInvalidPointer);
-  InvalidPointer.AllowFree:=false;
   AssertErrorProc:=@AssertErrorHandler;
   ErrorProc:=@RunErrorToExcept;
   OnShowException:=Nil;
@@ -525,10 +580,8 @@ end;
 
 Procedure DoneExceptions;
 begin
-  OutOfMemory.AllowFree:=true;
-  OutOfMemory.Free;
-  InValidPointer.AllowFree:=true;
-  InValidPointer.Free;
+  FreeAndNil(OutOfMemory); { These will automatically work as they first set pointer to nil, then free the object. See EHeapMemoryError.FreeInstance. }
+  FreeAndNil(InValidPointer);
 end;
 
 
@@ -571,7 +624,7 @@ begin
 end;
 
 function ExceptionErrorMessage(ExceptObject: TObject; ExceptAddr: Pointer;
-                               Buffer: PChar; Size: Integer): Integer;
+                               Buffer: PAnsiChar; Size: Integer): Integer;
 
 Var
   S : AnsiString;
@@ -621,6 +674,43 @@ procedure OutOfMemoryError;
 begin
   Raise OutOfMemory;
 end;
+
+function ListIndexErrorMsg(aIndex, aMaxIndex: SizeInt; const aListObjName: string): string; overload;
+
+begin
+  if aMaxIndex<0 then
+    Result:=Format(SListIndexErrorEmptyReason,[aListObjName])
+  else
+    Result:=Format(SListIndexErrorRangeReason,[aListObjName]);
+  Result:=Format(SListIndexError, [aIndex])+Result;
+end;
+
+function ListIndexErrorMsg(AIndex, AMaxIndex: SizeInt; AListObj: TObject): string; overload;
+
+Var
+  aName : string;
+
+begin
+  if Assigned(aListObj) then
+   Result:=aListObj.ClassName
+ else
+   Result:='<Nil>';
+  Result:=ListIndexErrorMsg(aIndex, aMaxIndex, aName);
+end;
+
+procedure ListIndexError(aIndex,aMax: Integer; aObj: TObject);
+
+var
+ aClassName : string;
+
+begin
+  if Assigned(aObj) then
+    aClassName:=aObj.ClassName
+  else
+    aClassName:='<nil>';
+  Raise EListError.CreateFmt(SErrListIndexExt,[aIndex,aClassName,aMax])
+end;
+
 
 { ---------------------------------------------------------------------
     Initialization/Finalization/exit code
@@ -828,7 +918,6 @@ end;
 
 
 // generic ifthen..
-{$IFNDEF VER3_0}
 generic function IfThen<T>(val:boolean;const iftrue:T; const iffalse:T) :T; inline; overload;
 begin
   if val then
@@ -836,9 +925,34 @@ begin
   else
     Result:=ifFalse;
 end;
-{$ENDIF}
 
-Function ArrayOfConstToStrArray(Args: array of const) : TUTF8StringDynArray;
+generic function Exchange<T>(var target:T; const newvalue:T) :T;
+begin
+  Result := target;
+  target := newvalue;
+end;
+
+generic function Extract<T>(var from: T) :T;
+type
+  RawT = array[0 .. sizeof(T) - 1] of byte;
+begin
+  Finalize(Result);
+  RawT(Result):=RawT(from);
+  Initialize(from);
+end;
+
+generic procedure Swap<T>(var lhs,rhs: T);
+type
+  RawT = array[0 .. sizeof(T) - 1] of byte;
+var
+  tmp:RawT;
+begin
+  tmp:=RawT(lhs);
+  RawT(lhs):=RawT(rhs);
+  RawT(rhs):=tmp;
+end;
+
+Function ArrayOfConstToStrArray(const Args: array of const) : TUTF8StringDynArray;
 
 var
   i: Integer;
@@ -902,7 +1016,7 @@ begin
     end;
 end;
 
-Function ArrayOfConstToStr(Args: array of const ; aSeparator : Char = ','; aQuoteBegin : Char = '"'; aQuoteEnd : Char = '"') : UTF8String;
+Function ArrayOfConstToStr(const Args: array of const ; aSeparator : Char = ','; aQuoteBegin : Char = '"'; aQuoteEnd : Char = '"') : UTF8String;
 
   Procedure Add(s: UTF8String);
 
@@ -925,3 +1039,269 @@ begin
   For S in ArrayOfConstToStrArray(Args) do
     Add(S);
 end;
+
+Function GetCompiledArchitecture : TOSVersion.TArchitecture;
+
+begin
+  Result:=arOther;
+  {$ifdef i386}
+  Result:=arIntelX86;
+  {$endif i386}
+
+  {$ifdef m68k}
+  Result:=arM68k;
+  {$endif m68k}
+
+  {$ifdef powerpc}
+  Result:=arPowerPC
+  {$endif powerpc}
+
+  {$ifdef powerpc64}
+  Result:=arPower64
+  {$endif powerpc64}
+
+  {$ifdef arm}
+  Result:=arARM32;
+  {$endif arm}
+
+  {$ifdef aarch64}
+  Result:=arARM64
+  {$endif aarch64}
+
+  {$ifdef sparc}
+  Result:=arSparc;
+  {$endif sparc}
+
+  {$ifdef sparc64}
+  Result:=arSparc64;
+  {$endif sparc64}
+
+  {$ifdef CPUX86_64}
+  Result:=arIntelX64;
+  {$endif x86_64}
+
+  {$ifdef mipsel}
+  Result:=arMipsel
+  {$else : not mipsel}
+    {$ifdef mips}
+      Result:=arMips;
+    {$endif mips}
+  {$endif not mipsel}
+
+  {$ifdef riscv32}
+  Result:=arRiscV32;
+  {$endif riscv32}
+
+  {$ifdef riscv64}
+  Result:=arRiscV64;
+  {$endif riscv64}
+
+  {$ifdef xtensa}
+  Result:=arXtensa;
+  {$endif xtensa}
+
+  {$ifdef wasm32}
+  Result:=arWasm32;
+  {$endif wasm32}
+
+  {$ifdef loongarch64}
+  Result:=arLoongArch64;
+  {$endif loongarch64}
+end;
+
+Function GetCompiledPlatform : TOSVersion.TPlatform;
+
+begin
+  Result:=pfOther;
+  {$IFDEF WINDOWS}
+  Result:=pfWindows;
+  {$ENDIF}
+  {$Ifdef darwin}
+  Result:=pfMacOS;
+  {$ENDIF}
+  {$IFDEF IOS}
+  Result:=pfiOS;
+  {$ENDIF}
+  {$IFDEF ANDROID}
+  Result:=pfAndroid;
+  {$ENDIF}
+  {$IFDEF LINUX}
+  Result:=pfLinux;
+  {$ENDIF}
+  {$IFDEF GO32V2}
+  Result:=pfGo32v2;
+  {$ENDIF}
+  {$IFDEF OS2}
+  Result:=pfOS2;
+  {$ENDIF}
+  {$IFDEF FREEBSD}
+  Result:=pfFreeBSD;
+  {$ENDIF}
+  {$IFDEF BEOS}
+  Result:=pfBeos;
+  {$ENDIF}
+  {$IFDEF NETBSD}
+  Result:=pfNetBSD;
+  {$ENDIF}
+  {$IFDEF AMIGA}
+  Result:=pfAmiga;
+  {$ENDIF}
+  {$IFDEF ATARI}
+  Result:=pfAtari;
+  {$ENDIF}
+  {$IFDEF SUNOS}
+  Result:=pfSolaris;
+  {$ENDIF}
+  {$IFDEF QNX}
+  Result:=pfQNX;
+  {$ENDIF}
+  {$IFDEF Netware}
+  Result:=pfNetware;
+  {$ENDIF}
+  {$IFDEF OpenBSD}
+  Result:=pfOpenBSD;
+  {$ENDIF}
+  {$IFDEF WDosX}
+  Result:=pfWDosX;
+  {$ENDIF}
+  {$IFDEF PALMOS}
+  Result:=pfPalmos;
+  {$ENDIF}
+  {$IFDEF MacOSClassic}
+  Result:=pfMacOSClassic;
+  {$ENDIF}
+  {$IFDEF DARWIN}
+  Result:=pfDarwin;
+  {$ENDIF}
+  {$IFDEF EMX}
+  Result:=pfEMX;
+  {$ENDIF}
+  {$IFDEF WATCOM}
+  Result:=pfWatcom;
+  {$ENDIF}
+  {$IFDEF MORPHOS}
+  Result:=pfMorphos;
+  {$ENDIF}
+  {$IFDEF NETWLIBC}
+  Result:=pfNetwLibC;
+  {$ENDIF}
+  {$IFDEF WINCE}
+  Result:=pfWinCE;
+  {$ENDIF}
+  {$IFDEF GBA}
+  Result:=pfGBA;
+  {$ENDIF}
+  {$IFDEF NDS}
+  Result:=pfNDS;
+  {$ENDIF}
+  {$IFDEF EMBEDDED}
+  Result:=pfEmbedded;
+  {$ENDIF}
+  {$IFDEF SYMBIAN}
+  Result:=pfSymbian;
+  {$ENDIF}
+  {$IFDEF HAIKU}
+  Result:=pfHaiku;
+  {$ENDIF}
+  {$IFDEF IPHONESIM}
+  Result:=pfIPhoneSim;
+  {$ENDIF}
+  {$IFDEF AIX}
+  Result:=pfAIX;
+  {$ENDIF}
+  {$IFDEF JAVA}
+  Result:=pfJava;
+  {$ENDIF}
+  {$IFDEF NATIVENT}
+  Result:=pfNativeNT;
+  {$ENDIF}
+  {$IFDEF MSDOS}
+  Result:=pfMSDos;
+  {$ENDIF}
+  {$IFDEF WII}
+  Result:=pfWII;
+  {$ENDIF}
+  {$IFDEF AROS}
+  Result:=pfAROS;
+  {$ENDIF}
+  {$IFDEF DRAGONFLY}
+  Result:=pfDragonFly;
+  {$ENDIF}
+  {$IFDEF WIN16}
+  Result:=pfWin16;
+  {$ENDIF}
+  {$IFDEF FREERTOS}
+  Result:=pfFreeRTOS;
+  {$ENDIF}
+  {$IFDEF ZXSPECTRUM}
+  Result:=pfZXSpectrum;
+  {$ENDIF}
+  {$IFDEF MSXDOS}
+  Result:=pfMSXDOS;
+  {$ENDIF}
+  {$IFDEF AMSTRADCPC}
+  Result:=pfAmstradCPC;
+  {$ENDIF}
+  {$IFDEF SINCLAIRQL}
+  Result:=pfSinclairQL;
+  {$ENDIF}
+  {$IFDEF WASI}
+  Result:=pfWasi;
+  {$ENDIF}
+end;
+
+class constructor TOSVersion.Create;
+
+{$IFNDEF HAS_OSVERSION}
+var
+  S : String;
+{$ENDIF}
+begin
+  FArchitecture:=GetCompiledArchitecture;
+  FPlatform:=GetCompiledPlatform;
+  FBuild:=0;
+  FMajor:=0;
+  FMinor:=0;
+  FServicePackMajor:=0;
+  FServicePackMinor:=0;
+{$IFDEF HAS_OSVERSION}
+  InitOSVersion;
+{$ELSE}
+  WriteStr(S,GetCompiledPlatform);
+  FName:=Copy(S,3);
+  WriteStr(S,GetCompiledArchitecture);
+  FFull:=Copy(S,3)+'-'+FName;
+{$ENDIF}
+end;
+
+class function TOSVersion.Check(aMajor: Integer): Boolean; overload; static; inline;
+
+begin
+  Result:=(Major>=aMajor);
+end;
+
+
+class function TOSVersion.Check(aMajor, aMinor: Integer): Boolean; overload; static; inline;
+
+begin
+ Result:=(Major>aMajor)
+         or ((Major=aMajor) and (Minor>=aMinor))
+end;
+
+
+class function TOSVersion.Check(aMajor, aMinor, aServicePackMajor: Integer): Boolean; overload; static; inline;
+
+begin
+  Result:=(Major>AMajor)
+          or ((Major=aMajor) and (Minor>aMinor))
+          or ((Major=aMajor) and (Minor=aMinor) and (ServicePackMajor>=aServicePackMajor));
+end;
+
+
+class function TOSVersion.ToString: string; static;
+
+begin
+  Result:=FFull;
+end;
+
+

@@ -16,7 +16,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CFURLEnumerator;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -201,7 +203,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CFBase,MacOsApi.CFArray,MacOsApi.CFError,MacOsApi.CFURL;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CFBase,CFArray,CFError,CFURL;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 {$ALIGN POWER}
@@ -288,7 +294,7 @@ function CFURLEnumeratorGetDescendentLevel( enumerator: CFURLEnumeratorRef ): CF
 
 
 { CFURLEnumeratorGetSourceDidChange is deprecated. If your program is interested in directory hierarchy changes during enumeration (and most programs are not interested), you should use the File System Events API.
- 
+
  CFURLEnumeratorGetSourceDidChange does nothing and always returns false.
  }
 function CFURLEnumeratorGetSourceDidChange( enumerator: CFURLEnumeratorRef ): Boolean; external name '_CFURLEnumeratorGetSourceDidChange';

@@ -12,14 +12,21 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
   **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit FPDDDiff;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, Data.Dict.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, fpdatadict;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
 
@@ -27,12 +34,12 @@ type
   TDiffKindSet = set of TDiffKind;
 
   TDifferenceType = (dtMissing, dtDifferent, dtSurplus);
-  
+
 const
   diffAll = [DiffTables, DiffFields, DiffIndexes, DiffSequences, DiffDomains];
-  
+
 type
-  
+
   { TCustomDDDiffer }
 
   TCustomDDDiffer = class
@@ -60,12 +67,16 @@ type
     property SourceDD : TFPdatadictionary read FSourceDD write FSourceDD;
     property TargetDD : TFPdatadictionary read FTargetDD write FTargetDD;
   end;
-  
+
   EDataDictDiff = Class(EDataDict);
-  
+
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses Data.Db;
+{$ELSE FPC_DOTTEDUNITS}
 uses db;
+{$ENDIF FPC_DOTTEDUNITS}
 
 resourcestring
   SErrMissingDatadict = 'Source and/or target datadictionary not assigned.';

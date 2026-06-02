@@ -71,8 +71,8 @@ Type
   TGstElement_queueautoptr = PGQueue;
 
 
-  function gst_make_element_message_details(name:Pchar; args:array of const):PGstStructure;cdecl;external gstreamerlib name 'gst_make_element_message_details';
-  function gst_make_element_message_details(name:Pchar):PGstStructure;cdecl;external gstreamerlib name 'gst_make_element_message_details';
+  function gst_make_element_message_details(name:PAnsiChar; args:array of const):PGstStructure;cdecl;external gstreamerlib name 'gst_make_element_message_details';
+  function gst_make_element_message_details(name:PAnsiChar):PGstStructure;cdecl;external gstreamerlib name 'gst_make_element_message_details';
 
 
   procedure gst_element_class_add_pad_template(klass:PGstElementClass; templ:PGstPadTemplate);cdecl;external gstreamerlib name 'gst_element_class_add_pad_template';
@@ -162,7 +162,7 @@ Type
 
   function gst_element_send_event(element:PGstElement; event:PGstEvent):Tgboolean;cdecl;external gstreamerlib name 'gst_element_send_event';
 
-  function gst_element_seek(element:PGstElement; rate:Tgdouble; format:TGstFormat; flags:TGstSeekFlags; start_type:TGstSeekType; 
+  function gst_element_seek(element:PGstElement; rate:Tgdouble; format:TGstFormat; flags:TGstSeekFlags; start_type:TGstSeekType;
              start:Tgint64; stop_type:TGstSeekType; stop:Tgint64):Tgboolean;cdecl;external gstreamerlib name 'gst_element_seek';
 
   function gst_element_query(element:PGstElement; query:PGstQuery):Tgboolean;cdecl;external gstreamerlib name 'gst_element_query';
@@ -176,12 +176,12 @@ Type
 
 (* Const before type ignored *)
 (* Const before type ignored *)
-  procedure gst_element_message_full(element:PGstElement; _type:TGstMessageType; domain:TGQuark; code:Tgint; text:Pgchar; 
+  procedure gst_element_message_full(element:PGstElement; _type:TGstMessageType; domain:TGQuark; code:Tgint; text:Pgchar;
               debug:Pgchar; afile:Pgchar; _function:Pgchar; line:Tgint);cdecl;external gstreamerlib name 'gst_element_message_full';
 
 (* Const before type ignored *)
 (* Const before type ignored *)
-  procedure gst_element_message_full_with_details(element:PGstElement; _type:TGstMessageType; domain:TGQuark; code:Tgint; text:Pgchar; 
+  procedure gst_element_message_full_with_details(element:PGstElement; _type:TGstMessageType; domain:TGQuark; code:Tgint; text:Pgchar;
               debug:Pgchar; afile:Pgchar; _function:Pgchar; line:Tgint; structure:PGstStructure);cdecl;external gstreamerlib name 'gst_element_message_full_with_details';
 
   function gst_element_is_locked_state(element:PGstElement):Tgboolean;cdecl;external gstreamerlib name 'gst_element_is_locked_state';

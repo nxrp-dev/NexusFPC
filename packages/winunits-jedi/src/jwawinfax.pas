@@ -42,7 +42,9 @@
 
 // $Id: JwaWinFax.pas,v 1.13 2007/10/19 19:54:18 dezipaitor Exp $
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaWinFax;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -58,8 +60,13 @@ interface
 
 
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Wintype, WinApi.Jedi.Winerror, WinApi.Jedi.Winbase, WinApi.Jedi.Winnt;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaWinType, JwaWinError, JwaWinBase, JwaWinNT;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 
@@ -96,7 +103,7 @@ const
   {$EXTERNALSYM FAX_ERR_DEVICE_NUM_LIMIT_EXCEEDED}
   FAX_ERR_NOT_SUPPORTED_ON_THIS_SKU = 7011;
   {$EXTERNALSYM FAX_ERR_NOT_SUPPORTED_ON_THIS_SKU}
-  FAX_ERR_VERSION_MISMATCH          = 7012; // Fax client/server versions mismtach
+  FAX_ERR_VERSION_MISMATCH          = 7012; // Fax client/server versions mismatch
   {$EXTERNALSYM FAX_ERR_VERSION_MISMATCH}
   FAX_ERR_RECIPIENTS_LIMIT          = 7013; // Recipients limit in a single broadcast
   {$EXTERNALSYM FAX_ERR_RECIPIENTS_LIMIT}
@@ -1185,7 +1192,7 @@ type
   _FAX_CONTEXT_INFOA = record
     SizeOfStruct: DWORD; // Size of this structure
     hDC: HDC; // Device Context
-    ServerName: array [0..MAX_COMPUTERNAME_LENGTH] of CHAR; // Server name
+    ServerName: array [0..MAX_COMPUTERNAME_LENGTH] of AnsiChar; // Server name
   end;
   {$EXTERNALSYM _FAX_CONTEXT_INFOA}
   FAX_CONTEXT_INFOA = _FAX_CONTEXT_INFOA;

@@ -1,7 +1,7 @@
 { **********************************************************************
     This file is part of the Free Component Library (FCL)
     Copyright (c) 2008 by Mattias Gaertner
-    
+
     Average Level Tree implementation by Mattias Gaertner
 
     See the file COPYING.FPC, included in this distribution,
@@ -20,7 +20,9 @@
     balanced, so that inserting, deleting and finding a node is performed in
     O(log(#Nodes)).
 }
+{$IFNDEF FPC_DOTTEDUNITS}
 unit AVL_Tree;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$ifdef FPC}{$mode objfpc}{$endif}{$H+}
 
@@ -29,9 +31,15 @@ interface
 {off $DEFINE MEM_CHECK}
 {off $DEFINE CheckAVLTreeNodeManager}
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  {$IFDEF MEM_CHECK}MemCheck,{$ENDIF}
+  System.Classes, System.SysUtils;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   {$IFDEF MEM_CHECK}MemCheck,{$ENDIF}
   Classes, SysUtils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   TAVLTree = class;

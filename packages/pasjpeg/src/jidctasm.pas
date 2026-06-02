@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 Unit JIDctAsm;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { This file contains a slow-but-accurate integer implementation of the
   inverse DCT (Discrete Cosine Transform).  In the IJG code, this routine
@@ -57,11 +59,19 @@ interface
 
 {$I jconfig.inc}
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Jpeg.Jmorecfg,
+  System.Jpeg.Jinclude,
+  System.Jpeg.Jpeglib,
+  System.Jpeg.Jdct;         { Private declarations for DCT subsystem }
+{$ELSE FPC_DOTTEDUNITS}
 uses
   jmorecfg,
   jinclude,
   jpeglib,
   jdct;         { Private declarations for DCT subsystem }
+{$ENDIF FPC_DOTTEDUNITS}
 
 { Perform dequantization and inverse DCT on one block of coefficients. }
 
@@ -490,7 +500,7 @@ asm
   {end;}
         jmp     @loop518
 @loop519:
-  { Save to memory what we've registerized for the preceding loop. }
+  { Save to memory what we've registered for the preceding loop. }
 
   { Pass 2: process rows from work array, store into output array. }
   { Note that we must descale the results by a factor of 8 == 2**3, }

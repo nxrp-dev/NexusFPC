@@ -93,7 +93,6 @@ unit cgcpu;
         procedure a_loadaddr_ref_reg(list : TAsmList;const ref : treference;r : tregister);override;
 
         procedure g_concatcopy(list : TAsmList;const source,dest : treference;len : tcgint);override;
-        procedure g_concatcopy_move(list : TAsmList;const source,dest : treference;len : tcgint);
 
         procedure g_overflowcheck(list: TAsmList; const l: tlocation; def: tdef); override;
         procedure g_overflowCheck_loc(List: TAsmList; const Loc: TLocation; def: TDef; ovloc: tlocation); override;
@@ -1040,6 +1039,24 @@ unit cgcpu;
                { Optimized, replaced with a simple load }
                a_load_const_reg(list,size,a,reg);
              end;
+           OP_XOR:
+             begin
+               for i:=1 to tcgsize2size[size] do
+                 begin
+                   if ((qword(a) and mask) shr shift)<>0 then
+                     begin
+                       getcpuregister(list,NR_R26);
+                       list.concat(taicpu.op_reg_const(A_LDI,NR_R26,(qword(a) and mask) shr shift));
+                       list.concat(taicpu.op_reg_reg(A_EOR,reg,NR_R26));
+                       ungetcpuregister(list,NR_R26);
+                     end;
+                   { check if we are not in the last iteration to avoid an internalerror in GetNextReg }
+                   if i<tcgsize2size[size] then
+                     NextRegPostInc;
+                   mask:=mask shl 8;
+                   inc(shift,8);
+                 end;
+             end;
            OP_OR:
              begin
                for i:=1 to tcgsize2size[size] do
@@ -1327,7 +1344,7 @@ unit cgcpu;
           end;
 
         { can we take advantage of adiw/sbiw? }
-        if (current_settings.cputype>=cpu_avr2) and not(assigned(ref.symbol)) and (ref.offset<>0) and (ref.offset>=-63) and (ref.offset<=63) and
+        if (CPUAVR_HAS_ADIW in cpu_capabilities[current_settings.cputype]) and not(assigned(ref.symbol)) and (ref.offset<>0) and (ref.offset>=-63) and (ref.offset<=63) and
           ((tmpreg=NR_R24) or (tmpreg=NR_R26) or (tmpreg=NR_R28) or (tmpreg=NR_R30)) and (ref.base<>NR_NO) then
           begin
             maybegetcpuregister(list,tmpreg);
@@ -2654,33 +2671,6 @@ unit cgcpu;
     procedure tcgavr.fixref(list : TAsmList;var ref : treference);
       begin
         internalerror(2011021320);
-      end;
-
-
-    procedure tcgavr.g_concatcopy_move(list : TAsmList;const source,dest : treference;len : tcgint);
-      var
-        paraloc1,paraloc2,paraloc3 : TCGPara;
-        pd : tprocdef;
-      begin
-        pd:=search_system_proc('MOVE');
-        paraloc1.init;
-        paraloc2.init;
-        paraloc3.init;
-        paramanager.getcgtempparaloc(list,pd,1,paraloc1);
-        paramanager.getcgtempparaloc(list,pd,2,paraloc2);
-        paramanager.getcgtempparaloc(list,pd,3,paraloc3);
-        a_load_const_cgpara(list,OS_SINT,len,paraloc3);
-        a_loadaddr_ref_cgpara(list,dest,paraloc2);
-        a_loadaddr_ref_cgpara(list,source,paraloc1);
-        paramanager.freecgpara(list,paraloc3);
-        paramanager.freecgpara(list,paraloc2);
-        paramanager.freecgpara(list,paraloc1);
-        alloccpuregisters(list,R_INTREGISTER,paramanager.get_volatile_registers_int(pocall_default));
-        a_call_name_static(list,'FPC_MOVE');
-        dealloccpuregisters(list,R_INTREGISTER,paramanager.get_volatile_registers_int(pocall_default));
-        paraloc3.done;
-        paraloc2.done;
-        paraloc1.done;
       end;
 
 

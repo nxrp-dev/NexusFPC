@@ -22,7 +22,7 @@
 {$I ctypes.inc}
 {$packrecords c}
 
-const 
+const
     SEM_SAFE=255;
 type
 
@@ -58,7 +58,7 @@ type
 {$ifdef CPU64}
     size_t   = cuint64;
 {$else}
-    size_t   = cuint32;         { as definied in the C standard}
+    size_t   = cuint32;         { as defined in the C standard}
 {$endif}
     TSize    = size_t;
     pSize    = ^size_t;
@@ -101,7 +101,7 @@ type
   TTimeVal = timeval;
 
   timespec = packed record
-    tv_sec   : time_t;                  // should be time_t, bug compability
+    tv_sec   : time_t;                  // should be time_t, bug compatibility
     tv_nsec  : clong;
   end;
   ptimespec= ^timespec;
@@ -125,7 +125,7 @@ type
    pthread_key_t        = cint;
    pthread_rwlock_t     = ^pthread_rwlock_t_rec;
    pthread_rwlockattr_t = ^pthread_rwlockattr_t_rec;
-  
+
    psem_t = ^sem_t;
    ppsem_t= ^psem_t;
    semid_t= pointer;
@@ -139,7 +139,7 @@ type
        sysse   : cint;
        entry   : psem_t;
        backpointer : ppsem_t;
-       spare   : array[0..SEM_SAFE] of char;
+       spare   : array[0..SEM_SAFE] of AnsiChar;
 
     end;
 
@@ -173,7 +173,7 @@ type
 
 Const
      MNAMELEN   = 80;
-     MFSNAMELEN = 16;	
+     MFSNAMELEN = 16;
 
 Type TStatFS = Record
         spare2       : clong;          { placeholder }
@@ -190,21 +190,21 @@ Type TStatFS = Record
         fflags       : cint32;         { copy of mount exported flags }
         fsyncwrites  : clong;          { count of sync writes since mount }
         fasyncwrites : clong;          { count of async writes since mount }
-        fstypename   : array[0..MFSNAMELEN-1] of char; { filesystem type name }
-        mntonname    : array[0..  MNAMELEN-1] of char; { directory on which mounted }
+        fstypename   : array[0..MFSNAMELEN-1] of AnsiChar; { filesystem type name }
+        mntonname    : array[0..  MNAMELEN-1] of AnsiChar; { directory on which mounted }
         fsyncreads   : clong;          { count of sync reads since mount }
         fasyncreads  : clong;          { count of async reads since mount }
         fspares1     : cshort;         { unused spare }
-        mntfromname  : array[0..  MNAMELEN-1] of char; { mounted filesystem }
+        mntfromname  : array[0..  MNAMELEN-1] of AnsiChar; { mounted filesystem }
         fspares2     : cshort;         { unused spare }
         fspares3     : clong;          { unused spare }
         fspares4     : clong;          { unused spare }
-     end; 
+     end;
      PStatFS=^TStatFS;
 
   mbstate_t = record
       case byte of
-        0: (__mbstate8: array[0..127] of char);
+        0: (__mbstate8: array[0..127] of AnsiChar);
         1: (_mbstateL: cint64); { for alignment }
     end;
     pmbstate_t = ^mbstate_t;

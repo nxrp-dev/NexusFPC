@@ -42,7 +42,9 @@
 
 // $Id: JwaWS2atm.pas,v 1.7 2007/09/05 11:58:53 dezipaitor Exp $
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaWS2atm;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -56,8 +58,13 @@ unit JwaWS2atm;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Wintype, WinApi.Jedi.Winsock2;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaWinType, JwaWinSock2;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 //#include <pshpack4.h>
@@ -237,7 +244,7 @@ type
     IE_TransitNetworkSelection);
   {$EXTERNALSYM Q2931_IE_TYPE}
   TQ2931IEType = Q2931_IE_TYPE;
-  PQ2931IEType = ^Q2931_IE_TYPE;  
+  PQ2931IEType = ^Q2931_IE_TYPE;
 
   Q2931_IE = record
     IEType: Q2931_IE_TYPE;
@@ -335,7 +342,7 @@ type
   end;
   {$EXTERNALSYM ATM_TRAFFIC_DESCRIPTOR_IE}
   TAtmTrafficDescriptorIE = ATM_TD;
-  PAtmTrafficDescriptorIE = ^ATM_TD;  
+  PAtmTrafficDescriptorIE = ^ATM_TD;
 
 (*
  *  values used for the BearerClass field in struct ATM_BROADBAND_BEARER_CAPABILITY_IE
@@ -470,7 +477,7 @@ type
   ATM_CALLED_PARTY_NUMBER_IE = ATM_ADDRESS;
   {$EXTERNALSYM ATM_CALLED_PARTY_NUMBER_IE}
   TAtmCalledPartyNumberIE = ATM_CALLED_PARTY_NUMBER_IE;
-  PAtmCalledPartyNumberIE = ^ATM_CALLED_PARTY_NUMBER_IE;  
+  PAtmCalledPartyNumberIE = ^ATM_CALLED_PARTY_NUMBER_IE;
   ATM_CALLED_PARTY_SUBADDRESS_IE = ATM_ADDRESS;
   {$EXTERNALSYM ATM_CALLED_PARTY_SUBADDRESS_IE}
   TAtmCalledPartySubAddressIE = ATM_CALLED_PARTY_SUBADDRESS_IE;
@@ -516,7 +523,7 @@ type
   ATM_CALLING_PARTY_SUBADDRESS_IE = ATM_ADDRESS;
   {$EXTERNALSYM ATM_CALLING_PARTY_SUBADDRESS_IE}
   TAtmCallingPartySubAddressIE = ATM_CALLING_PARTY_SUBADDRESS_IE;
-  PAtmCallingPartySubAddressIE = ^ATM_CALLING_PARTY_SUBADDRESS_IE;  
+  PAtmCallingPartySubAddressIE = ^ATM_CALLING_PARTY_SUBADDRESS_IE;
 
 (*
  *  values used for the Location field in struct ATM_CAUSE_IE

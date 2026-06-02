@@ -2,7 +2,7 @@
     This file is part of the Free Pascal run time library.
     Copyright (c) 2016 by Free Pascal development team
 
-    comodities.library functions
+    commodities.library functions
 
     See the file COPYING.FPC, included in this distribution,
     for details about the copyright.
@@ -13,12 +13,19 @@
 
  **********************************************************************}
 {$PACKRECORDS 2}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit commodities;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  Amiga.Core.Exec, Amiga.Core.Inputevent, Amiga.Core.Keymap;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   exec, inputevent, keymap;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   CxObj = LongInt;
@@ -62,7 +69,7 @@ const
   CX_TRANSLATE  = 5; // translates IE into chain
   CX_BROKER     = 6; // application representative
   CX_DEBUG      = 7; // dumps kprintf to serial port
-  CX_CUSTOM     = 8; // application provids function
+  CX_CUSTOM     = 8; // application provides function
   CX_ZERO       = 9; // system terminator node
 
   CXM_IEVENT  = 1 shl 5;
@@ -124,7 +131,7 @@ var
  CxBase: PLibrary = nil;
 
 const
-  COMMODITIESNAME: PChar = 'commodities.library';
+  COMMODITIESNAME: PAnsiChar = 'commodities.library';
 
 function CreateCxObj(Typ: LongWord location 'd0'; Arg1: LongInt location 'a0'; Arg2: LongInt location 'a1'): PCxObj; syscall CxBase 30;
 function CxBroker(Nb: PNewBroker location 'a0'; var Error: LongInt location 'd0'): PCxObj; syscall CxBase 36;

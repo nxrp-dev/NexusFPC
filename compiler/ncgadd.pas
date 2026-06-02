@@ -182,8 +182,9 @@ interface
             { when it is not allowed to swap we have a constant on
               left, that will give problems }
             if not allow_swap then
-              internalerror(200307043);
-            swapleftright;
+              hlcg.location_force_reg(current_asmdata.CurrAsmList,left.location,left.resultdef,left.resultdef,false)
+            else
+              swapleftright;
           end;
       end;
 
@@ -388,7 +389,7 @@ interface
           needed nodes unless full boolean evaluation is enabled }
         if (nodetype in [orn,andn]) and
            (not(cs_full_boolean_eval in current_settings.localswitches) or
-            (nf_short_bool in flags)) then
+            (anf_short_bool in addnodeflags)) then
           begin
             case nodetype of
               andn :
@@ -665,7 +666,7 @@ interface
         ovloc.loc:=LOC_VOID;
 
         pass_left_right;
-        force_reg_left_right(false,true);
+        force_reg_left_right(true,true);
         set_result_location_reg;
 
         { determine if the comparison will be unsigned }

@@ -377,6 +377,7 @@ type
     Procedure TestAdvRecordClassOperator;
     Procedure TestAdvRecordInitOperator;
     Procedure TestAdvRecordGenericFunction;
+    Procedure TestRecordAlign;
   end;
 
   { TTestProcedureTypeParser }
@@ -2816,6 +2817,21 @@ begin
   ParseModule;   // We're just interested in that it parses.
 end;
 
+procedure TTestRecordTypeParser.TestRecordAlign;
+Const
+   SRC =
+    'program afile;'+sLineBreak+
+    'type'+sLineBreak+
+    '  TMyRecord = record'+sLineBreak+
+    '    x  : integer;'+sLineBreak+
+    '  end align 16;'+sLineBreak+
+    'begin'+sLineBreak+
+    'end.';
+begin
+  Source.Text:=Src;
+  ParseModule;   // We're just interested in that it parses.
+end;
+
 { TBaseTestTypeParser }
 
 Function TBaseTestTypeParser.ParseType(ASource: String; ATypeClass: TClass;
@@ -3091,17 +3107,17 @@ end;
 
 procedure TTestTypeParser.TestSimpleTypeChar;
 begin
-  DoTestAliasType('CHAR','');
+  DoTestAliasType('AnsiChar','');
 end;
 
 procedure TTestTypeParser.TestSimpleTypeCharDeprecated;
 begin
-  DoTestAliasType('CHAR','deprecated');
+  DoTestAliasType('AnsiChar','deprecated');
 end;
 
 procedure TTestTypeParser.TestSimpleTypeCharPlatform;
 begin
-  DoTestAliasType('CHAR','platform');
+  DoTestAliasType('AnsiChar','platform');
 end;
 
 procedure TTestTypeParser.TestSimpleTypeInteger;

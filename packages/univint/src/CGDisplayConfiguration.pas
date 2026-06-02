@@ -19,7 +19,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CGDisplayConfiguration;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -204,7 +206,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CGBase,MacOsApi.CGDirectDisplay,MacOsApi.CGColorSpace,MacOsApi.CGErrors,MacOsApi.CFDictionary,MacOsApi.CGGeometry;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CGBase,CGDirectDisplay,CGColorSpace,CGErrors,CFDictionary,CGGeometry;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 {$ALIGN POWER}
@@ -593,7 +599,7 @@ function CGDisplayCopyColorSpace( display: CGDirectDisplayID ): CGColorSpaceRef;
  *
  * When changing display modes of displays in a mirroring set, other displays in
  * the mirroring set whose mode is not explicitly changed will be set to a display
- * mode capable of mirroring the bounds of the largest display being explicitly set. 
+ * mode capable of mirroring the bounds of the largest display being explicitly set.
  }
 
 function CGConfigureDisplayMode( config: CGDisplayConfigRef; display: CGDirectDisplayID; mode: CFDictionaryRef ): CGError; external name '_CGConfigureDisplayMode';

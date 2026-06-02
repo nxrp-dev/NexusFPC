@@ -149,6 +149,11 @@ interface
     }
     function compare_paras(para1,para2 : TFPObjectList; acp : tcompare_paras_type; cpoptions: tcompare_paras_options):tequaltype;
 
+    { Compares the compatibility of two return types (in contrast to
+      compare_defs the cdo_strict_undefined_check will be passed to
+      compare_defs_ext as well) }
+    function compare_rettype(def1,def2:tdef):tequaltype;
+
     { True if a function can be assigned to a procvar }
     { changed first argument type to pabstractprocdef so that it can also be }
     { used to test compatibility between two pprocvardefs (JM)               }
@@ -355,7 +360,7 @@ implementation
              if assigned(tstoreddef(def_from).genconstraintdata) or
                  assigned(tstoreddef(def_to).genconstraintdata) then
                begin
-                 { this is bascially a poor man's type checking, if there is a chance
+                 { this is basically a poor man's type checking, if there is a chance
                    that the types are equal considering the constraints, this needs probably
                    to be improved and maybe factored out or even result in a recursive compare_defs_ext }
                  if (def_from.typ<>def_to.typ) and
@@ -473,11 +478,13 @@ implementation
          if (
                (df_generic in def_to.defoptions) and
                (df_specialization in def_from.defoptions) and
-               (tstoreddef(def_from).genericdef=def_to)
+               (tstoreddef(def_from).genericdef=def_to) and
+               assigned(tstoreddef(def_to).genericparas)
              ) or (
                (df_generic in def_from.defoptions) and
                (df_specialization in def_to.defoptions) and
-               (tstoreddef(def_to).genericdef=def_from)
+               (tstoreddef(def_to).genericdef=def_from) and
+               assigned(tstoreddef(def_from).genericparas)
              ) then
            begin
              if tstoreddef(def_from).genericdef=def_to then
@@ -632,12 +639,12 @@ implementation
                         is_shortstring(def_to) then
                         eq:=te_equal
                      else if (tstringdef(def_to).stringtype=st_ansistring) and
-                             (tstringdef(def_from).stringtype=st_ansistring) then 
+                             (tstringdef(def_from).stringtype=st_ansistring) then
                       begin
                         { don't convert ansistrings if any condition is true:
                           1) same encoding
                           2) from explicit codepage ansistring to ansistring and vice versa
-                          3) from any ansistring to rawbytestring 
+                          3) from any ansistring to rawbytestring
                           4) from rawbytestring to any ansistring }
                         if (tstringdef(def_from).encoding=tstringdef(def_to).encoding) or
                            ((tstringdef(def_to).encoding=0) and (tstringdef(def_from).encoding=getansistringcodepage)) or
@@ -648,10 +655,10 @@ implementation
                            eq:=te_equal;
                          end
                         else
-                         begin        
+                         begin
                            doconv := tc_string_2_string;
 
-                           { prefere conversion to utf8 codepage }
+                           { prefer conversion to utf8 codepage }
                            if tstringdef(def_to).encoding = globals.CP_UTF8 then
                              eq:=te_convert_l1
                            { else to AnsiString type }
@@ -661,7 +668,7 @@ implementation
                            else
                              eq:=te_convert_l3;
                          end
-                      end          
+                      end
                      else
                      { same string type ? }
                       if (tstringdef(def_from).stringtype=tstringdef(def_to).stringtype) and
@@ -955,27 +962,18 @@ implementation
                        eq:=te_equal
                      else
                        begin
-                         { Delphi does not allow explicit type conversions for float types like:
-                             single_var:=single(double_var);
-                           But if such conversion is inserted by compiler (internal) for some purpose,
-                           it should be allowed even in Delphi mode. }
-                         if (fromtreetype=realconstn) or
-                            not((cdoptions*[cdo_explicit,cdo_internal]=[cdo_explicit]) and
-                                (m_delphi in current_settings.modeswitches)) then
+                         doconv:=tc_real_2_real;
+                         { do we lose precision? }
+                         if (def_to.size<def_from.size) or
+                           (is_currency(def_from) and (tfloatdef(def_to).floattype in [s32real,s64real])) then
                            begin
-                             doconv:=tc_real_2_real;
-                             { do we lose precision? }
-                             if (def_to.size<def_from.size) or
-                               (is_currency(def_from) and (tfloatdef(def_to).floattype in [s32real,s64real])) then
-                               begin
-                                 if is_currency(def_from) and (tfloatdef(def_to).floattype=s32real) then
-                                   eq:=te_convert_l3
-                                 else
-                                   eq:=te_convert_l2
-                               end
+                             if is_currency(def_from) and (tfloatdef(def_to).floattype=s32real) then
+                               eq:=te_convert_l3
                              else
-                               eq:=te_convert_l1;
-                           end;
+                               eq:=te_convert_l2
+                           end
+                         else
+                           eq:=te_convert_l1;
                        end;
                    end;
                  else
@@ -1149,8 +1147,8 @@ implementation
                                     else if subeq>te_convert_l6 then
                                       eq:=pred(subeq)
                                     else if subeq=te_convert_operator then
-                                      { the operater needs to be applied by element, so we tell
-                                        the caller that it's some unpreffered conversion and let
+                                      { the operator needs to be applied by element, so we tell
+                                        the caller that it's some unpreferred conversion and let
                                         it handle the per-element stuff }
                                       eq:=te_convert_l6
                                     else
@@ -1411,7 +1409,7 @@ implementation
                        end;
                      variantdef :
                        begin
-                         { doing this in the compiler avoids a lot of unncessary
+                         { doing this in the compiler avoids a lot of unnecessary
                            copying }
                          if (tvariantdef(def_from).varianttype=vt_olevariant) and
                            (tvariantdef(def_to).varianttype=vt_normalvariant) then
@@ -1624,7 +1622,7 @@ implementation
                              eq:=te_equal
                            end
                          else
-                          { child class pointer can be assigned to anchestor pointers }
+                          { child class pointer can be assigned to ancestor pointers }
                           if (
                               (tpointerdef(def_from).pointeddef.typ=objectdef) and
                               (tpointerdef(def_to).pointeddef.typ=objectdef) and
@@ -1712,12 +1710,12 @@ implementation
                         (torddef(tpointerdef(def_to).pointeddef).ordtype=uvoid) then
                        begin
                          doconv:=tc_equal;
-                         eq:=te_convert_l2;
+                         eq:=te_convert_l5;
                        end
                      else if (is_objc_class_or_protocol(def_from) and
                               (def_to=objc_idtype)) or
                              { classrefs are also instances in Objective-C,
-                               hence they're also assignment-cpmpatible with
+                               hence they're also assignment-compatible with
                                id }
                              (is_objcclassref(def_from) and
                               ((def_to=objc_metaclasstype) or
@@ -1818,7 +1816,7 @@ implementation
                         eq:=te_convert_l1;
                       end
                      else
-                      { for example delphi allows the assignement from pointers }
+                      { for example delphi allows the assignment from pointers  }
                       { to procedure variables                                  }
                       if (m_pointer_2_procedure in current_settings.modeswitches) and
                          is_void(tpointerdef(def_from).pointeddef) and
@@ -1945,8 +1943,9 @@ implementation
                                   else
                                     { for Objective-C, we don't have to do anything special }
                                     doconv:=tc_equal;
-                                  { don't prefer this over objectdef->objectdef }
-                                  eq:=te_convert_l2;
+                                  { don't prefer this over objectdef->objectdef or
+                                    inherited objectdef->objectdef }
+                                  eq:=te_convert_l4;
                                   break;
                                end;
                              hobjdef:=hobjdef.childof;
@@ -2062,8 +2061,8 @@ implementation
              begin
                { typed files are all equal to the abstract file type
                name TYPEDFILE in system.pp in is_equal in types.pas
-               the problem is that it sholud be also compatible to FILE
-               but this would leed to a problem for ASSIGN RESET and REWRITE
+               the problem is that it should be also compatible to FILE
+               but this would lead to a problem for ASSIGN RESET and REWRITE
                when trying to find the good overloaded function !!
                so all file function are doubled in system.pp
                this is not very beautiful !!}
@@ -2540,6 +2539,15 @@ implementation
       end;
 
 
+    function compare_rettype(def1,def2:tdef):tequaltype;
+      var
+        doconv : tconverttype;
+        pd : tprocdef;
+      begin
+        result:=compare_defs_ext(def1,def2,nothingn,doconv,pd,[cdo_check_operator,cdo_allow_variant,cdo_strict_undefined_check]);
+      end;
+
+
     function proc_to_procvar_equal_internal(def1:tabstractprocdef;def2:tabstractprocdef;checkincompatibleuniv,ignoreself: boolean):tequaltype;
       var
         eq: tequaltype;
@@ -2600,8 +2608,13 @@ implementation
            include(pa_comp,cpo_warn_incompatible_univ);
          { check return value and options, methodpointer is already checked }
          po_comp:=[po_interrupt,po_iocheck,po_varargs,po_far];
-         { check static only if we compare method pointers }
-         if def1.is_methodpointer and def2.is_methodpointer then
+         { check static only if we compare method pointers (and function
+           references don't count as methodpointers here) }
+         if def1.is_methodpointer and
+             (
+               def2.is_methodpointer and
+               not (po_is_function_ref in def2.procoptions)
+             ) then
            include(po_comp,po_staticmethod);
          if (m_delphi in current_settings.modeswitches) then
            exclude(po_comp,po_varargs);
@@ -2630,9 +2643,12 @@ implementation
                   compatible with the target }
                 if po_anonymous in def1.procoptions then
                   begin
-                    if def1.typ<>procdef then
-                      internalerror(2021052602);
-                    captured:=tprocdef(def1).capturedsyms;
+                    captured:=nil;
+                    if def1.typ=procdef then
+                      captured:=tprocdef(def1).capturedsyms
+                    { def1.typ=procvardef can happen if someone uses procvar := @<anon func> }
+                    else if def1.typ<>procvardef then
+                      internalerror(2021052601);
                     { a function reference can capture anything, but they're
                       rather expensive, so cheaper overloads are preferred }
                     dstisfuncref:=assigned(def2.owner) and
@@ -2649,7 +2665,9 @@ implementation
                         - nested procvar }
                     if not assigned(captured) or (captured.count=0) then
                       begin
-                        if po_methodpointer in def2.procoptions then
+                        if def1.typ=procvardef then
+                          eq:=te_incompatible
+                        else if po_methodpointer in def2.procoptions then
                           eq:=te_convert_l2
                         else if po_delphi_nested_cc in def2.procoptions then
                           eq:=te_convert_l4

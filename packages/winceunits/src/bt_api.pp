@@ -33,13 +33,19 @@
 //  Microsoft Windows Mobile 6.0 for PocketPC SDK.
 //
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit bt_api;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$CALLING cdecl}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses WinApi.Windows, WinApi.Winsock2, WinceAPI.Winioctl, WinceAPI.Ws2bth;
+{$ELSE FPC_DOTTEDUNITS}
 uses Windows, WinSock2, WinIOCtl, ws2bth;
+{$ENDIF FPC_DOTTEDUNITS}
 
 //
 //		COD classes
@@ -502,7 +508,7 @@ type
      PBT_LINK_KEY_EVENT = ^BT_LINK_KEY_EVENT;
 
 //
-// Class of events to notify changes specific to the 
+// Class of events to notify changes specific to the
 // local device (cod, name)
 //
 const

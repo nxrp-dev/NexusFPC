@@ -12,7 +12,9 @@
 
  **********************************************************************}
 {$mode objfpc}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit SysConst;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
@@ -87,6 +89,7 @@ const
   SInvalidUnaryVarOp     = 'Invalid variant operation %s %s';
   SInvalidVarOpWithHResultWithPrefix = 'Invalid variant operation (%s%.8x)'+LineEnding+'%s';
   SNoError               = 'No error.';
+  SInstanceIsNotA        = ': %s is not a %s';
   SNoThreadSupport       = 'Threads not supported. Recompile program with thread driver.';
   SNoDynLibsSupport      = 'Dynamic libraries not supported. Recompile program with dynamic library driver.';
   SMissingWStringManager = 'Widestring manager not available. Recompile program with appropriate manager.';
@@ -147,6 +150,9 @@ const
   SFullpattern                  = 'Couldn''t match entire pattern string. Input too short at pattern position %d.';
   SPatternCharMismatch          = 'Pattern mismatch char "%s" at position %d.';
   SAMPMError                    = 'Hour >= 13 not allowed in AM/PM mode.';
+  SErrListIndexExt              = 'List index out of bounds (%d): %s object range is 0..%d';
+  SListIndexErrorEmptyReason = '%s is empty';
+  SListIndexErrorRangeReason = '%s object range is 0..%d';
 
   SShortMonthNameJan = 'Jan';
   SShortMonthNameFeb = 'Feb';
@@ -192,7 +198,7 @@ const
 
 const
    // Do not localize
-   HexDigits: array[0..15] of char = '0123456789ABCDEF';
+   HexDigits: array[0..15] of AnsiChar = '0123456789ABCDEF';
    HexDigitsW: array[0..15] of widechar = '0123456789ABCDEF';
 
 Function GetRunError(Errno : Word) : String;
@@ -244,7 +250,7 @@ begin
      230 : Result:=SSafecallException;
      231 : Result:=SExceptionStack;
      232 : Result:=SNoThreadSupport;
-     233 : Result:=SMissingWStringManager;
+     234 : Result:=SMissingWStringManager;
      235 : Result:=SNoDynLibsSupport;
 
      255 : Result:=SFallbackError;

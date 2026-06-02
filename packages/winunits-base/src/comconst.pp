@@ -14,7 +14,9 @@
 {$mode objfpc}
 {$H+}
 {$inline on}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit ComConst;
+{$ENDIF FPC_DOTTEDUNITS}
 
   interface
 
@@ -26,7 +28,7 @@ unit ComConst;
       SNoCloseActiveServer1 = 'NoCloseActiveServer1';
       SNoCloseActiveServer2 = 'NoCloseActiveServer2';
       SAutomationWarning = 'COM Automation Warning';
-      
+
   implementation
 
 end.

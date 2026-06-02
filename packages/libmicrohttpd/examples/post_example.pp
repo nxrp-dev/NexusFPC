@@ -79,7 +79,7 @@ type
     (**
      * Unique ID for this session.
      *)
-    sid: array[0..33] of Char;
+    sid: array[0..33] of AnsiChar;
 
     (**
      * Reference counter giving the number of connections
@@ -95,12 +95,12 @@ type
     (**
      * String submitted via form.
      *)
-    value_1: array[0..64] of Char;
+    value_1: array[0..64] of AnsiChar;
 
     (**
      * Another value submitted via form.
      *)
-    value_2: array[0..64] of Char;
+    value_2: array[0..64] of AnsiChar;
   end;
 
   (**
@@ -225,7 +225,7 @@ type
    *)
   procedure add_session_cookie(session: PSession; response: PMHD_Response);
   var
-    cstr: array[0..256] of Char;
+    cstr: array[0..256] of AnsiChar;
   begin
     snprintf(cstr, SizeOf(cstr), '%s=%s', COOKIE_NAME, session^.sid);
     if MHD_NO =
@@ -448,7 +448,7 @@ const
    *        can be set with the MHD_OPTION_NOTIFY_COMPLETED).
    *        Initially, <tt>*con_cls</tt> will be NULL.
    * @return MHS_YES if the connection was handled successfully,
-   *         MHS_NO if the socket must be closed due to a serios
+   *         MHS_NO if the socket must be closed due to a serious
    *         error while handling the request
    *)
   function create_response(cls: Pointer; connection: PMHD_Connection;

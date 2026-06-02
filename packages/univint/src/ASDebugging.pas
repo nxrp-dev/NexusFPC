@@ -1,17 +1,17 @@
 {
      File:       OpenScripting/ASDebugging.h
- 
+
      Contains:   AppleScript Debugging Interfaces.
- 
+
      Version:    OSA-148~28
- 
+
      Copyright:  © 1992-2008 by Apple Computer, Inc., all rights reserved
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 
 {  Pascal Translation Updated: Gorazd Krosl <gorazd_1957@yahoo.ca>, October 2009 }
@@ -30,7 +30,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit ASDebugging;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -215,7 +217,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.AEDataModel,MacOsApi.OSA,MacOsApi.Files,MacOsApi.Components,MacOsApi.AppleEvents,MacOsApi.AppleScript,MacOsApi.CFBase,MacOsApi.CFData,MacOsApi.CFURL;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,AEDataModel,OSA,Files,Components,AppleEvents,AppleScript,CFBase,CFData,CFURL;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -230,7 +236,7 @@ uses MacTypes,AEDataModel,OSA,Files,Components,AppleEvents,AppleScript,CFBase,CF
 {    This mode flag can be passed to OSASetProperty or OSASetHandler
     and will prevent properties or handlers from being defined in a context
     that doesn't already have bindings for them. An error is returned if
-    a current binding doesn't already exist. 
+    a current binding doesn't already exist.
 }
 const
 	kOSAModeDontDefine = $0001;
@@ -258,7 +264,7 @@ const
 *************************************************************************}
 {
  *  OSASetProperty()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -270,7 +276,7 @@ function OSASetProperty( scriptingComponent: ComponentInstance; modeFlags: SInt3
 
 {
  *  OSAGetProperty()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -282,7 +288,7 @@ function OSAGetProperty( scriptingComponent: ComponentInstance; modeFlags: SInt3
 
 {
  *  OSAGetPropertyNames()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -294,7 +300,7 @@ function OSAGetPropertyNames( scriptingComponent: ComponentInstance; modeFlags: 
 
 {
  *  OSASetHandler()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -306,7 +312,7 @@ function OSASetHandler( scriptingComponent: ComponentInstance; modeFlags: SInt32
 
 {
  *  OSAGetHandler()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -318,7 +324,7 @@ function OSAGetHandler( scriptingComponent: ComponentInstance; modeFlags: SInt32
 
 {
  *  OSAGetHandlerNames()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -332,10 +338,10 @@ function OSAGetHandlerNames( scriptingComponent: ComponentInstance; modeFlags: S
 {$ifc not TARGET_CPU_64}
 {
  *  OSAGetAppTerminology()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    use OSACopyScriptingDefinition instead.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -349,12 +355,12 @@ function OSAGetAppTerminology( scriptingComponent: ComponentInstance; modeFlags:
 
 {
  *  OSAGetSysTerminology()
- *  
+ *
  *  Discussion:
  *    A terminology ID is derived from script code and language code as
  *    follows: terminologyID = ((scriptCode & 0x7F) << 8) | (langCode &
  *    0xFF)
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -366,22 +372,22 @@ function OSAGetSysTerminology( scriptingComponent: ComponentInstance; modeFlags:
 
 {
  *  OSACopyScriptingDefinition()
- *  
+ *
  *  Discussion:
  *    Gets the scripting definition of the specified bundle.  See
  *    sdef(5) for details of the sdef format.
- *  
+ *
  *  Parameters:
- *    
+ *
  *    ref:
  *      The file (or bundle) to look in.
- *    
+ *
  *    modeFlags:
  *      There are no flags defined at this time; pass 0.
- *    
+ *
  *    sdef:
  *      The resulting sdef as XML data.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.4 and later in Carbon.framework
  *    CarbonLib:        not available
@@ -393,23 +399,23 @@ function OSACopyScriptingDefinition( const (*var*) ref: FSRef; modeFlags: SInt32
 
 {
  *  OSACopyScriptingDefinitionFromURL()
- *  
+ *
  *  Discussion:
  *    Gets the scripting definition of the specified URL.  See sdef(5)
  *    for details of the sdef format.  If used with a file: URL, this
  *    call is equivalent to OSACopyScriptingDefinition.
- *  
+ *
  *  Parameters:
- *    
+ *
  *    url:
  *      The URL to look in; this should be a file: or eppc: URL.
- *    
+ *
  *    modeFlags:
  *      There are no flags defined at this time; pass 0.
- *    
+ *
  *    sdef:
  *      The resulting sdef as XML data.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.5 and later in Carbon.framework
  *    CarbonLib:        not available
@@ -426,7 +432,7 @@ function OSACopyScriptingDefinitionFromURL( url: CFURLRef; modeFlags: SInt32; va
 {$ifc not TARGET_CPU_64}
 {
  *  ASSetProperty()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -438,7 +444,7 @@ function ASSetProperty( scriptingComponent: ComponentInstance; contextID: OSAID;
 
 {
  *  ASGetProperty()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -450,7 +456,7 @@ function ASGetProperty( scriptingComponent: ComponentInstance; contextID: OSAID;
 
 {
  *  ASSetHandler()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -462,7 +468,7 @@ function ASSetHandler( scriptingComponent: ComponentInstance; contextID: OSAID; 
 
 {
  *  ASGetHandler()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -474,7 +480,7 @@ function ASGetHandler( scriptingComponent: ComponentInstance; contextID: OSAID; 
 
 {
  *  ASGetAppTerminology()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        in CarbonLib 1.0 and later

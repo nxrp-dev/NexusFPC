@@ -32,7 +32,7 @@ unit aasmdata;
 interface
 
     uses
-       cutils,cclasses,
+       sysutils,cutils,cclasses,
        globtype,systems,
        cgbase,
        symtype,
@@ -66,6 +66,8 @@ interface
         al_dwarf_line,
         al_dwarf_aranges,
         al_dwarf_ranges,
+        al_dwarf_loc,
+        al_dwarf_loclists,
         al_picdata,
         al_indirectpicdata,
         al_resourcestrings,
@@ -109,7 +111,7 @@ interface
          sp_guids,
          sp_paraloc
       );
-      
+
     const
       AsmListTypeStr : array[TAsmListType] of string[24] =(
         'al_begin',
@@ -132,6 +134,8 @@ interface
         'al_dwarf_line',
         'al_dwarf_aranges',
         'al_dwarf_ranges',
+        'al_dwarf_loc',
+        'al_dwarf_loclists',
         'al_picdata',
         'al_indirectpicdata',
         'al_resourcestrings',
@@ -151,13 +155,13 @@ interface
          procedure insertListBefore(Item:TLinkedListItem;p : TLinkedList); override;
          { inserts another List after the provided item and make this List empty }
          procedure insertListAfter(Item:TLinkedListItem;p : TLinkedList); override;
-         { concats another List at the end and make this List empty }
+         { concatenate another List at the end and make this List empty }
          procedure concatList(p : TLinkedList); override;
-         { concats another List at the start and makes a copy
+         { concatenate another List at the start and makes a copy
            the list is ordered in reverse.
          }
          procedure insertListcopy(p : TLinkedList); override;
-         { concats another List at the end and makes a copy }
+         { concatenate another List at the end and makes a copy }
          procedure concatListcopy(p : TLinkedList); override;
          { removes all items from the list, the items are not freed }
          procedure RemoveAll; override;
@@ -210,7 +214,9 @@ interface
         function  DefineAsmSymbolByClass(symclass: TAsmSymbolClass; const s : TSymStr;_bind:TAsmSymBind;_typ:Tasmsymtype; def: tdef) : TAsmSymbol; virtual;
         function  DefineAsmSymbol(const s : TSymStr;_bind:TAsmSymBind;_typ:Tasmsymtype; def: tdef) : TAsmSymbol;
         function  DefineProcAsmSymbol(pd: tdef; const s: TSymStr; global: boolean): TAsmSymbol;
+        function  WeakRefAsmSymbolByClass(symclass: TAsmSymbolClass; const s : TSymStr;_typ:Tasmsymtype) : TAsmSymbol;
         function  WeakRefAsmSymbol(const s : TSymStr;_typ:Tasmsymtype) : TAsmSymbol;
+        function  RefAsmSymbolByClass(symclass: TAsmSymbolClass; const s : TSymStr;_typ:Tasmsymtype;indirect:boolean=false) : TAsmSymbol;
         function  RefAsmSymbol(const s : TSymStr;_typ:Tasmsymtype;indirect:boolean=false) : TAsmSymbol;
         function  GetAsmSymbol(const s : TSymStr) : TAsmSymbol;
         { create new assembler label }
@@ -229,6 +235,8 @@ interface
           of a dead-strippable data block, and references to such labels are
           also ignored to determine whether a data block should be live) }
         procedure getlocaldatalabel(out l : TAsmLabel);
+        { data label visible within the current unit, if it's global or local depends if library based smartlinking is used }
+        procedure getdatalabel(out l: TAsmLabel);
         { generate an alternative (duplicate) symbol }
         procedure GenerateAltSymbol(p:TAsmSymbol);
         procedure ResetAltSymbols;
@@ -548,7 +556,9 @@ implementation
         memasmsymbols.start;
 {$endif}
         FAltSymbolList.free;
+        FAltSymbolList := nil;
         FAsmSymbolDict.free;
+        FAsmSymbolDict := nil;
 {$ifdef MEMDEBUG}
         memasmsymbols.stop;
 {$endif}
@@ -557,6 +567,7 @@ implementation
         memasmcfi.start;
 {$endif}
         FAsmCFI.free;
+        FAsmCFI := nil;
 {$ifdef MEMDEBUG}
         memasmcfi.stop;
 {$endif}
@@ -565,15 +576,18 @@ implementation
          memasmlists.start;
 {$endif}
         ResStrInits.free;
+        ResStrInits := nil;
         WideInits.free;
+        WideInits := nil;
          for hal:=low(TAsmListType) to high(TAsmListType) do
-           AsmLists[hal].free;
+           FreeAndNil(AsmLists[hal]);
          CurrAsmList.free;
+         CurrAsmList := nil;
 {$ifdef MEMDEBUG}
          memasmlists.stop;
 {$endif}
          for hp := low(TConstPoolType) to high(TConstPoolType) do
-           FConstPools[hp].Free;
+           FreeAndNil(FConstPools[hp]);
       end;
 
     function TAsmData.DefineAsmSymbolByClass(symclass: TAsmSymbolClass; const s: TSymStr; _bind: TAsmSymBind; _typ: Tasmsymtype; def: tdef): TAsmSymbol;
@@ -605,7 +619,8 @@ implementation
           result:=DefineAsmSymbol(s,AB_LOCAL,AT_FUNCTION,pd);
       end;
 
-    function TAsmData.RefAsmSymbol(const s : TSymStr;_typ:Tasmsymtype;indirect:boolean) : TAsmSymbol;
+
+    function TAsmData.RefAsmSymbolByClass(symclass: TAsmSymbolClass; const s : TSymStr;_typ:Tasmsymtype;indirect:boolean) : TAsmSymbol;
       var
         namestr : TSymStr;
         bind : tasmsymbind;
@@ -622,18 +637,30 @@ implementation
           end;
         result:=TAsmSymbol(FAsmSymbolDict.Find(namestr));
         if not assigned(result) then
-          result:=TAsmSymbol.create(AsmSymbolDict,namestr,bind,_typ)
+          result:=symclass.create(AsmSymbolDict,namestr,bind,_typ)
         { one normal reference removes the "weak" character of a symbol }
         else if (result.bind=AB_WEAK_EXTERNAL) then
           result.bind:=bind;
       end;
 
 
-    function TAsmData.WeakRefAsmSymbol(const s : TSymStr;_typ:Tasmsymtype) : TAsmSymbol;
+    function TAsmData.RefAsmSymbol(const s : TSymStr;_typ:Tasmsymtype;indirect:boolean) : TAsmSymbol;
+      begin
+        result:=RefAsmSymbolByClass(TAsmSymbol,s,_typ,indirect);
+      end;
+
+
+    function TAsmData.WeakRefAsmSymbolByClass(symclass: TAsmSymbolClass; const s : TSymStr;_typ:Tasmsymtype) : TAsmSymbol;
       begin
         result:=TAsmSymbol(FAsmSymbolDict.Find(s));
         if not assigned(result) then
-          result:=TAsmSymbol.create(AsmSymbolDict,s,AB_WEAK_EXTERNAL,_typ);
+          result:=symclass.create(AsmSymbolDict,s,AB_WEAK_EXTERNAL,_typ);
+      end;
+
+
+    function TAsmData.WeakRefAsmSymbol(const s : TSymStr;_typ:Tasmsymtype) : TAsmSymbol;
+      begin
+        result:=WeakRefAsmSymbolByClass(TAsmSymbol,s,_typ);
       end;
 
 
@@ -712,6 +739,15 @@ implementation
       end;
 
 
+    procedure TAsmData.getdatalabel(out l : TAsmLabel);
+      begin
+        if create_smartlink_library then
+          getglobaldatalabel(l)
+        else
+          getlocaldatalabel(l);
+      end;
+
+
     procedure TAsmData.getaddrlabel(out l : TAsmLabel);
       begin
         l:=TAsmLabel.createlocal(AsmSymbolDict,FNextLabelNr[alt_addr],alt_addr);
@@ -733,8 +769,11 @@ initialization
 finalization
 {$ifdef MEMDEBUG}
   memasmsymbols.free;
+  memasmsymbols := nil;
   memasmcfi.free;
+  memasmcfi := nil;
   memasmlists.free;
+  memasmlists := nil;
 {$endif MEMDEBUG}
 
 end.

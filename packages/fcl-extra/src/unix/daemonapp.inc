@@ -13,7 +13,11 @@
  **********************************************************************}
 { System dependent service stuff }
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses UnixApi.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses baseunix;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Resourcestring
   SErrFailedToFork          = 'Failed to fork daemon process.';
@@ -31,7 +35,7 @@ begin
     end
   else
     begin
-    // Here we are in the daemonized proces
+    // Here we are in the daemonized process
     sid := FpSetsid;
     if sid < 0 then
       raise Exception.Create(SErrFailedToFork);
@@ -54,7 +58,7 @@ Const
   SERVICE_CONTROL_CONTINUE              = $00000003;
   SERVICE_CONTROL_INTERROGATE           = $00000004;
   SERVICE_CONTROL_SHUTDOWN              = $00000005;
-  
+
 function TCustomDaemonApplication.RunGUIloop(P: Pointer): integer;
 begin
 
@@ -103,7 +107,7 @@ procedure TCustomDaemonApplication.SysEndRunDaemons;
 Var
   I : Integer;
   DC : TDaemonController;
-  
+
 begin
   For I:=ComponentCount-1 downto 0 do
     If Components[i] is TDaemoncontroller then
@@ -121,11 +125,7 @@ end;
 
 procedure TCustomDaemonApplication.RemoveController(
   AController: TDaemonController);
-  
-Var
-  I : Integer;
-  HC : Boolean;
-  
+
 begin
   FreeAndNil(AController.FDaemon);
   AController.Free;
@@ -199,15 +199,15 @@ begin
                                CurrentStatusNames[Status]]);
       if Assigned(Definition) then
         doLog:=Definition.LogStatusReport;
-      end;  
-  if DoLog then    
+      end;
+  if DoLog then
     Application.Log(etInfo,S);
 end;
 
 { ---------------------------------------------------------------------
   Global initialization/Finalization
   ---------------------------------------------------------------------}
- 
+
 {$if defined(BeOS) and not defined(Haiku)}
 Procedure DoShutDown(Sig : Longint; SigContext: PSigContextRec; uContext : Pvregs);cdecl;
 {$else}

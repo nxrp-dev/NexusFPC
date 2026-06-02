@@ -42,7 +42,9 @@
 
 // $Id: JwaAclApi.pas,v 1.11 2007/09/05 11:58:48 dezipaitor Exp $
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaAclApi;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -56,8 +58,13 @@ unit JwaAclApi;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Accctrl, WinApi.Jedi.Winnt, WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaAccCtrl, JwaWinNT, JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 {$IFNDEF JWA_IMPLEMENTATIONSECTION}
@@ -88,7 +95,7 @@ type
     ); stdcall;
   {$EXTERNALSYM FN_PROGRESS}
   TFnProgress = FN_PROGRESS;
-{$ENDIF JWA_INCLUDEMODE}  
+{$ENDIF JWA_INCLUDEMODE}
 
 function SetEntriesInAclA(cCountOfExplicitEntries: ULONG;
   pListOfExplicitEntries: PEXPLICIT_ACCESS_A; OldAcl: PACL;

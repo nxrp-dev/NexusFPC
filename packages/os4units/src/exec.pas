@@ -13,7 +13,9 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit exec;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$PACKRECORDS 2}
 
@@ -24,8 +26,8 @@ unit exec;
 interface
 
 type
-  STRPTR   = PChar;
-  PSTRPTR  = PPChar;
+  STRPTR   = PAnsiChar;
+  PSTRPTR  = PPAnsiChar;
   ULONG    = Longword;
   LONG     = LongInt;
   APTR     = Pointer;
@@ -139,7 +141,7 @@ type
 
 const
   {There is a problem with boolean
-  vaules in taglists, just use this
+  values in taglists, just use this
   for now instead}
   LTrue : LongInt = 1;
   LFalse: LongInt = 0;
@@ -384,7 +386,7 @@ const
 
 // ------ expansion.library
   AN_ExpansionLib     = $0A000000;
-  AN_BadExpansionFree = $0A000001; // freeed free region
+  AN_BadExpansionFree = $0A000001; // freed free region
 
 // ------ diskfont.library
   AN_DiskfontLib = $0B000000;
@@ -1526,7 +1528,7 @@ const
 // Memory Pool
   ASOPOOL_MFlags      = TAG_USER + 10; // Memory flags/requirements for this pool
   ASOPOOL_Puddle      = TAG_USER + 11; // Size of each puddle
-  ASOPOOL_Threshold   = TAG_USER + 12; // Largest alloction size that goes into the puddle
+  ASOPOOL_Threshold   = TAG_USER + 12; // Largest allocation size that goes into the puddle
   ASOPOOL_Protected   = TAG_USER + 13; // Protect pool with a semaphore
   ASOPOOL_Name        = TAG_USER + 14; // Name for the pool (for informational purpose only;
   ASOPOOL_CopyName    = TAG_USER + 15; // Copy the name string
@@ -1624,7 +1626,7 @@ const
   GCIT_TimeBaseSpeed  = TAG_USER + 17;
 
 // Family codes
-//enCPUFamiliy
+//enCPUFamily
   CPUFAMILY_UNKNOWN = 0;
   CPUFAMILY_60X     = 1;
   CPUFAMILY_7X0     = 2;
@@ -1745,7 +1747,7 @@ procedure ExecExpunge(); syscall IExec 68;
 function ExecClone(): PInterface; syscall IExec 72;
 procedure AddHead(List: PList; Node: PNode); syscall IExec 76;
 procedure AddMemHandler(MemHand: PInterrupt); syscall IExec 80;
-procedure AddMemList(Size: LongWord; Attributes: LongWord; Pri: LongInt; Base: APTR; const Name: PChar); syscall IExec 84;
+procedure AddMemList(Size: LongWord; Attributes: LongWord; Pri: LongInt; Base: APTR; const Name: PAnsiChar); syscall IExec 84;
 procedure AddTail(List: PList; Node: PNode); syscall IExec 88;
 function AllocAbs(ByteSize: LongWord; Location: APTR): APTR; syscall IExec 92;
 function Allocate(FreeList: PMemHeader; ByteSize: LongWord): APTR; syscall IExec 96;
@@ -1761,8 +1763,8 @@ function CreatePool(MemFlags: LongWord; PuddleSize: LongWord; ThreshSize: LongWo
 procedure Deallocate(MemHeader: PMemHeader; MemoryBlock: APTR; ByteSize: LongWord); syscall IExec 136;
 procedure DeletePool(PoolHeader: APTR); syscall IExec 140;
 procedure Enqueue(List: PList; Node: PNode); syscall IExec 144;
-function FindName(Start: PList; const Name: PChar): PNode; syscall IExec 148;
-function FindIName(Start: PList; const Name: PChar): PNode; syscall IExec 152;
+function FindName(Start: PList; const Name: PAnsiChar): PNode; syscall IExec 148;
+function FindIName(Start: PList; const Name: PAnsiChar): PNode; syscall IExec 152;
 procedure Forbid(); syscall IExec 156;
 procedure FreeEntry(MemList: PMemList); syscall IExec 160;
 procedure ExecFreeMem(MemoryBlock: APTR; ByteSize: LongWord); syscall IExec 164;
@@ -1914,7 +1916,7 @@ function Emulate(const InitPC: APTR; const TagList: PTagItem): LongWord; syscall
 // 748 DebugPrintF
 function IsNative(const Code: APTR): LongBool; syscall IExec 752;
 function RawMayGetChar(): LongInt;syscall IExec 756;
-procedure RawPutChar(c: Char); syscall IExec 760;
+procedure RawPutChar(c: AnsiChar); syscall IExec 760;
 procedure GetCPUInfo(const TagList: PTagItem); syscall IExec 764;
 // 768 GetCPUInfoTags
 function OwnerOfMem(const Address: APTR): PTask; syscall IExec 772;

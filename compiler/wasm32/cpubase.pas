@@ -99,8 +99,10 @@ uses
       a_i64_trunc_sat_f32_u,
       a_i64_trunc_sat_f64_s,
       a_i64_trunc_sat_f64_u,
-      // exceptions
-      a_try,a_catch,a_catch_all,a_delegate,a_throw,a_rethrow,a_end_try,
+      // exceptions (legacy)
+      a_legacy_try,a_legacy_catch,a_legacy_catch_all,a_legacy_delegate,a_legacy_throw,a_legacy_rethrow,a_end_legacy_try,
+      // exceptions (with exnref)
+      a_try_table,a_catch,a_catch_ref,a_catch_all,a_catch_all_ref,a_throw,a_throw_ref,a_end_try_table,
       // atomic memory accesses - load/store
       a_i32_atomic_load8_u, a_i32_atomic_load16_u, a_i32_atomic_load,
       a_i64_atomic_load8_u, a_i64_atomic_load16_u, a_i64_atomic_load32_u,
@@ -131,6 +133,7 @@ uses
       );
 
       TWasmBasicType = (
+        wbt_Unknown,
         { number types }
         wbt_i32, wbt_i64, wbt_f32, wbt_f64,
         { reference types }
@@ -139,6 +142,20 @@ uses
         wbt_v128
       );
       TWasmResultType = array of TWasmBasicType;
+      TWasmLocalsDynArray = array of TWasmBasicType;
+
+      TWasmMemoryFlag = (
+        wmfHasMaximumBound,
+        wmfShared,
+        wmfMemory64,
+        wmfCustomPageSize
+      );
+      TWasmMemoryFlags = set of TWasmMemoryFlag;
+      TWasmMemoryType = record
+        Flags: TWasmMemoryFlags;
+        MinPages, MaxPages: UInt64;
+        PageSize: UInt32;
+      end;
 
       { TWasmFuncType }
 
@@ -151,12 +168,18 @@ uses
         procedure add_param(param: TWasmBasicType);
         procedure add_result(res: TWasmBasicType);
         function Equals(Obj: TObject): boolean; override;
+        function ToString: ansistring; override;
       end;
 
       {# This should define the array of instructions as string }
       op2strtable=array[tasmop] of string[31];
 
     Const
+      WasmNumberTypes = [wbt_i32, wbt_i64, wbt_f32, wbt_f64];
+      WasmReferenceTypes = [wbt_funcref, wbt_externref];
+      WasmVectorTypes = [wbt_v128];
+      wasm_basic_type_str : array [TWasmBasicType] of string = ('unknown','i32','i64','f32','f64','funcref','externref','v128');
+
       {# First value of opcode enumeration }
       firstop = low(tasmop);
       {# Last value of opcode enumeration  }
@@ -391,6 +414,9 @@ uses
 
     function natural_alignment_for_load_store(op: TAsmOp): shortint;
     function encode_wasm_basic_type(wbt: TWasmBasicType): Byte;
+    function decode_wasm_basic_type(b: Byte; out wbt: TWasmBasicType): Boolean;
+
+    function is_atomic_op(op: TAsmOp): boolean;
 
 implementation
 
@@ -578,6 +604,8 @@ uses
     function encode_wasm_basic_type(wbt: TWasmBasicType): Byte;
       begin
         case wbt of
+          wbt_unknown:
+            internalerror(2024011702);
           wbt_i32:
             result:=$7F;
           wbt_i64:
@@ -593,6 +621,37 @@ uses
           wbt_v128:
             result:=$7B;
         end;
+      end;
+
+    function decode_wasm_basic_type(b: Byte; out wbt: TWasmBasicType): Boolean;
+      begin
+        result:=true;
+        case b of
+          $7F:
+            wbt:=wbt_i32;
+          $7E:
+            wbt:=wbt_i64;
+          $7D:
+            wbt:=wbt_f32;
+          $7C:
+            wbt:=wbt_f64;
+          $7B:
+            wbt:=wbt_v128;
+          $70:
+            wbt:=wbt_funcref;
+          $6F:
+            wbt:=wbt_externref;
+          else
+            begin
+              result:=false;
+              wbt:=default(TWasmBasicType);
+            end;
+        end;
+      end;
+
+    function is_atomic_op(op: TAsmOp): boolean;
+      begin
+        result:=(op>=a_i32_atomic_load8_u) and (op<=a_atomic_fence);
       end;
 
 {*****************************************************************************
@@ -614,9 +673,12 @@ uses
       end;
 
     procedure TWasmFuncType.add_param(param: TWasmBasicType);
+    var
+      len : integer;
       begin
-        SetLength(params,Length(params)+1);
-        params[High(params)]:=param;
+        len:=Length(params);
+        SetLength(params,len+1);
+        params[len]:=param;
       end;
 
     procedure TWasmFuncType.add_result(res: TWasmBasicType);
@@ -644,6 +706,27 @@ uses
           end
         else
           Result:=inherited Equals(Obj);
+      end;
+
+    function TWasmFuncType.ToString: ansistring;
+      var
+        i: Integer;
+      begin
+        Result:='(';
+        for i:=0 to high(params) do
+          begin
+            if i<>0 then
+              Result:=Result+', ';
+            Result:=Result+wasm_basic_type_str[params[i]];
+          end;
+        Result:=Result+') -> (';
+        for i:=0 to high(results) do
+          begin
+            if i<>0 then
+              Result:=Result+', ';
+            Result:=Result+wasm_basic_type_str[results[i]];
+          end;
+        Result:=Result+')';
       end;
 
 end.

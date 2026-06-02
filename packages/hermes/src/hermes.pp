@@ -30,7 +30,9 @@
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 }
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit Hermes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$MODE objfpc}
 
@@ -58,7 +60,7 @@ interface
 {$IF  defined(cpui386) and defined(FPC_PIC)}
   { FPC_PIC is only set after parsing _INTERFFACE keyword
     so we need to delay the test to here }
-  { the i386 assembler code is not prepared for PIC code }    
+  { the i386 assembler code is not prepared for PIC code }
   {$DEFINE noassembler}
   { Thus, disable assembler code in that case for now }
   {$UNDEF I386_ASSEMBLER}

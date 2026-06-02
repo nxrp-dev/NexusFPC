@@ -15,7 +15,7 @@
  }
 
 {
- * @file apr_signal.h 
+ * @file apr_signal.h
  * @brief APR Signal Handling
  }
 
@@ -28,7 +28,7 @@
 
 {
  * @defgroup apr_signal Handling
- * @ingroup APR 
+ * @ingroup APR
  }
 
 {$if defined(APR_HAVE_SIGACTION) or defined(DOXYGEN)}
@@ -71,12 +71,12 @@ function apr_signal(signo: Integer; func: apr_sigfunc_t): Papr_sigfunc_t;
  * @param signum The signal number
  * @return The description of the signal
  }
-function apr_signal_description_get(signo: Integer): PChar;
+function apr_signal_description_get(signo: Integer): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibAPR name LibNamePrefix + 'apr_signal_description_get' + LibSuff4;
 
 { @deprecated @see apr_signal_description_get }
-function apr_signal_get_description(signo: Integer): PChar;
+function apr_signal_get_description(signo: Integer): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibAPR name LibNamePrefix + 'apr_signal_get_description' + LibSuff4;
 

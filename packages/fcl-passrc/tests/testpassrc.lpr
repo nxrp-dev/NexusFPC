@@ -3,10 +3,13 @@ program testpassrc;
 {$mode objfpc}{$H+}
 
 uses
+{$IFDEF UNIX}
+  cwstring,
+{$ENDIF}
   //MemCheck,
   Classes, consoletestrunner, tcscanner,  tctypeparser, tcstatements,
   tcbaseparser, tcmoduleparser, tconstparser, tcvarparser, tcclasstype,
-  tcexprparser, tcprocfunc, tcpassrcutil, TCGenerics,
+  tcexprparser, tcprocfunc, tcpassrcutil, TCGenerics, paswrite, tcPasWriteStatements,
   TCResolver, TCResolveGenerics, TCResolveMultiErrors,
   TCUseAnalyzer;
 

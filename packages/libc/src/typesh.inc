@@ -10,7 +10,7 @@ type
    __u_quad_t = qword;
    __quad_t = int64;
 
-   __int8_t = char;
+   __int8_t = AnsiChar;
    __uint8_t = byte;
    __int16_t = smallint;
    __uint16_t = word;
@@ -37,7 +37,7 @@ type
         __val : array[0..1] of longint;
      end;
    __daddr_t = longint;
-   __caddr_t = pchar;
+   __caddr_t = PAnsiChar;
    __time_t = longint;
    __useconds_t = dword;
    __suseconds_t = longint;
@@ -58,7 +58,7 @@ type
   TFdSet = __fd_set;
   PFdSet = ^TFdSet;
 
- 
+
 type
   __key_t = longint;
   __ipc_pid_t = word;
@@ -81,8 +81,8 @@ Const
   stdin   = 0;
   stdout  = 1;
   stderr  = 2;
-           
-  
+
+
 { ---------------------------------------------------------------------
     'h2pas -S -c -D -l libc -i' from sys/types.h
   ---------------------------------------------------------------------}
@@ -117,7 +117,7 @@ Type
   ulong = dword;
   ushort = word;
   uint = dword;
-  int8_t = char;
+  int8_t = AnsiChar;
   int16_t = smallint;
   int32_t = longint;
   u_int8_t = byte;
@@ -220,10 +220,10 @@ Type
 { Macros }
 Function __FDELT(d: longint): Integer;
 Function __FDMASK(d: longint): __fd_mask;
- 
+
 { Borland compatibility }
 Type
 
   TFsID = __fsid_t;
   PFsID = ^TFsID;
- 
+

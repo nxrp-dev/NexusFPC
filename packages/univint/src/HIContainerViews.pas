@@ -1,17 +1,17 @@
 {
      File:       HIToolbox/HIContainerViews.h
- 
+
      Contains:   Definition of the container views provided by HIToolbox.
- 
+
      Version:    HIToolbox-624~3
- 
+
      Copyright:  © 2006-2008 by Apple Computer, Inc., all rights reserved.
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 {       Initial Pascal Translation:  Jonas Maebe, <jonas@freepascal.org>, October 2009 }
 {       Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2012 }
@@ -29,7 +29,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit HIContainerViews;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -214,7 +216,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.Appearance,MacOsApi.CarbonEvents,MacOsApi.Controls,MacOsApi.Menus,MacOsApi.QuickdrawTypes,MacOsApi.CFBase,MacOsApi.HIObject;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,Appearance,CarbonEvents,Controls,Menus,QuickdrawTypes,CFBase,HIObject;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -225,7 +231,7 @@ uses MacTypes,Appearance,CarbonEvents,Controls,Menus,QuickdrawTypes,CFBase,HIObj
 
 {
  *  HIContainerViews.h
- *  
+ *
  *  Discussion:
  *    API definitions for the views that can contain other views: group
  *    box, placard, window header, and user pane.
@@ -263,30 +269,30 @@ const
 {$ifc not TARGET_CPU_64}
 {
  *  CreateGroupBoxControl()
- *  
+ *
  *  Summary:
  *    Creates a group box control.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Parameters:
- *    
+ *
  *    window:
  *      The window that should contain the control.
- *    
+ *
  *    boundsRect:
  *      The bounding box of the control.
- *    
+ *
  *    title:
  *      The title of the control.
- *    
+ *
  *    primary:
  *      Whether to create a primary or secondary group box.
- *    
+ *
  *    outControl:
  *      On exit, contains the new control.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        in CarbonLib 1.1 and later
@@ -298,38 +304,38 @@ function CreateGroupBoxControl( window: WindowRef; const (*var*) boundsRect: Rec
 
 {
  *  CreateCheckGroupBoxControl()
- *  
+ *
  *  Summary:
  *    Creates a group box control that has a check box as its title.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Parameters:
- *    
+ *
  *    window:
  *      The window that should contain the control.
- *    
+ *
  *    boundsRect:
  *      The bounding box of the control.
- *    
+ *
  *    title:
  *      The title of the control (used as the title of the check box).
- *    
+ *
  *    initialValue:
  *      The initial value of the check box.
- *    
+ *
  *    primary:
  *      Whether to create a primary or secondary group box.
- *    
+ *
  *    autoToggle:
  *      Whether to create an auto-toggling check box. Auto-toggling
  *      check box titles are only supported on Mac OS X; this parameter
  *      must be false when used with CarbonLib.
- *    
+ *
  *    outControl:
  *      On exit, contains the new control.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        in CarbonLib 1.1 and later
@@ -341,50 +347,50 @@ function CreateCheckGroupBoxControl( window: WindowRef; const (*var*) boundsRect
 
 {
  *  CreatePopupGroupBoxControl()
- *  
+ *
  *  Summary:
  *    Creates a group box control that has a popup button as its title.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Parameters:
- *    
+ *
  *    window:
  *      The window that should contain the control.
- *    
+ *
  *    boundsRect:
  *      The bounding box of the control.
- *    
+ *
  *    title:
  *      The title of the control (used as the title of the popup
  *      button).
- *    
+ *
  *    primary:
  *      Whether to create a primary or secondary group box.
- *    
+ *
  *    menuID:
  *      The menu ID of the menu to be displayed by the popup button.
- *    
+ *
  *    variableWidth:
  *      Whether the popup button should have a variable-width title.
  *      Fixed-width titles are only supported by Mac OS X; this
  *      parameter must be true when used with CarbonLib.
- *    
+ *
  *    titleWidth:
  *      The width in pixels of the popup button title.
- *    
+ *
  *    titleJustification:
  *      The justification of the popup button title. Use one of the
  *      TextEdit justification constants here (teFlushDefault,
  *      teCenter, teFlushRight, or teFlushLeft).
- *    
+ *
  *    titleStyle:
  *      The QuickDraw text style of the popup button title.
- *    
+ *
  *    outControl:
  *      On exit, contains the new control.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        in CarbonLib 1.1 and later
@@ -438,25 +444,25 @@ const
 {$ifc not TARGET_CPU_64}
 {
  *  CreatePlacardControl()
- *  
+ *
  *  Summary:
  *    Creates a placard control.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Parameters:
- *    
+ *
  *    window:
  *      The window that should contain the control. May be NULL on 10.3
  *      and later.
- *    
+ *
  *    boundsRect:
  *      The bounding box of the control.
- *    
+ *
  *    outControl:
  *      On exit, contains the new control.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        in CarbonLib 1.1 and later
@@ -500,10 +506,10 @@ const
 {$ifc not TARGET_CPU_64}
 {
  *  CreateWindowHeaderControl()
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        in CarbonLib 1.1 and later
@@ -550,10 +556,10 @@ const
 {$ifc not TARGET_CPU_64}
 {
  *  CreateUserPaneControl()
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        in CarbonLib 1.1 and later
@@ -595,7 +601,7 @@ type
 	ControlUserPaneFocusUPP = ControlUserPaneFocusProcPtr;
 {
  *  NewControlUserPaneDrawUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -606,7 +612,7 @@ function NewControlUserPaneDrawUPP( userRoutine: ControlUserPaneDrawProcPtr ): C
 
 {
  *  NewControlUserPaneHitTestUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -617,7 +623,7 @@ function NewControlUserPaneHitTestUPP( userRoutine: ControlUserPaneHitTestProcPt
 
 {
  *  NewControlUserPaneTrackingUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -628,7 +634,7 @@ function NewControlUserPaneTrackingUPP( userRoutine: ControlUserPaneTrackingProc
 
 {
  *  NewControlUserPaneIdleUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -639,7 +645,7 @@ function NewControlUserPaneIdleUPP( userRoutine: ControlUserPaneIdleProcPtr ): C
 
 {
  *  NewControlUserPaneKeyDownUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -650,7 +656,7 @@ function NewControlUserPaneKeyDownUPP( userRoutine: ControlUserPaneKeyDownProcPt
 
 {
  *  NewControlUserPaneActivateUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -661,7 +667,7 @@ function NewControlUserPaneActivateUPP( userRoutine: ControlUserPaneActivateProc
 
 {
  *  NewControlUserPaneFocusUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -672,7 +678,7 @@ function NewControlUserPaneFocusUPP( userRoutine: ControlUserPaneFocusProcPtr ):
 
 {
  *  DisposeControlUserPaneDrawUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -683,7 +689,7 @@ procedure DisposeControlUserPaneDrawUPP( userUPP: ControlUserPaneDrawUPP ); exte
 
 {
  *  DisposeControlUserPaneHitTestUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -694,7 +700,7 @@ procedure DisposeControlUserPaneHitTestUPP( userUPP: ControlUserPaneHitTestUPP )
 
 {
  *  DisposeControlUserPaneTrackingUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -705,7 +711,7 @@ procedure DisposeControlUserPaneTrackingUPP( userUPP: ControlUserPaneTrackingUPP
 
 {
  *  DisposeControlUserPaneIdleUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -716,7 +722,7 @@ procedure DisposeControlUserPaneIdleUPP( userUPP: ControlUserPaneIdleUPP ); exte
 
 {
  *  DisposeControlUserPaneKeyDownUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -727,7 +733,7 @@ procedure DisposeControlUserPaneKeyDownUPP( userUPP: ControlUserPaneKeyDownUPP )
 
 {
  *  DisposeControlUserPaneActivateUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -738,7 +744,7 @@ procedure DisposeControlUserPaneActivateUPP( userUPP: ControlUserPaneActivateUPP
 
 {
  *  DisposeControlUserPaneFocusUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -749,7 +755,7 @@ procedure DisposeControlUserPaneFocusUPP( userUPP: ControlUserPaneFocusUPP ); ex
 
 {
  *  InvokeControlUserPaneDrawUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -760,7 +766,7 @@ procedure InvokeControlUserPaneDrawUPP( control: ControlRef; part: ControlPartCo
 
 {
  *  InvokeControlUserPaneHitTestUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -771,7 +777,7 @@ function InvokeControlUserPaneHitTestUPP( control: ControlRef; where: Point; use
 
 {
  *  InvokeControlUserPaneTrackingUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -782,7 +788,7 @@ function InvokeControlUserPaneTrackingUPP( control: ControlRef; startPt: Point; 
 
 {
  *  InvokeControlUserPaneIdleUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -793,7 +799,7 @@ procedure InvokeControlUserPaneIdleUPP( control: ControlRef; userUPP: ControlUse
 
 {
  *  InvokeControlUserPaneKeyDownUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -804,7 +810,7 @@ function InvokeControlUserPaneKeyDownUPP( control: ControlRef; keyCode: SInt16; 
 
 {
  *  InvokeControlUserPaneActivateUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -815,7 +821,7 @@ procedure InvokeControlUserPaneActivateUPP( control: ControlRef; activating: Boo
 
 {
  *  InvokeControlUserPaneFocusUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -830,7 +836,7 @@ type
 	ControlUserPaneBackgroundUPP = ControlUserPaneBackgroundProcPtr;
 {
  *  NewControlUserPaneBackgroundUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -841,7 +847,7 @@ function NewControlUserPaneBackgroundUPP( userRoutine: ControlUserPaneBackground
 
 {
  *  DisposeControlUserPaneBackgroundUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -852,7 +858,7 @@ procedure DisposeControlUserPaneBackgroundUPP( userUPP: ControlUserPaneBackgroun
 
 {
  *  InvokeControlUserPaneBackgroundUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later

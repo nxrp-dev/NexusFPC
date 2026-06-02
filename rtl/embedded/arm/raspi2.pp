@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit raspi2;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$goto on}
 {$INLINE ON}
@@ -32,8 +34,13 @@ const
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+    EmbeddedApi.ConsoleIO;
+{$ELSE FPC_DOTTEDUNITS}
 uses
     consoleio;
+{$ENDIF FPC_DOTTEDUNITS}
 
 procedure _FPC_haltproc; assembler; nostackframe; public name '_haltproc';
 asm
@@ -52,7 +59,7 @@ begin
             nop
         end;
     end;
-end; 
+end;
 
 procedure PUT32(Address: DWord; Value: DWord); inline;
 VAR
@@ -75,7 +82,7 @@ begin
     UARTLCR := GET32(AUX_MU_LCR_REG);
 end;
 
-procedure UARTPuts(C: Char);
+procedure UARTPuts(C: AnsiChar);
 begin
     while True do
     begin
@@ -85,14 +92,14 @@ begin
     PUT32(AUX_MU_IO_REG, DWord(C));
 end;
 
-function UARTGet(): Char;
+function UARTGet(): AnsiChar;
 begin
     while True do
     begin
         if (GET32(AUX_MU_LSR_REG) and $01) > 0 then break;
     end;
 
-    UARTGet := Char(GET32(AUX_MU_IO_REG) and $FF);
+    UARTGet := AnsiChar(GET32(AUX_MU_IO_REG) and $FF);
 end;
 
 procedure UARTFlush();
@@ -103,14 +110,14 @@ begin
     end;
 end;
 
-function RaspiWrite(ACh: char; AUserData: pointer): boolean;
+function RaspiWrite(ACh: AnsiChar; AUserData: pointer): boolean;
 begin
     UARTPuts(ACh);
 
     RaspiWrite := true;
 end;
 
-function RaspiRead(var ACh: char; AUserData: pointer): boolean;
+function RaspiRead(var ACh: AnsiChar; AUserData: pointer): boolean;
 begin
     if (GET32(AUX_MU_LSR_REG) and $01) > 0 then
     begin
@@ -135,7 +142,7 @@ begin
     PUT32(AUX_MU_IER_REG, 0);
     PUT32(AUX_MU_IIR_REG, $C6);
     PUT32(AUX_MU_BAUD_REG, 270);
-    
+
     ra := GET32(GPFSEL1);
     ra := ra AND (not (7 shl 12)); // gpio14
     ra := ra OR (2 shl 12);  // alt5
@@ -144,7 +151,7 @@ begin
 
     PUT32(GPFSEL1, ra);
     PUT32(GPPUD, 0);
-    
+
     Dummy(500);
 
     PUT32(GPPUDCLK0, ((1 shl 14) OR (1 shl 15)));

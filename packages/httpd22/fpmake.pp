@@ -2,7 +2,7 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses {$ifdef unix}cthreads,{$endif} fpmkunit;
 
 Var
   P : TPackage;
@@ -109,12 +109,15 @@ begin
     P.ExamplePath.Add('examples');
     T:=P.Targets.AddExampleProgram('minimain.pas');
     T:=P.Targets.AddExampleProgram('mod_hello.pp');
-    T:=P.Targets.AddExampleProgram('mod_example.pp'); 
-    T.Dependencies.AddInclude('define.inc');	
+    T:=P.Targets.AddExampleProgram('mod_example.pp');
+    T.Dependencies.AddInclude('define.inc');
     T:=P.Targets.AddExampleProgram('mod_spelling.pp');
-    T.Dependencies.AddInclude('define.inc');	
+    T.Dependencies.AddInclude('define.inc');
     T:=P.Targets.AddExampleProgram('testmodule.pp');
-    T.Dependencies.AddInclude('define.inc');	
+    T.Dependencies.AddInclude('define.inc');
+
+
+    P.NamespaceMap:='namespaces.lst';
 
 {$ifndef ALLPACKAGES}
     Run;

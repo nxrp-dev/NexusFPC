@@ -2,14 +2,14 @@
  * Copyright (c) 2000, 2001, 2004, 2005, 2007-2010 Apple Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
  * compliance with the License. Please obtain a copy of the License at
  * http://www.opensource.apple.com/apsl/ and read it before using this
  * file.
- * 
+ *
  * The Original Code and all software distributed under the License are
  * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
  * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
@@ -17,7 +17,7 @@
  * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
  * Please see the License for the specific language governing rights and
  * limitations under the License.
- * 
+ *
  * @APPLE_LICENSE_HEADER_END@
  }
 {  Pascal Translation:  Peter N Lewis, <peter@stairways.com.au>, 2004 }
@@ -37,7 +37,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit SCPreferences;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -222,7 +224,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.MacOSXPosix,MacOsApi.CFBase,MacOsApi.SCDynamicStore,MacOsApi.CFDate,MacOsApi.CFPropertyList,MacOsApi.CFArray,MacOsApi.CFData,MacOsApi.CFRunLoop,MacOsApi.Authorization;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,MacOSXPosix,CFBase,SCDynamicStore,CFDate,CFPropertyList,CFArray,CFData,CFRunLoop,Authorization;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 {$ALIGN POWER}
@@ -470,7 +476,7 @@ function SCPreferencesCopyKeyList( prefs: SCPreferencesRef ): CFArrayRef; extern
 		This function retrieves data associated with the specified
 		key.
 
-		Note: To avoid inadvertantly reading stale data, first call
+		Note: To avoid inadvertently reading stale data, first call
 		the SCPreferencesLock function.
 	@param prefs The preferences session.
 	@param key The preference key to be returned.

@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit PQConnection;
+{$ENDIF FPC_DOTTEDUNITS}
 {
     This file is part of the Free Pascal run time library.
     Copyright (c) 1999-2022 by Michael van Canney and other members of the
@@ -22,13 +24,23 @@ unit PQConnection;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
 uses
-  Classes, SysUtils, sqldb, db, dbconst,bufdataset,
+  System.Classes, System.Types, System.SysUtils, Data.Sqldb, Data.Db, Data.Consts,Data.BufDataset,
+{$IfDef LinkDynamically}
+  Api.Postgres3dyn;
+{$Else}
+  Api.Postgres3;
+{$EndIf}
+{$ELSE FPC_DOTTEDUNITS}
+uses
+  Classes, Types, SysUtils, sqldb, db, dbconst,bufdataset,
 {$IfDef LinkDynamically}
   postgres3dyn;
 {$Else}
   postgres3;
 {$EndIf}
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   TPQCursor = Class;
@@ -47,9 +59,10 @@ type
     FConnected: Boolean;
     FCOnnection: TPQConnection;
     FDBName : String;
-    FActive : Boolean;
-    FUsed: Boolean;
+    FActive : Boolean; // within BEGIN - COMMIT/ROLLBACK
+    FUsed: Boolean; // is currently used in a transaction and cannot be obtained from handle pool
     function GetConnected: Boolean;
+    function GetHasOpenCursors: Boolean; // has open cursors
   protected
     FNativeConn: PPGConn;
     FCursorList  : TThreadList;
@@ -68,12 +81,13 @@ type
     Function CheckConnectionStatus(doRaise : Boolean = True) : Boolean;
     Function DescribePrepared(StmtName : String): PPGresult;
     Function Exec(aSQL : String; aClearResult : Boolean; aError : String = '') : PPGresult;
-    function ExecPrepared(stmtName: AnsiString; nParams:longint; paramValues:PPchar; paramLengths:Plongint;paramFormats:Plongint; aClearResult : Boolean) : PPGresult;
+    function ExecPrepared(stmtName: AnsiString; nParams:longint; paramValues:PPAnsichar; paramLengths:Plongint;paramFormats:Plongint; aClearResult : Boolean) : PPGresult;
     procedure CheckResultError(var res: PPGresult; Actions : TCheckResultActions; const ErrMsg: string);
     Property Connection : TPQConnection Read FCOnnection;
     Property NativeConn : PPGConn Read FNativeConn;
     Property Active : Boolean Read Factive;
     Property Used : Boolean Read FUsed Write FUsed;
+    Property HasOpenCursors : Boolean Read GetHasOpenCursors;
     Property Connected : Boolean Read GetConnected;
   end;
 
@@ -108,8 +122,8 @@ type
   private
     procedure SetHandle(AValue: TPGhandle);
   protected
-    Statement    : string;
-    StmtName     : string;
+    Statement    : RawByteString;
+    StmtName     : RawByteString;
     Fhandle       : TPGHandle;
     res          : PPGresult;
     CurTuple     : integer;
@@ -146,6 +160,7 @@ type
     FCursorCount         : dword;
     FIntegerDateTimes    : boolean;
     FVerboseErrors       : Boolean;
+    function PGexec(aConnection: PPGconn; query: String): PPGresult;
   protected
     // Protected so they can be used by descendents.
    function GetConnectionString(const aDBName : String) : string;
@@ -215,7 +230,11 @@ type
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.Math, System.StrUtils, Data.FMTBcd;
+{$ELSE FPC_DOTTEDUNITS}
 uses math, strutils, FmtBCD;
+{$ENDIF FPC_DOTTEDUNITS}
 
 ResourceString
   SErrRollbackFailed = 'Rollback transaction failed';
@@ -252,6 +271,7 @@ const Oid_Bool     = 16;
       Oid_interval  = 1186;
       oid_numeric   = 1700;
       Oid_uuid      = 2950;
+      Oid_JSONB     = 3802;
 
 { TPQTransactionHandle }
 
@@ -306,6 +326,20 @@ begin
   Result:=FNativeConn<>Nil;
 end;
 
+function TPGHandle.GetHasOpenCursors: Boolean;
+
+Var
+  L : TList;
+
+begin
+  L:=FCursorList.LockList;
+  try
+    Result:=L.Count>0;
+  finally
+    FCursorList.UnlockList;
+  end;
+end;
+
 procedure TPGHandle.RegisterCursor(Cursor: TPQCursor);
 begin
   if Cursor.handle=Self then
@@ -333,15 +367,9 @@ begin
   {$ENDIF}
   Cursor.Handle:=Nil;
   FCursorList.Remove(Cursor);
-  L:=FCursorList.LockList;
-  try
-    Used:=L.Count>0;
-    {$IFDEF PQDEBUG}
-    Writeln('>>> ',FHandleID,' [',TThread.CurrentThread.ThreadID, ']  unregistering cursor ',PtrInt(Cursor),'. Handle still used: ',Used);
-    {$ENDIF}
-  finally
-    FCursorList.UnlockList;
-  end;
+  {$IFDEF PQDEBUG}
+  Writeln('>>> ',FHandleID,' [',TThread.CurrentThread.ThreadID, ']  unregistering cursor ',PtrInt(Cursor),'. Handle still used: ',Used);
+  {$ENDIF}
 end;
 
 procedure TPGHandle.UnprepareStatement(Cursor: TPQCursor; Force : Boolean);
@@ -433,7 +461,7 @@ constructor TPQConnection.Create(AOwner : TComponent);
 
 begin
   inherited;
-  FConnOptions := FConnOptions + [sqSupportParams, sqSupportEmptyDatabaseName, sqEscapeRepeat, sqEscapeSlash, sqImplicitTransaction,sqSupportReturning,sqSequences];
+  FConnOptions := FConnOptions + [sqSupportParams, sqSupportEmptyDatabaseName, sqEscapeRepeat, sqEscapeSlash, sqImplicitTransaction,sqSupportReturning,sqSequences] - [sqCommitEndsPrepared];
   FieldNameQuoteChars:=DoubleQuotes;
   VerboseErrors:=True;
   FHandlePool:=TThreadlist.Create;
@@ -481,6 +509,20 @@ begin
 {$EndIf}
 end;
 
+function TPQConnection.PGexec(aConnection : PPGconn; query:String):PPGresult;
+
+Var
+  SQL : RawByteString;
+
+begin
+{$IF SIZEOF(CHAR)=2}
+  SQL:=UTF8Encode(Query);
+{$ELSE}
+  SQL:=Query;
+{$ENDIF}
+  Result:=PQexec(aConnection,PAnsiChar(SQL));
+end;
+
 procedure TPQConnection.GetExtendedFieldInfo(cursor: TPQCursor;
   Bindings: TFieldBindings);
 
@@ -491,7 +533,7 @@ Var
   toid : oid;
 
 begin
-s:='';
+  s:='';
   For I:=0 to Length(Bindings)-1 do
     if (Bindings[i].TypeOID>0) then
       begin
@@ -565,6 +607,12 @@ var
 begin
   tr := (trans as TPQTransactionHandle).Handle as TPGHandle;
   TR.RollBack;
+  FHandlePool.LockList; // protect the Used change with critical section
+  try
+    tr.Used:=False; // handle can be reused after successful rollback
+  finally
+    FHandlePool.UnLockList;
+  end;
   result := true;
 end;
 
@@ -574,6 +622,12 @@ var
 begin
   tr := (trans as TPQTransactionHandle).Handle;
   tr.Commit;
+  FHandlePool.LockList; // protect the Used change with critical section
+  try
+    tr.Used:=False; // handle can be reused after successful commit
+  finally
+    FHandlePool.UnLockList;
+  end;
   Result:=True;
 end;
 
@@ -610,7 +664,7 @@ begin
     while (i<L.Count) do
       begin
       T:=TPGHandle(L[i]);
-      if Not (T.Connected and T.Used) then
+      if Not (T.Used or T.HasOpenCursors) then // existing handle must not be used and must not have open cursors
         break
       else
         T:=Nil;
@@ -635,7 +689,6 @@ begin
     {$IFDEF PQDEBUG}
     Writeln('>>> ',T.FHandleID,' [',TThread.CurrentThread.ThreadID, '] Reusing connection ');
     {$ENDIF}
-
     end;
 
   if (Not T.Connected) then
@@ -768,7 +821,7 @@ begin
   // unprepare statements associated with given transaction
   L:=FCursorList.LockList;
   try
-    For I:=0 to L.Count-1 do
+    For I:=L.Count-1 downto 0 do
       begin
       C:=TPQCursor(L[i]);
       UnprepareStatement(C,False);
@@ -785,6 +838,7 @@ procedure TPGHandle.Commit;
 
 begin
   Exec('COMMIT',True,SErrCommitFailed);
+  FActive:=False; // handle is not active after successful COMMIT
 end;
 
 procedure TPGHandle.Reset;
@@ -817,7 +871,7 @@ Var
 
 begin
   S:=StmtName;
-  Result:=PQdescribePrepared(FNativeConn,pchar(S));
+  Result:=PQdescribePrepared(FNativeConn,pansichar(S));
 end;
 
 function TPGHandle.Exec(aSQL: String; aClearResult: Boolean; aError: String): PPGresult;
@@ -842,7 +896,7 @@ begin
 end;
 
 function TPGHandle.ExecPrepared(stmtName: AnsiString; nParams: longint;
-  paramValues: PPchar; paramLengths: Plongint; paramFormats: Plongint;
+  paramValues: PPAnsichar; paramLengths: Plongint; paramFormats: Plongint;
   aClearResult: Boolean): PPGresult;
 
 var
@@ -884,7 +938,7 @@ var
   COLUMN_NAME: string;
   DATATYPE_NAME: string;
   CONSTRAINT_NAME: string;
-  P : Pchar;
+  P : PAnsiChar;
   haveError : Boolean;
   lMessage : String;
 
@@ -986,7 +1040,10 @@ begin
   case AOID of
     Oid_varchar,Oid_bpchar,
     Oid_name               : begin
-                             Result := ftString;
+                             if aOID=Oid_bpchar then
+                               Result:=ftFixedChar
+                             else
+                               Result := ftString;
                              size := PQfsize(Res, Tuple);
                              if (size = -1) then
                                begin
@@ -999,7 +1056,8 @@ begin
                              if size > MaxSmallint then size := MaxSmallint;
                              end;
 //    Oid_text               : Result := ftString;
-    Oid_text,Oid_JSON      : Result := ftMemo;
+    Oid_text,Oid_JSON,
+    Oid_JSONB              : Result := ftMemo;
     Oid_Bytea              : Result := ftBlob;
     Oid_oid                : Result := ftInteger;
     Oid_int8               : Result := ftLargeInt;
@@ -1070,7 +1128,7 @@ begin
 end;
 
 procedure TPQConnection.PrepareStatement(cursor: TSQLCursor;ATransaction : TSQLTransaction;buf : string; AParams : TParams);
-                          
+
 const TypeStrings : array[TFieldType] of string =
     (
       'Unknown',   // ftUnknown
@@ -1088,7 +1146,7 @@ const TypeStrings : array[TFieldType] of string =
       'Unknown',   // ftBytes
       'bytea',     // ftVarBytes
       'Unknown',   // ftAutoInc
-      'bytea',     // ftBlob 
+      'bytea',     // ftBlob
       'text',      // ftMemo
       'bytea',     // ftGraphic
       'text',      // ftFmtMemo
@@ -1117,9 +1175,9 @@ const TypeStrings : array[TFieldType] of string =
              ,
       'Unknown',   // ftOraTimeStamp
       'Unknown',   // ftOraInterval
-      'Unknown',   // ftLongWord
-      'Unknown',   // ftShortint
-      'Unknown',   // ftByte
+      'bigint',    // ftLongWord
+      'smallint',  // ftShortint
+      'smallint',  // ftByte
       'Unknown',   // ftExtended
       'real'       // ftSingle
 {$ENDIF}
@@ -1231,7 +1289,7 @@ var ar  : array of PAnsiChar;
     bd : TBlobData;
     lengths,formats : array of integer;
     ParamNames,
-    ParamValues : array of string;
+    ParamValues : tansistringdynarray;
     cash: int64;
     PQCurs : TPQCursor;
 
@@ -1292,13 +1350,11 @@ begin
               Handled:=true;
               bd:= AParams[i].AsBlob;
               l:=length(BD);
+              GetMem(ar[i],l+1);
+              ar[i][l]:=#0;
               if l>0 then
-                begin
-                GetMem(ar[i],l+1);
-                ar[i][l]:=#0;
                 Move(BD[0],ar[i]^, L);
-                lengths[i]:=l;
-                end;
+              lengths[i]:=l;
               end
             else
               s := GetAsString(AParams[i]);
@@ -1362,6 +1418,7 @@ var
   Q : TPQCursor;
   FD : TSQLDBFieldDef;
   FB : PFieldBinding;
+  FN: String;
 
 begin
   B:=False;
@@ -1372,8 +1429,9 @@ begin
     setlength(FieldBinding,nFields);
     for i := 0 to nFields-1 do
       begin
+      FN:=PQfname(Res, i);
       fieldtype := TranslateFldType(Res, i, asize, aoid );
-      FD := AddFieldDef(FieldDefs, i+1, PQfname(Res, i), fieldtype, asize, -1, False, False, False) as TSQLDBFieldDef;
+      FD := AddFieldDef(FieldDefs, i+1, FN, fieldtype, asize, -1, False, False, False) as TSQLDBFieldDef;
       With FD do
         begin
         SQLDBData:=@FieldBinding[i];
@@ -1494,7 +1552,7 @@ var
   x,i           : integer;
   s             : string;
   li            : Longint;
-  CurrBuff      : pchar;
+  CurrBuff      : PAnsiChar;
   dbl           : pdouble;
   cur           : currency;
   NumericRecord : ^TNumericRecord;
@@ -1512,7 +1570,7 @@ begin
     // Joost, 5 jan 2006: I disabled the following, since it's useful for
     // debugging, but it also slows things down. In principle things can only go
     // wrong when FieldDefs is changed while the dataset is opened. A user just
-    // shoudn't do that. ;) (The same is done in IBConnection)
+    // shouldn't do that. ;) (The same is done in IBConnection)
     //if PQfname(Res, x) <> FieldDef.Name then
     //  DatabaseErrorFmt(SFieldNotFound,[FieldDef.Name],self);
 
@@ -1565,11 +1623,11 @@ begin
             else
             begin
               li := pqgetlength(res,curtuple,x);
-              if li > FieldDef.Size then li := FieldDef.Size;
+              if li > FieldDef.Size*FieldDef.CharSize then li := FieldDef.Size*FieldDef.CharSize;
               Move(CurrBuff^, Buffer^, li);
             end;
           end;
-          pchar(Buffer + li)^ := #0;
+          PAnsiChar(Buffer + li)^ := #0;
           end;
         ftBlob, ftMemo, ftVarBytes :
           CreateBlob := True;
@@ -1637,7 +1695,7 @@ begin
           dbl^ := BEtoN(PInt64(CurrBuff)^) / 100;
           end;
         ftBoolean:
-          pchar(buffer)[0] := CurrBuff[0];
+          PAnsiChar(buffer)[0] := CurrBuff[0];
         ftGuid:
           begin
           Move(CurrBuff^, guid, sizeof(guid));
@@ -1645,7 +1703,7 @@ begin
           guid.D2:=BEtoN(guid.D2);
           guid.D3:=BEtoN(guid.D3);
           s:=GUIDToString(guid);
-          StrPLCopy(PChar(Buffer), s, FieldDef.Size);
+          StrPLCopy(PAnsiChar(Buffer), s, FieldDef.Size);
           end
         else
           result := false;
@@ -1729,7 +1787,7 @@ function TPQConnection.GetSchemaInfoSQL(SchemaType: TSchemaType;
 var s : string;
 
 begin
-  // select * from information_schema.tables with 
+  // select * from information_schema.tables with
   // where table_schema [not] in ('pg_catalog','information_schema') may be better.
   // But the following should work:
   case SchemaType of
@@ -1793,13 +1851,22 @@ procedure TPQConnection.LoadBlobIntoBuffer(FieldDef: TFieldDef;
 var
   x             : integer;
   li            : Longint;
+  v             : PAnsiChar;
 begin
   with cursor as TPQCursor do
     begin
     x := FieldBinding[FieldDef.FieldNo-1].Index;
     li := pqgetlength(res,curtuple,x);
+    v := pqgetvalue(res,CurTuple,x);
+    if PQftype(res, x)=Oid_JSONB then
+    begin
+      // postgres returns the version for the JSONB binary encoding in the first byte (currently it is 0x1) - we don't want to have it in the result
+      //  jump over the first byte
+      inc(v);
+      dec(li);
+    end;
     ReAllocMem(ABlobBuf^.BlobBuffer^.Buffer,li);
-    Move(pqgetvalue(res,CurTuple,x)^, ABlobBuf^.BlobBuffer^.Buffer^, li);
+    Move(v^, ABlobBuf^.BlobBuffer^.Buffer^, li);
     ABlobBuf^.BlobBuffer^.Size := li;
     end;
 end;

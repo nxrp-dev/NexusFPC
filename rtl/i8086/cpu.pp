@@ -14,12 +14,19 @@
 
  **********************************************************************}
 {$mode objfpc}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit cpu;
+{$ENDIF FPC_DOTTEDUNITS}
 
   interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+    uses
+      System.SysUtils;
+{$ELSE FPC_DOTTEDUNITS}
     uses
       sysutils;
+{$ENDIF FPC_DOTTEDUNITS}
 
     { returns true, if the processor supports the cpuid instruction }
     function cpuid_support : boolean;
@@ -183,7 +190,7 @@ unit cpu;
 //              _AESSupport:=(_ecx and $2000000)<>0;
 //
 //              _AVXSupport:=
-//                { XGETBV suspport? }
+//                { XGETBV support? }
 //                ((_ecx and $08000000)<>0) and
 //                { xmm and ymm state enabled? }
 //                ((XGETBV(0) and %110)=%110) and

@@ -1,11 +1,18 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit opensslsockets;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, System.Net.Sockets, System.Net.Ssockets, System.Net.Sslsockets, System.Net.Sslbase, Api.Openssl, System.Net.Fpopenssl;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, sockets, ssockets, sslsockets, sslbase, openssl, fpopenssl;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
 
@@ -77,7 +84,18 @@ begin
   FSSLLastErrorString:=AValue;
 end;
 
+function NormalizeHostNameForSNI(const AHostName: AnsiString): AnsiString;
+begin
+  Result:=LowerCase(AHostName);
+  if (Length(Result)>0) and (Result[Length(Result)]='.') then
+    Delete(Result,Length(Result),1);
+end;
+
 function TOpenSSLSocketHandler.Connect: Boolean;
+
+var
+  SNIHostName: AnsiString;
+
 begin
   Result:=Inherited Connect;
   Result := Result and InitContext(False);
@@ -87,7 +105,12 @@ begin
     if Result then
      begin
      if SendHostAsSNI  and (Socket is TInetSocket) then
-       FSSL.Ctrl(SSL_CTRL_SET_TLSEXT_HOSTNAME,TLSEXT_NAMETYPE_host_name,PAnsiChar(AnsiString((Socket as TInetSocket).Host)));
+       begin
+       SNIHostName:=NormalizeHostNameForSNI(AnsiString((Socket as TInetSocket).NetworkAddress.Address));
+       FSSL.Ctrl(SSL_CTRL_SET_TLSEXT_HOSTNAME,TLSEXT_NAMETYPE_host_name,PAnsiChar(SNIHostName));
+       end;
+     if VerifyPeerCert and (Socket is TInetSocket) then
+       FSSL.Set1Host(NormalizeHostNameForSNI(AnsiString((Socket as TInetSocket).Host)));
      Result:=CheckSSL(FSSL.Connect);
      //if Result and VerifyPeerCert then
      //  Result:=(FSSL.VerifyResult<>0) or (not DoVerifyCert);
@@ -164,11 +187,12 @@ begin
     H:=TOpenSSLSocketHandler(UD);
     Pwd:=H.CertificateData.KeyPassword;
     end;
-  if (len<Length(Pwd)+1) then
-    SetLength(Pwd,len-1);
-  pwd:=pwd+#0;
-  Result:=Length(Pwd);
-  Move(Pointer(Pwd)^,Buf^,Result);
+   Result:=Length(Pwd);
+   if Result=0 then
+     Exit;
+   if Result>len then
+     Result:=len;
+   Move(Pointer(Pwd)^,Buf^,Result);
 end;
 
 function TOpenSSLSocketHandler.InitSslKeys: boolean;
@@ -298,6 +322,7 @@ function TOpenSSLSocketHandler.Send(Const Buffer; Count: Integer): Integer;
 var
   e: integer;
 begin
+  FLastError:=0;
   FSSLLastError := 0;
   FSSLLastErrorString:='';
   repeat
@@ -307,7 +332,11 @@ begin
   if (E=SSL_ERROR_ZERO_RETURN) then
     Result:=0
   else if (e<>0) then
+    begin
     FSSLLastError:=e;
+    if e=SSL_ERROR_SYSCALL then
+      FLastError:=socketerror;
+    end;
 end;
 
 function TOpenSSLSocketHandler.Recv(Const Buffer; Count: Integer): Integer;
@@ -315,6 +344,7 @@ function TOpenSSLSocketHandler.Recv(Const Buffer; Count: Integer): Integer;
 var
   e: integer;
 begin
+  FLastError:=0;
   FSSLLastError:=0;
   FSSLLastErrorString:= '';
   repeat
@@ -326,7 +356,11 @@ begin
   if (E=SSL_ERROR_ZERO_RETURN) then
     Result:=0
   else if (e<>0) then
+    begin
     FSSLLastError:=e;
+    if e=SSL_ERROR_SYSCALL then
+      FLastError:=socketerror;
+    end;
 end;
 
 function TOpenSSLSocketHandler.BytesAvailable: Integer;

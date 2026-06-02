@@ -39,7 +39,7 @@
 #   n_   note
 #   h_   hint
 #   i_   info
-#   l_   add linenumber
+#   l_   add line number
 #   u_   used
 #   t_   tried
 #   c_   conditional
@@ -54,7 +54,7 @@
 #
 # General
 #
-# 01027 is the last used one
+# 01033 is the last used one
 #
 # BeginOfTeX
 % \section{General compiler messages}
@@ -143,11 +143,32 @@ general_t_unitscope=01027_T_Using unit scope: $1
 % When the \var{-vt} switch is used, this line tells you what unit scopes (namespaces)
 % the compiler is using when looking up units. You can add a unit scope with the
 % \var{-FN} option.
+general_i_reduced_filesearch=01028_I_Reduced file search: Not searching for uppercased or 8.3 unit filenames.
+% When the \var{-Ft} switch is used, this line informs you that the compiler
+% will not look for uppercased filenames or 8.3 conforming filenames.
+general_f_compiler_aborted=01029_F_Compiler stopped
+% Compilation was aborted.
+general_t_unitpath_local=01030_T_$1: Using local unit path: $2
+% When the \var{-vt} switch is used, this line tells you where the compiler
+% looks for compiled units. You can set this path with the \var{\{\$UNITPATH xxx\}}
+% directive.
+general_t_includepath_local=01031_T_$1: Using local include path: $2
+% When the \var{-vt} switch is used, this line tells you where the compiler
+% looks for its include files (files used in \var{\{\$I xxx\}} statements).
+% You can set this path with the \var{\{\$INCLUDEPATH xxx\}} directive.
+general_t_librarypath_local=01032_T_$1: Using local library path: $2
+% When the \var{-vt} switch is used, this line tells you where the compiler
+% looks for the libraries. You can set this path with the \var{\{\$LIBRARYPATH xxx\}}
+% directive.
+general_t_objectpath_local=01033_T_$1: Using local object path: $2
+% When the \var{-vt} switch is used, this line tells you where the compiler
+% looks for object files you link in (files used in \var{\{\$L xxx\}} statements).
+% You can set this path with the \var{\{\$OBJECTPATH xxx\}} directive.
 % \end{description}
 #
 # Scanner
 #
-# 02107 is the last used one
+# 02122 is the last used one
 #
 % \section{Scanner messages.}
 % This section lists the messages that the scanner emits. The scanner takes
@@ -173,7 +194,7 @@ scan_f_syn_expected=02003_F_Syntax error, "$1" expected but "$2" found
 % This indicates that the compiler expected a different token than
 % the one you typed. It can occur almost anywhere it is possible to make an error
 % against the Pascal language.
-scan_t_start_include_file=02004_TL_Start reading includefile $1
+scan_t_start_include_file=02004_TL_Start reading include file $1
 % When you provide the \var{-vt} switch, the compiler tells you
 % when it starts reading an included file.
 scan_w_comment_level=02005_W_Comment level $1 found
@@ -386,6 +407,12 @@ scanner_w_illegal_warn_identifier=02087_W_Illegal identifier "$1" for $WARN dire
 scanner_e_illegal_alignment_directive=02088_E_Illegal alignment directive
 % The alignment directive is not valid. Either the alignment type is not known or the alignment
 % value is not a power of two.
+scanner_w_alignment_larger_than_max=02114_W_Variable "$1" has align directive larger than system maximum alignment for variables
+scanner_n_alignment_larger_than_max=02121_N_Variable "$1" has align directive larger than system maximum alignment for variables
+% The type of the variable has an 'align' directive which is larger than  current maximum
+scanner_w_local_alignment_larger_than_max=02115_W_Local variable "$1" has align directive larger than system maximum alignment for local variables
+scanner_n_local_alignment_larger_than_max=02122_N_Local variable "$1" has align directive larger than system maximum alignment for local variables
+% The type of the variable has an 'align' directive which is larger than current  maximum.
 scanner_f_illegal_utf8_bom=02089_F_It is not possible to include a file that starts with an UTF-8 BOM in a module that uses a different code page
 % All source code that is part of a single compilation entity (program, library, unit) must be encoded
 % in the same code page
@@ -442,7 +469,32 @@ scan_e_unexpected_endif=02108_E_$ENDIF directive found without a matching $IF(N)
 % When legacy ifend is turned on by the directive \var{\$LEGACYIFEND}, then the
 % \var{\$IF} directive must be closed by the \var{\$IFEND} directive and the
 % \var{\$IFDEF} directive must be closed by the \var{\$ENDIF} directive.
-% \end{description}
+scan_e_invalid_rtti_clause=02109_E_A Invalid RTTI clause (expected Explicit or Inherit)
+% The \var{\$RTTI} directive needs to be followed either by \var{EXPLICIT} or \var{INHERIT}
+% and entries for \var{FIELDS}, \var{PROPERTIES} or \var{METHODS}.
+scan_e_incomplete_rtti_clause=02110_E_A Explicit clause requires at least one option (Methods, Properties or Fields)
+% An \var{\$RTTI EXPLICIT} directive requires at least one of the \var{FIELDS}, \var{PROPERTIES}
+% or \var{METHODS} entries.
+scan_e_invalid_rtti_option=02111_E_A Invalid RTTI option "$1" (expected Methods, Properties or Fields)
+% The \var{\$RTTI EXPLICIT} can only contain \var{FIELDS}, \var{PROPERTIES} and \var{METHODS}
+% entries.
+scan_e_duplicate_rtti_option=02112_E_A Duplicate RTTI option "$1"
+% An option in a \var{\$RTTI EXPLICIT} directive can only appear once.
+scan_e_misplaced_rtti_directive=02113_E_A The RTTI directive cannot be used here
+% The \var{\$RTTI} directive can not be used in this location (e.g. before the \var{PROGRAM}
+% or \var{UNIT} headers).
+scan_e_unknown_lineending_type=02116_E_Unknown line ending type specified. Valid options are CR, CRLF, LF, PLATFORM, or SOURCE.
+% The line ending type that was specified is not one of CR, CRLF, LF, PLATFORM, or SOURCE.
+scan_e_trimcount_out_of_range=02117_E_The value of MULTILINESTRINGTRIMLEFT cannot be less than 0 or greater than 65535.
+% MULTILINESTRINGTRIMLEFT is stored in a "word" field, and thus is restricted to the range 0..65535.
+scan_e_illegal_directive=02118_E_Illegal compiler directive "$1"
+% You have specified a compiler directive that cannot (for one of several possible reasons) currently be used.
+scan_f_unterminated_multiline_string=02119_F_Unterminated multi-line string starting at line $1, column $2.
+% The file contains an "unbalanced" number of multi-line string denoting backtick characters.
+scan_e_improperly_indented_multiline_string=02120_E_Incorrectly indented multi-line string (need $1 whitespace chars) starting at line $2, column $3.
+% The multi-line string does not have the proper indentation, every line
+% must have at least the number of spaces as in the last line.
+%\end{description}
 #
 # Parser
 #
@@ -754,7 +806,7 @@ parser_e_directive_only_one_var=03095_E_$1 can be associated with only one varia
 % Var Z : Longint;
 %     X,Y : Longint absolute Z;
 % \end{verbatim}
-parser_e_absolute_only_to_var_or_const=03096_E_absolute can only be associated with a var or const
+parser_e_absolute_only_to_var_or_const=03096_E_absolute can only be associated with a variable or constant representing an address
 % The address of an \var{absolute} directive can only point to a variable or
 % constant. Therefore, the following code will produce this error:
 % \begin{verbatim}
@@ -763,7 +815,7 @@ parser_e_absolute_only_to_var_or_const=03096_E_absolute can only be associated w
 %  var p : longint absolute x;
 % \end{verbatim}
 parser_e_initialized_only_one_var=03097_E_Only one variable can be initialized
-% You cannot specify more than one variable with a initial value in Delphi mode.
+% You cannot specify more than one variable with an initial value.
 parser_e_abstract_no_definition=03098_E_Abstract methods shouldn't have any definition (with function body)
 % Abstract methods can only be declared, you cannot implement them. They
 % should be overridden by a descendant class.
@@ -1498,7 +1550,7 @@ parser_d_internal_parser_string=03319_D_Parsing internally generated code: $1
 parser_e_feature_unsupported_for_vm=03320_E_This language feature is not supported on managed VM targets
 % Certain language features are not supported on targets that are managed virtual machines.
 parser_e_jvm_invalid_virtual_constructor_call=03321_E_Calling a virtual constructor for the current instance inside another constructor is not possible on the JVM target
-% The JVM does not natively support virtual constructor. Unforunately, we are not aware of a way to
+% The JVM does not natively support virtual constructor. Unfortunately, we are not aware of a way to
 % emulate them in a way that makes it possible to support calling virtual constructors
 % for the current instance inside another constructor.
 parser_e_method_lower_visibility=03322_E_Overriding method "$1" cannot have a lower visibility ($2) than in parent class $3 ($4)
@@ -1631,7 +1683,7 @@ parser_e_location_regpair_only_data=03358_E_Only data registers are supported fo
 % AmigaOS/MorphOS syscall specific: for 64 bit register pairs, only data registers are supported
 parser_e_location_regpair_only_consecutive=03359_E_Only consecutive registers are supported for explicit location register pairs
 % MorphOS syscall specific: only consecutive (f.e.: d1-d2) registers are supported for 64 bit register pairs
-parser_e_constructurs_cannot_take_type_parameters=03360_E_Constructors cannot take type parameters
+parser_e_constructors_cannot_take_type_parameters=03360_E_Constructors cannot take type parameters
 % The use of type parameters in constructors is not allowed.
 parser_e_raise_with_noreturn_not_allowed=03361_E_Raise in subroutines declared as noreturn is not allowed
 % \var{noreturn} tells the compiler that the activation scope of the subroutine is never left. This includes exceptions
@@ -1640,23 +1692,41 @@ parser_e_section_directive_not_allowed_for_target=03362_E_Directive section not 
 % Only some targets (e.g. Embedded and FreeRTOS) support the section directive.
 parser_e_absolute_sym_cannot_reference_itself=03363_E_Absolute variable cannot reference itself
 parser_e_syscall_format_not_support=03364_E_Syntax of syscall directive not supported by current target
-% Published property is ignored
-parser_w_ignoring_published_property=03365_W_This property will not be published
 % On a certain target, not all syntax variants of the syscall directive make sense and thus those making
 % no sense are not supported
 % Declarations like \var{var i: Integer absolute i;} are not allowed
+parser_w_ignoring_published_property=03365_W_This property will not be published
+% Published property is ignored
 parser_e_wasm_ref_types_can_only_be_passed_by_value=03366_E_WebAssembly reference types can only be passed by value
 % WebAssembly reference types don't have an in-memory representation and can only be passed by value.
 parser_e_promising_exports_not_supported_on_current_platform=03367_E_Declaring exports as 'promising' is WebAssembly-specific and is not supported on the current platform
 % Promising exports are WebAssembly-specific. They are not allowed on other platforms.
 parser_e_suspending_externals_not_supported_on_current_platform=03368_E_Declaring externals as 'suspending' is WebAssembly-specific and is not supported on the current platform
 % Suspending externals are WebAssembly-specific. They are not allowed on other platforms.
+parser_w_widechar_set_reduced=03369_W_Reducing Widechar set to single-byte AnsiChar set.
+% The base type of a set can only have 255 elements. Sets of wide characters
+% are reduced to sets of 1-byte characters.
+parser_e_nostringaliasinsystem=03370_E_Using 'string' alias is not allowed in the system unit. Use short-,ansi- or unicodestring.
+% As a safeguard, the system unit may only use basic string types, not the
+% string alias which is dependent on the mode in which a unit is compiled.
+parser_e_coperators_off=03371_E_C styled assignment operators are turned off
+% By default, c style assignment operators (+=, -=, *=, /=) are turn off. Either turn them on by the command line
+% parameter -Sc or in the source code by {\$COPERATORS ON}
+parser_e_cannot_evaluate_expression_at_compile_time=03372_E_Expression cannot be evaluated at compile time
+% Certain operations like the size of an object cannot be determined at compile time,
+% so it cannot be e.g. part of a constant expression.
+parser_e_type_alread_forward=03373_E_Duplicate forward type declaration: $1
+% Types might be defined only once as forward:
+% \var{type myclass = class; myclass = class;} is not allowed
+parser_e_no_suitable_newinstance_method_found=03374_E_No suitable NewInstance method for class instance creation found
+% To create a new instance of a class, a suitable NewInstance (like \var{TObject.NewInstance}) method must be found. The symbol name NewInstance
+% might not be used for other purposes than to create a new instance of a class.
 %
 % \end{description}
 %
 # Type Checking
 #
-# 04133 is the last used one
+# 04134 is the last used one
 #
 % \section{Type checking errors}
 % This section lists all errors that can occur when type checking is
@@ -2116,6 +2186,8 @@ type_e_cannot_take_address_of_wasm_externref=04132_E_Cannot take the address of 
 % WebAssembly externref types don't have an in-memory representation and therefore, their address cannot be taken.
 type_e_cannot_determine_size_of_wasm_reference_type=04133_E_WebAssembly reference types don't have an observable size
 % WebAssembly reference types are opaque, meaning neither their size, nor their bit pattern can be observed.
+type_e_ordinal_or_pointer_expr_expected=04134_E_Ordinal or pointer expression expected
+% The expression must be of an ordinal or pointer type.
 %
 % \end{description}
 #
@@ -2359,7 +2431,7 @@ sym_e_formal_class_not_resolved=05080_E_No full definition of the formally decla
 % access one of its fields, send a message to it, or use it to inherit from), the compiler requires the full definition
 % of the class to be in scope.
 sym_e_interprocgoto_into_init_final_code_not_allowed=05081_E_Gotos into initialization or finalization blocks of units are not allowed
-% Gotos into initialization or finalization blockse of units are not allowed.
+% Gotos into initialization or finalization blocks of units are not allowed.
 sym_e_external_class_name_mismatch1=05082_E_Invalid external name "$1" for formal class "$2"
 sym_e_external_class_name_mismatch2=05083_E_Complete class definition with external name "$1" here
 % When a class is declared using a formal external definition, the actual external
@@ -2442,7 +2514,7 @@ sym_e_type_must_be_rec_or_object=05098_E_Record or object type expected
 sym_e_symbol_no_capture=05099_E_Symbol "$1" can not be captured
 % The specified symbol can not be captured to be used in a function reference.
 % For example \var{var} or \var{out} parameters can not be captured in that way.
-sym_f_systemunitnotloaded=05100_F_System unit not loaded.
+sym_f_systemunitnotloaded=05100_F_System unit not loaded
 % The compiler used a function that requires the system unit to be loaded,
 % but it was not yet loaded. This is an internal compiler error and must be reported.
 sym_e_wasm_ref_types_cannot_be_used_in_records=05101_E_WebAssembly reference types cannot be used inside records, objects, or classes
@@ -2579,7 +2651,7 @@ cg_h_inherited_ignored=06048_H_Inherited call to abstract method ignored
 % of a parent class via \var{inherited;}. The call is then ignored.
 cg_e_goto_label_not_found=06049_E_Goto label "$1" not defined or optimized away
 % The label used in the goto definition is not defined or optimized away by the
-% unreachable code elemination.
+% unreachable code elimination.
 cg_f_unknown_type_in_unit=06050_F_Cannot find type "$1" in unit "$2". Check if you use the correct run time library.
 % The compiler expects that the runtime library contains certain type definitions. If you see this error
 % and you didn't change the runtime library code, it's very likely that the runtime library
@@ -2592,7 +2664,7 @@ cg_e_labels_cannot_defined_outside_declaration_scope=06052_E_Label must be defin
 % In ISO mode, labels must be defined in the same scope as they are declared.
 cg_e_goto_across_procedures_with_exceptions_not_allowed=06053_E_Leaving procedures containing explicit or implicit exceptions frames using goto is not allowed
 % Non-local gotos might not be used to leave procedures using exceptions either implicitly or explicitly. Procedures
-% which use automated types like ansistrings or class constructurs are affected by this too.
+% which use automated types like ansistrings or class constructors are affected by this too.
 cg_e_mod_only_defined_for_pos_quotient=06054_E_In ISO mode, the mod operator is defined only for positive quotient
 % In ISO pascal, only positive values are allowed for the quotient: \var{n mod m} is only valid if \var{m>0}.
 cg_d_autoinlining=06055_DL_Auto inlining: $1
@@ -2621,6 +2693,12 @@ cg_w_interrupt_does_not_save_registers=06062_W_The target CPU does not support p
 % Certain processors have no memory (e.~g. avr1 family), so they do not support storing/restoring the used registers
 % in an interrupt routine. The programmer has to ensure that while there is a chance for the interrupt routine being
 % called that no other code depending on registers being preserved is executed.
+cg_f_unknown_internal_procedure_number=06063_F_Unknown internal procedure number "$1"
+% The directive \var{internproc} is used with a number not known by the compiler. \var{internproc} should be used only by the
+% supplied RTL or by users really knowing what they are doing.
+cg_e_intrinsic_not_supported_by_instruction_set=06064_E_Intrinsic not supported by the currently selected instruction set
+% The intrinsic translates into an assembler instruction which is not supported by the instruction set
+% selected by \var{-Cp}
 %
 % \end{description}
 # EndOfTeX
@@ -2906,10 +2984,10 @@ asmr_e_wrong_gotpcrel_intel_syntax=07117_E_GOTPCREL references in Intel assemble
 % \verb*[global_symbol wrt ..gotpcrel]*
 asmr_e_no_gotpcrel_support=07118_E_The current target does not support GOTPCREL relocations
 % Not all targets support position-independent code using a global offset table.
-% Use a different way to access symbols in a position-indepent way in these cases.
+% Use a different way to access symbols in a position-independent way in these cases.
 asmr_w_global_access_without_got=07119_W_Exported/global symbols should be accessed via the GOT
 % Global symbols (symbols from the unit interface, or defined in a program
-% or library) should be accessed via the GOT when generating position-indepent code.
+% or library) should be accessed via the GOT when generating position-independent code.
 asmr_w_check_mem_operand_size=07120_W_Check size of memory operand "$1"
 % The size of memory operand is possible invalid. This is
 % probably an error in the assembler statement
@@ -2976,7 +3054,7 @@ asmr_e_a64_regset_too_large=07147_E_Too many registers in register set.
 #
 # Assembler/binary writers
 #
-# 08037 is the last used one
+# 08039 is the last used one
 #
 asmw_f_too_many_asm_files=08000_F_Too many assembler files
 % With smartlinking enabled, there are too many assembler
@@ -3030,11 +3108,13 @@ asmw_e_32bit_not_supported=08029_E_Asm: 32 bit references not supported
 asmw_f_code_segment_too_large=08030_F_Code segment too large
 asmw_f_data_segment_too_large=08031_F_Data segment too large
 asmw_e_instruction_not_supported_by_cpu=08032_E_Instruction not supported by the selected instruction set
-asmw_e_brxx_out_of_range=08033_E_Asm: conditional branch destination is out of range
+asmw_e_destination_out_of_range=08033_E_Asm: $1 destination is out of range
 asmw_e_illegal_use_of_rip=08034_E_Asm: RIP cannot be used as index register or with another register in a reference
 asmw_e_seh_invalid_data_size=08035_F_Illegal function size for SEH function
 asmw_e_illegal_use_of_sp=08036_E_Asm: ESP/RSP cannot be used as index register
 asmw_e_illegal_unset_index=08037_E_Wasm32 symbol $1 without index value error
+asmw_e_destination_and_source_registers_must_be_distinct=08038_E_Asm: $1 destination and source registers must be distinct.
+asmw_e_registers_should_be_distinct=08039_E_Asm: $1 registers should be distinct.
 #
 # Executing linker/assembler
 #
@@ -3143,7 +3223,7 @@ exec_f_controllertype_expected=09036_F_To generate the correct linker call, a co
 % Xtensa micro controller require a detailed specification linker command which depends on the target controller.
 % If no target controller is set, this command cannot be build and thus linking cannot be carried out.
 %
-%\end{description}
+% \end{description}
 # EndOfTeX
 
 #
@@ -3170,13 +3250,13 @@ execinfo_x_stackreserve=09133_X_Stack space reserved: $1 bytes
 % Informational message showing the stack size that the compiler reserved for the executable.
 execinfo_x_stackcommit=09134_X_Stack space committed: $1 bytes
 % Informational message showing the stack size that the compiler committed for the executable.
-%\end{description}
+% \end{description}
 # EndOfTeX
 
 #
 # Internal linker messages
 #
-# 09222 is the last used one
+# 09224 is the last used one
 #
 # BeginOfTeX
 % \section{Linker messages}
@@ -3241,13 +3321,17 @@ link_e_undefined_symbol_in_obj=09221_E_Undefined symbol: $1 (first seen in $2)
 % The specified symbol is used, but not defined and was first seen in the specified object file.
 link_e_undefined_symbol=09222_E_Undefined symbol: $1
 % The specified symbol is used, but not defined.
-%\end{description}
+link_w_unsupported_cross_endian_internal_linker=09223_W_Internal linker in cross-endian configuration is work in progress
+% The internal linker does not correctly handle endianess conversion.
+link_f_executable_too_big_exceeds_X_by_Y_bytes=09224_F_Executable image size is too big for $1 target (exceeds $2 by $3 bytes).
+% The result File is too big
+% \end{description}
 # EndOfTeX
 
 #
 # Unit loading
 #
-# 10070 is the last used one
+# 10072 is the last used one
 #
 # BeginOfTeX
 % \section{Unit loading messages.}
@@ -3273,13 +3357,16 @@ unit_u_ppu_file_too_short=10006_U_PPU File too short
 % The ppufile is too short, not all declarations are present.
 unit_u_ppu_invalid_header=10007_U_PPU Invalid Header (no PPU at the begin)
 % A unit file contains as the first three bytes the ASCII codes of the characters \var{PPU}.
-unit_u_ppu_invalid_version=10008_U_PPU Invalid Version $1
+unit_u_ppu_invalid_version=10008_U_PPU Invalid Version $1 expecting $2
 % This unit file was compiled with a different version of the compiler, and
 % cannot be read.
-unit_u_ppu_invalid_processor=10009_U_PPU is compiled for another processor
+unit_u_ppu_invalid_long_version=10072_U_PPU Invalid Long Version $1 expecting $2
+% This unit file was compiled with a different long version of the compiler, and
+% cannot be read.
+unit_u_ppu_invalid_processor=10009_U_PPU is compiled for another processor $1
 % This unit file was compiled for a different processor type, and
 % cannot be read.
-unit_u_ppu_invalid_target=10010_U_PPU is compiled for another target
+unit_u_ppu_invalid_target=10010_U_PPU is compiled for another target $1
 % This unit file was compiled for a different target, and
 % cannot be read.
 unit_u_ppu_source=10011_U_PPU Source: $1
@@ -3480,21 +3567,24 @@ unit_u_ppu_symansistr_mismatch=10069_U_Skipping unit, PPU and compiler have to b
 unit_u_ppu_wasm_threads_mismatch=10070_U_PPU and program must both be compiled with or without WebAssembly multithreading support
 % The user is compiling a program with multithreading turned on, but the unit was compiled with multithreading off,
 % or vice versa.
+unit_w_unsupported_esp_idf_version=10071_W_Unsupported esp-idf version
+% FPC supports only certain ESP-IDF versions. It is very unlikely that the resulting program works if this
+% warning is thrown.
 % \end{description}
 # EndOfTeX
 
 #
 #  Options
 #
-# 11064 is the last used one
+# 11071 is the last used one
 #
-option_usage=11000_O_$1 [options] <inputfile> [options]
 # BeginOfTeX
 %
 % \section{Command line handling errors}
 % This section lists errors that occur when the compiler is processing the
 % command line or handling the configuration files.
 % \begin{description}
+option_usage=11000_O_$1 [options] <inputfile> [options]
 option_only_one_source_support=11001_W_Only one source file supported, changing source file to compile from "$1" into "$2"
 % You can specify only one source file on the command line. The last
 % one will be compiled, others will be ignored. This may indicate that
@@ -3613,7 +3703,7 @@ option_debug_external_unsupported=11048_W_Disabling external debug information b
 % Not all debug formats can be stored in an external file on all platforms. In particular, on
 % Mac OS X only DWARF debug information can be stored externally.
 option_dwarf_smartlink_creation=11049_N_DWARF debug information cannot be used with smart linking with external assembler, disabling static library creation.
-% Smart linking is currently incompatble with DWARF debug information on most
+% Smart linking is currently incompatible with DWARF debug information on most
 % platforms, so smart linking is disabled in such cases.
 option_invalid_macosx_deployment_target=11050_E_Invalid value for MACOSX_DEPLOYMENT_TARGET environment variable: $1
 option_invalid_iphoneos_deployment_target=11051_E_Invalid value for IPHONEOS_DEPLOYMENT_TARGET environment variable: $1
@@ -3633,7 +3723,7 @@ option_malformed_para=11055_E_Malformed parameter: $1
 option_smart_link_requires_external_linker=11056_W_Smart linking requires external linker
 option_com_files_require_tiny_model=11057_E_Creating .COM files is not supported in the current memory model. Only the tiny memory model supports making .COM files.
 % Do not enable experimental -gc option if -Ur option is given.
-option_gc_incompatible_with_release_flag=11058_W_Experimental CheckPointer option not enabled because it is incomptatible with -Ur option.
+option_gc_incompatible_with_release_flag=11058_W_Experimental CheckPointer option not enabled because it is incompatible with -Ur option.
 % The compiler binary only supports a single target architecture. Invoke the fpc binary if you wish to select a compiler binary for a different target architecture.
 option_invalid_target_architecture=11059_E_Unsupported target architecture -P$1, invoke the "fpc" compiler driver instead.
 % The ppc<target> executables support only a single target architecture. They do not support the -P switch. The compiler driver "fpc"
@@ -3646,14 +3736,24 @@ option_valgrind_heaptrc_mismatch=11062_E_You can not use both options ($1) ($2) 
 option_unsupported_fpu=11063_F_The selected FPU type "$1" is not supported by the selected instruction set "$2"
 % Not all instruction sets support all FPU types. For example on ARM, Thumb(-1) supports no FPU/VFP instruction set
 option_too_many_exception_modes=11064_E_Only one WebAssembly exception support mode can be specified.
-% Only one WebAssembly exception support mode (NOEXCEPTIONS, JSEXCEPTIONS, BFEXCEPTIONS or NATIVEEXCEPTIONS) can be specified.
+% Only one WebAssembly exception support mode (NOEXCEPTIONS, BFEXCEPTIONS or NATIVEEXCEPTIONS) can be specified.
 option_subtarget_is_already_set=11065_W_Subtarget is already set to: $1
 % Displayed if more than one \var{-t} option is specified.
 option_subtarget_config_not_found=11066_E_Subtarget $1 specified but no corresponding config file $2 found.
 % Displayed if more than one \var{-t} option is specified.
 option_x_ignored=11067_N_Ignoring compiler executable suffix $1.
 % Displayed if more than one \var{-t} option is specified.
-%\end{description}
+option_switch_bin_to_src_assembler_cross_endian=11068_N_Switching assembler to default source writing assembler in cross-endian configuration
+% This notifies you that the assembler has been changed because
+% the binary assembler writer is not yet ready for cross-endian configuration.
+option_e_win16_unsupported_memory_model=11069_W_Unsupported memory model $1 for Win16 OS
+% i8086-win16 system only supports large and huge memory models.
+option_n_win16_set_default_large_memory_model=11070_N_Setting memory model for Win16 system to "large"
+% i8086-win16 requires at least large memory model.
+option_e_avr_cvt_unsupported=11071_E_CVT option not supported for $1
+% The CVT option is not supported by the selected MCU
+%
+% \end{description}
 # EndOfTeX
 
 #
@@ -3729,7 +3829,7 @@ wpo_symbol_live_info_needs_smart_linking=12018_E_Collection of symbol liveness i
 % actually used or not. So in that case all symbols will be seen as live, which makes this optimization ineffective.
 wpo_cant_create_feedback_file=12019_E_Cannot create specified whole program optimisation feedback file "$1"
 % The compiler is unable to create the file specified using the -FW parameter to store the whole program optimisation information.
-%\end{description}
+% \end{description}
 # EndOfTeX
 
 
@@ -3831,7 +3931,7 @@ package_u_ppl_filename=13029_U_PPL filename $1
 #
 option_logo=11023_[
 Free Pascal Compiler version $FPCFULLVERSION [$FPCDATE] for $FPCCPU
-Copyright (c) 1993-2023 by Florian Klaempfl and others
+Copyright (c) 1993-2026 by Florian Klaempfl and others
 ]
 
 #
@@ -3935,7 +4035,7 @@ F*0*_Only options valid for the default or selected platform are listed.
 # Assembler related options
 **1a_The compiler does not delete the generated assembler file, automatically switches to external assembler writer
 **2a5_Don't generate Big Obj COFF files for GNU Binutils older than 2.25 (Windows, NativeNT)
-**2al_List sourcecode lines in assembler file
+**2al_List source code lines in assembler file
 **2an_List node info in assembler file (-dEXTDEBUG compiler)
 **2ao_Add an extra option to external assembler call (ignored for internal)
 *L2ap_Use pipes instead of creating temporary assembler files
@@ -3980,6 +4080,7 @@ F*0*_Only options valid for the default or selected platform are listed.
 6*2Avasm_Use vasm to assemble
 8*2Anasm_Assemble using Nasm
 8*2Anasmobj_Assemble using Nasm
+8*2Aomf Assemble using internal OMF object writer
 A*2Aas_Assemble using GNU AS
 A*2Aas-darwin_Assemble using GNU AS for Darwin targets
 A*2Aclang_Assemble using clang
@@ -3991,14 +4092,17 @@ P*2Aas_Assemble using GNU AS
 S*2Aas_Assemble using GNU AS
 s*2Aas_Assemble using GNU AS
 v*2Aas_Assemble using GNU AS
-W*2Awasm_Assemble using the internal object writer for wasm32 (experimental)
+W*2Awasm_Assemble using the internal object writer for wasm32
 W*2Abinaryen_Assemble using GNU AS for wasm32 (wasm-as) (experimental)
-W*2Allvm-mc-10_Assemble using llvm-mc-10
 W*2Allvm-mc-11_Assemble using llvm-mc-11
 W*2Allvm-mc-12_Assemble using llvm-mc-12
-W*2Allvm-mc-13_Assemble using llvm-mc-13
-W*2Allvm-mc_Assemble using llvm-mc (version 14 or later)
-W*2Awabt_Assemble using wasa (experimental)
+W*2Allvm-mc-13_Assemble using llvm-mc-13 (broken, due to bugs in LLVM)
+W*2Allvm-mc-14_Assemble using llvm-mc-14 (broken, due to bugs in LLVM)
+W*2Allvm-mc-15_Assemble using llvm-mc-15
+W*2Allvm-mc-16_Assemble using llvm-mc-16
+W*2Allvm-mc-17_Assemble using llvm-mc-17
+W*2Allvm-mc_Assemble using llvm-mc (version 18 or later)
+W*2Awasa_Assemble using wasa (experimental)
 x*2Aas_Assemble using GNU AS
 Z*2Asdcc-sdasz80_Assemble using SDCC-SDASZ80
 Z*2Avasm_Assemble using Vasm
@@ -4008,10 +4112,16 @@ Z*2Az80asm_Assemble using z80asm
 **2bl_Generate local symbol info
 **1B_Build all modules
 **1C<x>_Code generation options:
-**2C3_Turn on ieee error checking for constants
+**2C3_Turn on IEEE error checking for constants
 **2Ca<x>_Select ABI; see fpc -i or fpc -ia for possible values
 **2Cb_Generate code for a big-endian variant of the target architecture
 **2Cc<x>_Set default calling convention to <x>
+V*2CC_Use compact vector table
+V*2Cd<x>_Discard selected RTL startup sections (use with caution)
+V*3Cdc_Discard initializing data. Data defaults to noinit section
+V*3Cdj_Discard jump to PASCALMAIN. Use only if PASCALMAIN follows directly after startup code
+V*3Cds_Discard _START code. Use only if all interrupts are disabled
+V*3Cdz_Discard code initializing the zero register and stack pointer
 **2CD_Create also dynamic library (not supported)
 **2Ce_Compilation with emulated floating point opcodes
 **2CE_Generate FPU code which can raise exceptions
@@ -4028,6 +4138,7 @@ L*3Clflsanitize=address_Enable address sanitizer
 L*3Clv<x>_LLVM target version: Xcode-10.1, 7.0, 8.0, .., 10.0
 **2Cn_Omit linking stage
 P*2CN_Generate nil-pointer checks (AIX-only)
+W*2CN_Generate nil-pointer checks
 **2Co_Check overflow of integer operations
 **2CO_Check for possible overflow of integer operations
 **2Cp<x>_Select instruction set; see fpc -i or fpc -ic for possible values
@@ -4062,9 +4173,10 @@ J*3CTlowercaseprocstart_  Lowercase the first character of procedure/function/me
 A*3CTthumbinterworking_ Generate Thumb interworking-safe code if possible
 W*3CTnoexceptions_        Disable the exception support. Raising an exception will abort the program.
 W*3CTbfexceptions_        Enable the branchful exception support for WebAssembly
-W*3CTjsexceptions_        Enable the JavaScript-based exception support for WebAssembly (experimental)
-W*3CTwasmexceptions_      Enable the native WebAssembly exceptions support
+W*3CTwasmexceptions_      Enable the native WebAssembly exceptions support (current proposal - exceptions with exnref)
+W*3CTlegacyexceptions_    Enable the native WebAssembly exceptions support (legacy proposal, compatible with earlier browser versions)
 W*3CTwasmthreads_         Enable WebAssembly threads support (experimental)
+W*3CTsaturatingfloattoint_ Use saturating (non-trapping) float-to-int conversion instructions
 J*2Cv_Var/out parameter copy-out checking
 A*2CV<x>_Set section threadvar model to <x>
 **2CX_Create also smartlinked library
@@ -4097,6 +4209,7 @@ A*2CV<x>_Set section threadvar model to <x>
 **2Fo<x>_Add <x> to object path
 **2Fr<x>_Load error message file <x>
 **2FR<x>_Set resource (.res) linker to <x>
+**2Ft_Do not search uppercased or 8.3 unit filenames on case sensitive filesystems.
 **2Fu<x>_Add <x> to unit path
 **2FU<x>_Set unit output path to <x>, overrides -FE
 **2Fw<x>_Load previously stored whole-program optimization feedback from <x>
@@ -4173,7 +4286,7 @@ L*2il_Return list of supported LLVM/Xcode versions by the LLVM backend
 F*1P<x>_Target CPU / compiler related options:
 F*2PB_Show default compiler binary
 F*2PP_Show default target cpu
-F*2P<x>_Set target CPU (aarch64,arm,avr,i386,i8086,jvm,m68k,mips,mipsel,powerpc,powerpc64,sparc,x86_64)
+F*2P<x>_Set target CPU (aarch64,arm,avr,i386,i8086,jvm,loongarch64,m68k,mips,mipsel,powerpc,powerpc64,riscv32,riscv64,sparc,sparc64,wasm32,x86_64,xtensa,z80)
 **1R<x>_Assembler reading style:
 **2Rdefault_Use default assembler for target
 3*2Ratt_Read AT&T style assembler
@@ -4191,7 +4304,7 @@ F*2P<x>_Set target CPU (aarch64,arm,avr,i386,i8086,jvm,m68k,mips,mipsel,powerpc,
 **1S<x>_Syntax options:
 **2S2_Same as -Mobjfpc
 **2Sa_Turn on assertions
-**2Sc_Support operators like C (*=,+=,/= and -=)
+**2Sc_Support operators as in the C language (*=, +=, /= and -=)
 **2Sd_Same as -Mdelphi
 **2Se<x>_Error options. <x> is a combination of the following:
 **3*_<n> : Compiler halts after the <n> errors (default is 1)
@@ -4207,7 +4320,7 @@ F*2P<x>_Set target CPU (aarch64,arm,avr,i386,i8086,jvm,m68k,mips,mipsel,powerpc,
 **3SIcorba_CORBA compatible interface
 **2Sj_Allows typed constants to be writeable (default in all modes)
 **2Sk_Load fpcylix unit
-**2Sm_Support macros like C (global)
+**2Sm_Support macros as in the C language (global)
 **2So_Same as -Mtp
 **2Sr_Transparent file names in ISO mode
 **2Ss_Constructor name must be "Init" (destructor name must be "Done")
@@ -4257,6 +4370,7 @@ F*2P<x>_Set target CPU (aarch64,arm,avr,i386,i8086,jvm,m68k,mips,mipsel,powerpc,
 6*2Tamiga_Commodore Amiga
 6*2Tatari_Atari ST/STe/TT
 6*2Tembedded_Embedded
+6*2Thuman68k_Human 68k
 6*2Tlinux_Linux
 6*2Tnetbsd_NetBSD
 6*2Tmacosclassic_Classic Mac OS
@@ -4282,7 +4396,9 @@ A*2Twince_Windows CE
 # aarch64 targets
 a*2Tandroid_Android
 a*2Tdarwin_Darwin/Mac OS X
+a*2Tembedded_Embedded
 a*2Tfreebsd_FreeBSD
+a*2Tiphonesim_iPhoneSimulator
 a*2Tios_iOS
 a*2Tlinux_Linux
 a*2Twin64_Windows 64
@@ -4295,6 +4411,7 @@ l*2Tlinux_Linux
 m*2Tandroid_Android
 m*2Tembedded_Embedded
 m*2Tlinux_Linux
+m*2Tps1_PlayStation 1
 # mipseb targets
 M*2Tembedded_Embedded
 M*2Tlinux_Linux
@@ -4312,6 +4429,7 @@ P*2Twii_Wii
 p*2Taix_AIX
 p*2Tdarwin_Darwin/Mac OS X
 p*2Tembedded_Embedded
+p*2Tfreebsd_FreeBSD
 p*2Tlinux_Linux
 # riscv32 targets
 R*2Tembedded_Embedded
@@ -4338,7 +4456,9 @@ Z*2Tmsxdos_MSX-DOS
 Z*2Tzxspectrum_ZX Spectrum
 # wasm32 targets
 W*2Tembedded_Embedded
-W*2Twasi_The WebAssembly System Interface (WASI)
+W*2Twasip1_The WebAssembly System Interface Preview 1 (WASI 0.1)
+W*2Twasip1threads_The WebAssembly System Interface Preview 1 with Multithreading (WASI 0.1 + wasi-threads)
+W*2Twasip2_The WebAssembly System Interface Preview 2 (WASI 0.2) (experimental)
 # end of targets section
 **1t<x>_Target architecture
 **2*_ * Defines FPC_SUBTARGET_<x> 
@@ -4350,18 +4470,33 @@ W*2Twasi_The WebAssembly System Interface (WASI)
 **2Ur_Generate release unit files (never automatically recompiled)
 **2Us_Compile a system unit
 **1v<x>_Be verbose. <x> is a combination of the following letters:
-**2*_0 : Show nothing (except errors) p : Write tree.log with parse tree
-**2*_a : Show everything              q : Show message numbers
-**2*_b : Write file names messages    r : Rhide/GCC compatibility mode
-**2*_    with full path               s : Show time stamps
-**2*_c : Show conditionals            t : Show tried/used files
-**2*_d : Show debug info              u : Show unit info
-**2*_e : Show errors (default)        v : Write fpcdebug.txt with
-**2*_h : Show hints                       lots of debugging info
-**2*_i : Show general info            w : Show warnings
-**2*_l : Show linenumbers             x : Show info about invoked tools
+**2*_0 : Show nothing (except errors)
+**2*_a : Show everything
+**2*_b : Write file names messages with full path
+**2*_c : Show conditionals
+**2*_d : Show debug info
+**2*_e : Show errors (default)
+#**2*_f : Not used yet
+#**2*_g : Not used yet
+**2*_h : Show hints
+**2*_i : Show general info
+**2*_j : Always add main source (useful when run in parallel make)
+#**2*_k : Not used yet
+**2*_l : Show line numbers
 **2*_m<x>,<y> : Do not show messages numbered <x> and <y>
-**2*_n : Show notes                   z : Write output to stderr
+**2*_n : Show notes
+#**2*_o : Not used yet
+**2*_p : Write tree.log with parse tree
+**2*_q : Show message numbers
+**2*_r : Rhide/GCC compatibility mode
+**2*_s : Show time stamps
+**2*_t : Show tried/used files
+**2*_u : Show unit info
+**2*_v : Write fpcdebug.txt with lots of debugging info
+**2*_w : Show warnings
+**2*_x : Show info about invoked tools
+#**2*_y : Not used yet
+**2*_z : Write output to stderr
 F*1V<x>_Append '-<x>' to the used compiler binary name (e.g. for version)
 **1W<x>_Target-specific options (targets)
 3*2WA_Specify native type application (Windows)
@@ -4432,6 +4567,7 @@ x*2Wp<x>_Specify the controller type; see fpc -i or fpc -iu for possible values
 4*2WP<x>_Minimum iOS deployment version: 8.0, 8.0.2, ... (iphonesim)
 a*2WP<x>_Minimum iOS deployment version: 7.0, 7.1.2, ... (Darwin)
 A*2WP<x>_Minimum iOS deployment version: 3.0, 5.0.1, ... (Darwin)
+R*2WP<x>_esp-idf version number: 4.4, 5.0.6, ... (esp32c3)
 x*2WP<x>_Esp8266-rtos-sdk or esp-idf version number: 3.3, 3.4 (esp8266) or 4.2, 4.3 (esp32)
 3*2WR_Generate relocation code (Windows)
 4*2WR_Generate relocation code (Windows)
@@ -4447,7 +4583,7 @@ P*2WT_Specify MPW tool type application (Classic Mac OS)
 6*3WQqhdr_Set metadata to QDOS File Header style (default)
 6*3WQxtcc_Set metadata to XTcc style
 **2WX_Enable executable stack (Linux)
-**1x<suff>_Set suffix for compiler executable (fpc command only).
+**1x<suff>_Set suffix for compiler executable (fpc command only)
 **1X_Executable options:
 **2X9_Generate linkerscript for GNU Binutils ld older than version 2.19.1 (Linux)
 **2Xa_Generate code which allows to use more than 2 GB static data on 64 bit targets (Linux)
@@ -4458,10 +4594,12 @@ P*2WT_Specify MPW tool type application (Classic Mac OS)
 **2Xf_Substitute pthread library name for linking (BSD)
 **2Xg_Create debuginfo in a separate file and add a debuglink section to executable
 **2Xi_Use internal linker
-L*2XlS<x>_LLVM utilties suffix (e.g. -7 in case clang is called clang-7)
+L*2XlS<x>_LLVM utilities suffix (e.g. -7 in case clang is called clang-7)
+W*2XlS<x>_LLVM utilities suffix (e.g. -17 in case llvm-mc is called llvm-mc-17)
 **2XLA_Define library substitutions for linking
 **2XLD_Exclude default order of standard libraries
 **2XLO_Define order of library linking
+**2XLL_Link using ld.lld GNU compatible LLVM linker (Linux and some BSD targets, experimental)
 **2Xm_Generate link map
 **2XM<x>_Set the name of the 'main' program routine (default is 'main')
 **2Xn_Use target system native linker instead of GNU ld (Solaris, AIX)

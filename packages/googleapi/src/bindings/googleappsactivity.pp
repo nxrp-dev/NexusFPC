@@ -1,13 +1,19 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit googleappsactivity;
+{$ENDIF FPC_DOTTEDUNITS}
 {$MODE objfpc}
 {$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils, System.Classes, GoogleApi.Service, FpWeb.Rest.Base, GoogleApi.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses sysutils, classes, googleservice, restbase, googlebase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
-  
+
   //Top-level schema types
   TActivity = Class;
   TEvent = Class;
@@ -39,11 +45,11 @@ type
   TMoveTyperemovedParentsArray = Array of TParent;
   TPermissionChangeTypeaddedPermissionsArray = Array of TPermission;
   TPermissionChangeTyperemovedPermissionsArray = Array of TPermission;
-  
+
   { --------------------------------------------------------------------
     TActivity
     --------------------------------------------------------------------}
-  
+
   TActivity = Class(TGoogleBaseObject)
   Private
     FcombinedEvent : TEvent;
@@ -62,11 +68,11 @@ type
     Property singleEvents : TActivityTypesingleEventsArray Index 8 Read FsingleEvents Write SetsingleEvents;
   end;
   TActivityClass = Class of TActivity;
-  
+
   { --------------------------------------------------------------------
     TEvent
     --------------------------------------------------------------------}
-  
+
   TEvent = Class(TGoogleBaseObject)
   Private
     FadditionalEventTypes : TStringArray;
@@ -106,11 +112,11 @@ type
     Property user : TUser Index 64 Read Fuser Write Setuser;
   end;
   TEventClass = Class of TEvent;
-  
+
   { --------------------------------------------------------------------
     TListActivitiesResponse
     --------------------------------------------------------------------}
-  
+
   TListActivitiesResponse = Class(TGoogleBaseObject)
   Private
     Factivities : TListActivitiesResponseTypeactivitiesArray;
@@ -129,11 +135,11 @@ type
     Property nextPageToken : String Index 8 Read FnextPageToken Write SetnextPageToken;
   end;
   TListActivitiesResponseClass = Class of TListActivitiesResponse;
-  
+
   { --------------------------------------------------------------------
     TMove
     --------------------------------------------------------------------}
-  
+
   TMove = Class(TGoogleBaseObject)
   Private
     FaddedParents : TMoveTypeaddedParentsArray;
@@ -152,11 +158,11 @@ type
     Property removedParents : TMoveTyperemovedParentsArray Index 8 Read FremovedParents Write SetremovedParents;
   end;
   TMoveClass = Class of TMove;
-  
+
   { --------------------------------------------------------------------
     TParent
     --------------------------------------------------------------------}
-  
+
   TParent = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -174,11 +180,11 @@ type
     Property title : String Index 16 Read Ftitle Write Settitle;
   end;
   TParentClass = Class of TParent;
-  
+
   { --------------------------------------------------------------------
     TPermission
     --------------------------------------------------------------------}
-  
+
   TPermission = Class(TGoogleBaseObject)
   Private
     Fname : String;
@@ -206,11 +212,11 @@ type
     Property withLink : boolean Index 40 Read FwithLink Write SetwithLink;
   end;
   TPermissionClass = Class of TPermission;
-  
+
   { --------------------------------------------------------------------
     TPermissionChange
     --------------------------------------------------------------------}
-  
+
   TPermissionChange = Class(TGoogleBaseObject)
   Private
     FaddedPermissions : TPermissionChangeTypeaddedPermissionsArray;
@@ -229,11 +235,11 @@ type
     Property removedPermissions : TPermissionChangeTyperemovedPermissionsArray Index 8 Read FremovedPermissions Write SetremovedPermissions;
   end;
   TPermissionChangeClass = Class of TPermissionChange;
-  
+
   { --------------------------------------------------------------------
     TPhoto
     --------------------------------------------------------------------}
-  
+
   TPhoto = Class(TGoogleBaseObject)
   Private
     Furl : String;
@@ -245,11 +251,11 @@ type
     Property url : String Index 0 Read Furl Write Seturl;
   end;
   TPhotoClass = Class of TPhoto;
-  
+
   { --------------------------------------------------------------------
     TRename
     --------------------------------------------------------------------}
-  
+
   TRename = Class(TGoogleBaseObject)
   Private
     FnewTitle : String;
@@ -264,11 +270,11 @@ type
     Property oldTitle : String Index 8 Read FoldTitle Write SetoldTitle;
   end;
   TRenameClass = Class of TRename;
-  
+
   { --------------------------------------------------------------------
     TTarget
     --------------------------------------------------------------------}
-  
+
   TTarget = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -286,11 +292,11 @@ type
     Property name : String Index 16 Read Fname Write Setname;
   end;
   TTargetClass = Class of TTarget;
-  
+
   { --------------------------------------------------------------------
     TUser
     --------------------------------------------------------------------}
-  
+
   TUser = Class(TGoogleBaseObject)
   Private
     FisDeleted : boolean;
@@ -311,14 +317,14 @@ type
     Property photo : TPhoto Index 24 Read Fphoto Write Setphoto;
   end;
   TUserClass = Class of TUser;
-  
+
   { --------------------------------------------------------------------
     TActivitiesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TActivitiesResource, method List
-  
+
   TActivitiesListOptions = Record
     driveancestorId : String;
     drivefileId : String;
@@ -328,7 +334,7 @@ type
     source : String;
     userId : String;
   end;
-  
+
   TActivitiesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -336,12 +342,12 @@ type
     Function List(AQuery : string  = '') : TListActivitiesResponse;
     Function List(AQuery : TActivitieslistOptions) : TListActivitiesResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TAppsactivityAPI
     --------------------------------------------------------------------}
-  
+
   TAppsactivityAPI = Class(TGoogleAPI)
   Private
     FActivitiesInstance : TActivitiesResource;
@@ -383,7 +389,7 @@ implementation
   --------------------------------------------------------------------}
 
 
-Procedure TActivity.SetcombinedEvent(AIndex : Integer; const AValue : TEvent); 
+Procedure TActivity.SetcombinedEvent(AIndex : Integer; const AValue : TEvent);
 
 begin
   If (FcombinedEvent=AValue) then exit;
@@ -393,7 +399,7 @@ end;
 
 
 
-Procedure TActivity.SetsingleEvents(AIndex : Integer; const AValue : TActivityTypesingleEventsArray); 
+Procedure TActivity.SetsingleEvents(AIndex : Integer; const AValue : TActivityTypesingleEventsArray);
 
 begin
   If (FsingleEvents=AValue) then exit;
@@ -404,7 +410,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TActivity.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TActivity.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -423,7 +429,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TEvent.SetadditionalEventTypes(AIndex : Integer; const AValue : TStringArray); 
+Procedure TEvent.SetadditionalEventTypes(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FadditionalEventTypes=AValue) then exit;
@@ -433,7 +439,7 @@ end;
 
 
 
-Procedure TEvent.SeteventTimeMillis(AIndex : Integer; const AValue : String); 
+Procedure TEvent.SeteventTimeMillis(AIndex : Integer; const AValue : String);
 
 begin
   If (FeventTimeMillis=AValue) then exit;
@@ -443,7 +449,7 @@ end;
 
 
 
-Procedure TEvent.SetfromUserDeletion(AIndex : Integer; const AValue : boolean); 
+Procedure TEvent.SetfromUserDeletion(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FfromUserDeletion=AValue) then exit;
@@ -453,7 +459,7 @@ end;
 
 
 
-Procedure TEvent.Setmove(AIndex : Integer; const AValue : TMove); 
+Procedure TEvent.Setmove(AIndex : Integer; const AValue : TMove);
 
 begin
   If (Fmove=AValue) then exit;
@@ -463,7 +469,7 @@ end;
 
 
 
-Procedure TEvent.SetpermissionChanges(AIndex : Integer; const AValue : TEventTypepermissionChangesArray); 
+Procedure TEvent.SetpermissionChanges(AIndex : Integer; const AValue : TEventTypepermissionChangesArray);
 
 begin
   If (FpermissionChanges=AValue) then exit;
@@ -473,7 +479,7 @@ end;
 
 
 
-Procedure TEvent.SetprimaryEventType(AIndex : Integer; const AValue : String); 
+Procedure TEvent.SetprimaryEventType(AIndex : Integer; const AValue : String);
 
 begin
   If (FprimaryEventType=AValue) then exit;
@@ -483,7 +489,7 @@ end;
 
 
 
-Procedure TEvent.Setrename(AIndex : Integer; const AValue : TRename); 
+Procedure TEvent.Setrename(AIndex : Integer; const AValue : TRename);
 
 begin
   If (Frename=AValue) then exit;
@@ -493,7 +499,7 @@ end;
 
 
 
-Procedure TEvent.Settarget(AIndex : Integer; const AValue : TTarget); 
+Procedure TEvent.Settarget(AIndex : Integer; const AValue : TTarget);
 
 begin
   If (Ftarget=AValue) then exit;
@@ -503,7 +509,7 @@ end;
 
 
 
-Procedure TEvent.Setuser(AIndex : Integer; const AValue : TUser); 
+Procedure TEvent.Setuser(AIndex : Integer; const AValue : TUser);
 
 begin
   If (Fuser=AValue) then exit;
@@ -514,7 +520,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TEvent.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TEvent.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -534,7 +540,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TListActivitiesResponse.Setactivities(AIndex : Integer; const AValue : TListActivitiesResponseTypeactivitiesArray); 
+Procedure TListActivitiesResponse.Setactivities(AIndex : Integer; const AValue : TListActivitiesResponseTypeactivitiesArray);
 
 begin
   If (Factivities=AValue) then exit;
@@ -544,7 +550,7 @@ end;
 
 
 
-Procedure TListActivitiesResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TListActivitiesResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -555,7 +561,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TListActivitiesResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TListActivitiesResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -574,7 +580,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TMove.SetaddedParents(AIndex : Integer; const AValue : TMoveTypeaddedParentsArray); 
+Procedure TMove.SetaddedParents(AIndex : Integer; const AValue : TMoveTypeaddedParentsArray);
 
 begin
   If (FaddedParents=AValue) then exit;
@@ -584,7 +590,7 @@ end;
 
 
 
-Procedure TMove.SetremovedParents(AIndex : Integer; const AValue : TMoveTyperemovedParentsArray); 
+Procedure TMove.SetremovedParents(AIndex : Integer; const AValue : TMoveTyperemovedParentsArray);
 
 begin
   If (FremovedParents=AValue) then exit;
@@ -595,7 +601,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TMove.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TMove.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -615,7 +621,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TParent.Setid(AIndex : Integer; const AValue : String); 
+Procedure TParent.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -625,7 +631,7 @@ end;
 
 
 
-Procedure TParent.SetisRoot(AIndex : Integer; const AValue : boolean); 
+Procedure TParent.SetisRoot(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FisRoot=AValue) then exit;
@@ -635,7 +641,7 @@ end;
 
 
 
-Procedure TParent.Settitle(AIndex : Integer; const AValue : String); 
+Procedure TParent.Settitle(AIndex : Integer; const AValue : String);
 
 begin
   If (Ftitle=AValue) then exit;
@@ -652,7 +658,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPermission.Setname(AIndex : Integer; const AValue : String); 
+Procedure TPermission.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -662,7 +668,7 @@ end;
 
 
 
-Procedure TPermission.SetpermissionId(AIndex : Integer; const AValue : String); 
+Procedure TPermission.SetpermissionId(AIndex : Integer; const AValue : String);
 
 begin
   If (FpermissionId=AValue) then exit;
@@ -672,7 +678,7 @@ end;
 
 
 
-Procedure TPermission.Setrole(AIndex : Integer; const AValue : String); 
+Procedure TPermission.Setrole(AIndex : Integer; const AValue : String);
 
 begin
   If (Frole=AValue) then exit;
@@ -682,7 +688,7 @@ end;
 
 
 
-Procedure TPermission.Set_type(AIndex : Integer; const AValue : String); 
+Procedure TPermission.Set_type(AIndex : Integer; const AValue : String);
 
 begin
   If (F_type=AValue) then exit;
@@ -692,7 +698,7 @@ end;
 
 
 
-Procedure TPermission.Setuser(AIndex : Integer; const AValue : TUser); 
+Procedure TPermission.Setuser(AIndex : Integer; const AValue : TUser);
 
 begin
   If (Fuser=AValue) then exit;
@@ -702,7 +708,7 @@ end;
 
 
 
-Procedure TPermission.SetwithLink(AIndex : Integer; const AValue : boolean); 
+Procedure TPermission.SetwithLink(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FwithLink=AValue) then exit;
@@ -730,7 +736,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPermissionChange.SetaddedPermissions(AIndex : Integer; const AValue : TPermissionChangeTypeaddedPermissionsArray); 
+Procedure TPermissionChange.SetaddedPermissions(AIndex : Integer; const AValue : TPermissionChangeTypeaddedPermissionsArray);
 
 begin
   If (FaddedPermissions=AValue) then exit;
@@ -740,7 +746,7 @@ end;
 
 
 
-Procedure TPermissionChange.SetremovedPermissions(AIndex : Integer; const AValue : TPermissionChangeTyperemovedPermissionsArray); 
+Procedure TPermissionChange.SetremovedPermissions(AIndex : Integer; const AValue : TPermissionChangeTyperemovedPermissionsArray);
 
 begin
   If (FremovedPermissions=AValue) then exit;
@@ -751,7 +757,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TPermissionChange.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TPermissionChange.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -771,7 +777,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPhoto.Seturl(AIndex : Integer; const AValue : String); 
+Procedure TPhoto.Seturl(AIndex : Integer; const AValue : String);
 
 begin
   If (Furl=AValue) then exit;
@@ -788,7 +794,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TRename.SetnewTitle(AIndex : Integer; const AValue : String); 
+Procedure TRename.SetnewTitle(AIndex : Integer; const AValue : String);
 
 begin
   If (FnewTitle=AValue) then exit;
@@ -798,7 +804,7 @@ end;
 
 
 
-Procedure TRename.SetoldTitle(AIndex : Integer; const AValue : String); 
+Procedure TRename.SetoldTitle(AIndex : Integer; const AValue : String);
 
 begin
   If (FoldTitle=AValue) then exit;
@@ -815,7 +821,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTarget.Setid(AIndex : Integer; const AValue : String); 
+Procedure TTarget.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -825,7 +831,7 @@ end;
 
 
 
-Procedure TTarget.SetmimeType(AIndex : Integer; const AValue : String); 
+Procedure TTarget.SetmimeType(AIndex : Integer; const AValue : String);
 
 begin
   If (FmimeType=AValue) then exit;
@@ -835,7 +841,7 @@ end;
 
 
 
-Procedure TTarget.Setname(AIndex : Integer; const AValue : String); 
+Procedure TTarget.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -852,7 +858,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TUser.SetisDeleted(AIndex : Integer; const AValue : boolean); 
+Procedure TUser.SetisDeleted(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FisDeleted=AValue) then exit;
@@ -862,7 +868,7 @@ end;
 
 
 
-Procedure TUser.Setname(AIndex : Integer; const AValue : String); 
+Procedure TUser.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -872,7 +878,7 @@ end;
 
 
 
-Procedure TUser.SetpermissionId(AIndex : Integer; const AValue : String); 
+Procedure TUser.SetpermissionId(AIndex : Integer; const AValue : String);
 
 begin
   If (FpermissionId=AValue) then exit;
@@ -882,7 +888,7 @@ end;
 
 
 
-Procedure TUser.Setphoto(AIndex : Integer; const AValue : TPhoto); 
+Procedure TUser.Setphoto(AIndex : Integer; const AValue : TPhoto);
 
 begin
   If (Fphoto=AValue) then exit;
@@ -1062,7 +1068,7 @@ begin
   Result[3].Description:='View metadata for files in your Google Drive';
   Result[4].Name:='https://www.googleapis.com/auth/drive.readonly';
   Result[4].Description:='View the files in your Google Drive';
-  
+
 end;
 
 Class Function TAppsactivityAPI.APINeedsAuth : Boolean;

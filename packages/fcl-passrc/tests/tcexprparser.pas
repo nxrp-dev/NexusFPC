@@ -5,7 +5,7 @@ unit tcexprparser;
 interface
 
 uses
-  Classes, SysUtils, fpcunit, testregistry, tcbaseparser, pastree, PScanner;
+  Classes, SysUtils, fpcunit, testregistry, tcbaseparser, pastree, pparser, PScanner;
 
 type
 
@@ -110,6 +110,8 @@ type
     Procedure TestAPlusBBracketDotC;
     Procedure TestADotBDotC;
     Procedure TestADotBBracketC;
+    procedure TestADotKeyWord;
+    procedure TestADotKeyWordOnlyDelphi;
     Procedure TestSelfDotBBracketC;
     Procedure TestAasBDotCBracketFuncParams;
     Procedure TestRange;
@@ -140,6 +142,8 @@ type
     Procedure TestPrecedencePlusMod;
     Procedure TestPrecedenceMultiplyDiv;
     Procedure TestPrecedenceDivMultiply;
+    Procedure TestPrecedenceMultiplyPower;
+    Procedure TestPrecedencePowerMultiply;
     Procedure TestTypeCast;
     procedure TestTypeCast2;
     Procedure TestCreate;
@@ -150,7 +154,7 @@ type
     Procedure TestExpCaret;
     Procedure TestArrayAccess;
     Procedure TestHelperOnLiteral;
-
+    procedure TestSpecializedCall;
     procedure TestParseAdhocExpression;
   end;
 
@@ -581,6 +585,18 @@ begin
   AssertLeftPrecedence(1,eopDiv,2,eopMultiply,3);
 end;
 
+procedure TTestExpressions.TestPrecedenceMultiplyPower;
+begin
+  ParseExpression('1 * 2 ** 3');
+  AssertRightPrecedence(1,eopMultiply,2,eopPower,3);
+end;
+
+procedure TTestExpressions.TestPrecedencePowerMultiply;
+begin
+  ParseExpression('1 ** 2 * 3');
+  AssertLeftPrecedence(1,eopPower,2,eopMultiply,3);
+end;
+
 procedure TTestExpressions.TestTypeCast;
 begin
   DeclareVar('TSDOBaseDataObjectClass');
@@ -682,6 +698,11 @@ begin
   Source.Add('writeln(''10''.toint);');
   Source.Add('end.');
   ParseModule;
+end;
+
+procedure TTestExpressions.TestSpecializedCall;
+begin
+  ParseExpression('TA.Resolve<IB>()');
 end;
 
 
@@ -1002,14 +1023,14 @@ end;
 
 procedure TTestExpressions.TestPrimitiveChar;
 begin
-  DeclareVar('char');
+  DeclareVar('AnsiChar');
   ParseExpression('#32');
   AssertExpression('Simple string',theExpr,pekString,'#32');
 end;
 
 procedure TTestExpressions.TestPrimitiveControlChar;
 begin
-  DeclareVar('char');
+  DeclareVar('AnsiChar');
   ParseExpression('^M');
   AssertExpression('Simple string',theExpr,pekString,'^M');
 end;
@@ -1234,6 +1255,27 @@ begin
   TAssert.AssertSame('PlusB.right.parent=PlusB',PlusB,PlusB.Right.Parent);
   AssertExpression('left a',PlusB.Left,pekIdent,'a');
   AssertExpression('right b',PlusB.Right,pekIdent,'b');
+end;
+
+procedure TTestExpressions.TestADotKeyWord;
+
+begin
+  Add('{$MODE DELPHI}');
+  Add('Type TEnum = (&in,&of);');
+  Add('Var a : TEnum;');
+  Add('begin');
+  Add('  a:=Tenum.in;');
+  ParseExpression;
+  AssertExpression('Binary identifier',TheExpr,pekBinary,TBinaryExpr);
+end;
+
+procedure TTestExpressions.TestADotKeyWordOnlyDelphi;
+begin
+  Add('Type TEnum = (&in,&of);');
+  Add('Var a : TEnum;');
+  Add('begin');
+  Add('  a:=Tenum.in;');
+  AssertException(EParserError,@ParseExpression);
 end;
 
 procedure TTestExpressions.TestADotBDotC;

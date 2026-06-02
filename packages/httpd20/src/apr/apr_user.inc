@@ -16,7 +16,7 @@
 
 {
  * @file apr_user.h
- * @brief APR User ID Services 
+ * @brief APR User ID Services
  }
 
 {#include "apr.h"
@@ -25,7 +25,7 @@
 
 {
  * @defgroup apr_user User and Group ID Services
- * @ingroup APR 
+ * @ingroup APR
  }
 
 {
@@ -78,13 +78,13 @@ function apr_uid_current(userid: Papr_uid_t; groupid: Papr_gid_t;
  * @param p The pool from which to allocate the string
  * @remark This function is available only if APR_HAS_USER is defined.
  }
-function apr_uid_name_get(username: PPChar; userid: apr_uid_t;
+function apr_uid_name_get(username: PPAnsiChar; userid: apr_uid_t;
  p: Papr_pool_t): apr_status_t;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibAPR name LibNamePrefix + 'apr_uid_name_get' + LibSuff12;
 
 { @deprecated @see apr_uid_name_get }
-{APR_DECLARE(apr_status_t) apr_get_username(char **username, apr_uid_t userid,
+{APR_DECLARE(apr_status_t) apr_get_username(AnsiChar **username, apr_uid_t userid,
                                            apr_pool_t *p);}
 {
  * Get the userid (and groupid) for the specified username
@@ -95,13 +95,13 @@ function apr_uid_name_get(username: PPChar; userid: apr_uid_t;
  * @remark This function is available only if APR_HAS_USER is defined.
  }
 function apr_uid_get(userid: Papr_uid_t; groupid: Papr_gid_t;
- const username: PChar; p: Papr_pool_t): apr_status_t;
+ const username: PAnsiChar; p: Papr_pool_t): apr_status_t;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibAPR name LibNamePrefix + 'apr_uid_get' + LibSuff16;
 
 { @deprecated @see apr_uid_get }
 {APR_DECLARE(apr_status_t) apr_get_userid(apr_uid_t *userid, apr_gid_t *groupid,
-                                         const char *username, apr_pool_t *p);}
+                                         const AnsiChar *username, apr_pool_t *p);}
 
 {
  * Get the home directory for the named user
@@ -110,21 +110,21 @@ function apr_uid_get(userid: Papr_uid_t; groupid: Papr_gid_t;
  * @param p The pool from which to allocate the string
  * @remark This function is available only if APR_HAS_USER is defined.
  }
-function apr_uid_homepath_get(dirname: PPChar; const username: PChar;
+function apr_uid_homepath_get(dirname: PPAnsiChar; const username: PAnsiChar;
  p: Papr_pool_t): apr_status_t;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibAPR name LibNamePrefix + 'apr_uid_homepath_get' + LibSuff12;
 
 { @deprecated @see apr_uid_homepath_get }
-{APR_DECLARE(apr_status_t) apr_get_home_directory(char **dirname,
-                                                 const char *username,
+{APR_DECLARE(apr_status_t) apr_get_home_directory(AnsiChar **dirname,
+                                                 const AnsiChar *username,
                                                  apr_pool_t *p);}
 
 {
  * Compare two user identifiers for equality.
  * @param left One uid to test
  * @param right Another uid to test
- * @return APR_SUCCESS if the apr_uid_t strutures identify the same user,
+ * @return APR_SUCCESS if the apr_uid_t structures identify the same user,
  * APR_EMISMATCH if not, APR_BADARG if an apr_uid_t is invalid.
  * @remark This function is available only if APR_HAS_USER is defined.
  }
@@ -146,17 +146,17 @@ function apr_uid_homepath_get(dirname: PPChar; const username: PChar;
  * @param p The pool from which to allocate the string
  * @remark This function is available only if APR_HAS_USER is defined.
  }
-function apr_gid_name_get(groupname: PPChar; groupid: apr_gid_t;
+function apr_gid_name_get(groupname: PPAnsiChar; groupid: apr_gid_t;
  p: Papr_pool_t): apr_status_t;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibAPR name LibNamePrefix + 'apr_gid_name_get' + LibSuff12;
 
 { @deprecated @see apr_gid_name_get }
-{APR_DECLARE(apr_status_t) apr_group_name_get(char **groupname,
+{APR_DECLARE(apr_status_t) apr_group_name_get(AnsiChar **groupname,
                                              apr_gid_t groupid, apr_pool_t *p);}
 
 { @deprecated @see apr_gid_name_get }
-{APR_DECLARE(apr_status_t) apr_get_groupname(char **groupname,
+{APR_DECLARE(apr_status_t) apr_get_groupname(AnsiChar **groupname,
                                             apr_gid_t groupid, apr_pool_t *p);}
 
 {
@@ -166,20 +166,20 @@ function apr_gid_name_get(groupname: PPChar; groupid: apr_gid_t;
  * @param p The pool from which to allocate the string
  * @remark This function is available only if APR_HAS_USER is defined.
  }
-function apr_gid_get(groupid: Papr_gid_t; const groupname: PChar;
+function apr_gid_get(groupid: Papr_gid_t; const groupname: PAnsiChar;
  p: Papr_pool_t): apr_status_t;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibAPR name LibNamePrefix + 'apr_gid_get' + LibSuff12;
 
 { @deprecated @see apr_gid_get }
 {APR_DECLARE(apr_status_t) apr_get_groupid(apr_gid_t *groupid,
-                                          const char *groupname, apr_pool_t *p);}
+                                          const AnsiChar *groupname, apr_pool_t *p);}
 
 {
  * Compare two group identifiers for equality.
  * @param left One gid to test
  * @param right Another gid to test
- * @return APR_SUCCESS if the apr_gid_t strutures identify the same group,
+ * @return APR_SUCCESS if the apr_gid_t structures identify the same group,
  * APR_EMISMATCH if not, APR_BADARG if an apr_gid_t is invalid.
  * @remark This function is available only if APR_HAS_USER is defined.
  }

@@ -42,7 +42,9 @@
 
 // $Id: JwaFaxMmc.pas,v 1.8 2007/09/05 11:58:49 dezipaitor Exp $
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaFaxMmc;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -56,8 +58,13 @@ unit JwaFaxMmc;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 
@@ -65,7 +72,7 @@ uses
 {$IFNDEF JWA_IMPLEMENTATIONSECTION}
 
 type
-  OLESTR = WideString; // todo 
+  OLESTR = WideString; // todo
 
 const
   FAXSRV_DEVICE_NODETYPE_GUID_STR = OLESTR('{3115A19A-6251-46ac-9425-14782858B8C9}');

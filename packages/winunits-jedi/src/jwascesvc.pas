@@ -1,6 +1,6 @@
 {******************************************************************************}
 {                                                                              }
-{ Security Service Attachements API interface Unit for Object Pascal           }
+{ Security Service Attachments API interface Unit for Object Pascal            }
 {                                                                              }
 { Portions created by Microsoft are Copyright (C) 1995-2001 Microsoft          }
 { Corporation. All Rights Reserved.                                            }
@@ -42,7 +42,9 @@
 
 // $Id: JwaSceSvc.pas,v 1.5 2007/09/05 11:58:52 dezipaitor Exp $
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaSceSvc;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -58,8 +60,13 @@ unit JwaSceSvc;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 {$IFNDEF JWA_IMPLEMENTATIONSECTION}

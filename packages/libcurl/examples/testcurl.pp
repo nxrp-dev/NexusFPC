@@ -23,8 +23,8 @@ program testcurl;
 
 uses libcurl;
 
-Var 
-  URL : Pchar = 'http://www.freepascal.org';
+Var
+  URL : PAnsiChar = 'http://www.freepascal.org';
   hCurl : pCurl;
 
 begin

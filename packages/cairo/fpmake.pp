@@ -2,7 +2,7 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses {$ifdef unix}cthreads,{$endif} fpmkunit;
 
 Var
   P : TPackage;
@@ -20,7 +20,9 @@ begin
     P.Author :=  'Library:  University of Southern California + Red Hat Inc., header: Luiz AmXrico Pereira CXmara';
     P.License := 'Library: MPL 1.1 + LGPL-2.1, header: LGPL with modification, ';
     P.HomepageURL := 'www.freepascal.org';
-    P.OSes := [beos,haiku,freebsd,solaris,netbsd,openbsd,linux,win32,win64,aix,dragonfly];
+    P.OSes := [beos,haiku,freebsd,solaris,netbsd,openbsd,linux,win32,win64,aix,dragonfly,android];
+    if Defaults.CPU=jvm then
+      P.OSes := P.OSes - [android];
     // Do not build cairo on iPhone (=arm-darwin)
     if Defaults.CPU<>arm then
       P.OSes := P.OSes + [darwin];
@@ -49,6 +51,9 @@ begin
    T:=P.Targets.AddUnit('cairowin32.pp',AllWindowsOses);
     with T.Dependencies do
         AddUnit('cairo');
+
+    P.NamespaceMap:='namespaces.lst';
+
 {$ifndef ALLPACKAGES}
     Run;
     end;

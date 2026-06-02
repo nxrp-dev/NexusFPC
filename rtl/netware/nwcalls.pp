@@ -23,7 +23,9 @@
 }
 
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit nwcalls;
+{$ENDIF FPC_DOTTEDUNITS}
 {$MODE objfpc}
 {$MACRO on}
 
@@ -43,10 +45,10 @@ type
   Tnuint8 = byte;
   Pnuint8 = ^byte;
   Tnptr = pointer;
-  pnstr = pchar;
-  ppnstr = ppchar;
-  Tnstr8 = char;
-  Pnstr8 = pchar;
+  pnstr = PAnsiChar;
+  ppnstr = PPAnsiChar;
+  Tnstr8 = AnsiChar;
+  Pnstr8 = PAnsiChar;
   nptr = pointer;
   Pnptr = ^pointer;
   Tnflag32 = longint;
@@ -884,11 +886,11 @@ const
   NWU_UNSUPPORTED_AUX_FUNCTION = -(526); // Unsupported AUX function
   NWU_EMBEDDED_NULL = -(525); // Embedded null in len spec string
   NWU_GET_CODE_PAGE_FAILED = -(524); // Failed to get system cp or cc
-  NWU_ILLEGAL_UTF8_CHARACTER = -(506); // Cannot convert UTF8 char to Uni
+  NWU_ILLEGAL_UTF8_CHARACTER = -(506); // Cannot convert UTF8 AnsiChar to Uni
   NWU_INSUFFICIENT_BUFFER = -(500);
     { Error codes for translator based APIs (i.e. NW prefix) }
   UNI_ALREADY_LOADED = -(489); // Already loaded another country or code page
-  UNI_FUTURE_OPCODE = -(490); // Rule table has unimplimented rules
+  UNI_FUTURE_OPCODE = -(490); // Rule table has unimplemented rules
   UNI_NO_SUCH_FILE = -(491); // No such file or directory
   UNI_TOO_MANY_FILES = -(492); // Too many files already open
   UNI_NO_PERMISSION = -(493); // Permission denied on file open
@@ -1112,7 +1114,7 @@ function NWUXUnicodeToNormalized(normalizeHandle: TpCONVERT; normalizedOutput: p
     { Convert Unicode to bytes for file path    }
     { Handle to Byte <-> Uni converter   }
 
-    { Ptr to single or double-byte char  }
+    { Ptr to single or double-byte AnsiChar  }
     { # bytes in character (1 or 2)      }
 function NWUXGetCharSize(byteUniHandle: TpCONVERT; byteInput: Pnuint8; pCharSize: pnuint): Tnint; NWLIB_LOCNLM32;
     { Set action to be taken for no map chars   }
@@ -1143,13 +1145,13 @@ function NWUXSetSubByte(byteUniHandle: TpCONVERT; substituteByte: Tnuint8): Tnin
     { Handle to a Byte <-> Unicode converter    }
     { Substitution byte returned here           }
 function NWUXGetSubByte(byteUniHandle: TpCONVERT; substituteByte: pnuint8): Tnint; NWLIB_LOCNLM32;
-    { Set substitute uni char for converter     }
+    { Set substitute uni AnsiChar for converter     }
     { Handle to a Byte <-> Unicode converter    }
     { Unicode character to be substituted       }
 function NWUXSetSubUni(byteUniHandle: TpCONVERT; substituteUni: Tunicode): Tnint; NWLIB_LOCNLM32;
-    { Get substitute uni char for converter     }
+    { Get substitute uni AnsiChar for converter     }
     { Handle to a Byte <-> Unicode converter    }
-    { Substitution unicode char returned here   }
+    { Substitution unicode AnsiChar returned here   }
 function NWUXGetSubUni(byteUniHandle: TpCONVERT; substituteUni: punicode): Tnint; NWLIB_LOCNLM32;
     { Set up unmappable byte handling           }
     { Handle to a Byte <-> Unicode converter    }
@@ -1169,7 +1171,7 @@ function NWUXGetByteFunctions(byteUniHandle: TpCONVERT; var noMapByteFunc: TNMBY
     { Unicode scanning function                 }
     { Unicode parsing function                  }
 function NWUXSetUniFunctions(byteUniHandle: TpCONVERT; noMapUniFunc: TNMUNI; scanUniFunc: TSCUNI; parseUniFunc: TPRUNI): Tnint; NWLIB_LOCNLM32;
-    { Set up unmappable unicode char handling   }
+    { Set up unmappable unicode AnsiChar handling   }
     { Handle to a Byte <-> Unicode converter    }
     { Function called for unmappable uni chars  }
     { Unicode scan function                     }
@@ -2269,7 +2271,7 @@ const
   JOB_ALREADY_STARTED = $882D;
   SPECT_DAA_TYPE_NOT_SUPPORTED = $882E;
   INVALID_ENVIR_HANDLE = $882F;
-  NOT_SAME_CONNECTION = $8830; { 48 - Internal server request attempted accross different server connections }
+  NOT_SAME_CONNECTION = $8830; { 48 - Internal server request attempted across different server connections }
   PRIMARY_CONNECTION_NOT_SET = $8831; { 49 - Attempt to retrieve default connection with no primary connection set }
   NO_PRIMARY_SET = $8831;
   KEYWORD_NOT_FOUND = $8832; { Client-32 }
@@ -2286,7 +2288,7 @@ const
   CONFIG_FILE_READ_FAILED = $8839; { 57 - OS/2 only }
   CONFIG_LINE_TOO_LONG = $883A; { 58 - OS/2 only }
   CONFIG_LINES_IGNORED = $883B; { 59 - OS/2 only }
-  NOT_MY_RESOURCE = $883C; { 60 - Attempted request made with a parameter using foriegn resource }
+  NOT_MY_RESOURCE = $883C; { 60 - Attempted request made with a parameter using foreign resource }
   DAEMON_INSTALLED = $883D; { 61 - OS/2 only }
   SPOOLER_INSTALLED = $883E; { 62 - Attempted load of print spooler with print spooler already installed }
   CONN_TABLE_FULL = $883F;
@@ -2302,7 +2304,7 @@ const
   NO_DIRECTORY_SERVICE_CONNECTION = $8846;
   SERVICE_BUSY = $8846; { 70 - Attempted request made to partially asynchronous function in busy state }
   NO_SERVER_ERROR = $8847; { 71 - Attempted connect failed to find any servers responding }
-  BAD_VLM_ERROR = $8848; { 72 - Attempted function call to non-existant or not-loaded overlay }
+  BAD_VLM_ERROR = $8848; { 72 - Attempted function call to non-existent or not-loaded overlay }
   NETWORK_DRIVE_IN_USE = $8849; { 73 - Attempted map to network drive that was already mapped }
   LOCAL_DRIVE_IN_USE = $884A; { 74 - Attempted map to local drive that was in use }
   NO_DRIVES_AVAILABLE = $884B; { 75 - Attempted map to next available drive when none were available }
@@ -2596,7 +2598,7 @@ const
   NWE_CFG_READ_FAILED = $8839; { 57 - OS/2 only }
   NWE_CFG_LINE_TOO_LONG = $883A; { 58 - OS/2 only }
   NWE_CFG_LINES_IGNORED = $883B; { 59 - OS/2 only }
-  NWE_RESOURCE_NOT_OWNED = $883C; { 60 - Attempted request made with a parameter using foriegn resource }
+  NWE_RESOURCE_NOT_OWNED = $883C; { 60 - Attempted request made with a parameter using foreign resource }
   NWE_DAEMON_INSTALLED = $883D; { 61 - OS/2 only }
   NWE_PRN_SPOOLER_INSTALLED = $883E; { 62 - Attempted load of print spooler with print spooler already installed }
   NWE_CONN_TABLE_FULL = $883F; { 63 - Attempted to allocate a connection handle with no more local connection table entries }
@@ -2609,7 +2611,7 @@ const
   NWE_DS_NO_CONN = $8846; { 70 }
   NWE_SERVICE_BUSY = $8846; { 70 - Attempted request made to partially asynchronous function in busy state }
   NWE_SERVER_NOT_FOUND = $8847; { 71 - Attempted connect failed to find any servers responding }
-  NWE_VLM_INVALID = $8848; { 72 - Attempted function call to non-existant or not-loaded overlay }
+  NWE_VLM_INVALID = $8848; { 72 - Attempted function call to non-existent or not-loaded overlay }
   NWE_DRIVE_ALREADY_MAPPED = $8849; { 73 - Attempted map to network drive that was already mapped }
   NWE_DRIVE_LOCAL_IN_USE = $884A; { 74 - Attempted map to local drive that was in use }
   NWE_DRIVE_NONE_AVAILABLE = $884B; { 75 - Attempted map to next available drive when none were available }
@@ -4934,7 +4936,7 @@ type
   end;
     { Get Active Connection List by Type  }
     { Connection service type  }
-    { NOTE: type 1 is reserved by CLIB for backward compatability  }
+    { NOTE: type 1 is reserved by CLIB for backward compatibility  }
 
 const
   FSE_NCP_CONNECTION_TYPE = 2;
@@ -5896,7 +5898,7 @@ function NWDSGetConnectionInfo
   connStatus: pnuint8;
   connType: pnuint8;
   serverFlags: pnuint8;
-  serverName: pchar;
+  serverName: PAnsiChar;
   transType: pnuint8;
   transLen: pnuint32;
   transBuf: pointer;
@@ -5929,7 +5931,7 @@ function NWGetConnectionIDFromAddress
 { replacement - NWCCScanConnInfo, NWCCOpenConnByRef, NWCCLicenseConn }
 function NWGetConnectionIDFromName
   (nameLen: Tnuint32;
-  name: pchar;
+  name: PAnsiChar;
   connHandle: PNWCONN_HANDLE): TNWCCODE; NWLIB_DSAPI;
 { replacement - NWCCScanConnInfo, NWCCOpenConnByRef }
 function NWGetNearestDSConnRef(connRef: pnuint32): TNWCCODE; NWLIB_DSAPI;
@@ -5955,7 +5957,7 @@ function NWDSUnlockConnection(connHandle: TNWCONN_HANDLE): TNWCCODE; NWLIB_DSAPI
 { replacement - NWCCGetPrefServerName }
 function NWGetPreferredConnName(preferredName: pnuint8; preferredType: pnuint8): TNWCCODE; NWLIB_DSAPI;
 
-{ replacment - NWCSysCloseConnRef }
+{ replacement - NWCSysCloseConnRef }
 function NWFreeConnectionSlot(connHandle: TNWCONN_HANDLE; disconnectType: Tnuint8): TNWCCODE; NWLIB_DSAPI;
 
 { replacement - NONE (monitored connections are managed automatically

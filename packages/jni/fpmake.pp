@@ -2,14 +2,14 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses {$ifdef unix}cthreads,{$endif} fpmkunit;
 
 Var
   P : TPackage;
   T : TTarget;
 
 begin
-  With Installer do 
+  With Installer do
     begin
 {$endif ALLPACKAGES}
 
@@ -31,6 +31,9 @@ begin
     P.Options.Add('-Ur');
 
     T:=P.Targets.AddUnit('jni.pas');
+
+    P.NamespaceMap:='namespaces.lst';
+
 {$ifndef ALLPACKAGES}
     Run;
     end;

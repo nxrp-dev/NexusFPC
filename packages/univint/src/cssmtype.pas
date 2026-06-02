@@ -1,15 +1,15 @@
 {
  * Copyright (c) 1999-2002,2004 Apple Computer, Inc. All Rights Reserved.
- * 
+ *
  * @APPLE_LICENSE_HEADER_START@
- * 
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
  * compliance with the License. Please obtain a copy of the License at
  * http://www.opensource.apple.com/apsl/ and read it before using this
  * file.
- * 
+ *
  * The Original Code and all software distributed under the License are
  * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
  * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
@@ -17,7 +17,7 @@
  * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
  * Please see the License for the specific language governing rights and
  * limitations under the License.
- * 
+ *
  * @APPLE_LICENSE_HEADER_END@
  *
  * cssmtype.h -- Common Security Services Manager Common Data Types
@@ -39,7 +39,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit cssmtype;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -224,7 +226,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.Cssmconfig;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,cssmconfig;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -233,7 +239,7 @@ uses MacTypes,cssmconfig;
 {$packrecords c}
 
 { Handle types. }
-	
+
 type
 	CSSM_HANDLE = CSSM_INTPTR;
 	CSSM_HANDLE_PTR = ^CSSM_INTPTR;
@@ -294,7 +300,7 @@ const
 const
 	CSSM_MODULE_STRING_SIZE = 64;
 type
-	CSSM_STRING = array [0..CSSM_MODULE_STRING_SIZE + 4-1] of char;
+	CSSM_STRING = array [0..CSSM_MODULE_STRING_SIZE + 4-1] of AnsiChar;
 
 
 type
@@ -415,9 +421,9 @@ type
 const
 	CSSM_ADDR_NONE = 0;
 	CSSM_ADDR_CUSTOM = 1;
-	CSSM_ADDR_URL = 2; { char* }
+	CSSM_ADDR_URL = 2; { AnsiChar* }
 	CSSM_ADDR_SOCKADDR = 3;
-	CSSM_ADDR_NAME = 4; { char* - qualified by access method }
+	CSSM_ADDR_NAME = 4; { AnsiChar* - qualified by access method }
 
 type
 	CSSM_NET_ADDRESS_PTR = ^cssm_net_address;
@@ -1493,7 +1499,7 @@ type
 		  10: (DLDBHandle: CSSM_DL_DB_HANDLE_PTR);
   		11: (KRProfile: UnivPtr {cssm_kr_profile_ptr});
   end;
-  
+
   CSSM_CONTEXT_ATTRIBUTE_PTR = ^cssm_context_attribute;
   CSSM_CONTEXT_ATTRIBUTEPtr = ^cssm_context_attribute;
 	cssm_context_attribute = record
@@ -2033,7 +2039,7 @@ const
 	{ certificate holder has moved from this
 	   jurisdiction }
 	CSSM_TP_CERTCHANGE_REASON_SUPERCEDED = $5;
-	{ certificate holder as issued a new, superceding
+	{ certificate holder as issued a new, superseding
 	   certificate }
 	CSSM_TP_CERTCHANGE_REASON_SUSPECTEDCOMPROMISE = $6;
 	{ certificate could be compromised }
@@ -2374,7 +2380,7 @@ type
       1: (AttributeOID: CSSM_OID);		{ e.g., CSSMOID_RECORDLABEL }
       2: (AttributeID: UInt32);			{ e.g., FourCharCode('recl') }
   end;
- 
+
   CSSM_DB_ATTRIBUTE_INFO_PTR = ^cssm_db_attribute_info;
   CSSM_DB_ATTRIBUTE_INFOPtr = ^cssm_db_attribute_info;
 	cssm_db_attribute_info = record

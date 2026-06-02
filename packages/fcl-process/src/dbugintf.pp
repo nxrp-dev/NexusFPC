@@ -15,11 +15,17 @@
  **********************************************************************}
 {$mode objfpc}
 {$h+}
-unit dbugintf;
+{$IFNDEF FPC_DOTTEDUNITS}
+unit DbugIntf;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.Dbugmsg;
+{$ELSE FPC_DOTTEDUNITS}
 uses dbugmsg;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
   TDebugLevel = (dlInformation,dlWarning,dlError);
@@ -76,7 +82,7 @@ ResourceString
 
 Var
   DebugServerExe            : String = ''; { We can override this global var. in our compiled IPC client, with DefaultDebugServer a.k.a. dbugmsg.DebugServerID, or something else  }
-  DefaultDebugServer        : String = DebugServerID ; { A "last ressort" simplier compiled IPC server's name, called in command line by your client a.k.a. the compiler's target file "-o" }
+  DefaultDebugServer        : String = DebugServerID ; { A "last resort" simpler compiled IPC server's name, called in command line by your client a.k.a. the compiler's target file "-o" }
   //Last error message of a Send... function. Not cleared on a new call!
   SendError                 : String = '';
   //Raise an exception if a Send... function fails.
@@ -85,8 +91,13 @@ Var
 
 implementation
 
-Uses 
+{$IFDEF FPC_DOTTEDUNITS}
+Uses
+  System.SysUtils, System.Classes, System.Process, System.Simpleipc;
+{$ELSE FPC_DOTTEDUNITS}
+Uses
   SysUtils, classes, process, simpleipc;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Const
   DmtInformation = lctInformation;
@@ -95,7 +106,7 @@ Const
   ErrorLevel     : TErrorLevel
                  = (dmtInformation,dmtWarning,dmtError);
   IndentChars    = 2;
-  
+
 var
   DebugClient : TSimpleIPCClient = nil;
   MsgBuffer : TMemoryStream = Nil;
@@ -103,10 +114,12 @@ var
   ServerID : Integer;
   DebugDisabled : Boolean = False;
   Indent : Integer = 0;
-  
+
 Procedure WriteMessage(Const Msg : TDebugMessage);
 
 begin
+  if not Assigned(MsgBuffer) then
+    exit;
   MsgBuffer.Seek(0,soFrombeginning);
   WriteDebugMessageToStream(MsgBuffer,Msg);
   DebugClient.SendMessage(mtUnknown,MsgBuffer);
@@ -332,25 +345,25 @@ begin
   AlwaysDisplayPID:= ShowPID;
   DebugClient:=TSimpleIPCClient.Create(Nil);
   DebugClient.ServerID:=DebugServerID;
-  If not DebugClient.ServerRunning then
-    begin
-    ServerID:=StartDebugServer(ADebugServerExe,ARaiseExceptionOnSendError,ServerLogFileName);
-    if ServerID = 0 then
-      begin
-      DebugDisabled := True;
-      FreeAndNil(DebugClient);
-      Exit;
-      end
-    else
-      DebugDisabled := False;
-    I:=0;
-    While (I<100) and not DebugClient.ServerRunning do
-      begin
-      Inc(I);
-      Sleep(100);
-      end;
-    end;
   try
+    If not DebugClient.ServerRunning then
+      begin
+      ServerID:=StartDebugServer(ADebugServerExe,ARaiseExceptionOnSendError,ServerLogFileName);
+      if ServerID = 0 then
+        begin
+        DebugDisabled := True;
+        FreeAndNil(DebugClient);
+        Exit;
+        end
+      else
+        DebugDisabled := False;
+      I:=0;
+      While (I<100) and not DebugClient.ServerRunning do
+        begin
+        Inc(I);
+        Sleep(100);
+        end;
+      end;
     DebugClient.Connect;
   except
     FreeAndNil(DebugClient);

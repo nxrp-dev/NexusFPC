@@ -26,23 +26,30 @@
 
 }
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit timer;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  Amiga.Core.Exec;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   exec;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
 
-{ unit defintions }
+{ unit definitions }
   UNIT_MICROHZ        = 0;
   UNIT_VBLANK         = 1;
   UNIT_ECLOCK         = 2;
   UNIT_WAITUNTIL      = 3;
   UNIT_WAITECLOCK     = 4;
 
-  TIMERNAME: PChar = 'timer.device';
+  TIMERNAME: PAnsiChar = 'timer.device';
 
 type
   PTimeval = ^TTimeval;

@@ -33,6 +33,9 @@ interface
      unix,
   {$endif}
 {$endif}
+{$ifdef TEST_FPMKUNIT}
+      fpmkunit,
+{$endif}
       sysutils,classes,
       fpcmdic;
 
@@ -68,104 +71,147 @@ interface
       TitleDate=Title+' '+DateRevision;
 
     type
+{$ifdef TEST_FPMKUNIT}
+    { Please keep this order, see OSCPUSupported below
+      TCpu=(cpuNone,
+    i386,m68k,powerpc,sparc,x86_64,arm,powerpc64,avr,armeb,
+    mips,mipsel,mips64,mips64el,jvm,i8086,aarch64,wasm32,sparc64,riscv32,riscv64,xtensa,z80,loongarch64
+  );}
+  TCpu = fpmkunit.TCpu;
+      { Please keep this order, see OSCPUSupported below
+  TOS=(osNone,
+    linux,go32v2,win32,os2,freebsd,beos,netbsd,
+    amiga,atari, solaris, qnx, netware, openbsd,wdosx,
+    palmos,macosclassic,darwin,emx,watcom,morphos,netwlibc,
+    win64,wince,gba,nds,embedded,symbian,haiku,iphonesim,
+    aix,java,android,nativent,msdos,wii,aros,dragonfly,
+    win16,freertos,zxspectrum,msxdos,ios,amstradcpc,sinclairql,
+    wasip1,human68k,ps1,wasip1threads,wasip2
+  );}
+  TOS = fpmkunit.TOS;
+{$else}
       TCpu=(
-        c_i386,c_m68k,c_powerpc,c_sparc,c_x86_64,c_arm,c_powerpc64,c_avr,c_armeb,c_armel,c_mips,c_mipsel,c_mips64,c_mips64el,c_jvm,c_i8086,c_aarch64,c_wasm32,c_sparc64,c_riscv32,c_riscv64,c_xtensa,c_z80, c_loongarch64
+        c_none,i386,m68k,powerpc,sparc,x86_64,arm,powerpc64,avr,
+        armeb,armel,mips,mipsel,mips64,mips64el,jvm,i8086,aarch64,
+        wasm32,sparc64,riscv32,riscv64,xtensa,z80,loongarch64
       );
 
       TOS=(
-        o_linux,o_go32v2,o_win32,o_os2,o_freebsd,o_beos,o_haiku,o_netbsd,
-        o_amiga,o_atari, o_solaris, o_qnx, o_netware, o_openbsd,o_wdosx,
-        o_palmos,o_macosclassic,o_darwin,o_emx,o_watcom,o_morphos,o_netwlibc,
-        o_win64,o_wince,o_gba,o_nds,o_embedded,o_symbian,o_nativent,o_iphonesim,
-        o_wii,o_aix,o_java,o_android,o_msdos,o_aros,o_dragonfly,o_win16,o_freertos,
-        o_zxspectrum,o_msxdos,o_ios,o_amstradcpc,o_sinclairql,o_wasi
+        o_none,linux,go32v2,win32,os2,freebsd,beos,haiku,netbsd,
+        amiga,atari, solaris, qnx, netware, openbsd,wdosx,
+        palmos,macosclassic,darwin,emx,watcom,morphos,netwlibc,
+        win64,wince,gba,nds,embedded,symbian,nativent,iphonesim,
+        wii,aix,java,android,msdos,aros,dragonfly,win16,freertos,
+        zxspectrum,msxdos,ios,amstradcpc,sinclairql,wasip1,human68k,ps1,
+        wasip1threads,wasip2
       );
+{$endif}
 
       TTargetSet=array[tcpu,tos] of boolean;
 
     const
       CpuStr : array[TCpu] of string=(
-        'i386','m68k','powerpc','sparc','x86_64','arm','powerpc64','avr','armeb', 'armel', 'mips', 'mipsel', 'mips64', 'mips64el', 'jvm','i8086','aarch64','wasm32','sparc64','riscv32','riscv64','xtensa','z80', 'loongarch64'
+        'none','i386','m68k','powerpc','sparc','x86_64','arm','powerpc64','avr',
+        'armeb', 'armel', 'mips', 'mipsel', 'mips64', 'mips64el', 'jvm','i8086','aarch64',
+        'wasm32','sparc64','riscv32','riscv64','xtensa','z80', 'loongarch64'
       );
 
       CpuSuffix : array[TCpu] of string=(
-        '_i386','_m68k','_powerpc','_sparc','_x86_64','_arm','_powerpc64','_avr','_armeb', '_armel', '_mips', '_mipsel', '_mips64', '_mips64el', '_jvm','_i8086','_aarch64','_wasm32','_sparc64','_riscv32','_riscv64','xtensa','_z80', 'loongarch64'
+        '_none','_i386','_m68k','_powerpc','_sparc','_x86_64','_arm','_powerpc64','_avr',
+        '_armeb', '_armel', '_mips', '_mipsel', '_mips64', '_mips64el', '_jvm','_i8086','_aarch64',
+        '_wasm32','_sparc64','_riscv32','_riscv64','xtensa','_z80', 'loongarch64'
       );
 
       ppcSuffix : array[TCpu] of string=(
-        '386','68k','ppc','sparc','x64','arm','ppc64','avr','armeb', 'armel', 'mips', 'mipsel', 'mips64', 'mips64el', 'jvm','8086','a64','wasm32','sparc64','rv32','rv64','xtensa','z80', 'loongarch64'
+        'none','386','68k','ppc','sparc','x64','arm','ppc64','avr',
+        'armeb', 'armel', 'mips', 'mipsel', 'mips64', 'mips64el', 'jvm','8086','a64',
+        'wasm32','sparc64','rv32','rv64','xtensa','z80', 'loongarch64'
       );
 
       OSStr : array[TOS] of string=(
-        'linux','go32v2','win32','os2','freebsd','beos','haiku','netbsd',
+        'none','linux','go32v2','win32','os2','freebsd','beos','haiku','netbsd',
         'amiga','atari','solaris', 'qnx', 'netware','openbsd','wdosx',
         'palmos','macosclassic','darwin','emx','watcom','morphos','netwlibc',
         'win64','wince','gba','nds','embedded','symbian','nativent',
         'iphonesim', 'wii', 'aix', 'java', 'android', 'msdos', 'aros',
         'dragonfly', 'win16', 'freertos', 'zxspectrum', 'msxdos',
-        'ios','amstradcpc','sinclairql','wasi'
+        'ios','amstradcpc','sinclairql','wasip1','human68k','ps1','wasip1threads',
+        'wasip2'
       );
 
       OSSuffix : array[TOS] of string=(
-        '_linux','_go32v2','_win32','_os2','_freebsd','_beos','_haiku','_netbsd',
+        '_none','_linux','_go32v2','_win32','_os2','_freebsd','_beos','_haiku','_netbsd',
         '_amiga','_atari','_solaris', '_qnx', '_netware','_openbsd','_wdosx',
         '_palmos','_macosclassic','_darwin','_emx','_watcom','_morphos','_netwlibc',
         '_win64','_wince','_gba','_nds','_embedded','_symbian','_nativent',
         '_iphonesim','_wii','_aix','_java','_android','_msdos','_aros',
         '_dragonfly','_win16','_freertos','_zxspectrum','_msxdos',
-        '_ios','_amstradcpc','_sinclairql','_wasi'
+        '_ios','_amstradcpc','_sinclairql','_wasip1','_human68k','_ps1','_wasip1threads',
+        '_wasip2'
       );
 
       { This table is kept OS,Cpu because it is easier to maintain (PFV) }
-      OSCpuPossible : array[TOS,TCpu] of boolean = (
-        { os          i386    m68k  ppc    sparc  x86_64 arm    ppc64  avr    armeb  armel  mips   mipsel mips64 misp64el jvm    i8086  aarch64 wasm32 sparc64 riscv32 riscv64 xtensa z80   loongarch64 }
-        { linux }   ( true,  true,  true,  true,  true,  true,  true,  false, true,  false, true,  true,  true,  true,    false, false, true,   false, true,  true,   true,   true,  false, true),
-        { go32v2 }  ( true,  false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { win32 }   ( true,  false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { os2 }     ( true,  false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { freebsd } ( true,  false, false, false, true,  false, false, false, false, false, false, false, false, false,   false, false, true,   false, false, false,  false,  false, false, false),
-        { beos }    ( true,  false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { haiku }   ( true,  false, false, false, true,  false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { netbsd }  ( true,  true,  true,  true,  true,  true,  false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { amiga }   ( false, true,  true,  false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { atari }   ( false, true,  false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { solaris } ( true,  false, false, true,  true,  false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { qnx }     ( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { netware } ( true,  false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { openbsd } ( true,  false, false, false, true,  false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { wdosx }   ( true,  false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { palmos }  ( false, true,  false, false, false, true,  false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-   { macosclassic } ( false, true,  true,  false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { darwin }  ( true,  false, true,  false, true,  false, true,  false, false, false, false, false, false, false,   false, false, true,   false, false, false,  false,  false, false, false),
-        { emx }     ( true,  false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { watcom }  ( true,  false, false, false ,false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { morphos } ( false, false, true,  false ,false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { netwlibc }( true,  false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { win64   } ( false, false, false, false, true,  false, false, false, false, false, false, false, false, false,   false, false, true,   false, false, false,  false,  false, false, false),
-        { wince    }( true,  false, false, false, false, true,  false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { gba    }  ( false, false, false, false, false, true,  false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { nds    }  ( false, false, false, false, false, true,  false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { embedded }( true,  true,  true,  true,  true,  true,  true,  true,  true , false, false, true , false, false,   false, true , true ,  true,  false, true,   true,   true,  true,  false),
-        { symbian } ( true,  false, false, false, false, true,  false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { nativent }( true,  false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { iphonesim }( true, false, false, false, true,  false, false, false, false, false, false, false, false, false,   false, false, true ,  false, false, false,  false,  false, false, false),
-        { wii }     ( false, false, true,  false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { aix }     ( false, false, true,  false, false, false, true,  false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { java }    ( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   true,  false, false,  false, false, false,  false,  false, false, false),
-        { android } ( true,  false, false, false, true,  true,  false, false, false, false, false, true,  false, false,   true,  false, true,   false, false, false,  false,  false, false, false),
-        { msdos }   ( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, true , false,  false, false, false,  false,  false, false, false),
-        { aros }    ( true,  false, false, false, true,  true,  false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        {dragonfly} ( false, false, false, false, true,  false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { win16 }   ( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, true , false,  false, false, false,  false,  false, false, false),
-        { freertos }( false, false, false, false, false, true,  false, false, false, false, false, false, false, false,   false, false, false,  false, false, true,   false,   true, false, false),
-        {zxspectrum}( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, true,  false),
-        { msxdos}   ( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, true,  false),
-        { ios }     ( false, false, false, false, false, true,  false, false, false, false, false, false, false, false,   false, false, true ,  false, false, false,  false,  false, false, false),
-        {amstradcpc}( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, true,  false),
-        {sinclairql}( false, true,  false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { wasi }    ( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  true,  false, false,  false,  false, false, false)
+{$ifdef TEST_FPMKUNIT}
+      type
+        TOSCpuPossible = array[TOS,TCpu] of boolean;
+      var
+        OSCpuPossible : TOsCpuPossible;
+{$else}
+      OSCpuPossible : array[TOS,TCpu] of boolean =
+      (
+        { os          none   i386    m68k  ppc    sparc  x86_64 arm    ppc64  avr    armeb  armel  mips   mipsel mips64 misp64el jvm    i8086  aarch64 wasm32 sparc64 riscv32 riscv64 xtensa z80   loongarch64 }
+        { none  }   ( false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        { linux }   ( false, true,  true,  true,  true,  true,  true,  true,  false, true,  false, true,  true,  true,  true,    false, false, true,   false, true,  true,   true,   true,  false, true),
+        { go32v2 }  ( false, true,  false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        { win32 }   ( false, true,  false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        { os2 }     ( false, true,  false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        { freebsd } ( false, true,  false, false, false, true,  false, true,  false, false, false, false, false, false, false,   false, false, true,   false, false, false,  false,  false, false, false),
+        { beos }    ( false, true,  false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        { haiku }   ( false, true,  false, false, false, true,  false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        { netbsd }  ( false, true,  true,  true,  true,  true,  true,  false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        { amiga }   ( false, false, true,  true,  false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        { atari }   ( false, false, true,  false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        { solaris } ( false, true,  false, false, true,  true,  false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        { qnx }     ( false, true,  false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        { netware } ( false, true,  false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        { openbsd } ( false, true,  false, false, false, true,  false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        { wdosx }   ( false, true,  false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        { palmos }  ( false, false, true,  false, false, false, true,  false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+   { macosclassic } ( false, false, true,  true,  false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        { darwin }  ( false, true,  false, true,  false, true,  false, true,  false, false, false, false, false, false, false,   false, false, true,   false, false, false,  false,  false, false, false),
+        { emx }     ( false, true,  false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        { watcom }  ( false, true,  false, false, false ,false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        { morphos } ( false, false, false, true,  false ,false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        { netwlibc }( false, true,  false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        { win64   } ( false, false, false, false, false, true,  false, false, false, false, false, false, false, false, false,   false, false, true,   false, false, false,  false,  false, false, false),
+        { wince    }( false, true,  false, false, false, false, true,  false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        { gba    }  ( false, false, false, false, false, false, true,  false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        { nds    }  ( false, false, false, false, false, false, true,  false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        { embedded }( false, true,  true,  true,  true,  true,  true,  true,  true,  true , false, false, true , false, false,   false, true , true ,  true,  false, true,   true,   true,  true,  false),
+        { symbian } ( false, true,  false, false, false, false, true,  false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        { nativent }( false, true,  false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        { iphonesim }( false, true, false, false, false, true,  false, false, false, false, false, false, false, false, false,   false, false, true ,  false, false, false,  false,  false, false, false),
+        { wii }     ( false, false, false, true,  false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        { aix }     ( false, false, false, true,  false, false, false, true,  false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        { java }    ( false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,   true,  false, false,  false, false, false,  false,  false, false, false),
+        { android } ( false, true,  false, false, false, true,  true,  false, false, false, false, false, true,  false, false,   true,  false, true,   false, false, false,  false,  false, false, false),
+        { msdos }   ( false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, true , false,  false, false, false,  false,  false, false, false),
+        { aros }    ( false, true,  false, false, false, true,  true,  false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        {dragonfly} ( false, false, false, false, false, true,  false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        { win16 }   ( false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, true , false,  false, false, false,  false,  false, false, false),
+        { freertos }( false, false, false, false, false, false, true,  false, false, false, false, false, false, false, false,   false, false, false,  false, false, true,   false,   true, false, false),
+        {zxspectrum}( false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, true,  false),
+        { msxdos}   ( false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, true,  false),
+        { ios }     ( false, false, false, false, false, false, true,  false, false, false, false, false, false, false, false,   false, false, true ,  false, false, false,  false,  false, false, false),
+        {amstradcpc}( false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, true,  false),
+        {sinclairql}( false, false, true,  false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        { wasip1 }  ( false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  true,  false, false,  false,  false, false, false),
+        { human68k }( false, false, true,  false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+        { ps1 }     ( false, false, false, false, false, false, false, false, false, false, false, false, true,  false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+  { wasip1threads } ( false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  true,  false, false,  false,  false, false, false),
+        { wasip2 }  ( false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  true,  false, false,  false,  false, false, false)
       );
-
+{$endif }
     type
       TKeyValueItem = class(TDictionaryItem)
       private
@@ -227,6 +273,7 @@ interface
         FRequireList    : TTargetRequireList;
         FVariables      : TKeyValue;
         FIncludeTargets : TTargetSet;
+        FExtraTargetsFile : String;
         procedure Init;
         procedure ParseSec(p:TDictionaryItem);
         procedure PrintSec(p:TDictionaryItem);
@@ -244,6 +291,7 @@ interface
         destructor  Destroy;override;
         procedure Verbose(lvl:TFPCMakeVerbose;const s:string);virtual;
         procedure SetTargets(const s:string);
+        procedure AddExtraTargets(const aFileName : String; aList : TStrings);
         procedure LoadSections;
         procedure LoadMakefileFPC;
         procedure LoadPackageSection;
@@ -272,6 +320,7 @@ interface
         property CommentChars:TSysCharSet read FCommentChars write FCommentChars;
         property EmptyLines:Boolean read FEmptyLines write FEmptyLines;
         property IncludeTargets:TTargetSet read FIncludeTargets write FIncludeTargets;
+        Property ExtraTargetsFile : String Read FExtraTargetsFile Write FExtraTargetsFile;
       end;
 
     function posidx(const substr,s : string;idx:integer):integer;
@@ -648,8 +697,8 @@ implementation
         c : tcpu;
       begin
         FSections:=TDictionary.Create;
-        for c:=low(tcpu) to high(tcpu) do
-         for t:=low(tos) to high(tos) do
+        for c:=succ(low(tcpu)) to high(tcpu) do
+         for t:=succ(low(tos)) to high(tos) do
           FRequireList[c,t]:=TStringList.Create;
         FVariables:=TKeyValue.Create;
         FCommentChars:=[';','#'];
@@ -671,28 +720,57 @@ implementation
         c : tcpu;
       begin
         FSections.Free;
-        for c:=low(tcpu) to high(tcpu) do
-         for t:=low(tos) to high(tos) do
+        for c:=succ(low(tcpu)) to high(tcpu) do
+         for t:=succ(low(tos)) to high(tos) do
           FRequireList[c,t].Free;
         FVariables.Free;
       end;
 
 
+    procedure TFPCMake.AddExtraTargets(const aFileName : string; aList : TStrings);
+
+    var
+      Xtra : TStringList;
+
+    begin
+      Xtra:=TstringList.Create;
+      try
+        Xtra.LoadFromFile(aFileName);
+        aList.AddStrings(Xtra);
+      finally
+        Xtra.Free;
+      end;
+    end;
+
     procedure TFPCMake.LoadSections;
       var
-        SLInput : TStringList;
+        SLInput, slExtra : TStringList;
         i,j,n : integer;
         s,
         SecName : string;
         CurrSec : TFPCMakeSection;
       begin
+        CurrSec:=nil;
+        slExtra:=Nil;
+        SLInput:=TStringList.Create;
         try
-          CurrSec:=nil;
-          SLInput:=TStringList.Create;
+          // We do this first
+          if ExtraTargetsFile<>'' then
+            begin
+            slExtra:=TStringList.Create;
+            AddExtraTargets(ExtraTargetsFile,slExtra);
+            end;
           if assigned(FStream) then
            SLInput.LoadFromStream(FStream)
           else
            SLInput.LoadFromFile(FFileName);
+          if Assigned(SLExtra) then
+            begin
+            slExtra.AddStrings(slInput);
+            slInput.Free;
+            slInput:=slExtra;
+            slExtra:=nil;
+            end;
           { Load Input into sections list }
           n:=SLInput.Count;
           i:=0;
@@ -711,13 +789,14 @@ implementation
                    SecName:=Copy(s,2,j-2);
                    CurrSec:=TFPCMakeSection(FSections[SecName]);
                    if CurrSec=nil then
-                    CurrSec:=TFPCMakeSection(FSections.Insert(TFPCMakeSection.Create(SecName)));
+                    CurrSec:=TFPCMakeSection(FSections.Insert(TFPCMakeSection.Create(SecName)))
                  end
                 else
                  begin
                    if CurrSec=nil then
                     raise Exception.Create(Format(s_err_no_section,[FFileName,i+1]));
                    { Insert string without spaces stripped }
+                   // Writeln('Appending: ',SLInput[i]);
                    CurrSec.AddLine(SLInput[i]);
                  end;
               end;
@@ -725,6 +804,7 @@ implementation
            end;
         finally
           SLInput.Free;
+          slExtra.Free;
         end;
       end;
 
@@ -802,8 +882,8 @@ implementation
           { target 'all' includes all targets }
           if hs='all' then
            begin
-             for c:=low(TCpu) to high(TCpu) do
-              for t:=low(TOs) to high(TOs) do
+             for c:=succ(low(TCpu)) to high(TCpu) do
+              for t:=succ(low(TOs)) to high(TOs) do
                if OSCpuPossible[t,c] then
                 FIncludeTargets[c,t]:=true;
              targetset:=true;
@@ -815,11 +895,11 @@ implementation
             begin
               hcpu:=copy(hs,1,i-1);
               htarget:=copy(hs,i+1,length(hs)-i);
-              for c:=low(TCpu) to high(TCpu) do
+              for c:=succ(low(TCpu)) to high(TCpu) do
                 begin
                   if hcpu=CpuStr[c] then
                     begin
-                      for t:=low(TOs) to high(TOs) do
+                      for t:=succ(low(TOs)) to high(TOs) do
                         begin
                           if htarget=OSStr[t] then
                             begin
@@ -837,9 +917,9 @@ implementation
             end
           else
             begin
-              for c:=low(TCpu) to high(TCpu) do
+              for c:=succ(low(TCpu)) to high(TCpu) do
                 begin
-                  for t:=low(TOS) to high(TOS) do
+                  for t:=succ(low(TOS)) to high(TOS) do
                     begin
                       if hs=OSStr[t] then
                         begin
@@ -859,8 +939,8 @@ implementation
         else
          begin
            hs:='';
-           for c:=low(TCpu) to high(TCpu) do
-            for t:=low(TOs) to high(TOs) do
+           for c:=succ(low(TCpu)) to high(TCpu) do
+            for t:=succ(low(TOs)) to high(TOs) do
              if FIncludeTargets[c,t] then
               AddToken(hs,CpuStr[c]+'-'+OSStr[t],' ');
            Verbose(FPCMakeDebug,Format(s_targets_info,[hs]));
@@ -919,8 +999,8 @@ implementation
         FExportSec.AddKey('name',FPackageName);
         FExportSec.AddKey('version',FPackageVersion);
         { Add required packages }
-        for c:=low(TCpu) to high(TCpu) do
-         for t:=low(TOS) to high(TOS) do
+        for c:=succ(low(TCpu)) to high(TCpu) do
+         for t:=succ(low(TOS)) to high(TOS) do
           FExportSec.AddKey('require'+CpuSuffix[c]+OSSuffix[t],FPackageSec['require'+CpuSuffix[c]+OSSuffix[t]]);
         { Unit dir }
         {FExportSec.AddKey('unitdir','$(UNITSDIR)/'+Lowercase(PackageName));}
@@ -985,6 +1065,12 @@ implementation
         s:=SubstVariables('$(firstword $(wildcard '+s+'))');
         if TryFile(s) then
          exit;
+        { Check for Makefile }
+        s:=SubstVariables('$(addsuffix /'+ReqName+'/Makefile,$(FPCDIR)) $(addsuffix /'+ReqName+'/Makefile,$(PACKAGESDIR)) $(addsuffix /'+ReqName+'/Makefile,$(REQUIRE_PACKAGESDIR))');
+        Verbose(FPCMakeDebug,'Package "'+ReqName+'": Looking for Makefile+fpmake: "'+s+'"');
+        s:=SubstVariables('$(firstword $(wildcard '+s+'))');
+        if FileExists(s) then
+         exit;
         Raise Exception.Create(Format(s_package_not_found,[OSStr[t],Reqname]));
       end;
 
@@ -1002,8 +1088,12 @@ implementation
              { give better error what is wrong }
              if not PathExists(s) then
               Raise Exception.Create(Format(s_directory_not_found,[s]))
+             // packages may no longer have 'Makefile.fpc', but they will have a Makefile.
+             // for such cases, the top Makefile.fpc must simply specify all dependencies recursively.
+             else if not FileExists(s+'/Makefile') then
+               Raise Exception.Create(Format(s_makefilefpc_not_found,[s]))
              else
-              Raise Exception.Create(Format(s_makefilefpc_not_found,[s]));
+              exit;
            end;
           { Process Makefile.fpc }
           ReqFPCMake:=TFPCMake.Create(currdir+subdir+'/Makefile.fpc');
@@ -1099,8 +1189,8 @@ implementation
            SetVariable('require_packages',s,false);
          end;
         { Load recursively all required packages starting with this Makefile.fpc }
-        for c:=low(TCpu) to high(TCpu) do
-          for t:=low(Tos) to high(Tos) do
+        for c:=succ(low(TCpu)) to high(TCpu) do
+          for t:=succ(low(Tos)) to high(Tos) do
             if FIncludeTargets[c,t] then
               LoadRequires(c,t,self);
       end;
@@ -1168,14 +1258,14 @@ implementation
            exit;
          end;
         { for LLVM compiler support, and dwarf eh }
-        for c:=low(tcpu) to high(tcpu) do
-          if FIncludeTargets[c,o_linux] then
+        for c:=succ(low(tcpu)) to high(tcpu) do
+          if FIncludeTargets[c,linux] then
             begin
               Result:=true;
               exit;
             end;
-        for c:=low(tcpu) to high(tcpu) do
-          for t:=low(tos) to high(tos) do
+        for c:=succ(low(tcpu)) to high(tcpu) do
+          for t:=succ(low(tos)) to high(tos) do
             if FIncludeTargets[c,t] then
               begin
                 for i:=0 to RequireList[c,t].Count-1 do
@@ -1232,7 +1322,7 @@ implementation
          begin
 {$ifdef UNIX}
 {$ifndef NO_UNIX_UNIT}
-           cpu := low(TCpu);
+           cpu := succ(low(TCpu));
            while(cpuStr[cpu] <> {$I %FPCTARGETCPU%}) do begin
              Inc(cpu);
              if cpu > high(TCpu) then
@@ -1532,7 +1622,7 @@ implementation
          end
         else
          Result:=Variables[IniVar];
-        { Substition asked ? }
+        { Substitution asked ? }
         if dosubst then
          Result:=SubstVariables(Result);
       end;
@@ -1540,6 +1630,7 @@ implementation
 
     function TFPCMake.GetTargetVariable(c:TCPU;t:TOS;const inivar:string;dosubst:boolean):string;
       begin
+
         result:=Trim(GetVariable(inivar,dosubst)+' '+
                      GetVariable(inivar+cpusuffix[c],dosubst)+' '+
                      GetVariable(inivar+OSSuffix[t],dosubst)+' '+
@@ -1560,8 +1651,8 @@ implementation
         t:TOS;
       begin
         result:=false;
-        for c:=low(tcpu) to high(tcpu) do
-          for t:=low(tos) to high(tos) do
+        for c:=succ(low(tcpu)) to high(tcpu) do
+          for t:=succ(low(tos)) to high(tos) do
            if FIncludeTargets[c,t] then
              begin
                if (GetVariable(inivar,false)<>'') or
@@ -1672,4 +1763,8 @@ implementation
         GetSec:=FSections.Search(AName);
       end;
 
+{$ifdef TEST_FPMKUNIT}
+begin
+  OSCpuPossible := TOSCpuPossible(fpmkunit.OSCPUSupported);
+{$endif}
 end.

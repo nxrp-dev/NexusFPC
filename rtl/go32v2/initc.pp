@@ -15,7 +15,9 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit InitC;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
@@ -24,8 +26,13 @@ implementation
   { we need to include dpmiexcp unit
     to avoid getting troubles with _exit found both
     in libc and in v2prt0.as PM }
+{$IFDEF FPC_DOTTEDUNITS}
+  uses
+    DOSApi.dpmiexcp;
+{$ELSE FPC_DOTTEDUNITS}
   uses
     dpmiexcp;
+{$ENDIF FPC_DOTTEDUNITS}
 
   type
      simple_proc = procedure;
@@ -84,7 +91,7 @@ begin
    run_c_constructors;
    If cardinal(@first_dtor)<>cardinal(@last_dtor) then
      begin
-        { can exitproc be allready non nil here ?
+        { can exitproc be already non nil here ?
           you have to make really weird things to achieve
           that be lets suppose it is possible !! (PM) }
         save_exit:=exitproc;

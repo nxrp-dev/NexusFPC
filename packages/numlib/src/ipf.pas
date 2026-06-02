@@ -26,12 +26,18 @@
 
 {
  }
+{$IFNDEF FPC_DOTTEDUNITS}
 unit ipf;
+{$ENDIF FPC_DOTTEDUNITS}
 {$modeswitch exceptions}
 {$I direct.inc}
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses NumLib.Typ, NumLib.Mdt, NumLib.Dsl, NumLib.Sle, NumLib.Spe;
+{$ELSE FPC_DOTTEDUNITS}
 uses typ, mdt, dsl, sle, spe;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   THermiteSplineType = (
@@ -56,7 +62,7 @@ function  ipfspn(n: ArbInt; var x, y, d2s: ArbFloat; t: ArbFloat;
 
 {Calculate minimum and maximum values for the n.c. spline d2s.
 Does NOT take source points into account.}
-procedure ipfsmm(n: ArbInt; var x, y, d2s, minv, maxv: ArbFloat; 
+procedure ipfsmm(n: ArbInt; var x, y, d2s, minv, maxv: ArbFloat;
         var term: ArbInt);
 
 {Calculates tangents for each data point (d1s), for a given array of input data
@@ -524,7 +530,7 @@ begin
         end; {i}
       pa^[j+1]:=fpn/ppn
     end; {j}
-    freemem(pn); freemem(pn1);  
+    freemem(pn); freemem(pn1);
 end; {ortcoe}
 
 procedure polcoe(n:ArbInt; var alfa, beta, a, b: ArbFloat);

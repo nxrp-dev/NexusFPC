@@ -43,7 +43,9 @@
 // $Id: JwaAuthz.pas,v 1.13 2007/09/06 14:57:11 marquardt Exp $
 
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaAuthz;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -57,8 +59,13 @@ unit JwaAuthz;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Winnt, WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaWinNT, JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$ENDIF JWA_OMIT_SECTIONS}
 
@@ -407,7 +414,7 @@ typedef struct _AUTHZ_SOURCE_SCHEMA_REGISTRATION
 #define AUTHZ_FLAG_ALLOW_MULTIPLE_SOURCE_INSTANCES 0x1
 
 AUTHZAPI
-BOOL 
+BOOL
 WINAPI
 AuthzInstallSecurityEventSource(
     IN DWORD                             dwFlags,
@@ -431,7 +438,7 @@ AuthzEnumerateSecurityEventSources(
     OUT    PDWORD                            pdwCount,
     IN OUT PDWORD                            pdwLength
     );
-    
+
 AUTHZAPI
 BOOL
 WINAPI
@@ -440,7 +447,7 @@ AuthzRegisterSecurityEventSource(
     IN  PCWSTR                                szEventSourceName,
     OUT PAUTHZ_SECURITY_EVENT_PROVIDER_HANDLE phEventProvider
     );
-    
+
 AUTHZAPI
 BOOL
 WINAPI
@@ -458,7 +465,7 @@ AuthzReportSecurityEvent(
     IN     DWORD                                dwAuditId,
     IN     PSID                                 pUserSid        OPTIONAL,
     IN     DWORD                                dwCount,
-    ...    
+    ...
     );
 
 AUTHZAPI

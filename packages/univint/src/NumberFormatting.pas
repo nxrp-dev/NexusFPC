@@ -1,15 +1,15 @@
 {
      File:       CarbonCore/NumberFormatting.h
- 
-     Contains:   Utilites for formatting numbers
- 
+
+     Contains:   Utilities for formatting numbers
+
      Copyright:  © 1996-2012 by Apple Inc., all rights reserved.
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 {
     Modified for use with Free Pascal
@@ -25,7 +25,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit NumberFormatting;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -210,7 +212,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.ConditionalMacros,MacOsApi.IntlResources;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,ConditionalMacros,IntlResources;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -222,16 +228,16 @@ uses MacTypes,ConditionalMacros,IntlResources;
 
     Here are the current System 7 routine names and the translations to the older forms.
     Please use the newer forms in all new code and migrate the older names out of existing
-    code as maintainance permits.
-    
+    code as maintenance permits.
+
     New Name                    Old Name(s)
-    
+
     ExtendedToString            FormatX2Str
     FormatRecToString           Format2Str
-    NumToString             
+    NumToString
     StringToExtended            FormatStr2X
     StringToFormatRec           Str2Format
-    StringToNum             
+    StringToNum
 
 }
 
@@ -240,7 +246,7 @@ type
 	NumFormatString = packed record
 		fLength: UInt8;
 		fVersion: UInt8;
-		data: packed array [0..253] of char;              { private data }
+		data: packed array [0..253] of AnsiChar;              { private data }
 	end;
 type
 	NumFormatStringRec = NumFormatString;
@@ -285,14 +291,14 @@ type
 {$ifc not TARGET_CPU_64}
 {
  *  StringToNum()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    use CFStringGetIntValue instead.
- *  
+ *
  *  Discussion:
  *    This function is no longer recommended. Please use
  *    CFStringGetIntValue instead.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -304,14 +310,14 @@ procedure StringToNum( const (*var*) theString: Str255; var theNum: SIGNEDLONG )
 
 {
  *  NumToString()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    use CFStringCreateWithFormat instead.
- *  
+ *
  *  Discussion:
  *    This function is no longer recommended. Please use
  *    CFStringCreateWithFormat instead.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -326,14 +332,14 @@ procedure NumToString( theNum: SIGNEDLONG; var theString: Str255 ); external nam
 {$ifc not TARGET_CPU_64}
 {
  *  ExtendedToString()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    use CFNumberFormatterCreateStringWithNumber instead.
- *  
+ *
  *  Discussion:
  *    This function is no longer recommended. Please use
  *    CFNumberFormatterCreateStringWithNumber instead.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -345,14 +351,14 @@ function ExtendedToString( const (*var*) x: extended80; const (*var*) myCanonica
 
 {
  *  StringToExtended()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    use CFNumberFormatterCreateNumberFromString instead.
- *  
+ *
  *  Discussion:
  *    This function is no longer recommended. Please use
  *    CFNumberFormatterCreateNumberFromString instead.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -364,14 +370,14 @@ function StringToExtended( const (*var*) source: Str255; const (*var*) myCanonic
 
 {
  *  StringToFormatRec()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    use CFNumberFormatterSetFormat instead.
- *  
+ *
  *  Discussion:
  *    This function is no longer recommended. Please use
  *    CFNumberFormatterSetFormat instead.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -383,14 +389,14 @@ function StringToFormatRec( const (*var*) inString: Str255; const (*var*) partsT
 
 {
  *  FormatRecToString()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    use CFNumberFormatterSetFormat instead.
- *  
+ *
  *  Discussion:
  *    This function is no longer recommended. Please use
  *    CFNumberFormatterSetFormat instead.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later

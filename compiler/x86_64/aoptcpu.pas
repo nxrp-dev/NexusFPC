@@ -41,6 +41,7 @@ implementation
 
 uses
   globals,
+  globtype,
   aasmcpu;
 
     function TCpuAsmOptimizer.PrePeepHoleOptsCpu(var p : tai) : boolean;
@@ -93,14 +94,23 @@ uses
                   Result:=OptPass1ADD(p);
                 A_AND:
                   Result:=OptPass1AND(p);
+                A_CMOVcc:
+                  Result:=OptPass1CMOVcc(p);
                 A_IMUL:
                   Result:=OptPass1Imul(p);
                 A_MOV:
                   Result:=OptPass1MOV(p);
+                A_MOVD,
+                A_MOVQ,
+                A_VMOVD,
+                A_VMOVQ:
+                  Result:=OptPass1MOVD(p);
                 A_MOVSX,
                 A_MOVSXD,
                 A_MOVZX:
                   Result:=OptPass1Movx(p);
+                A_NOT:
+                  Result:=OptPass1NOT(p);
                 A_MOVDQA,
                 A_MOVAPD,
                 A_MOVAPS,
@@ -177,6 +187,9 @@ uses
                 A_VCVTSS2SD,
                 A_CVTSS2SD:
                   Result:=OptPass1_V_Cvtss2sd(p);
+                A_CLC,
+                A_STC:
+                  Result:=OptPass1STCCLC(p);
                 else
                   ;
               end;
@@ -193,9 +206,15 @@ uses
             if not Result then
               begin
                 if (p.typ in SkipInstr) then
-                  UpdateUsedRegs(p);
-
-                p := tai(p.Next);
+                  begin
+                    UpdateUsedRegs(p);
+                    p := tai(p.Next);
+                  end
+                else
+                  begin
+                    p := tai(p.Next);
+                    UpdateUsedRegs(p);
+                  end;
                 Result := True;
               end;
           end;
@@ -225,8 +244,17 @@ uses
                   Result:=OptPass2SUB(p);
                 A_ADD:
                   Result:=OptPass2ADD(p);
+                A_CMOVcc:
+                  Result:=OptPass2CMOVcc(p);
                 A_SETcc:
                   result:=OptPass2SETcc(p);
+                A_CMP:
+                  Result:=OptPass2CMP(p);
+                A_TEST:
+                  Result:=OptPass2TEST(p);
+                A_CLC,
+                A_STC:
+                  Result:=OptPass2STCCLC(p);
                 else
                   ;
               end;
@@ -234,8 +262,9 @@ uses
           else
             ;
         end;
-        { If this flag is set, something was optimised ahead of p, so move
-          ahead by 1 instruction but treat as if Result was set to True }
+        { If this flag is set, force another run of pass 2 even if p wasn't
+          changed (-O3 only), but otherwise move p ahead by 1 instruction
+          and treat as if Result was set to True }
         if aoc_ForceNewIteration in OptsToCheck then
           begin
             Exclude(OptsToCheck, aoc_ForceNewIteration);
@@ -243,9 +272,15 @@ uses
             if not Result then
               begin
                 if (p.typ in SkipInstr) then
-                  UpdateUsedRegs(p);
-
-                p := tai(p.Next);
+                  begin
+                    UpdateUsedRegs(p);
+                    p := tai(p.Next);
+                  end
+                else
+                  begin
+                    p := tai(p.Next);
+                    UpdateUsedRegs(p);
+                  end;
                 Result := True;
               end;
           end;
@@ -286,8 +321,16 @@ uses
                 A_ADD,
                 A_SUB:
                   Result:=PostPeepholeOptADDSUB(p);
+                A_RET:
+                  Result:=PostPeepholeOptRET(p);
                 A_VPXOR:
                   Result:=PostPeepholeOptVPXOR(p);
+                A_SARX,
+                A_SHLX,
+                A_SHRX:
+                  Result:=PostPeepholeOptSARXSHLXSHRX(p);
+                A_RORX:
+                  Result:=PostPeepholeOptRORX(p);
                 else
                   ;
               end;

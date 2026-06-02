@@ -1,7 +1,9 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit sdl_image;
+{$ENDIF FPC_DOTTEDUNITS}
 {
   $Id: sdl_image.pas,v 1.14 2007/05/29 21:31:13 savage Exp $
-  
+
 }
 {******************************************************************************}
 {                                                                              }
@@ -56,13 +58,13 @@ unit sdl_image;
 {                                                                              }
 { Programming Notes                                                            }
 { -----------------                                                            }
-{   See the Aliens Demo on how to make use of this libaray                     }
+{   See the Aliens Demo on how to make use of this library                     }
 {                                                                              }
 { Revision History                                                             }
 { ----------------                                                             }
 {   April    02 2001 - MT : Initial Translation                                }
 {                                                                              }
-{   May      08 2001 - DL : Added ExternalSym derectives and copyright header  }
+{   May      08 2001 - DL : Added ExternalSym directives and copyright header  }
 {                                                                              }
 {   April   03 2003 - DL : Added jedi-sdl.inc include file to support more     }
 {                          Pascal compilers. Initial support is now included   }
@@ -126,13 +128,23 @@ unit sdl_image;
   version 1 of sdl_image, sdl_mixer and smpeg.
 
 
-}  
+}
 {******************************************************************************}
 
 {$I jedi-sdl.inc}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+{$IFDEF __GPC__}
+  gpc,
+{$ENDIF}
+{$IFDEF MORPHOS}
+  Amiga.Core.Exec,
+{$ENDIF}
+  Api.Sdl;
+{$ELSE FPC_DOTTEDUNITS}
 uses
 {$IFDEF __GPC__}
   gpc,
@@ -141,6 +153,7 @@ uses
   exec,
 {$ENDIF}
   sdl;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
 {$IFDEF WINDOWS}
@@ -199,11 +212,11 @@ external {$IFDEF __GPC__}name 'IMG_Linked_Version'{$ELSE} SDL_ImageLibName{$ENDI
    surface afterwards by calling:
         SDL_SetColorKey(image, SDL_RLEACCEL, image.format.colorkey);
 }
-function IMG_LoadTyped_RW(src: PSDL_RWops; freesrc: Integer; _type: PChar): PSDL_Surface;
+function IMG_LoadTyped_RW(src: PSDL_RWops; freesrc: Integer; _type: PAnsiChar): PSDL_Surface;
 cdecl; external {$IFDEF __GPC__}name 'IMG_LoadTyped_RW'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
 {$EXTERNALSYM IMG_LoadTyped_RW}
 { Convenience functions }
-function IMG_Load(const _file: PChar): PSDL_Surface;
+function IMG_Load(const _file: PAnsiChar): PSDL_Surface;
 cdecl; external {$IFDEF __GPC__}name 'IMG_Load'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
 {$EXTERNALSYM IMG_Load}
 function IMG_Load_RW(src: PSDL_RWops; freesrc: Integer): PSDL_Surface;
@@ -311,7 +324,7 @@ function IMG_LoadXV_RW(src: PSDL_RWops): PSDL_Surface;
 cdecl; external {$IFDEF __GPC__}name 'IMG_LoadXV_RW'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
 {$EXTERNALSYM IMG_LoadXV_RW}
 
-function IMG_ReadXPMFromArray( xpm : PPChar ): PSDL_Surface;
+function IMG_ReadXPMFromArray( xpm : PPAnsiChar ): PSDL_Surface;
 cdecl; external {$IFDEF __GPC__}name 'IMG_ReadXPMFromArray'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
 {$EXTERNALSYM IMG_ReadXPMFromArray}
 
@@ -319,15 +332,15 @@ cdecl; external {$IFDEF __GPC__}name 'IMG_ReadXPMFromArray'{$ELSE} SDL_ImageLibN
 
 
 { used internally, NOT an exported function }
-//function IMG_string_equals( const str1 : PChar; const str2 : PChar ) : integer;
+//function IMG_string_equals( const str1 : PAnsiChar; const str2 : PAnsiChar ) : integer;
 //cdecl; external {$IFDEF __GPC__}name 'IMG_string_equals'{$ELSE} SDL_ImageLibName{$ENDIF __GPC__};
 //{ $ EXTERNALSYM IMG_string_equals}
 
 { Error Macros }
 { We'll use SDL for reporting errors }
-procedure IMG_SetError( fmt : PChar );
+procedure IMG_SetError( fmt : PAnsiChar );
 
-function IMG_GetError : PChar;
+function IMG_GetError : PAnsiChar;
 
 implementation
 
@@ -342,12 +355,12 @@ begin
   X.patch := SDL_IMAGE_PATCHLEVEL;
 end;
 
-procedure IMG_SetError( fmt : PChar );
+procedure IMG_SetError( fmt : PAnsiChar );
 begin
   SDL_SetError( fmt );
 end;
 
-function IMG_GetError : PChar;
+function IMG_GetError : PAnsiChar;
 begin
   result := SDL_GetError;
 end;

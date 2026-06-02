@@ -52,19 +52,26 @@ SOFTWARE.
 
         Pascal Convertion was made by Ido Kannner - kanerido@actcom.net.il
 
-Histroy:
+History:
         2004/10/15 - Fixed a bug of accessing second based records by removing "paced record" and chnaged it to
-                     "reocrd" only.
+                     "record" only.
         2004/10/07 - Removed the "uses X;" line. The unit does not need it.
         2004/10/03 - Conversion from C header to Pascal unit.
 }
 {$PACKRECORDS C} {$MACRO ON} {$DEFINE MACROS}
 {$MODE OBJFPC}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit xi;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.CTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   ctypes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
         sz_xGetExtensionVersionReq           =  8;

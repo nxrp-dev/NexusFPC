@@ -1,4 +1,20 @@
+{ **********************************************************************
+  This file is part of the Free Component Library
+
+  PDF names/constants.
+  Copyright (c) 2022 by Michael Van Canneyt michael@freepascal.org
+
+  See the file COPYING.FPC, included in this distribution,
+  for details about the copyright.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fppdfconsts;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode ObjFPC}{$H+}
 
@@ -222,32 +238,33 @@ const
   SCMAPKeyWMode          = 'WMode';
   SCMAPKeyUseCMap        = 'UseCMap';
 
-  SPDFExtGSStateType  = 'Type';
-  SPDFExtGSStateLW    = 'LW';
-  SPDFExtGSStateLC    = 'LC';
-  SPDFExtGSStateLJ    = 'LJ';
-  SPDFExtGSStateML    = 'ML';
-  SPDFExtGSStateD     = 'D';
-  SPDFExtGSStateRI    = 'RI';
-  SPDFExtGSStateop    = 'op';
-  SPDFExtGSStateOPM   = 'OPM';
-  SPDFExtGSStateFont  = 'Font';
-  SPDFExtGSStateBG    = 'BG';
-  SPDFExtGSStateBG2   = 'BG2';
-  SPDFExtGSStateUCR   = 'UCR';
-  SPDFExtGSStateUCR2  = 'UCR2';
-  SPDFExtGSStateTR    = 'TR';
-  SPDFExtGSStateTR2   = 'TR2';
-  SPDFExtGSStateHT    = 'HT';
-  SPDFExtGSStateFL    = 'FL';
-  SPDFExtGSStateSM    = 'SM';
-  SPDFExtGSStateSA    = 'SA';
-  SPDFExtGSStateBM    = 'BM';
-  SPDFExtGSStateSMask = 'SMask';
-  SPDFExtGSStateCA    = 'CA';
-  SPDFExtGSStateca_   = 'ca';
-  SPDFExtGSStateAIS   = 'AIS';
-  SPDFExtGSStateTK    = 'TK';
+  SPDFExtGStateKeyType  = 'Type';
+  SPDFExtGStateKeyLW    = 'LW';
+  SPDFExtGStateKeyLC    = 'LC';
+  SPDFExtGStateKeyLJ    = 'LJ';
+  SPDFExtGStateKeyML    = 'ML';
+  SPDFExtGStateKeyD     = 'D';
+  SPDFExtGStateKeyRI    = 'RI';
+  SPDFExtGStateKeyOP_U  = 'OP';
+  SPDFExtGStateKeyop_l  = 'op';
+  SPDFExtGStateKeyOPM   = 'OPM';
+  SPDFExtGStateKeyFont  = 'Font';
+  SPDFExtGStateKeyBG    = 'BG';
+  SPDFExtGStateKeyBG2   = 'BG2';
+  SPDFExtGStateKeyUCR   = 'UCR';
+  SPDFExtGStateKeyUCR2  = 'UCR2';
+  SPDFExtGStateKeyTR    = 'TR';
+  SPDFExtGStateKeyTR2   = 'TR2';
+  SPDFExtGStateKeyHT    = 'HT';
+  SPDFExtGStateKeyFL    = 'FL';
+  SPDFExtGStateKeySM    = 'SM';
+  SPDFExtGStateKeySA    = 'SA';
+  SPDFExtGStateKeyBM    = 'BM';
+  SPDFExtGStateKeySMask = 'SMask';
+  SPDFExtGStateKeyCA_U  = 'CA';
+  SPDFExtGStateKeyca_l  = 'ca';
+  SPDFExtGStateKeyAIS   = 'AIS';
+  SPDFExtGStateKeyTK    = 'TK';
 
 
   // CJK Cmaps

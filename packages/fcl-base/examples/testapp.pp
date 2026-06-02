@@ -23,7 +23,7 @@ Var
   Opts,FN,Args : TStrings;
 
 begin
-  CaseSensitiveOptions:=not HasOption('i','insensitive'); 
+  CaseSensitiveOptions:=not HasOption('i','insensitive');
   Writeln('Exe name            : ',ExeName);
   Writeln('Help file           : ',HelpFile);
   Writeln('Terminated          : ',Terminated);
@@ -33,7 +33,7 @@ begin
   Writeln('ParamCount          : ',ParamCount);
   For I:=0 to ParamCount do
     Writeln('Params [',I:3,']        : ',Params[i]);
-  Writeln('Option char         : ',OptionChar);
+  Writeln('Option AnsiChar         : ',OptionChar);
   Writeln('Case sensitive opts : ',CaseSensitiveOptions);
   Writeln('StopOnException     : ',StopOnException);
   Writeln('----------------------------------------');

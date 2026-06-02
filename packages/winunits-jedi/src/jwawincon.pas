@@ -43,7 +43,9 @@
 // $Id: JwaWinCon.pas,v 1.12 2007/09/05 11:58:53 dezipaitor Exp $
 
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaWinCon;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 
@@ -60,8 +62,13 @@ unit JwaWinCon;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Winbase, WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaWinBase, JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$ENDIF JWA_OMIT_SECTIONS}
 
@@ -97,7 +104,7 @@ type
   TCharUnion = record
     case Integer of
       0: (UnicodeChar: WCHAR);
-      1: (AsciiChar: CHAR);
+      1: (AsciiChar: AnsiChar);
   end;
 
   PKEY_EVENT_RECORD = ^KEY_EVENT_RECORD;
@@ -255,7 +262,7 @@ const
   KEY_EVENT                = $0001; // Event contains key event record
   {$EXTERNALSYM KEY_EVENT}
   MOUSE_EVENT_             = $0002; // Event contains mouse event record
-  
+
   WINDOW_BUFFER_SIZE_EVENT = $0004; // Event contains window change event record
   {$EXTERNALSYM WINDOW_BUFFER_SIZE_EVENT}
   MENU_EVENT               = $0008; // Event contains menu event record
@@ -366,7 +373,7 @@ type
   PCONSOLE_SELECTION_INFO = ^CONSOLE_SELECTION_INFO;
   {$EXTERNALSYM PCONSOLE_SELECTION_INFO}
   TConsoleSelectionInfo = CONSOLE_SELECTION_INFO;
-  PConsoleSelectionInfo = PCONSOLE_SELECTION_INFO;  
+  PConsoleSelectionInfo = PCONSOLE_SELECTION_INFO;
 
 //
 // Selection flags
@@ -523,7 +530,7 @@ function WriteConsoleOutputAttribute(hConsoleOutput: HANDLE; lpAttribute: PWORD;
   nLength: DWORD; dwWriteCoord: COORD; var lpNumberOfAttrsWritten: DWORD): BOOL; stdcall;
 {$EXTERNALSYM WriteConsoleOutputAttribute}
 
-function FillConsoleOutputCharacterA(hConsoleOutput: HANDLE; cCharacter: CHAR;
+function FillConsoleOutputCharacterA(hConsoleOutput: HANDLE; cCharacter: AnsiChar;
   nLength: DWORD; dwWriteCoord: COORD; var lpNumberOfCharsWritten: DWORD): BOOL; stdcall;
 {$EXTERNALSYM FillConsoleOutputCharacterA}
 function FillConsoleOutputCharacterW(hConsoleOutput: HANDLE; cCharacter: WCHAR;

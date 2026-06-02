@@ -22,8 +22,13 @@ interface
 {$modeswitch objectivec1}
 {$packrecords c}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 uses
   ctypes;
+{$ELSE}
+uses
+  System.CTypes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   NSString = objcclass external;
@@ -213,7 +218,7 @@ type
     function methodSignatureForSelector(aSelector: SEL): NSMethodSignature; message 'methodSignatureForSelector:';
     function methodSignatureForSelector_(aSelector: SEL): NSMethodSignature; message 'methodSignatureForSelector:';
 
-    // can't be classDescription, becaue there's a method in another
+    // can't be classDescription, because there's a method in another
     // class that's also called classDescription
     class function _classDescription: NSString; message 'description';
 
@@ -238,13 +243,13 @@ type
   NSMutableCopyingProtocol = objcprotocol external name 'NSMutableCopying'
     function mutableCopyWithZone(zone_: NSZonePtr): id; message 'mutableCopyWithZone:';
   end;
-  
+
 { NSCoding Protocol }
   NSCodingProtocol = objcprotocol external name 'NSCoding'
     procedure encodeWithCoder(aCoder: NSCoder); message 'encodeWithCoder:';
     function initWithCoder(aDecoder: NSCoder): id; message 'initWithCoder:';
   end;
-  
+
 { NSDiscardableContent Protocol }
   NSDiscardableContentProtocol = objcprotocol external name 'NSDiscardableContent'
     function beginContentAccess: ObjCBOOL; message 'beginContentAccess';

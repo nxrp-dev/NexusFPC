@@ -12,7 +12,9 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit extinterpolation;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {
 Some more interpolation filters for TFPCanvas.StretchDraw:
@@ -25,8 +27,13 @@ of Bessel and Sinc are windowed with Blackman filter.
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
 uses
-  Math, Classes, SysUtils, FPImage, FPCanvas;
+  System.Math, System.Classes, System.SysUtils, FpImage, FpImage.Canvas;
+{$ELSE FPC_DOTTEDUNITS}
+uses
+  Math, Classes, SysUtils, FpImage, FPCanvas;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
 
@@ -110,13 +117,14 @@ type
     function MaxSupport : double; override;
   end;
 
-  { TBilineairInterpolation }
+  { TBilinearInterpolation }
 
-  TBilineairInterpolation = class (TFPBaseInterpolation)
+  TBilinearInterpolation = class (TFPBaseInterpolation)
   protected
     function Filter (x : double) : double; override;
     function MaxSupport : double; override;
   end;
+  TBilineairInterpolation = TBilinearInterpolation deprecated 'Use TBilinearInterpolation';
 
   { THanningInterpolation }
 
@@ -252,8 +260,7 @@ begin
     else
       begin
       OneOverSqrt2 := 1.0 / sqrt(2.0);
-      sinx := sin(x);
-      cosx := cos(x);
+      SinCos(x,sinx,cosx);
       result := sqrt(2.0/(PI*x)) *
            ( P1(x)*(OneOverSqrt2*(sinx-cosx))
              - 8.0/x*Q1(x)*(-OneOverSqrt2*(sinx+cosx))
@@ -444,9 +451,9 @@ begin
   result := 1.0;
 end;
 
-{ TBilineairInterpolation }
+{ TBilinearInterpolation }
 
-function TBilineairInterpolation.Filter(x: double): double;
+function TBilinearInterpolation.Filter(x: double): double;
 begin
   if x < -1.0 then
     result := 0.0
@@ -458,7 +465,7 @@ begin
     result := 0.0;
 end;
 
-function TBilineairInterpolation.MaxSupport: double;
+function TBilinearInterpolation.MaxSupport: double;
 begin
   result := 1.0;
 end;

@@ -75,6 +75,7 @@ interface
         FOutput : TStringList;
         FPhony  : string;
         FHasSection : array[tsections] of boolean;
+        FSkipPackageInfo: Boolean;
         procedure LoadFPCMakeIni;
         procedure AddIniSection(const s:string);
         procedure AddCustomSection(const s:string);
@@ -96,6 +97,7 @@ interface
         constructor Create(AFPCMake:TFPCMake;const AFileName:string);
         destructor  Destroy;override;
         procedure WriteGenericMakefile;
+        property SkipPackageInfo : Boolean Read FSkipPackageInfo Write FSkipPackageInfo;
       end;
 
 
@@ -283,8 +285,8 @@ implementation
         T : TOs;
         C : TCpu;
       begin
-        for c:=low(TCpu) to high(TCpu) do
-          for t:=low(TOS) to high(TOS) do
+        for c:=succ(low(TCpu)) to high(TCpu) do
+          for t:=succ(low(TOS)) to high(TOS) do
             if FInput.IncludeTargets[c,t] then
               begin
                 s:=FInput.GetTargetVariable(c,t,IniVar,false);
@@ -340,8 +342,8 @@ implementation
         C : TCpu;
       begin
         result:='';
-        for c:=low(TCpu) to high(TCpu) do
-          for t:=low(TOS) to high(TOS) do
+        for c:=succ(low(TCpu)) to high(TCpu) do
+          for t:=succ(low(TOS)) to high(TOS) do
             if FInput.IncludeTargets[c,t] then
               begin
                 s:=FInput.GetTargetVariable(c,t,IniVar,false);
@@ -367,10 +369,10 @@ implementation
               Add(varname+':=$(strip $(wildcard $(addsuffix /'+altexename+'$(SRCEXEEXT),$(SEARCHPATH))))');
             end;
            Add('ifeq ($('+varname+'),)');
-           Add(varname+'= __missing_command_'+varname); {This is to be shure make stops,
+           Add(varname+'= __missing_command_'+varname); {This is to be sure make stops,
               if the command is not found. Otherwise if the command was set to the
               empty string, options to the command would be interpreted as command,
-              and because options is preceeded by a "-", make will ignore the error
+              and because options is preceded by a "-", make will ignore the error
               that the command is not found.}
            Add('else');
            Add(varname+':=$(firstword $('+varname+'))');
@@ -536,6 +538,14 @@ implementation
           unitfpmakedirvar:='UNITDIR_FPMAKE_'+VarName(pack);
           { Search packagedir by looking for Makefile.fpc }
           FOutput.Add(packdirvar+':=$(firstword $(subst /Makefile.fpc,,$(strip $(wildcard $(addsuffix /'+pack+'/Makefile.fpc,$(PACKAGESDIR))))))');
+          { Packages may no longer have a Makefile.fpc . Check existence of Makefile + fpmake.pp to be sure }
+          FOutput.Add('ifeq ($('+packdirvar+'),)');
+          FOutput.Add(packdirvar+':=$(firstword $(subst /Makefile,,$(strip $(wildcard $(addsuffix /'+pack+'/Makefile,$(PACKAGESDIR))))))');
+          FOutput.Add('ifneq ($('+packdirvar+'),)');
+          FOutput.Add(packdirvar+':=$(firstword $(subst /fpmake.pp,,$(strip $(wildcard $(addsuffix /'+pack+'/fpmake.pp,$(PACKAGESDIR))))))');
+          FOutput.Add('endif');
+          FOutput.Add('endif');
+
           FOutput.Add('ifneq ($('+packdirvar+'),)');
           { Create unit dir, check if os dependent dir exists }
           FOutput.Add('ifneq ($(wildcard $('+packdirvar+')/units/$(TARGETSUFFIX)),)');
@@ -599,8 +609,8 @@ implementation
         prefix:='REQUIRE_PACKAGES_';
         reqs:='';
         { Add target defines }
-        for c:=low(tcpu) to high(tcpu) do
-          for t:=low(tos) to high(tos) do
+        for c:=succ(low(tcpu)) to high(tcpu) do
+          for t:=succ(low(tos)) to high(tos) do
             if FInput.IncludeTargets[c,t] then
               begin
                 sl:=FInput.GetTargetRequires(c,t);
@@ -653,8 +663,8 @@ implementation
         t : Tos;
       begin
         s:='';
-        for c:=low(tcpu) to high(tcpu) do
-         for t:=low(tos) to high(tos) do
+        for c:=succ(low(tcpu)) to high(tcpu) do
+         for t:=succ(low(tos)) to high(tos) do
           if FInput.IncludeTargets[c,t] then
            AddToken(s,CpuStr[c]+'-'+OSStr[t],' ');
         FOutput.Add('MAKEFILETARGETS='+s);
@@ -758,8 +768,9 @@ implementation
            AddIniSection('fpcdircheckenv');
            AddIniSection('fpcdirdetect');
            AddIniSection('fpmakefpcdetect');
-           { Package }
-           AddVariable('package_name');
+           { Package info }
+           if not SkipPackageInfo then
+             AddVariable('package_name');
            AddVariable('package_version');
            AddVariable('package_targets');
            { Directory of main package }
@@ -888,7 +899,7 @@ implementation
             AddStrings(TFPCMakeSection(FInput['rules']).List);
          end;
         { write to disk }
-        FInput.Verbose(FPCMakeInfo,'Writing Makefile');
+        FInput.Verbose(FPCMakeInfo,'Writing '+FFileName);
         Fixtab(FOutput);
         FOutput.SaveToFile(FFileName);
       end;

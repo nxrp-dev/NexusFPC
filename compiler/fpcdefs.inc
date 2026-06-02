@@ -1,9 +1,14 @@
 {$mode objfpc}
 {$asmmode default}
+{$modeswitch advancedrecords}
 {$H-}
 {$goto on}
 {$ifndef DISABLE_INLINE}
   {$inline on}
+  { Inline small functions, but not when EXTDEBUG is used }
+  {$ifndef EXTDEBUG}
+    {$define USEINLINE}
+  {$endif EXTDEBUG}
 {$endif}
 {$interfaces corba}
 
@@ -23,6 +28,10 @@
 { We don't want C operators to be used inside the compiler }
 {$COPERATORS OFF}
 
+{ We don't want assignments to typed consts. In such cases, an initialized var
+  should be used instead. }
+{$WRITEABLECONST OFF}
+
 { This define enables codepage-aware compiler messages handling. Turning it on
   forces code page conversion from the codepage, specified in the .msg file to
   CP_ACP, before printing the message to the console. Enable this for host
@@ -30,11 +39,6 @@
 {$if defined(win32) or defined(win64) or defined(unix)}
   {$define cpawaremessages}
 {$endif}
-
-{ Inline small functions, but not when EXTDEBUG is used }
-{$ifndef EXTDEBUG}
-  {$define USEINLINE}
-{$endif EXTDEBUG}
 
 {$ifdef DEBUG_ALL_OPT}
   { for aopt unit }
@@ -57,6 +61,8 @@
   { for optloop unit }
   {$define DEBUG_OPTFORLOOP}
   {$define DEBUG_OPTSTRENGTH}
+  { for opttail unit }
+  {$define DEBUG_OPTTAIL}
   { for optvirt unit }
   {$define DEBUG_DEVIRT}
 {$endif}
@@ -127,6 +133,7 @@
 {$ifdef x86_64}
   {$define x86}
   {$define cpuflags}
+  {$define cpu64bit}
   {$define cpu64bitalu}
   {$define cpu64bitaddr}
   {$define cpuextended}
@@ -139,6 +146,7 @@
   {$define SUPPORT_GET_FRAME}
   {$define cpucapabilities}
   {$define fpucapabilities}
+  {$define support_rodata}
 {$endif x86_64}
 
 {$ifdef sparc}
@@ -180,9 +188,12 @@
   {$define cpurefshaveindexreg}
   {$define SUPPORT_SAFECALL}
   {$define SUPPORT_GET_FRAME}
+  {$define CPU_BC_HAS_SIZE_LIMIT}
+  {$define support_rodata}
 {$endif powerpc}
 
 {$ifdef powerpc64}
+  {$define cpu64bit}
   {$define cpu64bitalu}
   {$define cpu64bitaddr}
   {$define cpuflags}
@@ -192,6 +203,7 @@
   {$define cpurefshaveindexreg}
   {$define cpuno32bitops}
   {$define SUPPORT_SAFECALL}
+  {$define CPU_BC_HAS_SIZE_LIMIT}
 {$endif powerpc64}
 
 {$ifdef arm}
@@ -208,6 +220,7 @@
   {$define fpucapabilities}
   {$define SUPPORT_SAFECALL}
   {$define SUPPORT_GET_FRAME}
+  {$define support_rodata}
   { default to armel }
   {$if not(defined(CPUARM)) and not(defined(CPUARMEB)) and not(defined(FPC_OARM)) and not(defined(FPC_ARMEB)) and not(defined(FPC_ARMHF))}
     {$define FPC_ARMEL}
@@ -281,7 +294,7 @@
   {$define mips64}
 {$endif mips64eb}
 
-{ Also accept mips64 for big endian 64-bit mips, but only if mips64 el is not eet }
+{ Also accept mips64 for big endian 64-bit mips, but only if mips64 el is not set }
 {$ifdef mips64}
   {$define mips}
   {$ifndef mips64el}
@@ -304,6 +317,7 @@
     {$define cpu64bitalu}
     {$define cpu64bitaddr}
   {$endif}
+  {$define cpufpemu}
   {$define cpuflags} { Flags are emulated }
   {$define cputargethasfixedstack}
   {$define cpurequiresproperalignment}
@@ -335,6 +349,7 @@
   {$define SUPPORT_SAFECALL}
   {$define cpucapabilities}
   {$define fpucapabilities}
+  {$define support_rodata}
 {$endif aarch64}
 
 {$ifdef riscv32}
@@ -342,6 +357,7 @@
   {$define cpu32bit}
   {$define cpu32bitaddr}
   {$define cpu32bitalu}
+  {$define cpurox}
   {$define cpufpemu}
   {$define cputargethasfixedstack}
   {$define cpuneedsmulhelper}
@@ -369,6 +385,7 @@
   {$define cpu64bit}
   {$define cpu64bitaddr}
   {$define cpu64bitalu}
+  {$define cpurox}
   {$define cpufpemu}
   {$define cputargethasfixedstack}
   {$define cpuneedsmulhelper}
@@ -376,6 +393,7 @@
   {$define cpucapabilities}
   {$define cpurequiresproperalignment}
   {$define SUPPORT_SAFECALL}
+  {$define support_rodata}
 {$endif riscv64}
 
 {$ifdef xtensa}
@@ -399,6 +417,7 @@
   {$define cputargethasfixedstack}
   {$define cpucapabilities}
   {$define SUPPORT_SAFECALL}
+  {$define support_rodata}
 {$endif loongarch64}
 
 { Stabs is not officially supported on 64 bit targets by gdb, except on Mac OS X

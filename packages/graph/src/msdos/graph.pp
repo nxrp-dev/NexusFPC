@@ -132,9 +132,9 @@ const
     ALL_PLANES      =   $0F      ; { All Bit Planes Selected         }
     CHAR_BITS       =   $0F      ; { Bits 0-3 of Character Data      }
 
-    GET_CHAR_PTR    =   $01130   ; { VGA BIOS Func: Get Char Set     }
-    ROM_8x8_Lo      =   $03      ; { ROM 8x8 Char Set Lo Pointer     }
-    ROM_8x8_Hi      =   $04      ; { ROM 8x8 Char Set Hi Pointer     }
+    GET_CHAR_PTR    =   $01130   ; { VGA BIOS Func: Get AnsiChar Set     }
+    ROM_8x8_Lo      =   $03      ; { ROM 8x8 AnsiChar Set Lo Pointer     }
+    ROM_8x8_Hi      =   $04      ; { ROM 8x8 AnsiChar Set Hi Pointer     }
 
     { Constants Specific for these routines                          }
 
@@ -565,7 +565,7 @@ var
 
 procedure SetCGAPalette(CGAPaletteID: Byte); assembler;
 asm
-  mov ax,CGAPaletteID
+  mov al,CGAPaletteID
   mov bl, al
   mov bh, 1
   mov ah, 0Bh
@@ -578,7 +578,7 @@ end;
 
 procedure SetCGABorder(CGABorder: Byte); assembler;
 asm
-  mov ax,CGABorder
+  mov al,CGABorder
   mov bl, al
   mov bh, 0
   mov ah, 0Bh
@@ -3845,7 +3845,7 @@ begin
   exitproc := @freeSaveStateBuffer;
   { windows screws up the display if the savestate/restore state  }
   { stuff is used (or uses an abnormal amount of cpu time after   }
-  { such a problem has exited), so detect its presense and do not }
+  { such a problem has exited), so detect its presence and do not }
   { use those functions if it's running. I'm really tired of      }
   { working around Windows bugs :( (JM)                           }
   regs.ax:=$160a;

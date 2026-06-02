@@ -19,7 +19,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CGContext;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -204,7 +206,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CFBase,MacOsApi.CGGeometry,MacOsApi.CGBase,MacOsApi.CFDictionary,MacOsApi.CGAffineTransforms,MacOsApi.CGColorSpace,MacOsApi.CGFont,MacOsApi.CGGradient,MacOsApi.CGImage,MacOsApi.CGPDFDocument,MacOsApi.CGPath,MacOsApi.CGColor,MacOsApi.CGShading,MacOsApi.CGPDFPage;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CFBase,CGGeometry,CGBase,CFDictionary,CGAffineTransforms,CGColorSpace,CGFont,CGGradient,CGImage,CGPDFDocument,CGPath,CGColor,CGShading,CGPDFPage;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 {$ALIGN POWER}
@@ -720,7 +726,7 @@ procedure CGContextSetStrokeColorSpace( context: CGContextRef; space: CGColorSpa
 {* Color functions. *}
 
 { Set the components of the current fill color in `context' to the values
-   specifed by `components'. The number of elements in `components' must be
+   specified by `components'. The number of elements in `components' must be
    one greater than the number of components in the current fill color space
    (N color components + 1 alpha component). The current fill color space
    must not be a pattern color space. }
@@ -729,7 +735,7 @@ procedure CGContextSetFillColor( context: CGContextRef; {const} components: {var
 (* CG_AVAILABLE_STARTING(__MAC_10_0, __IPHONE_2_0) *)
 
 { Set the components of the current stroke color in `context' to the values
-   specifed by `components'. The number of elements in `components' must be
+   specified by `components'. The number of elements in `components' must be
    one greater than the number of components in the current stroke color
    space (N color components + 1 alpha component). The current stroke color
    space must not be a pattern color space. }
@@ -740,7 +746,7 @@ procedure CGContextSetStrokeColor( context: CGContextRef; {const} components: {v
 {* Pattern functions. *}
 
 { Set the components of the current fill color in `context' to the values
-   specifed by `components', and set the current fill pattern to `pattern'.
+   specified by `components', and set the current fill pattern to `pattern'.
    The number of elements in `components' must be one greater than the
    number of components in the current fill color space (N color components
    + 1 alpha component). The current fill color space must be a pattern
@@ -750,7 +756,7 @@ procedure CGContextSetFillPattern( context: CGContextRef; pattern: CGPatternRef;
 (* CG_AVAILABLE_STARTING(__MAC_10_0, __IPHONE_2_0) *)
 
 { Set the components of the current stroke color in `context' to the values
-   specifed by `components', and set the current stroke pattern to
+   specified by `components', and set the current stroke pattern to
    `pattern'. The number of elements in `components' must be one greater
    than the number of components in the current stroke color space (N color
    components + 1 alpha component). The current stroke color space must be a
@@ -1024,7 +1030,7 @@ procedure CGContextSetShouldSmoothFonts( context: CGContextRef; shouldSmoothFont
    parameter is not part of the graphics state. Fonts will be smoothed if
    they are antialiased when drawn and if both `allowsFontSmoothing' and the
    graphics state parameter `shouldSmoothFonts' are true. }
- 
+
 procedure CGContextSetAllowsFontSmoothing( context: CGContextRef; allowsFontSmoothing: CBool ); external name '_CGContextSetAllowsFontSmoothing';
 (* CG_AVAILABLE_STARTING(__MAC_10_2, __IPHONE_2_0) *)
 
@@ -1092,12 +1098,12 @@ procedure CGContextBeginTransparencyLayer( context: CGContextRef; auxiliaryInfo:
 procedure CGContextBeginTransparencyLayerWithRect( context: CGContextRef; rect: CGRect; auxiliaryInfo: CFDictionaryRef ); external name '_CGContextBeginTransparencyLayerWithRect';
 (* CG_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_2_0) *)
 
-{ End a tranparency layer. }
+{ End a transparency layer. }
 
 procedure CGContextEndTransparencyLayer( context: CGContextRef ); external name '_CGContextEndTransparencyLayer';
 (* CG_AVAILABLE_STARTING(__MAC_10_3, __IPHONE_2_0) *)
 
-{* User space to device space tranformations. *}
+{* User space to device space transformations. *}
 
 { Return the affine transform mapping the user space (abstract coordinates)
    of `context' to device space (pixels). }

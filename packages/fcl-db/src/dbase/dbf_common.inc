@@ -20,7 +20,7 @@
 {.$define USE_CACHE}
 
 // define the following if you want support for 65535 length character
-// fields for all dbase files (and not only foxpro); if you define this, 
+// fields for all dbase files (and not only foxpro); if you define this,
 // you will not be able to read MS Excel generated .dbf files!
 
 {.$define USE_LONG_CHAR_FIELDS}
@@ -213,10 +213,12 @@
 //--- Conclude supported features in FreePascal      ---
 //------------------------------------------------------
 
-{$ifdef FPC_VERSION}
+{$ifdef FPC}
 
   {$mode delphi}
+{$ifndef unicodertl}
   {$h+}
+{$ENDIF}
 
 {$ifndef CPUI386}
   {$undef USE_ASSEMBLER_486_UP}

@@ -12,13 +12,19 @@
 **********************************************************************}
 {$mode objfpc}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit gstack;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.Stl.Vector;
+{$ELSE FPC_DOTTEDUNITS}
 uses gvector;
+{$ENDIF FPC_DOTTEDUNITS}
 
-type 
+type
   generic TStack<T>=class
     private
     type TContainer= specialize TVector<T>;

@@ -22,7 +22,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CTFont;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -207,7 +209,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CTFontDescriptor,MacOsApi.CTFontTraits,MacOsApi.ATSTypes,MacOsApi.CFBase,MacOsApi.CFArray,MacOsApi.CFCharacterSet,MacOsApi.CFData,MacOsApi.CFDictionary,MacOsApi.CFString,MacOsApi.CGBase,MacOsApi.CGAffineTransforms,MacOsApi.CGContext,MacOsApi.CGFont,MacOsApi.CGGeometry,MacOsApi.CGPath;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CTFontDescriptor,CTFontTraits,ATSTypes,CFBase,CFArray,CFCharacterSet,CFData,CFDictionary,CFString,CGBase,CGAffineTransforms,CGContext,CGFont,CGGeometry,CGPath;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -428,7 +434,7 @@ type
 
     @param      matrix
                 The transformation matrix for the font. If unspecified, the identity matrix will be used. Optional.
-                
+
     @param      options
                 Options flags.
 
@@ -1527,20 +1533,20 @@ procedure CTFontDrawGlyphs( font: CTFontRef; {const} glyphs: {variable-size-arra
                 will populate the caller's positions buffer with available positions if possible.
                 This function may not be able to produce positions if the font does not
                 have the appropriate data, in which case it will return 0.
- 
+
     @param      font
                 The font reference.
-    
+
     @param      glyph
                 The glyph.
- 
+
     @param      positions
                 A buffer of at least maxPositions to receive the ligature caret positions for
                 the glyph.
- 
+
     @param      maxPositions
                 The maximum number of positions to return.
- 
+
     @result     Returns the number of caret positions for the specified glyph.
 }
 function CTFontGetLigatureCaretPositions( font: CTFontRef; glyph: CGGlyph; positions: {variable-size-array} CGFloatPtr; maxPositions: CFIndex ): CFIndex; external name '_CTFontGetLigatureCaretPositions';
@@ -1554,7 +1560,7 @@ function CTFontGetLigatureCaretPositions( font: CTFontRef; glyph: CGGlyph; posit
     @defined    kCTBaselineClassRoman
 
     @abstract   Key to reference the Roman baseline class.
- 
+
     @discussion This key can be used with a baseline info dictionary to offset to the Roman baseline as a CFNumberRef float. It can also be used as the value for kCTBaselineClassAttributeName.
 }
 var kCTBaselineClassRoman: CFStringRef; external name '_kCTBaselineClassRoman'; (* attribute const *)
@@ -1562,24 +1568,24 @@ var kCTBaselineClassRoman: CFStringRef; external name '_kCTBaselineClassRoman'; 
 
 {!
     @defined    kCTBaselineClassIdeographicCentered
- 
+
     @abstract   Key to reference the Ideographic Centered baseline class.
- 
+
     @discussion This key can be used with a baseline info dictionary to offset to the Ideographic Centered baseline as a CFNumberRef float. It can also be used as the value for kCTBaselineClassAttributeName.
 }
 var kCTBaselineClassIdeographicCentered: CFStringRef; external name '_kCTBaselineClassIdeographicCentered'; (* attribute const *)
 (* CT_AVAILABLE_STARTING( __MAC_10_8, __IPHONE_6_0) *)
-    
+
 {!
     @defined    kCTBaselineClassIdeographicLow
- 
+
     @abstract   Key to reference the Ideographic Low baseline class.
- 
+
     @discussion This key can be used with a baseline info dictionary to offset to the Ideographic Low baseline as a CFNumberRef float. It can also be used as the value for kCTBaselineClassAttributeName.
 }
 var kCTBaselineClassIdeographicLow: CFStringRef; external name '_kCTBaselineClassIdeographicLow'; (* attribute const *)
 (* CT_AVAILABLE_STARTING( __MAC_10_8, __IPHONE_6_0) *)
-    
+
 {!
     @defined    kCTBaselineClassIdeographicHigh
 
@@ -1592,9 +1598,9 @@ var kCTBaselineClassIdeographicHigh: CFStringRef; external name '_kCTBaselineCla
 
 {!
     @defined    kCTBaselineClassHanging
- 
+
     @abstract   Key to reference the Hanging baseline class.
- 
+
     @discussion This key can be used with a baseline info dictionary to offset to the Hanging baseline as a CFNumberRef float. It can also be used as the value for kCTBaselineClassAttributeName.
 }
 var kCTBaselineClassHanging: CFStringRef; external name '_kCTBaselineClassHanging'; (* attribute const *)
@@ -1612,9 +1618,9 @@ var kCTBaselineClassMath: CFStringRef; external name '_kCTBaselineClassMath'; (*
 
 {!
     @defined    kCTBaselineReferenceFont
- 
+
     @abstract   Key to reference a font for the reference baseline.
- 
+
     @discussion This key can be used to specify a font for the reference baseline. The value is a CTFontRef or the kCTBaselineOriginalFont constant.
 }
 var kCTBaselineReferenceFont: CFStringRef; external name '_kCTBaselineReferenceFont'; (* attribute const *)
@@ -1622,9 +1628,9 @@ var kCTBaselineReferenceFont: CFStringRef; external name '_kCTBaselineReferenceF
 
 {!
     @defined    kCTBaselineOriginalFont
-    
+
     @abstract   Use the original font for setting the reference baseline.
- 
+
     @discussion This constant can be used as the value for kCTBaselineReferenceFont to specify that the original font should be used for the reference baseline.
 }
 var kCTBaselineOriginalFont: CFStringRef; external name '_kCTBaselineOriginalFont'; (* attribute const *)
@@ -1636,7 +1642,7 @@ var kCTBaselineOriginalFont: CFStringRef; external name '_kCTBaselineOriginalFon
 
     @param      font
                 The font reference.
- 
+
     @param      languagePrefList
                 The language preference list - ordered array of CFStringRef's of ISO language codes.
 

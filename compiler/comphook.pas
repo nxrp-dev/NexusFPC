@@ -34,41 +34,18 @@ uses
   globtype,
   finput;
 
-Const
-  { Levels }
-  V_None         = $0;
-  V_Fatal        = $1;
-  V_Error        = $2;
-  V_Normal       = $4; { doesn't show a text like Error: }
-  V_Warning      = $8;
-  V_Note         = $10;
-  V_Hint         = $20;
-  V_LineInfoMask = $fff;
-  { From here by default no line info }
-  V_Info         = $1000;
-  V_Status       = $2000;
-  V_Used         = $4000;
-  V_Tried        = $8000;
-  V_Conditional  = $10000;
-  V_Debug        = $20000;
-  V_Executable   = $40000;
-  V_TimeStamps   = $80000;
-  V_LevelMask    = $fffffff;
-  V_All          = V_LevelMask;
-  V_Default      = V_Fatal + V_Error + V_Normal;
-  { Flags }
-  V_LineInfo     = $10000000;
-
-const
+var
   { RHIDE expect gcc like error output }
   fatalstr      : string[6] = 'Fatal:';
   errorstr      : string[6] = 'Error:';
   warningstr    : string[8] = 'Warning:';
   notestr       : string[5] = 'Note:';
   hintstr       : string[5] = 'Hint:';
+const
   warningerrorstr    : string[29] = 'Warning: (treated as error)';
   noteerrorstr       : string[27] = 'Note: (treated as error)';
   hinterrorstr       : string[27] = 'Hint: (treated as error)';
+
 type
   PCompilerStatus = ^TCompilerStatus;
   TCompilerStatus = record
@@ -80,7 +57,7 @@ type
     currentsource : string;   { filename }
     currentline,
     currentcolumn : longint;  { current line and column }
-    currentmodulestate : string[20];
+    currentmodulestate : string[32];
   { Total Status }
     compiledlines : longint;  { the number of lines which are compiled }
     errorcount,               { this field should never be increased directly,
@@ -134,6 +111,7 @@ var
 Function  def_status:boolean;
 Function  def_comment(Level:Longint;const s:ansistring):boolean;
 function  def_internalerror(i:longint):boolean;
+function  def_internalerrorEx(i:longint;const s:ansistring):boolean;
 function  def_CheckVerbosity(v:longint):boolean;
 procedure def_initsymbolinfo;
 procedure def_donesymbolinfo;
@@ -146,6 +124,7 @@ type
   tstatusfunction        = function:boolean;
   tcommentfunction       = function(Level:Longint;const s:ansistring):boolean;
   tinternalerrorfunction = function(i:longint):boolean;
+  tinternalerrorexfunction = function(i:longint; const s : ansistring):boolean;
   tcheckverbosityfunction = function(i:longint):boolean;
 
   tinitsymbolinfoproc = procedure;
@@ -154,10 +133,11 @@ type
   topeninputfilefunc = function(const filename: TPathStr): tinputfile;
   tgetnamedfiletimefunc = function(const filename: TPathStr): longint;
 
-const
+var
   do_status        : tstatusfunction  = @def_status;
   do_comment       : tcommentfunction = @def_comment;
-  do_internalerror : tinternalerrorfunction = @def_internalerror;
+  do_internalerror : tinternalerrorfunction = @def_internalerror deprecated 'use do_internalerrorex';
+  do_internalerrorex : tinternalerrorexfunction = @def_internalerrorex;
   do_checkverbosity : tcheckverbosityfunction = @def_checkverbosity;
 
   do_initsymbolinfo : tinitsymbolinfoproc = @def_initsymbolinfo;
@@ -207,7 +187,7 @@ begin
 end;
 
 type
-  TOutputColor = (oc_black,oc_red,oc_green,oc_orange,og_blue,oc_magenta,oc_cyan,oc_lightgray);
+  TOutputColor = (oc_black,oc_red,oc_green,oc_orange,oc_blue,oc_magenta,oc_cyan,oc_lightgray);
 
 procedure WriteColoredOutput(var t: Text;color: TOutputColor;const s : AnsiString);
   begin
@@ -222,7 +202,7 @@ procedure WriteColoredOutput(var t: Text;color: TOutputColor;const s : AnsiStrin
              write(t,#27'[1m'#27'[32m');
            oc_orange:
              write(t,#27'[1m'#27'[33m');
-           og_blue:
+           oc_blue:
              write(t,#27'[1m'#27'[34m');
            oc_magenta:
              write(t,#27'[1m'#27'[35m');
@@ -274,9 +254,10 @@ begin
         (status.currentline mod 100=0) then
        begin
          if status.currentline>0 then
-           Write(status.currentline,' ');
+           Write(status.currentmodule,':',status.currentline,' ');
          hstatus:=GetFPCHeapStatus;
          WriteLn(DStr(hstatus.CurrHeapUsed shr 10),'/',DStr(hstatus.CurrHeapSize shr 10),' Kb Used');
+         flush(output);
        end;
    end;
 {$ifdef macos}
@@ -334,8 +315,18 @@ begin
         MsgTypeStr:=errorstr;
       if (status.verbosity and Level)=V_Fatal then
         MsgTypeStr:=fatalstr;
-      if (status.verbosity and Level)=V_Used then
+      if (status.verbosity and V_Parallel)=V_Parallel then
+        begin
+          if (inputfilename<>'') and (status.currentmodule<>'') then
+            MsgTypeStr:=MsgTypeStr+'('+inputfilename+'/'+status.currentmodule+')'
+          else if (status.currentmodule<>'') then
+            MsgTypeStr:=MsgTypeStr+'('+status.currentmodule+')'
+          else if (inputfilename<>'') then
+            MsgTypeStr:=MsgTypeStr+'('+inputfilename+')';
+        end
+      else if (status.verbosity and Level)=V_Used then
         MsgTypeStr:=PadSpace('('+status.currentmodule+')',10);
+
     end
   else
     begin
@@ -410,7 +401,10 @@ begin
      else
        begin
          if status.use_redir then
-           writeln(status.redirfile,MsgTimeStr+MsgLocStr+MsgTypeStr+s)
+           begin
+           writeln(status.redirfile,MsgTimeStr+MsgLocStr+MsgTypeStr+s);
+           flush(status.redirfile);
+           end
          else
            begin
              write(MsgTimeStr+MsgLocStr);
@@ -430,13 +424,24 @@ end;
 
 function def_internalerror(i : longint) : boolean;
 begin
-  do_comment(V_Fatal+V_LineInfo,'Internal error '+tostr(i));
+  result:=def_internalerrorex(i,'');
+end;
+
+function def_internalerrorex(i : longint; const s : ansistring) : boolean;
+var
+  msg : ansistring;
+begin
+  msg:=S;
+  if msg<>'' then
+    msg:=': '+msg;
+  msg:='Internal error '+tostr(i)+msg;
+  do_comment(V_Fatal+V_LineInfo,msg);
 {$ifdef EXTDEBUG}
   { Internalerror() and def_internalerror() do not
     have a stackframe }
   dump_stack(stdout,get_caller_frame(get_frame));
 {$endif EXTDEBUG}
-  def_internalerror:=true;
+  def_internalerrorex:=true;
 end;
 
 function def_CheckVerbosity(v:longint):boolean;

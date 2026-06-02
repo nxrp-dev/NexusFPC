@@ -19,7 +19,7 @@
 {
  * @file apr_version.h
  * @brief APR Versioning Interface
- * 
+ *
  * APR's Version
  *
  * There are several different mechanisms for accessing the version. There
@@ -37,7 +37,7 @@
  }
 
 { The numeric compile-time version constants. These constants are the
- * authoritative version numbers for APR. 
+ * authoritative version numbers for APR.
  }
 
 const
@@ -108,8 +108,8 @@ const
 //#include "apr.h"
 
 {
- * The numeric version information is broken out into fields within this 
- * structure. 
+ * The numeric version information is broken out into fields within this
+ * structure.
  }
 type
   apr_version_t = record
@@ -132,7 +132,7 @@ procedure apr_version(pvsn: Papr_version_t);
  external LibAPR name LibNamePrefix + 'apr_version' + LibSuff4;
 
 { Return APR's version information as a string. }
-function apr_version_string: PChar;
+function apr_version_string: PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibAPR name LibNamePrefix + 'apr_version_string' + LibSuff0;
 

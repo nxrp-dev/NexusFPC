@@ -42,7 +42,9 @@
 
 // $Id: JwaWinWlx.pas,v 1.12 2007/09/05 11:58:54 dezipaitor Exp $
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaWinWlx;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -56,8 +58,13 @@ unit JwaWinWlx;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Wintype, WinApi.Jedi.Winuser, WinApi.Jedi.Winnt;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaWinType, JwaWinUser, JwaWinNT;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$ENDIF JWA_OMIT_SECTIONS}
 
@@ -445,7 +452,7 @@ type
     // Cleartext password of the user account.  If the OldPassword
     // field is non-null, then this field contains the new password
     // in a password change operation.  The string pointed to by
-    // this field must be separately allocated and will be seperately
+    // this field must be separately allocated and will be separately
     // deallocated by Winlogon.
     //
     pszPassword: PWSTR;
@@ -570,7 +577,7 @@ type
   PWLX_CLIENT_CREDENTIALS_INFO_V2_0 = ^WLX_CLIENT_CREDENTIALS_INFO_V2_0;
   {$EXTERNALSYM PWLX_CLIENT_CREDENTIALS_INFO_V2_0}
   TWlxClientCredentialsInfoV2_0 = WLX_CLIENT_CREDENTIALS_INFO_V2_0;
-  PWlxClientCredentialsInfoV2_0 = PWLX_CLIENT_CREDENTIALS_INFO_V2_0;  
+  PWlxClientCredentialsInfoV2_0 = PWLX_CLIENT_CREDENTIALS_INFO_V2_0;
 
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
@@ -645,7 +652,7 @@ type
   PWLX_CONSOLESWITCH_CREDENTIALS_INFO_V1_0 = ^WLX_CONSOLESWITCH_CREDENTIALS_INFO_V1_0;
   {$EXTERNALSYM PWLX_CONSOLESWITCH_CREDENTIALS_INFO_V1_0}
   TWlxConsoleSwitchCredentialsInfoV1_0 = WLX_CONSOLESWITCH_CREDENTIALS_INFO_V1_0;
-  PWlxConsoleSwitchCredentialsInfoV1_0 = PWLX_CONSOLESWITCH_CREDENTIALS_INFO_V1_0;  
+  PWlxConsoleSwitchCredentialsInfoV1_0 = PWLX_CONSOLESWITCH_CREDENTIALS_INFO_V1_0;
 
 ////////////////////////////////////////////////////////////////////////
 //                                                                    //

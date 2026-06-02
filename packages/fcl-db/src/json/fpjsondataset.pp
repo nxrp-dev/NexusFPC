@@ -1,6 +1,8 @@
 {$mode objfpc}
 {$h+}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fpjsondataset;
+{$ENDIF FPC_DOTTEDUNITS}
 {
     This file is part of the Free Pascal run time library.
     Copyright (c) 1999-2022 by Michael van Canney and other members of the
@@ -19,8 +21,13 @@ unit fpjsondataset;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  Data.Db, System.TypInfo, System.Classes, System.SysUtils, FpJson.Data;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   DB, typinfo, Classes, SysUtils, fpjson;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   TBaseJSONDataset = class;
@@ -222,7 +229,6 @@ type
     FEditRow : TJSONData;
     FRowType: TJSONRowType;
     FDeletedRows: TFPList;
-    procedure AddToRows(AValue: TJSONArray);
     procedure AppendToIndexes;
     procedure CreateIndexes;
     procedure SetMetaData(AValue: TJSONObject);
@@ -256,6 +262,7 @@ type
     procedure SetBookmarkFlag(Buffer: TRecordBuffer; Value: TBookmarkFlag); override;
     procedure SetBookmarkData(Buffer: TRecordBuffer; Data: Pointer); override;
     function GetRecordCount: Integer; override;
+    procedure AddToRows(AValue: TJSONArray);
     procedure SetRecNo(Value: Integer); override;
     function GetRecNo: Integer; override;
   Protected
@@ -347,10 +354,14 @@ type
   end;
 
   EJSONDataset = Class(EDatabaseError);
-  
+
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.Variants, System.DateUtils, FpJson.Parser;
+{$ELSE FPC_DOTTEDUNITS}
 uses variants, dateutils, jsonparser;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { TIntegerFieldComparer }
 
@@ -886,7 +897,7 @@ end;
 
 procedure TBaseJSONDataSet.InternalClose;
 begin
-  // disconnet and destroy field objects
+  // disconnect and destroy field objects
   BindFields (False);
   if DefaultFields then
     DestroyFields;
@@ -1188,7 +1199,7 @@ begin
     if (length(W)>0) then
       Move(W[1],Buffer^,Length(W)*SizeOf(Widechar)+1)
     else
-      PChar(Buffer)^:=#0;
+      PAnsiChar(Buffer)^:=#0;
     end;
     ftfixedchar,
     ftString:
@@ -1197,7 +1208,7 @@ begin
       if (length(s)>0) then
         Move(S[1],Buffer^,Length(S)+1)
       else
-        PChar(Buffer)^:=#0;
+        PAnsiChar(Buffer)^:=#0;
       end;
     ftBoolean:
       begin
@@ -1289,6 +1300,8 @@ begin
     FFieldMapper.SetJSONDataForField(Field,FRows[FCurrentIndex[FCurrent]],F)
   else
     FFieldMapper.SetJSONDataForField(Field,FEditRow,F);
+  if not (State in [dsCalcFields, dsFilter, dsNewValue]) then
+    DataEvent(deFieldChange, PtrInt(Field));
 end;
 
 procedure TBaseJSONDataSet.SetBookmarkFlag(Buffer: TRecordBuffer;
@@ -1302,7 +1315,7 @@ begin
   if (Value < 0) or (Value > FCurrentIndex.Count) then
     raise EJSONDataset.CreateFmt('SetRecNo: index %d out of range',[Value]);
   FCurrent := Value - 1;
-  Resync([]); 
+  Resync([]);
   DoAfterScroll;
 end;
 

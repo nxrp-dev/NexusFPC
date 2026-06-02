@@ -37,7 +37,7 @@
 
 {$L abitag.o}
 var
-  libc_environ: pchar; external name '__environ';
+  libc_environ: PAnsiChar; external name '__environ';
   libc_fpu_control: word; external name '__fpu_control';
   libc_init_proc: procedure; external name '_init';
   libc_fini_proc: procedure; external name '_fini';
@@ -59,6 +59,10 @@ procedure __libc_csu_init; public name '__libc_csu_init'; assembler;
   asm
     .weak __libc_csu_init
   end;
+{$else FPC_FULLVERSION>30202}
+procedure __libc_csu_init; public name '__libc_csu_init'; assembler;
+  asm
+  end;
 {$endif FPC_FULLVERSION>30202}
 
 procedure ___libc_csu_fini; external name '__libc_csu_fini';
@@ -67,6 +71,10 @@ procedure ___libc_csu_fini; external name '__libc_csu_fini';
 procedure __libc_csu_fini; public name '__libc_csu_fini'; assembler;
   asm
     .weak __libc_csu_fini
+  end;
+{$else FPC_FULLVERSION>30202}
+procedure __libc_csu_fini; public name '__libc_csu_fini'; assembler;
+  asm
   end;
 {$endif FPC_FULLVERSION>30202}
 

@@ -19,8 +19,11 @@ program pdfdump;
 {$h+}
 
 uses
-  cwString, sysutils, classes, contnrs, fppdfobjects, fppdfparser, fppdfpredict,
-  custapp, fppdfconsts;
+{$ifdef unix}
+  cwString,
+{$endif}
+  sysutils, classes, contnrs, fppdfobjects, fppdfparser, fppdfpredict,
+  custapp, fppdfconsts, fppdfcommands;
 
 type
 
@@ -161,7 +164,7 @@ begin
   Writeln('-h --help                This help text');
   Writeln('-c --pagecontent         Show page content stream (commands). Needs -p');
   Writeln('-d --dictionaries        Show object dictionaries. Needs -o');
-  Writeln('-p --fonts               Show font info');
+  Writeln('-f --fonts               Show font info');
   Writeln('-i --info                Show document info');
   Writeln('-l --catalog             Show document catalog');
   Writeln('-n --pageno=N            Show only page N');
@@ -212,7 +215,7 @@ begin
   Writeln('Font definitions:');
   Writeln;
   For Obj in Doc do
-    if Obj is TPDFFontObject then
+    if (Obj is TPDFFontObject) or (Obj is TPDFFontDescriptor) then
       begin
       Writeln(Obj.GetDescription);
       Writeln;
@@ -305,9 +308,9 @@ begin
   For I:=0 to aPage.CommandList.Count-1 do
     begin
     Cmd:=aPage.CommandList[I];
-    if Cmd is TPDFTfCommand then
+    if Cmd is TPDFTf_Command then
       begin
-      FontName:=TPDFTfCommand(Cmd).FontName;
+      FontName:=TPDFTf_Command(Cmd).FontName;
       if (FontName<>'') and (FontName[1]='/') then
         Delete(FontName,1,1);
       aFontRef:=aPage.FindFontRef(FontName);

@@ -1,13 +1,15 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit googlecloudsearch;
+{$ENDIF FPC_DOTTEDUNITS}
 {
-  This is the file COPYING.FPC, it applies to the Free Pascal Run-Time Library 
-  (RTL) and packages (packages) distributed by members of the Free Pascal 
+  This is the file COPYING.FPC, it applies to the Free Pascal Run-Time Library
+  (RTL) and packages (packages) distributed by members of the Free Pascal
   Development Team.
-  
-  The source code of the Free Pascal Runtime Libraries and packages are 
-  distributed under the Library GNU General Public License 
+
+  The source code of the Free Pascal Runtime Libraries and packages are
+  distributed under the Library GNU General Public License
   (see the file COPYING) with the following modification:
-  
+
   As a special exception, the copyright holders of this library give you
   permission to link this library with independent modules to produce an
   executable, regardless of the license terms of these independent modules,
@@ -18,28 +20,32 @@ unit googlecloudsearch;
   library, you may extend this exception to your version of the library, but you are
   not obligated to do so. If you do not wish to do so, delete this exception
   statement from your version.
-  
+
   If you didn't receive a copy of the file COPYING, contact:
         Free Software Foundation
         675 Mass Ave
         Cambridge, MA  02139
         USA
-  
+
 }
 {$MODE objfpc}
 {$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils, System.Classes, GoogleApi.Service, FpWeb.Rest.Base, GoogleApi.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses sysutils, classes, googleservice, restbase, googlebase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   //
-  
+
   { --------------------------------------------------------------------
     TCloudsearchAPI
     --------------------------------------------------------------------}
-  
+
   TCloudsearchAPI = Class(TGoogleAPI)
   Private
   Public
@@ -181,7 +187,7 @@ Class Function TCloudsearchAPI.APIAuthScopes : TScopeInfoArray;
 
 begin
   SetLength(Result,0);
-  
+
 end;
 
 Class Function TCloudsearchAPI.APINeedsAuth : Boolean;

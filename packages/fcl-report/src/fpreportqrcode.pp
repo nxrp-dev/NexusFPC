@@ -12,15 +12,22 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fpreportqrcode;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$MODE objfpc}
 {$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, FpImage, Fcl.Expressions, FpImage.QRCode, FpImage.QRCodeGen, FpReport.Report, FPReport.Streamer;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, fpimage, fpexprpars, fpimgqrcode, fpqrcodegen, fpreport, fpreportstreamer;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
 
@@ -59,10 +66,14 @@ Type
 
 Procedure RegisterReportQRCode;
 Procedure UnRegisterReportQRCode;
-  
+
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.TypInfo, System.StrUtils;
+{$ELSE FPC_DOTTEDUNITS}
 uses typinfo, strutils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 
 { TFPReportQRCode }
@@ -143,7 +154,7 @@ begin
       Result:=PS2;
     end;
   if Result<1 then
-    Result:=1;  
+    Result:=1;
 end;
 
 procedure TFPReportQRCode.ReadElement(AReader: TFPReportStreamer);
@@ -172,7 +183,7 @@ Var
   D : TImageQRCodeGenerator;
   Q : TFPReportQRCode;
   DD,PX,PY : Integer;
-  
+
 
 begin
   Q:=TFPReportQRCode(aElement);
@@ -194,7 +205,7 @@ begin
      DD:=aImage.Height-(D.PixelSize*D.Size);
      if DD>0 then
        PY:=DD div 2;
-     end; 
+     end;
     D.Draw(aImage, PX, PY);
   finally
     D.Free;
@@ -228,4 +239,4 @@ end;
 
 initialization
   RegisterReportQRcode;
-end.  
+end.

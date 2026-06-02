@@ -14,11 +14,18 @@
 
  **********************************************************************}
 {$INCLUDE sdo_global.inc}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit sdo_datafactory;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils, System.Classes,
+     Sdo.Base, Sdo.BaseTypes, Sdo.Types;
+{$ELSE FPC_DOTTEDUNITS}
 uses SysUtils, Classes,
      sdo, sdo_type, sdo_types;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
 
@@ -99,8 +106,13 @@ type
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  Sdo.Impl.Utils, Sdo.DataObject, Sdo.Consts;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   sdo_imp_utils, sdo_dataobject, sdo_consts;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { TSDOBaseDataFactory }
 
@@ -269,7 +281,7 @@ var
     if ( Length(Result) > 0 ) then
       Delete(Result,Pred(Length(Result)),2);
   end;
-  
+
 var
   typeX : ISDOTypeEx;
   prpLs : ISDOPropertyList;
@@ -357,7 +369,7 @@ constructor TSDOBaseDataFactory.Create();
     ATypeList.insert(typeRef);
       typeRef.setAlias('boolean');
     typeRef := TSDOByteType.Create(selfIntf);
-    ATypeList.insert(typeRef);   
+    ATypeList.insert(typeRef);
       typeRef.setAlias('byte');
 {$IFDEF HAS_SDO_BYTES}
     ATypeList.insert(TSDOBytesType.Create(selfIntf));
@@ -387,7 +399,7 @@ constructor TSDOBaseDataFactory.Create();
     typeRef := TSDOIntegerType.Create(selfIntf);
     ATypeList.insert(typeRef);
       AddAlias(typeRef,['int']);
-{$IFDEF HAS_SDO_LONG}             
+{$IFDEF HAS_SDO_LONG}
     typeRef := TSDOLongType.Create(selfIntf);
     ATypeList.insert(typeRef);
       AddAlias(typeRef,['long']);
@@ -561,7 +573,7 @@ begin
     if ( pfIsMany in AFlags ) then
       raise ESDOIllegalArgumentException.Create('AIsMany');
     if not ( pfIsReadOnly in AFlags ) then
-      raise ESDOIllegalArgumentException.Create('AIsReadOnly');  
+      raise ESDOIllegalArgumentException.Create('AIsReadOnly');
     if (pfIsAttribute in AFlags) then
       raise ESDOIllegalArgumentException.Create('AIsAttribute');
   end;

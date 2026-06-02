@@ -19,12 +19,12 @@
 
 {$ifndef FPC_UNIT_HAS_STRCOMP}
 {$define FPC_UNIT_HAS_STRCOMP}
-function StrComp(Str1, Str2: PChar): SizeInt;assembler;nostackframe;
+function StrComp(Str1, Str2: PAnsiChar): SizeInt;assembler;nostackframe;
 asm
-{$ifndef win64}
+{$ifndef FPC_ABI_WIN64}
         movq   %rsi,%rdx
         movq   %rdi,%rcx
-{$endif win64}
+{$endif FPC_ABI_WIN64}
         subq   %rcx,%rdx
 .balign 16
 .Lloop:                          { unrolled 4 times }

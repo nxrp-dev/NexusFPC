@@ -58,22 +58,22 @@ end;
 
 { TFPCustomDrawFont }
 
-procedure TFPCustomDrawFont.DrawText (x,y:integer; text:string);
+procedure TFPCustomDrawFont.DrawText (x,y:integer; text:ansistring);
 begin
   DoDrawText (x,y, text);
 end;
 
-procedure TFPCustomDrawFont.GetTextSize (text:string; var w,h:integer);
+procedure TFPCustomDrawFont.GetTextSize (text:ansistring; var w,h:integer);
 begin
   DoGetTextSize (text, w,h);
 end;
 
-function TFPCustomDrawFont.GetTextHeight (text:string) : integer;
+function TFPCustomDrawFont.GetTextHeight (text:ansistring) : integer;
 begin
   result := DoGetTextHeight (Text);
 end;
 
-function TFPCustomDrawFont.GetTextWidth (text:string) : integer;
+function TFPCustomDrawFont.GetTextWidth (text:ansistring) : integer;
 begin
   result := DoGetTextWidth (Text);
 end;
@@ -98,13 +98,13 @@ begin
   result := DoGetTextWidth (Text);
 end;
 
-procedure TFPCustomDrawFont.DoDrawText (x,y:integer; text:unicodestring); 
+procedure TFPCustomDrawFont.DoDrawText (x,y:integer; text:unicodestring);
 
 begin
   DoDrawText(x,y,String(text));
 end;
 
-procedure TFPCustomDrawFont.DoGetTextSize (text: unicodestring; var w,h:integer); 
+procedure TFPCustomDrawFont.DoGetTextSize (text: unicodestring; var w,h:integer);
 
 begin
   DoGetTextSize(String(text),w,h);
@@ -112,13 +112,13 @@ end;
 
 
 
-function TFPCustomDrawFont.DoGetTextHeight (text: unicodestring) : integer;  
+function TFPCustomDrawFont.DoGetTextHeight (text: unicodestring) : integer;
 
 begin
   Result:=DoGetTextHeight(String(text));
 end;
 
-function TFPCustomDrawFont.DoGetTextWidth (text: unicodestring) : integer; 
+function TFPCustomDrawFont.DoGetTextWidth (text: unicodestring) : integer;
 
 begin
   Result:=DoGetTextWidth(String(text));

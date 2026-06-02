@@ -22,7 +22,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CVOpenGLBufferPool;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -207,7 +209,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CFBase,MacOsApi.CFString,MacOsApi.CFDictionary,MacOsApi.CVBase,MacOsApi.CVReturns,MacOsApi.CVOpenGLBuffer;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CFBase,CFString,CFDictionary,CVBase,CVReturns,CVOpenGLBuffer;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -219,7 +225,7 @@ uses MacTypes,CFBase,CFString,CFDictionary,CVBase,CVReturns,CVOpenGLBuffer;
 	@copyright 2004 Apple Computer, Inc. All rights reserved.
 	@availability Mac OS X 10.4 or later
     @discussion CVOpenGLBufferPool is a utility object for managing a set of CVOpenGLBuffer objects that are going to be recycled.
-		   
+
 }
 
 
@@ -293,7 +299,7 @@ function CVOpenGLBufferPoolGetOpenGLBufferAttributes( pool: CVOpenGLBufferPoolRe
 {!
     @function   CVOpenGLBufferPoolCreateOpenGLBuffer
     @abstract   Creates a new OpenGLBuffer object from the pool.
-    @discussion The function creates a new CVOpenGLBuffer with the default attachments using the OpenGL buffer attributes specifed during pool creation.
+    @discussion The function creates a new CVOpenGLBuffer with the default attachments using the OpenGL buffer attributes specified during pool creation.
     @param      allocator The CFAllocatorRef to use for creating the OpenGL buffer.  May be NULL.
     @param      openGLBufferPool      The CVOpenGLBufferPool that should create the new CVOpenGLBuffer.
     @param      openGLBufferOut   The newly created OpenGL buffer will be placed here

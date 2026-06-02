@@ -13,14 +13,21 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit custapache24;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
 uses
-  SysUtils, Classes, CustWeb, httpDefs, fpHTTP, httpd24, apr24, SyncObjs;
+  System.SysUtils, System.Classes, FpWeb.Handler, FpWeb.Http.Defs, FpWeb.Http.Base, Api.Httpd24, Api.Httpd24.Apr, System.SyncObjs, FpWeb.Http.Protocol;
+{$ELSE FPC_DOTTEDUNITS}
+uses
+  SysUtils, Classes, CustWeb, httpDefs, fpHTTP, httpd24, apr24, SyncObjs, httpprotocol;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
 
@@ -33,8 +40,10 @@ Type
     FApache : TApacheHandler;
     FRequest : PRequest_rec;
   Protected
-    Function GetFieldValue(Index : Integer) : String; override;
+    function GetApacheHeaderValue(H: THeader): String;
+    function GetApacheVariableValue(V: THTTPVariableType): String;
     Procedure InitFromRequest;
+    procedure initrequestvars; override;
     procedure ReadContent; override;
   Public
     Constructor CreateReq(App : TApacheHandler; ARequest : PRequest_rec);
@@ -63,8 +72,11 @@ Type
   TBeforeRequestEvent = Procedure(Sender : TObject; Const AHandler : String;
                                   Var AllowRequest : Boolean) of object;
 
+  { TApacheHandler }
+
   TApacheHandler = Class(TWebHandler)
   private
+    Finitialized: Boolean;
     FMaxRequests: Integer;             //Maximum number of simultaneous web module requests (default=64, if set to zero no limit)
     FWorkingWebModules: TList;         //List of currently running web modules handling requests
     FIdleWebModules: TList;            //List of idle web modules available
@@ -77,6 +89,7 @@ Type
     FPriority: THandlerPriority;
     FModuleRecord : PModule;
     function GetModules(Index: integer): TStrings;
+    procedure SetModuleName(AValue: String);
     procedure SetModules(Index: integer; const AValue: TStrings);
     function GetIdleModuleCount : Integer;
     function GetWorkingModuleCount : Integer;
@@ -97,7 +110,7 @@ Type
     Property BeforeModules : TStrings Index 0 Read GetModules Write SetModules;
     Property AfterModules : TStrings Index 1 Read GetModules Write SetModules;
     Property BaseLocation : String Read FBaseLocation Write FBaseLocation;
-    Property ModuleName : String Read FModuleName Write FModuleName;
+    Property ModuleName : String Read FModuleName Write SetModuleName;
     Property HandlerName : String Read FHandlerName Write FHandlerName;
     Property BeforeRequest : TBeforeRequestEvent Read FBeforeRequest Write FBeforeRequest;
     Property MaxRequests: Integer read FMaxRequests write FMaxRequests;
@@ -153,7 +166,12 @@ Var
 
 
 implementation
+
+{$IFDEF FPC_DOTTEDUNITS}
+uses Fcl.CustApp;
+{$ELSE FPC_DOTTEDUNITS}
 uses CustApp;
+{$ENDIF FPC_DOTTEDUNITS}
 
 resourcestring
   SErrNoModuleNameForRequest = 'Could not determine HTTP module name for request';
@@ -161,6 +179,19 @@ resourcestring
   SErrNoModuleRecord = 'No module record location set.';
   SErrNoModuleName = 'No module name set';
   SErrTooManyRequests = 'Too many simultaneous requests.';
+  SErrContentLengthTooBig = 'Content length exceeds maximum body size';
+
+
+Function MaybeAnsi(S : String) : AnsiString; inline;
+
+begin
+{$IF SIZEOF(CHAR)=1}
+  Result:=S;
+{$ELSE}
+  Result:=UTF8Encode(S);
+{$ENDIF}
+end;
+
 
 const
   HPRIO : Array[THandlerPriority] of Integer
@@ -173,18 +204,17 @@ Function DefaultApacheHandler(P : PRequest_Rec) : integer;cdecl;
 begin
   If (AlternateHandler<>Nil) then
     Result:=AlternateHandler(P)
+  else if Assigned(Application) and Application.AllowRequest(P) then
+    Result:=Application.ProcessRequest(P)
   else
-    If Application.AllowRequest(P) then
-      Result:=Application.ProcessRequest(P)
-    else
-      Result:=DECLINED;
+    Result:=DECLINED;
 end;
 
 Procedure RegisterApacheHooks(P: PApr_pool_t);cdecl;
 
 Var
   H : ap_hook_handler_t;
-  PP1,PP2 : PPChar;
+  PP1,PP2 : PPAnsiChar;
 
 begin
   H:=AlternateHandler;
@@ -204,6 +234,14 @@ begin
   Result:=FModules[Index];
 end;
 
+procedure TApacheHandler.SetModuleName(AValue: String);
+begin
+  if FModuleName=AValue then Exit;
+  if FInitialized then
+    Raise EHTTP.Create('Cannot change module name after initialization');
+  FModuleName:=AValue;
+end;
+
 procedure TApacheHandler.SetModules(Index: integer;
   const AValue: TStrings);
 begin
@@ -212,7 +250,7 @@ begin
   FModules[Index].Assign(AValue);
 end;
 
-Function TApacheHandler.ProcessRequest(P: PRequest_Rec) : Integer;
+function TApacheHandler.ProcessRequest(P: PRequest_Rec): Integer;
 
 Var
   Req : TApacheRequest;
@@ -257,7 +295,10 @@ Var
   Hn : String;
 
 begin
-  HN:=StrPas(p^.Handler);
+  if p^.Handler=Nil then
+    HN:=''
+  else
+    HN:=StrPas(p^.Handler);
   Result:=CompareText(HN,FHandlerName)=0;
   If Assigned(FBeforeRequest) then
     FBeforeRequest(Self,HN,Result);
@@ -309,21 +350,22 @@ begin
     Raise EFPApacheError.Create(SErrNoModuleName);
   STANDARD20_MODULE_STUFF(FModuleRecord^);
   If (StrPas(FModuleRecord^.name)<>FModuleName) then
-    FModuleRecord^.Name:=PChar(FModuleName);
+    FModuleRecord^.Name:= PAnsiChar(FModuleName);
   FModuleRecord^.register_hooks:=@RegisterApacheHooks;
+  Finitialized:=True;
 end;
 
 procedure TApacheHandler.LogErrorMessage(const Msg: String; LogLevel: integer);
 var a: ap_version_t;
 begin
-  ap_log_error(pchar(FModuleName),  //The file in which this function is called
+  ap_log_error(PAnsiChar(FModuleName),  //The file in which this function is called
                0,                   //The line number on which this function is called
                0,                   //The module_index of the module generating this message
                LogLevel,            //The level of this error message
                0,                   //The status code from the previous command
                Nil,                 //The server on which we are logging
                'module: %s',        //The format string
-               [pchar(Msg)])        //The arguments to use to fill out fmt.
+               [PAnsiChar(Msg)])        //The arguments to use to fill out fmt.
 end;
 
 function TApacheHandler.GetIdleModuleCount : Integer;
@@ -346,7 +388,7 @@ begin
   end;
 end;
 
-procedure TApacheHandler.HandleRequest(ARequest: TRequest; AResponse: TResponse);
+procedure TApacheHandler.handleRequest(ARequest: TRequest; AResponse: TResponse);
 
 Var
   MC : TCustomHTTPModuleClass;
@@ -383,6 +425,17 @@ Var
     end;
   end;
 
+  procedure MarkIdle(aModule : TCustomHTTPModule);
+  begin
+    FCriticalSection.Enter;
+    try
+      FWorkingWebModules.Remove(aModule);
+      FIdleWebModules.Add(aModule);
+    finally
+      FCriticalSection.Leave;
+    end;
+  end;
+
 begin
   try
     MC:=Nil;
@@ -403,14 +456,10 @@ begin
       MC:=MI.ModuleClass;
     end;
     GetAWebModule;
-    M.HandleRequest(ARequest,AResponse);
-
-    FCriticalSection.Enter;
     try
-      FWorkingWebModules.Remove(M);
-      FIdleWebModules.Add(M);
+      M.HandleRequest(ARequest,AResponse);
     finally
-      FCriticalSection.Leave;
+      MarkIdle(M);
     end;
   except
     On E : Exception do
@@ -423,59 +472,82 @@ end;
 
 { TApacheRequest }
 
-function TApacheRequest.GetFieldValue(Index: Integer): String;
+Function MaybeP(P : PAnsiChar) : String;
 
-  Function MaybeP(P : Pchar) : String;
+begin
+  If (P<>Nil) then
+    Result:=StrPas(P);
+end;
 
-  begin
-    If (P<>Nil) then
-      Result:=StrPas(P);
-  end;
+function TApacheRequest.GetApacheVariableValue(V: THTTPVariableType): String;
 
 var
-  FN : String;
-  I : Integer;
+  i : integer;
 
 begin
   Result:='';
-  If (Index in [1..NoHTTPFields]) then
-    begin
-    FN:=HTTPFieldNames[Index];
-    Result:=MaybeP(apr_table_get(FRequest^.headers_in,pchar(FN)));
-    end;
-  if (Result='') and Assigned(FRequest) then
-    case Index of
-      0  : Result:=MaybeP(FRequest^.protocol); // ProtocolVersion
-      7  : Result:=MaybeP(FRequest^.content_encoding); //ContentEncoding
-      25 : Result:=MaybeP(FRequest^.path_info); // PathInfo
-      26 : Result:=MaybeP(FRequest^.filename); // PathTranslated
-      27 : // RemoteAddr
-           If (FRequest^.Connection<>Nil) then
-             Result:=MaybeP(FRequest^.Connection^.remote_ip);
-      28 : // RemoteHost
-           If (FRequest^.Connection<>Nil) then
-             begin
-             Result:=MaybeP(ap_get_remote_host(FRequest^.Connection,
-                            FRequest^.per_dir_config,
-//                            nil,
-                            REMOTE_NAME,@i));
-             end;
-      29 : begin // ScriptName
-           Result:=MaybeP(FRequest^.unparsed_uri);
-           I:=Pos('?',Result)-1;
-           If (I=-1) then
-             I:=Length(Result);
-           Result:=Copy(Result,1,I-Length(PathInfo));
-           end;
-      30 : Result:=IntToStr(ap_get_server_port(FRequest)); // ServerPort
-      31 : Result:=MaybeP(FRequest^.method); // Method
-      32 : Result:=MaybeP(FRequest^.unparsed_uri); // URL
-      33 : Result:=MaybeP(FRequest^.args); // Query
-      34 : Result:=MaybeP(FRequest^.HostName); // Host
-    else
-      Result:=inherited GetFieldValue(Index);
+  if not Assigned(FRequest) then
+    exit;
+  case V of
+    hvHTTPVersion:
+      Result:=MaybeP(FRequest^.protocol); // ProtocolVersion
+    hvPathInfo:
+      Result:=MaybeP(FRequest^.path_info); // PathInfo
+    hvPathTranslated:
+      Result:=MaybeP(FRequest^.filename); // PathTranslated
+    hvRemoteAddress :
+      If (FRequest^.Connection<>Nil) then
+        Result:=MaybeP(FRequest^.Connection^.remote_ip);
+    hvRemoteHost:
+      If (FRequest^.Connection<>Nil) then
+        begin
+        Result:=MaybeP(ap_get_remote_host(FRequest^.Connection,
+                       FRequest^.per_dir_config,
+//                     nil,
+                       REMOTE_NAME,@i));
+        end;
+    hvScriptName:
+      begin // ScriptName
+      Result:=MaybeP(FRequest^.unparsed_uri);
+      I:=Pos('?',Result)-1;
+      If (I=-1) then
+       I:=Length(Result);
+      Result:=Copy(Result,1,I-Length(PathInfo));
+      end;
+    hvServerPort:
+      Result:=IntToStr(ap_get_server_port(FRequest)); // ServerPort
+    hvMethod:
+      Result:=MaybeP(FRequest^.method); // Method
+    hvURL:
+      Result:=MaybeP(FRequest^.unparsed_uri); // URL
+    hvQuery:
+      Result:=MaybeP(FRequest^.args); // Query
     end;
 end;
+
+function TApacheRequest.GetApacheHeaderValue(H: THeader): String;
+
+var
+  FN : AnsiString;
+  I : Integer;
+  S : String;
+
+begin
+  Result:='';
+  Str(H,S);
+  If Not Assigned(FRequest) then
+    exit;
+  Case h of
+    hhContentEncoding:
+      Result:=MaybeP(FRequest^.content_encoding);
+    hhHost:
+      Result:=MaybeP(FRequest^.HostName);
+  else
+    FN:=MaybeAnsi(HeaderName(H));
+    Result:=MaybeP(apr_table_get(FRequest^.headers_in,PAnsiChar(FN)));
+  end;
+end;
+
 
 procedure TApacheRequest.ReadContent;
 
@@ -490,7 +562,7 @@ procedure TApacheRequest.ReadContent;
 
 Var
   Left,Len,Count,Bytes : Integer;
-  P : Pchar;
+  P : PAnsiChar;
   S : String;
 
 begin
@@ -498,23 +570,29 @@ begin
   If (ap_should_client_block(FRequest)=1) then
     begin
     Len:=ContentLength;
+    if (MaxBodySize>0) and (Len>MaxBodySize) then
+      PayloadTooLarge(SErrContentLengthTooBig);
     If (Len>0) then
       begin
       SetLength(S,Len);
-      P:=PChar(S);
+      P:=PAnsiChar(S);
       Left:=Len;
       Count:=0;
       Repeat
         Bytes:=ap_get_client_block(FRequest,P,MinS(10*1024,Left));
+        // ap_get_client_block returns -1 on error
+        if Bytes<=0 then
+          break;
         Dec(Left,Bytes);
         Inc(P,Bytes);
         Inc(Count,Bytes);
-      Until (Count>=Len) or (Bytes=0);
+      Until (Count>=Len);
       SetLength(S,Count);
       end;
     end;
   InitContent(S);
 end;
+
 
 procedure TApacheRequest.InitFromRequest;
 begin
@@ -522,7 +600,32 @@ begin
   ReadContent;
 end;
 
-Constructor TApacheRequest.CreateReq(App : TApacheHandler; ARequest : PRequest_rec);
+procedure TApacheRequest.initrequestvars;
+
+Var
+  H : THeader;
+  V : THTTPVariableType;
+  S : String;
+
+begin
+  For H in Theader do
+    if hdRequest in HTTPHeaderDirections[H] then
+      begin
+      S:=GetApacheHeaderValue(H);
+      if S<>'' then
+        SetHeader(H,S);
+      end;
+  For V in THTTPVariableType do
+    begin
+    S:=GetApacheVariableValue(V);
+    if S<>'' then
+      SetHTTPVariable(V,S);
+    end;
+  inherited initrequestvars;
+end;
+
+constructor TApacheRequest.CreateReq(App: TApacheHandler; ARequest: PRequest_rec
+  );
 
 begin
   FApache:=App;
@@ -538,7 +641,7 @@ procedure TApacheResponse.DoSendHeaders(Headers: TStrings);
 
 Var
   I,P : Integer;
-  N,V : String;
+  N,V : AnsiString;
 
 begin
   For I:=0 to Headers.Count-1 do
@@ -550,35 +653,33 @@ begin
       N:=Copy(V,1,P-1);
       System.Delete(V,1,P);
       V := Trim(V);//no need space before the value, apache puts it there
-      apr_table_set(FRequest^.headers_out,Pchar(N),Pchar(V));
+      apr_table_set(FRequest^.headers_out,PAnsiChar(N),PAnsiChar(V));
       end;
     end;
 end;
 
+
 procedure TApacheResponse.DoSendContent;
 
 Var
-  S : String;
-  I : Integer;
+  S : AnsiString;
 
 begin
-  S:=ContentType;
+  S:=MaybeAnsi(ContentType);
   If (S<>'') then
-    FRequest^.content_type:=apr_pstrdup(FRequest^.pool,Pchar(S));
-  S:=ContentEncoding;
+    FRequest^.content_type:=apr_pstrdup(FRequest^.pool,PAnsiChar(S));
+  S:=MaybeAnsi(ContentEncoding);
   If (S<>'') then
-    FRequest^.content_encoding:=apr_pstrdup(FRequest^.pool,Pchar(S));
+    FRequest^.content_encoding:=apr_pstrdup(FRequest^.pool,PAnsiChar(S));
   If Code <> 200 then
     FRequest^.status := Code;
   If assigned(ContentStream) then
     SendStream(Contentstream)
   else
-    for I:=0 to Contents.Count-1 do
-      begin
-      S:=Contents[i]+LineEnding;
-      // If there is a null, it's written also with ap_rwrite
-      ap_rwrite(PChar(S),Length(S),FRequest);
-      end;
+    begin
+    S:=Content;
+    ap_rwrite(PAnsiChar(S),Length(S),FRequest);
+    end;
 end;
 
 Procedure TApacheResponse.SendStream(S : TStream);
@@ -715,14 +816,14 @@ end;
 
 procedure TCustomApacheApplication.ShowException(E: Exception);
 begin
-  ap_log_error(PChar(TApacheHandler(WebHandler).ModuleName),  //The file in which this function is called
+  ap_log_error(PAnsiChar(TApacheHandler(WebHandler).ModuleName),  //The file in which this function is called
                0,                                             //The line number on which this function is called
                0,                                             //The module_index of the module generating this message
                APLOG_ERR,                                     //The level of this error message
                0,                                             //The status code from the previous command
                Nil,                                           //The server on which we are logging
                'module: %s',                                  //The format string
-               [Pchar(E.Message)]);                           //The arguments to use to fill out fmt.
+               [PAnsiChar(E.Message)]);                           //The arguments to use to fill out fmt.
 end;
 
 function TCustomApacheApplication.ProcessRequest(P: PRequest_Rec): Integer;

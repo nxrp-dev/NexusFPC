@@ -1,13 +1,19 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit googlereplicapoolupdater;
+{$ENDIF FPC_DOTTEDUNITS}
 {$MODE objfpc}
 {$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils, System.Classes, GoogleApi.Service, FpWeb.Rest.Base, GoogleApi.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses sysutils, classes, googleservice, restbase, googlebase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
-  
+
   //Top-level schema types
   TInstanceUpdate = Class;
   TInstanceUpdateList = Class;
@@ -39,11 +45,11 @@ type
   TOperationListTypeitemsArray = Array of TOperation;
   TRollingUpdateTypeerrorTypeerrorsArray = Array of TRollingUpdateTypeerrorTypeerrorsItem;
   TRollingUpdateListTypeitemsArray = Array of TRollingUpdate;
-  
+
   { --------------------------------------------------------------------
     TInstanceUpdateTypeerrorTypeerrorsItem
     --------------------------------------------------------------------}
-  
+
   TInstanceUpdateTypeerrorTypeerrorsItem = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -61,11 +67,11 @@ type
     Property message : String Index 16 Read Fmessage Write Setmessage;
   end;
   TInstanceUpdateTypeerrorTypeerrorsItemClass = Class of TInstanceUpdateTypeerrorTypeerrorsItem;
-  
+
   { --------------------------------------------------------------------
     TInstanceUpdateTypeerror
     --------------------------------------------------------------------}
-  
+
   TInstanceUpdateTypeerror = Class(TGoogleBaseObject)
   Private
     Ferrors : TInstanceUpdateTypeerrorTypeerrorsArray;
@@ -81,11 +87,11 @@ type
     Property errors : TInstanceUpdateTypeerrorTypeerrorsArray Index 0 Read Ferrors Write Seterrors;
   end;
   TInstanceUpdateTypeerrorClass = Class of TInstanceUpdateTypeerror;
-  
+
   { --------------------------------------------------------------------
     TInstanceUpdate
     --------------------------------------------------------------------}
-  
+
   TInstanceUpdate = Class(TGoogleBaseObject)
   Private
     Ferror : TInstanceUpdateTypeerror;
@@ -103,11 +109,11 @@ type
     Property status : String Index 16 Read Fstatus Write Setstatus;
   end;
   TInstanceUpdateClass = Class of TInstanceUpdate;
-  
+
   { --------------------------------------------------------------------
     TInstanceUpdateList
     --------------------------------------------------------------------}
-  
+
   TInstanceUpdateList = Class(TGoogleBaseObject)
   Private
     Fitems : TInstanceUpdateListTypeitemsArray;
@@ -132,11 +138,11 @@ type
     Property selfLink : String Index 24 Read FselfLink Write SetselfLink;
   end;
   TInstanceUpdateListClass = Class of TInstanceUpdateList;
-  
+
   { --------------------------------------------------------------------
     TOperationTypeerrorTypeerrorsItem
     --------------------------------------------------------------------}
-  
+
   TOperationTypeerrorTypeerrorsItem = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -154,11 +160,11 @@ type
     Property message : String Index 16 Read Fmessage Write Setmessage;
   end;
   TOperationTypeerrorTypeerrorsItemClass = Class of TOperationTypeerrorTypeerrorsItem;
-  
+
   { --------------------------------------------------------------------
     TOperationTypeerror
     --------------------------------------------------------------------}
-  
+
   TOperationTypeerror = Class(TGoogleBaseObject)
   Private
     Ferrors : TOperationTypeerrorTypeerrorsArray;
@@ -174,11 +180,11 @@ type
     Property errors : TOperationTypeerrorTypeerrorsArray Index 0 Read Ferrors Write Seterrors;
   end;
   TOperationTypeerrorClass = Class of TOperationTypeerror;
-  
+
   { --------------------------------------------------------------------
     TOperationTypewarningsItemTypedataItem
     --------------------------------------------------------------------}
-  
+
   TOperationTypewarningsItemTypedataItem = Class(TGoogleBaseObject)
   Private
     Fkey : String;
@@ -193,11 +199,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TOperationTypewarningsItemTypedataItemClass = Class of TOperationTypewarningsItemTypedataItem;
-  
+
   { --------------------------------------------------------------------
     TOperationTypewarningsItem
     --------------------------------------------------------------------}
-  
+
   TOperationTypewarningsItem = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -219,11 +225,11 @@ type
     Property message : String Index 16 Read Fmessage Write Setmessage;
   end;
   TOperationTypewarningsItemClass = Class of TOperationTypewarningsItem;
-  
+
   { --------------------------------------------------------------------
     TOperation
     --------------------------------------------------------------------}
-  
+
   TOperation = Class(TGoogleBaseObject)
   Private
     FclientOperationId : String;
@@ -302,11 +308,11 @@ type
     Property zone : String Index 168 Read Fzone Write Setzone;
   end;
   TOperationClass = Class of TOperation;
-  
+
   { --------------------------------------------------------------------
     TOperationList
     --------------------------------------------------------------------}
-  
+
   TOperationList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -334,11 +340,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TOperationListClass = Class of TOperationList;
-  
+
   { --------------------------------------------------------------------
     TRollingUpdateTypeerrorTypeerrorsItem
     --------------------------------------------------------------------}
-  
+
   TRollingUpdateTypeerrorTypeerrorsItem = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -356,11 +362,11 @@ type
     Property message : String Index 16 Read Fmessage Write Setmessage;
   end;
   TRollingUpdateTypeerrorTypeerrorsItemClass = Class of TRollingUpdateTypeerrorTypeerrorsItem;
-  
+
   { --------------------------------------------------------------------
     TRollingUpdateTypeerror
     --------------------------------------------------------------------}
-  
+
   TRollingUpdateTypeerror = Class(TGoogleBaseObject)
   Private
     Ferrors : TRollingUpdateTypeerrorTypeerrorsArray;
@@ -376,11 +382,11 @@ type
     Property errors : TRollingUpdateTypeerrorTypeerrorsArray Index 0 Read Ferrors Write Seterrors;
   end;
   TRollingUpdateTypeerrorClass = Class of TRollingUpdateTypeerror;
-  
+
   { --------------------------------------------------------------------
     TRollingUpdateTypepolicy
     --------------------------------------------------------------------}
-  
+
   TRollingUpdateTypepolicy = Class(TGoogleBaseObject)
   Private
     FautoPauseAfterInstances : integer;
@@ -404,11 +410,11 @@ type
     Property minInstanceUpdateTimeSec : integer Index 32 Read FminInstanceUpdateTimeSec Write SetminInstanceUpdateTimeSec;
   end;
   TRollingUpdateTypepolicyClass = Class of TRollingUpdateTypepolicy;
-  
+
   { --------------------------------------------------------------------
     TRollingUpdate
     --------------------------------------------------------------------}
-  
+
   TRollingUpdate = Class(TGoogleBaseObject)
   Private
     FactionType : String;
@@ -465,11 +471,11 @@ type
     Property user : String Index 120 Read Fuser Write Setuser;
   end;
   TRollingUpdateClass = Class of TRollingUpdate;
-  
+
   { --------------------------------------------------------------------
     TRollingUpdateList
     --------------------------------------------------------------------}
-  
+
   TRollingUpdateList = Class(TGoogleBaseObject)
   Private
     Fitems : TRollingUpdateListTypeitemsArray;
@@ -494,29 +500,29 @@ type
     Property selfLink : String Index 24 Read FselfLink Write SetselfLink;
   end;
   TRollingUpdateListClass = Class of TRollingUpdateList;
-  
+
   { --------------------------------------------------------------------
     TRollingUpdatesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TRollingUpdatesResource, method List
-  
+
   TRollingUpdatesListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
-  
+
+
   //Optional query Options for TRollingUpdatesResource, method ListInstanceUpdates
-  
+
   TRollingUpdatesListInstanceUpdatesOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TRollingUpdatesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -532,21 +538,21 @@ type
     Function Resume(project: string; rollingUpdate: string; zone: string) : TOperation;
     Function Rollback(project: string; rollingUpdate: string; zone: string) : TOperation;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TZoneOperationsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TZoneOperationsResource, method List
-  
+
   TZoneOperationsListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TZoneOperationsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -555,12 +561,12 @@ type
     Function List(project: string; zone: string; AQuery : string  = '') : TOperationList;
     Function List(project: string; zone: string; AQuery : TZoneOperationslistOptions) : TOperationList;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TReplicapoolupdaterAPI
     --------------------------------------------------------------------}
-  
+
   TReplicapoolupdaterAPI = Class(TGoogleAPI)
   Private
     FRollingUpdatesInstance : TRollingUpdatesResource;
@@ -607,7 +613,7 @@ implementation
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceUpdateTypeerrorTypeerrorsItem.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TInstanceUpdateTypeerrorTypeerrorsItem.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -617,7 +623,7 @@ end;
 
 
 
-Procedure TInstanceUpdateTypeerrorTypeerrorsItem.Setlocation(AIndex : Integer; const AValue : String); 
+Procedure TInstanceUpdateTypeerrorTypeerrorsItem.Setlocation(AIndex : Integer; const AValue : String);
 
 begin
   If (Flocation=AValue) then exit;
@@ -627,7 +633,7 @@ end;
 
 
 
-Procedure TInstanceUpdateTypeerrorTypeerrorsItem.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TInstanceUpdateTypeerrorTypeerrorsItem.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -644,7 +650,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceUpdateTypeerror.Seterrors(AIndex : Integer; const AValue : TInstanceUpdateTypeerrorTypeerrorsArray); 
+Procedure TInstanceUpdateTypeerror.Seterrors(AIndex : Integer; const AValue : TInstanceUpdateTypeerrorTypeerrorsArray);
 
 begin
   If (Ferrors=AValue) then exit;
@@ -655,7 +661,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInstanceUpdateTypeerror.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInstanceUpdateTypeerror.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -674,7 +680,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceUpdate.Seterror(AIndex : Integer; const AValue : TInstanceUpdateTypeerror); 
+Procedure TInstanceUpdate.Seterror(AIndex : Integer; const AValue : TInstanceUpdateTypeerror);
 
 begin
   If (Ferror=AValue) then exit;
@@ -684,7 +690,7 @@ end;
 
 
 
-Procedure TInstanceUpdate.Setinstance(AIndex : Integer; const AValue : String); 
+Procedure TInstanceUpdate.Setinstance(AIndex : Integer; const AValue : String);
 
 begin
   If (Finstance=AValue) then exit;
@@ -694,7 +700,7 @@ end;
 
 
 
-Procedure TInstanceUpdate.Setstatus(AIndex : Integer; const AValue : String); 
+Procedure TInstanceUpdate.Setstatus(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -711,7 +717,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceUpdateList.Setitems(AIndex : Integer; const AValue : TInstanceUpdateListTypeitemsArray); 
+Procedure TInstanceUpdateList.Setitems(AIndex : Integer; const AValue : TInstanceUpdateListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -721,7 +727,7 @@ end;
 
 
 
-Procedure TInstanceUpdateList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TInstanceUpdateList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -731,7 +737,7 @@ end;
 
 
 
-Procedure TInstanceUpdateList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TInstanceUpdateList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -741,7 +747,7 @@ end;
 
 
 
-Procedure TInstanceUpdateList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TInstanceUpdateList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -752,7 +758,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInstanceUpdateList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInstanceUpdateList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -771,7 +777,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperationTypeerrorTypeerrorsItem.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TOperationTypeerrorTypeerrorsItem.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -781,7 +787,7 @@ end;
 
 
 
-Procedure TOperationTypeerrorTypeerrorsItem.Setlocation(AIndex : Integer; const AValue : String); 
+Procedure TOperationTypeerrorTypeerrorsItem.Setlocation(AIndex : Integer; const AValue : String);
 
 begin
   If (Flocation=AValue) then exit;
@@ -791,7 +797,7 @@ end;
 
 
 
-Procedure TOperationTypeerrorTypeerrorsItem.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TOperationTypeerrorTypeerrorsItem.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -808,7 +814,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperationTypeerror.Seterrors(AIndex : Integer; const AValue : TOperationTypeerrorTypeerrorsArray); 
+Procedure TOperationTypeerror.Seterrors(AIndex : Integer; const AValue : TOperationTypeerrorTypeerrorsArray);
 
 begin
   If (Ferrors=AValue) then exit;
@@ -819,7 +825,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOperationTypeerror.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOperationTypeerror.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -838,7 +844,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperationTypewarningsItemTypedataItem.Setkey(AIndex : Integer; const AValue : String); 
+Procedure TOperationTypewarningsItemTypedataItem.Setkey(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkey=AValue) then exit;
@@ -848,7 +854,7 @@ end;
 
 
 
-Procedure TOperationTypewarningsItemTypedataItem.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TOperationTypewarningsItemTypedataItem.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -865,7 +871,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperationTypewarningsItem.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TOperationTypewarningsItem.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -875,7 +881,7 @@ end;
 
 
 
-Procedure TOperationTypewarningsItem.Setdata(AIndex : Integer; const AValue : TOperationTypewarningsItemTypedataArray); 
+Procedure TOperationTypewarningsItem.Setdata(AIndex : Integer; const AValue : TOperationTypewarningsItemTypedataArray);
 
 begin
   If (Fdata=AValue) then exit;
@@ -885,7 +891,7 @@ end;
 
 
 
-Procedure TOperationTypewarningsItem.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TOperationTypewarningsItem.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -896,7 +902,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOperationTypewarningsItem.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOperationTypewarningsItem.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -915,7 +921,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperation.SetclientOperationId(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SetclientOperationId(AIndex : Integer; const AValue : String);
 
 begin
   If (FclientOperationId=AValue) then exit;
@@ -925,7 +931,7 @@ end;
 
 
 
-Procedure TOperation.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -935,7 +941,7 @@ end;
 
 
 
-Procedure TOperation.SetendTime(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SetendTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FendTime=AValue) then exit;
@@ -945,7 +951,7 @@ end;
 
 
 
-Procedure TOperation.Seterror(AIndex : Integer; const AValue : TOperationTypeerror); 
+Procedure TOperation.Seterror(AIndex : Integer; const AValue : TOperationTypeerror);
 
 begin
   If (Ferror=AValue) then exit;
@@ -955,7 +961,7 @@ end;
 
 
 
-Procedure TOperation.SethttpErrorMessage(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SethttpErrorMessage(AIndex : Integer; const AValue : String);
 
 begin
   If (FhttpErrorMessage=AValue) then exit;
@@ -965,7 +971,7 @@ end;
 
 
 
-Procedure TOperation.SethttpErrorStatusCode(AIndex : Integer; const AValue : integer); 
+Procedure TOperation.SethttpErrorStatusCode(AIndex : Integer; const AValue : integer);
 
 begin
   If (FhttpErrorStatusCode=AValue) then exit;
@@ -975,7 +981,7 @@ end;
 
 
 
-Procedure TOperation.Setid(AIndex : Integer; const AValue : String); 
+Procedure TOperation.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -985,7 +991,7 @@ end;
 
 
 
-Procedure TOperation.SetinsertTime(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SetinsertTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FinsertTime=AValue) then exit;
@@ -995,7 +1001,7 @@ end;
 
 
 
-Procedure TOperation.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOperation.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1005,7 +1011,7 @@ end;
 
 
 
-Procedure TOperation.Setname(AIndex : Integer; const AValue : String); 
+Procedure TOperation.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -1015,7 +1021,7 @@ end;
 
 
 
-Procedure TOperation.SetoperationType(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SetoperationType(AIndex : Integer; const AValue : String);
 
 begin
   If (FoperationType=AValue) then exit;
@@ -1025,7 +1031,7 @@ end;
 
 
 
-Procedure TOperation.Setprogress(AIndex : Integer; const AValue : integer); 
+Procedure TOperation.Setprogress(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fprogress=AValue) then exit;
@@ -1035,7 +1041,7 @@ end;
 
 
 
-Procedure TOperation.Setregion(AIndex : Integer; const AValue : String); 
+Procedure TOperation.Setregion(AIndex : Integer; const AValue : String);
 
 begin
   If (Fregion=AValue) then exit;
@@ -1045,7 +1051,7 @@ end;
 
 
 
-Procedure TOperation.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -1055,7 +1061,7 @@ end;
 
 
 
-Procedure TOperation.SetstartTime(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SetstartTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FstartTime=AValue) then exit;
@@ -1065,7 +1071,7 @@ end;
 
 
 
-Procedure TOperation.Setstatus(AIndex : Integer; const AValue : String); 
+Procedure TOperation.Setstatus(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -1075,7 +1081,7 @@ end;
 
 
 
-Procedure TOperation.SetstatusMessage(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SetstatusMessage(AIndex : Integer; const AValue : String);
 
 begin
   If (FstatusMessage=AValue) then exit;
@@ -1085,7 +1091,7 @@ end;
 
 
 
-Procedure TOperation.SettargetId(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SettargetId(AIndex : Integer; const AValue : String);
 
 begin
   If (FtargetId=AValue) then exit;
@@ -1095,7 +1101,7 @@ end;
 
 
 
-Procedure TOperation.SettargetLink(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SettargetLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FtargetLink=AValue) then exit;
@@ -1105,7 +1111,7 @@ end;
 
 
 
-Procedure TOperation.Setuser(AIndex : Integer; const AValue : String); 
+Procedure TOperation.Setuser(AIndex : Integer; const AValue : String);
 
 begin
   If (Fuser=AValue) then exit;
@@ -1115,7 +1121,7 @@ end;
 
 
 
-Procedure TOperation.Setwarnings(AIndex : Integer; const AValue : TOperationTypewarningsArray); 
+Procedure TOperation.Setwarnings(AIndex : Integer; const AValue : TOperationTypewarningsArray);
 
 begin
   If (Fwarnings=AValue) then exit;
@@ -1125,7 +1131,7 @@ end;
 
 
 
-Procedure TOperation.Setzone(AIndex : Integer; const AValue : String); 
+Procedure TOperation.Setzone(AIndex : Integer; const AValue : String);
 
 begin
   If (Fzone=AValue) then exit;
@@ -1136,7 +1142,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOperation.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOperation.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1155,7 +1161,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperationList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TOperationList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -1165,7 +1171,7 @@ end;
 
 
 
-Procedure TOperationList.Setitems(AIndex : Integer; const AValue : TOperationListTypeitemsArray); 
+Procedure TOperationList.Setitems(AIndex : Integer; const AValue : TOperationListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -1175,7 +1181,7 @@ end;
 
 
 
-Procedure TOperationList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOperationList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1185,7 +1191,7 @@ end;
 
 
 
-Procedure TOperationList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TOperationList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -1195,7 +1201,7 @@ end;
 
 
 
-Procedure TOperationList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TOperationList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -1206,7 +1212,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOperationList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOperationList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1225,7 +1231,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TRollingUpdateTypeerrorTypeerrorsItem.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TRollingUpdateTypeerrorTypeerrorsItem.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -1235,7 +1241,7 @@ end;
 
 
 
-Procedure TRollingUpdateTypeerrorTypeerrorsItem.Setlocation(AIndex : Integer; const AValue : String); 
+Procedure TRollingUpdateTypeerrorTypeerrorsItem.Setlocation(AIndex : Integer; const AValue : String);
 
 begin
   If (Flocation=AValue) then exit;
@@ -1245,7 +1251,7 @@ end;
 
 
 
-Procedure TRollingUpdateTypeerrorTypeerrorsItem.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TRollingUpdateTypeerrorTypeerrorsItem.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -1262,7 +1268,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TRollingUpdateTypeerror.Seterrors(AIndex : Integer; const AValue : TRollingUpdateTypeerrorTypeerrorsArray); 
+Procedure TRollingUpdateTypeerror.Seterrors(AIndex : Integer; const AValue : TRollingUpdateTypeerrorTypeerrorsArray);
 
 begin
   If (Ferrors=AValue) then exit;
@@ -1273,7 +1279,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TRollingUpdateTypeerror.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TRollingUpdateTypeerror.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1292,7 +1298,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TRollingUpdateTypepolicy.SetautoPauseAfterInstances(AIndex : Integer; const AValue : integer); 
+Procedure TRollingUpdateTypepolicy.SetautoPauseAfterInstances(AIndex : Integer; const AValue : integer);
 
 begin
   If (FautoPauseAfterInstances=AValue) then exit;
@@ -1302,7 +1308,7 @@ end;
 
 
 
-Procedure TRollingUpdateTypepolicy.SetinstanceStartupTimeoutSec(AIndex : Integer; const AValue : integer); 
+Procedure TRollingUpdateTypepolicy.SetinstanceStartupTimeoutSec(AIndex : Integer; const AValue : integer);
 
 begin
   If (FinstanceStartupTimeoutSec=AValue) then exit;
@@ -1312,7 +1318,7 @@ end;
 
 
 
-Procedure TRollingUpdateTypepolicy.SetmaxNumConcurrentInstances(AIndex : Integer; const AValue : integer); 
+Procedure TRollingUpdateTypepolicy.SetmaxNumConcurrentInstances(AIndex : Integer; const AValue : integer);
 
 begin
   If (FmaxNumConcurrentInstances=AValue) then exit;
@@ -1322,7 +1328,7 @@ end;
 
 
 
-Procedure TRollingUpdateTypepolicy.SetmaxNumFailedInstances(AIndex : Integer; const AValue : integer); 
+Procedure TRollingUpdateTypepolicy.SetmaxNumFailedInstances(AIndex : Integer; const AValue : integer);
 
 begin
   If (FmaxNumFailedInstances=AValue) then exit;
@@ -1332,7 +1338,7 @@ end;
 
 
 
-Procedure TRollingUpdateTypepolicy.SetminInstanceUpdateTimeSec(AIndex : Integer; const AValue : integer); 
+Procedure TRollingUpdateTypepolicy.SetminInstanceUpdateTimeSec(AIndex : Integer; const AValue : integer);
 
 begin
   If (FminInstanceUpdateTimeSec=AValue) then exit;
@@ -1349,7 +1355,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TRollingUpdate.SetactionType(AIndex : Integer; const AValue : String); 
+Procedure TRollingUpdate.SetactionType(AIndex : Integer; const AValue : String);
 
 begin
   If (FactionType=AValue) then exit;
@@ -1359,7 +1365,7 @@ end;
 
 
 
-Procedure TRollingUpdate.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TRollingUpdate.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -1369,7 +1375,7 @@ end;
 
 
 
-Procedure TRollingUpdate.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TRollingUpdate.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -1379,7 +1385,7 @@ end;
 
 
 
-Procedure TRollingUpdate.Seterror(AIndex : Integer; const AValue : TRollingUpdateTypeerror); 
+Procedure TRollingUpdate.Seterror(AIndex : Integer; const AValue : TRollingUpdateTypeerror);
 
 begin
   If (Ferror=AValue) then exit;
@@ -1389,7 +1395,7 @@ end;
 
 
 
-Procedure TRollingUpdate.Setid(AIndex : Integer; const AValue : String); 
+Procedure TRollingUpdate.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -1399,7 +1405,7 @@ end;
 
 
 
-Procedure TRollingUpdate.SetinstanceGroup(AIndex : Integer; const AValue : String); 
+Procedure TRollingUpdate.SetinstanceGroup(AIndex : Integer; const AValue : String);
 
 begin
   If (FinstanceGroup=AValue) then exit;
@@ -1409,7 +1415,7 @@ end;
 
 
 
-Procedure TRollingUpdate.SetinstanceGroupManager(AIndex : Integer; const AValue : String); 
+Procedure TRollingUpdate.SetinstanceGroupManager(AIndex : Integer; const AValue : String);
 
 begin
   If (FinstanceGroupManager=AValue) then exit;
@@ -1419,7 +1425,7 @@ end;
 
 
 
-Procedure TRollingUpdate.SetinstanceTemplate(AIndex : Integer; const AValue : String); 
+Procedure TRollingUpdate.SetinstanceTemplate(AIndex : Integer; const AValue : String);
 
 begin
   If (FinstanceTemplate=AValue) then exit;
@@ -1429,7 +1435,7 @@ end;
 
 
 
-Procedure TRollingUpdate.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TRollingUpdate.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1439,7 +1445,7 @@ end;
 
 
 
-Procedure TRollingUpdate.SetoldInstanceTemplate(AIndex : Integer; const AValue : String); 
+Procedure TRollingUpdate.SetoldInstanceTemplate(AIndex : Integer; const AValue : String);
 
 begin
   If (FoldInstanceTemplate=AValue) then exit;
@@ -1449,7 +1455,7 @@ end;
 
 
 
-Procedure TRollingUpdate.Setpolicy(AIndex : Integer; const AValue : TRollingUpdateTypepolicy); 
+Procedure TRollingUpdate.Setpolicy(AIndex : Integer; const AValue : TRollingUpdateTypepolicy);
 
 begin
   If (Fpolicy=AValue) then exit;
@@ -1459,7 +1465,7 @@ end;
 
 
 
-Procedure TRollingUpdate.Setprogress(AIndex : Integer; const AValue : integer); 
+Procedure TRollingUpdate.Setprogress(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fprogress=AValue) then exit;
@@ -1469,7 +1475,7 @@ end;
 
 
 
-Procedure TRollingUpdate.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TRollingUpdate.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -1479,7 +1485,7 @@ end;
 
 
 
-Procedure TRollingUpdate.Setstatus(AIndex : Integer; const AValue : String); 
+Procedure TRollingUpdate.Setstatus(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -1489,7 +1495,7 @@ end;
 
 
 
-Procedure TRollingUpdate.SetstatusMessage(AIndex : Integer; const AValue : String); 
+Procedure TRollingUpdate.SetstatusMessage(AIndex : Integer; const AValue : String);
 
 begin
   If (FstatusMessage=AValue) then exit;
@@ -1499,7 +1505,7 @@ end;
 
 
 
-Procedure TRollingUpdate.Setuser(AIndex : Integer; const AValue : String); 
+Procedure TRollingUpdate.Setuser(AIndex : Integer; const AValue : String);
 
 begin
   If (Fuser=AValue) then exit;
@@ -1516,7 +1522,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TRollingUpdateList.Setitems(AIndex : Integer; const AValue : TRollingUpdateListTypeitemsArray); 
+Procedure TRollingUpdateList.Setitems(AIndex : Integer; const AValue : TRollingUpdateListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -1526,7 +1532,7 @@ end;
 
 
 
-Procedure TRollingUpdateList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TRollingUpdateList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1536,7 +1542,7 @@ end;
 
 
 
-Procedure TRollingUpdateList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TRollingUpdateList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -1546,7 +1552,7 @@ end;
 
 
 
-Procedure TRollingUpdateList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TRollingUpdateList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -1557,7 +1563,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TRollingUpdateList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TRollingUpdateList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1919,7 +1925,7 @@ begin
   Result[2].Description:='View and manage replica pools';
   Result[3].Name:='https://www.googleapis.com/auth/replicapool.readonly';
   Result[3].Description:='View replica pools';
-  
+
 end;
 
 Class Function TReplicapoolupdaterAPI.APINeedsAuth : Boolean;

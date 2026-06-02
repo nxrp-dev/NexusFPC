@@ -13,14 +13,21 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit elfwriter;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$MODE OBJFPC} {$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, System.Resources.Resource, System.Resources.Elf.Consts, System.Resources.Elf.Types;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, resource, elfconsts, elftypes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   EElfResourceWriterException = class(EResourceWriterException);
@@ -43,7 +50,7 @@ type
     fOppositeEndianess : boolean;
     procedure SetDefaultTarget;
     procedure SetMachineType(const aMachineType : TElfMachineType);
-    
+
     procedure WriteElfIdent(aStream : TStream);
   protected
     function GetExtensions : string; override;
@@ -58,7 +65,11 @@ type
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.Resources.Tree, System.Resources.StringTable.Types, System.Resources.Types;
+{$ELSE FPC_DOTTEDUNITS}
 uses resourcetree, strtable, fpcrestypes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
 
@@ -110,7 +121,7 @@ type
     property Items[index : integer] : PElf64Symbol read GetItem; default;
     property FirstGlobal : integer read fLocFree;
   end;
-  
+
   { TAbstractElfSubWriter }
 
   TAbstractElfSubWriter = class
@@ -545,6 +556,7 @@ procedure TElfResourceWriter.SetMachineType(const aMachineType: TElfMachineType)
 begin
   case aMachineType of
     emtsparc  : begin fMachineTypeInt:=EM_SPARC; fBits:=ELFCLASS32; fOrder:=ELFDATA2MSB; end;
+    emtsparc64: begin fMachineTypeInt:=EM_SPARCV9; fBits:=ELFCLASS64; fOrder:=ELFDATA2MSB; end;
     emti386   : begin fMachineTypeInt:=EM_386; fBits:=ELFCLASS32; fOrder:=ELFDATA2LSB; end;
     emtm68k   : begin fMachineTypeInt:=EM_68K; fBits:=ELFCLASS32; fOrder:=ELFDATA2MSB; end;
     emtppc    : begin fMachineTypeInt:=EM_PPC; fBits:=ELFCLASS32; fOrder:=ELFDATA2MSB; end;
@@ -578,7 +590,7 @@ begin
   ident.OsAbi:=ELFOSABI_NONE; // UNIX System V ABI
   ident.AbiVersion:=0;
   FillByte(ident.Padding[9],length(ident.Padding),0);
-  
+
   aStream.WriteBuffer(ident,sizeof(ident));
 end;
 

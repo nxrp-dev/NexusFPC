@@ -47,8 +47,8 @@ Type
     // Procedures which MAY be overridden in descendents
     procedure WriteBeginDocument; virtual;
     procedure WriteEndDocument; virtual;
-    Function  EscapeText(S : UnicodeString) : String; overload;
-    Function  EscapeText(S : String) : String; virtual; overload;
+    Function  EscapeText(S : UnicodeString) : AnsiString; overload;
+    Function  EscapeText(S : AnsiString) : AnsiString; virtual; overload;
     Function  StripText(S : String) : String; virtual;
     Procedure StartProcedure; Virtual;
     Procedure EndProcedure; Virtual;
@@ -87,7 +87,7 @@ Type
     procedure WriteUnitEntry(UnitRef : TPasType);virtual; Abstract;
     procedure EndUnitOverview; virtual; Abstract;
     Property LastURL : DomString Read FLastURL Write FLastURL;
-    // Overriden from fpdocwriter;
+    // Overridden from fpdocwriter;
     procedure DescrWriteText(const AText: DOMString); override;
     // Actual writing happens here.
     Procedure DoWriteDocumentation; override;
@@ -280,7 +280,7 @@ end;
   Default implementations, may be overridden in descendents
   ---------------------------------------------------------------------}
 
-function TLinearWriter.EscapeText(S: String): String;
+function TLinearWriter.EscapeText(S: AnsiString): AnsiString;
 
 begin
   Result:=S;
@@ -428,7 +428,8 @@ begin
   WriteClassInheritanceOverView(ClassDecl);
 
   // Write Interfaces Overview;
-  WriteClassInterfacesOverView(ClassDecl);
+  if assigned(ClassDecl.Interfaces) then
+    WriteClassInterfacesOverView(ClassDecl);
   // Write method overview
   WriteMethodOverView(ClassDecl,ClassDecl.Members);
   // Write Property Overview;
@@ -1486,7 +1487,7 @@ begin
   // do nothing
 end;
 
-function TLinearWriter.EscapeText(S: UnicodeString): String;
+function TLinearWriter.EscapeText(S: UnicodeString): AnsiString;
 begin
   Result:=EscapeText(UTF8Encode(S));
 end;

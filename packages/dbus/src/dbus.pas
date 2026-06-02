@@ -1,6 +1,6 @@
 {
   Pascal translation of the dbus headers
-  
+
   Based on dbus version 1.2.16
 }
 { -*- mode: C; c-file-style: "gnu" -*- }
@@ -9,7 +9,7 @@
  * Copyright (C) 2002, 2003  Red Hat Inc.
  *
  * Licensed under the Academic Free License version 2.1
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -19,14 +19,16 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301, USA.
  *
  }
+{$IFNDEF FPC_DOTTEDUNITS}
 unit dbus;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$ifdef fpc}
   {$mode delphi}{$H+}
@@ -48,7 +50,11 @@ unit dbus;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.CTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses ctypes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
 {$ifdef unix}
@@ -85,7 +91,7 @@ const
  * convenient when used with the GLib bindings, Python bindings, Qt
  * bindings, Mono bindings, and so forth.  This low-level API has a
  * lot of complexity useful only for bindings.
- * 
+ *
  }
 implementation
 

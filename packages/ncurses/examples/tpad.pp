@@ -33,10 +33,10 @@ end;
 
 function randomchar: chtype;
 var
-  ch: Char = #0;
+  ch: AnsiChar = #0;
 begin
   while not (ch in ['0'..'9','A'..'Z','a'..'z']) do
-    ch := Char(Random(123));
+    ch := AnsiChar(Random(123));
   randomchar := chtype(ch);
 end;
 
@@ -104,7 +104,7 @@ begin
   nstr.coord[x] += st_middle(mx,width);
 
   wattron(win,nstr.attr);
-  mvwaddnstr(win,nstr.coord[y],nstr.coord[x],PChar(nstr.str),width);
+  mvwaddnstr(win,nstr.coord[y],nstr.coord[x],PAnsiChar(nstr.str),width);
   wattroff(win,nstr.attr);
 end;
 
@@ -560,7 +560,8 @@ begin
       doupdate();
     until (ch = chtype('q')) OR (ch = KEY_F(10));
   finally
-    ncpad.destroy;
+    if ncpad <> nil then  {if parameters are wrong "ncpad" is not even created}
+      ncpad.destroy;
     curs_set(1);
     endwin();
   end;

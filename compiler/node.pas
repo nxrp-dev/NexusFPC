@@ -41,7 +41,7 @@ interface
           symdifn,          {Represents the >< operator}
           modn,             {Represents the mod operator}
           assignn,          {Represents an assignment}
-          loadn,            {Represents the use of a variabele}
+          loadn,            {Represents the use of a variable}
           rangen,           {Represents a range (i.e. 0..9)}
           ltn,              {Represents the < operator}
           lten,             {Represents the <= operator}
@@ -208,14 +208,10 @@ interface
     type
        { all boolean field of ttree are now collected in flags }
        tnodeflag = (
-         { tbinop operands can be swaped }
-         nf_swapable,
-         { tbinop operands are swaped    }
+         { tbinop operands are swapped    }
          nf_swapped,
-         nf_error,
 
          { general }
-         nf_pass1_done,
          { Node is written to    }
          nf_write,
          { Node is modified      }
@@ -224,40 +220,20 @@ interface
          nf_address_taken,
          nf_is_funcret,
          nf_isproperty,
-         nf_processing,
          { Node cannot be assigned to }
          nf_no_lvalue,
          { this node is the user code entry, if a node with this flag is removed
-           during simplify, the flag must be moved to another node }
+           during simplify, the flag must be moved to another node.  Though
+           normally applicable to block nodes, they can also appear on asm nodes
+           in the case of pure assembly routines }
          nf_usercode_entry,
-
-         { tderefnode }
-         nf_no_checkpointer,
-
-         { tvecnode }
-         nf_memindex,
-         nf_memseg,
-         nf_callunique,
 
          { tloadnode/ttypeconvnode }
          nf_absolute,
 
-         { taddnode }
-         { if the result type of a node is currency, then this flag denotes, that the value is already mulitplied by 10000 }
+         { taddnode, but appears in typeconv nodes as well among other places }
+         { if the result type of a node is currency, then this flag denotes, that the value is already multiplied by 10000 }
          nf_is_currency,
-         nf_has_pointerdiv,
-         { the node shall be short boolean evaluated, this flag has priority over localswitches }
-         nf_short_bool,
-
-         { tmoddivnode }
-         nf_isomod,
-
-         { tassignmentnode }
-         nf_assign_done_in_right,
-
-         { tarrayconstructnode }
-         nf_forcevaria,
-         nf_novariaallowed,
 
          { ttypeconvnode, and the first one also treal/ord/pointerconstn }
          { second one also for subtractions of u32-u32 implicitly upcasted to s64 }
@@ -266,36 +242,46 @@ interface
          nf_internal,  { no warnings/hints generated }
          nf_load_procvar,
 
-         { tinlinenode }
-         nf_inlineconst,
-
-         { tasmnode }
-         nf_get_asm_position,
-
-         { tblocknode }
+         { tblocknode / this is not node-specific because it can also appear on
+           implicit try/finally nodes }
          nf_block_with_exit,
 
-         { tloadvmtaddrnode }
+         { tloadvmtaddrnode / tisnode }
          nf_ignore_for_wpo, { we know that this loadvmtaddrnode cannot be used to construct a class instance }
 
          { node is derived from generic parameter }
-         nf_generic_para,
-
-         { internal flag to indicate that this node has been removed from the tree or must otherwise not be
-           execute.  Running it through firstpass etc. will raise an internal error }
-         nf_do_not_execute
+         nf_generic_para
        );
 
        tnodeflags = set of tnodeflag;
 
+       TTransientNodeFlag = (
+         { general }
+         tnf_pass1_done,
+         tnf_error,
+
+         { tbinop operands can be swapped }
+         tnf_swapable,
+
+         tnf_processing,
+
+         { internal flag to indicate that this node has been removed from the tree or must otherwise not be
+           execute.  Running it through firstpass etc. will raise an internal error }
+         tnf_do_not_execute
+       );
+
+       TTransientNodeFlags = set of TTransientNodeFlag;
+
+
     const
        { contains the flags which must be equal for the equality }
        { of nodes                                                }
-       flagsequal : tnodeflags = [nf_error];
+       flagsequal : tnodeflags = [];
+       transientflagsequal : TTransientNodeFlags = [tnf_error];
 
     type
-       tnodelist = class
-       end;
+      tnodelist = class
+      end;
 
       pnode = ^tnode;
       { basic class for the intermediated representation fpc uses }
@@ -320,6 +306,7 @@ interface
          successor : tnode;
          { there are some properties about the node stored }
          flags  : tnodeflags;
+         transientflags : TTransientNodeFlags;
          resultdef     : tdef;
          resultdefderef : tderef;
          fileinfo      : tfileposinfo;
@@ -367,7 +354,7 @@ interface
 
          { comparing of nodes }
          function isequal(p : tnode) : boolean;
-         { to implement comparisation, override this method }
+         { to implement comparison, override this method }
          function docompare(p : tnode) : boolean;virtual;
          { wrapper for getcopy }
          function getcopy : tnode;
@@ -400,7 +387,7 @@ interface
 
       tnodeclassarray = array[tnodetype] of tnodeclass;
 
-      { this node is the anchestor for all nodes with at least   }
+      { this node is the ancestor for all nodes with at least    }
       { one child, you have to use it if you want to use         }
       { true- and current_procinfo.CurrFalseLabel                                     }
       //punarynode = ^tunarynode;
@@ -490,8 +477,10 @@ interface
     function ppuloadnodetree(ppufile:tcompilerppufile):tnode;
     procedure ppuwritenodetree(ppufile:tcompilerppufile;n:tnode);
 
+    procedure printfileinfo(var t:text;pos:tfileposinfo);
+    procedure dprintfileinfo(pos:tfileposinfo);
     procedure printnode(var t:text;n:tnode);
-    procedure printnode(n:tnode);
+    procedure dprintnode(n:tnode);
 {$ifdef DEBUG_NODE_XML}
     procedure XMLPrintNode(var T: Text; N: TNode);
 {$endif DEBUG_NODE_XML}
@@ -511,11 +500,12 @@ interface
 implementation
 
     uses
-       verbose,entfile,comphook,
+       verbose,entfile,
+       finput,comphook,
 {$ifdef DEBUG_NODE_XML}
        cutils,
 {$endif DEBUG_NODE_XML}
-       ppu,
+       ppu,fmodule,
        symconst,
        nutils,nflw,
        defutil;
@@ -661,9 +651,31 @@ implementation
       end;
 
 
-    procedure printnode(n:tnode);
+    procedure dprintnode(n:tnode);
       begin
         printnode(output,n);
+      end;
+
+    procedure printfileinfo(var t:text; pos:tfileposinfo);
+      var
+	infile : string;
+	module : tmodule;
+	afile : tinputfile;
+      begin
+        infile:='inconsistent';
+	module:=get_module(pos.moduleindex);
+	if assigned(module) then
+          begin
+            afile:=module.sourcefiles.get_file(pos.fileindex);
+	    if assigned(afile) then
+              infile:=afile.name;
+	  end;
+        write(t,'(',infile,':',pos.line,',',pos.column,')');
+      end;
+
+    procedure dprintfileinfo(pos:tfileposinfo);
+      begin
+        printfileinfo(output,pos);
       end;
 
 {$ifdef DEBUG_NODE_XML}
@@ -783,7 +795,7 @@ implementation
         ppufile.getset(tppuset5(localswitches));
         verbosity:=ppufile.getlongint;
         ppufile.getderef(resultdefderef);
-        ppufile.getset(tppuset5(flags));
+        ppufile.getset(tppuset2(flags));
         { updated by firstpass }
         expectloc:=LOC_INVALID;
         { updated by secondpass }
@@ -793,12 +805,12 @@ implementation
 
     procedure tnode.ppuwrite(ppufile:tcompilerppufile);
       begin
-        ppufile.putbyte(byte(block_type));
+        ppufile.putbyte(byte(blocktype));
         ppufile.putposinfo(fileinfo);
         ppufile.putset(tppuset5(localswitches));
         ppufile.putlongint(verbosity);
         ppufile.putderef(resultdefderef);
-        ppufile.putset(tppuset5(flags));
+        ppufile.putset(tppuset2(flags));
       end;
 
 
@@ -873,11 +885,11 @@ implementation
       begin
         write(t,nodetype2str[nodetype]);
         if assigned(resultdef) then
-          write(t,', resultdef = ',resultdef.typesymbolprettyname,' = "',resultdef.GetTypeName,'"')
+          write(t,', resultdef = ',resultdef.typesymbolprettyname,' = "',resultdef.GetTypeName,'" ')
         else
-          write(t,', resultdef = <nil>');
-        write(t,', pos = (',fileinfo.line,',',fileinfo.column,')',
-                  ', loc = ',tcgloc2str[location.loc],
+          write(t,', resultdef = <nil> ');
+        printfileinfo(t,fileinfo);
+	write(t,', loc = ',tcgloc2str[location.loc],
                   ', expectloc = ',tcgloc2str[expectloc],
                   ', flags = [');
         first:=true;
@@ -891,7 +903,7 @@ implementation
               write(t, i);
             end;
         write(t,']');
-        if (nf_pass1_done in flags) then
+        if (tnf_pass1_done in transientflags) then
           write(t,', cmplx = ',node_complexity(self));
         if assigned(optinfo) then
           write(t,', optinfo = ',HexStr(optinfo));
@@ -919,7 +931,8 @@ implementation
       instead call XMLPrintNode to write a complete tree }
     procedure tnode.XMLPrintNodeInfo(var T: Text);
       var
-        i: TNodeFlag;
+        i_nf: TNodeFlag;
+        i_tnf: TTransientNodeFlag;
         first: Boolean;
       begin
         if Assigned(resultdef) then
@@ -928,19 +941,31 @@ implementation
         Write(T,' pos="',fileinfo.line,',',fileinfo.column);
 
         First := True;
-        for i := Low(TNodeFlag) to High(TNodeFlag) do
-          if i in flags then
-            begin
-              if First then
-                begin
-                  Write(T, '" flags="', i);
-                  First := False;
-                end
-              else
-                Write(T, ',', i)
-            end;
-        write(t,'"');
-        if (nf_pass1_done in flags) then
+        for i_nf in flags do
+          begin
+            if First then
+              begin
+                Write(T, '" flags="', i_nf);
+                First := False;
+              end
+            else
+              Write(T, ',', i_nf)
+          end;
+
+        First := True;
+        for i_tnf in transientflags do
+          begin
+            if First then
+              begin
+                Write(T, '" transientflags="', i_tnf);
+                First := False;
+              end
+            else
+              Write(T, ',', i_tnf)
+          end;
+        write(T,'"');
+
+        if (tnf_pass1_done in transientflags) then
           write(t,' complexity="',node_complexity(self),'"');
       end;
 
@@ -971,6 +996,7 @@ implementation
             (p.classtype=classtype) and
             (p.nodetype=nodetype) and
             (flags*flagsequal=p.flags*flagsequal) and
+            (transientflags*transientflagsequal=p.transientflags*transientflagsequal) and
             docompare(p));
       end;
 
@@ -1024,6 +1050,7 @@ implementation
          p.expectloc:=expectloc;
          p.location:=location;
          p.flags:=flags;
+         p.transientflags:=transientflags;
          p.resultdef:=resultdef;
          p.fileinfo:=fileinfo;
          p.localswitches:=localswitches;
@@ -1073,6 +1100,7 @@ implementation
     destructor tunarynode.destroy;
       begin
         left.free;
+        left := nil;
         inherited destroy;
       end;
 
@@ -1152,7 +1180,7 @@ implementation
       begin
         Result := left;
         left := nil;
-        Include(flags, nf_do_not_execute);
+        Include(transientflags, tnf_do_not_execute);
       end;
 
 
@@ -1180,6 +1208,7 @@ implementation
     destructor tbinarynode.destroy;
       begin
         right.free;
+        right := nil;
         inherited destroy;
       end;
 
@@ -1306,7 +1335,7 @@ implementation
       begin
         Result := right;
         right := nil;
-        Include(flags, nf_do_not_execute);
+        Include(transientflags, tnf_do_not_execute);
       end;
 
 
@@ -1334,6 +1363,7 @@ implementation
     destructor ttertiarynode.destroy;
       begin
         third.free;
+        third := nil;
         inherited destroy;
       end;
 
@@ -1421,7 +1451,7 @@ implementation
       begin
         Result := third;
         third := nil;
-        Include(flags, nf_do_not_execute);
+        Include(transientflags, tnf_do_not_execute);
       end;
 
 
@@ -1439,7 +1469,7 @@ implementation
       begin
          docompare:=(inherited docompare(p)) or
            { if that's in the flags, is p then always a tbinopnode (?) (JM) }
-           ((nf_swapable in flags) and
+           ((tnf_swapable in transientflags) and
             left.isequal(tbinopnode(p).right) and
             right.isequal(tbinopnode(p).left));
       end;
@@ -1455,6 +1485,9 @@ implementation
       end;
 {$endif DEBUG_NODE_XML}
 
+var
+  printfileinfo_address : pointer;
+  printnode_address : pointer;
 
 begin
 {$push}{$warnings off}
@@ -1465,5 +1498,7 @@ begin
   if ord(high(tnodeflags))>31 then
     internalerror(2014020701); *)
 {$pop}
+  printfileinfo_address:=@dprintfileinfo;
+  printnode_address:=@dprintnode;
 end.
 

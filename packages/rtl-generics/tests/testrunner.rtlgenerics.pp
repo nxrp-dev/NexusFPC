@@ -15,20 +15,25 @@ uses
   tests.generics.sets,
   tests.generics.queue,
   tests.generics.stack,
-  tests.generics.dictionary
+  tests.generics.dictionary,
+  tests.generics.dictionary2
   ;
 
 var
   Application: TTestRunner;
 
 begin
+  DefaultFormat:=fPlain;
+  DefaultRunAllTests:=True;
   Application := TTestRunner.Create(nil);
   Application.Initialize;
   Application.Title := 'RTL-Generics unit tests';
   Application.Run;
   Application.Free;
+{$IFDEF WINDOWS}  
 {$IFDEF WAIT_FOR_ENTER}
   WriteLn('Press enter...');
   ReadLn;
+{$ENDIF}
 {$ENDIF}
 end.

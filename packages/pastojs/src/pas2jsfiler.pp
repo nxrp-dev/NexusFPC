@@ -63,7 +63,7 @@ Works:
 
   - TPCUReader.AddPendingSpecialize
   - TPCUReader.Set_SpecializeParam
-    - called when a Param of a spezialization was resolved,
+    - called when a Param of a specialization was resolved,
     - can trigger Resolver.GetSpecializedEl and ReadExternalReferences
   - TPCUReader.ReadExternalSpecialized
     -
@@ -76,7 +76,9 @@ Todo:
 - when pcu is bad, unload and use src
 - replace GUID with crc
 }
+{$IFNDEF FPC_DOTTEDUNITS}
 unit Pas2JsFiler;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
@@ -86,6 +88,17 @@ unit Pas2JsFiler;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.Types, System.SysUtils, System.Contnrs,
+  {$ifdef pas2js}
+  {$else}
+  System.ZLib.Zstream, Fcl.AVLTree,
+  {$endif}
+  FpJson.Data, FpJson.Parser, FpJson.Scanner,
+  Pascal.Tree, Pascal.Scanner, Pascal.Parser, Pascal.ResolveEval, Pascal.Resolver,
+  Pas2Js.Files.Utils, Pas2Js.Compiler.Transpiler, Pas2Js.Utils, Js.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, Types, SysUtils, contnrs,
   {$ifdef pas2js}
@@ -95,6 +108,7 @@ uses
   fpjson, jsonparser, jsonscanner,
   PasTree, PScanner, PParser, PasResolveEval, PasResolver,
   Pas2jsFileUtils, FPPas2Js, Pas2JSUtils, jsbase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   PCUMagic = 'Pas2JSCache';
@@ -140,7 +154,9 @@ const
     'AsyncProcs',
     'DisableResources',
     'po_AsmPascalComments',
-    'AllowMem' );
+    'AllowMem',
+    'WarnResourceNotFound',
+    'CheckDirectiveRTTI');
 
   PCUDefaultModeSwitches: TModeSwitches = [
     msObjfpc,
@@ -212,7 +228,9 @@ const
     'AnonymousFunctions',
     'ExternalClass',
     'OmitRTTI',
-    'MultilineStrings'
+    'MultilineStrings',
+    'DelphiMultilineStrings',
+    'InlineVars'
     ); // Dont forget to update ModeSwitchToInt !
 
   PCUDefaultBoolSwitches: TBoolSwitches = [
@@ -268,8 +286,7 @@ const
     'RTLVersionCheckSystem',
     'RTLVersionCheckUnit',
     'ShortRefGlobals',
-    'ObfuscateLocalIdentifiers',
-    'TruncateIntegersOnOverflow'
+    'ObfuscateLocalIdentifiers'
     );
 
   PCUDefaultTargetPlatform = PlatformBrowser;
@@ -331,7 +348,8 @@ const
     'Export',
     'Class',
     'Static',
-    'Far'
+    'Far',
+    'ThreadVar'
     );
 
   PCUDefaultExprKind = pekIdent;
@@ -339,6 +357,7 @@ const
     'Ident',
     'Number',
     'String',
+    'StringMultiLine',
     'Set',
     'Nil',
     'Bool',
@@ -351,7 +370,8 @@ const
     'Inherited',
     'Self',
     'Specialize',
-    'Procedure');
+    'Procedure',
+    'NamedArg');
 
   PCUExprOpCodeNames: array[TExprOpCode] of string = (
     'None',
@@ -448,7 +468,8 @@ const
     'SysV_ABI_CDecl',
     'MS_ABI_Default',
     'MS_ABI_CDecl',
-    'VectorCall'
+    'VectorCall',
+    'WinApi'
     );
 
   PCUProcTypeModifierNames: array[TProcTypeModifier] of string = (
@@ -528,10 +549,11 @@ const
     'Far',
     'Final',
     'DiscardResult',
-    'NoStackFrame', 
-    'section', 
-    'RtlProc', 
-    'InternProc'
+    'NoStackFrame',
+    'section',
+    'RtlProc',
+    'InternProc',
+    'WeakExternal'
     );
   PCUProcedureModifiersImplProc = [pmInline,pmAssembler,pmCompilerProc,pmNoReturn];
 
@@ -644,7 +666,7 @@ type
   TPCUSourceFileArray = array of TPCUSourceFile;
 
   TPCUGetSrcEvent = procedure(Sender: TObject; aFilename: string;
-    out p: PChar; out Count: integer) of object;
+    out p: PAnsiChar; out Count: integer) of object;
 
   { TPCUFilerContext - base class TPCUWriterContext/TPCUReaderContext }
 
@@ -1084,7 +1106,8 @@ type
     function CheckJSONArray(Data: TJSONData; El: TPasElement; const PropName: string): TJSONArray;
     function CheckJSONObject(Data: TJSONData; Id: int64): TJSONObject;
     function CheckJSONString(Data: TJSONData; Id: int64): String;
-    function ReadString(Obj: TJSONObject; const PropName: string; out s: string; El: TPasElement): boolean;
+    function ReadString(Obj: TJSONObject; const PropName: string; out s: AnsiString; El: TPasElement): boolean;
+    function ReadString(Obj: TJSONObject; const PropName: string; out s: UnicodeString; El: TPasElement): boolean;
     function ReadInteger(Obj: TJSONObject; const PropName: string; out i: integer; El: TPasElement): boolean;
     function ReadBoolean(Obj: TJSONObject; const PropName: string; out b: boolean; El: TPasElement): boolean;
     function ReadArray(Obj: TJSONObject; const PropName: string; out Arr: TJSONArray; El: TPasElement): boolean;
@@ -1319,7 +1342,7 @@ function EncodeVLQ(i: TMaxPrecUInt): string; overload;
 function DecodeVLQ(const s: string): TMaxPrecInt; // base256 Variable Length Quantity
 function DecodeVLQ(var p: PByte): TMaxPrecInt; // base256 Variable Length Quantity
 
-function ComputeChecksum(p: PChar; Cnt: integer): TPCUSourceFileChecksum;
+function ComputeChecksum(p: PAnsiChar; Cnt: integer): TPCUSourceFileChecksum;
 function crc32(crc: cardinal; buf: Pbyte; len: cardinal): cardinal;
 
 function ModeSwitchToInt(ms: TModeSwitch): byte;
@@ -1330,7 +1353,7 @@ procedure WriteJSON(aData: TJSONData; TargetStream: TStream; Compressed: boolean
 procedure GrowIdToRefsArray(var IdToRefsArray: TPCUFilerElementRefArray; Id: integer);
 
 function dbgmem(const s: string): string; overload;
-function dbgmem(p: PChar; Cnt: integer): string; overload;
+function dbgmem(p: PAnsiChar; Cnt: integer): string; overload;
 
 implementation
 
@@ -1478,9 +1501,9 @@ begin
     Result:=-Result;
 end;
 
-function ComputeChecksum(p: PChar; Cnt: integer): TPCUSourceFileChecksum;
+function ComputeChecksum(p: PAnsiChar; Cnt: integer): TPCUSourceFileChecksum;
 var
-  SrcP, SrcEndP, SrcLineEndP, SrcLineStartP: PChar;
+  SrcP, SrcEndP, SrcLineEndP, SrcLineStartP: PAnsiChar;
   l: PtrInt;
   CheckSum, CurLen: Cardinal;
 begin
@@ -1611,6 +1634,7 @@ end;
 
 function ModeSwitchToInt(ms: TModeSwitch): byte;
 begin
+  // these numbers are stored in files, so keep the values.
   case ms of
     msNone: Result:=0;
     msFpc: Result:=1;
@@ -1664,6 +1688,9 @@ begin
     msMultiHelpers: Result:=49;
     msImplicitFunctionSpec: Result:=50;
     msMultiLineStrings: Result:=51;
+    msDelphiMultiLineStrings: Result:=52;
+  else
+    Result:=0;
   end;
 end;
 
@@ -1689,7 +1716,7 @@ var
     TargetStream.Write(s[1],length(s));
   end;
 
-  procedure WriteChar(const c: char);
+  procedure WriteChar(const {%H-}c: AnsiChar);
   begin
     TargetStream.Write(c,1);
   end;
@@ -1830,10 +1857,10 @@ end;
 function dbgmem(const s: string): string;
 begin
   if s='' then exit('');
-  Result:=dbgmem(PChar(s),length(s));
+  Result:=dbgmem(PAnsiChar(s),length(s));
 end;
 
-function dbgmem(p: PChar; Cnt: integer): string;
+function dbgmem(p: PAnsiChar; Cnt: integer): string;
 
   procedure AddLine(const Line: string);
   begin
@@ -1843,7 +1870,7 @@ function dbgmem(p: PChar; Cnt: integer): string;
   end;
 
 var
-  c: Char;
+  c: AnsiChar;
   IsTxt: boolean;
   Line: String;
   i: Integer;
@@ -2104,7 +2131,7 @@ end;
 
 function TPCUFiler.GetSrcCheckSum(aFilename: string): TPCUSourceFileChecksum;
 var
-  p: PChar;
+  p: PAnsiChar;
   Cnt: integer;
 begin
   OnGetSrc(Self,aFilename,p,Cnt);
@@ -4350,7 +4377,7 @@ begin
     Obj.Add('Forward',true);
   if El.IsExternal then
     Obj.Add('External',true);
-  // not needed IsShortDefinition: Boolean; -> class(anchestor); without end
+  // not needed IsShortDefinition: Boolean; -> class(ancestor); without end
   WriteExpr(Obj,El,'GUID',El.GUIDExpr,aContext);
   if El.Modifiers.Count>0 then
     begin
@@ -4662,7 +4689,7 @@ begin
 
   if Scope.SpecializedFromItem<>nil then
     begin
-    // spezialiations are generated on the fly -> cannot be stored
+    // specializations are generated on the fly -> cannot be stored
     RaiseMsg(20191120180305,El,GetObjPath(Scope.SpecializedFromItem.FirstSpecialize));
     end;
   if (Scope.ImplJS<>nil) and (Scope.ImplProc<>nil) then
@@ -5010,7 +5037,7 @@ begin
     {$IFDEF VerbosePCUFiler}
     writeln('TPCUWriter.WritePCU create js');
     {$ENDIF}
-    Pas2jsFiler.WriteJSON(aJSON,TargetStream,Compressed);
+    {$IFDEF FPC_DOTTEDUNITS}Pas2js.Filer{$ELSE}Pas2jsFiler{$ENDIF}.WriteJSON(aJSON,TargetStream,Compressed);
     if Compressed then
       try
         {$IFDEF VerbosePCUFiler}
@@ -5837,7 +5864,7 @@ begin
 end;
 
 function TPCUReader.ReadString(Obj: TJSONObject; const PropName: string; out
-  s: string; El: TPasElement): boolean;
+  s: AnsiString; El: TPasElement): boolean;
 var
   Data: TJSONData;
 begin
@@ -5847,6 +5874,23 @@ begin
   if Data.ClassType=TJSONString then
     begin
     s:=String(Data.AsString);
+    exit(true);
+    end;
+  RaiseMsg(20180205133227,El,PropName+':'+Data.ClassName);
+  Result:=false;
+end;
+
+function TPCUReader.ReadString(Obj: TJSONObject; const PropName: string; out
+  s: UnicodeString; El: TPasElement): boolean;
+var
+  Data: TJSONData;
+begin
+  s:='';
+  Data:=Obj.Find(PropName);
+  if Data=nil then exit(false);
+  if Data.ClassType=TJSONString then
+    begin
+    s:=Data.AsUnicodeString;
     exit(true);
     end;
   RaiseMsg(20180205133227,El,PropName+':'+Data.ClassName);
@@ -9001,7 +9045,7 @@ begin
   ReadElType(Obj,'Ancestor',El,@Set_ClassType_AncestorType,aContext);
   ReadElType(Obj,'HelperFor',El,@Set_ClassType_HelperForType,aContext);
   ReadBoolean(Obj,'External',El.IsExternal,El);
-  // not needed IsShortDefinition: Boolean; -> class(anchestor); without end
+  // not needed IsShortDefinition: Boolean; -> class(ancestor); without end
   El.GUIDExpr:=ReadExpr(Obj,El,'GUID',aContext);
 
   // Modifiers

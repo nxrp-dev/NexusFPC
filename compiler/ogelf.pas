@@ -128,14 +128,14 @@ interface
          shoffset: aword;
          shstrndx: longword;
          symtabndx: longword;
-         shstrtab: PChar;
-         strtab: PChar;
+         shstrtab: TAnsiCharDynarray;
+         strtab: TAnsiCharDynarray;
          shstrtablen: longword;
          strtablen: longword;
          symtaboffset: aword;
          syms: longword;
          localsyms: longword;
-         symversions: PWord;
+         symversions: TWordDynArray;
          dynobj: boolean;
          CObjSymbol: TObjSymbolClass;
          verdefs: TFPHashObjectList;
@@ -515,8 +515,13 @@ implementation
     function TElfObjData.sectionname(atype:TAsmSectiontype;const aname:string;aorder:TAsmSectionOrder):string;
       const
         secnames : array[TAsmSectiontype] of string[length('__DATA, __datacoal_nt,coalesced')] = ('','',
-          { TODO: sec_rodata is still writable }
-          '.text','.data','.data','.rodata','.bss','.threadvar',
+          '.text','.data',
+{$if defined(support_rodata)}
+          '.rodata',
+{$else defined(support_rodata)}
+          '.data',
+{$endif defined(support_rodata)}
+          '.rodata','.bss','.threadvar',
           '.pdata',
           '.text', { darwin stubs }
           '__DATA,__nl_symbol_ptr',
@@ -526,7 +531,7 @@ implementation
           '.stab','.stabstr',
           '.idata$2','.idata$4','.idata$5','.idata$6','.idata$7','.edata',
           '.eh_frame',
-          '.debug_frame','.debug_info','.debug_line','.debug_abbrev','.debug_aranges','.debug_ranges',
+          '.debug_frame','.debug_info','.debug_line','.debug_abbrev','.debug_aranges','.debug_ranges','.debug_loc','.debug_loclists',
           '.fpc',
           '.toc',
           '.init',
@@ -568,13 +573,14 @@ implementation
           '.stack',
           '.heap',
           '.gcc_except_table',
-          '.ARM.attributes'
+          '.ARM.attributes',
+          '.note'
         );
       var
         sep : string[3];
         secname : string;
       begin
-        { section type user gives the user full controll on the section name }
+        { section type user gives the user full control on the section name }
         if atype=sec_user then
           result:=aname
         else
@@ -623,8 +629,20 @@ implementation
 
 
     procedure TElfObjData.writereloc(data:aint;len:aword;p:TObjSymbol;reltype:TObjRelocationType);
+      type
+        multi = record
+          case integer of
+          0 : (ba : array[0..sizeof(aint)-1] of byte);
+          1 : (b : byte);
+          2 : (w : word);
+          4 : (d : dword);
+          8 : (q : qword);
+        end;
+
       var
         symaddr : aint;
+        ba : multi;
+        b : byte;
         objreloc: TObjRelocation;
       begin
         if CurrObjSec=nil then
@@ -683,7 +701,31 @@ implementation
                 data:=0;
               end;
           end;
-        CurrObjSec.write(data,len);
+        if target_info.endian<>source_info.endian then
+          begin
+            ba.q:=0;
+            if (len<=sizeof(data)) then
+              case len of
+                1 : ba.b:=byte(data);
+                2 : begin
+                      ba.w:=word(data);
+                      ba.w:=swapendian(ba.w);
+                    end;
+                4 : begin
+                      ba.d:=dword(data);
+                      ba.d:=swapendian(ba.d);
+                    end;
+                8 : begin
+                      ba.q:=qword(data);
+                      ba.q:=swapendian(ba.q);
+                    end;
+              else
+                internalerror(2024012501);
+              end;
+            CurrObjSec.write(ba,len);
+          end
+        else
+          CurrObjSec.write(data,len);
       end;
 
 
@@ -704,6 +746,7 @@ implementation
     destructor TElfDynamicObjData.destroy;
       begin
         FVersionDefs.free;
+        FVersionDefs := nil;
         inherited Destroy;
       end;
 
@@ -1040,7 +1083,7 @@ implementation
            createsymtab(data);
            { Create the relocation sections, this needs valid secidx and symidx }
            ObjSectionList.ForEachCall(@section_create_relocsec,data);
-           { recalc nsections to incude the reloc sections }
+           { recalc nsections to include the reloc sections }
            nsections:=1;
            ObjSectionList.ForEachCall(@section_count_sections,@nsections);
            { create .shstrtab }
@@ -1130,12 +1173,9 @@ implementation
           FreeMem(FSymTbl);
         if Assigned(FSecTbl) then
           FreeMem(FSecTbl);
-        if Assigned(strtab) then
-          FreeMem(strtab);
-        if Assigned(shstrtab) then
-          FreeMem(shstrtab);
-        if Assigned(symversions) then
-          FreeMem(symversions);
+        strtab:=nil;
+        shstrtab:=nil;
+        symversions:=nil;
         inherited Destroy;
       end;
 
@@ -1557,9 +1597,9 @@ implementation
         if shdrs[shstrndx].sh_type<>SHT_STRTAB then
           InternalError(2012060202);
         shstrtablen:=shdrs[shstrndx].sh_size;
-        GetMem(shstrtab,shstrtablen);
+        SetLength(shstrtab,shstrtablen);
         FReader.seek(shdrs[shstrndx].sh_offset);
-        FReader.read(shstrtab^,shstrtablen);
+        FReader.read(shstrtab[0],shstrtablen);
         FLoaded[shstrndx]:=True;
 
         { Locate the symtable, it is typically at the end so loop backwards.
@@ -1580,9 +1620,9 @@ implementation
             if shdrs[strndx].sh_type<>SHT_STRTAB then
               InternalError(2012062703);
             strtablen:=shdrs[strndx].sh_size;
-            GetMem(strtab,strtablen);
+            setLength(strtab,strtablen);
             FReader.seek(shdrs[strndx].sh_offset);
-            FReader.read(strtab^,strtablen);
+            FReader.read(strtab[0],strtablen);
 
             symtaboffset:=shdrs[i].sh_offset;
             syms:=shdrs[i].sh_size div sizeof(TElfSymbol);
@@ -1626,9 +1666,9 @@ implementation
                         InternalError(2012102004);
                       if shdrs[i].sh_size<>syms*sizeof(word) then
                         InternalError(2012102005);
-                      GetMem(symversions,shdrs[i].sh_size);
+                      SetLength(symversions,shdrs[i].sh_size);
                       FReader.seek(shdrs[i].sh_offset);
-                      FReader.read(symversions^,shdrs[i].sh_size);
+                      FReader.read(symversions[0],shdrs[i].sh_size);
                       if source_info.endian<>target_info.endian then
                         for j:=0 to syms-1 do
                           symversions[j]:=SwapEndian(symversions[j]);
@@ -1798,10 +1838,15 @@ implementation
     destructor TElfExeOutput.Destroy;
       begin
         dyncopysyms.Free;
+        dyncopysyms := nil;
         neededlist.Free;
+        neededlist := nil;
         segmentlist.Free;
+        segmentlist := nil;
         dynsymlist.Free;
+        dynsymlist := nil;
         dynreloclist.Free;
+        dynreloclist := nil;
         if assigned(dynsymnames) then
           FreeMem(dynsymnames);
         stringdispose(FInterpreter);
@@ -2235,6 +2280,7 @@ implementation
         newsections:=TFPHashObjectList.Create(false);
         allsections:=TFPList.Create;
         { copy existing sections }
+        allsections.Capacity:=ExeSectionList.Count;
         for i:=0 to ExeSectionList.Count-1 do
           allsections.add(ExeSectionList[i]);
         inserts[0]:=FindExeSection('.comment');
@@ -2299,7 +2345,9 @@ implementation
         if (newsections.count<>0) then
           ReplaceExeSectionList(allsections);
         newsections.Free;
+        newsections := nil;
         allsections.Free;
+        allsections := nil;
       end;
 
 
@@ -2652,6 +2700,7 @@ implementation
         if assigned(dynrelocsec) then
           begin
             { Append R_xx_COPY relocations }
+            dynreloclist.capacity:=dynreloclist.count+dyncopysyms.count;
             for i:=0 to dyncopysyms.count-1 do
               begin
                 objsym:=TObjSymbol(dyncopysyms[i]);
@@ -2870,9 +2919,9 @@ implementation
         ver: TElfVersionDef;
         vn: TElfverneed;
         vna: TElfvernaux;
-        symversions: pword;
+        symversions: TWordDynArray;
       begin
-        symversions:=AllocMem((dynsymlist.count+1)*sizeof(word));
+        SetLength(symversions,(dynsymlist.count+1));
         { Assign version indices }
         idx:=VER_NDX_GLOBAL+1;
         for i:=0 to dynsymlist.count-1 do
@@ -2953,9 +3002,9 @@ implementation
             if source_info.endian<>target_info.endian then
               for i:=0 to dynsymlist.count+1 do
                 symversions[i]:=swapendian(symversions[i]);
-            symversec.write(symversions^,(dynsymlist.count+1)*sizeof(word));
+            symversec.write(symversions[0],(dynsymlist.count+1)*sizeof(word));
           end;
-        FreeMem(symversions);
+        symversions:=nil;
       end;
 
 
@@ -3256,6 +3305,7 @@ implementation
     destructor TElfSegment.Destroy;
       begin
         FSectionList.Free;
+        FSectionList := nil;
         inherited Destroy;
       end;
 

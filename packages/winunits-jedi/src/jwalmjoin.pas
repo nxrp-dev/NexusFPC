@@ -43,7 +43,9 @@
 // $Id: JwaLmJoin.pas,v 1.13 2007/09/05 11:58:50 dezipaitor Exp $
 
 {$IFNDEF JWA_OMIT_SECTIONS_LM}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaLmJoin;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 
@@ -51,8 +53,13 @@ unit JwaLmJoin;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Lmcons, WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaLmCons, JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS_LM}
 
 {$HPPEMIT ''}
@@ -125,7 +132,7 @@ const
   NETSETUP_DEFER_SPN_SET = $00000100; // Specifies that writting SPN and DnsHostName
   {$EXTERNALSYM NETSETUP_DEFER_SPN_SET}
                                                 //  attributes on the computer object should be
-                                                //  defered until rename that will follow join
+                                                //  deferred until rename that will follow join
 
   NETSETUP_INSTALL_INVOCATION = $00040000; // The APIs were invoked during install
   {$EXTERNALSYM NETSETUP_INSTALL_INVOCATION}

@@ -23,7 +23,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CVPixelBufferPool;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -208,7 +210,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes, MacOsApi.CFBase, MacOsApi.CFDictionary, MacOsApi.CVBase, MacOsApi.CVPixelBuffer, MacOsApi.CVReturns;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes, CFBase, CFDictionary, CVBase, CVPixelBuffer, CVReturns;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -219,7 +225,7 @@ uses MacTypes, CFBase, CFDictionary, CVBase, CVPixelBuffer, CVReturns;
 	@copyright 2004 Apple Computer, Inc. All rights reserved.
 	@availability Mac OS X 10.4 or later
     @discussion CVPixelBufferPool is a utility object for managing a set of CVPixelBuffer objects that are going to be recycled.
-		   
+
 }
 
 
@@ -292,7 +298,7 @@ function CVPixelBufferPoolGetPixelBufferAttributes( pool: CVPixelBufferPoolRef )
 {!
     @function   CVPixelBufferPoolCreatePixelBuffer
     @abstract   Creates a new PixelBuffer object from the pool.
-    @discussion The function creates a new (attachment-free) CVPixelBuffer using the pixel buffer attributes specifed during pool creation.
+    @discussion The function creates a new (attachment-free) CVPixelBuffer using the pixel buffer attributes specified during pool creation.
     @param      allocator The CFAllocatorRef to use for creating the pixel buffer.  May be NULL.
     @param      pool      The CVPixelBufferPool that should create the new CVPixelBuffer.
     @param      pixelBufferOut   The newly created pixel buffer will be placed here
@@ -327,7 +333,7 @@ var kCVPixelBufferPoolAllocationThresholdKey: CFStringRef; external name '_kCVPi
 
 // kCVPixelBufferPoolFreeBufferNotification is posted if a buffer becomes available after
 // CVPixelBufferPoolCreatePixelBufferWithAuxAttributes has failed due to kCVPixelBufferPoolAllocationThresholdKey.
-// This notification will not be posted by the pool if kCVPixelBufferPoolAllocationThresholdKey 
+// This notification will not be posted by the pool if kCVPixelBufferPoolAllocationThresholdKey
 // has never been passed to CVPixelBufferPoolCreatePixelBufferWithAuxAttributes.
 var kCVPixelBufferPoolFreeBufferNotification: CFStringRef; external name '_kCVPixelBufferPoolFreeBufferNotification'; (* attribute const *)
 (* __OSX_AVAILABLE_STARTING(__MAC_10_7,__IPHONE_4_0) *)

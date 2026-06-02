@@ -503,6 +503,7 @@ implementation
         lr,hr : TConstExprInt;
         hp : tarrayconstructornode;
         oldfilepos: tfileposinfo;
+        first: Boolean;
       begin
         { keep in sync with arrayconstructor_can_be_set }
         if p.nodetype<>arrayconstructorn then
@@ -522,10 +523,11 @@ implementation
         hp:=tarrayconstructornode(p);
         if assigned(hp.left) then
          begin
+           first:=true;
            while assigned(hp) do
             begin
               p4:=nil; { will contain the tree to create the set }
-            {split a range into p2 and p3 }
+              { split a range into p2 and p3 }
               if hp.left.nodetype=arrayconstructorrangen then
                begin
                  p2:=tarrayconstructorrangenode(hp.left).left;
@@ -551,127 +553,123 @@ implementation
               oldfilepos:=current_filepos;
               current_filepos:=p2.fileinfo;
               case p2.resultdef.typ of
-                 enumdef,
-                 orddef:
-                   begin
-                      { widechars are not yet supported }
-                      if is_widechar(p2.resultdef) then
-                        begin
+                enumdef,
+                orddef:
+                  begin
+                    { widechars are not yet supported }
+                    if is_widechar(p2.resultdef) then
+                      begin
+                        if block_type<>bt_const then
                           inserttypeconv(p2,cansichartype);
-                          if (p2.nodetype<>ordconstn) then
-                            incompatibletypes(cwidechartype,cansichartype);
-                        end;
-
-                      getrange(p2.resultdef,lr,hr);
-                      if assigned(p3) then
-                       begin
-                         if is_widechar(p3.resultdef) then
-                           begin
-                             inserttypeconv(p3,cansichartype);
-                             if (p3.nodetype<>ordconstn) then
-                               begin
-                                 current_filepos:=p3.fileinfo;
-                                 incompatibletypes(cwidechartype,cansichartype);
-                               end;
-                           end;
-                         { this isn't good, you'll get problems with
-                           type t010 = 0..10;
-                                ts = set of t010;
-                           var  s : ts;b : t010
-                           begin  s:=[1,2,b]; end.
-                         if is_integer(p3^.resultdef) then
-                          begin
-                            inserttypeconv(p3,u8bitdef);
-                          end;
-                         }
-                         if assigned(hdef) and not(equal_defs(hdef,p3.resultdef)) then
-                           begin
-                              CGMessagePos(p3.fileinfo,type_e_typeconflict_in_set);
-                           end
-                         else
-                           begin
-                             if (p2.nodetype=ordconstn) and (p3.nodetype=ordconstn) then
-                              begin
-                                 if not(is_integer(p3.resultdef)) then
-                                   hdef:=p3.resultdef
-                                 else
-                                   begin
-                                     inserttypeconv(p3,u8inttype);
-                                     inserttypeconv(p2,u8inttype);
-                                   end;
-
-                                if tordconstnode(p2).value.svalue>tordconstnode(p3).value.svalue then
-                                  CGMessagePos(p2.fileinfo,type_w_empty_constant_range_set);
-                                for l:=tordconstnode(p2).value.svalue to tordconstnode(p3).value.svalue do
-                                  do_set(l);
-                                p2.free;
-                                p3.free;
-                              end
-                             else
-                              begin
-                                update_constsethi(p2.resultdef,false);
-                                inserttypeconv(p2,hdef);
-
-                                update_constsethi(p3.resultdef,false);
-                                inserttypeconv(p3,hdef);
-
-                                if assigned(hdef) then
-                                  inserttypeconv(p3,hdef)
-                                else
-                                  inserttypeconv(p3,u8inttype);
-                                p4:=csetelementnode.create(p2,p3);
-                              end;
-                           end;
-                       end
-                      else
-                       begin
-                         { Single value }
-                         if p2.nodetype=ordconstn then
-                          begin
-                            if not(is_integer(p2.resultdef)) then
-                              update_constsethi(p2.resultdef,true);
-
-                            if assigned(hdef) then
-                              inserttypeconv(p2,hdef)
-                            else
-                              inserttypeconv(p2,u8inttype);
-
-                            do_set(tordconstnode(p2).value.svalue);
-                            p2.free;
-                          end
-                         else
-                          begin
-                            update_constsethi(p2.resultdef,false);
-
-                            if assigned(hdef) then
-                              inserttypeconv(p2,hdef)
-                            else
-                              inserttypeconv(p2,u8inttype);
-
-                            p4:=csetelementnode.create(p2,nil);
-                          end;
-                       end;
-                    end;
-
-                  stringdef :
-                    begin
-                        if (p2.nodetype<>stringconstn) then
-                          Message(parser_e_illegal_expression)
-                        { if we've already set elements which are constants }
-                        { throw an error                                    }
-                        else if ((hdef=nil) and assigned(result)) or
-                          not(is_char(hdef)) then
-                          CGMessage(type_e_typeconflict_in_set)
-                        else
-                         for l:=1 to length(pshortstring(tstringconstnode(p2).value_str)^) do
-                          do_set(ord(pshortstring(tstringconstnode(p2).value_str)^[l]));
-                        if hdef=nil then
-                         hdef:=cansichartype;
-                        p2.free;
+                        if (p2.nodetype<>ordconstn) and not (m_default_unicodestring in current_settings.modeswitches) then
+                          incompatibletypes(cwidechartype,cansichartype);
                       end;
 
+                    getrange(p2.resultdef,lr,hr);
+                    if assigned(p3) then
+                     begin
+                       if is_widechar(p3.resultdef) then
+                         begin
+                           if block_type<>bt_const then
+                             inserttypeconv(p3,cansichartype);
+                           if (p3.nodetype<>ordconstn) and not (m_default_unicodestring in current_settings.modeswitches) then
+                             begin
+                               current_filepos:=p3.fileinfo;
+                               incompatibletypes(cwidechartype,cansichartype);
+                             end;
+                         end;
+                       { this isn't good, you'll get problems with
+                         type t010 = 0..10;
+                              ts = set of t010;
+                         var  s : ts;b : t010
+                         begin  s:=[1,2,b]; end.
+                       if is_integer(p3^.resultdef) then
+                        begin
+                          inserttypeconv(p3,u8bitdef);
+                        end;
+                       }
+                       if assigned(hdef) and not(equal_defs(hdef,p3.resultdef)) then
+                         begin
+                            CGMessagePos(p3.fileinfo,type_e_typeconflict_in_set);
+                         end
+                       else
+                         begin
+                           if (p2.nodetype=ordconstn) and (p3.nodetype=ordconstn) then
+                            begin
+                               if not(is_integer(p3.resultdef)) then
+                                 begin
+                                   if not(assigned(hdef)) and first then
+                                     hdef:=p3.resultdef;
+                                 end
+                               else
+                                 begin
+                                   inserttypeconv(p3,u8inttype);
+                                   inserttypeconv(p2,u8inttype);
+                                 end;
+
+                              if tordconstnode(p2).value.svalue>tordconstnode(p3).value.svalue then
+                                CGMessagePos(p2.fileinfo,type_w_empty_constant_range_set);
+                              for l:=tordconstnode(p2).value.svalue to tordconstnode(p3).value.svalue do
+                                do_set(l);
+                              p2.free;
+                              p2 := nil;
+                              p3.free;
+                              p3 := nil;
+                            end
+                           else
+                            begin
+                              update_constsethi(p2.resultdef,false);
+                              inserttypeconv(p2,hdef);
+
+                              update_constsethi(p3.resultdef,false);
+                              inserttypeconv(p3,hdef);
+
+                              if assigned(hdef) then
+                                inserttypeconv(p3,hdef)
+                              else if first then
+                                hdef:=p3.resultdef
+                              else
+                                inserttypeconv(p3,u8inttype);
+                              p4:=csetelementnode.create(p2,p3);
+                            end;
+                         end;
+                     end
                     else
-                      CGMessage(type_e_ordinal_expr_expected);
+                     begin
+                       { Single value }
+                       if p2.nodetype=ordconstn then
+                        begin
+                          if assigned(hdef) then
+                            inserttypeconv(p2,hdef)
+                          else if not(is_integer(p2.resultdef)) and first then
+                            hdef:=p2.resultdef
+                          else
+                            inserttypeconv(p2,u8inttype);
+
+                          if not(is_integer(p2.resultdef)) then
+                            update_constsethi(p2.resultdef,true);
+
+                          do_set(tordconstnode(p2).value.svalue);
+                          p2.free;
+                          p2 := nil;
+                        end
+                       else
+                        begin
+                          update_constsethi(p2.resultdef,false);
+
+                          if assigned(hdef) then
+                            inserttypeconv(p2,hdef)
+                          else if not(is_integer(p2.resultdef)) and first then
+                            hdef:=p2.resultdef
+                          else
+                            inserttypeconv(p2,u8inttype);
+
+                          p4:=csetelementnode.create(p2,nil);
+                        end;
+                     end;
+                  end;
+                else
+                  CGMessage(type_e_ordinal_expr_expected);
               end;
               { insert the set creation tree }
               if assigned(p4) then
@@ -681,17 +679,18 @@ implementation
               hp:=tarrayconstructornode(tarrayconstructornode(p2).right);
               tarrayconstructornode(p2).right:=nil;
               if freep then
-                p2.free;
+                p2.free; // no nil needed
               current_filepos:=oldfilepos;
+              first:=false;
             end;
-           if (hdef=nil) then
+          if (hdef=nil) then
             hdef:=u8inttype;
          end
         else
          begin
            { empty set [], only remove node }
            if freep then
-             p.free;
+             p.free; // no nil needed
          end;
         { set the initial set type }
         constp.resultdef:=csetdef.create(hdef,constsetlo.svalue,constsethi.svalue,true);
@@ -741,7 +740,7 @@ implementation
                         begin
                           if p1.nodetype<>ordconstn then
                             exit
-                          else if tordconstnode(p1).value.uvalue>high(byte) then
+                          else if (tordconstnode(p1).value.uvalue>high(byte)) and not (m_default_unicodestring in current_settings.modeswitches) then
                             exit;
                         end;
 
@@ -751,7 +750,7 @@ implementation
                             begin
                               if p2.nodetype<>ordconstn then
                                 exit
-                              else if tordconstnode(p2).value.uvalue>high(byte) then
+                              else if (tordconstnode(p2).value.uvalue>high(byte)) and not (m_default_unicodestring in current_settings.modeswitches) then
                                 exit;
                             end;
 
@@ -899,6 +898,7 @@ implementation
             typecheckpass(fromnode);
             ttypeconvnode(hp).left:=nil;
             hp.free;
+            hp := nil;
             result:=true;
           end;
       end;
@@ -933,6 +933,7 @@ implementation
             typecheckpass(fromnode);
             ttypeconvnode(hp).left:=nil;
             hp.free;
+            hp := nil;
             result:=true;
           end;
       end;
@@ -1052,7 +1053,9 @@ implementation
         i: ttypeconvnodeflag;
       begin
         inherited printnodeinfo(t);
+        write(t,', totypedef = ',totypedef.GetTypeName);
         write(t,', convtype = ',convtype);
+        write(t,', assignment_side = ',assignment_side);
         write(t,', convnodeflags = [');
         first:=true;
         for i:=low(ttypeconvnodeflag) to high(ttypeconvnodeflag) do
@@ -1192,6 +1195,7 @@ implementation
         pchtemp  : pchar;
         arrsize  : tcgint;
         chartype : string[8];
+
       begin
         result := nil;
         with tarraydef(resultdef) do
@@ -1215,9 +1219,10 @@ implementation
                  { (2.0.x compatible)                               }
                  if (arrsize>tstringconstnode(left).len) then
                    begin
-                     pchtemp:=concatansistrings(tstringconstnode(left).value_str,pchar(StringOfChar(#0,arrsize-tstringconstnode(left).len)),tstringconstnode(left).len,arrsize-tstringconstnode(left).len);
+                     pchtemp:=concatansistrings(tstringconstnode(left).asconstpchar,pchar(StringOfChar(#0,arrsize-tstringconstnode(left).len)),tstringconstnode(left).len,arrsize-tstringconstnode(left).len);
                      left.free;
                      left:=cstringconstnode.createpchar(pchtemp,arrsize,nil);
+                     freemem(pchtemp);
                      typecheckpass(left);
                    end;
                  exit;
@@ -1255,7 +1260,7 @@ implementation
         procname: string[31];
         para : tcallparanode;
         hp : tstringconstnode;
-        ws : pcompilerwidestring;
+        ws : tcompilerwidestring;
         sa : ansistring;
         cw : tcompilerwidechar;
         l : SizeUInt;
@@ -1377,7 +1382,7 @@ implementation
 {$else cpu8bitalu}
                exprtype:=uinttype;
 {$endif cpu8bitalu}
-               { create word(byte(char) shl 8 or 1) for litte endian machines }
+               { create word(byte(char) shl 8 or 1) for little endian machines}
                { and word(byte(char) or 256) for big endian machines          }
                left := ctypeconvnode.create_internal(left,exprtype);
                if (target_info.endian = endian_little) then
@@ -1428,7 +1433,7 @@ implementation
                 (tstringdef(left.resultdef).stringtype in [st_unicodestring,st_widestring]) and
                 (tstringdef(resultdef).stringtype=st_shortstring) then
           begin
-            if not hasnonasciichars(pcompilerwidestring(tstringconstnode(left).value_str)) then
+            if not hasnonasciichars(tstringconstnode(left).valuews) then
               begin
                 tstringconstnode(left).changestringtype(resultdef);
                 Result:=left;
@@ -1672,7 +1677,7 @@ implementation
          inserttypeconv(left,cunicodestringtype);
          { evaluate again, reset resultdef so the convert_typ
            will be calculated again and cstring_to_pchar will
-           be used for futher conversion }
+           be used for further conversion }
          convtype:=tc_none;
          result:=pass_typecheck;
       end;
@@ -1715,7 +1720,7 @@ implementation
             (tstringconstnode(left).cst_type=cst_conststring) and
             (tstringconstnode(left).len=4) then
            begin
-             pb:=pbyte(tstringconstnode(left).value_str);
+             pb:=pbyte(tstringconstnode(left).asconstpchar);
              fcc:=(pb[0] shl 24) or (pb[1] shl 16) or (pb[2] shl 8) or pb[3];
              result:=cordconstnode.create(fcc,u32inttype,false);
            end
@@ -1764,6 +1769,9 @@ implementation
         { constant sets can be converted by changing the type only }
         if (left.nodetype=setconstn) then
          begin
+           if (cs_check_range in current_settings.localswitches) and (tsetconstnode(left).elements>0) and ((tsetconstnode(left).low<tsetdef(resultdef).setlow) or (tsetconstnode(left).high>tsetdef(resultdef).setmax)) then
+             Message(parser_e_range_check_error);
+
            left.resultdef:=resultdef;
            result:=left;
            left:=nil;
@@ -1839,12 +1847,12 @@ implementation
           CGMessage(type_e_no_addr_of_constant);
         { a dynamic array is a pointer to an array, so to convert it to }
         { an open array, we have to dereference it (JM)                 }
-        result := ctypeconvnode.create_internal(left,cpointerdef.getreusable(resultdef));
+        result:=ctypeconvnode.create_internal(left,cpointerdef.getreusable(resultdef));
         typecheckpass(result);
         { left is reused }
-        left := nil;
-        result := cderefnode.create(result);
-        include(result.flags,nf_no_checkpointer);
+        left:=nil;
+        result:=cderefnode.create(result);
+        include(TDerefNode(result).derefnodeflags,drnf_no_checkpointer);
       end;
 
 
@@ -2103,7 +2111,7 @@ implementation
                  nil))))
 
           ));
-        { add assignment statememnts }
+        { add assignment statements }
         addstatement(newstatement,ctempdeletenode.create(temp2));
         addstatement(newstatement,assnode);
         { the last statement should return the value as
@@ -2161,7 +2169,7 @@ implementation
         temp2:=ctempcreatenode.create_value(sinttype,sinttype.size,tt_persistent,false,cordconstnode.create(paracount,s32inttype,true));
         addstatement(newstatement,temp2);
 
-        { add assignment statememnts }
+        { add assignment statements }
         addstatement(newstatement,ctempdeletenode.create(temp2));
         addstatement(newstatement,assnode);
         { the last statement should return the value as
@@ -2713,6 +2721,7 @@ implementation
             typecheckpass(left);
             ttypeconvnode(hp).left:=nil;
             hp.free;
+            hp := nil;
           end;
 
         intfdef:=capturer_add_procvar_or_proc(current_procinfo,left,capturer,hp);
@@ -3384,11 +3393,22 @@ implementation
 
     { remove int type conversions and set the result to the given type }
     procedure doremoveinttypeconvs(level : dword;var n: tnode; todef: tdef; forceunsigned: boolean; signedtype,unsignedtype : tdef);
+
+      function SmallerOrSigned(def: tdef): Boolean;
+        begin
+          Result := (def.size < signedtype.size) or
+            (
+              (def.size = signedtype.size) and
+              is_signed(def)
+            )
+        end;
+
       var
         newblock: tblocknode;
         newstatements: tstatementnode;
         originaldivtree: tnode;
         tempnode: ttempcreatenode;
+        NeedMinus1Check: Boolean;
       begin
         { we may not recurse into shr nodes:
 
@@ -3413,12 +3433,40 @@ implementation
                  is_signed(n.resultdef) then
                 begin
                   originaldivtree:=nil;
+                  NeedMinus1Check:=False;
+
                   if n.nodetype in [divn,modn] then
+                    begin
+                      { If the DIV operation is being downsized, we must explicitly check for a divisor of -1 }
+                      NeedMinus1Check := True;
+
+                      { If the operand size is equal or smaller, the -1 check isn't necessary }
+                      if (
+                          SmallerOrSigned(tbinarynode(n).left.resultdef) or
+                          (
+                            (tbinarynode(n).left.nodetype = typeconvn) and
+                            SmallerOrSigned(ttypeconvnode(tbinarynode(n).left).left.resultdef)
+                          )
+                        ) and
+                        (
+                          SmallerOrSigned(tbinarynode(n).right.resultdef) or
+                          (
+                            (tbinarynode(n).right.nodetype = typeconvn) and
+                            SmallerOrSigned(ttypeconvnode(tbinarynode(n).right).left.resultdef)
+                          )
+                        ) then
+                        NeedMinus1Check := False;
+                    end;
+
+
+                  if NeedMinus1Check then
                     originaldivtree:=n.getcopy;
+
                   doremoveinttypeconvs(level+1,tbinarynode(n).left,signedtype,false,signedtype,unsignedtype);
                   doremoveinttypeconvs(level+1,tbinarynode(n).right,signedtype,false,signedtype,unsignedtype);
                   n.resultdef:=signedtype;
-                  if n.nodetype in [divn,modn] then
+
+                  if NeedMinus1Check then
                     begin
                       newblock:=internalstatements(newstatements);
                       tempnode:=ctempcreatenode.create(n.resultdef,n.resultdef.size,tt_persistent,true);
@@ -3439,6 +3487,7 @@ implementation
                       n:=newblock;
                       do_typecheckpass(n);
                       originaldivtree.free;
+                      originaldivtree := nil;
                     end;
                 end
               else
@@ -3576,6 +3625,7 @@ implementation
                   if ([nf_explicit,nf_internal] * flags <> []) then
                     include(result.flags, nf_explicit);
                   hp.free;
+                  hp := nil;
                 end;
             end;
 
@@ -3604,7 +3654,7 @@ implementation
               else
                { remove typeconv after niln, but not when the result is a
                  methodpointer. The typeconv of the methodpointer will then
-                 take care of updateing size of niln to OS_64 }
+                 take care of updating size of niln to OS_64 }
                if not((resultdef.typ=procvardef) and
                       not(tprocvardef(resultdef).is_addressonly)) and
                   { converting (dynamic array) nil to a an open array is not allowed }
@@ -3621,7 +3671,7 @@ implementation
 
           ordconstn :
             begin
-              { ordinal contants can be directly converted }
+              { ordinal constants can be directly converted }
               { but not char to char because it is a widechar to char or via versa }
               { which needs extra code to do the code page transistion             }
               { constant ordinal to pointer }
@@ -3648,7 +3698,7 @@ implementation
                      exclude(left.flags, nf_explicit);
                    { when converting from one boolean type to another, force }
                    { booleans to 0/1, and byte/word/long/qwordbool to 0/-1   }
-                   { (Delphi-compatibile)                                    }
+                   { (Delphi-compatible)                                     }
                    if is_boolean(left.resultdef) and
                       is_boolean(resultdef) and
                       (is_cbool(left.resultdef) or
@@ -4599,7 +4649,7 @@ implementation
                 is_void(left.resultdef) or
                 (left.resultdef.typ=formaldef) or
                 { int 2 int with same size reuses same location, or for
-                  tp7 mode also allow size < orignal size }
+                  tp7 mode also allow size < original size }
                 (
                  (convtype=tc_int_2_int) and
                  (
@@ -4630,8 +4680,11 @@ implementation
         { the same goes for changing the sign of equal-sized values which
           are smaller than an entire register }
         if result and
-           { don't try to check the size of an open array }
+           { don't try to check the size of an open array or an array of const }
            (is_open_array(resultdef) or
+            is_open_array(left.resultdef) or
+            is_array_of_const(resultdef) or
+            is_array_of_const(left.resultdef) or
             (resultdef.size<left.resultdef.size) or
             ((resultdef.size=left.resultdef.size) and
              (left.resultdef.size<sizeof(aint)) and
@@ -5092,6 +5145,7 @@ implementation
 
       begin
         call.free;
+        call := nil;
         inherited destroy;
       end;
 

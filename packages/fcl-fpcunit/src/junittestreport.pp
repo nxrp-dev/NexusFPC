@@ -2,7 +2,7 @@
     This file is part of the Free Component Library (FCL)
     Copyright (c) 2021 by Joost van der Sluis (CNOC)
 
-    An example of an XML report writer for FPCUnit tests.
+    An example of an XML report writer for FpcUnit tests.
 
     See the file COPYING.FPC, included in this distribution,
     for details about the copyright.
@@ -12,7 +12,7 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************
-  
+
 
   Purpose:
     This unit contains a XML/JUnit TestListener for use with the fpcUnit testing
@@ -30,17 +30,26 @@
 
 }
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit junittestreport;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils,FpcUnit.Test, FpcUnit.Reports, Xml.Dom, Xml.Writer,
+  {$ifdef Unix}UnixApi.Unix,{$endif}
+  System.DateUtils;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils,fpcunit, fpcunitreport, dom, XMLWrite,
   {$ifdef unix}unix,{$endif}
   DateUtils;
-  
+{$ENDIF FPC_DOTTEDUNITS}
+
 
 type
 
@@ -72,8 +81,8 @@ type
     procedure WriteTestHeader(ATest: TTest; ALevel: integer; ACount: integer); override;
     procedure WriteTestFooter(ATest: TTest; ALevel: integer; ATiming: TDateTime); override;
     procedure WriteSuiteHeader(ATestSuite: TTestSuite; ALevel: integer); override;
-    procedure WriteSuiteFooter(ATestSuite: TTestSuite; ALevel: integer; 
-      ATiming: TDateTime; ANumRuns: integer; ANumErrors: integer; 
+    procedure WriteSuiteFooter(ATestSuite: TTestSuite; ALevel: integer;
+      ATiming: TDateTime; ANumRuns: integer; ANumErrors: integer;
       ANumFailures: integer; ANumIgnores: integer); override;
   public
     constructor Create(aOwner: TComponent); override;

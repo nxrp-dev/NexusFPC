@@ -1,17 +1,17 @@
 {
      File:       QD/FontSync.h
- 
+
      Contains:   Public interface for FontSync
- 
+
      Version:    Quickdraw-262~1
- 
+
      Copyright:  © 1999-2008 by Apple Inc. all rights reserved.
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 {   Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2009 }
 {
@@ -28,7 +28,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit FontSync;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -213,7 +215,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.ATSTypes,MacOsApi.Files,MacOsApi.Fonts,MacOsApi.SFNTTypes,MacOsApi.MacErrors;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,ATSTypes,Files,Fonts,SFNTTypes,MacErrors;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -244,7 +250,7 @@ const
 {$ifc not TARGET_CPU_64}
 {
  *  FNSMatchDefaultsGet()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -284,7 +290,7 @@ type
 {$ifc not TARGET_CPU_64}
 {
  *  FNSSysInfoGet()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -303,7 +309,7 @@ type
 {$ifc not TARGET_CPU_64}
 {
  *  FNSReferenceGetVersion()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -315,7 +321,7 @@ function FNSReferenceGetVersion( iReference: FNSFontReference; var oVersion: FNS
 
 {
  *  FNSReferenceDispose()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -327,7 +333,7 @@ function FNSReferenceDispose( iReference: FNSFontReference ): OSStatus; external
 
 {
  *  FNSReferenceMatch()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -339,7 +345,7 @@ function FNSReferenceMatch( iReference1: FNSFontReference; iReference2: FNSFontR
 
 {
  *  FNSReferenceFlattenedSize()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -351,7 +357,7 @@ function FNSReferenceFlattenedSize( iReference: FNSFontReference; var oFlattened
 
 {
  *  FNSReferenceFlatten()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -363,7 +369,7 @@ function FNSReferenceFlatten( iReference: FNSFontReference; oFlatReference: Univ
 
 {
  *  FNSReferenceUnflatten()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -386,7 +392,7 @@ type
 {$ifc not TARGET_CPU_64}
 {
  *  FNSProfileCreate()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -398,7 +404,7 @@ function FNSProfileCreate( const (*var*) iFile: FSSpec; iCreator: FourCharCode; 
 
 {
  *  FNSProfileOpen()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -410,7 +416,7 @@ function FNSProfileOpen( const (*var*) iFile: FSSpec; iOpenForWrite: Boolean; va
 
 {
  *  FNSProfileCreateWithFSRef()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.1 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        not available in CarbonLib 1.x, is available on Mac OS X version 10.1 and later
@@ -422,7 +428,7 @@ function FNSProfileCreateWithFSRef( const (*var*) iParentDirectory: FSRef; iName
 
 {
  *  FNSProfileOpenWithFSRef()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.1 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        not available in CarbonLib 1.x, is available on Mac OS X version 10.1 and later
@@ -434,7 +440,7 @@ function FNSProfileOpenWithFSRef( const (*var*) iFile: FSRef; iOpenForWrite: Boo
 
 {
  *  FNSProfileGetVersion()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -446,7 +452,7 @@ function FNSProfileGetVersion( iProfile: FNSFontProfile; var oVersion: FNSObject
 
 {
  *  FNSProfileCompact()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in  in ApplicationServices.framework [32-bit only] but deprecated in LeopardX
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -457,7 +463,7 @@ function FNSProfileCompact( iProfile: FNSFontProfile ): OSStatus; external name 
 
 {
  *  FNSProfileClose()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -469,7 +475,7 @@ function FNSProfileClose( iProfile: FNSFontProfile ): OSStatus; external name '_
 
 {
  *  FNSProfileAddReference()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -481,7 +487,7 @@ function FNSProfileAddReference( iProfile: FNSFontProfile; iReference: FNSFontRe
 
 {
  *  FNSProfileRemoveReference()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -493,7 +499,7 @@ function FNSProfileRemoveReference( iProfile: FNSFontProfile; iReference: FNSFon
 
 {
  *  FNSProfileRemoveIndReference()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -505,7 +511,7 @@ function FNSProfileRemoveIndReference( iProfile: FNSFontProfile; iIndex: UInt32 
 
 {
  *  FNSProfileClear()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -517,7 +523,7 @@ function FNSProfileClear( iProfile: FNSFontProfile ): OSStatus; external name '_
 
 {
  *  FNSProfileCountReferences()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -529,7 +535,7 @@ function FNSProfileCountReferences( iProfile: FNSFontProfile; var oCount: ItemCo
 
 {
  *  FNSProfileGetIndReference()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -541,7 +547,7 @@ function FNSProfileGetIndReference( iProfile: FNSFontProfile; iWhichReference: U
 
 {
  *  FNSProfileMatchReference()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -554,7 +560,7 @@ function FNSProfileMatchReference( iProfile: FNSFontProfile; iReference: FNSFont
 { Mapping to and from Font Objects }
 {
  *  FNSReferenceCreate()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -566,7 +572,7 @@ function FNSReferenceCreate( iFont: FMFont; iDesiredVersion: FNSObjectVersion; v
 
 {
  *  FNSReferenceMatchFonts()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -579,7 +585,7 @@ function FNSReferenceMatchFonts( iReference: FNSFontReference; iMatchOptions: FN
 { Mapping to and from Font Families }
 {
  *  FNSReferenceCreateFromFamily()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -591,7 +597,7 @@ function FNSReferenceCreateFromFamily( iFamily: FMFontFamily; iStyle: FMFontStyl
 
 {
  *  FNSReferenceMatchFamilies()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -604,7 +610,7 @@ function FNSReferenceMatchFamilies( iReference: FNSFontReference; iMatchOptions:
 { UI Support }
 {
  *  FNSReferenceGetFamilyInfo()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -616,7 +622,7 @@ function FNSReferenceGetFamilyInfo( iReference: FNSFontReference; oFamilyName: S
 
 {
  *  FNSReferenceCountNames()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -628,7 +634,7 @@ function FNSReferenceCountNames( iReference: FNSFontReference; var oNameCount: I
 
 {
  *  FNSReferenceGetIndName()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -640,7 +646,7 @@ function FNSReferenceGetIndName( iReference: FNSFontReference; iFontNameIndex: I
 
 {
  *  FNSReferenceFindName()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -653,7 +659,7 @@ function FNSReferenceFindName( iReference: FNSFontReference; iFontNameCode: Font
 { Miscellany }
 {
  *  FNSEnabled()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later

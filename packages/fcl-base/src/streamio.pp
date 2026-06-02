@@ -16,11 +16,17 @@
 {$mode objfpc}
 {$H+}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit StreamIO;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.Classes,System.SysUtils;
+{$ELSE FPC_DOTTEDUNITS}
 uses Classes,SysUtils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Procedure AssignStream(var F: Textfile; Stream: TStream);
 Function GetStream(var F: TTextRec) : TStream;
@@ -100,14 +106,14 @@ begin
         InOutFunc:=@StreamWrite;
         FlushFunc:=@StreamWrite;
         if Mode=fmAppend then
-          begin 
-            Mode:=fmOutput; // see comments in text.inc  
+          begin
+            Mode:=fmOutput; // see comments in text.inc
             Try
               GetStream(F).Seek(0,soFromEnd);
             except
               InOutRes:=156;
             end;
-          end;  
+          end;
         end;
     end;
     end;
@@ -133,7 +139,7 @@ begin
     end;
   with TTextRec(F) do
     begin
-    
+
     OpenFunc:=@StreamOpen;
     CloseFunc:=@StreamClose;
     Case DefaultTextLineBreakStyle Of
@@ -146,8 +152,11 @@ begin
     BufSize:=SizeOf(Buffer);
     BufPtr:=@Buffer;
     Name[0]:=#0;
+    {$ifdef FPC_HAS_FEATURE_UNICODESTRINGS}
+    FullName := nil;
+    {$endif FPC_HAS_FEATURE_UNICODESTRINGS}
     end;
-   SetTextCodePage(F,CP_ACP); 
+   SetTextCodePage(F,CP_ACP);
 end;
 
 

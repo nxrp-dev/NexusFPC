@@ -20,11 +20,17 @@
 **********************************************************************}
 
 {$PACKRECORDS 2}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit AHI;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses Amiga.Core.Exec, Amiga.Core.Utility;
+{$ELSE FPC_DOTTEDUNITS}
 uses exec, utility;
+{$ENDIF FPC_DOTTEDUNITS}
 
 var
   AHIBase: PLibrary = nil;
@@ -187,9 +193,9 @@ var
      AHIP_LoopOffset = AHI_TagBase + 64;
      AHIP_LoopLength = AHI_TagBase + 65;
   { AHI_ControlAudioA tags  }
-  { Booleanean  }
+  { Boolean  }
      AHIC_Play = AHI_TagBase + 80;
-  { Booleanean  }
+  { Boolean  }
      AHIC_Record = AHI_TagBase + 81;
      AHIC_MonitorVolume = AHI_TagBase + 82;
   { ti_Data is pointer to Fixed (LONG)  }
@@ -215,15 +221,15 @@ var
      AHIDB_Driver = AHI_TagBaseR + 101;
   { Private!  }
      AHIDB_Flags = AHI_TagBase + 102;
-  { Booleanean  }
+  { Boolean  }
      AHIDB_Volume = AHI_TagBase + 103;
-  { Booleanean  }
+  { Boolean  }
      AHIDB_Panning = AHI_TagBase + 104;
-  { Booleanean  }
+  { Boolean  }
      AHIDB_Stereo = AHI_TagBase + 105;
-  { Booleanean  }
+  { Boolean  }
      AHIDB_HiFi = AHI_TagBase + 106;
-  { Booleanean  }
+  { Boolean  }
      AHIDB_PingPong = AHI_TagBase + 107;
   { Private!  }
      AHIDB_MultTable = AHI_TagBase + 108;
@@ -237,7 +243,7 @@ var
      AHIDB_MinMixFreq = AHI_TagBase + 112;
   { Max mixing freq. supported  }
      AHIDB_MaxMixFreq = AHI_TagBase + 113;
-  { Booleanean  }
+  { Boolean  }
      AHIDB_Record = AHI_TagBase + 114;
      AHIDB_Frequencies = AHI_TagBase + 115;
   { ti_Data is frequency index  }
@@ -256,13 +262,13 @@ var
   { ti_Data is frequency!  }
      AHIDB_IndexArg = AHI_TagBase + 123;
      AHIDB_Index = AHI_TagBase + 124;
-  { Booleanean  }
+  { Boolean  }
      AHIDB_Realtime = AHI_TagBase + 125;
   { It's sample  frames   }
      AHIDB_MaxPlaySamples = AHI_TagBase + 126;
   { It's sample  frames   }
      AHIDB_MaxRecordSamples = AHI_TagBase + 127;
-  { Booleanean  }
+  { Boolean  }
      AHIDB_FullDuplex = AHI_TagBase + 129;
   { --- New for V2, they will be ignored by V1 ---  }
      AHIDB_MinMonitorVolume = AHI_TagBase + 130;
@@ -343,7 +349,7 @@ var
   { Function to filter mode id's  }
      AHIR_FilterFunc = AHI_TagBase + 271;
   {   DEFS  }
-     AHINAME : PChar = 'ahi.device';
+     AHINAME : PAnsiChar = 'ahi.device';
   { Invalid Audio ID  }
      AHI_INVALID_ID =  not (0);
   { Only for AHI_AllocAudioA()!  }
@@ -538,7 +544,7 @@ SysCall AHIBase 150;
 function AHI_RemoveAudioMode(d0arg : Cardinal location 'd0') : Cardinal;
 SysCall AHIBase 156;
 
-function AHI_LoadModeFile(a0arg : PChar location 'a0') : Cardinal;
+function AHI_LoadModeFile(a0arg : PAnsiChar location 'a0') : Cardinal;
 SysCall AHIBase 162;
 
 

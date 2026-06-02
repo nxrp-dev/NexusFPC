@@ -16,7 +16,7 @@
 {                                                          }
 {****************[ THIS CODE IS FREEWARE ]*****************}
 {                                                          }
-{     This sourcecode is released for the purpose to       }
+{     This source code is released for the purpose to      }
 {   promote the pascal language on all platforms. You may  }
 {   redistribute it and/or modify with the following       }
 {   DISCLAIMER.                                            }
@@ -31,11 +31,13 @@
 {                                                          }
 {**********************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 {$ifdef FV_UNICODE}
 UNIT UDrivers;
 {$else FV_UNICODE}
 UNIT Drivers;
 {$endif FV_UNICODE}
+{$ENDIF FPC_DOTTEDUNITS}
 
 {<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>}
                                   INTERFACE
@@ -65,6 +67,60 @@ UNIT Drivers;
   {$INLINE ON}
 {$endif}
 
+{$IFDEF FPC_DOTTEDUNITS}
+USES
+   {$IFDEF OS_WINDOWS}                                { WIN/NT CODE }
+         WinApi.Windows,                                     { Standard unit }
+   {$ENDIF}
+
+   {$IFDEF OS_WIN16}                                  { WIN16 CODE }
+         WinApi.WinProcs, WinApi.WinTypes,                          { Standard units }
+         System.Console.Crt,                                         { used for Delay() }
+   {$ENDIF}
+
+   {$ifdef OS_DOS}
+     TP.DOS,
+   {$endif OS_DOS}
+
+   {$IFDEF OS_OS2}                                    { OS2 CODE }
+     {$IFDEF PPC_Virtual}                             { VIRTUAL PASCAL UNITS }
+       os2def, OS2Base, OS2PMAPI,                     { Standard units }
+     {$ENDIF}
+     {$IFDEF PPC_Speed}                               { SPEED PASCAL UNITS }
+       BseDos, Os2Def,                                { Standard units }
+     {$ENDIF}
+     {$IFDEF PPC_FPC}                                 { FPC UNITS }
+       OS2Api.doscalls, OS2Api.Os2Def,                { Standard units }
+     {$ENDIF}
+   {$ENDIF}
+
+   {$IFDEF OS_UNIX}
+       UnixApi.Types,UnixApi.Base,UnixApi.Unix,
+   {$ENDIF}
+
+   {$IFDEF OS_NETWARE_LIBC}
+      Api.Libc,
+   {$ENDIF}
+   {$IFDEF OS_NETWARE_CLIB}
+      NetWareApi.nwserv,
+   {$ENDIF}
+
+   {$IFDEF OS_AMIGA}
+      TP.DOS, Amiga.Core.Amigados,
+   {$ENDIF}
+
+   System.Console.Video,
+   FreeVision.Sysmsg,
+{$ifdef FV_UNICODE}
+   FreeVision.UfvCommon,
+   System.Unicode.Graphemebreakproperty,
+   FreeVision.Ufvclip,
+{$else FV_UNICODE}
+   FreeVision.Fvcommon,
+   FreeVision.Fvclip,
+{$endif FV_UNICODE}
+   System.Objects;                                 { GFV standard units }
+{$ELSE FPC_DOTTEDUNITS}
 USES
    {$IFDEF OS_WINDOWS}                                { WIN/NT CODE }
          Windows,                                     { Standard unit }
@@ -111,10 +167,13 @@ USES
 {$ifdef FV_UNICODE}
    UFVCommon,
    GraphemeBreakProperty,
+   ufvclip,
 {$else FV_UNICODE}
    FVCommon,
+   fvclip,
 {$endif FV_UNICODE}
    Objects;                                 { GFV standard units }
+{$ENDIF FPC_DOTTEDUNITS}
 
 {***************************************************************************}
 {                              PUBLIC CONSTANTS                             }
@@ -128,6 +187,8 @@ CONST
    evMouseUp   = $0002;                               { Mouse up event }
    evMouseMove = $0004;                               { Mouse move event }
    evMouseAuto = $0008;                               { Mouse auto event }
+   { Idea of evMouseWheel to be separate event type comes from https://github.com/magiblot/tvision }
+   evMouseWheel= $0020;                               { Mouse wheel event }
    evKeyDown   = $0010;                               { Key down event }
    evCommand   = $0100;                               { Command event }
    evBroadcast = $0200;                               { Broadcast event }
@@ -137,7 +198,7 @@ CONST
 {---------------------------------------------------------------------------}
 CONST
    evNothing   = $0000;                               { Empty event }
-   evMouse     = $000F;                               { Mouse event }
+   evMouse     = $002F;                               { Mouse event }
    evKeyboard  = $0010;                               { Keyboard event }
    evMessage   = $FF00;                               { Message event }
 
@@ -242,9 +303,19 @@ CONST
    mbLeftButton      = $01;                           { Left mouse button }
    mbRightButton     = $02;                           { Right mouse button }
    mbMiddleButton    = $04;                           { Middle mouse button }
-   mbScrollWheelDown = $08;                           { Scroll wheel down}
-   mbScrollWheelUp   = $10;                           { Scroll wheel up }
+   mbScrollWheelDown = $08 deprecated 'use evMouseWheel event and mwDown instead';
+   mbScrollWheelUp   = $10 deprecated 'use evMouseWheel event and mwUp instead';
+   mbXButton1        = $20;                           { 4th mouse button. Browser_Back }
+   mbXButton2        = $40;                           { 5th mouse button. Browser_Forward }
 
+{---------------------------------------------------------------------------}
+{                         MOUSE WHEEL STATES                                }
+{---------------------------------------------------------------------------}
+CONST
+   mwUp     = $01;      { Scroll up - turn the wheel upward (away from you) }
+   mwDown   = $02;      { Scroll down - turn the wheel downward (toward you) }
+   mwLeft   = $04;      { not implemented }
+   mwRight  = $08;      { not implemented }
 
 {---------------------------------------------------------------------------}
 {                         SCREEN CRT MODE CONSTANTS                         }
@@ -260,7 +331,7 @@ CONST
 {***************************************************************************}
 
 { ******************************* REMARK ****************************** }
-{    The TEvent definition is completely compatable with all existing   }
+{    The TEvent definition is completely compatible with all existing   }
 {  code but adds two new fields ID and Data into the message record     }
 {  which helps with WIN/NT and OS2 message processing.                  }
 { ****************************** END REMARK *** Leon de Boer, 11Sep97 * }
@@ -279,7 +350,9 @@ TYPE
         evNothing: ();                                { ** NO EVENT ** }
         evMouse: (
           Buttons: Byte;                              { Mouse buttons }
+          Wheel:   Byte;                              { Mouse wheel }
           Double: Boolean;                            { Double click state }
+          Triple: Boolean;                            { Triple click state }
           Where: TPoint);                             { Mouse position }
         evKeyDown: (
         { ** KEY EVENT ** }
@@ -288,12 +361,12 @@ TYPE
             1: (
 {$ifdef ENDIAN_BIG}
                 ScanCode: Byte;
-                CharCode: Char;
+                CharCode: AnsiChar;
 {$else not ENDIAN_BIG}
-                CharCode: Char;                       { Char code }
+                CharCode: AnsiChar;                       { AnsiChar code }
                 ScanCode: Byte;                       { Scan code }
 {$endif not ENDIAN_BIG}
-                UnicodeChar: WideChar;                { Unicode char code.
+                UnicodeChar: WideChar;                { Unicode AnsiChar code.
                           Code points from the Supplementary Planes (U+010000 to
                           U+10FFFF) are encoded as 2 consecutive key events,
                           forming an UTF-16 surrogate pair. }
@@ -308,11 +381,11 @@ TYPE
             2: (InfoWord: Word);                      { Message Sw_Word }
             3: (InfoInt: SmallInt);                   { Message Sw_Integer }
             4: (InfoByte: Byte);                      { Message byte }
-            5: (InfoChar: Char));                     { Message character }
+            5: (InfoChar: AnsiChar));                     { Message character }
    END;
    PEvent = ^TEvent;
 
-   TVideoMode = Video.TVideoMode;                     { Screen mode }
+   TVideoMode = {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Video.TVideoMode;                     { Screen mode }
 
 {---------------------------------------------------------------------------}
 {                    ERROR HANDLER FUNCTION DEFINITION                      }
@@ -397,7 +470,7 @@ set to Attr, or remain unchanged if Attr is zero.
 {$ifdef FV_UNICODE}
 PROCEDURE MoveChar (Var Dest; C: UnicodeString; Attr: Byte; Count: Sw_Word);
 {$else FV_UNICODE}
-PROCEDURE MoveChar (Var Dest; C: Char; Attr: Byte; Count: Sw_Word);
+PROCEDURE MoveChar (Var Dest; C: AnsiChar; Attr: Byte; Count: Sw_Word);
 {$endif FV_UNICODE}
 
 {+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++}
@@ -408,25 +481,25 @@ PROCEDURE MoveChar (Var Dest; C: Char; Attr: Byte; Count: Sw_Word);
 Returns the scancode corresponding to Alt+Ch key that is given.
 25May96 LdB
 ---------------------------------------------------------------------}
-FUNCTION GetAltCode (Ch: Char): Word;
+FUNCTION GetAltCode (Ch: AnsiChar): Word;
 
 {-GetCtrlCode--------------------------------------------------------
 Returns the scancode corresponding to Alt+Ch key that is given.
 25May96 LdB
 ---------------------------------------------------------------------}
-FUNCTION GetCtrlCode (Ch: Char): Word;
+FUNCTION GetCtrlCode (Ch: AnsiChar): Word;
 
 {-GetAltChar---------------------------------------------------------
 Returns the ascii character for the Alt+Key scancode that was given.
 25May96 LdB
 ---------------------------------------------------------------------}
-FUNCTION GetAltChar (KeyCode: Word): Char;
+FUNCTION GetAltChar (KeyCode: Word): AnsiChar;
 
 {-GetCtrlChar--------------------------------------------------------
 Returns the ascii character for the Ctrl+Key scancode that was given.
 25May96 LdB
 ---------------------------------------------------------------------}
-FUNCTION GetCtrlChar (KeyCode: Word): Char;
+FUNCTION GetCtrlChar (KeyCode: Word): AnsiChar;
 
 {-CtrlToArrow--------------------------------------------------------
 Converts a WordStar-compatible control key code to the corresponding
@@ -546,13 +619,13 @@ Called automatically by TApplication.Done.
 PROCEDURE DoneVideo;
 
 {-ClearScreen--------------------------------------------------------
-Does nothing provided for compatability purposes only.
+Does nothing provided for compatibility purposes only.
 04Jan97 LdB
 ---------------------------------------------------------------------}
 PROCEDURE ClearScreen;
 
 {-SetVideoMode-------------------------------------------------------
-Does nothing provided for compatability purposes only.
+Does nothing provided for compatibility purposes only.
 04Jan97 LdB
 ---------------------------------------------------------------------}
 PROCEDURE SetVideoMode (Mode: Sw_Word);
@@ -586,7 +659,7 @@ FUNCTION SystemError (ErrorCode: Sw_Integer; Drive: Byte): Sw_Integer;
 {+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++}
 
 {-PrintStr-----------------------------------------------------------
-Does nothing provided for compatability purposes only.
+Does nothing provided for compatibility purposes only.
 30Jun98 LdB
 ---------------------------------------------------------------------}
 PROCEDURE PrintStr (CONST S: String);
@@ -629,23 +702,23 @@ PROCEDURE ShowMouseCursor;
 {                INITIALIZED DOS/DPMI/WIN/NT/OS2 VARIABLES                  }
 {---------------------------------------------------------------------------}
 CONST
-   CheckSnow    : Boolean = False;                    { Compatability only }
+   CheckSnow    : Boolean = False;                    { Compatibility only }
    MouseEvents  : Boolean = False;                    { Mouse event state }
    MouseReverse : Boolean = False;                    { Mouse reversed }
-   HiResScreen  : Boolean = False;                    { Compatability only }
-   CtrlBreakHit : Boolean = False;                    { Compatability only }
-   SaveCtrlBreak: Boolean = False;                    { Compatability only }
-   SysErrActive : Boolean = False;                    { Compatability only }
-   FailSysErrors: Boolean = False;                    { Compatability only }
+   HiResScreen  : Boolean = False;                    { Compatibility only }
+   CtrlBreakHit : Boolean = False;                    { Compatibility only }
+   SaveCtrlBreak: Boolean = False;                    { Compatibility only }
+   SysErrActive : Boolean = False;                    { Compatibility only }
+   FailSysErrors: Boolean = False;                    { Compatibility only }
    ButtonCount  : Byte = 0;                           { Mouse button count }
    DoubleDelay  : Sw_Word = 8;                           { Double click delay }
    RepeatDelay  : Sw_Word = 8;                           { Auto mouse delay }
    SysColorAttr : Sw_Word = $4E4F;                       { System colour attr }
    SysMonoAttr  : Sw_Word = $7070;                       { System mono attr }
-   StartupMode  : Sw_Word = $FFFF;                       { Compatability only }
-   CursorLines  : Sw_Word = $FFFF;                       { Compatability only }
-   ScreenBuffer : Pointer = Nil;                      { Compatability only }
-   SaveInt09    : Pointer = Nil;                      { Compatability only }
+   StartupMode  : Sw_Word = $FFFF;                       { Compatibility only }
+   CursorLines  : Sw_Word = $FFFF;                       { Compatibility only }
+   ScreenBuffer : Pointer = Nil;                      { Compatibility only }
+   SaveInt09    : Pointer = Nil;                      { Compatibility only }
    SysErrorFunc : TSysErrorFunc = {$ifdef FPC}@{$endif}SystemError; { System error ptr }
 
 
@@ -659,18 +732,25 @@ CONST
 VAR
    MouseIntFlag: Byte;                                { Mouse in int flag }
    MouseButtons: Byte;                                { Mouse button state }
-   ScreenWidth : Byte;                                { Screen text width }
-   ScreenHeight: Byte;                                { Screen text height }
+   ScreenWidth : Sw_Word;                             { Screen text width }
+   ScreenHeight: Sw_Word;                             { Screen text height }
    ScreenMode  : TVideoMode;                         { Screen mode }
    MouseWhere  : TPoint;                              { Mouse position }
 
 {<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>}
                                IMPLEMENTATION
 {<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>}
+{$IFDEF FPC_DOTTEDUNITS}
+{ API Units }
+  USES
+  FreeVision.Fvconsts,
+  System.Console.Keyboard,System.Console.Mouse;
+{$ELSE FPC_DOTTEDUNITS}
 { API Units }
   USES
   FVConsts,
   Keyboard,Mouse;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {***************************************************************************}
 {                        PRIVATE INTERNAL CONSTANTS                         }
@@ -685,11 +765,6 @@ CONST EventQSize = 16;                                { Default int bufsize }
 {                DOS/DPMI/WIN/NT/OS2 NEW EVENT QUEUE MAX SIZE               }
 {---------------------------------------------------------------------------}
 CONST QueueMax = 64;                                  { Max new queue size }
-
-{---------------------------------------------------------------------------}
-{   MAX WIEW WIDTH to avoid TDrawBuffer overrun in views unit               }
-{---------------------------------------------------------------------------}
-CONST MaxViewWidth = 255;                                  { Max view width }
 
 {***************************************************************************}
 {                          PRIVATE INTERNAL TYPES                           }
@@ -742,8 +817,8 @@ CONST
 {---------------------------------------------------------------------------}
 VAR
    LastDouble : Boolean;                              { Last double buttons }
-   LastButtons: Byte;                                 { Last button state }
-   DownButtons: Byte;                                 { Last down buttons }
+   LastButtons: Word;                                 { Last button state }
+   DownButtons: Word;                                 { Last down buttons }
    EventCount : Sw_Word;                                 { Events in queue }
    AutoDelay  : Sw_Word;                                 { Delay time count }
    DownTicks  : Sw_Word;                                 { Down key tick count }
@@ -912,7 +987,7 @@ END;
 {---------------------------------------------------------------------------}
 PROCEDURE ExitDrivers; {$IFNDEF PPC_FPC}{$IFNDEF OS_UNIX} FAR; {$ENDIF}{$ENDIF}
 BEGIN
-   DoneSysError;                                      { Relase error trap }
+   DoneSysError;                                      { Release error trap }
    DoneEvents;                                        { Close event driver }
 {   DoneKeyboard;}
    DoneVideo;
@@ -927,7 +1002,7 @@ procedure DetectVideo;
 VAR
   CurrMode : TVideoMode;
 begin
-  { Video.InitVideo; Incompatible with BP
+  { {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Video.InitVideo; Incompatible with BP
     and forces a screen clear which is often a bad thing PM }
   GetVideoMode(CurrMode);
   ScreenMode:=CurrMode;
@@ -937,7 +1012,7 @@ end;
 {  DetectMouse -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 19May98 LdB       }
 FUNCTION DetectMouse: Byte;inline;
 begin
-  DetectMouse:=Mouse.DetectMouse;
+  DetectMouse:={$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Mouse.DetectMouse;
 end;
 
 {***************************************************************************}
@@ -951,14 +1026,14 @@ end;
 {$ifdef FV_UNICODE}
 FUNCTION EgcWidth(Const EGC: Sw_String): Sw_Integer;
 BEGIN
-   Result := Video.ExtendedGraphemeClusterDisplayWidth(EGC);
+   Result := {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Video.ExtendedGraphemeClusterDisplayWidth(EGC);
 END;
 {$endif FV_UNICODE}
 
 {$ifdef FV_UNICODE}
 FUNCTION StrWidth(Const S: Sw_String): Sw_Integer;
 BEGIN
-   Result := Video.StringDisplayWidth(S);
+   Result := {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Video.StringDisplayWidth(S);
 END;
 {$else FV_UNICODE}
 FUNCTION StrWidth(Const S: Sw_String): Sw_Integer;
@@ -978,7 +1053,7 @@ BEGIN
    Result := 0;
    for EGC in TUnicodeStringExtendedGraphemeClustersEnumerator.Create(S) do
      if EGC <> '~' then
-       Inc(Result, Video.ExtendedGraphemeClusterDisplayWidth(EGC));
+       Inc(Result, {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Video.ExtendedGraphemeClusterDisplayWidth(EGC));
 END;
 {$else FV_UNICODE}
 FUNCTION CStrLen (Const S: String): Sw_Integer;
@@ -1003,8 +1078,8 @@ BEGIN
    for EGC in TUnicodeStringExtendedGraphemeClustersEnumerator.Create(Str) do
      begin
        If (Attr <> 0) Then P^.Attribute := Attr;        { Copy attribute }
-       P^.ExtendedGraphemeCluster := EGC;               { Copy string char }
-       Inc(P, Video.ExtendedGraphemeClusterDisplayWidth(EGC));
+       P^.ExtendedGraphemeCluster := EGC;               { Copy string AnsiChar }
+       Inc(P, {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Video.ExtendedGraphemeClusterDisplayWidth(EGC));
      end;
 END;
 {$else FV_UNICODE}
@@ -1014,7 +1089,7 @@ BEGIN
    For I := 1 To Length(Str) Do Begin                 { For each character }
      P := @TWordArray(Dest)[I-1];                     { Pointer to Sw_Word }
      If (Attr <> 0) Then WordRec(P^).Hi := Attr;      { Copy attribute }
-     WordRec(P^).Lo := Byte(Str[I]);                  { Copy string char }
+     WordRec(P^).Lo := Byte(Str[I]);                  { Copy string AnsiChar }
    End;
 END;
 {$endif FV_UNICODE}
@@ -1034,8 +1109,8 @@ BEGIN
          begin
            If (Lo(Attrs) <> 0) Then
              P^.Attribute := Lo(Attrs);                   { Copy attribute }
-           P^.ExtendedGraphemeCluster:=EGC;               { Copy string char }
-           Inc(P, Video.ExtendedGraphemeClusterDisplayWidth(EGC));  { Next position }
+           P^.ExtendedGraphemeCluster:=EGC;               { Copy string AnsiChar }
+           Inc(P, {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Video.ExtendedGraphemeClusterDisplayWidth(EGC));  { Next position }
          end
        else
          begin
@@ -1055,7 +1130,7 @@ BEGIN
        P := @TWordArray(Dest)[J];                     { Pointer to Sw_Word }
        If (Lo(Attrs) <> 0) Then
          WordRec(P^).Hi := Lo(Attrs);                 { Copy attribute }
-       WordRec(P^).Lo := Byte(Str[I]);                { Copy string char }
+       WordRec(P^).Lo := Byte(Str[I]);                { Copy string AnsiChar }
        Inc(J);                                        { Next position }
      End Else Begin
        B := Hi(Attrs);                                { Hold attribute }
@@ -1093,7 +1168,7 @@ BEGIN
     begin
       if DestWidth <= 0 then
         exit;
-      Dec(DestWidth, Video.ExtendedGraphemeClusterDisplayWidth(EGC));
+      Dec(DestWidth, {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Video.ExtendedGraphemeClusterDisplayWidth(EGC));
       if DestWidth < 0 then
         begin
           If (Attr <> 0) Then P^.Attribute := Attr;
@@ -1101,8 +1176,8 @@ BEGIN
           exit;
         end;
       If (Attr <> 0) Then P^.Attribute := Attr;        { Copy attribute }
-      P^.ExtendedGraphemeCluster := EGC;               { Copy string char }
-      Inc(P, Video.ExtendedGraphemeClusterDisplayWidth(EGC));
+      P^.ExtendedGraphemeCluster := EGC;               { Copy string AnsiChar }
+      Inc(P, {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Video.ExtendedGraphemeClusterDisplayWidth(EGC));
     end;
 END;
 {$else FV_UNICODE}
@@ -1135,7 +1210,7 @@ BEGIN
    End;
 END;
 {$else FV_UNICODE}
-PROCEDURE MoveChar (Var Dest; C: Char; Attr: Byte; Count: Sw_Word);
+PROCEDURE MoveChar (Var Dest; C: AnsiChar; Attr: Byte; Count: Sw_Word);
 VAR I: Word; P: PWord;
 BEGIN
    For I := 1 To Count Do Begin
@@ -1153,7 +1228,7 @@ END;
 {---------------------------------------------------------------------------}
 {  GetAltCode -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 25May96 LdB        }
 {---------------------------------------------------------------------------}
-FUNCTION GetAltCode (Ch: Char): Word;
+FUNCTION GetAltCode (Ch: AnsiChar): Word;
 BEGIN
    GetAltCode := 0;                                   { Preset zero return }
    Ch := UpCase(Ch);                                  { Convert upper case }
@@ -1166,7 +1241,7 @@ END;
 {---------------------------------------------------------------------------}
 {  GetCtrlCode -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 25May96 LdB       }
 {---------------------------------------------------------------------------}
-FUNCTION GetCtrlCode (Ch: Char): Word;
+FUNCTION GetCtrlCode (Ch: AnsiChar): Word;
 BEGIN
    GetCtrlCode := GetAltCode(Ch) OR (Ord(Ch) - $40);  { Ctrl+key code }
 END;
@@ -1174,7 +1249,7 @@ END;
 {---------------------------------------------------------------------------}
 {  GetAltChar -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 25May96 LdB        }
 {---------------------------------------------------------------------------}
-FUNCTION GetAltChar (KeyCode: Word): Char;
+FUNCTION GetAltChar (KeyCode: Word): AnsiChar;
 VAR I: Sw_Integer;
 BEGIN
    GetAltChar := #0;                                  { Preset fail return }
@@ -1185,19 +1260,19 @@ BEGIN
          Do Inc(I);                                   { Search for match }
        If (I < 128) Then GetAltChar := Chr(I);        { Return character }
      End Else
-       If (Hi(KeyCode)=$02) Then GetAltChar := #240;  { Return char }
+       If (Hi(KeyCode)=$02) Then GetAltChar := #240;  { Return AnsiChar }
    End;
 END;
 
 {---------------------------------------------------------------------------}
 {  GetCtrlChar -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 25May96 LdB       }
 {---------------------------------------------------------------------------}
-FUNCTION GetCtrlChar (KeyCode: Word): Char;
-VAR C: Char;
+FUNCTION GetCtrlChar (KeyCode: Word): AnsiChar;
+VAR C: AnsiChar;
 BEGIN
   C := #0;                                            { Preset #0 return }
   If (Lo(KeyCode) > 0) AND (Lo(KeyCode) <= 26) Then   { Between 1-26 }
-    C := Chr(Lo(KeyCode) + $40);                      { Return char A-Z }
+    C := Chr(Lo(KeyCode) + $40);                      { Return AnsiChar A-Z }
   GetCtrlChar := C;                                   { Return result }
 END;
 
@@ -1206,7 +1281,7 @@ END;
 {---------------------------------------------------------------------------}
 FUNCTION CtrlToArrow (KeyCode: Word): Word;
 CONST NumCodes = 11;
-      CtrlCodes : Array [0..NumCodes-1] Of Char =
+      CtrlCodes : Array [0..NumCodes-1] Of AnsiChar =
         (#19, #4, #5, #24, #1, #6, #7, #22, #18, #3, #8);
       ArrowCodes: Array [0..NumCodes-1] Of Sw_Word =
        (kbLeft, kbRight, kbUp, kbDown, kbHome, kbEnd, kbDel, kbIns,
@@ -1231,7 +1306,7 @@ END;
 {---------------------------------------------------------------------------}
 FUNCTION GetShiftState: Byte;
 begin
-  GetShiftState:=Keyboard.GetKeyEventShiftState(Keyboard.PollShiftStateEvent);
+  GetShiftState:={$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Keyboard.GetKeyEventShiftState({$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Keyboard.PollShiftStateEvent);
 end;
 
 {---------------------------------------------------------------------------}
@@ -1242,9 +1317,9 @@ var
   key      : TEnhancedKeyEvent;
   keycode  : Word;
 begin
-  if Keyboard.PollEnhancedKeyEvent<>NilEnhancedKeyEvent then
+  if {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Keyboard.PollEnhancedKeyEvent<>NilEnhancedKeyEvent then
    begin
-     key:=Keyboard.GetEnhancedKeyEvent;
+     key:={$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Keyboard.GetEnhancedKeyEvent;
      keycode:=key.VirtualScanCode;
      // some kbds still honour old XT E0 prefix. (org IBM ps/2, win98?) bug #8978
      if (keycode and $FF = $E0) and
@@ -1310,7 +1385,7 @@ procedure HideMouse;
 begin
 { Is mouse hidden yet?
   If (HideCount = 0) Then}
-    Mouse.HideMouse;
+    {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Mouse.HideMouse;
 {  Inc(HideCount);}
 end;
 
@@ -1322,7 +1397,7 @@ begin
 {  if HideCount>0 then
     dec(HideCount);
   if (HideCount=0) then}
-   Mouse.ShowMouse;
+   {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Mouse.ShowMouse;
 end;
 
 {---------------------------------------------------------------------------}
@@ -1330,31 +1405,56 @@ end;
 {---------------------------------------------------------------------------}
 procedure GetMouseEvent (Var Event: TEvent);
 var
-  e : Mouse.TMouseEvent;
+  e : {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Mouse.TMouseEvent;
 begin
-  if Mouse.PollMouseEvent(e) then
+  if {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Mouse.PollMouseEvent(e) then
    begin
-     Mouse.GetMouseEvent(e);
+     {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Mouse.GetMouseEvent(e);
      MouseWhere.X:=e.x;
      MouseWhere.Y:=e.y;
      Event.Double:=false;
+     Event.Triple:=false;
+     if (e.Buttons and (MouseButton4 or MouseButton5))<>0 then
+       e.Action:=MouseActionDown; { wheel buttons process in mouse down event }
      case e.Action of
        MouseActionMove :
          Event.What:=evMouseMove;
        MouseActionDown :
          begin
            Event.What:=evMouseDown;
-           if (DownButtons=e.Buttons) and (LastWhere.X=MouseWhere.X) and (LastWhere.Y=MouseWhere.Y) and
+           if (DownButtons=e.Buttons) and (DownWhere.X=MouseWhere.X) and (DownWhere.Y=MouseWhere.Y) and
               (GetDosTicks-DownTicks<=DoubleDelay) then
+           begin
              Event.Double:=true;
+             if LastDouble and ((e.Buttons and( MouseButton4 or MouseButton5)) = 0) then
+             begin              {only "normal" buttons can produce triple click}
+               Event.Double:=false;
+               Event.Triple:=true;
+             end;
+           end;
+           LastDouble:=Event.Double;
            DownButtons:=e.Buttons;
            DownWhere.X:=MouseWhere.x;
            DownWhere.Y:=MouseWhere.y;
            DownTicks:=GetDosTicks;
+           if Event.Triple then
+             dec(DownTicks,DoubleDelay); {after triple click can follow only single click}
            AutoTicks:=GetDosTicks;
            if AutoTicks=0 then
              AutoTicks:=1;
            AutoDelay:=RepeatDelay;
+           if (e.Buttons and (MouseButton4 or MouseButton5))<>0 then
+           begin
+             Event.What:=evMouseWheel; { Mouse wheel event not mouse down }
+             case e.Buttons and (MouseButton4 or MouseButton5) of
+               MouseButton4: Event.Wheel:=mwUp;
+               MouseButton5: Event.Wheel:=mwDown;
+             end;
+             e.Buttons:=e.Buttons and( not word( MouseButton4 or MouseButton5)); {remove wheel buttons for Buttons}
+             { do not temper with AutoTicks because other buttons can be held down while scrolling
+             AutoTicks:=0;}  {there is no "holding down" mouse wheel }
+             LastDouble:=false; { consecutive mouse wheel events all will be double events }
+           end;
          end;
        MouseActionUp :
          begin
@@ -1394,7 +1494,7 @@ var
 begin
   if PollSystemEvent(SysEvent) then
     begin
-      SysMsg.GetSystemEvent(SysEvent);
+      {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}Sysmsg.GetSystemEvent(SysEvent);
       case SysEvent.typ of
       SysNothing :
         Event.What:=evNothing;
@@ -1420,6 +1520,13 @@ begin
           Event.Id:=SysEvent.x;
           Event.InfoWord:=SysEvent.y;
         end;
+      SysPaste :
+        begin
+          Event.What:=evCommand;
+          Event.Command:=cmPasteText;
+          Event.Id:=SysEvent.Len;
+          Event.InfoPtr:=SysEvent.P;
+        end;
       else
         Event.What:=evNothing;
       end;
@@ -1440,14 +1547,14 @@ PROCEDURE InitEvents;
 BEGIN
   If (ButtonCount <> 0) Then
     begin                   { Mouse is available }
-     Mouse.InitMouse;                                 { Hook the mouse }
+     {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Mouse.InitMouse;                                 { Hook the mouse }
      { this is required by the use of HideCount variable }
-     Mouse.ShowMouse;                                 { visible by default }
+     {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Mouse.ShowMouse;                                 { visible by default }
      { HideCount:=0;  }
      LastButtons := 0;                                { Clear last buttons }
      DownButtons := 0;                                { Clear down buttons }
-     MouseWhere.X:=Mouse.GetMouseX;
-     MouseWhere.Y:=Mouse.GetMouseY;                   { Get mouse position }
+     MouseWhere.X:={$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Mouse.GetMouseX;
+     MouseWhere.Y:={$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Mouse.GetMouseY;                   { Get mouse position }
      LastWhere.x:=MouseWhere.x;
      LastWhereX:=MouseWhere.x;
      LastWhere.y:=MouseWhere.y;
@@ -1455,6 +1562,7 @@ BEGIN
      MouseEvents := True;                             { Set initialized flag }
     end;
   InitSystemMsg;
+  InitClip;
 END;
 
 {---------------------------------------------------------------------------}
@@ -1462,8 +1570,9 @@ END;
 {---------------------------------------------------------------------------}
 PROCEDURE DoneEvents;
 BEGIN
+  DoneClip;
   DoneSystemMsg;
-  Mouse.DoneMouse;
+  {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Mouse.DoneMouse;
   MouseEvents:=false;
 END;
 
@@ -1481,7 +1590,7 @@ const
 procedure initkeyboard;inline;
 
 begin
-  keyboard.initkeyboard;
+  {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Keyboard.initkeyboard;
 end;
 
 {---------------------------------------------------------------------------}
@@ -1491,7 +1600,7 @@ end;
 procedure donekeyboard;inline;
 
 begin
-  keyboard.donekeyboard;
+  {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Keyboard.donekeyboard;
 end;
 
 {---------------------------------------------------------------------------}
@@ -1512,17 +1621,17 @@ begin
     StoreScreenMode.Col:=0;
 
 {$ifdef FV_UNICODE}
-  Video.InitEnhancedVideo;
+  {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Video.InitEnhancedVideo;
 {$else FV_UNICODE}
-  Video.InitVideo;
+  {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Video.InitVideo;
 {$endif FV_UNICODE}
-  if video.errorcode<>viook then
+  if {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Video.errorcode<>viook then
     exit;
   GetVideoMode(StartupScreenMode);
   GetVideoMode(ScreenMode);
 {$ifdef OS_WINDOWS}
   { Force the console to the current screen mode }
-  Video.SetVideoMode(ScreenMode);
+  {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Video.SetVideoMode(ScreenMode);
 {$endif OS_WINDOWS}
 
   If (StoreScreenMode.Col<>0) and
@@ -1530,14 +1639,11 @@ begin
      (StoreScreenMode.row<>ScreenMode.row) or
      (StoreScreenMode.col<>ScreenMode.col)) then
     begin
-      Video.SetVideoMode(StoreScreenMode);
+      {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Video.SetVideoMode(StoreScreenMode);
       GetVideoMode(ScreenMode);
     end;
-
-  if ScreenWidth > MaxViewWidth then
-    ScreenWidth := MaxViewWidth;
-  ScreenWidth:=Video.ScreenWidth;
-  ScreenHeight:=Video.ScreenHeight;
+  ScreenWidth:={$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Video.ScreenWidth;
+  ScreenHeight:={$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Video.ScreenHeight;
   VideoInitialized:=true;
   initvideo:=true;
 end;
@@ -1549,10 +1655,16 @@ PROCEDURE DoneVideo;
 BEGIN
   if not VideoInitialized then
     exit;
-  Video.SetVideoMode(StartupScreenMode);
-  Video.ClearScreen;
-  Video.SetCursorPos(0,0);
-  Video.DoneVideo;
+{$IFNDEF WINDOWS}
+  {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Video.SetVideoMode(StartupScreenMode);
+  {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Video.ClearScreen;
+  {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Video.SetCursorPos(0,0);
+{$ENDIF}
+{$ifdef FV_UNICODE}
+  {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Video.DoneEnhancedVideo;
+{$else FV_UNICODE}
+   {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Video.DoneVideo;
+{$endif FV_UNICODE}
   VideoInitialized:=false;
 END;
 
@@ -1561,7 +1673,7 @@ END;
 {---------------------------------------------------------------------------}
 PROCEDURE ClearScreen;
 BEGIN
-  Video.ClearScreen;
+  {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Video.ClearScreen;
 END;
 
 {---------------------------------------------------------------------------}
@@ -1620,10 +1732,10 @@ procedure FormatStr (Var Result: Sw_String; CONST Format: Sw_String; Var Params)
 TYPE TLongArray = Array[0..0] Of PtrInt;
 VAR W, ResultLength : SmallInt;
     FormatIndex, Justify, Wth: Byte;
-    Fill: Char; S: Sw_String;
+    Fill: AnsiChar; S: Sw_String;
 
    FUNCTION LongToStr (L: Longint; Radix: Byte): Sw_String;
-   CONST HexChars: Array[0..15] Of Char =
+   CONST HexChars: Array[0..15] Of AnsiChar =
     ('0', '1', '2', '3', '4', '5', '6', '7',
      '8', '9', 'A', 'B', 'C', 'D', 'E', 'F');
    VAR I: LongInt; S: Sw_String; Sign: String[1];
@@ -1636,8 +1748,8 @@ VAR W, ResultLength : SmallInt;
      S := '';                                         { Preset empty string }
      Repeat
        I := L MOD Radix;                              { Radix mod of value }
-       S := HexChars[I] + S;                          { Add char to string }
-       L := L DIV Radix;                              { Divid by radix }
+       S := HexChars[I] + S;                          { Add AnsiChar to string }
+       L := L DIV Radix;                              { Divide by radix }
      Until (L = 0);                                   { Until no remainder }
      LongToStr := Sign + S;                           { Return result }
    end;
@@ -1650,24 +1762,24 @@ VAR W, ResultLength : SmallInt;
          exit;
 {$endif FV_UNICODE}
        While (FormatIndex <= Length(Format)) and
-             (Format[FormatIndex] <> '%')          { Param char not found }
+             (Format[FormatIndex] <> '%')          { Param AnsiChar not found }
         Do begin
 {$ifdef FV_UNICODE}
          SetLength(Result,ResultLength+1);
 {$endif FV_UNICODE}
          Result[ResultLength+1] := Format[FormatIndex]; { Transfer character }
          Inc(ResultLength);                           { One character added }
-         Inc(FormatIndex);                            { Next param char }
+         Inc(FormatIndex);                            { Next param AnsiChar }
        end;
-       If (FormatIndex < Length(Format)) and          { Not last char and }
-       (Format[FormatIndex] = '%') Then begin         { '%' char found }
-         Fill := ' ';                                 { Default fill char }
+       If (FormatIndex < Length(Format)) and          { Not last AnsiChar and }
+       (Format[FormatIndex] = '%') Then begin         { '%' AnsiChar found }
+         Fill := ' ';                                 { Default fill AnsiChar }
          Justify := 0;                                { Default justify }
          Wth := 0;                                    { Default 0=no width }
          Inc(FormatIndex);                            { Next character }
          If (Format[FormatIndex] = '0') Then
-           Fill := '0';                               { Fill char to zero }
-         If (Format[FormatIndex] = '-') Then begin    { Optional just char }
+           Fill := '0';                               { Fill AnsiChar to zero }
+         If (Format[FormatIndex] = '-') Then begin    { Optional just AnsiChar }
            Justify := 1;                              { Right justify }
            Inc(FormatIndex);                          { Next character }
          end;
@@ -1697,10 +1809,10 @@ VAR W, ResultLength : SmallInt;
              Inc(ResultLength,Length(S));
              Continue;
            end;
-           'c': S := Char(TLongArray(Params)[I]);  { Character parameter }
+           'c': S := Sw_Char (TLongArray(Params)[I]);  { Character parameter }
              'd': S := LongToStr(TLongArray(Params)[I],
                10);                                   { Decimal parameter }
-             's': S := PString(TLongArray(Params)[I])^;{ String parameter }
+             's': S := Sw_String(Pointer(TLongArray(Params)[I])^); { String parameter }
              'x': S := LongToStr(TLongArray(Params)[I],
                16);                                   { Hex parameter }
            end;

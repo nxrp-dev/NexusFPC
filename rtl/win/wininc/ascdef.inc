@@ -217,13 +217,13 @@ function CharLower(lpsz:LPSTR):LPSTR; external 'user32' name 'CharLowerA';
 function CharLowerBuff(lpsz:LPSTR; cchLength:DWORD):DWORD; external 'user32' name 'CharLowerBuffA';
 function CharNext(lpsz:LPCSTR):LPSTR; external 'user32' name 'CharNextA';
 function CharPrev(lpszStart:LPCSTR; lpszCurrent:LPCSTR):LPSTR; external 'user32' name 'CharPrevA';
-function IsCharAlpha(ch:CHAR):WINBOOL; external 'user32' name 'IsCharAlphaA';
-function IsCharAlphaNumeric(ch:CHAR):WINBOOL; external 'user32' name 'IsCharAlphaNumericA';
-function IsCharUpper(ch:CHAR):WINBOOL; external 'user32' name 'IsCharUpperA';
-function IsCharLower(ch:CHAR):WINBOOL; external 'user32' name 'IsCharLowerA';
+function IsCharAlpha(ch:AnsiChar):WINBOOL; external 'user32' name 'IsCharAlphaA';
+function IsCharAlphaNumeric(ch:AnsiChar):WINBOOL; external 'user32' name 'IsCharAlphaNumericA';
+function IsCharUpper(ch:AnsiChar):WINBOOL; external 'user32' name 'IsCharUpperA';
+function IsCharLower(ch:AnsiChar):WINBOOL; external 'user32' name 'IsCharLowerA';
 function GetKeyNameText(lParam:LONG; lpString:LPSTR; nSize:longint):longint; external 'user32' name 'GetKeyNameTextA';
-function VkKeyScan(ch:CHAR):SHORT; external 'user32' name 'VkKeyScanA';
-function VkKeyScanEx(ch:CHAR; dwhkl:HKL):SHORT; external 'user32' name 'VkKeyScanExA';
+function VkKeyScan(ch:AnsiChar):SHORT; external 'user32' name 'VkKeyScanA';
+function VkKeyScanEx(ch:AnsiChar; dwhkl:HKL):SHORT; external 'user32' name 'VkKeyScanExA';
 function MapVirtualKey(uCode:UINT; uMapType:UINT):UINT; external 'user32' name 'MapVirtualKeyA';
 function MapVirtualKeyEx(uCode:UINT; uMapType:UINT; dwhkl:HKL):UINT; external 'user32' name 'MapVirtualKeyExA';
 function LoadAccelerators(hInstance:HINST; lpTableName:LPCSTR):HACCEL; external 'user32' name 'LoadAcceleratorsA';
@@ -340,22 +340,6 @@ function GetICMProfile(_para1:HDC; _para2:DWORD; _para3:LPSTR):WINBOOL; external
 function SetICMProfile(_para1:HDC; _para2:LPSTR):WINBOOL; external 'gdi32' name 'SetICMProfileA';
 function UpdateICMRegKey(_para1:DWORD; _para2:DWORD; _para3:LPSTR; _para4:UINT):WINBOOL; external 'gdi32' name 'UpdateICMRegKeyA';
 function EnumICMProfiles(_para1:HDC; _para2:ICMENUMPROC; _para3:LPARAM):longint; external 'gdi32' name 'EnumICMProfilesA';
-{
-function PropertySheet(lppsph:LPCPROPSHEETHEADER):longint; external 'comctl32' name 'PropertySheetA';
-function ImageList_LoadImage(hi:HINST; lpbmp:LPCSTR; cx:longint; cGrow:longint; crMask:COLORREF;uType:UINT; uFlags:UINT):HIMAGELIST; external 'comctl32' name 'ImageList_LoadImageA';
-function CreateStatusWindow(style:LONG; lpszText:LPCSTR; hwndParent:HWND; wID:UINT):HWND; external 'comctl32' name 'CreateStatusWindowA';
-procedure DrawStatusText(hDC:HDC; lprc:LPRECT; pszText:LPCSTR; uFlags:UINT); external 'comctl32' name 'DrawStatusTextA';
-
-function GetOpenFileName(_para1:LPOPENFILENAME):WINBOOL; external 'comdlg32' name 'GetOpenFileNameA';
-function GetSaveFileName(_para1:LPOPENFILENAME):WINBOOL; external 'comdlg32' name 'GetSaveFileNameA';
-function GetFileTitle(_para1:LPCSTR; _para2:LPSTR; _para3:WORD):integer; external 'comdlg32' name 'GetFileTitleA';
-function ChooseColor(_para1:LPCHOOSECOLOR):WINBOOL; external 'comdlg32' name 'ChooseColorA';
-function FindText(_para1:LPFINDREPLACE):HWND; external 'comdlg32' name 'FindTextA';
-function ReplaceText(_para1:LPFINDREPLACE):HWND; external 'comdlg32' name 'ReplaceTextA';
-function ChooseFont(_para1:LPCHOOSEFONT):WINBOOL; external 'comdlg32' name 'ChooseFontA';
-function PrintDlg(_para1:LPPRINTDLG):WINBOOL; external 'comdlg32' name 'PrintDlgA';
-function PageSetupDlg(_para1:LPPAGESETUPDLG):WINBOOL; external 'comdlg32' name 'PageSetupDlgA';
-}
 
 function CreateProcess(lpApplicationName:LPCSTR; lpCommandLine:LPSTR; lpProcessAttributes:LPSECURITY_ATTRIBUTES; lpThreadAttributes:LPSECURITY_ATTRIBUTES; bInheritHandles:WINBOOL;dwCreationFlags:DWORD; lpEnvironment:LPVOID;
   lpCurrentDirectory:LPCSTR; lpStartupInfo:LPSTARTUPINFO; lpProcessInformation:LPPROCESS_INFORMATION):WINBOOL; external 'kernel32' name 'CreateProcessA';
@@ -423,7 +407,7 @@ function ReadConsoleOutput(hConsoleOutput:HANDLE; lpBuffer:PCHAR_INFO; dwBufferS
 function WriteConsoleOutput(hConsoleOutput:HANDLE; lpBuffer:PCHAR_INFO; dwBufferSize:COORD; dwBufferCoord:COORD; lpWriteRegion:PSMALL_RECT):WINBOOL; external 'kernel32' name 'WriteConsoleOutputA';
 function ReadConsoleOutputCharacter(hConsoleOutput:HANDLE; lpCharacter:LPSTR; nLength:DWORD; dwReadCoord:COORD; lpNumberOfCharsRead:LPDWORD):WINBOOL; external 'kernel32' name 'ReadConsoleOutputCharacterA';
 function WriteConsoleOutputCharacter(hConsoleOutput:HANDLE; lpCharacter:LPCSTR; nLength:DWORD; dwWriteCoord:COORD; lpNumberOfCharsWritten:LPDWORD):WINBOOL; external 'kernel32' name 'WriteConsoleOutputCharacterA';
-function FillConsoleOutputCharacter(hConsoleOutput:HANDLE; cCharacter:CHAR; nLength:DWORD; dwWriteCoord:COORD; lpNumberOfCharsWritten:LPDWORD):WINBOOL; external 'kernel32' name 'FillConsoleOutputCharacterA';
+function FillConsoleOutputCharacter(hConsoleOutput:HANDLE; cCharacter:AnsiChar; nLength:DWORD; dwWriteCoord:COORD; lpNumberOfCharsWritten:LPDWORD):WINBOOL; external 'kernel32' name 'FillConsoleOutputCharacterA';
 function ScrollConsoleScreenBuffer(hConsoleOutput:HANDLE; lpScrollRectangle:PSMALL_RECT; lpClipRectangle:PSMALL_RECT; dwDestinationOrigin:COORD; lpFill:PCHAR_INFO):WINBOOL; external 'kernel32' name 'ScrollConsoleScreenBufferA';
 function GetConsoleTitle(lpConsoleTitle:LPSTR; nSize:DWORD):DWORD; external 'kernel32' name 'GetConsoleTitleA';
 function SetConsoleTitle(lpConsoleTitle:LPCSTR):WINBOOL; external 'kernel32' name 'SetConsoleTitleA';
@@ -463,16 +447,16 @@ function QueryServiceLockStatus(hSCManager:SC_HANDLE; lpLockStatus:LPQUERY_SERVI
 function RegisterServiceCtrlHandler(lpServiceName:LPCSTR; lpHandlerProc:LPHANDLER_FUNCTION):SERVICE_STATUS_HANDLE; external 'advapi32' name 'RegisterServiceCtrlHandlerA';
 function StartServiceCtrlDispatcher(lpServiceStartTable:LPSERVICE_TABLE_ENTRY):WINBOOL; external 'advapi32' name 'StartServiceCtrlDispatcherA';
 function StartService(hService:SC_HANDLE; dwNumServiceArgs:DWORD; lpServiceArgVectors:LPPCSTR):WINBOOL; external 'advapi32' name 'StartServiceA';
-function DragQueryFile(_para1:HDROP; _para2:cardinal; _para3:Pchar;_para4:cardinal):cardinal; external 'shell32' name 'DragQueryFileA';
-function ExtractAssociatedIcon(_para1:HINST; _para2:Pchar; _para3:LPWORD):HICON; external 'shell32' name 'ExtractAssociatedIconA';
-function ExtractIcon(_para1:HINST; _para2:Pchar; _para3:cardinal):HICON;external 'shell32' name 'ExtractIconA';
-function FindExecutable(_para1:pchar; _para2:pchar;_para3:pchar):HINST; external 'shell32' name 'FindExecutableA';
-function ShellAbout(_para1:HWND; _para2:pchar; _para3:pchar;_para4:HICON):longint; external 'shell32' name 'ShellAboutA';
-function ShellExecute(_para1:HWND; _para2:pchar; _para3:pchar;_para4:pchar; _para5:pchar;_para6:longint):HINST; external 'shell32' name 'ShellExecuteA';
+function DragQueryFile(_para1:HDROP; _para2:cardinal; _para3:PAnsiChar;_para4:cardinal):cardinal; external 'shell32' name 'DragQueryFileA';
+function ExtractAssociatedIcon(_para1:HINST; _para2:PAnsiChar; _para3:LPWORD):HICON; external 'shell32' name 'ExtractAssociatedIconA';
+function ExtractIcon(_para1:HINST; _para2:PAnsiChar; _para3:cardinal):HICON;external 'shell32' name 'ExtractIconA';
+function FindExecutable(_para1:PAnsiChar; _para2:PAnsiChar;_para3:PAnsiChar):HINST; external 'shell32' name 'FindExecutableA';
+function ShellAbout(_para1:HWND; _para2:PAnsiChar; _para3:PAnsiChar;_para4:HICON):longint; external 'shell32' name 'ShellAboutA';
+function ShellExecute(_para1:HWND; _para2:PAnsiChar; _para3:PAnsiChar;_para4:PAnsiChar; _para5:PAnsiChar;_para6:longint):HINST; external 'shell32' name 'ShellExecuteA';
 function Shell_NotifyIcon(dwMessage: DWORD; lpData: PNotifyIconDataA): BOOL; external 'shell32' name 'Shell_NotifyIconA';
-function DdeCreateStringHandle(_para1:DWORD; _para2:pchar;_para3:longint):HSZ; external 'user32' name 'DdeCreateStringHandleA';
+function DdeCreateStringHandle(_para1:DWORD; _para2:PAnsiChar;_para3:longint):HSZ; external 'user32' name 'DdeCreateStringHandleA';
 function DdeInitialize(_para1:LPDWORD; _para2:PFNCALLBACK; _para3:DWORD; _para4:DWORD):UINT;external 'user32' name 'DdeInitializeA';
-function DdeQueryString(_para1:DWORD; _para2:HSZ; _para3:pchar;_para4:DWORD; _para5:longint):DWORD; external 'user32' name 'DdeQueryStringA';
+function DdeQueryString(_para1:DWORD; _para2:HSZ; _para3:PAnsiChar;_para4:DWORD; _para5:longint):DWORD; external 'user32' name 'DdeQueryStringA';
 function LogonUser(_para1:LPSTR; _para2:LPSTR; _para3:LPSTR; _para4:DWORD; _para5:DWORD;_para6:PHANDLE):WINBOOL; external 'advapi32' name 'LogonUserA';
 function CreateProcessAsUser(_para1:HANDLE; _para2:LPCTSTR; _para3:LPTSTR; _para4:LPSECURITY_ATTRIBUTES; _para5:LPSECURITY_ATTRIBUTES;_para6:WINBOOL; _para7:DWORD; _para8:LPVOID; _para9:LPCTSTR;
   _para10:LPSTARTUPINFO; _para11:LPPROCESS_INFORMATION):WINBOOL; external 'advapi32' name 'CreateProcessAsUserA';

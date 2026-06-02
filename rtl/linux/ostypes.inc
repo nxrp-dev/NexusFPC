@@ -57,13 +57,13 @@ TYPE
 
    { system information services }
    UtsName   = Record
-                Sysname : Array[0..UTSNAME_LENGTH -1] OF Char;   // Name of this OS
-                Nodename: Array[0..UTSNAME_NODENAME_LENGTH-1] OF Char;   // Name of this network node.
-                Release : Array[0..UTSNAME_LENGTH -1] OF Char;   // Release level.
-                Version : Array[0..UTSNAME_LENGTH -1] OF Char;   // Version level.
-                Machine : Array[0..UTSNAME_LENGTH -1] OF Char;   // Hardware type.
+                Sysname : Array[0..UTSNAME_LENGTH -1] OF AnsiChar;   // Name of this OS
+                Nodename: Array[0..UTSNAME_NODENAME_LENGTH-1] OF AnsiChar;   // Name of this network node.
+                Release : Array[0..UTSNAME_LENGTH -1] OF AnsiChar;   // Release level.
+                Version : Array[0..UTSNAME_LENGTH -1] OF AnsiChar;   // Version level.
+                Machine : Array[0..UTSNAME_LENGTH -1] OF AnsiChar;   // Hardware type.
                {$ifdef usedomain}
-                Domain  : array[0..UTSNAME_DOMAIN_LENGTH-1] of char {$ifndef ver2_2} platform; {$endif}  // Linux addition "Domain"
+                Domain  : array[0..UTSNAME_DOMAIN_LENGTH-1] of AnsiChar {$ifndef ver2_2} platform; {$endif}  // Linux addition "Domain"
                {$endif}
                end;
   TUtsName   = UtsName;
@@ -75,14 +75,14 @@ TYPE
 { include /include/asm-<cpu>/posix-types.h                       }
 
 const
-{$if not defined(cpux86_64) and not defined (cpuaarch64)}
+{$if not defined(cpux86_64) and not defined (cpuaarch64) and not defined (cpuriscv64)}
   _STAT_VER_LINUX_OLD = 1;
   _STAT_VER_KERNEL = 1;
   _STAT_VER_SVR4 = 2;
   _STAT_VER_LINUX = 3;
 {$else}
   _STAT_VER_KERNEL = 0;
-{$if defined(cpuaarch64)}
+{$if defined(cpuaarch64) or defined(cpuriscv64)}
   _STAT_VER_LINUX = 0;
 {$else}
   _STAT_VER_LINUX = 1;
@@ -153,7 +153,7 @@ type
                 d_off         : off_t;
                 d_reclen      : cushort;                        // length of string in d_name
                 d_type        : cuchar;                         // file type, see below
-                d_name        : array[0..4095-sizeof(ino64_t)-sizeof(off_t)-sizeof(cushort)-sizeof(cuchar)] of char;  // name buffer + padding for extra records; align total record size to a page size
+                d_name        : array[0..4095-sizeof(ino64_t)-sizeof(off_t)-sizeof(cushort)-sizeof(cuchar)] of AnsiChar;  // name buffer + padding for extra records; align total record size to a page size
                end;
   TDirent  = Dirent;
   pDirent  = ^Dirent;
@@ -175,7 +175,7 @@ type
         // new libc one. NOTE that off_t must be real, so 64-bit ifdef
    Dir       = Record   // packing doesn't matter. This is a userland struct.
                 fd      : cint;
-                data    : pchar;
+                data    : PAnsiChar;
                 allocation: size_t;
                 _size     : size_t;
                 offset    : size_t;
@@ -397,7 +397,7 @@ CONST
   S_ISGID = &2000;
   S_ISVTX = &1000;
 
-  { Constansts for MMAP }
+  { Constants for MMAP }
  {$IFDEF FPC_IS_SYSTEM}
   MAP_PRIVATE   =2;
  {$ENDIF}
@@ -464,10 +464,10 @@ const
   RLIMIT_LOCKS = 10;    { maximum file locks held  }
 
 type
-{$ifdef fs32bit}
-  rlim_t = cULong;
-{$else}
+{$ifdef CPU64}
   rlim_t = cULongLong;
+{$else}
+  rlim_t = cULong;
 {$endif}
   PRLimit = ^TRLimit;
   TRLimit = record
@@ -511,3 +511,24 @@ const
 
 {$i signal.inc}
 
+  { For 32 bit 2038 safe support, we have to use the kernel_timespec on linux which
+    makes all fields 64 bit regardless of the bit size of the CPU.
+
+    I have no idea though how to work around this when libc is used
+  }
+{$ifndef FPC_USE_LIBC}
+  kernel_time64_t = clonglong;
+
+  kernel_timespec = record
+    tv_sec  : kernel_time64_t;
+    tv_nsec : clonglong;
+  end;
+  tkernel_timespec = kernel_timespec;
+  pkernel_timespec = ^kernel_timespec;
+
+  tkernel_timespecs = array[0..1] of kernel_timespec;
+
+  TTimespecArr = tkernel_timespecs;
+{$else FPC_USE_LIBC}
+  TTimespecArr = array[0..1] of ttimespec;
+{$endif FPC_USE_LIBC}

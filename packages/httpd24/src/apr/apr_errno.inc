@@ -48,9 +48,9 @@ type
  * @param buf A buffer to hold the error string.
  * @param bufsize Size of the buffer to hold the string.
  *}
-//APR_DECLARE(char *) apr_strerror(apr_status_t statcode, char *buf,
+//APR_DECLARE(AnsiChar *) apr_strerror(apr_status_t statcode, AnsiChar *buf,
 //                                 apr_size_t bufsize);
-function apr_strerror(statcode: apr_status_t; buf: PChar; bufsize: apr_size_t): PChar;
+function apr_strerror(statcode: apr_status_t; buf: PAnsiChar; bufsize: apr_size_t): PAnsiChar;
   {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
   external LibAPR name LibNamePrefix + 'apr_strerror' + LibSuff12;
 
@@ -273,7 +273,7 @@ const
  * APR_ANONYMOUS      APR is using anonymous shared memory
  * APR_FILEBASED      APR is using a file name as the key to the shared memory
  * APR_KEYBASED       APR is using a shared key as the key to the shared memory
- * APR_EINIT          Ininitalizer value.  If no option has been found, but
+ * APR_EINIT          Initializer value.  If no option has been found, but
  *                    the status variable requires a value, this should be used
  * APR_ENOTIMPL       The APR function has not been implemented on this
  *                    platform, either because nobody has gotten to it yet,
@@ -604,7 +604,7 @@ APR_EBUSY =         APR_OS_START_STATUS+25;
  *}
 //#define APR_STATUS_IS_KEYBASED(s)       ((s) == APR_KEYBASED)
 {**
- * Ininitalizer value.  If no option has been found, but
+ * Initializer value.  If no option has been found, but
  * the status variable requires a value, this should be used
  * @warning
  * always use this test, as platform-specific variances may meet this
@@ -1299,7 +1299,7 @@ SOCENOTEMPTY            = (SOCBASEERR + 66);            //* Directory not empty 
 #define APR_STATUS_IS_EHOSTUNREACH(s)    ((s) == APR_EHOSTUNREACH)
 /** network is unreachable */
 #define APR_STATUS_IS_ENETUNREACH(s)     ((s) == APR_ENETUNREACH)
-/** inappropiate file type or format */
+/** inappropriate file type or format */
 #define APR_STATUS_IS_EFTYPE(s)          ((s) == APR_EFTYPE)
 /** broken pipe */
 #define APR_STATUS_IS_EPIPE(s)           ((s) == APR_EPIPE)

@@ -276,7 +276,7 @@ implementation
           '.stabstr',
           '.idata$2','.idata$4','.idata$5','.idata$6','.idata$7','.edata',
           '.eh_frame',
-          '.debug_frame','.debug_info','.debug_line','.debug_abbrev','.debug_aranges','.debug_ranges',
+          '.debug_frame','.debug_info','.debug_line','.debug_abbrev','.debug_aranges','.debug_ranges','.debug_loc','.debug_loclists',
           '.fpc',
           '.toc',
           '.init',
@@ -318,7 +318,8 @@ implementation
           '_STACK',
           '_HEAP',
           '.gcc_except_table',
-          '.ARM.attributes'
+          '.ARM.attributes',
+          '.note'
         );
       begin
         if atype=sec_user then
@@ -1229,6 +1230,7 @@ implementation
                 end;
             end;
         instance.Free;
+        instance := nil;
       end;
 
 

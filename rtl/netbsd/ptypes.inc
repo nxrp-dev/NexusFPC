@@ -59,7 +59,7 @@ type
  {$ifdef CPU64}
     size_t   = cuint64;
 {$else}
-    size_t   = cuint32;         { as definied in the C standard}
+    size_t   = cuint32;         { as defined in the C standard}
 {$endif}
     TSize    = size_t;
     pSize    = ^size_t;
@@ -81,7 +81,7 @@ type
     wint_t    = cint32;
     wchar_t   = cint32;
     pwchar_t  = ^wchar_t;
-    
+
     clock_t  = culong;
     TClock   = clock_t;
     pClock   = ^clock_t;
@@ -98,8 +98,8 @@ type
 Const
     MNAMELEN   = 90;      // found in sys/mount.h
     MNAMLEN = MNAMELEN; // Keep all constant name.
-    MFSNAMELEN = 16;// found in sys/compat/sys/mount.h	
-    MFSNamLen = MFSNAMELEN;	
+    MFSNAMELEN = 16;// found in sys/compat/sys/mount.h
+    MFSNamLen = MFSNAMELEN;
 type
 { Checked, found in sys/fstypes.h }
     fsid_t  = array[0..1] of cint32;
@@ -122,9 +122,9 @@ struct statfs12 {
 	long	f_syncwrites;		/* count of sync writes since mount */
 	long	f_asyncwrites;		/* count of async writes since mount */
 	long	f_spare[1];		/* spare for later */
-	char	f_fstypename[MFSNAMELEN]; /* fs type name */
-	char	f_mntonname[MNAMELEN];	  /* directory on which mounted */
-	char	f_mntfromname[MNAMELEN];  /* mounted file system */
+	AnsiChar	f_fstypename[MFSNAMELEN]; /* fs type name */
+	AnsiChar	f_mntonname[MNAMELEN];	  /* directory on which mounted */
+	AnsiChar	f_mntfromname[MNAMELEN];  /* mounted file system */
 };
 *)
     TStatfs12 = record
@@ -143,11 +143,11 @@ struct statfs12 {
       fsyncwrites,
       fasyncwrites   : clong;
       fspare0        : array [0..0] of clong;
-      fstypename     : array[0..MFSNamLen-1] of char;
-      mountpoint     : array[0..MNAMLEN-1] of char;
-      mnfromname     : array[0..MNAMLEN-1] of char;
+      fstypename     : array[0..MFSNamLen-1] of AnsiChar;
+      mountpoint     : array[0..MNAMLEN-1] of AnsiChar;
+      mnfromname     : array[0..MNAMLEN-1] of AnsiChar;
     end;
-    TStatFS = TStatFS12;   
+    TStatFS = TStatFS12;
     PStatFS=^TStatFS;
     timeval = packed record
                 tv_sec,
@@ -165,12 +165,12 @@ struct statfs12 {
 
    mbstate_t = record
       case byte of
-        0: (__mbstate8: array[0..127] of char);
+        0: (__mbstate8: array[0..127] of AnsiChar);
         1: (_mbstateL: cint64); { for alignment }
     end;
    pmbstate_t = ^mbstate_t;
- 
-{ records transcripted fromm NetBSD 5.1 libpthread sources } 
+
+{ records transcribed fromm NetBSD 5.1 libpthread sources }
    pthread_t            = pointer;
    pthread_attr_t       = record
      pta_magic : cuint;
@@ -182,7 +182,7 @@ struct statfs12 {
      ptma_magic : cint;
      ptma_private : pointer;
    end;
-   pthread_spin_t = char;
+   pthread_spin_t = AnsiChar;
    pthread_queue_t = record
        first, last : pointer;
      end;

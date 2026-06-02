@@ -2,7 +2,7 @@
     This file is part of the Free Component Library.
     Copyright (c) 2017 Michael Van Canneyt, member of the Free Pascal development team
 
-    TFPReport descendent that stores it's design in a JSON structure. 
+    TFPReport descendent that stores it's design in a JSON structure.
     Can be used in an IDE
 
     See the file COPYING.FPC, included in this distribution,
@@ -13,14 +13,22 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fplazreport;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, FpReport.Report, Xml.Dom, FpImage.Canvas, FpPdf.Ttf,
+  FpReport.Data.Db, FpReport.BarCode;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, fpreport, DOM, FPCanvas, fpTTF, fpreportdb, fpreportbarcode;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
   TCustomPropEvent = procedure(Sender: TObject;Data : TDOMNode) of object;
@@ -84,7 +92,11 @@ Type
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.DateUtils, Xml.Read,FpImage.Reader.PNG,FpImage,FpImage.Reader.GIF,FpImage.Reader.JPEG,FpImage.BarCode;
+{$ELSE FPC_DOTTEDUNITS}
 uses dateutils, XMLRead,FPReadPNG,FPimage,FPReadGif,FPReadJPEG,fpbarcode;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Resourcestring
   SLogUnknownClass = 'Ignoring unknown lazreport class type for object "%s": "%s".';

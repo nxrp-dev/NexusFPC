@@ -42,7 +42,9 @@
 
 // $Id: JwaNtDsbCli.pas,v 1.12 2007/09/05 11:58:51 dezipaitor Exp $
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaNtDsbCli;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -56,8 +58,13 @@ unit JwaNtDsbCli;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 {$IFNDEF JWA_IMPLEMENTATIONSECTION}
 
@@ -124,7 +131,7 @@ type
   BFT = WCHAR;
   {$EXTERNALSYM BFT}
   {$ELSE}
-  BFT = Char;
+  BFT = AnsiChar;
   {$EXTERNALSYM BFT}
   {$ENDIF UNICODE}
 
@@ -162,8 +169,8 @@ type
   PEDB_RSTMAPA = ^EDB_RSTMAPA;
   {$EXTERNALSYM PEDB_RSTMAPA}
   tagEDB_RSTMAPA = record
-    szDatabaseName: PChar;
-    szNewDtabaseName: PChar;
+    szDatabaseName: PAnsiChar;
+    szNewDtabaseName: PAnsiChar;
   end;
   {$EXTERNALSYM tagEDB_RSTMAPA}
   EDB_RSTMAPA = tagEDB_RSTMAPA;
@@ -303,7 +310,7 @@ Routine Description:
     [in]    hbc - backup context handle
     [in]    szAttachmentName - name of the attachment to be opened for read
     [in]    cbReadHintSize - suggested size in bytes that might be used during the
-                subsequent reads on this attachement
+                subsequent reads on this attachment
     [out]   pliFileSize - pointer to a large integer that would receive the size in
                 bytes of the given attachment
 Return Value:
@@ -350,7 +357,7 @@ Routine Description:
 
       DsBackupClose
         To be called by the application after it completes reading all the data in
-        the currently opened attachement.
+        the currently opened attachment.
 
   Arguments:
     [in]    hbc - backup context handle

@@ -17,7 +17,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CGLDevice;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -202,7 +204,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CGLTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CGLTypes;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -214,7 +220,7 @@ type
 	CGLShareGroupRec = record end;
 	CGLShareGroup = ^CGLShareGroupRec;
 	CGLShareGroupObj = ^CGLShareGroupRec;
-	
+
 function CGLGetShareGroup( ctx: CGLContextObj ): CGLShareGroupObj; external name '_CGLGetShareGroup';
 
 {$endc} {TARGET_OS_MAC}

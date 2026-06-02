@@ -1,3 +1,4 @@
+{%MainUnit sysutils.pp}
 {
     *********************************************************************
     Copyright (C) 2012 Paul Ishenin,
@@ -14,28 +15,46 @@
 
 { TEncoding }
 
-class function TEncoding.GetANSI: TEncoding;
+class function TEncoding.GetStandard(Se: TStandardEncoding; Ctr: TCreateEncodingProc): TEncoding;
 begin
+  Result := FStandardEncodings[Se];
+  if Assigned(Result) then
+  begin
 {$ifdef FPC_HAS_FEATURE_THREADING}
-  EnterCriticalSection(FLock);
-  try
+    ReadDependencyBarrier; // Read Result contents (by caller) after Result pointer.
 {$endif}
-    if not Assigned(FStandardEncodings[seAnsi]) then
-    begin
-      if Assigned(widestringmanager.GetStandardCodePageProc) then
-        FStandardEncodings[seAnsi] := TMBCSEncoding.Create(widestringmanager.GetStandardCodePageProc(scpAnsi))
-      else
-        FStandardEncodings[seAnsi] := TMBCSEncoding.Create(DefaultSystemCodePage);
-    end;
-{$ifdef FPC_HAS_FEATURE_THREADING}
-  finally
-    LeaveCriticalSection(FLock);
+    Exit;
   end;
+
+  Result := Ctr();
+{$ifdef FPC_HAS_FEATURE_THREADING}
+  WriteBarrier; // Write FStandardEncodings[Se] after Result contents.
+  if InterlockedCompareExchange(Pointer(FStandardEncodings[Se]), Pointer(Result), nil) <> nil then
+  begin
+    Result.Free;
+    Result := FStandardEncodings[Se];
+  end;
+{$else}
+  FStandardEncodings[Se] := Result;
 {$endif}
-  Result := FStandardEncodings[seAnsi];
 end;
 
-function TEncoding.GetAnsiBytes(const S: string): TBytes;
+class function TEncoding.CreateANSI: TEncoding;
+var
+  Cp: TSystemCodePage;
+begin
+  Cp := DefaultSystemCodePage;
+  if Assigned(widestringmanager.GetStandardCodePageProc) then
+    Cp := widestringmanager.GetStandardCodePageProc(scpAnsi);
+  Result := TMBCSEncoding.Create(Cp);
+end;
+
+class function TEncoding.GetANSI: TEncoding;
+begin
+  Result := GetStandard(seAnsi, @CreateANSI);
+end;
+
+function TEncoding.GetAnsiBytes(const S: ansistring): TBytes;
 begin
   if S='' then
     Result := nil
@@ -43,13 +62,13 @@ begin
     Result := GetAnsiBytes(S, 1, Length(S));
 end;
 
-function TEncoding.GetAnsiBytes(const S: string; CharIndex, CharCount: Integer
+function TEncoding.GetAnsiBytes(const S: ansistring; CharIndex, CharCount: Integer
   ): TBytes;
 begin
   Result := GetAnsiBytes(Pointer(@S[CharIndex]), CharCount);
 end;
 
-function TEncoding.GetAnsiString(const Bytes: TBytes): string;
+function TEncoding.GetAnsiString(const Bytes: TBytes): ansistring;
 begin
   if Length(Bytes)=0 then
     Result := ''
@@ -58,42 +77,30 @@ begin
 end;
 
 function TEncoding.GetAnsiString(const Bytes: TBytes; ByteIndex,
-  ByteCount: Integer): string;
+  ByteCount: Integer): ansistring;
 begin
   Result := GetAnsiString(Pointer(@Bytes[ByteIndex]), ByteCount);
   SetCodePage(RawByteString(Result), DefaultSystemCodePage, False);
 end;
 
+class function TEncoding.CreateASCII: TEncoding;
+begin
+  Result := TMBCSEncoding.Create(CP_ASCII);
+end;
+
 class function TEncoding.GetASCII: TEncoding;
 begin
-{$ifdef FPC_HAS_FEATURE_THREADING}
-  EnterCriticalSection(FLock);
-  try
-{$endif}
-    if not Assigned(FStandardEncodings[seAscii]) then
-      FStandardEncodings[seAscii] := TMBCSEncoding.Create(CP_ASCII);
-{$ifdef FPC_HAS_FEATURE_THREADING}
-  finally
-    LeaveCriticalSection(FLock);
-  end;
-{$endif}
-  Result := FStandardEncodings[seAscii];
+  Result := GetStandard(seAscii, @CreateASCII);
+end;
+
+class function TEncoding.CreateBigEndianUnicode: TEncoding;
+begin
+  Result := TBigEndianUnicodeEncoding.Create;
 end;
 
 class function TEncoding.GetBigEndianUnicode: TEncoding;
 begin
-{$ifdef FPC_HAS_FEATURE_THREADING}
-  EnterCriticalSection(FLock);
-  try
-{$endif}
-    if not Assigned(FStandardEncodings[seBigEndianUnicode]) then
-      FStandardEncodings[seBigEndianUnicode] := TBigEndianUnicodeEncoding.Create;
-{$ifdef FPC_HAS_FEATURE_THREADING}
-  finally
-    LeaveCriticalSection(FLock);
-  end;
-{$endif}
-  Result := FStandardEncodings[seBigEndianUnicode];
+  Result := GetStandard(seBigEndianUnicode, @CreateBigEndianUnicode);
 end;
 
 class function TEncoding.GetDefault: TEncoding;
@@ -103,124 +110,83 @@ end;
 
 class function TEncoding.GetSystemEncoding: TEncoding;
 var
-  I: Integer;
+  Cp: TSystemCodePage;
+  Head: TEncoding;
 begin
+  repeat
+    Cp := DefaultSystemCodePage;
+    Head := FSystemEncodingsList; // Must not be re-read until InterlockedCompareExchange to guarantee that search was performed against this head.
 {$ifdef FPC_HAS_FEATURE_THREADING}
-  EnterCriticalSection(FLock);
-  try
+    ReadDependencyBarrier; // Read Head contents after Head pointer.
 {$endif}
-    for I := Low(FSystemEncodings) to High(FSystemEncodings) do
-    begin
-      if FSystemEncodings[I].CodePage=DefaultSystemCodePage then
-      begin
-        Result := FSystemEncodings[I];
-        if I<>Low(FSystemEncodings) then // exchange with first position to find it faster the next time
-        begin
-          FSystemEncodings[I] := FSystemEncodings[Low(FSystemEncodings)];
-          FSystemEncodings[Low(FSystemEncodings)] := Result;
-        end;
-        Exit;
-      end;
-    end;
+    Result := Head;
+    while Assigned(Result) do
+      if Result.CodePage = Cp then
+        Exit
+      else
+        Result := Result.FNext;
+
     // not found - create new encoding at first position
-    Result := TMBCSEncoding.Create(DefaultSystemCodePage);
-    SetLength(FSystemEncodings, Length(FSystemEncodings)+1);
-    if High(FSystemEncodings)<>Low(FSystemEncodings) then
-      FSystemEncodings[High(FSystemEncodings)] := FSystemEncodings[Low(FSystemEncodings)];
-    FSystemEncodings[Low(FSystemEncodings)] := Result;
+    Result := TMBCSEncoding.Create(Cp);
+    Result.FNext := Head;
 {$ifdef FPC_HAS_FEATURE_THREADING}
-  finally
-    LeaveCriticalSection(FLock);
-  end;
+    WriteBarrier; // Write FSystemEncodingsList after Result contents.
+    if InterlockedCompareExchange(Pointer(FSystemEncodingsList), Pointer(Result), Pointer(Head)) = Pointer(Head) then
+      break
+    else
+      Result.Free;
+{$else}
+    FSystemEncodingsList := Result;
+    break;
 {$endif}
+  until false;
+end;
+
+class function TEncoding.CreateUnicode: TEncoding;
+begin
+  Result := TUnicodeEncoding.Create;
 end;
 
 class function TEncoding.GetUnicode: TEncoding;
 begin
-{$ifdef FPC_HAS_FEATURE_THREADING}
-  EnterCriticalSection(FLock);
-  try
-{$endif}
-    if not Assigned(FStandardEncodings[seUnicode]) then
-      FStandardEncodings[seUnicode] := TUnicodeEncoding.Create;
-{$ifdef FPC_HAS_FEATURE_THREADING}
-  finally
-    LeaveCriticalSection(FLock);
-  end;
-{$endif}
-  Result := FStandardEncodings[seUnicode];
+  Result := GetStandard(seUnicode, @CreateUnicode);
+end;
+
+class function TEncoding.CreateUTF7: TEncoding;
+begin
+  Result := TUTF7Encoding.Create;
 end;
 
 class function TEncoding.GetUTF7: TEncoding;
 begin
-{$ifdef FPC_HAS_FEATURE_THREADING}
-  EnterCriticalSection(FLock);
-  try
-{$endif}
-    if not Assigned(FStandardEncodings[seUTF7]) then
-      FStandardEncodings[seUTF7] := TUTF7Encoding.Create;
-{$ifdef FPC_HAS_FEATURE_THREADING}
-  finally
-    LeaveCriticalSection(FLock);
-  end;
-{$endif}
-  Result := FStandardEncodings[seUTF7];
+  Result := GetStandard(seUTF7, @CreateUTF7);
+end;
+
+class function TEncoding.CreateUTF8: TEncoding;
+begin
+  Result := TUTF8Encoding.Create;
 end;
 
 class function TEncoding.GetUTF8: TEncoding;
 begin
-{$ifdef FPC_HAS_FEATURE_THREADING}
-  EnterCriticalSection(FLock);
-  try
-{$endif}
-    if not Assigned(FStandardEncodings[seUTF8]) then
-      FStandardEncodings[seUTF8] := TUTF8Encoding.Create;
-{$ifdef FPC_HAS_FEATURE_THREADING}
-  finally
-    LeaveCriticalSection(FLock);
-  end;
-{$endif}
-  Result := FStandardEncodings[seUTF8];
-end;
-
-class procedure TEncoding.FreeEncodings;
-var
-  E: TStandardEncoding;
-  I: Integer;
-begin
-{$ifdef FPC_HAS_FEATURE_THREADING}
-  EnterCriticalSection(FLock);
-  try
-{$endif}
-    for E := Low(FStandardEncodings) to High(FStandardEncodings) do
-      FreeAndNil(FStandardEncodings[E]);
-    for I := Low(FSystemEncodings) to High(FSystemEncodings) do
-      FSystemEncodings[I].Free;
-    SetLength(FSystemEncodings, 0);
-{$ifdef FPC_HAS_FEATURE_THREADING}
-  finally
-    LeaveCriticalSection(FLock);
-  end;
-{$endif}
-end;
-
-class constructor TEncoding.Create;
-var
-  E: TStandardEncoding;
-begin
-  for E := Low(FStandardEncodings) to High(FStandardEncodings) do
-    FStandardEncodings[E] := nil;
-{$ifdef FPC_HAS_FEATURE_THREADING}
-  InitCriticalSection(FLock);
-{$endif}
+  Result := GetStandard(seUTF8, @CreateUTF8);
 end;
 
 class destructor TEncoding.Destroy;
+var
+  E: TStandardEncoding;
+  Se: TEncoding;
 begin
-  FreeEncodings;
-{$ifdef FPC_HAS_FEATURE_THREADING}
-  DoneCriticalSection(FLock);
-{$endif}
+  // Synchronization shouldn't be required for class destructors.
+  for E := Low(FStandardEncodings) to High(FStandardEncodings) do
+    FreeAndNil(FStandardEncodings[E]);
+  repeat
+    Se := FSystemEncodingsList;
+    if not Assigned(Se) then
+      break;
+    FSystemEncodingsList := Se.FNext;
+    Se.Free;
+  until false;
 end;
 
 function TEncoding.Clone: TEncoding;
@@ -249,9 +215,12 @@ begin
     for Encoding in FStandardEncodings do
       if Encoding = AEncoding then
         Exit(True);
-    for Encoding in FSystemEncodings do
+    Encoding := FSystemEncodingsList;
+    while Assigned(Encoding) do
       if Encoding = AEncoding then
-        Exit(True);
+        Exit(True)
+      else
+        Encoding := Encoding.FNext;
   end;
   Result := False;
 end;
@@ -505,7 +474,7 @@ function TMBCSEncoding.GetCharCount(Bytes: PByte; ByteCount: Integer): Integer;
 var
   U: UnicodeString;
 begin
-  widestringmanager.Ansi2UnicodeMoveProc(PChar(Bytes), CodePage, U, ByteCount);
+  widestringmanager.Ansi2UnicodeMoveProc(PAnsiChar(Bytes), CodePage, U, ByteCount);
   Result := Length(U);
 end;
 
@@ -514,7 +483,7 @@ function TMBCSEncoding.GetChars(Bytes: PByte; ByteCount: Integer; Chars: PUnicod
 var
   U: UnicodeString;
 begin
-  widestringmanager.Ansi2UnicodeMoveProc(PChar(Bytes), CodePage, U, ByteCount);
+  widestringmanager.Ansi2UnicodeMoveProc(PAnsiChar(Bytes), CodePage, U, ByteCount);
   Result := Length(U);
   if CharCount < Result then
     Result := CharCount;
@@ -560,7 +529,7 @@ begin
   Result := TMBCSEncoding.Create(FCodePage, FMBToWCharFlags, FWCharToMBFlags);
 end;
 
-function TMBCSEncoding.GetAnsiBytes(Chars: PChar; CharCount: Integer): TBytes;
+function TMBCSEncoding.GetAnsiBytes(Chars: PAnsiChar; CharCount: Integer): TBytes;
 var
   S: RawByteString;
 begin
@@ -572,7 +541,7 @@ begin
     Move(S[1], Result[0], Length(S));
 end;
 
-function TMBCSEncoding.GetAnsiString(Bytes: PByte; ByteCount: Integer): string;
+function TMBCSEncoding.GetAnsiString(Bytes: PByte; ByteCount: Integer): ansistring;
 begin
   SetString(Result, Pointer(Bytes), ByteCount);
   SetCodePage(RawByteString(Result), GetCodePage, False);
@@ -723,7 +692,7 @@ begin
   Result := TUnicodeEncoding.Create;
 end;
 
-function TUnicodeEncoding.GetAnsiBytes(Chars: PChar; CharCount: Integer
+function TUnicodeEncoding.GetAnsiBytes(Chars: PAnsiChar; CharCount: Integer
   ): TBytes;
 var
   U: UnicodeString;
@@ -735,7 +704,7 @@ begin
 end;
 
 function TUnicodeEncoding.GetAnsiString(Bytes: PByte; ByteCount: Integer
-  ): string;
+  ): ansistring;
 begin
   widestringmanager.Unicode2AnsiMoveProc(PUnicodeChar(Bytes), RawByteString(Result), DefaultSystemCodePage, ByteCount div SizeOf(UnicodeChar));
 end;
@@ -811,7 +780,7 @@ begin
   Result := TBigEndianUnicodeEncoding.Create;
 end;
 
-function TBigEndianUnicodeEncoding.GetAnsiBytes(Chars: PChar; CharCount: Integer
+function TBigEndianUnicodeEncoding.GetAnsiBytes(Chars: PAnsiChar; CharCount: Integer
   ): TBytes;
 begin
   Result := TEncoding.Unicode.GetAnsiBytes(Chars, CharCount);
@@ -819,7 +788,7 @@ begin
 end;
 
 function TBigEndianUnicodeEncoding.GetAnsiString(Bytes: PByte;
-  ByteCount: Integer): string;
+  ByteCount: Integer): ansistring;
 var
   B: TBytes;
 begin

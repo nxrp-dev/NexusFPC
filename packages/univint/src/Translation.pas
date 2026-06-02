@@ -1,17 +1,17 @@
 {
      File:       HIToolbox/Translation.h
- 
+
      Contains:   Translation Manager (Macintosh Easy Open) Interfaces.
- 
+
      Version:    HIToolbox-624~3
- 
+
      Copyright:  © 1991-2008 by Apple Computer, Inc., all rights reserved.
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 {       Pascal Translation Updated:  Peter N Lewis, <peter@stairways.com.au>, August 2005 }
 {       Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2009 }
@@ -30,7 +30,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit Translation;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -215,7 +217,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.Files,MacOsApi.Components,MacOsApi.TranslationExtensions;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,Files,Components,TranslationExtensions;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -259,13 +265,13 @@ type
 {$ifc not TARGET_CPU_64}
 {
  *  GetFileTypesThatAppCanNativelyOpen()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    There is no direct replacement at this time.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.3
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -277,13 +283,13 @@ function GetFileTypesThatAppCanNativelyOpen( appVRefNumHint: SInt16; appSignatur
 
 {
  *  ExtendFileTypeList()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    Use TranslationCreateWithSourceArray instead.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.3
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -295,13 +301,13 @@ function ExtendFileTypeList( originalTypeList: {variable-size-array} FileTypePtr
 
 {
  *  CanDocBeOpened()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    Use the Launch Services API instead.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.3
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -313,13 +319,13 @@ function CanDocBeOpened( const (*var*) targetDocument: FSSpec; appVRefNumHint: S
 
 {
  *  GetFileTranslationPaths()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    Use TranslationCreateWithSourceArray instead.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.3
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -331,15 +337,15 @@ function GetFileTranslationPaths( const (*var*) srcDocument: FSSpec; dstDocType:
 
 {
  *  GetPathFromTranslationDialog()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    There is no direct replacement at this time, but all the
  *    necessary information can be obtained from the Launch Services,
  *    Translation Services and Uniform Type Identification APIs.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.3
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -351,13 +357,13 @@ function GetPathFromTranslationDialog( const (*var*) theDocument: FSSpec; const 
 
 {
  *  TranslateFile()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    Use TranslationPerformForFile or TranslationPerformForURL instead.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.3
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -369,13 +375,13 @@ function TranslateFile( const (*var*) sourceDocument: FSSpec; const (*var*) dest
 
 {
  *  GetDocumentKindString()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    Use the Launch Services API instead.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.3
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -387,16 +393,16 @@ function GetDocumentKindString( docVRefNum: SInt16; docType: OSType; docCreator:
 
 {
  *  GetTranslationExtensionName()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    There is no direct replacement at this time, but
  *    TranslationCopySourceType and TranslationCopyDestinationType in
  *    conjunction with UTTypeCopyDescription will provide useful user
  *    level information.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.3
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -417,7 +423,7 @@ type
 	GetScrapDataUPP = GetScrapDataProcPtr;
 {
  *  NewGetScrapDataUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -428,7 +434,7 @@ function NewGetScrapDataUPP( userRoutine: GetScrapDataProcPtr ): GetScrapDataUPP
 
 {
  *  DisposeGetScrapDataUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -439,7 +445,7 @@ procedure DisposeGetScrapDataUPP( userUPP: GetScrapDataUPP ); external name '_Di
 
 {
  *  InvokeGetScrapDataUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -453,13 +459,13 @@ type
 {$ifc not TARGET_CPU_64}
 {
  *  TranslateScrap()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    Use TranslationPerformForData instead.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.3
  *    CarbonLib:        in CarbonLib 1.0 and later

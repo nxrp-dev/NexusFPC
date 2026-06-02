@@ -4,16 +4,16 @@ uses odbcsql;
 
 
 Const
-  DBDSn : Pchar = 'FPC';
-  Empty : pchar = '';
-  Query : pchar = 'SELECT Id,Username,InstEmail from FPdev Order by UserName';
+  DBDSn : PAnsiChar = 'FPC';
+  Empty : PAnsiChar = '';
+  Query : PAnsiChar = 'SELECT Id,Username,InstEmail from FPdev Order by UserName';
 // Adapt to needs...
 {$ifdef linux}
-  UserName : pchar = 'michael';  // for mysql test.
-  Password : pchar = 'geen';
+  UserName : PAnsiChar = 'michael';  // for mysql test.
+  Password : PAnsiChar = 'geen';
 {$else}
-    UserName : pchar = ''; // for MS-Acces test.
-    Password : pchar = '';
+    UserName : PAnsiChar = ''; // for MS-Acces test.
+    Password : PAnsiChar = '';
 {$endif}
 
 Function ODBCSuccess (Res : Integer) : Boolean;
@@ -27,8 +27,8 @@ Var
   DBHandle   : SQLHandle;
   StmtHandle : SQLHSTMT;
   ResID      : Longint;
-  ResName    : Array[0..255] of char; // Matches length of field+1
-  ResEmail   : Array[0..255] of char;
+  ResName    : Array[0..255] of AnsiChar; // Matches length of field+1
+  ResEmail   : Array[0..255] of AnsiChar;
 
 Procedure FreeHandles;
 
@@ -85,7 +85,7 @@ begin
     DoError('Could not allocate statement handle.',Res);
   { Bind result buffers.
     Note that for many queries, the result is not known on beforehand,
-    And must be queried with SQLPrepare, SQLNumResulCols and SQLDescribeCol
+    And must be queried with SQLPrepare, SQLNumResultCols and SQLDescribeCol
     before the statement is executed.}
   SQLBindCol(stmtHandle,1,SQL_INTEGER,SQLPointer(@ResID),4,@ErrCode);
   SQLBindCol(stmtHandle,2,SQL_CHAR,SQLPointer(@ResName),256,@ErrCode);
@@ -108,7 +108,7 @@ begin
     begin
     Inc(Count);
     Write('Record: ',Count,' : ');
-    Writeln(ResId,' ',PChar(@ResName[0]),' ',Pchar(@ResEmail[0]));
+    Writeln(ResId,' ',PAnsiChar(@ResName[0]),' ',PAnsiChar(@ResEmail[0]));
     Res:=SQLFetch(StmtHandle);
     end;
 end;

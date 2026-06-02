@@ -278,6 +278,9 @@ function pthread_mutexattr_settype(_para1:Ppthread_mutexattr_t; _para2:cint):cin
 function pthread_mutex_destroy(_para1:Ppthread_mutex_t):cint;cdecl;external;
 function pthread_mutex_init(_para1:Ppthread_mutex_t; _para2:Ppthread_mutexattr_t):cint;cdecl;external;
 function pthread_mutex_lock(_para1:Ppthread_mutex_t):cint;cdecl;external;
+{$IFNDEF Darwin}
+function pthread_mutex_timedlock(__mutex:ppthread_mutex_t; __abs_timeout:ptimespec):longint;cdecl;external;
+{$ENDIF}
 function pthread_mutex_trylock(_para1:Ppthread_mutex_t):cint;cdecl;external;
 function pthread_mutex_unlock(_para1:Ppthread_mutex_t):cint;cdecl;external;
 type pthreadonceroutine = procedure (p:pointer); cdecl;
@@ -335,7 +338,7 @@ function pthread_attr_getfloatstate(_para1:Ppthread_attr_t; _para2:Pcint):cint;c
   function sem_init(__sem:Psem_t; __pshared:cint;__value:dword):cint;cdecl; external;
   function sem_destroy(__sem:Psem_t):cint;cdecl;external ;
   function sem_close(__sem:Psem_t):cint;cdecl;external ;
-  function sem_unlink(__name:Pchar):cint;cdecl;external ;
+  function sem_unlink(__name:PAnsiChar):cint;cdecl;external ;
   function sem_wait(__sem:Psem_t):cint;cdecl;external ;
   function sem_trywait(__sem:Psem_t):cint;cdecl;external ;
   function sem_post(__sem:Psem_t):cint;cdecl;external ;

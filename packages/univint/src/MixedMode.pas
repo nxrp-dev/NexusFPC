@@ -1,9 +1,9 @@
 {
      File:       CarbonCore/MixedMode.h
- 
+
      Contains:   Mixed Mode Manager Interfaces.
                  The contents of this header file are deprecated.
- 
+
      Copyright:  © 1992-2011 by Apple Inc. All rights reserved.
 }
 {
@@ -20,7 +20,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit MixedMode;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -205,7 +207,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -214,15 +220,15 @@ uses MacTypes;
 
 {
     ===========================================================================
-    
+
     Notes on Mixed Mode and Mac OS X
-    
+
     Mac OS X doesn't have mixed mode, nor the Mixed Mode Manager, because
     everything running is PowerPC code.  Therefore, there is little need for
     anything in this file unless the code still needs to run on Mac OS 9.x
     CarbonLib, and on Mac OS X.
 
-    =========================================================================== 
+    ===========================================================================
 }
 { Mixed Mode constants }
 { Current Routine Descriptor Version }
@@ -288,7 +294,7 @@ const
   GetCurrentArchitecture = 0;
 {$endc}
 
-{ Constants for specifing 68k registers }
+{ Constants for specifying 68k registers }
 const
 	kRegisterD0 = 0;
 	kRegisterD1 = 1;
@@ -395,7 +401,7 @@ type
 	end;
 {
  *  NewRoutineDescriptor()   *** DEPRECATED ***
- *  
+ *
  *  Discussion:
  *    This function is deprecated on Mac OS X and in CarbonLib because
  *    routine descriptors existed to allow 68k code and PowerPC code to
@@ -404,7 +410,7 @@ type
  *    require the use of mixed mode.
  *    You should remove any calls to NewRoutineDescriptor() from your
  *    sources, and replace them with theProc parameter itself.
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available but deprecated in 10.4
  *    CarbonLib:        not available
@@ -414,13 +420,13 @@ type
 
 {
  *  DisposeRoutineDescriptor()   *** DEPRECATED ***
- *  
+ *
  *  Discussion:
- *    DisposeRoutineDescriptor() is deprecated on Mac OS X. 
+ *    DisposeRoutineDescriptor() is deprecated on Mac OS X.
  *    RoutineDescriptors are no longer used.
  *    You should delete any calls to DisposeRoutineDescriptor() from
  *    your sources.
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available but deprecated in 10.4
  *    CarbonLib:        not available
@@ -480,11 +486,11 @@ const
 	kSpecialCaseMBarHook = 12;
 
 
-{ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+{ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  *  Macros for building ProcInfos.  Examples:
- *  
- *  
+ *
+ *
  *  uppModalFilterProcInfo = kPascalStackBased
  *       | RESULT_SIZE(SIZE_CODE(sizeof(Boolean)))
  *       | STACK_ROUTINE_PARAMETER(1, SIZE_CODE(sizeof(DialogRef)))

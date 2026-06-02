@@ -18,7 +18,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CFFileSecurity;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -203,7 +205,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.MacOSXPosix,MacOsApi.CFBase,MacOsApi.Acl,MacOsApi.CFUUID;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,MacOSXPosix,CFBase,acl,CFUUID;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 {$ALIGN POWER}
@@ -213,7 +219,7 @@ uses MacTypes,MacOSXPosix,CFBase,acl,CFUUID;
 
 
 {
- *	A CFFileSecurity object encapulates a file system object's security information
+ *	A CFFileSecurity object encapsulates a file system object's security information
  *	in a CF object.
  }
 type
@@ -264,7 +270,7 @@ function CFFileSecurityCreateCopy( allocator: CFAllocatorRef; fileSec: CFFileSec
 
 {
  *	This routine copies the owner UUID associated with an CFFileSecurity object.
- *  
+ *
  *	Parameters
  *		fileSec
  *			The CFFileSecurity object.
@@ -279,7 +285,7 @@ function CFFileSecurityCopyOwnerUUID( fileSec: CFFileSecurityRef; var ownerUUID:
 
 {
  *	This routine sets the owner UUID associated with an CFFileSecurity object.
- *  
+ *
  *	Parameters
  *		fileSec
  *			The CFFileSecurity object.
@@ -293,7 +299,7 @@ function CFFileSecuritySetOwnerUUID( fileSec: CFFileSecurityRef; ownerUUID: CFUU
 
 {
  *	This routine copies the group UUID associated with an CFFileSecurity object.
- *  
+ *
  *	Parameters
  *		fileSec
  *			The CFFileSecurity object.
@@ -309,7 +315,7 @@ function CFFileSecurityCopyGroupUUID( fileSec: CFFileSecurityRef; var groupUUID:
 
 {
  *	This routine sets the group UUID associated with an CFFileSecurity object.
- *  
+ *
  *	Parameters
  *		fileSec
  *			The CFFileSecurity object.
@@ -327,7 +333,7 @@ function CFFileSecuritySetGroupUUID( fileSec: CFFileSecurityRef; groupUUID: CFUU
  *	CFFileSecurity object. The acl_t returned by this routine is a copy and must
  *	be released using acl_free(3). The acl_t is meant to be manipulated using
  *	the acl calls defined in <sys/acl.h>.
- *  
+ *
  *	Parameters
  *		fileSec
  *			The CFFileSecurity object.
@@ -366,7 +372,7 @@ function CFFileSecuritySetAccessControlList( fileSec: CFFileSecurityRef; accessC
 
 {
  *	This routine gets the owner uid_t associated with an CFFileSecurity object.
- *  
+ *
  *	Parameters
  *		fileSec
  *			The CFFileSecurity object.
@@ -382,7 +388,7 @@ function CFFileSecurityGetOwner( fileSec: CFFileSecurityRef; var owner: uid_t ):
 
 {
  *	This routine sets the owner uid_t associated with an CFFileSecurity object.
- *  
+ *
  *	Parameters
  *		fileSec
  *			The CFFileSecurity object.
@@ -397,7 +403,7 @@ function CFFileSecuritySetOwner( fileSec: CFFileSecurityRef; owner: uid_t ): Boo
 
 {
  *	This routine gets the group gid_t associated with an CFFileSecurity object.
- *  
+ *
  *	Parameters
  *		fileSec
  *			The CFFileSecurity object.
@@ -413,7 +419,7 @@ function CFFileSecurityGetGroup( fileSec: CFFileSecurityRef; var group: gid_t ):
 
 {
  *	This routine sets the group gid_t associated with an CFFileSecurity object.
- *  
+ *
  *	Parameters
  *		fileSec
  *			The CFFileSecurity object.
@@ -428,7 +434,7 @@ function CFFileSecuritySetGroup( fileSec: CFFileSecurityRef; group: gid_t ): Boo
 
 {
  *	This routine gets the mode_t associated with an CFFileSecurity object.
- *  
+ *
  *	Parameters
  *		fileSec
  *			The CFFileSecurity object.
@@ -444,7 +450,7 @@ function CFFileSecurityGetMode( fileSec: CFFileSecurityRef; var mode: mode_t ): 
 
 {
  *	This routine sets the mode_t associated with an CFFileSecurity object.
- *  
+ *
  *	Parameters
  *		fileSec
  *			The CFFileSecurity object.
@@ -470,7 +476,7 @@ const
 
 {
  *	This routine clears file security properties in the CFFileSecurity object.
- *  
+ *
  *	Parameters
  *		clearPropertyMask
  *			The file security properties to clear.

@@ -1,16 +1,16 @@
 {
      File:       PMPrintAETypes.h
- 
+
      Contains:   Mac OS X Printing Manager AE definitions.
- 
+
      Version:    Technology: Mac OS X
                  Release:    1.0
- 
+
      Copyright (c) 2003,2008 by Apple Inc. All Rights Reserved.
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
 }
 {    Pascal Translation:  Jonas Maebe, <jonas@freepascal.org>, October 2009 }
@@ -28,7 +28,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit PMPrintAETypes;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -213,7 +215,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.AEDataModel,MacOsApi.AERegistry;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,AEDataModel,AERegistry;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 

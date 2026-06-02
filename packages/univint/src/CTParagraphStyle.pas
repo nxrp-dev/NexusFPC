@@ -22,7 +22,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CTParagraphStyle;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -207,7 +209,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CFArray,MacOsApi.CGBase,MacOsApi.CFBase;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CFArray,CGBase,CFBase;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -503,8 +509,8 @@ type
                 Type: CGFloat
                 Default: some large number.
                 Application: CTFramesetter
- 
- 
+
+
     @constant   kCTParagraphStyleSpecifierMinimumLineSpacing
                 The minimum space in points between lines within the paragraph
                 (commonly known as leading). This value is always
@@ -513,11 +519,11 @@ type
                 Type: CGFloat
                 Default: 0.0
                 Application: CTFramesetter
- 
- 
+
+
     @constant   kCTParagraphStyleSpecifierLineSpacingAdjustment
                 The space in points added between lines within the paragraph
-                (commonly known as leading). 
+                (commonly known as leading).
 
                 Type: CGFloat
                 Default: 0.0

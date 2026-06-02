@@ -17,13 +17,13 @@ included in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL Kaleb S. KEITHLEY BE LIABLE FOR ANY CLAIM, DAMAGES 
+IN NO EVENT SHALL Kaleb S. KEITHLEY BE LIABLE FOR ANY CLAIM, DAMAGES
 OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of Kaleb S. KEITHLEY 
-shall not be used in advertising or otherwise to promote the sale, use 
+Except as contained in this notice, the name of Kaleb S. KEITHLEY
+shall not be used in advertising or otherwise to promote the sale, use
 or other dealings in this Software without prior written authorization
 from Kaleb S. KEITHLEY
 
@@ -32,15 +32,22 @@ from Kaleb S. KEITHLEY
 
 { THIS IS NOT AN X CONSORTIUM STANDARD OR AN X PROJECT TEAM SPECIFICATION }
 
+{$IFNDEF FPC_DOTTEDUNITS}
 Unit xf86vmode;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$PACKRECORDS c}
 {$DEFINE MACROS}
 
 Interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+Uses
+  System.CTypes, Api.X11.X, Api.X11.Xlib;
+{$ELSE FPC_DOTTEDUNITS}
 Uses
   ctypes, x, xlib;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Const
   libXxf86vm = 'Xxf86vm';
@@ -142,8 +149,8 @@ Type
 
   PXF86VidModeMonitor = ^TXF86VidModeMonitor;
   TXF86VidModeMonitor = Record
-    vendor : PChar;
-    model : PChar;
+    vendor : PAnsiChar;
+    model : PAnsiChar;
     EMPTY : cfloat;
     nhsync : cuchar;
     hsync : PXF86VidModeSyncRange;

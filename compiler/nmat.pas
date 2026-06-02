@@ -26,13 +26,27 @@ unit nmat;
 interface
 
     uses
-       node;
+       node,symtype;
 
     type
+       TModDivNodeFlag = (
+         mdnf_isomod
+       );
+
+       TModDivNodeFlags = set of TModDivNodeFlag;
+
        tmoddivnode = class(tbinopnode)
+          moddivnodeflags : TModDivNodeFlags;
+          constructor create(t:tnodetype;l,r : tnode); override;
+          constructor ppuload(t:tnodetype;ppufile:tcompilerppufile);override;
+          procedure ppuwrite(ppufile:tcompilerppufile);override;
           function pass_1 : tnode;override;
           function pass_typecheck:tnode;override;
           function simplify(forinline : boolean) : tnode;override;
+          function dogetcopy : tnode;override;
+    {$ifdef DEBUG_NODE_XML}
+          procedure XMLPrintNodeInfo(var T: Text); override;
+    {$endif DEBUG_NODE_XML}
          protected
           { override the following if you want to implement }
           { parts explicitely in the code generator (JM)    }
@@ -97,16 +111,38 @@ implementation
       systems,
       verbose,globals,cutils,compinnr,
       globtype,constexp,
-      symconst,symtype,symdef,symcpu,
+      symconst,symdef,symcpu,
       defcmp,defutil,
       htypechk,pass_1,
       cgbase,
       ncon,ncnv,ncal,nadd,nld,nbas,nflw,ninl,
-      nutils;
+      nutils,ppu;
 
 {****************************************************************************
                               TMODDIVNODE
  ****************************************************************************}
+
+
+    constructor tmoddivnode.create(t:tnodetype;l,r : tnode);
+      begin
+        inherited create(t, l, r);
+        moddivnodeflags:=[];
+      end;
+
+
+    constructor tmoddivnode.ppuload(t:tnodetype;ppufile:tcompilerppufile);
+      begin
+        inherited ppuload(t, ppufile);
+        ppufile.getset(tppuset1(moddivnodeflags));
+      end;
+
+
+    procedure tmoddivnode.ppuwrite(ppufile:tcompilerppufile);
+      begin
+        inherited ppuwrite(ppufile);
+        ppufile.putset(tppuset1(moddivnodeflags));
+      end;
+
 
     function tmoddivnode.simplify(forinline : boolean):tnode;
       var
@@ -149,7 +185,7 @@ implementation
                 left:=nil;
                 exit;
               end;
-            if (nf_isomod in flags) and
+            if (mdnf_isomod in moddivnodeflags) and
               (rv<=0) then
                begin
                  Message(cg_e_mod_only_defined_for_pos_quotient);
@@ -178,32 +214,45 @@ implementation
                 Result:=ctypeconvnode.create_internal(Result,resultdef);
                 exit;
               end;
-          end;
-        if is_constintnode(right) and is_constintnode(left) then
-          begin
-            rv:=tordconstnode(right).value;
-            lv:=tordconstnode(left).value;
 
-            case nodetype of
-              modn:
-                if nf_isomod in flags then
-                  begin
-                    if lv>=0 then
-                      result:=create_simplified_ord_const(lv mod rv,resultdef,forinline,false)
+            { pointer subtractions generate nodes dividing pointer (constants) }
+            if is_constintnode(left) or is_constpointernode(left) then
+              begin
+                { load values }
+                lv:=get_int_value(left);
+                rv:=get_int_value(right);
+
+                case nodetype of
+                  modn:
+                    if mdnf_isomod in moddivnodeflags then
+                      begin
+                        if lv>=0 then
+                          result:=create_simplified_ord_const(lv mod rv,resultdef,forinline,false)
+                        else
+                          if ((-lv) mod rv)=0 then
+                            result:=create_simplified_ord_const((-lv) mod rv,resultdef,forinline,false)
+                          else
+                            result:=create_simplified_ord_const(rv-((-lv) mod rv),resultdef,forinline,false);
+                      end
                     else
-                      if ((-lv) mod rv)=0 then
-                        result:=create_simplified_ord_const((-lv) mod rv,resultdef,forinline,false)
-                      else
-                        result:=create_simplified_ord_const(rv-((-lv) mod rv),resultdef,forinline,false);
-                  end
-                else
-                  result:=create_simplified_ord_const(lv mod rv,resultdef,forinline,false);
-              divn:
-                result:=create_simplified_ord_const(lv div rv,resultdef,forinline,cs_check_overflow in localswitches);
-              else
-                internalerror(2019050519);
-            end;
-         end;
+                      result:=create_simplified_ord_const(lv mod rv,resultdef,forinline,false);
+                  divn:
+                    result:=create_simplified_ord_const(lv div rv,resultdef,forinline,cs_check_overflow in localswitches);
+                  else
+                    internalerror(2019050519);
+                end;
+             end;
+          end;
+      end;
+
+
+    function tmoddivnode.dogetcopy: tnode;
+      var
+        n: tmoddivnode;
+      begin
+        n:=tmoddivnode(inherited dogetcopy);
+        n.moddivnodeflags:=moddivnodeflags;
+        result:=n;
       end;
 
 
@@ -387,7 +436,7 @@ implementation
            end
          else
            begin
-              { Make everything always default singed int }
+              { Make everything always default signed int }
               if not(rd.ordtype in [torddef(sinttype).ordtype,torddef(uinttype).ordtype]) then
                 inserttypeconv(right,sinttype);
               if not(ld.ordtype in [torddef(sinttype).ordtype,torddef(uinttype).ordtype]) then
@@ -411,7 +460,7 @@ implementation
             result:=hp;
           end;
 
-         if (nodetype=modn) and (nf_isomod in flags) then
+         if (nodetype=modn) and (mdnf_isomod in moddivnodeflags) then
            begin
              result:=internalstatements(statements);
              else_block:=internalstatements(else_statements);
@@ -622,6 +671,7 @@ implementation
                     addstatement(statements,ctempdeletenode.create_normal_temp(resulttemp));
                     addstatement(statements,ctemprefnode.create(resulttemp));
                     right.Free;
+                    right := nil;
                   end
                 else
                   begin
@@ -721,7 +771,28 @@ implementation
          expectloc:=LOC_REGISTER;
       end;
 
-
+{$ifdef DEBUG_NODE_XML}
+    procedure TModDivNode.XMLPrintNodeInfo(var T: Text);
+      var
+        i: TModDivNodeFlag;
+        First: Boolean;
+      begin
+        inherited XMLPrintNodeInfo(T);
+        First := True;
+        for i in moddivnodeflags do
+          begin
+            if First then
+              begin
+                Write(T, ' moddivnodeflags="', i);
+                First := False;
+              end
+            else
+              Write(T, ',', i)
+          end;
+        if not First then
+          Write(T, '"');
+      end;
+{$endif DEBUG_NODE_XML}
 
 {****************************************************************************
                               TSHLSHRNODE
@@ -856,7 +927,7 @@ implementation
              if (not is_64bit(left.resultdef)) and
                 (torddef(left.resultdef).ordtype<>u32bit) then
                begin
-                 { keep singness of orignal type }
+                 { keep signedness of original type }
                  if is_signed(left.resultdef) then
                    begin
 {$if defined(cpu64bitalu) or defined(cpu32bitalu)}
@@ -942,7 +1013,7 @@ implementation
 
     constructor tunaryminusnode.create(expr : tnode);
       begin
-         inherited create(unaryminusn,expr);
+        inherited create(unaryminusn,expr);
       end;
 
 
@@ -1022,6 +1093,20 @@ implementation
             if left.nodetype=unaryminusn then
               begin
                 result:=tunarynode(left).left.getcopy;
+                exit;
+              end;
+          end
+        { transform -(x+1) or -(1+x) into not(x) }
+        else if is_integer(left.resultdef) and is_signed(left.resultdef) and (left.nodetype=addn) and ((localswitches*[cs_check_overflow,cs_check_range])=[]) then
+          begin
+            if is_constintnode(taddnode(left).right) and (tordconstnode(taddnode(left).right).value=1) then
+              begin
+                result:=cnotnode.create(taddnode(left).left.getcopy);
+                exit;
+              end
+            else if is_constintnode(taddnode(left).left) and (tordconstnode(taddnode(left).left).value=1) then
+              begin
+                result:=cnotnode.create(taddnode(left).right.getcopy);
                 exit;
               end;
           end;
@@ -1262,7 +1347,7 @@ implementation
         def : tdef;
       begin
         result:=nil;
-        { Try optmimizing ourself away }
+        { Try optimizing ourself away }
         if left.nodetype=notn then
           begin
             { Double not. Remove both }
@@ -1297,7 +1382,7 @@ implementation
              { not-nodes are not range checked by the code generator -> also
                don't range check while inlining; the resultdef is a bit tricky
                though: the node's resultdef gets changed in most cases compared
-               to left, but the not-operation itself is caried out in the code
+               to left, but the not-operation itself is carried out in the code
                generator using the size of left
                }
              if not(forinline) then
@@ -1389,7 +1474,7 @@ implementation
            begin
              if (expectloc in [LOC_REFERENCE,LOC_CREFERENCE,LOC_CREGISTER]) then
                expectloc:=LOC_REGISTER;
-             { xtensa has boolean registers which are treateed as flags but they
+             { xtensa has boolean registers which are treated as flags but they
                are not used for boolean expressions }
 {$if defined(cpuflags) and not(defined(xtensa))}
              if left.expectloc<>LOC_JUMP then

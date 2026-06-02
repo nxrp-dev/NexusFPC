@@ -25,7 +25,7 @@
 //*         the messages discussed below.
 //*      2) If the applet needs to save information in CONTROL.INI minimize
 //*         clutter by using the application name [MMCPL.appletname].
-//*      2) If the applet is refrenced in CONTROL.INI under [MMCPL] use
+//*      2) If the applet is referenced in CONTROL.INI under [MMCPL] use
 //*         the following form:
 //*              ...
 //*              [MMCPL]
@@ -50,7 +50,9 @@
 //  Microsoft Windows Mobile 6.0 for PocketPC SDK.
 //
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit cpl;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$ifdef FPC_OS_UNICODE}
   {$define UNICODE}
@@ -58,7 +60,11 @@ unit cpl;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses WinApi.Windows;
+{$ELSE FPC_DOTTEDUNITS}
 uses Windows;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$PACKRECORDS 1} // #include "pshpack1.h"   /* Assume byte packing throughout */
 
@@ -215,7 +221,7 @@ const
       CPL_NEWINQUIRE    = 8;
 //* this is the same as CPL_INQUIRE execpt lParam2 is a pointer to a */
 //* NEWCPLINFO structure.  this will be sent before the CPL_INQUIRE */
-//* and if it is responed to (return != 0) CPL_INQUIRE will not be sent */
+//* and if it is responded to (return != 0) CPL_INQUIRE will not be sent */
 
 
 const

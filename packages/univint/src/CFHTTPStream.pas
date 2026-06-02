@@ -1,15 +1,15 @@
 {
 	 File:	   CFNetwork/CFHTTPStream.h
- 
+
 	 Contains:   CoreFoundation Network HTTP streams header
- 
+
 	 Copyright:  Copyright (c) 2001-2008, Apple Inc. All rights reserved.
- 
+
 	 Bugs?:	  For bug reports, consult the following page on
 				 the World Wide Web:
- 
+
 					 http://bugs.freepascal.org
- 
+
 }
 {       Pascal Translation:  Peter N Lewis, <peter@stairways.com.au>, 2004 }
 {       Pascal Translation Updated:  Gale R Paeper, <gpaeper@empirenet.com>, 2008 }
@@ -30,7 +30,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CFHTTPStream;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -215,17 +217,21 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CFStream,MacOsApi.CFBase,MacOsApi.CFHTTPMessage;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CFStream,CFBase,CFHTTPMessage;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 {$ALIGN POWER}
 
 {
  *  kCFStreamErrorDomainHTTP
- *  
+ *
  *  Discussion:
  *	Result code returned by HTTP server
- *  
+ *
  *  Availability:
  *	Mac OS X:		 in version 10.1 and later in CoreServices.framework
  *	CarbonLib:		not available
@@ -236,7 +242,7 @@ var kCFStreamErrorDomainHTTP: SInt32; external name '_kCFStreamErrorDomainHTTP';
 
 {
  *  CFStreamErrorHTTP
- *  
+ *
  *  Discussion:
  *	Errors from the kCFStreamErrorDomainHTTP domain.
  }
@@ -254,17 +260,17 @@ const
 	kCFStreamErrorHTTPRedirectionLoop = -2;
 
   {
-   * Could not retreive url for request/response.
+   * Could not retrieve url for request/response.
    }
 	kCFStreamErrorHTTPBadURL = -3;
 
 {
  *  kCFStreamPropertyHTTPResponseHeader
- *  
+ *
  *  Discussion:
  *	Stream property key, for copy operations. Value is a
  *	CFHTTPMessage with 0 bytes data.
- *  
+ *
  *  Availability:
  *	Mac OS X:		 in version 10.1 and later in CoreServices.framework
  *	CarbonLib:		not available
@@ -276,13 +282,13 @@ var kCFStreamPropertyHTTPResponseHeader: CFStringRef; external name '_kCFStreamP
 
 {
  *  kCFStreamPropertyHTTPFinalURL
- *  
+ *
  *  Discussion:
  *	Stream property key, for copy operations. The response header
  *	value is the CFURL from the final request; will only differ from
  *	the URL in the original request if an autoredirection has
  *	occurred.
- *  
+ *
  *  Availability:
  *	Mac OS X:		 in version 10.2 and later in CoreServices.framework
  *	CarbonLib:		not available
@@ -293,13 +299,13 @@ var kCFStreamPropertyHTTPFinalURL: CFStringRef; external name '_kCFStreamPropert
 
 {
  *  kCFStreamPropertyHTTPFinalRequest
- *  
+ *
  *  Discussion:
  *	Stream property key, for copy operations. The value is the
  *	CFHTTPMessage transmitted by the stream, after all modifications
  *	(such as for authentication, connection policy, or redirection)
  *	have been made.
- *  
+ *
  *  Availability:
  *	Mac OS X:		 in version 10.5 and later in CoreServices.framework
  *	CarbonLib:		not available
@@ -310,7 +316,7 @@ var kCFStreamPropertyHTTPFinalRequest: CFStringRef; external name '_kCFStreamPro
 
 {
  *  kCFStreamPropertyHTTPProxy
- *  
+ *
  *  Discussion:
  *	Stream property key, for both set and copy operations. The value
  *	is a CFDictionary. HTTP proxy information is set the same way as
@@ -320,7 +326,7 @@ var kCFStreamPropertyHTTPFinalRequest: CFStringRef; external name '_kCFStreamPro
  *	Host/Port pair from the keys below. Use the dictionary returned
  *	by SystemConfiguration.framework to set the default values for
  *	the system. HTTP proxies are not applied automatically.
- *  
+ *
  *  Availability:
  *	Mac OS X:		 in version 10.2 and later in CoreServices.framework
  *	CarbonLib:		not available
@@ -332,11 +338,11 @@ var kCFStreamPropertyHTTPProxy: CFStringRef; external name '_kCFStreamPropertyHT
 
 {
  *  kCFStreamPropertyHTTPProxyHost
- *  
+ *
  *  Discussion:
  *	Proxy dictionary key. The hostname of an HTTP proxy. The value is
  *	a CFString. The key name matches kSCPropNetProxiesHTTPProxy.
- *  
+ *
  *  Availability:
  *	Mac OS X:		 in version 10.2 and later in CoreServices.framework
  *	CarbonLib:		not available
@@ -348,10 +354,10 @@ var kCFStreamPropertyHTTPProxyHost: CFStringRef; external name '_kCFStreamProper
 
 {
  *  kCFStreamPropertyHTTPProxyPort
- *  
+ *
  *  Discussion:
  *	Proxy dictionary key. Value is a CFNumber.
- *  
+ *
  *  Availability:
  *	Mac OS X:		 in version 10.2 and later in CoreServices.framework
  *	CarbonLib:		not available
@@ -364,10 +370,10 @@ var kCFStreamPropertyHTTPProxyPort: CFStringRef; external name '_kCFStreamProper
 
 {
  *  kCFStreamPropertyHTTPSProxyHost
- *  
+ *
  *  Discussion:
  *	Proxy dictionary key. Value is a CFString.
- *  
+ *
  *  Availability:
  *	Mac OS X:		 in version 10.2 and later in CoreServices.framework
  *	CarbonLib:		not available
@@ -380,10 +386,10 @@ var kCFStreamPropertyHTTPSProxyHost: CFStringRef; external name '_kCFStreamPrope
 
 {
  *  kCFStreamPropertyHTTPSProxyPort
- *  
+ *
  *  Discussion:
  *	Proxy dictionary key. Value is a CFNumber.
- *  
+ *
  *  Availability:
  *	Mac OS X:		 in version 10.2 and later in CoreServices.framework
  *	CarbonLib:		not available
@@ -396,11 +402,11 @@ var kCFStreamPropertyHTTPSProxyPort: CFStringRef; external name '_kCFStreamPrope
 
 {
  *  kCFStreamPropertyHTTPShouldAutoredirect
- *  
+ *
  *  Discussion:
  *	Stream property key. Value is a CFBoolean. Redirection is not
  *	performed by default.
- *  
+ *
  *  Availability:
  *	Mac OS X:		 in version 10.2 and later in CoreServices.framework
  *	CarbonLib:		not available
@@ -412,14 +418,14 @@ var kCFStreamPropertyHTTPShouldAutoredirect: CFStringRef; external name '_kCFStr
 
 {
  *  kCFStreamPropertyHTTPAttemptPersistentConnection
- *  
+ *
  *  Discussion:
  *	Stream property key. Value is a CFBoolean.  If this property is
  *	set to kCFBooleanTrue, an HTTP stream will look for an
  *	appropriate extant persistent connection to use, and if it finds
  *	none, will try to create one. Persistent connections are not used
  *	by default.
- *  
+ *
  *  Availability:
  *	Mac OS X:		 in version 10.2 and later in CoreServices.framework
  *	CarbonLib:		not available
@@ -431,13 +437,13 @@ var kCFStreamPropertyHTTPAttemptPersistentConnection: CFStringRef; external name
 
 {
  *  kCFStreamPropertyHTTPRequestBytesWrittenCount
- *  
+ *
  *  Discussion:
  *	Stream property key. Value is a CFNumber. This property can only
  *	be retrieved, not set. The number returned is the number of bytes
  *	from the body of the request that have been written to the
  *	underlying socket
- *  
+ *
  *  Availability:
  *	Mac OS X:		 in version 10.3 and later in CoreServices.framework
  *	CarbonLib:		not available
@@ -452,7 +458,7 @@ var kCFStreamPropertyHTTPRequestBytesWrittenCount: CFStringRef; external name '_
 {*******************}
 {
  *  CFReadStreamCreateForHTTPRequest()
- *  
+ *
  *  Discussion:
  *	Create an HTTP read stream for the response to the given request.
  *	When the stream is opened, it will begin transmitting the
@@ -463,24 +469,24 @@ var kCFStreamPropertyHTTPRequestBytesWrittenCount: CFStringRef; external name '_
  *	reported, if there are no data bytes). When an HTTP/1.1 server
  *	returns a chunked a response, the chunks will be formed into one
  *	continuous stream.
- *  
+ *
  *  Parameters:
- *	
+ *
  *	alloc:
  *	  A pointer to the CFAllocator which should be used to allocate
  *	  memory for the CF read stream and its storage for values. If
  *	  this reference is not a valid CFAllocator, the behavior is
  *	  undefined.
- *	
+ *
  *	request:
  *	  A pointer to a CFHTTPMessage created by the
  *	  CFHTTPMessageCreateRequest function.
- *  
+ *
  *  Result:
  *	A pointer to the CF read stream created, or NULL if failed. It is
- *	caller's responsibilty to release the memory allocated for the
+ *	caller's responsibility to release the memory allocated for the
  *	read stream.
- *  
+ *
  *  Availability:
  *	Mac OS X:		 in version 10.1 and later in CoreServices.framework
  *	CarbonLib:		not available
@@ -492,7 +498,7 @@ function CFReadStreamCreateForHTTPRequest( alloc: CFAllocatorRef; request: CFHTT
 
 {
  *  CFReadStreamCreateForStreamedHTTPRequest()
- *  
+ *
  *  Discussion:
  *	Creates a read stream for the response to the given
  *	requestHeaders plus requestBody. Use in preference to
@@ -507,28 +513,28 @@ function CFReadStreamCreateForHTTPRequest( alloc: CFAllocatorRef; request: CFHTT
  *	transfer-encoding will be added to requestHeaders, and bytes read
  *	from requestBody will be transmitted chunked. The body of
  *	requestHeaders is ignored.
- *  
+ *
  *  Parameters:
- *	
+ *
  *	alloc:
  *	  A pointer to the CFAllocator which should be used to allocate
  *	  memory for the CF read stream and its storage for values. If
  *	  this reference is not a valid CFAllocator, the behavior is
  *	  undefined.
- *	
+ *
  *	requestHeaders:
  *	  A pointer to a CFHTTPMessage created by the
  *	  CFHTTPMessageCreateRequest function. The body of requestHeaders
  *	  is ignored.
- *	
+ *
  *	requestBody:
  *	  A pointer to a CFReadStream.
- *  
+ *
  *  Result:
  *	A pointer to the CF read stream created, or NULL if failed. It is
- *	caller's responsibilty to release the memory allocated for the
+ *	caller's responsibility to release the memory allocated for the
  *	read stream.
- *  
+ *
  *  Availability:
  *	Mac OS X:		 in version 10.2 and later in CoreServices.framework
  *	CarbonLib:		not available
@@ -540,22 +546,22 @@ function CFReadStreamCreateForStreamedHTTPRequest( alloc: CFAllocatorRef; reques
 {$ifc TARGET_OS_MAC}
 {
  *  CFHTTPReadStreamSetRedirectsAutomatically()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *	Use the kCFStreamPropertyHTTPShouldAutoredirect property above
  *	instead.
- *  
+ *
  *  Discussion:
  *	Sets the redirection property on the http stream.
- *  
+ *
  *  Parameters:
- *	
+ *
  *	httpStream:
  *	  A pointer to the CFHTTPStream to be set.
- *	
+ *
  *	shouldAutoRedirect:
  *	  A boolean indicating whether to redirect or not.
- *  
+ *
  *  Availability:
  *	Mac OS X:		 in version 10.1 and later in CoreServices.framework but deprecated in 10.3
  *	CarbonLib:		not available
@@ -567,24 +573,24 @@ procedure CFHTTPReadStreamSetRedirectsAutomatically( httpStream: CFReadStreamRef
 
 {
  *  CFHTTPReadStreamSetProxy()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *	Use the kCFStreamPropertyHTTPProxy above instead.
- *  
+ *
  *  Discussion:
  *	Sets the redirection property on the http stream.
- *  
+ *
  *  Parameters:
- *	
+ *
  *	httpStream:
  *	  A pointer to the CFHTTPStream to be set.
- *	
+ *
  *	proxyHost:
  *	  The proxy hostname. A CFString value.
- *	
+ *
  *	proxyPort:
  *	  The port number. A CFNumber value.
- *  
+ *
  *  Availability:
  *	Mac OS X:		 in version 10.1 and later in CoreServices.framework but deprecated in 10.3
  *	CarbonLib:		not available

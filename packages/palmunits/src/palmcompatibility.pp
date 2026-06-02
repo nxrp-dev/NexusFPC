@@ -39,11 +39,17 @@
  *
  *****************************************************************************)
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit palmcompatibility;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses  PalmApi.Palmos, PalmApi.Localemgr, PalmApi.Palmlocale, PalmApi.Window, PalmApi.Fslib;
+{$ELSE FPC_DOTTEDUNITS}
 uses  palmos, localemgr, palmlocale, window, fslib;
+{$ENDIF FPC_DOTTEDUNITS}
 
 // The data types Byte, Word, DWord and so on are now deprecated.  We
 // recommend that you use the corresponding new data types: for example,
@@ -97,7 +103,7 @@ type
 // Logical data types
   BooleanPtr = ^Boolean;
 
-  CharPtr = ^Char;
+  CharPtr = ^AnsiChar;
   SCharPtr = ^SChar;
   UCharPtr = ^UChar;
 
@@ -175,7 +181,7 @@ const
 
 // More system date string resources, introduced in Palm OS 3.5.  If you use
 // these, you are limiting yourself to running on nothing earlier than 3.5,
-// so you likely might as well use DateTempalateToAscii instead.
+// so you likely might as well use DateTemplateToAscii instead.
 
   daysOfWeekShortStrListID         = 10200;
   daysOfWeekStdStrListID           = 10201;

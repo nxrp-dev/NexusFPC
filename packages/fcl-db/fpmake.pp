@@ -2,7 +2,7 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses {$ifdef unix}cthreads,{$endif} fpmkunit;
 {$endif ALLPACKAGES}
 
 procedure add_fcl_db(const ADirectory: string);
@@ -32,7 +32,7 @@ begin
     P.Email := '';
     P.Description := 'Database library of Free Component Libraries(FCL), FPC''s OOP library.';
     P.NeedLibC:= false;
-    P.OSes:=AllOSes-[embedded,msdos,win16,macosclassic,palmos,zxspectrum,msxdos,amstradcpc,sinclairql];
+    P.OSes:=AllOSes-[embedded,msdos,win16,macosclassic,palmos,zxspectrum,msxdos,amstradcpc,sinclairql,human68k,ps1,wasip2];
     if Defaults.CPU=jvm then
       P.OSes := P.OSes - [java,android];
 
@@ -82,7 +82,7 @@ begin
     P.Dependencies.Add('pxlib',ParadoxOSes);
     P.Dependencies.Add('fcl-json');
 
-    P.Options.Add('-S2h');
+//    P.Options.Add('-S2h');
 
     // base
     T:=P.Targets.AddUnit('bufdataset.pas');
@@ -97,7 +97,6 @@ begin
       with T.Dependencies do
         begin
         AddUnit('db');
-        AddUnit('sqldb');
         AddUnit('bufdataset');
         end;
 
@@ -136,7 +135,7 @@ begin
 
     T:=P.Targets.AddUnit('sqlscript.pp');
     T.ResourceStrings:=true;
-    
+
     T:=P.Targets.AddUnit('fieldmap.pp');
     T.ResourceStrings:=true;
 
@@ -340,7 +339,7 @@ begin
         begin
           AddUnit('fpddcodegen');
         end;
-    T.ResourceStrings:=true;    
+    T.ResourceStrings:=true;
     T:=P.Targets.AddUnit('fpcgfieldmap.pp', DatadictOSes);
       with T.Dependencies do
         begin
@@ -850,7 +849,7 @@ begin
     T:=P.Targets.AddUnit('fpjsondataset.pp');
     with T.Dependencies do
       AddUnit('db');
-    
+
     T:=P.Targets.AddUnit('extjsdataset.pp');
     with T.Dependencies do
       AddUnit('fpjsondataset');
@@ -874,6 +873,7 @@ begin
     T:=P.Targets.AddExampleProgram('toolsunit.pas');
     // database.ini.txt
     // README.txt
+    P.NamespaceMap:='namespaces.lst';
 
     end;
 end;

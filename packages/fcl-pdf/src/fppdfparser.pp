@@ -13,7 +13,9 @@
 
   **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fppdfparser;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode ObjFPC}{$H+}
 {$J-}
@@ -25,7 +27,11 @@ unit fppdfparser;
 interface
 
 uses
+{$IFDEF FPC_DOTTEDUNITS}
+  System.Types, System.TypInfo, System.Classes, System.SysUtils, FpPdf.Objects, FpPdf.Scanner, FpPdf.Source, Fcl.Streams.Extra, FpPdf.Predict, FpPdf.Commands;
+{$ELSE FPC_DOTTEDUNITS}
   Types, Typinfo, Classes, SysUtils, fppdfobjects, fppdfscanner, fppdfsource, streamex, fppdfpredict, fppdfcommands;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Const
   PDFMaxTrailerDistance = 6;  // Maximum number of bytes to scan backwards for trailer dictionary end: >>
@@ -244,7 +250,11 @@ Const
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.StrUtils, System.ZLib.Zstream, System.Hash.Ascii85, Fcl.Streams.Chained, Fcl.Streams.LZW, FpPdf.Consts;
+{$ELSE FPC_DOTTEDUNITS}
 uses strutils, zstream, ascii85, chainstream, lzwstream, fppdfconsts;
+{$ENDIF FPC_DOTTEDUNITS}
 
 resourcestring
   SErrNoStartXRef = 'No startxref found, starting at position %d';
@@ -510,7 +520,7 @@ begin
     UnsupportedToken(aContext+SErrExpectedString,Token);
 end;
 
-// Parse inderect object at specified position in stream
+// Parse indirect object at specified position in stream
 
 function TPDFParser.ParseIndirectObject(aAt : Int64): TPDFIndirect;
 
@@ -1304,7 +1314,7 @@ begin
     SetLength(B2,(aSrc.Size div 2));
     aSrc.ReadBuffer(B[0],aSrc.Size);
     end;
-  HexToBin(PChar(B),PChar(B2),Length(B2));
+  HexToBin(PAnsiChar(B),PAnsiChar(B2),Length(B2));
   if not Direct then
     aDest.WriteBuffer(B2[0],Length(B2));
 end;

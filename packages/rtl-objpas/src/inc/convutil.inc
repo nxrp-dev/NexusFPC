@@ -17,8 +17,9 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 **********************************************************************}
-
+{$IFNDEF FPC_DOTTEDUNITS}
 unit ConvUtils;
+{$ENDIF}
 
 interface
 
@@ -26,8 +27,14 @@ interface
 {$H+}
 
 {$ifndef FPUNONE}
+{$IFDEF FPC_DOTTEDUNITS}
 uses
-  sysutils, math;
+  System.SysUtils, System.Math, System.SysConst;
+{$ELSE FPC_DOTTEDUNITS}
+uses
+  sysutils, math, SysConst;
+{$ENDIF FPC_DOTTEDUNITS}
+
 
 Type TConvType        = type Word;
      TConvFamily      = type Word;
@@ -137,8 +144,13 @@ Type
 
 Implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.RtlConsts;
+{$ELSE}
 uses
   RtlConsts;
+{$ENDIF}
 
 const
   macheps=1E-9;
@@ -408,7 +420,7 @@ begin
   ValueStr:=Copy(AText,1,P);
   if not TryStrToFloat(ValueStr, AValue) then
     Exit;
-  if P=Length(AText) then //no desription found
+  if P=Length(AText) then //no description found
     Exit;
   TypeStr:=Trim(Copy(AText,P+1,MaxInt));
   Result:=DescriptionToConvType(TypeStr, AType);
@@ -557,6 +569,15 @@ end;
 function RegisterConversionType(Fam: TConvFamily; const S: String;
   const AToCommonFunc, AFromCommonFunc: TConversionProc): TConvType;
 begin
+  // Many platforms automatically raise an exception when calling a nil pointer
+  // function, but some don't. WebAssembly, for example, traps and terminates
+  // the program, without the ability to handle the exception. Others, like
+  // real mode DOS, crash. Since we have tests that pass a nil parameter and
+  // expect an exception, we also add an explicit check, so it works
+  // consistently on all platforms.
+  if not Assigned(AToCommonFunc) then
+    raise EAccessViolation.Create(SAccessViolation);
+
   result:=InternalRegisterConversionType(Fam,S,(AToCommonFunc(1)-AToCommonFunc(0)),AToCommonFunc,AFromCommonFunc);
 end;
 

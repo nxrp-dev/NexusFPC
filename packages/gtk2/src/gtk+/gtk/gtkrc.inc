@@ -38,7 +38,7 @@
      should work in most cases.
     }
 { Fill in engine specific parts of GtkRcStyle by parsing contents
-     of brackets. Returns G_TOKEN_NONE if succesful, otherwise returns
+     of brackets. Returns G_TOKEN_NONE if successful, otherwise returns
      the token it expected but didn't get.
     }
 { Combine RC style data from src into dest. If overridden, this
@@ -148,7 +148,7 @@ procedure gtk_rc_add_default_file(filename:Pgchar); cdecl; external gtklib;
 procedure gtk_rc_set_default_files(filenames:PPgchar); cdecl; external gtklib;
 function gtk_rc_get_default_files:PPgchar; cdecl; external gtklib;
 function gtk_rc_get_style(widget:PGtkWidget):PGtkStyle; cdecl; external gtklib;
-function gtk_rc_get_style_by_paths(settings:PGtkSettings; widget_path:Pchar; class_path:Pchar; _type:GType):PGtkStyle; cdecl; external gtklib;
+function gtk_rc_get_style_by_paths(settings:PGtkSettings; widget_path:PAnsiChar; class_path:PAnsiChar; _type:GType):PGtkStyle; cdecl; external gtklib;
 function gtk_rc_reparse_all_for_settings(settings:PGtkSettings; force_load:gboolean):gboolean; cdecl; external gtklib;
 function gtk_rc_find_pixmap_in_path(settings:PGtkSettings; scanner:PGScanner; pixmap_file:Pgchar):Pgchar; cdecl; external gtklib;
 procedure gtk_rc_parse(filename:Pgchar); cdecl; external gtklib;

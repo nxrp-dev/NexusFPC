@@ -2,7 +2,11 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses
+  {$ifdef unix}
+  cthreads,
+  {$endif}
+  fpmkunit;
 {$endif ALLPACKAGES}
 
 procedure add_pas2jni(const ADirectory: string);
@@ -24,7 +28,7 @@ begin
     P.Email := '';
     P.NeedLibC:= false;
 
-    P.OSes:=AllOSes-[embedded,msdos,win16,go32v2,nativent,macosclassic,palmos,atari,zxspectrum,msxdos,amstradcpc,sinclairql,wasi];
+    P.OSes:=AllOSes-[embedded,msdos,win16,go32v2,nativent,macosclassic,palmos,atari,zxspectrum,msxdos,amstradcpc,sinclairql,wasip1,wasip1threads,wasip2,human68k,ps1];
     if Defaults.CPU=jvm then
       P.OSes := P.OSes - [java,android];
 

@@ -1,17 +1,17 @@
 {
      File:       HIToolbox/TypeSelect.h
- 
-     Contains:   TypeSelect Utilties
- 
+
+     Contains:   TypeSelect Utilities
+
      Version:    HIToolbox-624~3
- 
+
      Copyright:  © 2000-2008 by Apple Computer, Inc., all rights reserved.
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 {       Pascal Translation Updated:  Peter N Lewis, <peter@stairways.com.au>, August 2005 }
 {       Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2009 }
@@ -30,7 +30,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit TypeSelect;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -215,7 +217,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.Events;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,Events;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -226,7 +232,7 @@ uses MacTypes,Events;
 
 {
  *  TypeSelect
- *  
+ *
  *  Discussion:
  *    The TypeSelection API is deprecated in Mac OS X 10.4 and later,
  *    and is not included in the 64-bit version of HIToolbox.
@@ -253,7 +259,7 @@ type
 	IndexToStringUPP = IndexToStringProcPtr;
 {
  *  NewIndexToStringUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -264,7 +270,7 @@ function NewIndexToStringUPP( userRoutine: IndexToStringProcPtr ): IndexToString
 
 {
  *  DisposeIndexToStringUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -275,7 +281,7 @@ procedure DisposeIndexToStringUPP( userUPP: IndexToStringUPP ); external name '_
 
 {
  *  InvokeIndexToStringUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -289,17 +295,17 @@ function InvokeIndexToStringUPP( item: SInt16; var itemsScript: ScriptCode; var 
 {$ifc not TARGET_CPU_64}
 {
  *  TypeSelectClear()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    Use UCTypeSelectFlushSelectorData instead.
- *  
+ *
  *  Discussion:
  *    This function is no longer recommended. Please use
  *    UCTypeSelectFlushSelectorData instead.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -317,17 +323,17 @@ procedure TypeSelectClear( var tsr: TypeSelectRecord ); external name '_TypeSele
     }
 {
  *  TypeSelectNewKey()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    Use UCTypeSelectAddKeyToSelector instead.
- *  
+ *
  *  Discussion:
  *    This function is no longer recommended. Please use
  *    UCTypeSelectAddKeyToSelector instead.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -339,17 +345,17 @@ function TypeSelectNewKey( const (*var*) theEvent: EventRecord; var tsr: TypeSel
 
 {
  *  TypeSelectFindItem()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    Use UCTypeSelectFindItem instead.
- *  
+ *
  *  Discussion:
  *    This function is no longer recommended. Please use
  *    UCTypeSelectFindItem instead.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -361,17 +367,17 @@ function TypeSelectFindItem( const (*var*) tsr: TypeSelectRecord; listSize: SInt
 
 {
  *  TypeSelectCompare()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    Use UCTypeSelectCompare instead.
- *  
+ *
  *  Discussion:
  *    This function is no longer recommended. Please use
  *    UCTypeSelectCompare instead.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later

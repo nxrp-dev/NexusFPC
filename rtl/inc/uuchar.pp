@@ -2,7 +2,7 @@
     This file is part of the Free Pascal Run time library.
     Copyright (c) 2011 by the Free Pascal development team
 
-    This unit redefines the Char type from ansichar into widechar
+    This unit redefines the AnsiChar type from ansichar into widechar
 
     See the file COPYING.FPC, included in this distribution,
     For details about the copyright.
@@ -18,9 +18,10 @@ unit uuchar;
 interface
 
   type
-    char = widechar;
-    pchar = pwidechar;
-
+    Char = widechar;
+    PChar = pwidechar;
+    PPChar = ^PChar;
+    PPPChar = ^PPChar;
 
 {$ifdef FPC_HAS_FEATURE_COMMANDARGS}
 {$ifdef MSWINDOWS}

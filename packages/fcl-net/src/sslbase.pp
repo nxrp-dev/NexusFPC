@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit sslbase;
+{$ENDIF FPC_DOTTEDUNITS}
 {
     This file is part of the Free Pascal run time library.
     Copyright (c) 1999-2022 by Michael van Canney and other members of the
@@ -19,8 +21,13 @@ unit sslbase;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
   TSSLType = (stAny,stSSLv2,stSSLv3,stTLSv1,stTLSv1_1,stTLSv1_2);
@@ -43,7 +50,6 @@ Const
   StrDataCount = 2; // 0 based.
 
 Type
-  { TSSLSocketHandler }
 
   { TCertificateData }
 
@@ -74,11 +80,14 @@ Type
     Property TrustedCertsDir : String Read FTrustedCertsDir Write FTrustedCertsDir;
   end;
 
-    { TX509Certificate }
+  { TCertAndKey }
+
   TCertAndKey = Record
     Certificate : TBytes;
     PrivateKey : TBytes;
   end;
+
+  { TX509Certificate }
 
   TX509Certificate = Class (TObject)
   private
@@ -113,7 +122,6 @@ Type
     Property Version : Integer Read GetVersion Write FVersion;
     // Serial. If zero, then a serial is generated.
     Property Serial : Integer Read FSerial Write FSerial;
-
   end;
 
 implementation
@@ -213,7 +221,7 @@ function TX509Certificate.GetKeySize: Integer;
 begin
   Result:=FKeySize;
   if Result=0 then
-    Result:=1024;
+    Result:=2048;
 end;
 
 function TX509Certificate.GetValidFrom: TDateTime;

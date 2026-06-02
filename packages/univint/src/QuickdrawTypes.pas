@@ -1,17 +1,17 @@
 {
      File:       QD/QuickdrawTypes.h
- 
+
      Contains:   Type definitions from the former Quickdraw.i
- 
+
      Version:    Quickdraw-262~1
- 
+
      Copyright:  © 2005-2008 by Apple Inc. all rights reserved.
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 {       Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2009 }
 {
@@ -28,7 +28,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit QuickdrawTypes;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -213,7 +215,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.QuickdrawText;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,QuickdrawText;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -359,13 +365,13 @@ type
 
 {**************   IMPORTANT NOTE REGARDING Pattern  **************************************
    Patterns were originally defined as:
-   
-        C:          typedef unsigned char Pattern[8];
+
+        C:          typedef unsigned AnsiChar Pattern[8];
         Pascal:     Pattern = PACKED ARRAY [0..7] OF 0..255;
-        
+
    The old array definition of Pattern would cause 68000 based CPU's to crash in certain circum-
    stances. The new struct definition is safe, but may require source code changes to compile.
-    
+
 ********************************************************************************************}
 type
 	PatternPtr = ^Pattern;
@@ -539,7 +545,7 @@ type
 	QDProcsPtr = ^QDProcs;
 {
  *  NewQDTextUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -550,7 +556,7 @@ function NewQDTextUPP( userRoutine: QDTextProcPtr ): QDTextUPP; external name '_
 
 {
  *  NewQDLineUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -561,7 +567,7 @@ function NewQDLineUPP( userRoutine: QDLineProcPtr ): QDLineUPP; external name '_
 
 {
  *  NewQDRectUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -572,7 +578,7 @@ function NewQDRectUPP( userRoutine: QDRectProcPtr ): QDRectUPP; external name '_
 
 {
  *  NewQDRRectUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -583,7 +589,7 @@ function NewQDRRectUPP( userRoutine: QDRRectProcPtr ): QDRRectUPP; external name
 
 {
  *  NewQDOvalUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -594,7 +600,7 @@ function NewQDOvalUPP( userRoutine: QDOvalProcPtr ): QDOvalUPP; external name '_
 
 {
  *  NewQDArcUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -605,7 +611,7 @@ function NewQDArcUPP( userRoutine: QDArcProcPtr ): QDArcUPP; external name '_New
 
 {
  *  NewQDPolyUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -616,7 +622,7 @@ function NewQDPolyUPP( userRoutine: QDPolyProcPtr ): QDPolyUPP; external name '_
 
 {
  *  NewQDRgnUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -627,7 +633,7 @@ function NewQDRgnUPP( userRoutine: QDRgnProcPtr ): QDRgnUPP; external name '_New
 
 {
  *  NewQDBitsUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -638,7 +644,7 @@ function NewQDBitsUPP( userRoutine: QDBitsProcPtr ): QDBitsUPP; external name '_
 
 {
  *  NewQDCommentUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -649,7 +655,7 @@ function NewQDCommentUPP( userRoutine: QDCommentProcPtr ): QDCommentUPP; externa
 
 {
  *  NewQDTxMeasUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -660,7 +666,7 @@ function NewQDTxMeasUPP( userRoutine: QDTxMeasProcPtr ): QDTxMeasUPP; external n
 
 {
  *  NewQDGetPicUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -671,7 +677,7 @@ function NewQDGetPicUPP( userRoutine: QDGetPicProcPtr ): QDGetPicUPP; external n
 
 {
  *  NewQDPutPicUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -682,7 +688,7 @@ function NewQDPutPicUPP( userRoutine: QDPutPicProcPtr ): QDPutPicUPP; external n
 
 {
  *  NewQDOpcodeUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -693,7 +699,7 @@ function NewQDOpcodeUPP( userRoutine: QDOpcodeProcPtr ): QDOpcodeUPP; external n
 
 {
  *  NewQDStdGlyphsUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -704,7 +710,7 @@ function NewQDStdGlyphsUPP( userRoutine: QDStdGlyphsProcPtr ): QDStdGlyphsUPP; e
 
 {
  *  NewQDJShieldCursorUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -715,7 +721,7 @@ function NewQDJShieldCursorUPP( userRoutine: QDJShieldCursorProcPtr ): QDJShield
 
 {
  *  DisposeQDTextUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -726,7 +732,7 @@ procedure DisposeQDTextUPP( userUPP: QDTextUPP ); external name '_DisposeQDTextU
 
 {
  *  DisposeQDLineUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -737,7 +743,7 @@ procedure DisposeQDLineUPP( userUPP: QDLineUPP ); external name '_DisposeQDLineU
 
 {
  *  DisposeQDRectUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -748,7 +754,7 @@ procedure DisposeQDRectUPP( userUPP: QDRectUPP ); external name '_DisposeQDRectU
 
 {
  *  DisposeQDRRectUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -759,7 +765,7 @@ procedure DisposeQDRRectUPP( userUPP: QDRRectUPP ); external name '_DisposeQDRRe
 
 {
  *  DisposeQDOvalUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -770,7 +776,7 @@ procedure DisposeQDOvalUPP( userUPP: QDOvalUPP ); external name '_DisposeQDOvalU
 
 {
  *  DisposeQDArcUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -781,7 +787,7 @@ procedure DisposeQDArcUPP( userUPP: QDArcUPP ); external name '_DisposeQDArcUPP'
 
 {
  *  DisposeQDPolyUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -792,7 +798,7 @@ procedure DisposeQDPolyUPP( userUPP: QDPolyUPP ); external name '_DisposeQDPolyU
 
 {
  *  DisposeQDRgnUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -803,7 +809,7 @@ procedure DisposeQDRgnUPP( userUPP: QDRgnUPP ); external name '_DisposeQDRgnUPP'
 
 {
  *  DisposeQDBitsUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -814,7 +820,7 @@ procedure DisposeQDBitsUPP( userUPP: QDBitsUPP ); external name '_DisposeQDBitsU
 
 {
  *  DisposeQDCommentUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -825,7 +831,7 @@ procedure DisposeQDCommentUPP( userUPP: QDCommentUPP ); external name '_DisposeQ
 
 {
  *  DisposeQDTxMeasUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -836,7 +842,7 @@ procedure DisposeQDTxMeasUPP( userUPP: QDTxMeasUPP ); external name '_DisposeQDT
 
 {
  *  DisposeQDGetPicUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -847,7 +853,7 @@ procedure DisposeQDGetPicUPP( userUPP: QDGetPicUPP ); external name '_DisposeQDG
 
 {
  *  DisposeQDPutPicUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -858,7 +864,7 @@ procedure DisposeQDPutPicUPP( userUPP: QDPutPicUPP ); external name '_DisposeQDP
 
 {
  *  DisposeQDOpcodeUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -869,7 +875,7 @@ procedure DisposeQDOpcodeUPP( userUPP: QDOpcodeUPP ); external name '_DisposeQDO
 
 {
  *  DisposeQDStdGlyphsUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -880,7 +886,7 @@ procedure DisposeQDStdGlyphsUPP( userUPP: QDStdGlyphsUPP ); external name '_Disp
 
 {
  *  DisposeQDJShieldCursorUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -891,7 +897,7 @@ procedure DisposeQDJShieldCursorUPP( userUPP: QDJShieldCursorUPP ); external nam
 
 {
  *  InvokeQDTextUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -902,7 +908,7 @@ procedure InvokeQDTextUPP( byteCount: SInt16; textBuf: {const} UnivPtr; numer: P
 
 {
  *  InvokeQDLineUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -913,7 +919,7 @@ procedure InvokeQDLineUPP( newPt: Point; userUPP: QDLineUPP ); external name '_I
 
 {
  *  InvokeQDRectUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -924,7 +930,7 @@ procedure InvokeQDRectUPP( verb: GrafVerb; const (*var*) r: Rect; userUPP: QDRec
 
 {
  *  InvokeQDRRectUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -935,7 +941,7 @@ procedure InvokeQDRRectUPP( verb: GrafVerb; const (*var*) r: Rect; ovalWidth: SI
 
 {
  *  InvokeQDOvalUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -946,7 +952,7 @@ procedure InvokeQDOvalUPP( verb: GrafVerb; const (*var*) r: Rect; userUPP: QDOva
 
 {
  *  InvokeQDArcUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -957,7 +963,7 @@ procedure InvokeQDArcUPP( verb: GrafVerb; const (*var*) r: Rect; startAngle: SIn
 
 {
  *  InvokeQDPolyUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -968,7 +974,7 @@ procedure InvokeQDPolyUPP( verb: GrafVerb; poly: PolyHandle; userUPP: QDPolyUPP 
 
 {
  *  InvokeQDRgnUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -979,7 +985,7 @@ procedure InvokeQDRgnUPP( verb: GrafVerb; rgn: RgnHandle; userUPP: QDRgnUPP ); e
 
 {
  *  InvokeQDBitsUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -990,7 +996,7 @@ procedure InvokeQDBitsUPP( const (*var*) srcBits: BitMap; const (*var*) srcRect:
 
 {
  *  InvokeQDCommentUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1001,7 +1007,7 @@ procedure InvokeQDCommentUPP( kind: SInt16; dataSize: SInt16; dataHandle: Handle
 
 {
  *  InvokeQDTxMeasUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1012,7 +1018,7 @@ function InvokeQDTxMeasUPP( byteCount: SInt16; textAddr: {const} UnivPtr; var nu
 
 {
  *  InvokeQDGetPicUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1023,7 +1029,7 @@ procedure InvokeQDGetPicUPP( dataPtr: UnivPtr; byteCount: SInt16; userUPP: QDGet
 
 {
  *  InvokeQDPutPicUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1034,7 +1040,7 @@ procedure InvokeQDPutPicUPP( dataPtr: {const} UnivPtr; byteCount: SInt16; userUP
 
 {
  *  InvokeQDOpcodeUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1045,7 +1051,7 @@ procedure InvokeQDOpcodeUPP( const (*var*) fromRect: Rect; const (*var*) toRect:
 
 {
  *  InvokeQDStdGlyphsUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1056,7 +1062,7 @@ function InvokeQDStdGlyphsUPP( dataStream: UnivPtr; size: ByteCount; userUPP: QD
 
 {
  *  InvokeQDJShieldCursorUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1152,7 +1158,7 @@ type
 	ColorComplementUPP = ColorComplementProcPtr;
 {
  *  NewDragGrayRgnUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1163,7 +1169,7 @@ function NewDragGrayRgnUPP( userRoutine: DragGrayRgnProcPtr ): DragGrayRgnUPP; e
 
 {
  *  NewColorSearchUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1174,7 +1180,7 @@ function NewColorSearchUPP( userRoutine: ColorSearchProcPtr ): ColorSearchUPP; e
 
 {
  *  NewColorComplementUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1185,7 +1191,7 @@ function NewColorComplementUPP( userRoutine: ColorComplementProcPtr ): ColorComp
 
 {
  *  DisposeDragGrayRgnUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1196,7 +1202,7 @@ procedure DisposeDragGrayRgnUPP( userUPP: DragGrayRgnUPP ); external name '_Disp
 
 {
  *  DisposeColorSearchUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1207,7 +1213,7 @@ procedure DisposeColorSearchUPP( userUPP: ColorSearchUPP ); external name '_Disp
 
 {
  *  DisposeColorComplementUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1218,7 +1224,7 @@ procedure DisposeColorComplementUPP( userUPP: ColorComplementUPP ); external nam
 
 {
  *  InvokeDragGrayRgnUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1229,7 +1235,7 @@ procedure InvokeDragGrayRgnUPP( userUPP: DragGrayRgnUPP ); external name '_Invok
 
 {
  *  InvokeColorSearchUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1240,7 +1246,7 @@ function InvokeColorSearchUPP( var rgb: RGBColor; var position: SIGNEDLONG; user
 
 {
  *  InvokeColorComplementUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1288,7 +1294,7 @@ const
 const
 	NON_MAC_PIXEL_FORMATS = 1;
 
-{ QuickTime 3.0 changed the original PixMap data structure, replacing the 
+{ QuickTime 3.0 changed the original PixMap data structure, replacing the
    old planeBytes field by "pixelFormat", and pmReserved by pmExt (a Handle to
    additional private info). On Mac OS X, most QuickTime-specific changes were
    merged into Quickdraw.
@@ -1567,7 +1573,7 @@ type
 	DeviceLoopDrawingUPP = DeviceLoopDrawingProcPtr;
 {
  *  NewQDPrinterStatusUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -1576,7 +1582,7 @@ type
 
 {
  *  NewDeviceLoopDrawingUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1587,7 +1593,7 @@ function NewDeviceLoopDrawingUPP( userRoutine: DeviceLoopDrawingProcPtr ): Devic
 
 {
  *  DisposeQDPrinterStatusUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -1596,7 +1602,7 @@ function NewDeviceLoopDrawingUPP( userRoutine: DeviceLoopDrawingProcPtr ): Devic
 
 {
  *  DisposeDeviceLoopDrawingUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1607,7 +1613,7 @@ procedure DisposeDeviceLoopDrawingUPP( userUPP: DeviceLoopDrawingUPP ); external
 
 {
  *  InvokeQDPrinterStatusUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -1616,7 +1622,7 @@ procedure DisposeDeviceLoopDrawingUPP( userUPP: DeviceLoopDrawingUPP ); external
 
 {
  *  InvokeDeviceLoopDrawingUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1628,7 +1634,7 @@ procedure InvokeDeviceLoopDrawingUPP( depth: SInt16; deviceFlags: SInt16; target
 {$ifc NOT OPAQUE_TOOLBOX_STRUCTS OR NOT TARGET_API_MAC_CARBON}
 type
 	QDGlobals = record
-		privates: packed array [0..75] of char;
+		privates: packed array [0..75] of AnsiChar;
 		randSeed: SInt32;               { in Carbon use GetQDGlobalsRandomSeed}
 		screenBits: BitMap;             { in Carbon use GetQDGlobalsScreenBits}
 		arrow: Cursor;                  { in Carbon use GetQDGlobalsArrow}

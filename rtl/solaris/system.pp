@@ -25,8 +25,8 @@ interface
 {$I sysunixh.inc}
 
 var argc:longint;
-    argv:PPchar;
-    envp:PPchar;
+    argv:PPAnsiChar;
+    envp:PPAnsiChar;
 
 {$define FPC_SYSTEM_HAS_STACKTOP}
 var
@@ -85,7 +85,7 @@ Begin
 End;
 
 
-function BackPos(c:char; const s: shortstring): integer;
+function BackPos(c:AnsiChar; const s: shortstring): integer;
 var
  i: integer;
 Begin
@@ -103,12 +103,12 @@ end;
 var
  execpathstr : shortstring;
 
-function paramstr(l: longint) : string;
+function paramstr(l: longint) : shortstring;
  var
-  s: string;
-  s1: string;
+  s: shortstring;
+  s1: shortstring;
  begin
-   { stricly conforming POSIX applications  }
+   { strictly conforming POSIX applications }
    { have the executing filename as argv[0] }
 //   if l=0 then
 //     begin
@@ -195,11 +195,11 @@ var
   len,j,
   size,i : longint;
   found  : boolean;
-  buf    : pchar;
+  buf    : PAnsiChar;
 
   procedure AddBuf;
   begin
-    reallocmem(cmdline,size+bufsize);
+    sysreallocmem(cmdline,size+bufsize);
     move(buf^,cmdline[size],bufsize);
     inc(size,bufsize);
     bufsize:=0;

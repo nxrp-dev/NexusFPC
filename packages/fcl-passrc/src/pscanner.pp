@@ -14,21 +14,34 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit PScanner;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$i fcl-passrc.inc}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
 uses
   {$ifdef pas2js}
   js,
   {$IFDEF NODEJS}
   Node.FS,
   {$ENDIF}
-  Types,
+  System.Types,
   {$endif}
-  SysUtils, Classes;
+  System.SysUtils, System.Classes, System.Types;
+{$ELSE FPC_DOTTEDUNITS}
+uses
+  {$ifdef pas2js}
+  js,
+  {$IFDEF NODEJS}
+  Node.FS,
+  {$ENDIF}
+  {$endif}
+  SysUtils, Classes, Types;
+{$ENDIF FPC_DOTTEDUNITS}
 
 // message numbers
 const
@@ -70,6 +83,9 @@ const
   nResourceFileNotFound = 1034;
   nErrInvalidMultiLineLineEnding = 1035;
   nWarnIgnoringLinkLib = 1036;
+  nErrInvalidIndent = 1037;
+  nErrMultilineNonWhiteSpaceBeforeClosing = 1038;
+  nErrInvalidMultiLineTrimLeft = 1039;
 
 // resourcestring patterns of messages
 resourcestring
@@ -111,8 +127,28 @@ resourcestring
   SNoResourceSupport = 'No support for resources of type "%s"';
   SErrInvalidMultiLineLineEnding = 'Invalid multilinestring line ending type: use one of CR/LF/CRLF/SOURCE/PLATFORM' ;
   SWarnIgnoringLinkLib = 'Ignoring LINKLIB directive %s -> %s (Options: %s)';
+  SErrInvalidIndent = ' Inconsistent indent characters';
+  SErrMultilineNonWhiteSpaceBeforeClosing = 'There should be no white-space characters before closing quotes of the text block';
+  SErrInvalidMultiLineTrimLeft = 'Invalid MultiLineStringTrimLeft value: "%s", use ALL/AUTO/NONE or 0..65535';
 
 type
+  {$IFDEF PAS2JS}
+    RTLString = string;
+    TRTLStringDynArray = array of RTLString;
+    TPasScannerString = String;
+    AnsiChar = Char;
+  {$ELSE}
+    {$IF NOT DECLARED(RTLSTRING) }
+      RTLString = ansistring;
+      TRTLStringDynArray = array of RTLString;
+    {$ENDIF}
+    // String used for scanning
+    TPasScannerString = RawByteString;
+  {$ENDIF}
+
+  // String used for interfacing with PasTree
+  TPasTreeString = String;
+
   TMessageType = (
     mtFatal,
     mtError,
@@ -124,14 +160,15 @@ type
     );
   TMessageTypes = set of TMessageType;
 
-  TMessageArgs = array of string;
+  TMessageArgs = array of String;
 
   TToken = (
     tkEOF,
     tkWhitespace,
     tkComment,
     tkIdentifier,
-    tkString,
+    tkString, // string literal including quotes, e.g. 'a'#13^M''''
+    tkStringMultiLine, // string literal in raw format
     tkNumber,
     tkChar, // ^A .. ^Z
     // Simple (one-character) tokens
@@ -181,6 +218,7 @@ type
     tkconst,
     tkconstref,
     tkconstructor,
+    tkcontains,
     tkdestructor,
     tkdispinterface,
     tkdiv,
@@ -220,12 +258,14 @@ type
     tkor,
     tkotherwise,
     tkpacked,
+    tkPackage,
     tkprocedure,
     tkprogram,
     tkproperty,
     tkraise,
     tkrecord,
     tkrepeat,
+    tkrequires,
     tkResourceString,
     tkself,
     tkset,
@@ -260,13 +300,13 @@ type
     msClass,               { delphi class model }
     msObjpas,              { load objpas unit }
     msResult,              { result in functions }
-    msStringPchar,         { pchar 2 string conversion }
+    msStringPchar,         { PAnsiChar 2 TPasScannerString conversion }
     msCVarSupport,         { cvar variable directive }
     msNestedComment,       { nested comments }
     msTPProcVar,           { tp style procvars (no @ needed) }
     msMacProcVar,          { macpas style procvars }
     msRepeatForward,       { repeating forward declarations is needed }
-    msPointer2Procedure,   { allows the assignement of pointers to
+    msPointer2Procedure,   { allows the assignment of pointers to
                              procedure variables                     }
     msAutoDeref,           { does auto dereferencing of struct. vars }
     msInitFinal,           { initialization/finalization for units }
@@ -288,8 +328,8 @@ type
     msFinalFields,         { allows declaring fields as "final", which means they must be initialised
                              in the (class) constructor and are constant from then on (same as final
                              fields in Java) }
-    msDefaultUnicodestring, { makes the default string type in $h+ mode unicodestring rather than
-                               ansistring; similarly, char becomes unicodechar rather than ansichar }
+    msDefaultUnicodestring, { makes the default TPasScannerString type in $h+ mode unicodestring rather than
+                               ansistring; similarly, AnsiChar becomes unicodechar rather than ansichar }
     msTypeHelpers,         { allows the declaration of "type helper" (non-Delphi) or "record helper"
                              (Delphi) for primitive types }
     msCBlocks,             { 'cblocks', support for http://en.wikipedia.org/wiki/Blocks_(C_language_extension) }
@@ -307,7 +347,9 @@ type
 
     msExternalClass,       { pas2js: Allow external class definitions }
     msOmitRTTI,            { pas2js: treat class section 'published' as 'public' and typeinfo does not work on symbols declared with this switch }
-    msMultiLineStrings     { pas2js: Multiline strings }
+    msMultiLineStrings,     { pas2js: Multiline strings }
+    msDelphiMultiLineStrings, { Delpi-compatible multiline strings }
+    msInlineVars              { Allow inline var declarations }
     );
   TModeSwitches = Set of TModeSwitch;
 
@@ -321,7 +363,7 @@ type
     bsExtension,      // E   output file extension
                       // F
     bsImportedData,   // G
-    bsLongStrings,    // H   String=AnsiString
+    bsLongStrings,    // H   TPasScannerString=AnsiString
     bsIOChecks,       // I   generate EInOutError
     bsWriteableConst, // J   writable typed const
                       // K
@@ -394,10 +436,10 @@ type
     vsDispatchStrField
     );
   TValueSwitches = set of TValueSwitch;
-  TValueSwitchArray = array[TValueSwitch] of string;
+  TValueSwitchArray = array[TValueSwitch] of TPasScannerString;
 const
   vsAllValueSwitches = [low(TValueSwitch)..high(TValueSwitch)];
-  DefaultValueSwitches: array[TValueSwitch] of string = (
+  DefaultValueSwitches: array[TValueSwitch] of TPasScannerString = (
      'com', // vsInterfaces
      'Msg', // vsDispatchField
      'MsgStr' // vsDispatchStrField
@@ -421,12 +463,12 @@ type
 
   TMacroDef = Class(TObject)
   Private
-    FName: String;
-    FValue: String;
+    FName: TPasTreeString;
+    FValue: TPasTreeString;
   Public
-    Constructor Create(Const AName,AValue : String);
-    Property Name  : String Read FName;
-    Property Value : String Read FValue Write FValue;
+    Constructor Create(Const AName,AValue : TPasTreeString);
+    Property Name  : TPasTreeString Read FName;
+    Property Value : TPasTreeString Read FValue Write FValue;
   end;
 
   { TLineReader }
@@ -434,15 +476,15 @@ type
 
   TLineReader = class
   Private
-    FFilename: string;
+    FFilename: String;
   Protected
     EOLStyle : TEOLStyle;
   public
-    constructor Create(const AFilename: string); virtual;
+    constructor Create(const AFilename: String); virtual;
     function IsEOF: Boolean; virtual; abstract;
-    function ReadLine: string; virtual; abstract;
+    function ReadLine: TPasScannerString; virtual; abstract;
     function LastEOLStyle: TEOLStyle; virtual;
-    property Filename: string read FFilename;
+    property Filename: String read FFilename;
   end;
 
   { TFileLineReader }
@@ -456,39 +498,41 @@ type
     FBuffer : Array[0..4096-1] of byte;
     {$endif}
   public
-    constructor Create(const AFilename: string); override;
+    constructor Create(const AFilename: String); override;
     destructor Destroy; override;
     function IsEOF: Boolean; override;
-    function ReadLine: string; override;
+    function ReadLine: TPasScannerString; override;
   end;
 
   { TStreamLineReader }
 
   TStreamLineReader = class(TLineReader)
   private
+    {$ifndef pas2js}
+    FContent: RawByteString;
+    {$ELSE}
     FContent: String;
+    {$ENDIF}
     FPos : Integer;
   public
-    {$ifdef HasStreams}
     Procedure InitFromStream(AStream : TStream);
-    {$endif}
-    Procedure InitFromString(const s: string);
+    Procedure InitFromString(const s: TPasScannerString);
     function IsEOF: Boolean; override;
-    function ReadLine: string; override;
+    function ReadLine: TPasScannerString; override;
   end;
 
   { TFileStreamLineReader }
 
   TFileStreamLineReader = class(TStreamLineReader)
   Public
-    constructor Create(const AFilename: string); override;
+    constructor Create(const AFilename: String); override;
   end;
 
   { TStringStreamLineReader }
 
   TStringStreamLineReader = class(TStreamLineReader)
   Public
-    constructor Create(const AFilename: string; Const ASource: String); reintroduce;
+    constructor Create(const AFilename: String; Const ASource: TPasScannerString); reintroduce;
   end;
 
   { TMacroReader }
@@ -506,30 +550,30 @@ type
 
   TBaseFileResolver = class
   private
-    FBaseDirectory: string;
+    FBaseDirectory: String;
     FMode: TModeSwitch;
-    FModuleDirectory: string;
+    FModuleDirectory: String;
     FResourcePaths,
     FIncludePaths: TStringList;
     FStrictFileCase : Boolean;
   Protected
-    function FindIncludeFileName(const aFilename: string): String; virtual; abstract;
-    procedure SetBaseDirectory(AValue: string); virtual;
-    procedure SetModuleDirectory(AValue: string); virtual;
+    function FindIncludeFileName(const aFilename: String): String; virtual; abstract;
+    procedure SetBaseDirectory(AValue: String); virtual;
+    procedure SetModuleDirectory(AValue: String); virtual;
     procedure SetStrictFileCase(AValue: Boolean); virtual;
     Property IncludePaths: TStringList Read FIncludePaths;
     Property ResourcePaths: TStringList Read FResourcePaths;
   public
     constructor Create; virtual;
     destructor Destroy; override;
-    procedure AddIncludePath(const APath: string); virtual;
-    procedure AddResourcePath(const APath: string); virtual;
-    function FindResourceFileName(const AName: string): String; virtual; abstract;
-    function FindSourceFile(const AName: string): TLineReader; virtual; abstract;
-    function FindIncludeFile(const AName: string): TLineReader; virtual; abstract;
-    property BaseDirectory: string read FBaseDirectory write SetBaseDirectory; // e.g. current path of include file
+    procedure AddIncludePath(const APath: String); virtual;
+    procedure AddResourcePath(const APath: String); virtual;
+    function FindResourceFileName(const AName: String): String; virtual; abstract;
+    function FindSourceFile(const AName: String): TLineReader; virtual; abstract;
+    function FindIncludeFile(const AName: String): TLineReader; virtual; abstract;
+    property BaseDirectory: String read FBaseDirectory write SetBaseDirectory; // e.g. current path of include file
     property Mode: TModeSwitch read FMode write FMode;
-    property ModuleDirectory: string read FModuleDirectory write SetModuleDirectory; // e.g. path of module file
+    property ModuleDirectory: String read FModuleDirectory write SetModuleDirectory; // e.g. path of module file
     property StrictFileCase : Boolean Read FStrictFileCase Write SetStrictFileCase;
   end;
   TBaseFileResolverClass = Class of TBaseFileResolver;
@@ -543,50 +587,49 @@ type
     FUseStreams: Boolean;
     {$endif}
   Protected
-    function SearchLowUpCase(FN: string): string;
-    Function FindIncludeFileName(const AName: string): String; override;
+    function SearchLowUpCase(FN: String): String;
+    Function FindIncludeFileName(const AName: String): String; override;
     Function CreateFileReader(Const AFileName : String) : TLineReader; virtual;
   Public
-    function FindResourceFileName(const AFileName: string): String; override;
-    function FindSourceFile(const AName: string): TLineReader; override;
-    function FindIncludeFile(const AName: string): TLineReader; override;
+    function FindResourceFileName(const AFileName: String): String; override;
+    function FindSourceFile(const AName: String): TLineReader; override;
+    function FindIncludeFile(const AName: String): TLineReader; override;
     {$ifdef HasStreams}
     Property UseStreams : Boolean Read FUseStreams Write FUseStreams;
     {$endif}
   end;
 {$ENDIF}
 
-  {$ifdef fpc}
   { TStreamResolver }
 
   TStreamResolver = class(TBaseFileResolver)
   Private
     FOwnsStreams: Boolean;
     FStreams : TStringList;
-    function FindStream(const AName: string; ScanIncludes: Boolean): TStream;
-    function FindStreamReader(const AName: string; ScanIncludes: Boolean): TLineReader;
+    function FindStream(const AName: String; ScanIncludes: Boolean): TStream;
+    function FindStreamReader(const AName: String; ScanIncludes: Boolean): TLineReader;
     procedure SetOwnsStreams(AValue: Boolean);
   Protected
-    function FindIncludeFileName(const aFilename: string): String; override;
+    function FindIncludeFileName(const aFilename: String): String; override;
   Public
     constructor Create; override;
     destructor Destroy; override;
     Procedure Clear;
-    function FindResourceFileName(const AFileName: string): String; override;
+    function FindResourceFileName(const AFileName: String): String; override;
     Procedure AddStream(Const AName : String; AStream : TStream);
-    function FindSourceFile(const AName: string): TLineReader; override;
-    function FindIncludeFile(const AName: string): TLineReader; override;
+    function FindSourceFile(const AName: String): TLineReader; override;
+    function FindIncludeFile(const AName: String): TLineReader; override;
     Property OwnsStreams : Boolean Read FOwnsStreams write SetOwnsStreams;
     Property Streams: TStringList read FStreams;
   end;
-  {$endif}
+
 
 const
-  CondDirectiveBool: array[boolean] of string = (
+  CondDirectiveBool: array[boolean] of TPasScannerString = (
     '0', // false
     '1'  // true  Note: True is <>'0'
     );
-  MACDirectiveBool: array[boolean] of string = (
+  MACDirectiveBool: array[boolean] of TPasScannerString = (
     'FALSE', // false
     'TRUE'  // true  Note: True is <>'0'
     );
@@ -597,8 +640,8 @@ type
 
   TCondDirectiveEvaluator = class;
 
-  TCEEvalVarEvent = function(Sender: TCondDirectiveEvaluator; Name: String; out Value: string): boolean of object;
-  TCEEvalFunctionEvent = function(Sender: TCondDirectiveEvaluator; Name, Param: String; out Value: string): boolean of object;
+  TCEEvalVarEvent = function(Sender: TCondDirectiveEvaluator; Name: String; out Value: String): boolean of object;
+  TCEEvalFunctionEvent = function(Sender: TCondDirectiveEvaluator; Name, Param: String; out Value: String): boolean of object;
   TCELogEvent = procedure(Sender: TCondDirectiveEvaluator; Args : Array of const) of object;
 
   { TCondDirectiveEvaluator - evaluate $IF expression }
@@ -619,13 +662,13 @@ type
       TStackItem = record
         Level: TPrecedenceLevel;
         Operathor: TToken;
-        Operand: String;
+        Operand: TPasScannerString;
         OperandPos: integer;
       end;
   protected
     {$ifdef UsePChar}
-    FTokenStart: PChar;
-    FTokenEnd: PChar;
+    FTokenStart: PAnsiChar;
+    FTokenEnd: PAnsiChar;
     {$else}
     FTokenStart: integer; // position in Expression
     FTokenEnd: integer; // position in Expression
@@ -633,23 +676,23 @@ type
     FToken: TToken;
     FStack: array of TStackItem;
     FStackTop: integer;
-    function IsFalse(const Value: String): boolean; inline;
-    function IsTrue(const Value: String): boolean; inline;
-    function IsInteger(const Value: String; out i: TMaxPrecInt): boolean;
-    function IsExtended(const Value: String; out e: TMaxFloat): boolean;
+    function IsFalse(const Value: TPasScannerString): boolean; inline;
+    function IsTrue(const Value: TPasScannerString): boolean; inline;
+    function IsInteger(const Value: TPasScannerString; out i: TMaxPrecInt): boolean;
+    function IsExtended(const Value: TPasScannerString; out e: TMaxFloat): boolean;
     procedure NextToken;
     procedure Log(aMsgType: TMessageType; aMsgNumber: integer;
       const aMsgFmt: String; const Args: array of const; MsgPos: integer = 0);
-    procedure LogXExpectedButTokenFound(const X: String; ErrorPos: integer = 0);
+    procedure LogXExpectedButTokenFound(const X: TPasScannerString; ErrorPos: integer = 0);
     procedure ReadOperand(Skip: boolean = false); // unary operators plus one operand
     procedure ReadExpression; // binary operators
     procedure ResolveStack(MinStackLvl: integer; Level: TPrecedenceLevel;
       NewOperator: TToken);
-    function GetTokenString: String;
-    function GetStringLiteralValue: String; // read value of tkString
-    procedure Push(const AnOperand: String; OperandPosition: integer);
+    function GetTokenString: TPasScannerString;
+    function GetStringLiteralValue: TPasScannerString; // read value of tkString
+    procedure Push(const AnOperand: TPasScannerString; OperandPosition: integer);
   public
-    Expression: String;
+    Expression: TPasScannerString;
     MsgCurLine : Integer;
     MsgPos: integer;
     MsgNumber: integer;
@@ -658,7 +701,7 @@ type
     isMac : Boolean;
     constructor Create(aIsMac : Boolean = False);
     destructor Destroy; override;
-    function Eval(const Expr: string): boolean;
+    function Eval(const Expr: TPasScannerString): boolean;
     property OnEvalVariable: TCEEvalVarEvent read FOnEvalVariable write FOnEvalVariable;
     property OnEvalFunction: TCEEvalFunctionEvent read FOnEvalFunction write FOnEvalFunction;
     property OnLog: TCELogEvent read FOnLog write FOnLog;
@@ -673,7 +716,7 @@ type
     po_delphi,               // DEPRECATED since fpc 3.1.1: Delphi mode: forbid nested comments
     po_KeepScannerError,     // default: catch EScannerError and raise an EParserError instead
     po_CAssignments,         // allow C-operators += -= *= /=
-    po_ResolveStandardTypes, // search for 'longint', 'string', etc., do not use dummies, TPasResolver sets this to use its declarations
+    po_ResolveStandardTypes, // search for 'longint', 'TPasScannerString', etc., do not use dummies, TPasResolver sets this to use its declarations
     po_AsmWhole,             // store whole text between asm..end in TPasImplAsmStatement.Tokens
     po_NoOverloadedProcs,    // do not create TPasOverloadedProc for procs with same name
     po_KeepClassForward,     // disabled: delete class fowards when there is a class declaration
@@ -685,16 +728,18 @@ type
     po_ExtConstWithoutExpr,  // allow typed const without expression in external class and with external modifier
     po_StopOnUnitInterface,  // parse only a unit name and stop at interface keyword
     po_IgnoreUnknownResource,// Ignore resources for which no handler is registered.
-    po_AsyncProcs,            // allow async procedure modifier
-    po_DisableResources,      // Disable resources altogether
+    po_AsyncProcs,           // allow async procedure modifier
+    po_DisableResources,     // Disable resources altogether
     po_AsmPascalComments,    // Allow pascal comments/directives in asm blocks
-    po_AllowMem              // Allow use of meml, mem, memw arrays
+    po_AllowMem,             // Allow use of meml, mem, memw arrays
+    po_WarnResourceNotFound, // Do not raise error if resource not found.
+    po_CheckDirectiveRTTI    // parse $RTTI directive and error on invalid
     );
   TPOptions = set of TPOption;
 
 type
   TPasSourcePos = Record
-    FileName: String;
+    FileName: TPasScannerString;
     Row, Column: Cardinal;
   end;
 const
@@ -706,54 +751,59 @@ type
   TPScannerLogHandler = Procedure (Sender : TObject; Const Msg : String) of object;
   TPScannerLogEvent = (sleFile,sleLineNumber,sleConditionals,sleDirective);
   TPScannerLogEvents = Set of TPScannerLogEvent;
-  TPScannerDirectiveEvent = procedure(Sender: TObject; Directive, Param: String; var Handled: boolean) of object;
-  TPScannerCommentEvent = procedure(Sender: TObject; aComment : String) of object;
-  TPScannerFormatPathEvent = function(const aPath: string): string of object;
-  TPScannerWarnEvent = procedure(Sender: TObject; Identifier: string; State: TWarnMsgState; var Handled: boolean) of object;
+  TPScannerDirectiveEvent = procedure(Sender: TObject; Directive, Param: TPasScannerString; var Handled: boolean) of object;
+  TPScannerCommentEvent = procedure(Sender: TObject; aComment : TPasScannerString) of object;
+  TPScannerFormatPathEvent = function(const aPath: String): String of object;
+  TPScannerWarnEvent = procedure(Sender: TObject; Identifier: TPasScannerString; State: TWarnMsgState; var Handled: boolean) of object;
   TPScannerModeDirective = procedure(Sender: TObject; NewMode: TModeSwitch; Before: boolean; var Handled: boolean) of object;
-  TPScannerLinkLibEvent = procedure(Sender: TObject; Const aLibName,aLibAlias,aLibOptions : String; var Handled: boolean) of object;
+  TPScannerLinkLibEvent = procedure(Sender: TObject; Const aLibName,aLibAlias,aLibOptions : TPasScannerString; var Handled: boolean) of object;
 
   // aFileName: full filename (search is already done) aOptions: list of name:value pairs.
   TResourceHandler = Procedure (Sender : TObject; const aFileName : String; aOptions : TStrings) of object;
 
-  TPasScannerTokenPos = {$ifdef UsePChar}PChar{$else}integer{$endif};
+  TPasScannerTokenPos = {$ifdef UsePChar}PAnsiChar{$else}integer{$endif};
 
   TPascalScanner = class
   private
     type
       TResourceHandlerRecord = record
-        Ext : String;
+        Ext : TPasScannerString;
         Handler : TResourceHandler;
+      end;
+      TDirectiveHandlerRecord = record
+        Directive : TPasScannerString;
+        Handler : TPScannerDirectiveEvent;
       end;
       TWarnMsgNumberState = record
         Number: integer;
         State: TWarnMsgState;
       end;
       TWarnMsgNumberStateArr = array of TWarnMsgNumberState;
+    procedure HandleTextBlock(const AParam: TPasScannerString);
   private
     FAllowedBoolSwitches: TBoolSwitches;
     FAllowedModeSwitches: TModeSwitches;
     FAllowedValueSwitches: TValueSwitches;
     FConditionEval: TCondDirectiveEvaluator;
-    FCurModulename: string;
+    FCurModulename: TPasTreeString;
     FCurrentBoolSwitches: TBoolSwitches;
     FCurrentModeSwitches: TModeSwitches;
     FCurrentValueSwitches: TValueSwitchArray;
     FCurtokenEscaped: Boolean;
     FCurTokenPos: TPasSourcePos;
-    FLastMsg: string;
+    FLastMsg: String;
     FLastMsgArgs: TMessageArgs;
     FLastMsgNumber: integer;
-    FLastMsgPattern: string;
+    FLastMsgPattern: String;
     FLastMsgType: TMessageType;
     FFileResolver: TBaseFileResolver;
     FCurSourceFile: TLineReader;
-    FCurFilename: string;
+    FCurFilename: String;
     FCurRow: Integer;
     FCurColumnOffset: integer;
     FCurToken: TToken;
-    FCurTokenString: string;
-    FCurLine: string;
+    FCurTokenString: TPasScannerString;
+    FCurLine: TPasScannerString;
     FMaxIncludeStackDepth: integer;
     FModuleRow: Integer;
     FMacros: TStrings; // Objects are TMacroDef
@@ -785,7 +835,8 @@ type
     FIncludeStack: TFPList;
     FFiles: TStrings;
     FWarnMsgStates: TWarnMsgNumberStateArr;
-    FResourceHandlers : Array of TResourceHandlerRecord;
+    FResourceHandlers: Array of TResourceHandlerRecord;
+    FDirectiveHandles: Array of TDirectiveHandlerRecord;
 
     // Preprocessor $IFxxx skipping data
     PPSkipMode: TPascalScannerPPSkipMode;
@@ -794,15 +845,14 @@ type
     PPSkipModeStack: array[0..255] of TPascalScannerPPSkipMode;
     PPIsSkippingStack: array[0..255] of Boolean;
     function GetCurColumn: Integer;
-    function GetCurrentValueSwitch(V: TValueSwitch): string;
+    function GetCurrentValueSwitch(V: TValueSwitch): TPasScannerString;
     function GetForceCaret: Boolean;
     function GetMacrosOn: boolean;
+    function GetTokenString: TPasTreeString; inline;
     function IndexOfWarnMsgState(Number: integer; InsertPos: boolean): integer;
-    function OnCondEvalFunction(Sender: TCondDirectiveEvaluator; Name,
-      Param: String; out Value: string): boolean;
+    function OnCondEvalFunction(Sender: TCondDirectiveEvaluator; Name,  Param: String; out Value: String): boolean;
     procedure OnCondEvalLog(Sender: TCondDirectiveEvaluator; Args: array of const);
-    function OnCondEvalVar(Sender: TCondDirectiveEvaluator; Name: String; out
-      Value: string): boolean;
+    function OnCondEvalVar(Sender: TCondDirectiveEvaluator; Name: String; out Value: String): boolean;
     procedure SetAllowedBoolSwitches(const AValue: TBoolSwitches);
     procedure SetAllowedModeSwitches(const AValue: TModeSwitches);
     procedure SetAllowedValueSwitches(const AValue: TValueSwitches);
@@ -813,70 +863,75 @@ type
     procedure SetReadOnlyValueSwitches(const AValue: TValueSwitches);
   protected
     // extension without initial dot (.)
-    Function IndexOfResourceHandler(Const aExt : string) : Integer;
-    Function FindResourceHandler(Const aExt : string) : TResourceHandler;
-    function ReadIdentifier(const AParam: string): string;
+    Function IndexOfResourceHandler(Const aExt : TPasScannerString) : Integer;
+    Function FindResourceHandler(Const aExt : TPasScannerString) : TResourceHandler;
+    function IndexOfDirectiveHandle(const aDirective: TPasScannerString; ForInsert: boolean = false): Integer;
+    function ReadIdentifier(const AParam: TPasScannerString): TPasScannerString;
     function FetchLine: boolean;
-    procedure AddFile(aFilename: string); virtual;
-    function GetMacroName(const Param: String): String;
-    procedure SetCurMsg(MsgType: TMessageType; MsgNumber: integer; Const Fmt : String; Args : Array of const);
-    Procedure DoLog(MsgType: TMessageType; MsgNumber: integer; Const Msg : String; SkipSourceInfo : Boolean = False);overload;
-    Procedure DoLog(MsgType: TMessageType; MsgNumber: integer; Const Fmt : String; Args : Array of const;SkipSourceInfo : Boolean = False);overload;
-    procedure Error(MsgNumber: integer; const Msg: string);overload;
-    procedure Error(MsgNumber: integer; const Fmt: string; Args: array of const);overload;
+    procedure AddFile(aFilename: TPasScannerString); virtual;
+    function GetMacroName(const Param: TPasScannerString): TPasScannerString;
+    procedure SetCurMsg(MsgType: TMessageType; MsgNumber: integer; Const Fmt : TPasScannerString; Args : Array of const);
+    procedure SetCurMsg(MsgType: TMessageType; MsgNumber: integer; Const Msg : TPasScannerString);
+    Procedure DoLog(MsgType: TMessageType; MsgNumber: integer; Const Msg : TPasScannerString; SkipSourceInfo : Boolean = False); overload;
+    Procedure DoLog(MsgType: TMessageType; MsgNumber: integer; Const Fmt : TPasScannerString; Args : Array of const;SkipSourceInfo : Boolean = False); overload;
+    procedure ErrorAt(MsgNumber: integer; const Msg: TPasScannerString; aRow,ACol : Integer); overload;
+    procedure Error(MsgNumber: integer; const Msg: TPasScannerString); overload;
+    procedure Error(MsgNumber: integer; const Fmt: TPasScannerString; Args: array of const); overload;
     procedure PushSkipMode;
-    function GetMultiLineStringLineEnd(aReader: TLineReader): string;
-    function MakeLibAlias(const LibFileName: String): string; virtual;
+    function GetMultiLineStringLineEnd(aReader: TLineReader): TPasScannerString;
+    function MakeLibAlias(const LibFileName: TPasScannerString): TPasScannerString; virtual;
 
-    function HandleDirective(const ADirectiveText: String): TToken; virtual;
-    function HandleLetterDirective(Letter: char; Enable: boolean): TToken; virtual;
-    procedure HandleBoolDirective(bs: TBoolSwitch; const Param: String); virtual;
-    procedure DoHandleComment(Sender: TObject; const aComment : string); virtual;
-    procedure DoHandleDirective(Sender: TObject; Directive, Param: String;
+    function HandleDirective(const ADirectiveText: TPasScannerString): TToken; virtual;
+    function HandleLetterDirective(Letter: AnsiChar; Enable: boolean): TToken; virtual;
+    procedure HandleBoolDirective(bs: TBoolSwitch; const Param: TPasScannerString); virtual;
+    procedure DoHandleComment(Sender: TObject; const aComment : TPasScannerString); virtual;
+    procedure DoHandleDirective(Sender: TObject; Directive, Param: TPasScannerString;
       var Handled: boolean); virtual;
-    procedure HandleMultilineStringTrimLeft(const AParam : String);
-    procedure HandleMultilineStringLineEnding(const AParam : string);
-    Function HandleMultilineComment: TToken;
+
+    procedure HandleMultilineStringTrimLeft(const AParam : TPasScannerString);
+    procedure HandleMultilineStringLineEnding(const AParam : TPasScannerString);
+    function HandleMultilineComment: TToken;
     function HandleMultilineCommentOldStyle: TToken;
-    procedure HandleIFDEF(const AParam: String);
-    procedure HandleIFNDEF(const AParam: String);
-    procedure HandleIFOPT(const AParam: String);
-    procedure HandleIF(const AParam: String; aIsMac : Boolean);
-    procedure HandleELSEIF(const AParam: String; aIsMac : Boolean);
-    procedure HandleELSE(const AParam: String);
-    procedure HandleENDIF(const AParam: String);
-    procedure HandleDefine(Param: String); virtual;
-    procedure HandleDispatchField(Param: String; vs: TValueSwitch); virtual;
-    procedure HandleError(Param: String); virtual;
-    procedure HandleMessageDirective(Param: String); virtual;
-    procedure HandleIncludeFile(Param: String); virtual;
-    procedure HandleIncludeString(Param: String); virtual;
-    procedure HandleResource(Param : string); virtual;
-    procedure HandleLinkLib(Param : string); virtual;
-    procedure HandleOptimizations(Param : string); virtual;
-    procedure DoHandleOptimization(OptName, OptValue: string); virtual;
+    procedure HandleIFDEF(const AParam: TPasScannerString);
+    procedure HandleIFNDEF(const AParam: TPasScannerString);
+    procedure HandleIFOPT(const AParam: TPasScannerString);
+    procedure HandleIF(const AParam: TPasScannerString; aIsMac : Boolean);
+    procedure HandleELSEIF(const AParam: TPasScannerString; aIsMac : Boolean);
+    procedure HandleELSE(const AParam: TPasScannerString);
+    procedure HandleENDIF(const AParam: TPasScannerString);
+    procedure HandleDefine(Param: TPasScannerString); virtual;
+    procedure HandleDispatchField(Param: TPasScannerString; vs: TValueSwitch); virtual;
+    procedure HandleError(Param: TPasScannerString); virtual;
+    procedure HandleMessageDirective(Param: TPasScannerString); virtual;
+    procedure HandleIncludeFile(Param: TPasScannerString); virtual;
+    procedure HandleIncludeString(Param: TPasScannerString); virtual;
+    procedure HandleResource(Param : TPasScannerString); virtual;
+    procedure HandleLinkLib(Param : TPasScannerString); virtual;
+    procedure HandleOptimizations(Param : TPasScannerString); virtual;
+    procedure DoHandleOptimization(OptName, OptValue: TPasScannerString); virtual;
 
-    procedure HandleUnDefine(Param: String); virtual;
+    procedure HandleUnDefine(Param: TPasScannerString); virtual;
 
-    function HandleInclude(const Param: String): TToken; virtual;
-    procedure HandleMode(const Param: String); virtual;
-    procedure HandleModeSwitch(const Param: String); virtual;
+    function HandleInclude(const Param: TPasScannerString): TToken; virtual;
+    procedure HandleMode(const Param: TPasScannerString); virtual;
+    procedure HandleModeSwitch(const Param: TPasScannerString); virtual;
     function HandleMacro(AIndex: integer): TToken; virtual;
-    procedure HandleInterfaces(const Param: String); virtual;
-    procedure HandleWarn(Param: String); virtual;
-    procedure HandleWarnIdentifier(Identifier, Value: String); virtual;
+    procedure HandleInterfaces(const Param: TPasScannerString); virtual;
+    procedure HandleWarn(Param: TPasScannerString); virtual;
+    procedure HandleWarnIdentifier(Identifier, Value: TPasScannerString); virtual;
     procedure PushStackItem; virtual;
     procedure PopStackItem; virtual;
     function DoFetchTextToken: TToken; // including quotes
-    function DoFetchMultilineTextToken: TToken; // back ticks are converted to apostrophs, unindented
+    function DoFetchMultilineTextToken: TToken; // back ticks are converted to apostrophes, unindented
+    function DoFetchDelphiMultiLineTextToken(QuoteLen: Integer): TToken;
     function DoFetchToken: TToken;
     procedure ClearFiles;
     Procedure ClearMacros;
     Procedure SetCurToken(const AValue: TToken);
-    Procedure SetCurTokenString(const AValue: string);
+    Procedure SetCurTokenString(const AValue: TPasScannerString);
     procedure SetCurrentBoolSwitches(const AValue: TBoolSwitches); virtual;
     procedure SetCurrentModeSwitches(AValue: TModeSwitches); virtual;
-    procedure SetCurrentValueSwitch(V: TValueSwitch; const AValue: string);
+    procedure SetCurrentValueSwitch(V: TValueSwitch; const AValue: TPasScannerString);
     procedure SetWarnMsgState(Number: integer; State: TWarnMsgState); virtual;
     function GetWarnMsgState(Number: integer): TWarnMsgState; virtual;
     function LogEvent(E : TPScannerLogEvent) : Boolean; inline;
@@ -885,41 +940,47 @@ type
     constructor Create(AFileResolver: TBaseFileResolver);
     destructor Destroy; override;
     // extension without initial dot  (.), case insensitive
-    Procedure RegisterResourceHandler(aExtension : String; aHandler : TResourceHandler); overload;
-    Procedure RegisterResourceHandler(aExtensions : Array of String; aHandler : TResourceHandler); overload;
-    procedure OpenFile(AFilename: string);
+    procedure RegisterResourceHandler(aExtension : String; const aHandler : TResourceHandler); overload;
+    procedure RegisterResourceHandler(const aExtensions : Array of String; const aHandler : TResourceHandler); overload;
+    procedure RegisterDirectiveHandler(const aDirective: String; const aHandler : TPScannerDirectiveEvent); overload;
+    procedure RegisterDirectiveHandler(const aDirectives : TStringDynArray; const aHandler : TPScannerDirectiveEvent); overload;
+    procedure OpenFile(AFilename: TPasScannerString);
     procedure FinishedModule; virtual; // called by parser after end.
-    function FormatPath(const aFilename: string): string; virtual;
+    function FormatPath(const aFilename: String): String; virtual;
+    function FormatSrcPos(const p: TPasSourcePos): String;
+    function FormatCurrentSrcPos: String;
+    procedure DisablePackageTokens;
     procedure SetNonToken(aToken : TToken);
     procedure UnsetNonToken(aToken : TToken);
     procedure SetTokenOption(aOption : TTokenoption);
     procedure UnSetTokenOption(aOption : TTokenoption);
-    function CheckToken(aToken : TToken; const ATokenString : String) : TToken;
+    function CheckToken(aToken : TToken; const ATokenString : TPasScannerString) : TToken;
     function FetchToken: TToken;
     function ReadNonPascalTillEndToken(StopAtLineEnd: boolean): TToken; virtual;
-    function AddDefine(const aName: String; Quiet: boolean = false): boolean;
-    function RemoveDefine(const aName: String; Quiet: boolean = false): boolean;
-    function UnDefine(const aName: String; Quiet: boolean = false): boolean; // check defines and macros
-    function IsDefined(const aName: String): boolean; // check defines and macros
-    function IfOpt(Letter: Char): boolean;
-    function AddMacro(const aName, aValue: String; Quiet: boolean = false): boolean;
-    function RemoveMacro(const aName: String; Quiet: boolean = false): boolean;
-    procedure SetCompilerMode(S : String);
-    procedure SetModeSwitch(S : String);
+    function AddDefine(const aName: TPasScannerString; Quiet: boolean = false): boolean;
+    function RemoveDefine(const aName: TPasScannerString; Quiet: boolean = false): boolean;
+    function UnDefine(const aName: TPasScannerString; Quiet: boolean = false): boolean; // check defines and macros
+    function IsDefined(const aName: TPasScannerString): boolean; // check defines and macros
+    function IfOpt(Letter: AnsiChar): boolean;
+    function AddMacro(const aName, aValue: TPasScannerString; Quiet: boolean = false): boolean;
+    function RemoveMacro(const aName: TPasScannerString; Quiet: boolean = false): boolean;
+    procedure SetCompilerMode(S : TPasScannerString);
+    procedure SetModeSwitch(S : TPasScannerString);
     function CurSourcePos: TPasSourcePos;
     function SetForceCaret(AValue : Boolean) : Boolean; // returns old state
     function IgnoreMsgType(MsgType: TMessageType): boolean; virtual;
     property FileResolver: TBaseFileResolver read FFileResolver;
     property Files: TStrings read FFiles;
     property CurSourceFile: TLineReader read FCurSourceFile;
-    property CurFilename: string read FCurFilename;
-    property CurModuleName: string read FCurModulename Write FCurModuleName;
-    property CurLine: string read FCurLine;
+    property CurFilename: String read FCurFilename;
+    property CurModuleName: TPasTreeString read FCurModulename Write FCurModuleName;
+    property CurLine: TPasScannerString read FCurLine;
     property CurRow: Integer read FCurRow;
     property CurColumn: Integer read GetCurColumn;
     property CurToken: TToken read FCurToken;
-    property CurTokenString: string read FCurTokenString;
     property CurTokenEscaped : Boolean Read FCurTokenEscaped;
+    property RawCurTokenString: TPasScannerString read FCurTokenString;
+    property CurTokenString: TPasTreeString read GetTokenString;
     property CurTokenPos: TPasSourcePos read FCurTokenPos;
     property PreviousToken : TToken Read FPreviousToken;
     property ModuleRow: Integer read FModuleRow;
@@ -936,7 +997,7 @@ type
     property CurrentBoolSwitches: TBoolSwitches read FCurrentBoolSwitches Write SetCurrentBoolSwitches;
     property AllowedValueSwitches: TValueSwitches read FAllowedValueSwitches Write SetAllowedValueSwitches;
     property ReadOnlyValueSwitches: TValueSwitches read FReadOnlyValueSwitches Write SetReadOnlyValueSwitches;// cannot be changed by code
-    property CurrentValueSwitch[V: TValueSwitch]: string read GetCurrentValueSwitch Write SetCurrentValueSwitch;
+    property CurrentValueSwitch[V: TValueSwitch]: TPasScannerString read GetCurrentValueSwitch Write SetCurrentValueSwitch;
     property WarnMsgState[Number: integer]: TWarnMsgState read GetWarnMsgState write SetWarnMsgState;
     property Options : TPOptions read FOptions write SetOptions;
     property SkipWhiteSpace : Boolean Read FSkipWhiteSpace Write FSkipWhiteSpace;
@@ -958,20 +1019,21 @@ type
     property OnDirective: TPScannerDirectiveEvent read FOnDirective write FOnDirective;
     property OnComment: TPScannerCommentEvent read FOnComment write FOnComment;
     Property OnLinkLib : TPScannerLinkLibEvent Read FOnLinkLib Write FOnLinkLib;
-    property LastMsg: string read FLastMsg write FLastMsg;
+    property LastMsg: String read FLastMsg write FLastMsg;
     property LastMsgNumber: integer read FLastMsgNumber write FLastMsgNumber;
     property LastMsgType: TMessageType read FLastMsgType write FLastMsgType;
-    property LastMsgPattern: string read FLastMsgPattern write FLastMsgPattern;
+    property LastMsgPattern: String read FLastMsgPattern write FLastMsgPattern;
     property LastMsgArgs: TMessageArgs read FLastMsgArgs write FLastMsgArgs;
   end;
 
 const
-  TokenInfos: array[TToken] of string = (
+  TokenInfos: array[TToken] of TPasScannerString = (
     'EOF',
     'Whitespace',
     'Comment',
     'Identifier',
-    'string',
+    'String',
+    'StringMultiLine',
     'Number',
     'Character',
     '(',
@@ -1018,6 +1080,7 @@ const
     'const',
     'constref',
     'constructor',
+    'contains',
     'destructor',
     'dispinterface',
     'div',
@@ -1057,19 +1120,21 @@ const
     'or',
     'otherwise',
     'packed',
+    'package',
     'procedure',
     'program',
     'property',
     'raise',
     'record',
     'repeat',
+    'requires',
     'resourcestring',
     'self',
     'set',
     'shl',
     'shr',
     'specialize',
-//    'string',
+//    'TPasScannerString',
     'then',
     'threadvar',
     'to',
@@ -1087,7 +1152,7 @@ const
     'Tab'
   );
 
-  SModeSwitchNames : array[TModeSwitch] of string =
+  SModeSwitchNames : array[TModeSwitch] of TPasScannerString =
   ( '', // msNone
     '', // Fpc,
     '', // Objfpc,
@@ -1143,10 +1208,12 @@ const
     'ANONYMOUSFUNCTIONS',
     'EXTERNALCLASS',
     'OMITRTTI',
-    'MULTILINESTRINGS'
+    'MULTILINESTRINGS',
+    'DELPHIMULTILINESTRINGS',
+    'INLINEVARS'
     );
 
-  LetterSwitchNames: array['A'..'Z'] of string=(
+  LetterSwitchNames: array['A'..'Z'] of TPasScannerString=(
      'ALIGN'          // A   align fields
     ,'BOOLEVAL'       // B   complete boolean evaluation
     ,'ASSERTIONS'     // C   generate code for assertions
@@ -1154,7 +1221,7 @@ const
     ,'EXTENSION'      // E   output file extension
     ,''               // F
     ,'IMPORTEDDATA'   // G
-    ,'LONGSTRINGS'    // H   String=AnsiString
+    ,'LONGSTRINGS'    // H   TPasScannerString=AnsiString
     ,'IOCHECKS'       // I   generate EInOutError
     ,'WRITEABLECONST' // J   writable typed const
     ,''               // K
@@ -1175,7 +1242,7 @@ const
     ,''               // Z
    );
 
-  BoolSwitchNames: array[TBoolSwitch] of string = (
+  BoolSwitchNames: array[TBoolSwitch] of TPasScannerString = (
     // letter directives
     'None',
     'Align',
@@ -1210,14 +1277,14 @@ const
     'Goto'
     );
 
-  ValueSwitchNames: array[TValueSwitch] of string = (
+  ValueSwitchNames: array[TValueSwitch] of TPasScannerString = (
     'Interfaces', // vsInterfaces
     'DispatchField', // vsDispatchField
     'DispatchStrField' // vsDispatchStrField
     );
 
 const
-  MessageTypeNames : Array[TMessageType] of string = (
+  MessageTypeNames : Array[TMessageType] of TPasScannerString = (
     'Fatal','Error','Warning','Note','Hint','Info','Debug'
   );
 
@@ -1231,7 +1298,8 @@ const
      msOut,msDefaultPara,msDuplicateNames,msHintDirective,
      msProperty,msDefaultInline,msExcept,msAdvancedRecords,msTypeHelpers,
      msPrefixedAttributes,msArrayOperators,msImplicitFunctionSpec,
-     msFunctionReferences,msAnonymousFunctions
+     msFunctionReferences,msAnonymousFunctions,msDelphiMultiLineStrings,
+     msInlineVars
      ];
 
   DelphiUnicodeModeSwitches = delphimodeswitches + [msSystemCodePage,msDefaultUnicodestring];
@@ -1243,7 +1311,7 @@ const
 
   OBJFPCModeSwitches =  [msObjfpc,msClass,msObjpas,msResult,msStringPchar,msNestedComment,
     msRepeatForward,msCVarSupport,msInitFinal,msOut,msDefaultPara,msHintDirective,
-    msProperty,msDefaultInline,msExcept];
+    msProperty,msDefaultInline,msExcept,msDelphiMultiLineStrings];
 
   TPModeSwitches = [msTP7,msTPProcVar,msDuplicateNames];
 
@@ -1260,19 +1328,19 @@ const
     msNonLocalGoto,msISOLikeUnaryMinus,msISOLikeIO,msISOLikeProgramsPara,
     msISOLikeMod];
 
-function StrToModeSwitch(aName: String): TModeSwitch;
-function ModeSwitchesToStr(Switches: TModeSwitches): string;
-function BoolSwitchesToStr(Switches: TBoolSwitches): string;
+function StrToModeSwitch(aName: TPasScannerString): TModeSwitch;
+function ModeSwitchesToStr(Switches: TModeSwitches): TPasScannerString;
+function BoolSwitchesToStr(Switches: TBoolSwitches): TPasScannerString;
 
-function FilenameIsAbsolute(const TheFilename: string):boolean;
-function FilenameIsWinAbsolute(const TheFilename: string): boolean;
-function FilenameIsUnixAbsolute(const TheFilename: string): boolean;
-function IsNamedToken(Const AToken : String; Out T : TToken) : Boolean;
+function FilenameIsAbsolute(const TheFilename: String):boolean;
+function FilenameIsWinAbsolute(const TheFilename: String): boolean;
+function FilenameIsUnixAbsolute(const TheFilename: String): boolean;
+function IsNamedToken(Const AToken : TPasScannerString; Out T : TToken) : Boolean;
 Function ExtractFilenameOnly(Const AFileName : String) : String;
-function ExtractFileUnitName(aFilename: string): string;
+function ExtractFileUnitName(const aFilename: String): String;
 
 procedure CreateMsgArgs(var MsgArgs: TMessageArgs; Args: array of const);
-function SafeFormat(const Fmt: string; Args: array of const): string;
+function SafeFormat(const Fmt: String; Args: array of const): String;
 
 {$IFNDEF Pas2js}
 procedure ReadNextPascalToken(var Position: PChar; out TokenStart: PChar;
@@ -1281,14 +1349,22 @@ procedure ReadNextPascalToken(var Position: PChar; out TokenStart: PChar;
 
 implementation
 
+uses
+  {$IFDEF FPC_DOTTEDUNITS}
+  System.StrUtils;
+  {$ELSE}
+  strutils;
+  {$ENDIF}
 const
   IdentChars = ['0'..'9', 'A'..'Z', 'a'..'z','_'];
   Digits = ['0'..'9'];
   Letters = ['a'..'z','A'..'Z'];
   HexDigits = ['0'..'9','a'..'f','A'..'F'];
+  SingleQuote = #39;
+
 Var
   SortedTokens : array of TToken;
-  LowerCaseTokens  : Array[ttoken] of String;
+  LowerCaseTokens  : Array[ttoken] of TPasScannerString;
 
 Function ExtractFilenameOnly(Const AFileName : String) : String;
 
@@ -1296,21 +1372,16 @@ begin
   Result:=ChangeFileExt(ExtractFileName(aFileName),'');
 end;
 
-function ExtractFileUnitName(aFilename: string): string;
+function ExtractFileUnitName(const aFilename: String): String;
 var
   p: Integer;
 begin
   Result:=ExtractFileName(aFilename);
-  if Result='' then exit;
-  for p:=length(Result) downto 1 do
-    case Result[p] of
-    '/','\': exit;
-    '.':
-      begin
-      Delete(Result,p,length(Result));
-      exit;
-      end;
-    end;
+  if Result='' then
+    exit;
+  p:=rpos('.',Result);
+  if p>0 then
+    SetLength(Result, p-1);
 end;
 
 Procedure SortTokenInfo;
@@ -1351,11 +1422,11 @@ begin
     end;
 end;
 
-function IndexOfToken(Const AToken : string) : Integer;
+function IndexOfToken(Const AToken : TPasScannerString) : Integer;
 
 var
   B,T,M : Integer;
-  N : String;
+  N : TPasScannerString;
 begin
   B:=0;
   T:=Length(SortedTokens)-1;
@@ -1373,7 +1444,7 @@ begin
   Result:=-1;
 end;
 
-function IsNamedToken(Const AToken : String; Out T : TToken) : Boolean;
+function IsNamedToken(Const AToken : TPasScannerString; Out T : TToken) : Boolean;
 
 Var
   I : Integer;
@@ -1402,7 +1473,7 @@ begin
     if isBoolean(v) then
       MsgArgs[i] := BoolToStr(Boolean(v))
     else if isString(v) then
-      MsgArgs[i] := String(v)
+      MsgArgs[i] := TPasScannerString(v)
     else if isNumber(v) then
       begin
       if IsInteger(v) then
@@ -1440,7 +1511,7 @@ begin
     {$endif}
 end;
 
-function SafeFormat(const Fmt: string; Args: array of const): string;
+function SafeFormat(const Fmt: String; Args: array of const): String;
 var
   MsgArgs: TMessageArgs;
   i: Integer;
@@ -1468,7 +1539,7 @@ const
   IdentChars = ['a'..'z','A'..'Z','_','0'..'9'];
   HexNumberChars = ['0'..'9','a'..'f','A'..'F'];
 var
-  c1:char;
+  c1:AnsiChar;
   CommentLvl: Integer;
   Src: PChar;
 begin
@@ -1601,7 +1672,7 @@ begin
         inc(Src);
       end;
     end;
-  '''','#','`':  // string constant
+  '''','#','`':  // TPasScannerString constant
     while true do
       case Src^ of
       #0: break;
@@ -1732,16 +1803,16 @@ end;
 type
   TIncludeStackItem = class
     SourceFile: TLineReader;
-    Filename: string;
+    Filename: String;
     Token: TToken;
-    TokenString: string;
-    Line: string;
+    TokenString: TPasScannerString;
+    Line: TPasScannerString;
     Row: Integer;
     ColumnOffset: integer;
-    TokenPos: {$ifdef UsePChar}PChar;{$else}integer; { position in Line }{$endif}
+    TokenPos: {$ifdef UsePChar}PAnsiChar;{$else}integer; { position in Line }{$endif}
   end;
 
-function StrToModeSwitch(aName: String): TModeSwitch;
+function StrToModeSwitch(aName: TPasScannerString): TModeSwitch;
 var
   ms: TModeSwitch;
 begin
@@ -1752,7 +1823,7 @@ begin
   Result:=msNone;
 end;
 
-function ModeSwitchesToStr(Switches: TModeSwitches): string;
+function ModeSwitchesToStr(Switches: TModeSwitches): TPasScannerString;
 var
   ms: TModeSwitch;
 begin
@@ -1762,7 +1833,7 @@ begin
   Result:='['+LeftStr(Result,length(Result)-1)+']';
 end;
 
-function BoolSwitchesToStr(Switches: TBoolSwitches): string;
+function BoolSwitchesToStr(Switches: TBoolSwitches): TPasScannerString;
 var
   bs: TBoolSwitch;
 begin
@@ -1772,7 +1843,7 @@ begin
   Result:='['+LeftStr(Result,length(Result)-1)+']';
 end;
 
-function FilenameIsAbsolute(const TheFilename: string):boolean;
+function FilenameIsAbsolute(const TheFilename: String):boolean;
 begin
   {$IFDEF WINDOWS}
   // windows
@@ -1783,7 +1854,7 @@ begin
   {$ENDIF}
 end;
 
-function FilenameIsWinAbsolute(const TheFilename: string): boolean;
+function FilenameIsWinAbsolute(const TheFilename: String): boolean;
 begin
   Result:=((length(TheFilename)>=2) and (TheFilename[1] in ['A'..'Z','a'..'z'])
            and (TheFilename[2]=':'))
@@ -1791,7 +1862,7 @@ begin
          and (TheFilename[1]='\') and (TheFilename[2]='\'));
 end;
 
-function FilenameIsUnixAbsolute(const TheFilename: string): boolean;
+function FilenameIsUnixAbsolute(const TheFilename: String): boolean;
 begin
   Result:=(TheFilename<>'') and (TheFilename[1]='/');
 end;
@@ -1799,7 +1870,7 @@ end;
 { TCondDirectiveEvaluator }
 
 // inline
-function TCondDirectiveEvaluator.IsFalse(const Value: String): boolean;
+function TCondDirectiveEvaluator.IsFalse(const Value: TPasScannerString): boolean;
 begin
   Result:=Value=CondDirectiveBool[false];
   if (not Result) and isMac then
@@ -1807,14 +1878,14 @@ begin
 end;
 
 // inline
-function TCondDirectiveEvaluator.IsTrue(const Value: String): boolean;
+function TCondDirectiveEvaluator.IsTrue(const Value: TPasScannerString): boolean;
 begin
   Result:=Value<>CondDirectiveBool[false];
   if Result and isMac then
     Result:=Value<>MacDirectiveBool[False];
 end;
 
-function TCondDirectiveEvaluator.IsInteger(const Value: String; out i: TMaxPrecInt
+function TCondDirectiveEvaluator.IsInteger(const Value: TPasScannerString; out i: TMaxPrecInt
   ): boolean;
 var
   Code: integer;
@@ -1823,7 +1894,7 @@ begin
   Result:=Code=0;
 end;
 
-function TCondDirectiveEvaluator.IsExtended(const Value: String; out e: TMaxFloat
+function TCondDirectiveEvaluator.IsExtended(const Value: TPasScannerString; out e: TMaxFloat
   ): boolean;
 var
   Code: integer;
@@ -1837,9 +1908,9 @@ const
   IdentChars = ['a'..'z','A'..'Z','_','0'..'9'];
 
   {$ifdef UsePChar}
-  function IsIdentifier(a,b: PChar): boolean;
+  function IsIdentifier(a,b: PAnsiChar): boolean;
   var
-    ac: Char;
+    ac: AnsiChar;
   begin
     repeat
       ac:=a^;
@@ -1902,7 +1973,7 @@ const
   HexDigits = ['0'..'9'];
 var
   l: integer;
-  Src: String;
+  Src: TPasScannerString;
 {$endif}
 begin
   FTokenStart:=FTokenEnd;
@@ -1912,7 +1983,7 @@ begin
   repeat
     case FTokenStart^ of
       #0:
-      if FTokenStart-PChar(Expression)>=length(Expression) then
+      if FTokenStart-PAnsiChar(Expression)>=length(Expression) then
         begin
         FToken:=tkEOF;
         FTokenEnd:=FTokenStart;
@@ -2112,7 +2183,7 @@ begin
     FToken:=tkEOF;
   end;
   {$IFDEF VerbosePasDirectiveEval}
-  writeln('TCondDirectiveEvaluator.NextToken END Token[',FTokenStart-PChar(Expression)+1,']="',GetTokenString,'" ',FToken);
+  writeln('TCondDirectiveEvaluator.NextToken END Token[',FTokenStart-PAnsiChar(Expression)+1,']="',GetTokenString,'" ',FToken);
   {$ENDIF}
 end;
 
@@ -2122,7 +2193,7 @@ procedure TCondDirectiveEvaluator.Log(aMsgType: TMessageType;
   MsgPos: integer);
 begin
   if MsgPos<1 then
-    MsgPos:=FTokenEnd{$ifdef UsePChar}-PChar(Expression)+1{$endif};
+    MsgPos:=FTokenEnd{$ifdef UsePChar}-PAnsiChar(Expression)+1{$endif};
   MsgType:=aMsgType;
   MsgNumber:=aMsgNumber;
   MsgPattern:=aMsgFmt;
@@ -2134,12 +2205,16 @@ begin
   raise EScannerError.CreateFmt(MsgPattern+' at pos '+IntToStr(MsgPos)+' line '+IntToStr(MsgCurLine),Args);
 end;
 
-procedure TCondDirectiveEvaluator.LogXExpectedButTokenFound(const X: String;
+procedure TCondDirectiveEvaluator.LogXExpectedButTokenFound(const X: TPasScannerString;
   ErrorPos: integer);
 
+Var
+  S : String;
+
 begin
+  S:=X;
   Log(mtError,nErrXExpectedButYFound,SErrXExpectedButYFound,
-      [X,TokenInfos[FToken]],ErrorPos);
+      [S,TokenInfos[FToken]],ErrorPos);
 end;
 
 procedure TCondDirectiveEvaluator.ReadOperand(Skip: boolean);
@@ -2157,7 +2232,7 @@ procedure TCondDirectiveEvaluator.ReadOperand(Skip: boolean);
    (expression)
 }
 
-  Function IsMacNoArgFunction(aName : string) : Boolean;
+  Function IsMacNoArgFunction(aName : String) : Boolean;
   begin
     Result:=SameText(aName,'DEFINED') or SameText(aName,'UNDEFINED');
   end;
@@ -2167,12 +2242,12 @@ var
   e: TMaxFloat;
   S, aName, Param: String;
   Code: integer;
-  NameStartP: {$ifdef UsePChar}PChar{$else}integer{$endif};
+  NameStartP: {$ifdef UsePChar}PAnsiChar{$else}integer{$endif};
   p, Lvl: integer;
 
 begin
   {$IFDEF VerbosePasDirectiveEval}
-  writeln('TCondDirectiveEvaluator.ReadOperand START Token[',FTokenStart-PChar(Expression)+1,']="',GetTokenString,'" ',FToken,BoolToStr(Skip,' SKIP',''));
+  writeln('TCondDirectiveEvaluator.ReadOperand START Token[',FTokenStart-PAnsiChar(Expression)+1,']="',GetTokenString,'" ',FToken,BoolToStr(Skip,' SKIP',''));
   {$ENDIF}
   case FToken of
     tknot:
@@ -2215,7 +2290,7 @@ begin
         if Code=0 then
           begin
           // integer
-          Push(IntToStr(i),FTokenStart{$ifdef UsePChar}-PChar(Expression)+1{$endif});
+          Push(IntToStr(i),FTokenStart{$ifdef UsePChar}-PAnsiChar(Expression)+1{$endif});
           end
         else
           begin
@@ -2224,16 +2299,16 @@ begin
             Log(mtError,nErrRangeCheck,sErrRangeCheck,[]);
           if e=0 then ;
           // float
-          Push(S,FTokenStart{$ifdef UsePChar}-PChar(Expression)+1{$endif});
+          Push(S,FTokenStart{$ifdef UsePChar}-PAnsiChar(Expression)+1{$endif});
           end;
         end;
       NextToken;
       end;
     tkString:
       begin
-      // string literal
+      // TPasScannerString literal
       if not Skip then
-        Push(GetStringLiteralValue,FTokenStart{$ifdef UsePChar}-PChar(Expression)+1{$endif});
+        Push(GetStringLiteralValue,FTokenStart{$ifdef UsePChar}-PAnsiChar(Expression)+1{$endif});
       NextToken;
       end;
     tkIdentifier:
@@ -2260,7 +2335,7 @@ begin
       else
         begin
         aName:=GetTokenString;
-        p:=FTokenStart{$ifdef UsePChar}-PChar(Expression)+1{$endif};
+        p:=FTokenStart{$ifdef UsePChar}-PAnsiChar(Expression)+1{$endif};
         NextToken;
         if FToken=tkBraceOpen then
           begin
@@ -2339,7 +2414,7 @@ begin
     LogXExpectedButTokenFound('identifier');
   end;
   {$IFDEF VerbosePasDirectiveEval}
-  writeln('TCondDirectiveEvaluator.ReadOperand END Top=',FStackTop,' Value="',FStack[FStackTop].Operand,'" Token[',FTokenStart-PChar(Expression)+1,']="',GetTokenString,'" ',FToken);
+  writeln('TCondDirectiveEvaluator.ReadOperand END Top=',FStackTop,' Value="',FStack[FStackTop].Operand,'" Token[',FTokenStart-PAnsiChar(Expression)+1,']="',GetTokenString,'" ',FToken);
   {$ENDIF}
 end;
 
@@ -2358,12 +2433,12 @@ var
 begin
   OldStackTop:=FStackTop;
   {$IFDEF VerbosePasDirectiveEval}
-  writeln('TCondDirectiveEvaluator.ReadExpression START Top=',FStackTop,' Token[',FTokenStart-PChar(Expression)+1,']="',GetTokenString,'" ',FToken);
+  writeln('TCondDirectiveEvaluator.ReadExpression START Top=',FStackTop,' Token[',FTokenStart-PAnsiChar(Expression)+1,']="',GetTokenString,'" ',FToken);
   {$ENDIF}
   ReadOperand;
   repeat
     {$IFDEF VerbosePasDirectiveEval}
-    writeln('TCondDirectiveEvaluator.ReadExpression NEXT Top=',FStackTop,' Token[',FTokenStart-PChar(Expression)+1,']="',GetTokenString,'" ',FToken);
+    writeln('TCondDirectiveEvaluator.ReadExpression NEXT Top=',FStackTop,' Token[',FTokenStart-PAnsiChar(Expression)+1,']="',GetTokenString,'" ',FToken);
     {$ENDIF}
     case FToken of
     tkEOF,tkBraceClose:
@@ -2418,14 +2493,14 @@ begin
     end;
   until false;
   {$IFDEF VerbosePasDirectiveEval}
-  writeln('TCondDirectiveEvaluator.ReadExpression END Top=',FStackTop,' Value="',FStack[FStackTop].Operand,'" Token[',FTokenStart-PChar(Expression)+1,']=',GetTokenString,' ',FToken);
+  writeln('TCondDirectiveEvaluator.ReadExpression END Top=',FStackTop,' Value="',FStack[FStackTop].Operand,'" Token[',FTokenStart-PAnsiChar(Expression)+1,']=',GetTokenString,' ',FToken);
   {$ENDIF}
 end;
 
 procedure TCondDirectiveEvaluator.ResolveStack(MinStackLvl: integer;
   Level: TPrecedenceLevel; NewOperator: TToken);
 var
-  A, B, R: String;
+  A, B, R: TPasScannerString;
   Op: TToken;
   AInt, BInt: TMaxPrecInt;
   AFloat, BFloat: TMaxFloat;
@@ -2573,20 +2648,20 @@ begin
   FStack[FStackTop].Level:=Level;
 end;
 
-function TCondDirectiveEvaluator.GetTokenString: String;
+function TCondDirectiveEvaluator.GetTokenString: TPasScannerString;
 begin
-  Result:=copy(Expression,FTokenStart{$ifdef UsePChar}-PChar(Expression)+1{$endif},
+  Result:=copy(Expression,FTokenStart{$ifdef UsePChar}-PAnsiChar(Expression)+1{$endif},
                FTokenEnd-FTokenStart);
 end;
 
-function TCondDirectiveEvaluator.GetStringLiteralValue: String;
+function TCondDirectiveEvaluator.GetStringLiteralValue: TPasScannerString;
 var
   {$ifdef UsePChar}
-  p, StartP: PChar;
+  p, StartP: PAnsiChar;
   {$else}
-  Src: string;
+  Src: TPasScannerString;
   p, l, StartP: Integer;
-  c: char;
+  c: AnsiChar;
   {$endif}
 begin
   Result:='';
@@ -2606,7 +2681,7 @@ begin
         end;
       until false;
       if p>StartP then
-        Result:=Result+copy(Expression,StartP-PChar(Expression)+1,p-StartP);
+        Result:=Result+copy(Expression,StartP-PAnsiChar(Expression)+1,p-StartP);
       inc(p);
       end;
     '`':
@@ -2621,7 +2696,7 @@ begin
         end;
       until false;
       if p>StartP then
-        Result:=Result+copy(Expression,StartP-PChar(Expression)+1,p-StartP);
+        Result:=Result+copy(Expression,StartP-PAnsiChar(Expression)+1,p-StartP);
       inc(p);
       end;
     else
@@ -2657,7 +2732,7 @@ begin
   {$endif}
 end;
 
-procedure TCondDirectiveEvaluator.Push(const AnOperand: String;
+procedure TCondDirectiveEvaluator.Push(const AnOperand: TPasScannerString;
   OperandPosition: integer);
 begin
   inc(FStackTop);
@@ -2685,7 +2760,7 @@ begin
   inherited Destroy;
 end;
 
-function TCondDirectiveEvaluator.Eval(const Expr: string): boolean;
+function TCondDirectiveEvaluator.Eval(const Expr: TPasScannerString): boolean;
 begin
   {$IFDEF VerbosePasDirectiveEval}
   writeln('TCondDirectiveEvaluator.Eval Expr="',Expr,'"');
@@ -2695,7 +2770,7 @@ begin
   MsgNumber:=0;
   MsgPattern:='';
   if Expr='' then exit(false);
-  FTokenStart:={$ifdef UsePChar}PChar(Expr){$else}1{$endif};
+  FTokenStart:={$ifdef UsePChar}PAnsiChar(Expr){$else}1{$endif};
   FTokenEnd:=FTokenStart;
   FStackTop:=-1;
   NextToken;
@@ -2708,7 +2783,7 @@ end;
 
 { TMacroDef }
 
-constructor TMacroDef.Create(const AName, AValue: String);
+constructor TMacroDef.Create(const AName, AValue: TPasTreeString);
 begin
   FName:=AName;
   FValue:=AValue;
@@ -2716,7 +2791,7 @@ end;
 
 { TLineReader }
 
-constructor TLineReader.Create(const AFilename: string);
+constructor TLineReader.Create(const AFilename: String);
 begin
   FFileName:=AFileName;
   if LineEnding=#13 then
@@ -2736,7 +2811,7 @@ end;
   TFileLineReader
   ---------------------------------------------------------------------}
 
-constructor TFileLineReader.Create(const AFilename: string);
+constructor TFileLineReader.Create(const AFilename: String);
 
 begin
   inherited Create(AFileName);
@@ -2770,7 +2845,7 @@ begin
   {$endif}
 end;
 
-function TFileLineReader.ReadLine: string;
+function TFileLineReader.ReadLine: TPasScannerString;
 begin
   {$ifdef pas2js}
   Result:='';// ToDo
@@ -2781,20 +2856,59 @@ end;
 
 { TStreamLineReader }
 
-{$ifdef HasStreams}
+
 Procedure TStreamLineReader.InitFromStream(AStream : TStream);
 
+{$IFDEF PAS2JS}
+  function BufferToString(aBuffer: TBytes): String;
+
+  var
+    a : TJSUint16Array;
+    i,len: Integer;
+
+  begin
+    Result:=''; // Silence warning
+    len:=Length(aBuffer);
+    a:=TJSUint16Array.New(Len);
+    for I:=0 to Len-1 do
+      a[i]:=aBuffer[i];
+    if a<>nil then
+      Result:=String(TJSFunction(@TJSString.fromCharCode).apply(nil,TJSValueDynArray(JSValue(a))));
+  end;
+{$ENDIF}
+
+Var
+  B : TBytes;
+
 begin
-  SetLength(FContent,AStream.Size);
-  if FContent<>'' then
-    AStream.Read(FContent[1],length(FContent));
+  SetLength(B{%H-},AStream.Size);
+  if Length(B)>0 then
+    {$ifdef pas2js}
+    AStream.Read(B,length(B));
+    {$ELSE}
+    AStream.Read(B[0],length(B));
+    {$ENDIF}
+  {$IFNDEF PAS2JS}
+  FContent:=TEncoding.Default.GetAnsiString(B);
+  {$ELSE}
+  FContent:=BufferToString(B);
+  {$ENDIF}
+
   FPos:=0;
 end;
-{$endif}
 
-procedure TStreamLineReader.InitFromString(const s: string);
+
+procedure TStreamLineReader.InitFromString(const s: TPasScannerString);
 begin
-  FContent:=s;
+{$IFDEF PAS2JS}
+  FContent:=S;
+{$ELSE}
+{$IF SIZEOF(CHAR)=2}
+  FContent:=UTF8Encode(s);
+{$ELSE}
+  FContent:=S;
+{$ENDIF}
+{$ENDIF}
   FPos:=0;
 end;
 
@@ -2803,7 +2917,7 @@ begin
   Result:=FPos>=Length(FContent);
 end;
 
-function TStreamLineReader.ReadLine: string;
+function TStreamLineReader.ReadLine: TPasScannerString;
 
 Var
   LPos : Integer;
@@ -2836,7 +2950,7 @@ end;
 
 { TFileStreamLineReader }
 
-constructor TFileStreamLineReader.Create(const AFilename: string);
+constructor TFileStreamLineReader.Create(const AFilename: String);
 {$ifdef HasStreams}
 Var
   S : TFileStream;
@@ -2857,7 +2971,7 @@ end;
 
 { TStringStreamLineReader }
 
-constructor TStringStreamLineReader.Create(const AFilename: string; const ASource: String);
+constructor TStringStreamLineReader.Create(const AFilename: String; const ASource: TPasScannerString);
 begin
   inherited Create(AFilename);
   InitFromString(ASource);
@@ -2867,14 +2981,14 @@ end;
   TBaseFileResolver
   ---------------------------------------------------------------------}
 
-procedure TBaseFileResolver.SetBaseDirectory(AValue: string);
+procedure TBaseFileResolver.SetBaseDirectory(AValue: String);
 begin
   AValue:=IncludeTrailingPathDelimiter(AValue);
   if FBaseDirectory=AValue then Exit;
   FBaseDirectory:=AValue;
 end;
 
-procedure TBaseFileResolver.SetModuleDirectory(AValue: string);
+procedure TBaseFileResolver.SetModuleDirectory(AValue: String);
 begin
   AValue:=IncludeTrailingPathDelimiter(AValue);
   if FModuleDirectory=AValue then Exit;
@@ -2902,10 +3016,10 @@ begin
   inherited Destroy;
 end;
 
-procedure TBaseFileResolver.AddIncludePath(const APath: string);
+procedure TBaseFileResolver.AddIncludePath(const APath: String);
 
 Var
-  FP : String;
+  FP : TPasScannerString;
 
 begin
   if (APath='') then
@@ -2921,7 +3035,7 @@ begin
     end;
 end;
 
-procedure TBaseFileResolver.AddResourcePath(const APath: string);
+procedure TBaseFileResolver.AddResourcePath(const APath: String);
 Var
   FP : String;
 
@@ -2947,10 +3061,10 @@ end;
   ---------------------------------------------------------------------}
 
 
-function TFileResolver.SearchLowUpCase(FN: string): string;
+function TFileResolver.SearchLowUpCase(FN: String): String;
 
 var
-  Dir: String;
+  Dir: TPasScannerString;
 
 begin
   If FileExists(FN) then
@@ -2969,7 +3083,7 @@ begin
     end;
 end;
 
-function TFileResolver.FindIncludeFileName(const AName: string): String;
+function TFileResolver.FindIncludeFileName(const AName: String): String;
 
 
   Function FindInPath(FN : String) : String;
@@ -3003,7 +3117,7 @@ function TFileResolver.FindIncludeFileName(const AName: string): String;
   end;
 
 var
-  FN : string;
+  FN : TPasScannerString;
 
 begin
   Result := '';
@@ -3052,7 +3166,7 @@ begin
     Result:=TFileLineReader.Create(AFileName);
 end;
 
-function TFileResolver.FindResourceFileName(const AFileName: string): String;
+function TFileResolver.FindResourceFileName(const AFileName: String): String;
 
   Function FindInPath(FN : String) : String;
 
@@ -3073,7 +3187,7 @@ function TFileResolver.FindResourceFileName(const AFileName: string): String;
   end;
 
 var
-  FN : string;
+  FN : TPasScannerString;
 
 begin
   Result := '';
@@ -3091,7 +3205,7 @@ begin
     end;
 end;
 
-function TFileResolver.FindSourceFile(const AName: string): TLineReader;
+function TFileResolver.FindSourceFile(const AName: String): TLineReader;
 begin
   Result := nil;
   if not FileExists(AName) then
@@ -3104,7 +3218,7 @@ begin
     end;
 end;
 
-function TFileResolver.FindIncludeFile(const AName: string): TLineReader;
+function TFileResolver.FindIncludeFile(const AName: String): TLineReader;
 
 Var
   FN : String;
@@ -3121,7 +3235,6 @@ begin
 end;
 {$ENDIF}
 
-{$ifdef fpc}
 { TStreamResolver }
 
 procedure TStreamResolver.SetOwnsStreams(AValue: Boolean);
@@ -3130,13 +3243,13 @@ begin
   FOwnsStreams:=AValue;
 end;
 
-function TStreamResolver.FindIncludeFileName(const aFilename: string): String;
+function TStreamResolver.FindIncludeFileName(const aFilename: String): String;
 begin
   raise EFileNotFoundError.Create('TStreamResolver.FindIncludeFileName not supported '+aFilename);
   Result:='';
 end;
 
-function TStreamResolver.FindResourceFileName(const AFileName: string): String;
+function TStreamResolver.FindResourceFileName(const AFileName: String): String;
 begin
   raise EFileNotFoundError.Create('TStreamResolver.FindResourceFileName not supported '+aFileName);
   Result:='';
@@ -3161,11 +3274,16 @@ procedure TStreamResolver.Clear;
 
 Var
   I : integer;
+  Obj : TObject;
 begin
   if OwnsStreams then
     begin
     For I:=0 to FStreams.Count-1 do
-      Fstreams.Objects[i].Free;
+      begin
+      Obj:=Fstreams.Objects[i];
+      Fstreams.Objects[i]:=nil;
+      Obj.Free;
+      end;
     end;
   FStreams.Clear;
 end;
@@ -3175,7 +3293,7 @@ begin
   FStreams.AddObject(AName,AStream);
 end;
 
-function TStreamResolver.FindStream(const AName: string; ScanIncludes : Boolean) : TStream;
+function TStreamResolver.FindStream(const AName: String; ScanIncludes : Boolean) : TStream;
 
 Var
   I,J : Integer;
@@ -3199,7 +3317,7 @@ begin
     Result:=FStreams.Objects[i] as TStream;
 end;
 
-function TStreamResolver.FindStreamReader(const AName: string; ScanIncludes : Boolean) : TLineReader;
+function TStreamResolver.FindStreamReader(const AName: String; ScanIncludes : Boolean) : TLineReader;
 
 Var
   S : TStream;
@@ -3222,17 +3340,17 @@ begin
     end;
 end;
 
-function TStreamResolver.FindSourceFile(const AName: string): TLineReader;
+function TStreamResolver.FindSourceFile(const AName: String): TLineReader;
 
 begin
   Result:=FindStreamReader(AName,False);
 end;
 
-function TStreamResolver.FindIncludeFile(const AName: string): TLineReader;
+function TStreamResolver.FindIncludeFile(const AName: String): TLineReader;
 begin
   Result:=FindStreamReader(AName,True);
 end;
-{$endif}
+
 
 { ---------------------------------------------------------------------
   TPascalScanner
@@ -3287,7 +3405,8 @@ begin
   inherited Destroy;
 end;
 
-procedure TPascalScanner.RegisterResourceHandler(aExtension: String; aHandler: TResourceHandler);
+procedure TPascalScanner.RegisterResourceHandler(aExtension: String;
+  const aHandler: TResourceHandler);
 
 Var
   Idx: Integer;
@@ -3307,14 +3426,47 @@ begin
   FResourceHandlers[Idx].handler:=aHandler;
 end;
 
-procedure TPascalScanner.RegisterResourceHandler(aExtensions: array of String; aHandler: TResourceHandler);
+procedure TPascalScanner.RegisterResourceHandler(const aExtensions: array of String;
+  const aHandler: TResourceHandler);
 
 Var
-  S : String;
+  S : TPasScannerString;
 
 begin
   For S in aExtensions do
     RegisterResourceHandler(S,aHandler);
+end;
+
+procedure TPascalScanner.RegisterDirectiveHandler(const aDirective: String;
+  const aHandler: TPScannerDirectiveEvent);
+var
+  i: Integer;
+  Item: TDirectiveHandlerRecord;
+begin
+  if aDirective='' then exit;
+  i:=IndexOfDirectiveHandle(aDirective,true);
+  if (i<length(FDirectiveHandles))
+      and (CompareText(aDirective,FDirectiveHandles[i].Directive)=0) then
+    begin
+    // replace
+    FDirectiveHandles[i].Directive:=aDirective;
+    FDirectiveHandles[i].Handler:=aHandler;
+    end
+  else
+    begin
+    Item.Directive:=aDirective;
+    Item.Handler:=aHandler;
+    Insert(Item,FDirectiveHandles,i);
+    end;
+end;
+
+procedure TPascalScanner.RegisterDirectiveHandler(const aDirectives: TStringDynArray;
+  const aHandler: TPScannerDirectiveEvent);
+var
+  S: String;
+begin
+  for S in aDirectives do
+    RegisterDirectiveHandler(S,aHandler);
 end;
 
 procedure TPascalScanner.ClearFiles;
@@ -3348,15 +3500,15 @@ begin
   FCurToken:=AValue;
 end;
 
-procedure TPascalScanner.SetCurTokenString(const AValue: string);
+procedure TPascalScanner.SetCurTokenString(const AValue: TPasScannerString);
 begin
   FCurTokenString:=AValue;
 end;
 
-procedure TPascalScanner.OpenFile(AFilename: string);
+procedure TPascalScanner.OpenFile(AFilename: TPasScannerString);
 
 Var
-  aPath : String;
+  aPath : TPasScannerString;
 
 begin
   Clearfiles;
@@ -3382,12 +3534,30 @@ begin
     DoLog(mtInfo,nLogLineNumber,SLogLineNumber,[CurRow],True);
 end;
 
-function TPascalScanner.FormatPath(const aFilename: string): string;
+function TPascalScanner.FormatPath(const aFilename: String): String;
 begin
   if Assigned(OnFormatPath) then
     Result:=OnFormatPath(aFilename)
   else
     Result:=aFilename;
+end;
+
+function TPascalScanner.FormatSrcPos(const p: TPasSourcePos): String;
+begin
+  Result:=FormatPath(p.FileName)+'('+IntToStr(p.Row);
+  if p.Column>0 then
+    Result:=Result+','+IntToStr(p.Column);
+  Result:=Result+')';
+end;
+
+function TPascalScanner.FormatCurrentSrcPos: String;
+begin
+  Result:=FormatSrcPos(CurSourcePos);
+end;
+
+procedure TPascalScanner.DisablePackageTokens;
+begin
+  FNonTokens:=FNonTokens+[tkContains,tkPackage,tkrequires];
 end;
 
 procedure TPascalScanner.SetNonToken(aToken: TToken);
@@ -3410,7 +3580,7 @@ begin
   Exclude(FTokenOptions,aOption);
 end;
 
-function TPascalScanner.CheckToken(aToken: TToken; const ATokenString: String): TToken;
+function TPascalScanner.CheckToken(aToken: TToken; const ATokenString: TPasScannerString): TToken;
 begin
   Result:=atoken;
   if (aToken=tkIdentifier) and (CompareText(aTokenString,'operator')=0) then
@@ -3498,10 +3668,10 @@ function TPascalScanner.ReadNonPascalTillEndToken(StopAtLineEnd: boolean
   ): TToken;
 
 var
-  StartPos: {$ifdef UsePChar}PChar{$else}integer{$endif};
+  StartPos: {$ifdef UsePChar}PAnsiChar{$else}integer{$endif};
   {$ifndef UsePChar}
   var
-    s: string;
+    s: TPasScannerString;
     l: integer;
   {$endif}
 
@@ -3520,7 +3690,7 @@ var
       {$ifdef UsePChar}
       OldLen:=length(FCurTokenString);
       SetLength(FCurTokenString,OldLen+AddLen);
-      Move(StartPos^,PChar(PChar(FCurTokenString)+OldLen)^,AddLen);
+      Move(StartPos^,PAnsiChar(PAnsiChar(FCurTokenString)+OldLen)^,AddLen);
       {$else}
       FCurTokenString:=FCurTokenString+copy(FCurLine,StartPos,AddLen);
       {$endif}
@@ -3584,7 +3754,7 @@ begin
         begin
         // Notes:
         // 1. Eventually there should be a mechanism to override parsing non-pascal
-        // 2. By default skip Pascal string literals, as this is more intuitive
+        // 2. By default skip Pascal TPasScannerString literals, as this is more intuitive
         //    in IDEs with Pascal highlighters
         inc(FTokenPos);
         repeat
@@ -3603,7 +3773,7 @@ begin
             end;
           #10,#13:
             begin
-            // string literal missing closing apostroph
+            // TPasScannerString literal missing closing apostroph
             break;
             end
           else
@@ -3690,7 +3860,7 @@ begin
         else
           begin
           // skip identifier
-          if FTokenPos[0]='@' then
+          if {$ifdef UsePChar}FTokenPos[0]='@'{$ELSE} (FTokenPos<=l) and (s[FTokenPos]='@'){$ENDIF} then
             inc(FTokenPos);
           while {$ifdef UsePChar}FTokenPos[0] in IdentChars{$else}(FTokenPos<=l) and (s[FTokenPos] in IdentChars){$endif} do
             inc(FTokenPos);
@@ -3703,14 +3873,19 @@ begin
   until false;
 end;
 
-procedure TPascalScanner.Error(MsgNumber: integer; const Msg: string);
+procedure TPascalScanner.ErrorAt(MsgNumber: integer; const Msg: TPasScannerString; aRow, ACol: Integer);
 begin
   SetCurMsg(mtError,MsgNumber,Msg,[]);
   raise EScannerError.CreateFmt('%s(%d,%d) Error: %s',
-    [FormatPath(CurFilename),CurRow,CurColumn,FLastMsg]);
+    [FormatPath(CurFilename),aRow,aCol,FLastMsg]);
 end;
 
-procedure TPascalScanner.Error(MsgNumber: integer; const Fmt: string;
+procedure TPascalScanner.Error(MsgNumber: integer; const Msg: TPasScannerString);
+begin
+  ErrorAt(MsgNumber,Msg,CurRow,CurColumn);
+end;
+
+procedure TPascalScanner.Error(MsgNumber: integer; const Fmt: TPasScannerString;
   Args: array of const);
 begin
   SetCurMsg(mtError,MsgNumber,Fmt,Args);
@@ -3718,10 +3893,10 @@ begin
     [FormatPath(CurFilename),CurRow,CurColumn,FLastMsg]);
 end;
 
-function TPascalScanner.GetMultiLineStringLineEnd(aReader : TLineReader) : string;
+function TPascalScanner.GetMultiLineStringLineEnd(aReader : TLineReader) : TPasScannerString;
 
 Var
-  aLF : String;
+  aLF : TPasScannerString;
   aStyle: TEOLStyle;
 
 
@@ -3742,10 +3917,10 @@ end;
 
 function TPascalScanner.DoFetchTextToken:TToken;
 var
-  TokenStart, StartP : {$ifdef UsePChar}PChar{$else}integer{$endif};
+  TokenStart, StartP : {$ifdef UsePChar}PAnsiChar{$else}integer{$endif};
   SectionLength : Integer;
   {$ifndef UsePChar}
-  s: String;
+  s: TPasScannerString;
   l: integer;
   {$endif}
 begin
@@ -3820,17 +3995,100 @@ begin
           else
             Result := tkString;
         end;
+      '`':
+        if (msMultiLineStrings in CurrentModeSwitches) then
+        begin
+          // Backtick string as continuation: #$41` text `#$42
+          // Flush raw segment before the backtick
+          SectionLength := FTokenPos - StartP;
+          {$ifdef UsePChar}
+          if SectionLength > 0 then
+          begin
+            SetLength(FCurTokenString, Length(FCurTokenString) + SectionLength);
+            Move(StartP^, FCurTokenString[Length(FCurTokenString) - SectionLength + 1], SectionLength);
+          end;
+          {$else}
+          if SectionLength > 0 then
+            FCurTokenString := FCurTokenString + copy(s, StartP, SectionLength);
+          {$endif}
+          // Convert backtick content to apostrophe-delimited form
+          FCurTokenString := FCurTokenString + '''';
+          Inc(FTokenPos); // skip opening backtick
+          {$ifndef UsePChar}
+          while FTokenPos <= l do
+          begin
+            case s[FTokenPos] of
+              '`':
+                if (FTokenPos < l) and (s[FTokenPos+1] = '`') then
+                begin
+                  // escaped backtick ``
+                  FCurTokenString := FCurTokenString + '`';
+                  Inc(FTokenPos, 2);
+                end
+                else
+                begin
+                  // closing backtick
+                  Inc(FTokenPos);
+                  break;
+                end;
+              '''':
+                begin
+                  // escape apostrophe inside backtick content
+                  FCurTokenString := FCurTokenString + '''''';
+                  Inc(FTokenPos);
+                end;
+            else
+              FCurTokenString := FCurTokenString + s[FTokenPos];
+              Inc(FTokenPos);
+            end;
+          end;
+          {$else}
+          while FTokenPos[0] <> #0 do
+          begin
+            case FTokenPos[0] of
+              '`':
+                if FTokenPos[1] = '`' then
+                begin
+                  FCurTokenString := FCurTokenString + '`';
+                  Inc(FTokenPos, 2);
+                end
+                else
+                begin
+                  Inc(FTokenPos);
+                  break;
+                end;
+              '''':
+                begin
+                  FCurTokenString := FCurTokenString + '''''';
+                  Inc(FTokenPos);
+                end;
+            else
+              FCurTokenString := FCurTokenString + FTokenPos[0];
+              Inc(FTokenPos);
+            end;
+          end;
+          {$endif}
+          FCurTokenString := FCurTokenString + '''';
+          // Reset StartP so subsequent segments are captured correctly
+          StartP := FTokenPos;
+          Result := tkString;
+        end
+        else
+          Break;
     else
       Break;
     end;
   until false;
   SectionLength := FTokenPos - StartP;
   {$ifdef UsePChar}
-  SetLength(FCurTokenString, SectionLength);
   if SectionLength > 0 then
-    Move(StartP^, FCurTokenString[1], SectionLength);
+  begin
+    SetLength(FCurTokenString, Length(FCurTokenString) + SectionLength);
+    Move(StartP^, FCurTokenString[Length(FCurTokenString) - SectionLength + 1], SectionLength);
+  end;
   {$else}
-  FCurTokenString:=FCurTokenString+copy(FCurLine,StartP,SectionLength);
+  if SectionLength > 0 then
+    FCurTokenString := FCurTokenString + copy(FCurLine, StartP, SectionLength);
   {$endif}
 end;
 
@@ -3839,78 +4097,70 @@ function TPascalScanner.DoFetchMultilineTextToken:TToken;
 
 var
   StartPos: Integer;
-  TokenStart: {$ifdef UsePChar}PChar{$else}integer{$endif};
+  TokenStart: {$ifdef UsePChar}PAnsiChar{$else}integer{$endif};
   {$ifdef UsePChar}
   OldLength: integer;
   {$else}
-  s: String;
+  s: TPasScannerString;
   l: integer;
   {$endif}
-  Apostroph, CurLF : String;
+  Apostroph, CurLF : TPasScannerString;
 
-  {$IFDEF UsePChar}
-  procedure Add(StartP: PChar; Cnt: integer);
+  procedure Add(const S: TPasScannerString);
   begin
-    if Cnt=0 then exit;
-    if OldLength+Cnt>length(FCurTokenString) then
-      SetLength(FCurTokenString,length(FCurTokenString)*2+128);
-    Move(StartP^,FCurTokenString[OldLength+1],Cnt);
-    inc(OldLength,Cnt);
-  end;
-  {$ELSE}
-  procedure Add(const S: string);
-  begin
+    if S='' then exit;
     FCurTokenString:=FCurTokenString+S;
+    {$IFDEF UsePChar}
+    OldLength:=length(FCurTokenString);
+    {$ENDIF}
   end;
-  {$ENDIF}
 
   Procedure AddToCurString(addLF : Boolean);
   var
     i : Integer;
+    {$ifdef UsePChar}
+    TokenOffset, Cnt: Integer;
+    {$endif}
 
   begin
-    i:=MultilineStringsTrimLeft;
-    if I=-1 then
-      // auto unindent -> use line indent of first line
-      I:=StartPos+1;
-    if I>0 then
+    // Start of line, take indent into account
+    if ({$ifdef UsePChar}TokenStart=PAnsichar(FCurLine){$ELSE}Tokenstart=1{$ENDIF}) then
       begin
-      // fixed unindent -> remove up to I leading spaces
-      While ({$ifdef UsePChar} TokenStart^{$ELSE}FCurLine[TokenStart]{$ENDIF} in [' ',#9]) and (TokenStart<=FTokenPos) and (I>0) do
+      i:=MultilineStringsTrimLeft;
+      if I=-1 then
+        // auto unindent -> use line indent of first line
+        I:=StartPos+1;
+      if I>0 then
         begin
-        Inc(TokenStart);
-        Dec(I);
+        // fixed unindent -> remove up to I leading spaces
+        While ({$ifdef UsePChar} TokenStart^{$ELSE}FCurLine[TokenStart]{$ENDIF} in [' ',#9]) and (TokenStart<=FTokenPos) and (I>0) do
+          begin
+          Inc(TokenStart);
+          Dec(I);
+          end;
+        end
+      else if I=-2 then
+        begin
+        // no indent -> remove all leading spaces
+        While ({$ifdef UsePChar} TokenStart^{$ELSE}FCurLine[TokenStart]{$ENDIF} in [' ',#9]) and (TokenStart<=FTokenPos) do
+          Inc(TokenStart);
         end;
-      end
-    else if I=-2 then
-      begin
-      // no indent -> remove all leading spaces
-      While ({$ifdef UsePChar} TokenStart^{$ELSE}FCurLine[TokenStart]{$ENDIF} in [' ',#9]) and (TokenStart<=FTokenPos) do
-        Inc(TokenStart);
       end;
-
     {$ifdef UsePChar}
-    Add(TokenStart,FTokenPos - TokenStart);
+    TokenOffset := TokenStart - PAnsiChar(FCurLine) + 1;
+    Cnt := FTokenPos - TokenStart;
+    if Cnt > 0 then
+      Add(copy(FCurLine, TokenOffset, Cnt));
     {$else}
     Add(copy(FCurLine,TokenStart,FTokenPos - TokenStart));
     {$ENDIF}
     if addLF then
-      begin
-      {$IFDEF UsePChar}
-      Add(@CurLF[1],length(CurLF));
-      {$ELSE}
       Add(CurLF);
-      {$endif}
-      end;
   end;
 
   procedure AddApostroph;
   begin
-    {$IFDEF UsePChar}
-    Add(@Apostroph[1],length(Apostroph));
-    {$ELSE}
     Add(Apostroph);
-    {$ENDIF}
   end;
 
 begin
@@ -3922,7 +4172,7 @@ begin
   StartPos:=FTokenPos;
   {$ELSE}
   OldLength:=0;
-  StartPos:=FTokenPos-PChar(FCurLine);
+  StartPos:=FTokenPos-PAnsiChar(FCurLine);
   {$endif}
   Apostroph:='''';
   CurLF:=GetMultiLineStringLineEnd(FCurSourceFile);
@@ -3939,7 +4189,7 @@ begin
         if {$ifdef UsePChar}FTokenPos[0] in Letters{$else}(FTokenPos<l) and (s[FTokenPos] in Letters){$endif} then
           Inc(FTokenPos);
         {$IFDEF UsePChar}
-        Add(TokenStart,FTokenPos-TokenStart);
+        Add(copy(FCurLine, TokenStart - PAnsiChar(FCurLine) + 1, FTokenPos-TokenStart));
         {$ELSE}
         Add(copy(FCurLine,TokenStart,FTokenPos-TokenStart));
         {$ENDIF}
@@ -3963,7 +4213,7 @@ begin
             Inc(FTokenPos);
           until {$ifdef UsePChar}not (FTokenPos[0] in Digits){$else}(FTokenPos>l) or not (s[FTokenPos] in Digits){$endif};
         {$IFDEF UsePChar}
-        Add(TokenStart,FTokenPos-TokenStart);
+        Add(copy(FCurLine, TokenStart - PAnsiChar(FCurLine) + 1, FTokenPos-TokenStart));
         {$ELSE}
         Add(copy(FCurLine,TokenStart,FTokenPos-TokenStart));
         {$ENDIF}
@@ -3996,7 +4246,7 @@ begin
               s:=FCurLine;
               l:=length(s);
               {$ELSE}
-              FTokenPos:=PChar(FCurLine);
+              FTokenPos:=PAnsiChar(FCurLine);
               {$endif}
               TokenStart:=FTokenPos;
               end
@@ -4021,18 +4271,22 @@ begin
                   end;
               '''':
                 begin
-                // convert apostroph to two apostrophs
+                // convert apostroph to two apostrophes
                 Inc(FTokenPos);
                 AddToCurString(false);
                 AddApostroph;
                 TokenStart := FTokenPos;
+                // Re-enter loop without extra Inc(FTokenPos) so that
+                // the character after the apostrophe (possibly closing
+                // backtick or end-of-line) is processed correctly.
+                continue;
                 end;
               end;
               Inc(FTokenPos);
               end;
           end;
           Inc(FTokenPos);
-          Result := tkString;
+          Result := tkStringMultiLine;
         end;
     else
       {$IFDEF UsePChar}
@@ -4041,6 +4295,168 @@ begin
       Break;
     end;
   until false;
+end;
+
+function TPascalScanner.DoFetchDelphiMultiLineTextToken(QuoteLen : Integer): TToken;
+// works similar to DoFetchTextToken, except changes indentation
+
+var
+  s: TPasScannerString;
+  CurLF : TPasScannerString;
+  Lines : Array of String;
+  l, I, SpaceCount, QuoteCount, WhiteSpaces, CurLineCount , Cnt: Integer;
+  HasNonWhiteSpace: Boolean;
+
+  Procedure AddToLines;
+
+  var
+    L : Integer;
+
+  begin
+    L:=Length(Lines);
+    if CurLineCount=L then
+      SetLength(Lines,L*2+10);
+    Lines[CurLineCount]:=FCurLine;
+    Inc(CurLineCount);
+  end;
+
+  Function LocalFetchLine : Boolean;
+
+  begin
+    // Writeln('Curtokenstring : >>',FCurTokenString,'<<');
+    Result:=Self.FetchLine;
+    if not Result then
+      Error(nErrOpenString,SErrOpenString);
+    // Writeln('Current line is now : ',FCurLine);
+    {$IFDEF UsePChar}
+    FTokenPos:=PAnsiChar(FCurLine);
+    {$ELSE}
+    s:=FCurLine;
+    l:=length(s);
+    {$ENDIF}
+  end;
+
+begin
+  Lines:=[];
+  CurLineCount:=0;
+  Result:=tkEOF;
+  FCurTokenString := '';
+  // On entry, we know that the current position is the start of the multiline quoted string.
+  // the strings are added as-is.
+  repeat
+    QuoteCount:=0;
+    WhiteSpaces:=0;
+    if not LocalFetchLine then
+      exit(tkEOF);
+    // Skip whitespace, but count, as the last line defines the unindented WhiteSpaces.
+    {$IFDEF USEPCHAR}
+    While (FTokenPos[0]=' ') do
+    {$ELSE}
+    While (FTokenPos<=l) and (s[FTokenPos]=' ') do
+    {$ENDIF}
+      begin
+      Inc(FTokenPos);
+      Inc(WhiteSpaces);
+      end;
+    // check for the end sequence of quotes
+    HasNonWhiteSpace:=false;
+    repeat
+      {$IFDEF USEPCHAR}
+      case FTokenPos[0] of
+      #0:
+        break;
+      {$ELSE}
+      if FTokenPos>l then
+        break;
+      case s[FTokenPos] of
+      {$ENDIF}
+      SingleQuote:
+        begin
+          repeat
+            inc(FTokenPos);
+            inc(QuoteCount);
+          {$IFDEF UsePChar}
+          until (FTokenPos[0]<>SingleQuote) or (QuoteCount=QuoteLen);
+          {$ELSE}
+          until (FTokenPos>l) or (s[FTokenPos]<>SingleQuote) or (QuoteCount=QuoteLen);
+          {$ENDIF}
+          if QuoteCount=QuoteLen then
+            begin
+            if HasNonWhiteSpace then
+              Error(nErrMultilineNonWhiteSpaceBeforeClosing,sErrMultilineNonWhiteSpaceBeforeClosing);
+            break;
+            end;
+          HasNonWhiteSpace:=true;
+        end;
+      else
+        HasNonWhiteSpace:=true;
+        inc(FTokenPos);
+      end;
+    until false;
+    if QuoteCount<>QuoteLen then
+      AddToLines // another multiline
+    else
+      break;
+  Until false;
+  // Note: the last line defines the needed whitespaces of all lines
+
+  CurLF:=GetMultiLineStringLineEnd(FCurSourceFile);
+
+  // unindent
+  Cnt:=0;
+  For I:=0 to CurLineCount-1 do
+    begin
+    // cut whitespaces
+    s:=Lines[I];
+    SpaceCount:=0;
+    l:=length(s);
+    while (SpaceCount<l) and (s[SpaceCount+1]=' ') do
+      inc(SpaceCount);
+    if SpaceCount=l then
+      begin
+      // empty line
+      s:='';
+      end
+    else if SpaceCount<WhiteSpaces then
+      ErrorAt(nErrInvalidIndent,SErrInvalidIndent,CurRow-CurLineCount+I,SpaceCount)
+    else
+      s:=copy(s,WhiteSpaces+1,l);
+    Lines[I]:=s;
+    if I>0 then
+      inc(Cnt,length(CurLF));
+    inc(Cnt,length(s));
+    end;
+
+  // build final string
+  {$IFNDEF PAS2JS}
+  SetLength(FCurTokenString,Cnt);
+  {$ENDIF}
+  Cnt:=0;
+  For I:=0 to CurLineCount-1 do
+    begin
+    s:=Lines[I];
+    l:=length(s);
+    if l>0 then
+      begin
+      {$IFDEF PAS2JS}
+      FCurTokenString:=FCurTokenString+S;
+      {$ELSE}
+      System.Move(s[1],FCurTokenString[Cnt+1],l);
+      inc(Cnt,l);
+      {$ENDIF}
+      end;
+    if I<CurLineCount-1 then
+      begin
+      {$IFDEF PAS2JS}
+      FCurTokenString:=FCurTokenString+CurLF;
+      {$ELSE}
+      l:=length(CurLF);
+      System.Move(CurLF[1],FCurTokenString[Cnt+1],l);
+      inc(Cnt,l);
+      {$ENDIF}
+      end;
+    end;
+  Result:=tkStringMultiLine;
 end;
 
 procedure TPascalScanner.PushStackItem;
@@ -4066,11 +4482,11 @@ begin
   FCurColumnOffset := 1;
 end;
 
-procedure TPascalScanner.HandleIncludeFile(Param: String);
+procedure TPascalScanner.HandleIncludeFile(Param: TPasScannerString);
 
 var
   NewSourceFile: TLineReader;
-  aFileName : string;
+  aFileName : TPasScannerString;
 
 begin
   Param:=Trim(Param);
@@ -4102,11 +4518,11 @@ begin
     DoLog(mtInfo,nLogOpeningFile,SLogOpeningFile,[FormatPath(FCurFileName)],True);
 end;
 
-procedure TPascalScanner.HandleIncludeString(Param: String);
+procedure TPascalScanner.HandleIncludeString(Param: TPasScannerString);
 
 var
   NewSourceFile: TLineReader;
-  aString,aLine: string;
+  aString,aLine: TPasScannerString;
 
 begin
   Param:=Trim(Param);
@@ -4138,10 +4554,10 @@ begin
   FCurToken:=tkString;
 end;
 
-procedure TPascalScanner.HandleResource(Param: string);
+procedure TPascalScanner.HandleResource(Param: TPasScannerString);
 
 Var
-  Ext,aFullFileName,aFilename,aOptions : String;
+  Ext,aFullFileName,aFilename,aOptions : TPasScannerString;
   P: Integer;
   H : TResourceHandler;
   OptList : TStrings;
@@ -4159,11 +4575,14 @@ begin
     end;
   Ext:=ExtractFileExt(aFileName);
   // Construct & find filename
-  If (ChangeFileExt(aFileName,'')='*') then
+  If (ChangeFileExt(aFileName,RTLString(''))='*') then
     aFileName:=ChangeFileExt(ExtractFileName(CurFilename),Ext);
   aFullFileName:=FileResolver.FindResourceFileName(aFileName);
-  if aFullFileName='' then
-    Error(nResourceFileNotFound,SErrResourceFileNotFound,[aFileName]);
+  if (aFullFileName='') then
+    if (po_WarnResourceNotFound in Options) then
+      Self.DoLog(mtWarning,nResourceFileNotFound,SErrResourceFileNotFound,[aFileName])
+    else
+      Error(nResourceFileNotFound,SErrResourceFileNotFound,[aFileName]);
   // Check if we can find a handler.
   if Ext<>'' then
     Ext:=Copy(Ext,2,Length(Ext)-1);
@@ -4189,7 +4608,7 @@ begin
   end;
 end;
 
-Function TPascalScanner.MakeLibAlias(const LibFileName : String): string;
+function TPascalScanner.MakeLibAlias(const LibFileName: TPasScannerString): TPasScannerString;
 
 Var
   p,l,d : integer;
@@ -4212,14 +4631,14 @@ begin
       Result[p]:='_';
 end;
 
-procedure TPascalScanner.HandleLinkLib(Param: string);
+procedure TPascalScanner.HandleLinkLib(Param: TPasScannerString);
 
 Var
   P,L : Integer;
-  LibFileName,LibAlias,LibOptions : string;
+  LibFileName,LibAlias,LibOptions : TPasScannerString;
   IsHandled: Boolean;
 
-  Function NextWord : String;
+  Function NextWord : TPasScannerString;
 
   Var
     lp : integer;
@@ -4256,11 +4675,11 @@ begin
     DoLog(mtNote,nWarnIgnoringLinkLib,SWarnIgnoringLinkLib,[LibFileName,LibAlias,LibOptions]);
 end;
 
-procedure TPascalScanner.HandleOptimizations(Param: string);
+procedure TPascalScanner.HandleOptimizations(Param: TPasScannerString);
 // $optimization A,B-,C+
 var
   p, StartP, l: Integer;
-  OptName, Value: String;
+  OptName, Value: TPasScannerString;
 begin
   p:=1;
   l:=length(Param);
@@ -4296,7 +4715,7 @@ begin
     end;
 end;
 
-procedure TPascalScanner.DoHandleOptimization(OptName, OptValue: string);
+procedure TPascalScanner.DoHandleOptimization(OptName, OptValue: TPasScannerString);
 begin
   // default: skip any optimization directive
   if OptName='' then ;
@@ -4323,9 +4742,9 @@ begin
 //  Writeln(Result,Curtoken);
 end;
 
-procedure TPascalScanner.HandleInterfaces(const Param: String);
+procedure TPascalScanner.HandleInterfaces(const Param: TPasScannerString);
 var
-  s, NewValue: String;
+  s, NewValue: TPasScannerString;
   p: SizeInt;
 begin
   if not (vsInterfaces in AllowedValueSwitches) then
@@ -4350,11 +4769,11 @@ begin
   CurrentValueSwitch[vsInterfaces]:=NewValue;
 end;
 
-procedure TPascalScanner.HandleWarn(Param: String);
+procedure TPascalScanner.HandleWarn(Param: TPasScannerString);
 // $warn identifier on|off|default|error
 var
   p, StartPos: Integer;
-  Identifier, Value: String;
+  Identifier, Value: TPasScannerString;
 begin
   p:=1;
   while (p<=length(Param)) and (Param[p] in [' ',#9]) do inc(p);
@@ -4369,7 +4788,7 @@ begin
 end;
 
 procedure TPascalScanner.HandleWarnIdentifier(Identifier,
-  Value: String);
+  Value: TPasScannerString);
 var
   Number: LongInt;
   State: TWarnMsgState;
@@ -4413,11 +4832,11 @@ begin
     end;
 end;
 
-procedure TPascalScanner.HandleDefine(Param: String);
+procedure TPascalScanner.HandleDefine(Param: TPasScannerString);
 
 Var
   Index : Integer;
-  MName,MValue : String;
+  MName,MValue : TPasScannerString;
 
 begin
   // Param is already trimmed on entry.
@@ -4433,9 +4852,9 @@ begin
     end;
 end;
 
-procedure TPascalScanner.HandleDispatchField(Param: String; vs: TValueSwitch);
+procedure TPascalScanner.HandleDispatchField(Param: TPasScannerString; vs: TValueSwitch);
 var
-  NewValue: String;
+  NewValue: TPasScannerString;
 begin
   if not (vs in AllowedValueSwitches) then
     Error(nWarnIllegalCompilerDirectiveX,sWarnIllegalCompilerDirectiveX,[ValueSwitchNames[vs]]);
@@ -4453,7 +4872,7 @@ begin
   CurrentValueSwitch[vs]:=NewValue;
 end;
 
-procedure TPascalScanner.HandleError(Param: String);
+procedure TPascalScanner.HandleError(Param: TPasScannerString);
 begin
   if po_StopOnErrorDirective in Options then
     Error(nUserDefined, SUserDefined,[Param])
@@ -4461,10 +4880,10 @@ begin
     DoLog(mtWarning,nUserDefined,SUserDefined+' error',[Param]);
 end;
 
-procedure TPascalScanner.HandleMessageDirective(Param: String);
+procedure TPascalScanner.HandleMessageDirective(Param: TPasScannerString);
 var
   p: Integer;
-  Kind: String;
+  Kind: TPasScannerString;
   MsgType: TMessageType;
 begin
   if Param='' then exit;
@@ -4490,12 +4909,12 @@ begin
     DoLog(MsgType,nUserDefined,SUserDefined,[Param]);
 end;
 
-procedure TPascalScanner.HandleUnDefine(Param: String);
+procedure TPascalScanner.HandleUnDefine(Param: TPasScannerString);
 begin
   UnDefine(GetMacroName(Param));
 end;
 
-function TPascalScanner.HandleInclude(const Param: String): TToken;
+function TPascalScanner.HandleInclude(const Param: TPasScannerString): TToken;
 
 begin
   Result:=tkComment;
@@ -4509,7 +4928,7 @@ begin
     HandleIncludeFile(Param);
 end;
 
-procedure TPascalScanner.HandleMode(const Param: String);
+procedure TPascalScanner.HandleMode(const Param: TPasScannerString);
 
   procedure SetMode(const LangMode: TModeSwitch;
     const NewModeSwitches: TModeSwitches; IsDelphi: boolean;
@@ -4546,7 +4965,7 @@ procedure TPascalScanner.HandleMode(const Param: String);
   end;
 
 Var
-  P : String;
+  P : TPasScannerString;
 begin
   if SkipGlobalSwitches then
     begin
@@ -4604,12 +5023,12 @@ begin
   end;
 end;
 
-procedure TPascalScanner.HandleModeSwitch(const Param: String);
+procedure TPascalScanner.HandleModeSwitch(const Param: TPasScannerString);
 // $modeswitch param
 // name, name-, name+, name off, name on, name- comment, name on comment
 Var
   MS : TModeSwitch;
-  MSN,PM : String;
+  MSN,PM : TPasScannerString;
   p : Integer;
   Enable: Boolean;
 
@@ -4686,9 +5105,9 @@ begin
   Inc(PPSkipStackIndex);
 end;
 
-procedure TPascalScanner.HandleIFDEF(const AParam: String);
+procedure TPascalScanner.HandleIFDEF(const AParam: TPasScannerString);
 var
-  aName: String;
+  aName: TPasScannerString;
 begin
   PushSkipMode;
   if PPIsSkipping then
@@ -4711,9 +5130,9 @@ begin
     end;
 end;
 
-procedure TPascalScanner.HandleIFNDEF(const AParam: String);
+procedure TPascalScanner.HandleIFNDEF(const AParam: TPasScannerString);
 var
-  aName: String;
+  aName: TPasScannerString;
 begin
   PushSkipMode;
   if PPIsSkipping then
@@ -4736,7 +5155,7 @@ begin
     end;
 end;
 
-procedure TPascalScanner.HandleIFOPT(const AParam: String);
+procedure TPascalScanner.HandleIFOPT(const AParam: TPasScannerString);
 
 begin
   PushSkipMode;
@@ -4762,7 +5181,7 @@ begin
     end;
 end;
 
-procedure TPascalScanner.HandleIF(const AParam: String; aIsMac: Boolean);
+procedure TPascalScanner.HandleIF(const AParam: TPasScannerString; aIsMac: Boolean);
 
 begin
   PushSkipMode;
@@ -4787,7 +5206,7 @@ begin
     end;
 end;
 
-procedure TPascalScanner.HandleELSEIF(const AParam: String; aIsMac : Boolean);
+procedure TPascalScanner.HandleELSEIF(const AParam: TPasScannerString; aIsMac : Boolean);
 begin
   if PPSkipStackIndex = 0 then
     Error(nErrInvalidPPElse,sErrInvalidPPElse);
@@ -4813,7 +5232,7 @@ begin
     end;
 end;
 
-procedure TPascalScanner.HandleELSE(const AParam: String);
+procedure TPascalScanner.HandleELSE(const AParam: TPasScannerString);
 
 begin
   if AParam='' then;
@@ -4826,7 +5245,7 @@ begin
 end;
 
 
-procedure TPascalScanner.HandleENDIF(const AParam: String);
+procedure TPascalScanner.HandleENDIF(const AParam: TPasScannerString);
 
 begin
   if AParam='' then;
@@ -4837,10 +5256,10 @@ begin
   PPIsSkipping := PPIsSkippingStack[PPSkipStackIndex];
 end;
 
-function TPascalScanner.HandleDirective(const ADirectiveText: String): TToken;
+function TPascalScanner.HandleDirective(const ADirectiveText: TPasScannerString): TToken;
 
 Var
-  Directive,Param : String;
+  Directive,Param : TPasScannerString;
   P : Integer;
   IsFlowControl,Handled: Boolean;
 
@@ -4879,13 +5298,13 @@ begin
      HandleIFNDEF(Param);
   'IFOPT':
      HandleIFOPT(Param);
-  'IFC',   
+  'IFC',
   'IF':
      HandleIF(Param,UpperCase(Directive)='IFC');
   'ELIFC',
   'ELSEIF':
      HandleELSEIF(Param,UpperCase(Directive)='ELIFC');
-  'ELSEC',   
+  'ELSEC',
   'ELSE':
      HandleELSE(Param);
   'ENDC',
@@ -4972,6 +5391,8 @@ begin
         DoBoolDirective(bsRangeChecks);
       'SCOPEDENUMS':
         DoBoolDirective(bsScopedEnums);
+      'TEXTBLOCK':
+        HandleTextBlock(Param);
       'TYPEDADDRESS':
         DoBoolDirective(bsTypedAddress);
       'TYPEINFO':
@@ -5004,7 +5425,7 @@ begin
         [Directive]);
 end;
 
-function TPascalScanner.HandleLetterDirective(Letter: char; Enable: boolean): TToken;
+function TPascalScanner.HandleLetterDirective(Letter: AnsiChar; Enable: boolean): TToken;
 var
   bs: TBoolSwitch;
 begin
@@ -5041,10 +5462,10 @@ begin
 end;
 
 procedure TPascalScanner.HandleBoolDirective(bs: TBoolSwitch;
-  const Param: String);
+  const Param: TPasScannerString);
 var
   NewValue: Boolean;
-  
+
 begin
   if CompareText(Param,'on')=0 then
     NewValue:=true
@@ -5065,23 +5486,31 @@ begin
     CurrentBoolSwitches:=CurrentBoolSwitches-[bs];
 end;
 
-procedure TPascalScanner.DoHandleComment(Sender: TObject; const aComment: string);
+procedure TPascalScanner.DoHandleComment(Sender: TObject; const aComment: TPasScannerString);
 begin
   if Assigned(OnComment) then
     OnComment(Sender,aComment);
 end;
 
 procedure TPascalScanner.DoHandleDirective(Sender: TObject; Directive,
-  Param: String; var Handled: boolean);
+  Param: TPasScannerString; var Handled: boolean);
+var
+  i: Integer;
 begin
+  i:=IndexOfDirectiveHandle(Directive);
+  if i>=0 then
+    FDirectiveHandles[i].Handler(Sender,Directive,Param,Handled);
   if Assigned(OnDirective) then
+    begin
     OnDirective(Sender,Directive,Param,Handled);
+    if Handled then exit;
+    end;
 end;
 
-procedure TPascalScanner.HandleMultilineStringTrimLeft(const AParam: String);
+procedure TPascalScanner.HandleMultilineStringTrimLeft(const AParam: TPasScannerString);
 
 Var
-  S : String;
+  S : TPasScannerString;
   i : integer;
 
 begin
@@ -5092,12 +5521,37 @@ begin
     'NONE' : I:=0;
   else
     If not TryStrToInt(S,I) then
-      I:=0;
+      Error(nErrInvalidMultiLineTrimLeft,SErrInvalidMultiLineTrimLeft,[aParam])
+    else if (I<0) or (I>65535) then
+      Error(nErrInvalidMultiLineTrimLeft,SErrInvalidMultiLineTrimLeft,[aParam]);
   end;
   MultilineStringsTrimLeft:=I;
 end;
 
-procedure TPascalScanner.HandleMultilineStringLineEnding(const AParam: string);
+procedure TPascalScanner.HandleTextBlock(const AParam: TPasScannerString);
+
+Var
+  S : TEOLStyle;
+  P : integer;
+  Parm : TPasScannerString;
+
+begin
+  Parm:=UpperCase(Trim(aParam));
+  P:=Pos(' ',Parm);
+  if P>1 then
+    Parm:=Copy(Parm,1,P-1);
+  Case Parm of
+    'CR' : s:=elCR;
+    'LF' : s:=elLF;
+    'CRLF' : s:=elCRLF;
+    'NATIVE' : s:=elPlatform;
+  else
+    Error(nErrInvalidMultiLineLineEnding,sErrInvalidMultiLineLineEnding);
+  end;
+  MultilineStringsEOLStyle:=S;
+end;
+
+procedure TPascalScanner.HandleMultilineStringLineEnding(const AParam: TPasScannerString);
 
 Var
   S : TEOLStyle;
@@ -5119,10 +5573,10 @@ function TPascalScanner.HandleMultilineCommentOldStyle: TToken;
 
 var
   {$ifdef UsePChar}
-  TokenStart: PChar;
+  TokenStart: PAnsiChar;
   OldLength: integer;
-  Ch: AnsiChar;
   LE: String[2];
+  I : Integer;
   {$else}
   TokenStart: Integer;
   s: String;
@@ -5157,14 +5611,14 @@ begin
       begin
       SectionLength:=FTokenPos - TokenStart;
       {$ifdef UsePChar}
-      SetLength(FCurTokenString, OldLength + SectionLength + length(LineEnding)); // Corrected JC
+      SetLength(FCurTokenString, OldLength + SectionLength + length(LE)); // Corrected JC
       if SectionLength > 0 then
         Move(TokenStart^, FCurTokenString[OldLength + 1],SectionLength);
       Inc(OldLength, SectionLength);
-      for Ch in LE do
+      for I:=1 to Length(LE) do
         begin
         Inc(OldLength);
-        FCurTokenString[OldLength] := Ch;
+        FCurTokenString[OldLength] := LE[i];
         end;
       {$else}
       FCurTokenString:=FCurTokenString+copy(FCurLine,TokenStart,SectionLength)+LineEnding; // Corrected JC
@@ -5216,9 +5670,9 @@ function TPascalScanner.HandleMultilineComment: TToken;
 
 var
   {$ifdef UsePChar}
-  TokenStart: PChar;
+  TokenStart: PAnsiChar;
   OldLength: integer;
-  Ch: AnsiChar;
+  I : Integer;
   LE: String[2];
   {$else}
   TokenStart: Integer;
@@ -5244,26 +5698,30 @@ begin
   {$ifdef UsePChar}
   LE:=LineEnding;
   OldLength := 0;
+  {$else}
+  s:=FCurLine;
+  l:=length(FCurLine);
   {$endif}
   NestingLevel := 0;
+
   repeat
     if {$ifdef UsePChar}FTokenPos[0] = #0{$else}FTokenPos>l{$endif} then
       begin
       SectionLength := FTokenPos - TokenStart;
       {$ifdef UsePChar}
-      SetLength(FCurTokenString, OldLength + SectionLength + length(LineEnding)); // Corrected JC
+      SetLength(FCurTokenString, OldLength + SectionLength + length(LE)); // Corrected JC
       if SectionLength > 0 then
         Move(TokenStart^, FCurTokenString[OldLength + 1],SectionLength);
 
       // Corrected JC: Append the correct lineending
       Inc(OldLength, SectionLength);
-      for Ch in LE do
+      for I:=1 to length(LE) do
         begin
           Inc(OldLength);
-          FCurTokenString[OldLength] := Ch;
+          FCurTokenString[OldLength] := LE[i];
         end;
       {$else}
-      FCurTokenString:=FCurTokenString+copy(FCurLine,TokenStart,SectionLength)+LineEnding; // Corrected JC
+      FCurTokenString:=FCurTokenString+copy(S,TokenStart,SectionLength)+LineEnding; // Corrected JC
       {$endif}
       if not FetchLocalLine then
       begin
@@ -5299,7 +5757,7 @@ begin
   {$endif}
   Inc(FTokenPos);
   Result := tkComment;
-  if (Copy(CurTokenString,1,1)='$') then
+  if (length(CurTokenString)>0) and (CurTokenString[1]='$') then
     Result:=HandleDirective(CurTokenString)
   else
     DoHandleComment(Self, CurTokenString)
@@ -5308,13 +5766,13 @@ end;
 function TPascalScanner.DoFetchToken: TToken;
 
 var
-  TokenStart: {$ifdef UsePChar}PChar{$else}integer{$endif};
+  TokenStart: {$ifdef UsePChar}PAnsiChar{$else}integer{$endif};
   i: TToken;
-  SectionLength,  Index: Integer;
+  QuoteLen, SectionLength, Index: Integer;
   {$ifdef UsePChar}
   //
   {$else}
-  s: string;
+  s: TPasScannerString;
   l: integer;
   {$endif}
 
@@ -5339,6 +5797,41 @@ var
     {$endif}
   end;
 
+  {$ifdef UsePChar}
+  Function IsDelphiMultiLine (out QuoteLen : integer): Boolean;
+  var
+    P : PAnsiChar;
+  begin
+    P:=FTokenPos;
+    QuoteLen:=0;
+    While P[0]<>#0 do
+      begin
+      inc(QuoteLen);
+      if P[0]<>SingleQuote then
+        Exit(false);
+      Inc(P);
+      end;
+    Result:=(P[0]=#0) and (QuoteLen>2) and ((QuoteLen mod 2) = 1);
+  end;
+  {$ELSE}
+  Function IsDelphiMultiLine(out Quotelen : integer) : Boolean;
+  var
+    P : Integer;
+  begin
+    P:=FTokenPos;
+    QuoteLen:=0;
+    While (P<=L) do
+      begin
+      inc(QuoteLen);
+      if (S[P]<>SingleQuote) then
+        Exit(false);
+      Inc(P);
+      end;
+    // Accessing single char is more expensive than a copy
+    Result:=(P>L) and (QuoteLen>2) and ((QuoteLen mod 2) = 1);
+  end;
+  {$ENDIF}
+
 begin
   FCurtokenEscaped:=False;
   TokenStart:={$ifdef UsePChar}nil{$else}0{$endif};
@@ -5348,6 +5841,7 @@ begin
       begin
       Result := tkEOF;
       FCurToken := Result;
+      FCurTokenString := '';
       exit;
       end;
   FCurTokenString := '';
@@ -5399,8 +5893,13 @@ begin
             end;
       until not ({$ifdef UsePChar}FTokenPos[0]{$else}s[FTokenPos]{$endif}=#9);
       end;
-    '#', '''':
+    '#':
       Result:=DoFetchTextToken;
+    '''':
+      if (msDelphiMultiLineStrings in CurrentModeSwitches) and IsDelphiMultiLine(Quotelen) then
+        Result:=DoFetchDelphiMultiLineTextToken(Quotelen)
+      else
+        Result:=DoFetchTextToken;
     '`' :
       begin
       If not (msMultiLineStrings in CurrentModeSwitches) then
@@ -5532,7 +6031,7 @@ begin
           Inc(FTokenPos);
           Result:=tkDotDotDot;
           end
-        else  
+        else
           Result := tkDotDot;
         end
       else
@@ -5764,12 +6263,12 @@ end;
 function TPascalScanner.GetCurColumn: Integer;
 begin
   If {$ifdef UsePChar}(FTokenPos<>Nil){$else}FTokenPos>0{$endif} then
-    Result := FTokenPos {$ifdef UsePChar}- PChar(CurLine){$else}-1{$endif} + FCurColumnOffset
+    Result := FTokenPos {$ifdef UsePChar}- PAnsiChar(CurLine){$else}-1{$endif} + FCurColumnOffset
   else
     Result := FCurColumnOffset;
 end;
 
-function TPascalScanner.GetCurrentValueSwitch(V: TValueSwitch): string;
+function TPascalScanner.GetCurrentValueSwitch(V: TValueSwitch): TPasScannerString;
 begin
   Result:=FCurrentValueSwitches[V];
 end;
@@ -5782,6 +6281,19 @@ end;
 function TPascalScanner.GetMacrosOn: boolean;
 begin
   Result:=bsMacro in FCurrentBoolSwitches;
+end;
+
+function TPascalScanner.GetTokenString: TPasTreeString;
+begin
+{$IFDEF PAS2JS}
+  Result:=RawCurTokenString;
+{$ELSE}
+{$IF SIZEOF(Char)=2}
+  Result:=UTF8Decode(RawCurTokenString);
+{$ELSE}
+  Result:=RawCurTokenString;
+{$ENDIF}
+{$ENDIF}
 end;
 
 function TPascalScanner.IndexOfWarnMsgState(Number: integer; InsertPos: boolean
@@ -5813,7 +6325,7 @@ begin
 end;
 
 function TPascalScanner.OnCondEvalFunction(Sender: TCondDirectiveEvaluator;
-  Name, Param: String; out Value: string): boolean;
+  Name, Param: String; out Value: String): boolean;
 begin
   {$IFDEF VerbosePasDirectiveEval}
   writeln('TPascalScanner.OnCondEvalFunction Func="',Name,'" Param="',Param,'"');
@@ -5869,7 +6381,7 @@ procedure TPascalScanner.OnCondEvalLog(Sender: TCondDirectiveEvaluator;
   Args: array of const);
 
 Var
-  Msg : String;
+  Msg : TPasScannerString;
 
 begin
   {$IFDEF VerbosePasDirectiveEval}
@@ -5887,7 +6399,7 @@ begin
 end;
 
 function TPascalScanner.OnCondEvalVar(Sender: TCondDirectiveEvaluator;
-  Name: String; out Value: string): boolean;
+  Name: String; out Value: String): boolean;
 var
   i: Integer;
   M: TMacroDef;
@@ -6004,7 +6516,7 @@ begin
 end;
 
 procedure TPascalScanner.SetCurrentValueSwitch(V: TValueSwitch;
-  const AValue: string);
+  const AValue: TPasScannerString);
 begin
   if not (V in AllowedValueSwitches) then exit;
   if FCurrentValueSwitches[V]=AValue then exit;
@@ -6084,17 +6596,17 @@ begin
 end;
 
 procedure TPascalScanner.DoLog(MsgType: TMessageType; MsgNumber: integer;
-  const Msg: String; SkipSourceInfo: Boolean);
+  const Msg: TPasScannerString; SkipSourceInfo: Boolean);
 begin
   DoLog(MsgType,MsgNumber,Msg,[],SkipSourceInfo);
 end;
 
 procedure TPascalScanner.DoLog(MsgType: TMessageType; MsgNumber: integer;
-  const Fmt: String; Args: array of const;
+  const Fmt: TPasScannerString; Args: array of const;
   SkipSourceInfo: Boolean);
 
 Var
-  Msg : String;
+  Msg : TPasScannerString;
 
 begin
   if IgnoreMsgType(MsgType) then exit;
@@ -6109,6 +6621,7 @@ begin
     FOnLog(Self,Msg);
     end;
 end;
+
 
 procedure TPascalScanner.SetOptions(AValue: TPOptions);
 
@@ -6147,7 +6660,7 @@ begin
   FReadOnlyValueSwitches:=AValue;
 end;
 
-function TPascalScanner.IndexOfResourceHandler(const aExt: string): Integer;
+function TPascalScanner.IndexOfResourceHandler(const aExt: TPasScannerString): Integer;
 
 begin
   Result:=Length(FResourceHandlers)-1;
@@ -6155,7 +6668,7 @@ begin
     Dec(Result);
 end;
 
-function TPascalScanner.FindResourceHandler(const aExt: string): TResourceHandler;
+function TPascalScanner.FindResourceHandler(const aExt: TPasScannerString): TResourceHandler;
 
 Var
   Idx : Integer;
@@ -6168,7 +6681,33 @@ begin
     Result:=FResourceHandlers[Idx].handler;
 end;
 
-function TPascalScanner.ReadIdentifier(const AParam: string): string;
+function TPascalScanner.IndexOfDirectiveHandle(const aDirective: TPasScannerString;
+  ForInsert: boolean): Integer;
+var
+  l, r, m, cmp: Integer;
+begin
+  l:=0;
+  r:=length(FDirectiveHandles)-1;
+  m:=0;
+  while l<=r do begin
+    m:=(l+r) div 2;
+    cmp:=CompareText(aDirective,FDirectiveHandles[m].Directive);
+    if cmp>0 then
+      l:=m+1
+    else if cmp<0 then
+      r:=m-1
+    else
+      exit(m);
+  end;
+  if not ForInsert then exit(-1);
+  Result:=m;
+  if length(FDirectiveHandles)=0 then
+    exit;
+  if cmp>0 then
+    inc(Result);
+end;
+
+function TPascalScanner.ReadIdentifier(const AParam: TPasScannerString): TPasScannerString;
 var
   p, l: Integer;
 begin
@@ -6194,7 +6733,7 @@ begin
   end else
   begin
     FCurLine := CurSourceFile.ReadLine;
-    FTokenPos := {$ifdef UsePChar}PChar(CurLine){$else}1{$endif};
+    FTokenPos := {$ifdef UsePChar}PAnsiChar(CurLine){$else}1{$endif};
     Result := true;
     {$ifdef UseAnsiStrings}
     if (FCurRow = 0)
@@ -6220,7 +6759,7 @@ begin
   end;
 end;
 
-procedure TPascalScanner.AddFile(aFilename: string);
+procedure TPascalScanner.AddFile(aFilename: TPasScannerString);
 var
   i: Integer;
 begin
@@ -6229,7 +6768,7 @@ begin
   FFiles.Add(aFilename);
 end;
 
-function TPascalScanner.GetMacroName(const Param: String): String;
+function TPascalScanner.GetMacroName(const Param: TPasScannerString): TPasScannerString;
 var
   p: Integer;
 begin
@@ -6242,7 +6781,7 @@ begin
 end;
 
 procedure TPascalScanner.SetCurMsg(MsgType: TMessageType; MsgNumber: integer;
-  const Fmt: String; Args: array of const);
+  const Fmt: TPasScannerString; Args: array of const);
 begin
   FLastMsgType := MsgType;
   FLastMsgNumber := MsgNumber;
@@ -6251,7 +6790,17 @@ begin
   CreateMsgArgs(FLastMsgArgs,Args);
 end;
 
-function TPascalScanner.AddDefine(const aName: String; Quiet: boolean): boolean;
+procedure TPascalScanner.SetCurMsg(MsgType: TMessageType; MsgNumber: integer; const Msg: TPasScannerString);
+begin
+  FLastMsgType := MsgType;
+  FLastMsgNumber := MsgNumber;
+  FLastMsgPattern := '';
+  FLastMsgArgs:=[];
+  FLastMsg := Msg;
+
+end;
+
+function TPascalScanner.AddDefine(const aName: TPasScannerString; Quiet: boolean): boolean;
 
 begin
   If FDefines.IndexOf(aName)>=0 then exit(false);
@@ -6261,7 +6810,7 @@ begin
     DoLog(mtInfo,nLogMacroDefined,sLogMacroDefined,[aName])
 end;
 
-function TPascalScanner.RemoveDefine(const aName: String; Quiet: boolean
+function TPascalScanner.RemoveDefine(const aName: TPasScannerString; Quiet: boolean
   ): boolean;
 
 Var
@@ -6276,26 +6825,26 @@ begin
     DoLog(mtInfo,nLogMacroUnDefined,sLogMacroUnDefined,[aName])
 end;
 
-function TPascalScanner.UnDefine(const aName: String; Quiet: boolean): boolean;
+function TPascalScanner.UnDefine(const aName: TPasScannerString; Quiet: boolean): boolean;
 begin
   // Important: always call both, do not use OR
   Result:=RemoveDefine(aName,Quiet);
   if RemoveMacro(aName,Quiet) then Result:=true;
 end;
 
-function TPascalScanner.IsDefined(const aName: String): boolean;
+function TPascalScanner.IsDefined(const aName: TPasScannerString): boolean;
 begin
   Result:=(FDefines.IndexOf(aName)>=0) or (FMacros.IndexOf(aName)>=0);
 end;
 
-function TPascalScanner.IfOpt(Letter: Char): boolean;
+function TPascalScanner.IfOpt(Letter: AnsiChar): boolean;
 begin
   Letter:=upcase(Letter);
   Result:=(Letter in ['A'..'Z']) and (LetterSwitchNames[Letter]<>'')
     and IsDefined(LetterSwitchNames[Letter]);
 end;
 
-function TPascalScanner.AddMacro(const aName, aValue: String; Quiet: boolean
+function TPascalScanner.AddMacro(const aName, aValue: TPasScannerString; Quiet: boolean
   ): boolean;
 var
   Index: Integer;
@@ -6313,7 +6862,7 @@ begin
     DoLog(mtInfo,nLogMacroXSetToY,SLogMacroXSetToY,[aName,aValue])
 end;
 
-function TPascalScanner.RemoveMacro(const aName: String; Quiet: boolean
+function TPascalScanner.RemoveMacro(const aName: TPasScannerString; Quiet: boolean
   ): boolean;
 var
   Index: Integer;
@@ -6327,12 +6876,12 @@ begin
     DoLog(mtInfo,nLogMacroUnDefined,sLogMacroUnDefined,[aName])
 end;
 
-procedure TPascalScanner.SetCompilerMode(S: String);
+procedure TPascalScanner.SetCompilerMode(S: TPasScannerString);
 begin
   HandleMode(S);
 end;
 
-procedure TPascalScanner.SetModeSwitch(S: String);
+procedure TPascalScanner.SetModeSwitch(S: TPasScannerString);
 begin
   HandleModeSwitch(S);
 end;

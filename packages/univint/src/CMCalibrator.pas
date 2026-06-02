@@ -1,17 +1,17 @@
 {
      File:       CommonPanels/CMCalibrator.h
- 
+
      Contains:   ColorSync Calibration API
- 
+
      Version:    CommonPanels-94~602
- 
+
      Copyright:  © 1998-2008 by Apple Computer, Inc., all rights reserved.
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 {  Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2009 }
 {  Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2012 }
@@ -29,7 +29,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CMCalibrator;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -214,7 +216,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.ColorSyncDeprecated,MacOsApi.Events;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,ColorSyncDeprecated,Events;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -250,7 +256,7 @@ type
 	CalibrateUPP = CalibrateProcPtr;
 {
  *  NewCalibrateEventUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -261,7 +267,7 @@ function NewCalibrateEventUPP( userRoutine: CalibrateEventProcPtr ): CalibrateEv
 
 {
  *  NewCanCalibrateUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -271,7 +277,7 @@ function NewCanCalibrateUPP( userRoutine: CanCalibrateProcPtr ): CanCalibrateUPP
 
 {
  *  NewCalibrateUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -281,7 +287,7 @@ function NewCalibrateUPP( userRoutine: CalibrateProcPtr ): CalibrateUPP; externa
 
 {
  *  DisposeCalibrateEventUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -292,7 +298,7 @@ procedure DisposeCalibrateEventUPP( userUPP: CalibrateEventUPP ); external name 
 
 {
  *  DisposeCanCalibrateUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -302,7 +308,7 @@ procedure DisposeCanCalibrateUPP( userUPP: CanCalibrateUPP ); external name '_Di
 
 {
  *  DisposeCalibrateUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -312,7 +318,7 @@ procedure DisposeCalibrateUPP( userUPP: CalibrateUPP ); external name '_DisposeC
 
 {
  *  InvokeCalibrateEventUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -323,7 +329,7 @@ procedure InvokeCalibrateEventUPP( var event: EventRecord; userUPP: CalibrateEve
 
 {
  *  InvokeCanCalibrateUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -333,7 +339,7 @@ function InvokeCanCalibrateUPP( displayID: CMDisplayIDType; var errMessage: Str2
 
 {
  *  InvokeCalibrateUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -343,7 +349,7 @@ function InvokeCalibrateUPP( var theInfo: CalibratorInfo; userUPP: CalibrateUPP 
 
 {
  *  CMCalibrateDisplay()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        not available

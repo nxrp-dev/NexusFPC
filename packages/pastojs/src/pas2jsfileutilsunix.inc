@@ -67,10 +67,10 @@ function GetPhysicalFilename(const Filename: string; ExceptionOnError: boolean
 var
   OldPath: String;
   NewPath: String;
-  p: PChar;
+  p: PAnsiChar;
 begin
   Result:=Filename;
-  p:=PChar(Result);
+  p:=PAnsiChar(Result);
   repeat
     while p^='/' do
       inc(p);
@@ -80,13 +80,13 @@ begin
       repeat
         inc(p);
       until p^ in [#0,'/'];
-      OldPath:=LeftStr(Result,p-PChar(Result));
+      OldPath:=LeftStr(Result,p-PAnsiChar(Result));
       NewPath:=ResolveSymLinks(OldPath,ExceptionOnError);
       if NewPath='' then exit('');
       if OldPath<>NewPath then
       begin
         Result:=NewPath+copy(Result,length(OldPath)+1,length(Result));
-        p:=PChar(Result)+length(NewPath);
+        p:=PAnsiChar(Result)+length(NewPath);
       end;
     end;
   until false;
@@ -157,16 +157,17 @@ end;
 
 function FileIsWritable(const AFilename: string): boolean;
 begin
-  Result := BaseUnix.FpAccess(AFilename, BaseUnix.W_OK) = 0;
+  Result := {$IFDEF FPC_DOTTEDUNITS}UnixApi.Base{$ELSE}BaseUnix{$ENDIF}.FpAccess(AFilename, {$IFDEF FPC_DOTTEDUNITS}UnixApi.Base{$ELSE}BaseUnix{$ENDIF}.W_OK) = 0;
 end;
 
 function FileIsExecutable(const AFilename: string): boolean;
 var
   Info : Stat;
 begin
+  Info:=Default(Stat);
   // first check AFilename is not a directory and then check if executable
   Result:= (FpStat(AFilename,info{%H-})<>-1) and FPS_ISREG(info.st_mode) and
-           (BaseUnix.FpAccess(AFilename,BaseUnix.X_OK)=0);
+           ({$IFDEF FPC_DOTTEDUNITS}UnixApi.Base{$ELSE}BaseUnix{$ENDIF}.FpAccess(AFilename,{$IFDEF FPC_DOTTEDUNITS}UnixApi.Base{$ELSE}BaseUnix{$ENDIF}.X_OK)=0);
 end;
 
 function GetEnvironmentVariableCountPJ: Integer;
@@ -182,68 +183,5 @@ end;
 function GetEnvironmentVariablePJ(const EnvVar: string): String;
 begin
   Result:=ConsoleToUTF8(GetEnvironmentVariable(EnvVar));
-end;
-
-{$IFNDEF Darwin}
-function GetUnixEncoding: string;
-var
-  i: integer;
-begin
-  Result:=EncodingSystem;
-  i:=pos('.',Lang);
-  if (i>0) and (i<=length(Lang)) then
-    Result:=copy(Lang,i+1,length(Lang)-i);
-end;
-{$ENDIF}
-
-function GetConsoleTextEncoding: string;
-begin
-  Result:=GetDefaultTextEncoding;
-end;
-
-function UTF8ToSystemCP(const s: string): string;
-begin
-  if NonUTF8System and not IsASCII(s) then
-  begin
-    Result:=UTF8ToAnsi(s);
-    // prevent UTF8 codepage appear in the strings - we don't need codepage
-    // conversion magic
-    SetCodePage(RawByteString(Result), StringCodePage(s), False);
-  end
-  else
-    Result:=s;
-end;
-
-function SystemCPToUTF8(const s: string): string;
-begin
-  if NonUTF8System and not IsASCII(s) then
-  begin
-    Result:=AnsiToUTF8(s);
-    // prevent UTF8 codepage appear in the strings - we don't need codepage
-    // conversion magic
-    SetCodePage(RawByteString(Result), StringCodePage(s), False);
-  end
-  else
-    Result:=s;
-end;
-
-function ConsoleToUTF8(const s: string): string;
-begin
-  Result:=SystemCPToUTF8(s);
-end;
-
-function UTF8ToConsole(const s: string): string;
-begin
-  Result:=UTF8ToSystemCP(s);
-end;
-
-procedure InitPlatform;
-begin
-
-end;
-
-procedure FinalizePlatform;
-begin
-
 end;
 

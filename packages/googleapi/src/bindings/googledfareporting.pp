@@ -1,13 +1,19 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit googledfareporting;
+{$ENDIF FPC_DOTTEDUNITS}
 {$MODE objfpc}
 {$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils, System.Classes, GoogleApi.Service, FpWeb.Rest.Base, GoogleApi.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses sysutils, classes, googleservice, restbase, googlebase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
-  
+
   //Top-level schema types
   TAccount = Class;
   TAccountActiveAdSummary = Class;
@@ -545,11 +551,11 @@ type
   TUserRolePermissionGroupsListResponseTypeuserRolePermissionGroupsArray = Array of TUserRolePermissionGroup;
   TUserRolePermissionsListResponseTypeuserRolePermissionsArray = Array of TUserRolePermission;
   TUserRolesListResponseTypeuserRolesArray = Array of TUserRole;
-  
+
   { --------------------------------------------------------------------
     TAccount
     --------------------------------------------------------------------}
-  
+
   TAccount = Class(TGoogleBaseObject)
   Private
     FaccountPermissionIds : TStringArray;
@@ -619,11 +625,11 @@ type
     Property teaserSizeLimit : String Index 144 Read FteaserSizeLimit Write SetteaserSizeLimit;
   end;
   TAccountClass = Class of TAccount;
-  
+
   { --------------------------------------------------------------------
     TAccountActiveAdSummary
     --------------------------------------------------------------------}
-  
+
   TAccountActiveAdSummary = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -647,11 +653,11 @@ type
     Property kind : String Index 32 Read Fkind Write Setkind;
   end;
   TAccountActiveAdSummaryClass = Class of TAccountActiveAdSummary;
-  
+
   { --------------------------------------------------------------------
     TAccountPermission
     --------------------------------------------------------------------}
-  
+
   TAccountPermission = Class(TGoogleBaseObject)
   Private
     FaccountProfiles : TStringArray;
@@ -682,11 +688,11 @@ type
     Property permissionGroupId : String Index 40 Read FpermissionGroupId Write SetpermissionGroupId;
   end;
   TAccountPermissionClass = Class of TAccountPermission;
-  
+
   { --------------------------------------------------------------------
     TAccountPermissionGroup
     --------------------------------------------------------------------}
-  
+
   TAccountPermissionGroup = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -704,11 +710,11 @@ type
     Property name : String Index 16 Read Fname Write Setname;
   end;
   TAccountPermissionGroupClass = Class of TAccountPermissionGroup;
-  
+
   { --------------------------------------------------------------------
     TAccountPermissionGroupsListResponse
     --------------------------------------------------------------------}
-  
+
   TAccountPermissionGroupsListResponse = Class(TGoogleBaseObject)
   Private
     FaccountPermissionGroups : TAccountPermissionGroupsListResponseTypeaccountPermissionGroupsArray;
@@ -727,11 +733,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TAccountPermissionGroupsListResponseClass = Class of TAccountPermissionGroupsListResponse;
-  
+
   { --------------------------------------------------------------------
     TAccountPermissionsListResponse
     --------------------------------------------------------------------}
-  
+
   TAccountPermissionsListResponse = Class(TGoogleBaseObject)
   Private
     FaccountPermissions : TAccountPermissionsListResponseTypeaccountPermissionsArray;
@@ -750,11 +756,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TAccountPermissionsListResponseClass = Class of TAccountPermissionsListResponse;
-  
+
   { --------------------------------------------------------------------
     TAccountUserProfile
     --------------------------------------------------------------------}
-  
+
   TAccountUserProfile = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -811,11 +817,11 @@ type
     Property userRoleId : String Index 120 Read FuserRoleId Write SetuserRoleId;
   end;
   TAccountUserProfileClass = Class of TAccountUserProfile;
-  
+
   { --------------------------------------------------------------------
     TAccountUserProfilesListResponse
     --------------------------------------------------------------------}
-  
+
   TAccountUserProfilesListResponse = Class(TGoogleBaseObject)
   Private
     FaccountUserProfiles : TAccountUserProfilesListResponseTypeaccountUserProfilesArray;
@@ -837,11 +843,11 @@ type
     Property nextPageToken : String Index 16 Read FnextPageToken Write SetnextPageToken;
   end;
   TAccountUserProfilesListResponseClass = Class of TAccountUserProfilesListResponse;
-  
+
   { --------------------------------------------------------------------
     TAccountsListResponse
     --------------------------------------------------------------------}
-  
+
   TAccountsListResponse = Class(TGoogleBaseObject)
   Private
     Faccounts : TAccountsListResponseTypeaccountsArray;
@@ -863,11 +869,11 @@ type
     Property nextPageToken : String Index 16 Read FnextPageToken Write SetnextPageToken;
   end;
   TAccountsListResponseClass = Class of TAccountsListResponse;
-  
+
   { --------------------------------------------------------------------
     TActivities
     --------------------------------------------------------------------}
-  
+
   TActivities = Class(TGoogleBaseObject)
   Private
     Ffilters : TActivitiesTypefiltersArray;
@@ -889,11 +895,11 @@ type
     Property metricNames : TStringArray Index 16 Read FmetricNames Write SetmetricNames;
   end;
   TActivitiesClass = Class of TActivities;
-  
+
   { --------------------------------------------------------------------
     TAd
     --------------------------------------------------------------------}
-  
+
   TAd = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -1018,11 +1024,11 @@ type
     Property _type : String Index 288 Read F_type Write Set_type;
   end;
   TAdClass = Class of TAd;
-  
+
   { --------------------------------------------------------------------
     TAdSlot
     --------------------------------------------------------------------}
-  
+
   TAdSlot = Class(TGoogleBaseObject)
   Private
     Fcomment : String;
@@ -1055,11 +1061,11 @@ type
     Property width : String Index 56 Read Fwidth Write Setwidth;
   end;
   TAdSlotClass = Class of TAdSlot;
-  
+
   { --------------------------------------------------------------------
     TAdsListResponse
     --------------------------------------------------------------------}
-  
+
   TAdsListResponse = Class(TGoogleBaseObject)
   Private
     Fads : TAdsListResponseTypeadsArray;
@@ -1081,11 +1087,11 @@ type
     Property nextPageToken : String Index 16 Read FnextPageToken Write SetnextPageToken;
   end;
   TAdsListResponseClass = Class of TAdsListResponse;
-  
+
   { --------------------------------------------------------------------
     TAdvertiser
     --------------------------------------------------------------------}
-  
+
   TAdvertiser = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -1139,11 +1145,11 @@ type
     Property suspended : boolean Index 112 Read Fsuspended Write Setsuspended;
   end;
   TAdvertiserClass = Class of TAdvertiser;
-  
+
   { --------------------------------------------------------------------
     TAdvertiserGroup
     --------------------------------------------------------------------}
-  
+
   TAdvertiserGroup = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -1164,11 +1170,11 @@ type
     Property name : String Index 24 Read Fname Write Setname;
   end;
   TAdvertiserGroupClass = Class of TAdvertiserGroup;
-  
+
   { --------------------------------------------------------------------
     TAdvertiserGroupsListResponse
     --------------------------------------------------------------------}
-  
+
   TAdvertiserGroupsListResponse = Class(TGoogleBaseObject)
   Private
     FadvertiserGroups : TAdvertiserGroupsListResponseTypeadvertiserGroupsArray;
@@ -1190,11 +1196,11 @@ type
     Property nextPageToken : String Index 16 Read FnextPageToken Write SetnextPageToken;
   end;
   TAdvertiserGroupsListResponseClass = Class of TAdvertiserGroupsListResponse;
-  
+
   { --------------------------------------------------------------------
     TAdvertisersListResponse
     --------------------------------------------------------------------}
-  
+
   TAdvertisersListResponse = Class(TGoogleBaseObject)
   Private
     Fadvertisers : TAdvertisersListResponseTypeadvertisersArray;
@@ -1216,11 +1222,11 @@ type
     Property nextPageToken : String Index 16 Read FnextPageToken Write SetnextPageToken;
   end;
   TAdvertisersListResponseClass = Class of TAdvertisersListResponse;
-  
+
   { --------------------------------------------------------------------
     TAudienceSegment
     --------------------------------------------------------------------}
-  
+
   TAudienceSegment = Class(TGoogleBaseObject)
   Private
     Fallocation : integer;
@@ -1238,11 +1244,11 @@ type
     Property name : String Index 16 Read Fname Write Setname;
   end;
   TAudienceSegmentClass = Class of TAudienceSegment;
-  
+
   { --------------------------------------------------------------------
     TAudienceSegmentGroup
     --------------------------------------------------------------------}
-  
+
   TAudienceSegmentGroup = Class(TGoogleBaseObject)
   Private
     FaudienceSegments : TAudienceSegmentGroupTypeaudienceSegmentsArray;
@@ -1264,11 +1270,11 @@ type
     Property name : String Index 16 Read Fname Write Setname;
   end;
   TAudienceSegmentGroupClass = Class of TAudienceSegmentGroup;
-  
+
   { --------------------------------------------------------------------
     TBrowser
     --------------------------------------------------------------------}
-  
+
   TBrowser = Class(TGoogleBaseObject)
   Private
     FbrowserVersionId : String;
@@ -1295,11 +1301,11 @@ type
     Property name : String Index 40 Read Fname Write Setname;
   end;
   TBrowserClass = Class of TBrowser;
-  
+
   { --------------------------------------------------------------------
     TBrowsersListResponse
     --------------------------------------------------------------------}
-  
+
   TBrowsersListResponse = Class(TGoogleBaseObject)
   Private
     Fbrowsers : TBrowsersListResponseTypebrowsersArray;
@@ -1318,11 +1324,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TBrowsersListResponseClass = Class of TBrowsersListResponse;
-  
+
   { --------------------------------------------------------------------
     TCampaign
     --------------------------------------------------------------------}
-  
+
   TCampaign = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -1419,11 +1425,11 @@ type
     Property traffickerEmails : TStringArray Index 216 Read FtraffickerEmails Write SettraffickerEmails;
   end;
   TCampaignClass = Class of TCampaign;
-  
+
   { --------------------------------------------------------------------
     TCampaignCreativeAssociation
     --------------------------------------------------------------------}
-  
+
   TCampaignCreativeAssociation = Class(TGoogleBaseObject)
   Private
     FcreativeId : String;
@@ -1438,11 +1444,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TCampaignCreativeAssociationClass = Class of TCampaignCreativeAssociation;
-  
+
   { --------------------------------------------------------------------
     TCampaignCreativeAssociationsListResponse
     --------------------------------------------------------------------}
-  
+
   TCampaignCreativeAssociationsListResponse = Class(TGoogleBaseObject)
   Private
     FcampaignCreativeAssociations : TCampaignCreativeAssociationsListResponseTypecampaignCreativeAssociationsArray;
@@ -1464,11 +1470,11 @@ type
     Property nextPageToken : String Index 16 Read FnextPageToken Write SetnextPageToken;
   end;
   TCampaignCreativeAssociationsListResponseClass = Class of TCampaignCreativeAssociationsListResponse;
-  
+
   { --------------------------------------------------------------------
     TCampaignsListResponse
     --------------------------------------------------------------------}
-  
+
   TCampaignsListResponse = Class(TGoogleBaseObject)
   Private
     Fcampaigns : TCampaignsListResponseTypecampaignsArray;
@@ -1490,11 +1496,11 @@ type
     Property nextPageToken : String Index 16 Read FnextPageToken Write SetnextPageToken;
   end;
   TCampaignsListResponseClass = Class of TCampaignsListResponse;
-  
+
   { --------------------------------------------------------------------
     TChangeLog
     --------------------------------------------------------------------}
-  
+
   TChangeLog = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -1545,11 +1551,11 @@ type
     Property userProfileName : String Index 104 Read FuserProfileName Write SetuserProfileName;
   end;
   TChangeLogClass = Class of TChangeLog;
-  
+
   { --------------------------------------------------------------------
     TChangeLogsListResponse
     --------------------------------------------------------------------}
-  
+
   TChangeLogsListResponse = Class(TGoogleBaseObject)
   Private
     FchangeLogs : TChangeLogsListResponseTypechangeLogsArray;
@@ -1571,11 +1577,11 @@ type
     Property nextPageToken : String Index 16 Read FnextPageToken Write SetnextPageToken;
   end;
   TChangeLogsListResponseClass = Class of TChangeLogsListResponse;
-  
+
   { --------------------------------------------------------------------
     TCitiesListResponse
     --------------------------------------------------------------------}
-  
+
   TCitiesListResponse = Class(TGoogleBaseObject)
   Private
     Fcities : TCitiesListResponseTypecitiesArray;
@@ -1594,11 +1600,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TCitiesListResponseClass = Class of TCitiesListResponse;
-  
+
   { --------------------------------------------------------------------
     TCity
     --------------------------------------------------------------------}
-  
+
   TCity = Class(TGoogleBaseObject)
   Private
     FcountryCode : String;
@@ -1634,11 +1640,11 @@ type
     Property regionDartId : String Index 64 Read FregionDartId Write SetregionDartId;
   end;
   TCityClass = Class of TCity;
-  
+
   { --------------------------------------------------------------------
     TClickTag
     --------------------------------------------------------------------}
-  
+
   TClickTag = Class(TGoogleBaseObject)
   Private
     FeventName : String;
@@ -1656,11 +1662,11 @@ type
     Property value : String Index 16 Read Fvalue Write Setvalue;
   end;
   TClickTagClass = Class of TClickTag;
-  
+
   { --------------------------------------------------------------------
     TClickThroughUrl
     --------------------------------------------------------------------}
-  
+
   TClickThroughUrl = Class(TGoogleBaseObject)
   Private
     FcomputedClickThroughUrl : String;
@@ -1681,11 +1687,11 @@ type
     Property landingPageId : String Index 24 Read FlandingPageId Write SetlandingPageId;
   end;
   TClickThroughUrlClass = Class of TClickThroughUrl;
-  
+
   { --------------------------------------------------------------------
     TClickThroughUrlSuffixProperties
     --------------------------------------------------------------------}
-  
+
   TClickThroughUrlSuffixProperties = Class(TGoogleBaseObject)
   Private
     FclickThroughUrlSuffix : String;
@@ -1700,11 +1706,11 @@ type
     Property overrideInheritedSuffix : boolean Index 8 Read FoverrideInheritedSuffix Write SetoverrideInheritedSuffix;
   end;
   TClickThroughUrlSuffixPropertiesClass = Class of TClickThroughUrlSuffixProperties;
-  
+
   { --------------------------------------------------------------------
     TCompanionClickThroughOverride
     --------------------------------------------------------------------}
-  
+
   TCompanionClickThroughOverride = Class(TGoogleBaseObject)
   Private
     FclickThroughUrl : TClickThroughUrl;
@@ -1719,11 +1725,11 @@ type
     Property creativeId : String Index 8 Read FcreativeId Write SetcreativeId;
   end;
   TCompanionClickThroughOverrideClass = Class of TCompanionClickThroughOverride;
-  
+
   { --------------------------------------------------------------------
     TCompatibleFields
     --------------------------------------------------------------------}
-  
+
   TCompatibleFields = Class(TGoogleBaseObject)
   Private
     FcrossDimensionReachReportCompatibleFields : TCrossDimensionReachReportCompatibleFields;
@@ -1750,11 +1756,11 @@ type
     Property reportCompatibleFields : TReportCompatibleFields Index 40 Read FreportCompatibleFields Write SetreportCompatibleFields;
   end;
   TCompatibleFieldsClass = Class of TCompatibleFields;
-  
+
   { --------------------------------------------------------------------
     TConnectionType
     --------------------------------------------------------------------}
-  
+
   TConnectionType = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -1772,11 +1778,11 @@ type
     Property name : String Index 16 Read Fname Write Setname;
   end;
   TConnectionTypeClass = Class of TConnectionType;
-  
+
   { --------------------------------------------------------------------
     TConnectionTypesListResponse
     --------------------------------------------------------------------}
-  
+
   TConnectionTypesListResponse = Class(TGoogleBaseObject)
   Private
     FconnectionTypes : TConnectionTypesListResponseTypeconnectionTypesArray;
@@ -1795,11 +1801,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TConnectionTypesListResponseClass = Class of TConnectionTypesListResponse;
-  
+
   { --------------------------------------------------------------------
     TContentCategoriesListResponse
     --------------------------------------------------------------------}
-  
+
   TContentCategoriesListResponse = Class(TGoogleBaseObject)
   Private
     FcontentCategories : TContentCategoriesListResponseTypecontentCategoriesArray;
@@ -1821,11 +1827,11 @@ type
     Property nextPageToken : String Index 16 Read FnextPageToken Write SetnextPageToken;
   end;
   TContentCategoriesListResponseClass = Class of TContentCategoriesListResponse;
-  
+
   { --------------------------------------------------------------------
     TContentCategory
     --------------------------------------------------------------------}
-  
+
   TContentCategory = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -1846,11 +1852,11 @@ type
     Property name : String Index 24 Read Fname Write Setname;
   end;
   TContentCategoryClass = Class of TContentCategory;
-  
+
   { --------------------------------------------------------------------
     TConversion
     --------------------------------------------------------------------}
-  
+
   TConversion = Class(TGoogleBaseObject)
   Private
     FchildDirectedTreatment : boolean;
@@ -1899,11 +1905,11 @@ type
     Property value : double Index 88 Read Fvalue Write Setvalue;
   end;
   TConversionClass = Class of TConversion;
-  
+
   { --------------------------------------------------------------------
     TConversionError
     --------------------------------------------------------------------}
-  
+
   TConversionError = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -1921,11 +1927,11 @@ type
     Property message : String Index 16 Read Fmessage Write Setmessage;
   end;
   TConversionErrorClass = Class of TConversionError;
-  
+
   { --------------------------------------------------------------------
     TConversionStatus
     --------------------------------------------------------------------}
-  
+
   TConversionStatus = Class(TGoogleBaseObject)
   Private
     Fconversion : TConversion;
@@ -1947,11 +1953,11 @@ type
     Property kind : String Index 16 Read Fkind Write Setkind;
   end;
   TConversionStatusClass = Class of TConversionStatus;
-  
+
   { --------------------------------------------------------------------
     TConversionsBatchInsertRequest
     --------------------------------------------------------------------}
-  
+
   TConversionsBatchInsertRequest = Class(TGoogleBaseObject)
   Private
     Fconversions : TConversionsBatchInsertRequestTypeconversionsArray;
@@ -1973,11 +1979,11 @@ type
     Property kind : String Index 16 Read Fkind Write Setkind;
   end;
   TConversionsBatchInsertRequestClass = Class of TConversionsBatchInsertRequest;
-  
+
   { --------------------------------------------------------------------
     TConversionsBatchInsertResponse
     --------------------------------------------------------------------}
-  
+
   TConversionsBatchInsertResponse = Class(TGoogleBaseObject)
   Private
     FhasFailures : boolean;
@@ -1999,11 +2005,11 @@ type
     Property status : TConversionsBatchInsertResponseTypestatusArray Index 16 Read Fstatus Write Setstatus;
   end;
   TConversionsBatchInsertResponseClass = Class of TConversionsBatchInsertResponse;
-  
+
   { --------------------------------------------------------------------
     TCountriesListResponse
     --------------------------------------------------------------------}
-  
+
   TCountriesListResponse = Class(TGoogleBaseObject)
   Private
     Fcountries : TCountriesListResponseTypecountriesArray;
@@ -2022,11 +2028,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TCountriesListResponseClass = Class of TCountriesListResponse;
-  
+
   { --------------------------------------------------------------------
     TCountry
     --------------------------------------------------------------------}
-  
+
   TCountry = Class(TGoogleBaseObject)
   Private
     FcountryCode : String;
@@ -2050,11 +2056,11 @@ type
     Property sslEnabled : boolean Index 32 Read FsslEnabled Write SetsslEnabled;
   end;
   TCountryClass = Class of TCountry;
-  
+
   { --------------------------------------------------------------------
     TCreative
     --------------------------------------------------------------------}
-  
+
   TCreative = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -2242,11 +2248,11 @@ type
     Property videoDuration : integer Index 456 Read FvideoDuration Write SetvideoDuration;
   end;
   TCreativeClass = Class of TCreative;
-  
+
   { --------------------------------------------------------------------
     TCreativeAsset
     --------------------------------------------------------------------}
-  
+
   TCreativeAsset = Class(TGoogleBaseObject)
   Private
     FactionScript3 : boolean;
@@ -2385,11 +2391,11 @@ type
     Property zipFilesize : String Index 328 Read FzipFilesize Write SetzipFilesize;
   end;
   TCreativeAssetClass = Class of TCreativeAsset;
-  
+
   { --------------------------------------------------------------------
     TCreativeAssetId
     --------------------------------------------------------------------}
-  
+
   TCreativeAssetId = Class(TGoogleBaseObject)
   Private
     Fname : String;
@@ -2405,11 +2411,11 @@ type
     Property _type : String Index 8 Read F_type Write Set_type;
   end;
   TCreativeAssetIdClass = Class of TCreativeAssetId;
-  
+
   { --------------------------------------------------------------------
     TCreativeAssetMetadata
     --------------------------------------------------------------------}
-  
+
   TCreativeAssetMetadata = Class(TGoogleBaseObject)
   Private
     FassetIdentifier : TCreativeAssetId;
@@ -2437,11 +2443,11 @@ type
     Property warnedValidationRules : TStringArray Index 32 Read FwarnedValidationRules Write SetwarnedValidationRules;
   end;
   TCreativeAssetMetadataClass = Class of TCreativeAssetMetadata;
-  
+
   { --------------------------------------------------------------------
     TCreativeAssignment
     --------------------------------------------------------------------}
-  
+
   TCreativeAssignment = Class(TGoogleBaseObject)
   Private
     Factive : boolean;
@@ -2493,11 +2499,11 @@ type
     Property weight : integer Index 96 Read Fweight Write Setweight;
   end;
   TCreativeAssignmentClass = Class of TCreativeAssignment;
-  
+
   { --------------------------------------------------------------------
     TCreativeCustomEvent
     --------------------------------------------------------------------}
-  
+
   TCreativeCustomEvent = Class(TGoogleBaseObject)
   Private
     FadvertiserCustomEventId : String;
@@ -2536,11 +2542,11 @@ type
     Property videoReportingId : String Index 72 Read FvideoReportingId Write SetvideoReportingId;
   end;
   TCreativeCustomEventClass = Class of TCreativeCustomEvent;
-  
+
   { --------------------------------------------------------------------
     TCreativeField
     --------------------------------------------------------------------}
-  
+
   TCreativeField = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -2570,11 +2576,11 @@ type
     Property subaccountId : String Index 48 Read FsubaccountId Write SetsubaccountId;
   end;
   TCreativeFieldClass = Class of TCreativeField;
-  
+
   { --------------------------------------------------------------------
     TCreativeFieldAssignment
     --------------------------------------------------------------------}
-  
+
   TCreativeFieldAssignment = Class(TGoogleBaseObject)
   Private
     FcreativeFieldId : String;
@@ -2589,11 +2595,11 @@ type
     Property creativeFieldValueId : String Index 8 Read FcreativeFieldValueId Write SetcreativeFieldValueId;
   end;
   TCreativeFieldAssignmentClass = Class of TCreativeFieldAssignment;
-  
+
   { --------------------------------------------------------------------
     TCreativeFieldValue
     --------------------------------------------------------------------}
-  
+
   TCreativeFieldValue = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -2611,11 +2617,11 @@ type
     Property value : String Index 16 Read Fvalue Write Setvalue;
   end;
   TCreativeFieldValueClass = Class of TCreativeFieldValue;
-  
+
   { --------------------------------------------------------------------
     TCreativeFieldValuesListResponse
     --------------------------------------------------------------------}
-  
+
   TCreativeFieldValuesListResponse = Class(TGoogleBaseObject)
   Private
     FcreativeFieldValues : TCreativeFieldValuesListResponseTypecreativeFieldValuesArray;
@@ -2637,11 +2643,11 @@ type
     Property nextPageToken : String Index 16 Read FnextPageToken Write SetnextPageToken;
   end;
   TCreativeFieldValuesListResponseClass = Class of TCreativeFieldValuesListResponse;
-  
+
   { --------------------------------------------------------------------
     TCreativeFieldsListResponse
     --------------------------------------------------------------------}
-  
+
   TCreativeFieldsListResponse = Class(TGoogleBaseObject)
   Private
     FcreativeFields : TCreativeFieldsListResponseTypecreativeFieldsArray;
@@ -2663,11 +2669,11 @@ type
     Property nextPageToken : String Index 16 Read FnextPageToken Write SetnextPageToken;
   end;
   TCreativeFieldsListResponseClass = Class of TCreativeFieldsListResponse;
-  
+
   { --------------------------------------------------------------------
     TCreativeGroup
     --------------------------------------------------------------------}
-  
+
   TCreativeGroup = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -2700,11 +2706,11 @@ type
     Property subaccountId : String Index 56 Read FsubaccountId Write SetsubaccountId;
   end;
   TCreativeGroupClass = Class of TCreativeGroup;
-  
+
   { --------------------------------------------------------------------
     TCreativeGroupAssignment
     --------------------------------------------------------------------}
-  
+
   TCreativeGroupAssignment = Class(TGoogleBaseObject)
   Private
     FcreativeGroupId : String;
@@ -2719,11 +2725,11 @@ type
     Property creativeGroupNumber : String Index 8 Read FcreativeGroupNumber Write SetcreativeGroupNumber;
   end;
   TCreativeGroupAssignmentClass = Class of TCreativeGroupAssignment;
-  
+
   { --------------------------------------------------------------------
     TCreativeGroupsListResponse
     --------------------------------------------------------------------}
-  
+
   TCreativeGroupsListResponse = Class(TGoogleBaseObject)
   Private
     FcreativeGroups : TCreativeGroupsListResponseTypecreativeGroupsArray;
@@ -2745,11 +2751,11 @@ type
     Property nextPageToken : String Index 16 Read FnextPageToken Write SetnextPageToken;
   end;
   TCreativeGroupsListResponseClass = Class of TCreativeGroupsListResponse;
-  
+
   { --------------------------------------------------------------------
     TCreativeOptimizationConfiguration
     --------------------------------------------------------------------}
-  
+
   TCreativeOptimizationConfiguration = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -2774,11 +2780,11 @@ type
     Property optimizationModel : String Index 24 Read FoptimizationModel Write SetoptimizationModel;
   end;
   TCreativeOptimizationConfigurationClass = Class of TCreativeOptimizationConfiguration;
-  
+
   { --------------------------------------------------------------------
     TCreativeRotation
     --------------------------------------------------------------------}
-  
+
   TCreativeRotation = Class(TGoogleBaseObject)
   Private
     FcreativeAssignments : TCreativeRotationTypecreativeAssignmentsArray;
@@ -2804,11 +2810,11 @@ type
     Property weightCalculationStrategy : String Index 24 Read FweightCalculationStrategy Write SetweightCalculationStrategy;
   end;
   TCreativeRotationClass = Class of TCreativeRotation;
-  
+
   { --------------------------------------------------------------------
     TCreativeSettings
     --------------------------------------------------------------------}
-  
+
   TCreativeSettings = Class(TGoogleBaseObject)
   Private
     FiFrameFooter : String;
@@ -2823,11 +2829,11 @@ type
     Property iFrameHeader : String Index 8 Read FiFrameHeader Write SetiFrameHeader;
   end;
   TCreativeSettingsClass = Class of TCreativeSettings;
-  
+
   { --------------------------------------------------------------------
     TCreativesListResponse
     --------------------------------------------------------------------}
-  
+
   TCreativesListResponse = Class(TGoogleBaseObject)
   Private
     Fcreatives : TCreativesListResponseTypecreativesArray;
@@ -2849,11 +2855,11 @@ type
     Property nextPageToken : String Index 16 Read FnextPageToken Write SetnextPageToken;
   end;
   TCreativesListResponseClass = Class of TCreativesListResponse;
-  
+
   { --------------------------------------------------------------------
     TCrossDimensionReachReportCompatibleFields
     --------------------------------------------------------------------}
-  
+
   TCrossDimensionReachReportCompatibleFields = Class(TGoogleBaseObject)
   Private
     Fbreakdown : TCrossDimensionReachReportCompatibleFieldsTypebreakdownArray;
@@ -2881,11 +2887,11 @@ type
     Property overlapMetrics : TCrossDimensionReachReportCompatibleFieldsTypeoverlapMetricsArray Index 32 Read FoverlapMetrics Write SetoverlapMetrics;
   end;
   TCrossDimensionReachReportCompatibleFieldsClass = Class of TCrossDimensionReachReportCompatibleFields;
-  
+
   { --------------------------------------------------------------------
     TCustomFloodlightVariable
     --------------------------------------------------------------------}
-  
+
   TCustomFloodlightVariable = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -2904,11 +2910,11 @@ type
     Property value : String Index 16 Read Fvalue Write Setvalue;
   end;
   TCustomFloodlightVariableClass = Class of TCustomFloodlightVariable;
-  
+
   { --------------------------------------------------------------------
     TCustomRichMediaEvents
     --------------------------------------------------------------------}
-  
+
   TCustomRichMediaEvents = Class(TGoogleBaseObject)
   Private
     FfilteredEventIds : TCustomRichMediaEventsTypefilteredEventIdsArray;
@@ -2927,11 +2933,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TCustomRichMediaEventsClass = Class of TCustomRichMediaEvents;
-  
+
   { --------------------------------------------------------------------
     TDateRange
     --------------------------------------------------------------------}
-  
+
   TDateRange = Class(TGoogleBaseObject)
   Private
     FendDate : TDate;
@@ -2952,11 +2958,11 @@ type
     Property startDate : TDate Index 24 Read FstartDate Write SetstartDate;
   end;
   TDateRangeClass = Class of TDateRange;
-  
+
   { --------------------------------------------------------------------
     TDayPartTargeting
     --------------------------------------------------------------------}
-  
+
   TDayPartTargeting = Class(TGoogleBaseObject)
   Private
     FdaysOfWeek : TStringArray;
@@ -2978,11 +2984,11 @@ type
     Property userLocalTime : boolean Index 16 Read FuserLocalTime Write SetuserLocalTime;
   end;
   TDayPartTargetingClass = Class of TDayPartTargeting;
-  
+
   { --------------------------------------------------------------------
     TDefaultClickThroughEventTagProperties
     --------------------------------------------------------------------}
-  
+
   TDefaultClickThroughEventTagProperties = Class(TGoogleBaseObject)
   Private
     FdefaultClickThroughEventTagId : String;
@@ -2997,11 +3003,11 @@ type
     Property overrideInheritedEventTag : boolean Index 8 Read FoverrideInheritedEventTag Write SetoverrideInheritedEventTag;
   end;
   TDefaultClickThroughEventTagPropertiesClass = Class of TDefaultClickThroughEventTagProperties;
-  
+
   { --------------------------------------------------------------------
     TDeliverySchedule
     --------------------------------------------------------------------}
-  
+
   TDeliverySchedule = Class(TGoogleBaseObject)
   Private
     FfrequencyCap : TFrequencyCap;
@@ -3022,11 +3028,11 @@ type
     Property priority : String Index 24 Read Fpriority Write Setpriority;
   end;
   TDeliveryScheduleClass = Class of TDeliverySchedule;
-  
+
   { --------------------------------------------------------------------
     TDfpSettings
     --------------------------------------------------------------------}
-  
+
   TDfpSettings = Class(TGoogleBaseObject)
   Private
     Fdfp_network_code : String;
@@ -3050,11 +3056,11 @@ type
     Property publisherPortalOnly : boolean Index 32 Read FpublisherPortalOnly Write SetpublisherPortalOnly;
   end;
   TDfpSettingsClass = Class of TDfpSettings;
-  
+
   { --------------------------------------------------------------------
     TDimension
     --------------------------------------------------------------------}
-  
+
   TDimension = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -3069,11 +3075,11 @@ type
     Property name : String Index 8 Read Fname Write Setname;
   end;
   TDimensionClass = Class of TDimension;
-  
+
   { --------------------------------------------------------------------
     TDimensionFilter
     --------------------------------------------------------------------}
-  
+
   TDimensionFilter = Class(TGoogleBaseObject)
   Private
     FdimensionName : String;
@@ -3091,11 +3097,11 @@ type
     Property value : String Index 16 Read Fvalue Write Setvalue;
   end;
   TDimensionFilterClass = Class of TDimensionFilter;
-  
+
   { --------------------------------------------------------------------
     TDimensionValue
     --------------------------------------------------------------------}
-  
+
   TDimensionValue = Class(TGoogleBaseObject)
   Private
     FdimensionName : String;
@@ -3122,11 +3128,11 @@ type
     Property value : String Index 40 Read Fvalue Write Setvalue;
   end;
   TDimensionValueClass = Class of TDimensionValue;
-  
+
   { --------------------------------------------------------------------
     TDimensionValueList
     --------------------------------------------------------------------}
-  
+
   TDimensionValueList = Class(TGoogleBaseObject)
   Private
     Fetag : String;
@@ -3151,11 +3157,11 @@ type
     Property nextPageToken : String Index 24 Read FnextPageToken Write SetnextPageToken;
   end;
   TDimensionValueListClass = Class of TDimensionValueList;
-  
+
   { --------------------------------------------------------------------
     TDimensionValueRequest
     --------------------------------------------------------------------}
-  
+
   TDimensionValueRequest = Class(TGoogleBaseObject)
   Private
     FdimensionName : String;
@@ -3183,11 +3189,11 @@ type
     Property startDate : TDate Index 32 Read FstartDate Write SetstartDate;
   end;
   TDimensionValueRequestClass = Class of TDimensionValueRequest;
-  
+
   { --------------------------------------------------------------------
     TDirectorySite
     --------------------------------------------------------------------}
-  
+
   TDirectorySite = Class(TGoogleBaseObject)
   Private
     Factive : boolean;
@@ -3242,11 +3248,11 @@ type
     Property url : String Index 104 Read Furl Write Seturl;
   end;
   TDirectorySiteClass = Class of TDirectorySite;
-  
+
   { --------------------------------------------------------------------
     TDirectorySiteContact
     --------------------------------------------------------------------}
-  
+
   TDirectorySiteContact = Class(TGoogleBaseObject)
   Private
     Faddress : String;
@@ -3286,11 +3292,11 @@ type
     Property _type : String Index 72 Read F_type Write Set_type;
   end;
   TDirectorySiteContactClass = Class of TDirectorySiteContact;
-  
+
   { --------------------------------------------------------------------
     TDirectorySiteContactAssignment
     --------------------------------------------------------------------}
-  
+
   TDirectorySiteContactAssignment = Class(TGoogleBaseObject)
   Private
     FcontactId : String;
@@ -3305,11 +3311,11 @@ type
     Property visibility : String Index 8 Read Fvisibility Write Setvisibility;
   end;
   TDirectorySiteContactAssignmentClass = Class of TDirectorySiteContactAssignment;
-  
+
   { --------------------------------------------------------------------
     TDirectorySiteContactsListResponse
     --------------------------------------------------------------------}
-  
+
   TDirectorySiteContactsListResponse = Class(TGoogleBaseObject)
   Private
     FdirectorySiteContacts : TDirectorySiteContactsListResponseTypedirectorySiteContactsArray;
@@ -3331,11 +3337,11 @@ type
     Property nextPageToken : String Index 16 Read FnextPageToken Write SetnextPageToken;
   end;
   TDirectorySiteContactsListResponseClass = Class of TDirectorySiteContactsListResponse;
-  
+
   { --------------------------------------------------------------------
     TDirectorySiteSettings
     --------------------------------------------------------------------}
-  
+
   TDirectorySiteSettings = Class(TGoogleBaseObject)
   Private
     FactiveViewOptOut : boolean;
@@ -3365,11 +3371,11 @@ type
     Property videoActiveViewOptOut : boolean Index 48 Read FvideoActiveViewOptOut Write SetvideoActiveViewOptOut;
   end;
   TDirectorySiteSettingsClass = Class of TDirectorySiteSettings;
-  
+
   { --------------------------------------------------------------------
     TDirectorySitesListResponse
     --------------------------------------------------------------------}
-  
+
   TDirectorySitesListResponse = Class(TGoogleBaseObject)
   Private
     FdirectorySites : TDirectorySitesListResponseTypedirectorySitesArray;
@@ -3391,11 +3397,11 @@ type
     Property nextPageToken : String Index 16 Read FnextPageToken Write SetnextPageToken;
   end;
   TDirectorySitesListResponseClass = Class of TDirectorySitesListResponse;
-  
+
   { --------------------------------------------------------------------
     TDynamicTargetingKey
     --------------------------------------------------------------------}
-  
+
   TDynamicTargetingKey = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -3416,11 +3422,11 @@ type
     Property objectType : String Index 24 Read FobjectType Write SetobjectType;
   end;
   TDynamicTargetingKeyClass = Class of TDynamicTargetingKey;
-  
+
   { --------------------------------------------------------------------
     TDynamicTargetingKeysListResponse
     --------------------------------------------------------------------}
-  
+
   TDynamicTargetingKeysListResponse = Class(TGoogleBaseObject)
   Private
     FdynamicTargetingKeys : TDynamicTargetingKeysListResponseTypedynamicTargetingKeysArray;
@@ -3439,11 +3445,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TDynamicTargetingKeysListResponseClass = Class of TDynamicTargetingKeysListResponse;
-  
+
   { --------------------------------------------------------------------
     TEncryptionInfo
     --------------------------------------------------------------------}
-  
+
   TEncryptionInfo = Class(TGoogleBaseObject)
   Private
     FencryptionEntityId : String;
@@ -3464,11 +3470,11 @@ type
     Property kind : String Index 24 Read Fkind Write Setkind;
   end;
   TEncryptionInfoClass = Class of TEncryptionInfo;
-  
+
   { --------------------------------------------------------------------
     TEventTag
     --------------------------------------------------------------------}
-  
+
   TEventTag = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -3536,11 +3542,11 @@ type
     Property urlEscapeLevels : integer Index 136 Read FurlEscapeLevels Write SeturlEscapeLevels;
   end;
   TEventTagClass = Class of TEventTag;
-  
+
   { --------------------------------------------------------------------
     TEventTagOverride
     --------------------------------------------------------------------}
-  
+
   TEventTagOverride = Class(TGoogleBaseObject)
   Private
     Fenabled : boolean;
@@ -3555,11 +3561,11 @@ type
     Property id : String Index 8 Read Fid Write Setid;
   end;
   TEventTagOverrideClass = Class of TEventTagOverride;
-  
+
   { --------------------------------------------------------------------
     TEventTagsListResponse
     --------------------------------------------------------------------}
-  
+
   TEventTagsListResponse = Class(TGoogleBaseObject)
   Private
     FeventTags : TEventTagsListResponseTypeeventTagsArray;
@@ -3578,11 +3584,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TEventTagsListResponseClass = Class of TEventTagsListResponse;
-  
+
   { --------------------------------------------------------------------
     TFileTypeurls
     --------------------------------------------------------------------}
-  
+
   TFileTypeurls = Class(TGoogleBaseObject)
   Private
     FapiUrl : String;
@@ -3597,11 +3603,11 @@ type
     Property browserUrl : String Index 8 Read FbrowserUrl Write SetbrowserUrl;
   end;
   TFileTypeurlsClass = Class of TFileTypeurls;
-  
+
   { --------------------------------------------------------------------
     TFile
     --------------------------------------------------------------------}
-  
+
   TFile = Class(TGoogleBaseObject)
   Private
     FdateRange : TDateRange;
@@ -3640,11 +3646,11 @@ type
     Property urls : TFileTypeurls Index 72 Read Furls Write Seturls;
   end;
   TFileClass = Class of TFile;
-  
+
   { --------------------------------------------------------------------
     TFileList
     --------------------------------------------------------------------}
-  
+
   TFileList = Class(TGoogleBaseObject)
   Private
     Fetag : String;
@@ -3669,11 +3675,11 @@ type
     Property nextPageToken : String Index 24 Read FnextPageToken Write SetnextPageToken;
   end;
   TFileListClass = Class of TFileList;
-  
+
   { --------------------------------------------------------------------
     TFlight
     --------------------------------------------------------------------}
-  
+
   TFlight = Class(TGoogleBaseObject)
   Private
     FendDate : TDate;
@@ -3694,11 +3700,11 @@ type
     Property units : String Index 24 Read Funits Write Setunits;
   end;
   TFlightClass = Class of TFlight;
-  
+
   { --------------------------------------------------------------------
     TFloodlightActivitiesGenerateTagResponse
     --------------------------------------------------------------------}
-  
+
   TFloodlightActivitiesGenerateTagResponse = Class(TGoogleBaseObject)
   Private
     FfloodlightActivityTag : String;
@@ -3713,11 +3719,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TFloodlightActivitiesGenerateTagResponseClass = Class of TFloodlightActivitiesGenerateTagResponse;
-  
+
   { --------------------------------------------------------------------
     TFloodlightActivitiesListResponse
     --------------------------------------------------------------------}
-  
+
   TFloodlightActivitiesListResponse = Class(TGoogleBaseObject)
   Private
     FfloodlightActivities : TFloodlightActivitiesListResponseTypefloodlightActivitiesArray;
@@ -3739,11 +3745,11 @@ type
     Property nextPageToken : String Index 16 Read FnextPageToken Write SetnextPageToken;
   end;
   TFloodlightActivitiesListResponseClass = Class of TFloodlightActivitiesListResponse;
-  
+
   { --------------------------------------------------------------------
     TFloodlightActivity
     --------------------------------------------------------------------}
-  
+
   TFloodlightActivity = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -3840,11 +3846,11 @@ type
     Property userDefinedVariableTypes : TStringArray Index 216 Read FuserDefinedVariableTypes Write SetuserDefinedVariableTypes;
   end;
   TFloodlightActivityClass = Class of TFloodlightActivity;
-  
+
   { --------------------------------------------------------------------
     TFloodlightActivityDynamicTag
     --------------------------------------------------------------------}
-  
+
   TFloodlightActivityDynamicTag = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -3862,11 +3868,11 @@ type
     Property tag : String Index 16 Read Ftag Write Settag;
   end;
   TFloodlightActivityDynamicTagClass = Class of TFloodlightActivityDynamicTag;
-  
+
   { --------------------------------------------------------------------
     TFloodlightActivityGroup
     --------------------------------------------------------------------}
-  
+
   TFloodlightActivityGroup = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -3912,11 +3918,11 @@ type
     Property _type : String Index 88 Read F_type Write Set_type;
   end;
   TFloodlightActivityGroupClass = Class of TFloodlightActivityGroup;
-  
+
   { --------------------------------------------------------------------
     TFloodlightActivityGroupsListResponse
     --------------------------------------------------------------------}
-  
+
   TFloodlightActivityGroupsListResponse = Class(TGoogleBaseObject)
   Private
     FfloodlightActivityGroups : TFloodlightActivityGroupsListResponseTypefloodlightActivityGroupsArray;
@@ -3938,11 +3944,11 @@ type
     Property nextPageToken : String Index 16 Read FnextPageToken Write SetnextPageToken;
   end;
   TFloodlightActivityGroupsListResponseClass = Class of TFloodlightActivityGroupsListResponse;
-  
+
   { --------------------------------------------------------------------
     TFloodlightActivityPublisherDynamicTag
     --------------------------------------------------------------------}
-  
+
   TFloodlightActivityPublisherDynamicTag = Class(TGoogleBaseObject)
   Private
     FclickThrough : boolean;
@@ -3969,11 +3975,11 @@ type
     Property viewThrough : boolean Index 40 Read FviewThrough Write SetviewThrough;
   end;
   TFloodlightActivityPublisherDynamicTagClass = Class of TFloodlightActivityPublisherDynamicTag;
-  
+
   { --------------------------------------------------------------------
     TFloodlightConfiguration
     --------------------------------------------------------------------}
-  
+
   TFloodlightConfiguration = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -4040,11 +4046,11 @@ type
     Property userDefinedVariableConfigurations : TFloodlightConfigurationTypeuserDefinedVariableConfigurationsArray Index 136 Read FuserDefinedVariableConfigurations Write SetuserDefinedVariableConfigurations;
   end;
   TFloodlightConfigurationClass = Class of TFloodlightConfiguration;
-  
+
   { --------------------------------------------------------------------
     TFloodlightConfigurationsListResponse
     --------------------------------------------------------------------}
-  
+
   TFloodlightConfigurationsListResponse = Class(TGoogleBaseObject)
   Private
     FfloodlightConfigurations : TFloodlightConfigurationsListResponseTypefloodlightConfigurationsArray;
@@ -4063,11 +4069,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TFloodlightConfigurationsListResponseClass = Class of TFloodlightConfigurationsListResponse;
-  
+
   { --------------------------------------------------------------------
     TFloodlightReportCompatibleFields
     --------------------------------------------------------------------}
-  
+
   TFloodlightReportCompatibleFields = Class(TGoogleBaseObject)
   Private
     FdimensionFilters : TFloodlightReportCompatibleFieldsTypedimensionFiltersArray;
@@ -4092,11 +4098,11 @@ type
     Property metrics : TFloodlightReportCompatibleFieldsTypemetricsArray Index 24 Read Fmetrics Write Setmetrics;
   end;
   TFloodlightReportCompatibleFieldsClass = Class of TFloodlightReportCompatibleFields;
-  
+
   { --------------------------------------------------------------------
     TFrequencyCap
     --------------------------------------------------------------------}
-  
+
   TFrequencyCap = Class(TGoogleBaseObject)
   Private
     Fduration : String;
@@ -4111,11 +4117,11 @@ type
     Property impressions : String Index 8 Read Fimpressions Write Setimpressions;
   end;
   TFrequencyCapClass = Class of TFrequencyCap;
-  
+
   { --------------------------------------------------------------------
     TFsCommand
     --------------------------------------------------------------------}
-  
+
   TFsCommand = Class(TGoogleBaseObject)
   Private
     Fleft : integer;
@@ -4139,11 +4145,11 @@ type
     Property windowWidth : integer Index 32 Read FwindowWidth Write SetwindowWidth;
   end;
   TFsCommandClass = Class of TFsCommand;
-  
+
   { --------------------------------------------------------------------
     TGeoTargeting
     --------------------------------------------------------------------}
-  
+
   TGeoTargeting = Class(TGoogleBaseObject)
   Private
     Fcities : TGeoTargetingTypecitiesArray;
@@ -4174,11 +4180,11 @@ type
     Property regions : TGeoTargetingTyperegionsArray Index 40 Read Fregions Write Setregions;
   end;
   TGeoTargetingClass = Class of TGeoTargeting;
-  
+
   { --------------------------------------------------------------------
     TInventoryItem
     --------------------------------------------------------------------}
-  
+
   TInventoryItem = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -4252,11 +4258,11 @@ type
     Property _type : String Index 152 Read F_type Write Set_type;
   end;
   TInventoryItemClass = Class of TInventoryItem;
-  
+
   { --------------------------------------------------------------------
     TInventoryItemsListResponse
     --------------------------------------------------------------------}
-  
+
   TInventoryItemsListResponse = Class(TGoogleBaseObject)
   Private
     FinventoryItems : TInventoryItemsListResponseTypeinventoryItemsArray;
@@ -4278,11 +4284,11 @@ type
     Property nextPageToken : String Index 16 Read FnextPageToken Write SetnextPageToken;
   end;
   TInventoryItemsListResponseClass = Class of TInventoryItemsListResponse;
-  
+
   { --------------------------------------------------------------------
     TKeyValueTargetingExpression
     --------------------------------------------------------------------}
-  
+
   TKeyValueTargetingExpression = Class(TGoogleBaseObject)
   Private
     Fexpression : String;
@@ -4294,11 +4300,11 @@ type
     Property expression : String Index 0 Read Fexpression Write Setexpression;
   end;
   TKeyValueTargetingExpressionClass = Class of TKeyValueTargetingExpression;
-  
+
   { --------------------------------------------------------------------
     TLandingPage
     --------------------------------------------------------------------}
-  
+
   TLandingPage = Class(TGoogleBaseObject)
   Private
     Fdefault : boolean;
@@ -4322,11 +4328,11 @@ type
     Property url : String Index 32 Read Furl Write Seturl;
   end;
   TLandingPageClass = Class of TLandingPage;
-  
+
   { --------------------------------------------------------------------
     TLandingPagesListResponse
     --------------------------------------------------------------------}
-  
+
   TLandingPagesListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -4345,11 +4351,11 @@ type
     Property landingPages : TLandingPagesListResponseTypelandingPagesArray Index 8 Read FlandingPages Write SetlandingPages;
   end;
   TLandingPagesListResponseClass = Class of TLandingPagesListResponse;
-  
+
   { --------------------------------------------------------------------
     TLastModifiedInfo
     --------------------------------------------------------------------}
-  
+
   TLastModifiedInfo = Class(TGoogleBaseObject)
   Private
     Ftime : String;
@@ -4361,11 +4367,11 @@ type
     Property time : String Index 0 Read Ftime Write Settime;
   end;
   TLastModifiedInfoClass = Class of TLastModifiedInfo;
-  
+
   { --------------------------------------------------------------------
     TListPopulationClause
     --------------------------------------------------------------------}
-  
+
   TListPopulationClause = Class(TGoogleBaseObject)
   Private
     Fterms : TListPopulationClauseTypetermsArray;
@@ -4381,11 +4387,11 @@ type
     Property terms : TListPopulationClauseTypetermsArray Index 0 Read Fterms Write Setterms;
   end;
   TListPopulationClauseClass = Class of TListPopulationClause;
-  
+
   { --------------------------------------------------------------------
     TListPopulationRule
     --------------------------------------------------------------------}
-  
+
   TListPopulationRule = Class(TGoogleBaseObject)
   Private
     FfloodlightActivityId : String;
@@ -4407,11 +4413,11 @@ type
     Property listPopulationClauses : TListPopulationRuleTypelistPopulationClausesArray Index 16 Read FlistPopulationClauses Write SetlistPopulationClauses;
   end;
   TListPopulationRuleClass = Class of TListPopulationRule;
-  
+
   { --------------------------------------------------------------------
     TListPopulationTerm
     --------------------------------------------------------------------}
-  
+
   TListPopulationTerm = Class(TGoogleBaseObject)
   Private
     Fcontains : boolean;
@@ -4445,11 +4451,11 @@ type
     Property variableName : String Index 56 Read FvariableName Write SetvariableName;
   end;
   TListPopulationTermClass = Class of TListPopulationTerm;
-  
+
   { --------------------------------------------------------------------
     TListTargetingExpression
     --------------------------------------------------------------------}
-  
+
   TListTargetingExpression = Class(TGoogleBaseObject)
   Private
     Fexpression : String;
@@ -4461,11 +4467,11 @@ type
     Property expression : String Index 0 Read Fexpression Write Setexpression;
   end;
   TListTargetingExpressionClass = Class of TListTargetingExpression;
-  
+
   { --------------------------------------------------------------------
     TLookbackConfiguration
     --------------------------------------------------------------------}
-  
+
   TLookbackConfiguration = Class(TGoogleBaseObject)
   Private
     FclickDuration : integer;
@@ -4480,11 +4486,11 @@ type
     Property postImpressionActivitiesDuration : integer Index 8 Read FpostImpressionActivitiesDuration Write SetpostImpressionActivitiesDuration;
   end;
   TLookbackConfigurationClass = Class of TLookbackConfiguration;
-  
+
   { --------------------------------------------------------------------
     TMetric
     --------------------------------------------------------------------}
-  
+
   TMetric = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -4499,11 +4505,11 @@ type
     Property name : String Index 8 Read Fname Write Setname;
   end;
   TMetricClass = Class of TMetric;
-  
+
   { --------------------------------------------------------------------
     TMetro
     --------------------------------------------------------------------}
-  
+
   TMetro = Class(TGoogleBaseObject)
   Private
     FcountryCode : String;
@@ -4533,11 +4539,11 @@ type
     Property name : String Index 48 Read Fname Write Setname;
   end;
   TMetroClass = Class of TMetro;
-  
+
   { --------------------------------------------------------------------
     TMetrosListResponse
     --------------------------------------------------------------------}
-  
+
   TMetrosListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -4556,11 +4562,11 @@ type
     Property metros : TMetrosListResponseTypemetrosArray Index 8 Read Fmetros Write Setmetros;
   end;
   TMetrosListResponseClass = Class of TMetrosListResponse;
-  
+
   { --------------------------------------------------------------------
     TMobileCarrier
     --------------------------------------------------------------------}
-  
+
   TMobileCarrier = Class(TGoogleBaseObject)
   Private
     FcountryCode : String;
@@ -4584,11 +4590,11 @@ type
     Property name : String Index 32 Read Fname Write Setname;
   end;
   TMobileCarrierClass = Class of TMobileCarrier;
-  
+
   { --------------------------------------------------------------------
     TMobileCarriersListResponse
     --------------------------------------------------------------------}
-  
+
   TMobileCarriersListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -4607,11 +4613,11 @@ type
     Property mobileCarriers : TMobileCarriersListResponseTypemobileCarriersArray Index 8 Read FmobileCarriers Write SetmobileCarriers;
   end;
   TMobileCarriersListResponseClass = Class of TMobileCarriersListResponse;
-  
+
   { --------------------------------------------------------------------
     TObjectFilter
     --------------------------------------------------------------------}
-  
+
   TObjectFilter = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -4633,11 +4639,11 @@ type
     Property status : String Index 16 Read Fstatus Write Setstatus;
   end;
   TObjectFilterClass = Class of TObjectFilter;
-  
+
   { --------------------------------------------------------------------
     TOffsetPosition
     --------------------------------------------------------------------}
-  
+
   TOffsetPosition = Class(TGoogleBaseObject)
   Private
     Fleft : integer;
@@ -4652,11 +4658,11 @@ type
     Property top : integer Index 8 Read Ftop Write Settop;
   end;
   TOffsetPositionClass = Class of TOffsetPosition;
-  
+
   { --------------------------------------------------------------------
     TOmnitureSettings
     --------------------------------------------------------------------}
-  
+
   TOmnitureSettings = Class(TGoogleBaseObject)
   Private
     FomnitureCostDataEnabled : boolean;
@@ -4671,11 +4677,11 @@ type
     Property omnitureIntegrationEnabled : boolean Index 8 Read FomnitureIntegrationEnabled Write SetomnitureIntegrationEnabled;
   end;
   TOmnitureSettingsClass = Class of TOmnitureSettings;
-  
+
   { --------------------------------------------------------------------
     TOperatingSystem
     --------------------------------------------------------------------}
-  
+
   TOperatingSystem = Class(TGoogleBaseObject)
   Private
     FdartId : String;
@@ -4699,11 +4705,11 @@ type
     Property name : String Index 32 Read Fname Write Setname;
   end;
   TOperatingSystemClass = Class of TOperatingSystem;
-  
+
   { --------------------------------------------------------------------
     TOperatingSystemVersion
     --------------------------------------------------------------------}
-  
+
   TOperatingSystemVersion = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -4730,11 +4736,11 @@ type
     Property operatingSystem : TOperatingSystem Index 40 Read FoperatingSystem Write SetoperatingSystem;
   end;
   TOperatingSystemVersionClass = Class of TOperatingSystemVersion;
-  
+
   { --------------------------------------------------------------------
     TOperatingSystemVersionsListResponse
     --------------------------------------------------------------------}
-  
+
   TOperatingSystemVersionsListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -4753,11 +4759,11 @@ type
     Property operatingSystemVersions : TOperatingSystemVersionsListResponseTypeoperatingSystemVersionsArray Index 8 Read FoperatingSystemVersions Write SetoperatingSystemVersions;
   end;
   TOperatingSystemVersionsListResponseClass = Class of TOperatingSystemVersionsListResponse;
-  
+
   { --------------------------------------------------------------------
     TOperatingSystemsListResponse
     --------------------------------------------------------------------}
-  
+
   TOperatingSystemsListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -4776,11 +4782,11 @@ type
     Property operatingSystems : TOperatingSystemsListResponseTypeoperatingSystemsArray Index 8 Read FoperatingSystems Write SetoperatingSystems;
   end;
   TOperatingSystemsListResponseClass = Class of TOperatingSystemsListResponse;
-  
+
   { --------------------------------------------------------------------
     TOptimizationActivity
     --------------------------------------------------------------------}
-  
+
   TOptimizationActivity = Class(TGoogleBaseObject)
   Private
     FfloodlightActivityId : String;
@@ -4798,11 +4804,11 @@ type
     Property weight : integer Index 16 Read Fweight Write Setweight;
   end;
   TOptimizationActivityClass = Class of TOptimizationActivity;
-  
+
   { --------------------------------------------------------------------
     TOrder
     --------------------------------------------------------------------}
-  
+
   TOrder = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -4875,11 +4881,11 @@ type
     Property termsAndConditions : String Index 152 Read FtermsAndConditions Write SettermsAndConditions;
   end;
   TOrderClass = Class of TOrder;
-  
+
   { --------------------------------------------------------------------
     TOrderContact
     --------------------------------------------------------------------}
-  
+
   TOrderContact = Class(TGoogleBaseObject)
   Private
     FcontactInfo : String;
@@ -4903,11 +4909,11 @@ type
     Property signatureUserProfileId : String Index 32 Read FsignatureUserProfileId Write SetsignatureUserProfileId;
   end;
   TOrderContactClass = Class of TOrderContact;
-  
+
   { --------------------------------------------------------------------
     TOrderDocument
     --------------------------------------------------------------------}
-  
+
   TOrderDocument = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -4972,11 +4978,11 @@ type
     Property _type : String Index 128 Read F_type Write Set_type;
   end;
   TOrderDocumentClass = Class of TOrderDocument;
-  
+
   { --------------------------------------------------------------------
     TOrderDocumentsListResponse
     --------------------------------------------------------------------}
-  
+
   TOrderDocumentsListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -4998,11 +5004,11 @@ type
     Property orderDocuments : TOrderDocumentsListResponseTypeorderDocumentsArray Index 16 Read ForderDocuments Write SetorderDocuments;
   end;
   TOrderDocumentsListResponseClass = Class of TOrderDocumentsListResponse;
-  
+
   { --------------------------------------------------------------------
     TOrdersListResponse
     --------------------------------------------------------------------}
-  
+
   TOrdersListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -5024,11 +5030,11 @@ type
     Property orders : TOrdersListResponseTypeordersArray Index 16 Read Forders Write Setorders;
   end;
   TOrdersListResponseClass = Class of TOrdersListResponse;
-  
+
   { --------------------------------------------------------------------
     TPathToConversionReportCompatibleFields
     --------------------------------------------------------------------}
-  
+
   TPathToConversionReportCompatibleFields = Class(TGoogleBaseObject)
   Private
     FconversionDimensions : TPathToConversionReportCompatibleFieldsTypeconversionDimensionsArray;
@@ -5056,11 +5062,11 @@ type
     Property perInteractionDimensions : TPathToConversionReportCompatibleFieldsTypeperInteractionDimensionsArray Index 32 Read FperInteractionDimensions Write SetperInteractionDimensions;
   end;
   TPathToConversionReportCompatibleFieldsClass = Class of TPathToConversionReportCompatibleFields;
-  
+
   { --------------------------------------------------------------------
     TPlacement
     --------------------------------------------------------------------}
-  
+
   TPlacement = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -5181,11 +5187,11 @@ type
     Property tagSetting : TTagSetting Index 280 Read FtagSetting Write SettagSetting;
   end;
   TPlacementClass = Class of TPlacement;
-  
+
   { --------------------------------------------------------------------
     TPlacementAssignment
     --------------------------------------------------------------------}
-  
+
   TPlacementAssignment = Class(TGoogleBaseObject)
   Private
     Factive : boolean;
@@ -5206,11 +5212,11 @@ type
     Property sslRequired : boolean Index 24 Read FsslRequired Write SetsslRequired;
   end;
   TPlacementAssignmentClass = Class of TPlacementAssignment;
-  
+
   { --------------------------------------------------------------------
     TPlacementGroup
     --------------------------------------------------------------------}
-  
+
   TPlacementGroup = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -5301,11 +5307,11 @@ type
     Property subaccountId : String Index 200 Read FsubaccountId Write SetsubaccountId;
   end;
   TPlacementGroupClass = Class of TPlacementGroup;
-  
+
   { --------------------------------------------------------------------
     TPlacementGroupsListResponse
     --------------------------------------------------------------------}
-  
+
   TPlacementGroupsListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -5327,11 +5333,11 @@ type
     Property placementGroups : TPlacementGroupsListResponseTypeplacementGroupsArray Index 16 Read FplacementGroups Write SetplacementGroups;
   end;
   TPlacementGroupsListResponseClass = Class of TPlacementGroupsListResponse;
-  
+
   { --------------------------------------------------------------------
     TPlacementStrategiesListResponse
     --------------------------------------------------------------------}
-  
+
   TPlacementStrategiesListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -5353,11 +5359,11 @@ type
     Property placementStrategies : TPlacementStrategiesListResponseTypeplacementStrategiesArray Index 16 Read FplacementStrategies Write SetplacementStrategies;
   end;
   TPlacementStrategiesListResponseClass = Class of TPlacementStrategiesListResponse;
-  
+
   { --------------------------------------------------------------------
     TPlacementStrategy
     --------------------------------------------------------------------}
-  
+
   TPlacementStrategy = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -5378,11 +5384,11 @@ type
     Property name : String Index 24 Read Fname Write Setname;
   end;
   TPlacementStrategyClass = Class of TPlacementStrategy;
-  
+
   { --------------------------------------------------------------------
     TPlacementTag
     --------------------------------------------------------------------}
-  
+
   TPlacementTag = Class(TGoogleBaseObject)
   Private
     FplacementId : String;
@@ -5401,11 +5407,11 @@ type
     Property tagDatas : TPlacementTagTypetagDatasArray Index 8 Read FtagDatas Write SettagDatas;
   end;
   TPlacementTagClass = Class of TPlacementTag;
-  
+
   { --------------------------------------------------------------------
     TPlacementsGenerateTagsResponse
     --------------------------------------------------------------------}
-  
+
   TPlacementsGenerateTagsResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -5424,11 +5430,11 @@ type
     Property placementTags : TPlacementsGenerateTagsResponseTypeplacementTagsArray Index 8 Read FplacementTags Write SetplacementTags;
   end;
   TPlacementsGenerateTagsResponseClass = Class of TPlacementsGenerateTagsResponse;
-  
+
   { --------------------------------------------------------------------
     TPlacementsListResponse
     --------------------------------------------------------------------}
-  
+
   TPlacementsListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -5450,11 +5456,11 @@ type
     Property placements : TPlacementsListResponseTypeplacementsArray Index 16 Read Fplacements Write Setplacements;
   end;
   TPlacementsListResponseClass = Class of TPlacementsListResponse;
-  
+
   { --------------------------------------------------------------------
     TPlatformType
     --------------------------------------------------------------------}
-  
+
   TPlatformType = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -5472,11 +5478,11 @@ type
     Property name : String Index 16 Read Fname Write Setname;
   end;
   TPlatformTypeClass = Class of TPlatformType;
-  
+
   { --------------------------------------------------------------------
     TPlatformTypesListResponse
     --------------------------------------------------------------------}
-  
+
   TPlatformTypesListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -5495,11 +5501,11 @@ type
     Property platformTypes : TPlatformTypesListResponseTypeplatformTypesArray Index 8 Read FplatformTypes Write SetplatformTypes;
   end;
   TPlatformTypesListResponseClass = Class of TPlatformTypesListResponse;
-  
+
   { --------------------------------------------------------------------
     TPopupWindowProperties
     --------------------------------------------------------------------}
-  
+
   TPopupWindowProperties = Class(TGoogleBaseObject)
   Private
     Fdimension : TSize;
@@ -5535,11 +5541,11 @@ type
     Property title : String Index 64 Read Ftitle Write Settitle;
   end;
   TPopupWindowPropertiesClass = Class of TPopupWindowProperties;
-  
+
   { --------------------------------------------------------------------
     TPostalCode
     --------------------------------------------------------------------}
-  
+
   TPostalCode = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -5563,11 +5569,11 @@ type
     Property kind : String Index 32 Read Fkind Write Setkind;
   end;
   TPostalCodeClass = Class of TPostalCode;
-  
+
   { --------------------------------------------------------------------
     TPostalCodesListResponse
     --------------------------------------------------------------------}
-  
+
   TPostalCodesListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -5586,11 +5592,11 @@ type
     Property postalCodes : TPostalCodesListResponseTypepostalCodesArray Index 8 Read FpostalCodes Write SetpostalCodes;
   end;
   TPostalCodesListResponseClass = Class of TPostalCodesListResponse;
-  
+
   { --------------------------------------------------------------------
     TPricing
     --------------------------------------------------------------------}
-  
+
   TPricing = Class(TGoogleBaseObject)
   Private
     FcapCostType : String;
@@ -5621,11 +5627,11 @@ type
     Property startDate : TDate Index 40 Read FstartDate Write SetstartDate;
   end;
   TPricingClass = Class of TPricing;
-  
+
   { --------------------------------------------------------------------
     TPricingSchedule
     --------------------------------------------------------------------}
-  
+
   TPricingSchedule = Class(TGoogleBaseObject)
   Private
     FcapCostOption : String;
@@ -5665,11 +5671,11 @@ type
     Property testingStartDate : TDate Index 64 Read FtestingStartDate Write SettestingStartDate;
   end;
   TPricingScheduleClass = Class of TPricingSchedule;
-  
+
   { --------------------------------------------------------------------
     TPricingSchedulePricingPeriod
     --------------------------------------------------------------------}
-  
+
   TPricingSchedulePricingPeriod = Class(TGoogleBaseObject)
   Private
     FendDate : TDate;
@@ -5693,11 +5699,11 @@ type
     Property units : String Index 32 Read Funits Write Setunits;
   end;
   TPricingSchedulePricingPeriodClass = Class of TPricingSchedulePricingPeriod;
-  
+
   { --------------------------------------------------------------------
     TProject
     --------------------------------------------------------------------}
-  
+
   TProject = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -5769,11 +5775,11 @@ type
     Property targetImpressions : String Index 160 Read FtargetImpressions Write SettargetImpressions;
   end;
   TProjectClass = Class of TProject;
-  
+
   { --------------------------------------------------------------------
     TProjectsListResponse
     --------------------------------------------------------------------}
-  
+
   TProjectsListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -5795,11 +5801,11 @@ type
     Property projects : TProjectsListResponseTypeprojectsArray Index 16 Read Fprojects Write Setprojects;
   end;
   TProjectsListResponseClass = Class of TProjectsListResponse;
-  
+
   { --------------------------------------------------------------------
     TReachReportCompatibleFields
     --------------------------------------------------------------------}
-  
+
   TReachReportCompatibleFields = Class(TGoogleBaseObject)
   Private
     FdimensionFilters : TReachReportCompatibleFieldsTypedimensionFiltersArray;
@@ -5830,11 +5836,11 @@ type
     Property reachByFrequencyMetrics : TReachReportCompatibleFieldsTypereachByFrequencyMetricsArray Index 40 Read FreachByFrequencyMetrics Write SetreachByFrequencyMetrics;
   end;
   TReachReportCompatibleFieldsClass = Class of TReachReportCompatibleFields;
-  
+
   { --------------------------------------------------------------------
     TRecipient
     --------------------------------------------------------------------}
-  
+
   TRecipient = Class(TGoogleBaseObject)
   Private
     FdeliveryType : String;
@@ -5852,11 +5858,11 @@ type
     Property kind : String Index 16 Read Fkind Write Setkind;
   end;
   TRecipientClass = Class of TRecipient;
-  
+
   { --------------------------------------------------------------------
     TRegion
     --------------------------------------------------------------------}
-  
+
   TRegion = Class(TGoogleBaseObject)
   Private
     FcountryCode : String;
@@ -5883,11 +5889,11 @@ type
     Property regionCode : String Index 40 Read FregionCode Write SetregionCode;
   end;
   TRegionClass = Class of TRegion;
-  
+
   { --------------------------------------------------------------------
     TRegionsListResponse
     --------------------------------------------------------------------}
-  
+
   TRegionsListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -5906,11 +5912,11 @@ type
     Property regions : TRegionsListResponseTyperegionsArray Index 8 Read Fregions Write Setregions;
   end;
   TRegionsListResponseClass = Class of TRegionsListResponse;
-  
+
   { --------------------------------------------------------------------
     TRemarketingList
     --------------------------------------------------------------------}
-  
+
   TRemarketingList = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -5958,11 +5964,11 @@ type
     Property subaccountId : String Index 96 Read FsubaccountId Write SetsubaccountId;
   end;
   TRemarketingListClass = Class of TRemarketingList;
-  
+
   { --------------------------------------------------------------------
     TRemarketingListShare
     --------------------------------------------------------------------}
-  
+
   TRemarketingListShare = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -5987,11 +5993,11 @@ type
     Property sharedAdvertiserIds : TStringArray Index 24 Read FsharedAdvertiserIds Write SetsharedAdvertiserIds;
   end;
   TRemarketingListShareClass = Class of TRemarketingListShare;
-  
+
   { --------------------------------------------------------------------
     TRemarketingListsListResponse
     --------------------------------------------------------------------}
-  
+
   TRemarketingListsListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -6013,11 +6019,11 @@ type
     Property remarketingLists : TRemarketingListsListResponseTyperemarketingListsArray Index 16 Read FremarketingLists Write SetremarketingLists;
   end;
   TRemarketingListsListResponseClass = Class of TRemarketingListsListResponse;
-  
+
   { --------------------------------------------------------------------
     TReportTypecriteria
     --------------------------------------------------------------------}
-  
+
   TReportTypecriteria = Class(TGoogleBaseObject)
   Private
     Factivities : TActivities;
@@ -6048,11 +6054,11 @@ type
     Property metricNames : TStringArray Index 40 Read FmetricNames Write SetmetricNames;
   end;
   TReportTypecriteriaClass = Class of TReportTypecriteria;
-  
+
   { --------------------------------------------------------------------
     TReportTypecrossDimensionReachCriteria
     --------------------------------------------------------------------}
-  
+
   TReportTypecrossDimensionReachCriteria = Class(TGoogleBaseObject)
   Private
     Fbreakdown : TReportTypecrossDimensionReachCriteriaTypebreakdownArray;
@@ -6086,11 +6092,11 @@ type
     Property pivoted : boolean Index 48 Read Fpivoted Write Setpivoted;
   end;
   TReportTypecrossDimensionReachCriteriaClass = Class of TReportTypecrossDimensionReachCriteria;
-  
+
   { --------------------------------------------------------------------
     TReportTypedelivery
     --------------------------------------------------------------------}
-  
+
   TReportTypedelivery = Class(TGoogleBaseObject)
   Private
     FemailOwner : boolean;
@@ -6115,11 +6121,11 @@ type
     Property recipients : TReportTypedeliveryTyperecipientsArray Index 24 Read Frecipients Write Setrecipients;
   end;
   TReportTypedeliveryClass = Class of TReportTypedelivery;
-  
+
   { --------------------------------------------------------------------
     TReportTypefloodlightCriteriaTypereportProperties
     --------------------------------------------------------------------}
-  
+
   TReportTypefloodlightCriteriaTypereportProperties = Class(TGoogleBaseObject)
   Private
     FincludeAttributedIPConversions : boolean;
@@ -6137,11 +6143,11 @@ type
     Property includeUnattributedIPConversions : boolean Index 16 Read FincludeUnattributedIPConversions Write SetincludeUnattributedIPConversions;
   end;
   TReportTypefloodlightCriteriaTypereportPropertiesClass = Class of TReportTypefloodlightCriteriaTypereportProperties;
-  
+
   { --------------------------------------------------------------------
     TReportTypefloodlightCriteria
     --------------------------------------------------------------------}
-  
+
   TReportTypefloodlightCriteria = Class(TGoogleBaseObject)
   Private
     FcustomRichMediaEvents : TReportTypefloodlightCriteriaTypecustomRichMediaEventsArray;
@@ -6175,11 +6181,11 @@ type
     Property reportProperties : TReportTypefloodlightCriteriaTypereportProperties Index 48 Read FreportProperties Write SetreportProperties;
   end;
   TReportTypefloodlightCriteriaClass = Class of TReportTypefloodlightCriteria;
-  
+
   { --------------------------------------------------------------------
     TReportTypepathToConversionCriteriaTypereportProperties
     --------------------------------------------------------------------}
-  
+
   TReportTypepathToConversionCriteriaTypereportProperties = Class(TGoogleBaseObject)
   Private
     FclicksLookbackWindow : integer;
@@ -6215,11 +6221,11 @@ type
     Property pivotOnInteractionPath : boolean Index 64 Read FpivotOnInteractionPath Write SetpivotOnInteractionPath;
   end;
   TReportTypepathToConversionCriteriaTypereportPropertiesClass = Class of TReportTypepathToConversionCriteriaTypereportProperties;
-  
+
   { --------------------------------------------------------------------
     TReportTypepathToConversionCriteria
     --------------------------------------------------------------------}
-  
+
   TReportTypepathToConversionCriteria = Class(TGoogleBaseObject)
   Private
     FactivityFilters : TReportTypepathToConversionCriteriaTypeactivityFiltersArray;
@@ -6259,11 +6265,11 @@ type
     Property reportProperties : TReportTypepathToConversionCriteriaTypereportProperties Index 64 Read FreportProperties Write SetreportProperties;
   end;
   TReportTypepathToConversionCriteriaClass = Class of TReportTypepathToConversionCriteria;
-  
+
   { --------------------------------------------------------------------
     TReportTypereachCriteria
     --------------------------------------------------------------------}
-  
+
   TReportTypereachCriteria = Class(TGoogleBaseObject)
   Private
     Factivities : TActivities;
@@ -6300,11 +6306,11 @@ type
     Property reachByFrequencyMetricNames : TStringArray Index 56 Read FreachByFrequencyMetricNames Write SetreachByFrequencyMetricNames;
   end;
   TReportTypereachCriteriaClass = Class of TReportTypereachCriteria;
-  
+
   { --------------------------------------------------------------------
     TReportTypeschedule
     --------------------------------------------------------------------}
-  
+
   TReportTypeschedule = Class(TGoogleBaseObject)
   Private
     Factive : boolean;
@@ -6338,11 +6344,11 @@ type
     Property startDate : TDate Index 48 Read FstartDate Write SetstartDate;
   end;
   TReportTypescheduleClass = Class of TReportTypeschedule;
-  
+
   { --------------------------------------------------------------------
     TReport
     --------------------------------------------------------------------}
-  
+
   TReport = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -6406,11 +6412,11 @@ type
     Property _type : String Index 136 Read F_type Write Set_type;
   end;
   TReportClass = Class of TReport;
-  
+
   { --------------------------------------------------------------------
     TReportCompatibleFields
     --------------------------------------------------------------------}
-  
+
   TReportCompatibleFields = Class(TGoogleBaseObject)
   Private
     FdimensionFilters : TReportCompatibleFieldsTypedimensionFiltersArray;
@@ -6438,11 +6444,11 @@ type
     Property pivotedActivityMetrics : TReportCompatibleFieldsTypepivotedActivityMetricsArray Index 32 Read FpivotedActivityMetrics Write SetpivotedActivityMetrics;
   end;
   TReportCompatibleFieldsClass = Class of TReportCompatibleFields;
-  
+
   { --------------------------------------------------------------------
     TReportList
     --------------------------------------------------------------------}
-  
+
   TReportList = Class(TGoogleBaseObject)
   Private
     Fetag : String;
@@ -6467,11 +6473,11 @@ type
     Property nextPageToken : String Index 24 Read FnextPageToken Write SetnextPageToken;
   end;
   TReportListClass = Class of TReportList;
-  
+
   { --------------------------------------------------------------------
     TReportsConfiguration
     --------------------------------------------------------------------}
-  
+
   TReportsConfiguration = Class(TGoogleBaseObject)
   Private
     FexposureToConversionEnabled : boolean;
@@ -6489,11 +6495,11 @@ type
     Property reportGenerationTimeZoneId : String Index 16 Read FreportGenerationTimeZoneId Write SetreportGenerationTimeZoneId;
   end;
   TReportsConfigurationClass = Class of TReportsConfiguration;
-  
+
   { --------------------------------------------------------------------
     TRichMediaExitOverride
     --------------------------------------------------------------------}
-  
+
   TRichMediaExitOverride = Class(TGoogleBaseObject)
   Private
     FcustomExitUrl : String;
@@ -6511,11 +6517,11 @@ type
     Property useCustomExitUrl : boolean Index 16 Read FuseCustomExitUrl Write SetuseCustomExitUrl;
   end;
   TRichMediaExitOverrideClass = Class of TRichMediaExitOverride;
-  
+
   { --------------------------------------------------------------------
     TSite
     --------------------------------------------------------------------}
-  
+
   TSite = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -6564,11 +6570,11 @@ type
     Property subaccountId : String Index 88 Read FsubaccountId Write SetsubaccountId;
   end;
   TSiteClass = Class of TSite;
-  
+
   { --------------------------------------------------------------------
     TSiteContact
     --------------------------------------------------------------------}
-  
+
   TSiteContact = Class(TGoogleBaseObject)
   Private
     Faddress : String;
@@ -6601,11 +6607,11 @@ type
     Property title : String Index 56 Read Ftitle Write Settitle;
   end;
   TSiteContactClass = Class of TSiteContact;
-  
+
   { --------------------------------------------------------------------
     TSiteSettings
     --------------------------------------------------------------------}
-  
+
   TSiteSettings = Class(TGoogleBaseObject)
   Private
     FactiveViewOptOut : boolean;
@@ -6635,11 +6641,11 @@ type
     Property videoActiveViewOptOut : boolean Index 48 Read FvideoActiveViewOptOut Write SetvideoActiveViewOptOut;
   end;
   TSiteSettingsClass = Class of TSiteSettings;
-  
+
   { --------------------------------------------------------------------
     TSitesListResponse
     --------------------------------------------------------------------}
-  
+
   TSitesListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -6661,11 +6667,11 @@ type
     Property sites : TSitesListResponseTypesitesArray Index 16 Read Fsites Write Setsites;
   end;
   TSitesListResponseClass = Class of TSitesListResponse;
-  
+
   { --------------------------------------------------------------------
     TSize
     --------------------------------------------------------------------}
-  
+
   TSize = Class(TGoogleBaseObject)
   Private
     Fheight : integer;
@@ -6689,11 +6695,11 @@ type
     Property width : integer Index 32 Read Fwidth Write Setwidth;
   end;
   TSizeClass = Class of TSize;
-  
+
   { --------------------------------------------------------------------
     TSizesListResponse
     --------------------------------------------------------------------}
-  
+
   TSizesListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -6712,11 +6718,11 @@ type
     Property sizes : TSizesListResponseTypesizesArray Index 8 Read Fsizes Write Setsizes;
   end;
   TSizesListResponseClass = Class of TSizesListResponse;
-  
+
   { --------------------------------------------------------------------
     TSortedDimension
     --------------------------------------------------------------------}
-  
+
   TSortedDimension = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -6734,11 +6740,11 @@ type
     Property sortOrder : String Index 16 Read FsortOrder Write SetsortOrder;
   end;
   TSortedDimensionClass = Class of TSortedDimension;
-  
+
   { --------------------------------------------------------------------
     TSubaccount
     --------------------------------------------------------------------}
-  
+
   TSubaccount = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -6766,11 +6772,11 @@ type
     Property name : String Index 32 Read Fname Write Setname;
   end;
   TSubaccountClass = Class of TSubaccount;
-  
+
   { --------------------------------------------------------------------
     TSubaccountsListResponse
     --------------------------------------------------------------------}
-  
+
   TSubaccountsListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -6792,11 +6798,11 @@ type
     Property subaccounts : TSubaccountsListResponseTypesubaccountsArray Index 16 Read Fsubaccounts Write Setsubaccounts;
   end;
   TSubaccountsListResponseClass = Class of TSubaccountsListResponse;
-  
+
   { --------------------------------------------------------------------
     TTagData
     --------------------------------------------------------------------}
-  
+
   TTagData = Class(TGoogleBaseObject)
   Private
     FadId : String;
@@ -6820,11 +6826,11 @@ type
     Property impressionTag : String Index 32 Read FimpressionTag Write SetimpressionTag;
   end;
   TTagDataClass = Class of TTagData;
-  
+
   { --------------------------------------------------------------------
     TTagSetting
     --------------------------------------------------------------------}
-  
+
   TTagSetting = Class(TGoogleBaseObject)
   Private
     FadditionalKeyValues : String;
@@ -6845,11 +6851,11 @@ type
     Property keywordOption : String Index 24 Read FkeywordOption Write SetkeywordOption;
   end;
   TTagSettingClass = Class of TTagSetting;
-  
+
   { --------------------------------------------------------------------
     TTagSettings
     --------------------------------------------------------------------}
-  
+
   TTagSettings = Class(TGoogleBaseObject)
   Private
     FdynamicTagEnabled : boolean;
@@ -6864,11 +6870,11 @@ type
     Property imageTagEnabled : boolean Index 8 Read FimageTagEnabled Write SetimageTagEnabled;
   end;
   TTagSettingsClass = Class of TTagSettings;
-  
+
   { --------------------------------------------------------------------
     TTargetWindow
     --------------------------------------------------------------------}
-  
+
   TTargetWindow = Class(TGoogleBaseObject)
   Private
     FcustomHtml : String;
@@ -6883,11 +6889,11 @@ type
     Property targetWindowOption : String Index 8 Read FtargetWindowOption Write SettargetWindowOption;
   end;
   TTargetWindowClass = Class of TTargetWindow;
-  
+
   { --------------------------------------------------------------------
     TTargetableRemarketingList
     --------------------------------------------------------------------}
-  
+
   TTargetableRemarketingList = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -6932,11 +6938,11 @@ type
     Property subaccountId : String Index 88 Read FsubaccountId Write SetsubaccountId;
   end;
   TTargetableRemarketingListClass = Class of TTargetableRemarketingList;
-  
+
   { --------------------------------------------------------------------
     TTargetableRemarketingListsListResponse
     --------------------------------------------------------------------}
-  
+
   TTargetableRemarketingListsListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -6958,11 +6964,11 @@ type
     Property targetableRemarketingLists : TTargetableRemarketingListsListResponseTypetargetableRemarketingListsArray Index 16 Read FtargetableRemarketingLists Write SettargetableRemarketingLists;
   end;
   TTargetableRemarketingListsListResponseClass = Class of TTargetableRemarketingListsListResponse;
-  
+
   { --------------------------------------------------------------------
     TTechnologyTargeting
     --------------------------------------------------------------------}
-  
+
   TTechnologyTargeting = Class(TGoogleBaseObject)
   Private
     Fbrowsers : TTechnologyTargetingTypebrowsersArray;
@@ -6993,11 +6999,11 @@ type
     Property platformTypes : TTechnologyTargetingTypeplatformTypesArray Index 40 Read FplatformTypes Write SetplatformTypes;
   end;
   TTechnologyTargetingClass = Class of TTechnologyTargeting;
-  
+
   { --------------------------------------------------------------------
     TThirdPartyAuthenticationToken
     --------------------------------------------------------------------}
-  
+
   TThirdPartyAuthenticationToken = Class(TGoogleBaseObject)
   Private
     Fname : String;
@@ -7012,11 +7018,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TThirdPartyAuthenticationTokenClass = Class of TThirdPartyAuthenticationToken;
-  
+
   { --------------------------------------------------------------------
     TThirdPartyTrackingUrl
     --------------------------------------------------------------------}
-  
+
   TThirdPartyTrackingUrl = Class(TGoogleBaseObject)
   Private
     FthirdPartyUrlType : String;
@@ -7031,11 +7037,11 @@ type
     Property url : String Index 8 Read Furl Write Seturl;
   end;
   TThirdPartyTrackingUrlClass = Class of TThirdPartyTrackingUrl;
-  
+
   { --------------------------------------------------------------------
     TUserDefinedVariableConfiguration
     --------------------------------------------------------------------}
-  
+
   TUserDefinedVariableConfiguration = Class(TGoogleBaseObject)
   Private
     FdataType : String;
@@ -7053,11 +7059,11 @@ type
     Property variableType : String Index 16 Read FvariableType Write SetvariableType;
   end;
   TUserDefinedVariableConfigurationClass = Class of TUserDefinedVariableConfiguration;
-  
+
   { --------------------------------------------------------------------
     TUserProfile
     --------------------------------------------------------------------}
-  
+
   TUserProfile = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -7090,11 +7096,11 @@ type
     Property userName : String Index 56 Read FuserName Write SetuserName;
   end;
   TUserProfileClass = Class of TUserProfile;
-  
+
   { --------------------------------------------------------------------
     TUserProfileList
     --------------------------------------------------------------------}
-  
+
   TUserProfileList = Class(TGoogleBaseObject)
   Private
     Fetag : String;
@@ -7116,11 +7122,11 @@ type
     Property kind : String Index 16 Read Fkind Write Setkind;
   end;
   TUserProfileListClass = Class of TUserProfileList;
-  
+
   { --------------------------------------------------------------------
     TUserRole
     --------------------------------------------------------------------}
-  
+
   TUserRole = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -7157,11 +7163,11 @@ type
     Property subaccountId : String Index 56 Read FsubaccountId Write SetsubaccountId;
   end;
   TUserRoleClass = Class of TUserRole;
-  
+
   { --------------------------------------------------------------------
     TUserRolePermission
     --------------------------------------------------------------------}
-  
+
   TUserRolePermission = Class(TGoogleBaseObject)
   Private
     Favailability : String;
@@ -7185,11 +7191,11 @@ type
     Property permissionGroupId : String Index 32 Read FpermissionGroupId Write SetpermissionGroupId;
   end;
   TUserRolePermissionClass = Class of TUserRolePermission;
-  
+
   { --------------------------------------------------------------------
     TUserRolePermissionGroup
     --------------------------------------------------------------------}
-  
+
   TUserRolePermissionGroup = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -7207,11 +7213,11 @@ type
     Property name : String Index 16 Read Fname Write Setname;
   end;
   TUserRolePermissionGroupClass = Class of TUserRolePermissionGroup;
-  
+
   { --------------------------------------------------------------------
     TUserRolePermissionGroupsListResponse
     --------------------------------------------------------------------}
-  
+
   TUserRolePermissionGroupsListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -7230,11 +7236,11 @@ type
     Property userRolePermissionGroups : TUserRolePermissionGroupsListResponseTypeuserRolePermissionGroupsArray Index 8 Read FuserRolePermissionGroups Write SetuserRolePermissionGroups;
   end;
   TUserRolePermissionGroupsListResponseClass = Class of TUserRolePermissionGroupsListResponse;
-  
+
   { --------------------------------------------------------------------
     TUserRolePermissionsListResponse
     --------------------------------------------------------------------}
-  
+
   TUserRolePermissionsListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -7253,11 +7259,11 @@ type
     Property userRolePermissions : TUserRolePermissionsListResponseTypeuserRolePermissionsArray Index 8 Read FuserRolePermissions Write SetuserRolePermissions;
   end;
   TUserRolePermissionsListResponseClass = Class of TUserRolePermissionsListResponse;
-  
+
   { --------------------------------------------------------------------
     TUserRolesListResponse
     --------------------------------------------------------------------}
-  
+
   TUserRolesListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -7279,23 +7285,23 @@ type
     Property userRoles : TUserRolesListResponseTypeuserRolesArray Index 16 Read FuserRoles Write SetuserRoles;
   end;
   TUserRolesListResponseClass = Class of TUserRolesListResponse;
-  
+
   { --------------------------------------------------------------------
     TAccountActiveAdSummariesResource
     --------------------------------------------------------------------}
-  
+
   TAccountActiveAdSummariesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
     Class Function DefaultAPI : TGoogleAPIClass; override;
     Function Get(profileId: string; summaryAccountId: string) : TAccountActiveAdSummary;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TAccountPermissionGroupsResource
     --------------------------------------------------------------------}
-  
+
   TAccountPermissionGroupsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7303,12 +7309,12 @@ type
     Function Get(id: string; profileId: string) : TAccountPermissionGroup;
     Function List(profileId: string) : TAccountPermissionGroupsListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TAccountPermissionsResource
     --------------------------------------------------------------------}
-  
+
   TAccountPermissionsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7316,15 +7322,15 @@ type
     Function Get(id: string; profileId: string) : TAccountPermission;
     Function List(profileId: string) : TAccountPermissionsListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TAccountUserProfilesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TAccountUserProfilesResource, method List
-  
+
   TAccountUserProfilesListOptions = Record
     active : boolean;
     ids : int64;
@@ -7336,14 +7342,14 @@ type
     subaccountId : int64;
     userRoleId : int64;
   end;
-  
-  
+
+
   //Optional query Options for TAccountUserProfilesResource, method Patch
-  
+
   TAccountUserProfilesPatchOptions = Record
     id : int64;
   end;
-  
+
   TAccountUserProfilesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7356,15 +7362,15 @@ type
     Function Patch(profileId: string; aAccountUserProfile : TAccountUserProfile; AQuery : TAccountUserProfilespatchOptions) : TAccountUserProfile;
     Function Update(profileId: string; aAccountUserProfile : TAccountUserProfile) : TAccountUserProfile;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TAccountsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TAccountsResource, method List
-  
+
   TAccountsListOptions = Record
     active : boolean;
     ids : int64;
@@ -7374,14 +7380,14 @@ type
     sortField : String;
     sortOrder : String;
   end;
-  
-  
+
+
   //Optional query Options for TAccountsResource, method Patch
-  
+
   TAccountsPatchOptions = Record
     id : int64;
   end;
-  
+
   TAccountsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7393,15 +7399,15 @@ type
     Function Patch(profileId: string; aAccount : TAccount; AQuery : TAccountspatchOptions) : TAccount;
     Function Update(profileId: string; aAccount : TAccount) : TAccount;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TAdsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TAdsResource, method List
-  
+
   TAdsListOptions = Record
     active : boolean;
     advertiserId : int64;
@@ -7428,14 +7434,14 @@ type
     sslRequired : boolean;
     _type : String;
   end;
-  
-  
+
+
   //Optional query Options for TAdsResource, method Patch
-  
+
   TAdsPatchOptions = Record
     id : int64;
   end;
-  
+
   TAdsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7448,15 +7454,15 @@ type
     Function Patch(profileId: string; aAd : TAd; AQuery : TAdspatchOptions) : TAd;
     Function Update(profileId: string; aAd : TAd) : TAd;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TAdvertiserGroupsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TAdvertiserGroupsResource, method List
-  
+
   TAdvertiserGroupsListOptions = Record
     ids : int64;
     maxResults : integer;
@@ -7465,14 +7471,14 @@ type
     sortField : String;
     sortOrder : String;
   end;
-  
-  
+
+
   //Optional query Options for TAdvertiserGroupsResource, method Patch
-  
+
   TAdvertiserGroupsPatchOptions = Record
     id : int64;
   end;
-  
+
   TAdvertiserGroupsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7486,15 +7492,15 @@ type
     Function Patch(profileId: string; aAdvertiserGroup : TAdvertiserGroup; AQuery : TAdvertiserGroupspatchOptions) : TAdvertiserGroup;
     Function Update(profileId: string; aAdvertiserGroup : TAdvertiserGroup) : TAdvertiserGroup;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TAdvertisersResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TAdvertisersResource, method List
-  
+
   TAdvertisersListOptions = Record
     advertiserGroupIds : int64;
     floodlightConfigurationIds : int64;
@@ -7509,14 +7515,14 @@ type
     status : String;
     subaccountId : int64;
   end;
-  
-  
+
+
   //Optional query Options for TAdvertisersResource, method Patch
-  
+
   TAdvertisersPatchOptions = Record
     id : int64;
   end;
-  
+
   TAdvertisersResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7529,33 +7535,33 @@ type
     Function Patch(profileId: string; aAdvertiser : TAdvertiser; AQuery : TAdvertiserspatchOptions) : TAdvertiser;
     Function Update(profileId: string; aAdvertiser : TAdvertiser) : TAdvertiser;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TBrowsersResource
     --------------------------------------------------------------------}
-  
+
   TBrowsersResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
     Class Function DefaultAPI : TGoogleAPIClass; override;
     Function List(profileId: string) : TBrowsersListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TCampaignCreativeAssociationsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TCampaignCreativeAssociationsResource, method List
-  
+
   TCampaignCreativeAssociationsListOptions = Record
     maxResults : integer;
     pageToken : String;
     sortOrder : String;
   end;
-  
+
   TCampaignCreativeAssociationsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7564,23 +7570,23 @@ type
     Function List(campaignId: string; profileId: string; AQuery : string  = '') : TCampaignCreativeAssociationsListResponse;
     Function List(campaignId: string; profileId: string; AQuery : TCampaignCreativeAssociationslistOptions) : TCampaignCreativeAssociationsListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TCampaignsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TCampaignsResource, method Insert
-  
+
   TCampaignsInsertOptions = Record
     defaultLandingPageName : String;
     defaultLandingPageUrl : String;
   end;
-  
-  
+
+
   //Optional query Options for TCampaignsResource, method List
-  
+
   TCampaignsListOptions = Record
     advertiserGroupIds : int64;
     advertiserIds : int64;
@@ -7596,14 +7602,14 @@ type
     sortOrder : String;
     subaccountId : int64;
   end;
-  
-  
+
+
   //Optional query Options for TCampaignsResource, method Patch
-  
+
   TCampaignsPatchOptions = Record
     id : int64;
   end;
-  
+
   TCampaignsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7617,15 +7623,15 @@ type
     Function Patch(profileId: string; aCampaign : TCampaign; AQuery : TCampaignspatchOptions) : TCampaign;
     Function Update(profileId: string; aCampaign : TCampaign) : TCampaign;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TChangeLogsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TChangeLogsResource, method List
-  
+
   TChangeLogsListOptions = Record
     action : String;
     ids : int64;
@@ -7638,7 +7644,7 @@ type
     searchString : String;
     userProfileIds : int64;
   end;
-  
+
   TChangeLogsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7647,22 +7653,22 @@ type
     Function List(profileId: string; AQuery : string  = '') : TChangeLogsListResponse;
     Function List(profileId: string; AQuery : TChangeLogslistOptions) : TChangeLogsListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TCitiesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TCitiesResource, method List
-  
+
   TCitiesListOptions = Record
     countryDartIds : int64;
     dartIds : int64;
     namePrefix : String;
     regionDartIds : int64;
   end;
-  
+
   TCitiesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7670,12 +7676,12 @@ type
     Function List(profileId: string; AQuery : string  = '') : TCitiesListResponse;
     Function List(profileId: string; AQuery : TCitieslistOptions) : TCitiesListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TConnectionTypesResource
     --------------------------------------------------------------------}
-  
+
   TConnectionTypesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7683,15 +7689,15 @@ type
     Function Get(id: string; profileId: string) : TConnectionType;
     Function List(profileId: string) : TConnectionTypesListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TContentCategoriesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TContentCategoriesResource, method List
-  
+
   TContentCategoriesListOptions = Record
     ids : int64;
     maxResults : integer;
@@ -7700,14 +7706,14 @@ type
     sortField : String;
     sortOrder : String;
   end;
-  
-  
+
+
   //Optional query Options for TContentCategoriesResource, method Patch
-  
+
   TContentCategoriesPatchOptions = Record
     id : int64;
   end;
-  
+
   TContentCategoriesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7721,24 +7727,24 @@ type
     Function Patch(profileId: string; aContentCategory : TContentCategory; AQuery : TContentCategoriespatchOptions) : TContentCategory;
     Function Update(profileId: string; aContentCategory : TContentCategory) : TContentCategory;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TConversionsResource
     --------------------------------------------------------------------}
-  
+
   TConversionsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
     Class Function DefaultAPI : TGoogleAPIClass; override;
     Function Batchinsert(profileId: string; aConversionsBatchInsertRequest : TConversionsBatchInsertRequest) : TConversionsBatchInsertResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TCountriesResource
     --------------------------------------------------------------------}
-  
+
   TCountriesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7746,27 +7752,27 @@ type
     Function Get(dartId: string; profileId: string) : TCountry;
     Function List(profileId: string) : TCountriesListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TCreativeAssetsResource
     --------------------------------------------------------------------}
-  
+
   TCreativeAssetsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
     Class Function DefaultAPI : TGoogleAPIClass; override;
     Function Insert(advertiserId: string; profileId: string; aCreativeAssetMetadata : TCreativeAssetMetadata) : TCreativeAssetMetadata;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TCreativeFieldValuesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TCreativeFieldValuesResource, method List
-  
+
   TCreativeFieldValuesListOptions = Record
     ids : int64;
     maxResults : integer;
@@ -7775,14 +7781,14 @@ type
     sortField : String;
     sortOrder : String;
   end;
-  
-  
+
+
   //Optional query Options for TCreativeFieldValuesResource, method Patch
-  
+
   TCreativeFieldValuesPatchOptions = Record
     id : int64;
   end;
-  
+
   TCreativeFieldValuesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7796,15 +7802,15 @@ type
     Function Patch(creativeFieldId: string; profileId: string; aCreativeFieldValue : TCreativeFieldValue; AQuery : TCreativeFieldValuespatchOptions) : TCreativeFieldValue;
     Function Update(creativeFieldId: string; profileId: string; aCreativeFieldValue : TCreativeFieldValue) : TCreativeFieldValue;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TCreativeFieldsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TCreativeFieldsResource, method List
-  
+
   TCreativeFieldsListOptions = Record
     advertiserIds : int64;
     ids : int64;
@@ -7814,14 +7820,14 @@ type
     sortField : String;
     sortOrder : String;
   end;
-  
-  
+
+
   //Optional query Options for TCreativeFieldsResource, method Patch
-  
+
   TCreativeFieldsPatchOptions = Record
     id : int64;
   end;
-  
+
   TCreativeFieldsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7835,15 +7841,15 @@ type
     Function Patch(profileId: string; aCreativeField : TCreativeField; AQuery : TCreativeFieldspatchOptions) : TCreativeField;
     Function Update(profileId: string; aCreativeField : TCreativeField) : TCreativeField;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TCreativeGroupsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TCreativeGroupsResource, method List
-  
+
   TCreativeGroupsListOptions = Record
     advertiserIds : int64;
     groupNumber : integer;
@@ -7854,14 +7860,14 @@ type
     sortField : String;
     sortOrder : String;
   end;
-  
-  
+
+
   //Optional query Options for TCreativeGroupsResource, method Patch
-  
+
   TCreativeGroupsPatchOptions = Record
     id : int64;
   end;
-  
+
   TCreativeGroupsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7874,15 +7880,15 @@ type
     Function Patch(profileId: string; aCreativeGroup : TCreativeGroup; AQuery : TCreativeGroupspatchOptions) : TCreativeGroup;
     Function Update(profileId: string; aCreativeGroup : TCreativeGroup) : TCreativeGroup;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TCreativesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TCreativesResource, method List
-  
+
   TCreativesListOptions = Record
     active : boolean;
     advertiserId : int64;
@@ -7901,14 +7907,14 @@ type
     studioCreativeId : int64;
     types : String;
   end;
-  
-  
+
+
   //Optional query Options for TCreativesResource, method Patch
-  
+
   TCreativesPatchOptions = Record
     id : int64;
   end;
-  
+
   TCreativesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7921,20 +7927,20 @@ type
     Function Patch(profileId: string; aCreative : TCreative; AQuery : TCreativespatchOptions) : TCreative;
     Function Update(profileId: string; aCreative : TCreative) : TCreative;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TDimensionValuesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TDimensionValuesResource, method Query
-  
+
   TDimensionValuesQueryOptions = Record
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TDimensionValuesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7942,15 +7948,15 @@ type
     Function Query(profileId: string; aDimensionValueRequest : TDimensionValueRequest; AQuery : string  = '') : TDimensionValueList;
     Function Query(profileId: string; aDimensionValueRequest : TDimensionValueRequest; AQuery : TDimensionValuesqueryOptions) : TDimensionValueList;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TDirectorySiteContactsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TDirectorySiteContactsResource, method List
-  
+
   TDirectorySiteContactsListOptions = Record
     directorySiteIds : int64;
     ids : int64;
@@ -7960,7 +7966,7 @@ type
     sortField : String;
     sortOrder : String;
   end;
-  
+
   TDirectorySiteContactsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7969,15 +7975,15 @@ type
     Function List(profileId: string; AQuery : string  = '') : TDirectorySiteContactsListResponse;
     Function List(profileId: string; AQuery : TDirectorySiteContactslistOptions) : TDirectorySiteContactsListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TDirectorySitesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TDirectorySitesResource, method List
-  
+
   TDirectorySitesListOptions = Record
     acceptsInStreamVideoPlacements : boolean;
     acceptsInterstitialPlacements : boolean;
@@ -7993,7 +7999,7 @@ type
     sortField : String;
     sortOrder : String;
   end;
-  
+
   TDirectorySitesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8003,30 +8009,30 @@ type
     Function List(profileId: string; AQuery : string  = '') : TDirectorySitesListResponse;
     Function List(profileId: string; AQuery : TDirectorySiteslistOptions) : TDirectorySitesListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TDynamicTargetingKeysResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TDynamicTargetingKeysResource, method Delete
-  
+
   TDynamicTargetingKeysDeleteOptions = Record
     _name : String;
     objectType : String;
   end;
-  
-  
+
+
   //Optional query Options for TDynamicTargetingKeysResource, method List
-  
+
   TDynamicTargetingKeysListOptions = Record
     advertiserId : int64;
     names : String;
     objectId : int64;
     objectType : String;
   end;
-  
+
   TDynamicTargetingKeysResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8037,15 +8043,15 @@ type
     Function List(profileId: string; AQuery : string  = '') : TDynamicTargetingKeysListResponse;
     Function List(profileId: string; AQuery : TDynamicTargetingKeyslistOptions) : TDynamicTargetingKeysListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TEventTagsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TEventTagsResource, method List
-  
+
   TEventTagsListOptions = Record
     adId : int64;
     advertiserId : int64;
@@ -8058,14 +8064,14 @@ type
     sortField : String;
     sortOrder : String;
   end;
-  
-  
+
+
   //Optional query Options for TEventTagsResource, method Patch
-  
+
   TEventTagsPatchOptions = Record
     id : int64;
   end;
-  
+
   TEventTagsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8079,15 +8085,15 @@ type
     Function Patch(profileId: string; aEventTag : TEventTag; AQuery : TEventTagspatchOptions) : TEventTag;
     Function Update(profileId: string; aEventTag : TEventTag) : TEventTag;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TFilesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TFilesResource, method List
-  
+
   TFilesListOptions = Record
     maxResults : integer;
     pageToken : String;
@@ -8095,7 +8101,7 @@ type
     sortField : String;
     sortOrder : String;
   end;
-  
+
   TFilesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8104,22 +8110,22 @@ type
     Function List(profileId: string; AQuery : string  = '') : TFileList;
     Function List(profileId: string; AQuery : TFileslistOptions) : TFileList;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TFloodlightActivitiesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TFloodlightActivitiesResource, method Generatetag
-  
+
   TFloodlightActivitiesGeneratetagOptions = Record
     floodlightActivityId : int64;
   end;
-  
-  
+
+
   //Optional query Options for TFloodlightActivitiesResource, method List
-  
+
   TFloodlightActivitiesListOptions = Record
     advertiserId : int64;
     floodlightActivityGroupIds : int64;
@@ -8135,14 +8141,14 @@ type
     sortOrder : String;
     tagString : String;
   end;
-  
-  
+
+
   //Optional query Options for TFloodlightActivitiesResource, method Patch
-  
+
   TFloodlightActivitiesPatchOptions = Record
     id : int64;
   end;
-  
+
   TFloodlightActivitiesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8158,15 +8164,15 @@ type
     Function Patch(profileId: string; aFloodlightActivity : TFloodlightActivity; AQuery : TFloodlightActivitiespatchOptions) : TFloodlightActivity;
     Function Update(profileId: string; aFloodlightActivity : TFloodlightActivity) : TFloodlightActivity;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TFloodlightActivityGroupsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TFloodlightActivityGroupsResource, method List
-  
+
   TFloodlightActivityGroupsListOptions = Record
     advertiserId : int64;
     floodlightConfigurationId : int64;
@@ -8178,14 +8184,14 @@ type
     sortOrder : String;
     _type : String;
   end;
-  
-  
+
+
   //Optional query Options for TFloodlightActivityGroupsResource, method Patch
-  
+
   TFloodlightActivityGroupsPatchOptions = Record
     id : int64;
   end;
-  
+
   TFloodlightActivityGroupsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8198,26 +8204,26 @@ type
     Function Patch(profileId: string; aFloodlightActivityGroup : TFloodlightActivityGroup; AQuery : TFloodlightActivityGroupspatchOptions) : TFloodlightActivityGroup;
     Function Update(profileId: string; aFloodlightActivityGroup : TFloodlightActivityGroup) : TFloodlightActivityGroup;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TFloodlightConfigurationsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TFloodlightConfigurationsResource, method List
-  
+
   TFloodlightConfigurationsListOptions = Record
     ids : int64;
   end;
-  
-  
+
+
   //Optional query Options for TFloodlightConfigurationsResource, method Patch
-  
+
   TFloodlightConfigurationsPatchOptions = Record
     id : int64;
   end;
-  
+
   TFloodlightConfigurationsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8229,15 +8235,15 @@ type
     Function Patch(profileId: string; aFloodlightConfiguration : TFloodlightConfiguration; AQuery : TFloodlightConfigurationspatchOptions) : TFloodlightConfiguration;
     Function Update(profileId: string; aFloodlightConfiguration : TFloodlightConfiguration) : TFloodlightConfiguration;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TInventoryItemsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TInventoryItemsResource, method List
-  
+
   TInventoryItemsListOptions = Record
     ids : int64;
     inPlan : boolean;
@@ -8249,7 +8255,7 @@ type
     sortOrder : String;
     _type : String;
   end;
-  
+
   TInventoryItemsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8258,19 +8264,19 @@ type
     Function List(profileId: string; projectId: string; AQuery : string  = '') : TInventoryItemsListResponse;
     Function List(profileId: string; projectId: string; AQuery : TInventoryItemslistOptions) : TInventoryItemsListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TLandingPagesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TLandingPagesResource, method Patch
-  
+
   TLandingPagesPatchOptions = Record
     id : int64;
   end;
-  
+
   TLandingPagesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8283,24 +8289,24 @@ type
     Function Patch(campaignId: string; profileId: string; aLandingPage : TLandingPage; AQuery : TLandingPagespatchOptions) : TLandingPage;
     Function Update(campaignId: string; profileId: string; aLandingPage : TLandingPage) : TLandingPage;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TMetrosResource
     --------------------------------------------------------------------}
-  
+
   TMetrosResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
     Class Function DefaultAPI : TGoogleAPIClass; override;
     Function List(profileId: string) : TMetrosListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TMobileCarriersResource
     --------------------------------------------------------------------}
-  
+
   TMobileCarriersResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8308,12 +8314,12 @@ type
     Function Get(id: string; profileId: string) : TMobileCarrier;
     Function List(profileId: string) : TMobileCarriersListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TOperatingSystemVersionsResource
     --------------------------------------------------------------------}
-  
+
   TOperatingSystemVersionsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8321,12 +8327,12 @@ type
     Function Get(id: string; profileId: string) : TOperatingSystemVersion;
     Function List(profileId: string) : TOperatingSystemVersionsListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TOperatingSystemsResource
     --------------------------------------------------------------------}
-  
+
   TOperatingSystemsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8334,15 +8340,15 @@ type
     Function Get(dartId: string; profileId: string) : TOperatingSystem;
     Function List(profileId: string) : TOperatingSystemsListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TOrderDocumentsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TOrderDocumentsResource, method List
-  
+
   TOrderDocumentsListOptions = Record
     approved : boolean;
     ids : int64;
@@ -8354,7 +8360,7 @@ type
     sortField : String;
     sortOrder : String;
   end;
-  
+
   TOrderDocumentsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8363,15 +8369,15 @@ type
     Function List(profileId: string; projectId: string; AQuery : string  = '') : TOrderDocumentsListResponse;
     Function List(profileId: string; projectId: string; AQuery : TOrderDocumentslistOptions) : TOrderDocumentsListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TOrdersResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TOrdersResource, method List
-  
+
   TOrdersListOptions = Record
     ids : int64;
     maxResults : integer;
@@ -8381,7 +8387,7 @@ type
     sortField : String;
     sortOrder : String;
   end;
-  
+
   TOrdersResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8390,15 +8396,15 @@ type
     Function List(profileId: string; projectId: string; AQuery : string  = '') : TOrdersListResponse;
     Function List(profileId: string; projectId: string; AQuery : TOrderslistOptions) : TOrdersListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TPlacementGroupsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TPlacementGroupsResource, method List
-  
+
   TPlacementGroupsListOptions = Record
     advertiserIds : int64;
     archived : boolean;
@@ -8420,14 +8426,14 @@ type
     sortField : String;
     sortOrder : String;
   end;
-  
-  
+
+
   //Optional query Options for TPlacementGroupsResource, method Patch
-  
+
   TPlacementGroupsPatchOptions = Record
     id : int64;
   end;
-  
+
   TPlacementGroupsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8440,15 +8446,15 @@ type
     Function Patch(profileId: string; aPlacementGroup : TPlacementGroup; AQuery : TPlacementGroupspatchOptions) : TPlacementGroup;
     Function Update(profileId: string; aPlacementGroup : TPlacementGroup) : TPlacementGroup;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TPlacementStrategiesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TPlacementStrategiesResource, method List
-  
+
   TPlacementStrategiesListOptions = Record
     ids : int64;
     maxResults : integer;
@@ -8457,14 +8463,14 @@ type
     sortField : String;
     sortOrder : String;
   end;
-  
-  
+
+
   //Optional query Options for TPlacementStrategiesResource, method Patch
-  
+
   TPlacementStrategiesPatchOptions = Record
     id : int64;
   end;
-  
+
   TPlacementStrategiesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8478,24 +8484,24 @@ type
     Function Patch(profileId: string; aPlacementStrategy : TPlacementStrategy; AQuery : TPlacementStrategiespatchOptions) : TPlacementStrategy;
     Function Update(profileId: string; aPlacementStrategy : TPlacementStrategy) : TPlacementStrategy;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TPlacementsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TPlacementsResource, method Generatetags
-  
+
   TPlacementsGeneratetagsOptions = Record
     campaignId : int64;
     placementIds : int64;
     tagFormats : String;
   end;
-  
-  
+
+
   //Optional query Options for TPlacementsResource, method List
-  
+
   TPlacementsListOptions = Record
     advertiserIds : int64;
     archived : boolean;
@@ -8520,14 +8526,14 @@ type
     sortField : String;
     sortOrder : String;
   end;
-  
-  
+
+
   //Optional query Options for TPlacementsResource, method Patch
-  
+
   TPlacementsPatchOptions = Record
     id : int64;
   end;
-  
+
   TPlacementsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8542,12 +8548,12 @@ type
     Function Patch(profileId: string; aPlacement : TPlacement; AQuery : TPlacementspatchOptions) : TPlacement;
     Function Update(profileId: string; aPlacement : TPlacement) : TPlacement;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TPlatformTypesResource
     --------------------------------------------------------------------}
-  
+
   TPlatformTypesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8555,12 +8561,12 @@ type
     Function Get(id: string; profileId: string) : TPlatformType;
     Function List(profileId: string) : TPlatformTypesListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TPostalCodesResource
     --------------------------------------------------------------------}
-  
+
   TPostalCodesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8568,15 +8574,15 @@ type
     Function Get(code: string; profileId: string) : TPostalCode;
     Function List(profileId: string) : TPostalCodesListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TProjectsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TProjectsResource, method List
-  
+
   TProjectsListOptions = Record
     advertiserIds : int64;
     ids : int64;
@@ -8586,7 +8592,7 @@ type
     sortField : String;
     sortOrder : String;
   end;
-  
+
   TProjectsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8595,31 +8601,31 @@ type
     Function List(profileId: string; AQuery : string  = '') : TProjectsListResponse;
     Function List(profileId: string; AQuery : TProjectslistOptions) : TProjectsListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TRegionsResource
     --------------------------------------------------------------------}
-  
+
   TRegionsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
     Class Function DefaultAPI : TGoogleAPIClass; override;
     Function List(profileId: string) : TRegionsListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TRemarketingListSharesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TRemarketingListSharesResource, method Patch
-  
+
   TRemarketingListSharesPatchOptions = Record
     remarketingListId : int64;
   end;
-  
+
   TRemarketingListSharesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8629,15 +8635,15 @@ type
     Function Patch(profileId: string; aRemarketingListShare : TRemarketingListShare; AQuery : TRemarketingListSharespatchOptions) : TRemarketingListShare;
     Function Update(profileId: string; aRemarketingListShare : TRemarketingListShare) : TRemarketingListShare;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TRemarketingListsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TRemarketingListsResource, method List
-  
+
   TRemarketingListsListOptions = Record
     active : boolean;
     advertiserId : int64;
@@ -8648,14 +8654,14 @@ type
     sortField : String;
     sortOrder : String;
   end;
-  
-  
+
+
   //Optional query Options for TRemarketingListsResource, method Patch
-  
+
   TRemarketingListsPatchOptions = Record
     id : int64;
   end;
-  
+
   TRemarketingListsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8668,34 +8674,34 @@ type
     Function Patch(profileId: string; aRemarketingList : TRemarketingList; AQuery : TRemarketingListspatchOptions) : TRemarketingList;
     Function Update(profileId: string; aRemarketingList : TRemarketingList) : TRemarketingList;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TReportsCompatibleFieldsResource
     --------------------------------------------------------------------}
-  
+
   TReportsCompatibleFieldsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
     Class Function DefaultAPI : TGoogleAPIClass; override;
     Function Query(profileId: string; aReport : TReport) : TCompatibleFields;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TReportsFilesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TReportsFilesResource, method List
-  
+
   TReportsFilesListOptions = Record
     maxResults : integer;
     pageToken : String;
     sortField : String;
     sortOrder : String;
   end;
-  
+
   TReportsFilesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8704,15 +8710,15 @@ type
     Function List(profileId: string; reportId: string; AQuery : string  = '') : TFileList;
     Function List(profileId: string; reportId: string; AQuery : TReportsFileslistOptions) : TFileList;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TReportsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TReportsResource, method List
-  
+
   TReportsListOptions = Record
     maxResults : integer;
     pageToken : String;
@@ -8720,14 +8726,14 @@ type
     sortField : String;
     sortOrder : String;
   end;
-  
-  
+
+
   //Optional query Options for TReportsResource, method Run
-  
+
   TReportsRunOptions = Record
     synchronous : boolean;
   end;
-  
+
   TReportsResource = Class(TGoogleResource)
   Private
     FCompatibleFieldsInstance : TReportsCompatibleFieldsResource;
@@ -8753,15 +8759,15 @@ type
     Property CompatibleFieldsResource : TReportsCompatibleFieldsResource Read GetCompatibleFieldsInstance;
     Property FilesResource : TReportsFilesResource Read GetFilesInstance;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TSitesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TSitesResource, method List
-  
+
   TSitesListOptions = Record
     acceptsInStreamVideoPlacements : boolean;
     acceptsInterstitialPlacements : boolean;
@@ -8779,14 +8785,14 @@ type
     subaccountId : int64;
     unmappedSite : boolean;
   end;
-  
-  
+
+
   //Optional query Options for TSitesResource, method Patch
-  
+
   TSitesPatchOptions = Record
     id : int64;
   end;
-  
+
   TSitesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8799,22 +8805,22 @@ type
     Function Patch(profileId: string; aSite : TSite; AQuery : TSitespatchOptions) : TSite;
     Function Update(profileId: string; aSite : TSite) : TSite;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TSizesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TSizesResource, method List
-  
+
   TSizesListOptions = Record
     height : integer;
     iabStandard : boolean;
     ids : int64;
     width : integer;
   end;
-  
+
   TSizesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8824,15 +8830,15 @@ type
     Function List(profileId: string; AQuery : string  = '') : TSizesListResponse;
     Function List(profileId: string; AQuery : TSizeslistOptions) : TSizesListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TSubaccountsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TSubaccountsResource, method List
-  
+
   TSubaccountsListOptions = Record
     ids : int64;
     maxResults : integer;
@@ -8841,14 +8847,14 @@ type
     sortField : String;
     sortOrder : String;
   end;
-  
-  
+
+
   //Optional query Options for TSubaccountsResource, method Patch
-  
+
   TSubaccountsPatchOptions = Record
     id : int64;
   end;
-  
+
   TSubaccountsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8861,15 +8867,15 @@ type
     Function Patch(profileId: string; aSubaccount : TSubaccount; AQuery : TSubaccountspatchOptions) : TSubaccount;
     Function Update(profileId: string; aSubaccount : TSubaccount) : TSubaccount;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TTargetableRemarketingListsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TTargetableRemarketingListsResource, method List
-  
+
   TTargetableRemarketingListsListOptions = Record
     active : boolean;
     advertiserId : int64;
@@ -8879,7 +8885,7 @@ type
     sortField : String;
     sortOrder : String;
   end;
-  
+
   TTargetableRemarketingListsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8888,12 +8894,12 @@ type
     Function List(profileId: string; AQuery : string  = '') : TTargetableRemarketingListsListResponse;
     Function List(profileId: string; AQuery : TTargetableRemarketingListslistOptions) : TTargetableRemarketingListsListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TUserProfilesResource
     --------------------------------------------------------------------}
-  
+
   TUserProfilesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8901,12 +8907,12 @@ type
     Function Get(profileId: string) : TUserProfile;
     Function List : TUserProfileList;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TUserRolePermissionGroupsResource
     --------------------------------------------------------------------}
-  
+
   TUserRolePermissionGroupsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8914,19 +8920,19 @@ type
     Function Get(id: string; profileId: string) : TUserRolePermissionGroup;
     Function List(profileId: string) : TUserRolePermissionGroupsListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TUserRolePermissionsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TUserRolePermissionsResource, method List
-  
+
   TUserRolePermissionsListOptions = Record
     ids : int64;
   end;
-  
+
   TUserRolePermissionsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8935,15 +8941,15 @@ type
     Function List(profileId: string; AQuery : string  = '') : TUserRolePermissionsListResponse;
     Function List(profileId: string; AQuery : TUserRolePermissionslistOptions) : TUserRolePermissionsListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TUserRolesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TUserRolesResource, method List
-  
+
   TUserRolesListOptions = Record
     accountUserRoleOnly : boolean;
     ids : int64;
@@ -8954,14 +8960,14 @@ type
     sortOrder : String;
     subaccountId : int64;
   end;
-  
-  
+
+
   //Optional query Options for TUserRolesResource, method Patch
-  
+
   TUserRolesPatchOptions = Record
     id : int64;
   end;
-  
+
   TUserRolesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -8975,12 +8981,12 @@ type
     Function Patch(profileId: string; aUserRole : TUserRole; AQuery : TUserRolespatchOptions) : TUserRole;
     Function Update(profileId: string; aUserRole : TUserRole) : TUserRole;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TDfareportingAPI
     --------------------------------------------------------------------}
-  
+
   TDfareportingAPI = Class(TGoogleAPI)
   Private
     FAccountActiveAdSummariesInstance : TAccountActiveAdSummariesResource;
@@ -9312,7 +9318,7 @@ implementation
   --------------------------------------------------------------------}
 
 
-Procedure TAccount.SetaccountPermissionIds(AIndex : Integer; const AValue : TStringArray); 
+Procedure TAccount.SetaccountPermissionIds(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FaccountPermissionIds=AValue) then exit;
@@ -9322,7 +9328,7 @@ end;
 
 
 
-Procedure TAccount.SetaccountProfile(AIndex : Integer; const AValue : String); 
+Procedure TAccount.SetaccountProfile(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountProfile=AValue) then exit;
@@ -9332,7 +9338,7 @@ end;
 
 
 
-Procedure TAccount.Setactive(AIndex : Integer; const AValue : boolean); 
+Procedure TAccount.Setactive(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Factive=AValue) then exit;
@@ -9342,7 +9348,7 @@ end;
 
 
 
-Procedure TAccount.SetactiveAdsLimitTier(AIndex : Integer; const AValue : String); 
+Procedure TAccount.SetactiveAdsLimitTier(AIndex : Integer; const AValue : String);
 
 begin
   If (FactiveAdsLimitTier=AValue) then exit;
@@ -9352,7 +9358,7 @@ end;
 
 
 
-Procedure TAccount.SetactiveViewOptOut(AIndex : Integer; const AValue : boolean); 
+Procedure TAccount.SetactiveViewOptOut(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FactiveViewOptOut=AValue) then exit;
@@ -9362,7 +9368,7 @@ end;
 
 
 
-Procedure TAccount.SetavailablePermissionIds(AIndex : Integer; const AValue : TStringArray); 
+Procedure TAccount.SetavailablePermissionIds(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FavailablePermissionIds=AValue) then exit;
@@ -9372,7 +9378,7 @@ end;
 
 
 
-Procedure TAccount.SetcomscoreVceEnabled(AIndex : Integer; const AValue : boolean); 
+Procedure TAccount.SetcomscoreVceEnabled(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FcomscoreVceEnabled=AValue) then exit;
@@ -9382,7 +9388,7 @@ end;
 
 
 
-Procedure TAccount.SetcountryId(AIndex : Integer; const AValue : String); 
+Procedure TAccount.SetcountryId(AIndex : Integer; const AValue : String);
 
 begin
   If (FcountryId=AValue) then exit;
@@ -9392,7 +9398,7 @@ end;
 
 
 
-Procedure TAccount.SetcurrencyId(AIndex : Integer; const AValue : String); 
+Procedure TAccount.SetcurrencyId(AIndex : Integer; const AValue : String);
 
 begin
   If (FcurrencyId=AValue) then exit;
@@ -9402,7 +9408,7 @@ end;
 
 
 
-Procedure TAccount.SetdefaultCreativeSizeId(AIndex : Integer; const AValue : String); 
+Procedure TAccount.SetdefaultCreativeSizeId(AIndex : Integer; const AValue : String);
 
 begin
   If (FdefaultCreativeSizeId=AValue) then exit;
@@ -9412,7 +9418,7 @@ end;
 
 
 
-Procedure TAccount.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TAccount.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -9422,7 +9428,7 @@ end;
 
 
 
-Procedure TAccount.Setid(AIndex : Integer; const AValue : String); 
+Procedure TAccount.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -9432,7 +9438,7 @@ end;
 
 
 
-Procedure TAccount.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAccount.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -9442,7 +9448,7 @@ end;
 
 
 
-Procedure TAccount.Setlocale(AIndex : Integer; const AValue : String); 
+Procedure TAccount.Setlocale(AIndex : Integer; const AValue : String);
 
 begin
   If (Flocale=AValue) then exit;
@@ -9452,7 +9458,7 @@ end;
 
 
 
-Procedure TAccount.SetmaximumImageSize(AIndex : Integer; const AValue : String); 
+Procedure TAccount.SetmaximumImageSize(AIndex : Integer; const AValue : String);
 
 begin
   If (FmaximumImageSize=AValue) then exit;
@@ -9462,7 +9468,7 @@ end;
 
 
 
-Procedure TAccount.Setname(AIndex : Integer; const AValue : String); 
+Procedure TAccount.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -9472,7 +9478,7 @@ end;
 
 
 
-Procedure TAccount.SetnielsenOcrEnabled(AIndex : Integer; const AValue : boolean); 
+Procedure TAccount.SetnielsenOcrEnabled(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FnielsenOcrEnabled=AValue) then exit;
@@ -9482,7 +9488,7 @@ end;
 
 
 
-Procedure TAccount.SetreportsConfiguration(AIndex : Integer; const AValue : TReportsConfiguration); 
+Procedure TAccount.SetreportsConfiguration(AIndex : Integer; const AValue : TReportsConfiguration);
 
 begin
   If (FreportsConfiguration=AValue) then exit;
@@ -9492,7 +9498,7 @@ end;
 
 
 
-Procedure TAccount.SetteaserSizeLimit(AIndex : Integer; const AValue : String); 
+Procedure TAccount.SetteaserSizeLimit(AIndex : Integer; const AValue : String);
 
 begin
   If (FteaserSizeLimit=AValue) then exit;
@@ -9503,7 +9509,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAccount.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAccount.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -9523,7 +9529,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountActiveAdSummary.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TAccountActiveAdSummary.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -9533,7 +9539,7 @@ end;
 
 
 
-Procedure TAccountActiveAdSummary.SetactiveAds(AIndex : Integer; const AValue : String); 
+Procedure TAccountActiveAdSummary.SetactiveAds(AIndex : Integer; const AValue : String);
 
 begin
   If (FactiveAds=AValue) then exit;
@@ -9543,7 +9549,7 @@ end;
 
 
 
-Procedure TAccountActiveAdSummary.SetactiveAdsLimitTier(AIndex : Integer; const AValue : String); 
+Procedure TAccountActiveAdSummary.SetactiveAdsLimitTier(AIndex : Integer; const AValue : String);
 
 begin
   If (FactiveAdsLimitTier=AValue) then exit;
@@ -9553,7 +9559,7 @@ end;
 
 
 
-Procedure TAccountActiveAdSummary.SetavailableAds(AIndex : Integer; const AValue : String); 
+Procedure TAccountActiveAdSummary.SetavailableAds(AIndex : Integer; const AValue : String);
 
 begin
   If (FavailableAds=AValue) then exit;
@@ -9563,7 +9569,7 @@ end;
 
 
 
-Procedure TAccountActiveAdSummary.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAccountActiveAdSummary.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -9580,7 +9586,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountPermission.SetaccountProfiles(AIndex : Integer; const AValue : TStringArray); 
+Procedure TAccountPermission.SetaccountProfiles(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FaccountProfiles=AValue) then exit;
@@ -9590,7 +9596,7 @@ end;
 
 
 
-Procedure TAccountPermission.Setid(AIndex : Integer; const AValue : String); 
+Procedure TAccountPermission.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -9600,7 +9606,7 @@ end;
 
 
 
-Procedure TAccountPermission.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAccountPermission.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -9610,7 +9616,7 @@ end;
 
 
 
-Procedure TAccountPermission.Setlevel(AIndex : Integer; const AValue : String); 
+Procedure TAccountPermission.Setlevel(AIndex : Integer; const AValue : String);
 
 begin
   If (Flevel=AValue) then exit;
@@ -9620,7 +9626,7 @@ end;
 
 
 
-Procedure TAccountPermission.Setname(AIndex : Integer; const AValue : String); 
+Procedure TAccountPermission.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -9630,7 +9636,7 @@ end;
 
 
 
-Procedure TAccountPermission.SetpermissionGroupId(AIndex : Integer; const AValue : String); 
+Procedure TAccountPermission.SetpermissionGroupId(AIndex : Integer; const AValue : String);
 
 begin
   If (FpermissionGroupId=AValue) then exit;
@@ -9641,7 +9647,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAccountPermission.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAccountPermission.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -9660,7 +9666,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountPermissionGroup.Setid(AIndex : Integer; const AValue : String); 
+Procedure TAccountPermissionGroup.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -9670,7 +9676,7 @@ end;
 
 
 
-Procedure TAccountPermissionGroup.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAccountPermissionGroup.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -9680,7 +9686,7 @@ end;
 
 
 
-Procedure TAccountPermissionGroup.Setname(AIndex : Integer; const AValue : String); 
+Procedure TAccountPermissionGroup.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -9697,7 +9703,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountPermissionGroupsListResponse.SetaccountPermissionGroups(AIndex : Integer; const AValue : TAccountPermissionGroupsListResponseTypeaccountPermissionGroupsArray); 
+Procedure TAccountPermissionGroupsListResponse.SetaccountPermissionGroups(AIndex : Integer; const AValue : TAccountPermissionGroupsListResponseTypeaccountPermissionGroupsArray);
 
 begin
   If (FaccountPermissionGroups=AValue) then exit;
@@ -9707,7 +9713,7 @@ end;
 
 
 
-Procedure TAccountPermissionGroupsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAccountPermissionGroupsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -9718,7 +9724,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAccountPermissionGroupsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAccountPermissionGroupsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -9737,7 +9743,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountPermissionsListResponse.SetaccountPermissions(AIndex : Integer; const AValue : TAccountPermissionsListResponseTypeaccountPermissionsArray); 
+Procedure TAccountPermissionsListResponse.SetaccountPermissions(AIndex : Integer; const AValue : TAccountPermissionsListResponseTypeaccountPermissionsArray);
 
 begin
   If (FaccountPermissions=AValue) then exit;
@@ -9747,7 +9753,7 @@ end;
 
 
 
-Procedure TAccountPermissionsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAccountPermissionsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -9758,7 +9764,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAccountPermissionsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAccountPermissionsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -9777,7 +9783,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountUserProfile.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TAccountUserProfile.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -9787,7 +9793,7 @@ end;
 
 
 
-Procedure TAccountUserProfile.Setactive(AIndex : Integer; const AValue : boolean); 
+Procedure TAccountUserProfile.Setactive(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Factive=AValue) then exit;
@@ -9797,7 +9803,7 @@ end;
 
 
 
-Procedure TAccountUserProfile.SetadvertiserFilter(AIndex : Integer; const AValue : TObjectFilter); 
+Procedure TAccountUserProfile.SetadvertiserFilter(AIndex : Integer; const AValue : TObjectFilter);
 
 begin
   If (FadvertiserFilter=AValue) then exit;
@@ -9807,7 +9813,7 @@ end;
 
 
 
-Procedure TAccountUserProfile.SetcampaignFilter(AIndex : Integer; const AValue : TObjectFilter); 
+Procedure TAccountUserProfile.SetcampaignFilter(AIndex : Integer; const AValue : TObjectFilter);
 
 begin
   If (FcampaignFilter=AValue) then exit;
@@ -9817,7 +9823,7 @@ end;
 
 
 
-Procedure TAccountUserProfile.Setcomments(AIndex : Integer; const AValue : String); 
+Procedure TAccountUserProfile.Setcomments(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcomments=AValue) then exit;
@@ -9827,7 +9833,7 @@ end;
 
 
 
-Procedure TAccountUserProfile.Setemail(AIndex : Integer; const AValue : String); 
+Procedure TAccountUserProfile.Setemail(AIndex : Integer; const AValue : String);
 
 begin
   If (Femail=AValue) then exit;
@@ -9837,7 +9843,7 @@ end;
 
 
 
-Procedure TAccountUserProfile.Setid(AIndex : Integer; const AValue : String); 
+Procedure TAccountUserProfile.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -9847,7 +9853,7 @@ end;
 
 
 
-Procedure TAccountUserProfile.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAccountUserProfile.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -9857,7 +9863,7 @@ end;
 
 
 
-Procedure TAccountUserProfile.Setlocale(AIndex : Integer; const AValue : String); 
+Procedure TAccountUserProfile.Setlocale(AIndex : Integer; const AValue : String);
 
 begin
   If (Flocale=AValue) then exit;
@@ -9867,7 +9873,7 @@ end;
 
 
 
-Procedure TAccountUserProfile.Setname(AIndex : Integer; const AValue : String); 
+Procedure TAccountUserProfile.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -9877,7 +9883,7 @@ end;
 
 
 
-Procedure TAccountUserProfile.SetsiteFilter(AIndex : Integer; const AValue : TObjectFilter); 
+Procedure TAccountUserProfile.SetsiteFilter(AIndex : Integer; const AValue : TObjectFilter);
 
 begin
   If (FsiteFilter=AValue) then exit;
@@ -9887,7 +9893,7 @@ end;
 
 
 
-Procedure TAccountUserProfile.SetsubaccountId(AIndex : Integer; const AValue : String); 
+Procedure TAccountUserProfile.SetsubaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsubaccountId=AValue) then exit;
@@ -9897,7 +9903,7 @@ end;
 
 
 
-Procedure TAccountUserProfile.SettraffickerType(AIndex : Integer; const AValue : String); 
+Procedure TAccountUserProfile.SettraffickerType(AIndex : Integer; const AValue : String);
 
 begin
   If (FtraffickerType=AValue) then exit;
@@ -9907,7 +9913,7 @@ end;
 
 
 
-Procedure TAccountUserProfile.SetuserAccessType(AIndex : Integer; const AValue : String); 
+Procedure TAccountUserProfile.SetuserAccessType(AIndex : Integer; const AValue : String);
 
 begin
   If (FuserAccessType=AValue) then exit;
@@ -9917,7 +9923,7 @@ end;
 
 
 
-Procedure TAccountUserProfile.SetuserRoleFilter(AIndex : Integer; const AValue : TObjectFilter); 
+Procedure TAccountUserProfile.SetuserRoleFilter(AIndex : Integer; const AValue : TObjectFilter);
 
 begin
   If (FuserRoleFilter=AValue) then exit;
@@ -9927,7 +9933,7 @@ end;
 
 
 
-Procedure TAccountUserProfile.SetuserRoleId(AIndex : Integer; const AValue : String); 
+Procedure TAccountUserProfile.SetuserRoleId(AIndex : Integer; const AValue : String);
 
 begin
   If (FuserRoleId=AValue) then exit;
@@ -9944,7 +9950,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountUserProfilesListResponse.SetaccountUserProfiles(AIndex : Integer; const AValue : TAccountUserProfilesListResponseTypeaccountUserProfilesArray); 
+Procedure TAccountUserProfilesListResponse.SetaccountUserProfiles(AIndex : Integer; const AValue : TAccountUserProfilesListResponseTypeaccountUserProfilesArray);
 
 begin
   If (FaccountUserProfiles=AValue) then exit;
@@ -9954,7 +9960,7 @@ end;
 
 
 
-Procedure TAccountUserProfilesListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAccountUserProfilesListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -9964,7 +9970,7 @@ end;
 
 
 
-Procedure TAccountUserProfilesListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TAccountUserProfilesListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -9975,7 +9981,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAccountUserProfilesListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAccountUserProfilesListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -9994,7 +10000,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountsListResponse.Setaccounts(AIndex : Integer; const AValue : TAccountsListResponseTypeaccountsArray); 
+Procedure TAccountsListResponse.Setaccounts(AIndex : Integer; const AValue : TAccountsListResponseTypeaccountsArray);
 
 begin
   If (Faccounts=AValue) then exit;
@@ -10004,7 +10010,7 @@ end;
 
 
 
-Procedure TAccountsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAccountsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -10014,7 +10020,7 @@ end;
 
 
 
-Procedure TAccountsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TAccountsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -10025,7 +10031,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAccountsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAccountsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -10044,7 +10050,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TActivities.Setfilters(AIndex : Integer; const AValue : TActivitiesTypefiltersArray); 
+Procedure TActivities.Setfilters(AIndex : Integer; const AValue : TActivitiesTypefiltersArray);
 
 begin
   If (Ffilters=AValue) then exit;
@@ -10054,7 +10060,7 @@ end;
 
 
 
-Procedure TActivities.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TActivities.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -10064,7 +10070,7 @@ end;
 
 
 
-Procedure TActivities.SetmetricNames(AIndex : Integer; const AValue : TStringArray); 
+Procedure TActivities.SetmetricNames(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FmetricNames=AValue) then exit;
@@ -10075,7 +10081,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TActivities.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TActivities.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -10095,7 +10101,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAd.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TAd.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -10105,7 +10111,7 @@ end;
 
 
 
-Procedure TAd.Setactive(AIndex : Integer; const AValue : boolean); 
+Procedure TAd.Setactive(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Factive=AValue) then exit;
@@ -10115,7 +10121,7 @@ end;
 
 
 
-Procedure TAd.SetadvertiserId(AIndex : Integer; const AValue : String); 
+Procedure TAd.SetadvertiserId(AIndex : Integer; const AValue : String);
 
 begin
   If (FadvertiserId=AValue) then exit;
@@ -10125,7 +10131,7 @@ end;
 
 
 
-Procedure TAd.SetadvertiserIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TAd.SetadvertiserIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FadvertiserIdDimensionValue=AValue) then exit;
@@ -10135,7 +10141,7 @@ end;
 
 
 
-Procedure TAd.Setarchived(AIndex : Integer; const AValue : boolean); 
+Procedure TAd.Setarchived(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Farchived=AValue) then exit;
@@ -10145,7 +10151,7 @@ end;
 
 
 
-Procedure TAd.SetaudienceSegmentId(AIndex : Integer; const AValue : String); 
+Procedure TAd.SetaudienceSegmentId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaudienceSegmentId=AValue) then exit;
@@ -10155,7 +10161,7 @@ end;
 
 
 
-Procedure TAd.SetcampaignId(AIndex : Integer; const AValue : String); 
+Procedure TAd.SetcampaignId(AIndex : Integer; const AValue : String);
 
 begin
   If (FcampaignId=AValue) then exit;
@@ -10165,7 +10171,7 @@ end;
 
 
 
-Procedure TAd.SetcampaignIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TAd.SetcampaignIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FcampaignIdDimensionValue=AValue) then exit;
@@ -10175,7 +10181,7 @@ end;
 
 
 
-Procedure TAd.SetclickThroughUrl(AIndex : Integer; const AValue : TClickThroughUrl); 
+Procedure TAd.SetclickThroughUrl(AIndex : Integer; const AValue : TClickThroughUrl);
 
 begin
   If (FclickThroughUrl=AValue) then exit;
@@ -10185,7 +10191,7 @@ end;
 
 
 
-Procedure TAd.SetclickThroughUrlSuffixProperties(AIndex : Integer; const AValue : TClickThroughUrlSuffixProperties); 
+Procedure TAd.SetclickThroughUrlSuffixProperties(AIndex : Integer; const AValue : TClickThroughUrlSuffixProperties);
 
 begin
   If (FclickThroughUrlSuffixProperties=AValue) then exit;
@@ -10195,7 +10201,7 @@ end;
 
 
 
-Procedure TAd.Setcomments(AIndex : Integer; const AValue : String); 
+Procedure TAd.Setcomments(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcomments=AValue) then exit;
@@ -10205,7 +10211,7 @@ end;
 
 
 
-Procedure TAd.Setcompatibility(AIndex : Integer; const AValue : String); 
+Procedure TAd.Setcompatibility(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcompatibility=AValue) then exit;
@@ -10215,7 +10221,7 @@ end;
 
 
 
-Procedure TAd.SetcreateInfo(AIndex : Integer; const AValue : TLastModifiedInfo); 
+Procedure TAd.SetcreateInfo(AIndex : Integer; const AValue : TLastModifiedInfo);
 
 begin
   If (FcreateInfo=AValue) then exit;
@@ -10225,7 +10231,7 @@ end;
 
 
 
-Procedure TAd.SetcreativeGroupAssignments(AIndex : Integer; const AValue : TAdTypecreativeGroupAssignmentsArray); 
+Procedure TAd.SetcreativeGroupAssignments(AIndex : Integer; const AValue : TAdTypecreativeGroupAssignmentsArray);
 
 begin
   If (FcreativeGroupAssignments=AValue) then exit;
@@ -10235,7 +10241,7 @@ end;
 
 
 
-Procedure TAd.SetcreativeRotation(AIndex : Integer; const AValue : TCreativeRotation); 
+Procedure TAd.SetcreativeRotation(AIndex : Integer; const AValue : TCreativeRotation);
 
 begin
   If (FcreativeRotation=AValue) then exit;
@@ -10245,7 +10251,7 @@ end;
 
 
 
-Procedure TAd.SetdayPartTargeting(AIndex : Integer; const AValue : TDayPartTargeting); 
+Procedure TAd.SetdayPartTargeting(AIndex : Integer; const AValue : TDayPartTargeting);
 
 begin
   If (FdayPartTargeting=AValue) then exit;
@@ -10255,7 +10261,7 @@ end;
 
 
 
-Procedure TAd.SetdefaultClickThroughEventTagProperties(AIndex : Integer; const AValue : TDefaultClickThroughEventTagProperties); 
+Procedure TAd.SetdefaultClickThroughEventTagProperties(AIndex : Integer; const AValue : TDefaultClickThroughEventTagProperties);
 
 begin
   If (FdefaultClickThroughEventTagProperties=AValue) then exit;
@@ -10265,7 +10271,7 @@ end;
 
 
 
-Procedure TAd.SetdeliverySchedule(AIndex : Integer; const AValue : TDeliverySchedule); 
+Procedure TAd.SetdeliverySchedule(AIndex : Integer; const AValue : TDeliverySchedule);
 
 begin
   If (FdeliverySchedule=AValue) then exit;
@@ -10275,7 +10281,7 @@ end;
 
 
 
-Procedure TAd.SetdynamicClickTracker(AIndex : Integer; const AValue : boolean); 
+Procedure TAd.SetdynamicClickTracker(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FdynamicClickTracker=AValue) then exit;
@@ -10285,7 +10291,7 @@ end;
 
 
 
-Procedure TAd.SetendTime(AIndex : Integer; const AValue : TDatetime); 
+Procedure TAd.SetendTime(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (FendTime=AValue) then exit;
@@ -10295,7 +10301,7 @@ end;
 
 
 
-Procedure TAd.SeteventTagOverrides(AIndex : Integer; const AValue : TAdTypeeventTagOverridesArray); 
+Procedure TAd.SeteventTagOverrides(AIndex : Integer; const AValue : TAdTypeeventTagOverridesArray);
 
 begin
   If (FeventTagOverrides=AValue) then exit;
@@ -10305,7 +10311,7 @@ end;
 
 
 
-Procedure TAd.SetgeoTargeting(AIndex : Integer; const AValue : TGeoTargeting); 
+Procedure TAd.SetgeoTargeting(AIndex : Integer; const AValue : TGeoTargeting);
 
 begin
   If (FgeoTargeting=AValue) then exit;
@@ -10315,7 +10321,7 @@ end;
 
 
 
-Procedure TAd.Setid(AIndex : Integer; const AValue : String); 
+Procedure TAd.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -10325,7 +10331,7 @@ end;
 
 
 
-Procedure TAd.SetidDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TAd.SetidDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FidDimensionValue=AValue) then exit;
@@ -10335,7 +10341,7 @@ end;
 
 
 
-Procedure TAd.SetkeyValueTargetingExpression(AIndex : Integer; const AValue : TKeyValueTargetingExpression); 
+Procedure TAd.SetkeyValueTargetingExpression(AIndex : Integer; const AValue : TKeyValueTargetingExpression);
 
 begin
   If (FkeyValueTargetingExpression=AValue) then exit;
@@ -10345,7 +10351,7 @@ end;
 
 
 
-Procedure TAd.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAd.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -10355,7 +10361,7 @@ end;
 
 
 
-Procedure TAd.SetlastModifiedInfo(AIndex : Integer; const AValue : TLastModifiedInfo); 
+Procedure TAd.SetlastModifiedInfo(AIndex : Integer; const AValue : TLastModifiedInfo);
 
 begin
   If (FlastModifiedInfo=AValue) then exit;
@@ -10365,7 +10371,7 @@ end;
 
 
 
-Procedure TAd.Setname(AIndex : Integer; const AValue : String); 
+Procedure TAd.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -10375,7 +10381,7 @@ end;
 
 
 
-Procedure TAd.SetplacementAssignments(AIndex : Integer; const AValue : TAdTypeplacementAssignmentsArray); 
+Procedure TAd.SetplacementAssignments(AIndex : Integer; const AValue : TAdTypeplacementAssignmentsArray);
 
 begin
   If (FplacementAssignments=AValue) then exit;
@@ -10385,7 +10391,7 @@ end;
 
 
 
-Procedure TAd.SetremarketingListExpression(AIndex : Integer; const AValue : TListTargetingExpression); 
+Procedure TAd.SetremarketingListExpression(AIndex : Integer; const AValue : TListTargetingExpression);
 
 begin
   If (FremarketingListExpression=AValue) then exit;
@@ -10395,7 +10401,7 @@ end;
 
 
 
-Procedure TAd.Setsize(AIndex : Integer; const AValue : TSize); 
+Procedure TAd.Setsize(AIndex : Integer; const AValue : TSize);
 
 begin
   If (Fsize=AValue) then exit;
@@ -10405,7 +10411,7 @@ end;
 
 
 
-Procedure TAd.SetsslCompliant(AIndex : Integer; const AValue : boolean); 
+Procedure TAd.SetsslCompliant(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FsslCompliant=AValue) then exit;
@@ -10415,7 +10421,7 @@ end;
 
 
 
-Procedure TAd.SetsslRequired(AIndex : Integer; const AValue : boolean); 
+Procedure TAd.SetsslRequired(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FsslRequired=AValue) then exit;
@@ -10425,7 +10431,7 @@ end;
 
 
 
-Procedure TAd.SetstartTime(AIndex : Integer; const AValue : TDatetime); 
+Procedure TAd.SetstartTime(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (FstartTime=AValue) then exit;
@@ -10435,7 +10441,7 @@ end;
 
 
 
-Procedure TAd.SetsubaccountId(AIndex : Integer; const AValue : String); 
+Procedure TAd.SetsubaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsubaccountId=AValue) then exit;
@@ -10445,7 +10451,7 @@ end;
 
 
 
-Procedure TAd.SettechnologyTargeting(AIndex : Integer; const AValue : TTechnologyTargeting); 
+Procedure TAd.SettechnologyTargeting(AIndex : Integer; const AValue : TTechnologyTargeting);
 
 begin
   If (FtechnologyTargeting=AValue) then exit;
@@ -10455,7 +10461,7 @@ end;
 
 
 
-Procedure TAd.Set_type(AIndex : Integer; const AValue : String); 
+Procedure TAd.Set_type(AIndex : Integer; const AValue : String);
 
 begin
   If (F_type=AValue) then exit;
@@ -10477,7 +10483,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAd.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAd.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -10498,7 +10504,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAdSlot.Setcomment(AIndex : Integer; const AValue : String); 
+Procedure TAdSlot.Setcomment(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcomment=AValue) then exit;
@@ -10508,7 +10514,7 @@ end;
 
 
 
-Procedure TAdSlot.Setcompatibility(AIndex : Integer; const AValue : String); 
+Procedure TAdSlot.Setcompatibility(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcompatibility=AValue) then exit;
@@ -10518,7 +10524,7 @@ end;
 
 
 
-Procedure TAdSlot.Setheight(AIndex : Integer; const AValue : String); 
+Procedure TAdSlot.Setheight(AIndex : Integer; const AValue : String);
 
 begin
   If (Fheight=AValue) then exit;
@@ -10528,7 +10534,7 @@ end;
 
 
 
-Procedure TAdSlot.SetlinkedPlacementId(AIndex : Integer; const AValue : String); 
+Procedure TAdSlot.SetlinkedPlacementId(AIndex : Integer; const AValue : String);
 
 begin
   If (FlinkedPlacementId=AValue) then exit;
@@ -10538,7 +10544,7 @@ end;
 
 
 
-Procedure TAdSlot.Setname(AIndex : Integer; const AValue : String); 
+Procedure TAdSlot.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -10548,7 +10554,7 @@ end;
 
 
 
-Procedure TAdSlot.SetpaymentSourceType(AIndex : Integer; const AValue : String); 
+Procedure TAdSlot.SetpaymentSourceType(AIndex : Integer; const AValue : String);
 
 begin
   If (FpaymentSourceType=AValue) then exit;
@@ -10558,7 +10564,7 @@ end;
 
 
 
-Procedure TAdSlot.Setprimary(AIndex : Integer; const AValue : boolean); 
+Procedure TAdSlot.Setprimary(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fprimary=AValue) then exit;
@@ -10568,7 +10574,7 @@ end;
 
 
 
-Procedure TAdSlot.Setwidth(AIndex : Integer; const AValue : String); 
+Procedure TAdSlot.Setwidth(AIndex : Integer; const AValue : String);
 
 begin
   If (Fwidth=AValue) then exit;
@@ -10585,7 +10591,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAdsListResponse.Setads(AIndex : Integer; const AValue : TAdsListResponseTypeadsArray); 
+Procedure TAdsListResponse.Setads(AIndex : Integer; const AValue : TAdsListResponseTypeadsArray);
 
 begin
   If (Fads=AValue) then exit;
@@ -10595,7 +10601,7 @@ end;
 
 
 
-Procedure TAdsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAdsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -10605,7 +10611,7 @@ end;
 
 
 
-Procedure TAdsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TAdsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -10616,7 +10622,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAdsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAdsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -10635,7 +10641,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAdvertiser.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TAdvertiser.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -10645,7 +10651,7 @@ end;
 
 
 
-Procedure TAdvertiser.SetadvertiserGroupId(AIndex : Integer; const AValue : String); 
+Procedure TAdvertiser.SetadvertiserGroupId(AIndex : Integer; const AValue : String);
 
 begin
   If (FadvertiserGroupId=AValue) then exit;
@@ -10655,7 +10661,7 @@ end;
 
 
 
-Procedure TAdvertiser.SetclickThroughUrlSuffix(AIndex : Integer; const AValue : String); 
+Procedure TAdvertiser.SetclickThroughUrlSuffix(AIndex : Integer; const AValue : String);
 
 begin
   If (FclickThroughUrlSuffix=AValue) then exit;
@@ -10665,7 +10671,7 @@ end;
 
 
 
-Procedure TAdvertiser.SetdefaultClickThroughEventTagId(AIndex : Integer; const AValue : String); 
+Procedure TAdvertiser.SetdefaultClickThroughEventTagId(AIndex : Integer; const AValue : String);
 
 begin
   If (FdefaultClickThroughEventTagId=AValue) then exit;
@@ -10675,7 +10681,7 @@ end;
 
 
 
-Procedure TAdvertiser.SetdefaultEmail(AIndex : Integer; const AValue : String); 
+Procedure TAdvertiser.SetdefaultEmail(AIndex : Integer; const AValue : String);
 
 begin
   If (FdefaultEmail=AValue) then exit;
@@ -10685,7 +10691,7 @@ end;
 
 
 
-Procedure TAdvertiser.SetfloodlightConfigurationId(AIndex : Integer; const AValue : String); 
+Procedure TAdvertiser.SetfloodlightConfigurationId(AIndex : Integer; const AValue : String);
 
 begin
   If (FfloodlightConfigurationId=AValue) then exit;
@@ -10695,7 +10701,7 @@ end;
 
 
 
-Procedure TAdvertiser.SetfloodlightConfigurationIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TAdvertiser.SetfloodlightConfigurationIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FfloodlightConfigurationIdDimensionValue=AValue) then exit;
@@ -10705,7 +10711,7 @@ end;
 
 
 
-Procedure TAdvertiser.Setid(AIndex : Integer; const AValue : String); 
+Procedure TAdvertiser.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -10715,7 +10721,7 @@ end;
 
 
 
-Procedure TAdvertiser.SetidDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TAdvertiser.SetidDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FidDimensionValue=AValue) then exit;
@@ -10725,7 +10731,7 @@ end;
 
 
 
-Procedure TAdvertiser.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAdvertiser.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -10735,7 +10741,7 @@ end;
 
 
 
-Procedure TAdvertiser.Setname(AIndex : Integer; const AValue : String); 
+Procedure TAdvertiser.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -10745,7 +10751,7 @@ end;
 
 
 
-Procedure TAdvertiser.SetoriginalFloodlightConfigurationId(AIndex : Integer; const AValue : String); 
+Procedure TAdvertiser.SetoriginalFloodlightConfigurationId(AIndex : Integer; const AValue : String);
 
 begin
   If (ForiginalFloodlightConfigurationId=AValue) then exit;
@@ -10755,7 +10761,7 @@ end;
 
 
 
-Procedure TAdvertiser.Setstatus(AIndex : Integer; const AValue : String); 
+Procedure TAdvertiser.Setstatus(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -10765,7 +10771,7 @@ end;
 
 
 
-Procedure TAdvertiser.SetsubaccountId(AIndex : Integer; const AValue : String); 
+Procedure TAdvertiser.SetsubaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsubaccountId=AValue) then exit;
@@ -10775,7 +10781,7 @@ end;
 
 
 
-Procedure TAdvertiser.Setsuspended(AIndex : Integer; const AValue : boolean); 
+Procedure TAdvertiser.Setsuspended(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fsuspended=AValue) then exit;
@@ -10792,7 +10798,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAdvertiserGroup.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TAdvertiserGroup.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -10802,7 +10808,7 @@ end;
 
 
 
-Procedure TAdvertiserGroup.Setid(AIndex : Integer; const AValue : String); 
+Procedure TAdvertiserGroup.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -10812,7 +10818,7 @@ end;
 
 
 
-Procedure TAdvertiserGroup.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAdvertiserGroup.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -10822,7 +10828,7 @@ end;
 
 
 
-Procedure TAdvertiserGroup.Setname(AIndex : Integer; const AValue : String); 
+Procedure TAdvertiserGroup.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -10839,7 +10845,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAdvertiserGroupsListResponse.SetadvertiserGroups(AIndex : Integer; const AValue : TAdvertiserGroupsListResponseTypeadvertiserGroupsArray); 
+Procedure TAdvertiserGroupsListResponse.SetadvertiserGroups(AIndex : Integer; const AValue : TAdvertiserGroupsListResponseTypeadvertiserGroupsArray);
 
 begin
   If (FadvertiserGroups=AValue) then exit;
@@ -10849,7 +10855,7 @@ end;
 
 
 
-Procedure TAdvertiserGroupsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAdvertiserGroupsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -10859,7 +10865,7 @@ end;
 
 
 
-Procedure TAdvertiserGroupsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TAdvertiserGroupsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -10870,7 +10876,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAdvertiserGroupsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAdvertiserGroupsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -10889,7 +10895,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAdvertisersListResponse.Setadvertisers(AIndex : Integer; const AValue : TAdvertisersListResponseTypeadvertisersArray); 
+Procedure TAdvertisersListResponse.Setadvertisers(AIndex : Integer; const AValue : TAdvertisersListResponseTypeadvertisersArray);
 
 begin
   If (Fadvertisers=AValue) then exit;
@@ -10899,7 +10905,7 @@ end;
 
 
 
-Procedure TAdvertisersListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAdvertisersListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -10909,7 +10915,7 @@ end;
 
 
 
-Procedure TAdvertisersListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TAdvertisersListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -10920,7 +10926,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAdvertisersListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAdvertisersListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -10939,7 +10945,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAudienceSegment.Setallocation(AIndex : Integer; const AValue : integer); 
+Procedure TAudienceSegment.Setallocation(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fallocation=AValue) then exit;
@@ -10949,7 +10955,7 @@ end;
 
 
 
-Procedure TAudienceSegment.Setid(AIndex : Integer; const AValue : String); 
+Procedure TAudienceSegment.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -10959,7 +10965,7 @@ end;
 
 
 
-Procedure TAudienceSegment.Setname(AIndex : Integer; const AValue : String); 
+Procedure TAudienceSegment.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -10976,7 +10982,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAudienceSegmentGroup.SetaudienceSegments(AIndex : Integer; const AValue : TAudienceSegmentGroupTypeaudienceSegmentsArray); 
+Procedure TAudienceSegmentGroup.SetaudienceSegments(AIndex : Integer; const AValue : TAudienceSegmentGroupTypeaudienceSegmentsArray);
 
 begin
   If (FaudienceSegments=AValue) then exit;
@@ -10986,7 +10992,7 @@ end;
 
 
 
-Procedure TAudienceSegmentGroup.Setid(AIndex : Integer; const AValue : String); 
+Procedure TAudienceSegmentGroup.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -10996,7 +11002,7 @@ end;
 
 
 
-Procedure TAudienceSegmentGroup.Setname(AIndex : Integer; const AValue : String); 
+Procedure TAudienceSegmentGroup.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -11007,7 +11013,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAudienceSegmentGroup.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAudienceSegmentGroup.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -11026,7 +11032,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TBrowser.SetbrowserVersionId(AIndex : Integer; const AValue : String); 
+Procedure TBrowser.SetbrowserVersionId(AIndex : Integer; const AValue : String);
 
 begin
   If (FbrowserVersionId=AValue) then exit;
@@ -11036,7 +11042,7 @@ end;
 
 
 
-Procedure TBrowser.SetdartId(AIndex : Integer; const AValue : String); 
+Procedure TBrowser.SetdartId(AIndex : Integer; const AValue : String);
 
 begin
   If (FdartId=AValue) then exit;
@@ -11046,7 +11052,7 @@ end;
 
 
 
-Procedure TBrowser.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TBrowser.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -11056,7 +11062,7 @@ end;
 
 
 
-Procedure TBrowser.SetmajorVersion(AIndex : Integer; const AValue : String); 
+Procedure TBrowser.SetmajorVersion(AIndex : Integer; const AValue : String);
 
 begin
   If (FmajorVersion=AValue) then exit;
@@ -11066,7 +11072,7 @@ end;
 
 
 
-Procedure TBrowser.SetminorVersion(AIndex : Integer; const AValue : String); 
+Procedure TBrowser.SetminorVersion(AIndex : Integer; const AValue : String);
 
 begin
   If (FminorVersion=AValue) then exit;
@@ -11076,7 +11082,7 @@ end;
 
 
 
-Procedure TBrowser.Setname(AIndex : Integer; const AValue : String); 
+Procedure TBrowser.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -11093,7 +11099,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TBrowsersListResponse.Setbrowsers(AIndex : Integer; const AValue : TBrowsersListResponseTypebrowsersArray); 
+Procedure TBrowsersListResponse.Setbrowsers(AIndex : Integer; const AValue : TBrowsersListResponseTypebrowsersArray);
 
 begin
   If (Fbrowsers=AValue) then exit;
@@ -11103,7 +11109,7 @@ end;
 
 
 
-Procedure TBrowsersListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TBrowsersListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -11114,7 +11120,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TBrowsersListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TBrowsersListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -11133,7 +11139,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCampaign.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TCampaign.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -11143,7 +11149,7 @@ end;
 
 
 
-Procedure TCampaign.SetadditionalCreativeOptimizationConfigurations(AIndex : Integer; const AValue : TCampaignTypeadditionalCreativeOptimizationConfigurationsArray); 
+Procedure TCampaign.SetadditionalCreativeOptimizationConfigurations(AIndex : Integer; const AValue : TCampaignTypeadditionalCreativeOptimizationConfigurationsArray);
 
 begin
   If (FadditionalCreativeOptimizationConfigurations=AValue) then exit;
@@ -11153,7 +11159,7 @@ end;
 
 
 
-Procedure TCampaign.SetadvertiserGroupId(AIndex : Integer; const AValue : String); 
+Procedure TCampaign.SetadvertiserGroupId(AIndex : Integer; const AValue : String);
 
 begin
   If (FadvertiserGroupId=AValue) then exit;
@@ -11163,7 +11169,7 @@ end;
 
 
 
-Procedure TCampaign.SetadvertiserId(AIndex : Integer; const AValue : String); 
+Procedure TCampaign.SetadvertiserId(AIndex : Integer; const AValue : String);
 
 begin
   If (FadvertiserId=AValue) then exit;
@@ -11173,7 +11179,7 @@ end;
 
 
 
-Procedure TCampaign.SetadvertiserIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TCampaign.SetadvertiserIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FadvertiserIdDimensionValue=AValue) then exit;
@@ -11183,7 +11189,7 @@ end;
 
 
 
-Procedure TCampaign.Setarchived(AIndex : Integer; const AValue : boolean); 
+Procedure TCampaign.Setarchived(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Farchived=AValue) then exit;
@@ -11193,7 +11199,7 @@ end;
 
 
 
-Procedure TCampaign.SetaudienceSegmentGroups(AIndex : Integer; const AValue : TCampaignTypeaudienceSegmentGroupsArray); 
+Procedure TCampaign.SetaudienceSegmentGroups(AIndex : Integer; const AValue : TCampaignTypeaudienceSegmentGroupsArray);
 
 begin
   If (FaudienceSegmentGroups=AValue) then exit;
@@ -11203,7 +11209,7 @@ end;
 
 
 
-Procedure TCampaign.SetbillingInvoiceCode(AIndex : Integer; const AValue : String); 
+Procedure TCampaign.SetbillingInvoiceCode(AIndex : Integer; const AValue : String);
 
 begin
   If (FbillingInvoiceCode=AValue) then exit;
@@ -11213,7 +11219,7 @@ end;
 
 
 
-Procedure TCampaign.SetclickThroughUrlSuffixProperties(AIndex : Integer; const AValue : TClickThroughUrlSuffixProperties); 
+Procedure TCampaign.SetclickThroughUrlSuffixProperties(AIndex : Integer; const AValue : TClickThroughUrlSuffixProperties);
 
 begin
   If (FclickThroughUrlSuffixProperties=AValue) then exit;
@@ -11223,7 +11229,7 @@ end;
 
 
 
-Procedure TCampaign.Setcomment(AIndex : Integer; const AValue : String); 
+Procedure TCampaign.Setcomment(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcomment=AValue) then exit;
@@ -11233,7 +11239,7 @@ end;
 
 
 
-Procedure TCampaign.SetcomscoreVceEnabled(AIndex : Integer; const AValue : boolean); 
+Procedure TCampaign.SetcomscoreVceEnabled(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FcomscoreVceEnabled=AValue) then exit;
@@ -11243,7 +11249,7 @@ end;
 
 
 
-Procedure TCampaign.SetcreateInfo(AIndex : Integer; const AValue : TLastModifiedInfo); 
+Procedure TCampaign.SetcreateInfo(AIndex : Integer; const AValue : TLastModifiedInfo);
 
 begin
   If (FcreateInfo=AValue) then exit;
@@ -11253,7 +11259,7 @@ end;
 
 
 
-Procedure TCampaign.SetcreativeGroupIds(AIndex : Integer; const AValue : TStringArray); 
+Procedure TCampaign.SetcreativeGroupIds(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FcreativeGroupIds=AValue) then exit;
@@ -11263,7 +11269,7 @@ end;
 
 
 
-Procedure TCampaign.SetcreativeOptimizationConfiguration(AIndex : Integer; const AValue : TCreativeOptimizationConfiguration); 
+Procedure TCampaign.SetcreativeOptimizationConfiguration(AIndex : Integer; const AValue : TCreativeOptimizationConfiguration);
 
 begin
   If (FcreativeOptimizationConfiguration=AValue) then exit;
@@ -11273,7 +11279,7 @@ end;
 
 
 
-Procedure TCampaign.SetdefaultClickThroughEventTagProperties(AIndex : Integer; const AValue : TDefaultClickThroughEventTagProperties); 
+Procedure TCampaign.SetdefaultClickThroughEventTagProperties(AIndex : Integer; const AValue : TDefaultClickThroughEventTagProperties);
 
 begin
   If (FdefaultClickThroughEventTagProperties=AValue) then exit;
@@ -11283,7 +11289,7 @@ end;
 
 
 
-Procedure TCampaign.SetendDate(AIndex : Integer; const AValue : TDate); 
+Procedure TCampaign.SetendDate(AIndex : Integer; const AValue : TDate);
 
 begin
   If (FendDate=AValue) then exit;
@@ -11293,7 +11299,7 @@ end;
 
 
 
-Procedure TCampaign.SeteventTagOverrides(AIndex : Integer; const AValue : TCampaignTypeeventTagOverridesArray); 
+Procedure TCampaign.SeteventTagOverrides(AIndex : Integer; const AValue : TCampaignTypeeventTagOverridesArray);
 
 begin
   If (FeventTagOverrides=AValue) then exit;
@@ -11303,7 +11309,7 @@ end;
 
 
 
-Procedure TCampaign.SetexternalId(AIndex : Integer; const AValue : String); 
+Procedure TCampaign.SetexternalId(AIndex : Integer; const AValue : String);
 
 begin
   If (FexternalId=AValue) then exit;
@@ -11313,7 +11319,7 @@ end;
 
 
 
-Procedure TCampaign.Setid(AIndex : Integer; const AValue : String); 
+Procedure TCampaign.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -11323,7 +11329,7 @@ end;
 
 
 
-Procedure TCampaign.SetidDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TCampaign.SetidDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FidDimensionValue=AValue) then exit;
@@ -11333,7 +11339,7 @@ end;
 
 
 
-Procedure TCampaign.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TCampaign.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -11343,7 +11349,7 @@ end;
 
 
 
-Procedure TCampaign.SetlastModifiedInfo(AIndex : Integer; const AValue : TLastModifiedInfo); 
+Procedure TCampaign.SetlastModifiedInfo(AIndex : Integer; const AValue : TLastModifiedInfo);
 
 begin
   If (FlastModifiedInfo=AValue) then exit;
@@ -11353,7 +11359,7 @@ end;
 
 
 
-Procedure TCampaign.SetlookbackConfiguration(AIndex : Integer; const AValue : TLookbackConfiguration); 
+Procedure TCampaign.SetlookbackConfiguration(AIndex : Integer; const AValue : TLookbackConfiguration);
 
 begin
   If (FlookbackConfiguration=AValue) then exit;
@@ -11363,7 +11369,7 @@ end;
 
 
 
-Procedure TCampaign.Setname(AIndex : Integer; const AValue : String); 
+Procedure TCampaign.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -11373,7 +11379,7 @@ end;
 
 
 
-Procedure TCampaign.SetnielsenOcrEnabled(AIndex : Integer; const AValue : boolean); 
+Procedure TCampaign.SetnielsenOcrEnabled(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FnielsenOcrEnabled=AValue) then exit;
@@ -11383,7 +11389,7 @@ end;
 
 
 
-Procedure TCampaign.SetstartDate(AIndex : Integer; const AValue : TDate); 
+Procedure TCampaign.SetstartDate(AIndex : Integer; const AValue : TDate);
 
 begin
   If (FstartDate=AValue) then exit;
@@ -11393,7 +11399,7 @@ end;
 
 
 
-Procedure TCampaign.SetsubaccountId(AIndex : Integer; const AValue : String); 
+Procedure TCampaign.SetsubaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsubaccountId=AValue) then exit;
@@ -11403,7 +11409,7 @@ end;
 
 
 
-Procedure TCampaign.SettraffickerEmails(AIndex : Integer; const AValue : TStringArray); 
+Procedure TCampaign.SettraffickerEmails(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FtraffickerEmails=AValue) then exit;
@@ -11414,7 +11420,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TCampaign.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TCampaign.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -11437,7 +11443,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCampaignCreativeAssociation.SetcreativeId(AIndex : Integer; const AValue : String); 
+Procedure TCampaignCreativeAssociation.SetcreativeId(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreativeId=AValue) then exit;
@@ -11447,7 +11453,7 @@ end;
 
 
 
-Procedure TCampaignCreativeAssociation.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TCampaignCreativeAssociation.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -11464,7 +11470,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCampaignCreativeAssociationsListResponse.SetcampaignCreativeAssociations(AIndex : Integer; const AValue : TCampaignCreativeAssociationsListResponseTypecampaignCreativeAssociationsArray); 
+Procedure TCampaignCreativeAssociationsListResponse.SetcampaignCreativeAssociations(AIndex : Integer; const AValue : TCampaignCreativeAssociationsListResponseTypecampaignCreativeAssociationsArray);
 
 begin
   If (FcampaignCreativeAssociations=AValue) then exit;
@@ -11474,7 +11480,7 @@ end;
 
 
 
-Procedure TCampaignCreativeAssociationsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TCampaignCreativeAssociationsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -11484,7 +11490,7 @@ end;
 
 
 
-Procedure TCampaignCreativeAssociationsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TCampaignCreativeAssociationsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -11495,7 +11501,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TCampaignCreativeAssociationsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TCampaignCreativeAssociationsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -11514,7 +11520,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCampaignsListResponse.Setcampaigns(AIndex : Integer; const AValue : TCampaignsListResponseTypecampaignsArray); 
+Procedure TCampaignsListResponse.Setcampaigns(AIndex : Integer; const AValue : TCampaignsListResponseTypecampaignsArray);
 
 begin
   If (Fcampaigns=AValue) then exit;
@@ -11524,7 +11530,7 @@ end;
 
 
 
-Procedure TCampaignsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TCampaignsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -11534,7 +11540,7 @@ end;
 
 
 
-Procedure TCampaignsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TCampaignsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -11545,7 +11551,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TCampaignsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TCampaignsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -11564,7 +11570,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TChangeLog.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TChangeLog.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -11574,7 +11580,7 @@ end;
 
 
 
-Procedure TChangeLog.Setaction(AIndex : Integer; const AValue : String); 
+Procedure TChangeLog.Setaction(AIndex : Integer; const AValue : String);
 
 begin
   If (Faction=AValue) then exit;
@@ -11584,7 +11590,7 @@ end;
 
 
 
-Procedure TChangeLog.SetchangeTime(AIndex : Integer; const AValue : TDatetime); 
+Procedure TChangeLog.SetchangeTime(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (FchangeTime=AValue) then exit;
@@ -11594,7 +11600,7 @@ end;
 
 
 
-Procedure TChangeLog.SetfieldName(AIndex : Integer; const AValue : String); 
+Procedure TChangeLog.SetfieldName(AIndex : Integer; const AValue : String);
 
 begin
   If (FfieldName=AValue) then exit;
@@ -11604,7 +11610,7 @@ end;
 
 
 
-Procedure TChangeLog.Setid(AIndex : Integer; const AValue : String); 
+Procedure TChangeLog.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -11614,7 +11620,7 @@ end;
 
 
 
-Procedure TChangeLog.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TChangeLog.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -11624,7 +11630,7 @@ end;
 
 
 
-Procedure TChangeLog.SetnewValue(AIndex : Integer; const AValue : String); 
+Procedure TChangeLog.SetnewValue(AIndex : Integer; const AValue : String);
 
 begin
   If (FnewValue=AValue) then exit;
@@ -11634,7 +11640,7 @@ end;
 
 
 
-Procedure TChangeLog.SetobjectId(AIndex : Integer; const AValue : String); 
+Procedure TChangeLog.SetobjectId(AIndex : Integer; const AValue : String);
 
 begin
   If (FobjectId=AValue) then exit;
@@ -11644,7 +11650,7 @@ end;
 
 
 
-Procedure TChangeLog.SetobjectType(AIndex : Integer; const AValue : String); 
+Procedure TChangeLog.SetobjectType(AIndex : Integer; const AValue : String);
 
 begin
   If (FobjectType=AValue) then exit;
@@ -11654,7 +11660,7 @@ end;
 
 
 
-Procedure TChangeLog.SetoldValue(AIndex : Integer; const AValue : String); 
+Procedure TChangeLog.SetoldValue(AIndex : Integer; const AValue : String);
 
 begin
   If (FoldValue=AValue) then exit;
@@ -11664,7 +11670,7 @@ end;
 
 
 
-Procedure TChangeLog.SetsubaccountId(AIndex : Integer; const AValue : String); 
+Procedure TChangeLog.SetsubaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsubaccountId=AValue) then exit;
@@ -11674,7 +11680,7 @@ end;
 
 
 
-Procedure TChangeLog.SettransactionId(AIndex : Integer; const AValue : String); 
+Procedure TChangeLog.SettransactionId(AIndex : Integer; const AValue : String);
 
 begin
   If (FtransactionId=AValue) then exit;
@@ -11684,7 +11690,7 @@ end;
 
 
 
-Procedure TChangeLog.SetuserProfileId(AIndex : Integer; const AValue : String); 
+Procedure TChangeLog.SetuserProfileId(AIndex : Integer; const AValue : String);
 
 begin
   If (FuserProfileId=AValue) then exit;
@@ -11694,7 +11700,7 @@ end;
 
 
 
-Procedure TChangeLog.SetuserProfileName(AIndex : Integer; const AValue : String); 
+Procedure TChangeLog.SetuserProfileName(AIndex : Integer; const AValue : String);
 
 begin
   If (FuserProfileName=AValue) then exit;
@@ -11711,7 +11717,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TChangeLogsListResponse.SetchangeLogs(AIndex : Integer; const AValue : TChangeLogsListResponseTypechangeLogsArray); 
+Procedure TChangeLogsListResponse.SetchangeLogs(AIndex : Integer; const AValue : TChangeLogsListResponseTypechangeLogsArray);
 
 begin
   If (FchangeLogs=AValue) then exit;
@@ -11721,7 +11727,7 @@ end;
 
 
 
-Procedure TChangeLogsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TChangeLogsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -11731,7 +11737,7 @@ end;
 
 
 
-Procedure TChangeLogsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TChangeLogsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -11742,7 +11748,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TChangeLogsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TChangeLogsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -11761,7 +11767,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCitiesListResponse.Setcities(AIndex : Integer; const AValue : TCitiesListResponseTypecitiesArray); 
+Procedure TCitiesListResponse.Setcities(AIndex : Integer; const AValue : TCitiesListResponseTypecitiesArray);
 
 begin
   If (Fcities=AValue) then exit;
@@ -11771,7 +11777,7 @@ end;
 
 
 
-Procedure TCitiesListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TCitiesListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -11782,7 +11788,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TCitiesListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TCitiesListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -11801,7 +11807,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCity.SetcountryCode(AIndex : Integer; const AValue : String); 
+Procedure TCity.SetcountryCode(AIndex : Integer; const AValue : String);
 
 begin
   If (FcountryCode=AValue) then exit;
@@ -11811,7 +11817,7 @@ end;
 
 
 
-Procedure TCity.SetcountryDartId(AIndex : Integer; const AValue : String); 
+Procedure TCity.SetcountryDartId(AIndex : Integer; const AValue : String);
 
 begin
   If (FcountryDartId=AValue) then exit;
@@ -11821,7 +11827,7 @@ end;
 
 
 
-Procedure TCity.SetdartId(AIndex : Integer; const AValue : String); 
+Procedure TCity.SetdartId(AIndex : Integer; const AValue : String);
 
 begin
   If (FdartId=AValue) then exit;
@@ -11831,7 +11837,7 @@ end;
 
 
 
-Procedure TCity.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TCity.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -11841,7 +11847,7 @@ end;
 
 
 
-Procedure TCity.SetmetroCode(AIndex : Integer; const AValue : String); 
+Procedure TCity.SetmetroCode(AIndex : Integer; const AValue : String);
 
 begin
   If (FmetroCode=AValue) then exit;
@@ -11851,7 +11857,7 @@ end;
 
 
 
-Procedure TCity.SetmetroDmaId(AIndex : Integer; const AValue : String); 
+Procedure TCity.SetmetroDmaId(AIndex : Integer; const AValue : String);
 
 begin
   If (FmetroDmaId=AValue) then exit;
@@ -11861,7 +11867,7 @@ end;
 
 
 
-Procedure TCity.Setname(AIndex : Integer; const AValue : String); 
+Procedure TCity.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -11871,7 +11877,7 @@ end;
 
 
 
-Procedure TCity.SetregionCode(AIndex : Integer; const AValue : String); 
+Procedure TCity.SetregionCode(AIndex : Integer; const AValue : String);
 
 begin
   If (FregionCode=AValue) then exit;
@@ -11881,7 +11887,7 @@ end;
 
 
 
-Procedure TCity.SetregionDartId(AIndex : Integer; const AValue : String); 
+Procedure TCity.SetregionDartId(AIndex : Integer; const AValue : String);
 
 begin
   If (FregionDartId=AValue) then exit;
@@ -11898,7 +11904,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TClickTag.SeteventName(AIndex : Integer; const AValue : String); 
+Procedure TClickTag.SeteventName(AIndex : Integer; const AValue : String);
 
 begin
   If (FeventName=AValue) then exit;
@@ -11908,7 +11914,7 @@ end;
 
 
 
-Procedure TClickTag.Setname(AIndex : Integer; const AValue : String); 
+Procedure TClickTag.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -11918,7 +11924,7 @@ end;
 
 
 
-Procedure TClickTag.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TClickTag.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -11935,7 +11941,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TClickThroughUrl.SetcomputedClickThroughUrl(AIndex : Integer; const AValue : String); 
+Procedure TClickThroughUrl.SetcomputedClickThroughUrl(AIndex : Integer; const AValue : String);
 
 begin
   If (FcomputedClickThroughUrl=AValue) then exit;
@@ -11945,7 +11951,7 @@ end;
 
 
 
-Procedure TClickThroughUrl.SetcustomClickThroughUrl(AIndex : Integer; const AValue : String); 
+Procedure TClickThroughUrl.SetcustomClickThroughUrl(AIndex : Integer; const AValue : String);
 
 begin
   If (FcustomClickThroughUrl=AValue) then exit;
@@ -11955,7 +11961,7 @@ end;
 
 
 
-Procedure TClickThroughUrl.SetdefaultLandingPage(AIndex : Integer; const AValue : boolean); 
+Procedure TClickThroughUrl.SetdefaultLandingPage(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FdefaultLandingPage=AValue) then exit;
@@ -11965,7 +11971,7 @@ end;
 
 
 
-Procedure TClickThroughUrl.SetlandingPageId(AIndex : Integer; const AValue : String); 
+Procedure TClickThroughUrl.SetlandingPageId(AIndex : Integer; const AValue : String);
 
 begin
   If (FlandingPageId=AValue) then exit;
@@ -11982,7 +11988,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TClickThroughUrlSuffixProperties.SetclickThroughUrlSuffix(AIndex : Integer; const AValue : String); 
+Procedure TClickThroughUrlSuffixProperties.SetclickThroughUrlSuffix(AIndex : Integer; const AValue : String);
 
 begin
   If (FclickThroughUrlSuffix=AValue) then exit;
@@ -11992,7 +11998,7 @@ end;
 
 
 
-Procedure TClickThroughUrlSuffixProperties.SetoverrideInheritedSuffix(AIndex : Integer; const AValue : boolean); 
+Procedure TClickThroughUrlSuffixProperties.SetoverrideInheritedSuffix(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FoverrideInheritedSuffix=AValue) then exit;
@@ -12009,7 +12015,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCompanionClickThroughOverride.SetclickThroughUrl(AIndex : Integer; const AValue : TClickThroughUrl); 
+Procedure TCompanionClickThroughOverride.SetclickThroughUrl(AIndex : Integer; const AValue : TClickThroughUrl);
 
 begin
   If (FclickThroughUrl=AValue) then exit;
@@ -12019,7 +12025,7 @@ end;
 
 
 
-Procedure TCompanionClickThroughOverride.SetcreativeId(AIndex : Integer; const AValue : String); 
+Procedure TCompanionClickThroughOverride.SetcreativeId(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreativeId=AValue) then exit;
@@ -12036,7 +12042,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCompatibleFields.SetcrossDimensionReachReportCompatibleFields(AIndex : Integer; const AValue : TCrossDimensionReachReportCompatibleFields); 
+Procedure TCompatibleFields.SetcrossDimensionReachReportCompatibleFields(AIndex : Integer; const AValue : TCrossDimensionReachReportCompatibleFields);
 
 begin
   If (FcrossDimensionReachReportCompatibleFields=AValue) then exit;
@@ -12046,7 +12052,7 @@ end;
 
 
 
-Procedure TCompatibleFields.SetfloodlightReportCompatibleFields(AIndex : Integer; const AValue : TFloodlightReportCompatibleFields); 
+Procedure TCompatibleFields.SetfloodlightReportCompatibleFields(AIndex : Integer; const AValue : TFloodlightReportCompatibleFields);
 
 begin
   If (FfloodlightReportCompatibleFields=AValue) then exit;
@@ -12056,7 +12062,7 @@ end;
 
 
 
-Procedure TCompatibleFields.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TCompatibleFields.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -12066,7 +12072,7 @@ end;
 
 
 
-Procedure TCompatibleFields.SetpathToConversionReportCompatibleFields(AIndex : Integer; const AValue : TPathToConversionReportCompatibleFields); 
+Procedure TCompatibleFields.SetpathToConversionReportCompatibleFields(AIndex : Integer; const AValue : TPathToConversionReportCompatibleFields);
 
 begin
   If (FpathToConversionReportCompatibleFields=AValue) then exit;
@@ -12076,7 +12082,7 @@ end;
 
 
 
-Procedure TCompatibleFields.SetreachReportCompatibleFields(AIndex : Integer; const AValue : TReachReportCompatibleFields); 
+Procedure TCompatibleFields.SetreachReportCompatibleFields(AIndex : Integer; const AValue : TReachReportCompatibleFields);
 
 begin
   If (FreachReportCompatibleFields=AValue) then exit;
@@ -12086,7 +12092,7 @@ end;
 
 
 
-Procedure TCompatibleFields.SetreportCompatibleFields(AIndex : Integer; const AValue : TReportCompatibleFields); 
+Procedure TCompatibleFields.SetreportCompatibleFields(AIndex : Integer; const AValue : TReportCompatibleFields);
 
 begin
   If (FreportCompatibleFields=AValue) then exit;
@@ -12103,7 +12109,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TConnectionType.Setid(AIndex : Integer; const AValue : String); 
+Procedure TConnectionType.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -12113,7 +12119,7 @@ end;
 
 
 
-Procedure TConnectionType.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TConnectionType.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -12123,7 +12129,7 @@ end;
 
 
 
-Procedure TConnectionType.Setname(AIndex : Integer; const AValue : String); 
+Procedure TConnectionType.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -12140,7 +12146,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TConnectionTypesListResponse.SetconnectionTypes(AIndex : Integer; const AValue : TConnectionTypesListResponseTypeconnectionTypesArray); 
+Procedure TConnectionTypesListResponse.SetconnectionTypes(AIndex : Integer; const AValue : TConnectionTypesListResponseTypeconnectionTypesArray);
 
 begin
   If (FconnectionTypes=AValue) then exit;
@@ -12150,7 +12156,7 @@ end;
 
 
 
-Procedure TConnectionTypesListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TConnectionTypesListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -12161,7 +12167,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TConnectionTypesListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TConnectionTypesListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -12180,7 +12186,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TContentCategoriesListResponse.SetcontentCategories(AIndex : Integer; const AValue : TContentCategoriesListResponseTypecontentCategoriesArray); 
+Procedure TContentCategoriesListResponse.SetcontentCategories(AIndex : Integer; const AValue : TContentCategoriesListResponseTypecontentCategoriesArray);
 
 begin
   If (FcontentCategories=AValue) then exit;
@@ -12190,7 +12196,7 @@ end;
 
 
 
-Procedure TContentCategoriesListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TContentCategoriesListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -12200,7 +12206,7 @@ end;
 
 
 
-Procedure TContentCategoriesListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TContentCategoriesListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -12211,7 +12217,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TContentCategoriesListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TContentCategoriesListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -12230,7 +12236,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TContentCategory.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TContentCategory.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -12240,7 +12246,7 @@ end;
 
 
 
-Procedure TContentCategory.Setid(AIndex : Integer; const AValue : String); 
+Procedure TContentCategory.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -12250,7 +12256,7 @@ end;
 
 
 
-Procedure TContentCategory.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TContentCategory.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -12260,7 +12266,7 @@ end;
 
 
 
-Procedure TContentCategory.Setname(AIndex : Integer; const AValue : String); 
+Procedure TContentCategory.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -12277,7 +12283,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TConversion.SetchildDirectedTreatment(AIndex : Integer; const AValue : boolean); 
+Procedure TConversion.SetchildDirectedTreatment(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FchildDirectedTreatment=AValue) then exit;
@@ -12287,7 +12293,7 @@ end;
 
 
 
-Procedure TConversion.SetcustomVariables(AIndex : Integer; const AValue : TConversionTypecustomVariablesArray); 
+Procedure TConversion.SetcustomVariables(AIndex : Integer; const AValue : TConversionTypecustomVariablesArray);
 
 begin
   If (FcustomVariables=AValue) then exit;
@@ -12297,7 +12303,7 @@ end;
 
 
 
-Procedure TConversion.SetencryptedUserId(AIndex : Integer; const AValue : String); 
+Procedure TConversion.SetencryptedUserId(AIndex : Integer; const AValue : String);
 
 begin
   If (FencryptedUserId=AValue) then exit;
@@ -12307,7 +12313,7 @@ end;
 
 
 
-Procedure TConversion.SetfloodlightActivityId(AIndex : Integer; const AValue : String); 
+Procedure TConversion.SetfloodlightActivityId(AIndex : Integer; const AValue : String);
 
 begin
   If (FfloodlightActivityId=AValue) then exit;
@@ -12317,7 +12323,7 @@ end;
 
 
 
-Procedure TConversion.SetfloodlightConfigurationId(AIndex : Integer; const AValue : String); 
+Procedure TConversion.SetfloodlightConfigurationId(AIndex : Integer; const AValue : String);
 
 begin
   If (FfloodlightConfigurationId=AValue) then exit;
@@ -12327,7 +12333,7 @@ end;
 
 
 
-Procedure TConversion.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TConversion.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -12337,7 +12343,7 @@ end;
 
 
 
-Procedure TConversion.SetlimitAdTracking(AIndex : Integer; const AValue : boolean); 
+Procedure TConversion.SetlimitAdTracking(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FlimitAdTracking=AValue) then exit;
@@ -12347,7 +12353,7 @@ end;
 
 
 
-Procedure TConversion.SetmobileDeviceId(AIndex : Integer; const AValue : String); 
+Procedure TConversion.SetmobileDeviceId(AIndex : Integer; const AValue : String);
 
 begin
   If (FmobileDeviceId=AValue) then exit;
@@ -12357,7 +12363,7 @@ end;
 
 
 
-Procedure TConversion.Setordinal(AIndex : Integer; const AValue : String); 
+Procedure TConversion.Setordinal(AIndex : Integer; const AValue : String);
 
 begin
   If (Fordinal=AValue) then exit;
@@ -12367,7 +12373,7 @@ end;
 
 
 
-Procedure TConversion.Setquantity(AIndex : Integer; const AValue : String); 
+Procedure TConversion.Setquantity(AIndex : Integer; const AValue : String);
 
 begin
   If (Fquantity=AValue) then exit;
@@ -12377,7 +12383,7 @@ end;
 
 
 
-Procedure TConversion.SettimestampMicros(AIndex : Integer; const AValue : String); 
+Procedure TConversion.SettimestampMicros(AIndex : Integer; const AValue : String);
 
 begin
   If (FtimestampMicros=AValue) then exit;
@@ -12387,7 +12393,7 @@ end;
 
 
 
-Procedure TConversion.Setvalue(AIndex : Integer; const AValue : double); 
+Procedure TConversion.Setvalue(AIndex : Integer; const AValue : double);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -12398,7 +12404,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TConversion.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TConversion.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -12417,7 +12423,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TConversionError.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TConversionError.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -12427,7 +12433,7 @@ end;
 
 
 
-Procedure TConversionError.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TConversionError.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -12437,7 +12443,7 @@ end;
 
 
 
-Procedure TConversionError.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TConversionError.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -12454,7 +12460,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TConversionStatus.Setconversion(AIndex : Integer; const AValue : TConversion); 
+Procedure TConversionStatus.Setconversion(AIndex : Integer; const AValue : TConversion);
 
 begin
   If (Fconversion=AValue) then exit;
@@ -12464,7 +12470,7 @@ end;
 
 
 
-Procedure TConversionStatus.Seterrors(AIndex : Integer; const AValue : TConversionStatusTypeerrorsArray); 
+Procedure TConversionStatus.Seterrors(AIndex : Integer; const AValue : TConversionStatusTypeerrorsArray);
 
 begin
   If (Ferrors=AValue) then exit;
@@ -12474,7 +12480,7 @@ end;
 
 
 
-Procedure TConversionStatus.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TConversionStatus.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -12485,7 +12491,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TConversionStatus.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TConversionStatus.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -12504,7 +12510,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TConversionsBatchInsertRequest.Setconversions(AIndex : Integer; const AValue : TConversionsBatchInsertRequestTypeconversionsArray); 
+Procedure TConversionsBatchInsertRequest.Setconversions(AIndex : Integer; const AValue : TConversionsBatchInsertRequestTypeconversionsArray);
 
 begin
   If (Fconversions=AValue) then exit;
@@ -12514,7 +12520,7 @@ end;
 
 
 
-Procedure TConversionsBatchInsertRequest.SetencryptionInfo(AIndex : Integer; const AValue : TEncryptionInfo); 
+Procedure TConversionsBatchInsertRequest.SetencryptionInfo(AIndex : Integer; const AValue : TEncryptionInfo);
 
 begin
   If (FencryptionInfo=AValue) then exit;
@@ -12524,7 +12530,7 @@ end;
 
 
 
-Procedure TConversionsBatchInsertRequest.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TConversionsBatchInsertRequest.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -12535,7 +12541,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TConversionsBatchInsertRequest.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TConversionsBatchInsertRequest.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -12554,7 +12560,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TConversionsBatchInsertResponse.SethasFailures(AIndex : Integer; const AValue : boolean); 
+Procedure TConversionsBatchInsertResponse.SethasFailures(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FhasFailures=AValue) then exit;
@@ -12564,7 +12570,7 @@ end;
 
 
 
-Procedure TConversionsBatchInsertResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TConversionsBatchInsertResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -12574,7 +12580,7 @@ end;
 
 
 
-Procedure TConversionsBatchInsertResponse.Setstatus(AIndex : Integer; const AValue : TConversionsBatchInsertResponseTypestatusArray); 
+Procedure TConversionsBatchInsertResponse.Setstatus(AIndex : Integer; const AValue : TConversionsBatchInsertResponseTypestatusArray);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -12585,7 +12591,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TConversionsBatchInsertResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TConversionsBatchInsertResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -12604,7 +12610,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCountriesListResponse.Setcountries(AIndex : Integer; const AValue : TCountriesListResponseTypecountriesArray); 
+Procedure TCountriesListResponse.Setcountries(AIndex : Integer; const AValue : TCountriesListResponseTypecountriesArray);
 
 begin
   If (Fcountries=AValue) then exit;
@@ -12614,7 +12620,7 @@ end;
 
 
 
-Procedure TCountriesListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TCountriesListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -12625,7 +12631,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TCountriesListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TCountriesListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -12644,7 +12650,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCountry.SetcountryCode(AIndex : Integer; const AValue : String); 
+Procedure TCountry.SetcountryCode(AIndex : Integer; const AValue : String);
 
 begin
   If (FcountryCode=AValue) then exit;
@@ -12654,7 +12660,7 @@ end;
 
 
 
-Procedure TCountry.SetdartId(AIndex : Integer; const AValue : String); 
+Procedure TCountry.SetdartId(AIndex : Integer; const AValue : String);
 
 begin
   If (FdartId=AValue) then exit;
@@ -12664,7 +12670,7 @@ end;
 
 
 
-Procedure TCountry.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TCountry.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -12674,7 +12680,7 @@ end;
 
 
 
-Procedure TCountry.Setname(AIndex : Integer; const AValue : String); 
+Procedure TCountry.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -12684,7 +12690,7 @@ end;
 
 
 
-Procedure TCountry.SetsslEnabled(AIndex : Integer; const AValue : boolean); 
+Procedure TCountry.SetsslEnabled(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FsslEnabled=AValue) then exit;
@@ -12701,7 +12707,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCreative.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TCreative.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -12711,7 +12717,7 @@ end;
 
 
 
-Procedure TCreative.Setactive(AIndex : Integer; const AValue : boolean); 
+Procedure TCreative.Setactive(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Factive=AValue) then exit;
@@ -12721,7 +12727,7 @@ end;
 
 
 
-Procedure TCreative.SetadParameters(AIndex : Integer; const AValue : String); 
+Procedure TCreative.SetadParameters(AIndex : Integer; const AValue : String);
 
 begin
   If (FadParameters=AValue) then exit;
@@ -12731,7 +12737,7 @@ end;
 
 
 
-Procedure TCreative.SetadTagKeys(AIndex : Integer; const AValue : TStringArray); 
+Procedure TCreative.SetadTagKeys(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FadTagKeys=AValue) then exit;
@@ -12741,7 +12747,7 @@ end;
 
 
 
-Procedure TCreative.SetadvertiserId(AIndex : Integer; const AValue : String); 
+Procedure TCreative.SetadvertiserId(AIndex : Integer; const AValue : String);
 
 begin
   If (FadvertiserId=AValue) then exit;
@@ -12751,7 +12757,7 @@ end;
 
 
 
-Procedure TCreative.SetallowScriptAccess(AIndex : Integer; const AValue : boolean); 
+Procedure TCreative.SetallowScriptAccess(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FallowScriptAccess=AValue) then exit;
@@ -12761,7 +12767,7 @@ end;
 
 
 
-Procedure TCreative.Setarchived(AIndex : Integer; const AValue : boolean); 
+Procedure TCreative.Setarchived(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Farchived=AValue) then exit;
@@ -12771,7 +12777,7 @@ end;
 
 
 
-Procedure TCreative.SetartworkType(AIndex : Integer; const AValue : String); 
+Procedure TCreative.SetartworkType(AIndex : Integer; const AValue : String);
 
 begin
   If (FartworkType=AValue) then exit;
@@ -12781,7 +12787,7 @@ end;
 
 
 
-Procedure TCreative.SetauthoringSource(AIndex : Integer; const AValue : String); 
+Procedure TCreative.SetauthoringSource(AIndex : Integer; const AValue : String);
 
 begin
   If (FauthoringSource=AValue) then exit;
@@ -12791,7 +12797,7 @@ end;
 
 
 
-Procedure TCreative.SetauthoringTool(AIndex : Integer; const AValue : String); 
+Procedure TCreative.SetauthoringTool(AIndex : Integer; const AValue : String);
 
 begin
   If (FauthoringTool=AValue) then exit;
@@ -12801,7 +12807,7 @@ end;
 
 
 
-Procedure TCreative.Setauto_advance_images(AIndex : Integer; const AValue : boolean); 
+Procedure TCreative.Setauto_advance_images(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fauto_advance_images=AValue) then exit;
@@ -12811,7 +12817,7 @@ end;
 
 
 
-Procedure TCreative.SetbackgroundColor(AIndex : Integer; const AValue : String); 
+Procedure TCreative.SetbackgroundColor(AIndex : Integer; const AValue : String);
 
 begin
   If (FbackgroundColor=AValue) then exit;
@@ -12821,7 +12827,7 @@ end;
 
 
 
-Procedure TCreative.SetbackupImageClickThroughUrl(AIndex : Integer; const AValue : String); 
+Procedure TCreative.SetbackupImageClickThroughUrl(AIndex : Integer; const AValue : String);
 
 begin
   If (FbackupImageClickThroughUrl=AValue) then exit;
@@ -12831,7 +12837,7 @@ end;
 
 
 
-Procedure TCreative.SetbackupImageFeatures(AIndex : Integer; const AValue : TStringArray); 
+Procedure TCreative.SetbackupImageFeatures(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FbackupImageFeatures=AValue) then exit;
@@ -12841,7 +12847,7 @@ end;
 
 
 
-Procedure TCreative.SetbackupImageReportingLabel(AIndex : Integer; const AValue : String); 
+Procedure TCreative.SetbackupImageReportingLabel(AIndex : Integer; const AValue : String);
 
 begin
   If (FbackupImageReportingLabel=AValue) then exit;
@@ -12851,7 +12857,7 @@ end;
 
 
 
-Procedure TCreative.SetbackupImageTargetWindow(AIndex : Integer; const AValue : TTargetWindow); 
+Procedure TCreative.SetbackupImageTargetWindow(AIndex : Integer; const AValue : TTargetWindow);
 
 begin
   If (FbackupImageTargetWindow=AValue) then exit;
@@ -12861,7 +12867,7 @@ end;
 
 
 
-Procedure TCreative.SetclickTags(AIndex : Integer; const AValue : TCreativeTypeclickTagsArray); 
+Procedure TCreative.SetclickTags(AIndex : Integer; const AValue : TCreativeTypeclickTagsArray);
 
 begin
   If (FclickTags=AValue) then exit;
@@ -12871,7 +12877,7 @@ end;
 
 
 
-Procedure TCreative.SetcommercialId(AIndex : Integer; const AValue : String); 
+Procedure TCreative.SetcommercialId(AIndex : Integer; const AValue : String);
 
 begin
   If (FcommercialId=AValue) then exit;
@@ -12881,7 +12887,7 @@ end;
 
 
 
-Procedure TCreative.SetcompanionCreatives(AIndex : Integer; const AValue : TStringArray); 
+Procedure TCreative.SetcompanionCreatives(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FcompanionCreatives=AValue) then exit;
@@ -12891,7 +12897,7 @@ end;
 
 
 
-Procedure TCreative.Setcompatibility(AIndex : Integer; const AValue : TStringArray); 
+Procedure TCreative.Setcompatibility(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Fcompatibility=AValue) then exit;
@@ -12901,7 +12907,7 @@ end;
 
 
 
-Procedure TCreative.SetconvertFlashToHtml5(AIndex : Integer; const AValue : boolean); 
+Procedure TCreative.SetconvertFlashToHtml5(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FconvertFlashToHtml5=AValue) then exit;
@@ -12911,7 +12917,7 @@ end;
 
 
 
-Procedure TCreative.SetcounterCustomEvents(AIndex : Integer; const AValue : TCreativeTypecounterCustomEventsArray); 
+Procedure TCreative.SetcounterCustomEvents(AIndex : Integer; const AValue : TCreativeTypecounterCustomEventsArray);
 
 begin
   If (FcounterCustomEvents=AValue) then exit;
@@ -12921,7 +12927,7 @@ end;
 
 
 
-Procedure TCreative.SetcreativeAssets(AIndex : Integer; const AValue : TCreativeTypecreativeAssetsArray); 
+Procedure TCreative.SetcreativeAssets(AIndex : Integer; const AValue : TCreativeTypecreativeAssetsArray);
 
 begin
   If (FcreativeAssets=AValue) then exit;
@@ -12931,7 +12937,7 @@ end;
 
 
 
-Procedure TCreative.SetcreativeFieldAssignments(AIndex : Integer; const AValue : TCreativeTypecreativeFieldAssignmentsArray); 
+Procedure TCreative.SetcreativeFieldAssignments(AIndex : Integer; const AValue : TCreativeTypecreativeFieldAssignmentsArray);
 
 begin
   If (FcreativeFieldAssignments=AValue) then exit;
@@ -12941,7 +12947,7 @@ end;
 
 
 
-Procedure TCreative.SetcustomKeyValues(AIndex : Integer; const AValue : TStringArray); 
+Procedure TCreative.SetcustomKeyValues(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FcustomKeyValues=AValue) then exit;
@@ -12951,7 +12957,7 @@ end;
 
 
 
-Procedure TCreative.SetexitCustomEvents(AIndex : Integer; const AValue : TCreativeTypeexitCustomEventsArray); 
+Procedure TCreative.SetexitCustomEvents(AIndex : Integer; const AValue : TCreativeTypeexitCustomEventsArray);
 
 begin
   If (FexitCustomEvents=AValue) then exit;
@@ -12961,7 +12967,7 @@ end;
 
 
 
-Procedure TCreative.SetfsCommand(AIndex : Integer; const AValue : TFsCommand); 
+Procedure TCreative.SetfsCommand(AIndex : Integer; const AValue : TFsCommand);
 
 begin
   If (FfsCommand=AValue) then exit;
@@ -12971,7 +12977,7 @@ end;
 
 
 
-Procedure TCreative.SethtmlCode(AIndex : Integer; const AValue : String); 
+Procedure TCreative.SethtmlCode(AIndex : Integer; const AValue : String);
 
 begin
   If (FhtmlCode=AValue) then exit;
@@ -12981,7 +12987,7 @@ end;
 
 
 
-Procedure TCreative.SethtmlCodeLocked(AIndex : Integer; const AValue : boolean); 
+Procedure TCreative.SethtmlCodeLocked(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FhtmlCodeLocked=AValue) then exit;
@@ -12991,7 +12997,7 @@ end;
 
 
 
-Procedure TCreative.Setid(AIndex : Integer; const AValue : String); 
+Procedure TCreative.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -13001,7 +13007,7 @@ end;
 
 
 
-Procedure TCreative.SetidDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TCreative.SetidDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FidDimensionValue=AValue) then exit;
@@ -13011,7 +13017,7 @@ end;
 
 
 
-Procedure TCreative.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TCreative.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -13021,7 +13027,7 @@ end;
 
 
 
-Procedure TCreative.SetlastModifiedInfo(AIndex : Integer; const AValue : TLastModifiedInfo); 
+Procedure TCreative.SetlastModifiedInfo(AIndex : Integer; const AValue : TLastModifiedInfo);
 
 begin
   If (FlastModifiedInfo=AValue) then exit;
@@ -13031,7 +13037,7 @@ end;
 
 
 
-Procedure TCreative.SetlatestTraffickedCreativeId(AIndex : Integer; const AValue : String); 
+Procedure TCreative.SetlatestTraffickedCreativeId(AIndex : Integer; const AValue : String);
 
 begin
   If (FlatestTraffickedCreativeId=AValue) then exit;
@@ -13041,7 +13047,7 @@ end;
 
 
 
-Procedure TCreative.Setname(AIndex : Integer; const AValue : String); 
+Procedure TCreative.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -13051,7 +13057,7 @@ end;
 
 
 
-Procedure TCreative.SetoverrideCss(AIndex : Integer; const AValue : String); 
+Procedure TCreative.SetoverrideCss(AIndex : Integer; const AValue : String);
 
 begin
   If (FoverrideCss=AValue) then exit;
@@ -13061,7 +13067,7 @@ end;
 
 
 
-Procedure TCreative.SetredirectUrl(AIndex : Integer; const AValue : String); 
+Procedure TCreative.SetredirectUrl(AIndex : Integer; const AValue : String);
 
 begin
   If (FredirectUrl=AValue) then exit;
@@ -13071,7 +13077,7 @@ end;
 
 
 
-Procedure TCreative.SetrenderingId(AIndex : Integer; const AValue : String); 
+Procedure TCreative.SetrenderingId(AIndex : Integer; const AValue : String);
 
 begin
   If (FrenderingId=AValue) then exit;
@@ -13081,7 +13087,7 @@ end;
 
 
 
-Procedure TCreative.SetrenderingIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TCreative.SetrenderingIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FrenderingIdDimensionValue=AValue) then exit;
@@ -13091,7 +13097,7 @@ end;
 
 
 
-Procedure TCreative.SetrequiredFlashPluginVersion(AIndex : Integer; const AValue : String); 
+Procedure TCreative.SetrequiredFlashPluginVersion(AIndex : Integer; const AValue : String);
 
 begin
   If (FrequiredFlashPluginVersion=AValue) then exit;
@@ -13101,7 +13107,7 @@ end;
 
 
 
-Procedure TCreative.SetrequiredFlashVersion(AIndex : Integer; const AValue : integer); 
+Procedure TCreative.SetrequiredFlashVersion(AIndex : Integer; const AValue : integer);
 
 begin
   If (FrequiredFlashVersion=AValue) then exit;
@@ -13111,7 +13117,7 @@ end;
 
 
 
-Procedure TCreative.Setsize(AIndex : Integer; const AValue : TSize); 
+Procedure TCreative.Setsize(AIndex : Integer; const AValue : TSize);
 
 begin
   If (Fsize=AValue) then exit;
@@ -13121,7 +13127,7 @@ end;
 
 
 
-Procedure TCreative.Setskippable(AIndex : Integer; const AValue : boolean); 
+Procedure TCreative.Setskippable(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fskippable=AValue) then exit;
@@ -13131,7 +13137,7 @@ end;
 
 
 
-Procedure TCreative.SetsslCompliant(AIndex : Integer; const AValue : boolean); 
+Procedure TCreative.SetsslCompliant(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FsslCompliant=AValue) then exit;
@@ -13141,7 +13147,7 @@ end;
 
 
 
-Procedure TCreative.SetsslOverride(AIndex : Integer; const AValue : boolean); 
+Procedure TCreative.SetsslOverride(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FsslOverride=AValue) then exit;
@@ -13151,7 +13157,7 @@ end;
 
 
 
-Procedure TCreative.SetstudioAdvertiserId(AIndex : Integer; const AValue : String); 
+Procedure TCreative.SetstudioAdvertiserId(AIndex : Integer; const AValue : String);
 
 begin
   If (FstudioAdvertiserId=AValue) then exit;
@@ -13161,7 +13167,7 @@ end;
 
 
 
-Procedure TCreative.SetstudioCreativeId(AIndex : Integer; const AValue : String); 
+Procedure TCreative.SetstudioCreativeId(AIndex : Integer; const AValue : String);
 
 begin
   If (FstudioCreativeId=AValue) then exit;
@@ -13171,7 +13177,7 @@ end;
 
 
 
-Procedure TCreative.SetstudioTraffickedCreativeId(AIndex : Integer; const AValue : String); 
+Procedure TCreative.SetstudioTraffickedCreativeId(AIndex : Integer; const AValue : String);
 
 begin
   If (FstudioTraffickedCreativeId=AValue) then exit;
@@ -13181,7 +13187,7 @@ end;
 
 
 
-Procedure TCreative.SetsubaccountId(AIndex : Integer; const AValue : String); 
+Procedure TCreative.SetsubaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsubaccountId=AValue) then exit;
@@ -13191,7 +13197,7 @@ end;
 
 
 
-Procedure TCreative.SetthirdPartyBackupImageImpressionsUrl(AIndex : Integer; const AValue : String); 
+Procedure TCreative.SetthirdPartyBackupImageImpressionsUrl(AIndex : Integer; const AValue : String);
 
 begin
   If (FthirdPartyBackupImageImpressionsUrl=AValue) then exit;
@@ -13201,7 +13207,7 @@ end;
 
 
 
-Procedure TCreative.SetthirdPartyRichMediaImpressionsUrl(AIndex : Integer; const AValue : String); 
+Procedure TCreative.SetthirdPartyRichMediaImpressionsUrl(AIndex : Integer; const AValue : String);
 
 begin
   If (FthirdPartyRichMediaImpressionsUrl=AValue) then exit;
@@ -13211,7 +13217,7 @@ end;
 
 
 
-Procedure TCreative.SetthirdPartyUrls(AIndex : Integer; const AValue : TCreativeTypethirdPartyUrlsArray); 
+Procedure TCreative.SetthirdPartyUrls(AIndex : Integer; const AValue : TCreativeTypethirdPartyUrlsArray);
 
 begin
   If (FthirdPartyUrls=AValue) then exit;
@@ -13221,7 +13227,7 @@ end;
 
 
 
-Procedure TCreative.SettimerCustomEvents(AIndex : Integer; const AValue : TCreativeTypetimerCustomEventsArray); 
+Procedure TCreative.SettimerCustomEvents(AIndex : Integer; const AValue : TCreativeTypetimerCustomEventsArray);
 
 begin
   If (FtimerCustomEvents=AValue) then exit;
@@ -13231,7 +13237,7 @@ end;
 
 
 
-Procedure TCreative.SettotalFileSize(AIndex : Integer; const AValue : String); 
+Procedure TCreative.SettotalFileSize(AIndex : Integer; const AValue : String);
 
 begin
   If (FtotalFileSize=AValue) then exit;
@@ -13241,7 +13247,7 @@ end;
 
 
 
-Procedure TCreative.Set_type(AIndex : Integer; const AValue : String); 
+Procedure TCreative.Set_type(AIndex : Integer; const AValue : String);
 
 begin
   If (F_type=AValue) then exit;
@@ -13251,7 +13257,7 @@ end;
 
 
 
-Procedure TCreative.Setversion(AIndex : Integer; const AValue : integer); 
+Procedure TCreative.Setversion(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fversion=AValue) then exit;
@@ -13261,7 +13267,7 @@ end;
 
 
 
-Procedure TCreative.SetvideoDescription(AIndex : Integer; const AValue : String); 
+Procedure TCreative.SetvideoDescription(AIndex : Integer; const AValue : String);
 
 begin
   If (FvideoDescription=AValue) then exit;
@@ -13271,7 +13277,7 @@ end;
 
 
 
-Procedure TCreative.SetvideoDuration(AIndex : Integer; const AValue : integer); 
+Procedure TCreative.SetvideoDuration(AIndex : Integer; const AValue : integer);
 
 begin
   If (FvideoDuration=AValue) then exit;
@@ -13293,7 +13299,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TCreative.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TCreative.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -13323,7 +13329,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCreativeAsset.SetactionScript3(AIndex : Integer; const AValue : boolean); 
+Procedure TCreativeAsset.SetactionScript3(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FactionScript3=AValue) then exit;
@@ -13333,7 +13339,7 @@ end;
 
 
 
-Procedure TCreativeAsset.Setactive(AIndex : Integer; const AValue : boolean); 
+Procedure TCreativeAsset.Setactive(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Factive=AValue) then exit;
@@ -13343,7 +13349,7 @@ end;
 
 
 
-Procedure TCreativeAsset.Setalignment(AIndex : Integer; const AValue : String); 
+Procedure TCreativeAsset.Setalignment(AIndex : Integer; const AValue : String);
 
 begin
   If (Falignment=AValue) then exit;
@@ -13353,7 +13359,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SetartworkType(AIndex : Integer; const AValue : String); 
+Procedure TCreativeAsset.SetartworkType(AIndex : Integer; const AValue : String);
 
 begin
   If (FartworkType=AValue) then exit;
@@ -13363,7 +13369,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SetassetIdentifier(AIndex : Integer; const AValue : TCreativeAssetId); 
+Procedure TCreativeAsset.SetassetIdentifier(AIndex : Integer; const AValue : TCreativeAssetId);
 
 begin
   If (FassetIdentifier=AValue) then exit;
@@ -13373,7 +13379,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SetbackupImageExit(AIndex : Integer; const AValue : TCreativeCustomEvent); 
+Procedure TCreativeAsset.SetbackupImageExit(AIndex : Integer; const AValue : TCreativeCustomEvent);
 
 begin
   If (FbackupImageExit=AValue) then exit;
@@ -13383,7 +13389,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SetbitRate(AIndex : Integer; const AValue : integer); 
+Procedure TCreativeAsset.SetbitRate(AIndex : Integer; const AValue : integer);
 
 begin
   If (FbitRate=AValue) then exit;
@@ -13393,7 +13399,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SetchildAssetType(AIndex : Integer; const AValue : String); 
+Procedure TCreativeAsset.SetchildAssetType(AIndex : Integer; const AValue : String);
 
 begin
   If (FchildAssetType=AValue) then exit;
@@ -13403,7 +13409,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SetcollapsedSize(AIndex : Integer; const AValue : TSize); 
+Procedure TCreativeAsset.SetcollapsedSize(AIndex : Integer; const AValue : TSize);
 
 begin
   If (FcollapsedSize=AValue) then exit;
@@ -13413,7 +13419,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SetcustomStartTimeValue(AIndex : Integer; const AValue : integer); 
+Procedure TCreativeAsset.SetcustomStartTimeValue(AIndex : Integer; const AValue : integer);
 
 begin
   If (FcustomStartTimeValue=AValue) then exit;
@@ -13423,7 +13429,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SetdetectedFeatures(AIndex : Integer; const AValue : TStringArray); 
+Procedure TCreativeAsset.SetdetectedFeatures(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FdetectedFeatures=AValue) then exit;
@@ -13433,7 +13439,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SetdisplayType(AIndex : Integer; const AValue : String); 
+Procedure TCreativeAsset.SetdisplayType(AIndex : Integer; const AValue : String);
 
 begin
   If (FdisplayType=AValue) then exit;
@@ -13443,7 +13449,7 @@ end;
 
 
 
-Procedure TCreativeAsset.Setduration(AIndex : Integer; const AValue : integer); 
+Procedure TCreativeAsset.Setduration(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fduration=AValue) then exit;
@@ -13453,7 +13459,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SetdurationType(AIndex : Integer; const AValue : String); 
+Procedure TCreativeAsset.SetdurationType(AIndex : Integer; const AValue : String);
 
 begin
   If (FdurationType=AValue) then exit;
@@ -13463,7 +13469,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SetexpandedDimension(AIndex : Integer; const AValue : TSize); 
+Procedure TCreativeAsset.SetexpandedDimension(AIndex : Integer; const AValue : TSize);
 
 begin
   If (FexpandedDimension=AValue) then exit;
@@ -13473,7 +13479,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SetfileSize(AIndex : Integer; const AValue : String); 
+Procedure TCreativeAsset.SetfileSize(AIndex : Integer; const AValue : String);
 
 begin
   If (FfileSize=AValue) then exit;
@@ -13483,7 +13489,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SetflashVersion(AIndex : Integer; const AValue : integer); 
+Procedure TCreativeAsset.SetflashVersion(AIndex : Integer; const AValue : integer);
 
 begin
   If (FflashVersion=AValue) then exit;
@@ -13493,7 +13499,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SethideFlashObjects(AIndex : Integer; const AValue : boolean); 
+Procedure TCreativeAsset.SethideFlashObjects(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FhideFlashObjects=AValue) then exit;
@@ -13503,7 +13509,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SethideSelectionBoxes(AIndex : Integer; const AValue : boolean); 
+Procedure TCreativeAsset.SethideSelectionBoxes(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FhideSelectionBoxes=AValue) then exit;
@@ -13513,7 +13519,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SethorizontallyLocked(AIndex : Integer; const AValue : boolean); 
+Procedure TCreativeAsset.SethorizontallyLocked(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FhorizontallyLocked=AValue) then exit;
@@ -13523,7 +13529,7 @@ end;
 
 
 
-Procedure TCreativeAsset.Setid(AIndex : Integer; const AValue : String); 
+Procedure TCreativeAsset.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -13533,7 +13539,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SetmimeType(AIndex : Integer; const AValue : String); 
+Procedure TCreativeAsset.SetmimeType(AIndex : Integer; const AValue : String);
 
 begin
   If (FmimeType=AValue) then exit;
@@ -13543,7 +13549,7 @@ end;
 
 
 
-Procedure TCreativeAsset.Setoffset(AIndex : Integer; const AValue : TOffsetPosition); 
+Procedure TCreativeAsset.Setoffset(AIndex : Integer; const AValue : TOffsetPosition);
 
 begin
   If (Foffset=AValue) then exit;
@@ -13553,7 +13559,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SetoriginalBackup(AIndex : Integer; const AValue : boolean); 
+Procedure TCreativeAsset.SetoriginalBackup(AIndex : Integer; const AValue : boolean);
 
 begin
   If (ForiginalBackup=AValue) then exit;
@@ -13563,7 +13569,7 @@ end;
 
 
 
-Procedure TCreativeAsset.Setposition(AIndex : Integer; const AValue : TOffsetPosition); 
+Procedure TCreativeAsset.Setposition(AIndex : Integer; const AValue : TOffsetPosition);
 
 begin
   If (Fposition=AValue) then exit;
@@ -13573,7 +13579,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SetpositionLeftUnit(AIndex : Integer; const AValue : String); 
+Procedure TCreativeAsset.SetpositionLeftUnit(AIndex : Integer; const AValue : String);
 
 begin
   If (FpositionLeftUnit=AValue) then exit;
@@ -13583,7 +13589,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SetpositionTopUnit(AIndex : Integer; const AValue : String); 
+Procedure TCreativeAsset.SetpositionTopUnit(AIndex : Integer; const AValue : String);
 
 begin
   If (FpositionTopUnit=AValue) then exit;
@@ -13593,7 +13599,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SetprogressiveServingUrl(AIndex : Integer; const AValue : String); 
+Procedure TCreativeAsset.SetprogressiveServingUrl(AIndex : Integer; const AValue : String);
 
 begin
   If (FprogressiveServingUrl=AValue) then exit;
@@ -13603,7 +13609,7 @@ end;
 
 
 
-Procedure TCreativeAsset.Setpushdown(AIndex : Integer; const AValue : boolean); 
+Procedure TCreativeAsset.Setpushdown(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fpushdown=AValue) then exit;
@@ -13613,7 +13619,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SetpushdownDuration(AIndex : Integer; const AValue : integer); 
+Procedure TCreativeAsset.SetpushdownDuration(AIndex : Integer; const AValue : integer);
 
 begin
   If (FpushdownDuration=AValue) then exit;
@@ -13623,7 +13629,7 @@ end;
 
 
 
-Procedure TCreativeAsset.Setrole(AIndex : Integer; const AValue : String); 
+Procedure TCreativeAsset.Setrole(AIndex : Integer; const AValue : String);
 
 begin
   If (Frole=AValue) then exit;
@@ -13633,7 +13639,7 @@ end;
 
 
 
-Procedure TCreativeAsset.Setsize(AIndex : Integer; const AValue : TSize); 
+Procedure TCreativeAsset.Setsize(AIndex : Integer; const AValue : TSize);
 
 begin
   If (Fsize=AValue) then exit;
@@ -13643,7 +13649,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SetsslCompliant(AIndex : Integer; const AValue : boolean); 
+Procedure TCreativeAsset.SetsslCompliant(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FsslCompliant=AValue) then exit;
@@ -13653,7 +13659,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SetstartTimeType(AIndex : Integer; const AValue : String); 
+Procedure TCreativeAsset.SetstartTimeType(AIndex : Integer; const AValue : String);
 
 begin
   If (FstartTimeType=AValue) then exit;
@@ -13663,7 +13669,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SetstreamingServingUrl(AIndex : Integer; const AValue : String); 
+Procedure TCreativeAsset.SetstreamingServingUrl(AIndex : Integer; const AValue : String);
 
 begin
   If (FstreamingServingUrl=AValue) then exit;
@@ -13673,7 +13679,7 @@ end;
 
 
 
-Procedure TCreativeAsset.Settransparency(AIndex : Integer; const AValue : boolean); 
+Procedure TCreativeAsset.Settransparency(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Ftransparency=AValue) then exit;
@@ -13683,7 +13689,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SetverticallyLocked(AIndex : Integer; const AValue : boolean); 
+Procedure TCreativeAsset.SetverticallyLocked(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FverticallyLocked=AValue) then exit;
@@ -13693,7 +13699,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SetvideoDuration(AIndex : Integer; const AValue : integer); 
+Procedure TCreativeAsset.SetvideoDuration(AIndex : Integer; const AValue : integer);
 
 begin
   If (FvideoDuration=AValue) then exit;
@@ -13703,7 +13709,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SetwindowMode(AIndex : Integer; const AValue : String); 
+Procedure TCreativeAsset.SetwindowMode(AIndex : Integer; const AValue : String);
 
 begin
   If (FwindowMode=AValue) then exit;
@@ -13713,7 +13719,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SetzIndex(AIndex : Integer; const AValue : integer); 
+Procedure TCreativeAsset.SetzIndex(AIndex : Integer; const AValue : integer);
 
 begin
   If (FzIndex=AValue) then exit;
@@ -13723,7 +13729,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SetzipFilename(AIndex : Integer; const AValue : String); 
+Procedure TCreativeAsset.SetzipFilename(AIndex : Integer; const AValue : String);
 
 begin
   If (FzipFilename=AValue) then exit;
@@ -13733,7 +13739,7 @@ end;
 
 
 
-Procedure TCreativeAsset.SetzipFilesize(AIndex : Integer; const AValue : String); 
+Procedure TCreativeAsset.SetzipFilesize(AIndex : Integer; const AValue : String);
 
 begin
   If (FzipFilesize=AValue) then exit;
@@ -13744,7 +13750,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TCreativeAsset.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TCreativeAsset.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -13763,7 +13769,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCreativeAssetId.Setname(AIndex : Integer; const AValue : String); 
+Procedure TCreativeAssetId.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -13773,7 +13779,7 @@ end;
 
 
 
-Procedure TCreativeAssetId.Set_type(AIndex : Integer; const AValue : String); 
+Procedure TCreativeAssetId.Set_type(AIndex : Integer; const AValue : String);
 
 begin
   If (F_type=AValue) then exit;
@@ -13801,7 +13807,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCreativeAssetMetadata.SetassetIdentifier(AIndex : Integer; const AValue : TCreativeAssetId); 
+Procedure TCreativeAssetMetadata.SetassetIdentifier(AIndex : Integer; const AValue : TCreativeAssetId);
 
 begin
   If (FassetIdentifier=AValue) then exit;
@@ -13811,7 +13817,7 @@ end;
 
 
 
-Procedure TCreativeAssetMetadata.SetclickTags(AIndex : Integer; const AValue : TCreativeAssetMetadataTypeclickTagsArray); 
+Procedure TCreativeAssetMetadata.SetclickTags(AIndex : Integer; const AValue : TCreativeAssetMetadataTypeclickTagsArray);
 
 begin
   If (FclickTags=AValue) then exit;
@@ -13821,7 +13827,7 @@ end;
 
 
 
-Procedure TCreativeAssetMetadata.SetdetectedFeatures(AIndex : Integer; const AValue : TStringArray); 
+Procedure TCreativeAssetMetadata.SetdetectedFeatures(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FdetectedFeatures=AValue) then exit;
@@ -13831,7 +13837,7 @@ end;
 
 
 
-Procedure TCreativeAssetMetadata.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TCreativeAssetMetadata.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -13841,7 +13847,7 @@ end;
 
 
 
-Procedure TCreativeAssetMetadata.SetwarnedValidationRules(AIndex : Integer; const AValue : TStringArray); 
+Procedure TCreativeAssetMetadata.SetwarnedValidationRules(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FwarnedValidationRules=AValue) then exit;
@@ -13852,7 +13858,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TCreativeAssetMetadata.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TCreativeAssetMetadata.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -13873,7 +13879,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCreativeAssignment.Setactive(AIndex : Integer; const AValue : boolean); 
+Procedure TCreativeAssignment.Setactive(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Factive=AValue) then exit;
@@ -13883,7 +13889,7 @@ end;
 
 
 
-Procedure TCreativeAssignment.SetapplyEventTags(AIndex : Integer; const AValue : boolean); 
+Procedure TCreativeAssignment.SetapplyEventTags(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FapplyEventTags=AValue) then exit;
@@ -13893,7 +13899,7 @@ end;
 
 
 
-Procedure TCreativeAssignment.SetclickThroughUrl(AIndex : Integer; const AValue : TClickThroughUrl); 
+Procedure TCreativeAssignment.SetclickThroughUrl(AIndex : Integer; const AValue : TClickThroughUrl);
 
 begin
   If (FclickThroughUrl=AValue) then exit;
@@ -13903,7 +13909,7 @@ end;
 
 
 
-Procedure TCreativeAssignment.SetcompanionCreativeOverrides(AIndex : Integer; const AValue : TCreativeAssignmentTypecompanionCreativeOverridesArray); 
+Procedure TCreativeAssignment.SetcompanionCreativeOverrides(AIndex : Integer; const AValue : TCreativeAssignmentTypecompanionCreativeOverridesArray);
 
 begin
   If (FcompanionCreativeOverrides=AValue) then exit;
@@ -13913,7 +13919,7 @@ end;
 
 
 
-Procedure TCreativeAssignment.SetcreativeGroupAssignments(AIndex : Integer; const AValue : TCreativeAssignmentTypecreativeGroupAssignmentsArray); 
+Procedure TCreativeAssignment.SetcreativeGroupAssignments(AIndex : Integer; const AValue : TCreativeAssignmentTypecreativeGroupAssignmentsArray);
 
 begin
   If (FcreativeGroupAssignments=AValue) then exit;
@@ -13923,7 +13929,7 @@ end;
 
 
 
-Procedure TCreativeAssignment.SetcreativeId(AIndex : Integer; const AValue : String); 
+Procedure TCreativeAssignment.SetcreativeId(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreativeId=AValue) then exit;
@@ -13933,7 +13939,7 @@ end;
 
 
 
-Procedure TCreativeAssignment.SetcreativeIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TCreativeAssignment.SetcreativeIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FcreativeIdDimensionValue=AValue) then exit;
@@ -13943,7 +13949,7 @@ end;
 
 
 
-Procedure TCreativeAssignment.SetendTime(AIndex : Integer; const AValue : TDatetime); 
+Procedure TCreativeAssignment.SetendTime(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (FendTime=AValue) then exit;
@@ -13953,7 +13959,7 @@ end;
 
 
 
-Procedure TCreativeAssignment.SetrichMediaExitOverrides(AIndex : Integer; const AValue : TCreativeAssignmentTyperichMediaExitOverridesArray); 
+Procedure TCreativeAssignment.SetrichMediaExitOverrides(AIndex : Integer; const AValue : TCreativeAssignmentTyperichMediaExitOverridesArray);
 
 begin
   If (FrichMediaExitOverrides=AValue) then exit;
@@ -13963,7 +13969,7 @@ end;
 
 
 
-Procedure TCreativeAssignment.Setsequence(AIndex : Integer; const AValue : integer); 
+Procedure TCreativeAssignment.Setsequence(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fsequence=AValue) then exit;
@@ -13973,7 +13979,7 @@ end;
 
 
 
-Procedure TCreativeAssignment.SetsslCompliant(AIndex : Integer; const AValue : boolean); 
+Procedure TCreativeAssignment.SetsslCompliant(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FsslCompliant=AValue) then exit;
@@ -13983,7 +13989,7 @@ end;
 
 
 
-Procedure TCreativeAssignment.SetstartTime(AIndex : Integer; const AValue : TDatetime); 
+Procedure TCreativeAssignment.SetstartTime(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (FstartTime=AValue) then exit;
@@ -13993,7 +13999,7 @@ end;
 
 
 
-Procedure TCreativeAssignment.Setweight(AIndex : Integer; const AValue : integer); 
+Procedure TCreativeAssignment.Setweight(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fweight=AValue) then exit;
@@ -14004,7 +14010,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TCreativeAssignment.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TCreativeAssignment.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -14025,7 +14031,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCreativeCustomEvent.SetadvertiserCustomEventId(AIndex : Integer; const AValue : String); 
+Procedure TCreativeCustomEvent.SetadvertiserCustomEventId(AIndex : Integer; const AValue : String);
 
 begin
   If (FadvertiserCustomEventId=AValue) then exit;
@@ -14035,7 +14041,7 @@ end;
 
 
 
-Procedure TCreativeCustomEvent.SetadvertiserCustomEventName(AIndex : Integer; const AValue : String); 
+Procedure TCreativeCustomEvent.SetadvertiserCustomEventName(AIndex : Integer; const AValue : String);
 
 begin
   If (FadvertiserCustomEventName=AValue) then exit;
@@ -14045,7 +14051,7 @@ end;
 
 
 
-Procedure TCreativeCustomEvent.SetadvertiserCustomEventType(AIndex : Integer; const AValue : String); 
+Procedure TCreativeCustomEvent.SetadvertiserCustomEventType(AIndex : Integer; const AValue : String);
 
 begin
   If (FadvertiserCustomEventType=AValue) then exit;
@@ -14055,7 +14061,7 @@ end;
 
 
 
-Procedure TCreativeCustomEvent.SetartworkLabel(AIndex : Integer; const AValue : String); 
+Procedure TCreativeCustomEvent.SetartworkLabel(AIndex : Integer; const AValue : String);
 
 begin
   If (FartworkLabel=AValue) then exit;
@@ -14065,7 +14071,7 @@ end;
 
 
 
-Procedure TCreativeCustomEvent.SetartworkType(AIndex : Integer; const AValue : String); 
+Procedure TCreativeCustomEvent.SetartworkType(AIndex : Integer; const AValue : String);
 
 begin
   If (FartworkType=AValue) then exit;
@@ -14075,7 +14081,7 @@ end;
 
 
 
-Procedure TCreativeCustomEvent.SetexitUrl(AIndex : Integer; const AValue : String); 
+Procedure TCreativeCustomEvent.SetexitUrl(AIndex : Integer; const AValue : String);
 
 begin
   If (FexitUrl=AValue) then exit;
@@ -14085,7 +14091,7 @@ end;
 
 
 
-Procedure TCreativeCustomEvent.Setid(AIndex : Integer; const AValue : String); 
+Procedure TCreativeCustomEvent.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -14095,7 +14101,7 @@ end;
 
 
 
-Procedure TCreativeCustomEvent.SetpopupWindowProperties(AIndex : Integer; const AValue : TPopupWindowProperties); 
+Procedure TCreativeCustomEvent.SetpopupWindowProperties(AIndex : Integer; const AValue : TPopupWindowProperties);
 
 begin
   If (FpopupWindowProperties=AValue) then exit;
@@ -14105,7 +14111,7 @@ end;
 
 
 
-Procedure TCreativeCustomEvent.SettargetType(AIndex : Integer; const AValue : String); 
+Procedure TCreativeCustomEvent.SettargetType(AIndex : Integer; const AValue : String);
 
 begin
   If (FtargetType=AValue) then exit;
@@ -14115,7 +14121,7 @@ end;
 
 
 
-Procedure TCreativeCustomEvent.SetvideoReportingId(AIndex : Integer; const AValue : String); 
+Procedure TCreativeCustomEvent.SetvideoReportingId(AIndex : Integer; const AValue : String);
 
 begin
   If (FvideoReportingId=AValue) then exit;
@@ -14132,7 +14138,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCreativeField.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TCreativeField.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -14142,7 +14148,7 @@ end;
 
 
 
-Procedure TCreativeField.SetadvertiserId(AIndex : Integer; const AValue : String); 
+Procedure TCreativeField.SetadvertiserId(AIndex : Integer; const AValue : String);
 
 begin
   If (FadvertiserId=AValue) then exit;
@@ -14152,7 +14158,7 @@ end;
 
 
 
-Procedure TCreativeField.SetadvertiserIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TCreativeField.SetadvertiserIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FadvertiserIdDimensionValue=AValue) then exit;
@@ -14162,7 +14168,7 @@ end;
 
 
 
-Procedure TCreativeField.Setid(AIndex : Integer; const AValue : String); 
+Procedure TCreativeField.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -14172,7 +14178,7 @@ end;
 
 
 
-Procedure TCreativeField.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TCreativeField.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -14182,7 +14188,7 @@ end;
 
 
 
-Procedure TCreativeField.Setname(AIndex : Integer; const AValue : String); 
+Procedure TCreativeField.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -14192,7 +14198,7 @@ end;
 
 
 
-Procedure TCreativeField.SetsubaccountId(AIndex : Integer; const AValue : String); 
+Procedure TCreativeField.SetsubaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsubaccountId=AValue) then exit;
@@ -14209,7 +14215,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCreativeFieldAssignment.SetcreativeFieldId(AIndex : Integer; const AValue : String); 
+Procedure TCreativeFieldAssignment.SetcreativeFieldId(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreativeFieldId=AValue) then exit;
@@ -14219,7 +14225,7 @@ end;
 
 
 
-Procedure TCreativeFieldAssignment.SetcreativeFieldValueId(AIndex : Integer; const AValue : String); 
+Procedure TCreativeFieldAssignment.SetcreativeFieldValueId(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreativeFieldValueId=AValue) then exit;
@@ -14236,7 +14242,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCreativeFieldValue.Setid(AIndex : Integer; const AValue : String); 
+Procedure TCreativeFieldValue.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -14246,7 +14252,7 @@ end;
 
 
 
-Procedure TCreativeFieldValue.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TCreativeFieldValue.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -14256,7 +14262,7 @@ end;
 
 
 
-Procedure TCreativeFieldValue.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TCreativeFieldValue.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -14273,7 +14279,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCreativeFieldValuesListResponse.SetcreativeFieldValues(AIndex : Integer; const AValue : TCreativeFieldValuesListResponseTypecreativeFieldValuesArray); 
+Procedure TCreativeFieldValuesListResponse.SetcreativeFieldValues(AIndex : Integer; const AValue : TCreativeFieldValuesListResponseTypecreativeFieldValuesArray);
 
 begin
   If (FcreativeFieldValues=AValue) then exit;
@@ -14283,7 +14289,7 @@ end;
 
 
 
-Procedure TCreativeFieldValuesListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TCreativeFieldValuesListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -14293,7 +14299,7 @@ end;
 
 
 
-Procedure TCreativeFieldValuesListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TCreativeFieldValuesListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -14304,7 +14310,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TCreativeFieldValuesListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TCreativeFieldValuesListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -14323,7 +14329,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCreativeFieldsListResponse.SetcreativeFields(AIndex : Integer; const AValue : TCreativeFieldsListResponseTypecreativeFieldsArray); 
+Procedure TCreativeFieldsListResponse.SetcreativeFields(AIndex : Integer; const AValue : TCreativeFieldsListResponseTypecreativeFieldsArray);
 
 begin
   If (FcreativeFields=AValue) then exit;
@@ -14333,7 +14339,7 @@ end;
 
 
 
-Procedure TCreativeFieldsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TCreativeFieldsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -14343,7 +14349,7 @@ end;
 
 
 
-Procedure TCreativeFieldsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TCreativeFieldsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -14354,7 +14360,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TCreativeFieldsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TCreativeFieldsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -14373,7 +14379,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCreativeGroup.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TCreativeGroup.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -14383,7 +14389,7 @@ end;
 
 
 
-Procedure TCreativeGroup.SetadvertiserId(AIndex : Integer; const AValue : String); 
+Procedure TCreativeGroup.SetadvertiserId(AIndex : Integer; const AValue : String);
 
 begin
   If (FadvertiserId=AValue) then exit;
@@ -14393,7 +14399,7 @@ end;
 
 
 
-Procedure TCreativeGroup.SetadvertiserIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TCreativeGroup.SetadvertiserIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FadvertiserIdDimensionValue=AValue) then exit;
@@ -14403,7 +14409,7 @@ end;
 
 
 
-Procedure TCreativeGroup.SetgroupNumber(AIndex : Integer; const AValue : integer); 
+Procedure TCreativeGroup.SetgroupNumber(AIndex : Integer; const AValue : integer);
 
 begin
   If (FgroupNumber=AValue) then exit;
@@ -14413,7 +14419,7 @@ end;
 
 
 
-Procedure TCreativeGroup.Setid(AIndex : Integer; const AValue : String); 
+Procedure TCreativeGroup.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -14423,7 +14429,7 @@ end;
 
 
 
-Procedure TCreativeGroup.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TCreativeGroup.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -14433,7 +14439,7 @@ end;
 
 
 
-Procedure TCreativeGroup.Setname(AIndex : Integer; const AValue : String); 
+Procedure TCreativeGroup.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -14443,7 +14449,7 @@ end;
 
 
 
-Procedure TCreativeGroup.SetsubaccountId(AIndex : Integer; const AValue : String); 
+Procedure TCreativeGroup.SetsubaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsubaccountId=AValue) then exit;
@@ -14460,7 +14466,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCreativeGroupAssignment.SetcreativeGroupId(AIndex : Integer; const AValue : String); 
+Procedure TCreativeGroupAssignment.SetcreativeGroupId(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreativeGroupId=AValue) then exit;
@@ -14470,7 +14476,7 @@ end;
 
 
 
-Procedure TCreativeGroupAssignment.SetcreativeGroupNumber(AIndex : Integer; const AValue : String); 
+Procedure TCreativeGroupAssignment.SetcreativeGroupNumber(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreativeGroupNumber=AValue) then exit;
@@ -14487,7 +14493,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCreativeGroupsListResponse.SetcreativeGroups(AIndex : Integer; const AValue : TCreativeGroupsListResponseTypecreativeGroupsArray); 
+Procedure TCreativeGroupsListResponse.SetcreativeGroups(AIndex : Integer; const AValue : TCreativeGroupsListResponseTypecreativeGroupsArray);
 
 begin
   If (FcreativeGroups=AValue) then exit;
@@ -14497,7 +14503,7 @@ end;
 
 
 
-Procedure TCreativeGroupsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TCreativeGroupsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -14507,7 +14513,7 @@ end;
 
 
 
-Procedure TCreativeGroupsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TCreativeGroupsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -14518,7 +14524,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TCreativeGroupsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TCreativeGroupsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -14537,7 +14543,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCreativeOptimizationConfiguration.Setid(AIndex : Integer; const AValue : String); 
+Procedure TCreativeOptimizationConfiguration.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -14547,7 +14553,7 @@ end;
 
 
 
-Procedure TCreativeOptimizationConfiguration.Setname(AIndex : Integer; const AValue : String); 
+Procedure TCreativeOptimizationConfiguration.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -14557,7 +14563,7 @@ end;
 
 
 
-Procedure TCreativeOptimizationConfiguration.SetoptimizationActivitys(AIndex : Integer; const AValue : TCreativeOptimizationConfigurationTypeoptimizationActivitysArray); 
+Procedure TCreativeOptimizationConfiguration.SetoptimizationActivitys(AIndex : Integer; const AValue : TCreativeOptimizationConfigurationTypeoptimizationActivitysArray);
 
 begin
   If (FoptimizationActivitys=AValue) then exit;
@@ -14567,7 +14573,7 @@ end;
 
 
 
-Procedure TCreativeOptimizationConfiguration.SetoptimizationModel(AIndex : Integer; const AValue : String); 
+Procedure TCreativeOptimizationConfiguration.SetoptimizationModel(AIndex : Integer; const AValue : String);
 
 begin
   If (FoptimizationModel=AValue) then exit;
@@ -14578,7 +14584,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TCreativeOptimizationConfiguration.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TCreativeOptimizationConfiguration.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -14597,7 +14603,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCreativeRotation.SetcreativeAssignments(AIndex : Integer; const AValue : TCreativeRotationTypecreativeAssignmentsArray); 
+Procedure TCreativeRotation.SetcreativeAssignments(AIndex : Integer; const AValue : TCreativeRotationTypecreativeAssignmentsArray);
 
 begin
   If (FcreativeAssignments=AValue) then exit;
@@ -14607,7 +14613,7 @@ end;
 
 
 
-Procedure TCreativeRotation.SetcreativeOptimizationConfigurationId(AIndex : Integer; const AValue : String); 
+Procedure TCreativeRotation.SetcreativeOptimizationConfigurationId(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreativeOptimizationConfigurationId=AValue) then exit;
@@ -14617,7 +14623,7 @@ end;
 
 
 
-Procedure TCreativeRotation.Set_type(AIndex : Integer; const AValue : String); 
+Procedure TCreativeRotation.Set_type(AIndex : Integer; const AValue : String);
 
 begin
   If (F_type=AValue) then exit;
@@ -14627,7 +14633,7 @@ end;
 
 
 
-Procedure TCreativeRotation.SetweightCalculationStrategy(AIndex : Integer; const AValue : String); 
+Procedure TCreativeRotation.SetweightCalculationStrategy(AIndex : Integer; const AValue : String);
 
 begin
   If (FweightCalculationStrategy=AValue) then exit;
@@ -14649,7 +14655,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TCreativeRotation.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TCreativeRotation.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -14668,7 +14674,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCreativeSettings.SetiFrameFooter(AIndex : Integer; const AValue : String); 
+Procedure TCreativeSettings.SetiFrameFooter(AIndex : Integer; const AValue : String);
 
 begin
   If (FiFrameFooter=AValue) then exit;
@@ -14678,7 +14684,7 @@ end;
 
 
 
-Procedure TCreativeSettings.SetiFrameHeader(AIndex : Integer; const AValue : String); 
+Procedure TCreativeSettings.SetiFrameHeader(AIndex : Integer; const AValue : String);
 
 begin
   If (FiFrameHeader=AValue) then exit;
@@ -14695,7 +14701,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCreativesListResponse.Setcreatives(AIndex : Integer; const AValue : TCreativesListResponseTypecreativesArray); 
+Procedure TCreativesListResponse.Setcreatives(AIndex : Integer; const AValue : TCreativesListResponseTypecreativesArray);
 
 begin
   If (Fcreatives=AValue) then exit;
@@ -14705,7 +14711,7 @@ end;
 
 
 
-Procedure TCreativesListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TCreativesListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -14715,7 +14721,7 @@ end;
 
 
 
-Procedure TCreativesListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TCreativesListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -14726,7 +14732,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TCreativesListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TCreativesListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -14745,7 +14751,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCrossDimensionReachReportCompatibleFields.Setbreakdown(AIndex : Integer; const AValue : TCrossDimensionReachReportCompatibleFieldsTypebreakdownArray); 
+Procedure TCrossDimensionReachReportCompatibleFields.Setbreakdown(AIndex : Integer; const AValue : TCrossDimensionReachReportCompatibleFieldsTypebreakdownArray);
 
 begin
   If (Fbreakdown=AValue) then exit;
@@ -14755,7 +14761,7 @@ end;
 
 
 
-Procedure TCrossDimensionReachReportCompatibleFields.SetdimensionFilters(AIndex : Integer; const AValue : TCrossDimensionReachReportCompatibleFieldsTypedimensionFiltersArray); 
+Procedure TCrossDimensionReachReportCompatibleFields.SetdimensionFilters(AIndex : Integer; const AValue : TCrossDimensionReachReportCompatibleFieldsTypedimensionFiltersArray);
 
 begin
   If (FdimensionFilters=AValue) then exit;
@@ -14765,7 +14771,7 @@ end;
 
 
 
-Procedure TCrossDimensionReachReportCompatibleFields.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TCrossDimensionReachReportCompatibleFields.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -14775,7 +14781,7 @@ end;
 
 
 
-Procedure TCrossDimensionReachReportCompatibleFields.Setmetrics(AIndex : Integer; const AValue : TCrossDimensionReachReportCompatibleFieldsTypemetricsArray); 
+Procedure TCrossDimensionReachReportCompatibleFields.Setmetrics(AIndex : Integer; const AValue : TCrossDimensionReachReportCompatibleFieldsTypemetricsArray);
 
 begin
   If (Fmetrics=AValue) then exit;
@@ -14785,7 +14791,7 @@ end;
 
 
 
-Procedure TCrossDimensionReachReportCompatibleFields.SetoverlapMetrics(AIndex : Integer; const AValue : TCrossDimensionReachReportCompatibleFieldsTypeoverlapMetricsArray); 
+Procedure TCrossDimensionReachReportCompatibleFields.SetoverlapMetrics(AIndex : Integer; const AValue : TCrossDimensionReachReportCompatibleFieldsTypeoverlapMetricsArray);
 
 begin
   If (FoverlapMetrics=AValue) then exit;
@@ -14796,7 +14802,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TCrossDimensionReachReportCompatibleFields.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TCrossDimensionReachReportCompatibleFields.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -14818,7 +14824,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCustomFloodlightVariable.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TCustomFloodlightVariable.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -14828,7 +14834,7 @@ end;
 
 
 
-Procedure TCustomFloodlightVariable.Set_type(AIndex : Integer; const AValue : String); 
+Procedure TCustomFloodlightVariable.Set_type(AIndex : Integer; const AValue : String);
 
 begin
   If (F_type=AValue) then exit;
@@ -14838,7 +14844,7 @@ end;
 
 
 
-Procedure TCustomFloodlightVariable.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TCustomFloodlightVariable.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -14866,7 +14872,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCustomRichMediaEvents.SetfilteredEventIds(AIndex : Integer; const AValue : TCustomRichMediaEventsTypefilteredEventIdsArray); 
+Procedure TCustomRichMediaEvents.SetfilteredEventIds(AIndex : Integer; const AValue : TCustomRichMediaEventsTypefilteredEventIdsArray);
 
 begin
   If (FfilteredEventIds=AValue) then exit;
@@ -14876,7 +14882,7 @@ end;
 
 
 
-Procedure TCustomRichMediaEvents.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TCustomRichMediaEvents.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -14887,7 +14893,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TCustomRichMediaEvents.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TCustomRichMediaEvents.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -14906,7 +14912,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDateRange.SetendDate(AIndex : Integer; const AValue : TDate); 
+Procedure TDateRange.SetendDate(AIndex : Integer; const AValue : TDate);
 
 begin
   If (FendDate=AValue) then exit;
@@ -14916,7 +14922,7 @@ end;
 
 
 
-Procedure TDateRange.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TDateRange.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -14926,7 +14932,7 @@ end;
 
 
 
-Procedure TDateRange.SetrelativeDateRange(AIndex : Integer; const AValue : String); 
+Procedure TDateRange.SetrelativeDateRange(AIndex : Integer; const AValue : String);
 
 begin
   If (FrelativeDateRange=AValue) then exit;
@@ -14936,7 +14942,7 @@ end;
 
 
 
-Procedure TDateRange.SetstartDate(AIndex : Integer; const AValue : TDate); 
+Procedure TDateRange.SetstartDate(AIndex : Integer; const AValue : TDate);
 
 begin
   If (FstartDate=AValue) then exit;
@@ -14953,7 +14959,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDayPartTargeting.SetdaysOfWeek(AIndex : Integer; const AValue : TStringArray); 
+Procedure TDayPartTargeting.SetdaysOfWeek(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FdaysOfWeek=AValue) then exit;
@@ -14963,7 +14969,7 @@ end;
 
 
 
-Procedure TDayPartTargeting.SethoursOfDay(AIndex : Integer; const AValue : TintegerArray); 
+Procedure TDayPartTargeting.SethoursOfDay(AIndex : Integer; const AValue : TintegerArray);
 
 begin
   If (FhoursOfDay=AValue) then exit;
@@ -14973,7 +14979,7 @@ end;
 
 
 
-Procedure TDayPartTargeting.SetuserLocalTime(AIndex : Integer; const AValue : boolean); 
+Procedure TDayPartTargeting.SetuserLocalTime(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FuserLocalTime=AValue) then exit;
@@ -14984,7 +14990,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TDayPartTargeting.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TDayPartTargeting.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -15004,7 +15010,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDefaultClickThroughEventTagProperties.SetdefaultClickThroughEventTagId(AIndex : Integer; const AValue : String); 
+Procedure TDefaultClickThroughEventTagProperties.SetdefaultClickThroughEventTagId(AIndex : Integer; const AValue : String);
 
 begin
   If (FdefaultClickThroughEventTagId=AValue) then exit;
@@ -15014,7 +15020,7 @@ end;
 
 
 
-Procedure TDefaultClickThroughEventTagProperties.SetoverrideInheritedEventTag(AIndex : Integer; const AValue : boolean); 
+Procedure TDefaultClickThroughEventTagProperties.SetoverrideInheritedEventTag(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FoverrideInheritedEventTag=AValue) then exit;
@@ -15031,7 +15037,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDeliverySchedule.SetfrequencyCap(AIndex : Integer; const AValue : TFrequencyCap); 
+Procedure TDeliverySchedule.SetfrequencyCap(AIndex : Integer; const AValue : TFrequencyCap);
 
 begin
   If (FfrequencyCap=AValue) then exit;
@@ -15041,7 +15047,7 @@ end;
 
 
 
-Procedure TDeliverySchedule.SethardCutoff(AIndex : Integer; const AValue : boolean); 
+Procedure TDeliverySchedule.SethardCutoff(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FhardCutoff=AValue) then exit;
@@ -15051,7 +15057,7 @@ end;
 
 
 
-Procedure TDeliverySchedule.SetimpressionRatio(AIndex : Integer; const AValue : String); 
+Procedure TDeliverySchedule.SetimpressionRatio(AIndex : Integer; const AValue : String);
 
 begin
   If (FimpressionRatio=AValue) then exit;
@@ -15061,7 +15067,7 @@ end;
 
 
 
-Procedure TDeliverySchedule.Setpriority(AIndex : Integer; const AValue : String); 
+Procedure TDeliverySchedule.Setpriority(AIndex : Integer; const AValue : String);
 
 begin
   If (Fpriority=AValue) then exit;
@@ -15078,7 +15084,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDfpSettings.Setdfp_network_code(AIndex : Integer; const AValue : String); 
+Procedure TDfpSettings.Setdfp_network_code(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdfp_network_code=AValue) then exit;
@@ -15088,7 +15094,7 @@ end;
 
 
 
-Procedure TDfpSettings.Setdfp_network_name(AIndex : Integer; const AValue : String); 
+Procedure TDfpSettings.Setdfp_network_name(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdfp_network_name=AValue) then exit;
@@ -15098,7 +15104,7 @@ end;
 
 
 
-Procedure TDfpSettings.SetprogrammaticPlacementAccepted(AIndex : Integer; const AValue : boolean); 
+Procedure TDfpSettings.SetprogrammaticPlacementAccepted(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FprogrammaticPlacementAccepted=AValue) then exit;
@@ -15108,7 +15114,7 @@ end;
 
 
 
-Procedure TDfpSettings.SetpubPaidPlacementAccepted(AIndex : Integer; const AValue : boolean); 
+Procedure TDfpSettings.SetpubPaidPlacementAccepted(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FpubPaidPlacementAccepted=AValue) then exit;
@@ -15118,7 +15124,7 @@ end;
 
 
 
-Procedure TDfpSettings.SetpublisherPortalOnly(AIndex : Integer; const AValue : boolean); 
+Procedure TDfpSettings.SetpublisherPortalOnly(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FpublisherPortalOnly=AValue) then exit;
@@ -15135,7 +15141,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDimension.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TDimension.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -15145,7 +15151,7 @@ end;
 
 
 
-Procedure TDimension.Setname(AIndex : Integer; const AValue : String); 
+Procedure TDimension.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -15162,7 +15168,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDimensionFilter.SetdimensionName(AIndex : Integer; const AValue : String); 
+Procedure TDimensionFilter.SetdimensionName(AIndex : Integer; const AValue : String);
 
 begin
   If (FdimensionName=AValue) then exit;
@@ -15172,7 +15178,7 @@ end;
 
 
 
-Procedure TDimensionFilter.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TDimensionFilter.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -15182,7 +15188,7 @@ end;
 
 
 
-Procedure TDimensionFilter.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TDimensionFilter.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -15199,7 +15205,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDimensionValue.SetdimensionName(AIndex : Integer; const AValue : String); 
+Procedure TDimensionValue.SetdimensionName(AIndex : Integer; const AValue : String);
 
 begin
   If (FdimensionName=AValue) then exit;
@@ -15209,7 +15215,7 @@ end;
 
 
 
-Procedure TDimensionValue.Setetag(AIndex : Integer; const AValue : String); 
+Procedure TDimensionValue.Setetag(AIndex : Integer; const AValue : String);
 
 begin
   If (Fetag=AValue) then exit;
@@ -15219,7 +15225,7 @@ end;
 
 
 
-Procedure TDimensionValue.Setid(AIndex : Integer; const AValue : String); 
+Procedure TDimensionValue.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -15229,7 +15235,7 @@ end;
 
 
 
-Procedure TDimensionValue.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TDimensionValue.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -15239,7 +15245,7 @@ end;
 
 
 
-Procedure TDimensionValue.SetmatchType(AIndex : Integer; const AValue : String); 
+Procedure TDimensionValue.SetmatchType(AIndex : Integer; const AValue : String);
 
 begin
   If (FmatchType=AValue) then exit;
@@ -15249,7 +15255,7 @@ end;
 
 
 
-Procedure TDimensionValue.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TDimensionValue.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -15266,7 +15272,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDimensionValueList.Setetag(AIndex : Integer; const AValue : String); 
+Procedure TDimensionValueList.Setetag(AIndex : Integer; const AValue : String);
 
 begin
   If (Fetag=AValue) then exit;
@@ -15276,7 +15282,7 @@ end;
 
 
 
-Procedure TDimensionValueList.Setitems(AIndex : Integer; const AValue : TDimensionValueListTypeitemsArray); 
+Procedure TDimensionValueList.Setitems(AIndex : Integer; const AValue : TDimensionValueListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -15286,7 +15292,7 @@ end;
 
 
 
-Procedure TDimensionValueList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TDimensionValueList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -15296,7 +15302,7 @@ end;
 
 
 
-Procedure TDimensionValueList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TDimensionValueList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -15307,7 +15313,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TDimensionValueList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TDimensionValueList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -15326,7 +15332,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDimensionValueRequest.SetdimensionName(AIndex : Integer; const AValue : String); 
+Procedure TDimensionValueRequest.SetdimensionName(AIndex : Integer; const AValue : String);
 
 begin
   If (FdimensionName=AValue) then exit;
@@ -15336,7 +15342,7 @@ end;
 
 
 
-Procedure TDimensionValueRequest.SetendDate(AIndex : Integer; const AValue : TDate); 
+Procedure TDimensionValueRequest.SetendDate(AIndex : Integer; const AValue : TDate);
 
 begin
   If (FendDate=AValue) then exit;
@@ -15346,7 +15352,7 @@ end;
 
 
 
-Procedure TDimensionValueRequest.Setfilters(AIndex : Integer; const AValue : TDimensionValueRequestTypefiltersArray); 
+Procedure TDimensionValueRequest.Setfilters(AIndex : Integer; const AValue : TDimensionValueRequestTypefiltersArray);
 
 begin
   If (Ffilters=AValue) then exit;
@@ -15356,7 +15362,7 @@ end;
 
 
 
-Procedure TDimensionValueRequest.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TDimensionValueRequest.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -15366,7 +15372,7 @@ end;
 
 
 
-Procedure TDimensionValueRequest.SetstartDate(AIndex : Integer; const AValue : TDate); 
+Procedure TDimensionValueRequest.SetstartDate(AIndex : Integer; const AValue : TDate);
 
 begin
   If (FstartDate=AValue) then exit;
@@ -15377,7 +15383,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TDimensionValueRequest.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TDimensionValueRequest.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -15396,7 +15402,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDirectorySite.Setactive(AIndex : Integer; const AValue : boolean); 
+Procedure TDirectorySite.Setactive(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Factive=AValue) then exit;
@@ -15406,7 +15412,7 @@ end;
 
 
 
-Procedure TDirectorySite.SetcontactAssignments(AIndex : Integer; const AValue : TDirectorySiteTypecontactAssignmentsArray); 
+Procedure TDirectorySite.SetcontactAssignments(AIndex : Integer; const AValue : TDirectorySiteTypecontactAssignmentsArray);
 
 begin
   If (FcontactAssignments=AValue) then exit;
@@ -15416,7 +15422,7 @@ end;
 
 
 
-Procedure TDirectorySite.SetcountryId(AIndex : Integer; const AValue : String); 
+Procedure TDirectorySite.SetcountryId(AIndex : Integer; const AValue : String);
 
 begin
   If (FcountryId=AValue) then exit;
@@ -15426,7 +15432,7 @@ end;
 
 
 
-Procedure TDirectorySite.SetcurrencyId(AIndex : Integer; const AValue : String); 
+Procedure TDirectorySite.SetcurrencyId(AIndex : Integer; const AValue : String);
 
 begin
   If (FcurrencyId=AValue) then exit;
@@ -15436,7 +15442,7 @@ end;
 
 
 
-Procedure TDirectorySite.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TDirectorySite.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -15446,7 +15452,7 @@ end;
 
 
 
-Procedure TDirectorySite.Setid(AIndex : Integer; const AValue : String); 
+Procedure TDirectorySite.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -15456,7 +15462,7 @@ end;
 
 
 
-Procedure TDirectorySite.SetidDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TDirectorySite.SetidDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FidDimensionValue=AValue) then exit;
@@ -15466,7 +15472,7 @@ end;
 
 
 
-Procedure TDirectorySite.SetinpageTagFormats(AIndex : Integer; const AValue : TStringArray); 
+Procedure TDirectorySite.SetinpageTagFormats(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FinpageTagFormats=AValue) then exit;
@@ -15476,7 +15482,7 @@ end;
 
 
 
-Procedure TDirectorySite.SetinterstitialTagFormats(AIndex : Integer; const AValue : TStringArray); 
+Procedure TDirectorySite.SetinterstitialTagFormats(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FinterstitialTagFormats=AValue) then exit;
@@ -15486,7 +15492,7 @@ end;
 
 
 
-Procedure TDirectorySite.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TDirectorySite.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -15496,7 +15502,7 @@ end;
 
 
 
-Procedure TDirectorySite.Setname(AIndex : Integer; const AValue : String); 
+Procedure TDirectorySite.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -15506,7 +15512,7 @@ end;
 
 
 
-Procedure TDirectorySite.SetparentId(AIndex : Integer; const AValue : String); 
+Procedure TDirectorySite.SetparentId(AIndex : Integer; const AValue : String);
 
 begin
   If (FparentId=AValue) then exit;
@@ -15516,7 +15522,7 @@ end;
 
 
 
-Procedure TDirectorySite.Setsettings(AIndex : Integer; const AValue : TDirectorySiteSettings); 
+Procedure TDirectorySite.Setsettings(AIndex : Integer; const AValue : TDirectorySiteSettings);
 
 begin
   If (Fsettings=AValue) then exit;
@@ -15526,7 +15532,7 @@ end;
 
 
 
-Procedure TDirectorySite.Seturl(AIndex : Integer; const AValue : String); 
+Procedure TDirectorySite.Seturl(AIndex : Integer; const AValue : String);
 
 begin
   If (Furl=AValue) then exit;
@@ -15537,7 +15543,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TDirectorySite.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TDirectorySite.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -15558,7 +15564,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDirectorySiteContact.Setaddress(AIndex : Integer; const AValue : String); 
+Procedure TDirectorySiteContact.Setaddress(AIndex : Integer; const AValue : String);
 
 begin
   If (Faddress=AValue) then exit;
@@ -15568,7 +15574,7 @@ end;
 
 
 
-Procedure TDirectorySiteContact.Setemail(AIndex : Integer; const AValue : String); 
+Procedure TDirectorySiteContact.Setemail(AIndex : Integer; const AValue : String);
 
 begin
   If (Femail=AValue) then exit;
@@ -15578,7 +15584,7 @@ end;
 
 
 
-Procedure TDirectorySiteContact.SetfirstName(AIndex : Integer; const AValue : String); 
+Procedure TDirectorySiteContact.SetfirstName(AIndex : Integer; const AValue : String);
 
 begin
   If (FfirstName=AValue) then exit;
@@ -15588,7 +15594,7 @@ end;
 
 
 
-Procedure TDirectorySiteContact.Setid(AIndex : Integer; const AValue : String); 
+Procedure TDirectorySiteContact.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -15598,7 +15604,7 @@ end;
 
 
 
-Procedure TDirectorySiteContact.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TDirectorySiteContact.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -15608,7 +15614,7 @@ end;
 
 
 
-Procedure TDirectorySiteContact.SetlastName(AIndex : Integer; const AValue : String); 
+Procedure TDirectorySiteContact.SetlastName(AIndex : Integer; const AValue : String);
 
 begin
   If (FlastName=AValue) then exit;
@@ -15618,7 +15624,7 @@ end;
 
 
 
-Procedure TDirectorySiteContact.Setphone(AIndex : Integer; const AValue : String); 
+Procedure TDirectorySiteContact.Setphone(AIndex : Integer; const AValue : String);
 
 begin
   If (Fphone=AValue) then exit;
@@ -15628,7 +15634,7 @@ end;
 
 
 
-Procedure TDirectorySiteContact.Setrole(AIndex : Integer; const AValue : String); 
+Procedure TDirectorySiteContact.Setrole(AIndex : Integer; const AValue : String);
 
 begin
   If (Frole=AValue) then exit;
@@ -15638,7 +15644,7 @@ end;
 
 
 
-Procedure TDirectorySiteContact.Settitle(AIndex : Integer; const AValue : String); 
+Procedure TDirectorySiteContact.Settitle(AIndex : Integer; const AValue : String);
 
 begin
   If (Ftitle=AValue) then exit;
@@ -15648,7 +15654,7 @@ end;
 
 
 
-Procedure TDirectorySiteContact.Set_type(AIndex : Integer; const AValue : String); 
+Procedure TDirectorySiteContact.Set_type(AIndex : Integer; const AValue : String);
 
 begin
   If (F_type=AValue) then exit;
@@ -15676,7 +15682,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDirectorySiteContactAssignment.SetcontactId(AIndex : Integer; const AValue : String); 
+Procedure TDirectorySiteContactAssignment.SetcontactId(AIndex : Integer; const AValue : String);
 
 begin
   If (FcontactId=AValue) then exit;
@@ -15686,7 +15692,7 @@ end;
 
 
 
-Procedure TDirectorySiteContactAssignment.Setvisibility(AIndex : Integer; const AValue : String); 
+Procedure TDirectorySiteContactAssignment.Setvisibility(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvisibility=AValue) then exit;
@@ -15703,7 +15709,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDirectorySiteContactsListResponse.SetdirectorySiteContacts(AIndex : Integer; const AValue : TDirectorySiteContactsListResponseTypedirectorySiteContactsArray); 
+Procedure TDirectorySiteContactsListResponse.SetdirectorySiteContacts(AIndex : Integer; const AValue : TDirectorySiteContactsListResponseTypedirectorySiteContactsArray);
 
 begin
   If (FdirectorySiteContacts=AValue) then exit;
@@ -15713,7 +15719,7 @@ end;
 
 
 
-Procedure TDirectorySiteContactsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TDirectorySiteContactsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -15723,7 +15729,7 @@ end;
 
 
 
-Procedure TDirectorySiteContactsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TDirectorySiteContactsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -15734,7 +15740,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TDirectorySiteContactsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TDirectorySiteContactsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -15753,7 +15759,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDirectorySiteSettings.SetactiveViewOptOut(AIndex : Integer; const AValue : boolean); 
+Procedure TDirectorySiteSettings.SetactiveViewOptOut(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FactiveViewOptOut=AValue) then exit;
@@ -15763,7 +15769,7 @@ end;
 
 
 
-Procedure TDirectorySiteSettings.Setdfp_settings(AIndex : Integer; const AValue : TDfpSettings); 
+Procedure TDirectorySiteSettings.Setdfp_settings(AIndex : Integer; const AValue : TDfpSettings);
 
 begin
   If (Fdfp_settings=AValue) then exit;
@@ -15773,7 +15779,7 @@ end;
 
 
 
-Procedure TDirectorySiteSettings.Setinstream_video_placement_accepted(AIndex : Integer; const AValue : boolean); 
+Procedure TDirectorySiteSettings.Setinstream_video_placement_accepted(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Finstream_video_placement_accepted=AValue) then exit;
@@ -15783,7 +15789,7 @@ end;
 
 
 
-Procedure TDirectorySiteSettings.SetinterstitialPlacementAccepted(AIndex : Integer; const AValue : boolean); 
+Procedure TDirectorySiteSettings.SetinterstitialPlacementAccepted(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FinterstitialPlacementAccepted=AValue) then exit;
@@ -15793,7 +15799,7 @@ end;
 
 
 
-Procedure TDirectorySiteSettings.SetnielsenOcrOptOut(AIndex : Integer; const AValue : boolean); 
+Procedure TDirectorySiteSettings.SetnielsenOcrOptOut(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FnielsenOcrOptOut=AValue) then exit;
@@ -15803,7 +15809,7 @@ end;
 
 
 
-Procedure TDirectorySiteSettings.SetverificationTagOptOut(AIndex : Integer; const AValue : boolean); 
+Procedure TDirectorySiteSettings.SetverificationTagOptOut(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FverificationTagOptOut=AValue) then exit;
@@ -15813,7 +15819,7 @@ end;
 
 
 
-Procedure TDirectorySiteSettings.SetvideoActiveViewOptOut(AIndex : Integer; const AValue : boolean); 
+Procedure TDirectorySiteSettings.SetvideoActiveViewOptOut(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FvideoActiveViewOptOut=AValue) then exit;
@@ -15830,7 +15836,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDirectorySitesListResponse.SetdirectorySites(AIndex : Integer; const AValue : TDirectorySitesListResponseTypedirectorySitesArray); 
+Procedure TDirectorySitesListResponse.SetdirectorySites(AIndex : Integer; const AValue : TDirectorySitesListResponseTypedirectorySitesArray);
 
 begin
   If (FdirectorySites=AValue) then exit;
@@ -15840,7 +15846,7 @@ end;
 
 
 
-Procedure TDirectorySitesListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TDirectorySitesListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -15850,7 +15856,7 @@ end;
 
 
 
-Procedure TDirectorySitesListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TDirectorySitesListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -15861,7 +15867,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TDirectorySitesListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TDirectorySitesListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -15880,7 +15886,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDynamicTargetingKey.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TDynamicTargetingKey.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -15890,7 +15896,7 @@ end;
 
 
 
-Procedure TDynamicTargetingKey.Setname(AIndex : Integer; const AValue : String); 
+Procedure TDynamicTargetingKey.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -15900,7 +15906,7 @@ end;
 
 
 
-Procedure TDynamicTargetingKey.SetobjectId(AIndex : Integer; const AValue : String); 
+Procedure TDynamicTargetingKey.SetobjectId(AIndex : Integer; const AValue : String);
 
 begin
   If (FobjectId=AValue) then exit;
@@ -15910,7 +15916,7 @@ end;
 
 
 
-Procedure TDynamicTargetingKey.SetobjectType(AIndex : Integer; const AValue : String); 
+Procedure TDynamicTargetingKey.SetobjectType(AIndex : Integer; const AValue : String);
 
 begin
   If (FobjectType=AValue) then exit;
@@ -15927,7 +15933,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDynamicTargetingKeysListResponse.SetdynamicTargetingKeys(AIndex : Integer; const AValue : TDynamicTargetingKeysListResponseTypedynamicTargetingKeysArray); 
+Procedure TDynamicTargetingKeysListResponse.SetdynamicTargetingKeys(AIndex : Integer; const AValue : TDynamicTargetingKeysListResponseTypedynamicTargetingKeysArray);
 
 begin
   If (FdynamicTargetingKeys=AValue) then exit;
@@ -15937,7 +15943,7 @@ end;
 
 
 
-Procedure TDynamicTargetingKeysListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TDynamicTargetingKeysListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -15948,7 +15954,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TDynamicTargetingKeysListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TDynamicTargetingKeysListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -15967,7 +15973,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TEncryptionInfo.SetencryptionEntityId(AIndex : Integer; const AValue : String); 
+Procedure TEncryptionInfo.SetencryptionEntityId(AIndex : Integer; const AValue : String);
 
 begin
   If (FencryptionEntityId=AValue) then exit;
@@ -15977,7 +15983,7 @@ end;
 
 
 
-Procedure TEncryptionInfo.SetencryptionEntityType(AIndex : Integer; const AValue : String); 
+Procedure TEncryptionInfo.SetencryptionEntityType(AIndex : Integer; const AValue : String);
 
 begin
   If (FencryptionEntityType=AValue) then exit;
@@ -15987,7 +15993,7 @@ end;
 
 
 
-Procedure TEncryptionInfo.SetencryptionSource(AIndex : Integer; const AValue : String); 
+Procedure TEncryptionInfo.SetencryptionSource(AIndex : Integer; const AValue : String);
 
 begin
   If (FencryptionSource=AValue) then exit;
@@ -15997,7 +16003,7 @@ end;
 
 
 
-Procedure TEncryptionInfo.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TEncryptionInfo.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -16014,7 +16020,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TEventTag.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TEventTag.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -16024,7 +16030,7 @@ end;
 
 
 
-Procedure TEventTag.SetadvertiserId(AIndex : Integer; const AValue : String); 
+Procedure TEventTag.SetadvertiserId(AIndex : Integer; const AValue : String);
 
 begin
   If (FadvertiserId=AValue) then exit;
@@ -16034,7 +16040,7 @@ end;
 
 
 
-Procedure TEventTag.SetadvertiserIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TEventTag.SetadvertiserIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FadvertiserIdDimensionValue=AValue) then exit;
@@ -16044,7 +16050,7 @@ end;
 
 
 
-Procedure TEventTag.SetcampaignId(AIndex : Integer; const AValue : String); 
+Procedure TEventTag.SetcampaignId(AIndex : Integer; const AValue : String);
 
 begin
   If (FcampaignId=AValue) then exit;
@@ -16054,7 +16060,7 @@ end;
 
 
 
-Procedure TEventTag.SetcampaignIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TEventTag.SetcampaignIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FcampaignIdDimensionValue=AValue) then exit;
@@ -16064,7 +16070,7 @@ end;
 
 
 
-Procedure TEventTag.SetenabledByDefault(AIndex : Integer; const AValue : boolean); 
+Procedure TEventTag.SetenabledByDefault(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FenabledByDefault=AValue) then exit;
@@ -16074,7 +16080,7 @@ end;
 
 
 
-Procedure TEventTag.SetexcludeFromAdxRequests(AIndex : Integer; const AValue : boolean); 
+Procedure TEventTag.SetexcludeFromAdxRequests(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FexcludeFromAdxRequests=AValue) then exit;
@@ -16084,7 +16090,7 @@ end;
 
 
 
-Procedure TEventTag.Setid(AIndex : Integer; const AValue : String); 
+Procedure TEventTag.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -16094,7 +16100,7 @@ end;
 
 
 
-Procedure TEventTag.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TEventTag.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -16104,7 +16110,7 @@ end;
 
 
 
-Procedure TEventTag.Setname(AIndex : Integer; const AValue : String); 
+Procedure TEventTag.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -16114,7 +16120,7 @@ end;
 
 
 
-Procedure TEventTag.SetsiteFilterType(AIndex : Integer; const AValue : String); 
+Procedure TEventTag.SetsiteFilterType(AIndex : Integer; const AValue : String);
 
 begin
   If (FsiteFilterType=AValue) then exit;
@@ -16124,7 +16130,7 @@ end;
 
 
 
-Procedure TEventTag.SetsiteIds(AIndex : Integer; const AValue : TStringArray); 
+Procedure TEventTag.SetsiteIds(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FsiteIds=AValue) then exit;
@@ -16134,7 +16140,7 @@ end;
 
 
 
-Procedure TEventTag.SetsslCompliant(AIndex : Integer; const AValue : boolean); 
+Procedure TEventTag.SetsslCompliant(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FsslCompliant=AValue) then exit;
@@ -16144,7 +16150,7 @@ end;
 
 
 
-Procedure TEventTag.Setstatus(AIndex : Integer; const AValue : String); 
+Procedure TEventTag.Setstatus(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -16154,7 +16160,7 @@ end;
 
 
 
-Procedure TEventTag.SetsubaccountId(AIndex : Integer; const AValue : String); 
+Procedure TEventTag.SetsubaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsubaccountId=AValue) then exit;
@@ -16164,7 +16170,7 @@ end;
 
 
 
-Procedure TEventTag.Set_type(AIndex : Integer; const AValue : String); 
+Procedure TEventTag.Set_type(AIndex : Integer; const AValue : String);
 
 begin
   If (F_type=AValue) then exit;
@@ -16174,7 +16180,7 @@ end;
 
 
 
-Procedure TEventTag.Seturl(AIndex : Integer; const AValue : String); 
+Procedure TEventTag.Seturl(AIndex : Integer; const AValue : String);
 
 begin
   If (Furl=AValue) then exit;
@@ -16184,7 +16190,7 @@ end;
 
 
 
-Procedure TEventTag.SeturlEscapeLevels(AIndex : Integer; const AValue : integer); 
+Procedure TEventTag.SeturlEscapeLevels(AIndex : Integer; const AValue : integer);
 
 begin
   If (FurlEscapeLevels=AValue) then exit;
@@ -16206,7 +16212,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TEventTag.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TEventTag.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -16225,7 +16231,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TEventTagOverride.Setenabled(AIndex : Integer; const AValue : boolean); 
+Procedure TEventTagOverride.Setenabled(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fenabled=AValue) then exit;
@@ -16235,7 +16241,7 @@ end;
 
 
 
-Procedure TEventTagOverride.Setid(AIndex : Integer; const AValue : String); 
+Procedure TEventTagOverride.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -16252,7 +16258,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TEventTagsListResponse.SeteventTags(AIndex : Integer; const AValue : TEventTagsListResponseTypeeventTagsArray); 
+Procedure TEventTagsListResponse.SeteventTags(AIndex : Integer; const AValue : TEventTagsListResponseTypeeventTagsArray);
 
 begin
   If (FeventTags=AValue) then exit;
@@ -16262,7 +16268,7 @@ end;
 
 
 
-Procedure TEventTagsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TEventTagsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -16273,7 +16279,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TEventTagsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TEventTagsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -16292,7 +16298,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFileTypeurls.SetapiUrl(AIndex : Integer; const AValue : String); 
+Procedure TFileTypeurls.SetapiUrl(AIndex : Integer; const AValue : String);
 
 begin
   If (FapiUrl=AValue) then exit;
@@ -16302,7 +16308,7 @@ end;
 
 
 
-Procedure TFileTypeurls.SetbrowserUrl(AIndex : Integer; const AValue : String); 
+Procedure TFileTypeurls.SetbrowserUrl(AIndex : Integer; const AValue : String);
 
 begin
   If (FbrowserUrl=AValue) then exit;
@@ -16319,7 +16325,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFile.SetdateRange(AIndex : Integer; const AValue : TDateRange); 
+Procedure TFile.SetdateRange(AIndex : Integer; const AValue : TDateRange);
 
 begin
   If (FdateRange=AValue) then exit;
@@ -16329,7 +16335,7 @@ end;
 
 
 
-Procedure TFile.Setetag(AIndex : Integer; const AValue : String); 
+Procedure TFile.Setetag(AIndex : Integer; const AValue : String);
 
 begin
   If (Fetag=AValue) then exit;
@@ -16339,7 +16345,7 @@ end;
 
 
 
-Procedure TFile.SetfileName(AIndex : Integer; const AValue : String); 
+Procedure TFile.SetfileName(AIndex : Integer; const AValue : String);
 
 begin
   If (FfileName=AValue) then exit;
@@ -16349,7 +16355,7 @@ end;
 
 
 
-Procedure TFile.Setformat(AIndex : Integer; const AValue : String); 
+Procedure TFile.Setformat(AIndex : Integer; const AValue : String);
 
 begin
   If (Fformat=AValue) then exit;
@@ -16359,7 +16365,7 @@ end;
 
 
 
-Procedure TFile.Setid(AIndex : Integer; const AValue : String); 
+Procedure TFile.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -16369,7 +16375,7 @@ end;
 
 
 
-Procedure TFile.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TFile.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -16379,7 +16385,7 @@ end;
 
 
 
-Procedure TFile.SetlastModifiedTime(AIndex : Integer; const AValue : String); 
+Procedure TFile.SetlastModifiedTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FlastModifiedTime=AValue) then exit;
@@ -16389,7 +16395,7 @@ end;
 
 
 
-Procedure TFile.SetreportId(AIndex : Integer; const AValue : String); 
+Procedure TFile.SetreportId(AIndex : Integer; const AValue : String);
 
 begin
   If (FreportId=AValue) then exit;
@@ -16399,7 +16405,7 @@ end;
 
 
 
-Procedure TFile.Setstatus(AIndex : Integer; const AValue : String); 
+Procedure TFile.Setstatus(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -16409,7 +16415,7 @@ end;
 
 
 
-Procedure TFile.Seturls(AIndex : Integer; const AValue : TFileTypeurls); 
+Procedure TFile.Seturls(AIndex : Integer; const AValue : TFileTypeurls);
 
 begin
   If (Furls=AValue) then exit;
@@ -16426,7 +16432,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFileList.Setetag(AIndex : Integer; const AValue : String); 
+Procedure TFileList.Setetag(AIndex : Integer; const AValue : String);
 
 begin
   If (Fetag=AValue) then exit;
@@ -16436,7 +16442,7 @@ end;
 
 
 
-Procedure TFileList.Setitems(AIndex : Integer; const AValue : TFileListTypeitemsArray); 
+Procedure TFileList.Setitems(AIndex : Integer; const AValue : TFileListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -16446,7 +16452,7 @@ end;
 
 
 
-Procedure TFileList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TFileList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -16456,7 +16462,7 @@ end;
 
 
 
-Procedure TFileList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TFileList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -16467,7 +16473,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TFileList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TFileList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -16486,7 +16492,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFlight.SetendDate(AIndex : Integer; const AValue : TDate); 
+Procedure TFlight.SetendDate(AIndex : Integer; const AValue : TDate);
 
 begin
   If (FendDate=AValue) then exit;
@@ -16496,7 +16502,7 @@ end;
 
 
 
-Procedure TFlight.SetrateOrCost(AIndex : Integer; const AValue : String); 
+Procedure TFlight.SetrateOrCost(AIndex : Integer; const AValue : String);
 
 begin
   If (FrateOrCost=AValue) then exit;
@@ -16506,7 +16512,7 @@ end;
 
 
 
-Procedure TFlight.SetstartDate(AIndex : Integer; const AValue : TDate); 
+Procedure TFlight.SetstartDate(AIndex : Integer; const AValue : TDate);
 
 begin
   If (FstartDate=AValue) then exit;
@@ -16516,7 +16522,7 @@ end;
 
 
 
-Procedure TFlight.Setunits(AIndex : Integer; const AValue : String); 
+Procedure TFlight.Setunits(AIndex : Integer; const AValue : String);
 
 begin
   If (Funits=AValue) then exit;
@@ -16533,7 +16539,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFloodlightActivitiesGenerateTagResponse.SetfloodlightActivityTag(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivitiesGenerateTagResponse.SetfloodlightActivityTag(AIndex : Integer; const AValue : String);
 
 begin
   If (FfloodlightActivityTag=AValue) then exit;
@@ -16543,7 +16549,7 @@ end;
 
 
 
-Procedure TFloodlightActivitiesGenerateTagResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivitiesGenerateTagResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -16560,7 +16566,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFloodlightActivitiesListResponse.SetfloodlightActivities(AIndex : Integer; const AValue : TFloodlightActivitiesListResponseTypefloodlightActivitiesArray); 
+Procedure TFloodlightActivitiesListResponse.SetfloodlightActivities(AIndex : Integer; const AValue : TFloodlightActivitiesListResponseTypefloodlightActivitiesArray);
 
 begin
   If (FfloodlightActivities=AValue) then exit;
@@ -16570,7 +16576,7 @@ end;
 
 
 
-Procedure TFloodlightActivitiesListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivitiesListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -16580,7 +16586,7 @@ end;
 
 
 
-Procedure TFloodlightActivitiesListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivitiesListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -16591,7 +16597,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TFloodlightActivitiesListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TFloodlightActivitiesListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -16610,7 +16616,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFloodlightActivity.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivity.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -16620,7 +16626,7 @@ end;
 
 
 
-Procedure TFloodlightActivity.SetadvertiserId(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivity.SetadvertiserId(AIndex : Integer; const AValue : String);
 
 begin
   If (FadvertiserId=AValue) then exit;
@@ -16630,7 +16636,7 @@ end;
 
 
 
-Procedure TFloodlightActivity.SetadvertiserIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TFloodlightActivity.SetadvertiserIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FadvertiserIdDimensionValue=AValue) then exit;
@@ -16640,7 +16646,7 @@ end;
 
 
 
-Procedure TFloodlightActivity.SetcacheBustingType(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivity.SetcacheBustingType(AIndex : Integer; const AValue : String);
 
 begin
   If (FcacheBustingType=AValue) then exit;
@@ -16650,7 +16656,7 @@ end;
 
 
 
-Procedure TFloodlightActivity.SetcountingMethod(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivity.SetcountingMethod(AIndex : Integer; const AValue : String);
 
 begin
   If (FcountingMethod=AValue) then exit;
@@ -16660,7 +16666,7 @@ end;
 
 
 
-Procedure TFloodlightActivity.SetdefaultTags(AIndex : Integer; const AValue : TFloodlightActivityTypedefaultTagsArray); 
+Procedure TFloodlightActivity.SetdefaultTags(AIndex : Integer; const AValue : TFloodlightActivityTypedefaultTagsArray);
 
 begin
   If (FdefaultTags=AValue) then exit;
@@ -16670,7 +16676,7 @@ end;
 
 
 
-Procedure TFloodlightActivity.SetexpectedUrl(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivity.SetexpectedUrl(AIndex : Integer; const AValue : String);
 
 begin
   If (FexpectedUrl=AValue) then exit;
@@ -16680,7 +16686,7 @@ end;
 
 
 
-Procedure TFloodlightActivity.SetfloodlightActivityGroupId(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivity.SetfloodlightActivityGroupId(AIndex : Integer; const AValue : String);
 
 begin
   If (FfloodlightActivityGroupId=AValue) then exit;
@@ -16690,7 +16696,7 @@ end;
 
 
 
-Procedure TFloodlightActivity.SetfloodlightActivityGroupName(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivity.SetfloodlightActivityGroupName(AIndex : Integer; const AValue : String);
 
 begin
   If (FfloodlightActivityGroupName=AValue) then exit;
@@ -16700,7 +16706,7 @@ end;
 
 
 
-Procedure TFloodlightActivity.SetfloodlightActivityGroupTagString(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivity.SetfloodlightActivityGroupTagString(AIndex : Integer; const AValue : String);
 
 begin
   If (FfloodlightActivityGroupTagString=AValue) then exit;
@@ -16710,7 +16716,7 @@ end;
 
 
 
-Procedure TFloodlightActivity.SetfloodlightActivityGroupType(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivity.SetfloodlightActivityGroupType(AIndex : Integer; const AValue : String);
 
 begin
   If (FfloodlightActivityGroupType=AValue) then exit;
@@ -16720,7 +16726,7 @@ end;
 
 
 
-Procedure TFloodlightActivity.SetfloodlightConfigurationId(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivity.SetfloodlightConfigurationId(AIndex : Integer; const AValue : String);
 
 begin
   If (FfloodlightConfigurationId=AValue) then exit;
@@ -16730,7 +16736,7 @@ end;
 
 
 
-Procedure TFloodlightActivity.SetfloodlightConfigurationIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TFloodlightActivity.SetfloodlightConfigurationIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FfloodlightConfigurationIdDimensionValue=AValue) then exit;
@@ -16740,7 +16746,7 @@ end;
 
 
 
-Procedure TFloodlightActivity.Sethidden(AIndex : Integer; const AValue : boolean); 
+Procedure TFloodlightActivity.Sethidden(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fhidden=AValue) then exit;
@@ -16750,7 +16756,7 @@ end;
 
 
 
-Procedure TFloodlightActivity.Setid(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivity.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -16760,7 +16766,7 @@ end;
 
 
 
-Procedure TFloodlightActivity.SetidDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TFloodlightActivity.SetidDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FidDimensionValue=AValue) then exit;
@@ -16770,7 +16776,7 @@ end;
 
 
 
-Procedure TFloodlightActivity.SetimageTagEnabled(AIndex : Integer; const AValue : boolean); 
+Procedure TFloodlightActivity.SetimageTagEnabled(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FimageTagEnabled=AValue) then exit;
@@ -16780,7 +16786,7 @@ end;
 
 
 
-Procedure TFloodlightActivity.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivity.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -16790,7 +16796,7 @@ end;
 
 
 
-Procedure TFloodlightActivity.Setname(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivity.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -16800,7 +16806,7 @@ end;
 
 
 
-Procedure TFloodlightActivity.Setnotes(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivity.Setnotes(AIndex : Integer; const AValue : String);
 
 begin
   If (Fnotes=AValue) then exit;
@@ -16810,7 +16816,7 @@ end;
 
 
 
-Procedure TFloodlightActivity.SetpublisherTags(AIndex : Integer; const AValue : TFloodlightActivityTypepublisherTagsArray); 
+Procedure TFloodlightActivity.SetpublisherTags(AIndex : Integer; const AValue : TFloodlightActivityTypepublisherTagsArray);
 
 begin
   If (FpublisherTags=AValue) then exit;
@@ -16820,7 +16826,7 @@ end;
 
 
 
-Procedure TFloodlightActivity.Setsecure(AIndex : Integer; const AValue : boolean); 
+Procedure TFloodlightActivity.Setsecure(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fsecure=AValue) then exit;
@@ -16830,7 +16836,7 @@ end;
 
 
 
-Procedure TFloodlightActivity.SetsslCompliant(AIndex : Integer; const AValue : boolean); 
+Procedure TFloodlightActivity.SetsslCompliant(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FsslCompliant=AValue) then exit;
@@ -16840,7 +16846,7 @@ end;
 
 
 
-Procedure TFloodlightActivity.SetsslRequired(AIndex : Integer; const AValue : boolean); 
+Procedure TFloodlightActivity.SetsslRequired(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FsslRequired=AValue) then exit;
@@ -16850,7 +16856,7 @@ end;
 
 
 
-Procedure TFloodlightActivity.SetsubaccountId(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivity.SetsubaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsubaccountId=AValue) then exit;
@@ -16860,7 +16866,7 @@ end;
 
 
 
-Procedure TFloodlightActivity.SettagFormat(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivity.SettagFormat(AIndex : Integer; const AValue : String);
 
 begin
   If (FtagFormat=AValue) then exit;
@@ -16870,7 +16876,7 @@ end;
 
 
 
-Procedure TFloodlightActivity.SettagString(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivity.SettagString(AIndex : Integer; const AValue : String);
 
 begin
   If (FtagString=AValue) then exit;
@@ -16880,7 +16886,7 @@ end;
 
 
 
-Procedure TFloodlightActivity.SetuserDefinedVariableTypes(AIndex : Integer; const AValue : TStringArray); 
+Procedure TFloodlightActivity.SetuserDefinedVariableTypes(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FuserDefinedVariableTypes=AValue) then exit;
@@ -16891,7 +16897,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TFloodlightActivity.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TFloodlightActivity.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -16912,7 +16918,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFloodlightActivityDynamicTag.Setid(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivityDynamicTag.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -16922,7 +16928,7 @@ end;
 
 
 
-Procedure TFloodlightActivityDynamicTag.Setname(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivityDynamicTag.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -16932,7 +16938,7 @@ end;
 
 
 
-Procedure TFloodlightActivityDynamicTag.Settag(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivityDynamicTag.Settag(AIndex : Integer; const AValue : String);
 
 begin
   If (Ftag=AValue) then exit;
@@ -16949,7 +16955,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFloodlightActivityGroup.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivityGroup.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -16959,7 +16965,7 @@ end;
 
 
 
-Procedure TFloodlightActivityGroup.SetadvertiserId(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivityGroup.SetadvertiserId(AIndex : Integer; const AValue : String);
 
 begin
   If (FadvertiserId=AValue) then exit;
@@ -16969,7 +16975,7 @@ end;
 
 
 
-Procedure TFloodlightActivityGroup.SetadvertiserIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TFloodlightActivityGroup.SetadvertiserIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FadvertiserIdDimensionValue=AValue) then exit;
@@ -16979,7 +16985,7 @@ end;
 
 
 
-Procedure TFloodlightActivityGroup.SetfloodlightConfigurationId(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivityGroup.SetfloodlightConfigurationId(AIndex : Integer; const AValue : String);
 
 begin
   If (FfloodlightConfigurationId=AValue) then exit;
@@ -16989,7 +16995,7 @@ end;
 
 
 
-Procedure TFloodlightActivityGroup.SetfloodlightConfigurationIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TFloodlightActivityGroup.SetfloodlightConfigurationIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FfloodlightConfigurationIdDimensionValue=AValue) then exit;
@@ -16999,7 +17005,7 @@ end;
 
 
 
-Procedure TFloodlightActivityGroup.Setid(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivityGroup.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -17009,7 +17015,7 @@ end;
 
 
 
-Procedure TFloodlightActivityGroup.SetidDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TFloodlightActivityGroup.SetidDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FidDimensionValue=AValue) then exit;
@@ -17019,7 +17025,7 @@ end;
 
 
 
-Procedure TFloodlightActivityGroup.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivityGroup.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -17029,7 +17035,7 @@ end;
 
 
 
-Procedure TFloodlightActivityGroup.Setname(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivityGroup.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -17039,7 +17045,7 @@ end;
 
 
 
-Procedure TFloodlightActivityGroup.SetsubaccountId(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivityGroup.SetsubaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsubaccountId=AValue) then exit;
@@ -17049,7 +17055,7 @@ end;
 
 
 
-Procedure TFloodlightActivityGroup.SettagString(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivityGroup.SettagString(AIndex : Integer; const AValue : String);
 
 begin
   If (FtagString=AValue) then exit;
@@ -17059,7 +17065,7 @@ end;
 
 
 
-Procedure TFloodlightActivityGroup.Set_type(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivityGroup.Set_type(AIndex : Integer; const AValue : String);
 
 begin
   If (F_type=AValue) then exit;
@@ -17087,7 +17093,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFloodlightActivityGroupsListResponse.SetfloodlightActivityGroups(AIndex : Integer; const AValue : TFloodlightActivityGroupsListResponseTypefloodlightActivityGroupsArray); 
+Procedure TFloodlightActivityGroupsListResponse.SetfloodlightActivityGroups(AIndex : Integer; const AValue : TFloodlightActivityGroupsListResponseTypefloodlightActivityGroupsArray);
 
 begin
   If (FfloodlightActivityGroups=AValue) then exit;
@@ -17097,7 +17103,7 @@ end;
 
 
 
-Procedure TFloodlightActivityGroupsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivityGroupsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -17107,7 +17113,7 @@ end;
 
 
 
-Procedure TFloodlightActivityGroupsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivityGroupsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -17118,7 +17124,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TFloodlightActivityGroupsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TFloodlightActivityGroupsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -17137,7 +17143,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFloodlightActivityPublisherDynamicTag.SetclickThrough(AIndex : Integer; const AValue : boolean); 
+Procedure TFloodlightActivityPublisherDynamicTag.SetclickThrough(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FclickThrough=AValue) then exit;
@@ -17147,7 +17153,7 @@ end;
 
 
 
-Procedure TFloodlightActivityPublisherDynamicTag.SetdirectorySiteId(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivityPublisherDynamicTag.SetdirectorySiteId(AIndex : Integer; const AValue : String);
 
 begin
   If (FdirectorySiteId=AValue) then exit;
@@ -17157,7 +17163,7 @@ end;
 
 
 
-Procedure TFloodlightActivityPublisherDynamicTag.SetdynamicTag(AIndex : Integer; const AValue : TFloodlightActivityDynamicTag); 
+Procedure TFloodlightActivityPublisherDynamicTag.SetdynamicTag(AIndex : Integer; const AValue : TFloodlightActivityDynamicTag);
 
 begin
   If (FdynamicTag=AValue) then exit;
@@ -17167,7 +17173,7 @@ end;
 
 
 
-Procedure TFloodlightActivityPublisherDynamicTag.SetsiteId(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightActivityPublisherDynamicTag.SetsiteId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsiteId=AValue) then exit;
@@ -17177,7 +17183,7 @@ end;
 
 
 
-Procedure TFloodlightActivityPublisherDynamicTag.SetsiteIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TFloodlightActivityPublisherDynamicTag.SetsiteIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FsiteIdDimensionValue=AValue) then exit;
@@ -17187,7 +17193,7 @@ end;
 
 
 
-Procedure TFloodlightActivityPublisherDynamicTag.SetviewThrough(AIndex : Integer; const AValue : boolean); 
+Procedure TFloodlightActivityPublisherDynamicTag.SetviewThrough(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FviewThrough=AValue) then exit;
@@ -17204,7 +17210,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFloodlightConfiguration.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightConfiguration.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -17214,7 +17220,7 @@ end;
 
 
 
-Procedure TFloodlightConfiguration.SetadvertiserId(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightConfiguration.SetadvertiserId(AIndex : Integer; const AValue : String);
 
 begin
   If (FadvertiserId=AValue) then exit;
@@ -17224,7 +17230,7 @@ end;
 
 
 
-Procedure TFloodlightConfiguration.SetadvertiserIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TFloodlightConfiguration.SetadvertiserIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FadvertiserIdDimensionValue=AValue) then exit;
@@ -17234,7 +17240,7 @@ end;
 
 
 
-Procedure TFloodlightConfiguration.SetanalyticsDataSharingEnabled(AIndex : Integer; const AValue : boolean); 
+Procedure TFloodlightConfiguration.SetanalyticsDataSharingEnabled(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FanalyticsDataSharingEnabled=AValue) then exit;
@@ -17244,7 +17250,7 @@ end;
 
 
 
-Procedure TFloodlightConfiguration.SetexposureToConversionEnabled(AIndex : Integer; const AValue : boolean); 
+Procedure TFloodlightConfiguration.SetexposureToConversionEnabled(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FexposureToConversionEnabled=AValue) then exit;
@@ -17254,7 +17260,7 @@ end;
 
 
 
-Procedure TFloodlightConfiguration.SetfirstDayOfWeek(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightConfiguration.SetfirstDayOfWeek(AIndex : Integer; const AValue : String);
 
 begin
   If (FfirstDayOfWeek=AValue) then exit;
@@ -17264,7 +17270,7 @@ end;
 
 
 
-Procedure TFloodlightConfiguration.Setid(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightConfiguration.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -17274,7 +17280,7 @@ end;
 
 
 
-Procedure TFloodlightConfiguration.SetidDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TFloodlightConfiguration.SetidDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FidDimensionValue=AValue) then exit;
@@ -17284,7 +17290,7 @@ end;
 
 
 
-Procedure TFloodlightConfiguration.SetinAppAttributionTrackingEnabled(AIndex : Integer; const AValue : boolean); 
+Procedure TFloodlightConfiguration.SetinAppAttributionTrackingEnabled(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FinAppAttributionTrackingEnabled=AValue) then exit;
@@ -17294,7 +17300,7 @@ end;
 
 
 
-Procedure TFloodlightConfiguration.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightConfiguration.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -17304,7 +17310,7 @@ end;
 
 
 
-Procedure TFloodlightConfiguration.SetlookbackConfiguration(AIndex : Integer; const AValue : TLookbackConfiguration); 
+Procedure TFloodlightConfiguration.SetlookbackConfiguration(AIndex : Integer; const AValue : TLookbackConfiguration);
 
 begin
   If (FlookbackConfiguration=AValue) then exit;
@@ -17314,7 +17320,7 @@ end;
 
 
 
-Procedure TFloodlightConfiguration.SetnaturalSearchConversionAttributionOption(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightConfiguration.SetnaturalSearchConversionAttributionOption(AIndex : Integer; const AValue : String);
 
 begin
   If (FnaturalSearchConversionAttributionOption=AValue) then exit;
@@ -17324,7 +17330,7 @@ end;
 
 
 
-Procedure TFloodlightConfiguration.SetomnitureSettings(AIndex : Integer; const AValue : TOmnitureSettings); 
+Procedure TFloodlightConfiguration.SetomnitureSettings(AIndex : Integer; const AValue : TOmnitureSettings);
 
 begin
   If (FomnitureSettings=AValue) then exit;
@@ -17334,7 +17340,7 @@ end;
 
 
 
-Procedure TFloodlightConfiguration.SetstandardVariableTypes(AIndex : Integer; const AValue : TStringArray); 
+Procedure TFloodlightConfiguration.SetstandardVariableTypes(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FstandardVariableTypes=AValue) then exit;
@@ -17344,7 +17350,7 @@ end;
 
 
 
-Procedure TFloodlightConfiguration.SetsubaccountId(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightConfiguration.SetsubaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsubaccountId=AValue) then exit;
@@ -17354,7 +17360,7 @@ end;
 
 
 
-Procedure TFloodlightConfiguration.SettagSettings(AIndex : Integer; const AValue : TTagSettings); 
+Procedure TFloodlightConfiguration.SettagSettings(AIndex : Integer; const AValue : TTagSettings);
 
 begin
   If (FtagSettings=AValue) then exit;
@@ -17364,7 +17370,7 @@ end;
 
 
 
-Procedure TFloodlightConfiguration.SetthirdPartyAuthenticationTokens(AIndex : Integer; const AValue : TFloodlightConfigurationTypethirdPartyAuthenticationTokensArray); 
+Procedure TFloodlightConfiguration.SetthirdPartyAuthenticationTokens(AIndex : Integer; const AValue : TFloodlightConfigurationTypethirdPartyAuthenticationTokensArray);
 
 begin
   If (FthirdPartyAuthenticationTokens=AValue) then exit;
@@ -17374,7 +17380,7 @@ end;
 
 
 
-Procedure TFloodlightConfiguration.SetuserDefinedVariableConfigurations(AIndex : Integer; const AValue : TFloodlightConfigurationTypeuserDefinedVariableConfigurationsArray); 
+Procedure TFloodlightConfiguration.SetuserDefinedVariableConfigurations(AIndex : Integer; const AValue : TFloodlightConfigurationTypeuserDefinedVariableConfigurationsArray);
 
 begin
   If (FuserDefinedVariableConfigurations=AValue) then exit;
@@ -17385,7 +17391,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TFloodlightConfiguration.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TFloodlightConfiguration.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -17406,7 +17412,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFloodlightConfigurationsListResponse.SetfloodlightConfigurations(AIndex : Integer; const AValue : TFloodlightConfigurationsListResponseTypefloodlightConfigurationsArray); 
+Procedure TFloodlightConfigurationsListResponse.SetfloodlightConfigurations(AIndex : Integer; const AValue : TFloodlightConfigurationsListResponseTypefloodlightConfigurationsArray);
 
 begin
   If (FfloodlightConfigurations=AValue) then exit;
@@ -17416,7 +17422,7 @@ end;
 
 
 
-Procedure TFloodlightConfigurationsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightConfigurationsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -17427,7 +17433,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TFloodlightConfigurationsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TFloodlightConfigurationsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -17446,7 +17452,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFloodlightReportCompatibleFields.SetdimensionFilters(AIndex : Integer; const AValue : TFloodlightReportCompatibleFieldsTypedimensionFiltersArray); 
+Procedure TFloodlightReportCompatibleFields.SetdimensionFilters(AIndex : Integer; const AValue : TFloodlightReportCompatibleFieldsTypedimensionFiltersArray);
 
 begin
   If (FdimensionFilters=AValue) then exit;
@@ -17456,7 +17462,7 @@ end;
 
 
 
-Procedure TFloodlightReportCompatibleFields.Setdimensions(AIndex : Integer; const AValue : TFloodlightReportCompatibleFieldsTypedimensionsArray); 
+Procedure TFloodlightReportCompatibleFields.Setdimensions(AIndex : Integer; const AValue : TFloodlightReportCompatibleFieldsTypedimensionsArray);
 
 begin
   If (Fdimensions=AValue) then exit;
@@ -17466,7 +17472,7 @@ end;
 
 
 
-Procedure TFloodlightReportCompatibleFields.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TFloodlightReportCompatibleFields.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -17476,7 +17482,7 @@ end;
 
 
 
-Procedure TFloodlightReportCompatibleFields.Setmetrics(AIndex : Integer; const AValue : TFloodlightReportCompatibleFieldsTypemetricsArray); 
+Procedure TFloodlightReportCompatibleFields.Setmetrics(AIndex : Integer; const AValue : TFloodlightReportCompatibleFieldsTypemetricsArray);
 
 begin
   If (Fmetrics=AValue) then exit;
@@ -17487,7 +17493,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TFloodlightReportCompatibleFields.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TFloodlightReportCompatibleFields.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -17508,7 +17514,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFrequencyCap.Setduration(AIndex : Integer; const AValue : String); 
+Procedure TFrequencyCap.Setduration(AIndex : Integer; const AValue : String);
 
 begin
   If (Fduration=AValue) then exit;
@@ -17518,7 +17524,7 @@ end;
 
 
 
-Procedure TFrequencyCap.Setimpressions(AIndex : Integer; const AValue : String); 
+Procedure TFrequencyCap.Setimpressions(AIndex : Integer; const AValue : String);
 
 begin
   If (Fimpressions=AValue) then exit;
@@ -17535,7 +17541,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFsCommand.Setleft(AIndex : Integer; const AValue : integer); 
+Procedure TFsCommand.Setleft(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fleft=AValue) then exit;
@@ -17545,7 +17551,7 @@ end;
 
 
 
-Procedure TFsCommand.SetpositionOption(AIndex : Integer; const AValue : String); 
+Procedure TFsCommand.SetpositionOption(AIndex : Integer; const AValue : String);
 
 begin
   If (FpositionOption=AValue) then exit;
@@ -17555,7 +17561,7 @@ end;
 
 
 
-Procedure TFsCommand.Settop(AIndex : Integer; const AValue : integer); 
+Procedure TFsCommand.Settop(AIndex : Integer; const AValue : integer);
 
 begin
   If (Ftop=AValue) then exit;
@@ -17565,7 +17571,7 @@ end;
 
 
 
-Procedure TFsCommand.SetwindowHeight(AIndex : Integer; const AValue : integer); 
+Procedure TFsCommand.SetwindowHeight(AIndex : Integer; const AValue : integer);
 
 begin
   If (FwindowHeight=AValue) then exit;
@@ -17575,7 +17581,7 @@ end;
 
 
 
-Procedure TFsCommand.SetwindowWidth(AIndex : Integer; const AValue : integer); 
+Procedure TFsCommand.SetwindowWidth(AIndex : Integer; const AValue : integer);
 
 begin
   If (FwindowWidth=AValue) then exit;
@@ -17592,7 +17598,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TGeoTargeting.Setcities(AIndex : Integer; const AValue : TGeoTargetingTypecitiesArray); 
+Procedure TGeoTargeting.Setcities(AIndex : Integer; const AValue : TGeoTargetingTypecitiesArray);
 
 begin
   If (Fcities=AValue) then exit;
@@ -17602,7 +17608,7 @@ end;
 
 
 
-Procedure TGeoTargeting.Setcountries(AIndex : Integer; const AValue : TGeoTargetingTypecountriesArray); 
+Procedure TGeoTargeting.Setcountries(AIndex : Integer; const AValue : TGeoTargetingTypecountriesArray);
 
 begin
   If (Fcountries=AValue) then exit;
@@ -17612,7 +17618,7 @@ end;
 
 
 
-Procedure TGeoTargeting.SetexcludeCountries(AIndex : Integer; const AValue : boolean); 
+Procedure TGeoTargeting.SetexcludeCountries(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FexcludeCountries=AValue) then exit;
@@ -17622,7 +17628,7 @@ end;
 
 
 
-Procedure TGeoTargeting.Setmetros(AIndex : Integer; const AValue : TGeoTargetingTypemetrosArray); 
+Procedure TGeoTargeting.Setmetros(AIndex : Integer; const AValue : TGeoTargetingTypemetrosArray);
 
 begin
   If (Fmetros=AValue) then exit;
@@ -17632,7 +17638,7 @@ end;
 
 
 
-Procedure TGeoTargeting.SetpostalCodes(AIndex : Integer; const AValue : TGeoTargetingTypepostalCodesArray); 
+Procedure TGeoTargeting.SetpostalCodes(AIndex : Integer; const AValue : TGeoTargetingTypepostalCodesArray);
 
 begin
   If (FpostalCodes=AValue) then exit;
@@ -17642,7 +17648,7 @@ end;
 
 
 
-Procedure TGeoTargeting.Setregions(AIndex : Integer; const AValue : TGeoTargetingTyperegionsArray); 
+Procedure TGeoTargeting.Setregions(AIndex : Integer; const AValue : TGeoTargetingTyperegionsArray);
 
 begin
   If (Fregions=AValue) then exit;
@@ -17653,7 +17659,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TGeoTargeting.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TGeoTargeting.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -17676,7 +17682,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInventoryItem.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TInventoryItem.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -17686,7 +17692,7 @@ end;
 
 
 
-Procedure TInventoryItem.SetadSlots(AIndex : Integer; const AValue : TInventoryItemTypeadSlotsArray); 
+Procedure TInventoryItem.SetadSlots(AIndex : Integer; const AValue : TInventoryItemTypeadSlotsArray);
 
 begin
   If (FadSlots=AValue) then exit;
@@ -17696,7 +17702,7 @@ end;
 
 
 
-Procedure TInventoryItem.SetadvertiserId(AIndex : Integer; const AValue : String); 
+Procedure TInventoryItem.SetadvertiserId(AIndex : Integer; const AValue : String);
 
 begin
   If (FadvertiserId=AValue) then exit;
@@ -17706,7 +17712,7 @@ end;
 
 
 
-Procedure TInventoryItem.SetcontentCategoryId(AIndex : Integer; const AValue : String); 
+Procedure TInventoryItem.SetcontentCategoryId(AIndex : Integer; const AValue : String);
 
 begin
   If (FcontentCategoryId=AValue) then exit;
@@ -17716,7 +17722,7 @@ end;
 
 
 
-Procedure TInventoryItem.SetestimatedClickThroughRate(AIndex : Integer; const AValue : String); 
+Procedure TInventoryItem.SetestimatedClickThroughRate(AIndex : Integer; const AValue : String);
 
 begin
   If (FestimatedClickThroughRate=AValue) then exit;
@@ -17726,7 +17732,7 @@ end;
 
 
 
-Procedure TInventoryItem.SetestimatedConversionRate(AIndex : Integer; const AValue : String); 
+Procedure TInventoryItem.SetestimatedConversionRate(AIndex : Integer; const AValue : String);
 
 begin
   If (FestimatedConversionRate=AValue) then exit;
@@ -17736,7 +17742,7 @@ end;
 
 
 
-Procedure TInventoryItem.Setid(AIndex : Integer; const AValue : String); 
+Procedure TInventoryItem.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -17746,7 +17752,7 @@ end;
 
 
 
-Procedure TInventoryItem.SetinPlan(AIndex : Integer; const AValue : boolean); 
+Procedure TInventoryItem.SetinPlan(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FinPlan=AValue) then exit;
@@ -17756,7 +17762,7 @@ end;
 
 
 
-Procedure TInventoryItem.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TInventoryItem.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -17766,7 +17772,7 @@ end;
 
 
 
-Procedure TInventoryItem.SetlastModifiedInfo(AIndex : Integer; const AValue : TLastModifiedInfo); 
+Procedure TInventoryItem.SetlastModifiedInfo(AIndex : Integer; const AValue : TLastModifiedInfo);
 
 begin
   If (FlastModifiedInfo=AValue) then exit;
@@ -17776,7 +17782,7 @@ end;
 
 
 
-Procedure TInventoryItem.Setname(AIndex : Integer; const AValue : String); 
+Procedure TInventoryItem.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -17786,7 +17792,7 @@ end;
 
 
 
-Procedure TInventoryItem.SetnegotiationChannelId(AIndex : Integer; const AValue : String); 
+Procedure TInventoryItem.SetnegotiationChannelId(AIndex : Integer; const AValue : String);
 
 begin
   If (FnegotiationChannelId=AValue) then exit;
@@ -17796,7 +17802,7 @@ end;
 
 
 
-Procedure TInventoryItem.SetorderId(AIndex : Integer; const AValue : String); 
+Procedure TInventoryItem.SetorderId(AIndex : Integer; const AValue : String);
 
 begin
   If (ForderId=AValue) then exit;
@@ -17806,7 +17812,7 @@ end;
 
 
 
-Procedure TInventoryItem.SetplacementStrategyId(AIndex : Integer; const AValue : String); 
+Procedure TInventoryItem.SetplacementStrategyId(AIndex : Integer; const AValue : String);
 
 begin
   If (FplacementStrategyId=AValue) then exit;
@@ -17816,7 +17822,7 @@ end;
 
 
 
-Procedure TInventoryItem.Setpricing(AIndex : Integer; const AValue : TPricing); 
+Procedure TInventoryItem.Setpricing(AIndex : Integer; const AValue : TPricing);
 
 begin
   If (Fpricing=AValue) then exit;
@@ -17826,7 +17832,7 @@ end;
 
 
 
-Procedure TInventoryItem.SetprojectId(AIndex : Integer; const AValue : String); 
+Procedure TInventoryItem.SetprojectId(AIndex : Integer; const AValue : String);
 
 begin
   If (FprojectId=AValue) then exit;
@@ -17836,7 +17842,7 @@ end;
 
 
 
-Procedure TInventoryItem.SetrfpId(AIndex : Integer; const AValue : String); 
+Procedure TInventoryItem.SetrfpId(AIndex : Integer; const AValue : String);
 
 begin
   If (FrfpId=AValue) then exit;
@@ -17846,7 +17852,7 @@ end;
 
 
 
-Procedure TInventoryItem.SetsiteId(AIndex : Integer; const AValue : String); 
+Procedure TInventoryItem.SetsiteId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsiteId=AValue) then exit;
@@ -17856,7 +17862,7 @@ end;
 
 
 
-Procedure TInventoryItem.SetsubaccountId(AIndex : Integer; const AValue : String); 
+Procedure TInventoryItem.SetsubaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsubaccountId=AValue) then exit;
@@ -17866,7 +17872,7 @@ end;
 
 
 
-Procedure TInventoryItem.Set_type(AIndex : Integer; const AValue : String); 
+Procedure TInventoryItem.Set_type(AIndex : Integer; const AValue : String);
 
 begin
   If (F_type=AValue) then exit;
@@ -17888,7 +17894,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInventoryItem.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInventoryItem.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -17907,7 +17913,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInventoryItemsListResponse.SetinventoryItems(AIndex : Integer; const AValue : TInventoryItemsListResponseTypeinventoryItemsArray); 
+Procedure TInventoryItemsListResponse.SetinventoryItems(AIndex : Integer; const AValue : TInventoryItemsListResponseTypeinventoryItemsArray);
 
 begin
   If (FinventoryItems=AValue) then exit;
@@ -17917,7 +17923,7 @@ end;
 
 
 
-Procedure TInventoryItemsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TInventoryItemsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -17927,7 +17933,7 @@ end;
 
 
 
-Procedure TInventoryItemsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TInventoryItemsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -17938,7 +17944,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInventoryItemsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInventoryItemsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -17957,7 +17963,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TKeyValueTargetingExpression.Setexpression(AIndex : Integer; const AValue : String); 
+Procedure TKeyValueTargetingExpression.Setexpression(AIndex : Integer; const AValue : String);
 
 begin
   If (Fexpression=AValue) then exit;
@@ -17974,7 +17980,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TLandingPage.Setdefault(AIndex : Integer; const AValue : boolean); 
+Procedure TLandingPage.Setdefault(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fdefault=AValue) then exit;
@@ -17984,7 +17990,7 @@ end;
 
 
 
-Procedure TLandingPage.Setid(AIndex : Integer; const AValue : String); 
+Procedure TLandingPage.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -17994,7 +18000,7 @@ end;
 
 
 
-Procedure TLandingPage.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TLandingPage.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -18004,7 +18010,7 @@ end;
 
 
 
-Procedure TLandingPage.Setname(AIndex : Integer; const AValue : String); 
+Procedure TLandingPage.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -18014,7 +18020,7 @@ end;
 
 
 
-Procedure TLandingPage.Seturl(AIndex : Integer; const AValue : String); 
+Procedure TLandingPage.Seturl(AIndex : Integer; const AValue : String);
 
 begin
   If (Furl=AValue) then exit;
@@ -18031,7 +18037,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TLandingPagesListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TLandingPagesListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -18041,7 +18047,7 @@ end;
 
 
 
-Procedure TLandingPagesListResponse.SetlandingPages(AIndex : Integer; const AValue : TLandingPagesListResponseTypelandingPagesArray); 
+Procedure TLandingPagesListResponse.SetlandingPages(AIndex : Integer; const AValue : TLandingPagesListResponseTypelandingPagesArray);
 
 begin
   If (FlandingPages=AValue) then exit;
@@ -18052,7 +18058,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TLandingPagesListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TLandingPagesListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -18071,7 +18077,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TLastModifiedInfo.Settime(AIndex : Integer; const AValue : String); 
+Procedure TLastModifiedInfo.Settime(AIndex : Integer; const AValue : String);
 
 begin
   If (Ftime=AValue) then exit;
@@ -18088,7 +18094,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TListPopulationClause.Setterms(AIndex : Integer; const AValue : TListPopulationClauseTypetermsArray); 
+Procedure TListPopulationClause.Setterms(AIndex : Integer; const AValue : TListPopulationClauseTypetermsArray);
 
 begin
   If (Fterms=AValue) then exit;
@@ -18099,7 +18105,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TListPopulationClause.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TListPopulationClause.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -18118,7 +18124,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TListPopulationRule.SetfloodlightActivityId(AIndex : Integer; const AValue : String); 
+Procedure TListPopulationRule.SetfloodlightActivityId(AIndex : Integer; const AValue : String);
 
 begin
   If (FfloodlightActivityId=AValue) then exit;
@@ -18128,7 +18134,7 @@ end;
 
 
 
-Procedure TListPopulationRule.SetfloodlightActivityName(AIndex : Integer; const AValue : String); 
+Procedure TListPopulationRule.SetfloodlightActivityName(AIndex : Integer; const AValue : String);
 
 begin
   If (FfloodlightActivityName=AValue) then exit;
@@ -18138,7 +18144,7 @@ end;
 
 
 
-Procedure TListPopulationRule.SetlistPopulationClauses(AIndex : Integer; const AValue : TListPopulationRuleTypelistPopulationClausesArray); 
+Procedure TListPopulationRule.SetlistPopulationClauses(AIndex : Integer; const AValue : TListPopulationRuleTypelistPopulationClausesArray);
 
 begin
   If (FlistPopulationClauses=AValue) then exit;
@@ -18149,7 +18155,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TListPopulationRule.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TListPopulationRule.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -18168,7 +18174,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TListPopulationTerm.Setcontains(AIndex : Integer; const AValue : boolean); 
+Procedure TListPopulationTerm.Setcontains(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fcontains=AValue) then exit;
@@ -18178,7 +18184,7 @@ end;
 
 
 
-Procedure TListPopulationTerm.Setnegation(AIndex : Integer; const AValue : boolean); 
+Procedure TListPopulationTerm.Setnegation(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fnegation=AValue) then exit;
@@ -18188,7 +18194,7 @@ end;
 
 
 
-Procedure TListPopulationTerm.Set_operator(AIndex : Integer; const AValue : String); 
+Procedure TListPopulationTerm.Set_operator(AIndex : Integer; const AValue : String);
 
 begin
   If (F_operator=AValue) then exit;
@@ -18198,7 +18204,7 @@ end;
 
 
 
-Procedure TListPopulationTerm.SetremarketingListId(AIndex : Integer; const AValue : String); 
+Procedure TListPopulationTerm.SetremarketingListId(AIndex : Integer; const AValue : String);
 
 begin
   If (FremarketingListId=AValue) then exit;
@@ -18208,7 +18214,7 @@ end;
 
 
 
-Procedure TListPopulationTerm.Set_type(AIndex : Integer; const AValue : String); 
+Procedure TListPopulationTerm.Set_type(AIndex : Integer; const AValue : String);
 
 begin
   If (F_type=AValue) then exit;
@@ -18218,7 +18224,7 @@ end;
 
 
 
-Procedure TListPopulationTerm.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TListPopulationTerm.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -18228,7 +18234,7 @@ end;
 
 
 
-Procedure TListPopulationTerm.SetvariableFriendlyName(AIndex : Integer; const AValue : String); 
+Procedure TListPopulationTerm.SetvariableFriendlyName(AIndex : Integer; const AValue : String);
 
 begin
   If (FvariableFriendlyName=AValue) then exit;
@@ -18238,7 +18244,7 @@ end;
 
 
 
-Procedure TListPopulationTerm.SetvariableName(AIndex : Integer; const AValue : String); 
+Procedure TListPopulationTerm.SetvariableName(AIndex : Integer; const AValue : String);
 
 begin
   If (FvariableName=AValue) then exit;
@@ -18267,7 +18273,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TListTargetingExpression.Setexpression(AIndex : Integer; const AValue : String); 
+Procedure TListTargetingExpression.Setexpression(AIndex : Integer; const AValue : String);
 
 begin
   If (Fexpression=AValue) then exit;
@@ -18284,7 +18290,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TLookbackConfiguration.SetclickDuration(AIndex : Integer; const AValue : integer); 
+Procedure TLookbackConfiguration.SetclickDuration(AIndex : Integer; const AValue : integer);
 
 begin
   If (FclickDuration=AValue) then exit;
@@ -18294,7 +18300,7 @@ end;
 
 
 
-Procedure TLookbackConfiguration.SetpostImpressionActivitiesDuration(AIndex : Integer; const AValue : integer); 
+Procedure TLookbackConfiguration.SetpostImpressionActivitiesDuration(AIndex : Integer; const AValue : integer);
 
 begin
   If (FpostImpressionActivitiesDuration=AValue) then exit;
@@ -18311,7 +18317,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TMetric.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TMetric.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -18321,7 +18327,7 @@ end;
 
 
 
-Procedure TMetric.Setname(AIndex : Integer; const AValue : String); 
+Procedure TMetric.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -18338,7 +18344,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TMetro.SetcountryCode(AIndex : Integer; const AValue : String); 
+Procedure TMetro.SetcountryCode(AIndex : Integer; const AValue : String);
 
 begin
   If (FcountryCode=AValue) then exit;
@@ -18348,7 +18354,7 @@ end;
 
 
 
-Procedure TMetro.SetcountryDartId(AIndex : Integer; const AValue : String); 
+Procedure TMetro.SetcountryDartId(AIndex : Integer; const AValue : String);
 
 begin
   If (FcountryDartId=AValue) then exit;
@@ -18358,7 +18364,7 @@ end;
 
 
 
-Procedure TMetro.SetdartId(AIndex : Integer; const AValue : String); 
+Procedure TMetro.SetdartId(AIndex : Integer; const AValue : String);
 
 begin
   If (FdartId=AValue) then exit;
@@ -18368,7 +18374,7 @@ end;
 
 
 
-Procedure TMetro.SetdmaId(AIndex : Integer; const AValue : String); 
+Procedure TMetro.SetdmaId(AIndex : Integer; const AValue : String);
 
 begin
   If (FdmaId=AValue) then exit;
@@ -18378,7 +18384,7 @@ end;
 
 
 
-Procedure TMetro.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TMetro.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -18388,7 +18394,7 @@ end;
 
 
 
-Procedure TMetro.SetmetroCode(AIndex : Integer; const AValue : String); 
+Procedure TMetro.SetmetroCode(AIndex : Integer; const AValue : String);
 
 begin
   If (FmetroCode=AValue) then exit;
@@ -18398,7 +18404,7 @@ end;
 
 
 
-Procedure TMetro.Setname(AIndex : Integer; const AValue : String); 
+Procedure TMetro.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -18415,7 +18421,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TMetrosListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TMetrosListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -18425,7 +18431,7 @@ end;
 
 
 
-Procedure TMetrosListResponse.Setmetros(AIndex : Integer; const AValue : TMetrosListResponseTypemetrosArray); 
+Procedure TMetrosListResponse.Setmetros(AIndex : Integer; const AValue : TMetrosListResponseTypemetrosArray);
 
 begin
   If (Fmetros=AValue) then exit;
@@ -18436,7 +18442,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TMetrosListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TMetrosListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -18455,7 +18461,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TMobileCarrier.SetcountryCode(AIndex : Integer; const AValue : String); 
+Procedure TMobileCarrier.SetcountryCode(AIndex : Integer; const AValue : String);
 
 begin
   If (FcountryCode=AValue) then exit;
@@ -18465,7 +18471,7 @@ end;
 
 
 
-Procedure TMobileCarrier.SetcountryDartId(AIndex : Integer; const AValue : String); 
+Procedure TMobileCarrier.SetcountryDartId(AIndex : Integer; const AValue : String);
 
 begin
   If (FcountryDartId=AValue) then exit;
@@ -18475,7 +18481,7 @@ end;
 
 
 
-Procedure TMobileCarrier.Setid(AIndex : Integer; const AValue : String); 
+Procedure TMobileCarrier.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -18485,7 +18491,7 @@ end;
 
 
 
-Procedure TMobileCarrier.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TMobileCarrier.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -18495,7 +18501,7 @@ end;
 
 
 
-Procedure TMobileCarrier.Setname(AIndex : Integer; const AValue : String); 
+Procedure TMobileCarrier.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -18512,7 +18518,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TMobileCarriersListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TMobileCarriersListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -18522,7 +18528,7 @@ end;
 
 
 
-Procedure TMobileCarriersListResponse.SetmobileCarriers(AIndex : Integer; const AValue : TMobileCarriersListResponseTypemobileCarriersArray); 
+Procedure TMobileCarriersListResponse.SetmobileCarriers(AIndex : Integer; const AValue : TMobileCarriersListResponseTypemobileCarriersArray);
 
 begin
   If (FmobileCarriers=AValue) then exit;
@@ -18533,7 +18539,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TMobileCarriersListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TMobileCarriersListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -18552,7 +18558,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TObjectFilter.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TObjectFilter.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -18562,7 +18568,7 @@ end;
 
 
 
-Procedure TObjectFilter.SetobjectIds(AIndex : Integer; const AValue : TStringArray); 
+Procedure TObjectFilter.SetobjectIds(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FobjectIds=AValue) then exit;
@@ -18572,7 +18578,7 @@ end;
 
 
 
-Procedure TObjectFilter.Setstatus(AIndex : Integer; const AValue : String); 
+Procedure TObjectFilter.Setstatus(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -18583,7 +18589,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TObjectFilter.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TObjectFilter.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -18602,7 +18608,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOffsetPosition.Setleft(AIndex : Integer; const AValue : integer); 
+Procedure TOffsetPosition.Setleft(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fleft=AValue) then exit;
@@ -18612,7 +18618,7 @@ end;
 
 
 
-Procedure TOffsetPosition.Settop(AIndex : Integer; const AValue : integer); 
+Procedure TOffsetPosition.Settop(AIndex : Integer; const AValue : integer);
 
 begin
   If (Ftop=AValue) then exit;
@@ -18629,7 +18635,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOmnitureSettings.SetomnitureCostDataEnabled(AIndex : Integer; const AValue : boolean); 
+Procedure TOmnitureSettings.SetomnitureCostDataEnabled(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FomnitureCostDataEnabled=AValue) then exit;
@@ -18639,7 +18645,7 @@ end;
 
 
 
-Procedure TOmnitureSettings.SetomnitureIntegrationEnabled(AIndex : Integer; const AValue : boolean); 
+Procedure TOmnitureSettings.SetomnitureIntegrationEnabled(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FomnitureIntegrationEnabled=AValue) then exit;
@@ -18656,7 +18662,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperatingSystem.SetdartId(AIndex : Integer; const AValue : String); 
+Procedure TOperatingSystem.SetdartId(AIndex : Integer; const AValue : String);
 
 begin
   If (FdartId=AValue) then exit;
@@ -18666,7 +18672,7 @@ end;
 
 
 
-Procedure TOperatingSystem.Setdesktop(AIndex : Integer; const AValue : boolean); 
+Procedure TOperatingSystem.Setdesktop(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fdesktop=AValue) then exit;
@@ -18676,7 +18682,7 @@ end;
 
 
 
-Procedure TOperatingSystem.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOperatingSystem.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -18686,7 +18692,7 @@ end;
 
 
 
-Procedure TOperatingSystem.Setmobile(AIndex : Integer; const AValue : boolean); 
+Procedure TOperatingSystem.Setmobile(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fmobile=AValue) then exit;
@@ -18696,7 +18702,7 @@ end;
 
 
 
-Procedure TOperatingSystem.Setname(AIndex : Integer; const AValue : String); 
+Procedure TOperatingSystem.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -18713,7 +18719,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperatingSystemVersion.Setid(AIndex : Integer; const AValue : String); 
+Procedure TOperatingSystemVersion.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -18723,7 +18729,7 @@ end;
 
 
 
-Procedure TOperatingSystemVersion.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOperatingSystemVersion.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -18733,7 +18739,7 @@ end;
 
 
 
-Procedure TOperatingSystemVersion.SetmajorVersion(AIndex : Integer; const AValue : String); 
+Procedure TOperatingSystemVersion.SetmajorVersion(AIndex : Integer; const AValue : String);
 
 begin
   If (FmajorVersion=AValue) then exit;
@@ -18743,7 +18749,7 @@ end;
 
 
 
-Procedure TOperatingSystemVersion.SetminorVersion(AIndex : Integer; const AValue : String); 
+Procedure TOperatingSystemVersion.SetminorVersion(AIndex : Integer; const AValue : String);
 
 begin
   If (FminorVersion=AValue) then exit;
@@ -18753,7 +18759,7 @@ end;
 
 
 
-Procedure TOperatingSystemVersion.Setname(AIndex : Integer; const AValue : String); 
+Procedure TOperatingSystemVersion.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -18763,7 +18769,7 @@ end;
 
 
 
-Procedure TOperatingSystemVersion.SetoperatingSystem(AIndex : Integer; const AValue : TOperatingSystem); 
+Procedure TOperatingSystemVersion.SetoperatingSystem(AIndex : Integer; const AValue : TOperatingSystem);
 
 begin
   If (FoperatingSystem=AValue) then exit;
@@ -18780,7 +18786,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperatingSystemVersionsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOperatingSystemVersionsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -18790,7 +18796,7 @@ end;
 
 
 
-Procedure TOperatingSystemVersionsListResponse.SetoperatingSystemVersions(AIndex : Integer; const AValue : TOperatingSystemVersionsListResponseTypeoperatingSystemVersionsArray); 
+Procedure TOperatingSystemVersionsListResponse.SetoperatingSystemVersions(AIndex : Integer; const AValue : TOperatingSystemVersionsListResponseTypeoperatingSystemVersionsArray);
 
 begin
   If (FoperatingSystemVersions=AValue) then exit;
@@ -18801,7 +18807,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOperatingSystemVersionsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOperatingSystemVersionsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -18820,7 +18826,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperatingSystemsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOperatingSystemsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -18830,7 +18836,7 @@ end;
 
 
 
-Procedure TOperatingSystemsListResponse.SetoperatingSystems(AIndex : Integer; const AValue : TOperatingSystemsListResponseTypeoperatingSystemsArray); 
+Procedure TOperatingSystemsListResponse.SetoperatingSystems(AIndex : Integer; const AValue : TOperatingSystemsListResponseTypeoperatingSystemsArray);
 
 begin
   If (FoperatingSystems=AValue) then exit;
@@ -18841,7 +18847,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOperatingSystemsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOperatingSystemsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -18860,7 +18866,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOptimizationActivity.SetfloodlightActivityId(AIndex : Integer; const AValue : String); 
+Procedure TOptimizationActivity.SetfloodlightActivityId(AIndex : Integer; const AValue : String);
 
 begin
   If (FfloodlightActivityId=AValue) then exit;
@@ -18870,7 +18876,7 @@ end;
 
 
 
-Procedure TOptimizationActivity.SetfloodlightActivityIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TOptimizationActivity.SetfloodlightActivityIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FfloodlightActivityIdDimensionValue=AValue) then exit;
@@ -18880,7 +18886,7 @@ end;
 
 
 
-Procedure TOptimizationActivity.Setweight(AIndex : Integer; const AValue : integer); 
+Procedure TOptimizationActivity.Setweight(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fweight=AValue) then exit;
@@ -18897,7 +18903,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrder.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TOrder.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -18907,7 +18913,7 @@ end;
 
 
 
-Procedure TOrder.SetadvertiserId(AIndex : Integer; const AValue : String); 
+Procedure TOrder.SetadvertiserId(AIndex : Integer; const AValue : String);
 
 begin
   If (FadvertiserId=AValue) then exit;
@@ -18917,7 +18923,7 @@ end;
 
 
 
-Procedure TOrder.SetapproverUserProfileIds(AIndex : Integer; const AValue : TStringArray); 
+Procedure TOrder.SetapproverUserProfileIds(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FapproverUserProfileIds=AValue) then exit;
@@ -18927,7 +18933,7 @@ end;
 
 
 
-Procedure TOrder.SetbuyerInvoiceId(AIndex : Integer; const AValue : String); 
+Procedure TOrder.SetbuyerInvoiceId(AIndex : Integer; const AValue : String);
 
 begin
   If (FbuyerInvoiceId=AValue) then exit;
@@ -18937,7 +18943,7 @@ end;
 
 
 
-Procedure TOrder.SetbuyerOrganizationName(AIndex : Integer; const AValue : String); 
+Procedure TOrder.SetbuyerOrganizationName(AIndex : Integer; const AValue : String);
 
 begin
   If (FbuyerOrganizationName=AValue) then exit;
@@ -18947,7 +18953,7 @@ end;
 
 
 
-Procedure TOrder.Setcomments(AIndex : Integer; const AValue : String); 
+Procedure TOrder.Setcomments(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcomments=AValue) then exit;
@@ -18957,7 +18963,7 @@ end;
 
 
 
-Procedure TOrder.Setcontacts(AIndex : Integer; const AValue : TOrderTypecontactsArray); 
+Procedure TOrder.Setcontacts(AIndex : Integer; const AValue : TOrderTypecontactsArray);
 
 begin
   If (Fcontacts=AValue) then exit;
@@ -18967,7 +18973,7 @@ end;
 
 
 
-Procedure TOrder.Setid(AIndex : Integer; const AValue : String); 
+Procedure TOrder.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -18977,7 +18983,7 @@ end;
 
 
 
-Procedure TOrder.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOrder.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -18987,7 +18993,7 @@ end;
 
 
 
-Procedure TOrder.SetlastModifiedInfo(AIndex : Integer; const AValue : TLastModifiedInfo); 
+Procedure TOrder.SetlastModifiedInfo(AIndex : Integer; const AValue : TLastModifiedInfo);
 
 begin
   If (FlastModifiedInfo=AValue) then exit;
@@ -18997,7 +19003,7 @@ end;
 
 
 
-Procedure TOrder.Setname(AIndex : Integer; const AValue : String); 
+Procedure TOrder.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -19007,7 +19013,7 @@ end;
 
 
 
-Procedure TOrder.Setnotes(AIndex : Integer; const AValue : String); 
+Procedure TOrder.Setnotes(AIndex : Integer; const AValue : String);
 
 begin
   If (Fnotes=AValue) then exit;
@@ -19017,7 +19023,7 @@ end;
 
 
 
-Procedure TOrder.SetplanningTermId(AIndex : Integer; const AValue : String); 
+Procedure TOrder.SetplanningTermId(AIndex : Integer; const AValue : String);
 
 begin
   If (FplanningTermId=AValue) then exit;
@@ -19027,7 +19033,7 @@ end;
 
 
 
-Procedure TOrder.SetprojectId(AIndex : Integer; const AValue : String); 
+Procedure TOrder.SetprojectId(AIndex : Integer; const AValue : String);
 
 begin
   If (FprojectId=AValue) then exit;
@@ -19037,7 +19043,7 @@ end;
 
 
 
-Procedure TOrder.SetsellerOrderId(AIndex : Integer; const AValue : String); 
+Procedure TOrder.SetsellerOrderId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsellerOrderId=AValue) then exit;
@@ -19047,7 +19053,7 @@ end;
 
 
 
-Procedure TOrder.SetsellerOrganizationName(AIndex : Integer; const AValue : String); 
+Procedure TOrder.SetsellerOrganizationName(AIndex : Integer; const AValue : String);
 
 begin
   If (FsellerOrganizationName=AValue) then exit;
@@ -19057,7 +19063,7 @@ end;
 
 
 
-Procedure TOrder.SetsiteId(AIndex : Integer; const AValue : TStringArray); 
+Procedure TOrder.SetsiteId(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FsiteId=AValue) then exit;
@@ -19067,7 +19073,7 @@ end;
 
 
 
-Procedure TOrder.SetsiteNames(AIndex : Integer; const AValue : TStringArray); 
+Procedure TOrder.SetsiteNames(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FsiteNames=AValue) then exit;
@@ -19077,7 +19083,7 @@ end;
 
 
 
-Procedure TOrder.SetsubaccountId(AIndex : Integer; const AValue : String); 
+Procedure TOrder.SetsubaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsubaccountId=AValue) then exit;
@@ -19087,7 +19093,7 @@ end;
 
 
 
-Procedure TOrder.SettermsAndConditions(AIndex : Integer; const AValue : String); 
+Procedure TOrder.SettermsAndConditions(AIndex : Integer; const AValue : String);
 
 begin
   If (FtermsAndConditions=AValue) then exit;
@@ -19098,7 +19104,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOrder.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOrder.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -19120,7 +19126,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrderContact.SetcontactInfo(AIndex : Integer; const AValue : String); 
+Procedure TOrderContact.SetcontactInfo(AIndex : Integer; const AValue : String);
 
 begin
   If (FcontactInfo=AValue) then exit;
@@ -19130,7 +19136,7 @@ end;
 
 
 
-Procedure TOrderContact.SetcontactName(AIndex : Integer; const AValue : String); 
+Procedure TOrderContact.SetcontactName(AIndex : Integer; const AValue : String);
 
 begin
   If (FcontactName=AValue) then exit;
@@ -19140,7 +19146,7 @@ end;
 
 
 
-Procedure TOrderContact.SetcontactTitle(AIndex : Integer; const AValue : String); 
+Procedure TOrderContact.SetcontactTitle(AIndex : Integer; const AValue : String);
 
 begin
   If (FcontactTitle=AValue) then exit;
@@ -19150,7 +19156,7 @@ end;
 
 
 
-Procedure TOrderContact.SetcontactType(AIndex : Integer; const AValue : String); 
+Procedure TOrderContact.SetcontactType(AIndex : Integer; const AValue : String);
 
 begin
   If (FcontactType=AValue) then exit;
@@ -19160,7 +19166,7 @@ end;
 
 
 
-Procedure TOrderContact.SetsignatureUserProfileId(AIndex : Integer; const AValue : String); 
+Procedure TOrderContact.SetsignatureUserProfileId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsignatureUserProfileId=AValue) then exit;
@@ -19177,7 +19183,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrderDocument.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TOrderDocument.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -19187,7 +19193,7 @@ end;
 
 
 
-Procedure TOrderDocument.SetadvertiserId(AIndex : Integer; const AValue : String); 
+Procedure TOrderDocument.SetadvertiserId(AIndex : Integer; const AValue : String);
 
 begin
   If (FadvertiserId=AValue) then exit;
@@ -19197,7 +19203,7 @@ end;
 
 
 
-Procedure TOrderDocument.SetamendedOrderDocumentId(AIndex : Integer; const AValue : String); 
+Procedure TOrderDocument.SetamendedOrderDocumentId(AIndex : Integer; const AValue : String);
 
 begin
   If (FamendedOrderDocumentId=AValue) then exit;
@@ -19207,7 +19213,7 @@ end;
 
 
 
-Procedure TOrderDocument.SetapprovedByUserProfileIds(AIndex : Integer; const AValue : TStringArray); 
+Procedure TOrderDocument.SetapprovedByUserProfileIds(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FapprovedByUserProfileIds=AValue) then exit;
@@ -19217,7 +19223,7 @@ end;
 
 
 
-Procedure TOrderDocument.Setcancelled(AIndex : Integer; const AValue : boolean); 
+Procedure TOrderDocument.Setcancelled(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fcancelled=AValue) then exit;
@@ -19227,7 +19233,7 @@ end;
 
 
 
-Procedure TOrderDocument.SetcreatedInfo(AIndex : Integer; const AValue : TLastModifiedInfo); 
+Procedure TOrderDocument.SetcreatedInfo(AIndex : Integer; const AValue : TLastModifiedInfo);
 
 begin
   If (FcreatedInfo=AValue) then exit;
@@ -19237,7 +19243,7 @@ end;
 
 
 
-Procedure TOrderDocument.SeteffectiveDate(AIndex : Integer; const AValue : TDate); 
+Procedure TOrderDocument.SeteffectiveDate(AIndex : Integer; const AValue : TDate);
 
 begin
   If (FeffectiveDate=AValue) then exit;
@@ -19247,7 +19253,7 @@ end;
 
 
 
-Procedure TOrderDocument.Setid(AIndex : Integer; const AValue : String); 
+Procedure TOrderDocument.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -19257,7 +19263,7 @@ end;
 
 
 
-Procedure TOrderDocument.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOrderDocument.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -19267,7 +19273,7 @@ end;
 
 
 
-Procedure TOrderDocument.SetlastSentRecipients(AIndex : Integer; const AValue : TStringArray); 
+Procedure TOrderDocument.SetlastSentRecipients(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FlastSentRecipients=AValue) then exit;
@@ -19277,7 +19283,7 @@ end;
 
 
 
-Procedure TOrderDocument.SetlastSentTime(AIndex : Integer; const AValue : TDatetime); 
+Procedure TOrderDocument.SetlastSentTime(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (FlastSentTime=AValue) then exit;
@@ -19287,7 +19293,7 @@ end;
 
 
 
-Procedure TOrderDocument.SetorderId(AIndex : Integer; const AValue : String); 
+Procedure TOrderDocument.SetorderId(AIndex : Integer; const AValue : String);
 
 begin
   If (ForderId=AValue) then exit;
@@ -19297,7 +19303,7 @@ end;
 
 
 
-Procedure TOrderDocument.SetprojectId(AIndex : Integer; const AValue : String); 
+Procedure TOrderDocument.SetprojectId(AIndex : Integer; const AValue : String);
 
 begin
   If (FprojectId=AValue) then exit;
@@ -19307,7 +19313,7 @@ end;
 
 
 
-Procedure TOrderDocument.Setsigned(AIndex : Integer; const AValue : boolean); 
+Procedure TOrderDocument.Setsigned(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fsigned=AValue) then exit;
@@ -19317,7 +19323,7 @@ end;
 
 
 
-Procedure TOrderDocument.SetsubaccountId(AIndex : Integer; const AValue : String); 
+Procedure TOrderDocument.SetsubaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsubaccountId=AValue) then exit;
@@ -19327,7 +19333,7 @@ end;
 
 
 
-Procedure TOrderDocument.Settitle(AIndex : Integer; const AValue : String); 
+Procedure TOrderDocument.Settitle(AIndex : Integer; const AValue : String);
 
 begin
   If (Ftitle=AValue) then exit;
@@ -19337,7 +19343,7 @@ end;
 
 
 
-Procedure TOrderDocument.Set_type(AIndex : Integer; const AValue : String); 
+Procedure TOrderDocument.Set_type(AIndex : Integer; const AValue : String);
 
 begin
   If (F_type=AValue) then exit;
@@ -19359,7 +19365,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOrderDocument.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOrderDocument.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -19379,7 +19385,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrderDocumentsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOrderDocumentsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -19389,7 +19395,7 @@ end;
 
 
 
-Procedure TOrderDocumentsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TOrderDocumentsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -19399,7 +19405,7 @@ end;
 
 
 
-Procedure TOrderDocumentsListResponse.SetorderDocuments(AIndex : Integer; const AValue : TOrderDocumentsListResponseTypeorderDocumentsArray); 
+Procedure TOrderDocumentsListResponse.SetorderDocuments(AIndex : Integer; const AValue : TOrderDocumentsListResponseTypeorderDocumentsArray);
 
 begin
   If (ForderDocuments=AValue) then exit;
@@ -19410,7 +19416,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOrderDocumentsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOrderDocumentsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -19429,7 +19435,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOrdersListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -19439,7 +19445,7 @@ end;
 
 
 
-Procedure TOrdersListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TOrdersListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -19449,7 +19455,7 @@ end;
 
 
 
-Procedure TOrdersListResponse.Setorders(AIndex : Integer; const AValue : TOrdersListResponseTypeordersArray); 
+Procedure TOrdersListResponse.Setorders(AIndex : Integer; const AValue : TOrdersListResponseTypeordersArray);
 
 begin
   If (Forders=AValue) then exit;
@@ -19460,7 +19466,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOrdersListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOrdersListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -19479,7 +19485,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPathToConversionReportCompatibleFields.SetconversionDimensions(AIndex : Integer; const AValue : TPathToConversionReportCompatibleFieldsTypeconversionDimensionsArray); 
+Procedure TPathToConversionReportCompatibleFields.SetconversionDimensions(AIndex : Integer; const AValue : TPathToConversionReportCompatibleFieldsTypeconversionDimensionsArray);
 
 begin
   If (FconversionDimensions=AValue) then exit;
@@ -19489,7 +19495,7 @@ end;
 
 
 
-Procedure TPathToConversionReportCompatibleFields.SetcustomFloodlightVariables(AIndex : Integer; const AValue : TPathToConversionReportCompatibleFieldsTypecustomFloodlightVariablesArray); 
+Procedure TPathToConversionReportCompatibleFields.SetcustomFloodlightVariables(AIndex : Integer; const AValue : TPathToConversionReportCompatibleFieldsTypecustomFloodlightVariablesArray);
 
 begin
   If (FcustomFloodlightVariables=AValue) then exit;
@@ -19499,7 +19505,7 @@ end;
 
 
 
-Procedure TPathToConversionReportCompatibleFields.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TPathToConversionReportCompatibleFields.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -19509,7 +19515,7 @@ end;
 
 
 
-Procedure TPathToConversionReportCompatibleFields.Setmetrics(AIndex : Integer; const AValue : TPathToConversionReportCompatibleFieldsTypemetricsArray); 
+Procedure TPathToConversionReportCompatibleFields.Setmetrics(AIndex : Integer; const AValue : TPathToConversionReportCompatibleFieldsTypemetricsArray);
 
 begin
   If (Fmetrics=AValue) then exit;
@@ -19519,7 +19525,7 @@ end;
 
 
 
-Procedure TPathToConversionReportCompatibleFields.SetperInteractionDimensions(AIndex : Integer; const AValue : TPathToConversionReportCompatibleFieldsTypeperInteractionDimensionsArray); 
+Procedure TPathToConversionReportCompatibleFields.SetperInteractionDimensions(AIndex : Integer; const AValue : TPathToConversionReportCompatibleFieldsTypeperInteractionDimensionsArray);
 
 begin
   If (FperInteractionDimensions=AValue) then exit;
@@ -19530,7 +19536,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TPathToConversionReportCompatibleFields.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TPathToConversionReportCompatibleFields.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -19552,7 +19558,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPlacement.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TPlacement.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -19562,7 +19568,7 @@ end;
 
 
 
-Procedure TPlacement.SetadvertiserId(AIndex : Integer; const AValue : String); 
+Procedure TPlacement.SetadvertiserId(AIndex : Integer; const AValue : String);
 
 begin
   If (FadvertiserId=AValue) then exit;
@@ -19572,7 +19578,7 @@ end;
 
 
 
-Procedure TPlacement.SetadvertiserIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TPlacement.SetadvertiserIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FadvertiserIdDimensionValue=AValue) then exit;
@@ -19582,7 +19588,7 @@ end;
 
 
 
-Procedure TPlacement.Setarchived(AIndex : Integer; const AValue : boolean); 
+Procedure TPlacement.Setarchived(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Farchived=AValue) then exit;
@@ -19592,7 +19598,7 @@ end;
 
 
 
-Procedure TPlacement.SetcampaignId(AIndex : Integer; const AValue : String); 
+Procedure TPlacement.SetcampaignId(AIndex : Integer; const AValue : String);
 
 begin
   If (FcampaignId=AValue) then exit;
@@ -19602,7 +19608,7 @@ end;
 
 
 
-Procedure TPlacement.SetcampaignIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TPlacement.SetcampaignIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FcampaignIdDimensionValue=AValue) then exit;
@@ -19612,7 +19618,7 @@ end;
 
 
 
-Procedure TPlacement.Setcomment(AIndex : Integer; const AValue : String); 
+Procedure TPlacement.Setcomment(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcomment=AValue) then exit;
@@ -19622,7 +19628,7 @@ end;
 
 
 
-Procedure TPlacement.Setcompatibility(AIndex : Integer; const AValue : String); 
+Procedure TPlacement.Setcompatibility(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcompatibility=AValue) then exit;
@@ -19632,7 +19638,7 @@ end;
 
 
 
-Procedure TPlacement.SetcontentCategoryId(AIndex : Integer; const AValue : String); 
+Procedure TPlacement.SetcontentCategoryId(AIndex : Integer; const AValue : String);
 
 begin
   If (FcontentCategoryId=AValue) then exit;
@@ -19642,7 +19648,7 @@ end;
 
 
 
-Procedure TPlacement.SetcreateInfo(AIndex : Integer; const AValue : TLastModifiedInfo); 
+Procedure TPlacement.SetcreateInfo(AIndex : Integer; const AValue : TLastModifiedInfo);
 
 begin
   If (FcreateInfo=AValue) then exit;
@@ -19652,7 +19658,7 @@ end;
 
 
 
-Procedure TPlacement.SetdirectorySiteId(AIndex : Integer; const AValue : String); 
+Procedure TPlacement.SetdirectorySiteId(AIndex : Integer; const AValue : String);
 
 begin
   If (FdirectorySiteId=AValue) then exit;
@@ -19662,7 +19668,7 @@ end;
 
 
 
-Procedure TPlacement.SetdirectorySiteIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TPlacement.SetdirectorySiteIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FdirectorySiteIdDimensionValue=AValue) then exit;
@@ -19672,7 +19678,7 @@ end;
 
 
 
-Procedure TPlacement.SetexternalId(AIndex : Integer; const AValue : String); 
+Procedure TPlacement.SetexternalId(AIndex : Integer; const AValue : String);
 
 begin
   If (FexternalId=AValue) then exit;
@@ -19682,7 +19688,7 @@ end;
 
 
 
-Procedure TPlacement.Setid(AIndex : Integer; const AValue : String); 
+Procedure TPlacement.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -19692,7 +19698,7 @@ end;
 
 
 
-Procedure TPlacement.SetidDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TPlacement.SetidDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FidDimensionValue=AValue) then exit;
@@ -19702,7 +19708,7 @@ end;
 
 
 
-Procedure TPlacement.SetkeyName(AIndex : Integer; const AValue : String); 
+Procedure TPlacement.SetkeyName(AIndex : Integer; const AValue : String);
 
 begin
   If (FkeyName=AValue) then exit;
@@ -19712,7 +19718,7 @@ end;
 
 
 
-Procedure TPlacement.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TPlacement.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -19722,7 +19728,7 @@ end;
 
 
 
-Procedure TPlacement.SetlastModifiedInfo(AIndex : Integer; const AValue : TLastModifiedInfo); 
+Procedure TPlacement.SetlastModifiedInfo(AIndex : Integer; const AValue : TLastModifiedInfo);
 
 begin
   If (FlastModifiedInfo=AValue) then exit;
@@ -19732,7 +19738,7 @@ end;
 
 
 
-Procedure TPlacement.SetlookbackConfiguration(AIndex : Integer; const AValue : TLookbackConfiguration); 
+Procedure TPlacement.SetlookbackConfiguration(AIndex : Integer; const AValue : TLookbackConfiguration);
 
 begin
   If (FlookbackConfiguration=AValue) then exit;
@@ -19742,7 +19748,7 @@ end;
 
 
 
-Procedure TPlacement.Setname(AIndex : Integer; const AValue : String); 
+Procedure TPlacement.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -19752,7 +19758,7 @@ end;
 
 
 
-Procedure TPlacement.SetpaymentApproved(AIndex : Integer; const AValue : boolean); 
+Procedure TPlacement.SetpaymentApproved(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FpaymentApproved=AValue) then exit;
@@ -19762,7 +19768,7 @@ end;
 
 
 
-Procedure TPlacement.SetpaymentSource(AIndex : Integer; const AValue : String); 
+Procedure TPlacement.SetpaymentSource(AIndex : Integer; const AValue : String);
 
 begin
   If (FpaymentSource=AValue) then exit;
@@ -19772,7 +19778,7 @@ end;
 
 
 
-Procedure TPlacement.SetplacementGroupId(AIndex : Integer; const AValue : String); 
+Procedure TPlacement.SetplacementGroupId(AIndex : Integer; const AValue : String);
 
 begin
   If (FplacementGroupId=AValue) then exit;
@@ -19782,7 +19788,7 @@ end;
 
 
 
-Procedure TPlacement.SetplacementGroupIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TPlacement.SetplacementGroupIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FplacementGroupIdDimensionValue=AValue) then exit;
@@ -19792,7 +19798,7 @@ end;
 
 
 
-Procedure TPlacement.SetplacementStrategyId(AIndex : Integer; const AValue : String); 
+Procedure TPlacement.SetplacementStrategyId(AIndex : Integer; const AValue : String);
 
 begin
   If (FplacementStrategyId=AValue) then exit;
@@ -19802,7 +19808,7 @@ end;
 
 
 
-Procedure TPlacement.SetpricingSchedule(AIndex : Integer; const AValue : TPricingSchedule); 
+Procedure TPlacement.SetpricingSchedule(AIndex : Integer; const AValue : TPricingSchedule);
 
 begin
   If (FpricingSchedule=AValue) then exit;
@@ -19812,7 +19818,7 @@ end;
 
 
 
-Procedure TPlacement.Setprimary(AIndex : Integer; const AValue : boolean); 
+Procedure TPlacement.Setprimary(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fprimary=AValue) then exit;
@@ -19822,7 +19828,7 @@ end;
 
 
 
-Procedure TPlacement.SetpublisherUpdateInfo(AIndex : Integer; const AValue : TLastModifiedInfo); 
+Procedure TPlacement.SetpublisherUpdateInfo(AIndex : Integer; const AValue : TLastModifiedInfo);
 
 begin
   If (FpublisherUpdateInfo=AValue) then exit;
@@ -19832,7 +19838,7 @@ end;
 
 
 
-Procedure TPlacement.SetsiteId(AIndex : Integer; const AValue : String); 
+Procedure TPlacement.SetsiteId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsiteId=AValue) then exit;
@@ -19842,7 +19848,7 @@ end;
 
 
 
-Procedure TPlacement.SetsiteIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TPlacement.SetsiteIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FsiteIdDimensionValue=AValue) then exit;
@@ -19852,7 +19858,7 @@ end;
 
 
 
-Procedure TPlacement.Setsize(AIndex : Integer; const AValue : TSize); 
+Procedure TPlacement.Setsize(AIndex : Integer; const AValue : TSize);
 
 begin
   If (Fsize=AValue) then exit;
@@ -19862,7 +19868,7 @@ end;
 
 
 
-Procedure TPlacement.SetsslRequired(AIndex : Integer; const AValue : boolean); 
+Procedure TPlacement.SetsslRequired(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FsslRequired=AValue) then exit;
@@ -19872,7 +19878,7 @@ end;
 
 
 
-Procedure TPlacement.Setstatus(AIndex : Integer; const AValue : String); 
+Procedure TPlacement.Setstatus(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -19882,7 +19888,7 @@ end;
 
 
 
-Procedure TPlacement.SetsubaccountId(AIndex : Integer; const AValue : String); 
+Procedure TPlacement.SetsubaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsubaccountId=AValue) then exit;
@@ -19892,7 +19898,7 @@ end;
 
 
 
-Procedure TPlacement.SettagFormats(AIndex : Integer; const AValue : TStringArray); 
+Procedure TPlacement.SettagFormats(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FtagFormats=AValue) then exit;
@@ -19902,7 +19908,7 @@ end;
 
 
 
-Procedure TPlacement.SettagSetting(AIndex : Integer; const AValue : TTagSetting); 
+Procedure TPlacement.SettagSetting(AIndex : Integer; const AValue : TTagSetting);
 
 begin
   If (FtagSetting=AValue) then exit;
@@ -19913,7 +19919,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TPlacement.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TPlacement.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -19932,7 +19938,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPlacementAssignment.Setactive(AIndex : Integer; const AValue : boolean); 
+Procedure TPlacementAssignment.Setactive(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Factive=AValue) then exit;
@@ -19942,7 +19948,7 @@ end;
 
 
 
-Procedure TPlacementAssignment.SetplacementId(AIndex : Integer; const AValue : String); 
+Procedure TPlacementAssignment.SetplacementId(AIndex : Integer; const AValue : String);
 
 begin
   If (FplacementId=AValue) then exit;
@@ -19952,7 +19958,7 @@ end;
 
 
 
-Procedure TPlacementAssignment.SetplacementIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TPlacementAssignment.SetplacementIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FplacementIdDimensionValue=AValue) then exit;
@@ -19962,7 +19968,7 @@ end;
 
 
 
-Procedure TPlacementAssignment.SetsslRequired(AIndex : Integer; const AValue : boolean); 
+Procedure TPlacementAssignment.SetsslRequired(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FsslRequired=AValue) then exit;
@@ -19979,7 +19985,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPlacementGroup.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TPlacementGroup.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -19989,7 +19995,7 @@ end;
 
 
 
-Procedure TPlacementGroup.SetadvertiserId(AIndex : Integer; const AValue : String); 
+Procedure TPlacementGroup.SetadvertiserId(AIndex : Integer; const AValue : String);
 
 begin
   If (FadvertiserId=AValue) then exit;
@@ -19999,7 +20005,7 @@ end;
 
 
 
-Procedure TPlacementGroup.SetadvertiserIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TPlacementGroup.SetadvertiserIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FadvertiserIdDimensionValue=AValue) then exit;
@@ -20009,7 +20015,7 @@ end;
 
 
 
-Procedure TPlacementGroup.Setarchived(AIndex : Integer; const AValue : boolean); 
+Procedure TPlacementGroup.Setarchived(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Farchived=AValue) then exit;
@@ -20019,7 +20025,7 @@ end;
 
 
 
-Procedure TPlacementGroup.SetcampaignId(AIndex : Integer; const AValue : String); 
+Procedure TPlacementGroup.SetcampaignId(AIndex : Integer; const AValue : String);
 
 begin
   If (FcampaignId=AValue) then exit;
@@ -20029,7 +20035,7 @@ end;
 
 
 
-Procedure TPlacementGroup.SetcampaignIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TPlacementGroup.SetcampaignIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FcampaignIdDimensionValue=AValue) then exit;
@@ -20039,7 +20045,7 @@ end;
 
 
 
-Procedure TPlacementGroup.SetchildPlacementIds(AIndex : Integer; const AValue : TStringArray); 
+Procedure TPlacementGroup.SetchildPlacementIds(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FchildPlacementIds=AValue) then exit;
@@ -20049,7 +20055,7 @@ end;
 
 
 
-Procedure TPlacementGroup.Setcomment(AIndex : Integer; const AValue : String); 
+Procedure TPlacementGroup.Setcomment(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcomment=AValue) then exit;
@@ -20059,7 +20065,7 @@ end;
 
 
 
-Procedure TPlacementGroup.SetcontentCategoryId(AIndex : Integer; const AValue : String); 
+Procedure TPlacementGroup.SetcontentCategoryId(AIndex : Integer; const AValue : String);
 
 begin
   If (FcontentCategoryId=AValue) then exit;
@@ -20069,7 +20075,7 @@ end;
 
 
 
-Procedure TPlacementGroup.SetcreateInfo(AIndex : Integer; const AValue : TLastModifiedInfo); 
+Procedure TPlacementGroup.SetcreateInfo(AIndex : Integer; const AValue : TLastModifiedInfo);
 
 begin
   If (FcreateInfo=AValue) then exit;
@@ -20079,7 +20085,7 @@ end;
 
 
 
-Procedure TPlacementGroup.SetdirectorySiteId(AIndex : Integer; const AValue : String); 
+Procedure TPlacementGroup.SetdirectorySiteId(AIndex : Integer; const AValue : String);
 
 begin
   If (FdirectorySiteId=AValue) then exit;
@@ -20089,7 +20095,7 @@ end;
 
 
 
-Procedure TPlacementGroup.SetdirectorySiteIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TPlacementGroup.SetdirectorySiteIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FdirectorySiteIdDimensionValue=AValue) then exit;
@@ -20099,7 +20105,7 @@ end;
 
 
 
-Procedure TPlacementGroup.SetexternalId(AIndex : Integer; const AValue : String); 
+Procedure TPlacementGroup.SetexternalId(AIndex : Integer; const AValue : String);
 
 begin
   If (FexternalId=AValue) then exit;
@@ -20109,7 +20115,7 @@ end;
 
 
 
-Procedure TPlacementGroup.Setid(AIndex : Integer; const AValue : String); 
+Procedure TPlacementGroup.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -20119,7 +20125,7 @@ end;
 
 
 
-Procedure TPlacementGroup.SetidDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TPlacementGroup.SetidDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FidDimensionValue=AValue) then exit;
@@ -20129,7 +20135,7 @@ end;
 
 
 
-Procedure TPlacementGroup.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TPlacementGroup.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -20139,7 +20145,7 @@ end;
 
 
 
-Procedure TPlacementGroup.SetlastModifiedInfo(AIndex : Integer; const AValue : TLastModifiedInfo); 
+Procedure TPlacementGroup.SetlastModifiedInfo(AIndex : Integer; const AValue : TLastModifiedInfo);
 
 begin
   If (FlastModifiedInfo=AValue) then exit;
@@ -20149,7 +20155,7 @@ end;
 
 
 
-Procedure TPlacementGroup.Setname(AIndex : Integer; const AValue : String); 
+Procedure TPlacementGroup.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -20159,7 +20165,7 @@ end;
 
 
 
-Procedure TPlacementGroup.SetplacementGroupType(AIndex : Integer; const AValue : String); 
+Procedure TPlacementGroup.SetplacementGroupType(AIndex : Integer; const AValue : String);
 
 begin
   If (FplacementGroupType=AValue) then exit;
@@ -20169,7 +20175,7 @@ end;
 
 
 
-Procedure TPlacementGroup.SetplacementStrategyId(AIndex : Integer; const AValue : String); 
+Procedure TPlacementGroup.SetplacementStrategyId(AIndex : Integer; const AValue : String);
 
 begin
   If (FplacementStrategyId=AValue) then exit;
@@ -20179,7 +20185,7 @@ end;
 
 
 
-Procedure TPlacementGroup.SetpricingSchedule(AIndex : Integer; const AValue : TPricingSchedule); 
+Procedure TPlacementGroup.SetpricingSchedule(AIndex : Integer; const AValue : TPricingSchedule);
 
 begin
   If (FpricingSchedule=AValue) then exit;
@@ -20189,7 +20195,7 @@ end;
 
 
 
-Procedure TPlacementGroup.SetprimaryPlacementId(AIndex : Integer; const AValue : String); 
+Procedure TPlacementGroup.SetprimaryPlacementId(AIndex : Integer; const AValue : String);
 
 begin
   If (FprimaryPlacementId=AValue) then exit;
@@ -20199,7 +20205,7 @@ end;
 
 
 
-Procedure TPlacementGroup.SetprimaryPlacementIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TPlacementGroup.SetprimaryPlacementIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FprimaryPlacementIdDimensionValue=AValue) then exit;
@@ -20209,7 +20215,7 @@ end;
 
 
 
-Procedure TPlacementGroup.SetsiteId(AIndex : Integer; const AValue : String); 
+Procedure TPlacementGroup.SetsiteId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsiteId=AValue) then exit;
@@ -20219,7 +20225,7 @@ end;
 
 
 
-Procedure TPlacementGroup.SetsiteIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TPlacementGroup.SetsiteIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FsiteIdDimensionValue=AValue) then exit;
@@ -20229,7 +20235,7 @@ end;
 
 
 
-Procedure TPlacementGroup.SetsubaccountId(AIndex : Integer; const AValue : String); 
+Procedure TPlacementGroup.SetsubaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsubaccountId=AValue) then exit;
@@ -20240,7 +20246,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TPlacementGroup.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TPlacementGroup.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -20259,7 +20265,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPlacementGroupsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TPlacementGroupsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -20269,7 +20275,7 @@ end;
 
 
 
-Procedure TPlacementGroupsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TPlacementGroupsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -20279,7 +20285,7 @@ end;
 
 
 
-Procedure TPlacementGroupsListResponse.SetplacementGroups(AIndex : Integer; const AValue : TPlacementGroupsListResponseTypeplacementGroupsArray); 
+Procedure TPlacementGroupsListResponse.SetplacementGroups(AIndex : Integer; const AValue : TPlacementGroupsListResponseTypeplacementGroupsArray);
 
 begin
   If (FplacementGroups=AValue) then exit;
@@ -20290,7 +20296,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TPlacementGroupsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TPlacementGroupsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -20309,7 +20315,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPlacementStrategiesListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TPlacementStrategiesListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -20319,7 +20325,7 @@ end;
 
 
 
-Procedure TPlacementStrategiesListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TPlacementStrategiesListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -20329,7 +20335,7 @@ end;
 
 
 
-Procedure TPlacementStrategiesListResponse.SetplacementStrategies(AIndex : Integer; const AValue : TPlacementStrategiesListResponseTypeplacementStrategiesArray); 
+Procedure TPlacementStrategiesListResponse.SetplacementStrategies(AIndex : Integer; const AValue : TPlacementStrategiesListResponseTypeplacementStrategiesArray);
 
 begin
   If (FplacementStrategies=AValue) then exit;
@@ -20340,7 +20346,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TPlacementStrategiesListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TPlacementStrategiesListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -20359,7 +20365,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPlacementStrategy.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TPlacementStrategy.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -20369,7 +20375,7 @@ end;
 
 
 
-Procedure TPlacementStrategy.Setid(AIndex : Integer; const AValue : String); 
+Procedure TPlacementStrategy.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -20379,7 +20385,7 @@ end;
 
 
 
-Procedure TPlacementStrategy.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TPlacementStrategy.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -20389,7 +20395,7 @@ end;
 
 
 
-Procedure TPlacementStrategy.Setname(AIndex : Integer; const AValue : String); 
+Procedure TPlacementStrategy.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -20406,7 +20412,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPlacementTag.SetplacementId(AIndex : Integer; const AValue : String); 
+Procedure TPlacementTag.SetplacementId(AIndex : Integer; const AValue : String);
 
 begin
   If (FplacementId=AValue) then exit;
@@ -20416,7 +20422,7 @@ end;
 
 
 
-Procedure TPlacementTag.SettagDatas(AIndex : Integer; const AValue : TPlacementTagTypetagDatasArray); 
+Procedure TPlacementTag.SettagDatas(AIndex : Integer; const AValue : TPlacementTagTypetagDatasArray);
 
 begin
   If (FtagDatas=AValue) then exit;
@@ -20427,7 +20433,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TPlacementTag.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TPlacementTag.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -20446,7 +20452,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPlacementsGenerateTagsResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TPlacementsGenerateTagsResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -20456,7 +20462,7 @@ end;
 
 
 
-Procedure TPlacementsGenerateTagsResponse.SetplacementTags(AIndex : Integer; const AValue : TPlacementsGenerateTagsResponseTypeplacementTagsArray); 
+Procedure TPlacementsGenerateTagsResponse.SetplacementTags(AIndex : Integer; const AValue : TPlacementsGenerateTagsResponseTypeplacementTagsArray);
 
 begin
   If (FplacementTags=AValue) then exit;
@@ -20467,7 +20473,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TPlacementsGenerateTagsResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TPlacementsGenerateTagsResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -20486,7 +20492,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPlacementsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TPlacementsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -20496,7 +20502,7 @@ end;
 
 
 
-Procedure TPlacementsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TPlacementsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -20506,7 +20512,7 @@ end;
 
 
 
-Procedure TPlacementsListResponse.Setplacements(AIndex : Integer; const AValue : TPlacementsListResponseTypeplacementsArray); 
+Procedure TPlacementsListResponse.Setplacements(AIndex : Integer; const AValue : TPlacementsListResponseTypeplacementsArray);
 
 begin
   If (Fplacements=AValue) then exit;
@@ -20517,7 +20523,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TPlacementsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TPlacementsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -20536,7 +20542,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPlatformType.Setid(AIndex : Integer; const AValue : String); 
+Procedure TPlatformType.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -20546,7 +20552,7 @@ end;
 
 
 
-Procedure TPlatformType.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TPlatformType.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -20556,7 +20562,7 @@ end;
 
 
 
-Procedure TPlatformType.Setname(AIndex : Integer; const AValue : String); 
+Procedure TPlatformType.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -20573,7 +20579,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPlatformTypesListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TPlatformTypesListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -20583,7 +20589,7 @@ end;
 
 
 
-Procedure TPlatformTypesListResponse.SetplatformTypes(AIndex : Integer; const AValue : TPlatformTypesListResponseTypeplatformTypesArray); 
+Procedure TPlatformTypesListResponse.SetplatformTypes(AIndex : Integer; const AValue : TPlatformTypesListResponseTypeplatformTypesArray);
 
 begin
   If (FplatformTypes=AValue) then exit;
@@ -20594,7 +20600,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TPlatformTypesListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TPlatformTypesListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -20613,7 +20619,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPopupWindowProperties.Setdimension(AIndex : Integer; const AValue : TSize); 
+Procedure TPopupWindowProperties.Setdimension(AIndex : Integer; const AValue : TSize);
 
 begin
   If (Fdimension=AValue) then exit;
@@ -20623,7 +20629,7 @@ end;
 
 
 
-Procedure TPopupWindowProperties.Setoffset(AIndex : Integer; const AValue : TOffsetPosition); 
+Procedure TPopupWindowProperties.Setoffset(AIndex : Integer; const AValue : TOffsetPosition);
 
 begin
   If (Foffset=AValue) then exit;
@@ -20633,7 +20639,7 @@ end;
 
 
 
-Procedure TPopupWindowProperties.SetpositionType(AIndex : Integer; const AValue : String); 
+Procedure TPopupWindowProperties.SetpositionType(AIndex : Integer; const AValue : String);
 
 begin
   If (FpositionType=AValue) then exit;
@@ -20643,7 +20649,7 @@ end;
 
 
 
-Procedure TPopupWindowProperties.SetshowAddressBar(AIndex : Integer; const AValue : boolean); 
+Procedure TPopupWindowProperties.SetshowAddressBar(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FshowAddressBar=AValue) then exit;
@@ -20653,7 +20659,7 @@ end;
 
 
 
-Procedure TPopupWindowProperties.SetshowMenuBar(AIndex : Integer; const AValue : boolean); 
+Procedure TPopupWindowProperties.SetshowMenuBar(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FshowMenuBar=AValue) then exit;
@@ -20663,7 +20669,7 @@ end;
 
 
 
-Procedure TPopupWindowProperties.SetshowScrollBar(AIndex : Integer; const AValue : boolean); 
+Procedure TPopupWindowProperties.SetshowScrollBar(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FshowScrollBar=AValue) then exit;
@@ -20673,7 +20679,7 @@ end;
 
 
 
-Procedure TPopupWindowProperties.SetshowStatusBar(AIndex : Integer; const AValue : boolean); 
+Procedure TPopupWindowProperties.SetshowStatusBar(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FshowStatusBar=AValue) then exit;
@@ -20683,7 +20689,7 @@ end;
 
 
 
-Procedure TPopupWindowProperties.SetshowToolBar(AIndex : Integer; const AValue : boolean); 
+Procedure TPopupWindowProperties.SetshowToolBar(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FshowToolBar=AValue) then exit;
@@ -20693,7 +20699,7 @@ end;
 
 
 
-Procedure TPopupWindowProperties.Settitle(AIndex : Integer; const AValue : String); 
+Procedure TPopupWindowProperties.Settitle(AIndex : Integer; const AValue : String);
 
 begin
   If (Ftitle=AValue) then exit;
@@ -20710,7 +20716,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPostalCode.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TPostalCode.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -20720,7 +20726,7 @@ end;
 
 
 
-Procedure TPostalCode.SetcountryCode(AIndex : Integer; const AValue : String); 
+Procedure TPostalCode.SetcountryCode(AIndex : Integer; const AValue : String);
 
 begin
   If (FcountryCode=AValue) then exit;
@@ -20730,7 +20736,7 @@ end;
 
 
 
-Procedure TPostalCode.SetcountryDartId(AIndex : Integer; const AValue : String); 
+Procedure TPostalCode.SetcountryDartId(AIndex : Integer; const AValue : String);
 
 begin
   If (FcountryDartId=AValue) then exit;
@@ -20740,7 +20746,7 @@ end;
 
 
 
-Procedure TPostalCode.Setid(AIndex : Integer; const AValue : String); 
+Procedure TPostalCode.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -20750,7 +20756,7 @@ end;
 
 
 
-Procedure TPostalCode.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TPostalCode.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -20767,7 +20773,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPostalCodesListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TPostalCodesListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -20777,7 +20783,7 @@ end;
 
 
 
-Procedure TPostalCodesListResponse.SetpostalCodes(AIndex : Integer; const AValue : TPostalCodesListResponseTypepostalCodesArray); 
+Procedure TPostalCodesListResponse.SetpostalCodes(AIndex : Integer; const AValue : TPostalCodesListResponseTypepostalCodesArray);
 
 begin
   If (FpostalCodes=AValue) then exit;
@@ -20788,7 +20794,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TPostalCodesListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TPostalCodesListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -20807,7 +20813,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPricing.SetcapCostType(AIndex : Integer; const AValue : String); 
+Procedure TPricing.SetcapCostType(AIndex : Integer; const AValue : String);
 
 begin
   If (FcapCostType=AValue) then exit;
@@ -20817,7 +20823,7 @@ end;
 
 
 
-Procedure TPricing.SetendDate(AIndex : Integer; const AValue : TDate); 
+Procedure TPricing.SetendDate(AIndex : Integer; const AValue : TDate);
 
 begin
   If (FendDate=AValue) then exit;
@@ -20827,7 +20833,7 @@ end;
 
 
 
-Procedure TPricing.Setflights(AIndex : Integer; const AValue : TPricingTypeflightsArray); 
+Procedure TPricing.Setflights(AIndex : Integer; const AValue : TPricingTypeflightsArray);
 
 begin
   If (Fflights=AValue) then exit;
@@ -20837,7 +20843,7 @@ end;
 
 
 
-Procedure TPricing.SetgroupType(AIndex : Integer; const AValue : String); 
+Procedure TPricing.SetgroupType(AIndex : Integer; const AValue : String);
 
 begin
   If (FgroupType=AValue) then exit;
@@ -20847,7 +20853,7 @@ end;
 
 
 
-Procedure TPricing.SetpricingType(AIndex : Integer; const AValue : String); 
+Procedure TPricing.SetpricingType(AIndex : Integer; const AValue : String);
 
 begin
   If (FpricingType=AValue) then exit;
@@ -20857,7 +20863,7 @@ end;
 
 
 
-Procedure TPricing.SetstartDate(AIndex : Integer; const AValue : TDate); 
+Procedure TPricing.SetstartDate(AIndex : Integer; const AValue : TDate);
 
 begin
   If (FstartDate=AValue) then exit;
@@ -20868,7 +20874,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TPricing.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TPricing.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -20887,7 +20893,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPricingSchedule.SetcapCostOption(AIndex : Integer; const AValue : String); 
+Procedure TPricingSchedule.SetcapCostOption(AIndex : Integer; const AValue : String);
 
 begin
   If (FcapCostOption=AValue) then exit;
@@ -20897,7 +20903,7 @@ end;
 
 
 
-Procedure TPricingSchedule.SetdisregardOverdelivery(AIndex : Integer; const AValue : boolean); 
+Procedure TPricingSchedule.SetdisregardOverdelivery(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FdisregardOverdelivery=AValue) then exit;
@@ -20907,7 +20913,7 @@ end;
 
 
 
-Procedure TPricingSchedule.SetendDate(AIndex : Integer; const AValue : TDate); 
+Procedure TPricingSchedule.SetendDate(AIndex : Integer; const AValue : TDate);
 
 begin
   If (FendDate=AValue) then exit;
@@ -20917,7 +20923,7 @@ end;
 
 
 
-Procedure TPricingSchedule.Setflighted(AIndex : Integer; const AValue : boolean); 
+Procedure TPricingSchedule.Setflighted(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fflighted=AValue) then exit;
@@ -20927,7 +20933,7 @@ end;
 
 
 
-Procedure TPricingSchedule.SetfloodlightActivityId(AIndex : Integer; const AValue : String); 
+Procedure TPricingSchedule.SetfloodlightActivityId(AIndex : Integer; const AValue : String);
 
 begin
   If (FfloodlightActivityId=AValue) then exit;
@@ -20937,7 +20943,7 @@ end;
 
 
 
-Procedure TPricingSchedule.SetpricingPeriods(AIndex : Integer; const AValue : TPricingScheduleTypepricingPeriodsArray); 
+Procedure TPricingSchedule.SetpricingPeriods(AIndex : Integer; const AValue : TPricingScheduleTypepricingPeriodsArray);
 
 begin
   If (FpricingPeriods=AValue) then exit;
@@ -20947,7 +20953,7 @@ end;
 
 
 
-Procedure TPricingSchedule.SetpricingType(AIndex : Integer; const AValue : String); 
+Procedure TPricingSchedule.SetpricingType(AIndex : Integer; const AValue : String);
 
 begin
   If (FpricingType=AValue) then exit;
@@ -20957,7 +20963,7 @@ end;
 
 
 
-Procedure TPricingSchedule.SetstartDate(AIndex : Integer; const AValue : TDate); 
+Procedure TPricingSchedule.SetstartDate(AIndex : Integer; const AValue : TDate);
 
 begin
   If (FstartDate=AValue) then exit;
@@ -20967,7 +20973,7 @@ end;
 
 
 
-Procedure TPricingSchedule.SettestingStartDate(AIndex : Integer; const AValue : TDate); 
+Procedure TPricingSchedule.SettestingStartDate(AIndex : Integer; const AValue : TDate);
 
 begin
   If (FtestingStartDate=AValue) then exit;
@@ -20978,7 +20984,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TPricingSchedule.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TPricingSchedule.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -20997,7 +21003,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPricingSchedulePricingPeriod.SetendDate(AIndex : Integer; const AValue : TDate); 
+Procedure TPricingSchedulePricingPeriod.SetendDate(AIndex : Integer; const AValue : TDate);
 
 begin
   If (FendDate=AValue) then exit;
@@ -21007,7 +21013,7 @@ end;
 
 
 
-Procedure TPricingSchedulePricingPeriod.SetpricingComment(AIndex : Integer; const AValue : String); 
+Procedure TPricingSchedulePricingPeriod.SetpricingComment(AIndex : Integer; const AValue : String);
 
 begin
   If (FpricingComment=AValue) then exit;
@@ -21017,7 +21023,7 @@ end;
 
 
 
-Procedure TPricingSchedulePricingPeriod.SetrateOrCostNanos(AIndex : Integer; const AValue : String); 
+Procedure TPricingSchedulePricingPeriod.SetrateOrCostNanos(AIndex : Integer; const AValue : String);
 
 begin
   If (FrateOrCostNanos=AValue) then exit;
@@ -21027,7 +21033,7 @@ end;
 
 
 
-Procedure TPricingSchedulePricingPeriod.SetstartDate(AIndex : Integer; const AValue : TDate); 
+Procedure TPricingSchedulePricingPeriod.SetstartDate(AIndex : Integer; const AValue : TDate);
 
 begin
   If (FstartDate=AValue) then exit;
@@ -21037,7 +21043,7 @@ end;
 
 
 
-Procedure TPricingSchedulePricingPeriod.Setunits(AIndex : Integer; const AValue : String); 
+Procedure TPricingSchedulePricingPeriod.Setunits(AIndex : Integer; const AValue : String);
 
 begin
   If (Funits=AValue) then exit;
@@ -21054,7 +21060,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TProject.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TProject.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -21064,7 +21070,7 @@ end;
 
 
 
-Procedure TProject.SetadvertiserId(AIndex : Integer; const AValue : String); 
+Procedure TProject.SetadvertiserId(AIndex : Integer; const AValue : String);
 
 begin
   If (FadvertiserId=AValue) then exit;
@@ -21074,7 +21080,7 @@ end;
 
 
 
-Procedure TProject.SetaudienceAgeGroup(AIndex : Integer; const AValue : String); 
+Procedure TProject.SetaudienceAgeGroup(AIndex : Integer; const AValue : String);
 
 begin
   If (FaudienceAgeGroup=AValue) then exit;
@@ -21084,7 +21090,7 @@ end;
 
 
 
-Procedure TProject.SetaudienceGender(AIndex : Integer; const AValue : String); 
+Procedure TProject.SetaudienceGender(AIndex : Integer; const AValue : String);
 
 begin
   If (FaudienceGender=AValue) then exit;
@@ -21094,7 +21100,7 @@ end;
 
 
 
-Procedure TProject.Setbudget(AIndex : Integer; const AValue : String); 
+Procedure TProject.Setbudget(AIndex : Integer; const AValue : String);
 
 begin
   If (Fbudget=AValue) then exit;
@@ -21104,7 +21110,7 @@ end;
 
 
 
-Procedure TProject.SetclientBillingCode(AIndex : Integer; const AValue : String); 
+Procedure TProject.SetclientBillingCode(AIndex : Integer; const AValue : String);
 
 begin
   If (FclientBillingCode=AValue) then exit;
@@ -21114,7 +21120,7 @@ end;
 
 
 
-Procedure TProject.SetclientName(AIndex : Integer; const AValue : String); 
+Procedure TProject.SetclientName(AIndex : Integer; const AValue : String);
 
 begin
   If (FclientName=AValue) then exit;
@@ -21124,7 +21130,7 @@ end;
 
 
 
-Procedure TProject.SetendDate(AIndex : Integer; const AValue : TDate); 
+Procedure TProject.SetendDate(AIndex : Integer; const AValue : TDate);
 
 begin
   If (FendDate=AValue) then exit;
@@ -21134,7 +21140,7 @@ end;
 
 
 
-Procedure TProject.Setid(AIndex : Integer; const AValue : String); 
+Procedure TProject.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -21144,7 +21150,7 @@ end;
 
 
 
-Procedure TProject.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TProject.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -21154,7 +21160,7 @@ end;
 
 
 
-Procedure TProject.SetlastModifiedInfo(AIndex : Integer; const AValue : TLastModifiedInfo); 
+Procedure TProject.SetlastModifiedInfo(AIndex : Integer; const AValue : TLastModifiedInfo);
 
 begin
   If (FlastModifiedInfo=AValue) then exit;
@@ -21164,7 +21170,7 @@ end;
 
 
 
-Procedure TProject.Setname(AIndex : Integer; const AValue : String); 
+Procedure TProject.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -21174,7 +21180,7 @@ end;
 
 
 
-Procedure TProject.Setoverview(AIndex : Integer; const AValue : String); 
+Procedure TProject.Setoverview(AIndex : Integer; const AValue : String);
 
 begin
   If (Foverview=AValue) then exit;
@@ -21184,7 +21190,7 @@ end;
 
 
 
-Procedure TProject.SetstartDate(AIndex : Integer; const AValue : TDate); 
+Procedure TProject.SetstartDate(AIndex : Integer; const AValue : TDate);
 
 begin
   If (FstartDate=AValue) then exit;
@@ -21194,7 +21200,7 @@ end;
 
 
 
-Procedure TProject.SetsubaccountId(AIndex : Integer; const AValue : String); 
+Procedure TProject.SetsubaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsubaccountId=AValue) then exit;
@@ -21204,7 +21210,7 @@ end;
 
 
 
-Procedure TProject.SettargetClicks(AIndex : Integer; const AValue : String); 
+Procedure TProject.SettargetClicks(AIndex : Integer; const AValue : String);
 
 begin
   If (FtargetClicks=AValue) then exit;
@@ -21214,7 +21220,7 @@ end;
 
 
 
-Procedure TProject.SettargetConversions(AIndex : Integer; const AValue : String); 
+Procedure TProject.SettargetConversions(AIndex : Integer; const AValue : String);
 
 begin
   If (FtargetConversions=AValue) then exit;
@@ -21224,7 +21230,7 @@ end;
 
 
 
-Procedure TProject.SettargetCpaNanos(AIndex : Integer; const AValue : String); 
+Procedure TProject.SettargetCpaNanos(AIndex : Integer; const AValue : String);
 
 begin
   If (FtargetCpaNanos=AValue) then exit;
@@ -21234,7 +21240,7 @@ end;
 
 
 
-Procedure TProject.SettargetCpcNanos(AIndex : Integer; const AValue : String); 
+Procedure TProject.SettargetCpcNanos(AIndex : Integer; const AValue : String);
 
 begin
   If (FtargetCpcNanos=AValue) then exit;
@@ -21244,7 +21250,7 @@ end;
 
 
 
-Procedure TProject.SettargetCpmNanos(AIndex : Integer; const AValue : String); 
+Procedure TProject.SettargetCpmNanos(AIndex : Integer; const AValue : String);
 
 begin
   If (FtargetCpmNanos=AValue) then exit;
@@ -21254,7 +21260,7 @@ end;
 
 
 
-Procedure TProject.SettargetImpressions(AIndex : Integer; const AValue : String); 
+Procedure TProject.SettargetImpressions(AIndex : Integer; const AValue : String);
 
 begin
   If (FtargetImpressions=AValue) then exit;
@@ -21271,7 +21277,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TProjectsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TProjectsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -21281,7 +21287,7 @@ end;
 
 
 
-Procedure TProjectsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TProjectsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -21291,7 +21297,7 @@ end;
 
 
 
-Procedure TProjectsListResponse.Setprojects(AIndex : Integer; const AValue : TProjectsListResponseTypeprojectsArray); 
+Procedure TProjectsListResponse.Setprojects(AIndex : Integer; const AValue : TProjectsListResponseTypeprojectsArray);
 
 begin
   If (Fprojects=AValue) then exit;
@@ -21302,7 +21308,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TProjectsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TProjectsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -21321,7 +21327,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TReachReportCompatibleFields.SetdimensionFilters(AIndex : Integer; const AValue : TReachReportCompatibleFieldsTypedimensionFiltersArray); 
+Procedure TReachReportCompatibleFields.SetdimensionFilters(AIndex : Integer; const AValue : TReachReportCompatibleFieldsTypedimensionFiltersArray);
 
 begin
   If (FdimensionFilters=AValue) then exit;
@@ -21331,7 +21337,7 @@ end;
 
 
 
-Procedure TReachReportCompatibleFields.Setdimensions(AIndex : Integer; const AValue : TReachReportCompatibleFieldsTypedimensionsArray); 
+Procedure TReachReportCompatibleFields.Setdimensions(AIndex : Integer; const AValue : TReachReportCompatibleFieldsTypedimensionsArray);
 
 begin
   If (Fdimensions=AValue) then exit;
@@ -21341,7 +21347,7 @@ end;
 
 
 
-Procedure TReachReportCompatibleFields.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TReachReportCompatibleFields.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -21351,7 +21357,7 @@ end;
 
 
 
-Procedure TReachReportCompatibleFields.Setmetrics(AIndex : Integer; const AValue : TReachReportCompatibleFieldsTypemetricsArray); 
+Procedure TReachReportCompatibleFields.Setmetrics(AIndex : Integer; const AValue : TReachReportCompatibleFieldsTypemetricsArray);
 
 begin
   If (Fmetrics=AValue) then exit;
@@ -21361,7 +21367,7 @@ end;
 
 
 
-Procedure TReachReportCompatibleFields.SetpivotedActivityMetrics(AIndex : Integer; const AValue : TReachReportCompatibleFieldsTypepivotedActivityMetricsArray); 
+Procedure TReachReportCompatibleFields.SetpivotedActivityMetrics(AIndex : Integer; const AValue : TReachReportCompatibleFieldsTypepivotedActivityMetricsArray);
 
 begin
   If (FpivotedActivityMetrics=AValue) then exit;
@@ -21371,7 +21377,7 @@ end;
 
 
 
-Procedure TReachReportCompatibleFields.SetreachByFrequencyMetrics(AIndex : Integer; const AValue : TReachReportCompatibleFieldsTypereachByFrequencyMetricsArray); 
+Procedure TReachReportCompatibleFields.SetreachByFrequencyMetrics(AIndex : Integer; const AValue : TReachReportCompatibleFieldsTypereachByFrequencyMetricsArray);
 
 begin
   If (FreachByFrequencyMetrics=AValue) then exit;
@@ -21382,7 +21388,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TReachReportCompatibleFields.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TReachReportCompatibleFields.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -21405,7 +21411,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TRecipient.SetdeliveryType(AIndex : Integer; const AValue : String); 
+Procedure TRecipient.SetdeliveryType(AIndex : Integer; const AValue : String);
 
 begin
   If (FdeliveryType=AValue) then exit;
@@ -21415,7 +21421,7 @@ end;
 
 
 
-Procedure TRecipient.Setemail(AIndex : Integer; const AValue : String); 
+Procedure TRecipient.Setemail(AIndex : Integer; const AValue : String);
 
 begin
   If (Femail=AValue) then exit;
@@ -21425,7 +21431,7 @@ end;
 
 
 
-Procedure TRecipient.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TRecipient.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -21442,7 +21448,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TRegion.SetcountryCode(AIndex : Integer; const AValue : String); 
+Procedure TRegion.SetcountryCode(AIndex : Integer; const AValue : String);
 
 begin
   If (FcountryCode=AValue) then exit;
@@ -21452,7 +21458,7 @@ end;
 
 
 
-Procedure TRegion.SetcountryDartId(AIndex : Integer; const AValue : String); 
+Procedure TRegion.SetcountryDartId(AIndex : Integer; const AValue : String);
 
 begin
   If (FcountryDartId=AValue) then exit;
@@ -21462,7 +21468,7 @@ end;
 
 
 
-Procedure TRegion.SetdartId(AIndex : Integer; const AValue : String); 
+Procedure TRegion.SetdartId(AIndex : Integer; const AValue : String);
 
 begin
   If (FdartId=AValue) then exit;
@@ -21472,7 +21478,7 @@ end;
 
 
 
-Procedure TRegion.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TRegion.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -21482,7 +21488,7 @@ end;
 
 
 
-Procedure TRegion.Setname(AIndex : Integer; const AValue : String); 
+Procedure TRegion.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -21492,7 +21498,7 @@ end;
 
 
 
-Procedure TRegion.SetregionCode(AIndex : Integer; const AValue : String); 
+Procedure TRegion.SetregionCode(AIndex : Integer; const AValue : String);
 
 begin
   If (FregionCode=AValue) then exit;
@@ -21509,7 +21515,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TRegionsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TRegionsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -21519,7 +21525,7 @@ end;
 
 
 
-Procedure TRegionsListResponse.Setregions(AIndex : Integer; const AValue : TRegionsListResponseTyperegionsArray); 
+Procedure TRegionsListResponse.Setregions(AIndex : Integer; const AValue : TRegionsListResponseTyperegionsArray);
 
 begin
   If (Fregions=AValue) then exit;
@@ -21530,7 +21536,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TRegionsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TRegionsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -21549,7 +21555,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TRemarketingList.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TRemarketingList.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -21559,7 +21565,7 @@ end;
 
 
 
-Procedure TRemarketingList.Setactive(AIndex : Integer; const AValue : boolean); 
+Procedure TRemarketingList.Setactive(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Factive=AValue) then exit;
@@ -21569,7 +21575,7 @@ end;
 
 
 
-Procedure TRemarketingList.SetadvertiserId(AIndex : Integer; const AValue : String); 
+Procedure TRemarketingList.SetadvertiserId(AIndex : Integer; const AValue : String);
 
 begin
   If (FadvertiserId=AValue) then exit;
@@ -21579,7 +21585,7 @@ end;
 
 
 
-Procedure TRemarketingList.SetadvertiserIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TRemarketingList.SetadvertiserIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FadvertiserIdDimensionValue=AValue) then exit;
@@ -21589,7 +21595,7 @@ end;
 
 
 
-Procedure TRemarketingList.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TRemarketingList.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -21599,7 +21605,7 @@ end;
 
 
 
-Procedure TRemarketingList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TRemarketingList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -21609,7 +21615,7 @@ end;
 
 
 
-Procedure TRemarketingList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TRemarketingList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -21619,7 +21625,7 @@ end;
 
 
 
-Procedure TRemarketingList.SetlifeSpan(AIndex : Integer; const AValue : String); 
+Procedure TRemarketingList.SetlifeSpan(AIndex : Integer; const AValue : String);
 
 begin
   If (FlifeSpan=AValue) then exit;
@@ -21629,7 +21635,7 @@ end;
 
 
 
-Procedure TRemarketingList.SetlistPopulationRule(AIndex : Integer; const AValue : TListPopulationRule); 
+Procedure TRemarketingList.SetlistPopulationRule(AIndex : Integer; const AValue : TListPopulationRule);
 
 begin
   If (FlistPopulationRule=AValue) then exit;
@@ -21639,7 +21645,7 @@ end;
 
 
 
-Procedure TRemarketingList.SetlistSize(AIndex : Integer; const AValue : String); 
+Procedure TRemarketingList.SetlistSize(AIndex : Integer; const AValue : String);
 
 begin
   If (FlistSize=AValue) then exit;
@@ -21649,7 +21655,7 @@ end;
 
 
 
-Procedure TRemarketingList.SetlistSource(AIndex : Integer; const AValue : String); 
+Procedure TRemarketingList.SetlistSource(AIndex : Integer; const AValue : String);
 
 begin
   If (FlistSource=AValue) then exit;
@@ -21659,7 +21665,7 @@ end;
 
 
 
-Procedure TRemarketingList.Setname(AIndex : Integer; const AValue : String); 
+Procedure TRemarketingList.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -21669,7 +21675,7 @@ end;
 
 
 
-Procedure TRemarketingList.SetsubaccountId(AIndex : Integer; const AValue : String); 
+Procedure TRemarketingList.SetsubaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsubaccountId=AValue) then exit;
@@ -21686,7 +21692,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TRemarketingListShare.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TRemarketingListShare.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -21696,7 +21702,7 @@ end;
 
 
 
-Procedure TRemarketingListShare.SetremarketingListId(AIndex : Integer; const AValue : String); 
+Procedure TRemarketingListShare.SetremarketingListId(AIndex : Integer; const AValue : String);
 
 begin
   If (FremarketingListId=AValue) then exit;
@@ -21706,7 +21712,7 @@ end;
 
 
 
-Procedure TRemarketingListShare.SetsharedAccountIds(AIndex : Integer; const AValue : TStringArray); 
+Procedure TRemarketingListShare.SetsharedAccountIds(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FsharedAccountIds=AValue) then exit;
@@ -21716,7 +21722,7 @@ end;
 
 
 
-Procedure TRemarketingListShare.SetsharedAdvertiserIds(AIndex : Integer; const AValue : TStringArray); 
+Procedure TRemarketingListShare.SetsharedAdvertiserIds(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FsharedAdvertiserIds=AValue) then exit;
@@ -21727,7 +21733,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TRemarketingListShare.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TRemarketingListShare.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -21747,7 +21753,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TRemarketingListsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TRemarketingListsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -21757,7 +21763,7 @@ end;
 
 
 
-Procedure TRemarketingListsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TRemarketingListsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -21767,7 +21773,7 @@ end;
 
 
 
-Procedure TRemarketingListsListResponse.SetremarketingLists(AIndex : Integer; const AValue : TRemarketingListsListResponseTyperemarketingListsArray); 
+Procedure TRemarketingListsListResponse.SetremarketingLists(AIndex : Integer; const AValue : TRemarketingListsListResponseTyperemarketingListsArray);
 
 begin
   If (FremarketingLists=AValue) then exit;
@@ -21778,7 +21784,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TRemarketingListsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TRemarketingListsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -21797,7 +21803,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TReportTypecriteria.Setactivities(AIndex : Integer; const AValue : TActivities); 
+Procedure TReportTypecriteria.Setactivities(AIndex : Integer; const AValue : TActivities);
 
 begin
   If (Factivities=AValue) then exit;
@@ -21807,7 +21813,7 @@ end;
 
 
 
-Procedure TReportTypecriteria.SetcustomRichMediaEvents(AIndex : Integer; const AValue : TCustomRichMediaEvents); 
+Procedure TReportTypecriteria.SetcustomRichMediaEvents(AIndex : Integer; const AValue : TCustomRichMediaEvents);
 
 begin
   If (FcustomRichMediaEvents=AValue) then exit;
@@ -21817,7 +21823,7 @@ end;
 
 
 
-Procedure TReportTypecriteria.SetdateRange(AIndex : Integer; const AValue : TDateRange); 
+Procedure TReportTypecriteria.SetdateRange(AIndex : Integer; const AValue : TDateRange);
 
 begin
   If (FdateRange=AValue) then exit;
@@ -21827,7 +21833,7 @@ end;
 
 
 
-Procedure TReportTypecriteria.SetdimensionFilters(AIndex : Integer; const AValue : TReportTypecriteriaTypedimensionFiltersArray); 
+Procedure TReportTypecriteria.SetdimensionFilters(AIndex : Integer; const AValue : TReportTypecriteriaTypedimensionFiltersArray);
 
 begin
   If (FdimensionFilters=AValue) then exit;
@@ -21837,7 +21843,7 @@ end;
 
 
 
-Procedure TReportTypecriteria.Setdimensions(AIndex : Integer; const AValue : TReportTypecriteriaTypedimensionsArray); 
+Procedure TReportTypecriteria.Setdimensions(AIndex : Integer; const AValue : TReportTypecriteriaTypedimensionsArray);
 
 begin
   If (Fdimensions=AValue) then exit;
@@ -21847,7 +21853,7 @@ end;
 
 
 
-Procedure TReportTypecriteria.SetmetricNames(AIndex : Integer; const AValue : TStringArray); 
+Procedure TReportTypecriteria.SetmetricNames(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FmetricNames=AValue) then exit;
@@ -21858,7 +21864,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TReportTypecriteria.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TReportTypecriteria.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -21879,7 +21885,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TReportTypecrossDimensionReachCriteria.Setbreakdown(AIndex : Integer; const AValue : TReportTypecrossDimensionReachCriteriaTypebreakdownArray); 
+Procedure TReportTypecrossDimensionReachCriteria.Setbreakdown(AIndex : Integer; const AValue : TReportTypecrossDimensionReachCriteriaTypebreakdownArray);
 
 begin
   If (Fbreakdown=AValue) then exit;
@@ -21889,7 +21895,7 @@ end;
 
 
 
-Procedure TReportTypecrossDimensionReachCriteria.SetdateRange(AIndex : Integer; const AValue : TDateRange); 
+Procedure TReportTypecrossDimensionReachCriteria.SetdateRange(AIndex : Integer; const AValue : TDateRange);
 
 begin
   If (FdateRange=AValue) then exit;
@@ -21899,7 +21905,7 @@ end;
 
 
 
-Procedure TReportTypecrossDimensionReachCriteria.Setdimension(AIndex : Integer; const AValue : String); 
+Procedure TReportTypecrossDimensionReachCriteria.Setdimension(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdimension=AValue) then exit;
@@ -21909,7 +21915,7 @@ end;
 
 
 
-Procedure TReportTypecrossDimensionReachCriteria.SetdimensionFilters(AIndex : Integer; const AValue : TReportTypecrossDimensionReachCriteriaTypedimensionFiltersArray); 
+Procedure TReportTypecrossDimensionReachCriteria.SetdimensionFilters(AIndex : Integer; const AValue : TReportTypecrossDimensionReachCriteriaTypedimensionFiltersArray);
 
 begin
   If (FdimensionFilters=AValue) then exit;
@@ -21919,7 +21925,7 @@ end;
 
 
 
-Procedure TReportTypecrossDimensionReachCriteria.SetmetricNames(AIndex : Integer; const AValue : TStringArray); 
+Procedure TReportTypecrossDimensionReachCriteria.SetmetricNames(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FmetricNames=AValue) then exit;
@@ -21929,7 +21935,7 @@ end;
 
 
 
-Procedure TReportTypecrossDimensionReachCriteria.SetoverlapMetricNames(AIndex : Integer; const AValue : TStringArray); 
+Procedure TReportTypecrossDimensionReachCriteria.SetoverlapMetricNames(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FoverlapMetricNames=AValue) then exit;
@@ -21939,7 +21945,7 @@ end;
 
 
 
-Procedure TReportTypecrossDimensionReachCriteria.Setpivoted(AIndex : Integer; const AValue : boolean); 
+Procedure TReportTypecrossDimensionReachCriteria.Setpivoted(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fpivoted=AValue) then exit;
@@ -21950,7 +21956,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TReportTypecrossDimensionReachCriteria.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TReportTypecrossDimensionReachCriteria.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -21972,7 +21978,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TReportTypedelivery.SetemailOwner(AIndex : Integer; const AValue : boolean); 
+Procedure TReportTypedelivery.SetemailOwner(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FemailOwner=AValue) then exit;
@@ -21982,7 +21988,7 @@ end;
 
 
 
-Procedure TReportTypedelivery.SetemailOwnerDeliveryType(AIndex : Integer; const AValue : String); 
+Procedure TReportTypedelivery.SetemailOwnerDeliveryType(AIndex : Integer; const AValue : String);
 
 begin
   If (FemailOwnerDeliveryType=AValue) then exit;
@@ -21992,7 +21998,7 @@ end;
 
 
 
-Procedure TReportTypedelivery.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TReportTypedelivery.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -22002,7 +22008,7 @@ end;
 
 
 
-Procedure TReportTypedelivery.Setrecipients(AIndex : Integer; const AValue : TReportTypedeliveryTyperecipientsArray); 
+Procedure TReportTypedelivery.Setrecipients(AIndex : Integer; const AValue : TReportTypedeliveryTyperecipientsArray);
 
 begin
   If (Frecipients=AValue) then exit;
@@ -22013,7 +22019,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TReportTypedelivery.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TReportTypedelivery.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -22032,7 +22038,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TReportTypefloodlightCriteriaTypereportProperties.SetincludeAttributedIPConversions(AIndex : Integer; const AValue : boolean); 
+Procedure TReportTypefloodlightCriteriaTypereportProperties.SetincludeAttributedIPConversions(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FincludeAttributedIPConversions=AValue) then exit;
@@ -22042,7 +22048,7 @@ end;
 
 
 
-Procedure TReportTypefloodlightCriteriaTypereportProperties.SetincludeUnattributedCookieConversions(AIndex : Integer; const AValue : boolean); 
+Procedure TReportTypefloodlightCriteriaTypereportProperties.SetincludeUnattributedCookieConversions(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FincludeUnattributedCookieConversions=AValue) then exit;
@@ -22052,7 +22058,7 @@ end;
 
 
 
-Procedure TReportTypefloodlightCriteriaTypereportProperties.SetincludeUnattributedIPConversions(AIndex : Integer; const AValue : boolean); 
+Procedure TReportTypefloodlightCriteriaTypereportProperties.SetincludeUnattributedIPConversions(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FincludeUnattributedIPConversions=AValue) then exit;
@@ -22069,7 +22075,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TReportTypefloodlightCriteria.SetcustomRichMediaEvents(AIndex : Integer; const AValue : TReportTypefloodlightCriteriaTypecustomRichMediaEventsArray); 
+Procedure TReportTypefloodlightCriteria.SetcustomRichMediaEvents(AIndex : Integer; const AValue : TReportTypefloodlightCriteriaTypecustomRichMediaEventsArray);
 
 begin
   If (FcustomRichMediaEvents=AValue) then exit;
@@ -22079,7 +22085,7 @@ end;
 
 
 
-Procedure TReportTypefloodlightCriteria.SetdateRange(AIndex : Integer; const AValue : TDateRange); 
+Procedure TReportTypefloodlightCriteria.SetdateRange(AIndex : Integer; const AValue : TDateRange);
 
 begin
   If (FdateRange=AValue) then exit;
@@ -22089,7 +22095,7 @@ end;
 
 
 
-Procedure TReportTypefloodlightCriteria.SetdimensionFilters(AIndex : Integer; const AValue : TReportTypefloodlightCriteriaTypedimensionFiltersArray); 
+Procedure TReportTypefloodlightCriteria.SetdimensionFilters(AIndex : Integer; const AValue : TReportTypefloodlightCriteriaTypedimensionFiltersArray);
 
 begin
   If (FdimensionFilters=AValue) then exit;
@@ -22099,7 +22105,7 @@ end;
 
 
 
-Procedure TReportTypefloodlightCriteria.Setdimensions(AIndex : Integer; const AValue : TReportTypefloodlightCriteriaTypedimensionsArray); 
+Procedure TReportTypefloodlightCriteria.Setdimensions(AIndex : Integer; const AValue : TReportTypefloodlightCriteriaTypedimensionsArray);
 
 begin
   If (Fdimensions=AValue) then exit;
@@ -22109,7 +22115,7 @@ end;
 
 
 
-Procedure TReportTypefloodlightCriteria.SetfloodlightConfigId(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TReportTypefloodlightCriteria.SetfloodlightConfigId(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FfloodlightConfigId=AValue) then exit;
@@ -22119,7 +22125,7 @@ end;
 
 
 
-Procedure TReportTypefloodlightCriteria.SetmetricNames(AIndex : Integer; const AValue : TStringArray); 
+Procedure TReportTypefloodlightCriteria.SetmetricNames(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FmetricNames=AValue) then exit;
@@ -22129,7 +22135,7 @@ end;
 
 
 
-Procedure TReportTypefloodlightCriteria.SetreportProperties(AIndex : Integer; const AValue : TReportTypefloodlightCriteriaTypereportProperties); 
+Procedure TReportTypefloodlightCriteria.SetreportProperties(AIndex : Integer; const AValue : TReportTypefloodlightCriteriaTypereportProperties);
 
 begin
   If (FreportProperties=AValue) then exit;
@@ -22140,7 +22146,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TReportTypefloodlightCriteria.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TReportTypefloodlightCriteria.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -22162,7 +22168,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TReportTypepathToConversionCriteriaTypereportProperties.SetclicksLookbackWindow(AIndex : Integer; const AValue : integer); 
+Procedure TReportTypepathToConversionCriteriaTypereportProperties.SetclicksLookbackWindow(AIndex : Integer; const AValue : integer);
 
 begin
   If (FclicksLookbackWindow=AValue) then exit;
@@ -22172,7 +22178,7 @@ end;
 
 
 
-Procedure TReportTypepathToConversionCriteriaTypereportProperties.SetimpressionsLookbackWindow(AIndex : Integer; const AValue : integer); 
+Procedure TReportTypepathToConversionCriteriaTypereportProperties.SetimpressionsLookbackWindow(AIndex : Integer; const AValue : integer);
 
 begin
   If (FimpressionsLookbackWindow=AValue) then exit;
@@ -22182,7 +22188,7 @@ end;
 
 
 
-Procedure TReportTypepathToConversionCriteriaTypereportProperties.SetincludeAttributedIPConversions(AIndex : Integer; const AValue : boolean); 
+Procedure TReportTypepathToConversionCriteriaTypereportProperties.SetincludeAttributedIPConversions(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FincludeAttributedIPConversions=AValue) then exit;
@@ -22192,7 +22198,7 @@ end;
 
 
 
-Procedure TReportTypepathToConversionCriteriaTypereportProperties.SetincludeUnattributedCookieConversions(AIndex : Integer; const AValue : boolean); 
+Procedure TReportTypepathToConversionCriteriaTypereportProperties.SetincludeUnattributedCookieConversions(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FincludeUnattributedCookieConversions=AValue) then exit;
@@ -22202,7 +22208,7 @@ end;
 
 
 
-Procedure TReportTypepathToConversionCriteriaTypereportProperties.SetincludeUnattributedIPConversions(AIndex : Integer; const AValue : boolean); 
+Procedure TReportTypepathToConversionCriteriaTypereportProperties.SetincludeUnattributedIPConversions(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FincludeUnattributedIPConversions=AValue) then exit;
@@ -22212,7 +22218,7 @@ end;
 
 
 
-Procedure TReportTypepathToConversionCriteriaTypereportProperties.SetmaximumClickInteractions(AIndex : Integer; const AValue : integer); 
+Procedure TReportTypepathToConversionCriteriaTypereportProperties.SetmaximumClickInteractions(AIndex : Integer; const AValue : integer);
 
 begin
   If (FmaximumClickInteractions=AValue) then exit;
@@ -22222,7 +22228,7 @@ end;
 
 
 
-Procedure TReportTypepathToConversionCriteriaTypereportProperties.SetmaximumImpressionInteractions(AIndex : Integer; const AValue : integer); 
+Procedure TReportTypepathToConversionCriteriaTypereportProperties.SetmaximumImpressionInteractions(AIndex : Integer; const AValue : integer);
 
 begin
   If (FmaximumImpressionInteractions=AValue) then exit;
@@ -22232,7 +22238,7 @@ end;
 
 
 
-Procedure TReportTypepathToConversionCriteriaTypereportProperties.SetmaximumInteractionGap(AIndex : Integer; const AValue : integer); 
+Procedure TReportTypepathToConversionCriteriaTypereportProperties.SetmaximumInteractionGap(AIndex : Integer; const AValue : integer);
 
 begin
   If (FmaximumInteractionGap=AValue) then exit;
@@ -22242,7 +22248,7 @@ end;
 
 
 
-Procedure TReportTypepathToConversionCriteriaTypereportProperties.SetpivotOnInteractionPath(AIndex : Integer; const AValue : boolean); 
+Procedure TReportTypepathToConversionCriteriaTypereportProperties.SetpivotOnInteractionPath(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FpivotOnInteractionPath=AValue) then exit;
@@ -22259,7 +22265,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TReportTypepathToConversionCriteria.SetactivityFilters(AIndex : Integer; const AValue : TReportTypepathToConversionCriteriaTypeactivityFiltersArray); 
+Procedure TReportTypepathToConversionCriteria.SetactivityFilters(AIndex : Integer; const AValue : TReportTypepathToConversionCriteriaTypeactivityFiltersArray);
 
 begin
   If (FactivityFilters=AValue) then exit;
@@ -22269,7 +22275,7 @@ end;
 
 
 
-Procedure TReportTypepathToConversionCriteria.SetconversionDimensions(AIndex : Integer; const AValue : TReportTypepathToConversionCriteriaTypeconversionDimensionsArray); 
+Procedure TReportTypepathToConversionCriteria.SetconversionDimensions(AIndex : Integer; const AValue : TReportTypepathToConversionCriteriaTypeconversionDimensionsArray);
 
 begin
   If (FconversionDimensions=AValue) then exit;
@@ -22279,7 +22285,7 @@ end;
 
 
 
-Procedure TReportTypepathToConversionCriteria.SetcustomFloodlightVariables(AIndex : Integer; const AValue : TReportTypepathToConversionCriteriaTypecustomFloodlightVariablesArray); 
+Procedure TReportTypepathToConversionCriteria.SetcustomFloodlightVariables(AIndex : Integer; const AValue : TReportTypepathToConversionCriteriaTypecustomFloodlightVariablesArray);
 
 begin
   If (FcustomFloodlightVariables=AValue) then exit;
@@ -22289,7 +22295,7 @@ end;
 
 
 
-Procedure TReportTypepathToConversionCriteria.SetcustomRichMediaEvents(AIndex : Integer; const AValue : TReportTypepathToConversionCriteriaTypecustomRichMediaEventsArray); 
+Procedure TReportTypepathToConversionCriteria.SetcustomRichMediaEvents(AIndex : Integer; const AValue : TReportTypepathToConversionCriteriaTypecustomRichMediaEventsArray);
 
 begin
   If (FcustomRichMediaEvents=AValue) then exit;
@@ -22299,7 +22305,7 @@ end;
 
 
 
-Procedure TReportTypepathToConversionCriteria.SetdateRange(AIndex : Integer; const AValue : TDateRange); 
+Procedure TReportTypepathToConversionCriteria.SetdateRange(AIndex : Integer; const AValue : TDateRange);
 
 begin
   If (FdateRange=AValue) then exit;
@@ -22309,7 +22315,7 @@ end;
 
 
 
-Procedure TReportTypepathToConversionCriteria.SetfloodlightConfigId(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TReportTypepathToConversionCriteria.SetfloodlightConfigId(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FfloodlightConfigId=AValue) then exit;
@@ -22319,7 +22325,7 @@ end;
 
 
 
-Procedure TReportTypepathToConversionCriteria.SetmetricNames(AIndex : Integer; const AValue : TStringArray); 
+Procedure TReportTypepathToConversionCriteria.SetmetricNames(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FmetricNames=AValue) then exit;
@@ -22329,7 +22335,7 @@ end;
 
 
 
-Procedure TReportTypepathToConversionCriteria.SetperInteractionDimensions(AIndex : Integer; const AValue : TReportTypepathToConversionCriteriaTypeperInteractionDimensionsArray); 
+Procedure TReportTypepathToConversionCriteria.SetperInteractionDimensions(AIndex : Integer; const AValue : TReportTypepathToConversionCriteriaTypeperInteractionDimensionsArray);
 
 begin
   If (FperInteractionDimensions=AValue) then exit;
@@ -22339,7 +22345,7 @@ end;
 
 
 
-Procedure TReportTypepathToConversionCriteria.SetreportProperties(AIndex : Integer; const AValue : TReportTypepathToConversionCriteriaTypereportProperties); 
+Procedure TReportTypepathToConversionCriteria.SetreportProperties(AIndex : Integer; const AValue : TReportTypepathToConversionCriteriaTypereportProperties);
 
 begin
   If (FreportProperties=AValue) then exit;
@@ -22350,7 +22356,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TReportTypepathToConversionCriteria.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TReportTypepathToConversionCriteria.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -22374,7 +22380,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TReportTypereachCriteria.Setactivities(AIndex : Integer; const AValue : TActivities); 
+Procedure TReportTypereachCriteria.Setactivities(AIndex : Integer; const AValue : TActivities);
 
 begin
   If (Factivities=AValue) then exit;
@@ -22384,7 +22390,7 @@ end;
 
 
 
-Procedure TReportTypereachCriteria.SetcustomRichMediaEvents(AIndex : Integer; const AValue : TCustomRichMediaEvents); 
+Procedure TReportTypereachCriteria.SetcustomRichMediaEvents(AIndex : Integer; const AValue : TCustomRichMediaEvents);
 
 begin
   If (FcustomRichMediaEvents=AValue) then exit;
@@ -22394,7 +22400,7 @@ end;
 
 
 
-Procedure TReportTypereachCriteria.SetdateRange(AIndex : Integer; const AValue : TDateRange); 
+Procedure TReportTypereachCriteria.SetdateRange(AIndex : Integer; const AValue : TDateRange);
 
 begin
   If (FdateRange=AValue) then exit;
@@ -22404,7 +22410,7 @@ end;
 
 
 
-Procedure TReportTypereachCriteria.SetdimensionFilters(AIndex : Integer; const AValue : TReportTypereachCriteriaTypedimensionFiltersArray); 
+Procedure TReportTypereachCriteria.SetdimensionFilters(AIndex : Integer; const AValue : TReportTypereachCriteriaTypedimensionFiltersArray);
 
 begin
   If (FdimensionFilters=AValue) then exit;
@@ -22414,7 +22420,7 @@ end;
 
 
 
-Procedure TReportTypereachCriteria.Setdimensions(AIndex : Integer; const AValue : TReportTypereachCriteriaTypedimensionsArray); 
+Procedure TReportTypereachCriteria.Setdimensions(AIndex : Integer; const AValue : TReportTypereachCriteriaTypedimensionsArray);
 
 begin
   If (Fdimensions=AValue) then exit;
@@ -22424,7 +22430,7 @@ end;
 
 
 
-Procedure TReportTypereachCriteria.SetenableAllDimensionCombinations(AIndex : Integer; const AValue : boolean); 
+Procedure TReportTypereachCriteria.SetenableAllDimensionCombinations(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FenableAllDimensionCombinations=AValue) then exit;
@@ -22434,7 +22440,7 @@ end;
 
 
 
-Procedure TReportTypereachCriteria.SetmetricNames(AIndex : Integer; const AValue : TStringArray); 
+Procedure TReportTypereachCriteria.SetmetricNames(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FmetricNames=AValue) then exit;
@@ -22444,7 +22450,7 @@ end;
 
 
 
-Procedure TReportTypereachCriteria.SetreachByFrequencyMetricNames(AIndex : Integer; const AValue : TStringArray); 
+Procedure TReportTypereachCriteria.SetreachByFrequencyMetricNames(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FreachByFrequencyMetricNames=AValue) then exit;
@@ -22455,7 +22461,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TReportTypereachCriteria.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TReportTypereachCriteria.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -22477,7 +22483,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TReportTypeschedule.Setactive(AIndex : Integer; const AValue : boolean); 
+Procedure TReportTypeschedule.Setactive(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Factive=AValue) then exit;
@@ -22487,7 +22493,7 @@ end;
 
 
 
-Procedure TReportTypeschedule.Setevery(AIndex : Integer; const AValue : integer); 
+Procedure TReportTypeschedule.Setevery(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fevery=AValue) then exit;
@@ -22497,7 +22503,7 @@ end;
 
 
 
-Procedure TReportTypeschedule.SetexpirationDate(AIndex : Integer; const AValue : TDate); 
+Procedure TReportTypeschedule.SetexpirationDate(AIndex : Integer; const AValue : TDate);
 
 begin
   If (FexpirationDate=AValue) then exit;
@@ -22507,7 +22513,7 @@ end;
 
 
 
-Procedure TReportTypeschedule.Setrepeats(AIndex : Integer; const AValue : String); 
+Procedure TReportTypeschedule.Setrepeats(AIndex : Integer; const AValue : String);
 
 begin
   If (Frepeats=AValue) then exit;
@@ -22517,7 +22523,7 @@ end;
 
 
 
-Procedure TReportTypeschedule.SetrepeatsOnWeekDays(AIndex : Integer; const AValue : TStringArray); 
+Procedure TReportTypeschedule.SetrepeatsOnWeekDays(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FrepeatsOnWeekDays=AValue) then exit;
@@ -22527,7 +22533,7 @@ end;
 
 
 
-Procedure TReportTypeschedule.SetrunsOnDayOfMonth(AIndex : Integer; const AValue : String); 
+Procedure TReportTypeschedule.SetrunsOnDayOfMonth(AIndex : Integer; const AValue : String);
 
 begin
   If (FrunsOnDayOfMonth=AValue) then exit;
@@ -22537,7 +22543,7 @@ end;
 
 
 
-Procedure TReportTypeschedule.SetstartDate(AIndex : Integer; const AValue : TDate); 
+Procedure TReportTypeschedule.SetstartDate(AIndex : Integer; const AValue : TDate);
 
 begin
   If (FstartDate=AValue) then exit;
@@ -22548,7 +22554,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TReportTypeschedule.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TReportTypeschedule.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -22567,7 +22573,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TReport.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TReport.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -22577,7 +22583,7 @@ end;
 
 
 
-Procedure TReport.Setcriteria(AIndex : Integer; const AValue : TReportTypecriteria); 
+Procedure TReport.Setcriteria(AIndex : Integer; const AValue : TReportTypecriteria);
 
 begin
   If (Fcriteria=AValue) then exit;
@@ -22587,7 +22593,7 @@ end;
 
 
 
-Procedure TReport.SetcrossDimensionReachCriteria(AIndex : Integer; const AValue : TReportTypecrossDimensionReachCriteria); 
+Procedure TReport.SetcrossDimensionReachCriteria(AIndex : Integer; const AValue : TReportTypecrossDimensionReachCriteria);
 
 begin
   If (FcrossDimensionReachCriteria=AValue) then exit;
@@ -22597,7 +22603,7 @@ end;
 
 
 
-Procedure TReport.Setdelivery(AIndex : Integer; const AValue : TReportTypedelivery); 
+Procedure TReport.Setdelivery(AIndex : Integer; const AValue : TReportTypedelivery);
 
 begin
   If (Fdelivery=AValue) then exit;
@@ -22607,7 +22613,7 @@ end;
 
 
 
-Procedure TReport.Setetag(AIndex : Integer; const AValue : String); 
+Procedure TReport.Setetag(AIndex : Integer; const AValue : String);
 
 begin
   If (Fetag=AValue) then exit;
@@ -22617,7 +22623,7 @@ end;
 
 
 
-Procedure TReport.SetfileName(AIndex : Integer; const AValue : String); 
+Procedure TReport.SetfileName(AIndex : Integer; const AValue : String);
 
 begin
   If (FfileName=AValue) then exit;
@@ -22627,7 +22633,7 @@ end;
 
 
 
-Procedure TReport.SetfloodlightCriteria(AIndex : Integer; const AValue : TReportTypefloodlightCriteria); 
+Procedure TReport.SetfloodlightCriteria(AIndex : Integer; const AValue : TReportTypefloodlightCriteria);
 
 begin
   If (FfloodlightCriteria=AValue) then exit;
@@ -22637,7 +22643,7 @@ end;
 
 
 
-Procedure TReport.Setformat(AIndex : Integer; const AValue : String); 
+Procedure TReport.Setformat(AIndex : Integer; const AValue : String);
 
 begin
   If (Fformat=AValue) then exit;
@@ -22647,7 +22653,7 @@ end;
 
 
 
-Procedure TReport.Setid(AIndex : Integer; const AValue : String); 
+Procedure TReport.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -22657,7 +22663,7 @@ end;
 
 
 
-Procedure TReport.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TReport.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -22667,7 +22673,7 @@ end;
 
 
 
-Procedure TReport.SetlastModifiedTime(AIndex : Integer; const AValue : String); 
+Procedure TReport.SetlastModifiedTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FlastModifiedTime=AValue) then exit;
@@ -22677,7 +22683,7 @@ end;
 
 
 
-Procedure TReport.Setname(AIndex : Integer; const AValue : String); 
+Procedure TReport.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -22687,7 +22693,7 @@ end;
 
 
 
-Procedure TReport.SetownerProfileId(AIndex : Integer; const AValue : String); 
+Procedure TReport.SetownerProfileId(AIndex : Integer; const AValue : String);
 
 begin
   If (FownerProfileId=AValue) then exit;
@@ -22697,7 +22703,7 @@ end;
 
 
 
-Procedure TReport.SetpathToConversionCriteria(AIndex : Integer; const AValue : TReportTypepathToConversionCriteria); 
+Procedure TReport.SetpathToConversionCriteria(AIndex : Integer; const AValue : TReportTypepathToConversionCriteria);
 
 begin
   If (FpathToConversionCriteria=AValue) then exit;
@@ -22707,7 +22713,7 @@ end;
 
 
 
-Procedure TReport.SetreachCriteria(AIndex : Integer; const AValue : TReportTypereachCriteria); 
+Procedure TReport.SetreachCriteria(AIndex : Integer; const AValue : TReportTypereachCriteria);
 
 begin
   If (FreachCriteria=AValue) then exit;
@@ -22717,7 +22723,7 @@ end;
 
 
 
-Procedure TReport.Setschedule(AIndex : Integer; const AValue : TReportTypeschedule); 
+Procedure TReport.Setschedule(AIndex : Integer; const AValue : TReportTypeschedule);
 
 begin
   If (Fschedule=AValue) then exit;
@@ -22727,7 +22733,7 @@ end;
 
 
 
-Procedure TReport.SetsubAccountId(AIndex : Integer; const AValue : String); 
+Procedure TReport.SetsubAccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsubAccountId=AValue) then exit;
@@ -22737,7 +22743,7 @@ end;
 
 
 
-Procedure TReport.Set_type(AIndex : Integer; const AValue : String); 
+Procedure TReport.Set_type(AIndex : Integer; const AValue : String);
 
 begin
   If (F_type=AValue) then exit;
@@ -22765,7 +22771,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TReportCompatibleFields.SetdimensionFilters(AIndex : Integer; const AValue : TReportCompatibleFieldsTypedimensionFiltersArray); 
+Procedure TReportCompatibleFields.SetdimensionFilters(AIndex : Integer; const AValue : TReportCompatibleFieldsTypedimensionFiltersArray);
 
 begin
   If (FdimensionFilters=AValue) then exit;
@@ -22775,7 +22781,7 @@ end;
 
 
 
-Procedure TReportCompatibleFields.Setdimensions(AIndex : Integer; const AValue : TReportCompatibleFieldsTypedimensionsArray); 
+Procedure TReportCompatibleFields.Setdimensions(AIndex : Integer; const AValue : TReportCompatibleFieldsTypedimensionsArray);
 
 begin
   If (Fdimensions=AValue) then exit;
@@ -22785,7 +22791,7 @@ end;
 
 
 
-Procedure TReportCompatibleFields.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TReportCompatibleFields.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -22795,7 +22801,7 @@ end;
 
 
 
-Procedure TReportCompatibleFields.Setmetrics(AIndex : Integer; const AValue : TReportCompatibleFieldsTypemetricsArray); 
+Procedure TReportCompatibleFields.Setmetrics(AIndex : Integer; const AValue : TReportCompatibleFieldsTypemetricsArray);
 
 begin
   If (Fmetrics=AValue) then exit;
@@ -22805,7 +22811,7 @@ end;
 
 
 
-Procedure TReportCompatibleFields.SetpivotedActivityMetrics(AIndex : Integer; const AValue : TReportCompatibleFieldsTypepivotedActivityMetricsArray); 
+Procedure TReportCompatibleFields.SetpivotedActivityMetrics(AIndex : Integer; const AValue : TReportCompatibleFieldsTypepivotedActivityMetricsArray);
 
 begin
   If (FpivotedActivityMetrics=AValue) then exit;
@@ -22816,7 +22822,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TReportCompatibleFields.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TReportCompatibleFields.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -22838,7 +22844,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TReportList.Setetag(AIndex : Integer; const AValue : String); 
+Procedure TReportList.Setetag(AIndex : Integer; const AValue : String);
 
 begin
   If (Fetag=AValue) then exit;
@@ -22848,7 +22854,7 @@ end;
 
 
 
-Procedure TReportList.Setitems(AIndex : Integer; const AValue : TReportListTypeitemsArray); 
+Procedure TReportList.Setitems(AIndex : Integer; const AValue : TReportListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -22858,7 +22864,7 @@ end;
 
 
 
-Procedure TReportList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TReportList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -22868,7 +22874,7 @@ end;
 
 
 
-Procedure TReportList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TReportList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -22879,7 +22885,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TReportList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TReportList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -22898,7 +22904,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TReportsConfiguration.SetexposureToConversionEnabled(AIndex : Integer; const AValue : boolean); 
+Procedure TReportsConfiguration.SetexposureToConversionEnabled(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FexposureToConversionEnabled=AValue) then exit;
@@ -22908,7 +22914,7 @@ end;
 
 
 
-Procedure TReportsConfiguration.SetlookbackConfiguration(AIndex : Integer; const AValue : TLookbackConfiguration); 
+Procedure TReportsConfiguration.SetlookbackConfiguration(AIndex : Integer; const AValue : TLookbackConfiguration);
 
 begin
   If (FlookbackConfiguration=AValue) then exit;
@@ -22918,7 +22924,7 @@ end;
 
 
 
-Procedure TReportsConfiguration.SetreportGenerationTimeZoneId(AIndex : Integer; const AValue : String); 
+Procedure TReportsConfiguration.SetreportGenerationTimeZoneId(AIndex : Integer; const AValue : String);
 
 begin
   If (FreportGenerationTimeZoneId=AValue) then exit;
@@ -22935,7 +22941,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TRichMediaExitOverride.SetcustomExitUrl(AIndex : Integer; const AValue : String); 
+Procedure TRichMediaExitOverride.SetcustomExitUrl(AIndex : Integer; const AValue : String);
 
 begin
   If (FcustomExitUrl=AValue) then exit;
@@ -22945,7 +22951,7 @@ end;
 
 
 
-Procedure TRichMediaExitOverride.SetexitId(AIndex : Integer; const AValue : String); 
+Procedure TRichMediaExitOverride.SetexitId(AIndex : Integer; const AValue : String);
 
 begin
   If (FexitId=AValue) then exit;
@@ -22955,7 +22961,7 @@ end;
 
 
 
-Procedure TRichMediaExitOverride.SetuseCustomExitUrl(AIndex : Integer; const AValue : boolean); 
+Procedure TRichMediaExitOverride.SetuseCustomExitUrl(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FuseCustomExitUrl=AValue) then exit;
@@ -22972,7 +22978,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSite.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TSite.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -22982,7 +22988,7 @@ end;
 
 
 
-Procedure TSite.Setapproved(AIndex : Integer; const AValue : boolean); 
+Procedure TSite.Setapproved(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fapproved=AValue) then exit;
@@ -22992,7 +22998,7 @@ end;
 
 
 
-Procedure TSite.SetdirectorySiteId(AIndex : Integer; const AValue : String); 
+Procedure TSite.SetdirectorySiteId(AIndex : Integer; const AValue : String);
 
 begin
   If (FdirectorySiteId=AValue) then exit;
@@ -23002,7 +23008,7 @@ end;
 
 
 
-Procedure TSite.SetdirectorySiteIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TSite.SetdirectorySiteIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FdirectorySiteIdDimensionValue=AValue) then exit;
@@ -23012,7 +23018,7 @@ end;
 
 
 
-Procedure TSite.Setid(AIndex : Integer; const AValue : String); 
+Procedure TSite.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -23022,7 +23028,7 @@ end;
 
 
 
-Procedure TSite.SetidDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TSite.SetidDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FidDimensionValue=AValue) then exit;
@@ -23032,7 +23038,7 @@ end;
 
 
 
-Procedure TSite.SetkeyName(AIndex : Integer; const AValue : String); 
+Procedure TSite.SetkeyName(AIndex : Integer; const AValue : String);
 
 begin
   If (FkeyName=AValue) then exit;
@@ -23042,7 +23048,7 @@ end;
 
 
 
-Procedure TSite.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TSite.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -23052,7 +23058,7 @@ end;
 
 
 
-Procedure TSite.Setname(AIndex : Integer; const AValue : String); 
+Procedure TSite.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -23062,7 +23068,7 @@ end;
 
 
 
-Procedure TSite.SetsiteContacts(AIndex : Integer; const AValue : TSiteTypesiteContactsArray); 
+Procedure TSite.SetsiteContacts(AIndex : Integer; const AValue : TSiteTypesiteContactsArray);
 
 begin
   If (FsiteContacts=AValue) then exit;
@@ -23072,7 +23078,7 @@ end;
 
 
 
-Procedure TSite.SetsiteSettings(AIndex : Integer; const AValue : TSiteSettings); 
+Procedure TSite.SetsiteSettings(AIndex : Integer; const AValue : TSiteSettings);
 
 begin
   If (FsiteSettings=AValue) then exit;
@@ -23082,7 +23088,7 @@ end;
 
 
 
-Procedure TSite.SetsubaccountId(AIndex : Integer; const AValue : String); 
+Procedure TSite.SetsubaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsubaccountId=AValue) then exit;
@@ -23093,7 +23099,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TSite.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TSite.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -23112,7 +23118,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSiteContact.Setaddress(AIndex : Integer; const AValue : String); 
+Procedure TSiteContact.Setaddress(AIndex : Integer; const AValue : String);
 
 begin
   If (Faddress=AValue) then exit;
@@ -23122,7 +23128,7 @@ end;
 
 
 
-Procedure TSiteContact.SetcontactType(AIndex : Integer; const AValue : String); 
+Procedure TSiteContact.SetcontactType(AIndex : Integer; const AValue : String);
 
 begin
   If (FcontactType=AValue) then exit;
@@ -23132,7 +23138,7 @@ end;
 
 
 
-Procedure TSiteContact.Setemail(AIndex : Integer; const AValue : String); 
+Procedure TSiteContact.Setemail(AIndex : Integer; const AValue : String);
 
 begin
   If (Femail=AValue) then exit;
@@ -23142,7 +23148,7 @@ end;
 
 
 
-Procedure TSiteContact.SetfirstName(AIndex : Integer; const AValue : String); 
+Procedure TSiteContact.SetfirstName(AIndex : Integer; const AValue : String);
 
 begin
   If (FfirstName=AValue) then exit;
@@ -23152,7 +23158,7 @@ end;
 
 
 
-Procedure TSiteContact.Setid(AIndex : Integer; const AValue : String); 
+Procedure TSiteContact.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -23162,7 +23168,7 @@ end;
 
 
 
-Procedure TSiteContact.SetlastName(AIndex : Integer; const AValue : String); 
+Procedure TSiteContact.SetlastName(AIndex : Integer; const AValue : String);
 
 begin
   If (FlastName=AValue) then exit;
@@ -23172,7 +23178,7 @@ end;
 
 
 
-Procedure TSiteContact.Setphone(AIndex : Integer; const AValue : String); 
+Procedure TSiteContact.Setphone(AIndex : Integer; const AValue : String);
 
 begin
   If (Fphone=AValue) then exit;
@@ -23182,7 +23188,7 @@ end;
 
 
 
-Procedure TSiteContact.Settitle(AIndex : Integer; const AValue : String); 
+Procedure TSiteContact.Settitle(AIndex : Integer; const AValue : String);
 
 begin
   If (Ftitle=AValue) then exit;
@@ -23199,7 +23205,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSiteSettings.SetactiveViewOptOut(AIndex : Integer; const AValue : boolean); 
+Procedure TSiteSettings.SetactiveViewOptOut(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FactiveViewOptOut=AValue) then exit;
@@ -23209,7 +23215,7 @@ end;
 
 
 
-Procedure TSiteSettings.SetcreativeSettings(AIndex : Integer; const AValue : TCreativeSettings); 
+Procedure TSiteSettings.SetcreativeSettings(AIndex : Integer; const AValue : TCreativeSettings);
 
 begin
   If (FcreativeSettings=AValue) then exit;
@@ -23219,7 +23225,7 @@ end;
 
 
 
-Procedure TSiteSettings.SetdisableBrandSafeAds(AIndex : Integer; const AValue : boolean); 
+Procedure TSiteSettings.SetdisableBrandSafeAds(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FdisableBrandSafeAds=AValue) then exit;
@@ -23229,7 +23235,7 @@ end;
 
 
 
-Procedure TSiteSettings.SetdisableNewCookie(AIndex : Integer; const AValue : boolean); 
+Procedure TSiteSettings.SetdisableNewCookie(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FdisableNewCookie=AValue) then exit;
@@ -23239,7 +23245,7 @@ end;
 
 
 
-Procedure TSiteSettings.SetlookbackConfiguration(AIndex : Integer; const AValue : TLookbackConfiguration); 
+Procedure TSiteSettings.SetlookbackConfiguration(AIndex : Integer; const AValue : TLookbackConfiguration);
 
 begin
   If (FlookbackConfiguration=AValue) then exit;
@@ -23249,7 +23255,7 @@ end;
 
 
 
-Procedure TSiteSettings.SettagSetting(AIndex : Integer; const AValue : TTagSetting); 
+Procedure TSiteSettings.SettagSetting(AIndex : Integer; const AValue : TTagSetting);
 
 begin
   If (FtagSetting=AValue) then exit;
@@ -23259,7 +23265,7 @@ end;
 
 
 
-Procedure TSiteSettings.SetvideoActiveViewOptOut(AIndex : Integer; const AValue : boolean); 
+Procedure TSiteSettings.SetvideoActiveViewOptOut(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FvideoActiveViewOptOut=AValue) then exit;
@@ -23276,7 +23282,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSitesListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TSitesListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -23286,7 +23292,7 @@ end;
 
 
 
-Procedure TSitesListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TSitesListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -23296,7 +23302,7 @@ end;
 
 
 
-Procedure TSitesListResponse.Setsites(AIndex : Integer; const AValue : TSitesListResponseTypesitesArray); 
+Procedure TSitesListResponse.Setsites(AIndex : Integer; const AValue : TSitesListResponseTypesitesArray);
 
 begin
   If (Fsites=AValue) then exit;
@@ -23307,7 +23313,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TSitesListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TSitesListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -23326,7 +23332,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSize.Setheight(AIndex : Integer; const AValue : integer); 
+Procedure TSize.Setheight(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fheight=AValue) then exit;
@@ -23336,7 +23342,7 @@ end;
 
 
 
-Procedure TSize.Setiab(AIndex : Integer; const AValue : boolean); 
+Procedure TSize.Setiab(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fiab=AValue) then exit;
@@ -23346,7 +23352,7 @@ end;
 
 
 
-Procedure TSize.Setid(AIndex : Integer; const AValue : String); 
+Procedure TSize.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -23356,7 +23362,7 @@ end;
 
 
 
-Procedure TSize.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TSize.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -23366,7 +23372,7 @@ end;
 
 
 
-Procedure TSize.Setwidth(AIndex : Integer; const AValue : integer); 
+Procedure TSize.Setwidth(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fwidth=AValue) then exit;
@@ -23383,7 +23389,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSizesListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TSizesListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -23393,7 +23399,7 @@ end;
 
 
 
-Procedure TSizesListResponse.Setsizes(AIndex : Integer; const AValue : TSizesListResponseTypesizesArray); 
+Procedure TSizesListResponse.Setsizes(AIndex : Integer; const AValue : TSizesListResponseTypesizesArray);
 
 begin
   If (Fsizes=AValue) then exit;
@@ -23404,7 +23410,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TSizesListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TSizesListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -23423,7 +23429,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSortedDimension.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TSortedDimension.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -23433,7 +23439,7 @@ end;
 
 
 
-Procedure TSortedDimension.Setname(AIndex : Integer; const AValue : String); 
+Procedure TSortedDimension.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -23443,7 +23449,7 @@ end;
 
 
 
-Procedure TSortedDimension.SetsortOrder(AIndex : Integer; const AValue : String); 
+Procedure TSortedDimension.SetsortOrder(AIndex : Integer; const AValue : String);
 
 begin
   If (FsortOrder=AValue) then exit;
@@ -23460,7 +23466,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSubaccount.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TSubaccount.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -23470,7 +23476,7 @@ end;
 
 
 
-Procedure TSubaccount.SetavailablePermissionIds(AIndex : Integer; const AValue : TStringArray); 
+Procedure TSubaccount.SetavailablePermissionIds(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FavailablePermissionIds=AValue) then exit;
@@ -23480,7 +23486,7 @@ end;
 
 
 
-Procedure TSubaccount.Setid(AIndex : Integer; const AValue : String); 
+Procedure TSubaccount.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -23490,7 +23496,7 @@ end;
 
 
 
-Procedure TSubaccount.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TSubaccount.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -23500,7 +23506,7 @@ end;
 
 
 
-Procedure TSubaccount.Setname(AIndex : Integer; const AValue : String); 
+Procedure TSubaccount.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -23511,7 +23517,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TSubaccount.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TSubaccount.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -23530,7 +23536,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSubaccountsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TSubaccountsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -23540,7 +23546,7 @@ end;
 
 
 
-Procedure TSubaccountsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TSubaccountsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -23550,7 +23556,7 @@ end;
 
 
 
-Procedure TSubaccountsListResponse.Setsubaccounts(AIndex : Integer; const AValue : TSubaccountsListResponseTypesubaccountsArray); 
+Procedure TSubaccountsListResponse.Setsubaccounts(AIndex : Integer; const AValue : TSubaccountsListResponseTypesubaccountsArray);
 
 begin
   If (Fsubaccounts=AValue) then exit;
@@ -23561,7 +23567,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TSubaccountsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TSubaccountsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -23580,7 +23586,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTagData.SetadId(AIndex : Integer; const AValue : String); 
+Procedure TTagData.SetadId(AIndex : Integer; const AValue : String);
 
 begin
   If (FadId=AValue) then exit;
@@ -23590,7 +23596,7 @@ end;
 
 
 
-Procedure TTagData.SetclickTag(AIndex : Integer; const AValue : String); 
+Procedure TTagData.SetclickTag(AIndex : Integer; const AValue : String);
 
 begin
   If (FclickTag=AValue) then exit;
@@ -23600,7 +23606,7 @@ end;
 
 
 
-Procedure TTagData.SetcreativeId(AIndex : Integer; const AValue : String); 
+Procedure TTagData.SetcreativeId(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreativeId=AValue) then exit;
@@ -23610,7 +23616,7 @@ end;
 
 
 
-Procedure TTagData.Setformat(AIndex : Integer; const AValue : String); 
+Procedure TTagData.Setformat(AIndex : Integer; const AValue : String);
 
 begin
   If (Fformat=AValue) then exit;
@@ -23620,7 +23626,7 @@ end;
 
 
 
-Procedure TTagData.SetimpressionTag(AIndex : Integer; const AValue : String); 
+Procedure TTagData.SetimpressionTag(AIndex : Integer; const AValue : String);
 
 begin
   If (FimpressionTag=AValue) then exit;
@@ -23637,7 +23643,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTagSetting.SetadditionalKeyValues(AIndex : Integer; const AValue : String); 
+Procedure TTagSetting.SetadditionalKeyValues(AIndex : Integer; const AValue : String);
 
 begin
   If (FadditionalKeyValues=AValue) then exit;
@@ -23647,7 +23653,7 @@ end;
 
 
 
-Procedure TTagSetting.SetincludeClickThroughUrls(AIndex : Integer; const AValue : boolean); 
+Procedure TTagSetting.SetincludeClickThroughUrls(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FincludeClickThroughUrls=AValue) then exit;
@@ -23657,7 +23663,7 @@ end;
 
 
 
-Procedure TTagSetting.SetincludeClickTracking(AIndex : Integer; const AValue : boolean); 
+Procedure TTagSetting.SetincludeClickTracking(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FincludeClickTracking=AValue) then exit;
@@ -23667,7 +23673,7 @@ end;
 
 
 
-Procedure TTagSetting.SetkeywordOption(AIndex : Integer; const AValue : String); 
+Procedure TTagSetting.SetkeywordOption(AIndex : Integer; const AValue : String);
 
 begin
   If (FkeywordOption=AValue) then exit;
@@ -23684,7 +23690,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTagSettings.SetdynamicTagEnabled(AIndex : Integer; const AValue : boolean); 
+Procedure TTagSettings.SetdynamicTagEnabled(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FdynamicTagEnabled=AValue) then exit;
@@ -23694,7 +23700,7 @@ end;
 
 
 
-Procedure TTagSettings.SetimageTagEnabled(AIndex : Integer; const AValue : boolean); 
+Procedure TTagSettings.SetimageTagEnabled(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FimageTagEnabled=AValue) then exit;
@@ -23711,7 +23717,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetWindow.SetcustomHtml(AIndex : Integer; const AValue : String); 
+Procedure TTargetWindow.SetcustomHtml(AIndex : Integer; const AValue : String);
 
 begin
   If (FcustomHtml=AValue) then exit;
@@ -23721,7 +23727,7 @@ end;
 
 
 
-Procedure TTargetWindow.SettargetWindowOption(AIndex : Integer; const AValue : String); 
+Procedure TTargetWindow.SettargetWindowOption(AIndex : Integer; const AValue : String);
 
 begin
   If (FtargetWindowOption=AValue) then exit;
@@ -23738,7 +23744,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetableRemarketingList.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TTargetableRemarketingList.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -23748,7 +23754,7 @@ end;
 
 
 
-Procedure TTargetableRemarketingList.Setactive(AIndex : Integer; const AValue : boolean); 
+Procedure TTargetableRemarketingList.Setactive(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Factive=AValue) then exit;
@@ -23758,7 +23764,7 @@ end;
 
 
 
-Procedure TTargetableRemarketingList.SetadvertiserId(AIndex : Integer; const AValue : String); 
+Procedure TTargetableRemarketingList.SetadvertiserId(AIndex : Integer; const AValue : String);
 
 begin
   If (FadvertiserId=AValue) then exit;
@@ -23768,7 +23774,7 @@ end;
 
 
 
-Procedure TTargetableRemarketingList.SetadvertiserIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue); 
+Procedure TTargetableRemarketingList.SetadvertiserIdDimensionValue(AIndex : Integer; const AValue : TDimensionValue);
 
 begin
   If (FadvertiserIdDimensionValue=AValue) then exit;
@@ -23778,7 +23784,7 @@ end;
 
 
 
-Procedure TTargetableRemarketingList.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TTargetableRemarketingList.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -23788,7 +23794,7 @@ end;
 
 
 
-Procedure TTargetableRemarketingList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TTargetableRemarketingList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -23798,7 +23804,7 @@ end;
 
 
 
-Procedure TTargetableRemarketingList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TTargetableRemarketingList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -23808,7 +23814,7 @@ end;
 
 
 
-Procedure TTargetableRemarketingList.SetlifeSpan(AIndex : Integer; const AValue : String); 
+Procedure TTargetableRemarketingList.SetlifeSpan(AIndex : Integer; const AValue : String);
 
 begin
   If (FlifeSpan=AValue) then exit;
@@ -23818,7 +23824,7 @@ end;
 
 
 
-Procedure TTargetableRemarketingList.SetlistSize(AIndex : Integer; const AValue : String); 
+Procedure TTargetableRemarketingList.SetlistSize(AIndex : Integer; const AValue : String);
 
 begin
   If (FlistSize=AValue) then exit;
@@ -23828,7 +23834,7 @@ end;
 
 
 
-Procedure TTargetableRemarketingList.SetlistSource(AIndex : Integer; const AValue : String); 
+Procedure TTargetableRemarketingList.SetlistSource(AIndex : Integer; const AValue : String);
 
 begin
   If (FlistSource=AValue) then exit;
@@ -23838,7 +23844,7 @@ end;
 
 
 
-Procedure TTargetableRemarketingList.Setname(AIndex : Integer; const AValue : String); 
+Procedure TTargetableRemarketingList.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -23848,7 +23854,7 @@ end;
 
 
 
-Procedure TTargetableRemarketingList.SetsubaccountId(AIndex : Integer; const AValue : String); 
+Procedure TTargetableRemarketingList.SetsubaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsubaccountId=AValue) then exit;
@@ -23865,7 +23871,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetableRemarketingListsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TTargetableRemarketingListsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -23875,7 +23881,7 @@ end;
 
 
 
-Procedure TTargetableRemarketingListsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TTargetableRemarketingListsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -23885,7 +23891,7 @@ end;
 
 
 
-Procedure TTargetableRemarketingListsListResponse.SettargetableRemarketingLists(AIndex : Integer; const AValue : TTargetableRemarketingListsListResponseTypetargetableRemarketingListsArray); 
+Procedure TTargetableRemarketingListsListResponse.SettargetableRemarketingLists(AIndex : Integer; const AValue : TTargetableRemarketingListsListResponseTypetargetableRemarketingListsArray);
 
 begin
   If (FtargetableRemarketingLists=AValue) then exit;
@@ -23896,7 +23902,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTargetableRemarketingListsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTargetableRemarketingListsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -23915,7 +23921,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTechnologyTargeting.Setbrowsers(AIndex : Integer; const AValue : TTechnologyTargetingTypebrowsersArray); 
+Procedure TTechnologyTargeting.Setbrowsers(AIndex : Integer; const AValue : TTechnologyTargetingTypebrowsersArray);
 
 begin
   If (Fbrowsers=AValue) then exit;
@@ -23925,7 +23931,7 @@ end;
 
 
 
-Procedure TTechnologyTargeting.SetconnectionTypes(AIndex : Integer; const AValue : TTechnologyTargetingTypeconnectionTypesArray); 
+Procedure TTechnologyTargeting.SetconnectionTypes(AIndex : Integer; const AValue : TTechnologyTargetingTypeconnectionTypesArray);
 
 begin
   If (FconnectionTypes=AValue) then exit;
@@ -23935,7 +23941,7 @@ end;
 
 
 
-Procedure TTechnologyTargeting.SetmobileCarriers(AIndex : Integer; const AValue : TTechnologyTargetingTypemobileCarriersArray); 
+Procedure TTechnologyTargeting.SetmobileCarriers(AIndex : Integer; const AValue : TTechnologyTargetingTypemobileCarriersArray);
 
 begin
   If (FmobileCarriers=AValue) then exit;
@@ -23945,7 +23951,7 @@ end;
 
 
 
-Procedure TTechnologyTargeting.SetoperatingSystemVersions(AIndex : Integer; const AValue : TTechnologyTargetingTypeoperatingSystemVersionsArray); 
+Procedure TTechnologyTargeting.SetoperatingSystemVersions(AIndex : Integer; const AValue : TTechnologyTargetingTypeoperatingSystemVersionsArray);
 
 begin
   If (FoperatingSystemVersions=AValue) then exit;
@@ -23955,7 +23961,7 @@ end;
 
 
 
-Procedure TTechnologyTargeting.SetoperatingSystems(AIndex : Integer; const AValue : TTechnologyTargetingTypeoperatingSystemsArray); 
+Procedure TTechnologyTargeting.SetoperatingSystems(AIndex : Integer; const AValue : TTechnologyTargetingTypeoperatingSystemsArray);
 
 begin
   If (FoperatingSystems=AValue) then exit;
@@ -23965,7 +23971,7 @@ end;
 
 
 
-Procedure TTechnologyTargeting.SetplatformTypes(AIndex : Integer; const AValue : TTechnologyTargetingTypeplatformTypesArray); 
+Procedure TTechnologyTargeting.SetplatformTypes(AIndex : Integer; const AValue : TTechnologyTargetingTypeplatformTypesArray);
 
 begin
   If (FplatformTypes=AValue) then exit;
@@ -23976,7 +23982,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTechnologyTargeting.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTechnologyTargeting.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -24000,7 +24006,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TThirdPartyAuthenticationToken.Setname(AIndex : Integer; const AValue : String); 
+Procedure TThirdPartyAuthenticationToken.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -24010,7 +24016,7 @@ end;
 
 
 
-Procedure TThirdPartyAuthenticationToken.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TThirdPartyAuthenticationToken.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -24027,7 +24033,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TThirdPartyTrackingUrl.SetthirdPartyUrlType(AIndex : Integer; const AValue : String); 
+Procedure TThirdPartyTrackingUrl.SetthirdPartyUrlType(AIndex : Integer; const AValue : String);
 
 begin
   If (FthirdPartyUrlType=AValue) then exit;
@@ -24037,7 +24043,7 @@ end;
 
 
 
-Procedure TThirdPartyTrackingUrl.Seturl(AIndex : Integer; const AValue : String); 
+Procedure TThirdPartyTrackingUrl.Seturl(AIndex : Integer; const AValue : String);
 
 begin
   If (Furl=AValue) then exit;
@@ -24054,7 +24060,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TUserDefinedVariableConfiguration.SetdataType(AIndex : Integer; const AValue : String); 
+Procedure TUserDefinedVariableConfiguration.SetdataType(AIndex : Integer; const AValue : String);
 
 begin
   If (FdataType=AValue) then exit;
@@ -24064,7 +24070,7 @@ end;
 
 
 
-Procedure TUserDefinedVariableConfiguration.SetreportName(AIndex : Integer; const AValue : String); 
+Procedure TUserDefinedVariableConfiguration.SetreportName(AIndex : Integer; const AValue : String);
 
 begin
   If (FreportName=AValue) then exit;
@@ -24074,7 +24080,7 @@ end;
 
 
 
-Procedure TUserDefinedVariableConfiguration.SetvariableType(AIndex : Integer; const AValue : String); 
+Procedure TUserDefinedVariableConfiguration.SetvariableType(AIndex : Integer; const AValue : String);
 
 begin
   If (FvariableType=AValue) then exit;
@@ -24091,7 +24097,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TUserProfile.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TUserProfile.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -24101,7 +24107,7 @@ end;
 
 
 
-Procedure TUserProfile.SetaccountName(AIndex : Integer; const AValue : String); 
+Procedure TUserProfile.SetaccountName(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountName=AValue) then exit;
@@ -24111,7 +24117,7 @@ end;
 
 
 
-Procedure TUserProfile.Setetag(AIndex : Integer; const AValue : String); 
+Procedure TUserProfile.Setetag(AIndex : Integer; const AValue : String);
 
 begin
   If (Fetag=AValue) then exit;
@@ -24121,7 +24127,7 @@ end;
 
 
 
-Procedure TUserProfile.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TUserProfile.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -24131,7 +24137,7 @@ end;
 
 
 
-Procedure TUserProfile.SetprofileId(AIndex : Integer; const AValue : String); 
+Procedure TUserProfile.SetprofileId(AIndex : Integer; const AValue : String);
 
 begin
   If (FprofileId=AValue) then exit;
@@ -24141,7 +24147,7 @@ end;
 
 
 
-Procedure TUserProfile.SetsubAccountId(AIndex : Integer; const AValue : String); 
+Procedure TUserProfile.SetsubAccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsubAccountId=AValue) then exit;
@@ -24151,7 +24157,7 @@ end;
 
 
 
-Procedure TUserProfile.SetsubAccountName(AIndex : Integer; const AValue : String); 
+Procedure TUserProfile.SetsubAccountName(AIndex : Integer; const AValue : String);
 
 begin
   If (FsubAccountName=AValue) then exit;
@@ -24161,7 +24167,7 @@ end;
 
 
 
-Procedure TUserProfile.SetuserName(AIndex : Integer; const AValue : String); 
+Procedure TUserProfile.SetuserName(AIndex : Integer; const AValue : String);
 
 begin
   If (FuserName=AValue) then exit;
@@ -24178,7 +24184,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TUserProfileList.Setetag(AIndex : Integer; const AValue : String); 
+Procedure TUserProfileList.Setetag(AIndex : Integer; const AValue : String);
 
 begin
   If (Fetag=AValue) then exit;
@@ -24188,7 +24194,7 @@ end;
 
 
 
-Procedure TUserProfileList.Setitems(AIndex : Integer; const AValue : TUserProfileListTypeitemsArray); 
+Procedure TUserProfileList.Setitems(AIndex : Integer; const AValue : TUserProfileListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -24198,7 +24204,7 @@ end;
 
 
 
-Procedure TUserProfileList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TUserProfileList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -24209,7 +24215,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TUserProfileList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TUserProfileList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -24228,7 +24234,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TUserRole.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TUserRole.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -24238,7 +24244,7 @@ end;
 
 
 
-Procedure TUserRole.SetdefaultUserRole(AIndex : Integer; const AValue : boolean); 
+Procedure TUserRole.SetdefaultUserRole(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FdefaultUserRole=AValue) then exit;
@@ -24248,7 +24254,7 @@ end;
 
 
 
-Procedure TUserRole.Setid(AIndex : Integer; const AValue : String); 
+Procedure TUserRole.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -24258,7 +24264,7 @@ end;
 
 
 
-Procedure TUserRole.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TUserRole.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -24268,7 +24274,7 @@ end;
 
 
 
-Procedure TUserRole.Setname(AIndex : Integer; const AValue : String); 
+Procedure TUserRole.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -24278,7 +24284,7 @@ end;
 
 
 
-Procedure TUserRole.SetparentUserRoleId(AIndex : Integer; const AValue : String); 
+Procedure TUserRole.SetparentUserRoleId(AIndex : Integer; const AValue : String);
 
 begin
   If (FparentUserRoleId=AValue) then exit;
@@ -24288,7 +24294,7 @@ end;
 
 
 
-Procedure TUserRole.Setpermissions(AIndex : Integer; const AValue : TUserRoleTypepermissionsArray); 
+Procedure TUserRole.Setpermissions(AIndex : Integer; const AValue : TUserRoleTypepermissionsArray);
 
 begin
   If (Fpermissions=AValue) then exit;
@@ -24298,7 +24304,7 @@ end;
 
 
 
-Procedure TUserRole.SetsubaccountId(AIndex : Integer; const AValue : String); 
+Procedure TUserRole.SetsubaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsubaccountId=AValue) then exit;
@@ -24309,7 +24315,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TUserRole.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TUserRole.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -24328,7 +24334,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TUserRolePermission.Setavailability(AIndex : Integer; const AValue : String); 
+Procedure TUserRolePermission.Setavailability(AIndex : Integer; const AValue : String);
 
 begin
   If (Favailability=AValue) then exit;
@@ -24338,7 +24344,7 @@ end;
 
 
 
-Procedure TUserRolePermission.Setid(AIndex : Integer; const AValue : String); 
+Procedure TUserRolePermission.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -24348,7 +24354,7 @@ end;
 
 
 
-Procedure TUserRolePermission.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TUserRolePermission.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -24358,7 +24364,7 @@ end;
 
 
 
-Procedure TUserRolePermission.Setname(AIndex : Integer; const AValue : String); 
+Procedure TUserRolePermission.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -24368,7 +24374,7 @@ end;
 
 
 
-Procedure TUserRolePermission.SetpermissionGroupId(AIndex : Integer; const AValue : String); 
+Procedure TUserRolePermission.SetpermissionGroupId(AIndex : Integer; const AValue : String);
 
 begin
   If (FpermissionGroupId=AValue) then exit;
@@ -24385,7 +24391,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TUserRolePermissionGroup.Setid(AIndex : Integer; const AValue : String); 
+Procedure TUserRolePermissionGroup.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -24395,7 +24401,7 @@ end;
 
 
 
-Procedure TUserRolePermissionGroup.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TUserRolePermissionGroup.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -24405,7 +24411,7 @@ end;
 
 
 
-Procedure TUserRolePermissionGroup.Setname(AIndex : Integer; const AValue : String); 
+Procedure TUserRolePermissionGroup.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -24422,7 +24428,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TUserRolePermissionGroupsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TUserRolePermissionGroupsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -24432,7 +24438,7 @@ end;
 
 
 
-Procedure TUserRolePermissionGroupsListResponse.SetuserRolePermissionGroups(AIndex : Integer; const AValue : TUserRolePermissionGroupsListResponseTypeuserRolePermissionGroupsArray); 
+Procedure TUserRolePermissionGroupsListResponse.SetuserRolePermissionGroups(AIndex : Integer; const AValue : TUserRolePermissionGroupsListResponseTypeuserRolePermissionGroupsArray);
 
 begin
   If (FuserRolePermissionGroups=AValue) then exit;
@@ -24443,7 +24449,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TUserRolePermissionGroupsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TUserRolePermissionGroupsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -24462,7 +24468,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TUserRolePermissionsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TUserRolePermissionsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -24472,7 +24478,7 @@ end;
 
 
 
-Procedure TUserRolePermissionsListResponse.SetuserRolePermissions(AIndex : Integer; const AValue : TUserRolePermissionsListResponseTypeuserRolePermissionsArray); 
+Procedure TUserRolePermissionsListResponse.SetuserRolePermissions(AIndex : Integer; const AValue : TUserRolePermissionsListResponseTypeuserRolePermissionsArray);
 
 begin
   If (FuserRolePermissions=AValue) then exit;
@@ -24483,7 +24489,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TUserRolePermissionsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TUserRolePermissionsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -24502,7 +24508,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TUserRolesListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TUserRolesListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -24512,7 +24518,7 @@ end;
 
 
 
-Procedure TUserRolesListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TUserRolesListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -24522,7 +24528,7 @@ end;
 
 
 
-Procedure TUserRolesListResponse.SetuserRoles(AIndex : Integer; const AValue : TUserRolesListResponseTypeuserRolesArray); 
+Procedure TUserRolesListResponse.SetuserRoles(AIndex : Integer; const AValue : TUserRolesListResponseTypeuserRolesArray);
 
 begin
   If (FuserRoles=AValue) then exit;
@@ -24533,7 +24539,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TUserRolesListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TUserRolesListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -29881,7 +29887,7 @@ begin
   Result[1].Description:='View and manage DoubleClick for Advertisers reports';
   Result[2].Name:='https://www.googleapis.com/auth/dfatrafficking';
   Result[2].Description:='View and manage your DoubleClick Campaign Manager''s (DCM) display ad campaigns';
-  
+
 end;
 
 Class Function TDfareportingAPI.APINeedsAuth : Boolean;

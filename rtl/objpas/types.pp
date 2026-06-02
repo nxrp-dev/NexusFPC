@@ -12,32 +12,47 @@
 
  **********************************************************************}
 {$MODE OBJFPC}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit Types;
+{$ENDIF FPC_DOTTEDUNITS}
 
   interface
 {$modeswitch advancedrecords}
 {$modeswitch class}
 {$if defined(win32) or defined(win64) or defined(wince)}
     uses
-       Windows;
+       {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows;
 {$elseif defined(win16)}
     uses
-       WinTypes;
+        {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}WinTypes;
 {$endif}
 
 {$if defined(win32) or defined(win64)}
 const
-  RT_RCDATA = Windows.RT_RCDATA deprecated 'Use Windows.RT_RCDATA instead';
+  RT_RCDATA =  {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.RT_RCDATA deprecated 'Use Windows.RT_RCDATA instead';
 {$elseif defined(win16)}
 const
-  RT_RCDATA = WinTypes.RT_RCDATA deprecated 'Use WinTypes.RT_RCDATA instead';
+  RT_RCDATA =  {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}WinTypes.RT_RCDATA deprecated 'Use WinTypes.RT_RCDATA instead';
 {$endif}
+
+Const
+  Epsilon: Single = 1E-40;
+  Epsilon2: Single = 1E-30;
+
+  CurveKappa = 0.5522847498;
+  CurveKappaInv = 1 - CurveKappa;
 
 type
   TEndian =  Objpas.TEndian;
   TDirection = (FromBeginning, FromEnd);
   TValueRelationship = -1..1;
-  
+
+const
+  LessThanValue = Low(TValueRelationship);
+  EqualsValue = 0;
+  GreaterThanValue = High(TValueRelationship);
+
+type
   DWORD = LongWord;
 
   PLongint = System.PLongint;
@@ -53,8 +68,34 @@ type
   LARGE_UINT= LargeUInt;
   PLargeuInt = ^LargeuInt;
 
+  { Null dummy type, for compile time null passing }
+  TNullPtr = record
+    { Some operators to make it (more or less) nil compatible }
+    class operator :=(None: TNullPtr): Pointer; inline;
+    class operator :=(None: TNullPtr): TObject; inline;
+
+    class operator =(LHS: TNullPtr; RHS: Pointer): Boolean; inline;
+    class operator =(LHS: TNullPtr; RHS: TObject): Boolean; inline;
+    class operator =(LHS: Pointer; RHS: TNullPtr): Boolean; inline;
+    class operator =(LHS: TObject; RHS: TNullPtr): Boolean; inline;
+
+    class operator <>(LHS: TNullPtr; RHS: Pointer): Boolean; inline;
+    class operator <>(LHS: TNullPtr; RHS: TObject): Boolean; inline;
+    class operator <>(LHS: Pointer; RHS: TNullPtr): Boolean; inline;
+    class operator <>(LHS: TObject; RHS: TNullPtr): Boolean; inline;
+  end;
+
+  {$Push}
+  {$WriteableConst Off}
+const
+  NullPtr: TNullPtr = ();
+  {$Pop}
+
+type
   TBooleanDynArray = array of Boolean;
   TByteDynArray = array of Byte;
+  TClassicByteDynArray = TByteDynArray;
+
   TCardinalDynArray = array of Cardinal;
   TInt64DynArray = array of Int64;
   TIntegerDynArray = array of Integer;
@@ -63,9 +104,20 @@ type
   TQWordDynArray = array of QWord;
   TShortIntDynArray = array of ShortInt;
   TSmallIntDynArray = array of SmallInt;
-  TStringDynArray = array of AnsiString;
-  TObjectDynArray = array of TObject;
+
+  TRTLStringDynArray = array of RTLString;
+  TAnsiStringDynArray = Array of AnsiString;
   TWideStringDynArray   = array of WideString;
+  TUnicodeStringDynArray = array of UnicodeString;
+{$if SIZEOF(CHAR)=2}
+  TStringDynArray = Array of UnicodeString;
+{$ELSE}
+  TStringDynArray = Array of AnsiString;
+{$ENDIF}
+
+  TClassicStringDynArray = TStringDynArray;
+
+  TObjectDynArray = array of TObject;
   TWordDynArray = array of Word;
   TCurrencyArray = Array of currency;
 {$ifndef FPUNONE}
@@ -76,21 +128,21 @@ type
 {$endif}
 
 {$if defined(win32) or defined(win64) or defined(wince)}
-  TArray4IntegerType = Windows.TArray4IntegerType;
-  TSmallPoint = Windows.TSmallPoint;
-  PSmallPoint = Windows.PSmallPoint;
+  TArray4IntegerType = {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.TArray4IntegerType;
+  TSmallPoint = {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.TSmallPoint;
+  PSmallPoint = {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.PSmallPoint;
 
-  TSize  = Windows.TSize;
-  TagSize  = Windows.tagSize deprecated;
-  PSize  = Windows.PSize;
+  TSize  = {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.TSize;
+  TagSize  = {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.tagSize deprecated;
+  PSize  = {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.PSize;
 
-  TPoint = Windows.TPoint;
-  TagPoint = Windows.TagPoint deprecated;
-  PPoint = Windows.PPoint;
+  TPoint = {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.TPoint;
+  TagPoint = {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.TagPoint deprecated;
+  PPoint = {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.PPoint;
 
-  TRect  = Windows.TRect;
-  PRect  = Windows.PRect;
-  TSplitRectType = Windows.TSplitRectType;
+  TRect  = {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.TRect;
+  PRect  = {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.PRect;
+  TSplitRectType = {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.TSplitRectType;
 const
   srLeft = TSplitRectType.srLeft;
   srRight = TSplitRectType.srRight;
@@ -125,6 +177,8 @@ type
           procedure Offset(const apt :TPointF);
           procedure Offset(const apt :TPoint);
           procedure Offset(dx,dy : Single);
+          function EqualsTo(const apt: TPointF; const aEpsilon : Single): Boolean; overload;
+          function EqualsTo(const apt: TPointF): Boolean; overload;
 
           function  Scale (afactor:Single)  : TPointF;
           function  Ceiling : TPoint;
@@ -138,8 +192,13 @@ type
           function MidPoint(const b: TPointF): TPointF;
           class function PointInCircle(const pt, center: TPointF; radius: single): Boolean; static;
           class function PointInCircle(const pt, center: TPointF; radius: integer): Boolean; static;
+          class function Zero: TPointF; inline; static;
           function Angle(const b: TPointF): Single;
           function AngleCosine(const b: TPointF): single;
+          function CrossProduct(const apt: TPointF): Single;
+          function Normalize: TPointF;
+          function ToString(aSize,aDecimals : Byte) : RTLString; overload;
+          function ToString : RTLString; overload; inline;
 
           class function Create(const ax, ay: Single): TPointF; overload; static; inline;
           class function Create(const apt: TPoint): TPointF; overload; static; inline;
@@ -179,9 +238,12 @@ type
           function  Floor   : TSize;
           function  Round   : TSize;
           function  Length  : Single;
+          function ToString(aSize,aDecimals : Byte) : RTLString; overload;
+          function ToString : RTLString; overload; inline;
 
           class function Create(const ax, ay: Single): TSizeF; overload; static; inline;
           class function Create(const asz: TSize): TSizeF; overload; static; inline;
+          class function Zero: TSizeF; static;
           class operator = (const asz1, asz2 : TSizeF) : Boolean;
           class operator <> (const asz1, asz2 : TSizeF): Boolean;
           class operator + (const asz1, asz2 : TSizeF): TSizeF;
@@ -196,6 +258,11 @@ type
           property Width: Single read cx write cx;
           property Height: Single read cy write cy;
        end;
+
+  {$SCOPEDENUMS ON}
+  TVertRectAlign = (Center, Top, Bottom);
+  THorzRectAlign = (Center, Left, Right);
+  {$SCOPEDENUMS OFF}
 
   { TRectF }
   PRectF = ^TRectF;
@@ -227,24 +294,36 @@ type
     class operator := (const arc: TRect): TRectF;
     class function Empty: TRectF; static;
 
-    procedure NormalizeRect;
-    function IsEmpty: Boolean;
+    class function Intersect(R1: TRectF; R2: TRectF): TRectF; static;
+    class function Union(const Points: array of TPointF): TRectF; static;
+    class function Union(R1, R2: TRectF): TRectF; static;
+    Function Ceiling : TRectF;
+    function CenterAt(const Dest: TRectF): TRectF;
+    function CenterPoint: TPointF;
     function Contains(Pt: TPointF): Boolean;
     function Contains(R: TRectF): Boolean;
+    function EqualsTo(const R: TRectF; const Epsilon: Single = 0): Boolean;
+    function Fit(const Dest: TRectF): Single; deprecated 'Use FitInto';
+    function FitInto(const Dest: TRectF): TRectF; overload;
+    function FitInto(const Dest: TRectF; out Ratio: Single): TRectF; overload;
     function IntersectsWith(R: TRectF): Boolean;
-    class function Intersect(R1: TRectF; R2: TRectF): TRectF; static;
-    procedure Intersect(R: TRectF);
-    class function Union(R1, R2: TRectF): TRectF; static;
-    class function Union(const Points: array of TPointF): TRectF; static;
-    procedure SetLocation(X, Y: Single);
-    procedure SetLocation(P: TPointF);
-    procedure Inflate(DX, DY: Single);
+    function IsEmpty: Boolean;
+    function PlaceInto(const Dest: TRectF; const AHorzAlign: THorzRectAlign = THorzRectAlign.Center;  const AVertAlign: TVertRectAlign = TVertRectAlign.Center): TRectF;
+    function Round: TRect;
+    function SnapToPixel(AScale: Single; APlaceBetweenPixels: Boolean = True): TRectF;
+    function Truncate: TRect;
     procedure Inflate(DL, DT, DR, DB: Single);
-    function CenterPoint: TPointF;
-
-    procedure Union  (const r: TRectF); inline;
+    procedure Inflate(DX, DY: Single);
+    procedure Intersect(R: TRectF);
+    procedure Normalize;
+    procedure NormalizeRect;
     procedure Offset (const dx,dy : Single); inline;
     procedure Offset (DP: TPointF); inline;
+    procedure SetLocation(P: TPointF);
+    procedure SetLocation(X, Y: Single);
+    function ToString(aSize,aDecimals : Byte; aUseSize : Boolean = False) : RTLString; overload;
+    function ToString(aUseSize : Boolean = False) : RTLString; overload; inline;
+    procedure Union  (const r: TRectF); inline;
     property  Width  : Single read GetWidth write SetWidth;
     property  Height : Single read GetHeight write SetHeight;
     property  Size   : TSizeF read getSize   write SetSize;
@@ -267,7 +346,9 @@ type
      constructor Create(const ax,ay,az:single);
      procedure   Offset(const adeltax,adeltay,adeltaz:single); inline;
      procedure   Offset(const adelta:TPoint3D); inline;
-   public  
+     function ToString(aSize,aDecimals : Byte) : RTLString; overload;
+     function ToString : RTLString; overload; inline;
+   public
      case Integer of
       0: (data:TSingle3Array);
       1: (x,y,z : single);
@@ -386,11 +467,11 @@ type
   PFileTime = ^TFileTime;
 {$else}
 type
-  PCLSID    = Windows.PCLSID;
-  TCLSID    = Windows.CLSID;
-  TFiletime = Windows.TFileTime;
-  Filetime  = Windows.FileTime;
-  PFiletime = Windows.PFileTime;
+  PCLSID    = {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.PCLSID;
+  TCLSID    = {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.CLSID;
+  TFiletime = {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.TFileTime;
+  Filetime  = {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.FileTime;
+  PFiletime = {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.PFileTime;
 {$endif Windows}
 
 type
@@ -435,23 +516,65 @@ type
      function Clone(out stm : IStream) : HRESULT;stdcall;
   end;
 
+  { TScoped }
+  generic TScoped<T:class> = record
+  private
+    obj: T;
+  public
+    class operator Initialize(var hdl: TScoped);
+    class operator Finalize(var hdl: TScoped);
+    class operator :=(aObj : T) : TScoped;
+    class operator :=(const aObj : TScoped) : T;
+    procedure Assign(aObj : T); inline;
+    function Swap(AObj: T): T;
+    function Get : T;
+  end;
+
 function EqualRect(const r1,r2 : TRect) : Boolean;
+function EqualRect(const r1,r2 : TRectF) : Boolean;
+function NormalizeRectF(const Pts: array of TPointF): TRectF; overload;
+function NormalizeRect(const ARect: TRectF): TRectF; overload;
 function Rect(Left,Top,Right,Bottom : Integer) : TRect; inline;
 function RectF(Left,Top,Right,Bottom : Single) : TRectF; inline;
 function Bounds(ALeft,ATop,AWidth,AHeight : Integer) : TRect; inline;
 function Point(x,y : Integer) : TPoint; inline;
 function PointF(x,y: Single) : TPointF; inline;
 function PtInRect(const Rect : TRect; const p : TPoint) : Boolean;
+function PtInRect(const Rect : TRectF; const p : TPointF) : Boolean;
+function IntersectRect(const Rect1, Rect2: TRect): Boolean;
+function IntersectRect(const Rect1, Rect2: TRectF): Boolean;
 function IntersectRect(var Rect : TRect; const R1,R2 : TRect) : Boolean;
+function IntersectRect(var Rect : TRectF; const R1,R2 : TRectF) : Boolean;
+function RectCenter(var R: TRect; const Bounds: TRect): TRect;
+function RectCenter(var R: TRectF; const Bounds: TRectF): TRectF;
+function RectHeight(const Rect: TRect): Integer; inline;
+function RectHeight(const Rect: TRectF): Single; inline;
+function RectWidth(const Rect: TRect): Integer; inline;
+function RectWidth(const Rect: TRectF): Single; inline;
 function UnionRect(var Rect : TRect; const R1,R2 : TRect) : Boolean;
+function UnionRect(var Rect : TRectF; const R1,R2 : TRectF) : Boolean;
+function UnionRect(const R1,R2 : TRect) : TRect;
+function UnionRect(const R1,R2 : TRectF) : TRectF;
+function IsRectEmpty(const Rect : TRectF) : Boolean;
 function IsRectEmpty(const Rect : TRect) : Boolean;
 function OffsetRect(var Rect : TRect;DX : Integer;DY : Integer) : Boolean;
+function OffsetRect(var Rect : TRectF;DX : Single;DY : Single) : Boolean;
+procedure MultiplyRect(var R: TRectF; const DX, DY: Single);
 function CenterPoint(const Rect: TRect): TPoint;
 function InflateRect(var Rect: TRect; dx: Integer; dy: Integer): Boolean;
+function InflateRect(var Rect: TRectF; dx: single; dy: Single): Boolean;
 function Size(AWidth, AHeight: Integer): TSize; inline;
-function Size(const ARect: TRect): TSize;
+function Size(const ARect: TRect): TSize; inline;
+function ScalePoint(const P: TPointF; dX, dY: Single): TPointF; overload;
+function ScalePoint(const P: TPoint; dX, dY: Single): TPoint; overload;
+function MinPoint(const P1, P2: TPointF): TPointF; overload;
+function MinPoint(const P1, P2: TPoint): TPoint; overload;
+function SplitRect(const Rect: TRect; SplitType: TSplitRectType; Size: Integer): TRect; overload;
+function SplitRect(const Rect: TRect; SplitType: TSplitRectType; Percent: Double): TRect; overload;
+function CenteredRect(const SourceRect: TRect; const aCenteredRect: TRect): TRect;
+function IntersectRectF(out Rect: TRectF; const R1, R2: TRectF): Boolean;
+function UnionRectF(out Rect: TRectF; const R1, R2: TRectF): Boolean;
 
-{$ifndef VER3_0}
 type
   TBitConverter = class
     generic class procedure UnsafeFrom<T>(const ASrcValue: T; var ADestination: Array of Byte; AOffset: Integer = 0); static; {inline;}
@@ -459,20 +582,110 @@ type
     generic class function UnsafeInTo<T>(const ASource: Array of Byte; AOffset: Integer = 0): T; static; {inline;}
     generic class function InTo<T>(const ASource: Array of Byte; AOffset: Integer = 0): T; static;
   end;
-{$endif}
+
+Const
+  cPI: Single = 3.141592654;
+  cPIdiv180: Single = 0.017453292;
+  cPIdiv2: Single = 1.570796326;
+  cPIdiv4: Single = 0.785398163;
+
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+Uses System.Math;
+{$ELSE FPC_DOTTEDUNITS}
 Uses Math;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$if (not defined(win32)) and (not defined(win64)) and (not defined(wince))}
   {$i typshrd.inc}
 {$endif}
 
+function SmallPoint(X, Y: Integer): TSmallPoint; inline; overload;
+begin
+  Result.X:=X;
+  Result.Y:=Y;
+end;
+
+function SmallPoint(XY: LongWord): TSmallPoint; overload;
+
+begin
+  Result.X:=SmallInt(XY and $0000FFFF);
+  Result.Y:=SmallInt(XY shr 16);
+end;
+
+function MinPoint(const P1, P2: TPointF): TPointF; overload;
+
+begin
+  Result:=P1;
+  if (P2.Y<P1.Y)
+     or ((P2.Y=P1.Y) and (P2.X<P1.X)) then
+    Result:=P2;
+end;
+
+function MinPoint(const P1, P2: TPoint): TPoint; overload;
+
+begin
+  Result:=P1;
+  if (P2.Y<P1.Y)
+     or ((P2.Y=P1.Y) and (P2.X<P1.X)) then
+    Result:=P2;
+end;
+
+function ScalePoint(const P: TPointF; dX, dY: Single): TPointF; overload;
+
+begin
+  Result.X:=P.X*dX;
+  Result.Y:=P.Y*dY;
+end;
+
+function ScalePoint(const P: TPoint; dX, dY: Single): TPoint; overload;
+
+begin
+  Result.X:=Round(P.X*dX);
+  Result.Y:=Round(P.Y*dY);
+end;
+
+function NormalizeRectF(const Pts: array of TPointF): TRectF;
+
+var
+  Pt: TPointF;
+
+begin
+  Result.Left:=$FFFF;
+  Result.Top:=$FFFF;
+  Result.Right:=-$FFFF;
+  Result.Bottom:=-$FFFF;
+  for Pt in Pts do
+    begin
+    Result.Left:=Min(Pt.X,Result.left);
+    Result.Top:=Min(Pt.Y,Result.Top);
+    Result.Right:=Max(Pt.X,Result.Right);
+    Result.Bottom:=Max(Pt.Y,Result.Bottom);
+    end;
+end;
+
+function NormalizeRect(const aRect : TRectF): TRectF;
+
+begin
+  With aRect do
+   Result:=NormalizeRectF([PointF(Left,Top),
+                           PointF(Right,Top),
+                           PointF(Right,Bottom),
+                           PointF(Left,Bottom)]);
+end;
+
 function EqualRect(const r1,r2 : TRect) : Boolean;
 
 begin
   EqualRect:=(r1.left=r2.left) and (r1.right=r2.right) and (r1.top=r2.top) and (r1.bottom=r2.bottom);
+end;
+
+function EqualRect(const r1,r2 : TRectF) : Boolean;
+
+begin
+  EqualRect:=r1.EqualsTo(r2);
 end;
 
 function Rect(Left,Top,Right,Bottom : Integer) : TRect; inline;
@@ -525,6 +738,35 @@ begin
             (p.x<Rect.Right);
 end;
 
+function PtInRect(const Rect : TRectF;const p : TPointF) : Boolean;
+
+begin
+  PtInRect:=(p.y>=Rect.Top) and
+            (p.y<Rect.Bottom) and
+            (p.x>=Rect.Left) and
+            (p.x<Rect.Right);
+end;
+
+function IntersectRectF(out Rect: TRectF; const R1, R2: TRectF): Boolean;
+begin
+  Result:=IntersectRect(Rect,R1,R2);
+end;
+
+function UnionRectF(out Rect: TRectF; const R1, R2: TRectF): Boolean;
+
+begin
+  Result:=UnionRect(Rect,R1,R2);
+end;
+
+
+function IntersectRect(const Rect1, Rect2: TRect): Boolean;
+begin
+  Result:=(Rect1.Left<Rect2.Right)
+           and (Rect1.Right>Rect2.Left)
+           and (Rect1.Top<Rect2.Bottom)
+           and (Rect1.Bottom>Rect2.Top);
+end;
+
 function IntersectRect(var Rect : TRect;const R1,R2 : TRect) : Boolean;
 var
   lRect: TRect;
@@ -542,21 +784,176 @@ begin
   // The var parameter is only assigned in the end to avoid problems
   // when passing the same rectangle in the var and const parameters.
   // See http://bugs.freepascal.org/view.php?id=17722
-  if IsRectEmpty(lRect) then
-  begin
-    FillChar(Rect,SizeOf(Rect),0);
-    IntersectRect:=false;
-  end
+  Result:=not IsRectEmpty(lRect);
+  if Result then
+    Rect := lRect
   else
-  begin
-    IntersectRect:=true;
-    Rect := lRect;
-  end;	
+    FillChar(Rect,SizeOf(Rect),0);
+end;
+
+function IntersectRect(const Rect1, Rect2: TRectF): Boolean;
+begin
+  Result:=(Rect1.Left<Rect2.Right)
+           and (Rect1.Right>Rect2.Left)
+           and (Rect1.Top<Rect2.Bottom)
+           and (Rect1.Bottom>Rect2.Top);
+end;
+
+
+function IntersectRect(var Rect : TRectF;const R1,R2 : TRectF) : Boolean;
+var
+  lRect: TRectF;
+begin
+  lRect := R1;
+  if R2.Left > R1.Left then
+    lRect.Left := R2.Left;
+  if R2.Top > R1.Top then
+    lRect.Top := R2.Top;
+  if R2.Right < R1.Right then
+    lRect.Right := R2.Right;
+  if R2.Bottom < R1.Bottom then
+    lRect.Bottom := R2.Bottom;
+
+  // The var parameter is only assigned in the end to avoid problems
+  // when passing the same rectangle in the var and const parameters.
+  // See http://bugs.freepascal.org/view.php?id=17722
+  Result:=not IsRectEmpty(lRect);
+  if Result then
+    Rect := lRect
+  else
+    FillChar(Rect,SizeOf(Rect),0);
+end;
+
+function SplitRect(const Rect: TRect; SplitType: TSplitRectType; Size: Integer): TRect; overload;
+
+begin
+  Result:=Rect.SplitRect(SplitType,Size);
+end;
+
+function SplitRect(const Rect: TRect; SplitType: TSplitRectType; Percent: Double): TRect; overload;
+
+begin
+  Result:=Rect.SplitRect(SplitType,Percent);
+end;
+
+function CenteredRect(const SourceRect: TRect; const aCenteredRect: TRect): TRect;
+
+var
+  W,H: Integer;
+  Center : TPoint;
+begin
+  W:=aCenteredRect.Width;
+  H:=aCenteredRect.Height;
+  Center:=SourceRect.CenterPoint;
+  With Center do
+    Result:= Rect(X-(W div 2),Y-(H div 2),X+((W+1) div 2),Y+((H+1) div 2));
+end;
+
+function RectWidth(const Rect: TRect): Integer;
+
+begin
+  Result:=Rect.Width;
+end;
+
+function RectWidth(const Rect: TRectF): Single;
+
+begin
+  Result:=Rect.Width;
+end;
+
+function RectHeight(const Rect: TRect): Integer; inline;
+
+begin
+  Result:=Rect.Height;
+end;
+
+function RectHeight(const Rect: TRectF): Single; inline;
+
+begin
+  Result:=Rect.Height
+end;
+
+
+
+function RectCenter(var R: TRect; const Bounds: TRect): TRect;
+
+var
+  C : TPoint;
+  CS : TPoint;
+
+begin
+  C:=Bounds.CenterPoint;
+  CS:=R.CenterPoint;
+  OffsetRect(R,C.X-CS.X,C.Y-CS.Y);
+  Result:=R;
+end;
+
+function RectCenter(var R: TRectF; const Bounds: TRectF): TRectF;
+
+Var
+  C,CS : TPointF;
+
+begin
+  C:=Bounds.CenterPoint;
+  CS:=R.CenterPoint;
+  OffsetRect(R,C.X-CS.X,C.Y-CS.Y);
+  Result:=R;
+end;
+
+procedure MultiplyRect(var R: TRectF; const DX, DY: Single);
+
+begin
+  R.Left:=DX*R.Left;
+  R.Right:=DX*R.Right;
+  R.Top:=DY*R.Top;
+  R.Bottom:=DY*R.Bottom;
+end;
+
+function UnionRect(const R1,R2 : TRect) : TRect;
+
+begin
+  Result:=Default(TRect);
+  UnionRect(Result,R1,R2);
+end;
+
+function UnionRect(const R1,R2 : TRectF) : TRectF;
+
+begin
+  Result:=Default(TRectF);
+  UnionRect(Result,R1,R2);
 end;
 
 function UnionRect(var Rect : TRect;const R1,R2 : TRect) : Boolean;
 var
   lRect: TRect;
+begin
+  if IsRectEmpty(R1) then
+    lRect:=R2
+  else if IsRectEmpty(R2) then
+    lRect:=R1
+  else
+    begin
+      lRect:=R1;
+      if R2.Left<R1.Left then
+        lRect.Left:=R2.Left;
+      if R2.Top<R1.Top then
+        lRect.Top:=R2.Top;
+      if R2.Right>R1.Right then
+        lRect.Right:=R2.Right;
+      if R2.Bottom>R1.Bottom then
+        lRect.Bottom:=R2.Bottom;
+    end;
+
+  Result:=not IsRectEmpty(lRect);
+  if Result then
+    Rect:=lRect
+  else
+    FillChar(Rect,SizeOf(Rect),0);
+end;
+
+function UnionRect(var Rect : TRectF;const R1,R2 : TRectF) : Boolean;
+var
+  lRect: TRectF;
 begin
   lRect:=R1;
   if R2.Left<R1.Left then
@@ -568,16 +965,11 @@ begin
   if R2.Bottom>R1.Bottom then
     lRect.Bottom:=R2.Bottom;
 
-  if IsRectEmpty(lRect) then
-  begin
-    FillChar(Rect,SizeOf(Rect),0);
-    UnionRect:=false;
-  end
+  Result:=not IsRectEmpty(lRect);
+  if Result then
+    Rect := lRect
   else
-  begin
-    Rect:=lRect;
-    UnionRect:=true;
-  end;
+    FillChar(Rect,SizeOf(Rect),0);
 end;
 
 function IsRectEmpty(const Rect : TRect) : Boolean;
@@ -585,21 +977,22 @@ begin
   IsRectEmpty:=(Rect.Right<=Rect.Left) or (Rect.Bottom<=Rect.Top);
 end;
 
+function IsRectEmpty(const Rect : TRectF) : Boolean;
+begin
+  IsRectEmpty:=(Rect.Right<=Rect.Left) or (Rect.Bottom<=Rect.Top);
+end;
+
 function OffsetRect(var Rect : TRect;DX : Integer;DY : Integer) : Boolean;
 begin
-  if assigned(@Rect) then
-    begin
+  Result:=assigned(@Rect);
+  if Result then
     with Rect do
       begin
-      inc(Left,dx);
-      inc(Top,dy);
-      inc(Right,dx);
-      inc(Bottom,dy);
+        inc(Left,dx);
+        inc(Top,dy);
+        inc(Right,dx);
+        inc(Bottom,dy);
       end;
-    OffsetRect:=true;
-    end
-  else
-    OffsetRect:=false;
 end;
 
 function Avg(a, b: Longint): Longint;
@@ -608,6 +1001,19 @@ begin
     Result := a + ((b - a) shr 1)
   else
     Result := b + ((a - b) shr 1);
+end;
+
+function OffsetRect(var Rect: TRectF; DX: Single; DY: Single): Boolean;
+begin
+  Result:=assigned(@Rect);
+  if Result then
+    with Rect do
+      begin
+        Left:=Left+dx;
+        Right:=Right+dx;
+        Top:=Top+dy;
+        Bottom:=Bottom+dy;
+      end;
 end;
 
 function CenterPoint(const Rect: TRect): TPoint;
@@ -621,19 +1027,28 @@ end;
 
 function InflateRect(var Rect: TRect; dx: Integer; dy: Integer): Boolean;
 begin
-  if Assigned(@Rect) then
-  begin
+  Result:=assigned(@Rect);
+  if Result then
     with Rect do
-    begin
-      dec(Left, dx);
-      dec(Top, dy);
-      inc(Right, dx);
-      inc(Bottom, dy);
-    end;
-    Result := True;
-  end
-  else
-    Result := False;
+      begin
+        dec(Left, dx);
+        dec(Top, dy);
+        inc(Right, dx);
+        inc(Bottom, dy);
+      end;
+end;
+
+function InflateRect(var Rect: TRectF; dx: Single; dy: Single): Boolean;
+begin
+  Result:=assigned(@Rect);
+  if Result then
+    with Rect do
+      begin
+        Left:=Left-dx;
+        Top:=Top-dy;
+        Right:=Right+dx;
+        Bottom:=Bottom+dy;
+      end;
 end;
 
 function Size(AWidth, AHeight: Integer): TSize; inline;
@@ -649,7 +1064,93 @@ begin
 end;
 
 
+Function SingleToStr(aValue : Single; aSize,aDecimals : Byte) : ShortString; inline;
+
+var
+  S : ShortString;
+  Len,P : Byte;
+
+begin
+  Str(aValue:aSize:aDecimals,S);
+  Len:=Length(S);
+  P:=1;
+  While (P<=Len) and (S[P]=' ') do
+    Inc(P);
+  if P>1 then
+    Delete(S,1,P-1);
+  Result:=S;
+end;
+
+{ TNullPtr }
+
+class operator TNullPtr.:=(None: TNullPtr): Pointer;
+begin
+  Result := nil;
+end;
+
+class operator TNullPtr.:=(None: TNullPtr): TObject;
+begin
+  Result := nil;
+end;
+
+class operator TNullPtr.=(LHS: TNullPtr; RHS: Pointer): Boolean;
+begin
+  Result := not Assigned(RHS);
+end;
+
+class operator TNullPtr.=(LHS: TNullPtr; RHS: TObject): Boolean;
+begin
+  Result := not Assigned(RHS);
+end;
+
+class operator TNullPtr.=(LHS: Pointer; RHS: TNullPtr): Boolean;
+begin
+  Result := not Assigned(LHS);
+end;
+
+class operator TNullPtr.=(LHS: TObject; RHS: TNullPtr): Boolean;
+begin
+  Result := not Assigned(LHS);
+end;
+
+class operator TNullPtr.<>(LHS: TNullPtr; RHS: Pointer): Boolean;
+begin
+  Result := Assigned(RHS);
+end;
+
+class operator TNullPtr.<>(LHS: TNullPtr; RHS: TObject): Boolean;
+begin
+  Result := Assigned(RHS);
+end;
+
+class operator TNullPtr.<>(LHS: Pointer; RHS: TNullPtr): Boolean;
+begin
+  Result := Assigned(LHS);
+end;
+
+class operator TNullPtr.<>(LHS: TObject; RHS: TNullPtr): Boolean;
+begin
+  Result := Assigned(LHS);
+end;
+
 { TPointF}
+
+function TPointF.ToString : RTLString;
+
+begin
+  Result:=ToString(8,2);
+end;
+
+function TPointF.ToString(aSize,aDecimals : Byte) : RTLString;
+
+var
+  Sx,Sy : shortstring;
+
+begin
+  Sx:=SingleToStr(X,aSize,aDecimals);
+  Sy:=SingleToStr(Y,aSize,aDecimals);
+  Result:='('+Sx+','+Sy+')';
+end;
 
 function TPointF.Add(const apt: TPoint): TPointF;
 begin
@@ -708,6 +1209,24 @@ begin
   y:=y+dy;
 end;
 
+function TPointF.EqualsTo(const apt: TPointF): Boolean;
+
+begin
+  Result:=EqualsTo(apt,0);
+end;
+
+function TPointF.EqualsTo(const apt: TPointF; const aEpsilon: Single): Boolean;
+
+  function Eq(a,b : single) : boolean; inline;
+
+  begin
+    result:=abs(a-b)<=aEpsilon;
+  end;
+
+begin
+  Result:=Eq(X,apt.X) and Eq(Y,apt.Y);
+end;
+
 function TPointF.Scale(afactor: Single): TPointF;
 begin
   result.x:=afactor*x;
@@ -728,8 +1247,8 @@ end;
 
 function TPointF.Floor: TPoint;
 begin
-  result.x:=Math.floor(x);
-  result.y:=Math.floor(y);
+  result.x:={$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}Math.floor(x);
+  result.y:={$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}Math.floor(y);
 end;
 
 function TPointF.Round: TPoint;
@@ -761,6 +1280,13 @@ function TPointF.MidPoint(const b: TPointF): TPointF;
 begin
   result.x := 0.5 * (x + b.x);
   result.y := 0.5 * (y + b.y);
+end;
+
+class function TPointF.Zero: TPointF;
+
+begin
+  Result.X:=0;
+  Result.Y:=0;
 end;
 
 class function TPointF.PointInCircle(const pt, center: TPointF; radius: single): Boolean;
@@ -870,7 +1396,49 @@ begin
   Result.y := apt.Y;
 end;
 
+
+function TPointF.CrossProduct(const apt: TPointF): Single;
+begin
+  Result:=X*apt.Y-Y*apt.X;
+end;
+
+function TPointF.Normalize: TPointF;
+
+var
+  L: Single;
+
+begin
+  L:=Sqrt(Sqr(X)+Sqr(Y));
+  if SameValue(L,0,Epsilon) then
+    Result:=Self
+  else
+    begin
+    Result.X:=X/L;
+    Result.Y:=Y/L;
+    end;
+end;
+
+
 { TSizeF }
+
+function TSizeF.ToString(aSize,aDecimals : Byte) : RTLString;
+
+var
+  Sx,Sy : shortstring;
+
+begin
+  Sx:=SingleToStr(cx,aSize,aDecimals);
+  Sy:=SingleToStr(cy,aSize,aDecimals);
+  Result:='('+Sx+'x'+Sy+')';
+end;
+
+function TSizeF.ToString : RTLString;
+
+begin
+  Result:=ToString(8,2);
+end;
+
+
 
 function TSizeF.Add(const asz: TSize): TSizeF;
 begin
@@ -932,8 +1500,8 @@ end;
 
 function TSizeF.Floor: TSize;
 begin
-  result.cx:=Math.floor(cx);
-  result.cy:=Math.floor(cy);
+  result.cx:={$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}Math.floor(cx);
+  result.cy:={$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}Math.floor(cy);
 end;
 
 function TSizeF.Round: TSize;
@@ -1003,6 +1571,12 @@ begin
   Result.y := asz.cy;
 end;
 
+class function TSizeF.Zero: TSizeF;
+begin
+  Result.cx := 0.0;
+  Result.cy := 0.0;
+end;
+
 class function TSizeF.Create(const ax, ay: Single): TSizeF;
 begin
   Result.cx := ax;
@@ -1016,6 +1590,25 @@ begin
 end;
 
 { TRectF }
+
+function TRectF.ToString(aSize,aDecimals : Byte; aUseSize : Boolean = False) : RTLString;
+
+var
+  S : RTLString;
+
+begin
+  if aUseSize then
+    S:=Size.ToString(aSize,aDecimals)
+  else
+    S:=BottomRight.ToString(aSize,aDecimals);
+  Result:='['+TopLeft.ToString(aSize,aDecimals)+' - '+S+']';
+end;
+
+function TRectF.ToString(aUseSize: Boolean = False) : RTLString;
+
+begin
+  Result:=ToString(8,2,aUseSize);
+end;
 
 class operator TRectF. * (L, R: TRectF): TRectF;
 begin
@@ -1096,6 +1689,129 @@ begin
   Result.Y := (Bottom-Top) / 2 + Top;
 end;
 
+function TRectF.Ceiling: TRectF;
+begin
+  Result.BottomRight:=BottomRight.Ceiling;
+  Result.TopLeft:=TopLeft.Ceiling;
+end;
+
+function TRectF.CenterAt(const Dest: TRectF): TRectF;
+begin
+  Result:=Self;
+  RectCenter(Result,Dest);
+end;
+
+function TRectF.Fit(const Dest: TRectF): Single;
+
+var
+  R : TRectF;
+
+begin
+  R:=FitInto(Dest,Result);
+  Self:=R;
+end;
+
+function TRectF.FitInto(const Dest: TRectF; out Ratio: Single): TRectF;
+var
+  dw, dh, w, h : Single;
+begin
+  dw := Dest.Width;
+  dh := Dest.Height;
+  if (dw <= 0) or (dh <= 0) then
+  begin
+    Ratio := 1.0;
+    exit(Self);
+  end;
+
+  w := Self.Width;
+  h := Self.Height;
+
+  if w * dh > h * dw  then
+    Ratio := w / dw
+  else
+    Ratio := h / dh;
+
+  if Ratio = 0 then
+    exit(Self);
+
+  w := w / Ratio;
+  h := h / Ratio;
+
+  // Center the result within the Dest rectangle
+  Result.Left := (Dest.Left + Dest.Right - w) * 0.5;
+  Result.Right := Result.Left + w;
+
+  Result.Top := (Dest.Top + Dest.Bottom - h) * 0.5;
+  Result.Bottom := Result.Top + h;
+end;
+
+function TRectF.FitInto(const Dest: TRectF): TRectF;
+var
+  Ratio: Single;
+begin
+  Result:=FitInto(Dest,Ratio);
+end;
+
+function TRectF.PlaceInto(const Dest: TRectF; const AHorzAlign: THorzRectAlign = THorzRectAlign.Center;  const AVertAlign: TVertRectAlign = TVertRectAlign.Center): TRectF;
+
+var
+  R : TRectF;
+  X,Y : Single;
+  D : TRectF absolute dest;
+
+begin
+  if (Height>Dest.Height) or (Width>Dest.Width) then
+    R:=FitInto(Dest)
+  else
+    R:=Self;
+  case AHorzAlign of
+     THorzRectAlign.Left:
+       X:=D.Left;
+     THorzRectAlign.Center:
+       X:=(D.Left+D.Right-R.Width)/2;
+     THorzRectAlign.Right:
+       X:=D.Right-R.Width;
+  end;
+  case AVertAlign of
+    TVertRectAlign.Top:
+      Y:=D.Top;
+    TVertRectAlign.Center:
+      Y:=(D.Top+D.Bottom-R.Height)/2;
+    TVertRectAlign.Bottom:
+      Y:=D.Bottom-R.Height;
+  end;
+  R.SetLocation(PointF(X,Y));
+  Result:=R;
+end;
+
+function TRectF.SnapToPixel(AScale: Single; APlaceBetweenPixels: Boolean): TRectF;
+
+  function sc (S : single) : single; inline;
+
+  begin
+    Result:=System.Trunc(S*AScale)/AScale;
+  end;
+
+var
+  R : TRectF;
+  Off: Single;
+
+begin
+  if AScale<=0 then
+    AScale := 1;
+  R.Top:=Sc(Top);
+  R.Left:=Sc(Left);
+  R.Width:=Sc(Width);
+  R.Height:=Sc(Height);
+  if APlaceBetweenPixels then
+    begin
+    Off:=1/(2*aScale);
+    R.Offset(Off,Off);
+    end;
+  Result:=R;
+end;
+
+
 function TRectF.Contains(Pt: TPointF): Boolean;
 begin
   Result := (Left <= Pt.X) and (Pt.X < Right) and (Top <= Pt.Y) and (Pt.Y < Bottom);
@@ -1109,6 +1825,12 @@ end;
 class function TRectF.Empty: TRectF;
 begin
   Result := TRectF.Create(0,0,0,0);
+end;
+
+function TRectF.EqualsTo(const R: TRectF; const Epsilon: Single): Boolean;
+begin
+  Result:=TopLeft.EqualsTo(R.TopLeft,Epsilon);
+  Result:=Result and BottomRight.EqualsTo(R.BottomRight,Epsilon);
 end;
 
 function TRectF.GetHeight: Single;
@@ -1167,6 +1889,24 @@ begin
   Result := (CompareValue(Right,Left)<=0) or (CompareValue(Bottom,Top)<=0);
 end;
 
+procedure TRectF.Normalize;
+var
+  x: Single;
+begin
+  if Top>Bottom then
+  begin
+    x := Top;
+    Top := Bottom;
+    Bottom := x;
+  end;
+  if Left>Right then
+  begin
+    x := Left;
+    Left := Right;
+    Right := x;
+  end
+end;
+
 procedure TRectF.NormalizeRect;
 var
   x: Single;
@@ -1203,6 +1943,18 @@ procedure TRectF.Offset(DP: TPointF);
 begin
   left:=left+DP.x; right:=right+DP.x;
   bottom:=bottom+DP.y; top:=top+DP.y;
+end;
+
+function TRectF.Truncate: TRect;
+begin
+  Result.BottomRight:=BottomRight.Truncate;
+  Result.TopLeft:=TopLeft.Truncate;
+end;
+
+function TRectF.Round: TRect;
+begin
+  Result.BottomRight:=BottomRight.Round;
+  Result.TopLeft:=TopLeft.Round;
 end;
 
 procedure TRectF.SetHeight(AValue: Single);
@@ -1267,6 +2019,25 @@ end;
 
 { TPoint3D }
 
+function TPoint3D.ToString(aSize,aDecimals : Byte) : RTLString;
+
+var
+  Sx,Sy,Sz : shortstring;
+  P : integer;
+
+begin
+  Sx:=SingleToStr(X,aSize,aDecimals);
+  Sy:=SingleToStr(Y,aSize,aDecimals);
+  Sz:=SingleToStr(Z,aSize,aDecimals);
+  Result:='('+Sx+','+Sy+','+Sz+')';
+end;
+
+function TPoint3D.ToString : RTLString;
+
+begin
+  Result:=ToString(8,2);
+end;
+
 constructor TPoint3D.Create(const ax,ay,az:single);
 begin
   x:=ax; y:=ay; z:=az;
@@ -1283,7 +2054,6 @@ begin
 end;
 
 
-{$ifndef VER3_0}
 generic class procedure TBitConverter.UnsafeFrom<T>(const ASrcValue: T; var ADestination: Array of Byte; AOffset: Integer = 0);
 begin
   move(ASrcValue, ADestination[AOffset], SizeOf(T));
@@ -1321,6 +2091,49 @@ begin
 
   Result := TBitConverter.specialize UnsafeInTo<T>(ASource, AOffset);
 end;
-{$endif}
+
+{ TScoped }
+
+class operator TScoped.Initialize(var hdl: TScoped);
+begin
+  hdl.obj := nil;
+end;
+
+class operator TScoped.Finalize(var hdl: TScoped);
+begin
+  hdl.obj.free;
+  hdl.obj:=nil;
+end;
+
+procedure TScoped.Assign(aObj : T);
+begin
+  Self.Obj:=aObj;
+end;
+
+function TScoped.Swap(AObj:T):T;
+var
+  LCurrent:T;
+begin
+  LCurrent := self.obj;
+  Assign(AObj);
+  Result := LCurrent;
+end;
+
+function TScoped.Get() : T;
+begin
+  Result :=  self.obj;
+end;
+
+class operator TScoped.:=(aObj : T) : TScoped;
+
+begin
+  result.assign(aObj);
+end;
+
+class operator TScoped.:=(const aObj : TScoped) : T;
+
+begin
+  Result:=aObj.Get();
+end;
 
 end.

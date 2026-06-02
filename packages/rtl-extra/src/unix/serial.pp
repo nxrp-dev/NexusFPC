@@ -1,8 +1,10 @@
-{ Unit for handling the serial interfaces for Linux and similar Unices.
+{ Unit for handling the serial interfaces for Linux and similar Unixes.
   (c) 2000 Sebastian Guenther, sg@freepascal.org; modified MarkMLl 2012.
 }
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit Serial;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$MODE objfpc}
 {$H+}
@@ -10,7 +12,11 @@ unit Serial;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses UnixApi.Base,UnixApi.TermIO,UnixApi.Unix;
+{$ELSE FPC_DOTTEDUNITS}
 uses BaseUnix,termio,unix;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
 
@@ -92,7 +98,7 @@ function SerGetRI(Handle: TSerialHandle): Boolean;
   NOTE THAT on Linux, the only reliable mSec parameter is zero which results in
   a break of around 250 mSec. Might be completely ineffective on Solaris.
  }
-procedure SerBreak(Handle: TSerialHandle; mSec: LongInt=0; sync: boolean= true); 
+procedure SerBreak(Handle: TSerialHandle; mSec: LongInt=0; sync: boolean= true);
 
 type    TSerialIdle= procedure(h: TSerialHandle);
 
@@ -331,7 +337,7 @@ begin
     tcsendbreak(Handle, Trunc(mSec / 250));
   if sync then
     tcdrain(Handle)
-end; 
+end;
 
 function SerReadTimeout(Handle: TSerialHandle; var Buffer; mSec: LongInt): LongInt;
 

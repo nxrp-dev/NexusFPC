@@ -17,14 +17,21 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit iosxlocale;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.SysUtils, MacOsApi.MacOSAll;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   SysUtils, MacOSAll;
+{$ENDIF FPC_DOTTEDUNITS}
 
 procedure GetMacFormatSettings(var ASettings: TFormatSettings);
 
@@ -49,21 +56,21 @@ function CFStringToStr(AString: CFStringRef): UTF8String;
         Result:='';
         Exit;
       end;
-  
+
     // Try the quick way first
     Str:=CFStringGetCStringPtr(AString, kCFStringEncodingUTF8);
     if Str<>nil then
-      Result:=PChar(Str)
+      Result:=PAnsiChar(Str)
     else
       begin
         // if that doesn't work this will
         StrRange.location:=0;
         StrRange.length:=CFStringGetLength(AString);
-    
+
         CFStringGetBytes(AString, StrRange, kCFStringEncodingUTF8,
           Ord('?'), False, nil, 0, StrSize{%H-});
         SetLength(Result, StrSize);
-    
+
         if StrSize>0 then
           CFStringGetBytes(AString, StrRange, kCFStringEncodingUTF8,
             Ord('?'), False, @Result[1], StrSize, StrSize);
@@ -180,7 +187,7 @@ function ConvertFormatStr(const fmt: utf8string): utf8string;
 procedure GetMacFormatSettings(var ASettings: TFormatSettings);
   var
     loc: CFLocaleRef;
-  
+
     function _GetFormat(dateStyle: CFDateFormatterStyle; timeStyle: CFDateFormatterStyle; const DefFormat: utf8string): utf8string;
     var
       fmt: CFDateFormatterRef;
@@ -195,7 +202,7 @@ procedure GetMacFormatSettings(var ASettings: TFormatSettings);
       if Result = '' then
         Result:=DefFormat;
     end;
-  
+
     function _DateToStr(fmt: CFDateFormatterRef; const AFormat: utf8string; AYear: integer; AMonth, ADay, AHour: byte;
                         const ADefault: utf8string): utf8string;
     var
@@ -221,8 +228,8 @@ procedure GetMacFormatSettings(var ASettings: TFormatSettings);
       if Result = '' then
         Result:=ADefault;
     end;
-  
-    function _GetSeparator(dateStyle: CFDateFormatterStyle; timeStyle: CFDateFormatterStyle; DefSep: char): char;
+
+    function _GetSeparator(dateStyle: CFDateFormatterStyle; timeStyle: CFDateFormatterStyle; DefSep: AnsiChar): AnsiChar;
     var
       fmt: CFDateFormatterRef;
       s: utf8string;
@@ -246,7 +253,7 @@ procedure GetMacFormatSettings(var ASettings: TFormatSettings);
           CFRelease(fmt);
         end;
     end;
-  
+
   var
     s: utf8string;
     fmt: CFDateFormatterRef;
@@ -264,17 +271,17 @@ procedure GetMacFormatSettings(var ASettings: TFormatSettings);
         if Length(s)=1 then
           ThousandSeparator:=s[1]
         else
-          ThousandSeparator:=' ';  // Unicode char has been returned. Probably it is a whitespace
+          ThousandSeparator:=' ';  // Unicode AnsiChar has been returned. Probably it is a whitespace
         CurrencyString:=CFStringToStr(CFLocaleGetValue(loc, kCFLocaleCurrencySymbol));
-    
+
         DateSeparator:=_GetSeparator(kCFDateFormatterShortStyle, kCFDateFormatterNoStyle, DateSeparator);
         TimeSeparator:=_GetSeparator(kCFDateFormatterNoStyle, kCFDateFormatterShortStyle, TimeSeparator);
-    
+
         LongDateFormat:=_GetFormat(kCFDateFormatterLongStyle, kCFDateFormatterNoStyle, LongDateFormat);
         ShortDateFormat:=_GetFormat(kCFDateFormatterShortStyle, kCFDateFormatterNoStyle, ShortDateFormat);
         LongTimeFormat:=_GetFormat(kCFDateFormatterNoStyle, kCFDateFormatterLongStyle, LongTimeFormat);
         ShortTimeFormat:=_GetFormat(kCFDateFormatterNoStyle, kCFDateFormatterShortStyle, ShortTimeFormat);
-    
+
         fmt:=CFDateFormatterCreate(nil, loc, kCFDateFormatterNoStyle, kCFDateFormatterNoStyle);
         if fmt<>nil then
           begin

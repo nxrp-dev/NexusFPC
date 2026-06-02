@@ -136,9 +136,7 @@ implementation
       pvdef : tprocvardef absolute def;
       intfdef : tobjectdef;
       invokedef : tprocdef;
-      psym : tprocsym;
       sym : tsym;
-      st : tsymtable;
       i : longint;
       name : tidstring;
     begin
@@ -358,6 +356,14 @@ implementation
 
   {.$define DEBUG_CAPTURER}
 
+  function acceptable_typ(sym:tabstractvarsym;typ :tsymtyp) : boolean;
+    begin
+      acceptable_typ:=false;
+      if (sym.typ=typ) then
+        acceptable_typ:=true
+      else if (sym.typ=absolutevarsym) and (tabsolutevarsym(sym).reftyp=typ) then
+        acceptable_typ:=true;
+    end;
 
   function get_capturer(pd:tprocdef):tabstractvarsym;
 
@@ -366,7 +372,7 @@ implementation
         result:=tabstractvarsym(st.find(capturer_var_name));
         if not assigned(result) then
           internalerror(2022010703);
-        if result.typ<>typ then
+       if not acceptable_typ(result,typ) then
           internalerror(2022010704);
         if not is_class(result.vardef) then
           internalerror(2022010705);
@@ -401,7 +407,7 @@ implementation
         result:=tabstractvarsym(st.find(capturer_var_name+keepalive_suffix));
         if not assigned(result) then
           internalerror(2022051703);
-        if result.typ<>typ then
+        if not acceptable_typ(result,typ) then
           internalerror(2022051704);
         if not is_interfacecom(result.vardef) then
           internalerror(2022051705);
@@ -436,7 +442,6 @@ implementation
       def : tobjectdef;
       typesym : tsym;
       keepalive : tabstractvarsym;
-      intfimpl : TImplementedInterface;
       st : tsymtable;
     begin
       if pd.has_capturer then
@@ -512,9 +517,11 @@ implementation
     end;
 
 
-  function can_be_captured(sym:tsym):boolean;
+  function can_be_captured(sym:tsym;curpd:tprocdef):boolean;
     begin
       result:=false;
+      if (sym.typ=procsym) and assigned(curpd) and (curpd.procsym=sym) then
+        exit(true);
       if not (sym.typ in [localvarsym,paravarsym]) then
         exit;
       if tabstractnormalvarsym(sym).varoptions*[vo_is_result,vo_is_funcret]<>[] then
@@ -565,7 +572,7 @@ implementation
     end;
 
 
-  procedure capture_captured_syms(pd:tprocdef;owner:tprocinfo;capturedef:tobjectdef);
+  procedure capture_captured_syms(pd:tprocdef;owner:tprocinfo;capturedef:tobjectdef;oldpd:tprocdef);
     var
       curpd : tprocdef;
       subcapturer : tobjectdef;
@@ -583,7 +590,8 @@ implementation
       subcapturer:=capturedef;
       symstodo:=tfplist.create;
       for i:=0 to pd.capturedsyms.count-1 do
-        if can_be_captured(pcapturedsyminfo(pd.capturedsyms[i])^.sym) then
+        if can_be_captured(pcapturedsyminfo(pd.capturedsyms[i])^.sym,oldpd) and
+            (pcapturedsyminfo(pd.capturedsyms[i])^.sym.typ<>procsym) then
           symstodo.add(pcapturedsyminfo(pd.capturedsyms[i])^.sym);
       while symstodo.count>0 do
         begin
@@ -630,6 +638,9 @@ implementation
                     internalerror(2022011602);
                   symstodo.delete(i);
                 end
+              else if sym=pd.procsym then
+                { no explicit capturing needed here }
+                symstodo.delete(i)
               else
                 inc(i);
             end;
@@ -650,8 +661,13 @@ implementation
                 begin
                   {$ifdef DEBUG_CAPTURER}writeln('Adding field OuterSelf to ',subcapturer.typesym.name);{$endif}
                   if subcapturer.owner.symtablelevel>normal_function_level then
-                    { the outer self is the capturer of the outer procdef }
-                    sym:=get_or_create_capturer(curpd)
+                    begin
+                      { the outer self is the capturer of the outer procdef }
+                      sym:=get_or_create_capturer(curpd);
+                      { ensure that the outer capturer isn't put into a register anymore }
+                      tabstractvarsym(sym).different_scope:=true;
+                      tabstractvarsym(sym).varregable:=vr_none;
+                    end
                   else
                     begin
                       { the outer self is the self of the method }
@@ -681,6 +697,7 @@ implementation
             end;
         end;
       symstodo.free;
+      symstodo := nil;
     end;
 
 
@@ -718,7 +735,7 @@ implementation
       if not (sym.owner.symtabletype in [parasymtable,localsymtable]) then
         exit;
       if sym.owner.symtablelevel>normal_function_level then begin
-        pd.add_captured_sym(sym,n.fileinfo);
+        pd.add_captured_sym(sym,tloadnode(n).resultdef,n.fileinfo);
         result:=fen_true;
       end;
     end;
@@ -852,6 +869,7 @@ implementation
 
     var
       ps : tprocsym;
+      oldpd,
       pd : tprocdef;
       pinested,
       pi : tcgprocinfo;
@@ -875,6 +893,7 @@ implementation
       capturer:=nil;
       capturen:=nil;
       pinested:=nil;
+      oldpd:=nil;
 
       { determine a unique name for the variable, field for function of the
         node we're trying to load }
@@ -905,7 +924,7 @@ implementation
             for i:=0 to capturesyms.count-1 do
               begin
                 captured:=pcapturedsyminfo(capturesyms[i]);
-                if not can_be_captured(captured^.sym) then
+                if not can_be_captured(captured^.sym,pd) then
                   MessagePos1(captured^.fileinfo,sym_e_symbol_no_capture,captured^.sym.realname);
               end;
           if not (df_generic in owner.procdef.defoptions) then
@@ -913,6 +932,7 @@ implementation
               pinested:=find_nested_procinfo(pd);
               if not assigned(pinested) then
                 internalerror(2022041803);
+              oldpd:=pd;
               if pinested.parent<>owner then
                 begin
                   { we need to capture this into the owner of the nested function
@@ -956,7 +976,7 @@ implementation
       invokename:=method_name_funcref_invoke_decl+'__FPCINTERNAL__'+fileinfo_to_suffix(sym.fileinfo);
 
       ps:=cprocsym.create(invokename);
-      pd:=tprocdef(tabstractprocdef(n.resultdef).getcopyas(procdef,pc_normal,'',false));
+      pd:=tprocdef(tabstractprocdef(n.resultdef).getcopyas(procdef,pc_normal_no_hidden,'',false));
       pd.aliasnames.clear;
 
       pd.procsym:=ps;
@@ -966,8 +986,6 @@ implementation
       pd.localst.symtablelevel:=normal_function_level;
       { reset procoptions }
       pd.procoptions:=[];
-      { to simplify some checks }
-      pd.was_anonymous:=true;
       ps.ProcdefList.Add(pd);
       pd.forwarddef:=false;
       { set procinfo and current_procinfo.procdef }
@@ -975,6 +993,7 @@ implementation
       pi.procdef:=pd;
       if not assigned(pinested) then
         begin
+          insert_funcret_para(pd);
           insert_funcret_local(pd);
           { we always do a call, namely to the provided function }
           include(pi.flags,pi_do_call);
@@ -989,8 +1008,16 @@ implementation
           { fix function return symbol }
           pd.funcretsym:=pinested.procdef.funcretsym;
           pinested.procdef.funcretsym:=nil;
+          pinested.procdef.reset_after_conv;
+          insert_funcret_para(pinested.procdef);
           insert_funcret_local(pinested.procdef);
+          { the nested function needs access to the parent's framepointer to
+            access the capturer }
+          insert_parentfp_para(pinested.procdef);
+          pd.copied_from:=pinested.procdef;
         end;
+      { to simplify some checks, but only after insert_funcret_para }
+      pd.was_anonymous:=true;
       capturedef.symtable.insertsym(ps);
       owner.addnestedproc(pi);
 
@@ -1070,8 +1097,12 @@ implementation
         end;
       if assigned(pd.returndef) and not is_void(pd.returndef) then
         begin
+          if assigned(pinested) then
+            sym:=pinested.procdef.funcretsym
+          else
+            sym:=pd.funcretsym;
           n1:=cassignmentnode.create(
-                      cloadnode.create(pd.funcretsym,pd.localst),
+                      cloadnode.create(sym,sym.owner),
                       n1
                     );
           { captured variables cannot be in registers }
@@ -1089,13 +1120,13 @@ implementation
               for i:=0 to capturesyms.count-1 do
                 begin
                   captured:=pcapturedsyminfo(capturesyms[i]);
-                  pi.add_captured_sym(captured^.sym,captured^.fileinfo);
+                  pi.add_captured_sym(captured^.sym,captured^.def,captured^.fileinfo);
                   dispose(captured);
                 end;
               capturesyms.clear;
             end;
           { the original nested function now needs to capture only the capturer }
-          pinested.procdef.add_captured_sym(capturer,n.fileinfo);
+          pinested.procdef.add_captured_sym(capturer,capturedef,n.fileinfo);
         end
       { does this need to capture Self? }
       else if not foreachnodestatic(pm_postprocess,n,@find_self_sym,@selfinfo) then
@@ -1119,7 +1150,7 @@ implementation
       if assigned(selfinfo.selfsym) and not assigned(fieldsym) then
         { this isn't a procdef that was captured into a field, so capture the
           self }
-        pd.add_captured_sym(selfinfo.selfsym,n.fileinfo);
+        pd.add_captured_sym(selfinfo.selfsym,tabstractvarsym(selfinfo.selfsym).vardef,n.fileinfo);
 
       print_procinfo(pi);
       if assigned(pinested) then
@@ -1127,7 +1158,7 @@ implementation
 
       implintf.AddMapping(upcase(result.objrealname^+'.')+method_name_funcref_invoke_find,upcase(invokename));
 
-      capture_captured_syms(pd,owner,capturedef);
+      capture_captured_syms(pd,owner,capturedef,oldpd);
     end;
 
 
@@ -1144,9 +1175,6 @@ implementation
       info : pcapturedsyminfo;
       pi : tprocinfo;
       mapping : tsym_mapping;
-      invokedef,
-      parentdef,
-      curpd : tprocdef;
     begin
       capturer:=nil;
       result:=funcref_intf_for_proc(pd,fileinfo_to_suffix(pd.fileinfo));
@@ -1162,7 +1190,7 @@ implementation
               for i:=0 to pd.capturedsyms.count-1 do
                 begin
                   info:=pcapturedsyminfo(pd.capturedsyms[i]);
-                  if not can_be_captured(info^.sym) then
+                  if not can_be_captured(info^.sym,pd) then
                     MessagePos1(info^.fileinfo,sym_e_symbol_no_capture,info^.sym.realname)
                 end;
             end;
@@ -1229,7 +1257,7 @@ implementation
               for i:=0 to pd.capturedsyms.count-1 do
                 begin
                   info:=pcapturedsyminfo(pd.capturedsyms[i]);
-                  if not can_be_captured(info^.sym) then
+                  if not can_be_captured(info^.sym,pd) then
                     MessagePos1(info^.fileinfo,sym_e_symbol_no_capture,info^.sym.realname)
                   else if info^.sym=selfsym then
                     begin
@@ -1263,9 +1291,10 @@ implementation
 
                       { update the captured symbol }
                       info^.sym:=outerself;
+                      info^.def:=tabstractvarsym(outerself).vardef;
                     end
                   else if info^.sym.owner.defowner<>owner.procdef then
-                    owner.procdef.add_captured_sym(info^.sym,info^.fileinfo);
+                    owner.procdef.add_captured_sym(info^.sym,info^.def,info^.fileinfo);
                 end;
             end;
           { delete the original self parameter }
@@ -1278,7 +1307,7 @@ implementation
         internalerror(2022022201);
       implintf.AddMapping(upcase(result.objrealname^+'.')+method_name_funcref_invoke_find,upcase(invokename));
 
-      capture_captured_syms(pd,owner,capturedef);
+      capture_captured_syms(pd,owner,capturedef,nil);
     end;
 
 
@@ -1363,10 +1392,12 @@ implementation
           if not assigned(outercapturer) then
             internalerror(2022011605);
           selfnode:=cloadnode.create(outercapturer,outercapturer.owner);
+          make_not_regable(selfnode,[ra_different_scope]);
           outeralive:=get_capturer_alive(tprocdef(ctx.procdef.owner.defowner));
           if not assigned(outeralive) then
             internalerror(2022051706);
           alivenode:=cloadnode.create(outeralive,outeralive.owner);
+          make_not_regable(alivenode,[ra_different_scope]);
         end;
       addstatement(stmt,cassignmentnode.create(
                           csubscriptnode.create(
@@ -1437,6 +1468,7 @@ implementation
     tconvert_mapping=record
       oldsym:tsym;
       newsym:tsym;
+      olddef:tdef;
       selfnode:tnode;
     end;
     pconvert_mapping=^tconvert_mapping;
@@ -1449,29 +1481,75 @@ implementation
       i : longint;
       old_filepos : tfileposinfo;
       loadprocvar : boolean;
+      paras: tnode;
+      cnf : tcallnodeflags;
+      paraold,
+      paranew : tcallparanode;
     begin
       result:=fen_true;
-      if n.nodetype<>loadn then
+      if not (n.nodetype in [loadn,calln]) then
         exit;
       for i:=0 to convertarg^.mappings.count-1 do
         begin
           mapping:=convertarg^.mappings[i];
-          if tloadnode(n).symtableentry<>mapping^.oldsym then
-            continue;
-          old_filepos:=current_filepos;
-          current_filepos:=n.fileinfo;
-          loadprocvar:=nf_load_procvar in n.flags;
-          n.free;
-          n:=csubscriptnode.create(mapping^.newsym,mapping^.selfnode.getcopy);
-          if loadprocvar then
-            include(n.flags,nf_load_procvar);
-          if (mapping^.oldsym.typ=paravarsym) and
-              (vo_is_self in tparavarsym(mapping^.oldsym).varoptions) and
-              not is_implicit_pointer_object_type(tparavarsym(mapping^.oldsym).vardef) then
-            n:=cderefnode.create(n);
-          typecheckpass(n);
-          current_filepos:=old_filepos;
-          break;
+          case n.nodetype of
+            loadn:
+              begin
+                if tloadnode(n).symtableentry<>mapping^.oldsym then
+                  continue;
+                old_filepos:=current_filepos;
+                current_filepos:=n.fileinfo;
+                loadprocvar:=nf_load_procvar in n.flags;
+                n.free;
+                n:=csubscriptnode.create(mapping^.newsym,mapping^.selfnode.getcopy);
+                if loadprocvar then
+                  include(n.flags,nf_load_procvar);
+                if (mapping^.oldsym.typ=paravarsym) and
+                    (vo_is_self in tparavarsym(mapping^.oldsym).varoptions) and
+                    not is_implicit_pointer_object_type(tparavarsym(mapping^.oldsym).vardef) then
+                  n:=cderefnode.create(n);
+                typecheckpass(n);
+                current_filepos:=old_filepos;
+                break;
+              end;
+            calln:
+              begin
+                if mapping^.oldsym.typ<>procsym then
+                  continue;
+                if tcallnode(n).symtableprocentry<>tprocsym(mapping^.oldsym) then
+                  continue;
+                if tcallnode(n).procdefinition<>tprocdef(mapping^.olddef) then
+                  continue;
+                old_filepos:=current_filepos;
+                current_filepos:=n.fileinfo;
+                loadprocvar:=nf_load_procvar in n.flags;
+                paras:=tcallnode(n).left;
+                paraold:=tcallparanode(paras);
+                paranew:=nil;
+                while assigned(paraold) do
+                  begin
+                    if not (vo_is_hidden_para in paraold.parasym.varoptions) then
+                      begin
+                        paranew:=ccallparanode.create(paraold.left,paranew);
+                        paraold.left:=nil;
+                      end;
+                    paraold:=tcallparanode(paraold.right);
+                  end;
+                reverseparameters(paranew);
+                if assigned(tcallnode(n).methodpointer) then
+                  internalerror(2023120802);
+                cnf:=tcallnode(n).callnodeflags;
+                n.free;
+                n:=ccallnode.create(paranew,tprocsym(mapping^.newsym),mapping^.newsym.owner,mapping^.selfnode.getcopy,cnf,nil);
+                if loadprocvar then
+                  include(n.flags,nf_load_procvar);
+                typecheckpass(n);
+                current_filepos:=old_filepos;
+                break;
+              end;
+            else
+              internalerror(2023120801);
+          end;
         end;
     end;
 
@@ -1496,16 +1574,14 @@ implementation
       end;
 
     var
-      i,j : longint;
+      i: longint;
       capturer : tobjectdef;
       tocapture,
       capturedsyms : tfplist;
       convertarg : tconvert_arg;
       mapping : pconvert_mapping;
-      invokepd : tprocdef;
       selfsym,
       sym : tsym;
-      info: pcapturedsyminfo;
     begin
       {$ifdef DEBUG_CAPTURER}writeln('Converting captured symbols of ',pd.procsym.name);{$endif}
 
@@ -1529,12 +1605,26 @@ implementation
           for i:=0 to pd.capturedsyms.count-1 do
             begin
               sym:=tsym(pcapturedsyminfo(pd.capturedsyms[i])^.sym);
-              if not can_be_captured(sym) then
+              if not can_be_captured(sym,pd) and
+                  not (
+                    (sym.typ=procsym) and
+                    assigned(pd.copied_from) and
+                    (pd.copied_from.procsym=sym)
+                  ) then
                 continue;
               {$ifdef DEBUG_CAPTURER}writeln('Replacing symbol ',sym.Name);{$endif}
               new(mapping);
               mapping^.oldsym:=sym;
-              mapping^.newsym:=tabstractnormalvarsym(sym).capture_sym;
+              if sym.typ=procsym then
+                begin
+                  if not assigned(pd.copied_from) or
+                      (pd.copied_from.procsym<>sym) then
+                    internalerror(2023123001);
+                  mapping^.newsym:=pd.procsym;
+                end
+              else
+                mapping^.newsym:=tabstractnormalvarsym(sym).capture_sym;
+              mapping^.olddef:=pcapturedsyminfo(pd.capturedsyms[i])^.def;
               if not assigned(mapping^.newsym) then
                 internalerror(2022010810);
               mapping^.selfnode:=self_tree_for_sym(selfsym,mapping^.newsym);
@@ -1558,12 +1648,15 @@ implementation
           for i:=0 to pd.capturedsyms.count-1 do
             begin
               sym:=tsym(pcapturedsyminfo(pd.capturedsyms[i])^.sym);
-              if not can_be_captured(sym) or not assigned(tabstractnormalvarsym(sym).capture_sym) then
+              if not can_be_captured(sym,pd) or
+                  (sym.typ=procsym) or
+                  not assigned(tabstractnormalvarsym(sym).capture_sym) then
                 continue;
               {$ifdef DEBUG_CAPTURER}writeln('Replacing symbol ',sym.Name);{$endif}
               new(mapping);
               mapping^.oldsym:=sym;
               mapping^.newsym:=tabstractnormalvarsym(sym).capture_sym;
+              mapping^.olddef:=pcapturedsyminfo(pd.capturedsyms[i])^.def;
               capturer:=tobjectdef(mapping^.newsym.owner.defowner);
               if not is_class(capturer) then
                 internalerror(2022012701);
@@ -1586,7 +1679,7 @@ implementation
 
           selfsym:=get_capturer(pd);
 
-          { only capture those symbols that weren't capture already by one of
+          { only capture those symbols that weren't captured already by one of
             the above if-clauses and thus are now listed in capturedsyms }
           tocapture:=tfplist.create;
 
@@ -1613,6 +1706,7 @@ implementation
                   tocapture.add(sym);
             end;
 
+          convertarg.mappings.capacity:=convertarg.mappings.count+tocapture.count;
           for i:=0 to tocapture.count-1 do
             begin
               new(mapping);
@@ -1626,21 +1720,24 @@ implementation
             end;
 
           tocapture.free;
+          tocapture := nil;
         end;
 
       { not required anymore }
       capturedsyms.free;
+      capturedsyms := nil;
 
-      foreachnodestatic(pm_postprocess,tree,@convert_captured_sym,@convertarg);
+      if convertarg.mappings.count>0 then
+        foreachnodestatic(pm_postprocess,tree,@convert_captured_sym,@convertarg);
 
       for i:=0 to convertarg.mappings.count-1 do
         begin
           mapping:=pconvert_mapping(convertarg.mappings[i]);
-          mapping^.selfnode.free;
+          mapping^.selfnode.free; // no nil needed
           dispose(mapping);
         end;
 
-      convertarg.mappings.free;
+      convertarg.mappings.free; // no nil needed
     end;
 
 

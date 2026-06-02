@@ -39,7 +39,7 @@
 {$define __MAC_10_8 := 1080}
 {$define __MAC_10_9 := 1090}
 {$define __MAC_10_10 := 1100}
-{$define __MAC_NA   := 9999}   
+{$define __MAC_NA   := 9999}
 
 {$define __IPHONE_2_0 := 20000}
 {$define __IPHONE_2_1 := 20100}
@@ -55,7 +55,7 @@
 {$define __IPHONE_6_0 := 60000}
 {$define __IPHONE_7_0 := 70000}
 {$define __IPHONE_8_0 := 80000}
-{$define __IPHONE_NA  := 99999}  
+{$define __IPHONE_NA  := 99999}
 {$define __IPHONE_LATEST  := __IPHONE_8_0}
 
 // Target Conditionals
@@ -196,15 +196,24 @@
 
 {$endif}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit QuartzCore;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 
 {$linkframework QuartzCore}
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+{$ifdef COCOAALL}
+	{$ifdef MACOSALL}
+	  Api.Cocoa.DefinedClassesCoreImage, Api.Cocoa.DefinedClassesFoundation, Api.Cocoa.DefinedClassesQuartzCore, Api.Cocoa.CoreVideo, Api.Cocoa.CocoaAll, System.CTypes, Api.Cocoa.CocoaAll, MacOsApi.MacOSAll;
+{$ELSE FPC_DOTTEDUNITS}
 uses
 {$ifdef COCOAALL}
 	{$ifdef MACOSALL}
 	  DefinedClassesCoreImage, DefinedClassesFoundation, DefinedClassesQuartzCore, CoreVideo, CocoaAll, CTypes, MacOSAll;
+{$ENDIF FPC_DOTTEDUNITS}
 	{$else}
 		DefinedClassesCoreImage, DefinedClassesFoundation, DefinedClassesQuartzCore, CoreVideo, CTypes, MacTypes, MacOSXPosix, CocoaAll, AEDataModel, IconsCore, IOSurfaceAPI, SecBase, SecTrust, MacGL, CGLTypes, CFBase, CFArray, CFBag, CFCharacterSet, CFData, CFDate, CFDictionary, CFNumber, CFPropertyList, CFSet, CFString, CFStringEncodingExt, CFTimeZone, CFTree, CFURL, CFXMLNode, CFXMLParser, CFMachPort, CFMessagePort, CFRunLoop, CFSocket, CFBinaryHeap, CFBitVector, CFBundle, CFByteOrders, CFPlugIn, CFPreferences, CFURLAccess, CFUUID, CFLocale, CFStream, CFDateFormatter, CFNumberFormatter, CFCalendar, CFUserNotification, CFNotificationCenter, CFAttributedString, CFNetworkErrorss, CGBase, CGAffineTransforms, CGBitmapContext, CGColor, CGColorSpace, CGContext, CGDataConsumer, CGDataProvider, CGDirectDisplay, CGDirectPalette, CGDisplayConfiguration, CGDisplayFades, CGErrors, CGEvent, CGEventSource, CGEventTypes, CGFont, CGFunction, CGGLContext, CGGeometry, CGImage, CGLayer, CGPDFArray, CGPDFContentStream, CGPDFContext, CGPDFDictionary, CGPDFDocument, CGPDFObject, CGPDFOperatorTable, CGPDFPage, CGPDFScanner, CGPDFStream, CGPDFString, CGPSConverter, CGPath, CGPattern, CGRemoteOperation, CGSession, CGShading, CGWindowLevels, CVBase, CVImageBuffer;
 	{$endif}

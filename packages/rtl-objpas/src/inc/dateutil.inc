@@ -1,5 +1,6 @@
 {$mode objfpc}
 {$h+}
+{$modeswitch typehelpers}
 {
     This file is part of the Free Pascal run time library.
     Copyright (c) 1999-2000 by the Free Pascal development team
@@ -14,14 +15,21 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
-
+{$IFNDEF FPC_DOTTEDUNITS}
 unit DateUtils;
+{$ENDIF}
 
 interface
 
 {$ifndef FPUNONE}
+
+{$IFDEF FPC_DOTTEDUNITS}
 uses
-  SysUtils, Math;
+  System.SysUtils, System.Math, System.TimeSpan;
+{$ELSE}
+uses
+  SysUtils, Math, System.TimeSpan;
+{$ENDIF}
 
 { ---------------------------------------------------------------------
     Various constants
@@ -80,21 +88,23 @@ Const
   ApproxDaysPerMonth: Double = 30.4375;
   ApproxDaysPerYear: Double  = 365.25;
 
+  DateTimeEpsilon: Double = 1E-10;    // about 0.1 ms
 
 
 { ---------------------------------------------------------------------
     Simple trimming functions.
   ---------------------------------------------------------------------}
 
-Function DateOf(const AValue: TDateTime): TDateTime;
-Function TimeOf(const AValue: TDateTime): TDateTime;
+Function DateOf(const AValue: TDateTime): TDateTime; inline;
+Function TimeOf(const AValue: TDateTime): TDateTime; inline;
 
 { ---------------------------------------------------------------------
     Identification functions.
   ---------------------------------------------------------------------}
 
 Function IsInLeapYear(const AValue: TDateTime): Boolean;
-Function IsPM(const AValue: TDateTime): Boolean;
+Function IsPM(const AValue: TDateTime): Boolean; inline;
+function IsAM(const AValue: TDateTime): Boolean; inline;
 Function IsValidDate(const AYear, AMonth, ADay: Word): Boolean;
 Function IsValidTime(const AHour, AMinute, ASecond, AMilliSecond: Word): Boolean;
 Function IsValidDateTime(const AYear, AMonth, ADay, AHour, AMinute, ASecond, AMilliSecond: Word): Boolean;
@@ -119,7 +129,7 @@ Function DaysInAMonth(const AYear, AMonth: Word): Word;
   ---------------------------------------------------------------------}
 
 
-Function Today: TDateTime;
+Function Today: TDateTime; inline;
 Function Yesterday: TDateTime;
 Function Tomorrow: TDateTime;
 Function IsToday(const AValue: TDateTime): Boolean;
@@ -133,7 +143,7 @@ Function PreviousDayOfWeek (DayOfWeek : Word) : Word;
 
 Function YearOf(const AValue: TDateTime): Word;
 Function MonthOf(const AValue: TDateTime): Word;
-Function WeekOf(const AValue: TDateTime): Word;
+Function WeekOf(const AValue: TDateTime): Word; inline;
 Function DayOf(const AValue: TDateTime): Word;
 Function HourOf(const AValue: TDateTime): Word;
 Function MinuteOf(const AValue: TDateTime): Word;
@@ -155,7 +165,7 @@ Function EndOfAYear(const AYear: Word): TDateTime;
 
 Function StartOfTheMonth(const AValue: TDateTime): TDateTime;
 Function EndOfTheMonth(const AValue: TDateTime): TDateTime;
-Function StartOfAMonth(const AYear, AMonth: Word): TDateTime;
+Function StartOfAMonth(const AYear, AMonth: Word): TDateTime; inline;
 Function EndOfAMonth(const AYear, AMonth: Word): TDateTime;
 
 { ---------------------------------------------------------------------
@@ -166,8 +176,8 @@ Function EndOfAMonth(const AYear, AMonth: Word): TDateTime;
 Function StartOfTheWeek(const AValue: TDateTime): TDateTime;
 Function EndOfTheWeek(const AValue: TDateTime): TDateTime;
 Function StartOfAWeek(const AYear, AWeekOfYear: Word; const ADayOfWeek: Word): TDateTime;
-Function StartOfAWeek(const AYear, AWeekOfYear: Word): TDateTime; // ADayOFWeek 1
-Function EndOfAWeek(const AYear, AWeekOfYear: Word; const ADayOfWeek: Word): TDateTime;
+Function StartOfAWeek(const AYear, AWeekOfYear: Word): TDateTime; inline; // ADayOFWeek 1
+Function EndOfAWeek(const AYear, AWeekOfYear: Word; const ADayOfWeek: Word): TDateTime; inline;
 Function EndOfAWeek(const AYear, AWeekOfYear: Word): TDateTime; // const ADayOfWeek: Word = 7
 
 
@@ -175,18 +185,18 @@ Function EndOfAWeek(const AYear, AWeekOfYear: Word): TDateTime; // const ADayOfW
     Start/End of day functions.
   ---------------------------------------------------------------------}
 
-Function StartOfTheDay(const AValue: TDateTime): TDateTime;
+Function StartOfTheDay(const AValue: TDateTime): TDateTime; inline;
 Function EndOfTheDay(const AValue: TDateTime): TDateTime;
-Function StartOfADay(const AYear, AMonth, ADay: Word): TDateTime; overload;
+Function StartOfADay(const AYear, AMonth, ADay: Word): TDateTime; overload; inline;
 Function StartOfADay(const AYear, ADayOfYear: Word): TDateTime; overload;
-Function EndOfADay(const AYear, AMonth, ADay: Word): TDateTime; overload;
+Function EndOfADay(const AYear, AMonth, ADay: Word): TDateTime; overload; inline;
 Function EndOfADay(const AYear, ADayOfYear: Word): TDateTime; overload;
 
 { ---------------------------------------------------------------------
     Part of year functions.
   ---------------------------------------------------------------------}
 
-Function MonthOfTheYear(const AValue: TDateTime): Word;
+Function MonthOfTheYear(const AValue: TDateTime): Word; inline;
 Function WeekOfTheYear(const AValue: TDateTime): Word; overload;
 Function WeekOfTheYear(const AValue: TDateTime; out AYear: Word): Word; overload;
 Function DayOfTheYear(const AValue: TDateTime): Word;
@@ -221,7 +231,7 @@ Function MilliSecondOfTheWeek(const AValue: TDateTime): LongWord;
     Part of day functions.
   ---------------------------------------------------------------------}
 
-Function HourOfTheDay(const AValue: TDateTime): Word;
+Function HourOfTheDay(const AValue: TDateTime): Word; inline;
 Function MinuteOfTheDay(const AValue: TDateTime): Word;
 Function SecondOfTheDay(const AValue: TDateTime): LongWord;
 Function MilliSecondOfTheDay(const AValue: TDateTime): LongWord;
@@ -230,7 +240,7 @@ Function MilliSecondOfTheDay(const AValue: TDateTime): LongWord;
     Part of hour functions.
   ---------------------------------------------------------------------}
 
-Function MinuteOfTheHour(const AValue: TDateTime): Word;
+Function MinuteOfTheHour(const AValue: TDateTime): Word; inline;
 Function SecondOfTheHour(const AValue: TDateTime): Word;
 Function MilliSecondOfTheHour(const AValue: TDateTime): LongWord;
 
@@ -239,28 +249,28 @@ Function MilliSecondOfTheHour(const AValue: TDateTime): LongWord;
   ---------------------------------------------------------------------}
 
 
-Function SecondOfTheMinute(const AValue: TDateTime): Word;
+Function SecondOfTheMinute(const AValue: TDateTime): Word; inline;
 Function MilliSecondOfTheMinute(const AValue: TDateTime): LongWord;
 
 { ---------------------------------------------------------------------
     Part of second functions.
   ---------------------------------------------------------------------}
 
-Function MilliSecondOfTheSecond(const AValue: TDateTime): Word;
+Function MilliSecondOfTheSecond(const AValue: TDateTime): Word; inline;
 
 
 { ---------------------------------------------------------------------
     Range checking functions.
   ---------------------------------------------------------------------}
 
-Function WithinPastYears(const ANow, AThen: TDateTime; const AYears: Integer): Boolean;
-Function WithinPastMonths(const ANow, AThen: TDateTime; const AMonths: Integer): Boolean;
-Function WithinPastWeeks(const ANow, AThen: TDateTime; const AWeeks: Integer): Boolean;
-Function WithinPastDays(const ANow, AThen: TDateTime; const ADays: Integer): Boolean;
-Function WithinPastHours(const ANow, AThen: TDateTime; const AHours: Int64): Boolean;
-Function WithinPastMinutes(const ANow, AThen: TDateTime; const AMinutes: Int64): Boolean;
-Function WithinPastSeconds(const ANow, AThen: TDateTime; const ASeconds: Int64): Boolean;
-Function WithinPastMilliSeconds(const ANow, AThen: TDateTime; const AMilliSeconds: Int64): Boolean;
+Function WithinPastYears(const ANow, AThen: TDateTime; const AYears: Integer): Boolean; inline;
+Function WithinPastMonths(const ANow, AThen: TDateTime; const AMonths: Integer): Boolean; inline;
+Function WithinPastWeeks(const ANow, AThen: TDateTime; const AWeeks: Integer): Boolean; inline;
+Function WithinPastDays(const ANow, AThen: TDateTime; const ADays: Integer): Boolean; inline;
+Function WithinPastHours(const ANow, AThen: TDateTime; const AHours: Int64): Boolean; inline;
+Function WithinPastMinutes(const ANow, AThen: TDateTime; const AMinutes: Int64): Boolean; inline;
+Function WithinPastSeconds(const ANow, AThen: TDateTime; const ASeconds: Int64): Boolean; inline;
+Function WithinPastMilliSeconds(const ANow, AThen: TDateTime; const AMilliSeconds: Int64): Boolean; inline;
 
 { ---------------------------------------------------------------------
     Period functions.
@@ -274,7 +284,7 @@ Function HoursBetween(const ANow, AThen: TDateTime): Int64;
 Function MinutesBetween(const ANow, AThen: TDateTime): Int64;
 Function SecondsBetween(const ANow, AThen: TDateTime): Int64;
 Function MilliSecondsBetween(const ANow, AThen: TDateTime): Int64;
-Procedure PeriodBetween(const ANow, AThen: TDateTime; Out Years, months, days : Word); 
+Procedure PeriodBetween(const ANow, AThen: TDateTime; Out Years, months, days : Word);
 
 { ---------------------------------------------------------------------
     Timespan in xxx functions.
@@ -368,14 +378,14 @@ Function RecodeDateTime(const AValue: TDateTime; const AYear, AMonth, ADay, AHou
 Function TryRecodeDateTime(const AValue: TDateTime; const AYear, AMonth, ADay, AHour, AMinute, ASecond, AMilliSecond: Word; out AResult: TDateTime): Boolean;
 
 { ---------------------------------------------------------------------
-    Comparision of date/time
+    Comparison of date/time
   ---------------------------------------------------------------------}
 
 Function CompareDateTime(const A, B: TDateTime): TValueRelationship;
 Function CompareDate(const A, B: TDateTime): TValueRelationship;
 Function CompareTime(const A, B: TDateTime): TValueRelationship;
 Function SameDateTime(const A, B: TDateTime): Boolean;
-Function SameDate(const A, B: TDateTime): Boolean;
+Function SameDate(const A, B: TDateTime): Boolean; inline;
 Function SameTime(const A, B: TDateTime): Boolean;
 function DateTimeInRange(ADateTime: TDateTime; AStartDateTime, AEndDateTime: TDateTime; aInclusive: Boolean = True): Boolean;
 function TimeInRange(ATime: TTime; AStartTime, AEndTime: TTime; AInclusive: Boolean = True): Boolean;
@@ -450,8 +460,10 @@ Function LocalTimeToUniversal(LT: TDateTime; TZOffset: Integer): TDateTime;
 
 
 { ScanDateTime is a limited inverse of formatdatetime }
-function ScanDateTime(const Pattern:string;const s:string;const fmt:TFormatSettings;startpos:integer=1) : tdatetime; overload;
+function ScanDateTime(const Pattern:String;const s:string;const fmt:TFormatSettings;startpos:integer=1) : tdatetime; overload;
 function ScanDateTime(const Pattern:string;const s:string;startpos:integer=1) : tdatetime; overload;
+
+
 
 // ISO date/time
 // YYYYMMDD or YYYY-MM-DD
@@ -472,14 +484,179 @@ Function ISO8601ToDateDef(const DateString: string; aDefault : TDateTime; Return
 Function TryISO8601ToDate(const DateString: string; out ADateTime: TDateTime; ReturnUTC : Boolean = True) : Boolean;
 
 
+type
+  // Original code by Colin Johnsun, used with permission under FPC license.
+  // See https://gitlab.com/freepascal.org/fpc/source/-/issues/40097
+
+  { TDateTimeHelper }
+
+  TDateTimeHelper = type helper for TDateTime
+  private
+    function GetDay: Word; inline;
+    function GetDayOfWeek: Word; inline;
+    function GetDayOfYear: Word; inline;
+    function GetHour: Word; inline;
+    function GetMillisecond: Word; inline;
+    function GetMinute: Word; inline;
+    function GetMonth: Word; inline;
+    function GetSecond: Word; inline;
+    function GetYear: Word; inline;
+    class function GetNow: TDateTime; static; inline;
+    class function GetToday: TDateTime; static; inline;
+    class function GetTomorrow: TDateTime; static; inline;
+    class function GetYesterDay: TDateTime; static; inline;
+    function GetUnixTime: Int64;
+    function GetTotalSecounds: Int64;
+    // Parse a string as TDateTime, using a string format ex.('MM/dd/yyyy hh:mm:ss')
+    class function Parse(Date: string; aFormat: string = ''; aDateSeparator:
+      Char = #0; aTimeSeparator: Char = #0): TDateTime; static; inline;
+
+   // Parse a string as TDateTime, using local string ex. ('en-US')
+    class function ParseLocal(Date: string; local: string = ''): TDateTime;
+      static; inline;
+  public
+    class function Create(const aYear, aMonth, aDay: Word): TDateTime; overload; static; inline;
+    class function Create(const aYear, aMonth, aDay, aHour, aMinute, aSecond, aMillisecond: Word): TDateTime; overload; static; inline;
+    class function Create(Date: string; aFormat: string = ''; aDateSeparator: Char = #0; aTimeSeparator: Char = #0): TDateTime; overload; static; inline;
+    class function CreateLocal(Date: string; local: string = ''): TDateTime; static; inline;
+    class function CreateUnixTime(const Value: Int64): TDateTime; static; inline;
+    class function CreateTotalSeconds(const Value: Int64): TDateTime; static; inline;
+    class property Now: TDateTime read GetNow;
+    class property Today: TDateTime read GetToday;
+    class property Yesterday: TDateTime read GetYesterDay;
+    class property Tomorrow: TDateTime read GetTomorrow;
+    function GetDate: TDateTime; inline;
+    function GetTime: TDateTime; inline;
+    function ToString(const aFormatStr: string = ''): string; inline;
+    function Format(const aFormatStr: string) : string;
+    function StartOfYear: TDateTime; inline;
+    function EndOfYear: TDateTime; inline;
+    function StartOfMonth: TDateTime; inline;
+    function EndOfMonth: TDateTime; inline;
+    function StartOfWeek: TDateTime; inline;
+    function EndOfWeek: TDateTime; inline;
+    function StartOfDay: TDateTime; inline;
+    function EndOfDay: TDateTime; inline;
+    function AddYears(const aNumberOfYears: Integer = 1): TDateTime; inline;
+    function AddMonths(const aNumberOfMonths: Integer = 1): TDateTime; inline;
+    function AddDays(const aNumberOfDays: Integer = 1): TDateTime; inline;
+    function AddHours(const aNumberOfHours: Int64 = 1): TDateTime; inline;
+    function AddMinutes(const aNumberOfMinutes: Int64 = 1): TDateTime; inline;
+    function AddSeconds(const aNumberOfSeconds: Int64 = 1): TDateTime; inline;
+    function AddMilliseconds(const aNumberOfMilliseconds: Int64 = 1): TDateTime; inline;
+    function CompareTo(const aDateTime: TDateTime): TValueRelationship; inline;
+    function Equals(const aDateTime: TDateTime): Boolean; inline;
+    function IsSameDay(const aDateTime: TDateTime): Boolean; inline;
+    function InRange(const aStartDateTime, aEndDateTime: TDateTime; const
+      aInclusive: Boolean = True): Boolean; inline;
+    function IsInLeapYear: Boolean; inline;
+    function IsToday: Boolean; inline;
+    function IsAM: Boolean; inline;
+    function IsPM: Boolean; inline;
+    function YearsBetween(const aDateTime: TDateTime): Integer; inline;
+    function MonthsBetween(const aDateTime: TDateTime): Integer; inline;
+    function WeeksBetween(const aDateTime: TDateTime): Integer; inline;
+    function DaysBetween(const aDateTime: TDateTime): Integer; inline;
+    function HoursBetween(const aDateTime: TDateTime): Int64; inline;
+    function MinutesBetween(const aDateTime: TDateTime): Int64; inline;
+    function SecondsBetween(const aDateTime: TDateTime): Int64; inline;
+    function MilliSecondsBetween(const aDateTime: TDateTime): Int64; inline;
+    // Delphi compatible
+    Function WithinPastYears(const AThen: TDateTime; const AYears: Integer): Boolean; inline;
+    Function WithinPastMonths(const AThen: TDateTime; const AMonths: Integer): Boolean; inline;
+    Function WithinPastWeeks(const AThen: TDateTime; const AWeeks: Integer): Boolean; inline;
+    Function WithinPastDays(const AThen: TDateTime; const ADays: Integer): Boolean; inline;
+    Function WithinPastHours(const AThen: TDateTime; const AHours: Int64): Boolean; inline;
+    Function WithinPastMinutes(const AThen: TDateTime; const AMinutes: Int64): Boolean; inline;
+    Function WithinPastSeconds(const AThen: TDateTime; const ASeconds: Int64): Boolean; inline;
+    Function WithinPastMilliSeconds(const AThen: TDateTime; const AMilliSeconds: Int64): Boolean; inline;
+
+    function WithinYears(const aDateTime: TDateTime; const aYears: Integer): Boolean; inline;
+    function WithinMonths(const aDateTime: TDateTime; const aMonths: Integer): Boolean; inline;
+    function WithinWeeks(const aDateTime: TDateTime; const aWeeks: Integer): Boolean; inline;
+    function WithinDays(const aDateTime: TDateTime; const aDays: Integer): Boolean; inline;
+    function WithinHours(const aDateTime: TDateTime; const aHours: Int64): Boolean; inline;
+    function WithinMinutes(const aDateTime: TDateTime; const aMinutes: Int64): Boolean; inline;
+    function WithinSeconds(const aDateTime: TDateTime; const aSeconds: Int64): Boolean; inline;
+    function WithinMilliseconds(const aDateTime: TDateTime; const AMilliseconds: Int64): Boolean; inline;
+    property Date: TDateTime read GetDate;
+    property Time: TDateTime read GetTime;
+    property DayOfWeek: Word read GetDayOfWeek;
+    property DayOfYear: Word read GetDayOfYear;
+    property Year: Word read GetYear;
+    property Month: Word read GetMonth;
+    property Day: Word read GetDay;
+    property Hour: Word read GetHour;
+    property Minute: Word read GetMinute;
+    property Second: Word read GetSecond;
+    property Millisecond: Word read GetMillisecond;
+    property UnixTime: Int64 read GetUnixTime;
+    property TotalSeconds: Int64 read GetTotalSecounds;
+  end;
+
+type
+  ELocalTimeInvalid = class(Exception);
+  EDateTimeException = class(Exception);
+
+  TLocalTimeType = (lttStandard, lttDaylight, lttAmbiguous, lttInvalid);
+
+  TTimeZone = class abstract
+  private
+    class var _Local: TTimeZone;
+    function GetUtcOffsetInSeconds(const aDateTime: TDateTime; const aForceDaylight: Boolean): Int64;
+    function GetCurrentAbbreviation: string;
+    function GetCurrentDisplayName: string;
+    function GetCurrentUtcOffset: TTimeSpan;
+  protected
+    function DoGetID: string; virtual; abstract;
+    function DoGetDisplayName(const aDateTime: TDateTime; const aForceDaylight: Boolean): string; virtual; abstract;
+    procedure DoGetOffsetsAndType(const aDateTime: TDateTime; out aOffset, aDstSave: Int64; out aType: TLocalTimeType); virtual; abstract;
+  public
+    class constructor Init;
+    class destructor Done;
+    function GetUtcOffset(const aDateTime: TDateTime; const aForceDaylight: Boolean = False): TTimeSpan;
+    function ToUniversalTime(const aDateTime: TDateTime; const aForceDaylight: Boolean = False): TDateTime;
+    function ToLocalTime(const aDateTime: TDateTime): TDateTime;
+    function GetDisplayName(const aDateTime: TDateTime; const aForceDaylight: Boolean = False): string;
+    function GetAbbreviation(const aDateTime: TDateTime; const aForceDaylight: Boolean = False): string;
+    function GetLocalTimeType(const aDateTime: TDateTime): TLocalTimeType; inline;
+    function HasDST(const AYear: TDateTime): Boolean; overload;
+    function HasDST: Boolean; overload;
+    function IsStandardTime(const aDateTime: TDateTime; const aForceDaylight: Boolean = False): Boolean;
+    function IsInvalidTime(const aDateTime: TDateTime): Boolean;
+    function IsAmbiguousTime(const aDateTime: TDateTime): Boolean;
+    function IsDaylightTime(const aDateTime: TDateTime; const aForceDaylight: Boolean = False): Boolean;
+    { Returns the time zone identification string: e.g. Europe/Brussels }
+    property ID: string read DoGetID;
+    property DisplayName: string read GetCurrentDisplayName;
+    property Abbreviation: string read GetCurrentAbbreviation;
+    property UtcOffset: TTimeSpan read GetCurrentUtcOffset;
+    class property Local: TTimeZone read _Local;
+  end;
+
 implementation
 
-uses sysconst;
+{$ifdef windows}
+  {$ifndef win16}
+    {$define USE_WINDOWS_UNIT}
+  {$endif not win16}
+{$endif windows}
+
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  {$IFDEF UNIX} UnixApi.Unix, {$ENDIF}
+  {$IFDEF USE_WINDOWS_UNIT} WinApi.Windows, {$ENDIF}
+  System.SysConst;
+{$ELSE FPC_DOTTEDUNITS}
+uses
+  {$IFDEF UNIX} Unix, {$ENDIF}
+  {$IFDEF USE_WINDOWS_UNIT} Windows, {$ENDIF}
+  sysconst;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
-  TDateTimeEpsilon = 2.2204460493e-16;
   HalfMilliSecond = OneMillisecond /2 ;
-  
+  SErrLocalTimeInvalid = 'Invalid local time: %s';
 
 { ---------------------------------------------------------------------
     Auxiliary routines
@@ -497,7 +674,7 @@ end;
 
 Function DateOf(const AValue: TDateTime): TDateTime; inline;
 begin
-  Result:=Trunc(AValue);
+  Result:=Int(AValue);
 end;
 
 
@@ -521,6 +698,11 @@ end;
 Function IsPM(const AValue: TDateTime): Boolean; inline;
 begin
   Result:=(HourOf(AValue)>=12);
+end;
+
+Function IsAM(const AValue: TDateTime): Boolean; inline;
+begin
+  Result:=(HourOf(AValue)<12);
 end;
 
 
@@ -644,7 +826,7 @@ begin
 end;
 
 
-Function Tomorrow: TDateTime; 
+Function Tomorrow: TDateTime;
 begin
   Result:=Date()+1;
 end;
@@ -1295,7 +1477,7 @@ begin
 end;
 
 
- 
+
 function DateTimeInRange(ADateTime: TDateTime; AStartDateTime, AEndDateTime: TDateTime; aInclusive: Boolean = True): Boolean;
 
 begin
@@ -1306,11 +1488,11 @@ begin
 end;
 
 
-function TimeInRange(ATime: TTime; AStartTime, AEndTime: TTime; AInclusive: Boolean = True): Boolean;
+function TimeInRange(ATime: System.TTime; AStartTime, AEndTime: System.TTime; AInclusive: Boolean = True): Boolean;
 
 var
- LTime, LStartTime, LEndTime: TTime;
- 
+ LTime, LStartTime, LEndTime: System.TTime;
+
 begin
   LTime:=TimeOf(ATime);
   LStartTime:=TimeOf(AStartTime);
@@ -1343,40 +1525,55 @@ end;
     Period functions.
   ---------------------------------------------------------------------}
 
-{
-  These functions are declared as approximate by Borland.
-  A bit strange, since it can be calculated exactly ?
+{ Converts a TDateTime variable to a linear number which can be used in
+  arithmetics, in particular for negative values.
 
-  -- No, because you need rounding or truncating (JM)
-}
+  TDateTime is not defined in the interval [-1.0..0.0[. Additionally, when
+  negative the time part must be treated using its absolute value (0.25 always
+  means "6 a.m."). And take care of rounding errors
 
-
-function DateTimeToNumber(ADateTime: TDateTime): Double;
+  Example:
+    Dec 29, 1899-12-29 6:00 corresponds to value -1.25, the "linear number" is -0.75 }
+    // Converts TDateTime to linear date number
+function DateTimeToNumber(ADateTime: TDateTime):double;
 begin
   if ADateTime >= 0  then
     Result := ADateTime
   else
-    Result := int(ADateTime) - frac(ADateTime);
+    Result := Trunc(ADateTime) - Frac(ADateTime);
 end;
 
-function NumberToDateTime(AValue: Double): TDateTime;
+function NumberToDateTime(AValue: double): TDateTime;
+var
+  f: Double;
+  d: Integer;
 begin
   if AValue >= 0 then
     Result := AValue
   else
-    Result := int(AValue) + frac(AValue);
+  begin
+    d := Trunc(AValue) - 1;
+    f := -Frac(AValue);
+    if (f < DateTimeEpsilon) then
+      f := -1.0
+    else if (1.0 - f < DateTimeEpsilon) then
+      f := 0.0
+    else
+      f := 1.0 - f;
+    Result := d - f;
+  end;
 end;
 
-Function DateTimeDiff(const ANow, AThen: TDateTime): TDateTime;
+Function DateTimeDiff(const ANow, AThen: TDateTime): Double;
 begin
-  Result := NumberToDateTime(DateTimeToNumber(ANow) - DateTimeToNumber(AThen));
+  Result := DateTimeToNumber(ANow) - DateTimeToNumber(AThen);
 end;
 
 Function YearsBetween(const ANow, AThen: TDateTime; AExact : Boolean = False): Integer;
 
 var
   yy, mm, dd: Word;
-  
+
 begin
   if AExact and (ANow >= -DateDelta) and (AThen >= -DateDelta) and
      (ANow <= MaxDateTime) and (AThen <= MaxDateTime) then
@@ -1418,7 +1615,7 @@ begin
     Result:=Trunc(Abs(DateTimeDiff(ANow,AThen))+HalfMilliSecond)
   else
     Result:=Trunc(Abs(DateTimeDiff(AThen,ANow))+HalfMilliSecond); // bug 37361
-end;            
+end;
 
 Function HoursBetween(const ANow, AThen: TDateTime): Int64;
 begin
@@ -1443,7 +1640,7 @@ begin
   Result:=Trunc((Abs(DateTimeDiff(ANow,AThen))+HalfMilliSecond)*MSecsPerDay);
 end;
 
-Procedure PeriodBetween(Const ANow, AThen: TDateTime; Out Years, months, days : Word); 
+Procedure PeriodBetween(Const ANow, AThen: TDateTime; Out Years, months, days : Word);
 
 var
   Y1, Y2, M1, M2, D1, D2: word;
@@ -1455,7 +1652,7 @@ begin
     DecodeDate(AThen,Y2,M2,D2);
     end
   else
-    begin  
+    begin
     DecodeDate(AThen,Y1,M1,D1);
     DecodeDate(ANow,Y2,M2,D2);
     end;
@@ -1473,7 +1670,7 @@ begin
       Dec(Months);
     Days:=(DaysInAMonth(Y1,M1)-D1)+D2;
     end;
-end;                    
+end;
 
 { ---------------------------------------------------------------------
     Timespan in xxx functions.
@@ -1531,44 +1728,6 @@ end;
     Increment/decrement functions.
   ---------------------------------------------------------------------}
 
-{ TDateTime is not defined in the interval [-1.0..0.0[. Additionally, when
-  negative the time part must be treated using its absolute value (0.25 always
-  means "6 a.m.") -> skip the gap and convert the time part when crossing the
-  gap -- and take care of rounding errors }
-Procedure MaybeSkipTimeWarp(OldDate: TDateTime; var NewDate: TDateTime);
-begin
-  if (OldDate>=0) and (NewDate<-TDateTimeEpsilon) then
-    NewDate:=int(NewDate-1.0+TDateTimeEpsilon)-frac(1.0+frac(NewDate))
-  else if (OldDate<=-1.0) and (NewDate>-1.0+TDateTimeEpsilon) then
-    NewDate:=int(NewDate+1.0-TDateTimeEpsilon)+frac(1.0-abs(frac(1.0+NewDate)));
-end;
-
-
-function IncNegativeTime(AValue, Addend: TDateTime): TDateTime;
-var
-  newtime: tdatetime;
-begin
-  newtime:=-frac(Avalue)+frac(Addend);
-  { handle rounding errors }
-  if SameValue(newtime,int(newtime)+1,TDateTimeEpsilon) then
-    newtime:=int(newtime)+1
-  else if SameValue(newtime,int(newtime),TDateTimeEpsilon) then
-    newtime:=int(newtime);
-  { time underflow -> previous day }
-  if newtime<-TDateTimeEpsilon then
-    begin
-      newtime:=1.0+newtime;
-      avalue:=int(avalue)-1;
-    end
-  { time overflow -> next day }
-  else if newtime>=1.0-TDateTimeEpsilon then
-    begin
-      newtime:=newtime-1.0;
-      avalue:=int(avalue)+1;
-    end;
-  Result:=int(AValue)+int(Addend)-newtime;
-end;
-
 Function IncYear(const AValue: TDateTime; const ANumberOfYears: Integer ): TDateTime;
 
 Var
@@ -1590,8 +1749,7 @@ end;
 
 Function IncWeek(const AValue: TDateTime; const ANumberOfWeeks: Integer): TDateTime;
 begin
-  Result:=AValue+ANumberOfWeeks*7;
-  MaybeSkipTimeWarp(AValue,Result);
+  Result := NumberToDateTime(DateTimeToNumber(AValue) + ANumberOfWeeks * 7);
 end;
 
 
@@ -1603,8 +1761,7 @@ end;
 
 Function IncDay(const AValue: TDateTime; const ANumberOfDays: Integer): TDateTime;
 begin
-  Result:=AValue+ANumberOfDays;
-  MaybeSkipTimeWarp(AValue,Result);
+  Result := NumberToDateTime(DateTimeToNumber(AValue) + ANumberOfDays);
 end;
 
 
@@ -1616,11 +1773,7 @@ end;
 
 Function IncHour(const AValue: TDateTime; const ANumberOfHours: Int64): TDateTime;
 begin
-  if AValue>=0 then
-    Result:=AValue+ANumberOfHours/HoursPerDay
-  else
-    Result:=IncNegativeTime(Avalue,ANumberOfHours/HoursPerDay);
-  MaybeSkipTimeWarp(AValue,Result);
+  Result := NumberToDateTime(DateTimeToNumber(AValue) + ANumberOfHours/24);
 end;
 
 
@@ -1632,11 +1785,7 @@ end;
 
 Function IncMinute(const AValue: TDateTime; const ANumberOfMinutes: Int64): TDateTime;
 begin
-  if AValue>=0 then
-    Result:=AValue+ANumberOfMinutes/MinsPerDay
-  else
-    Result:=IncNegativeTime(Avalue,ANumberOfMinutes/MinsPerDay);
-  MaybeSkipTimeWarp(AValue,Result);
+  Result := NumberToDateTime(DateTimeToNumber(AValue) + ANumberOfMinutes/MinsPerDay);
 end;
 
 
@@ -1648,11 +1797,7 @@ end;
 
 Function IncSecond(const AValue: TDateTime; const ANumberOfSeconds: Int64): TDateTime;
 begin
-  if AValue>=0 then
-    Result:=AValue+ANumberOfSeconds/SecsPerDay
-  else
-    Result:=IncNegativeTime(Avalue,ANumberOfSeconds/SecsPerDay);
-  MaybeSkipTimeWarp(AValue,Result);
+  Result := NumberToDateTime(DateTimeToNumber(AValue) + ANumberOfSeconds/SecsPerDay);
 end;
 
 
@@ -1664,11 +1809,7 @@ end;
 
 Function IncMilliSecond(const AValue: TDateTime; const ANumberOfMilliSeconds: Int64): TDateTime;
 begin
-  if Avalue>=0 then
-    Result:=AValue+ANumberOfMilliSeconds/MSecsPerDay
-  else
-    Result:=IncNegativeTime(Avalue,ANumberOfMilliSeconds/MSecsPerDay);
-  MaybeSkipTimeWarp(AValue,Result);
+  Result := NumberToDateTime(DateTimeToNumber(AValue) + ANumberOfMilliSeconds/MSecsPerDay);
 end;
 
 
@@ -2022,7 +2163,7 @@ begin
 end;
 
 { ---------------------------------------------------------------------
-    Comparision of date/time
+    Comparison of date/time
   ---------------------------------------------------------------------}
 
 
@@ -2032,16 +2173,16 @@ begin
     Result:=EqualsValue
   else if trunc(a)=trunc(b) then
     begin
-    if abs(frac(a))>abs(frac(b)) then 
+    if abs(frac(a))>abs(frac(b)) then
       result:=GreaterThanValue
-    else 
+    else
       result:=LessThanValue;
-    end 
-  else 
+    end
+  else
     begin
-    if a>b then 
+    if a>b then
       result:=GreaterThanValue
-    else 
+    else
       result:=LessThanValue;
     end;
 end;
@@ -2397,8 +2538,8 @@ end;
   Extensions
   - #9 eats whitespace.
   - whitespace at the end of a pattern is optional.
-  - ? matches any char.
-  - Quote the above chars to really match the char.
+  - ? matches any AnsiChar.
+  - Quote the above chars to really match the AnsiChar.
 }
 
 const whitespace  = [' ',#13,#10];
@@ -2415,22 +2556,23 @@ begin
   raise EConvertError.Create(s);
 end;
 
-function scandatetime(const pattern:string;const s:string;const fmt:TFormatSettings;startpos:integer=1) : tdatetime;
+function scandatetime(const pattern: string;const s:string;const fmt:TFormatSettings;startpos:integer=1) : tdatetime;
+
 const
   EPS = 1E-15;
 
 var len ,ind  : integer;
     yy,mm,dd  : integer;
     timeval   : TDateTime;
-    activequote: char;
+    activequote: Char;
 
-procedure intscandate(ptrn:pchar;plen:integer;poffs:integer);
+procedure intscandate(ptrn:PChar;plen:integer;poffs:integer);
 // poffs is the offset to
 
 var
     pind : integer;
 
-function findimatch(const mnts:array of string;p:pchar):integer;
+function findimatch(const mnts:array of string;p:PChar):integer;
 var i : integer;
     plen, findlen: integer;
 begin
@@ -2441,8 +2583,13 @@ begin
     begin
       findlen := length(mnts[i]);
       if (findlen > 0) and (findlen <= plen) then // protect against buffer over-read
+{$if SizeOf(Char)=2}
+        if StrLIComp(p,@(mnts[i][1]),findlen)=0 then
+          result:=i;
+{$else}
         if AnsiStrLIComp(p,@(mnts[i][1]),findlen)=0 then
           result:=i;
+{$endif}
       inc(i);
     end;
 end;
@@ -2453,7 +2600,7 @@ begin
   raiseexception(format(SNoArrayMatch,[pind+1,ind]))
 end;
 
-function scanmatch(const mnts : array of string;p:pchar; patlen: integer):integer;
+function scanmatch(const mnts : array of string;p:PChar; patlen: integer):integer;
 begin
   result:=findimatch(mnts,p);
   if result=-1 then
@@ -2471,7 +2618,7 @@ var
     i     : integer;
 
 function scanfixedint(maxv:integer):integer;
-var c : char;
+var c : Char;
     oi:integer;
 begin
   result:=0;
@@ -2488,7 +2635,7 @@ begin
     raiseexception(format(SPatternCharMismatch,[c,oi]));
 end;
 
-procedure matchchar(c:char);
+procedure matchchar(c:Char);
 
 begin
   if (ind>len) or (s[ind]<>c) then
@@ -2498,7 +2645,7 @@ begin
 end;
 
 function scanpatlen:integer;
-var c : char;
+var c : Char;
     lind : Integer;
 begin
   result:=pind;
@@ -2519,7 +2666,7 @@ begin
     intscandate(@lptr[1],len,pind+poffs);
 end;
 
-var lasttoken,lch : char;
+var lasttoken,lch : Char;
 
 begin
   pind:=0;     lasttoken:=' ';
@@ -2648,7 +2795,7 @@ begin
                                   end;
                                  inc(pind,length(AMPMformatting[2]));
                                end;
-                           else  // no AM/PM match. Assume 'a' is simply a char
+                           else  // no AM/PM match. Assume 'a' is simply a AnsiChar
                                matchchar(ptrn[pind]);
                              end;
                          end;
@@ -2722,25 +2869,25 @@ end;
 function UniversalTimeToLocal(UT: TDateTime): TDateTime;
 
 begin
-  Result:=SysUtils.UniversalTimeToLocal(UT,-GetLocalTimeOffset(UT, True));
+  Result:={$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SysUtils.UniversalTimeToLocal(UT,-GetLocalTimeOffset(UT, True));
 end;
 
 function UniversalTimeToLocal(UT: TDateTime; TZOffset : Integer): TDateTime;
 
 begin
-  Result:=SysUtils.UniversalTimeToLocal(UT,TZOffset);
+  Result:={$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SysUtils.UniversalTimeToLocal(UT,TZOffset);
 end;
- 
+
 Function LocalTimeToUniversal(LT: TDateTime): TDateTime;
 
 begin
-  Result:=SysUtils.LocalTimeToUniversal(LT,-GetLocalTimeOffset(LT, False));
+  Result:={$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SysUtils.LocalTimeToUniversal(LT,-GetLocalTimeOffset(LT, False));
 end;
 
 Function LocalTimeToUniversal(LT: TDateTime;TZOffset: Integer): TDateTime;
 
 begin
-  Result:=SysUtils.LocalTimeToUniversal(LT,TZOffset);
+  Result:={$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SysUtils.LocalTimeToUniversal(LT,TZOffset);
 end;
 
 Const
@@ -2751,7 +2898,7 @@ function DateToISO8601(const ADate: TDateTime; AInputIsUTC: Boolean = True): str
 
 const
   FmtOffset: string = '%.02d:%.02d';
-  Sign: array[Boolean] of Char = ('+', '-');
+  Sign: array[Boolean] of AnsiChar = ('+', '-');
 
 var
   Offset: Integer;
@@ -3050,8 +3197,661 @@ begin
     Result:=aDefault;
 end;
 
+{ TDateTimeHelper }
 
-{$else}
-implementation
-{$endif FPUNONE}
+function TDateTimeHelper.AddDays(const aNumberOfDays: Integer): TDateTime;
+begin
+  Result := IncDay(Self, aNumberOfDays);
+end;
+
+function TDateTimeHelper.AddHours(const aNumberOfHours: Int64): TDateTime;
+begin
+  Result := IncHour(Self, aNumberOfHours);
+end;
+
+function TDateTimeHelper.AddMilliseconds(const aNumberOfMilliseconds: Int64): TDateTime;
+begin
+  Result := IncMilliSecond(Self, aNumberOfMilliseconds);
+end;
+
+function TDateTimeHelper.AddMinutes(const aNumberOfMinutes: Int64): TDateTime;
+begin
+  Result := IncMinute(Self, aNumberOfMinutes);
+end;
+
+function TDateTimeHelper.AddMonths(const aNumberOfMonths: Integer): TDateTime;
+begin
+  Result := IncMonth(Self, aNumberOfMonths);
+end;
+
+function TDateTimeHelper.AddSeconds(const aNumberOfSeconds: Int64): TDateTime;
+begin
+  Result := IncSecond(Self, aNumberOfSeconds);
+end;
+
+function TDateTimeHelper.AddYears(const aNumberOfYears: Integer): TDateTime;
+begin
+  Result := IncYear(Self, aNumberOfYears);
+end;
+
+function TDateTimeHelper.CompareTo(const aDateTime: TDateTime): TValueRelationship;
+begin
+  Result := CompareDateTime(Self, aDateTime);
+end;
+
+class function TDateTimeHelper.Create(const aYear, aMonth, aDay: Word): TDateTime;
+begin
+  Result := EncodeDate(aYear, aMonth, aDay);
+end;
+
+class function TDateTimeHelper.Create(const aYear, aMonth, aDay, aHour, aMinute,
+  aSecond, aMillisecond: Word): TDateTime;
+begin
+  Result := EncodeDateTime(aYear, aMonth, aDay, aHour, aMinute, aSecond, aMillisecond);
+end;
+
+class function TDateTimeHelper.CreateTotalSeconds(const Value: Int64): TDateTime;
+begin
+  Result := (Value / 86400);
+end;
+
+class function TDateTimeHelper.CreateUnixTime(const Value: Int64): TDateTime;
+begin
+  Result := (Value / 86400) + 25569;
+end;
+
+function TDateTimeHelper.DaysBetween(const aDateTime: TDateTime): Integer;
+begin
+  Result :={$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}DateUtils.DaysBetween(Self, aDateTime);
+end;
+
+function TDateTimeHelper.EndOfDay: TDateTime;
+begin
+  Result := EndOfTheDay(Self);
+end;
+
+function TDateTimeHelper.EndOfMonth: TDateTime;
+begin
+  Result := EndOfTheMonth(Self);
+end;
+
+function TDateTimeHelper.EndOfWeek: TDateTime;
+begin
+  Result := EndOfTheWeek(Self);
+end;
+
+function TDateTimeHelper.EndOfYear: TDateTime;
+begin
+  Result := EndOfTheYear(Self);
+end;
+
+function TDateTimeHelper.Equals(const aDateTime: TDateTime): Boolean;
+begin
+  Result := SameDateTime(Self, aDateTime);
+end;
+
+function TDateTimeHelper.GetDate: TDateTime;
+begin
+  Result := DateOf(Self);
+end;
+
+function TDateTimeHelper.GetDay: Word;
+begin
+  Result := DayOf(Self);
+end;
+
+function TDateTimeHelper.GetDayOfWeek: Word;
+begin
+  Result := DayOfTheWeek(Self);
+end;
+
+function TDateTimeHelper.GetDayOfYear: Word;
+begin
+  Result := DayOfTheYear(Self);
+end;
+
+function TDateTimeHelper.GetHour: Word;
+begin
+  Result := HourOf(Self);
+end;
+
+function TDateTimeHelper.GetMillisecond: Word;
+begin
+  Result := MilliSecondOf(Self);
+end;
+
+function TDateTimeHelper.GetMinute: Word;
+begin
+  Result := MinuteOf(Self);
+end;
+
+function TDateTimeHelper.GetMonth: Word;
+begin
+  Result := MonthOf(Self);
+end;
+
+class function TDateTimeHelper.GetNow: TDateTime;
+begin
+  Result := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SysUtils.Now;
+end;
+
+function TDateTimeHelper.GetSecond: Word;
+begin
+  Result := SecondOf(Self);
+end;
+
+function TDateTimeHelper.GetTime: TDateTime;
+begin
+  Result := TimeOf(Self);
+end;
+
+class function TDateTimeHelper.GetToday: TDateTime;
+begin
+  Result := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SysUtils.Date;
+end;
+
+class function TDateTimeHelper.GetTomorrow: TDateTime;
+begin
+  Result := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SysUtils.Date + 1;
+end;
+
+function TDateTimeHelper.GetTotalSecounds: Int64;
+begin
+  Result := Trunc(86400 * self);
+end;
+
+function TDateTimeHelper.GetUnixTime: Int64;
+begin
+  Result := Trunc((self - 25569) * 86400);
+end;
+
+function TDateTimeHelper.GetYear: Word;
+begin
+  Result := YearOf(Self);
+end;
+
+class function TDateTimeHelper.GetYesterDay: TDateTime;
+begin
+  Result := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SysUtils.Date - 1;
+end;
+
+function TDateTimeHelper.HoursBetween(const aDateTime: TDateTime): Int64;
+begin
+  Result := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}DateUtils.HoursBetween(Self, aDateTime);
+end;
+
+function TDateTimeHelper.InRange(const aStartDateTime, aEndDateTime: TDateTime;
+  const aInclusive: Boolean): Boolean;
+begin
+  Result := DateTimeInRange(Self, aStartDateTime, aEndDateTime, aInclusive);
+end;
+
+function TDateTimeHelper.IsAM: Boolean;
+begin
+  Result := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}DateUtils.IsAM(Self);
+end;
+
+function TDateTimeHelper.IsInLeapYear: Boolean;
+begin
+  Result := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}DateUtils.IsInLeapYear(Self);
+end;
+
+function TDateTimeHelper.IsPM: Boolean;
+begin
+  Result := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}DateUtils.IsPM(Self);
+end;
+
+function TDateTimeHelper.IsSameDay(const aDateTime: TDateTime): Boolean;
+begin
+  Result := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}DateUtils.IsSameDay(Self, aDateTime);
+end;
+
+function TDateTimeHelper.IsToday: Boolean;
+begin
+  Result := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}DateUtils.IsToday(Self);
+end;
+
+function TDateTimeHelper.MilliSecondsBetween(const aDateTime: TDateTime): Int64;
+begin
+  Result := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}DateUtils.MilliSecondsBetween(Self, aDateTime);
+end;
+
+function TDateTimeHelper.WithinPastYears(const AThen: TDateTime; const AYears: Integer): Boolean;
+begin
+  Result:=WithinYears(aThen,aYears);
+end;
+
+function TDateTimeHelper.WithinPastMonths(const AThen: TDateTime; const AMonths: Integer): Boolean;
+begin
+  Result:=WithinMonths(aThen,aMonths);
+end;
+
+function TDateTimeHelper.WithinPastWeeks(const AThen: TDateTime; const AWeeks: Integer): Boolean;
+begin
+  Result:=WithinWeeks(aThen,aWeeks);
+end;
+
+function TDateTimeHelper.WithinPastDays(const AThen: TDateTime; const ADays: Integer): Boolean;
+begin
+  Result:=WithinDays(aThen,aDays);
+end;
+
+function TDateTimeHelper.WithinPastHours(const AThen: TDateTime; const AHours: Int64): Boolean;
+begin
+  Result:=WithinHours(aThen,aHours);
+end;
+
+function TDateTimeHelper.WithinPastMinutes(const AThen: TDateTime; const AMinutes: Int64): Boolean;
+begin
+  Result:=WithinMinutes(aThen,aMinutes);
+end;
+
+function TDateTimeHelper.WithinPastSeconds(const AThen: TDateTime; const ASeconds: Int64): Boolean;
+begin
+  Result:=WithinSeconds(aThen,aSeconds);
+end;
+
+function TDateTimeHelper.WithinPastMilliSeconds(const AThen: TDateTime; const AMilliSeconds: Int64): Boolean;
+begin
+  Result:=WithinMilliSeconds(aThen,aMilliSeconds);
+end;
+
+function TDateTimeHelper.MinutesBetween(const aDateTime: TDateTime): Int64;
+begin
+  Result := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}DateUtils.MinutesBetween(Self, aDateTime);
+end;
+
+function TDateTimeHelper.MonthsBetween(const aDateTime: TDateTime): Integer;
+begin
+  Result := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}DateUtils.MonthsBetween(Self, aDateTime);
+end;
+
+function TDateTimeHelper.SecondsBetween(const aDateTime: TDateTime): Int64;
+begin
+  Result := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}DateUtils.SecondsBetween(Self, aDateTime);
+end;
+
+function TDateTimeHelper.StartOfDay: TDateTime;
+begin
+  Result := StartOfTheDay(Self);
+end;
+
+function TDateTimeHelper.StartOfMonth: TDateTime;
+begin
+  Result := StartOfTheMonth(Self);
+end;
+
+function TDateTimeHelper.StartOfWeek: TDateTime;
+begin
+  Result := StartOfTheWeek(Self);
+end;
+
+function TDateTimeHelper.StartOfYear: TDateTime;
+begin
+  Result := StartOfTheYear(Self);
+end;
+
+function TDateTimeHelper.Format(const aFormatStr: string) : string;
+
+begin
+  Result:=FormatDateTime(aFormatStr, Self);
+end;
+
+function TDateTimeHelper.ToString(const aFormatStr: string): string;
+begin
+  if aFormatStr = '' then
+    Result := DateToStr(Self)
+  else
+    Result := FormatDateTime(aFormatStr, Self);
+end;
+
+function TDateTimeHelper.WeeksBetween(const aDateTime: TDateTime): Integer;
+begin
+  Result := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}DateUtils.WeeksBetween(Self, aDateTime);
+end;
+
+function TDateTimeHelper.WithinDays(const aDateTime: TDateTime; const aDays:
+  Integer): Boolean;
+begin
+  Result := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}DateUtils.WithinPastDays(Self, aDateTime, aDays);
+end;
+
+function TDateTimeHelper.WithinHours(const aDateTime: TDateTime; const aHours:
+  Int64): Boolean;
+begin
+  Result := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}DateUtils.WithinPastHours(Self, aDateTime, aHours);
+end;
+
+function TDateTimeHelper.WithinMilliseconds(const aDateTime: TDateTime; const
+  AMilliseconds: Int64): Boolean;
+begin
+  Result := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}DateUtils.WithinPastMilliSeconds(Self, aDateTime, AMilliseconds);
+end;
+
+function TDateTimeHelper.WithinMinutes(const aDateTime: TDateTime; const
+  aMinutes: Int64): Boolean;
+begin
+  Result := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}DateUtils.WithinPastMinutes(Self, aDateTime, aMinutes);
+end;
+
+function TDateTimeHelper.WithinMonths(const aDateTime: TDateTime; const aMonths:
+  Integer): Boolean;
+begin
+  Result := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}DateUtils.WithinPastMonths(Self, aDateTime, aMonths);
+end;
+
+function TDateTimeHelper.WithinSeconds(const aDateTime: TDateTime; const
+  aSeconds: Int64): Boolean;
+begin
+  Result := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}DateUtils.WithinPastSeconds(Self, aDateTime, aSeconds);
+end;
+
+function TDateTimeHelper.WithinWeeks(const aDateTime: TDateTime; const aWeeks:
+  Integer): Boolean;
+begin
+  Result := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}DateUtils.WithinPastWeeks(Self, aDateTime, aWeeks);
+end;
+
+function TDateTimeHelper.WithinYears(const aDateTime: TDateTime; const aYears:
+  Integer): Boolean;
+begin
+  Result := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}DateUtils.WithinPastYears(Self, aDateTime, aYears);
+end;
+
+function TDateTimeHelper.YearsBetween(const aDateTime: TDateTime): Integer;
+begin
+  Result := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}DateUtils.YearsBetween(Self, aDateTime);
+end;
+
+class function TDateTimeHelper.Parse(Date: string; aFormat: string = '';
+  aDateSeparator: Char = #0; aTimeSeparator: Char = #0): TDateTime;
+var
+  fs: TFormatSettings;
+  aFormats: TStringArray;
+  aLength: Integer;
+begin
+  aFormats := aFormat.split([' ']);
+
+  aLength := Length(aFormats);
+
+  if aLength = 0 then
+    exit(StrToDateTime(Date));
+
+  fs:=FormatSettings;
+  with fs do
+  begin
+
+    if aDateSeparator <> #0 then
+      DateSeparator := aDateSeparator;
+
+    if not aFormats[0].Trim.IsEmpty then
+      ShortDateFormat := aFormats[0];
+
+    if aLength > 1 then
+    begin
+      if aTimeSeparator <> #0 then
+        TimeSeparator := aTimeSeparator;
+
+      if not aFormats[1].Trim.IsEmpty then
+        ShortTimeFormat := aFormats[1];
+    end;
+  end;
+  Result := StrToDateTime(Date, fs);
+end;
+
+class function TDateTimeHelper.ParseLocal(Date: string; local: string = ''): TDateTime;
+var
+  fs: TFormatSettings;
+begin
+  if local.Trim.IsEmpty then
+    fs := FormatSettings
+  else
+    fs := FormatSettings;
+    // Not yet supported...
+//    fs := TFormatSettings.Create(local);
+
+  Result := StrToDateTime(Date, fs);
+end;
+
+class function TDateTimeHelper.Create(Date: string; aFormat: string; aDateSeparator: Char; aTimeSeparator: Char): TDateTime;
+begin
+  Result := Parse(Date, aFormat, aDateSeparator, aTimeSeparator);
+end;
+
+class function TDateTimeHelper.CreateLocal(Date: string; local: string): TDateTime;
+begin
+  Result:= ParseLocal(Date,local);
+end;
+
+type
+  TLocalTimeZone = class(TTimeZone)
+  protected
+    procedure DoGetOffsetsAndType(const aDateTime: TDateTime; out aOffset, aDstSave: Int64; out aType: TLocalTimeType); override;
+    function DoGetDisplayName(const aDateTime: TDateTime; const aForceDaylight: Boolean): string; override;
+    function DoGetID(): string; override;
+  end;
+
+{ TTimeZone }
+
+function TTimeZone.ToLocalTime(const aDateTime: TDateTime): TDateTime;
+
+var
+  ltt: TLocalTimeType;
+  lOffset,lDst: Int64;
+
+begin
+  { UTC -> Local }
+  DoGetOffsetsAndType(aDateTime,lOffset,lDst,ltt);
+  Result:=IncSecond(aDateTime,lOffset);
+  DoGetOffsetsAndType(Result,lOffset,lDst,ltt);
+  if (ltt in [lttInvalid,lttDaylight]) then
+    Result:=IncSecond(Result,lDst);
+end;
+
+function TTimeZone.ToUniversalTime(const aDateTime: TDateTime; const aForceDaylight: Boolean): TDateTime;
+var
+  lOffset: Int64;
+begin
+  LOffset:=GetUtcOffsetInSeconds(ADateTime,aForceDaylight);
+  Result:=IncSecond(ADateTime,-lOffset);
+end;
+
+class constructor TTimeZone.Init;
+
+begin
+  _Local:=TLocalTimeZone.Create;
+end;
+
+class destructor TTimeZone.Done;
+
+begin
+  FreeAndNil(_local);
+end;
+
+function TTimeZone.GetCurrentAbbreviation: string;
+
+begin
+  Result:=GetAbbreviation(Now);
+end;
+
+function TTimeZone.GetCurrentDisplayName: string;
+
+begin
+  Result:=GetDisplayName(Now);
+end;
+
+function TTimeZone.GetLocalTimeType(const ADateTime: TDateTime): TLocalTimeType;
+var
+  LOffset, LDSTSave: Int64;
+begin
+  DoGetOffsetsAndType(ADateTime, LOffset, LDSTSave, Result);
+end;
+
+
+function TTimeZone.GetDisplayName(const aDateTime: TDateTime; const aForceDaylight: Boolean): string;
+begin
+  if IsInvalidTime(aDateTime) then
+    raise ELocalTimeInvalid.CreateFmt(SErrLocalTimeInvalid,[DateTimeToStr(aDateTime)]);
+  Result:=DoGetDisplayName(aDateTime,aForceDaylight);
+end;
+
+function TTimeZone.GetAbbreviation(const aDateTime: TDateTime; const aForceDaylight: Boolean): string;
+
+const
+  SignChars : Array[Boolean] of Char = ('-','+');
+
+var
+  lHrs, LMins: Integer;
+  lOffset: Int64;
+  lSign: Char;
+
+begin
+  lOffset:=GetUtcOffsetInSeconds(aDateTime,aForceDaylight);
+  if lOffset=0 then
+    Exit('GMT');
+  // no divmod for int64
+  lHrs:=Abs(lOffset) div SecsPerHour;
+  lMins:=(Abs(lOffset) mod SecsPerHour) div SecsPerMin;
+  lSign:=SignChars[lOffset>0];
+  Result:='GMT'+lSign+Format('%.2d',[lHrs]);
+  Result:=Result+':'+Format('%.2d',[lMins]);
+end;
+
+function TTimeZone.GetUtcOffset(const aDateTime: TDateTime; const aForceDaylight: Boolean): TTimeSpan;
+begin
+  Result:=TTimeSpan.FromSeconds(GetUtcOffsetInSeconds(aDateTime,aForceDaylight));
+end;
+
+function TTimeZone.GetUtcOffsetInSeconds(const aDateTime: TDateTime; const aForceDaylight: Boolean): Int64;
+var
+  lOffset, lDst: Int64;
+  ltt: TLocalTimeType;
+begin
+  DoGetOffsetsAndType(aDateTime,lOffset,lDst,ltt);
+  Result:=lOffset;
+  Case ltt of
+  lttDaylight:
+    Result:=Result+lDst;
+  lttAmbiguous:
+    if aForceDaylight then
+      Result:=Result+lDst;
+  lttInvalid:
+    raise ELocalTimeInvalid.CreateFmt(SErrLocalTimeInvalid,[DateTimeToStr(aDateTime)]);
+  else
+    // nothing to do
+  end;
+end;
+
+function TTimeZone.IsAmbiguousTime(const aDateTime: TDateTime): Boolean;
+begin
+  Result:=(lttAmbiguous=GetLocalTimeType(aDateTime));
+end;
+
+function TTimeZone.IsDaylightTime(const aDateTime: TDateTime; const aForceDaylight: Boolean): Boolean;
+
+var
+  ltt : TLocalTimeType;
+
+begin
+  ltt:=GetLocalTimeType(aDateTime);
+  Result:=(ltt=lttDaylight) or ((ltt=lttAmbiguous) and aForceDaylight);
+end;
+
+function TTimeZone.IsStandardTime(const aDateTime: TDateTime; const aForceDaylight: Boolean): Boolean;
+var
+  ltt: TLocalTimeType;
+begin
+  ltt:=GetLocalTimeType(ADateTime);
+  Result:=(ltt=lttStandard) or ((ltt=lttAmbiguous) and not aForceDaylight);
+end;
+
+function TTimeZone.IsInvalidTime(const aDateTime: TDateTime): Boolean;
+begin
+  Result:=(lttInvalid=GetLocalTimeType(ADateTime));
+end;
+
+function TTimeZone.HasDST(const aYear: TDateTime): Boolean;
+
+var
+  ltt: TLocalTimeType;
+  lOffset,lDst: Int64;
+
+begin
+  DoGetOffsetsAndType(aYear,lOffset,lDst,ltt);
+  Result:=lDst<>0;
+end;
+
+function TTimeZone.HasDST: Boolean;
+begin
+  Result:=HasDST(Now);
+end;
+
+function TTimeZone.GetCurrentUtcOffset: TTimeSpan;
+begin
+  Result:=GetUtcOffset(Now);
+end;
+
+function TLocalTimeZone.DoGetID(): string;
+
+{$IFDEF USE_WINDOWS_UNIT}
+var
+  lInfo: TTimeZoneInformation;
+  Name : UnicodeString;
+{$ENDIF}
+{$IFDEF UNIX}
+var
+  lInfo : TTZInfoEx;
+{$ENDIF}
+{$IF NOT (DEFINED(USE_WINDOWS_UNIT) OR DEFINED(UNIX))}
+var
+  lTZEnv : String;
+  I : integer;
+{$ENDIF}
+begin
+  Result:='';
+  {$IFDEF UNIX}
+  lInfo:=GetTZInfoEx;
+  Result:=lInfo.Name[false];
+  {$ENDIF}
+  {$IFDEF USE_WINDOWS_UNIT}
+  lInfo:=Default(TTimeZoneInformation);
+  GetTimeZoneInformation(lInfo);
+  Name:=StrPas(@lInfo.StandardName);
+  {$IF SIZEOF(CHAR)=1}
+  Result:=UTF8Encode(Name);
+  {$ELSE}
+  Result:=Name;
+  {$ENDIF}
+  {$ENDIF}
+  {$IF NOT (DEFINED(WINDOWS) OR DEFINED(UNIX))}
+  lTZEnv:=GetEnvironmentVariable('TZ');
+  I:=1;
+  While (I<=Length(LTZEnv)) and (UpCase(LTZEnv[i]) in ['A'..'Z']) do
+    Result:=Result+LTZEnv[i];
+  {$ENDIF}
+end;
+
+
+function TLocalTimeZone.DoGetDisplayName(const aDateTime: TDateTime; const aForceDaylight: Boolean): string;
+
+begin
+  Result:=ID;// For the moment, it is not clear what this should do.
+end;
+
+procedure TLocalTimeZone.DoGetOffsetsAndType(const aDateTime: TDateTime;
+  out aOffset, aDstSave: Int64; out aType: TLocalTimeType);
+var
+  lOffset : Integer;
+  lDst : Boolean;
+begin
+  GetLocalTimeOffset(aDateTime,False,lOffset,lDst);
+  aOffSet:=-lOffset* 60;
+  aDSTSave:=0;
+  if lDST then
+    aType:=lttDaylight
+  else
+    aType:=lttStandard;
+end;
+
+{$endif fpunone}
 end.

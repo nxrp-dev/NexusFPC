@@ -1,18 +1,18 @@
 {
      File:       PMPrintSettingsKeys.h
- 
+
      Contains:   Mac OS X Printing Manager Print Settings Keys.
- 
+
      Version:    Technology: Mac OS X
                  Release:    1.0
- 
+
      Copyright  (c) 2008 by Apple Inc. All Rights Reserved.
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 {  Pascal Translation:  Jonas Maebe, <jonas@freepascal.org>, October 2009 }
 {  Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2012 }
@@ -30,7 +30,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit PMPrintSettingsKeys;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -215,7 +217,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -466,7 +472,7 @@ const
 { The values for kPMCoverPageKey }
 
 const
-	kPMCoverPageNone = 1;	
+	kPMCoverPageNone = 1;
 	// Print a cover page before printing the document.
 	kPMCoverPageBefore = 2;
 	// Print a cover page after printing the document.
@@ -549,7 +555,7 @@ const
 	kPMColorMatchingModeStr = 'AP_ColorMatchingMode';
 {$ifc USE_CFSTR_CONSTANT_MACROS}
 {$definec kPMColorMatchingModeKey CFSTRP('AP_ColorMatchingMode')}
-{$endc}   { Value is CFStringRef - one of kPMColorSyncMatching (deprecated), 
+{$endc}   { Value is CFStringRef - one of kPMColorSyncMatching (deprecated),
 										kPMVendorColorMatching, kPMApplicationColorMatching }
 
 

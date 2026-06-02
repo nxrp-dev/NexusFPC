@@ -12,15 +12,22 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
-unit jsonreader;
+{$IFNDEF FPC_DOTTEDUNITS}
+unit JsonReader;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$I fcl-json.inc}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, FpJson.Data, FpJson.Scanner;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, fpJSON, jsonscanner;
-  
+{$ENDIF FPC_DOTTEDUNITS}
+
 Type
 
   { TBaseJSONReader }
@@ -63,6 +70,7 @@ Type
     Constructor Create(Const Source : RawByteString; AUseUTF8 : Boolean = True); overload;deprecated 'use options form instead';
     constructor Create(Source: TStream; AOptions: TJSONOptions); overload;
     constructor Create(const Source: RawByteString; AOptions: TJSONOptions); overload;
+    constructor Create(const Source: UnicodeString; AOptions: TJSONOptions); overload;
     destructor Destroy();override;
     // Parsing options
     Property Options : TJSONOptions Read GetOptions Write SetOptions;
@@ -166,7 +174,7 @@ Type
   end;
 
   EJSONParser = Class(EParserError);
-  
+
 implementation
 
 Resourcestring
@@ -184,13 +192,13 @@ Resourcestring
 { TBaseJSONReader }
 
 
-Procedure TBaseJSONReader.DoExecute;
+procedure TBaseJSONReader.DoExecute;
 
 begin
   if (FScanner=Nil) then
     DoError(SErrNoScanner);
   DoParse(False,True);
-  if joStrict in Options then
+  if (joStrict in Options) and not (joSingle in Options) then
     begin
     Repeat
        GetNextToken;
@@ -223,10 +231,15 @@ begin
 end;
 
 procedure TBaseJSONReader.DoParse(AtCurrent, AllowEOF: Boolean);
-
+  procedure ParseString;
+  begin
+    if ((joUTF8 in Options) or (DefaultSystemCodePage<>CP_UTF8)) and (TypeInfo(TJSONStringType) <> TypeInfo(UTF8String)) then
+      StringValue(TJSONStringType(UTF8Decode(CurrentTokenString)))
+    else
+      StringValue(CurrentTokenString);
+  end;
 var
   T : TJSONToken;
-  
 begin
   If not AtCurrent then
     T:=GetNextToken
@@ -238,10 +251,7 @@ begin
     tkNull  : NullValue;
     tkTrue,
     tkFalse : BooleanValue(t=tkTrue);
-    tkString : if (joUTF8 in Options) and (DefaultSystemCodePage<>CP_UTF8) then
-                 StringValue(TJSONStringType(UTF8Decode(CurrentTokenString)))
-               else
-                 StringValue(CurrentTokenString);
+    tkString : ParseString;
     tkCurlyBraceOpen :
         ParseObject;
     tkCurlyBraceClose :
@@ -270,7 +280,7 @@ Var
   I64 : Int64;
   QW  : QWord;
   F : TJSONFloat;
-  S : String;
+  S : RawByteString;
 
 begin
   S:=CurrentTokenString;
@@ -338,7 +348,7 @@ end;
 
 
 // Current token is {, on exit current token is }
-Procedure TBaseJSONReader.ParseObject;
+procedure TBaseJSONReader.ParseObject;
 
 Var
   T : TJSONtoken;
@@ -375,7 +385,7 @@ begin
 end;
 
 // Current token is [, on exit current token is ]
-Procedure TBaseJSONReader.ParseArray;
+procedure TBaseJSONReader.ParseArray;
 
 Var
   T : TJSONtoken;
@@ -446,6 +456,13 @@ end;
 constructor TBaseJSONReader.Create(const Source: RawByteString; AOptions: TJSONOptions);
 begin
   FScanner:=TJSONScanner.Create(Source,AOptions);
+end;
+
+constructor TBaseJSONReader.Create(const Source: UnicodeString;
+  AOptions: TJSONOptions);
+begin
+  Include(aOptions,joUTF8);
+  Create(UTF8Encode(Source),aOptions);
 end;
 
 destructor TBaseJSONReader.Destroy();

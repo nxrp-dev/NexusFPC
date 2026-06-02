@@ -122,7 +122,7 @@ end;
 
     begin
     // We do nothing. Pipe streams don't support this
-    // As wel as possible read-ony streams !!
+    // As wel as possible read-only streams !!
     end;
 
   procedure TStream.SetSize(const NewSize: Int64);
@@ -1218,7 +1218,7 @@ end;
 
     end;
 
-    function TStream.ReadAnsiString: String;
+  function TStream.ReadAnsiString: AnsiString;
 
   Var
     TheSize : Longint;
@@ -1236,7 +1236,24 @@ end;
      end;
    end;
 
-    procedure TStream.WriteAnsiString(const S: String);
+  function TStream.ReadUnicodeString: WideString;
+  Var
+    TheSize : Longint;
+    P : PByte ;
+  begin
+    Result:='';
+    ReadBuffer (TheSize,SizeOf(TheSize));
+    SetLength(Result,TheSize);
+    // Illegal typecast if no AnsiStrings defined.
+    if TheSize>0 then
+     begin
+       ReadBuffer (Pointer(Result)^,TheSize*SizeOf(unicodeChar));
+       P:=Pointer(Result)+TheSize*SizeOf(UnicodeChar);
+       PWord(p)^:=0;
+     end;
+  end;
+
+  procedure TStream.WriteAnsiString(const S: AnsiString);
 
   Var L : Longint;
 
@@ -1244,6 +1261,15 @@ end;
     L:=Length(S);
     WriteBuffer (L,SizeOf(L));
     WriteBuffer (Pointer(S)^,L);
+  end;
+
+  procedure TStream.WriteUnicodeString(const S: UnicodeString);
+  Var L : Longint;
+
+  begin
+    L:=Length(S);
+    WriteBuffer (L,SizeOf(L));
+    WriteBuffer (Pointer(S)^,L*SizeOf(UnicodeChar));
   end;
 
   procedure TStream.WriteByte(b : Byte);
@@ -1328,6 +1354,7 @@ end;
 constructor TFileStream.Create(const AFileName: string; Mode: Word);
 
 begin
+  // 438 = 666 octal which is rw rw rw
   Create(AFileName,Mode,438);
 end;
 
@@ -1601,7 +1628,16 @@ end;
 {*                             TStringStream                                *}
 {****************************************************************************}
 
-function TStringStream.GetDataString: string;
+function TStringStream.GetDataString: RTLString;
+begin
+{$IF SIZEOF(CHAR)=1}
+  Result:=GetAnsiDataString;
+{$ELSE}
+  Result:=GetUnicodeDataString;
+{$ENDIF}
+end;
+
+function TStringStream.GetAnsiDataString: AnsiString;
 begin
   Result:=FEncoding.GetAnsiString(Bytes,0,Size);
 end;
@@ -1611,10 +1647,15 @@ begin
   Result:=FEncoding.GetString(Bytes, 0, Size);
 end;
 
-constructor TStringStream.Create(const AString: string = '');
+constructor TStringStream.Create(const AString: AnsiString);
 
 begin
   Create(AString,TEncoding.Default, False);
+end;
+
+constructor TStringStream.Create();
+begin
+  Create([]);
 end;
 
 constructor TStringStream.Create(const ABytes: TBytes);
@@ -1644,21 +1685,23 @@ begin
   inherited Create(BytesOf(AString));
 end;
 
-constructor TStringStream.Create(const AString: string; AEncoding: TEncoding; AOwnsEncoding: Boolean);
+constructor TStringStream.Create(const AString: Ansistring; AEncoding: TEncoding; AOwnsEncoding: Boolean);
+
 begin
   FOwnsEncoding:=AOwnsEncoding and not TEncoding.IsStandardEncoding(AEncoding);
   FEncoding:=AEncoding;
   Inherited Create(AEncoding.GetAnsiBytes(AString));
 end;
 
-constructor TStringStream.Create(const AString: string; ACodePage: Integer);
+constructor TStringStream.Create(const AString: Ansistring; ACodePage: Integer);
+
 begin
   Create(AString,TEncoding.GetEncoding(ACodePage),true);
 end;
 
 constructor TStringStream.Create(const AString: UnicodeString);
 begin
-  Create(AString,TEncoding.Unicode,false);
+  Create(AString,TEncoding.Default,false);
 end;
 
 constructor TStringStream.Create(const AString: UnicodeString; AEncoding: TEncoding; AOwnsEncoding: Boolean);
@@ -1820,7 +1863,7 @@ constructor TResourceStream.CreateFromID(Instance: TFPResourceHMODULE; ResID: In
   end;
 {$else FPC_OS_UNICODE}
 
-procedure TResourceStream.Initialize(Instance: TFPResourceHMODULE; Name, ResType: PChar; NameIsID: Boolean);
+procedure TResourceStream.Initialize(Instance: TFPResourceHMODULE; Name, ResType: PAnsiChar; NameIsID: Boolean);
   begin
     Res:=FindResource(Instance, Name, ResType);
     if Res=0 then
@@ -1837,15 +1880,33 @@ procedure TResourceStream.Initialize(Instance: TFPResourceHMODULE; Name, ResType
     SetPointer(LockResource(Handle),SizeOfResource(Instance,Res));
   end;
 
-constructor TResourceStream.Create(Instance: TFPResourceHMODULE; const ResName: string; ResType: PChar);
+constructor TResourceStream.Create(Instance: TFPResourceHMODULE; const ResName: string; ResType: PWideChar);
+
+begin
+  Create(Instance,ResName,PAnsichar(ResType));
+end;
+
+constructor TResourceStream.Create(Instance: TFPResourceHMODULE; const ResName: string; ResType: PAnsiChar);
+
+Var
+  S : AnsiString {$IF SIZEOF(CHAR)=1} absolute Resname {$endif} ;
+
+begin
+  inherited create;
+  // fpcres seems to use default translations...
+  {$IF SIZEOF(CHAR)=2}S:=ResName;{$endif}
+  Initialize(Instance,PAnsiChar(S),ResType,False);
+end;
+
+constructor TResourceStream.CreateFromID(Instance: TFPResourceHMODULE; ResID: Integer; ResType: PAnsiChar);
   begin
     inherited create;
-    Initialize(Instance,pchar(ResName),ResType,False);
+    Initialize(Instance,PAnsiChar(PtrInt(ResID)),ResType,True);
   end;
-constructor TResourceStream.CreateFromID(Instance: TFPResourceHMODULE; ResID: Integer; ResType: PChar);
+
+constructor TResourceStream.CreateFromID(Instance: TFPResourceHMODULE; ResID: Integer; ResType: PWideChar);
   begin
-    inherited create;
-    Initialize(Instance,pchar(PtrInt(ResID)),ResType,True);
+    CreateFromID(Instance,ResID,PAnsiChar(ResType));
   end;
 {$endif FPC_OS_UNICODE}
 
@@ -1856,6 +1917,214 @@ destructor TResourceStream.Destroy;
     FreeResource(Handle);
     inherited destroy;
   end;
+
+{****************************************************************************}
+{*                        TProxyAggregateStream                             *}
+{****************************************************************************}
+
+{ TProxyAggregateStream }
+
+function TProxyAggregateStream.AddStream(AStream: TStream; AOwnsStream: Boolean): Integer;
+begin
+  try
+    AStream.Position := 0;
+    Inc(FSize, AStream.Size);
+
+    SetLength(FStreams, Length(FStreams)+1);
+    Result := High(FStreams);
+    FStreams[Result].Stream := AStream;
+    FStreams[Result].OwnsStream := AOwnsStream;
+  except
+    if AOwnsStream then
+      AStream.Free;
+    raise;
+  end;
+end;
+
+procedure TProxyAggregateStream.Clear;
+var
+  I: Integer;
+begin
+  FSize := 0;
+  for I := 0 to High(FStreams) do
+    if FStreams[I].OwnsStream then
+      FStreams[I].Stream.Free;
+  FStreams := nil;
+  FPosition := 0;
+  FCurrentStream := -1;
+end;
+
+constructor TProxyAggregateStream.Create;
+begin
+  inherited Create;
+
+  FCurrentStream := -1;
+end;
+
+destructor TProxyAggregateStream.Destroy;
+begin
+  Clear;
+
+  inherited Destroy;
+end;
+
+function TProxyAggregateStream.GetCount: Integer;
+begin
+  Result := Length(FStreams);
+end;
+
+function TProxyAggregateStream.GetOwnsStream(AIndex: Integer): Boolean;
+begin
+  Result := FStreams[AIndex].OwnsStream;
+end;
+
+function TProxyAggregateStream.GetPosition: Int64;
+begin
+  Result := FPosition;
+end;
+
+function TProxyAggregateStream.GetSize: Int64;
+begin
+  Result := FSize;
+end;
+
+function TProxyAggregateStream.GetStreams(AIndex: Integer): TStream;
+begin
+  Result := FStreams[AIndex].Stream;
+end;
+
+function TProxyAggregateStream.Read(var Buffer; ACount: Longint): Longint;
+var
+  P: PByte;
+  LRemain, LStreamRead, LStreamRemain, LStreamSize: Int64;
+begin
+  if (FCurrentStream=-1) or (
+           (FCurrentStream<Self.Count)
+       and (FCurrentStreamPos<>FStreams[FCurrentStream].Stream.Position))
+  then
+    SyncPosition;
+
+  Result := 0;
+  if (FPosition=FSize) or (ACount=0) then
+    Exit;
+  P := @Buffer;
+  while (Result<ACount) and (FCurrentStream<Self.Count) do
+  begin
+    LRemain := Int64(ACount)-Int64(Result);
+    LStreamSize := FStreams[FCurrentStream].Stream.Size;
+    LStreamRemain := LStreamSize-FStreams[FCurrentStream].Stream.Position;
+    if LRemain<LStreamRemain then
+      LStreamRead := LRemain
+    else
+      LStreamRead := LStreamRemain;
+    LStreamRead := FStreams[FCurrentStream].Stream.Read(P[Result], LStreamRead);
+    FCurrentStreamPos := FStreams[FCurrentStream].Stream.Position;
+    Inc(FPosition, LStreamRead);
+    Inc(Result, LStreamRead);
+    if (Result<ACount) and (FCurrentStreamPos>=LStreamSize) then
+    begin
+      Inc(FCurrentStream);
+      if FCurrentStream<Self.Count then
+      begin
+        FStreams[FCurrentStream].Stream.Position := 0;
+        FCurrentStreamPos := 0;
+      end;
+    end;
+  end;
+end;
+
+procedure TProxyAggregateStream.RemoveStream(AIndex: Integer);
+begin
+  Dec(FSize, FStreams[AIndex].Stream.Size);
+  if FStreams[AIndex].OwnsStream then
+    FStreams[AIndex].Stream.Free;
+  Delete(FStreams, AIndex, 1);
+  FPosition := 0;
+  FCurrentStream := -1;
+end;
+
+procedure TProxyAggregateStream.RemoveStream(AStream: TStream);
+var
+  I: Integer;
+begin
+  for I := 0 to High(FStreams) do
+    if FStreams[I].Stream=AStream then
+    begin
+      RemoveStream(I);
+      Exit;
+    end;
+end;
+
+function TProxyAggregateStream.Seek(const Offset: Int64; Origin: TSeekOrigin): Int64;
+var
+  LNewPos, LPrevPos: Int64;
+begin
+  LPrevPos := FPosition;
+  case Origin of
+    soBeginning: LNewPos := Offset;
+    soCurrent: LNewPos := FPosition + Offset;
+    soEnd: LNewPos := FSize + Offset;
+  end;
+  if LNewPos <= 0 then
+    FPosition := 0
+  else
+  if LNewPos > Size then
+    FPosition := Size
+  else
+    FPosition := LNewPos;
+  if LPrevPos <> FPosition then
+    FCurrentStream := -1; // we need SyncPosition
+  Result := FPosition;
+end;
+
+function TProxyAggregateStream.Seek(Offset: Longint; Origin: Word): Longint;
+begin
+  Result := Seek(Int64(Offset), TSeekOrigin(Origin)); // call Int64-Seek
+end;
+
+procedure TProxyAggregateStream.SetOwnsStream(AIndex: Integer; const aOwnsStream: Boolean);
+begin
+  FStreams[AIndex].OwnsStream := aOwnsStream;
+end;
+
+procedure TProxyAggregateStream.SyncPosition;
+  procedure _GoToEnd;
+  begin
+    FCurrentStream := Count-1;
+    if FCurrentStream>=0 then
+      FCurrentStreamPos := FStreams[FCurrentStream].Stream.Seek(0, soEnd);
+  end;
+var
+  LPosition, LStreamSize: Int64;
+  I: Integer;
+begin
+  if FPosition>=FSize then
+    _GoToEnd
+  else
+  begin
+    LPosition := 0;
+    for I := 0 to High(FStreams) do
+    begin
+      LStreamSize := FStreams[I].Stream.Size;
+      if FPosition<LPosition+LStreamSize then
+      begin
+        FCurrentStream := I;
+        FCurrentStreamPos := FStreams[FCurrentStream].Stream.Seek(FPosition-LPosition, soBeginning);
+        Exit;
+      end;
+      Inc(LPosition, LStreamSize);
+    end;
+  end;
+
+  // FPosition outside the size
+  _GoToEnd;
+end;
+
+function TProxyAggregateStream.Write(const Buffer; ACount: Longint): Longint;
+begin
+  Result := 0;
+  raise EStreamError.CreateRes(@SCantWriteAggregateStreamError);
+end;
 
 {****************************************************************************}
 {*                             TOwnerStream                                 *}

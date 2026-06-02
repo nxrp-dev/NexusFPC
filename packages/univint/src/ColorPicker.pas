@@ -1,17 +1,17 @@
 {
      File:       CommonPanels/ColorPicker.h
- 
+
      Contains:   Color Picker package Interfaces.
- 
+
      Version:    CommonPanels-94~602
- 
+
      Copyright:  © 1987-2008 by Apple Computer, Inc., all rights reserved
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 {  Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2009 }
 {  Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2012 }
@@ -29,7 +29,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit ColorPicker;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -214,7 +216,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.ColorSyncDeprecated,MacOsApi.MixedMode,MacOsApi.QuickdrawTypes,MacOsApi.Events;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,ColorSyncDeprecated,MixedMode,QuickdrawTypes,Events;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -343,7 +349,7 @@ type
 	NColorChangedUPP = NColorChangedProcPtr;
 {
  *  NewNColorChangedUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -354,7 +360,7 @@ function NewNColorChangedUPP( userRoutine: NColorChangedProcPtr ): NColorChanged
 
 {
  *  DisposeNColorChangedUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -365,7 +371,7 @@ procedure DisposeNColorChangedUPP( userUPP: NColorChangedUPP ); external name '_
 
 {
  *  InvokeNColorChangedUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -387,7 +393,7 @@ type
 	UserEventUPP = UserEventProcPtr;
 {
  *  NewColorChangedUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -398,7 +404,7 @@ function NewColorChangedUPP( userRoutine: ColorChangedProcPtr ): ColorChangedUPP
 
 {
  *  NewUserEventUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -409,7 +415,7 @@ function NewUserEventUPP( userRoutine: UserEventProcPtr ): UserEventUPP; externa
 
 {
  *  DisposeColorChangedUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -420,7 +426,7 @@ procedure DisposeColorChangedUPP( userUPP: ColorChangedUPP ); external name '_Di
 
 {
  *  DisposeUserEventUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -431,7 +437,7 @@ procedure DisposeUserEventUPP( userUPP: UserEventUPP ); external name '_DisposeU
 
 {
  *  InvokeColorChangedUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -442,7 +448,7 @@ procedure InvokeColorChangedUPP( userData: SInt32; var newColor: PMColor; userUP
 
 {
  *  InvokeUserEventUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -496,7 +502,7 @@ type
 {$ifc not TARGET_CPU_64}
 {
  *  Fix2SmallFract()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -508,7 +514,7 @@ function Fix2SmallFract( f: Fixed ): SmallFract; external name '_Fix2SmallFract'
 
 {
  *  SmallFract2Fix()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -520,7 +526,7 @@ function SmallFract2Fix( s: SmallFract ): Fixed; external name '_SmallFract2Fix'
 
 {
  *  CMY2RGB()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -532,7 +538,7 @@ procedure CMY2RGB( const (*var*) cColor: CMYColor; var rColor: RGBColor ); exter
 
 {
  *  RGB2CMY()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -544,7 +550,7 @@ procedure RGB2CMY( const (*var*) rColor: RGBColor; var cColor: CMYColor ); exter
 
 {
  *  HSL2RGB()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -556,7 +562,7 @@ procedure HSL2RGB( const (*var*) hColor: HSLColor; var rColor: RGBColor ); exter
 
 {
  *  RGB2HSL()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -568,7 +574,7 @@ procedure RGB2HSL( const (*var*) rColor: RGBColor; var hColor: HSLColor ); exter
 
 {
  *  HSV2RGB()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -580,7 +586,7 @@ procedure HSV2RGB( const (*var*) hColor: HSVColor; var rColor: RGBColor ); exter
 
 {
  *  RGB2HSV()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -594,7 +600,7 @@ procedure RGB2HSV( const (*var*) rColor: RGBColor; var hColor: HSVColor ); exter
 
 {
  *  GetColor()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -607,7 +613,7 @@ function GetColor( where: Point; const (*var*) prompt: Str255; const (*var*) inC
 {$ifc not TARGET_CPU_64}
 {
  *  PickColor()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -621,7 +627,7 @@ function PickColor( var theColorInfo: ColorPickerInfo ): OSErr; external name '_
 
 {
  *  NPickColor()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later

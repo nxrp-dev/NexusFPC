@@ -13,10 +13,16 @@
 
  **********************************************************************}
 {$mode objfpc}{$h+}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fpwriteqoi;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 
-uses FPImage, classes, sysutils, QoiComn;
+{$IFDEF FPC_DOTTEDUNITS}
+uses FpImage, System.Classes, System.SysUtils, FpImage.Common.QOI;
+{$ELSE FPC_DOTTEDUNITS}
+uses FpImage, classes, sysutils, QoiComn;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
 
@@ -69,16 +75,16 @@ begin
     end;
 
   {$IFDEF ENDIAN_LITTLE}
-  QoiHeader.width:=Swap32(QoiHeader.width);
-  QoiHeader.height:=Swap32(QoiHeader.height);
+  QoiHeader.width:=SwapEndian(QoiHeader.width);
+  QoiHeader.height:=SwapEndian(QoiHeader.height);
   {$ENDIF}
 
   //writeln('Save width 2 ',QoiHeader.width, '   height  ', QoiHeader.height);
   Stream.Write(QoiHeader,sizeof(TQoiHeader));
 
   {$IFDEF ENDIAN_LITTLE}
-  QoiHeader.width:=Swap32(QoiHeader.width);
-  QoiHeader.height:=Swap32(QoiHeader.height);
+  QoiHeader.width:=SwapEndian(QoiHeader.width);
+  QoiHeader.height:=SwapEndian(QoiHeader.height);
   {$ENDIF}
   Result:=true;
 end;
@@ -116,8 +122,8 @@ begin
     dword(px):=0;
     px.a:=255;
 
-    {initalize previosly seen pixel array}
-    fillchar(arr,sizeof(arr),0);
+    {initialize previously seen pixel array}
+    FillQWord(arr,sizeof(arr) div sizeof(QWord),0);
     iA:=QoiPixelIndex(px);
      //for iA:=0 to 63 do
      //arr[iA]:=px;

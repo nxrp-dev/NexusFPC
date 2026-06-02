@@ -1,9 +1,15 @@
 program needassert;
 
+{$mode objfpc}
+
+{$IFDEF FPC_DOTTEDUNITS}
+uses FpcUnit.Test, FpcUnit.Registry, FpcUnit.Runners.Console;
+{$ELSE FPC_DOTTEDUNITS}
 uses fpcunit, testregistry, consoletestrunner;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
-  TTestNeedAssert = Class(TTestCase) 
+  TTestNeedAssert = Class(TTestCase)
   Published
     Procedure NeedsToFail;
     Procedure NeedsToBeOK;
@@ -25,7 +31,7 @@ end;
 
 Var
   Application : TTestRunner;
-  
+
 begin
   RegisterTest(TTestNeedAssert);
   TTestCase.CheckAssertCalled:=true;

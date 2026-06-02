@@ -16,13 +16,19 @@
 {$IFDEF FPC}
 {$MODE objfpc}
 {$H+}
+{$modeswitch advancedrecords}
 {$ENDIF}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit URIParser;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
 type
+
+  { TURI }
+
   TURI = record
     Protocol: String;
     Username: String;
@@ -34,6 +40,11 @@ type
     Params: String;
     Bookmark: String;
     HasAuthority: Boolean;
+    constructor create(aURI : String; aDecode: Boolean = True);
+    constructor create(const aURI, aDefaultProtocol: String; aDefaultPort: Word; aDecode : Boolean = True);
+    function ToString : String;
+    function URI : String;
+    procedure Free;
   end;
 
 function EncodeURI(const URI: TURI): String;
@@ -41,7 +52,7 @@ function ParseURI(const URI: String; Decode : Boolean = True):  TURI; overload;
 function ParseURI(const URI, DefaultProtocol: String; DefaultPort: Word; Decode : Boolean = True):  TURI; overload;
 
 function ResolveRelativeURI(const BaseUri, RelUri: UnicodeString;out ResultUri: UnicodeString): Boolean; overload;
-{$ifdef WINDOWS}  
+{$ifdef WINDOWS}
 function ResolveRelativeURI(const BaseUri, RelUri: WideString; out ResultUri: WideString): Boolean; overload;
 {$ENDIF}
 function ResolveRelativeURI(const BaseUri, RelUri: AnsiString;  out ResultUri: AnsiString): Boolean; overload;
@@ -53,7 +64,11 @@ function IsAbsoluteURI(const UriReference: string): Boolean;
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils;
+{$ELSE FPC_DOTTEDUNITS}
 uses SysUtils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   GenDelims = [':', '/', '?', '#', '[', ']', '@'];
@@ -95,16 +110,16 @@ end;
 function EncodeURI(const URI: TURI): String;
 // ! if no scheme then first colon in path should be escaped
 begin
-  SetLength(Result, 0);
-  if Length(URI.Protocol) > 0 then
+  Result := '';
+  if URI.Protocol <> '' then
     Result := LowerCase(URI.Protocol) + ':';
   if URI.HasAuthority then
   begin
     Result := Result + '//';
-    if Length(URI.Username) > 0 then
+    if URI.Username <> '' then
     begin
       Result := Result + URI.Username;
-      if Length(URI.Password) > 0 then
+      if URI.Password <> '' then
         Result := Result + ':' + URI.Password;
       Result := Result + '@';
     end;
@@ -113,15 +128,15 @@ begin
   if URI.Port <> 0 then
     Result := Result + ':' + IntToStr(URI.Port);
   Result := Result + Escape(URI.Path, ValidPathChars);
-  if Length(URI.Document) > 0 then
+  if URI.Document <> '' then
   begin
-    if (Length(URI.Path) > 0) and ((Length(Result) = 0) or (Result[Length(Result)] <> '/')) then
+    if (URI.Path <> '') and ((Result = '') or (Result[Length(Result)] <> '/')) then
       Result := Result + '/';
     Result := Result + Escape(URI.Document, ValidPathChars);
   end;
-  if Length(URI.Params) > 0 then
+  if URI.Params <> '' then
     Result := Result + '?' + Escape(URI.Params, ValidPathChars);
-  if Length(URI.Bookmark) > 0 then
+  if URI.Bookmark <> '' then
     Result := Result + '#' + Escape(URI.Bookmark, ValidPathChars);
 end;
 
@@ -172,7 +187,7 @@ var
   s, Authority: String;
   i,j: Integer;
   PortValid: Boolean;
-  
+
 begin
   Result:=Default(TURI);
   Result.Protocol := LowerCase(DefaultProtocol);
@@ -201,7 +216,7 @@ begin
     Result.Bookmark := Copy(s, i + 1, MaxInt);
     if Decode then
       Result.Bookmark:=Unescape(Result.Bookmark);
-    s := Copy(s, 1, i - 1);
+    SetLength(s, i - 1);
   end;
 
   // Extract the params
@@ -212,7 +227,7 @@ begin
     Result.Params := Copy(s, i + 1, MaxInt);
     if Decode then
       Result.Params:=Unescape(Result.Params);
-    s := Copy(s, 1, i - 1);
+    SetLength(s, i - 1);
   end;
 
   // extract authority
@@ -242,13 +257,11 @@ begin
       if Decode then
         Result.Document:=Unescape(Result.Document);
       if (Result.Document <> '.') and (Result.Document <> '..') then
-        s := Copy(s, 1, i)
+        SetLength(s, i)
       else
         Result.Document := '';
       break;
-    end else if s[i] = ':' then
-      break
-    else if i = 1 then
+    end else if i = 1 then
     begin
       Result.Document :=s;
       if Decode then
@@ -281,7 +294,7 @@ begin
     if PortValid then
     begin
       Result.Port := StrToInt(Copy(Authority, i + 1, MaxInt));
-      Authority := Copy(Authority, 1, i - 1);
+      SetLength(Authority, i - 1);
     end;
   end;
 
@@ -290,11 +303,11 @@ begin
   i := Pos('@', Authority);
   if i > 0 then
   begin
-    Result.Host := Copy(Authority, i+1, MaxInt);
-    Delete(Authority, i, MaxInt);
+    Result.Host := Copy(Authority, i + 1, MaxInt);
+    SetLength(Authority, i - 1);
 
     // Extract username and password
-    if Length(Authority) > 0 then
+    if Authority <> '' then
     begin
       i := Pos(':', Authority);
       if i = 0 then
@@ -378,7 +391,7 @@ begin
       RemoveDotSegments(Path);
     end;
   end; // with
-  
+
   // EncodeUri percent-encodes the result, and that's good
   ResultUri := EncodeUri(Rel);
 end;
@@ -490,6 +503,33 @@ begin
       Break;
   end;
   Result := False;
+end;
+
+{ TURI }
+
+constructor TURI.create(aURI: String; aDecode: Boolean);
+begin
+  Self:=ParseURI(aURI,aDecode);
+end;
+
+constructor TURI.create(const aURI, aDefaultProtocol: String; aDefaultPort: Word; aDecode: Boolean);
+begin
+  Self:=ParseURI(aURI,aDefaultProtocol,aDefaultPort,aDecode);
+end;
+
+function TURI.ToString: String;
+begin
+  Result:=EncodeURI(Self);
+end;
+
+function TURI.URI: String;
+begin
+  Result:=ToString;
+end;
+
+procedure TURI.Free;
+begin
+  Self:=Default(TURI);
 end;
 
 

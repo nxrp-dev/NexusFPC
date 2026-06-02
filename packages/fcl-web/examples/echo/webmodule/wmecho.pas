@@ -18,7 +18,7 @@ type
     { private declarations }
   public
     { public declarations }
-  end; 
+  end;
 
 var
   EchoModule: TEchoModule;
@@ -48,6 +48,6 @@ begin
 end;
 
 initialization
-  RegisterHTTPModule('TEchoModule', TEchoModule);
+  RegisterHTTPModule('Echo', TEchoModule);
 end.
 

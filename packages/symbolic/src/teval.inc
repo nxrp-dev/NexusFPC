@@ -23,7 +23,7 @@ procedure TEvaluator.WriteVliw(p:VLIWEvalWord); forward;
 
 Procedure TEvalInternalError(A,B:ArbInt);
 
-VAR S,S2 : String;
+VAR S,S2 : ShortString;
 
 begin
  Str(ORD(A),S);
@@ -57,7 +57,7 @@ it has a TExpression as argument.
 
 Besides that it gets the pnode from the TExpression, it sets the
 TExpression.Evaluator to self, and a flag to set in the TExpression that its
-assiociated TEvaluator is up to date with the TExpression.
+associated TEvaluator is up to date with the TExpression.
 }
 
 begin
@@ -86,7 +86,7 @@ begin
  inherited Destroy;
 end;
 
-PROCEDURE   TEvaluator.SetConstant(Name:String;Value:ArbFloat);
+PROCEDURE   TEvaluator.SetConstant(Name:ShortString;Value:ArbFloat);
 
 Var Ind,I    : Longint;
     TmpList  : TList;

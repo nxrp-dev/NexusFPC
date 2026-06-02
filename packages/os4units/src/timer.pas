@@ -14,15 +14,22 @@
  **********************************************************************}
 {$PACKRECORDS 2}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit timer;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  Amiga.Core.Exec;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   exec;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
-// unit defintions
+// unit definitions
 // enTimerUnits
   UNIT_MICROHZ    = 0; // 1/1000000 second granularity
   UNIT_VBLANK     = 1; // 1/60 second granularity
@@ -31,7 +38,7 @@ const
   UNIT_WAITECLOCK = 4; // wait until a certain point of time (in EClock ticks)
   UNIT_ENTROPY    = 5; // Read entropy data
 
-  TIMERNAME : PChar   = 'timer.device';
+  TIMERNAME : PAnsiChar   = 'timer.device';
 
 type
   PTimeVal = ^TTimeVal;

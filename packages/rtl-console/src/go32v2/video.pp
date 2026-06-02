@@ -13,7 +13,9 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit Video;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
@@ -25,10 +27,17 @@ var
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Console.Mouse,
+  DOSApi.GO32,
+  System.Unicode.Graphemebreakproperty,System.Unicode.Eastasianwidth,System.CharSet;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   mouse,
   go32,
   graphemebreakproperty,eastasianwidth,charset;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$i video.inc}
 
@@ -38,7 +47,7 @@ uses
 const
   LastCursorType : word = crUnderline;
 
-{ allways set blink state again }
+{ always set blink state again }
 
 procedure SetHighBitBlink;
 var

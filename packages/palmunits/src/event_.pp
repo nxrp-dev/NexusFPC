@@ -18,11 +18,17 @@
  *    10/28/99 kwk   Added EvtKeydownIsVirtual macro.
  *
  *****************************************************************************)
+{$IFNDEF FPC_DOTTEDUNITS}
 unit event_;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses PalmApi.Palmos, PalmApi.Coretraps, PalmApi.Sysevent, PalmApi.Control, PalmApi.Day, PalmApi.Field, PalmApi.List, PalmApi.Scrollbar, PalmApi.Table;
+{$ELSE FPC_DOTTEDUNITS}
 uses palmos, coretraps, sysevent, control, day, field, list, scrollbar, table;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   eventsEnum = WordEnum;
@@ -185,7 +191,7 @@ type
   frmGoto = record
     formID: UInt16;
     recordNum: UInt16;     // index of record that contain a match
-    matchPos: UInt16;      // postion in record of the match.
+    matchPos: UInt16;      // position in record of the match.
     matchLen: UInt16;      // length of match.
     matchFieldNum: UInt16; // field number string was found int
     matchCustom: UInt32;   // application specific info

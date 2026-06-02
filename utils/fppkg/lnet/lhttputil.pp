@@ -15,7 +15,7 @@
   You should have received a Copy of the GNU Library General Public License
   along with This library; if not, Write to the Free Software Foundation,
   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-  
+
   This license has been modified. See file LICENSE.ADDON for more information.
   Should you find these sources without a LICENSE File, please contact
   me at ales@chello.sk
@@ -29,12 +29,12 @@ unit lHTTPUtil;
 interface
 
 uses
-  sysutils, 
+  sysutils,
   strutils;
 
 const
   HTTPDateFormat: string = 'ddd, dd mmm yyyy hh:nn:ss';
-  HTTPAllowedChars = ['A'..'Z','a'..'z', '*','@','.','_','-', 
+  HTTPAllowedChars = ['A'..'Z','a'..'z', '*','@','.','_','-',
       '0'..'9', '$','!','''','(',')'];
 
 type
@@ -42,15 +42,15 @@ type
 
   function GMTToLocalTime(ADateTime: TDateTime): TDateTime;
   function LocalTimeToGMT(ADateTime: TDateTime): TDateTime;
-  function TryHTTPDateStrToDateTime(ADateStr: pchar; var ADest: TDateTime): boolean;
+  function TryHTTPDateStrToDateTime(ADateStr: pansichar; var ADest: TDateTime): boolean;
 
   function SeparatePath(var InPath: string; out ExtraPath: string; const Mode:Longint;
     ASearchRec: PSearchRec = nil): boolean;
-  function CheckPermission(const ADocument: pchar): boolean;
-  function HTTPDecode(AStr: pchar): pchar;
+  function CheckPermission(const ADocument: pansichar): boolean;
+  function HTTPDecode(AStr: pansichar): pansichar;
   function HTTPEncode(const AStr: string): string;
   function HexToNum(AChar: char): byte;
-  
+
   function DecomposeURL(const URL: string; out Host, URI: string; out Port: Word): Boolean;
   function ComposeURL(Host, URI: string; const Port: Word): string;
 
@@ -69,7 +69,7 @@ begin
   Result := ADateTime - (TZSeconds*1000/MSecsPerDay);
 end;
 
-function TryHTTPDateStrToDateTime(ADateStr: pchar; var ADest: TDateTime): boolean;
+function TryHTTPDateStrToDateTime(ADateStr: pansichar; var ADest: TDateTime): boolean;
 var
   lYear, lMonth, lDay: word;
   lTime: array[0..2] of word;
@@ -81,7 +81,7 @@ begin
   { day }
   if ADateStr[2] = ' ' then
     ADateStr[2] := #0
-  else 
+  else
     exit(false);
   Val(ADateStr, lDay, lCode);
   if lCode <> 0 then exit(false);
@@ -114,7 +114,7 @@ begin
   Result := true;
 end;
 
-function SeparatePath(var InPath: string; out ExtraPath: string; const Mode:Longint; 
+function SeparatePath(var InPath: string; out ExtraPath: string; const Mode:Longint;
   ASearchRec: PSearchRec = nil): boolean;
 var
   lFullPath: string;
@@ -156,9 +156,9 @@ begin
     Result := 0;
 end;
 
-function HTTPDecode(AStr: pchar): pchar;
+function HTTPDecode(AStr: pansichar): pansichar;
 var
-  lPos, lNext, lDest: pchar;
+  lPos, lNext, lDest: pansichar;
 begin
   lDest := AStr;
   repeat
@@ -167,7 +167,7 @@ begin
       Inc(lPos);
     if (lPos[0]='%') and (lPos[1] <> #0) and (lPos[2] <> #0) then
     begin
-      lPos^ := char((HexToNum(lPos[1]) shl 4) + HexToNum(lPos[2]));
+      lPos^ := ansichar((HexToNum(lPos[1]) shl 4) + HexToNum(lPos[2]));
       lNext := lPos+2;
     end else if lPos[0] = '+' then
     begin
@@ -197,9 +197,9 @@ begin
     exit;
   dest := pchar(Result);
   src := pchar(AStr);
-  srcend := src + len; 
+  srcend := src + len;
   while src < srcend do
-  begin 
+  begin
     if src^ in HTTPAllowedChars then
       dest^ := src^
     else if src^ = ' ' then
@@ -218,9 +218,9 @@ begin
   SetLength(Result, dest - pchar(Result));
 end;
 
-function CheckPermission(const ADocument: pchar): boolean;
+function CheckPermission(const ADocument: pansichar): boolean;
 var
-  lPos: pchar;
+  lPos: pansichar;
 begin
   lPos := ADocument;
   repeat

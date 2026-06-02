@@ -61,7 +61,7 @@
      CALTYPE = cardinal;
      CALID = cardinal;
 
-     CCHAR = char;
+     CCHAR = AnsiChar;
 
      COLORREF = cardinal;
      TCOLORREF = cardinal;
@@ -98,6 +98,7 @@
      PULONG32    = ^ULONG32;
      PULONG_PTR  = ^ULONG_PTR;
      PLONG64     = ^LONG64;
+     PSIZE_T     = ^SIZE_T;
 
      DWORDLONG  = qword;  { was unsigned long  }
      PDWORDLONG = ^DWORDLONG;
@@ -159,16 +160,16 @@
      LP     = ^word;
      LPBOOL = ^WINBOOL;
      LPBYTE = pbyte;
-     LPCCH  = PCHAR;
-     LPCH   = PCHAR;
+     LPCCH  = PAnsiChar;
+     LPCH   = PAnsiChar;
 
      LPCOLORREF = ^COLORREF;
 
-     LPCSTR  = Pchar;
+     LPCSTR  = PAnsiChar;
 {$ifdef UNICODE}
      LPCTSTR = Pwidechar;
 {$else}
-     LPCTSTR = Pchar;
+     LPCTSTR = PAnsiChar;
 {$endif}
 
      LPCWCH  = Pwidechar;
@@ -185,13 +186,13 @@
      LPINT  = ^longint;
      LPLONG = ^longint;
 
-     LPSTR = Pchar;
+     LPSTR = PAnsiChar;
 {$ifdef UNICODE}
      LPTCH  = Pwidechar;
      LPTSTR = Pwidechar;
 {$else}
-     LPTCH  = Pchar;
-     LPTSTR = Pchar;
+     LPTCH  = PAnsiChar;
+     LPTSTR = PAnsiChar;
 {$endif}
 
      LRESULT = LONG_PTR;
@@ -213,10 +214,10 @@
 
      PBYTE = System.PByte;
 
-     PCCH = PCHAR;
-     PCH  = PCHAR;
+     PCCH = PAnsiChar;
+     PCH  = PAnsiChar;
 
-     PCSTR = Pchar;
+     PCSTR = PAnsiChar;
 
      PCWCH  = Pwidechar;
      PCWSTR = Pwidechar;
@@ -230,10 +231,10 @@
      PLONG = ^longint;
      PSHORT = ^SHORT;
 
-     PSTR = Pchar;
+     PSTR = PAnsiChar;
      PWSTR = LPWSTR;
 
-     PSZ = Pchar;
+     PSZ = PAnsiChar;
 {$ifdef UNICODE}
      PTBYTE = ^word;
      PTCH = Pwidechar;
@@ -241,9 +242,9 @@
      PTSTR = Pwidechar;
 {$else}
      PTBYTE = ^byte;
-     PTCH   = Pchar;
-     PTCHAR = Pchar;
-     PTSTR  = Pchar;
+     PTCH   = PAnsiChar;
+     PTCHAR = PAnsiChar;
+     PTSTR  = PAnsiChar;
 {$endif}
 
      PUCHAR = ^byte;
@@ -552,9 +553,9 @@
   { argument types are unknown }
   function MAKEWPARAM(l,h : longint) : WPARAM; inline;
 
-  function GET_X_LPARAM(lp : Windows.LParam) : longint; inline;
+  function GET_X_LPARAM(lp : {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.LParam) : longint; inline;
 
-  function GET_Y_LPARAM(lp : Windows.LParam) : longint; inline;
+  function GET_Y_LPARAM(lp : {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.LParam) : longint; inline;
 
   {$ifndef max}
   { was #define dname(params) def_expr }
@@ -612,7 +613,7 @@
     function IMAGE_ORDINAL(Ordinal : cardinal) : cardinal; inline;
     function IMAGE_SNAP_BY_ORDINAL(Ordinal : cardinal) : boolean; inline;
   {$endif}
- 
+
 
 
  {
@@ -630,7 +631,7 @@
      PTHREAD_START_ROUTINE = function(p:pointer):integer; stdcall;
 
      LPTHREAD_START_ROUTINE = PTHREAD_START_ROUTINE;
-     TThreadStartRoutine    = PTHREAD_START_ROUTINE;  
+     TThreadStartRoutine    = PTHREAD_START_ROUTINE;
 
      EDITSTREAMCALLBACK = function (_para1:DWORD_PTR; _para2:LPBYTE; _para3:LONG; _para4:PLONG):DWORD;stdcall;
 
@@ -713,7 +714,7 @@
      ICMENUMPROCW = function (_para1:LPWSTR; _para2:LPARAM):longint;stdcall;
      ICMENUMPROC = function  (_para1:LPTSTR; _para2:LPARAM):longint;stdcall;
 
-     EDITWORDBREAKPROCEX = function (_para1:pchar; _para2:LONG; _para3:BYTE; _para4:WINT):LONG;stdcall;
+     EDITWORDBREAKPROCEX = function (_para1:PAnsiChar; _para2:LONG; _para3:BYTE; _para4:WINT):LONG;stdcall;
 
      PFNLVCOMPARE = function (_para1:LPARAM; _para2:LPARAM; _para3:LPARAM):longint;stdcall;
 
@@ -1047,12 +1048,12 @@ type
        MAKEWPARAM:=WPARAM(MAKELONG(l,h));
     end;
 
-  function GET_X_LPARAM(lp : Windows.LParam) : longint;
+  function GET_X_LPARAM(lp : {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.LParam) : longint;
     begin
       result:=smallint(LOWORD(lp));
     end;
 
-  function GET_Y_LPARAM(lp : Windows.LParam) : longint;
+  function GET_Y_LPARAM(lp : {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.LParam) : longint;
     begin
       result:=smallint(HIWORD(lp));
     end;

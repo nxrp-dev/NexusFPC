@@ -19,7 +19,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CGDataProvider;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -204,7 +206,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.MacOSXPosix,MacOsApi.CFBase,MacOsApi.CFData,MacOsApi.CGBase,MacOsApi.CFURL;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,MacOSXPosix,CFBase,CFData,CGBase,CFURL;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 {$ALIGN POWER}
@@ -415,7 +421,7 @@ type
      `offset' from the provider's data to `buffer'. It should return the
      number of bytes copied, or 0 if there's no more data.
    `releaseProvider', if non-NULL, is called when the provider is freed.
-  
+
    At least one of `getBytePointer' or `getBytes' must be non-NULL. }
 
 type

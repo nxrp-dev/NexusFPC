@@ -80,7 +80,7 @@ begin
     InOutRes := 0;
 end;
 
-procedure do_erase(p : pchar; pchangeable: boolean);
+procedure do_erase(p : PAnsiChar; pchangeable: boolean);
 VAR res : LONGINT;
 begin
   res := _unlink (p);
@@ -90,7 +90,7 @@ begin
     InOutRes := 0;
 end;
 
-procedure do_rename(p1,p2 : pchar; p1changeable, p2changeable: boolean);
+procedure do_rename(p1,p2 : PAnsiChar; p1changeable, p2changeable: boolean);
 VAR res : LONGINT;
 begin
   res := _rename (p1,p2);
@@ -188,8 +188,8 @@ begin
     InOutRes := 0;
 end;
 
-// mostly stolen from syslinux
-procedure do_open(var f;p:pchar;flags:longint; pchangeable: boolean);
+// mostly stolen from linux system unit
+procedure do_open(var f;p:PAnsiChar;flags:longint; pchangeable: boolean);
 {
   filerec and textrec have both handle and mode as the first items so
   they could use the same routine for opening/creating.
@@ -256,7 +256,7 @@ Begin
 { real open call }
   FileRec(f).Handle := _open(p,oflags,438);
   //WriteLn ('_open (',p,') returned ',ErrNo, 'Handle: ',FileRec(f).Handle);
-  // errno does not seem to be set on succsess ??
+  // errno does not seem to be set on success ??
   IF FileRec(f).Handle < 0 THEN
     if (ErrNo=Sys_EROFS) and ((OFlags and O_RDWR)<>0) then
     begin  // i.e. for cd-rom

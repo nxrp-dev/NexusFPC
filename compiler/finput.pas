@@ -33,15 +33,14 @@ interface
        linebufincrease=512;
 
     type
-       tlongintarr = array[0..1000000] of longint;
-       plongintarr = ^tlongintarr;
+       tlongintarr = array of longint;
 
        tinputfile = class
          path,name : TPathStr;       { path and filename }
          inc_path  : TPathStr;       { path if file was included with $I directive }
          next      : tinputfile;    { next file for reading }
 
-         buf          : pchar;      { buffer }
+         buf          : TAnsiCharDynArray;      { buffer }
          bufstart,                  { buffer start position in the file }
          bufsize,                   { amount of bytes in the buffer }
          maxbufsize   : longint;    { size in memory for the buffer }
@@ -50,7 +49,7 @@ interface
          savelastlinepos,
          saveline_no      : longint;
 
-         linebuf    : plongintarr;  { line buffer to retrieve lines }
+         linebuf    : tlongintarr;  { line buffer to retrieve lines }
          maxlinebuf : longint;
 
          ref_index  : longint;
@@ -116,24 +115,40 @@ interface
 
      type
         tmodulestate = (ms_unknown,
-          ms_registered,
-          ms_load,ms_compile,
-          ms_second_load,ms_second_compile,
-          ms_compiled
+          ms_registered, { tmodule created }
+          ms_load,
+          ms_compile,    { parsing and compiling }
+          ms_compiling_wait,      { waiting for used units of program/library/package }
+          ms_compiling_waitintf,  { waiting for used units of interface section }
+          ms_compiling_waitimpl,  { waiting for used units of implementation section }
+          ms_compiling_waitfinish,{ after impl section parsed, waiting for other impl sections needed by specializations }
+          ms_compiled_waitcrc,   { after computing own CRC, waiting for used units' CRCs }
+          ms_compiled,   { compiling complete, ppu written }
+          ms_processed,   { task complete }
+          ms_moduleerror
         );
+        tmodulestates = set of tmodulestate;
+
      const
-        ModuleStateStr : array[TModuleState] of string[20] = (
+        ModuleStateStr : array[TModuleState] of string[32] = (
           'Unknown',
           'Registered',
-          'Load','Compile',
-          'Second_Load','Second_Compile',
-          'Compiled'
+          'Load',
+          'Compile',
+          'Compiling_Waiting',
+          'Compiling_Waiting_interface',
+          'Compiling_Waiting_implementation',
+          'Compiling_Waiting_finish',
+          'Compiled_Waiting_crc',
+          'Compiled',
+          'Processed',
+          'Error'
         );
 
      type
         tmodulebase = class(TLinkedListItem)
           { index }
-          unit_index       : longint;  { global counter for browser }
+          moduleid      : longint;  { global counter for browser }
           { status }
           state            : tmodulestate;
           { sources }
@@ -141,7 +156,7 @@ interface
           { paths and filenames }
           paramallowoutput : boolean;  { original allowoutput parameter }
           modulename,               { name of the module in uppercase }
-          realmodulename: pshortstring; { name of the module in the orignal case }
+          realmodulename: pshortstring; { name of the module in the original case }
           paramfn,                  { original filename }
           mainsource,               { name of the main sourcefile }
           objfilename,              { fullname of the objectfile }
@@ -162,6 +177,7 @@ interface
 {$ifdef DEBUG_NODE_XML}
           ppxfilefail: Boolean;     { If the ppxfile could not be accessed, flag it }
 {$endif DEBUG_NODE_XML}
+          is_initial : boolean;     { is this the initial module, i.e. the one specified on the command-line ?}
           constructor create(const s:string);
           destructor destroy;override;
           procedure setfilename(const fn:TPathStr;allowoutput:boolean);
@@ -233,9 +249,7 @@ uses
       begin
         if not closed then
          close;
-      { free memory }
-        if assigned(linebuf) then
-         freemem(linebuf,maxlinebuf*sizeof(linebuf^[0]));
+        linebuf:=Nil;
       end;
 
 
@@ -262,7 +276,7 @@ uses
         if closed then
          exit;
         inc(bufstart,bufsize);
-        bufsize:=fileread(buf^,maxbufsize-1);
+        bufsize:=fileread(buf[0],maxbufsize-1);
         buf[bufsize]:=#0;
         endoffile:=fileeof;
       end;
@@ -278,7 +292,7 @@ uses
       { file }
         endoffile:=false;
         closed:=false;
-        Getmem(buf,MaxBufsize);
+        SetLength(buf,MaxBufsize);
         buf[0]:=#0;
         bufstart:=0;
         bufsize:=0;
@@ -290,11 +304,7 @@ uses
       begin
         if is_macro then
          begin
-           if assigned(buf) then
-            begin
-              Freemem(buf,maxbufsize);
-              buf:=nil;
-            end;
+           buf:=nil;
            name:='';
            path:='';
            closed:=true;
@@ -306,10 +316,7 @@ uses
            closed:=true;
          end;
         if assigned(buf) then
-          begin
-             Freemem(buf,maxbufsize);
-             buf:=nil;
-          end;
+          buf:=nil;
         bufstart:=0;
       end;
 
@@ -321,11 +328,7 @@ uses
         if not closed then
          begin
            fileclose;
-           if assigned(buf) then
-            begin
-              Freemem(buf,maxbufsize);
-              buf:=nil;
-            end;
+           buf:=nil;
            closed:=true;
          end;
       end;
@@ -336,7 +339,7 @@ uses
         tempopen:=false;
         if is_macro then
          begin
-           { seek buffer postion to bufstart }
+           { seek buffer position to bufstart }
            if bufstart>0 then
             begin
               move(buf[bufstart],buf[0],bufsize-bufstart+1);
@@ -351,7 +354,7 @@ uses
          exit;
         closed:=false;
       { get new mem }
-        Getmem(buf,maxbufsize);
+        SetLength(buf,maxbufsize);
       { restore state }
         fileseek(BufStart);
         bufsize:=0;
@@ -363,8 +366,9 @@ uses
     procedure tinputfile.setmacro(p:pchar;len:longint);
       begin
       { create new buffer }
-        getmem(buf,len+1);
-        move(p^,buf^,len);
+        SetLength(buf,len+1);
+        if len>0 then
+          move(p^,buf[0],len);
         buf[len]:=#0;
       { reset }
         bufstart:=0;
@@ -383,11 +387,10 @@ uses
         while (line>=maxlinebuf) do
           begin
             { create new linebuf and move old info }
-            linebuf:=reallocmem(linebuf,(maxlinebuf+linebufincrease)*sizeof(linebuf^[0]));
-            fillchar(linebuf^[maxlinebuf],linebufincrease*sizeof(linebuf^[0]),0);
+            SetLength(linebuf,(maxlinebuf+linebufincrease));
             inc(maxlinebuf,linebufincrease);
           end;
-        linebuf^[line]:=linepos;
+        linebuf[line]:=linepos;
       end;
 
 
@@ -401,7 +404,7 @@ uses
         getlinestr:='';
         if l<maxlinebuf then
          begin
-           fpos:=linebuf^[l];
+           fpos:=linebuf[l];
            { fpos is set negativ if the line was already written }
            { but we still know the correct value                 }
            if fpos<0 then
@@ -424,7 +427,7 @@ uses
                 if endoffile then
                  break;
                 readbuf;
-                p:=buf;
+                p:=@buf[0];
                 c:=p^;
               end;
              if c in [#10,#13] then
@@ -497,6 +500,7 @@ uses
         fileclose:=false;
         try
           f.Free;
+          f := nil;
           fileclose:=true;
         except
         end;
@@ -523,7 +527,7 @@ uses
          ifile : SizeInt;
       begin
          for ifile:=0 to nfiles-1 do
-          files[ifile].free;
+          FreeAndNil(files[ifile]);
          FreeMem(files);
       end;
 
@@ -545,7 +549,7 @@ uses
 
 {$ifndef GENERIC_CPU}
 {$ifdef heaptrc}
-         ppheap_register_file(f.path+f.name,current_module.unit_index*100000+f.ref_index);
+         ppheap_register_file(f.path+f.name,current_module.moduleid*100000+f.ref_index);
 {$endif heaptrc}
 {$endif not GENERIC_CPU}
       end;
@@ -620,15 +624,14 @@ uses
          staticlibfilename:=p+target_info.staticlibprefix+n+target_info.staticlibext;
          exportfilename:=p+'exp'+n+target_info.objext;
 
-         { output dir of exe can be specified separatly }
+         { output dir of exe can be specified separately }
          if AllowOutput and (OutputExeDir<>'') then
            p:=OutputExeDir
          else
            p:=path;
 
          { lib and exe could be loaded with a file specified with -o }
-         if AllowOutput and
-            (compile_level=1) and
+         if AllowOutput and is_initial and
             (OutputFileName<>'')then
            begin
              exefilename:=p+OutputFileName;
@@ -683,7 +686,7 @@ uses
         state:=ms_registered;
         { unit index }
         inc(global_unit_count);
-        unit_index:=global_unit_count;
+        moduleid:=global_unit_count;
         { sources }
         sourcefiles:=TInputFileManager.Create;
       end;

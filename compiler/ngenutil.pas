@@ -113,14 +113,14 @@ interface
       class procedure insertbssdata(sym : tstaticvarsym); virtual;
 
       class function create_main_procdef(const name: string; potype:tproctypeoption; ps: tprocsym):tdef; virtual;
-      class procedure InsertInitFinalTable;
+      class procedure InsertInitFinalTable(main : tmodule);
      protected
       class procedure InsertRuntimeInits(const prefix:string;list:TLinkedList;unitflag:tmoduleflag); virtual;
       class procedure InsertRuntimeInitsTablesTable(const prefix,tablename:string;unitflag:tmoduleflag); virtual;
 
-      class procedure insert_init_final_table(entries:tfplist); virtual;
+      class procedure insert_init_final_table(main: tmodule; entries:tfplist); virtual;
 
-      class function get_init_final_list: tfplist;
+      class function get_init_final_list(main : tmodule): tfplist;
       class procedure release_init_final_list(list:tfplist);
      public
       class procedure InsertThreadvarTablesTable; virtual;
@@ -133,6 +133,9 @@ interface
       class procedure InsertResourceInfo(ResourcesUsed : boolean); virtual;
 
       class procedure InsertMemorySizes; virtual;
+
+      { Call this to check if init code is required }
+      class function has_init_list: boolean; static;
 
       { called right before an object is assembled, can be used to insert
         global information into the assembler list (used by LLVM to insert type
@@ -152,7 +155,7 @@ interface
     end;
     tnodeutilsclass = class of tnodeutils;
 
-  const
+  var
     cnodeutils: tnodeutilsclass = tnodeutils;
 
 
@@ -239,9 +242,10 @@ implementation
       if (target_info.system in systems_fpnestedstruct) and
          (p.nodetype=loadn) and
          (tloadnode(p).symtableentry.typ=localvarsym) and
-         (tloadnode(p).symtableentry.visibility=vis_hidden) then
+         tlocalvarsym(tloadnode(p).symtableentry).inparentfpstruct then
         begin
           p.free;
+          p := nil;
           result:=cnothingnode.create;
         end
       else
@@ -288,9 +292,10 @@ implementation
       if (target_info.system in systems_fpnestedstruct) and
          (p.nodetype=loadn) and
          (tloadnode(p).symtableentry.typ=localvarsym) and
-         (tloadnode(p).symtableentry.visibility=vis_hidden) then
+         tlocalvarsym(tloadnode(p).symtableentry).inparentfpstruct then
         begin
           p.free;
+          p := nil;
           result:=cnothingnode.create;
         end
       else
@@ -339,7 +344,7 @@ implementation
       hp : tnode;
     begin
       if ((tsym(p).typ = localvarsym) or
-          { check staticvarsym for record management opeators and for objects
+          { check staticvarsym for record management operators and for objects
             which might contain record with management operators }
           ((tsym(p).typ = staticvarsym) and
            (
@@ -352,11 +357,21 @@ implementation
            they are used }
          ((tabstractvarsym(p).refs>0) or
           { managed return symbols must be inited }
-          ((tsym(p).typ=localvarsym) and (vo_is_funcret in tlocalvarsym(p).varoptions))
+          ((tsym(p).typ=localvarsym) and (vo_is_funcret in tlocalvarsym(p).varoptions)) or
+          { public managed records with Initialize operator need to be initialized
+            even if they aren't referenced in *this* unit }
+          (
+            (tsym(p).owner.symtabletype=globalsymtable) and
+            is_record(tabstractvarsym(p).vardef) and
+            (mop_initialize in trecordsymtable(trecorddef(tabstractvarsym(p).vardef).symtable).managementoperators)
+          )
          ) and
          not(vo_is_typed_const in tabstractvarsym(p).varoptions) and
          not(vo_is_external in tabstractvarsym(p).varoptions) and
-         not(vo_is_default_var in tabstractvarsym(p).varoptions) and
+         (
+           not (vo_is_default_var in tabstractvarsym(p).varoptions) or
+           (tabstractvarsym(p).varspez<>vs_const)
+         ) and
          (is_managed_type(tabstractvarsym(p).vardef) or
           ((m_iso in current_settings.modeswitches) and (tabstractvarsym(p).vardef.typ=filedef))
          ) then
@@ -373,9 +388,13 @@ implementation
     begin
       if (tsym(p).typ=localvarsym) and
          (tlocalvarsym(p).refs>0) and
+         not(vo_is_typed_const in tlocalvarsym(p).varoptions) and
          not(vo_is_external in tlocalvarsym(p).varoptions) and
          not(vo_is_funcret in tlocalvarsym(p).varoptions) and
-         not(vo_is_default_var in tabstractvarsym(p).varoptions) and
+         (
+           not(vo_is_default_var in tabstractvarsym(p).varoptions) or
+           (tabstractvarsym(p).varspez<>vs_const)
+         ) and
          is_managed_type(tlocalvarsym(p).vardef) then
         sym_maybe_finalize(tstatementnode(arg^),tsym(p));
     end;
@@ -481,6 +500,7 @@ implementation
             end;
         end;
       structlist.free;
+      structlist := nil;
     end;
 
 
@@ -499,7 +519,7 @@ implementation
              if mf_classinits in current_module.moduleflags then
                append_struct_initfinis(current_module, potype_class_constructor, stat);
            end;
-         { units have separate code for initilization and finalization }
+         { units have separate code for initialization and finalization }
          potype_unitfinalize: ;
          { program init/final is generated in separate procedure }
          potype_proginit: ;
@@ -693,7 +713,7 @@ implementation
                   method definitions coming after this class constructor), the
                   ones from inside the class definition have already been parsed.
                   in case of $j-, these are marked "final" in Java and such
-                  static fields must be initialsed in the class constructor
+                  static fields must be initialized in the class constructor
                   itself -> add them here }
                 block:=internalstatements(stat);
                 if assigned(pd.struct.tcinitcode) then
@@ -849,6 +869,7 @@ implementation
                       trash_large(stat,trashn,caddnode.create(addn,cinlinenode.create(in_high_x,false,trashn.getcopy),genintconstnode(1)),trashintval)
                     else
                       trashn.free;
+                      trashn := nil;
                   end;
                 1: trash_small(stat,
                   ctypeconvnode.create_internal(trashn,s8inttype),
@@ -881,6 +902,7 @@ implementation
         end
       else
         trashn.free;
+        trashn := nil;
     end;
 
 
@@ -938,7 +960,7 @@ implementation
   class procedure tnodeutils.insertbssdata(sym: tstaticvarsym);
     var
       l : asizeint;
-      varalign : shortint;
+      varalign,wantedalign,explicitalign : shortint;
       storefilepos : tfileposinfo;
       list : TAsmList;
       sectype : TAsmSectiontype;
@@ -947,11 +969,30 @@ implementation
       storefilepos:=current_filepos;
       current_filepos:=sym.fileinfo;
       l:=sym.getsize;
-      varalign:=sym.vardef.alignment;
-      if (varalign=0) then
+      wantedalign:=sym.vardef.alignment;
+      if sym.vardef.inheritsfrom(tabstractrecorddef) and
+         (sym.vardef.typ in [recorddef]) then
+        explicitalign:=tabstractrecordsymtable(tabstractrecorddef(sym.vardef).symtable).explicitrecordalignment
+      else
+        explicitalign:=0;
+      if (wantedalign=0) then
         varalign:=var_align_size(l)
       else
-        varalign:=var_align(varalign);
+        begin
+          varalign:=var_align(wantedalign);
+          if (explicitalign>varalign) then
+            begin
+              Message1(scanner_w_alignment_larger_than_max,sym.name);
+              varalign:=explicitalign;
+            end
+          else if (wantedalign>varalign) and (target_info.alignment.varalignmax>1) then
+            begin
+              { varalign:=wantedalign; this can lead to
+                troubles on systems like for instance
+                msdos which do not support 8-byte alignment }
+              Message1(scanner_n_alignment_larger_than_max,sym.name);
+	    end;
+	end;
       asmtype:=AT_DATA;
       if tf_section_threadvars in target_info.flags then
         begin
@@ -1020,37 +1061,53 @@ implementation
     end;
 
 
-  class function tnodeutils.get_init_final_list:tfplist;
+  class function tnodeutils.get_init_final_list(main : tmodule):tfplist;
+
+    procedure addusedunits(m : tmodule);
+
     var
       hp : tused_unit;
       entry : pinitfinalentry;
     begin
-      result:=tfplist.create;
-      { Insert initialization/finalization of the used units }
-      hp:=tused_unit(usedunits.first);
+      hp:=tused_unit(m.used_units.first);
       while assigned(hp) do
        begin
-         if (hp.u.moduleflags * [mf_init,mf_finalize])<>[] then
+         if (not hp.u.initfinalchecked) then
            begin
-             new(entry);
-             entry^.module:=hp.u;
-             entry^.initpd:=nil;
-             entry^.finipd:=nil;
-             if mf_init in hp.u.moduleflags then
-               entry^.initfunc:=make_mangledname('INIT$',hp.u.globalsymtable,'')
-             else
-               entry^.initfunc:='';
-             if mf_finalize in hp.u.moduleflags then
-               entry^.finifunc:=make_mangledname('FINALIZE$',hp.u.globalsymtable,'')
-             else
-               entry^.finifunc:='';
-             result.add(entry);
+           hp.u.initfinalchecked:=True;
+           addusedunits(hp.u);
+           if ((hp.u.moduleflags * [mf_init,mf_finalize])<>[]) then
+             begin
+               new(entry);
+               entry^.module:=hp.u;
+               entry^.initpd:=nil;
+               entry^.finipd:=nil;
+               if mf_init in hp.u.moduleflags then
+                 entry^.initfunc:=make_mangledname('INIT$',hp.u.globalsymtable,'')
+               else
+                 entry^.initfunc:='';
+               if mf_finalize in hp.u.moduleflags then
+                 entry^.finifunc:=make_mangledname('FINALIZE$',hp.u.globalsymtable,'')
+               else
+                 entry^.finifunc:='';
+               result.add(entry);
+             end;
            end;
          hp:=tused_unit(hp.next);
        end;
 
+    end;
+
+    var
+      entry : pinitfinalentry;
+    begin
+      result:=tfplist.create;
+
+      { Insert initialization/finalization of the used units }
+      addusedunits(main);
+
       { Insert initialization/finalization of the program }
-      if (current_module.moduleflags * [mf_init,mf_finalize])<>[] then
+      if (main.moduleflags * [mf_init,mf_finalize])<>[] then
         begin
           new(entry);
           entry^.module:=current_module;
@@ -1070,36 +1127,35 @@ implementation
 
 
   class procedure tnodeutils.release_init_final_list(list:tfplist);
-    var
-      i : longint;
     begin
       if not assigned(list) then
         internalerror(2017051901);
-      for i:=0 to list.count-1 do
-        dispose(pinitfinalentry(list[i]));
-      list.free;
+      TFPList.FreeAndNilDisposing(list,typeinfo(tinitfinalentry));
     end;
 
 
-  class procedure tnodeutils.InsertInitFinalTable;
+  class procedure tnodeutils.InsertInitFinalTable(main : tmodule);
     var
       entries : tfplist;
     begin
-      entries := get_init_final_list;
+      entries := get_init_final_list(main);
 
-      insert_init_final_table(entries);
+      insert_init_final_table(main,entries);
 
       release_init_final_list(entries);
     end;
 
 
-  class procedure tnodeutils.insert_init_final_table(entries:tfplist);
+  class procedure tnodeutils.insert_init_final_table(main : tmodule; entries:tfplist);
     var
       i : longint;
       unitinits : ttai_typedconstbuilder;
       nameinit,namefini : TSymStr;
       tabledef: tdef;
       entry : pinitfinalentry;
+      unitnametcb : ttai_typedconstbuilder;
+      unitnamedef : tdef;
+      unitnamelbl : tasmlabel;
 
       procedure add_initfinal_import(symtable:tsymtable);
         var
@@ -1197,6 +1253,18 @@ implementation
               if entry^.module<>current_module then
                 add_initfinal_import(entry^.module.localsymtable);
             end;
+          { Add pointer to unit name }
+          if assigned(entry^.module.realmodulename) then
+            begin
+              { Create string constant and emit pointer to it }
+              unitinits.start_internal_data_builder(current_asmdata.asmlists[al_globals],sec_rodata,'',unitnametcb,unitnamelbl);
+              unitnamedef:=unitnametcb.emit_shortstring_const(entry^.module.realmodulename^);
+              unitinits.finish_internal_data_builder(unitnametcb,unitnamelbl,unitnamedef,sizeof(pint));
+              unitinits.queue_init(charpointertype);
+              unitinits.queue_emit_asmsym(unitnamelbl,unitnamedef);
+            end
+          else
+            unitinits.emit_tai(Tai_const.Create_nil_dataptr,charpointertype);
         end;
 
       { Add to data segment }
@@ -1210,6 +1278,31 @@ implementation
       );
 
       unitinits.free;
+      unitinits := nil;
+    end;
+
+
+  class function tnodeutils.has_init_list: boolean;
+    var
+      hp : tused_unit;
+    begin
+      Result:=True;
+
+      { Check current module first }
+      if mf_init in current_module.moduleflags then
+        Exit;
+
+      { Check used units }
+      hp:=tused_unit(usedunits.first);
+      while assigned(hp) do
+        begin
+          if mf_init in hp.u.moduleflags then
+            Exit;
+          hp:=tused_unit(hp.next);
+        end;
+
+      { We reach this point, none of the used units have an initialisation list }
+      Result:=False;
     end;
 
 
@@ -1227,7 +1320,7 @@ implementation
       count:=0;
       tcb:=ctai_typedconstbuilder.create([tcalo_make_dead_strippable,tcalo_new_section]);
       tcb.begin_anonymous_record('',default_settings.packrecords,voidpointertype.alignment,targetinfos[target_info.system]^.alignment.recordalignmin);
-      placeholder:=tcb.emit_placeholder(u32inttype);
+      placeholder:=tcb.emit_placeholder(sizesinttype);
 
       hp:=tused_unit(usedunits.first);
       while assigned(hp) do
@@ -1253,8 +1346,9 @@ implementation
           inc(count);
         end;
       { set the count at the start }
-      placeholder.replace(tai_const.Create_32bit(count),u32inttype);
+      placeholder.replace(tai_const.Create_sizeint(count),sizesinttype);
       placeholder.free;
+      placeholder := nil;
       { insert in data segment }
       tabledef:=tcb.end_anonymous_record;
       sym:=current_asmdata.DefineAsmSymbol('FPC_THREADVARTABLES',AB_GLOBAL,AT_DATA,tabledef);
@@ -1264,6 +1358,7 @@ implementation
         )
       );
       tcb.free;
+      tcb := nil;
     end;
 
 
@@ -1317,10 +1412,9 @@ implementation
              tcb.get_final_asmlist(sym,tabledef,sec_data,s,const_align(sizeof(pint))));
            include(current_module.moduleflags,mf_threadvars);
            current_module.add_public_asmsym(sym);
-         end
-       else
-         s:='';
+         end;
        tcb.Free;
+       tcb := nil;
     end;
 
 
@@ -1362,6 +1456,7 @@ implementation
       { Insert TableCount at start }
       countplaceholder.replace(Tai_const.Create_sizeint(count),sizesinttype);
       countplaceholder.free;
+      countplaceholder := nil;
       { insert in data segment }
       tabledef:=tcb.end_anonymous_record;
       current_asmdata.asmlists[al_globals].concatlist(
@@ -1372,6 +1467,7 @@ implementation
         )
       );
       tcb.free;
+      tcb := nil;
     end;
 
 
@@ -1412,6 +1508,7 @@ implementation
           current_asmdata.DefineAsmSymbol(s,AB_GLOBAL,AT_DATA,rawdatadef),
           rawdatadef,sec_data,s,const_align(sizeof(pint))));
       tcb.free;
+      tcb := nil;
       include(current_module.moduleflags,unitflag);
     end;
 
@@ -1473,6 +1570,7 @@ implementation
       { Insert TableCount at start }
       countplaceholder.replace(Tai_const.Create_sizeint(count),sizesinttype);
       countplaceholder.free;
+      countplaceholder := nil;
       { Add to data segment }
       tabledef:=tcb.end_anonymous_record;
       current_asmdata.AsmLists[al_globals].concatList(
@@ -1482,6 +1580,7 @@ implementation
         )
       );
       tcb.free;
+      tcb := nil;
     end;
 
 
@@ -1489,7 +1588,7 @@ implementation
     var
       tcb: ttai_typedconstbuilder;
     begin
-      if (target_res.id in [res_elf,res_macho,res_xcoff]) or
+      if (target_res.id in [res_elf,res_macho,res_xcoff,res_wasm]) or
          { generate the FPC_RESLOCATION symbol even when using external resources,
            because in SysInit we can only reference it unconditionally }
          ((target_res.id=res_ext) and (target_info.system in systems_darwin)) then
@@ -1512,6 +1611,7 @@ implementation
           );
 
           tcb.free;
+          tcb := nil;
         end;
     end;
 
@@ -1555,6 +1655,7 @@ implementation
             tcb.get_final_asmlist(sym,ptruinttype,sec_data,'__stklen',const_align(sizeof(pint)))
           );
           tcb.free;
+          tcb := nil;
         end;
 
       { allocate the stack on the ZX Spectrum system }
@@ -1587,6 +1688,7 @@ implementation
            tcb.get_final_asmlist(sym,def,sec_data,'__stack_cookie',sizeof(pint))
          );
          tcb.free;
+         tcb := nil;
        end;
 {$ENDIF POWERPC}
       { Initial heapsize }
@@ -1597,6 +1699,7 @@ implementation
         tcb.get_final_asmlist(sym,ptruinttype,sec_data,'__heapsize',const_align(sizeof(pint)))
       );
       tcb.free;
+      tcb := nil;
 
       { allocate an initial heap on embedded systems }
       if target_info.system in (systems_embedded+systems_freertos+[system_z80_zxspectrum,system_z80_msxdos]) then
@@ -1617,6 +1720,7 @@ implementation
         tcb.get_final_asmlist(sym,u8inttype,sec_data,'__fpc_valgrind',const_align(sizeof(pint)))
       );
       tcb.free;
+      tcb := nil;
     end;
 
 
@@ -1639,6 +1743,7 @@ implementation
             )
           );
           tcb.free;
+          tcb := nil;
         end;
     end;
 

@@ -11,6 +11,13 @@
 
  **********************************************************************}
 
+{$IF DEFINED(CPU8) OR DEFINED(CPU16)}
+{ disable the extended RTTI for the RTL/FCL on these targets; the user can of
+  course still enable it for their own classes if needed (and published
+  properties and methods are accessible using the legacy RTTI as well) }
+{$DEFINE SMALLRTTI}
+{$ENDIF}
+
 {$PUSH}
 {$MINENUMSIZE 1   this saves a lot of memory }
 
@@ -26,6 +33,41 @@ type
               tkDynArray,tkInterfaceRaw,tkProcVar,tkUString,tkUChar,
               tkHelper,tkFile,tkClassRef,tkPointer);
 
+  TVisibilityClass = (vcPrivate, vcProtected, vcPublic, vcPublished);
+  TVisibilityClasses = set of TVisibilityClass;
+
+ {$MINENUMSIZE DEFAULT}
+
+const
+{$IFNDEF SMALLRTTI}
+  DefaultFieldRttiVisibility = [vcPrivate..vcPublished];
+  DefaultMethodRttiVisibility = [vcPublic,vcPublished];
+  DefaultPropertyRttiVisibility = [vcPublic,vcPublished];
+{$ELSE SMALLRTTI}
+  DefaultFieldRttiVisibility = [];
+  DefaultMethodRttiVisibility = [];
+  DefaultPropertyRttiVisibility = [];
+{$ENDIF SMALLRTTI}
+
+ { Default RTTI settings }
+
+{$IFDEF FPC_HAS_FEATURE_RTTI}
+{$IFDEF ENABLE_DELPHI_RTTI}
+
+{$Message WARN 'Delphi RTTI enabled'}
+
+{$RTTI INHERIT
+   METHODS(DefaultMethodRttiVisibility)
+   FIELDS(DefaultFieldRttiVisibility)
+   PROPERTIES(DefaultPropertyRttiVisibility)
+}
+
+{$ENDIF ENABLE_DELPHI_RTTI}
+
+{$ENDIF FPC_HAS_FEATURE_RTTI}
+
+
+
 {$POP}
 
 const
@@ -37,9 +79,10 @@ const
   tkWideString = tkWString;
   tkUnicodeString = tkUString;
 
-{$ifdef FPC_HAS_FEATURE_RTTI}
+{$IFDEF FPC_HAS_FEATURE_RTTI}
 procedure InitializeArray(p, typeInfo: Pointer; count: SizeInt);
 procedure FinalizeArray(p, typeInfo: Pointer; count: SizeInt);
+procedure AddRefArray(p, typeInfo: Pointer; count: SizeInt);
 procedure CopyArray(dest, source, typeInfo: Pointer; count: SizeInt);
 {$endif FPC_HAS_FEATURE_RTTI}
 

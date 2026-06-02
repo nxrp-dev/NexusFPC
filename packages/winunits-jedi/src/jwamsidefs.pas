@@ -42,7 +42,9 @@
 
 // $Id: JwaMsiDefs.pas,v 1.8 2007/09/05 11:58:51 dezipaitor Exp $
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaMsiDefs;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -56,8 +58,13 @@ unit JwaMsiDefs;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 {$IFNDEF JWA_IMPLEMENTATIONSECTION}
@@ -99,7 +106,7 @@ const
   IPROPNAME_ENABLEUSERCONTROL = TEXT('EnableUserControl'); // allows user to specify any public property
   {$EXTERNALSYM IPROPNAME_ENABLEUSERCONTROL}
   IPROPNAME_HIDDEN_PROPERTIES = TEXT('MsiHiddenProperties');  // properties that should not be dumped into the log file
-  {$EXTERNALSYM IPROPNAME_HIDDEN_PROPERTIES}  
+  {$EXTERNALSYM IPROPNAME_HIDDEN_PROPERTIES}
 
 // Customization properties: set on command-line or in Property table
 
@@ -763,7 +770,7 @@ const
   msidbCustomActionTypeProperty         = $00000030;  // Source = Property.Property, full path to executable
   {$EXTERNALSYM msidbCustomActionTypeProperty}
 
-  // return processing                  // default is syncronous execution, process return code
+  // return processing                  // default is synchronous execution, process return code
 
   msidbCustomActionTypeContinue         = $00000040;  // ignore action return status, continue running
   {$EXTERNALSYM msidbCustomActionTypeContinue}

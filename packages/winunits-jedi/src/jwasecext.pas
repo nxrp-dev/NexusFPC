@@ -42,7 +42,9 @@
 
 // $Id: JwaSecExt.pas,v 1.11 2007/09/05 11:58:52 dezipaitor Exp $
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaSecExt;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -56,8 +58,13 @@ unit JwaSecExt;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Sspi, WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaSSPI, JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 {$IFNDEF JWA_IMPLEMENTATIONSECTION}
@@ -67,7 +74,7 @@ uses
 //
 
 const
-  // Examples for the following formats assume a fictitous company
+  // Examples for the following formats assume a fictitious company
   // which hooks into the global X.500 and DNS name spaces as follows.
   //
   // Enterprise root domain in DNS is

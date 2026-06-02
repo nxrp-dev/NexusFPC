@@ -14,7 +14,9 @@
 
 { Initial implementation by petr kristan }
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit clocale;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$ifdef android}
   {$error This unit is not intended for Android. Something wrong with the make file. }
@@ -29,9 +31,9 @@ interface
 Type TOrgFormatSettings = record
                             ShortDateFormat,
                             LongDateFormat ,
-                            ShortTimeFormat, 
+                            ShortTimeFormat,
                             LongTimeFormat ,
-                            CurrencyString1, 
+                            CurrencyString1,
                             CurrencyString2: string;
                            end;
 
@@ -43,8 +45,13 @@ implementation
 
 {$linklib c}
 
+{$IFDEF FPC_DOTTEDUNITS}
+Uses
+  System.SysUtils, UnixApi.Types, System.InitC;
+{$ELSE FPC_DOTTEDUNITS}
 Uses
   SysUtils, unixtype, initc;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Const
 {$if defined(BSD) or defined(SUNOS) or defined(aix)}
@@ -95,12 +102,12 @@ Const
 {$ifdef netbsd}
   { NetBSD has a new setlocale function defined in /usr/include/locale.h
     that should be used }
-function setlocale(category: cint; locale: pchar): pchar; cdecl; external clib name '__setlocale_mb_len_max_32';
+function setlocale(category: cint; locale: PAnsiChar): PAnsiChar; cdecl; external clib name '__setlocale_mb_len_max_32';
 {$else}
-function setlocale(category: cint; locale: pchar): pchar; cdecl; external clib name 'setlocale';
+function setlocale(category: cint; locale: PAnsiChar): PAnsiChar; cdecl; external clib name 'setlocale';
 {$endif}
 
-function nl_langinfo(__item: cint):Pchar;cdecl;external clib name 'nl_langinfo';
+function nl_langinfo(__item: cint):PAnsiChar;cdecl;external clib name 'nl_langinfo';
 
 procedure GetFormatSettings(out fmts: TFormatSettings);
 
@@ -109,7 +116,7 @@ procedure GetFormatSettings(out fmts: TFormatSettings);
     GetLocaleStr := AnsiString(nl_langinfo(item));
   end;
 
-  function GetLocaleChar(item: cint): char;
+  function GetLocaleChar(item: cint): AnsiChar;
   begin
     GetLocaleChar := nl_langinfo(item)^;
   end;
@@ -120,14 +127,14 @@ procedure GetFormatSettings(out fmts: TFormatSettings);
   begin
     Result := '';
     l := Length(s);
-    //possible flag, with specifier or modifier - glibc exension
+    //possible flag, with specifier or modifier - glibc extension
     while (i<=l) and (s[i] in ['0'..'9', '_', '-', '^', '#', 'E', 'O']) do begin
       Result := Result + s[i];
       inc(i);
     end;
   end;
 
-  function IsModifier(const Mods: string; m: char): boolean;
+  function IsModifier(const Mods: string; m: AnsiChar): boolean;
   var
     i: integer;
   begin
@@ -140,7 +147,7 @@ procedure GetFormatSettings(out fmts: TFormatSettings);
     end;
   end;
 
-  function FindSeparator(const s: string; Def: char): char;
+  function FindSeparator(const s: string; Def: AnsiChar): AnsiChar;
   var
     i: integer;
   begin
@@ -151,7 +158,10 @@ procedure GetFormatSettings(out fmts: TFormatSettings);
     inc(i);
     SkipModifiers(s, i);
     inc(i);
-    if i<=Length(s) then
+    // Only accept common ASCII separators, such as ':', '.', '-', etc.
+    // Skip CJK-style language-specific date/time units like "时", "分", "초", "년".
+    // e.g. skip "14时05分30秒" or "2024년6월19일"
+    if (i<=Length(s)) and (s[i] in [':', '.', '-', '/', ' ', '_']) then
       FindSeparator := s[i];
   end;
 
@@ -192,7 +202,7 @@ procedure GetFormatSettings(out fmts: TFormatSettings);
           'G': TransformFormatStr := TransformFormatStr + 'yyyy';
           'h': TransformFormatStr := TransformFormatStr + 'mmm';
           'H': TransformFormatStr := TransformFormatStr + 'hh';
-          'I': begin 
+          'I': begin
                  TransformFormatStr := TransformFormatStr + 'hh';
                  clock12:=true;
                end;
@@ -208,7 +218,7 @@ procedure GetFormatSettings(out fmts: TFormatSettings);
                  TransformFormatStr := TransformFormatStr + 'mm';
           'M': TransformFormatStr := TransformFormatStr + 'nn';
           'n': TransformFormatStr := TransformFormatStr + sLineBreak;
-          'p','P': 
+          'p','P':
                begin
                  TransformFormatStr := TransformFormatStr + 'ampm';
                  clock12:=false;
@@ -216,7 +226,7 @@ procedure GetFormatSettings(out fmts: TFormatSettings);
                end;
           'r': begin
                  TransformFormatStr := TransformFormatStr + 'hh:nn:ss';
-                 clock12:=true;  
+                 clock12:=true;
                end;
           'R': TransformFormatStr := TransformFormatStr + 'hh:nn';
           //'s':
@@ -259,7 +269,7 @@ const
     ( (7, 10), (3, 11) ), //The sign string follows the quantity and currency_symbol
     ( (6, 13), (1, 9) ), //The sign string immediately precedes the currency_symbol
     ( (7, 10), (2, 12) )  //The sign string immediately follows the currency_symbol
-  ); 
+  );
 var
   i: integer;
   prec, sep, signp: byte;
@@ -280,11 +290,11 @@ begin
     end;
   //Date stuff
   fmts.ShortDateFormat := GetLocaleStr(D_FMT);
- 
+
 {$ifdef localedebug}
   OrgFormatSettings.ShortDateFormat:=fmts.shortdateformat;
 {$endif}
- 
+
   fmts.DateSeparator := FindSeparator(fmts.ShortDateFormat, fmts.DateSeparator);
   fmts.ShortDateFormat := TransformFormatStr(fmts.ShortDateFormat);
   fmts.LongDateFormat := GetLocaleStr(D_FMT);
@@ -357,7 +367,7 @@ begin
   fmts.ThousandSeparator:=GetLocaleChar(__THOUSANDS_SEP);
   Sep := ord(GetLocaleChar(__MON_THOUSANDS_SEP));
   if fmts.ThousandSeparator=#0 then
-    fmts.ThousandSeparator := char(Sep);
+    fmts.ThousandSeparator := AnsiChar(Sep);
   {$endif}
   fmts.DecimalSeparator:=GetLocaleChar(RADIXCHAR);
 end;

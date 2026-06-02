@@ -1,17 +1,17 @@
 {
      File:       CommonPanels/NSL.h
- 
+
      Contains:   Interface to API for using the NSL User Interface
- 
+
      Version:    CommonPanels-91~177
- 
+
      Copyright:  © 1997-2008 by Apple Computer, Inc., all rights reserved
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 {  Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2009 }
 {
@@ -28,7 +28,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit NSL;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -213,7 +215,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.Events,MacOsApi.NSLCore;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,Events,NSLCore;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -250,7 +256,7 @@ type
 	NSLEventUPP = NSLEventProcPtr;
 {
  *  NewNSLURLFilterUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -261,7 +267,7 @@ function NewNSLURLFilterUPP( userRoutine: NSLURLFilterProcPtr ): NSLURLFilterUPP
 
 {
  *  NewNSLEventUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -272,7 +278,7 @@ function NewNSLEventUPP( userRoutine: NSLEventProcPtr ): NSLEventUPP; external n
 
 {
  *  DisposeNSLURLFilterUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -283,7 +289,7 @@ procedure DisposeNSLURLFilterUPP( userUPP: NSLURLFilterUPP ); external name '_Di
 
 {
  *  DisposeNSLEventUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -294,7 +300,7 @@ procedure DisposeNSLEventUPP( userUPP: NSLEventUPP ); external name '_DisposeNSL
 
 {
  *  InvokeNSLURLFilterUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -305,7 +311,7 @@ function InvokeNSLURLFilterUPP( url: CStringPtr; var displayString: Str255; user
 
 {
  *  InvokeNSLEventUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -345,13 +351,13 @@ procedure InvokeNSLEventUPP( var newEvent: EventRecord; userContext: UnivPtr; us
    parameter.  (If left alone, NSLStandardGetURL dialog will strip the service type
    portion off the url).
 }
-{ char* serviceTypeList }
+{ AnsiChar* serviceTypeList }
 {
-   the serviceTypeList parameter is a null terminated string that will 
+   the serviceTypeList parameter is a null terminated string that will
    directly affect the contents of the services popup in the dialog.
    The structure of this string is a set of tuples as follows:
    Name of ServiceType as to be represented in the popup followed by
-   a comma delimted list of service descriptors (ie http,https) that will
+   a comma delimited list of service descriptors (ie http,https) that will
    used in the search of that type.  Each comma delimited tuple is delimited
    by semi-colons.
 }
@@ -379,9 +385,9 @@ procedure InvokeNSLEventUPP( var newEvent: EventRecord; userContext: UnivPtr; us
    servers would be shown with your icon at resource id 129.
 }
 
-{ char** url }
+{ AnsiChar** url }
 {
-   pass in the address of a char* and it will point to the resulting url.  If the user
+   pass in the address of a AnsiChar* and it will point to the resulting url.  If the user
    cancels (the function returns false), the pointer will be set to nil.  If the function
    returns true (user selected a url), then you must call NSLFreeURL on the pointer when
    you are done with it.
@@ -395,7 +401,7 @@ procedure InvokeNSLEventUPP( var newEvent: EventRecord; userContext: UnivPtr; us
 
 {
  *  NSLStandardGetURL()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -407,7 +413,7 @@ function NSLStandardGetURL( dialogOptions: NSLDialogOptionsPtr { can be NULL }; 
 
 {
  *  NSLGetDefaultDialogOptions()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -421,7 +427,7 @@ function NSLGetDefaultDialogOptions( var dialogOptions: NSLDialogOptions ): OSSt
 { ---> url is memory created by a call to NSLStandardGetURL }
 {
  *  NSLFreeURL()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -437,7 +443,7 @@ function NSLFreeURL( url: CStringPtr ): CStringPtr; external name '_NSLFreeURL';
 { ---> userFriendlyName is used for the file name and the display name (in the UI) }
 {
  *  NSLSaveURLAliasToFolder()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        not available

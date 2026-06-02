@@ -13,11 +13,17 @@
 
  **********************************************************************}
 {$mode objfpc}{$h+}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit FPReadQoi;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
-uses FPImage, classes, sysutils, QoiComn;
+{$IFDEF FPC_DOTTEDUNITS}
+uses FpImage, System.Classes, System.SysUtils, FpImage.Common.QOI;
+{$ELSE FPC_DOTTEDUNITS}
+uses FpImage, classes, sysutils, QoiComn;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   TFPReaderQoi = class (TFPCustomImageReader)
@@ -74,8 +80,8 @@ begin
   if Result then
     begin
    {$IFDEF ENDIAN_LITTLE}
-    QoiHeader.width:=Swap32(QoiHeader.width);
-    QoiHeader.height:=Swap32(QoiHeader.height);
+    QoiHeader.width:=SwapEndian(QoiHeader.width);
+    QoiHeader.height:=SwapEndian(QoiHeader.height);
    {$ENDIF}
     Result := (QoiHeader.magic = 'qoif'); // Just check magic number
     end;
@@ -120,8 +126,8 @@ begin
      dword(px):=0;
      px.a:=255;
 
-     {initalize previosly seen pixel array}
-     //fillchar(arr,sizeof(arr),0);
+     {initialize previously seen pixel array}
+     FillQWord(arr,sizeof(arr) div sizeof(QWord),0);
      iA:=QoiPixelIndex(px);
      //for iA:=0 to 63 do
      arr[iA]:=px;
@@ -138,7 +144,7 @@ begin
           inc(ip);
 
           case (b shr 6) of
-             0: begin  { pixel from previos pixel array}
+             0: begin  { pixel from previous pixel array}
 
                      if b = p^ then {deal with end of encoding}
                      begin
@@ -258,7 +264,7 @@ begin
                                 arr[iA]:=px;
 
                           end;
-                       otherwise { run - repeat previos pixel}
+                       otherwise { run - repeat previous pixel}
                             repeat
                                 img.Colors[Col,Row] := RGBAToFPColor( px );
                                 inc(q);

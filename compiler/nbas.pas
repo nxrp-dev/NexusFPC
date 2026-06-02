@@ -71,11 +71,18 @@ interface
        end;
        tfinalizetempsnodeclass = class of tfinalizetempsnode;
 
+       TAsmNodeFlag = (
+         asmnf_get_asm_position,
+         { Used registers in assembler block }
+         asmnf_has_registerlist
+       );
+
+       TAsmNodeFlags = set of TAsmNodeFlag;
+
        tasmnode = class(tnode)
+          asmnodeflags : TAsmNodeFlags;
           p_asm : TAsmList;
           currenttai : tai;
-          { Used registers in assembler block }
-          has_registerlist : boolean;
           constructor create(p : TAsmList);virtual;
           constructor create_get_position;
           destructor destroy;override;
@@ -88,7 +95,13 @@ interface
           function pass_typecheck:tnode;override;
           function docompare(p: tnode): boolean; override;
 {$ifdef DEBUG_NODE_XML}
+          procedure XMLPrintNodeInfo(var T: Text); override;
           procedure XMLPrintNodeData(var T: Text); override;
+       protected
+          class procedure XMLPadString(var S: string; Len: Integer); static;
+
+          function XMLFormatOp(const Oper: POper): string; virtual;
+          procedure XMLProcessInstruction(var T: Text; p: tai); virtual;
 {$endif DEBUG_NODE_XML}
        end;
        tasmnodeclass = class of tasmnode;
@@ -104,15 +117,28 @@ interface
        end;
        tstatementnodeclass = class of tstatementnode;
 
+       TBlockNodeFlag = (
+         bnf_strippable { Block node can be removed via simplify etc. }
+       );
+
+       TBlockNodeFlags = set of TBlockNodeFlag;
+
        tblocknode = class(tunarynode)
+          blocknodeflags : TBlockNodeFlags;
           constructor create(l : tnode);virtual;
           destructor destroy; override;
+          constructor ppuload(t:tnodetype;ppufile:tcompilerppufile);override;
+          procedure ppuwrite(ppufile:tcompilerppufile);override;
+          function dogetcopy : tnode;override;
           function simplify(forinline : boolean) : tnode; override;
           function pass_1 : tnode;override;
           function pass_typecheck:tnode;override;
 {$ifdef state_tracking}
           function track_state_pass(exec_known:boolean):boolean;override;
 {$endif state_tracking}
+{$ifdef DEBUG_NODE_XML}
+          procedure XMLPrintNodeInfo(var T: Text); override;
+{$endif DEBUG_NODE_XML}
           property statements : tnode read left write left;
        end;
        tblocknodeclass = class of tblocknode;
@@ -198,7 +224,7 @@ interface
        { already been disposed and to make sure the coherency between temps and     }
        { temp references is kept after a getcopy                                    }
        ptempinfo = ^ttempinfo;
-       ttempinfo = object
+       ttempinfo = record
         private
          flags                      : ttempinfoflags;
         public
@@ -288,7 +314,7 @@ interface
         { a node which removes a temp }
         ttempdeletenode = class(ttempbasenode)
           constructor create(const temp: ttempcreatenode); virtual;
-          { this will convert the persistant temp to a normal temp
+          { this will convert the persistent temp to a normal temp
             for returning to the other nodes }
           constructor create_normal_temp(const temp: ttempcreatenode);
           constructor ppuload(t:tnodetype;ppufile:tcompilerppufile);override;
@@ -340,7 +366,7 @@ implementation
     uses
       verbose,globals,systems,
       ppu,
-      symconst,symdef,defutil,defcmp,
+      symsym,symconst,symdef,defutil,defcmp,
       pass_1,
       nutils,nld,ncnv,
       procinfo
@@ -349,6 +375,12 @@ implementation
       ,
       cpubase,
       cutils,
+{$ifdef arm}
+      agarmgas, { Needed for gas_shiftmode2str }
+{$endif arm}
+{$ifdef aarch64}
+      agcpugas, { Needed for gas_shiftmode2str }
+{$endif aarch64}
       itcpugas
 {$endif jvm}
 {$endif DEBUG_NODE_XML}
@@ -363,7 +395,8 @@ implementation
       begin
         { create dummy initial statement }
         laststatement := cstatementnode.create(cnothingnode.create,nil);
-        internalstatements := cblocknode.create(laststatement);
+        result := cblocknode.create(laststatement);
+        Include(result.blocknodeflags, bnf_strippable);
       end;
 
 
@@ -463,7 +496,7 @@ implementation
     function terrornode.pass_typecheck:tnode;
       begin
          result:=nil;
-         include(flags,nf_error);
+         include(transientflags,tnf_error);
          codegenerror:=true;
          resultdef:=generrordef;
       end;
@@ -557,21 +590,6 @@ implementation
       end;
 
 
-    function is_exit_statement(var n: tnode; arg: pointer): foreachnoderesult;
-      begin
-        if (n.nodetype<>exitn) then
-          result:=fen_false
-        else
-          result:=fen_norecurse_true;
-      end;
-
-
-    function no_exit_statement_in_block(n: tnode): boolean;
-      begin
-        result:=not foreachnodestatic(n,@is_exit_statement,nil);
-      end;
-
-
     function tstatementnode.simplify(forinline: boolean) : tnode;
       begin
         result:=nil;
@@ -618,7 +636,7 @@ implementation
         }
         if (left.nodetype = blockn) and
            ((left.flags*[nf_block_with_exit,nf_usercode_entry]=[]) or
-            ((left.flags*[nf_block_with_exit,nf_usercode_entry]=[nf_block_with_exit]) and no_exit_statement_in_block(left))) and
+            ((left.flags*[nf_block_with_exit,nf_usercode_entry]=[nf_block_with_exit]) and not has_node_of_type(left, [exitn]))) and
            assigned(tblocknode(left).left) and
            not assigned(tstatementnode(tblocknode(left).left).right) then
           begin
@@ -678,6 +696,7 @@ implementation
 
       begin
          inherited create(blockn,l);
+         blocknodeflags:=[];
       end;
 
     destructor tblocknode.destroy;
@@ -698,6 +717,27 @@ implementation
       end;
 
 
+    constructor tblocknode.ppuload(t:tnodetype;ppufile:tcompilerppufile);
+      begin
+        inherited ppuload(t,ppufile);
+        ppufile.getset(tppuset1(blocknodeflags));
+      end;
+
+
+    procedure tblocknode.ppuwrite(ppufile:tcompilerppufile);
+      begin
+        inherited ppuwrite(ppufile);
+        ppufile.putset(tppuset1(blocknodeflags));
+      end;
+
+
+    function tblocknode.dogetcopy : tnode;
+      begin
+        Result:=inherited dogetcopy;
+        TBlockNode(Result).blocknodeflags:=blocknodeflags;
+      end;
+
+
     function NodesEqual(var n: tnode; arg: pointer): foreachnoderesult;
       begin
         if n.IsEqual(tnode(arg)) then
@@ -708,8 +748,12 @@ implementation
 
 
     function tblocknode.simplify(forinline : boolean): tnode;
-{$ifdef break_inlining}
+      const
+        NodeStripTerminators = [labeln, asmn, tempcreaten, tempdeleten];
+
       var
+        n, p, first, last: tstatementnode;
+{$ifdef break_inlining}
         a : array[0..3] of tstatementnode;
 {$endif break_inlining}
       begin
@@ -719,32 +763,116 @@ implementation
           main program body, and those nodes should always be blocknodes
           since that's what the compiler expects elsewhere. }
 
-        if assigned(left) and
-           not assigned(tstatementnode(left).right) then
+        if assigned(left) then
           begin
-            case tstatementnode(left).left.nodetype of
-              blockn:
-                begin
-                  { if the current block contains only one statement, and
-                    this one statement only contains another block, replace
-                    this block with that other block.                       }
-                  result:=tstatementnode(left).left;
-                  tstatementnode(left).left:=nil;
-                  { make sure the nf_block_with_exit flag is safeguarded }
-                  result.flags:=result.flags+(flags*[nf_block_with_exit,nf_usercode_entry]);
-                  exit;
+            if not assigned(tstatementnode(left).right) then
+              begin
+                { Block has a lone statement }
+                case tstatementnode(left).left.nodetype of
+                  blockn:
+                    begin
+                      { if the current block contains only one statement, and
+                        this one statement only contains another block, replace
+                        this block with that other block.                       }
+                      result:=tstatementnode(left).left;
+                      tstatementnode(left).left:=nil;
+                      { make sure the nf_block_with_exit flag is safeguarded }
+                      result.flags:=result.flags+(flags*[nf_block_with_exit,nf_usercode_entry]);
+                      exit;
+                    end;
+                  nothingn:
+                    begin
+                      { if the block contains only a statement with a nothing node,
+                        get rid of the statement }
+                      left.Free;
+                      left:=nil;
+                      exit;
+                    end;
+                  else
+                    ;
                 end;
-              nothingn:
-                begin
-                  { if the block contains only a statement with a nothing node,
-                    get rid of the statement }
-                  left.Free;
-                  left:=nil;
-                  exit;
-                end;
-              else
-                ;
-            end;
+              end
+            else if forinline or (cs_opt_level2 in current_settings.optimizerswitches) then
+              begin
+                n := TStatementNode(left);
+                while Assigned(n) do
+                  begin
+                    case n.left.nodetype of
+                      raisen, exitn, breakn, continuen, goton:
+                        { Remove all subsequent statements, stopping only at a
+                          label or asm block since code can theoretically jump
+                          to them.  Also, don't delete temp creates and deletes }
+                        begin
+                          last := n;
+                          p := TStatementNode(n.Next);
+                          while Assigned(p) do
+                            begin
+                              if has_node_of_type(TStatementNode(p).left, NodeStripTerminators) then
+                                Break;
+
+                              last := p;
+                              p := TStatementNode(p.Next);
+                            end;
+
+                          if (last <> n) then
+                            begin
+                              last.next := nil; { Make sure we stop one before p }
+                              n.next.Free;
+                              n.next := p;
+                              n := p;
+                              Continue;
+                            end;
+                        end;
+                      else
+                        ;
+                    end;
+
+                    { Look one statement ahead in case it can be deleted - we
+                      need the previous statement to stitch the tree correctly
+                    }
+                    p := TStatementNode(n.Next);
+                    if not Assigned(p) then
+                      Break;
+
+                    if Assigned(p.left) then
+                      begin
+                        case p.left.nodetype of
+                          blockn:
+                            if (bnf_strippable in TBlockNode(p.left).blocknodeflags) and
+                              ((p.left.flags * [nf_block_with_exit] = []) or not has_node_of_type(p.left, [exitn])) then
+                              begin
+                                { Attempt to merge this block into the main statement
+                                  set }
+
+                                { Find last statement }
+                                first := TStatementNode(TBlockNode(p.left).PruneKeepLeft());
+                                if Assigned(first) then
+                                  begin
+                                    last := first;
+                                    while Assigned(last.right) do
+                                      last := TStatementNode(last.right);
+
+                                    n.right := first;
+                                  end
+                                else
+                                  last := n;
+
+                                last.right := p.PruneKeepRight();
+
+                                { make sure the nf_usercode_entry flag is safeguarded }
+                                Flags := Flags + (p.left.flags * [nf_usercode_entry]);
+
+                                p.Free;
+                                p := nil;
+                                Continue;
+                              end;
+                          else
+                            ;
+                        end;
+                      end;
+                    n := TStatementNode(n.Next);
+                  end;
+              end;
           end;
 {$ifdef break_inlining}
         { simple sequence of tempcreate, assign and return temp.? }
@@ -800,7 +928,7 @@ implementation
 
     function tblocknode.pass_1 : tnode;
       var
-         hp : tstatementnode;
+         php,hp,chp : tstatementnode;
          FirstNode: Boolean;
          //count : longint;
       begin
@@ -808,6 +936,8 @@ implementation
          expectloc:=LOC_VOID;
          //count:=0;
          hp:=tstatementnode(left);
+         php:=nil;
+         chp:=nil;
          FirstNode := True;
          while assigned(hp) do
            begin
@@ -817,6 +947,7 @@ implementation
                      problems, so we have to be a little bit hacky if we want
                      to remove nothing nodes }
                    codegenerror:=false;
+                   chp:=tstatementnode(hp);
                    firstpass(tnode(hp));
                    { If the first node gets deleted, left must be updated,
                      otherwise it will be a dangling pointer }
@@ -828,13 +959,20 @@ implementation
                          set FirstNode to false }
                        FirstNode := False;
                        left := hp;
+                     end
+                   else if (chp<>hp) then
+                     begin
+                       { If FirstPass modified HP,
+                         we must update php.right }
+                       if assigned(php) then
+                         php.right:=hp;
                      end;
-
                    if assigned(hp.left) then
                      hp.expectloc:=hp.left.expectloc;
                 end;
               expectloc:=hp.expectloc;
               //inc(count);
+              php:=hp;
               hp:=tstatementnode(hp.right);
            end;
       end;
@@ -855,6 +993,30 @@ implementation
             end;
       end;
 {$endif state_tracking}
+{$ifdef DEBUG_NODE_XML}
+    procedure TBlockNode.XMLPrintNodeInfo(var T: Text);
+      var
+        i_bnf: TBlockNodeFlag;
+        First: Boolean;
+      begin
+        inherited XMLPrintNodeInfo(T);
+
+        First := True;
+        for i_bnf in blocknodeflags do
+          begin
+            if First then
+              begin
+                Write(T, ' blocknodeflags="', i_bnf);
+                First := False;
+              end
+            else
+              Write(T, ',', i_bnf)
+          end;
+
+        if not First then
+          write(T,'"');
+      end;
+{$endif DEBUG_NODE_XML}
 
 {*****************************************************************************
                              TASMNODE
@@ -864,6 +1026,7 @@ implementation
       begin
         inherited create(asmn);
         p_asm:=p;
+        asmnodeflags:=[];
         currenttai:=nil;
       end;
 
@@ -872,7 +1035,7 @@ implementation
       begin
         inherited create(asmn);
         p_asm:=nil;
-        include(flags,nf_get_asm_position);
+        asmnodeflags:=[asmnf_get_asm_position];
         currenttai:=nil;
       end;
 
@@ -880,7 +1043,10 @@ implementation
     destructor tasmnode.destroy;
       begin
         if assigned(p_asm) then
-         p_asm.free;
+          begin
+            p_asm.free;
+            p_asm := nil;
+          end;
         inherited destroy;
       end;
 
@@ -890,7 +1056,8 @@ implementation
         hp : tai;
       begin
         inherited ppuload(t,ppufile);
-        if not(nf_get_asm_position in flags) then
+        ppufile.getset(tppuset1(asmnodeflags));
+        if not(asmnf_get_asm_position in asmnodeflags) then
           begin
             p_asm:=TAsmList.create;
             repeat
@@ -913,8 +1080,9 @@ implementation
         hp : tai;
       begin
         inherited ppuwrite(ppufile);
+        ppufile.putset(tppuset1(asmnodeflags));
 { TODO: FIXME Add saving of register sets}
-        if not(nf_get_asm_position in flags) then
+        if not(asmnf_get_asm_position in asmnodeflags) then
           begin
             hp:=tai(p_asm.first);
             while assigned(hp) do
@@ -933,7 +1101,7 @@ implementation
         hp : tai;
       begin
         inherited buildderefimpl;
-        if not(nf_get_asm_position in flags) then
+        if not(asmnf_get_asm_position in asmnodeflags) then
           begin
             hp:=tai(p_asm.first);
             while assigned(hp) do
@@ -950,7 +1118,7 @@ implementation
         hp : tai;
       begin
         inherited derefimpl;
-        if not(nf_get_asm_position in flags) then
+        if not(asmnf_get_asm_position in asmnodeflags) then
           begin
             hp:=tai(p_asm.first);
             while assigned(hp) do
@@ -966,15 +1134,16 @@ implementation
       var
         n: tasmnode;
       begin
-        n := tasmnode(inherited dogetcopy);
+        n:=tasmnode(inherited dogetcopy);
+        n.asmnodeflags:=asmnodeflags;
         if assigned(p_asm) then
           begin
             n.p_asm:=TAsmList.create;
             n.p_asm.concatlistcopy(p_asm);
           end
-        else n.p_asm := nil;
+        else
+          n.p_asm:=nil;
         n.currenttai:=currenttai;
-        n.has_registerlist:=has_registerlist;
         result:=n;
       end;
 
@@ -983,7 +1152,7 @@ implementation
       begin
         result:=nil;
         resultdef:=voidtype;
-        if not(nf_get_asm_position in flags) then
+        if not(asmnf_get_asm_position in asmnodeflags) then
           include(current_procinfo.flags,pi_has_assembler_block);
       end;
 
@@ -1002,156 +1171,107 @@ implementation
       end;
 
 {$ifdef DEBUG_NODE_XML}
-    procedure TAsmNode.XMLPrintNodeData(var T: Text);
-
-      procedure PadString(var S: string; Len: Integer);
-        var
-          X, C: Integer;
-        begin
-          C := Length(S);
-          if C < Len then
-            begin
-              SetLength(S, 7);
-              for X := C + 1 to Len do
-                S[X] := ' '
-            end;
-        end;
-
-{$ifndef jvm}
-      function FormatOp(const Oper: POper): string;
-        begin
-          case Oper^.typ of
-            top_const:
+    procedure TAsmNode.XMLPrintNodeInfo(var T: Text);
+      var
+        i: TAsmNodeFlag;
+        First: Boolean;
+      begin
+        inherited XMLPrintNodeInfo(T);
+        First := True;
+        for i in asmnodeflags do
+          begin
+            if First then
               begin
-                case Oper^.val of
-                  -15..15:
-                    Result := '$' + tostr(Oper^.val);
-                  $10..$FF:
-                    Result := '$0x' + hexstr(Oper^.val, 2);
-                  $100..$FFFF:
-                    Result := '$0x' + hexstr(Oper^.val, 4);
-                  $10000..$FFFFFFFF:
-                    Result := '$0x' + hexstr(Oper^.val, 8);
-                  else
-                    Result := '$0x' + hexstr(Oper^.val, 16);
-                end;
-              end;
-            top_reg:
-              Result := gas_regname(Oper^.reg);
-            top_ref:
-              with Oper^.ref^ do
-                begin
-{$if defined(x86)}
-                  if segment <> NR_NO then
-                    Result := gas_regname(segment) + ':'
-                  else
-{$endif defined(x86)}
-                    Result := '';
-
-                  if Assigned(symbol) then
-                    begin
-                      Result := Result + symbol.Name;
-                      if offset > 0 then
-                        Result := Result + '+';
-                    end;
-
-                  if offset <> 0 then
-                    Result := Result + tostr(offset)
-                  else
-                    Result := Result;
-
-                  if (base <> NR_NO) or (index <> NR_NO) then
-                    begin
-                      Result := Result + '(';
-
-                      if base <> NR_NO then
-                        begin
-                          Result := Result + gas_regname(base);
-                          if index <> NR_NO then
-                            Result := Result + ',';
-                        end;
-
-                      if index <> NR_NO then
-                        Result := Result + gas_regname(index);
-
-                      if scalefactor <> 0 then
-                        Result := Result + ',' + tostr(scalefactor) + ')'
-                      else
-                        Result := Result + ')';
-                    end;
-                end;
-            top_bool:
-              begin
-                if Oper^.b then
-                  Result := 'TRUE'
-                else
-                  Result := 'FALSE';
+                Write(T, ' asmnodeflags="', i);
+                First := False;
               end
             else
-              Result := '';
+              Write(T, ',', i)
           end;
-        end;
+        if not First then
+          Write(T, '"');
+      end;
 
-{$if defined(x86)}
-      procedure ProcessInstruction(p: tai); inline;
-        var
-          ThisOp, ThisOper: string;
-          X: Integer;
-        begin
-          case p.typ of
-            ait_label:
-              WriteLn(T, PrintNodeIndention, tai_label(p).labsym.name);
 
-            ait_instruction:
-              begin
-                ThisOp := gas_op2str[taicpu(p).opcode]+cond2str[taicpu(p).condition];
-                if gas_needsuffix[taicpu(p).opcode] <> AttSufNONE then
-                  ThisOp := ThisOp + gas_opsize2str[taicpu(p).opsize];
-
-                { Pad the opcode with spaces so the succeeding operands are aligned }
-                PadString(ThisOp, 7);
-
-                Write(T, PrintNodeIndention, '  ', ThisOp); { Extra indentation to account for label formatting }
-                for X := 0 to taicpu(p).ops - 1 do
-                  begin
-                    Write(T, ' ');
-
-                    ThisOper := FormatOp(taicpu(p).oper[X]);
-                    if X < taicpu(p).ops - 1 then
-                      begin
-                        ThisOper := ThisOper + ',';
-                        PadString(ThisOper, 7);
-                      end;
-
-                    Write(T, ThisOper);
-                  end;
-                WriteLn(T);
-              end;
-            else
-              { Do nothing };
-          end;
-        end;
-
+    procedure TAsmNode.XMLProcessInstruction(var T: Text; p: tai);
       var
-        hp: tai;
+        ThisOp, ThisOper: string;
+        X: Integer;
+      begin
+        case p.typ of
+          { Instructions are handled on a per-platform basis }
+
+          ait_label:
+            WriteLn(T, PrintNodeIndention, tai_label(p).labsym.name, ':');
+
+          ait_const:
+            begin
+              case tai_const(p).consttype of
+                aitconst_64bit:
+                  WriteLn(T, PrintNodeIndention, '.quad 0x', hexstr(tai_const(p).value, 16));
+                aitconst_32bit:
+                  WriteLn(T, PrintNodeIndention, '.long 0x', hexstr(tai_const(p).value, 8));
+                aitconst_16bit:
+                  WriteLn(T, PrintNodeIndention, '.word 0x', hexstr(tai_const(p).value, 4));
+                aitconst_8bit:
+                  WriteLn(T, PrintNodeIndention, '.byte 0x', hexstr(tai_const(p).value, 2));
+                else
+                  WriteLn(T, PrintNodeIndention, '; (Other constant)');
+              end;
+            end;
+
+          ait_realconst:
+            WriteLn(T, PrintNodeIndention, '; (Real constant)');
+
+          else
+            { Do nothing };
+        end;
+      end;
+
+
+    class procedure TAsmNode.XMLPadString(var S: string; Len: Integer);
+      var
+        X, C: Integer;
+      begin
+        C := Length(S);
+        if C < Len then
+          begin
+            SetLength(S, Len);
+            for X := C + 1 to Len do
+              S[X] := ' '
+          end;
+      end;
+
+
+    function TAsmNode.XMLFormatOp(const Oper: POper): string;
+      begin
+        case Oper^.typ of
+          top_reg:
+            Result := gas_regname(Oper^.reg);
+
+          top_local:
+            { Local variable }
+            Result := TSym(Oper^.localoper^.localsym).prettyname;
+
+          top_bool:
+            begin
+              if Oper^.b then
+                Result := 'TRUE'
+              else
+                Result := 'FALSE';
+            end;
+          else
+            Result := '(unk)';
+        end;
+      end;
+
+
+    procedure TAsmNode.XMLPrintNodeData(var T: Text);
       begin
         if not Assigned(p_asm) then
           Exit;
 
-        hp := tai(p_asm.First);
-        while Assigned(hp) do
-          begin
-            ProcessInstruction(hp);
-            hp := tai(hp.Next);
-          end;
-{$else defined(x86)}
-      begin
         WriteLn(T, PrintNodeIndention, '(Assembler output not currently supported on this platform)');
-{$endif defined(x86)}
-{$else jvm}
-      begin
-        WriteLn(T, PrintNodeIndention, '(Should assembly language even be possible under JVM?)');
-{$endif jvm}
       end;
 {$endif DEBUG_NODE_XML}
 
@@ -1720,8 +1840,8 @@ implementation
 
     destructor ttempdeletenode.destroy;
       begin
-        tempinfo^.withnode.free;
-        tempinfo^.tempinitcode.free;
+        tempinfo^.withnode.free; // no nil needed
+        tempinfo^.tempinitcode.free; // no nil needed
         dispose(tempinfo);
         inherited destroy;
       end;

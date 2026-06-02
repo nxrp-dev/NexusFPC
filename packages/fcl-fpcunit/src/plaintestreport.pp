@@ -4,7 +4,7 @@
     This file is part of the Free Component Library (FCL)
     Copyright (c) 2006 by Dean Zobec
 
-    an example of plain text report for FPCUnit tests.
+    an example of plain text report for FpcUnit tests.
 
     See the file COPYING.FPC, included in this distribution,
     for details about the copyright.
@@ -14,12 +14,19 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit plaintestreport;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, FpcUnit.Test, FpcUnit.Reports, FpcUnit.Decorator;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   classes, SysUtils, fpcunit, fpcunitreport, testdecorator;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   TTestResultOption = (ttoSkipAddress,ttoSkipExceptionMessage,ttoErrorsOnly);
@@ -40,8 +47,8 @@ type
     procedure WriteTestHeader(ATest: TTest; ALevel: integer; ACount: integer); override;
     procedure WriteTestFooter(ATest: TTest; ALevel: integer; ATiming: TDateTime); override;
     procedure WriteSuiteHeader(ATestSuite: TTestSuite; ALevel: integer); override;
-    procedure WriteSuiteFooter(ATestSuite: TTestSuite; ALevel: integer; 
-      ATiming: TDateTime; ANumRuns: integer; ANumErrors: integer; 
+    procedure WriteSuiteFooter(ATestSuite: TTestSuite; ALevel: integer;
+      ATiming: TDateTime; ANumRuns: integer; ANumErrors: integer;
       ANumFailures: integer; ANumIgnores: integer); override;
   public
     constructor Create(aOwner: TComponent); override;
@@ -59,7 +66,11 @@ function TestResultAsPlain(aTestResult: TTestResult; Options : TTestResultOption
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.DateUtils;
+{$ELSE FPC_DOTTEDUNITS}
 uses dateutils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {TPlainResultsWriter}
 
@@ -126,8 +137,8 @@ begin
   FDoc.Add(S);
   if Assigned(FTempFailure) then
   begin
-    //check if it's an error 
-    if not FTempFailure.IsFailure then 
+    //check if it's an error
+    if not FTempFailure.IsFailure then
     begin
       FDoc[FDoc.Count -1] := FDoc[FDoc.Count -1] + '  Error: ' + FTempFailure.ExceptionClassName;
       FDoc.Add(StringOfChar(' ',ALevel*2) + '    Exception:   ' + FTempFailure.ExceptionMessage);
@@ -137,13 +148,13 @@ begin
     else
       if FTempFailure.IsIgnoredTest then
       begin
-         FDoc[FDoc.Count -1] := FDoc[FDoc.Count -1] + '  Ignored test: ' 
+         FDoc[FDoc.Count -1] := FDoc[FDoc.Count -1] + '  Ignored test: '
            + FTempFailure.ExceptionMessage;
       end
       else
       begin
         //is a failure
-        FDoc[FDoc.Count -1] := FDoc[FDoc.Count -1] + '  Failed: ' 
+        FDoc[FDoc.Count -1] := FDoc[FDoc.Count -1] + '  Failed: '
           + FTempFailure.ExceptionMessage;
         FDoc.Add(StringOfChar(' ',ALevel*2) + '    Exception:   ' + FTempFailure.ExceptionMessage);
         FDoc.Add(StringOfChar(' ',ALevel*2) + '    at ' + FTempFailure.LocationInfo);
@@ -160,10 +171,10 @@ Var
 begin
   Result:='ss.zzz';
   M:=MinutesBetween(ATiming,0);
-  if M>60 then
+  if M>=60 then
     Result:='hh:mm:'+Result
-  else if M>1 then
-   Result:='mm:'+Result;
+  else if M>=1 then
+   Result:='nn:'+Result;
 end;
 
 procedure TPlainResultsWriter.SetSkipAddressInfo(AValue: Boolean);
@@ -184,7 +195,7 @@ begin
     FTestResultOptions:=FTestResultOptions-[ttoSkipExceptionMessage,ttoErrorsOnly];
 end;
 
-procedure TPlainResultsWriter.WriteSuiteFooter(ATestSuite: TTestSuite; ALevel: integer; 
+procedure TPlainResultsWriter.WriteSuiteFooter(ATestSuite: TTestSuite; ALevel: integer;
   ATiming: TDateTime; ANumRuns: integer; ANumErrors: integer; ANumFailures: integer;
   ANumIgnores: integer);
 var
@@ -214,6 +225,7 @@ var
   i: integer;
 
 begin
+  Result := '';
   if (ASuite.TestSuiteName<>'') then
     begin
     Prefix:='  '+Prefix;

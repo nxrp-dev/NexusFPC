@@ -33,8 +33,8 @@
 type
   ap_HOOK_insert_error_filter_t = procedure(r: Prequest_rec); cdecl;
 
-procedure ap_hook_insert_error_filter(pf: ap_HOOK_insert_error_filter_t; const aszPre: PPChar;
- const aszSucc: PPChar; nOrder: Integer);
+procedure ap_hook_insert_error_filter(pf: ap_HOOK_insert_error_filter_t; const aszPre: PPAnsiChar;
+ const aszSucc: PPAnsiChar; nOrder: Integer);
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_hook_insert_error_filter' + LibSuff16;
 
@@ -88,10 +88,10 @@ procedure ap_finalize_request_protocol(r: Prequest_rec);
 {
  * Send error back to client.
  * @param r The current request
- * @param recursive_error last arg indicates error status in case we get 
- *      an error in the process of trying to deal with an ErrorDocument 
- *      to handle some other error.  In that case, we print the default 
- *      report for the first thing that went wrong, and more briefly report 
+ * @param recursive_error last arg indicates error status in case we get
+ *      an error in the process of trying to deal with an ErrorDocument
+ *      to handle some other error.  In that case, we print the default
+ *      report for the first thing that went wrong, and more briefly report
  *      on the problem with the ErrorDocument.
  * @deffunc void ap_send_error_response(request_rec *r, int recursive_error)
  }
@@ -127,7 +127,7 @@ function ap_set_keepalive(r: Prequest_rec): Integer;
  external LibHTTPD name LibNamePrefix + 'ap_set_keepalive' + LibSuff4;
 
 {
- * Return the latest rational time from a request/mtime pair.  Mtime is 
+ * Return the latest rational time from a request/mtime pair.  Mtime is
  * returned unless it's in the future, in which case we return the current time.
  * @param r The current request
  * @param mtime The last modified time
@@ -147,9 +147,9 @@ function ap_rationalize_mtime(r: Prequest_rec; mtime: apr_time_t): apr_time_t;
  *    - return type
  * @param r The current request
  * @return The content-type
- * @deffunc const char *ap_make_content_type(request_rec *r, const char *type);
+ * @deffunc const AnsiChar *ap_make_content_type(request_rec *r, const AnsiChar *type);
  }
-function ap_make_content_type(r: Prequest_rec; type_: PChar): PChar;
+function ap_make_content_type(r: Prequest_rec; type_: PAnsiChar): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_make_content_type' + LibSuff8;
 
@@ -172,9 +172,9 @@ procedure ap_setup_make_content_type(pool: Papr_pool_t);
  * @param force_weak Force the entity tag to be weak - it could be modified
  *                   again in as short an interval.
  * @return The entity tag
- * @deffunc char *ap_make_etag(request_rec *r, int force_weak)
+ * @deffunc AnsiChar *ap_make_etag(request_rec *r, int force_weak)
  }
-function ap_make_etag(r: Prequest_rec; force_weak: Integer): PChar;
+function ap_make_etag(r: Prequest_rec; force_weak: Integer): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_make_etag' + LibSuff8;
 
@@ -198,7 +198,7 @@ procedure ap_set_last_modified(r: Prequest_rec);
 
 {
  * Implements condition GET rules for HTTP/1.1 specification.  This function
- * inspects the client headers and determines if the response fulfills 
+ * inspects the client headers and determines if the response fulfills
  * the requirements specified.
  * @param r The current request
  * @return OK if the response fulfills the condition GET rules, some
@@ -216,12 +216,12 @@ function ap_meets_conditions(r: Prequest_rec): Integer;
  * us centralize a bit of accounting (bytes_sent).
  *
  * These also return the number of bytes written by the call.
- * They should only be called with a timeout registered, for obvious reaasons.
+ * They should only be called with a timeout registered, for obvious reasons.
  * (Ditto the send_header stuff).
  }
 
 {
- * Send an entire file to the client, using sendfile if supported by the 
+ * Send an entire file to the client, using sendfile if supported by the
  * current platform
  * @param fd The file to send.
  * @param r The current request
@@ -260,7 +260,7 @@ function ap_send_mmap(mm: Papr_mmap_t; r: Prequest_rec; offset, length: size_t):
  * @param methname The name of the new method to register.
  * @return         Ab int value representing an offset into a bitmask.
  }
-function ap_method_register(p: Papr_pool_t; methname: PChar): Integer;
+function ap_method_register(p: Papr_pool_t; methname: PAnsiChar): Integer;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_method_register' + LibSuff8;
 
@@ -299,14 +299,14 @@ procedure ap_copy_method_list(dest, src: Pap_method_list_t);
  external LibHTTPD name LibNamePrefix + 'ap_copy_method_list' + LibSuff8;
 
 type
-  comp_t = procedure (urec: Pointer; const mname: PChar; mnum: Integer);
-  
+  comp_t = procedure (urec: Pointer; const mname: PAnsiChar; mnum: Integer);
+
 procedure ap_method_list_do(
  comp: comp_t; rec: Pointer; ml: Pap_method_list_t; others: array of const);
  cdecl; external LibHTTPD name 'ap_method_list_do';
 
 type
-  ap_method_list_vdo_t = function (urec: Pointer; const mname: PChar;
+  ap_method_list_vdo_t = function (urec: Pointer; const mname: PAnsiChar;
    mnum: Integer): Integer; cdecl;
 
 procedure ap_method_list_vdo(comp: ap_method_list_vdo_t;
@@ -321,9 +321,9 @@ procedure ap_method_list_vdo(comp: ap_method_list_vdo_t;
  * @param   method  String containing the name of the method to check.
  * @param   l       Pointer to a method list, such as cmd->methods_limited.
  * @return  1 if method is in the list, otherwise 0
- * @deffunc int ap_method_in_list(const char *method, ap_method_list_t *l)
+ * @deffunc int ap_method_in_list(const AnsiChar *method, ap_method_list_t *l)
  }
-function ap_method_in_list(l: Pap_method_list_t; const method: PChar): Integer;
+function ap_method_in_list(l: Pap_method_list_t; const method: PAnsiChar): Integer;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_method_in_list' + LibSuff8;
 
@@ -334,9 +334,9 @@ function ap_method_in_list(l: Pap_method_list_t; const method: PChar): Integer;
  * @param   method  String containing the name of the method to check.
  * @param   l       Pointer to a method list, such as cmd->methods_limited.
  * @return  None.
- * @deffunc void ap_method_in_list(ap_method_list_t *l, const char *method)
+ * @deffunc void ap_method_in_list(ap_method_list_t *l, const AnsiChar *method)
  }
-procedure ap_method_list_add(l: Pap_method_list_t; const method: PChar);
+procedure ap_method_list_add(l: Pap_method_list_t; const method: PAnsiChar);
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_method_list_add' + LibSuff8;
 
@@ -346,9 +346,9 @@ procedure ap_method_list_add(l: Pap_method_list_t; const method: PChar);
  * @param   l       Pointer to a method list, such as cmd->methods_limited.
  * @param   method  String containing the name of the method to remove.
  * @return  None.
- * @deffunc void ap_method_list_remove(ap_method_list_t *l, const char *method)
+ * @deffunc void ap_method_list_remove(ap_method_list_t *l, const AnsiChar *method)
  }
-procedure ap_method_list_remove(l: Pap_method_list_t; const method: PChar);
+procedure ap_method_list_remove(l: Pap_method_list_t; const method: PAnsiChar);
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_method_list_remove' + LibSuff8;
 
@@ -364,14 +364,14 @@ procedure ap_clear_method_list(l: Pap_method_list_t);
  external LibHTTPD name LibNamePrefix + 'ap_clear_method_list' + LibSuff4;
 
 {
- * Set the content type for this request (r->content_type). 
+ * Set the content type for this request (r->content_type).
  * @param r The current request
  * @param ct The new content type
- * @deffunc void ap_set_content_type(request_rec *r, const char* ct)
- * @warning This function must be called to set r->content_type in order 
+ * @deffunc void ap_set_content_type(request_rec *r, const AnsiChar* ct)
+ * @warning This function must be called to set r->content_type in order
  * for the AddOutputFilterByType directive to work correctly.
  }
-procedure ap_set_content_type(r: Prequest_rec; const ct: PChar);
+procedure ap_set_content_type(r: Prequest_rec; const ct: PAnsiChar);
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_set_content_type' + LibSuff8;
 
@@ -395,9 +395,9 @@ function ap_rputc(c: Integer; r: Prequest_rec): Integer;
  * @param str The string to output
  * @param r The current request
  * @return The number of bytes sent
- * @deffunc int ap_rputs(const char *str, request_rec *r)
+ * @deffunc int ap_rputs(const AnsiChar *str, request_rec *r)
  }
-function ap_rputs(const str: PChar; r: Prequest_rec): Integer;
+function ap_rputs(const str: PAnsiChar; r: Prequest_rec): Integer;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_rputs' + LibSuff8;
 
@@ -431,9 +431,9 @@ function ap_rvputs(r: Prequest_rec; others: array of const): Integer;
  * @param fmt The format string
  * @param vlist The arguments to use to fill out the format string
  * @return The number of bytes sent
- * @deffunc int ap_vrprintf(request_rec *r, const char *fmt, va_list vlist)
+ * @deffunc int ap_vrprintf(request_rec *r, const AnsiChar *fmt, va_list vlist)
  }
-function ap_vrprintf(r: Prequest_rec; const fmt: PChar; vlist: va_list): Integer;
+function ap_vrprintf(r: Prequest_rec; const fmt: PAnsiChar; vlist: va_list): Integer;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_vrprintf' + LibSuff12;
 
@@ -443,12 +443,12 @@ function ap_vrprintf(r: Prequest_rec; const fmt: PChar; vlist: va_list): Integer
  * @param fmt The format string
  * @param ... The arguments to use to fill out the format string
  * @return The number of bytes sent
- * @deffunc int ap_rprintf(request_rec *r, const char *fmt, ...)
+ * @deffunc int ap_rprintf(request_rec *r, const AnsiChar *fmt, ...)
  }
-function ap_rprintf(r: Prequest_rec; const fmt: PChar; others: array of const): Integer;
+function ap_rprintf(r: Prequest_rec; const fmt: PAnsiChar; others: array of const): Integer;
  cdecl; external LibHTTPD name 'ap_rprintf';
 
-//AP_DECLARE_NONSTD(int) ap_rprintf(request_rec *r, const char *fmt,...)
+//AP_DECLARE_NONSTD(int) ap_rprintf(request_rec *r, const AnsiChar *fmt,...)
 //				__attribute__((format(printf,2,3)));
 
 {
@@ -475,12 +475,12 @@ function ap_index_of_response(status: Integer): Integer;
 {
  * Return the Status-Line for a given status code (excluding the
  * HTTP-Version field). If an invalid or unknown status code is
- * passed, "500 Internal Server Error" will be returned. 
+ * passed, "500 Internal Server Error" will be returned.
  * @param status The HTTP status code
  * @return The Status-Line
- * @deffunc const char *ap_get_status_line(int status)
+ * @deffunc const AnsiChar *ap_get_status_line(int status)
  }
-function ap_get_status_line(status: Integer): PChar;
+function ap_get_status_line(status: Integer): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_get_status_line' + LibSuff4;
 
@@ -489,7 +489,7 @@ function ap_get_status_line(status: Integer): PChar;
 {
  * Setup the client to allow Apache to read the request body.
  * @param r The current request
- * @param read_policy How the server should interpret a chunked 
+ * @param read_policy How the server should interpret a chunked
  *                    transfer-encoding.  One of: <pre>
  *    REQUEST_NO_BODY          Send 413 error if message has any body
  *    REQUEST_CHUNKED_ERROR    Send 411 error if body without Content-Length
@@ -503,7 +503,7 @@ function ap_setup_client_block(r: Prequest_rec; read_policy: Integer): Integer;
  external LibHTTPD name LibNamePrefix + 'ap_setup_client_block' + LibSuff8;
 
 {
- * Determine if the client has sent any data.  This also sends a 
+ * Determine if the client has sent any data.  This also sends a
  * 100 Continue response to HTTP/1.1 clients, so modules should not be called
  * until the module is ready to read content.
  * @warning Never call this function more than once.
@@ -523,9 +523,9 @@ function ap_should_client_block(r: Prequest_rec): Integer;
  * @param bufsiz The size of the buffer
  * @return Number of bytes inserted into the buffer.  When done reading, 0
  *         if EOF, or -1 if there was an error
- * @deffunc long ap_get_client_block(request_rec *r, char *buffer, apr_size_t bufsiz)
+ * @deffunc long ap_get_client_block(request_rec *r, AnsiChar *buffer, apr_size_t bufsiz)
  }
-function ap_get_client_block(r: Prequest_rec; buffer: PChar; bufsiz: apr_size_t): cLong;
+function ap_get_client_block(r: Prequest_rec; buffer: PAnsiChar; bufsiz: apr_size_t): cLong;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_get_client_block' + LibSuff12;
 
@@ -537,7 +537,7 @@ function ap_get_client_block(r: Prequest_rec; buffer: PChar; bufsiz: apr_size_t)
  * failing to read the request body would cause it to be interpreted
  * as the next request on a persistent connection.
  * @param r The current request
- * @return error status if request is malformed, OK otherwise 
+ * @return error status if request is malformed, OK otherwise
  * @deffunc int ap_discard_request_body(request_rec *r)
  }
 function ap_discard_request_body(r: Prequest_rec): Integer;
@@ -582,15 +582,15 @@ procedure ap_note_digest_auth_failure(r: Prequest_rec);
  * @param r The current request
  * @param pw The password as set in the headers
  * @return 0 (OK) if it set the 'pw' argument (and assured
- *         a correct value in r->user); otherwise it returns 
- *         an error code, either HTTP_INTERNAL_SERVER_ERROR if things are 
- *         really confused, HTTP_UNAUTHORIZED if no authentication at all 
- *         seemed to be in use, or DECLINED if there was authentication but 
- *         it wasn't Basic (in which case, the caller should presumably 
+ *         a correct value in r->user); otherwise it returns
+ *         an error code, either HTTP_INTERNAL_SERVER_ERROR if things are
+ *         really confused, HTTP_UNAUTHORIZED if no authentication at all
+ *         seemed to be in use, or DECLINED if there was authentication but
+ *         it wasn't Basic (in which case, the caller should presumably
  *         decline as well).
- * @deffunc int ap_get_basic_auth_pw(request_rec *r, const char **pw)
+ * @deffunc int ap_get_basic_auth_pw(request_rec *r, const AnsiChar **pw)
  }
-function ap_get_basic_auth_pw(r: Prequest_rec; pw: PPChar): Integer;
+function ap_get_basic_auth_pw(r: Prequest_rec; pw: PPAnsiChar): Integer;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_get_basic_auth_pw' + LibSuff8;
 
@@ -603,9 +603,9 @@ function ap_get_basic_auth_pw(r: Prequest_rec; pw: PPChar): Integer;
  * </pre>
  * @param r The current request
  * @param uri The uri to break apart
- * @deffunc void ap_parse_uri(request_rec *r, const char *uri)
+ * @deffunc void ap_parse_uri(request_rec *r, const AnsiChar *uri)
  }
-procedure ap_parse_uri(r: Prequest_rec; const uri: PChar);
+procedure ap_parse_uri(r: Prequest_rec; const uri: PAnsiChar);
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_parse_uri' + LibSuff8;
 
@@ -618,22 +618,22 @@ procedure ap_parse_uri(r: Prequest_rec; const uri: PChar);
  * @return The length of the line, if successful
  *         n, if the line is too big to fit in the buffer
  *         -1 for miscellaneous errors
- * @deffunc int ap_method_number_of(const char *method)
+ * @deffunc int ap_method_number_of(const AnsiChar *method)
  }
-function ap_getline(s: PChar; n: Integer; r: Prequest_rec; fold: Integer): Integer;
+function ap_getline(s: PAnsiChar; n: Integer; r: Prequest_rec; fold: Integer): Integer;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_getline' + LibSuff16;
 
 {
  * Get the next line of input for the request
  *
- * Note: on ASCII boxes, ap_rgetline is a macro which simply calls 
+ * Note: on ASCII boxes, ap_rgetline is a macro which simply calls
  *       ap_rgetline_core to get the line of input.
- * 
+ *
  *       on EBCDIC boxes, ap_rgetline is a wrapper function which
  *       translates ASCII protocol lines to the local EBCDIC code page
  *       after getting the line of input.
- *       
+ *
  * @param s Pointer to the pointer to the buffer into which the line
  *          should be read; if *s==NULL, a buffer of the necessary size
  *          to hold the data will be allocated from the request pool
@@ -647,7 +647,7 @@ function ap_getline(s: PChar; n: Integer; r: Prequest_rec; fold: Integer): Integ
  *         Other errors where appropriate
  }
 {#if APR_CHARSET_EBCDIC
-AP_DECLARE(apr_status_t) ap_rgetline(char **s, apr_size_t n, 
+AP_DECLARE(apr_status_t) ap_rgetline(AnsiChar **s, apr_size_t n,
                                      apr_size_t *read,
                                      request_rec *r, int fold,
                                      apr_bucket_brigade *bb);
@@ -656,7 +656,7 @@ AP_DECLARE(apr_status_t) ap_rgetline(char **s, apr_size_t n,
         ap_rgetline_core((s), (n), (read), (r), (fold), (bb))
 #endif}
 
-{AP_DECLARE(apr_status_t) ap_rgetline_core(char **s, apr_size_t n,
+{AP_DECLARE(apr_status_t) ap_rgetline_core(AnsiChar **s, apr_size_t n,
                                           apr_size_t *read,
                                           request_rec *r, int fold,
                                           apr_bucket_brigade *bb);}
@@ -667,7 +667,7 @@ AP_DECLARE(apr_status_t) ap_rgetline(char **s, apr_size_t n,
  * @param method A string containing a valid HTTP method
  * @return The method number
  }
-function ap_method_number_of(const method: PChar): Integer;
+function ap_method_number_of(const method: PAnsiChar): Integer;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_method_number_of' + LibSuff4;
 
@@ -678,7 +678,7 @@ function ap_method_number_of(const method: PChar): Integer;
  * @param methnum An integer value corresponding to an internal method number
  * @return The name corresponding to the method number
  }
-function ap_method_name_of(p: Papr_pool_t; methnum: Integer): PChar;
+function ap_method_name_of(p: Papr_pool_t; methnum: Integer): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_method_name_of' + LibSuff8;
 
@@ -700,7 +700,7 @@ type
   ap_HOOK_post_read_request_t = function(r: Prequest_rec): Integer; cdecl;
 
 procedure ap_hook_post_read_request(pf: ap_HOOK_post_read_request_t;
- const aszPre: PPChar; const aszSucc: PPChar; nOrder: Integer);
+ const aszPre: PPAnsiChar; const aszSucc: PPAnsiChar; nOrder: Integer);
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_hook_post_read_request' + LibSuff16;
 
@@ -715,7 +715,7 @@ type
   ap_HOOK_log_transaction_t = function(r: Prequest_rec): Integer; cdecl;
 
 procedure ap_hook_log_transaction(pf: ap_HOOK_log_transaction_t;
- const aszPre: PPChar; const aszSucc: PPChar; nOrder: Integer);
+ const aszPre: PPAnsiChar; const aszSucc: PPAnsiChar; nOrder: Integer);
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_hook_log_transaction' + LibSuff16;
 
@@ -724,13 +724,13 @@ procedure ap_hook_log_transaction(pf: ap_HOOK_log_transaction_t;
  * allows Apache modules to easily extend the methods that Apache understands
  * @param r The current request
  * @return The http method from the request
- * @deffunc const char *ap_run_http_method(const request_rec *r)
+ * @deffunc const AnsiChar *ap_run_http_method(const request_rec *r)
  }
 type
-  ap_HOOK_http_method_t = function(const r: Prequest_rec): PChar; cdecl;
+  ap_HOOK_http_method_t = function(const r: Prequest_rec): PAnsiChar; cdecl;
 
 procedure ap_hook_http_method(pf: ap_HOOK_http_method_t;
- const aszPre: PPChar; const aszSucc: PPChar; nOrder: Integer);
+ const aszPre: PPAnsiChar; const aszSucc: PPAnsiChar; nOrder: Integer);
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_hook_http_method' + LibSuff16;
 
@@ -744,7 +744,7 @@ type
   ap_HOOK_default_port_t = function(const r: Prequest_rec): apr_port_t; cdecl;
 
 procedure ap_hook_default_port(pf: ap_HOOK_default_port_t;
- const aszPre: PPChar; const aszSucc: PPChar; nOrder: Integer);
+ const aszPre: PPAnsiChar; const aszSucc: PPAnsiChar; nOrder: Integer);
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_hook_default_port' + LibSuff16;
 
@@ -762,7 +762,7 @@ type
     { The error code }
     status: Integer;
     { The error string }
-    data: PChar;
+    data: PAnsiChar;
   end;
   Pap_bucket_error = ^ap_bucket_error;
 
@@ -778,27 +778,27 @@ type
 {
  * Make the bucket passed in an error bucket
  * @param b The bucket to make into an error bucket
- * @param error The HTTP error code to put in the bucket. 
+ * @param error The HTTP error code to put in the bucket.
  * @param buf An optional error string to put in the bucket.
  * @param p A pool to allocate out of.
  * @return The new bucket, or NULL if allocation failed
- * @deffunc apr_bucket *ap_bucket_error_make(apr_bucket *b, int error, const char *buf, apr_pool_t *p)
+ * @deffunc apr_bucket *ap_bucket_error_make(apr_bucket *b, int error, const AnsiChar *buf, apr_pool_t *p)
  }
 function ap_bucket_error_make(b: Papr_bucket; error: Integer;
- const buf: PChar; p: Papr_pool_t): Papr_bucket;
+ const buf: PAnsiChar; p: Papr_pool_t): Papr_bucket;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_bucket_error_make' + LibSuff16;
 
 {
  * Create a bucket referring to an HTTP error.
- * @param error The HTTP error code to put in the bucket. 
+ * @param error The HTTP error code to put in the bucket.
  * @param buf An optional error string to put in the bucket.
  * @param p A pool to allocate the error string out of.
  * @param list The bucket allocator from which to allocate the bucket
  * @return The new bucket, or NULL if allocation failed
- * @deffunc apr_bucket *ap_bucket_error_create(int error, const char *buf, apr_pool_t *p, apr_bucket_alloc_t *list)
+ * @deffunc apr_bucket *ap_bucket_error_create(int error, const AnsiChar *buf, apr_pool_t *p, apr_bucket_alloc_t *list)
  }
-function ap_bucket_error_create(error: Integer; const buf: PChar;
+function ap_bucket_error_create(error: Integer; const buf: PAnsiChar;
  p: Papr_pool_t; list: Papr_bucket_alloc_t): Papr_bucket;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_bucket_error_create' + LibSuff16;

@@ -2,7 +2,7 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses {$ifdef unix}cthreads,{$endif} fpmkunit;
 
 Var
   P : TPackage;
@@ -25,11 +25,14 @@ begin
     T:=P.Targets.AddUnit('vgamouse.pp');
 
     P.Sources.AddSrc('README.txt');
- 
+
     P.ExamplePath.Add('examples');
     P.Targets.AddExampleProgram('testvga.pp');
     P.Targets.AddExampleProgram('vgatest.pp');
     P.Sources.AddExampleFiles('examples/*',P.Directory,false,'.');
+
+
+    P.NamespaceMap:='namespaces.lst';
 
 {$ifndef ALLPACKAGES}
     Run;

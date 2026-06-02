@@ -15,7 +15,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CFNotificationCenter;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -200,7 +202,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CFBase,MacOsApi.CFDictionary;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CFBase,CFDictionary;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 {$ALIGN POWER}
@@ -219,7 +225,7 @@ const
 	CFNotificationSuspensionBehaviorDrop = 1;
         // The server will not queue any notifications with this name and object while the process/app is in the background.
 	CFNotificationSuspensionBehaviorCoalesce = 2;
-        // The server will only queue the last notification of the specified name and object; earlier notifications are dropped. 
+        // The server will only queue the last notification of the specified name and object; earlier notifications are dropped.
 	CFNotificationSuspensionBehaviorHold = 3;
         // The server will hold all matching notifications until the queue has been filled (queue size determined by the server) at which point the server may flush queued notifications.
 	CFNotificationSuspensionBehaviorDeliverImmediately = 4;

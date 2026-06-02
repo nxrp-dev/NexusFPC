@@ -21,11 +21,17 @@
  *
  *****************************************************************************)
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit notifymgr;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses PalmApi.Palmos, PalmApi.Coretraps, PalmApi.Datamgr, PalmApi.Localemgr, PalmApi.Systemresources;
+{$ELSE FPC_DOTTEDUNITS}
 uses palmos, coretraps, datamgr, localemgr, systemresources;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   SysNotifyParamType = record
@@ -283,7 +289,7 @@ const
                                      // notifyDetailsP: ptr to SysNotifyDBInfoType.
 
   sysNotifyIrDASniffEvent          = Rsc('irda');
-                                     // Sent by IrDA sniffing code when an incomming IrDA frame is detected
+                                     // Sent by IrDA sniffing code when an incoming IrDA frame is detected
 
 // for sysNotifyDisplayChangeEvent
 type
@@ -324,7 +330,7 @@ type
     dbID: LocalID;         // database ID of dabatase
     cardNo: UInt16;        // card number that dabatase resides on
     attributes: UInt16;    // database attributes
-    dbName: array [0..dmDBNameLength-1] of Char; // name of database
+    dbName: array [0..dmDBNameLength-1] of AnsiChar; // name of database
     creator: UInt32;       // creator code of dabatase
     type_: UInt32;         // type of dabatase
   end;
@@ -336,7 +342,7 @@ type
     oldDBID: LocalID;      // old database ID of dabatase, no longer valid
     cardNo: UInt16;        // card number that dabatase resides on
     attributes: UInt16;    // database attributes
-    dbName: array [0..dmDBNameLength-1] of Char; // name of database
+    dbName: array [0..dmDBNameLength-1] of AnsiChar; // name of database
     creator: UInt32;       // creator code of dabatase
     type_: UInt32;         // type code of dabatase
   end;
@@ -352,7 +358,7 @@ NOTE that these are NOT implemented yet!!!!
 
  sysNotifyInitializeEvent       = Ord('helo');
                                  // broadcast to an app after its installed
-                                 // so it can do any necessary initalization
+                                 // so it can do any necessary initialization
                                  // This event is always broadcast.
                                  // param: ptr to SysNotifyDBInfoType.
 

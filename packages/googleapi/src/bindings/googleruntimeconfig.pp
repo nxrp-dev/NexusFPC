@@ -1,13 +1,19 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit googleruntimeconfig;
+{$ENDIF FPC_DOTTEDUNITS}
 {$MODE objfpc}
 {$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils, System.Classes, GoogleApi.Service, FpWeb.Rest.Base, GoogleApi.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses sysutils, classes, googleservice, restbase, googlebase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
-  
+
   //Top-level schema types
   TStatus = Class;
   TListConfigsResponse = Class;
@@ -41,11 +47,11 @@ type
   TListConfigsResponseTypeconfigsArray = Array of TRuntimeConfig;
   TListWaitersResponseTypewaitersArray = Array of TWaiter;
   TListVariablesResponseTypevariablesArray = Array of TVariable;
-  
+
   { --------------------------------------------------------------------
     TStatusTypedetailsItem
     --------------------------------------------------------------------}
-  
+
   TStatusTypedetailsItem = Class(TGoogleBaseObject)
   Private
   Protected
@@ -55,11 +61,11 @@ type
   Published
   end;
   TStatusTypedetailsItemClass = Class of TStatusTypedetailsItem;
-  
+
   { --------------------------------------------------------------------
     TStatus
     --------------------------------------------------------------------}
-  
+
   TStatus = Class(TGoogleBaseObject)
   Private
     Fcode : integer;
@@ -81,11 +87,11 @@ type
     Property message : String Index 16 Read Fmessage Write Setmessage;
   end;
   TStatusClass = Class of TStatus;
-  
+
   { --------------------------------------------------------------------
     TListConfigsResponse
     --------------------------------------------------------------------}
-  
+
   TListConfigsResponse = Class(TGoogleBaseObject)
   Private
     FnextPageToken : String;
@@ -104,11 +110,11 @@ type
     Property configs : TListConfigsResponseTypeconfigsArray Index 8 Read Fconfigs Write Setconfigs;
   end;
   TListConfigsResponseClass = Class of TListConfigsResponse;
-  
+
   { --------------------------------------------------------------------
     TVariable
     --------------------------------------------------------------------}
-  
+
   TVariable = Class(TGoogleBaseObject)
   Private
     Fvalue : String;
@@ -129,11 +135,11 @@ type
     Property name : String Index 24 Read Fname Write Setname;
   end;
   TVariableClass = Class of TVariable;
-  
+
   { --------------------------------------------------------------------
     TOperationTypemetadata
     --------------------------------------------------------------------}
-  
+
   TOperationTypemetadata = Class(TGoogleBaseObject)
   Private
   Protected
@@ -143,11 +149,11 @@ type
   Published
   end;
   TOperationTypemetadataClass = Class of TOperationTypemetadata;
-  
+
   { --------------------------------------------------------------------
     TOperationTyperesponse
     --------------------------------------------------------------------}
-  
+
   TOperationTyperesponse = Class(TGoogleBaseObject)
   Private
   Protected
@@ -157,11 +163,11 @@ type
   Published
   end;
   TOperationTyperesponseClass = Class of TOperationTyperesponse;
-  
+
   { --------------------------------------------------------------------
     TOperation
     --------------------------------------------------------------------}
-  
+
   TOperation = Class(TGoogleBaseObject)
   Private
     Ferror : TStatus;
@@ -185,11 +191,11 @@ type
     Property name : String Index 32 Read Fname Write Setname;
   end;
   TOperationClass = Class of TOperation;
-  
+
   { --------------------------------------------------------------------
     TWaiter
     --------------------------------------------------------------------}
-  
+
   TWaiter = Class(TGoogleBaseObject)
   Private
     Ftimeout : String;
@@ -219,11 +225,11 @@ type
     Property done : boolean Index 48 Read Fdone Write Setdone;
   end;
   TWaiterClass = Class of TWaiter;
-  
+
   { --------------------------------------------------------------------
     TRuntimeConfig
     --------------------------------------------------------------------}
-  
+
   TRuntimeConfig = Class(TGoogleBaseObject)
   Private
     Fdescription : String;
@@ -238,11 +244,11 @@ type
     Property name : String Index 8 Read Fname Write Setname;
   end;
   TRuntimeConfigClass = Class of TRuntimeConfig;
-  
+
   { --------------------------------------------------------------------
     TListWaitersResponse
     --------------------------------------------------------------------}
-  
+
   TListWaitersResponse = Class(TGoogleBaseObject)
   Private
     FnextPageToken : String;
@@ -261,11 +267,11 @@ type
     Property waiters : TListWaitersResponseTypewaitersArray Index 8 Read Fwaiters Write Setwaiters;
   end;
   TListWaitersResponseClass = Class of TListWaitersResponse;
-  
+
   { --------------------------------------------------------------------
     TEndCondition
     --------------------------------------------------------------------}
-  
+
   TEndCondition = Class(TGoogleBaseObject)
   Private
     Fcardinality : TCardinality;
@@ -277,11 +283,11 @@ type
     Property cardinality : TCardinality Index 0 Read Fcardinality Write Setcardinality;
   end;
   TEndConditionClass = Class of TEndCondition;
-  
+
   { --------------------------------------------------------------------
     TCardinality
     --------------------------------------------------------------------}
-  
+
   TCardinality = Class(TGoogleBaseObject)
   Private
     Fpath : String;
@@ -296,11 +302,11 @@ type
     Property number : integer Index 8 Read Fnumber Write Setnumber;
   end;
   TCardinalityClass = Class of TCardinality;
-  
+
   { --------------------------------------------------------------------
     TEmpty
     --------------------------------------------------------------------}
-  
+
   TEmpty = Class(TGoogleBaseObject)
   Private
   Protected
@@ -309,11 +315,11 @@ type
   Published
   end;
   TEmptyClass = Class of TEmpty;
-  
+
   { --------------------------------------------------------------------
     TWatchVariableRequest
     --------------------------------------------------------------------}
-  
+
   TWatchVariableRequest = Class(TGoogleBaseObject)
   Private
     FnewerThan : String;
@@ -325,11 +331,11 @@ type
     Property newerThan : String Index 0 Read FnewerThan Write SetnewerThan;
   end;
   TWatchVariableRequestClass = Class of TWatchVariableRequest;
-  
+
   { --------------------------------------------------------------------
     TListVariablesResponse
     --------------------------------------------------------------------}
-  
+
   TListVariablesResponse = Class(TGoogleBaseObject)
   Private
     Fvariables : TListVariablesResponseTypevariablesArray;
@@ -348,27 +354,27 @@ type
     Property nextPageToken : String Index 8 Read FnextPageToken Write SetnextPageToken;
   end;
   TListVariablesResponseClass = Class of TListVariablesResponse;
-  
+
   { --------------------------------------------------------------------
     TProjectsConfigsVariablesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TProjectsConfigsVariablesResource, method List
-  
+
   TProjectsConfigsVariablesListOptions = Record
     pageSize : integer;
     filter : String;
     pageToken : String;
   end;
-  
-  
+
+
   //Optional query Options for TProjectsConfigsVariablesResource, method Delete
-  
+
   TProjectsConfigsVariablesDeleteOptions = Record
     recursive : boolean;
   end;
-  
+
   TProjectsConfigsVariablesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -382,20 +388,20 @@ type
     Function Delete(_name: string; AQuery : string  = '') : TEmpty;
     Function Delete(_name: string; AQuery : TProjectsConfigsVariablesdeleteOptions) : TEmpty;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TProjectsConfigsWaitersResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TProjectsConfigsWaitersResource, method List
-  
+
   TProjectsConfigsWaitersListOptions = Record
     pageSize : integer;
     pageToken : String;
   end;
-  
+
   TProjectsConfigsWaitersResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -406,32 +412,32 @@ type
     Function List(parent: string; AQuery : TProjectsConfigsWaiterslistOptions) : TListWaitersResponse;
     Function Delete(_name: string) : TEmpty;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TProjectsConfigsOperationsResource
     --------------------------------------------------------------------}
-  
+
   TProjectsConfigsOperationsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
     Class Function DefaultAPI : TGoogleAPIClass; override;
     Function Get(_name: string) : TOperation;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TProjectsConfigsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TProjectsConfigsResource, method List
-  
+
   TProjectsConfigsListOptions = Record
     pageSize : integer;
     pageToken : String;
   end;
-  
+
   TProjectsConfigsResource = Class(TGoogleResource)
   Private
     FVariablesInstance : TProjectsConfigsVariablesResource;
@@ -459,12 +465,12 @@ type
     Property WaitersResource : TProjectsConfigsWaitersResource Read GetWaitersInstance;
     Property OperationsResource : TProjectsConfigsOperationsResource Read GetOperationsInstance;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TProjectsResource
     --------------------------------------------------------------------}
-  
+
   TProjectsResource = Class(TGoogleResource)
   Private
     FConfigsVariablesInstance : TProjectsConfigsVariablesResource;
@@ -491,12 +497,12 @@ type
     Property ConfigsOperationsResource : TProjectsConfigsOperationsResource Read GetConfigsOperationsInstance;
     Property ConfigsResource : TProjectsConfigsResource Read GetConfigsInstance;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TRuntimeconfigAPI
     --------------------------------------------------------------------}
-  
+
   TRuntimeconfigAPI = Class(TGoogleAPI)
   Private
     FProjectsConfigsVariablesInstance : TProjectsConfigsVariablesResource;
@@ -571,7 +577,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TStatus.Setcode(AIndex : Integer; const AValue : integer); 
+Procedure TStatus.Setcode(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fcode=AValue) then exit;
@@ -581,7 +587,7 @@ end;
 
 
 
-Procedure TStatus.Setdetails(AIndex : Integer; const AValue : TStatusTypedetailsArray); 
+Procedure TStatus.Setdetails(AIndex : Integer; const AValue : TStatusTypedetailsArray);
 
 begin
   If (Fdetails=AValue) then exit;
@@ -591,7 +597,7 @@ end;
 
 
 
-Procedure TStatus.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TStatus.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -602,7 +608,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TStatus.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TStatus.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -621,7 +627,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TListConfigsResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TListConfigsResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -631,7 +637,7 @@ end;
 
 
 
-Procedure TListConfigsResponse.Setconfigs(AIndex : Integer; const AValue : TListConfigsResponseTypeconfigsArray); 
+Procedure TListConfigsResponse.Setconfigs(AIndex : Integer; const AValue : TListConfigsResponseTypeconfigsArray);
 
 begin
   If (Fconfigs=AValue) then exit;
@@ -642,7 +648,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TListConfigsResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TListConfigsResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -661,7 +667,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TVariable.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TVariable.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -671,7 +677,7 @@ end;
 
 
 
-Procedure TVariable.SetupdateTime(AIndex : Integer; const AValue : String); 
+Procedure TVariable.SetupdateTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FupdateTime=AValue) then exit;
@@ -681,7 +687,7 @@ end;
 
 
 
-Procedure TVariable.Setstate(AIndex : Integer; const AValue : String); 
+Procedure TVariable.Setstate(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstate=AValue) then exit;
@@ -691,7 +697,7 @@ end;
 
 
 
-Procedure TVariable.Setname(AIndex : Integer; const AValue : String); 
+Procedure TVariable.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -734,7 +740,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperation.Seterror(AIndex : Integer; const AValue : TStatus); 
+Procedure TOperation.Seterror(AIndex : Integer; const AValue : TStatus);
 
 begin
   If (Ferror=AValue) then exit;
@@ -744,7 +750,7 @@ end;
 
 
 
-Procedure TOperation.Setdone(AIndex : Integer; const AValue : boolean); 
+Procedure TOperation.Setdone(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fdone=AValue) then exit;
@@ -754,7 +760,7 @@ end;
 
 
 
-Procedure TOperation.Setmetadata(AIndex : Integer; const AValue : TOperationTypemetadata); 
+Procedure TOperation.Setmetadata(AIndex : Integer; const AValue : TOperationTypemetadata);
 
 begin
   If (Fmetadata=AValue) then exit;
@@ -764,7 +770,7 @@ end;
 
 
 
-Procedure TOperation.Setresponse(AIndex : Integer; const AValue : TOperationTyperesponse); 
+Procedure TOperation.Setresponse(AIndex : Integer; const AValue : TOperationTyperesponse);
 
 begin
   If (Fresponse=AValue) then exit;
@@ -774,7 +780,7 @@ end;
 
 
 
-Procedure TOperation.Setname(AIndex : Integer; const AValue : String); 
+Procedure TOperation.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -791,7 +797,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TWaiter.Settimeout(AIndex : Integer; const AValue : String); 
+Procedure TWaiter.Settimeout(AIndex : Integer; const AValue : String);
 
 begin
   If (Ftimeout=AValue) then exit;
@@ -801,7 +807,7 @@ end;
 
 
 
-Procedure TWaiter.Setsuccess(AIndex : Integer; const AValue : TEndCondition); 
+Procedure TWaiter.Setsuccess(AIndex : Integer; const AValue : TEndCondition);
 
 begin
   If (Fsuccess=AValue) then exit;
@@ -811,7 +817,7 @@ end;
 
 
 
-Procedure TWaiter.Setfailure(AIndex : Integer; const AValue : TEndCondition); 
+Procedure TWaiter.Setfailure(AIndex : Integer; const AValue : TEndCondition);
 
 begin
   If (Ffailure=AValue) then exit;
@@ -821,7 +827,7 @@ end;
 
 
 
-Procedure TWaiter.SetcreateTime(AIndex : Integer; const AValue : String); 
+Procedure TWaiter.SetcreateTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreateTime=AValue) then exit;
@@ -831,7 +837,7 @@ end;
 
 
 
-Procedure TWaiter.Setname(AIndex : Integer; const AValue : String); 
+Procedure TWaiter.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -841,7 +847,7 @@ end;
 
 
 
-Procedure TWaiter.Seterror(AIndex : Integer; const AValue : TStatus); 
+Procedure TWaiter.Seterror(AIndex : Integer; const AValue : TStatus);
 
 begin
   If (Ferror=AValue) then exit;
@@ -851,7 +857,7 @@ end;
 
 
 
-Procedure TWaiter.Setdone(AIndex : Integer; const AValue : boolean); 
+Procedure TWaiter.Setdone(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fdone=AValue) then exit;
@@ -868,7 +874,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TRuntimeConfig.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TRuntimeConfig.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -878,7 +884,7 @@ end;
 
 
 
-Procedure TRuntimeConfig.Setname(AIndex : Integer; const AValue : String); 
+Procedure TRuntimeConfig.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -895,7 +901,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TListWaitersResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TListWaitersResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -905,7 +911,7 @@ end;
 
 
 
-Procedure TListWaitersResponse.Setwaiters(AIndex : Integer; const AValue : TListWaitersResponseTypewaitersArray); 
+Procedure TListWaitersResponse.Setwaiters(AIndex : Integer; const AValue : TListWaitersResponseTypewaitersArray);
 
 begin
   If (Fwaiters=AValue) then exit;
@@ -916,7 +922,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TListWaitersResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TListWaitersResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -935,7 +941,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TEndCondition.Setcardinality(AIndex : Integer; const AValue : TCardinality); 
+Procedure TEndCondition.Setcardinality(AIndex : Integer; const AValue : TCardinality);
 
 begin
   If (Fcardinality=AValue) then exit;
@@ -952,7 +958,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCardinality.Setpath(AIndex : Integer; const AValue : String); 
+Procedure TCardinality.Setpath(AIndex : Integer; const AValue : String);
 
 begin
   If (Fpath=AValue) then exit;
@@ -962,7 +968,7 @@ end;
 
 
 
-Procedure TCardinality.Setnumber(AIndex : Integer; const AValue : integer); 
+Procedure TCardinality.Setnumber(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fnumber=AValue) then exit;
@@ -986,7 +992,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TWatchVariableRequest.SetnewerThan(AIndex : Integer; const AValue : String); 
+Procedure TWatchVariableRequest.SetnewerThan(AIndex : Integer; const AValue : String);
 
 begin
   If (FnewerThan=AValue) then exit;
@@ -1003,7 +1009,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TListVariablesResponse.Setvariables(AIndex : Integer; const AValue : TListVariablesResponseTypevariablesArray); 
+Procedure TListVariablesResponse.Setvariables(AIndex : Integer; const AValue : TListVariablesResponseTypevariablesArray);
 
 begin
   If (Fvariables=AValue) then exit;
@@ -1013,7 +1019,7 @@ end;
 
 
 
-Procedure TListVariablesResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TListVariablesResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -1024,7 +1030,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TListVariablesResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TListVariablesResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1707,7 +1713,7 @@ begin
   Result[0].Description:='View and manage your data across Google Cloud Platform services';
   Result[1].Name:='https://www.googleapis.com/auth/cloudruntimeconfig';
   Result[1].Description:='Manage your Google Cloud Platform services'' runtime configuration';
-  
+
 end;
 
 Class Function TRuntimeconfigAPI.APINeedsAuth : Boolean;

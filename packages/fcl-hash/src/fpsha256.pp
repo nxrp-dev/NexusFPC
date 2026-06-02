@@ -11,27 +11,59 @@
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 }
+
+// Normally, if an optimized version is available for OS/CPU, that will be used
+// Define to force to use implementation in pascal
+{$ifdef OLD_ASSEMBLER}
+  {$DEFINE SHA256PASCAL}
+{$endif OLD_ASSEMBLER}
+
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fpsha256;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode ObjFPC}{$H+}
 {$MODESWITCH advancedrecords}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
+  TContextBuffer = array[0..7] of UInt32;
+  PContextBuffer = ^TContextBuffer;
+
+  THashBuffer = array[0..63] of Byte;
+
+  TSHA256Base = record
+    Context: TContextBuffer;
+    HashBuffer : THashBuffer;
+    Index: UInt32;
+    TotalLength: Int64;
+    procedure Compress; inline;
+    procedure Final;
+    procedure Init(Use224 : Boolean = False);
+    procedure Update(PBuf: PByte; Size: UInt32); overload;
+    procedure Update(const Value: TBytes); overload;
+{$IFDEF DEBUGSHA}
+  private
+    procedure DumpBuffer;
+    procedure DumpHash;
+{$ENDIF DEBUGSHA}
+  end;
+
   TSHA256Digest = packed array[0..31] of Byte;
   PSHA256Digest = ^TSHA256Digest;
   PSHA256 = ^TSHA256;
   TSHA256 = record
-    Context: array[0..7] of UInt32;
+    Base : TSHA256Base;
     Digest: TSHA256Digest;
-    HashBuffer: array[0..63] of Byte;
-    Index: UInt32;
-    TotalLength: Int64;
-    procedure Compress;
     procedure Final;
     procedure Init;
     function IsEqual(const ADigest: TSHA256Digest): Boolean;
@@ -63,34 +95,113 @@ Type
     class function HKDF(const Salt, IKM, Info: TBytes; var Output: TBytes; const DesiredLen: Integer): Boolean; static;
   end;
 
+  TSHA224Digest = packed array[0..27] of Byte;
+  PSHA224Digest = ^TSHA224Digest;
+  PSHA224 = ^TSHA224;
+  TSHA224 = record
+    Base : TSHA256Base;
+    Digest: TSHA224Digest;
+    procedure Final;
+    procedure Init;
+    function IsEqual(const ADigest: TSHA224Digest): Boolean;
+    procedure OutputHexa(out Result: AnsiString);
+    procedure Update(PBuf: PByte; Size: UInt32); overload;
+    procedure Update(const Value: TBytes); overload;
+
+    // Calculate SHA224, return digest as bytes.
+    class procedure DigestBytes(const Value: TBytes; out Result: TBytes) ; static;
+    // Calculate  SHA224, return digest as base64(url) string
+    class procedure DigestBase64(const Value: TBytes; const IsURL: Boolean; out Result: AnsiString); static;
+    // Calculate  SHA224, return digest as HEX encoded string
+    class procedure DigestHexa(const Value: TBytes; out Result: AnsiString); static;
+    // HMAC using SHA224 as hash
+    Class function HMAC(Key: PByte; KeySize: UInt32; Data: PByte; DataSize: UInt32; var aDigest: TSHA224Digest): Boolean; overload; static;
+    class function HMAC(Key: PByte; KeySize: UInt32; Data: PByte; DataSize: UInt32; Data2: PByte; DataSize2: UInt32; Data3: PByte; DataSize3: UInt32; var aDigest: TSHA224Digest): Boolean; overload; static;
+    // Calculate HMacSHA224, return digest as hex string.
+    class function HMACHexa(const Key, Data: TBytes; out SignatureHexa: AnsiString): Boolean; overload; static;
+    // Calculate SHA224 from a stream, return digest.
+    class procedure Stream(aStream: TStream; out aDigest: TSHA224Digest); static; overload;
+    class function Stream(aStream: TStream): TSHA224Digest; static; overload;
+    // Digest Stream, result as HexaDecimal string.
+    class procedure StreamHexa(aStream: TStream; out Result: AnsiString); static; overload;
+    class Function StreamHexa(aStream: TStream): AnsiString; static overload;
+    // Digest Stream, result as Base64-encoded string
+    class procedure StreamBase64(aStream: TStream; isURL : Boolean; out Result: AnsiString); static; overload;
+    class Function StreamBase64(aStream: TStream; isURL : Boolean): AnsiString; static; overload;
+    // HKDF : Derive key of desired length from a salt,input key and info  (RF5869, using HMACSHA224) .
+    class function HKDF(const Salt, IKM, Info: TBytes; var Output: TBytes; const DesiredLen: Integer): Boolean; static;
+  end;
+
+
 Const
   SHA256_DIGEST_SIZE = SizeOf(TSHA256Digest); // 32
+  SHA224_DIGEST_SIZE = SizeOf(TSHA224Digest); // 28
 
 implementation
 
-uses fphashutils;
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.Hash.Utils
+{$if defined(x86_64) or defined(CPU386)},System.CPU{$endif};
+{$ELSE FPC_DOTTEDUNITS}
+uses fphashutils
+{$if defined(x86_64) or defined(CPU386)},cpu{$endif};
+{$ENDIF FPC_DOTTEDUNITS}
+
+procedure sha256PascalCompress(var Context:TContextBuffer; var HashBuffer:THashBuffer; aK: pointer; Mask: pointer); forward;
+
+// Use assembler version if we have a suitable CPU as well
+// Define SHA256PASCAL to force use of original reference code
+{$ifndef SHA256PASCAL}
+  {$if defined(x86_64) or defined(CPU386)}
+     {$define SHA256ASM}
+     {$i sha256x86.inc} //-- assembler implementation for x86 using SHA instruction set
+  {$endif}
+{$endif}
 
 //------------------------------------------------------------------------------
-// SHA256
+// SHA256Base
 //------------------------------------------------------------------------------
 
-procedure TSHA256.Init;
+const
+  Seed256Hash : TContextBuffer = (
+    $6a09e667,
+    $bb67ae85,
+    $3c6ef372,
+    $a54ff53a,
+    $510e527f,
+    $9b05688c,
+    $1f83d9ab,
+    $5be0cd19
+  );
+  Seed224Hash : TContextBuffer = (
+   $c1059ed8,
+   $367cd507,
+   $3070dd17,
+   $f70e5939,
+   $ffc00b31,
+   $68581511,
+   $64f98fa7,
+   $befa4fa4
+  );
+
+procedure TSHA256Base.Init(Use224 : Boolean = False);
+
+var
+  P : PContextBuffer;
+  I : Integer;
+
 begin
   Self.Index := 0;
   Self.TotalLength := 0;
   FillChar(Self.HashBuffer, Sizeof(Self.HashBuffer), 0);
-  Self.Context[0] := $6a09e667;
-  Self.Context[1] := $bb67ae85;
-  Self.Context[2] := $3c6ef372;
-  Self.Context[3] := $a54ff53a;
-  Self.Context[4] := $510e527f;
-  Self.Context[5] := $9b05688c;
-  Self.Context[6] := $1f83d9ab;
-  Self.Context[7] := $5be0cd19;
+  if Use224 then
+    P:=@Seed224Hash
+  else
+    P:=@Seed256Hash;
+  For I:=0 to 7 do
+    Context[i]:=P^[i];
 end;
 
-procedure TSHA256.Compress;
-// Actual hashing function
 const
   K: array[0..63] of UInt32 = (
    $428a2f98, $71374491, $b5c0fbcf, $e9b5dba5, $3956c25b, $59f111f1,
@@ -104,6 +215,13 @@ const
    $19a4c116, $1e376c08, $2748774c, $34b0bcb5, $391c0cb3, $4ed8aa4a,
    $5b9cca4f, $682e6ff3, $748f82ee, $78a5636f, $84c87814, $8cc70208,
    $90befffa, $a4506ceb, $bef9a3f7, $c67178f2);
+
+{$ifdef SHA256ASM}
+  Mask: record a, b: qword end = (a:$0405060700010203;b:$0c0d0e0f08090a0b);
+{$endif}
+
+procedure sha256PascalCompress(var Context:TContextBuffer;var HashBuffer:THashBuffer; aK:pointer; Mask:pointer);
+// Actual hashing function
 Type
   TBuf64 =  array[0..63] of UInt32;
 var
@@ -117,14 +235,22 @@ begin
   Move(HashBuffer, W, Sizeof(HashBuffer));
   for I := 0 to 15 do
     W[I] := SwapEndian(W[I]);
+
+  A := Context[0]; B := Context[1]; C := Context[2]; D := Context[3]; E := Context[4]; F := Context[5];  G := Context[6];  H := Context[7];
+  for I := 0 to 15 do
+  begin
+    t1 := H+(((E shr 6) or (E shl 26)) xor ((E shr 11) or (E shl 21)) xor ((E shr 25) or (E shl 7)))+((E and F) xor (not E and G))+K[I]+W[I];
+    t2 := (((A shr 2) or (A shl 30)) xor ((A shr 13) or (A shl 19)) xor ((A shr 22) xor (A shl 10)))+((A and B) xor (A and C) xor (B and C));
+    H := G; G := F; F := E; E := D+t1;
+    D := C; C := B; B := A; A := t1+t2;
+  end;
+
   for I := 16 to 63 do
+  begin
     W[I] := (((W[I-2] shr 17) or(W[I-2] shl 15)) xor ((W[I-2] shr 19) or (W[I-2] shl 13))
       xor (W[I-2] shr 10))+W[I-7]+(((W[I-15] shr 7) or (W[I-15] shl 25))
       xor ((W[I-15] shr 18) or (W[I-15] shl 14)) xor (W[I-15] shr 3))+W[I-16];
-  A := Context[0]; B := Context[1]; C := Context[2]; D := Context[3]; E := Context[4]; F := Context[5];  G := Context[6];  H := Context[7];
 
-  for I := 0 to High(W) do
-  begin
     t1 := H+(((E shr 6) or (E shl 26)) xor ((E shr 11) or (E shl 21)) xor ((E shr 25) or (E shl 7)))+((E and F) xor (not E and G))+K[I]+W[I];
     t2 := (((A shr 2) or (A shl 30)) xor ((A shr 13) or (A shl 19)) xor ((A shr 22) xor (A shl 10)))+((A and B) xor (A and C) xor (B and C));
     H := G; G := F; F := E; E := D+t1;
@@ -141,6 +267,15 @@ begin
   Inc(Context[7], H);
 end;
 
+procedure TSHA256Base.Compress;
+begin
+{$ifdef SHA256ASM}
+  sha256AsmCompress(Context,HashBuffer,@K,@Mask);
+{$else}
+  sha256PascalCompress(Context,HashBuffer,@K,nil);
+{$endif}
+end;
+
 type
   TInt64Rec = packed record
     case Integer of
@@ -148,7 +283,7 @@ type
       1: (QuadPart: Int64);
   end;
 
-procedure TSHA256.Final;
+procedure TSHA256Base.Final;
 begin
   // 1. append bit '1' after Buffer
   HashBuffer[Self.Index] := $80;
@@ -172,21 +307,10 @@ begin
   Context[5] := SwapEndian(Context[5]);
   Context[6] := SwapEndian(Context[6]);
   Context[7] := SwapEndian(Context[7]);
-  Move(Context, Digest, Sizeof(Context));
 //  Self.Init; // uncomment if you need security protection against memory inspection
 end;
 
-
-function TSHA256.IsEqual(const ADigest: TSHA256Digest): Boolean;
-var
-  Left, Right: TBytes;
-begin
-  Left:=BytesFromVar(@ADigest, SizeOf(ADigest));
-  Right:=BytesFromVar(@Self.Digest, SizeOf(Self.Digest));
-  Result:=CompareMem(Pointer(Left), Pointer(Right),Length(Left));
-end;
-
-procedure TSHA256.Update(PBuf: PByte; Size: UInt32);
+procedure TSHA256Base.Update(PBuf: PByte; Size: UInt32);
 var
   Len: UInt32;
 begin
@@ -210,10 +334,53 @@ begin
   end;
 end;
 
+procedure TSHA256Base.Update(const Value: TBytes);
+
+begin
+  Update(PByte(Value), System.Length(Value));
+end;
+
+
+//------------------------------------------------------------------------------
+// SHA256
+//------------------------------------------------------------------------------
+
+
+procedure TSHA256.Init;
+begin
+  Base.Init(False);
+end;
+
+
+
+procedure TSHA256.Final;
+
+begin
+  Base.Final;
+  Move(Base.Context,Digest,Sizeof(Digest));
+end;
+
+function TSHA256.IsEqual(const ADigest: TSHA256Digest): Boolean;
+
+var
+  Left, Right: TBytes;
+begin
+  Left:=BytesFromVar(@ADigest, SizeOf(ADigest));
+  Right:=BytesFromVar(@Self.Digest, SizeOf(Self.Digest));
+  Result:=CompareMem(Pointer(Left), Pointer(Right),Length(Left));
+end;
+
+
+procedure TSHA256.Update(PBuf: PByte; Size: UInt32);
+
+begin
+  Base.Update(PBuf,Size);
+end;
+
 
 procedure TSHA256.Update(const Value: TBytes);
 begin
-  Update(PByte(Value), System.Length(Value));
+  Base.Update(Value);
 end;
 
 // @Result[64]
@@ -281,10 +448,6 @@ var
   SHA256, SHA256_: TSHA256;
 begin
   Result:=False;
-  if Key = nil then
-    Exit;
-  if Data = nil then
-    Exit;
   KeyBuffer:=Default(TBuf64);
   SHA256.Init;
   if KeySize > 64 then
@@ -292,7 +455,7 @@ begin
     SHA256.Update(Key, KeySize);
     SHA256.Final;
     System.Move(SHA256.Digest[0], KeyBuffer[0], SizeOf(SHA256.Digest));
-  end else
+  end else if KeySize>0 then
     System.Move(Key^, KeyBuffer[0], KeySize);
   // XOR the key buffer with the iPad value
   for Count := 0 to 63 do
@@ -333,23 +496,17 @@ end;
 
 class procedure TSHA256.Stream(aStream: TStream; out aDigest: TSHA256Digest);
 
-const
-  BUFFER_SIZE = 64*1024;
-
 var
   aLen : LongInt;
-  Buffer: TBytes;
+  Buffer: array[0 .. 64*1024 - 1] of Byte;
   SHA256: TSHA256;
 
 begin
-  Buffer:=Nil;
   SHA256.Init;
-  SetLength(Buffer,BUFFER_SIZE);
   repeat
-     aLen:=aStream.Read(Buffer, BUFFER_SIZE);
-     if aLen = 0 then
-       Break;
-     SHA256.Update(PByte(Buffer),aLen);
+     aLen:=aStream.Read(Buffer, Length(Buffer));
+     if aLen>0 then
+       SHA256.Update(PByte(Buffer),aLen);
   until aLen=0;
   SHA256.Final;
   aDigest:=SHA256.Digest;
@@ -429,6 +586,251 @@ begin
   end;
   SetLength(Output,DesiredLen);
 end;
+
+//------------------------------------------------------------------------------
+// SHA224
+//------------------------------------------------------------------------------
+
+
+procedure TSHA224.Init;
+begin
+  Base.Init(True);
+end;
+
+procedure TSHA224.Final;
+
+begin
+  Base.Final;
+  Move(Base.Context,Digest,Sizeof(Digest));
+end;
+
+function TSHA224.IsEqual(const ADigest: TSHA224Digest): Boolean;
+
+var
+  Left, Right: TBytes;
+begin
+  Left:=BytesFromVar(@ADigest, SizeOf(ADigest));
+  Right:=BytesFromVar(@Self.Digest, SizeOf(Self.Digest));
+  Result:=CompareMem(Pointer(Left), Pointer(Right),Length(Left));
+end;
+
+
+procedure TSHA224.Update(PBuf: PByte; Size: UInt32);
+
+begin
+  Base.Update(PBuf,Size);
+end;
+
+
+procedure TSHA224.Update(const Value: TBytes);
+begin
+  Base.Update(Value);
+end;
+
+// @Result[64]
+// 'abc' -> 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad'
+procedure TSHA224.OutputHexa(out Result: AnsiString);
+
+begin
+  BytesToHexStr(Result,PByte(@Self.Digest),SizeOf(Self.Digest));
+end;
+
+// @Result[32]
+class procedure TSHA224.DigestBytes(const Value: TBytes; out Result: TBytes);
+var
+  lSHA224: TSHA224;
+begin
+  lSHA224.Init;
+  lSHA224.Update(Value);
+  lSHA224.Final;
+  BytesFromVar(Result, @lSHA224.Digest[0], SizeOf(lSHA224.Digest));
+end;
+
+class procedure TSHA224.DigestBase64(const Value: TBytes; const IsURL: Boolean; out Result: AnsiString);
+var
+  S : TBytes;
+  lSHA224: TSHA224;
+begin
+  lSHA224.Init;
+  lSHA224.Update(Value);
+  lSHA224.Final;
+  BytesFromVar(S, @lSHA224.Digest[0], SizeOf(lSHA224.Digest));
+  BytesEncodeBase64(S, Result, IsURL, False, False);
+end;
+
+// @Result[64]
+Class procedure TSHA224.DigestHexa(const Value: TBytes; out Result: AnsiString);
+var
+  SHA224: TSHA224;
+begin
+  SHA224.Init;
+  SHA224.Update(Value);
+  SHA224.Final;
+  SHA224.OutputHexa(Result);
+end;
+
+class function TSHA224.HMAC(Key: PByte; KeySize: UInt32; Data: PByte; DataSize: UInt32; var aDigest: TSHA224Digest): Boolean;
+begin
+  Result := HMAC(Key, KeySize, Data, DataSize, nil, 0, nil, 0, aDigest);
+end;
+
+{Generate a SHA224 HMAC (Hashed Message Authentication Code) using the Key and Data
+The SHA224 HMAC algorithm is:
+ SHA224(Key xor oPad, SHA224(Key xor iPad, Data))
+ Where iPad is the byte $36 repeated 64 times
+       oPad is the byte $5c repeated 64 times
+ If Key is more than 64 bytes it will be hashed to Key = SHA224(Key) instead
+ If Key is less than 64 bytes it will be padded with zeros }
+ class function TSHA224.HMAC(Key: PByte; KeySize: UInt32; Data: PByte; DataSize: UInt32; Data2: PByte; DataSize2: UInt32; Data3: PByte; DataSize3: UInt32; var aDigest: TSHA224Digest): Boolean;
+
+Type
+  TBuf64 = array[0..63] of Byte;
+
+var
+  Count: UInt32;
+  KeyBuffer, PadBuffer: TBuf64;
+  SHA224, SHA224_: TSHA224;
+begin
+  Result:=False;
+  KeyBuffer:=Default(TBuf64);
+  SHA224.Init;
+  if KeySize > 64 then
+  begin
+    SHA224.Update(Key, KeySize);
+    SHA224.Final;
+    System.Move(SHA224.Digest[0], KeyBuffer[0], SizeOf(SHA224.Digest));
+  end else if KeySize>0 then
+    System.Move(Key^, KeyBuffer[0], KeySize);
+  // XOR the key buffer with the iPad value
+  for Count := 0 to 63 do
+    PadBuffer[Count] := KeyBuffer[Count] xor $36;
+  SHA224.Init;
+  SHA224.Update(@PadBuffer, SizeOf(PadBuffer));
+  SHA224.Update(Data, DataSize);
+  if Data2 <> nil then
+    SHA224.Update(Data2, DataSize2);
+  if Data3 <> nil then
+    SHA224.Update(Data3, DataSize3);
+  SHA224.Final;
+  // XOR the key buffer with the oPad value
+  for Count := 0 to 63 do
+    PadBuffer[Count] := KeyBuffer[Count] xor $5C;
+  // SHA224 the key buffer and the result of the inner SHA224 (Outer)
+  SHA224_.Init;
+  SHA224_.Update(@PadBuffer, SizeOf(PadBuffer));
+  SHA224_.Update(@SHA224.Digest, SizeOf(SHA224.Digest));
+  SHA224_.Final;
+  System.Move(SHA224_.Digest, aDigest, SizeOf(aDigest));
+  Result:=True;
+end;
+
+// @Result[64]
+class function TSHA224.HMACHexa(const Key, Data: TBytes; out SignatureHexa: AnsiString): Boolean; overload;
+
+var
+  aDigest: TSHA224Digest;
+  S: TBytes;
+begin
+  aDigest:=Default(TSHA224Digest);
+  Result := HMAC(PByte(Key),Length(Key), PByte(Data), Length(Data), aDigest);
+  BytesFromVar(S, @aDigest[0], SizeOf(aDigest));
+  BytesToHexStr(SignatureHexa,S);
+end;
+
+
+class procedure TSHA224.Stream(aStream: TStream; out aDigest: TSHA224Digest);
+
+var
+  aLen : LongInt;
+  Buffer: array[0 .. 64*1024 - 1] of Byte;
+  SHA224: TSHA224;
+
+begin
+  SHA224.Init;
+  repeat
+     aLen:=aStream.Read(Buffer, Length(Buffer));
+     if aLen>0 then
+       SHA224.Update(PByte(Buffer),aLen);
+  until aLen=0;
+  SHA224.Final;
+  aDigest:=SHA224.Digest;
+end;
+
+class function TSHA224.Stream(aStream: TStream): TSHA224Digest;
+
+begin
+  Stream(aStream,Result);
+end;
+
+
+class procedure TSHA224.StreamHexa(aStream: TStream; out Result: AnsiString);
+
+Var
+  B : TBytes;
+  aDigest : TSHA224Digest;
+
+begin
+  Stream(aStream,aDigest);
+  BytesFromVar(B,@aDigest,SizeOf(TSHA224Digest));
+  BytesToHexStr(Result,B);
+end;
+
+class function TSHA224.StreamHexa(aStream: TStream): AnsiString;
+
+begin
+  Result:='';
+  StreamHexa(aStream,Result);
+end;
+
+
+class procedure TSHA224.StreamBase64(aStream: TStream; isURL : Boolean; out Result: AnsiString);
+
+Var
+  B : TBytes;
+  aDigest : TSHA224Digest;
+
+begin
+  Stream(aStream,aDigest);
+  BytesFromVar(B,@aDigest,SizeOf(TSHA224Digest));
+  BytesEncodeBase64(B,Result,isUrl,False,False);
+end;
+
+class Function TSHA224.StreamBase64(aStream: TStream; isURL : Boolean): AnsiString;
+
+begin
+  Result:='';
+  StreamBase64(aStream,isURL,Result);
+end;
+
+class function TSHA224.HKDF(const Salt, IKM, Info: TBytes; var Output: TBytes; const DesiredLen: Integer): Boolean;
+
+var
+  PRK, T: TSHA224Digest;
+  Round: Byte;
+
+begin
+  PRK:=Default(TSHA224Digest);
+  T:=Default(TSHA224Digest);
+  Result := HMAC(PByte(Salt), Length(Salt), PByte(IKM), Length(IKM), PRK);
+  if not Result then
+    Exit;
+  Round := 1;
+  while Length(Output) < DesiredLen do
+  begin
+    if Length(Output) = 0 then
+      Result := HMAC(@PRK, SizeOf(PRK), PByte(Info), Length(Info), @Round, SizeOf(Round), nil, 0, T)
+    else
+      Result := HMAC(@PRK, SizeOf(PRK), @T, SizeOf(T), PByte(Info), Length(Info), @Round, SizeOf(Round), T);
+    if not Result then
+      Exit;
+    Inc(Round);
+    Output:=Concat(OutPut,BytesFromVar(@T,SizeOf(T)));
+    if Length(Output) >= DesiredLen then
+      Break;
+  end;
+  SetLength(Output,DesiredLen);
+end;
+
 
 end.
 

@@ -1,6 +1,6 @@
 {******************************************************************************}
 {                                                                              }
-{ Web Publishing Wizzard Error Codes API interface Unit for Object Pascal      }
+{ Web Publishing Wizard Error Codes API interface Unit for Object Pascal       }
 {                                                                              }
 { Portions created by Microsoft are Copyright (C) 1995-2001 Microsoft          }
 { Corporation. All Rights Reserved.                                            }
@@ -42,7 +42,9 @@
 
 // $Id: JwaWPWizMsg.pas,v 1.7 2007/09/05 11:58:53 dezipaitor Exp $
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaWPWizMsg;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -57,8 +59,13 @@ unit JwaWPWizMsg;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 {$IFNDEF JWA_IMPLEMENTATIONSECTION}
 

@@ -13,15 +13,22 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fpcgcreatedbf;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, Data.CodeGen.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, fpddCodeGen;
-  
+{$ENDIF FPC_DOTTEDUNITS}
+
 Type
 
   { TDDCreateDBFOptions }
@@ -43,7 +50,7 @@ Type
     Property ProcedureName : String Read FProcName Write SetProcName;
     Property TableName : String Read FTableName Write FTableName;
   end;
-  
+
   { TDDCreateDBFGenerator }
 
   TDDCreateDBFGenerator = Class(TDDCustomCodeGenerator)
@@ -67,7 +74,11 @@ Type
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses Data.Db,System.TypInfo;
+{$ELSE FPC_DOTTEDUNITS}
 uses db,typinfo;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { TDDCreateDBFOptions }
 
@@ -136,7 +147,7 @@ Var
   F : TFieldPropDef;
   S : String;
   N : String;
-  
+
 begin
   N:=DBFOptions.Identifier;
   If (DBFoptions.ProcedureName<>'') then

@@ -13,15 +13,22 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fpcgtiopf;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, Data.Db, Data.CodeGen.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, db, fpddcodegen;
-  
+{$ENDIF FPC_DOTTEDUNITS}
+
 TYpe
   TClassOption = (caCreateClass,caConstructor,caDestructor,caCreateList,
                   caListAddMethod,caListItemsProperty,caOverrideRead,
@@ -64,7 +71,7 @@ TYpe
     Property AncestorClass;
     Property TableName : String Read FTableName Write FTableName;
   end;
-  
+
   { TTiOPFCodeGenerator }
 
   TTiOPFCodeGenerator = Class(TDDClassCodeGenerator)
@@ -130,7 +137,7 @@ TYpe
 Const
   SOID = 'OID';              // OID property.
   SDefTableName = 'MYTABLE'; // Default table name.
-  
+
 implementation
 
 Function StripType(const S : String) : string;
@@ -224,7 +231,7 @@ procedure TTiOPFCodeOptions.Assign(ASource: TPersistent);
 
 Var
   OC : TTiOPFCodeOptions;
-  
+
 begin
   If ASource is TTiOPFCodeOptions then
     begin
@@ -480,7 +487,7 @@ end;
 Function TTiOPFCodeGenerator.CreateSQLStatement(V : TVisitorOption) : String;
 
   Function AddToS(Const S,Add : String) : string;
-  
+
   begin
     Result:=S;
     If (Result<>'') then
@@ -495,7 +502,7 @@ Var
 
 begin
   TN:=TiOPFOptions.TableName;
-  If (TN='') then 
+  If (TN='') then
     TN:=SDefTableName;
   S:='';
   VS:='';
@@ -1066,7 +1073,7 @@ procedure TTiOPFCodeGenerator.WriteDeleteVisitor(Strings : TStrings; Const Objec
 Var
   OCN,CS, C,S : String;
   F : TFieldPropDef;
-  
+
 begin
   OCN:=StripType(ObjectClassName);
   CS:=Format('SQLDelete%s',[OCN]);
@@ -1175,10 +1182,10 @@ end;
 
 procedure TTiOPFCodeGenerator.WriteListAddObject(Strings: TStrings;
   const ListClassName, ObjectClassName: String);
-  
+
 Var
   S : String;
-  
+
 begin
    S:=Format('Function %s.Add(AnItem : %s) : Integer;',[ListClassName,ObjectClassName]);
    BeginMethod(Strings,S);

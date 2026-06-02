@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit SdfData;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}
 {$h+}
@@ -34,15 +36,15 @@ Modifications
       Locate was changed to improve speed and some bug fixing too. Thanks for
          asking and testing Marcelo Castro
 16/Dec/01  Version 2.03 (Orlando Arrocha)
-           Fixed some bugs and added some recomentdations. Here is a list:
+           Fixed some bugs and added some recommendations. Here is a list:
       Quotations on the last field was not removed properly. Special thanks to
          Daniel Nakasone for helping with the solution.
       Appending first record to empty files was failing. Thanks again Daniel
          Nakasone for the report
       GetFieldData now trims the trailing spaces of the field, so users doesn't
-         needs to do it by themselves anymore. Thanks for the recomendation
+         needs to do it by themselves anymore. Thanks for the recommendation
          Juergen Gehrke.
-      FieldDefs is now available from the designer. Recomended by Leslie Drewery.
+      FieldDefs is now available from the designer. Recommended by Leslie Drewery.
                 ****** THANKS TO ALL & KEEP SENDING RECOMENDATIONS *****
 05/Oct/01  Version 2.02 (Ben Hay)
       Locate function : implement the virtual tdataset method "Locate".
@@ -65,7 +67,7 @@ Modifications
       Delimiter property added to TSdfDataSet. No more dependency on CommaText
          methodology -- choose your own delimiter.
       BufToStore/StoreToBuf methods lets you translate data records to and from
-         your propietary storage format.
+         your proprietary storage format.
       TTextDataSet removed dependencies.
       TBaseTextDataSet class removed. // TBaseTextDataSet = TFixedFormatDataSet;
                 ****** THANKS JOHN ******   ***** THANKS DIMMY *****
@@ -123,7 +125,7 @@ How to Install
     or a sub-folder.
  2. Install the TSdfDataSet and TFixedFormatDataSet components by choosing the
     Component | Install Component menu option.
- 3. Select the "Into exisiting package" page of the Install Components dialogue.
+ 3. Select the "Into existing package" page of the Install Components dialogue.
  4. Browse to the folder where you saved this file and select it.
  5. Ensure that the "Package file name" edit box contains $(DELPHI)\DCLUSR??.DPK
     or the one you prefer for DB related objects.
@@ -132,8 +134,13 @@ How to Install
 //-----------------------------------------------------------------------------
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  Data.Db, System.Classes, System.SysUtils, Data.Consts;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   DB, Classes, SysUtils, DBConst;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
 //-----------------------------------------------------------------------------
@@ -275,14 +282,14 @@ type
 //-----------------------------------------------------------------------------
   TSdfDataSet = class(TFixedFormatDataSet)
   private
-    FDelimiter : Char;
+    FDelimiter : AnsiChar;
     FFirstLineAsSchema : Boolean;
     FMultiLine         : Boolean;
     FStripTrailingDelimiters : Boolean;
     procedure DoStripTrailingDelimiters(var S: String);
     procedure SetMultiLine(const Value: Boolean);
     procedure SetFirstLineAsSchema(Value : Boolean);
-    procedure SetDelimiter(Value : Char);
+    procedure SetDelimiter(Value : AnsiChar);
   protected
     procedure InternalInitFieldDefs; override;
     function BufToStore(Buffer: TRecordBuffer): String; override;
@@ -293,7 +300,7 @@ type
   published
     // Whether or not to allow fields containing CR and/or LF (on write only)
     property AllowMultiLine: Boolean read FMultiLine write SetMultiLine;
-    property Delimiter: Char read FDelimiter write SetDelimiter;
+    property Delimiter: AnsiChar read FDelimiter write SetDelimiter;
     property FirstLineAsSchema: Boolean read FFirstLineAsSchema write SetFirstLineAsSchema;
     // Set this to True if you want to strip all last delimiters
     Property StripTrailingDelimiters : Boolean Read FStripTrailingDelimiters Write FStripTrailingDelimiters;
@@ -689,7 +696,7 @@ end;
 function TFixedFormatDataSet.GetFieldData(Field: TField; Buffer: Pointer): Boolean;
 var
   RecBuf,
-  BufEnd: PChar;
+  BufEnd: PAnsiChar;
 begin
   Result := GetActiveRecBuf(TRecordBuffer(RecBuf));
   if Result then
@@ -726,7 +733,7 @@ end;
 
 procedure TFixedFormatDataSet.SetFieldData(Field: TField; Buffer: Pointer);
 var
-  RecBuf: PChar;
+  RecBuf: PAnsiChar;
 begin
   if not (State in dsWriteModes) then
     DatabaseErrorFmt(SNotEditing, [Name], Self);
@@ -908,12 +915,12 @@ end;
 
 function TFixedFormatDataSet.StoreToBuf(Source: String): String;
 var i, Len: integer;
-    Src, Dest: PChar;
+    Src, Dest: PAnsiChar;
 begin
   // moves fixed length fields from Source to record buffer and null-terminates each field
   SetLength(Result, FRecordSize);
-  Src  := PChar(Source);
-  Dest := PChar(Result);
+  Src  := PAnsiChar(Source);
+  Dest := PAnsiChar(Result);
   for i := 0 to FieldDefs.Count - 1 do
   begin
     Len := FieldDefDataSize(FieldDefs[i])-1;
@@ -927,7 +934,7 @@ end;
 
 function TFixedFormatDataSet.BufToStore(Buffer: TRecordBuffer): String;
 var i, Len, SrcLen: integer;
-    Src, Dest: PChar;
+    Src, Dest: PAnsiChar;
 begin
   // calculate fixed length record size
   Len := 0;
@@ -935,8 +942,8 @@ begin
     Inc(Len, FieldDefDataSize(FieldDefs[i])-1);
   SetLength(Result, Len);
 
-  Src  := PChar(Buffer);
-  Dest := PChar(Result);
+  Src  := PAnsiChar(Buffer);
+  Dest := PAnsiChar(Result);
   for i := 0 to FieldDefs.Count - 1 do
   begin
     Len := FieldDefDataSize(FieldDefs[i])-1;
@@ -961,9 +968,9 @@ var
 
   function GetNextLine(const Value: string; out S: string; var P: Integer): Boolean;
   const
-    CR: char = #13;
-    LF: char = #10;
-    DQ: char = '"';
+    CR: AnsiChar = #13;
+    LF: AnsiChar = #10;
+    DQ: AnsiChar = '"';
   var
     L, P1: integer;
     InDQ: boolean;
@@ -1018,12 +1025,12 @@ end;
 
 function TSdfDataSet.ExtractDelimited(const S: String; var Pos: integer): string;
 const
-  CR: char = #13;
-  LF: char = #10;
-  DQ: char = '"';
+  CR: AnsiChar = #13;
+  LF: AnsiChar = #10;
+  DQ: AnsiChar = '"';
 var
   Len, P1: integer;
-  pSrc, pDest: PChar;
+  pSrc, pDest: PAnsiChar;
 begin
   Len := Length(S);
   P1 := Pos;
@@ -1136,13 +1143,13 @@ var
   Pos,
   Len     : Integer; // Actual length of field
   S       : String;
-  Dest    : PChar;
+  Dest    : PAnsiChar;
 begin
   SetLength(Result, FRecordSize);
   FillChar(Result[1], FRecordSize, Ord(' '));
 
   Pos := 1;
-  Dest := PChar(Result);
+  Dest := PAnsiChar(Result);
 
   for i := 0 to FieldDefs.Count - 1 do
   begin
@@ -1163,17 +1170,17 @@ end;
 
 function TSdfDataSet.BufToStore(Buffer: TRecordBuffer): String;
 const
-  CR: char = #13;
-  LF: char = #10;
-  DQ: char = '"';
+  CR: AnsiChar = #13;
+  LF: AnsiChar = #10;
+  DQ: AnsiChar = '"';
 var
-  Src: PChar;
+  Src: PAnsiChar;
   S : String;
   i, MaxLen, Len : Integer;
   QuoteMe: boolean;
 begin
   Result := '';
-  Src := PChar(Buffer);
+  Src := PAnsiChar(Buffer);
   for i := 0 to FieldDefs.Count - 1 do
   begin
     MaxLen := FieldDefDataSize(FieldDefs[i])-1;
@@ -1220,7 +1227,7 @@ begin
     S:=Copy(S,1,P);
 end;
 
-procedure TSdfDataSet.SetDelimiter(Value : Char);
+procedure TSdfDataSet.SetDelimiter(Value : AnsiChar);
 begin
   CheckInactive;
   FDelimiter := Value;

@@ -22,7 +22,7 @@
     (see http://home.arcor.de/armin.diehl/fpcnw for binutils working
     with win32) while not included in fpc-releases.
 
-    The following compiler-swiches are supported for NetWare:
+    The following compiler-switches are supported for NetWare:
     $DESCRIPTION    : NLM-Description, will be displayed at load-time
     $M              : For Stack-Size, Heap-Size will be ignored
                       32K is the accepted minimum
@@ -260,12 +260,12 @@ begin
   with Info do
    begin
      {$ifndef netware}
-     ExeCmd[1]:= FindUtil(utilsprefix+'ld') + ' -Ur -T $RES $STRIP -o $TMPOBJ';
-     ExeCmd[2]:= FindUtil(utilsprefix+'nlmconv') + ' -T$RES';
+     ExeCmd[1]:= 'ld -Ur -T $RES $STRIP -o $TMPOBJ';
+     ExeCmd[2]:= 'nlmconv -T$RES';
      {$else}
-     {for running on netware we need absolute pathes since ld has another working directory}
-     ExeCmd[1]:= FindUtil(utilsprefix+'ld') + ' -Ur -T '+FExpand(outputexedir+Info.ResName)+' $STRIP -o '+Fexpand(outputexedir+tmpLinkFileName);
-     ExeCmd[2]:= FindUtil(utilsprefix+'nlmconv') + ' -T'+FExpand(outputexedir+'n'+Info.ResName);
+     {for running on netware we need absolute paths since ld has another working directory}
+     ExeCmd[1]:= 'ld -Ur -T '+FExpand(outputexedir+Info.ResName)+' $STRIP -o '+Fexpand(outputexedir+tmpLinkFileName);
+     ExeCmd[2]:= 'nlmconv -T'+FExpand(outputexedir+'n'+Info.ResName);
      {$endif}
    end;
 end;
@@ -412,7 +412,7 @@ begin
         if s<>'' then
         begin
           {ad: that's a hack !
-           whith -XX we get the .a files as static libs (in addition to the
+           which -XX we get the .a files as static libs (in addition to the
            imported libraries}
          if (pos ('.a',s) <> 0) OR (pos ('.A', s) <> 0) then
          begin
@@ -559,10 +559,11 @@ begin
   Replace(cmdstr,'$RES',maybequoted(outputexedir+Info.ResName));
   Replace(cmdstr,'$STRIP',StripStr);
   Replace(cmdstr,'$TMPOBJ',maybequoted(outputexedir+tmpLinkFileName));
+  BinStr:=FindUtil(utilsprefix+BinStr);
   Comment (v_debug,'Executing '+BinStr+' '+cmdstr);
   success:=DoExec(BinStr,CmdStr,true,false);
 
-  { Remove ReponseFile }
+  { Remove ResponseFile }
   if (success) and not(cs_link_nolink in current_settings.globalswitches) then
     DeleteFile(outputexedir+Info.ResName);
 
@@ -572,6 +573,7 @@ begin
     NLMConvLinkFile.writetodisk;
     NLMConvLinkFile.Free;
     SplitBinCmd(Info.ExeCmd[2],binstr,cmdstr);
+    BinStr:=FindUtil(utilsprefix+BinStr);
     Replace(cmdstr,'$RES',maybequoted(outputexedir+'n'+Info.ResName));
     Comment (v_debug,'Executing '+BinStr+' '+cmdstr);
     success:=DoExec(BinStr,CmdStr,true,false);
@@ -685,7 +687,7 @@ end;
         end;
 
         { default: nwpre but can be specified via linker options
-          bacuse this has to be the first object, we have to scan
+          because this has to be the first object, we have to scan
           linker options before adding other options }
 
         function findPreludeInFile (fileName : string):string;

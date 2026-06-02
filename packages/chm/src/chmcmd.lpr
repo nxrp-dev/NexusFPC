@@ -22,8 +22,13 @@ program chmcmd;
 
 {$mode objfpc}{$H+}
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  {$ifdef Unix}UnixApi.CThreads, UnixApi.CWString, {$endif} System.Classes, System.SysUtils, Chm.FileWriter, System.GetOpts;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   {$ifdef Unix}cthreads, cwstring, {$endif} Classes, Sysutils, chmfilewriter, GetOpts;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Const
   CHMCMDVersion = {$I %FPCVERSION%};
@@ -106,7 +111,7 @@ var
   alloweddetaillevel : integer = 0;     // show if msg.detaillevel<=allowdetaillevel
   htmlscan           : THtmlScanEnum = Scandefault;
 
-procedure OnError (Project: TChmProject;errorkind:TChmProjectErrorKind;msg:String;detailevel:integer=0);
+procedure OnError (Project: TChmProject;errorkind:TChmProjectErrorKind;msg:rtlString;detailevel:integer=0);
 begin
   if (detailevel<=alloweddetaillevel) or (errorkind < chmnote) then
     if errorkind<>chmnone then
@@ -155,6 +160,7 @@ begin
          end;
        end;
     end;
+//  project.SaveToHHP(changefileext(name,'.hhpsaved'));
   OutStream := TFileStream.Create(Project.OutputFileName, fmCreate);
   Project.WriteChm(OutStream);
   if Project.ScanHtmlContents then
@@ -177,7 +183,7 @@ var
 
 begin
   InitOptions;
-  Writeln(stderr,'chmcmd, a CHM compiler. (c) 2010-2019 Free Pascal core.');
+  Writeln(stderr,'chmcmd, a CHM compiler. (c) 2010-2024 Free Pascal core.');
   Writeln(Stderr);
   repeat
     c:=getlongopts('h',@theopts[1],optionindex);

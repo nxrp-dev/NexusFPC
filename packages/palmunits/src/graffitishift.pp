@@ -10,7 +10,7 @@
  * Release: Palm OS SDK 4.0 (63220)
  *
  * Description:
- *        This file defines Griffiti shift state indicator routines.
+ *        This file defines Graffiti shift state indicator routines.
  *
  * History:
  *    Aug 24, 1995   Created by Art Lamb
@@ -18,11 +18,17 @@
  *
  *****************************************************************************)
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit graffitishift;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses PalmApi.Palmos, PalmApi.Coretraps;
+{$ELSE FPC_DOTTEDUNITS}
 uses palmos, coretraps;
+{$ENDIF FPC_DOTTEDUNITS}
 
 // Graffiti lock flags
 const
@@ -37,7 +43,7 @@ const
   gsiNumLock = Succ(gsiShiftNone);              // numeric lock
   gsiCapsLock = Succ(gsiNumLock);               // capital lock
   gsiShiftPunctuation = Succ(gsiCapsLock);      // punctuation shift
-  gsiShiftExtended = Succ(gsiShiftPunctuation); // extented punctuation shift
+  gsiShiftExtended = Succ(gsiShiftPunctuation); // extended punctuation shift
   gsiShiftUpper = Succ(gsiShiftExtended);       // alpha upper case shift
   gsiShiftLower = Succ(gsiShiftUpper);          // alpha lower case
 

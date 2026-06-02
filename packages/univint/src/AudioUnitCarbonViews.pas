@@ -20,7 +20,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit AudioUnitCarbonViews;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -205,7 +207,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.MacWindows,MacOsApi.HIObject,MacOsApi.QuickdrawTypes,MacOsApi.AUComponent,MacOsApi.Components;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,MacWindows,HIObject,QuickdrawTypes,AUComponent,Components;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 {$ifc TARGET_OS_MAC}
@@ -227,9 +233,9 @@ type
 {!
 	@enum		Carbon view component types and subtypes
 	@constant	kAudioUnitCarbonViewComponentType
-					The four char-code type of a carbon-based view component
+					The four AnsiChar-code type of a carbon-based view component
 	@constant	kAUCarbonViewSubType_Generic
-					The four char-code subtype of a carbon-based view component
+					The four AnsiChar-code subtype of a carbon-based view component
 }
 const
 	kAudioUnitCarbonViewComponentType = FourCharCode('auvw');
@@ -258,7 +264,7 @@ type
 	@typedef	AudioUnitCarbonViewEventListener
 	@abstract	Defines a callback function that is called when certain events occur in an
 				Audio Unit Carbon view, such as mouse-down and up events on a control.
-				
+
 	@param		inUserData
 					A user-defined pointer that was passed to an AudioUnitCarbonViewSetEventListener callback.
 	@param		inView
@@ -279,13 +285,13 @@ type
 {!
 	@function	AudioUnitCarbonViewCreate
 	@abstract	A callback that tells an Audio unit Carbon view to open its user interface (user pane).
-	@discussion	The host application specifies the audio unit which the view is to control. The host 
-				also provides the window, parent control, and rectangle into which the Audio unit 
+	@discussion	The host application specifies the audio unit which the view is to control. The host
+				also provides the window, parent control, and rectangle into which the Audio unit
 				Carbon view component (of type AudioUnitCarbonView) is to create itself.
 
 				The host application is responsible for closing the component (by calling the
 				CloseComponent function) before closing its window.
-				
+
 	@param		inView
 					The view component instance.
 	@param		inAudioUnit
@@ -293,14 +299,14 @@ type
 	@param		inWindow
 					The Carbon window in which the user interface is to be opened.
 	@param		inParentControl
-					The Carbon control into which the user interface is to be embedded. 
+					The Carbon control into which the user interface is to be embedded.
 					(This is typically the window's root control).
 	@param		inLocation
-					The host application's requested location for the view. The view should 
+					The host application's requested location for the view. The view should
 					always create itself at the specified location.
 	@param		inSize
-					The host application's requested size for the view. The view may choose a 
-					different size for itself. The actual dimensions of the view are described 
+					The host application's requested size for the view. The view may choose a
+					different size for itself. The actual dimensions of the view are described
 					by the value of the outControl parameter.
 	@param		outControl
 					The Carbon control which contains the entire user interface for the view.
@@ -314,7 +320,7 @@ function AudioUnitCarbonViewCreate( inView: AudioUnitCarbonView; inAudioUnit: Au
 	@abstract	Add an event listener to the carbon view.
 	@deprecated	in Mac OS X version 10.4
 	@discussion	Use the AUEventListener functions in <AudioToolbox/AudioUnitUtilities.h> instead.
-	
+
 	@param		inView
 					The Carbon view component instance.
 	@param		inCallback

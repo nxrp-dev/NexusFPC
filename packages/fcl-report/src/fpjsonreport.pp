@@ -2,7 +2,7 @@
     This file is part of the Free Component Library.
     Copyright (c) 2017 Michael Van Canneyt, member of the Free Pascal development team
 
-    TFPReport descendent that stores it's design in a JSON structure. 
+    TFPReport descendent that stores it's design in a JSON structure.
     Can be used in an IDE
 
     See the file COPYING.FPC, included in this distribution,
@@ -13,14 +13,21 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fpjsonreport;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, FpReport.Report, FpJson.Data, FpReport.Streamer, FPReport.Data;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, fpreport, fpjson, fpreportstreamer, fpreportdata;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
 

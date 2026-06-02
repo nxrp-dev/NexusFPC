@@ -21,12 +21,19 @@
 {$inline on}
 {$endif FGLINLINE}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fgl;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Types, System.SysUtils, System.SortBase;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   types, sysutils, sortbase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   MaxListSize = Maxint div 16;
@@ -295,7 +302,7 @@ type
       TKeyCompareFunc = function(const Key1, Key2: TKey): Integer;
       TDataCompareFunc = function(const Data1, Data2: TData): Integer;
       PKey = ^TKey;
-// unsed      PData = ^TData;
+// unused      PData = ^TData;
   protected
     var
       FOnKeyCompare: TKeyCompareFunc;
@@ -343,7 +350,7 @@ type
       TKeyCompareFunc = function(const Key1, Key2: TKey): Integer;
       TDataCompareFunc = function(const Data1, Data2: TData): Integer;
       PKey = ^TKey;
-// unsed      PData = ^TData;
+// unused      PData = ^TData;
   protected
     var
       FOnKeyCompare: TKeyCompareFunc;
@@ -393,7 +400,7 @@ type
       TKeyCompareFunc = function(const Key1, Key2: TKey): Integer;
       TDataCompareFunc = function(const Data1, Data2: TData): Integer;
       PKey = ^TKey;
-// unsed      PData = ^TData;
+// unused      PData = ^TData;
   protected
     var
       FOnKeyCompare: TKeyCompareFunc;
@@ -437,8 +444,13 @@ type
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.RtlConsts;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   rtlconsts;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {****************************************************************************
                              TFPSList
@@ -499,7 +511,7 @@ begin
   CheckIndex(Index);
   p:=InternalItems[Index];
   if assigned(p) then
-    DeRef(p);	
+    DeRef(p);
   InternalItems[Index] := Item;
 end;
 
@@ -595,7 +607,7 @@ begin
     there. Otherwise, we could accidentally have there a copy of some item
     on the list, and accidentally Deref it too soon.
     See http://bugs.freepascal.org/view.php?id=20005. }
-  FillChar(InternalItems[FCount]^, (FCapacity+1-FCount) * FItemSize, #0);
+  FillChar(InternalItems[FCount]^, FItemSize, #0);
 end;
 
 procedure TFPSList.DeleteRange(IndexFrom, IndexTo : Integer);
@@ -667,13 +679,21 @@ function TFPSList.Expand: TFPSList;
 var
   IncSize : Longint;
 begin
-  if FCount < FCapacity then exit;
-  IncSize := 4;
-  if FCapacity > 3 then IncSize := IncSize + 4;
-  if FCapacity > 8 then IncSize := IncSize + 8;
-  if FCapacity > 127 then Inc(IncSize, FCapacity shr 2);
-  SetCapacity(FCapacity + IncSize);
   Result := Self;
+  if FCount < FCapacity then
+    exit;
+  if FCapacity > 127 then
+    IncSize:=FCapacity shr 2
+  else if FCapacity > 8 then
+    IncSize := 16
+  else if FCapacity > 3 then
+    IncSize := 8
+  else
+    IncSize := 4;
+  // If we were at max capacity already, force error.
+  If IncSize<=0 then
+    IncSize:=1; // Will trigger error
+  SetCapacity(FCapacity + IncSize);
 end;
 
 function TFPSList.GetFirst: Pointer;
@@ -811,7 +831,7 @@ end;
 
 procedure TFPSList.Sort(Compare: TFPSListCompareFunc);
 begin
-  Sort(Compare, SortBase.DefaultSortingAlgorithm);
+  Sort(Compare, {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SortBase.DefaultSortingAlgorithm);
 end;
 
 type
@@ -841,7 +861,7 @@ begin
   if (R > L) and (L >= 0) then
   begin
     Context.Compare := Compare;
-    SortingAlgorithm := SortBase.DefaultSortingAlgorithm;
+    SortingAlgorithm := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SortBase.DefaultSortingAlgorithm;
     SortingAlgorithm^.ItemListSorter_ContextComparer(FList + FItemSize*L, R-L+1, FItemSize, @TFPSList_Sort_Comparer, @Context);
   end;
 end;
@@ -965,11 +985,7 @@ end;
 
 class function TFPGList.ItemIsManaged: Boolean;
 begin
-{$IFNDEF VER3_0}
   Result:=IsManagedType(T);
-{$ELSE}
-  Result:=True; // Fallback to old behaviour  
-{$ENDIF}
 end;
 
 function TFPGList.GetEnumerator: TFPGListEnumeratorSpec;
@@ -1009,7 +1025,7 @@ procedure TFPGList.AddList(Source: TFPGList);
 
 var
   i: Integer;
-  
+
 begin
   if ItemIsManaged then
     begin

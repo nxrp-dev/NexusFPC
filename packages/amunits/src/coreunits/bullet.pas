@@ -33,11 +33,17 @@
 }
 {$PACKRECORDS 2}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit bullet;
+{$ENDIF FPC_DOTTEDUNITS}
 
 INTERFACE
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses Amiga.Core.Exec, Amiga.Core.Utility;
+{$ELSE FPC_DOTTEDUNITS}
 uses exec, utility;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
 
@@ -94,7 +100,7 @@ const
 {******************************************************************}
 { font specification and inquiry tags }
 
-{ !  tags flagged with an exclaimation mark are valid for
+{ !  tags flagged with an exclamation mark are valid for
  *    specification.
  *  ? tags flagged with a question mark are valid for inquiry
  *
@@ -136,7 +142,7 @@ const
      OT_ShearSin   = (OT_Level0 OR $0a);
      OT_ShearCos   = (OT_Level0 OR $0b);
 
-{ !  OT_Rotate... specifies the Sine and Cosine of the baselin rotation
+{ !  OT_Rotate... specifies the Sine and Cosine of the baseline rotation
  *    angle, as two fixed point binary fractions.  Both must be specified:
  *    first the Sine and then the Cosine.  Setting the sine component
  *    changes the Shear to an undefined value, setting the cosine
@@ -146,10 +152,10 @@ const
      OT_RotateSin  = (OT_Level0 OR $0c);
      OT_RotateCos  = (OT_Level0 OR $0d);
 
-{ !  OT_Embolden... specifies values to algorithimically embolden -- or,
+{ !  OT_Embolden... specifies values to algorithmically embolden -- or,
  *    when negative, lighten -- the glyph.  It is encoded as a fixed point
  *    binary fraction of the em-square.  The X and Y components can be
- *    changed indendently.  For normal characters, set to 0.0, 0.0
+ *    changed independently.  For normal characters, set to 0.0, 0.0
  *    (encoded as $00000000, $00000000).  This is the default value. }
      OT_EmboldenX  = (OT_Level0 OR $0e);
      OT_EmboldenY  = (OT_Level0 OR $0f);
@@ -213,7 +219,7 @@ const
      OT_DesignKernPair = (OT_Level0 OR OT_Indirect OR $23);
 
 {  ? OT_Underlined is an unsigned word which is used to request
- *    algorithimic underlining for the engine when rendering the glyph.
+ *    algorithmic underlining for the engine when rendering the glyph.
  *    Bullet.library currently does not support this tag, though it
  *    may be used by other engines in the future.  The default for
  *    any engine which supports this tag must be OTUL_None.  Engines which
@@ -235,7 +241,7 @@ const
      OUTL_DoubleBroken    =  4;
 
 {  ? OT_StrikeThrough is a boolean which is used to request
- *    algorithimic strike through when rendering the glyph.
+ *    algorithmic strike through when rendering the glyph.
  *    Bullet.library currently does not support this tag, though it
  *    may be used by other engines in the future.  The default for
  *    any engined which supports this tag must be FALSE.  Engines which
@@ -247,7 +253,7 @@ const
 { .otag tags }
 
 { suffix for files in FONTS: that contain these tags }
-     OTSUFFIX     : PChar =  '.otag';
+     OTSUFFIX     : PAnsiChar =  '.otag';
 
 { OT_FileIdent both identifies this file and verifies its size.
  * It is required to be the first tag in the file. }
@@ -371,7 +377,7 @@ const
 VAR BulletBase : pLibrary;
 
 const
-    BULLETNAME : PChar = 'bullet.library';
+    BULLETNAME : PAnsiChar = 'bullet.library';
 
 
 PROCEDURE CloseEngine(glyphEngine : pGlyphEngine location 'a0'); syscall BulletBase 036;

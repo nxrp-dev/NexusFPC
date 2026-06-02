@@ -1,13 +1,19 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit googleprediction;
+{$ENDIF FPC_DOTTEDUNITS}
 {$MODE objfpc}
 {$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils, System.Classes, GoogleApi.Service, FpWeb.Rest.Base, GoogleApi.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses sysutils, classes, googleservice, restbase, googlebase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
-  
+
   //Top-level schema types
   TAnalyze = Class;
   TInput = Class;
@@ -50,11 +56,11 @@ type
   TInsertTypeutilityArray = Array of TInsertTypeutilityItem;
   TListTypeitemsArray = Array of TInsert2;
   TOutputTypeoutputMultiArray = Array of TOutputTypeoutputMultiItem;
-  
+
   { --------------------------------------------------------------------
     TAnalyzeTypedataDescriptionTypefeaturesItemTypecategoricalTypevaluesItem
     --------------------------------------------------------------------}
-  
+
   TAnalyzeTypedataDescriptionTypefeaturesItemTypecategoricalTypevaluesItem = Class(TGoogleBaseObject)
   Private
     Fcount : String;
@@ -69,11 +75,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TAnalyzeTypedataDescriptionTypefeaturesItemTypecategoricalTypevaluesItemClass = Class of TAnalyzeTypedataDescriptionTypefeaturesItemTypecategoricalTypevaluesItem;
-  
+
   { --------------------------------------------------------------------
     TAnalyzeTypedataDescriptionTypefeaturesItemTypecategorical
     --------------------------------------------------------------------}
-  
+
   TAnalyzeTypedataDescriptionTypefeaturesItemTypecategorical = Class(TGoogleBaseObject)
   Private
     Fcount : String;
@@ -92,11 +98,11 @@ type
     Property values : TAnalyzeTypedataDescriptionTypefeaturesItemTypecategoricalTypevaluesArray Index 8 Read Fvalues Write Setvalues;
   end;
   TAnalyzeTypedataDescriptionTypefeaturesItemTypecategoricalClass = Class of TAnalyzeTypedataDescriptionTypefeaturesItemTypecategorical;
-  
+
   { --------------------------------------------------------------------
     TAnalyzeTypedataDescriptionTypefeaturesItemTypenumeric
     --------------------------------------------------------------------}
-  
+
   TAnalyzeTypedataDescriptionTypefeaturesItemTypenumeric = Class(TGoogleBaseObject)
   Private
     Fcount : String;
@@ -114,11 +120,11 @@ type
     Property variance : String Index 16 Read Fvariance Write Setvariance;
   end;
   TAnalyzeTypedataDescriptionTypefeaturesItemTypenumericClass = Class of TAnalyzeTypedataDescriptionTypefeaturesItemTypenumeric;
-  
+
   { --------------------------------------------------------------------
     TAnalyzeTypedataDescriptionTypefeaturesItemTypetext
     --------------------------------------------------------------------}
-  
+
   TAnalyzeTypedataDescriptionTypefeaturesItemTypetext = Class(TGoogleBaseObject)
   Private
     Fcount : String;
@@ -130,11 +136,11 @@ type
     Property count : String Index 0 Read Fcount Write Setcount;
   end;
   TAnalyzeTypedataDescriptionTypefeaturesItemTypetextClass = Class of TAnalyzeTypedataDescriptionTypefeaturesItemTypetext;
-  
+
   { --------------------------------------------------------------------
     TAnalyzeTypedataDescriptionTypefeaturesItem
     --------------------------------------------------------------------}
-  
+
   TAnalyzeTypedataDescriptionTypefeaturesItem = Class(TGoogleBaseObject)
   Private
     Fcategorical : TAnalyzeTypedataDescriptionTypefeaturesItemTypecategorical;
@@ -155,11 +161,11 @@ type
     Property text : TAnalyzeTypedataDescriptionTypefeaturesItemTypetext Index 24 Read Ftext Write Settext;
   end;
   TAnalyzeTypedataDescriptionTypefeaturesItemClass = Class of TAnalyzeTypedataDescriptionTypefeaturesItem;
-  
+
   { --------------------------------------------------------------------
     TAnalyzeTypedataDescriptionTypeoutputFeatureTypenumeric
     --------------------------------------------------------------------}
-  
+
   TAnalyzeTypedataDescriptionTypeoutputFeatureTypenumeric = Class(TGoogleBaseObject)
   Private
     Fcount : String;
@@ -177,11 +183,11 @@ type
     Property variance : String Index 16 Read Fvariance Write Setvariance;
   end;
   TAnalyzeTypedataDescriptionTypeoutputFeatureTypenumericClass = Class of TAnalyzeTypedataDescriptionTypeoutputFeatureTypenumeric;
-  
+
   { --------------------------------------------------------------------
     TAnalyzeTypedataDescriptionTypeoutputFeatureTypetextItem
     --------------------------------------------------------------------}
-  
+
   TAnalyzeTypedataDescriptionTypeoutputFeatureTypetextItem = Class(TGoogleBaseObject)
   Private
     Fcount : String;
@@ -196,11 +202,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TAnalyzeTypedataDescriptionTypeoutputFeatureTypetextItemClass = Class of TAnalyzeTypedataDescriptionTypeoutputFeatureTypetextItem;
-  
+
   { --------------------------------------------------------------------
     TAnalyzeTypedataDescriptionTypeoutputFeature
     --------------------------------------------------------------------}
-  
+
   TAnalyzeTypedataDescriptionTypeoutputFeature = Class(TGoogleBaseObject)
   Private
     Fnumeric : TAnalyzeTypedataDescriptionTypeoutputFeatureTypenumeric;
@@ -219,11 +225,11 @@ type
     Property text : TAnalyzeTypedataDescriptionTypeoutputFeatureTypetextArray Index 8 Read Ftext Write Settext;
   end;
   TAnalyzeTypedataDescriptionTypeoutputFeatureClass = Class of TAnalyzeTypedataDescriptionTypeoutputFeature;
-  
+
   { --------------------------------------------------------------------
     TAnalyzeTypedataDescription
     --------------------------------------------------------------------}
-  
+
   TAnalyzeTypedataDescription = Class(TGoogleBaseObject)
   Private
     Ffeatures : TAnalyzeTypedataDescriptionTypefeaturesArray;
@@ -242,11 +248,11 @@ type
     Property outputFeature : TAnalyzeTypedataDescriptionTypeoutputFeature Index 8 Read FoutputFeature Write SetoutputFeature;
   end;
   TAnalyzeTypedataDescriptionClass = Class of TAnalyzeTypedataDescription;
-  
+
   { --------------------------------------------------------------------
     TAnalyzeTypeerrorsItem
     --------------------------------------------------------------------}
-  
+
   TAnalyzeTypeerrorsItem = Class(TGoogleBaseObject)
   Private
   Protected
@@ -256,11 +262,11 @@ type
   Published
   end;
   TAnalyzeTypeerrorsItemClass = Class of TAnalyzeTypeerrorsItem;
-  
+
   { --------------------------------------------------------------------
     TAnalyzeTypemodelDescriptionTypeconfusionMatrix
     --------------------------------------------------------------------}
-  
+
   TAnalyzeTypemodelDescriptionTypeconfusionMatrix = Class(TGoogleBaseObject)
   Private
   Protected
@@ -270,11 +276,11 @@ type
   Published
   end;
   TAnalyzeTypemodelDescriptionTypeconfusionMatrixClass = Class of TAnalyzeTypemodelDescriptionTypeconfusionMatrix;
-  
+
   { --------------------------------------------------------------------
     TAnalyzeTypemodelDescriptionTypeconfusionMatrixRowTotals
     --------------------------------------------------------------------}
-  
+
   TAnalyzeTypemodelDescriptionTypeconfusionMatrixRowTotals = Class(TGoogleBaseObject)
   Private
   Protected
@@ -284,11 +290,11 @@ type
   Published
   end;
   TAnalyzeTypemodelDescriptionTypeconfusionMatrixRowTotalsClass = Class of TAnalyzeTypemodelDescriptionTypeconfusionMatrixRowTotals;
-  
+
   { --------------------------------------------------------------------
     TAnalyzeTypemodelDescription
     --------------------------------------------------------------------}
-  
+
   TAnalyzeTypemodelDescription = Class(TGoogleBaseObject)
   Private
     FconfusionMatrix : TAnalyzeTypemodelDescriptionTypeconfusionMatrix;
@@ -306,11 +312,11 @@ type
     Property modelinfo : TInsert2 Index 16 Read Fmodelinfo Write Setmodelinfo;
   end;
   TAnalyzeTypemodelDescriptionClass = Class of TAnalyzeTypemodelDescription;
-  
+
   { --------------------------------------------------------------------
     TAnalyze
     --------------------------------------------------------------------}
-  
+
   TAnalyze = Class(TGoogleBaseObject)
   Private
     FdataDescription : TAnalyzeTypedataDescription;
@@ -341,11 +347,11 @@ type
     Property selfLink : String Index 40 Read FselfLink Write SetselfLink;
   end;
   TAnalyzeClass = Class of TAnalyze;
-  
+
   { --------------------------------------------------------------------
     TInputTypeinput
     --------------------------------------------------------------------}
-  
+
   TInputTypeinput = Class(TGoogleBaseObject)
   Private
     FcsvInstance : TTJSONSchemaArray;
@@ -361,11 +367,11 @@ type
     Property csvInstance : TTJSONSchemaArray Index 0 Read FcsvInstance Write SetcsvInstance;
   end;
   TInputTypeinputClass = Class of TInputTypeinput;
-  
+
   { --------------------------------------------------------------------
     TInput
     --------------------------------------------------------------------}
-  
+
   TInput = Class(TGoogleBaseObject)
   Private
     Finput : TInputTypeinput;
@@ -377,11 +383,11 @@ type
     Property input : TInputTypeinput Index 0 Read Finput Write Setinput;
   end;
   TInputClass = Class of TInput;
-  
+
   { --------------------------------------------------------------------
     TInsertTypetrainingInstancesItem
     --------------------------------------------------------------------}
-  
+
   TInsertTypetrainingInstancesItem = Class(TGoogleBaseObject)
   Private
     FcsvInstance : TTJSONSchemaArray;
@@ -400,11 +406,11 @@ type
     Property output : String Index 8 Read Foutput Write Setoutput;
   end;
   TInsertTypetrainingInstancesItemClass = Class of TInsertTypetrainingInstancesItem;
-  
+
   { --------------------------------------------------------------------
     TInsertTypeutilityItem
     --------------------------------------------------------------------}
-  
+
   TInsertTypeutilityItem = Class(TGoogleBaseObject)
   Private
   Protected
@@ -414,11 +420,11 @@ type
   Published
   end;
   TInsertTypeutilityItemClass = Class of TInsertTypeutilityItem;
-  
+
   { --------------------------------------------------------------------
     TInsert
     --------------------------------------------------------------------}
-  
+
   TInsert = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -455,11 +461,11 @@ type
     Property utility : TInsertTypeutilityArray Index 56 Read Futility Write Setutility;
   end;
   TInsertClass = Class of TInsert;
-  
+
   { --------------------------------------------------------------------
     TInsert2TypemodelInfo
     --------------------------------------------------------------------}
-  
+
   TInsert2TypemodelInfo = Class(TGoogleBaseObject)
   Private
     FclassWeightedAccuracy : String;
@@ -486,11 +492,11 @@ type
     Property numberLabels : String Index 40 Read FnumberLabels Write SetnumberLabels;
   end;
   TInsert2TypemodelInfoClass = Class of TInsert2TypemodelInfo;
-  
+
   { --------------------------------------------------------------------
     TInsert2
     --------------------------------------------------------------------}
-  
+
   TInsert2 = Class(TGoogleBaseObject)
   Private
     Fcreated : TDatetime;
@@ -532,11 +538,11 @@ type
     Property trainingStatus : String Index 80 Read FtrainingStatus Write SettrainingStatus;
   end;
   TInsert2Class = Class of TInsert2;
-  
+
   { --------------------------------------------------------------------
     TList
     --------------------------------------------------------------------}
-  
+
   TList = Class(TGoogleBaseObject)
   Private
     Fitems : TListTypeitemsArray;
@@ -561,11 +567,11 @@ type
     Property selfLink : String Index 24 Read FselfLink Write SetselfLink;
   end;
   TListClass = Class of TList;
-  
+
   { --------------------------------------------------------------------
     TOutputTypeoutputMultiItem
     --------------------------------------------------------------------}
-  
+
   TOutputTypeoutputMultiItem = Class(TGoogleBaseObject)
   Private
     F_label : String;
@@ -581,11 +587,11 @@ type
     Property score : String Index 8 Read Fscore Write Setscore;
   end;
   TOutputTypeoutputMultiItemClass = Class of TOutputTypeoutputMultiItem;
-  
+
   { --------------------------------------------------------------------
     TOutput
     --------------------------------------------------------------------}
-  
+
   TOutput = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -616,11 +622,11 @@ type
     Property selfLink : String Index 40 Read FselfLink Write SetselfLink;
   end;
   TOutputClass = Class of TOutput;
-  
+
   { --------------------------------------------------------------------
     TUpdate
     --------------------------------------------------------------------}
-  
+
   TUpdate = Class(TGoogleBaseObject)
   Private
     FcsvInstance : TTJSONSchemaArray;
@@ -639,31 +645,31 @@ type
     Property output : String Index 8 Read Foutput Write Setoutput;
   end;
   TUpdateClass = Class of TUpdate;
-  
+
   { --------------------------------------------------------------------
     THostedmodelsResource
     --------------------------------------------------------------------}
-  
+
   THostedmodelsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
     Class Function DefaultAPI : TGoogleAPIClass; override;
     Function Predict(hostedModelName: string; project: string; aInput : TInput) : TOutput;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TTrainedmodelsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TTrainedmodelsResource, method List
-  
+
   TTrainedmodelsListOptions = Record
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TTrainedmodelsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -677,12 +683,12 @@ type
     Function Predict(id: string; project: string; aInput : TInput) : TOutput;
     Function Update(id: string; project: string; aUpdate : TUpdate) : TInsert2;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TPredictionAPI
     --------------------------------------------------------------------}
-  
+
   TPredictionAPI = Class(TGoogleAPI)
   Private
     FHostedmodelsInstance : THostedmodelsResource;
@@ -729,7 +735,7 @@ implementation
   --------------------------------------------------------------------}
 
 
-Procedure TAnalyzeTypedataDescriptionTypefeaturesItemTypecategoricalTypevaluesItem.Setcount(AIndex : Integer; const AValue : String); 
+Procedure TAnalyzeTypedataDescriptionTypefeaturesItemTypecategoricalTypevaluesItem.Setcount(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcount=AValue) then exit;
@@ -739,7 +745,7 @@ end;
 
 
 
-Procedure TAnalyzeTypedataDescriptionTypefeaturesItemTypecategoricalTypevaluesItem.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TAnalyzeTypedataDescriptionTypefeaturesItemTypecategoricalTypevaluesItem.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -756,7 +762,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAnalyzeTypedataDescriptionTypefeaturesItemTypecategorical.Setcount(AIndex : Integer; const AValue : String); 
+Procedure TAnalyzeTypedataDescriptionTypefeaturesItemTypecategorical.Setcount(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcount=AValue) then exit;
@@ -766,7 +772,7 @@ end;
 
 
 
-Procedure TAnalyzeTypedataDescriptionTypefeaturesItemTypecategorical.Setvalues(AIndex : Integer; const AValue : TAnalyzeTypedataDescriptionTypefeaturesItemTypecategoricalTypevaluesArray); 
+Procedure TAnalyzeTypedataDescriptionTypefeaturesItemTypecategorical.Setvalues(AIndex : Integer; const AValue : TAnalyzeTypedataDescriptionTypefeaturesItemTypecategoricalTypevaluesArray);
 
 begin
   If (Fvalues=AValue) then exit;
@@ -777,7 +783,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAnalyzeTypedataDescriptionTypefeaturesItemTypecategorical.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAnalyzeTypedataDescriptionTypefeaturesItemTypecategorical.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -796,7 +802,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAnalyzeTypedataDescriptionTypefeaturesItemTypenumeric.Setcount(AIndex : Integer; const AValue : String); 
+Procedure TAnalyzeTypedataDescriptionTypefeaturesItemTypenumeric.Setcount(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcount=AValue) then exit;
@@ -806,7 +812,7 @@ end;
 
 
 
-Procedure TAnalyzeTypedataDescriptionTypefeaturesItemTypenumeric.Setmean(AIndex : Integer; const AValue : String); 
+Procedure TAnalyzeTypedataDescriptionTypefeaturesItemTypenumeric.Setmean(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmean=AValue) then exit;
@@ -816,7 +822,7 @@ end;
 
 
 
-Procedure TAnalyzeTypedataDescriptionTypefeaturesItemTypenumeric.Setvariance(AIndex : Integer; const AValue : String); 
+Procedure TAnalyzeTypedataDescriptionTypefeaturesItemTypenumeric.Setvariance(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvariance=AValue) then exit;
@@ -833,7 +839,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAnalyzeTypedataDescriptionTypefeaturesItemTypetext.Setcount(AIndex : Integer; const AValue : String); 
+Procedure TAnalyzeTypedataDescriptionTypefeaturesItemTypetext.Setcount(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcount=AValue) then exit;
@@ -850,7 +856,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAnalyzeTypedataDescriptionTypefeaturesItem.Setcategorical(AIndex : Integer; const AValue : TAnalyzeTypedataDescriptionTypefeaturesItemTypecategorical); 
+Procedure TAnalyzeTypedataDescriptionTypefeaturesItem.Setcategorical(AIndex : Integer; const AValue : TAnalyzeTypedataDescriptionTypefeaturesItemTypecategorical);
 
 begin
   If (Fcategorical=AValue) then exit;
@@ -860,7 +866,7 @@ end;
 
 
 
-Procedure TAnalyzeTypedataDescriptionTypefeaturesItem.Setindex(AIndex : Integer; const AValue : String); 
+Procedure TAnalyzeTypedataDescriptionTypefeaturesItem.Setindex(AIndex : Integer; const AValue : String);
 
 begin
   If (Findex=AValue) then exit;
@@ -870,7 +876,7 @@ end;
 
 
 
-Procedure TAnalyzeTypedataDescriptionTypefeaturesItem.Setnumeric(AIndex : Integer; const AValue : TAnalyzeTypedataDescriptionTypefeaturesItemTypenumeric); 
+Procedure TAnalyzeTypedataDescriptionTypefeaturesItem.Setnumeric(AIndex : Integer; const AValue : TAnalyzeTypedataDescriptionTypefeaturesItemTypenumeric);
 
 begin
   If (Fnumeric=AValue) then exit;
@@ -880,7 +886,7 @@ end;
 
 
 
-Procedure TAnalyzeTypedataDescriptionTypefeaturesItem.Settext(AIndex : Integer; const AValue : TAnalyzeTypedataDescriptionTypefeaturesItemTypetext); 
+Procedure TAnalyzeTypedataDescriptionTypefeaturesItem.Settext(AIndex : Integer; const AValue : TAnalyzeTypedataDescriptionTypefeaturesItemTypetext);
 
 begin
   If (Ftext=AValue) then exit;
@@ -897,7 +903,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAnalyzeTypedataDescriptionTypeoutputFeatureTypenumeric.Setcount(AIndex : Integer; const AValue : String); 
+Procedure TAnalyzeTypedataDescriptionTypeoutputFeatureTypenumeric.Setcount(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcount=AValue) then exit;
@@ -907,7 +913,7 @@ end;
 
 
 
-Procedure TAnalyzeTypedataDescriptionTypeoutputFeatureTypenumeric.Setmean(AIndex : Integer; const AValue : String); 
+Procedure TAnalyzeTypedataDescriptionTypeoutputFeatureTypenumeric.Setmean(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmean=AValue) then exit;
@@ -917,7 +923,7 @@ end;
 
 
 
-Procedure TAnalyzeTypedataDescriptionTypeoutputFeatureTypenumeric.Setvariance(AIndex : Integer; const AValue : String); 
+Procedure TAnalyzeTypedataDescriptionTypeoutputFeatureTypenumeric.Setvariance(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvariance=AValue) then exit;
@@ -934,7 +940,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAnalyzeTypedataDescriptionTypeoutputFeatureTypetextItem.Setcount(AIndex : Integer; const AValue : String); 
+Procedure TAnalyzeTypedataDescriptionTypeoutputFeatureTypetextItem.Setcount(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcount=AValue) then exit;
@@ -944,7 +950,7 @@ end;
 
 
 
-Procedure TAnalyzeTypedataDescriptionTypeoutputFeatureTypetextItem.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TAnalyzeTypedataDescriptionTypeoutputFeatureTypetextItem.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -961,7 +967,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAnalyzeTypedataDescriptionTypeoutputFeature.Setnumeric(AIndex : Integer; const AValue : TAnalyzeTypedataDescriptionTypeoutputFeatureTypenumeric); 
+Procedure TAnalyzeTypedataDescriptionTypeoutputFeature.Setnumeric(AIndex : Integer; const AValue : TAnalyzeTypedataDescriptionTypeoutputFeatureTypenumeric);
 
 begin
   If (Fnumeric=AValue) then exit;
@@ -971,7 +977,7 @@ end;
 
 
 
-Procedure TAnalyzeTypedataDescriptionTypeoutputFeature.Settext(AIndex : Integer; const AValue : TAnalyzeTypedataDescriptionTypeoutputFeatureTypetextArray); 
+Procedure TAnalyzeTypedataDescriptionTypeoutputFeature.Settext(AIndex : Integer; const AValue : TAnalyzeTypedataDescriptionTypeoutputFeatureTypetextArray);
 
 begin
   If (Ftext=AValue) then exit;
@@ -982,7 +988,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAnalyzeTypedataDescriptionTypeoutputFeature.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAnalyzeTypedataDescriptionTypeoutputFeature.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1001,7 +1007,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAnalyzeTypedataDescription.Setfeatures(AIndex : Integer; const AValue : TAnalyzeTypedataDescriptionTypefeaturesArray); 
+Procedure TAnalyzeTypedataDescription.Setfeatures(AIndex : Integer; const AValue : TAnalyzeTypedataDescriptionTypefeaturesArray);
 
 begin
   If (Ffeatures=AValue) then exit;
@@ -1011,7 +1017,7 @@ end;
 
 
 
-Procedure TAnalyzeTypedataDescription.SetoutputFeature(AIndex : Integer; const AValue : TAnalyzeTypedataDescriptionTypeoutputFeature); 
+Procedure TAnalyzeTypedataDescription.SetoutputFeature(AIndex : Integer; const AValue : TAnalyzeTypedataDescriptionTypeoutputFeature);
 
 begin
   If (FoutputFeature=AValue) then exit;
@@ -1022,7 +1028,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAnalyzeTypedataDescription.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAnalyzeTypedataDescription.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1080,7 +1086,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAnalyzeTypemodelDescription.SetconfusionMatrix(AIndex : Integer; const AValue : TAnalyzeTypemodelDescriptionTypeconfusionMatrix); 
+Procedure TAnalyzeTypemodelDescription.SetconfusionMatrix(AIndex : Integer; const AValue : TAnalyzeTypemodelDescriptionTypeconfusionMatrix);
 
 begin
   If (FconfusionMatrix=AValue) then exit;
@@ -1090,7 +1096,7 @@ end;
 
 
 
-Procedure TAnalyzeTypemodelDescription.SetconfusionMatrixRowTotals(AIndex : Integer; const AValue : TAnalyzeTypemodelDescriptionTypeconfusionMatrixRowTotals); 
+Procedure TAnalyzeTypemodelDescription.SetconfusionMatrixRowTotals(AIndex : Integer; const AValue : TAnalyzeTypemodelDescriptionTypeconfusionMatrixRowTotals);
 
 begin
   If (FconfusionMatrixRowTotals=AValue) then exit;
@@ -1100,7 +1106,7 @@ end;
 
 
 
-Procedure TAnalyzeTypemodelDescription.Setmodelinfo(AIndex : Integer; const AValue : TInsert2); 
+Procedure TAnalyzeTypemodelDescription.Setmodelinfo(AIndex : Integer; const AValue : TInsert2);
 
 begin
   If (Fmodelinfo=AValue) then exit;
@@ -1117,7 +1123,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAnalyze.SetdataDescription(AIndex : Integer; const AValue : TAnalyzeTypedataDescription); 
+Procedure TAnalyze.SetdataDescription(AIndex : Integer; const AValue : TAnalyzeTypedataDescription);
 
 begin
   If (FdataDescription=AValue) then exit;
@@ -1127,7 +1133,7 @@ end;
 
 
 
-Procedure TAnalyze.Seterrors(AIndex : Integer; const AValue : TAnalyzeTypeerrorsArray); 
+Procedure TAnalyze.Seterrors(AIndex : Integer; const AValue : TAnalyzeTypeerrorsArray);
 
 begin
   If (Ferrors=AValue) then exit;
@@ -1137,7 +1143,7 @@ end;
 
 
 
-Procedure TAnalyze.Setid(AIndex : Integer; const AValue : String); 
+Procedure TAnalyze.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -1147,7 +1153,7 @@ end;
 
 
 
-Procedure TAnalyze.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAnalyze.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1157,7 +1163,7 @@ end;
 
 
 
-Procedure TAnalyze.SetmodelDescription(AIndex : Integer; const AValue : TAnalyzeTypemodelDescription); 
+Procedure TAnalyze.SetmodelDescription(AIndex : Integer; const AValue : TAnalyzeTypemodelDescription);
 
 begin
   If (FmodelDescription=AValue) then exit;
@@ -1167,7 +1173,7 @@ end;
 
 
 
-Procedure TAnalyze.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TAnalyze.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -1178,7 +1184,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAnalyze.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAnalyze.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1197,7 +1203,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInputTypeinput.SetcsvInstance(AIndex : Integer; const AValue : TTJSONSchemaArray); 
+Procedure TInputTypeinput.SetcsvInstance(AIndex : Integer; const AValue : TTJSONSchemaArray);
 
 begin
   If (FcsvInstance=AValue) then exit;
@@ -1208,7 +1214,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInputTypeinput.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInputTypeinput.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1227,7 +1233,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInput.Setinput(AIndex : Integer; const AValue : TInputTypeinput); 
+Procedure TInput.Setinput(AIndex : Integer; const AValue : TInputTypeinput);
 
 begin
   If (Finput=AValue) then exit;
@@ -1244,7 +1250,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInsertTypetrainingInstancesItem.SetcsvInstance(AIndex : Integer; const AValue : TTJSONSchemaArray); 
+Procedure TInsertTypetrainingInstancesItem.SetcsvInstance(AIndex : Integer; const AValue : TTJSONSchemaArray);
 
 begin
   If (FcsvInstance=AValue) then exit;
@@ -1254,7 +1260,7 @@ end;
 
 
 
-Procedure TInsertTypetrainingInstancesItem.Setoutput(AIndex : Integer; const AValue : String); 
+Procedure TInsertTypetrainingInstancesItem.Setoutput(AIndex : Integer; const AValue : String);
 
 begin
   If (Foutput=AValue) then exit;
@@ -1265,7 +1271,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInsertTypetrainingInstancesItem.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInsertTypetrainingInstancesItem.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1297,7 +1303,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInsert.Setid(AIndex : Integer; const AValue : String); 
+Procedure TInsert.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -1307,7 +1313,7 @@ end;
 
 
 
-Procedure TInsert.SetmodelType(AIndex : Integer; const AValue : String); 
+Procedure TInsert.SetmodelType(AIndex : Integer; const AValue : String);
 
 begin
   If (FmodelType=AValue) then exit;
@@ -1317,7 +1323,7 @@ end;
 
 
 
-Procedure TInsert.SetsourceModel(AIndex : Integer; const AValue : String); 
+Procedure TInsert.SetsourceModel(AIndex : Integer; const AValue : String);
 
 begin
   If (FsourceModel=AValue) then exit;
@@ -1327,7 +1333,7 @@ end;
 
 
 
-Procedure TInsert.SetstorageDataLocation(AIndex : Integer; const AValue : String); 
+Procedure TInsert.SetstorageDataLocation(AIndex : Integer; const AValue : String);
 
 begin
   If (FstorageDataLocation=AValue) then exit;
@@ -1337,7 +1343,7 @@ end;
 
 
 
-Procedure TInsert.SetstoragePMMLLocation(AIndex : Integer; const AValue : String); 
+Procedure TInsert.SetstoragePMMLLocation(AIndex : Integer; const AValue : String);
 
 begin
   If (FstoragePMMLLocation=AValue) then exit;
@@ -1347,7 +1353,7 @@ end;
 
 
 
-Procedure TInsert.SetstoragePMMLModelLocation(AIndex : Integer; const AValue : String); 
+Procedure TInsert.SetstoragePMMLModelLocation(AIndex : Integer; const AValue : String);
 
 begin
   If (FstoragePMMLModelLocation=AValue) then exit;
@@ -1357,7 +1363,7 @@ end;
 
 
 
-Procedure TInsert.SettrainingInstances(AIndex : Integer; const AValue : TInsertTypetrainingInstancesArray); 
+Procedure TInsert.SettrainingInstances(AIndex : Integer; const AValue : TInsertTypetrainingInstancesArray);
 
 begin
   If (FtrainingInstances=AValue) then exit;
@@ -1367,7 +1373,7 @@ end;
 
 
 
-Procedure TInsert.Setutility(AIndex : Integer; const AValue : TInsertTypeutilityArray); 
+Procedure TInsert.Setutility(AIndex : Integer; const AValue : TInsertTypeutilityArray);
 
 begin
   If (Futility=AValue) then exit;
@@ -1378,7 +1384,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInsert.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInsert.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1398,7 +1404,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInsert2TypemodelInfo.SetclassWeightedAccuracy(AIndex : Integer; const AValue : String); 
+Procedure TInsert2TypemodelInfo.SetclassWeightedAccuracy(AIndex : Integer; const AValue : String);
 
 begin
   If (FclassWeightedAccuracy=AValue) then exit;
@@ -1408,7 +1414,7 @@ end;
 
 
 
-Procedure TInsert2TypemodelInfo.SetclassificationAccuracy(AIndex : Integer; const AValue : String); 
+Procedure TInsert2TypemodelInfo.SetclassificationAccuracy(AIndex : Integer; const AValue : String);
 
 begin
   If (FclassificationAccuracy=AValue) then exit;
@@ -1418,7 +1424,7 @@ end;
 
 
 
-Procedure TInsert2TypemodelInfo.SetmeanSquaredError(AIndex : Integer; const AValue : String); 
+Procedure TInsert2TypemodelInfo.SetmeanSquaredError(AIndex : Integer; const AValue : String);
 
 begin
   If (FmeanSquaredError=AValue) then exit;
@@ -1428,7 +1434,7 @@ end;
 
 
 
-Procedure TInsert2TypemodelInfo.SetmodelType(AIndex : Integer; const AValue : String); 
+Procedure TInsert2TypemodelInfo.SetmodelType(AIndex : Integer; const AValue : String);
 
 begin
   If (FmodelType=AValue) then exit;
@@ -1438,7 +1444,7 @@ end;
 
 
 
-Procedure TInsert2TypemodelInfo.SetnumberInstances(AIndex : Integer; const AValue : String); 
+Procedure TInsert2TypemodelInfo.SetnumberInstances(AIndex : Integer; const AValue : String);
 
 begin
   If (FnumberInstances=AValue) then exit;
@@ -1448,7 +1454,7 @@ end;
 
 
 
-Procedure TInsert2TypemodelInfo.SetnumberLabels(AIndex : Integer; const AValue : String); 
+Procedure TInsert2TypemodelInfo.SetnumberLabels(AIndex : Integer; const AValue : String);
 
 begin
   If (FnumberLabels=AValue) then exit;
@@ -1465,7 +1471,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInsert2.Setcreated(AIndex : Integer; const AValue : TDatetime); 
+Procedure TInsert2.Setcreated(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (Fcreated=AValue) then exit;
@@ -1475,7 +1481,7 @@ end;
 
 
 
-Procedure TInsert2.Setid(AIndex : Integer; const AValue : String); 
+Procedure TInsert2.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -1485,7 +1491,7 @@ end;
 
 
 
-Procedure TInsert2.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TInsert2.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1495,7 +1501,7 @@ end;
 
 
 
-Procedure TInsert2.SetmodelInfo(AIndex : Integer; const AValue : TInsert2TypemodelInfo); 
+Procedure TInsert2.SetmodelInfo(AIndex : Integer; const AValue : TInsert2TypemodelInfo);
 
 begin
   If (FmodelInfo=AValue) then exit;
@@ -1505,7 +1511,7 @@ end;
 
 
 
-Procedure TInsert2.SetmodelType(AIndex : Integer; const AValue : String); 
+Procedure TInsert2.SetmodelType(AIndex : Integer; const AValue : String);
 
 begin
   If (FmodelType=AValue) then exit;
@@ -1515,7 +1521,7 @@ end;
 
 
 
-Procedure TInsert2.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TInsert2.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -1525,7 +1531,7 @@ end;
 
 
 
-Procedure TInsert2.SetstorageDataLocation(AIndex : Integer; const AValue : String); 
+Procedure TInsert2.SetstorageDataLocation(AIndex : Integer; const AValue : String);
 
 begin
   If (FstorageDataLocation=AValue) then exit;
@@ -1535,7 +1541,7 @@ end;
 
 
 
-Procedure TInsert2.SetstoragePMMLLocation(AIndex : Integer; const AValue : String); 
+Procedure TInsert2.SetstoragePMMLLocation(AIndex : Integer; const AValue : String);
 
 begin
   If (FstoragePMMLLocation=AValue) then exit;
@@ -1545,7 +1551,7 @@ end;
 
 
 
-Procedure TInsert2.SetstoragePMMLModelLocation(AIndex : Integer; const AValue : String); 
+Procedure TInsert2.SetstoragePMMLModelLocation(AIndex : Integer; const AValue : String);
 
 begin
   If (FstoragePMMLModelLocation=AValue) then exit;
@@ -1555,7 +1561,7 @@ end;
 
 
 
-Procedure TInsert2.SettrainingComplete(AIndex : Integer; const AValue : TDatetime); 
+Procedure TInsert2.SettrainingComplete(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (FtrainingComplete=AValue) then exit;
@@ -1565,7 +1571,7 @@ end;
 
 
 
-Procedure TInsert2.SettrainingStatus(AIndex : Integer; const AValue : String); 
+Procedure TInsert2.SettrainingStatus(AIndex : Integer; const AValue : String);
 
 begin
   If (FtrainingStatus=AValue) then exit;
@@ -1582,7 +1588,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TList.Setitems(AIndex : Integer; const AValue : TListTypeitemsArray); 
+Procedure TList.Setitems(AIndex : Integer; const AValue : TListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -1592,7 +1598,7 @@ end;
 
 
 
-Procedure TList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1602,7 +1608,7 @@ end;
 
 
 
-Procedure TList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -1612,7 +1618,7 @@ end;
 
 
 
-Procedure TList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -1623,7 +1629,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1642,7 +1648,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOutputTypeoutputMultiItem.Set_label(AIndex : Integer; const AValue : String); 
+Procedure TOutputTypeoutputMultiItem.Set_label(AIndex : Integer; const AValue : String);
 
 begin
   If (F_label=AValue) then exit;
@@ -1652,7 +1658,7 @@ end;
 
 
 
-Procedure TOutputTypeoutputMultiItem.Setscore(AIndex : Integer; const AValue : String); 
+Procedure TOutputTypeoutputMultiItem.Setscore(AIndex : Integer; const AValue : String);
 
 begin
   If (Fscore=AValue) then exit;
@@ -1680,7 +1686,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOutput.Setid(AIndex : Integer; const AValue : String); 
+Procedure TOutput.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -1690,7 +1696,7 @@ end;
 
 
 
-Procedure TOutput.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOutput.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1700,7 +1706,7 @@ end;
 
 
 
-Procedure TOutput.SetoutputLabel(AIndex : Integer; const AValue : String); 
+Procedure TOutput.SetoutputLabel(AIndex : Integer; const AValue : String);
 
 begin
   If (FoutputLabel=AValue) then exit;
@@ -1710,7 +1716,7 @@ end;
 
 
 
-Procedure TOutput.SetoutputMulti(AIndex : Integer; const AValue : TOutputTypeoutputMultiArray); 
+Procedure TOutput.SetoutputMulti(AIndex : Integer; const AValue : TOutputTypeoutputMultiArray);
 
 begin
   If (FoutputMulti=AValue) then exit;
@@ -1720,7 +1726,7 @@ end;
 
 
 
-Procedure TOutput.SetoutputValue(AIndex : Integer; const AValue : String); 
+Procedure TOutput.SetoutputValue(AIndex : Integer; const AValue : String);
 
 begin
   If (FoutputValue=AValue) then exit;
@@ -1730,7 +1736,7 @@ end;
 
 
 
-Procedure TOutput.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TOutput.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -1741,7 +1747,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOutput.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOutput.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1760,7 +1766,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TUpdate.SetcsvInstance(AIndex : Integer; const AValue : TTJSONSchemaArray); 
+Procedure TUpdate.SetcsvInstance(AIndex : Integer; const AValue : TTJSONSchemaArray);
 
 begin
   If (FcsvInstance=AValue) then exit;
@@ -1770,7 +1776,7 @@ end;
 
 
 
-Procedure TUpdate.Setoutput(AIndex : Integer; const AValue : String); 
+Procedure TUpdate.Setoutput(AIndex : Integer; const AValue : String);
 
 begin
   If (Foutput=AValue) then exit;
@@ -1781,7 +1787,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TUpdate.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TUpdate.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2086,7 +2092,7 @@ begin
   Result[3].Description:='Manage your data in Google Cloud Storage';
   Result[4].Name:='https://www.googleapis.com/auth/prediction';
   Result[4].Description:='Manage your data in the Google Prediction API';
-  
+
 end;
 
 Class Function TPredictionAPI.APINeedsAuth : Boolean;

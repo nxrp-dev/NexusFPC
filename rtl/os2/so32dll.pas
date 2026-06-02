@@ -30,9 +30,11 @@
 @lastmod(23 Sep 2002)
 @todo(sys/ioctl.h, sys/ioctlos2.h, sys/itypes.h)
 This is functions from SO32DLL.DLL. These functions allows to use
-protocol-independed sockets. Equal to SYS\SOCKET.H, NERRNO.H, SYS\SYSCTL.H.
+protocol-independent sockets. Equal to SYS\SOCKET.H, NERRNO.H, SYS\SYSCTL.H.
 }
+{$IFNDEF FPC_DOTTEDUNITS}
 unit SO32Dll;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
@@ -316,7 +318,7 @@ const
 
 type
   ctlname=record
-    ctl_name: PChar;      // subsystem name
+    ctl_name: PAnsiChar;      // subsystem name
     ctl_type: Longint;    // type of name
   end;
 
@@ -407,7 +409,7 @@ struct inetcfg_ctl{
 /* Inetversion */
 struct inetvers_ctl {
          float version;
-         char  versionstr[10];           /* Less than 10 chars in version string */
+         AnsiChar  versionstr[10];           /* Less than 10 chars in version string */
 };
 
 #include <sys/cdefs.h>
@@ -509,11 +511,11 @@ type
 
   // Message header for recvmsg and sendmsg calls
   msghdr = record
-    msg_name:       pChar;     // optional address
+    msg_name:       PAnsiChar;     // optional address
     msg_namelen:    Longint;   // size of address
     msg_iov:        ^iovec;    // scatter/gather array
     msg_iovlen:     Longint;   // # elements in msg_iov (max 1024)
-    msg_control:    pChar;     // ancillary data, see below
+    msg_control:    PAnsiChar;     // ancillary data, see below
     msg_controllen: Longint;   // ancillary data buffer len
     msg_flags:      Longint;   // flags on received message
   end;
@@ -591,11 +593,11 @@ type
 type
   // 4.3-compat message header
   omsghdr = record
-    msg_name:         pChar;   // optional address
+    msg_name:         PAnsiChar;   // optional address
     msg_namelen:      Longint; // size of address
     msg_iov:          ^iovec;  // scatter/gather array
     msg_iovlen:       Longint; // # elements in msg_iov
-    msg_accrights:    pChar;   // access rights sent/received
+    msg_accrights:    PAnsiChar;   // access rights sent/received
     msg_accrightslen: Longint;
   end;
 
@@ -1085,7 +1087,7 @@ const
   SIOCSIFSETSIG = (Ord('i') SHL 8) OR 25;
   SIOCSIFCLRSIG = (Ord('i') SHL 8) OR 26;
   SIOCSIFBRD    = (Ord('i') SHL 8) OR 27; { SINGLE-rt bcst. using old # for bkw cmpt }
-  SIOCSIFALLRTB = (Ord('i') SHL 8) OR 63; { added to configure all-route broadcst }
+  SIOCSIFALLRTB = (Ord('i') SHL 8) OR 63; { added to configure all-route broadcast }
 
   SIOCGIFLOAD     =(Ord('i') SHL 8) OR 27;
   SIOCSIFFILTERSRC=(Ord('i') SHL 8) OR 28;
@@ -1121,7 +1123,7 @@ const
 
 
 {$IFDEF SLBOOTP}
-  SIOCGUNIT     = (Ord('i') SHL 8) OR 70;    { Used to retreive unit number on }
+  SIOCGUNIT     = (Ord('i') SHL 8) OR 70;    { Used to retrieve unit number on }
                                              { serial interface }
 {$ENDIF}
 
@@ -1205,7 +1207,7 @@ function  getinetversion(var version):Longint; cdecl;
 function  sock_errno:Longint; cdecl;
 
 { print last err string + str if not NIL }
-procedure psock_errno(var str:PChar); cdecl;
+procedure psock_errno(var str:PAnsiChar); cdecl;
 
 
 { * sockets creation / close funcs }
@@ -1266,7 +1268,7 @@ function  sendto(sock:Longint; var buf; buf_len,flags:Longint; var s_addr:sockad
 function  readv(sock:Longint; var iov:iovec; iov_count:Longint):LONGINT; cdecl;
 
 { write data from iov_count number of buffers iov.
-  ! return N of writed bytes, or -1 }
+  ! return N of written bytes, or -1 }
 function  writev(sock:Longint; var iov:iovec; iov_count:Longint):LONGINT; cdecl;
 
 { read data + control info from socket
@@ -1274,7 +1276,7 @@ function  writev(sock:Longint; var iov:iovec; iov_count:Longint):LONGINT; cdecl;
 function  recvmsg(sock:Longint; var msgbuf:msghdr; flags:Longint):Longint; cdecl;
 
 { send data + control info to socket
-  ! return N of sended bytes, or -1 }
+  ! return N of sent bytes, or -1 }
 function  sendmsg(sock:Longint; var msgbuf:msghdr; flags:Longint):Longint; cdecl;
 
 (***************************************************************************)
@@ -1375,7 +1377,7 @@ function  sock_init:Longint; cdecl; external 'SO32DLL' index 26;
 function  addsockettolist(sock:Longint):Longint; cdecl; external 'SO32DLL' index 27;
 function  removesocketfromlist(sock:Longint):Longint; cdecl; external 'SO32DLL' index 28;
 { entry 29 not used }
-procedure psock_errno(var str:PChar); cdecl; external 'SO32DLL' index 30;
+procedure psock_errno(var str:PAnsiChar); cdecl; external 'SO32DLL' index 30;
 function  getinetversion(var version):Longint; cdecl; external 'SO32DLL' index 31;
 function  select(nfds:Longint;
                  var readfds,writefds,exceptfds:fd_set;
@@ -1425,8 +1427,8 @@ type
 
   { struct for gethostbyname() and gethostbyaddr() }
   hostent = record
-    h_name       :  PChar;       // official name of host
-    h_aliases    :  ^PChar;      // alias list
+    h_name       :  PAnsiChar;       // official name of host
+    h_aliases    :  ^PAnsiChar;      // alias list
     h_addrtype   :  Longint;     // host address type
     h_length     :  Longint;     // length of address
     h_addr_list  :  ^PLongint;   // list of addresses from name server
@@ -1444,7 +1446,7 @@ const
   NETDB_INTERNAL  = -1;       // see errno
   NETDB_SUCCESS   =  0;       // no problem
   HOST_NOT_FOUND  =  1;       // Authoritative Answer Host not found
-  TRY_AGAIN       =  2;       // Non-Authoritive Host not found, or SERVERFAIL
+  TRY_AGAIN       =  2;       // Non-Authoritative Host not found, or SERVERFAIL
   NO_RECOVERY     =  3;       // Non recoverable errors, FORMERR, REFUSED, NOTIMP
   NO_DATA         =  4;       // Valid name, no data record of requested type
   NO_ADDRESS      =  NO_DATA; // no address, look for MX record
@@ -1453,8 +1455,8 @@ type
 
   { struct for getprotobyname() and getprotobynumber() }
   protoent = record
-    p_name     :  PChar;         // official protocol name
-    p_aliases  :  ^PChar;        // alias list
+    p_name     :  PAnsiChar;         // official protocol name
+    p_aliases  :  ^PAnsiChar;        // alias list
     p_proto    :  Longint;       // protocol #
   end;
 
@@ -1464,10 +1466,10 @@ type
 
   { struct for getservbyname() and getservbyport() }
   servent = record
-    s_name     :  PChar;         // official service name
-    s_aliases  :  ^PChar;        // alias list
+    s_name     :  PAnsiChar;         // official service name
+    s_aliases  :  ^PAnsiChar;        // alias list
     s_port     :  Longint;       // port # (need ntohl() !!)
-    s_proto    :  PChar;         // protocol to use
+    s_proto    :  PAnsiChar;         // protocol to use
   end;
 
   pservent = ^servent;
@@ -1533,7 +1535,7 @@ type
 * remainder may be interface specific.
 }
   ifreq = record
-     ifr_name           :  array[0..IFNAMSIZ-1] of Char;
+     ifr_name           :  array[0..IFNAMSIZ-1] of AnsiChar;
      case Byte of
      0: (ifr_addr       :  sockaddr);  // address
      1: (ifr_dstaddr    :  sockaddr);  // other end of p-to-p link
@@ -1654,7 +1656,7 @@ const
   IP_ADD_MEMBERSHIP     = 5;   // ip_mreq; add an IP group membership
   IP_DROP_MEMBERSHIP    = 6;   // ip_mreq; drop an IP group membership
   IP_HDRINCL            = 7;   // int; header is included with data
-  IP_TOS                = 8;   // int; IP type of service and preced.
+  IP_TOS                = 8;   // int; IP type of service and precede.
   IP_TTL                = 9;   // int; IP time to live
   IP_RECVOPTS           = 10;  // bool; receive all IP opts w/dgram
   IP_RECVRETOPTS        = 11;  // bool; receive IP opts for response

@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit matrix;
+{$ENDIF FPC_DOTTEDUNITS}
 {
     This file is part of the Free Pascal run time library.
     Copyright (c) 2004 by Daniel Mantione
@@ -527,7 +529,7 @@ operator := (const v:Tmatrix4_double) result:Tmatrix4_extended;
 operator := (const v:Tmatrix4_extended) result:Tmatrix4_single;
 operator := (const v:Tmatrix4_extended) result:Tmatrix4_double;
 
-{Matrix to matrix operatons.}
+{Matrix to matrix operations.}
 operator + (const m1,m2:Tmatrix2_single) result:Tmatrix2_single;
 operator + (const m1,m2:Tmatrix2_double) result:Tmatrix2_double;
 operator + (const m1,m2:Tmatrix2_extended) result:Tmatrix2_extended;

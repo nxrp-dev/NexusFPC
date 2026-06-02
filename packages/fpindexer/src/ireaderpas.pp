@@ -3,7 +3,7 @@
     Copyright (c) 2012 by the Free Pascal development team
 
     Pascal text reader
-    
+
     See the file COPYING.FPC, included in this distribution,
     for details about the copyright.
 
@@ -12,14 +12,21 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit IReaderPAS;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, FpIndexer.Indexer, FpIndexer.Reader.Txt;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, fpIndexer, IReaderTXT;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
 

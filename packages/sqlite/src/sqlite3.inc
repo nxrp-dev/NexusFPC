@@ -11,6 +11,19 @@
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.CTypes,
+{$ifdef LOAD_DYNAMICALLY}
+  System.SysUtils, System.DynLibs;
+{$else}
+  System.DynLibs;
+
+  {$ifdef darwin}
+    {$linklib sqlite3}
+  {$endif}
+{$endif}
+{$ELSE FPC_DOTTEDUNITS}
 uses
   ctypes,
 {$ifdef LOAD_DYNAMICALLY}
@@ -22,6 +35,7 @@ uses
     {$linklib sqlite3}
   {$endif}
 {$endif}
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
 {$IFDEF WINDOWS}
@@ -40,7 +54,7 @@ const
   Header converted from Sqlite version 3.14.2
 }
 
-//SQLITE_EXTERN const char sqlite3_version[];
+//SQLITE_EXTERN const AnsiChar sqlite3_version[];
 {$IFDEF S}function{$ELSE}var{$ENDIF}sqlite3_libversion{$IFDEF D}: function{$ENDIF}(): pansichar; cdecl;{$IFDEF S}external Sqlite3Lib;{$ENDIF}
 {$IFDEF S}function{$ELSE}var{$ENDIF}sqlite3_libversion_number{$IFDEF D}: function{$ENDIF}(): cint; cdecl;{$IFDEF S}external Sqlite3Lib;{$ENDIF}
 function sqlite3_version(): pansichar;
@@ -52,14 +66,14 @@ type
   psqlite3 = ^_sqlite3;
   _sqlite3 = record end;
 
-  
+
 type
   sqlite3_destructor_type = procedure(user: pointer); cdecl;
 
 const
   SQLITE_STATIC      = sqlite3_destructor_type(nil);
   SQLITE_TRANSIENT   = pointer(-1); //sqlite3_destructor_type(-1);
-  
+
 
 type
   psqlite_int64 = ^sqlite_int64;
@@ -82,7 +96,7 @@ type
 
 {$IFDEF S}function{$ELSE}var{$ENDIF}sqlite3_exec{$IFDEF D}: function{$ENDIF}(
   db: psqlite3;                              (* An open database *)
-  sql: pansichar;                            (* SQL to be evaluted *)
+  sql: pansichar;                            (* SQL to be evaluated *)
   cb: sqlite3_callback;                      (* Callback function *)
   user: pointer;                             (* 1st argument to callback *)
   errmsg: ppansichar                         (* Error msg written here *)
@@ -316,10 +330,10 @@ type
     DlSym        : function(vfs: psqlite3_vfs; addr: pointer; zSymbol: pansichar): pointer; cdecl;
     DlClose      : procedure(vfs: psqlite3_vfs; addr: pointer); cdecl;
     Randomness   : function(vfs: psqlite3_vfs; nByte: cint; zOut: pansichar): cint; cdecl;
-    Sleep        : function(vfs: psqlite3_vfs; microseconds: cint): cint; cdecl;    
+    Sleep        : function(vfs: psqlite3_vfs; microseconds: cint): cint; cdecl;
     CurrentTime  : function(vfs: psqlite3_vfs; time: pcdouble): cint; cdecl;
     GetLastError : function(vfs: psqlite3_vfs; code: cint; msg: pansichar): cint; cdecl;
-    CurrentTimeInt64 : function(vfs: psqlite3_vfs; time: psqlite3_int64): cint; cdecl; 	
+    CurrentTimeInt64 : function(vfs: psqlite3_vfs; time: psqlite3_int64): cint; cdecl;
     xSetSystemCall : function(vfs: psqlite3_vfs; zName: pansichar; sqlite3_syscall_ptr : pointer) : cint; cdecl;
     xGetSystemCall : function(vfs: psqlite3_vfs; zName: pansichar) : pointer; cdecl;
     xNextSystemCall : function(vfs: psqlite3_vfs; zName: pansichar) : pansichar; cdecl;
@@ -340,7 +354,7 @@ const
   function sqlite3_shutdown : cint;cdecl; external Sqlite3Lib;
   function sqlite3_os_init : cint;cdecl; external Sqlite3Lib;
   function sqlite3_os_end : cint;cdecl; external Sqlite3Lib;
-{$endif}  
+{$endif}
 {$ifdef D}
 Var
   sqlite3_initialize,
@@ -353,7 +367,7 @@ Var
  function sqlite3_config (a : cint): cint;cdecl;varargs; external Sqlite3Lib;
 {$ENDIF}
 {$IFDEF D}
-var 
+var
   sqlite3_config : function (a : cint): cint;cdecl;varargs;
 {$ENDIF}
 
@@ -361,7 +375,7 @@ var
  function sqlite3_db_config (f : psqlite3; op : cint):cint;cdecl;varargs;external Sqlite3Lib;
 {$ENDIF}
 {$IFDEF D}
-var 
+var
  sqlite3_db_config : function (f : psqlite3; op : cint): cint;cdecl;varargs;
 {$ENDIF}
 
@@ -411,7 +425,7 @@ Const
   SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER = 1004;
   SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION = 1005;
 
-  
+
 {$IFDEF S}function{$ELSE}var{$ENDIF}sqlite3_extended_result_codes{$IFDEF D}: function{$ENDIF}(db: psqlite3; onoff: cint): cint; cdecl;{$IFDEF S}external Sqlite3Lib;{$ENDIF}
 {$IFDEF S}function{$ELSE}var{$ENDIF}sqlite3_last_insert_rowid{$IFDEF D}: function{$ENDIF}(db: psqlite3): sqlite3_int64; cdecl;{$IFDEF S}external Sqlite3Lib;{$ENDIF}
 {$IFDEF S}function{$ELSE}var{$ENDIF}sqlite3_changes{$IFDEF D}: function{$ENDIF}(db: psqlite3): cint; cdecl;{$IFDEF S}external Sqlite3Lib;{$ENDIF}
@@ -435,9 +449,9 @@ type
 ): cint; cdecl;{$IFDEF S}external Sqlite3Lib;{$ENDIF}
 
 {$IFDEF S}procedure{$ELSE}var{$ENDIF}sqlite3_free_table{$IFDEF D}: procedure{$ENDIF}(result: ppansichar); cdecl;{$IFDEF S}external Sqlite3Lib;{$ENDIF}
-//char *sqlite3_mprintf(const char*,...);
-//char *sqlite3_vmprintf(const char*, va_list);
-//char *sqlite3_snprintf(int,char*,const char*, ...);
+//AnsiChar *sqlite3_mprintf(const AnsiChar*,...);
+//AnsiChar *sqlite3_vmprintf(const AnsiChar*, va_list);
+//AnsiChar *sqlite3_snprintf(int,AnsiChar*,const AnsiChar*, ...);
 
 {$IFDEF S}function{$ELSE}var{$ENDIF}sqlite3_malloc{$IFDEF D}: function{$ENDIF}(size: cint): pointer;cdecl;{$IFDEF S}external Sqlite3Lib;{$ENDIF}
 {$IFDEF S}function{$ELSE}var{$ENDIF}sqlite3_malloc64{$IFDEF D}: function{$ENDIF}(size: sqlite3_uint64): pointer;cdecl;{$IFDEF S}external Sqlite3Lib;{$ENDIF}
@@ -667,7 +681,7 @@ type
   xStep = procedure(ctx: psqlite3_context; N: cint; V: ppsqlite3_value); cdecl;
   xFinal = procedure(ctx: psqlite3_context); cdecl;
   xDestroy = sqlite3_destructor_type;
-  
+
 {$IFDEF S}function{$ELSE}var{$ENDIF}sqlite3_create_function{$IFDEF D}: function{$ENDIF}(
   db: psqlite3;
   zFunctionName: pansichar;
@@ -845,7 +859,7 @@ var
 {$IFDEF S}function{$ELSE}var{$ENDIF}sqlite3_db_filename{$IFDEF D}: function{$ENDIF}(db: psqlite3; zDbName: pansichar): pansichar; cdecl;{$IFDEF S}external Sqlite3Lib;{$ENDIF}
 {$IFDEF S}function{$ELSE}var{$ENDIF}sqlite3_db_readonly{$IFDEF D}: function{$ENDIF}(db: psqlite3; zDbName: pansichar): cint; cdecl;{$IFDEF S}external Sqlite3Lib;{$ENDIF}
 {$IFDEF S}function{$ELSE}var{$ENDIF}sqlite3_next_stmt{$IFDEF D}: function{$ENDIF}(db: psqlite3;stmt: psqlite3_stmt):psqlite3_stmt;cdecl;{$IFDEF S}external Sqlite3Lib;{$ENDIF}
- 
+
 type
   commit_callback = function(user: pointer): cint; cdecl;
 
@@ -860,7 +874,7 @@ type
 {$IFDEF S}function{$ELSE}var{$ENDIF}sqlite3_db_release_memory{$IFDEF D}: function{$ENDIF}(db: psqlite3): cint; cdecl;{$IFDEF S}external Sqlite3Lib;{$ENDIF}
 {$IFDEF S}procedure{$ELSE}var{$ENDIF}sqlite3_soft_heap_limit{$IFDEF D}: procedure{$ENDIF}(N: cint); cdecl;{$IFDEF S}external Sqlite3Lib;{$ENDIF}
 {$IFDEF S}function{$ELSE}var{$ENDIF}sqlite3_soft_heap_limit64{$IFDEF D}: function{$ENDIF}(N: int64):int64;cdecl;{$IFDEF S}external Sqlite3Lib;{$ENDIF}
- 
+
 {$IFDEF S}function{$ELSE}var{$ENDIF}sqlite3_table_column_metadata{$IFDEF D}: function{$ENDIF}(
   db: psqlite3;             (* Connection handle *)
   zDbName: pansichar;           (* Database name or NULL *)
@@ -891,17 +905,17 @@ type
     iVersion     : cint;
    // xCreate      : function(db: psqlite3; pAux: pointer; argc: cint; ): cint; cdecl;
   cint (*xCreate)(db: psqlite3; void *pAux;
-               cint argc; const char *const*argv;
-               sqlite3_vtab **ppVTab; char**);
+               cint argc; const AnsiChar *const*argv;
+               sqlite3_vtab **ppVTab; AnsiChar**);
   cint (*xConnect)(db: psqlite3; void *pAux;
-               cint argc; const char *const*argv;
-               sqlite3_vtab **ppVTab; char**);
+               cint argc; const AnsiChar *const*argv;
+               sqlite3_vtab **ppVTab; AnsiChar**);
   cint (*xBestIndex)(sqlite3_vtab *pVTab; sqlite3_index_info*);
   cint (*xDisconnect)(sqlite3_vtab *pVTab);
   cint (*xDestroy)(sqlite3_vtab *pVTab);
   cint (*xOpen)(sqlite3_vtab *pVTab; sqlite3_vtab_cursor **ppCursor);
   cint (*xClose)(sqlite3_vtab_cursor*);
-  cint (*xFilter)(sqlite3_vtab_cursor*; cint idxNum; const char *idxStr;
+  cint (*xFilter)(sqlite3_vtab_cursor*; cint idxNum; const AnsiChar *idxStr;
                 cint argc; sqlite3_value **argv);
     xNext         : function(pVCurs: sqlite3_vtab_cursor): cint; cdecl;
     xEof          : function(pVCurs: sqlite3_vtab_cursor): cint; cdecl;
@@ -922,21 +936,21 @@ type
   psqlite3_index_constracint = ^sqlite3_index_constracint;
   sqlite3_index_constracint = record
      iColumn: cint;              (* Column constrained.  -1 for ROWID *)
-     op: char;                   (* Constracint operator *)
-     usable: char;               (* True if this constracint is usable *)
+     op: AnsiChar;                   (* Constracint operator *)
+     usable: AnsiChar;               (* True if this constracint is usable *)
      iTermOffset: cint;          (* Used cinternally - xBestIndex should ignore *)
   end;
 
   psqlite3_index_orderby = ^sqlite3_index_orderby;
   sqlite3_index_orderby = record
      iColumn: cint;              (* Column number *)
-     desc: char;                 (* True for DESC.  False for ASC. *)
+     desc: AnsiChar;                 (* True for DESC.  False for ASC. *)
   end;
 
   psqlite3_index_constracint_usage = ^sqlite3_index_constracint_usage;
   sqlite3_index_constracint_usage = record
     argvIndex: cint;             (* if >0; constracint is part of argv to xFilter *)
-    omit: char;                  (* Do not code a test for this constracint *)
+    omit: AnsiChar;                  (* Do not code a test for this constracint *)
   end;
 
   psqlite3_index_info = ^sqlite3_index_info;
@@ -1136,17 +1150,17 @@ type
 
 Type
   xNotifycb = procedure (Argp: pointer; narg : cint);cdecl;
-  
+
 {$IFDEF S}function{$ELSE}var{$ENDIF} sqlite3_unlock_notify{$IFDEF D}: function{$ENDIF}(pBlocked:psqlite3;xNotify: xNotifycb;arg:pointer):cint;cdecl;{$IFDEF S}external Sqlite3Lib;{$ENDIF}
 {$IFDEF S}procedure{$ELSE}var{$ENDIF} sqlite3_log{$IFDEF D}: procedure{$ENDIF}(iErrCode:cint;fmt : pansichar); cdecl;varargs;{$IFDEF S}external Sqlite3Lib;{$ENDIF}
 
 Type
   wal_hook_cb = function (p : pointer; db :psqlite3; c : pansichar; d: cint): cint;cdecl;
- 
+
 {$IFDEF S}function{$ELSE}var{$ENDIF} sqlite3_wal_hook{$IFDEF D}: function{$ENDIF}(db:psqlite3;cb : wal_hook_cb; p: pointer): pointer;cdecl;{$IFDEF S}external Sqlite3Lib;{$ENDIF}
-{$IFDEF S}function{$ELSE}var{$ENDIF} sqlite3_wal_autocheckpoint{$IFDEF D}: function{$ENDIF}(db:psqlite3;n : cint): cint;cdecl;{$IFDEF S}external Sqlite3Lib;{$ENDIF} 
-{$IFDEF S}function{$ELSE}var{$ENDIF} sqlite3_wal_checkpoint{$IFDEF D}: function{$ENDIF}(db:psqlite3;zDB: pansichar): cint;cdecl;{$IFDEF S}external Sqlite3Lib;{$ENDIF} 
-{$IFDEF S}function{$ELSE}var{$ENDIF} sqlite3_wal_checkpoint_v2{$IFDEF D}: function{$ENDIF}(db:psqlite3;zDB: pansichar;emode:cint;nLog:pcint;nCkpt:pcint): cint;cdecl;{$IFDEF S}external Sqlite3Lib;{$ENDIF} 
+{$IFDEF S}function{$ELSE}var{$ENDIF} sqlite3_wal_autocheckpoint{$IFDEF D}: function{$ENDIF}(db:psqlite3;n : cint): cint;cdecl;{$IFDEF S}external Sqlite3Lib;{$ENDIF}
+{$IFDEF S}function{$ELSE}var{$ENDIF} sqlite3_wal_checkpoint{$IFDEF D}: function{$ENDIF}(db:psqlite3;zDB: pansichar): cint;cdecl;{$IFDEF S}external Sqlite3Lib;{$ENDIF}
+{$IFDEF S}function{$ELSE}var{$ENDIF} sqlite3_wal_checkpoint_v2{$IFDEF D}: function{$ENDIF}(db:psqlite3;zDB: pansichar;emode:cint;nLog:pcint;nCkpt:pcint): cint;cdecl;{$IFDEF S}external Sqlite3Lib;{$ENDIF}
 
 Const
   SQLITE_CHECKPOINT_PASSIVE  = 0;  (* Do as much as possible w/o blocking *)
@@ -1300,6 +1314,9 @@ begin
   pointer(sqlite3_sleep) := GetProcedureAddress(LibHandle,'sqlite3_sleep');
   pointer(sqlite3_get_autocommit) := GetProcedureAddress(LibHandle,'sqlite3_get_autocommit');
   pointer(sqlite3_db_handle) := GetProcedureAddress(LibHandle,'sqlite3_db_handle');
+  pointer(sqlite3_db_filename) := GetProcedureAddress(LibHandle,'sqlite3_db_filename');
+  pointer(sqlite3_db_readonly) := GetProcedureAddress(LibHandle,'sqlite3_db_readonly');
+  pointer(sqlite3_next_stmt) := GetProcedureAddress(LibHandle,'sqlite3_next_stmt');
   pointer(sqlite3_commit_hook) := GetProcedureAddress(LibHandle,'sqlite3_commit_hook');
   pointer(sqlite3_rollback_hook) := GetProcedureAddress(LibHandle,'sqlite3_rollback_hook');
   pointer(sqlite3_update_hook) := GetProcedureAddress(LibHandle,'sqlite3_update_hook');
@@ -1376,7 +1393,7 @@ begin
   pointer(sqlite3_wal_checkpoint) := GetProcedureAddress(LibHandle,'sqlite3_wal_checkpoint');
   pointer(sqlite3_wal_checkpoint_v2) := GetProcedureAddress(LibHandle,'sqlite3_wal_checkpoint_v2');
   pointer(sqlite3_strlike) := GetProcedureAddress(LibHandle,'sqlite3_strlike');
-   
+
   pointer(sqlite3_initialize) := GetProcedureAddress(LibHandle,'sqlite3_initialize');
   pointer(sqlite3_shutdown) := GetProcedureAddress(LibHandle,'sqlite3_shutdown');
   pointer(sqlite3_os_init) := GetProcedureAddress(LibHandle,'sqlite3_os_init');
@@ -1402,7 +1419,7 @@ function TryInitializeSqlite(const LibraryName: UnicodeString): Integer;
 
 Var
   N  : UnicodeString;
-  
+
 begin
   N:=LibraryName;
   if (N='') then

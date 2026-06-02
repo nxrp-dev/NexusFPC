@@ -3,7 +3,9 @@ Register definitions and utility code for STM32F10x - HD density
 
 Created by Jeppe Johansen 2012 - jeppe@j-software.dk
 }
+{$IFNDEF FPC_DOTTEDUNITS}
 unit stm32f10x_hd;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$goto on}
 {$define stm32f10x_hd}
@@ -157,7 +159,7 @@ type
   res5: array[$020..$17F] of byte;
 
   TX: array[0..2] of TCANMailbox;
-  RX: array[0..2] of TCANMailbox;
+  RX: array[0..1] of TCANMailbox;
 
   res6: array[$1D0..$1FF] of byte;
 
@@ -326,7 +328,7 @@ type
   OBR,
   WRPR: longword;
  end;
- 
+
  TFSMC_Bank1 = record
   BCR1 : longword;
   BTR1 : longword;
@@ -560,7 +562,7 @@ interrupt_vectors:
    .long 0
    .long PendingSV_interrupt
    .long SysTick_interrupt
-   
+
    .long Window_watchdog_interrupt
    .long PVD_through_EXTI_Line_detection_interrupt
    .long Tamper_interrupt
@@ -621,7 +623,7 @@ interrupt_vectors:
    .long DMA2_Channel2_global_interrupt
    .long DMA2_Channel3_global_interrupt
    .long DMA2_Channel4_and_DMA2_Channel5_global_interrupts
-   
+
    .weak NMI_interrupt
    .weak Hardfault_interrupt
    .weak MemManage_interrupt
@@ -631,7 +633,7 @@ interrupt_vectors:
    .weak DebugMonitor_interrupt
    .weak PendingSV_interrupt
    .weak SysTick_interrupt
-   
+
    .weak Window_watchdog_interrupt
    .weak PVD_through_EXTI_Line_detection_interrupt
    .weak Tamper_interrupt
@@ -693,7 +695,7 @@ interrupt_vectors:
    .weak DMA2_Channel3_global_interrupt
    .weak DMA2_Channel4_and_DMA2_Channel5_global_interrupts
 
-   
+
    .set NMI_interrupt, HaltProc
    .set Hardfault_interrupt, HaltProc
    .set MemManage_interrupt, HaltProc
@@ -764,7 +766,7 @@ interrupt_vectors:
    .set DMA2_Channel2_global_interrupt, HaltProc
    .set DMA2_Channel3_global_interrupt, HaltProc
    .set DMA2_Channel4_and_DMA2_Channel5_global_interrupts, HaltProc
-   
+
    .text
 end;
 

@@ -17,7 +17,7 @@
 
 {exported functions list = to do,
  * please remove functions done *
- 
+
      Exports
 
        ordinal    name
@@ -80,11 +80,17 @@
             33    Str_SetPtrW
 }
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit commctrl;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses WinApi.Windows;
+{$ELSE FPC_DOTTEDUNITS}
 uses windows;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$calling cdecl}
 
@@ -198,7 +204,7 @@ const
   HDN_ITEMDBLCLICK = HDN_ITEMDBLCLICKW;
   HDN_TRACK = HDN_TRACKW;
   HDN_GETDISPINFO = HDN_GETDISPINFOW;
-     
+
   // MONTHCAL CONTROL
   MONTHCAL_CLASS        = 'SysMonthCal32';
   MCM_FIRST             = $1000;
@@ -314,7 +320,7 @@ const
   DTN_WMKEYDOWNW      = DTN_FIRST + 16;
   DTN_FORMATW         = DTN_FIRST + 17;
   DTN_FORMATQUERYW    = DTN_FIRST + 18;
-  
+
   DTN_USERSTRING     = DTN_USERSTRINGW;
 
   GDTR_MIN            = $0001;
@@ -391,7 +397,7 @@ const
 
   // for FE, single byte character edit
   WC_SBEDIT     = 'sbedit';
-  
+
   // REBAR CONTROL
   REBARCLASSNAME = 'ReBarWindow';
 
@@ -424,7 +430,7 @@ const
   RBBIM_ID = $00000100;
   RBBIM_IDEALSIZE = $00000200;
   RBBIM_LPARAM = $00000400;
-  
+
   RB_DELETEBAND = WM_USER+2;
   RB_GETBARINFO = WM_USER+3;
   RB_SETBARINFO = WM_USER+4;
@@ -558,7 +564,7 @@ type
     pszFormat  : LPCSTR;
     st         : SYSTEMTIME;
     pszDisplay : LPCSTR;
-    szDisplay  : Array[0..63] of CHAR;
+    szDisplay  : Array[0..63] of AnsiChar;
   end;
   NMDATETIMEFORMATA=tagNMDATETIMEFORMATA;
   TNMDATETIMEFORMATA=tagNMDATETIMEFORMATA;
@@ -644,7 +650,7 @@ type
   end;
   PNMCustomDraw = ^TNMCustomDraw;
   TNMCustomDraw = tagNMCUSTOMDRAWINFO;
-  
+
   tagNMLVCUSTOMDRAW = record
     nmcd: TNMCustomDraw;
     clrText: COLORREF;
@@ -653,7 +659,7 @@ type
   end;
   PNMLVCustomDraw = ^TNMLVCustomDraw;
   TNMLVCustomDraw = tagNMLVCUSTOMDRAW;
-  
+
   tagNMLVODSTATECHANGE = record
     hdr: TNMHdr;
     iFrom: longint;
@@ -663,7 +669,7 @@ type
   end;
   PNMLVODStateChange = ^TNMLVODStateChange;
   TNMLVODStateChange = tagNMLVODSTATECHANGE;
-  
+
   tagREBARINFO = record
     cbSize : UINT;
     fMask : UINT;
@@ -671,7 +677,7 @@ type
   end;
   REBARINFO = tagREBARINFO;
   LPREBARINFO = ^tagREBARINFO;
-  
+
   tagREBARBANDINFOW = record
     cbSize : UINT;
     fMask : UINT;
@@ -726,7 +732,7 @@ type
   end;
   RBHITTESTINFO = _RB_HITTESTINFO;
   LPRBHITTESTINFO = ^_RB_HITTESTINFO;
-       
+
   tagCOMMANDBANDSRESTOREINFO = record
     cbSize : UINT;
     wID : UINT;

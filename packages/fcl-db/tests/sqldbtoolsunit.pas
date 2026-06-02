@@ -27,7 +27,7 @@ const
   MySQLConnTypes = [mysql40,mysql41,mysql50,mysql51,mysql55,mysql56,mysql57,mysql80];
   SQLConnTypesNames : Array [TSQLConnType] of String[19] =
         ('MYSQL40','MYSQL41','MYSQL50','MYSQL51','MYSQL55','MYSQL56','MYSQL57','MYSQL80','POSTGRESQL','INTERBASE','ODBC','ORACLE','SQLITE3','MSSQL','SYBASE');
-             
+
   STestNotApplicable = 'This test does not apply to this sqldb connection type';
 
 
@@ -42,6 +42,7 @@ type
     procedure CreateFConnection;
     Function CreateQuery : TSQLQuery;
   protected
+    procedure ClearDatasets; override;
     procedure SetTestUniDirectional(const AValue: boolean); override;
     function GetTestUniDirectional: boolean; override;
     procedure CreateNDatasets; override;
@@ -306,7 +307,7 @@ begin
       end;
       FTransaction.Commit;
       end;
-    ssMySQL:   
+    ssMySQL:
       begin
       FieldtypeDefinitions[ftWord] := 'SMALLINT UNSIGNED';
       // MySQL recognizes BOOLEAN, but as synonym for TINYINT, not true sql boolean datatype
@@ -408,7 +409,7 @@ begin
     for i := 0 to testValuesCount-1 do
       testValues[ftCurrency,i] := QuotedStr(CurrToStr(testCurrencyValues[i]));
 
-  // SQLite does not support fixed length CHAR datatype
+  // SQLite does not support fixed length Char datatype
   if SQLServerType in [ssSQLite] then
     for i := 0 to testValuesCount-1 do
       testValues[ftFixedChar,i] := PadRight(testValues[ftFixedChar,i], 10);
@@ -579,15 +580,23 @@ begin
   if assigned(FTransaction) then
     begin
     try
-      if Ftransaction.Active then Ftransaction.Rollback;
-      Ftransaction.StartTransaction;
+      if Ftransaction.Active and not (stoUseImplicit in FTransaction.Options) then
+        begin
+        Ftransaction.Rollback;
+        Ftransaction.StartTransaction;
+        end;
       Fconnection.ExecuteDirect('DROP TABLE FPDEV');
-      Ftransaction.Commit;
+      if not (stoUseImplicit in FTransaction.Options) then
+        Ftransaction.Commit;
+      Fconnection.ExecuteDirect('DROP TABLE  FPDEV2');
+      if not (stoUseImplicit in FTransaction.Options) then
+        Ftransaction.Commit;
     Except
       on E: Exception do begin
         if dblogfilename<>'' then
           DoLogEvent(nil,detCustom,'Exception running DropNDatasets: '+E.Message);
-        if Ftransaction.Active then Ftransaction.Rollback
+        if Ftransaction.Active and not (stoUseImplicit in FTransaction.Options) then
+           Ftransaction.Rollback
       end;
     end;
     end;
@@ -598,10 +607,16 @@ begin
   if assigned(FTransaction) then
     begin
     try
-      if Ftransaction.Active then Ftransaction.Rollback;
-      Ftransaction.StartTransaction;
+      if Ftransaction.Active and not (stoUseImplicit in FTransaction.Options) then
+        begin
+        Ftransaction.Rollback;
+        Ftransaction.StartTransaction;
+        end;
+      if not (stoUseImplicit in FTransaction.Options) then
+        Ftransaction.StartTransaction;
       Fconnection.ExecuteDirect('DROP TABLE FPDEV_FIELD');
-      Ftransaction.Commit;
+      if not (stoUseImplicit in FTransaction.Options) then
+        Ftransaction.Commit;
     Except
       on E: Exception do begin
         if dblogfilename<>'' then
@@ -724,11 +739,7 @@ end;
 
 procedure TSQLDBConnector.TryCreateSequence(ASequenceName: String);
 
-var
-  NoSeq : Boolean;
-
 begin
-  NoSeq:=False;
   case SQLServerType of
     ssInterbase,
     ssFirebird: FConnection.ExecuteDirect('CREATE GENERATOR '+ASequenceName);
@@ -761,9 +772,10 @@ begin
   FreeAndNil(FTransaction);
 end;
 
-destructor TSQLDBConnector.Destroy;
+Procedure TSQLDBConnector.ClearDatasets;
+
 begin
-  FreeAndNil(FQuery);
+  Inherited;
   if assigned(FTransaction) then
     begin
     try
@@ -781,6 +793,12 @@ begin
         Ftransaction.Rollback;
     end; // try
     end;
+end;
+
+destructor TSQLDBConnector.Destroy;
+begin
+  ClearDatasets;
+  FreeAndNil(FQuery);
   FreeTransaction;
   FreeAndNil(FConnection);
   inherited Destroy;

@@ -18,7 +18,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CGWindowLevels;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -203,7 +205,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CGBase;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CGBase;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 {$ALIGN POWER}
@@ -217,7 +223,7 @@ uses MacTypes,CGBase;
    A common set of window levels is defined here for use within higher level
    frameworks. The levels are accessed via a key and function, so that
    levels may be changed or adjusted in future releases without breaking
-   binary compatability. }
+   binary compatibility. }
 
 type
 	CGWindowLevel = SInt32;

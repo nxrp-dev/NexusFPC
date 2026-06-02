@@ -13,12 +13,14 @@
 
  **********************************************************************}
 {$modeswitch result}
+{$IFNDEF FPC_DOTTEDUNITS}
 Unit heapmgr;
+{$ENDIF FPC_DOTTEDUNITS}
 
   interface
 
     procedure RegisterHeapBlock(AAddress: pointer; ASize: ptruint);
-    
+
     function GetAlignedMem(Size, Alignment: ptruint): pointer;
 
   implementation

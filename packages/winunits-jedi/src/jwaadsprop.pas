@@ -43,7 +43,9 @@
 // $Id: JwaAdsProp.pas,v 1.13 2007/09/06 14:57:10 marquardt Exp $
 
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaAdsProp;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -57,8 +59,13 @@ unit JwaAdsProp;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Activex, WinApi.Jedi.Adstlb, WinApi.Jedi.Winuser, WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaActiveX, JwaAdsTLB, JwaWinUser, JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$ENDIF JWA_OMIT_SECTIONS}
 
@@ -88,7 +95,7 @@ const
   {$ENDIF JWA_INCLUDEMODE}
   WM_ADSPROP_NOTIFY_ERROR      = WM_USER + 1110; // used to send the notification object an error message
   {$EXTERNALSYM WM_ADSPROP_NOTIFY_ERROR}
-  
+
 //+----------------------------------------------------------------------------
 //
 //  Structure:  ADSPROPINITPARAMS
@@ -137,7 +144,7 @@ type
     hwndPage: HWND;         // The HWND of the page that had the error
     pszPageTitle: PWSTR;    // The title of the page that had the error
     pszObjPath: PWSTR;      // Path to the object that the error occurred on
-    pszObjClass: PWSTR;     // Class of the object that the error occurred on    
+    pszObjClass: PWSTR;     // Class of the object that the error occurred on
     hr: HRESULT;            // If this is non-zero, then the others
                             // pszError will be ignored
     pszError: PWSTR;        // An error message.  Used only if hr is zero
@@ -173,7 +180,7 @@ function ADsPropCreateNotifyObj(pAppThdDataObj: Pointer{LPDATAOBJECT};
 //
 //  Function:   ADsPropGetInitInfo
 //
-//  Synopsis:   Pages call this at their init time to retreive DS object info.
+//  Synopsis:   Pages call this at their init time to retrieve DS object info.
 //
 //  Arguments:  [hNotifyObj]  - the notificion window handle.
 //              [pInitParams] - struct filled in with DS object info. This

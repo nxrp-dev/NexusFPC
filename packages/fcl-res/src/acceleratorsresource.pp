@@ -13,14 +13,21 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit acceleratorsresource;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$MODE OBJFPC}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, System.Resources.Resource;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, resource;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   FVirtKey  =  1;
@@ -37,7 +44,7 @@ type
     padding : word;
   end;
   PAccelerator = ^TAccelerator;
-  
+
 type
 
   { TAcceleratorsResource }
@@ -72,8 +79,13 @@ type
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Resources.Factory;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   resfactory;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { TAcceleratorsResource }
 
@@ -190,7 +202,7 @@ begin
       // $80 means 'this is the last entry', so be sure only the last one has this bit set.
       if i=Count-1 then acc.Flags:=acc.Flags or $80
       else acc.Flags:=acc.Flags and $7F;
-      
+
       {$IFDEF ENDIAN_BIG}
       acc.Flags:=SwapEndian(acc.Flags);
       acc.Ansi:=SwapEndian(acc.Ansi);

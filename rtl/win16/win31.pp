@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit win31;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$MODE objfpc}
 
@@ -8,8 +10,13 @@ unit win31;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.WinTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   wintypes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   GFSR_SYSTEMRESOURCES = $0000;
@@ -112,7 +119,7 @@ type
     flags: UINT;
     dwOptions: DWORD;
     dwFilter: DWORD;
-    achAllocModule: array [0..7] of char;
+    achAllocModule: array [0..7] of AnsiChar;
     dwAllocBreak: DWORD;
     dwAllocCount: DWORD;
   end;
@@ -307,8 +314,8 @@ type
   LPENUMLOGFONT = ^ENUMLOGFONT; far;
   ENUMLOGFONT = record
     elfLogFont: LOGFONT;
-    elfFullName: array [0..LF_FULLFACESIZE-1] of char;
-    elfStyle: array [0..LF_FACESIZE-1] of char;
+    elfFullName: array [0..LF_FULLFACESIZE-1] of AnsiChar;
+    elfStyle: array [0..LF_FACESIZE-1] of AnsiChar;
   end;
   TEnumLogFont = ENUMLOGFONT;
 
@@ -617,7 +624,7 @@ type
   MDITILE_SKIPDISABLED = $0002;
 
 { Static control }
-{ Static Control Mesages }
+{ Static Control Messages }
   STM_SETICON = (WM_USER+0);
   STM_GETICON = (WM_USER+1);
 
@@ -824,7 +831,7 @@ type
     length: UINT;
     hDriver: HDRVR;
     hModule: HINST;
-    szAliasName: array [0..127] of char;
+    szAliasName: array [0..127] of AnsiChar;
   end;
   TDriverInfoStruct = DRIVERINFOSTRUCT;
 
@@ -861,7 +868,7 @@ function IsTask(Task: HTASK): BOOL; external 'KERNEL';
 function _hread(FileHandle: HFILE; Buffer: HugePointer; Bytes: LongInt): LongInt; external 'KERNEL';
 function _hwrite(FileHandle: HFILE; Buffer: HugePointer; Bytes: LongInt): LongInt; external 'KERNEL';
 
-{ International & Char Translation Support }
+{ International & AnsiChar Translation Support }
 
 function lstrcpyn(lpszString1: LPSTR; lpszString2: LPCSTR; cChars: SmallInt): LPSTR; external 'KERNEL';
 procedure hmemcpy(hpvDest, hpvSource: HugePointer; cbCopy: LongInt); external 'KERNEL';
@@ -971,7 +978,7 @@ function GetMessageExtraInfo: LPARAM; external 'USER';
 function GetQueueStatus(flags: UINT): DWORD; external 'USER';
 
 { Window class management }
-{ in Windows 3.1+, RegisterClass returns an ATOM that unquely identifies the 
+{ in Windows 3.1+, RegisterClass returns an ATOM that uniquely identifies the
   class. In Windows 3.0 and earlier, the return value is BOOL. That's why we
   redefine this function in the win31 unit. }
 function RegisterClass(lpwc: LPWNDCLASS): ATOM; external 'USER';

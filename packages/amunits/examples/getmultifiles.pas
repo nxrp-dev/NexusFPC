@@ -4,7 +4,7 @@ uses exec,easyasl, linklist, strings, amigautils;
 
 {
    How to get more files than one with easyasl.
-   Just remeber that you have to use linklist and
+   Just remember that you have to use linklist and
    not an ordinary list.
 
    24 Jan 2000.
@@ -14,9 +14,9 @@ uses exec,easyasl, linklist, strings, amigautils;
 
 VAR
 
-  pdummy   : array [0..108] of char;
+  pdummy   : array [0..108] of AnsiChar;
 
-  path     : PChar;
+  path     : PAnsiChar;
   dummy    : boolean;
   mylist   : pList;
   mynode   : pFPCNode;

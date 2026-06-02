@@ -19,8 +19,9 @@ interface
 {$define FPC_IS_SYSTEM}
 {$define FPC_STDOUT_TRUE_ALIAS}
 {$define FPC_ANSI_TEXTFILEREC}
-{$define FPC_QL_USE_OSHEAP}
+{$define FPC_SYSTEM_NO_VERBOSE_UNICODEERROR}
 
+{$define FPC_QL_USE_OSHEAP}
 {$ifdef FPC_QL_USE_OSHEAP}
 {$define HAS_MEMORYMANAGER}
 {$endif FPC_QL_USE_OSHEAP}
@@ -36,8 +37,8 @@ const
     DriveSeparator = ':';
     ExtensionSeparator = '.';
     PathSeparator = ';';
-    AllowDirectorySeparators : set of char = ['\','/'];
-    AllowDriveSeparators : set of char = [':'];
+    AllowDirectorySeparators : set of AnsiChar = ['\','/'];
+    AllowDriveSeparators : set of AnsiChar = [':'];
     FileNameCaseSensitive = false;
     FileNameCasePreserving = false;
     maxExitCode = 255;
@@ -57,9 +58,9 @@ var
     QL_ChannelIDNum : word;
     QL_ChannelIDs: pdword;
     QL_CommandLineLen : word;
-    QL_CommandLine : pchar;
+    QL_CommandLine : PAnsiChar;
 
-    argv: PPChar;
+    argv: PPAnsiChar;
     argc: Longint;
 
     {$if defined(FPUSOFT)}
@@ -80,11 +81,11 @@ type
 
 
 
-function SetQLJobName(const s: string): longint;
-function GetQLJobName: string;
+function SetQLJobName(const s: shortstring): longint;
+function GetQLJobName: shortstring;
 function GetQLJobNamePtr: pointer;
 
-procedure SetQLDefaultConExitMessage(const msg: PChar);
+procedure SetQLDefaultConExitMessage(const msg: PAnsiChar);
 
 implementation
 
@@ -129,7 +130,7 @@ end;
 *****************************************************************************}
 
 var
-  args: PChar;
+  args: PAnsiChar;
 
 { number of args }
 function ParamCount: LongInt;
@@ -138,7 +139,7 @@ begin
 end;
 
 { argument number l }
-function ParamStr(l: LongInt): string;
+function ParamStr(l: LongInt): shortstring;
 begin
   if (l >= 0) and (l <= argc) then
     ParamStr:=argv[l]
@@ -149,7 +150,7 @@ end;
 procedure SysInitParamsAndEnv;
 var
   i,j : longint;
-  c : char;
+  c : AnsiChar;
   argv_size : longint;
 const
   word_separators=[' ',#0];
@@ -173,7 +174,7 @@ begin
       inc(i);
     end;
 
-  { +2 is because argv[0] should be program name, 
+  { +2 is because argv[0] should be program name,
     and argv[argc+1] is argv array terminator }
   argv:=GetMem((argc+2)*sizeof(pointer));
   if not assigned(argv) then
@@ -228,14 +229,14 @@ end;
 
 
 var
-  start_proc: byte; external name '_start'; 
+  start_proc: byte; external name '_start';
 
   { WARNING! if you change this value, make sure there's enough
     buffer space for the job name in the startup code! }
 const
   JOB_NAME_MAX_LEN = 48;
 
-function SetQLJobName(const s: string): longint;
+function SetQLJobName(const s: shortstring): longint;
 var
   len: longint;
 begin
@@ -251,7 +252,7 @@ begin
     end;
 end;
 
-function GetQLJobName: string;
+function GetQLJobName: shortstring;
 var
   len: longint;
 begin
@@ -277,9 +278,9 @@ begin
 end;
 
 const
-  QLDefaultConExitMessage: PChar = 'Press any key to exit';
+  QLDefaultConExitMessage: PAnsiChar = 'Press any key to exit';
 
-procedure SetQLDefaultConExitMessage(const msg: PChar);
+procedure SetQLDefaultConExitMessage(const msg: PAnsiChar);
 begin
   QLDefaultConExitMessage:=msg;
 end;

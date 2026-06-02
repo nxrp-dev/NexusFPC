@@ -43,14 +43,21 @@
 // $Id: JwaZMOUSE.pas,v 1.8 2007/09/14 06:48:49 marquardt Exp $
 
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaZMOUSE;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$I jediapilib.inc}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Winuser, WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaWinUser, JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 {$IFNDEF JWA_IMPLEMENTATIONSECTION}
@@ -121,12 +128,12 @@ const
   MSH_WHEELMODULE_TITLE = MOUSEZ_TITLE;
   {$EXTERNALSYM MSH_WHEELMODULE_TITLE}
 
-// Apps need to call RegisterWindowMessage using the #defines 
+// Apps need to call RegisterWindowMessage using the #defines
 // below to get the message numbers for:
 // 1) the message that can be sent to the MSWHEEL window to
 //    query if wheel support is active (MSH_WHEELSUPPORT)>
-// 2) the message to query for the number of scroll lines 
-//    (MSH_SCROLL_LINES)  
+// 2) the message to query for the number of scroll lines
+//    (MSH_SCROLL_LINES)
 //
 // To send a message to MSWheel window, use FindWindow with the #defines
 // for CLASS and TITLE above.  If FindWindow fails to find the MSWHEEL

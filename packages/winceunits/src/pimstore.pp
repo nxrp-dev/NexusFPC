@@ -18,13 +18,19 @@
 //  Microsoft Windows Mobile 6.0 for PocketPC SDK.
 //
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit pimstore;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$MODE OBJFPC}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses WinApi.Windows, WinApi.Activex, WinceAPI.Windbase;
+{$ELSE FPC_DOTTEDUNITS}
 uses Windows, ActiveX, windbase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
 // Flags for receiving notifications
@@ -46,7 +52,7 @@ type
 
 const
       LIBID_PocketOutlook:TIID = '{4E130E40-7DBE-11D2-8F23-0000F87A4335}';
-      
+
 // Interfaces IDs.
 const
       IID_IException:TIID              = '{B47398D0-3B73-11d2-8F1B-0000F87A4335}';
@@ -578,7 +584,7 @@ type
  * at Mon Dec 07 11:02:04 1998
  * using MIDL 3.02.88
  ****************************************}
-// [dual][full][helpstring][uuid][object] 
+// [dual][full][helpstring][uuid][object]
 
      IPOutlookApp = interface(IDispatch)
       ['{05058F22-20BE-11d2-8F18-0000F87A4335}']
@@ -754,8 +760,8 @@ const
 // Additional Prototypes for ALL interfaces
 {
 unsigned long             __RPC_USER  BSTR_UserSize(     unsigned long __RPC_FAR *, unsigned long            , BSTR __RPC_FAR * );
-unsigned char __RPC_FAR * __RPC_USER  BSTR_UserMarshal(  unsigned long __RPC_FAR *, unsigned char __RPC_FAR *, BSTR __RPC_FAR * );
-unsigned char __RPC_FAR * __RPC_USER  BSTR_UserUnmarshal(unsigned long __RPC_FAR *, unsigned char __RPC_FAR *, BSTR __RPC_FAR * );
+unsigned AnsiChar __RPC_FAR * __RPC_USER  BSTR_UserMarshal(  unsigned long __RPC_FAR *, unsigned AnsiChar __RPC_FAR *, BSTR __RPC_FAR * );
+unsigned AnsiChar __RPC_FAR * __RPC_USER  BSTR_UserUnmarshal(unsigned long __RPC_FAR *, unsigned AnsiChar __RPC_FAR *, BSTR __RPC_FAR * );
 void                      __RPC_USER  BSTR_UserFree(     unsigned long __RPC_FAR *, BSTR __RPC_FAR * );
 }
 
@@ -811,7 +817,7 @@ const
 // Returns the index of the item in the collection for the given oidPIM
 function GetItemIndexFromOid(pItems:IPOutlookItemCollection; oidPIM:CEOID; pdwIndex:LPDWORD):HRESULT; cdecl; external PIMStoreDLL name 'GetItemIndexFromOid';
 
-// end of Additional Prototypes 
+// end of Additional Prototypes
 
 // Macro function.
 function PIM_PROP_TAG(ulPropType:ULONG; ulPropID:ULONG):ULONG;
@@ -974,7 +980,7 @@ const
       PIMPR_CONTACT_TYPE                    = (CEVT_UI4 shl 16) or $0102; // ContactType: The type of the contact (Device or SIM contact).
       PIMPR_SIM_PHONE                       = (CEVT_LPWSTR shl 16) or $0003; // SIMPhone: The contact's telephone number stored on the telephone's SIM card.
 
-// Alowable values for PIMPR_CONTACT_TYPE
+// Allowable values for PIMPR_CONTACT_TYPE
 type
      _PIMPR_CONTACTTYPE = (PIMPR_CONTACTTYPE_DEVICE := 0,
                            PIMPR_CONTACTTYPE_SIM := 1);

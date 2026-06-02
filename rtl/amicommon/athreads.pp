@@ -15,7 +15,9 @@
  **********************************************************************}
 
 {$mode objfpc}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit athreads;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
@@ -71,7 +73,7 @@ type
     nextThread: PThreadInfo; { threadinfos are a linked list, using this field }
     threadPtr: PProcess;     { our thread pointer, as returned by CreateNewProc(). invalid after exited field is true! }
     threadID: TThreadID;     { thread Unique ID }
-    stackLen: PtrUInt;       { stack size the thread was construced with }
+    stackLen: PtrUInt;       { stack size the thread was constructed with}
     exitCode: Pointer;       { exitcode after the process has exited     }
     f: TThreadFunc;          { ThreadFunc function pointer }
     p: Pointer;              { ThreadFunc argument }
@@ -220,7 +222,25 @@ begin
   ReleaseSemaphore(@AThreadListSemaphore);
 end;
 
-{ Get current thread's ThreadInfo structure }
+{ Function to check if a threadInfo is a threadInfo from our list }
+function IsValidThreadInfo(var l: PThreadInfo; threadInfo: PThreadInfo): Boolean;
+var
+  p: PThreadInfo;
+begin
+  IsValidThreadInfo:=false;
+  if (l = nil) or (threadInfo = nil) then
+    exit;
+
+  ObtainSemaphoreShared(@AThreadListSemaphore);
+  p:=l;
+  while (p <> nil) and (p <> threadinfo) do
+    p:=p^.nextThread;
+  IsValidThreadInfo:=p<>nil;
+  ReleaseSemaphore(@AThreadListSemaphore);
+end;
+
+
+{ Get current thread ThreadInfo structure }
 function GetCurrentThreadInfo: PThreadInfo;
 begin
   result:=PThreadInfo(PProcess(FindTask(nil))^.pr_Task.tc_UserData);
@@ -458,7 +478,7 @@ begin
       { this line can't be before threadvar allocation }
       SysDebugLn('FPC AThreads: Renaming thread ID:'+hexStr(threadInfo)+' to '+threadInfo^.name);
 {$endif}
-      thisThread^.pr_Task.tc_Node.ln_Name:=PChar(@threadInfo^.name[1]);
+      thisThread^.pr_Task.tc_Node.ln_Name:=PAnsiChar(@threadInfo^.name[1]);
     end;
 
   { Reply the message, so the calling thread could continue }
@@ -753,8 +773,33 @@ end;
 
 
 procedure ASetThreadDebugNameA(threadHandle: TThreadID; const ThreadName: AnsiString);
+var
+  p: PThreadInfo;
+  MyProcess: PProcess;
 begin
-  {$Warning SetThreadDebugName needs to be implemented}
+{$ifdef DEBUG_MT}
+  SysDebugLn('FPC AThreads: Set threadname to ' + ThreadName + ' for Thread ' + IToStr(threadHandle));
+{$endif}
+  Forbid();
+  if threadHandle = -1 then
+  begin
+    MyProcess := PProcess(FindTask(nil));
+    P := PThreadInfo(MyProcess^.pr_Task.tc_userData);
+    if not IsValidThreadInfo(AThreadList,p) then
+      P := nil;
+  end
+  else
+  begin
+    p:=GetThreadInfo(AThreadList, threadHandle);
+    if p <> nil then
+      MyProcess := p^.threadPtr;
+  end;
+  if (p <> nil) and (MyProcess <> nil) and (ThreadName <> '') then
+  begin
+    p^.name := ThreadName;
+    MyProcess^.pr_Task.tc_Node.ln_Name := PAnsiChar(@p^.name[1]);
+  end;
+  Permit();
 end;
 
 
@@ -818,7 +863,7 @@ var p:pintrtlevent;
 begin
   p:=pintrtlevent(aevent);
   ObtainSemaphore(@p^.Sem);
-  while not p^.isset do 
+  while not p^.isset do
     begin
       ReleaseSemaphore(@p^.Sem);
       DOSDelay(1);
@@ -995,7 +1040,7 @@ begin
   end;
 end;
 
-function CreatePort(Name: PChar; Pri: LongInt): PMsgPort;
+function CreatePort(Name: PAnsiChar; Pri: LongInt): PMsgPort;
 var
   SigBit: ShortInt;
   Port: PMsgPort;
@@ -1191,7 +1236,7 @@ begin
           {$ENDIF}
           Break;
         end;
-        // if we reach here, nothing happend...
+        // if we reach here, nothing happened...
         // we release the semaphore and wait for other threads to do something
         ReleaseSemaphore(@AmiEvent^.Sem);
         DosDelay(1);

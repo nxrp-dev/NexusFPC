@@ -58,7 +58,7 @@ Const
       va_list is just a dummy record
       MvdV: Nevertheless it should be a pointer type, not a record}
 
-     va_list = pchar;
+     va_list = PAnsiChar;
 
      ABC = record
           abcA : longint;
@@ -429,7 +429,7 @@ Const
           lpfn : BFFCALLBACK;
           lParam : LPARAM;
           iImage : longint;
-       end deprecated 'Use shlobj version. Will be removed in the future'; 
+       end deprecated 'Use shlobj version. Will be removed in the future';
      LPBROWSEINFO = ^BROWSEINFO deprecated;
      _browseinfo = BROWSEINFO deprecated;
      Tbrowseinfo = BROWSEINFO deprecated;
@@ -558,7 +558,7 @@ Const
               case longint of
                  0 : ( UnicodeChar : WCHAR;
                        Attributes  : Word);
-                 1 : ( AsciiChar : CHAR );
+                 1 : ( AsciiChar : AnsiChar );
               end;
      _CHAR_INFO = CHAR_INFO;
      TCHAR_INFO = CHAR_INFO;
@@ -639,7 +639,7 @@ Const
      TCHARSETINFO = CHARSETINFO;
      PCHARSETINFO = ^CHARSETINFO;
 
-     {CHOOSECOLOR = record confilcts with function ChooseColor }
+     {CHOOSECOLOR = record conflicts with function ChooseColor }
      TCHOOSECOLOR = record
           lStructSize : DWORD;
           hwndOwner : HWND;
@@ -809,11 +809,11 @@ Const
           ByteSize : BYTE;
           Parity : BYTE;
           StopBits : BYTE;
-          XonChar : char;
-          XoffChar : char;
-          ErrorChar : char;
-          EofChar : char;
-          EvtChar : char;
+          XonChar : AnsiChar;
+          XoffChar : AnsiChar;
+          ErrorChar : AnsiChar;
+          EofChar : AnsiChar;
+          EvtChar : AnsiChar;
           wReserved1 : WORD;
        end;
      LPDCB = ^DCB;
@@ -1117,15 +1117,14 @@ Const
 //
 
 //typedef struct DECLSPEC_ALIGN(16) _M128A {
-{$note todo, fix alignment }
   type
      M128A = record
           Low: ULONGLONG;
           High: LONGLONG;
-       end;
+       end {$ifndef VER3_2} align 16 {$endif}; // Also implicitly aligns CONTEXT to 16 bytes as required.
      _M128A = M128A;
      TM128A = M128A;
-     PM128A = TM128A;
+     PM128A = ^TM128A;
 
 //
 // Format of data for 32-bit fxsave/fxrstor instructions.
@@ -1162,7 +1161,7 @@ Const
 // Context Frame
 //
 //  This frame has a several purposes: 1) it is used as an argument to
-//  NtContinue, 2) is is used to constuct a call frame for APC delivery,
+//  NtContinue, 2) is is used to construct a call frame for APC delivery,
 //  and 3) it is used in the user level thread creation routines.
 //
 //
@@ -1192,14 +1191,13 @@ Const
 //
 
 //typedef struct DECLSPEC_ALIGN(16) _CONTEXT {
-{$note todo, fix alignment }
   type
      CONTEXT = record
 
           //
           // Register parameter home addresses.
           //
-          // N.B. These fields are for convience - they could be used to extend the
+          // N.B. These fields are for convenience - they could be used to extend the
           //      context record in the future.
           //
 
@@ -1548,7 +1546,7 @@ Const
         LeadByte       : array[0..(MAX_LEADBYTES)-1] of BYTE;
         DefaultUnicode : WCHAR;
         CodePage       : UINT;
-        CodePageName   : array[0..(MAX_PATH)-1] of CHAR;
+        CodePageName   : array[0..(MAX_PATH)-1] of AnsiChar;
       end;
      LPCPINFOEXA = ^CPINFOEXA;
      _cpinfoexA  = CPINFOEXA;
@@ -2064,7 +2062,7 @@ Const
 
      _DEV_BROADCAST_USERDEFINED = record
           dbud_dbh : _DEV_BROADCAST_HDR;
-          dbud_szName : array[0..0] of char;
+          dbud_szName : array[0..0] of AnsiChar;
           dbud_rgbUserDefined : array[0..0] of BYTE;
        end;
      TDEVBROADCASTUSERDEFINED = _DEV_BROADCAST_USERDEFINED;
@@ -2201,12 +2199,12 @@ Const
       TDEVMODE     = DEVMODEW;
       PDEVMODE     = ^DEVMODEW;
     {$ENDIF}
-  
+
     _devicemode  = DEVMODE;
     DeviceMode   = DEVMODE;
     TDeviceMode  = DEVMODE;
     PDeviceMode  = ^DEVMODE;
-  
+
      DEVNAMES = record
           wDriverOffset : WORD;
           wDeviceOffset : WORD;
@@ -2414,7 +2412,7 @@ Const
 				   PartitionID    : TGUID;
 				   Attributes     : DWORD64;
 				   Name		  : array[0..35] OF WCHAR;
-				  end; 	
+				  end;
      TPARTITION_INFORMATION_GPT= PARTITION_INFORMATION_GPT;
      PPARTITION_INFORMATION_GPT= ^PARTITION_INFORMATION_GPT;
 
@@ -2423,7 +2421,7 @@ Const
 				   BootIndicator  : ByteBool;
 				   RecognizedPartition : ByteBool;
 				   HiddenSectors  : DWORD;
-				  end; 	
+				  end;
      TPARTITION_INFORMATION_MBR=  PARTITION_INFORMATION_MBR;
      PPARTITION_INFORMATION_MBR= ^PARTITION_INFORMATION_MBR;
 
@@ -2466,7 +2464,7 @@ Const
 		       PartitionStyle : TPartition_Style;
 		       case integer of
 			 0: ( MBR : Create_Disk_MBR);
-		         1: ( GPT : Create_Disk_GPT);	
+		         1: ( GPT : Create_Disk_GPT);
 		      end;
      TCREATE_DISK = CREATE_DISK;
      PCREATE_DISK = ^TCREATE_DISK;
@@ -2485,7 +2483,7 @@ Const
           RewritePartition: BYTEBOOL;
 	  case integer of
 	    0: ( MBR : PARTITION_INFORMATION_MBR);
-	    1: ( GPT : PARTITION_INFORMATION_GPT);	
+	    1: ( GPT : PARTITION_INFORMATION_GPT);
        end;
      _PARTITION_INFORMATION_EX = PARTITION_INFORMATION_EX;
      TPARTITIONINFORMATION_EX  = PARTITION_INFORMATION_EX;
@@ -2535,7 +2533,7 @@ Const
      TDRIVERINFO3 = DRIVER_INFO_3;
      PDRIVERINFO3 = ^DRIVER_INFO_3;
 
-     EDITSTREAM = record
+     EDITSTREAM = packed record
           dwCookie : DWORD_PTR;
           dwError : DWORD;
           pfnCallback : EDITSTREAMCALLBACK;
@@ -2839,7 +2837,7 @@ Const
      TEXTLOGFONTA   = EXTLOGFONTA;
      PEXTLOGFONTA   = LPEXTLOGFONTA;
 
- 
+
      EXTLOGFONTW    = record
        elfLogFont   :LOGFONTW;
        elfFullName  :array[0..(LF_FULLFACESIZE) - 1] of WCHAR;
@@ -2856,7 +2854,7 @@ Const
      tagEXTLOGFONTW = EXTLOGFONTW;
      TEXTLOGFONTW   = EXTLOGFONTW;
      PEXTLOGFONTW   = ^EXTLOGFONTW;
-  
+
     {$IFNDEF UNICODE}
       EXTLOGFONT     = EXTLOGFONTA;
       LPEXTLOGFONT   = ^EXTLOGFONTA;
@@ -3756,7 +3754,7 @@ Const
             SID   UserSid
             TCHAR Strings[]
             BYTE  Data[]
-            CHAR  Pad[]
+            AnsiChar  Pad[]
             DWORD Length;
            }
      tagENUMLOGFONTEXW = ENUMLOGFONTEXW;
@@ -4296,7 +4294,7 @@ Const
           case longint of
              0 : ( UnicodeChar : WCHAR;
                    dwControlKeyState : DWORD; );
-             1 : ( AsciiChar : CHAR );
+             1 : ( AsciiChar : AnsiChar );
        end;
      _KEY_EVENT_RECORD = KEY_EVENT_RECORD;
      TKEYEVENTRECORD = KEY_EVENT_RECORD;
@@ -5323,7 +5321,7 @@ Const
      _NEWTEXTMETRICA   = NEWTEXTMETRICA;
      TNEWTEXTMETRICA   = NEWTEXTMETRICA;
      PNEWTEXTMETRICA   = ^NEWTEXTMETRICA;
-   
+
      NEWTEXTMETRICW    = record
        tmHeight           :LONG;
        tmAscent           :LONG;
@@ -5355,7 +5353,7 @@ Const
      _NEWTEXTMETRICW   = NEWTEXTMETRICW;
      TNEWTEXTMETRICW   = NEWTEXTMETRICW;
      PNEWTEXTMETRICW   = ^NEWTEXTMETRICW;
-   
+
     {$IFNDEF UNICODE}
      LPNEWTEXTMETRIC   = ^NEWTEXTMETRICA;
      _NEWTEXTMETRIC    = NEWTEXTMETRICA;
@@ -5380,7 +5378,7 @@ Const
      tagNEWTEXTMETRICEXA = NEWTEXTMETRICEXA;
      TNEWTEXTMETRICEXA   = NEWTEXTMETRICEXA;
      PNEWTEXTMETRICEXA   = ^NEWTEXTMETRICEXA;
-   
+
      NEWTEXTMETRICEXW    = record
        ntmentm           :NEWTEXTMETRICW;
        ntmeFontSignature :FONTSIGNATURE;
@@ -5389,7 +5387,7 @@ Const
      tagNEWTEXTMETRICEXW = NEWTEXTMETRICEXW;
      TNEWTEXTMETRICEXW   = NEWTEXTMETRICEXW;
      PNEWTEXTMETRICEXW   = ^NEWTEXTMETRICEXW;
-   
+
     {$IFNDEF UNICODE}
      LPNEWTEXTMETRICEX   = ^NEWTEXTMETRICEXA;
      _NEWTEXTMETRICEX    = NEWTEXTMETRICEXA;
@@ -5405,7 +5403,7 @@ Const
      PNEWTEXTMETRICEX    = ^NEWTEXTMETRICEXW;
      NEWTEXTMETRICEX     = NEWTEXTMETRICEXW;
     {$ENDIF}
-   
+
      NM_LISTVIEW = record
           hdr : NMHDR;
           iItem : longint;
@@ -5579,7 +5577,7 @@ Const
           nErrCode : WORD;
           Reserved1 : WORD;
           Reserved2 : WORD;
-          szPathName : array[0..(OFS_MAXPATHNAME)-1] of CHAR;
+          szPathName : array[0..(OFS_MAXPATHNAME)-1] of AnsiChar;
        end;
      LPOFSTRUCT = ^OFSTRUCT;
      _OFSTRUCT = OFSTRUCT;
@@ -6389,7 +6387,7 @@ Const
      TPROPSHEETHEADER   = TPROPSHEETHEADERA;
      PPROPSHEETHEADER   = PPROPSHEETHEADERA;
      {$endif}
-    
+
      { PropertySheet callbacks  }
      LPFNADDPROPSHEETPAGE = function (_para1:HPROPSHEETPAGE; _para2:LPARAM):WINBOOL;stdcall;
      TFNADDPROPSHEETPAGE = LPFNADDPROPSHEETPAGE;
@@ -7238,7 +7236,7 @@ Const
           case longint of
            0: ( polestr:LPWSTR);
            1: ( uOffset : UINT);
-           2: ( cStr : array[0..(MAX_PATH)-1] of char );
+           2: ( cStr : array[0..(MAX_PATH)-1] of AnsiChar );
        end;
      LPSTRRET = ^STRRET;
      _STRRET = STRRET;
@@ -7283,7 +7281,7 @@ Const
                        dwProcessorType : DWORD;
                        dwAllocationGranularity : DWORD;
                        wProcessorLevel : WORD;
-                       wProcessorRevision : WORD;	
+                       wProcessorRevision : WORD;
 			 );
                  1 : (
                       wProcessorArchitecture : WORD;
@@ -7536,7 +7534,7 @@ Const
      PTOGGLEKEYS = ^TOGGLEKEYS;
 
      TOKEN_SOURCE = record
-          SourceName : array[0..7] of CHAR;  // 0..(TOKEN_SOURCE_LENGTH-1)
+          SourceName : array[0..7] of AnsiChar;  // 0..(TOKEN_SOURCE_LENGTH-1)
           SourceIdentifier : LUID;
        end;
      _TOKEN_SOURCE = TOKEN_SOURCE;
@@ -8940,7 +8938,7 @@ type
         AddressOfNames  : DWORD;        { RVA from base of image }
         AddressOfNameOrdinals : DWORD;  { RVA from base of image }
       end;
-    TIMAGE_EXPORT_DIRECTORY = IMAGE_EXPORT_DIRECTORY; 
+    TIMAGE_EXPORT_DIRECTORY = IMAGE_EXPORT_DIRECTORY;
     _IMAGE_EXPORT_DIRECTORY = IMAGE_EXPORT_DIRECTORY;
     LPIMAGE_EXPORT_DIRECTORY= PIMAGE_EXPORT_DIRECTORY;
 
@@ -9077,7 +9075,7 @@ type
                   ForwarderChain : DWORD;        // -1 if no forwarders
                   Name : DWORD;
                   FirstThunk : DWORD;            // RVA to IAT (if bound this IAT has actual addresses)
-                );  
+                );
     end;
   IMAGE_IMPORT_DESCRIPTOR = _IMAGE_IMPORT_DESCRIPTOR;
   PIMAGE_IMPORT_DESCRIPTOR = ^IMAGE_IMPORT_DESCRIPTOR   {UNALIGNED  }     ;
@@ -9214,7 +9212,7 @@ type
 type
      tagMENUBARINFO = record
        cbSize:DWORD;
-       rcBar:Windows.RECT; // rect of bar, popup, item
+       rcBar: {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.RECT; // rect of bar, popup, item
        _hmenu:HMENU;       // real menu handle of bar, popup
        hwndMenu:HWND;      // hwnd of item submenu if one
 //    fBarFocused:1:BOOL;  // bar, popup has the focus
@@ -9422,7 +9420,7 @@ type
     LPRAWINPUTDEVICE = ^tagRAWINPUTDEVICE;
     PCRAWINPUTDEVICE = ^tagRAWINPUTDEVICE;
 
-{$packrecords C}	
+{$packrecords C}
     tagRAWINPUTDEVICELIST = record
       hDevice: HANDLE;
       dwType: DWORD;
@@ -9431,7 +9429,7 @@ type
     PRAWINPUTDEVICELIST = ^tagRAWINPUTDEVICELIST;
 //#endif /* _WIN32_WINNT >= 0x0501 */
 
-// Wincon.h  
+// Wincon.h
 
     _CONSOLE_SCREEN_BUFFER_INFOEX = record
         cbSize : ULONG;
@@ -9447,7 +9445,7 @@ type
     CONSOLE_SCREEN_BUFFER_INFOEX = _CONSOLE_SCREEN_BUFFER_INFOEX;
     PCONSOLE_SCREEN_BUFFER_INFOEX = ^_CONSOLE_SCREEN_BUFFER_INFOEX;
 
-    
+
     _CONSOLE_FONT_INFO = record
         nFont : DWORD;
         dwFontSize : COORD;
@@ -9465,8 +9463,6 @@ type
       end;
     CONSOLE_FONT_INFOEX = _CONSOLE_FONT_INFOEX;
     PCONSOLE_FONT_INFOEX = ^_CONSOLE_FONT_INFOEX;
-
-
 
     _CONSOLE_HISTORY_INFO = record
         cbSize : UINT;
@@ -9506,6 +9502,111 @@ type
           ComputerNamePhysicalDnsFullyQualified,
           ComputerNameMax=31);
     TCOMPUTER_NAME_FORMAT = COMPUTER_NAME_FORMAT;
+
+
+  PGUITHREADINFO = ^TGUITHREADINFO;
+  TGUITHREADINFO = record
+    cbSize           : DWORD;     { must be initialized before the call       }
+    flags            : DWORD;
+    hwndActive       : HWND;
+    hwndFocus        : HWND;
+    hwndCapture      : HWND;
+    hwndMenuOwner    : HWND;
+    hwndMoveSize     : HWND;
+    hwndCaret        : HWND;
+    rcCaret          : TRECT;
+  end;
+
+    PPROCESSOR_NUMBER = ^_PROCESSOR_NUMBER;
+    _PROCESSOR_NUMBER = record
+        Group :  WORD;
+        Number  : BYTE;
+        Reserved : BYTE;
+      end;
+   TPROCESSOR_NUMBER = _PROCESSOR_NUMBER;
+
+// tlhelp32.h
+    HEAPENTRY32 = record
+        dwSize: SIZE_T;
+        hHandle: HANDLE;
+        dwAddress: ULONG_PTR;
+        dwBlockSize: SIZE_T;
+        dwFlags: DWORD;
+        dwLockCount: DWORD;
+        dwResvd: DWORD;
+        th32ProcessID: DWORD;
+        th32HeapID: ULONG_PTR;
+    end;
+
+    HEAPLIST32 = record
+        dwSize: SIZE_T;
+        th32ProcessID: DWORD;
+        th32HeapID: ULONG_PTR;
+        dwFlags: DWORD;
+    end;
+
+    MODULEENTRY32 = record
+        dwSize: DWORD;
+        th32ModuleID: DWORD;
+        th32ProcessID: DWORD;
+        GlblcntUsage: DWORD;
+        ProccntUsage: DWORD;
+        modBaseAddr: pointer;
+        modBaseSize: DWORD;
+        hModule: HMODULE;
+        szModule: array[0 .. MAX_MODULE_NAME32 { not - 1 }] of ansichar;
+        szExePath: array[0 .. MAX_PATH - 1] of ansichar;
+    end;
+
+    MODULEENTRY32W = record
+        dwSize: DWORD;
+        th32ModuleID: DWORD;
+        th32ProcessID: DWORD;
+        GlblcntUsage: DWORD;
+        ProccntUsage: DWORD;
+        modBaseAddr: pointer;
+        modBaseSize: DWORD;
+        hModule: HMODULE;
+        szModule: array[0 .. MAX_MODULE_NAME32 { not - 1 }] of unicodechar;
+        szExePath: array[0 .. MAX_PATH - 1] of unicodechar;
+    end;
+
+    PROCESSENTRY32  = record
+        dwSize: DWORD;
+        cntUsage: DWORD;
+        th32ProcessID: DWORD;
+        th32DefaultHeapID: ULONG_PTR;
+        th32ModuleID: DWORD;
+        cntThreads: DWORD;
+        th32ParentProcessID: DWORD;
+        pcPriClassBase: LONG;
+        dwFlags: DWORD;
+        szExeFile: array[0 .. MAX_PATH - 1] of ansichar;
+    end;
+
+    PROCESSENTRY32W  = record
+        dwSize: DWORD;
+        cntUsage: DWORD;
+        th32ProcessID: DWORD;
+        th32DefaultHeapID: ULONG_PTR;
+        th32ModuleID: DWORD;
+        cntThreads: DWORD;
+        th32ParentProcessID: DWORD;
+        pcPriClassBase: LONG;
+        dwFlags: DWORD;
+        szExeFile: array[0 .. MAX_PATH - 1] of unicodechar;
+    end;
+
+    THREADENTRY32 = record
+        dwSize: DWORD;
+        cntUsage: DWORD;
+        th32ThreadID: DWORD;
+        th32OwnerProcessID: DWORD;
+        tpBasePri: LONG;
+        tpDeltaPri: LONG;
+        dwFlags: DWORD;
+    end;
+
 {$pop}
 {$endif read_interface}
 

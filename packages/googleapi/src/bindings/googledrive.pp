@@ -1,13 +1,19 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit googledrive;
+{$ENDIF FPC_DOTTEDUNITS}
 {$MODE objfpc}
 {$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils, System.Classes, GoogleApi.Service, FpWeb.Rest.Base, GoogleApi.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses sysutils, classes, googleservice, restbase, googlebase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
-  
+
   //Top-level schema types
   TAbout = Class;
   TChange = Class;
@@ -67,11 +73,11 @@ type
   TPermissionListTypepermissionsArray = Array of TPermission;
   TReplyListTyperepliesArray = Array of TReply;
   TRevisionListTyperevisionsArray = Array of TRevision;
-  
+
   { --------------------------------------------------------------------
     TAboutTypeexportFormats
     --------------------------------------------------------------------}
-  
+
   TAboutTypeexportFormats = Class(TGoogleBaseObject)
   Private
   Protected
@@ -81,11 +87,11 @@ type
   Published
   end;
   TAboutTypeexportFormatsClass = Class of TAboutTypeexportFormats;
-  
+
   { --------------------------------------------------------------------
     TAboutTypeimportFormats
     --------------------------------------------------------------------}
-  
+
   TAboutTypeimportFormats = Class(TGoogleBaseObject)
   Private
   Protected
@@ -95,11 +101,11 @@ type
   Published
   end;
   TAboutTypeimportFormatsClass = Class of TAboutTypeimportFormats;
-  
+
   { --------------------------------------------------------------------
     TAboutTypemaxImportSizes
     --------------------------------------------------------------------}
-  
+
   TAboutTypemaxImportSizes = Class(TGoogleBaseObject)
   Private
   Protected
@@ -109,11 +115,11 @@ type
   Published
   end;
   TAboutTypemaxImportSizesClass = Class of TAboutTypemaxImportSizes;
-  
+
   { --------------------------------------------------------------------
     TAboutTypestorageQuota
     --------------------------------------------------------------------}
-  
+
   TAboutTypestorageQuota = Class(TGoogleBaseObject)
   Private
     Flimit : String;
@@ -134,11 +140,11 @@ type
     Property usageInDriveTrash : String Index 24 Read FusageInDriveTrash Write SetusageInDriveTrash;
   end;
   TAboutTypestorageQuotaClass = Class of TAboutTypestorageQuota;
-  
+
   { --------------------------------------------------------------------
     TAbout
     --------------------------------------------------------------------}
-  
+
   TAbout = Class(TGoogleBaseObject)
   Private
     FappInstalled : boolean;
@@ -178,11 +184,11 @@ type
     Property user : TUser Index 64 Read Fuser Write Setuser;
   end;
   TAboutClass = Class of TAbout;
-  
+
   { --------------------------------------------------------------------
     TChange
     --------------------------------------------------------------------}
-  
+
   TChange = Class(TGoogleBaseObject)
   Private
     F_file : TFile;
@@ -207,11 +213,11 @@ type
     Property time : TDatetime Index 32 Read Ftime Write Settime;
   end;
   TChangeClass = Class of TChange;
-  
+
   { --------------------------------------------------------------------
     TChangeList
     --------------------------------------------------------------------}
-  
+
   TChangeList = Class(TGoogleBaseObject)
   Private
     Fchanges : TChangeListTypechangesArray;
@@ -236,11 +242,11 @@ type
     Property nextPageToken : String Index 24 Read FnextPageToken Write SetnextPageToken;
   end;
   TChangeListClass = Class of TChangeList;
-  
+
   { --------------------------------------------------------------------
     TChannelTypeparams
     --------------------------------------------------------------------}
-  
+
   TChannelTypeparams = Class(TGoogleBaseObject)
   Private
   Protected
@@ -250,11 +256,11 @@ type
   Published
   end;
   TChannelTypeparamsClass = Class of TChannelTypeparams;
-  
+
   { --------------------------------------------------------------------
     TChannel
     --------------------------------------------------------------------}
-  
+
   TChannel = Class(TGoogleBaseObject)
   Private
     Faddress : String;
@@ -294,11 +300,11 @@ type
     Property _type : String Index 72 Read F_type Write Set_type;
   end;
   TChannelClass = Class of TChannel;
-  
+
   { --------------------------------------------------------------------
     TCommentTypequotedFileContent
     --------------------------------------------------------------------}
-  
+
   TCommentTypequotedFileContent = Class(TGoogleBaseObject)
   Private
     FmimeType : String;
@@ -313,11 +319,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TCommentTypequotedFileContentClass = Class of TCommentTypequotedFileContent;
-  
+
   { --------------------------------------------------------------------
     TComment
     --------------------------------------------------------------------}
-  
+
   TComment = Class(TGoogleBaseObject)
   Private
     Fanchor : String;
@@ -366,11 +372,11 @@ type
     Property resolved : boolean Index 88 Read Fresolved Write Setresolved;
   end;
   TCommentClass = Class of TComment;
-  
+
   { --------------------------------------------------------------------
     TCommentList
     --------------------------------------------------------------------}
-  
+
   TCommentList = Class(TGoogleBaseObject)
   Private
     Fcomments : TCommentListTypecommentsArray;
@@ -392,11 +398,11 @@ type
     Property nextPageToken : String Index 16 Read FnextPageToken Write SetnextPageToken;
   end;
   TCommentListClass = Class of TCommentList;
-  
+
   { --------------------------------------------------------------------
     TFileTypeappProperties
     --------------------------------------------------------------------}
-  
+
   TFileTypeappProperties = Class(TGoogleBaseObject)
   Private
   Protected
@@ -406,11 +412,11 @@ type
   Published
   end;
   TFileTypeappPropertiesClass = Class of TFileTypeappProperties;
-  
+
   { --------------------------------------------------------------------
     TFileTypecapabilities
     --------------------------------------------------------------------}
-  
+
   TFileTypecapabilities = Class(TGoogleBaseObject)
   Private
     FcanComment : boolean;
@@ -434,11 +440,11 @@ type
     Property canShare : boolean Index 32 Read FcanShare Write SetcanShare;
   end;
   TFileTypecapabilitiesClass = Class of TFileTypecapabilities;
-  
+
   { --------------------------------------------------------------------
     TFileTypecontentHintsTypethumbnail
     --------------------------------------------------------------------}
-  
+
   TFileTypecontentHintsTypethumbnail = Class(TGoogleBaseObject)
   Private
     Fimage : String;
@@ -453,11 +459,11 @@ type
     Property mimeType : String Index 8 Read FmimeType Write SetmimeType;
   end;
   TFileTypecontentHintsTypethumbnailClass = Class of TFileTypecontentHintsTypethumbnail;
-  
+
   { --------------------------------------------------------------------
     TFileTypecontentHints
     --------------------------------------------------------------------}
-  
+
   TFileTypecontentHints = Class(TGoogleBaseObject)
   Private
     FindexableText : String;
@@ -472,11 +478,11 @@ type
     Property thumbnail : TFileTypecontentHintsTypethumbnail Index 8 Read Fthumbnail Write Setthumbnail;
   end;
   TFileTypecontentHintsClass = Class of TFileTypecontentHints;
-  
+
   { --------------------------------------------------------------------
     TFileTypeimageMediaMetadataTypelocation
     --------------------------------------------------------------------}
-  
+
   TFileTypeimageMediaMetadataTypelocation = Class(TGoogleBaseObject)
   Private
     Faltitude : double;
@@ -494,11 +500,11 @@ type
     Property longitude : double Index 16 Read Flongitude Write Setlongitude;
   end;
   TFileTypeimageMediaMetadataTypelocationClass = Class of TFileTypeimageMediaMetadataTypelocation;
-  
+
   { --------------------------------------------------------------------
     TFileTypeimageMediaMetadata
     --------------------------------------------------------------------}
-  
+
   TFileTypeimageMediaMetadata = Class(TGoogleBaseObject)
   Private
     Faperture : integer;
@@ -570,11 +576,11 @@ type
     Property width : integer Index 160 Read Fwidth Write Setwidth;
   end;
   TFileTypeimageMediaMetadataClass = Class of TFileTypeimageMediaMetadata;
-  
+
   { --------------------------------------------------------------------
     TFileTypeproperties
     --------------------------------------------------------------------}
-  
+
   TFileTypeproperties = Class(TGoogleBaseObject)
   Private
   Protected
@@ -584,11 +590,11 @@ type
   Published
   end;
   TFileTypepropertiesClass = Class of TFileTypeproperties;
-  
+
   { --------------------------------------------------------------------
     TFileTypevideoMediaMetadata
     --------------------------------------------------------------------}
-  
+
   TFileTypevideoMediaMetadata = Class(TGoogleBaseObject)
   Private
     FdurationMillis : String;
@@ -606,11 +612,11 @@ type
     Property width : integer Index 16 Read Fwidth Write Setwidth;
   end;
   TFileTypevideoMediaMetadataClass = Class of TFileTypevideoMediaMetadata;
-  
+
   { --------------------------------------------------------------------
     TFile
     --------------------------------------------------------------------}
-  
+
   TFile = Class(TGoogleBaseObject)
   Private
     FappProperties : TFileTypeappProperties;
@@ -755,11 +761,11 @@ type
     Property writersCanShare : boolean Index 344 Read FwritersCanShare Write SetwritersCanShare;
   end;
   TFileClass = Class of TFile;
-  
+
   { --------------------------------------------------------------------
     TFileList
     --------------------------------------------------------------------}
-  
+
   TFileList = Class(TGoogleBaseObject)
   Private
     Ffiles : TFileListTypefilesArray;
@@ -781,11 +787,11 @@ type
     Property nextPageToken : String Index 16 Read FnextPageToken Write SetnextPageToken;
   end;
   TFileListClass = Class of TFileList;
-  
+
   { --------------------------------------------------------------------
     TGeneratedIds
     --------------------------------------------------------------------}
-  
+
   TGeneratedIds = Class(TGoogleBaseObject)
   Private
     Fids : TStringArray;
@@ -807,11 +813,11 @@ type
     Property space : String Index 16 Read Fspace Write Setspace;
   end;
   TGeneratedIdsClass = Class of TGeneratedIds;
-  
+
   { --------------------------------------------------------------------
     TPermission
     --------------------------------------------------------------------}
-  
+
   TPermission = Class(TGoogleBaseObject)
   Private
     FallowFileDiscovery : boolean;
@@ -848,11 +854,11 @@ type
     Property _type : String Index 64 Read F_type Write Set_type;
   end;
   TPermissionClass = Class of TPermission;
-  
+
   { --------------------------------------------------------------------
     TPermissionList
     --------------------------------------------------------------------}
-  
+
   TPermissionList = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -871,11 +877,11 @@ type
     Property permissions : TPermissionListTypepermissionsArray Index 8 Read Fpermissions Write Setpermissions;
   end;
   TPermissionListClass = Class of TPermissionList;
-  
+
   { --------------------------------------------------------------------
     TReply
     --------------------------------------------------------------------}
-  
+
   TReply = Class(TGoogleBaseObject)
   Private
     Faction : String;
@@ -911,11 +917,11 @@ type
     Property modifiedTime : TDatetime Index 64 Read FmodifiedTime Write SetmodifiedTime;
   end;
   TReplyClass = Class of TReply;
-  
+
   { --------------------------------------------------------------------
     TReplyList
     --------------------------------------------------------------------}
-  
+
   TReplyList = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -937,11 +943,11 @@ type
     Property replies : TReplyListTyperepliesArray Index 16 Read Freplies Write Setreplies;
   end;
   TReplyListClass = Class of TReplyList;
-  
+
   { --------------------------------------------------------------------
     TRevision
     --------------------------------------------------------------------}
-  
+
   TRevision = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -987,11 +993,11 @@ type
     Property size : String Index 88 Read Fsize Write Setsize;
   end;
   TRevisionClass = Class of TRevision;
-  
+
   { --------------------------------------------------------------------
     TRevisionList
     --------------------------------------------------------------------}
-  
+
   TRevisionList = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -1010,11 +1016,11 @@ type
     Property revisions : TRevisionListTyperevisionsArray Index 8 Read Frevisions Write Setrevisions;
   end;
   TRevisionListClass = Class of TRevisionList;
-  
+
   { --------------------------------------------------------------------
     TStartPageToken
     --------------------------------------------------------------------}
-  
+
   TStartPageToken = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -1029,11 +1035,11 @@ type
     Property startPageToken : String Index 8 Read FstartPageToken Write SetstartPageToken;
   end;
   TStartPageTokenClass = Class of TStartPageToken;
-  
+
   { --------------------------------------------------------------------
     TUser
     --------------------------------------------------------------------}
-  
+
   TUser = Class(TGoogleBaseObject)
   Private
     FdisplayName : String;
@@ -1060,26 +1066,26 @@ type
     Property photoLink : String Index 40 Read FphotoLink Write SetphotoLink;
   end;
   TUserClass = Class of TUser;
-  
+
   { --------------------------------------------------------------------
     TAboutResource
     --------------------------------------------------------------------}
-  
+
   TAboutResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
     Class Function DefaultAPI : TGoogleAPIClass; override;
     Function Get : TAbout;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TChangesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TChangesResource, method List
-  
+
   TChangesListOptions = Record
     includeRemoved : boolean;
     pageSize : integer;
@@ -1087,10 +1093,10 @@ type
     restrictToMyDrive : boolean;
     spaces : String;
   end;
-  
-  
+
+
   //Optional query Options for TChangesResource, method Watch
-  
+
   TChangesWatchOptions = Record
     includeRemoved : boolean;
     pageSize : integer;
@@ -1098,7 +1104,7 @@ type
     restrictToMyDrive : boolean;
     spaces : String;
   end;
-  
+
   TChangesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -1109,41 +1115,41 @@ type
     Function Watch(aChannel : TChannel; AQuery : string  = '') : TChannel;
     Function Watch(aChannel : TChannel; AQuery : TChangeswatchOptions) : TChannel;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TChannelsResource
     --------------------------------------------------------------------}
-  
+
   TChannelsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
     Class Function DefaultAPI : TGoogleAPIClass; override;
     Procedure Stop(aChannel : TChannel);
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TCommentsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TCommentsResource, method Get
-  
+
   TCommentsGetOptions = Record
     includeDeleted : boolean;
   end;
-  
-  
+
+
   //Optional query Options for TCommentsResource, method List
-  
+
   TCommentsListOptions = Record
     includeDeleted : boolean;
     pageSize : integer;
     pageToken : String;
     startModifiedTime : String;
   end;
-  
+
   TCommentsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -1156,56 +1162,56 @@ type
     Function List(fileId: string; AQuery : TCommentslistOptions) : TCommentList;
     Function Update(commentId: string; fileId: string; aComment : TComment) : TComment;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TFilesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TFilesResource, method Copy
-  
+
   TFilesCopyOptions = Record
     ignoreDefaultVisibility : boolean;
     keepRevisionForever : boolean;
     ocrLanguage : String;
   end;
-  
-  
+
+
   //Optional query Options for TFilesResource, method Create
-  
+
   TFilesCreateOptions = Record
     ignoreDefaultVisibility : boolean;
     keepRevisionForever : boolean;
     ocrLanguage : String;
     useContentAsIndexableText : boolean;
   end;
-  
-  
+
+
   //Optional query Options for TFilesResource, method Export
-  
+
   TFilesExportOptions = Record
     mimeType : String;
   end;
-  
-  
+
+
   //Optional query Options for TFilesResource, method GenerateIds
-  
+
   TFilesGenerateIdsOptions = Record
     count : integer;
     space : String;
   end;
-  
-  
+
+
   //Optional query Options for TFilesResource, method Get
-  
+
   TFilesGetOptions = Record
     acknowledgeAbuse : boolean;
   end;
-  
-  
+
+
   //Optional query Options for TFilesResource, method List
-  
+
   TFilesListOptions = Record
     corpus : String;
     orderBy : String;
@@ -1215,10 +1221,10 @@ type
     spaces : String;
     fields: String;
   end;
-  
-  
+
+
   //Optional query Options for TFilesResource, method Update
-  
+
   TFilesUpdateOptions = Record
     addParents : String;
     keepRevisionForever : boolean;
@@ -1226,14 +1232,14 @@ type
     removeParents : String;
     useContentAsIndexableText : boolean;
   end;
-  
-  
+
+
   //Optional query Options for TFilesResource, method Watch
-  
+
   TFilesWatchOptions = Record
     acknowledgeAbuse : boolean;
   end;
-  
+
   TFilesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -1257,28 +1263,28 @@ type
     Function Watch(fileId: string; aChannel : TChannel; AQuery : string  = '') : TChannel;
     Function Watch(fileId: string; aChannel : TChannel; AQuery : TFileswatchOptions) : TChannel;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TPermissionsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TPermissionsResource, method Create
-  
+
   TPermissionsCreateOptions = Record
     emailMessage : String;
     sendNotificationEmail : boolean;
     transferOwnership : boolean;
   end;
-  
-  
+
+
   //Optional query Options for TPermissionsResource, method Update
-  
+
   TPermissionsUpdateOptions = Record
     transferOwnership : boolean;
   end;
-  
+
   TPermissionsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -1291,28 +1297,28 @@ type
     Function Update(fileId: string; permissionId: string; aPermission : TPermission; AQuery : string  = '') : TPermission;
     Function Update(fileId: string; permissionId: string; aPermission : TPermission; AQuery : TPermissionsupdateOptions) : TPermission;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TRepliesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TRepliesResource, method Get
-  
+
   TRepliesGetOptions = Record
     includeDeleted : boolean;
   end;
-  
-  
+
+
   //Optional query Options for TRepliesResource, method List
-  
+
   TRepliesListOptions = Record
     includeDeleted : boolean;
     pageSize : integer;
     pageToken : String;
   end;
-  
+
   TRepliesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -1325,19 +1331,19 @@ type
     Function List(commentId: string; fileId: string; AQuery : TReplieslistOptions) : TReplyList;
     Function Update(commentId: string; fileId: string; replyId: string; aReply : TReply) : TReply;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TRevisionsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TRevisionsResource, method Get
-  
+
   TRevisionsGetOptions = Record
     acknowledgeAbuse : boolean;
   end;
-  
+
   TRevisionsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -1348,12 +1354,12 @@ type
     Function List(fileId: string) : TRevisionList;
     Function Update(fileId: string; revisionId: string; aRevision : TRevision) : TRevision;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TDriveAPI
     --------------------------------------------------------------------}
-  
+
   TDriveAPI = Class(TGoogleAPI)
   Private
     FAboutInstance : TAboutResource;
@@ -1469,7 +1475,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAboutTypestorageQuota.Setlimit(AIndex : Integer; const AValue : String); 
+Procedure TAboutTypestorageQuota.Setlimit(AIndex : Integer; const AValue : String);
 
 begin
   If (Flimit=AValue) then exit;
@@ -1479,7 +1485,7 @@ end;
 
 
 
-Procedure TAboutTypestorageQuota.Setusage(AIndex : Integer; const AValue : String); 
+Procedure TAboutTypestorageQuota.Setusage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fusage=AValue) then exit;
@@ -1489,7 +1495,7 @@ end;
 
 
 
-Procedure TAboutTypestorageQuota.SetusageInDrive(AIndex : Integer; const AValue : String); 
+Procedure TAboutTypestorageQuota.SetusageInDrive(AIndex : Integer; const AValue : String);
 
 begin
   If (FusageInDrive=AValue) then exit;
@@ -1499,7 +1505,7 @@ end;
 
 
 
-Procedure TAboutTypestorageQuota.SetusageInDriveTrash(AIndex : Integer; const AValue : String); 
+Procedure TAboutTypestorageQuota.SetusageInDriveTrash(AIndex : Integer; const AValue : String);
 
 begin
   If (FusageInDriveTrash=AValue) then exit;
@@ -1516,7 +1522,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAbout.SetappInstalled(AIndex : Integer; const AValue : boolean); 
+Procedure TAbout.SetappInstalled(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FappInstalled=AValue) then exit;
@@ -1526,7 +1532,7 @@ end;
 
 
 
-Procedure TAbout.SetexportFormats(AIndex : Integer; const AValue : TAboutTypeexportFormats); 
+Procedure TAbout.SetexportFormats(AIndex : Integer; const AValue : TAboutTypeexportFormats);
 
 begin
   If (FexportFormats=AValue) then exit;
@@ -1536,7 +1542,7 @@ end;
 
 
 
-Procedure TAbout.SetfolderColorPalette(AIndex : Integer; const AValue : TStringArray); 
+Procedure TAbout.SetfolderColorPalette(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FfolderColorPalette=AValue) then exit;
@@ -1546,7 +1552,7 @@ end;
 
 
 
-Procedure TAbout.SetimportFormats(AIndex : Integer; const AValue : TAboutTypeimportFormats); 
+Procedure TAbout.SetimportFormats(AIndex : Integer; const AValue : TAboutTypeimportFormats);
 
 begin
   If (FimportFormats=AValue) then exit;
@@ -1556,7 +1562,7 @@ end;
 
 
 
-Procedure TAbout.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAbout.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1566,7 +1572,7 @@ end;
 
 
 
-Procedure TAbout.SetmaxImportSizes(AIndex : Integer; const AValue : TAboutTypemaxImportSizes); 
+Procedure TAbout.SetmaxImportSizes(AIndex : Integer; const AValue : TAboutTypemaxImportSizes);
 
 begin
   If (FmaxImportSizes=AValue) then exit;
@@ -1576,7 +1582,7 @@ end;
 
 
 
-Procedure TAbout.SetmaxUploadSize(AIndex : Integer; const AValue : String); 
+Procedure TAbout.SetmaxUploadSize(AIndex : Integer; const AValue : String);
 
 begin
   If (FmaxUploadSize=AValue) then exit;
@@ -1586,7 +1592,7 @@ end;
 
 
 
-Procedure TAbout.SetstorageQuota(AIndex : Integer; const AValue : TAboutTypestorageQuota); 
+Procedure TAbout.SetstorageQuota(AIndex : Integer; const AValue : TAboutTypestorageQuota);
 
 begin
   If (FstorageQuota=AValue) then exit;
@@ -1596,7 +1602,7 @@ end;
 
 
 
-Procedure TAbout.Setuser(AIndex : Integer; const AValue : TUser); 
+Procedure TAbout.Setuser(AIndex : Integer; const AValue : TUser);
 
 begin
   If (Fuser=AValue) then exit;
@@ -1607,7 +1613,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAbout.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAbout.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1626,7 +1632,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TChange.Set_file(AIndex : Integer; const AValue : TFile); 
+Procedure TChange.Set_file(AIndex : Integer; const AValue : TFile);
 
 begin
   If (F_file=AValue) then exit;
@@ -1636,7 +1642,7 @@ end;
 
 
 
-Procedure TChange.SetfileId(AIndex : Integer; const AValue : String); 
+Procedure TChange.SetfileId(AIndex : Integer; const AValue : String);
 
 begin
   If (FfileId=AValue) then exit;
@@ -1646,7 +1652,7 @@ end;
 
 
 
-Procedure TChange.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TChange.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1656,7 +1662,7 @@ end;
 
 
 
-Procedure TChange.Setremoved(AIndex : Integer; const AValue : boolean); 
+Procedure TChange.Setremoved(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fremoved=AValue) then exit;
@@ -1666,7 +1672,7 @@ end;
 
 
 
-Procedure TChange.Settime(AIndex : Integer; const AValue : TDatetime); 
+Procedure TChange.Settime(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (Ftime=AValue) then exit;
@@ -1694,7 +1700,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TChangeList.Setchanges(AIndex : Integer; const AValue : TChangeListTypechangesArray); 
+Procedure TChangeList.Setchanges(AIndex : Integer; const AValue : TChangeListTypechangesArray);
 
 begin
   If (Fchanges=AValue) then exit;
@@ -1704,7 +1710,7 @@ end;
 
 
 
-Procedure TChangeList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TChangeList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1714,7 +1720,7 @@ end;
 
 
 
-Procedure TChangeList.SetnewStartPageToken(AIndex : Integer; const AValue : String); 
+Procedure TChangeList.SetnewStartPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnewStartPageToken=AValue) then exit;
@@ -1724,7 +1730,7 @@ end;
 
 
 
-Procedure TChangeList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TChangeList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -1735,7 +1741,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TChangeList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TChangeList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1767,7 +1773,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TChannel.Setaddress(AIndex : Integer; const AValue : String); 
+Procedure TChannel.Setaddress(AIndex : Integer; const AValue : String);
 
 begin
   If (Faddress=AValue) then exit;
@@ -1777,7 +1783,7 @@ end;
 
 
 
-Procedure TChannel.Setexpiration(AIndex : Integer; const AValue : String); 
+Procedure TChannel.Setexpiration(AIndex : Integer; const AValue : String);
 
 begin
   If (Fexpiration=AValue) then exit;
@@ -1787,7 +1793,7 @@ end;
 
 
 
-Procedure TChannel.Setid(AIndex : Integer; const AValue : String); 
+Procedure TChannel.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -1797,7 +1803,7 @@ end;
 
 
 
-Procedure TChannel.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TChannel.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1807,7 +1813,7 @@ end;
 
 
 
-Procedure TChannel.Setparams(AIndex : Integer; const AValue : TChannelTypeparams); 
+Procedure TChannel.Setparams(AIndex : Integer; const AValue : TChannelTypeparams);
 
 begin
   If (Fparams=AValue) then exit;
@@ -1817,7 +1823,7 @@ end;
 
 
 
-Procedure TChannel.Setpayload(AIndex : Integer; const AValue : boolean); 
+Procedure TChannel.Setpayload(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fpayload=AValue) then exit;
@@ -1827,7 +1833,7 @@ end;
 
 
 
-Procedure TChannel.SetresourceId(AIndex : Integer; const AValue : String); 
+Procedure TChannel.SetresourceId(AIndex : Integer; const AValue : String);
 
 begin
   If (FresourceId=AValue) then exit;
@@ -1837,7 +1843,7 @@ end;
 
 
 
-Procedure TChannel.SetresourceUri(AIndex : Integer; const AValue : String); 
+Procedure TChannel.SetresourceUri(AIndex : Integer; const AValue : String);
 
 begin
   If (FresourceUri=AValue) then exit;
@@ -1847,7 +1853,7 @@ end;
 
 
 
-Procedure TChannel.Settoken(AIndex : Integer; const AValue : String); 
+Procedure TChannel.Settoken(AIndex : Integer; const AValue : String);
 
 begin
   If (Ftoken=AValue) then exit;
@@ -1857,7 +1863,7 @@ end;
 
 
 
-Procedure TChannel.Set_type(AIndex : Integer; const AValue : String); 
+Procedure TChannel.Set_type(AIndex : Integer; const AValue : String);
 
 begin
   If (F_type=AValue) then exit;
@@ -1885,7 +1891,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCommentTypequotedFileContent.SetmimeType(AIndex : Integer; const AValue : String); 
+Procedure TCommentTypequotedFileContent.SetmimeType(AIndex : Integer; const AValue : String);
 
 begin
   If (FmimeType=AValue) then exit;
@@ -1895,7 +1901,7 @@ end;
 
 
 
-Procedure TCommentTypequotedFileContent.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TCommentTypequotedFileContent.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -1912,7 +1918,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TComment.Setanchor(AIndex : Integer; const AValue : String); 
+Procedure TComment.Setanchor(AIndex : Integer; const AValue : String);
 
 begin
   If (Fanchor=AValue) then exit;
@@ -1922,7 +1928,7 @@ end;
 
 
 
-Procedure TComment.Setauthor(AIndex : Integer; const AValue : TUser); 
+Procedure TComment.Setauthor(AIndex : Integer; const AValue : TUser);
 
 begin
   If (Fauthor=AValue) then exit;
@@ -1932,7 +1938,7 @@ end;
 
 
 
-Procedure TComment.Setcontent(AIndex : Integer; const AValue : String); 
+Procedure TComment.Setcontent(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcontent=AValue) then exit;
@@ -1942,7 +1948,7 @@ end;
 
 
 
-Procedure TComment.SetcreatedTime(AIndex : Integer; const AValue : TDatetime); 
+Procedure TComment.SetcreatedTime(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (FcreatedTime=AValue) then exit;
@@ -1952,7 +1958,7 @@ end;
 
 
 
-Procedure TComment.Setdeleted(AIndex : Integer; const AValue : boolean); 
+Procedure TComment.Setdeleted(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fdeleted=AValue) then exit;
@@ -1962,7 +1968,7 @@ end;
 
 
 
-Procedure TComment.SethtmlContent(AIndex : Integer; const AValue : String); 
+Procedure TComment.SethtmlContent(AIndex : Integer; const AValue : String);
 
 begin
   If (FhtmlContent=AValue) then exit;
@@ -1972,7 +1978,7 @@ end;
 
 
 
-Procedure TComment.Setid(AIndex : Integer; const AValue : String); 
+Procedure TComment.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -1982,7 +1988,7 @@ end;
 
 
 
-Procedure TComment.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TComment.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1992,7 +1998,7 @@ end;
 
 
 
-Procedure TComment.SetmodifiedTime(AIndex : Integer; const AValue : TDatetime); 
+Procedure TComment.SetmodifiedTime(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (FmodifiedTime=AValue) then exit;
@@ -2002,7 +2008,7 @@ end;
 
 
 
-Procedure TComment.SetquotedFileContent(AIndex : Integer; const AValue : TCommentTypequotedFileContent); 
+Procedure TComment.SetquotedFileContent(AIndex : Integer; const AValue : TCommentTypequotedFileContent);
 
 begin
   If (FquotedFileContent=AValue) then exit;
@@ -2012,7 +2018,7 @@ end;
 
 
 
-Procedure TComment.Setreplies(AIndex : Integer; const AValue : TCommentTyperepliesArray); 
+Procedure TComment.Setreplies(AIndex : Integer; const AValue : TCommentTyperepliesArray);
 
 begin
   If (Freplies=AValue) then exit;
@@ -2022,7 +2028,7 @@ end;
 
 
 
-Procedure TComment.Setresolved(AIndex : Integer; const AValue : boolean); 
+Procedure TComment.Setresolved(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fresolved=AValue) then exit;
@@ -2033,7 +2039,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TComment.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TComment.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2052,7 +2058,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCommentList.Setcomments(AIndex : Integer; const AValue : TCommentListTypecommentsArray); 
+Procedure TCommentList.Setcomments(AIndex : Integer; const AValue : TCommentListTypecommentsArray);
 
 begin
   If (Fcomments=AValue) then exit;
@@ -2062,7 +2068,7 @@ end;
 
 
 
-Procedure TCommentList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TCommentList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -2072,7 +2078,7 @@ end;
 
 
 
-Procedure TCommentList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TCommentList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -2083,7 +2089,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TCommentList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TCommentList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2115,7 +2121,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFileTypecapabilities.SetcanComment(AIndex : Integer; const AValue : boolean); 
+Procedure TFileTypecapabilities.SetcanComment(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FcanComment=AValue) then exit;
@@ -2125,7 +2131,7 @@ end;
 
 
 
-Procedure TFileTypecapabilities.SetcanCopy(AIndex : Integer; const AValue : boolean); 
+Procedure TFileTypecapabilities.SetcanCopy(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FcanCopy=AValue) then exit;
@@ -2135,7 +2141,7 @@ end;
 
 
 
-Procedure TFileTypecapabilities.SetcanEdit(AIndex : Integer; const AValue : boolean); 
+Procedure TFileTypecapabilities.SetcanEdit(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FcanEdit=AValue) then exit;
@@ -2145,7 +2151,7 @@ end;
 
 
 
-Procedure TFileTypecapabilities.SetcanReadRevisions(AIndex : Integer; const AValue : boolean); 
+Procedure TFileTypecapabilities.SetcanReadRevisions(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FcanReadRevisions=AValue) then exit;
@@ -2155,7 +2161,7 @@ end;
 
 
 
-Procedure TFileTypecapabilities.SetcanShare(AIndex : Integer; const AValue : boolean); 
+Procedure TFileTypecapabilities.SetcanShare(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FcanShare=AValue) then exit;
@@ -2172,7 +2178,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFileTypecontentHintsTypethumbnail.Setimage(AIndex : Integer; const AValue : String); 
+Procedure TFileTypecontentHintsTypethumbnail.Setimage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fimage=AValue) then exit;
@@ -2182,7 +2188,7 @@ end;
 
 
 
-Procedure TFileTypecontentHintsTypethumbnail.SetmimeType(AIndex : Integer; const AValue : String); 
+Procedure TFileTypecontentHintsTypethumbnail.SetmimeType(AIndex : Integer; const AValue : String);
 
 begin
   If (FmimeType=AValue) then exit;
@@ -2199,7 +2205,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFileTypecontentHints.SetindexableText(AIndex : Integer; const AValue : String); 
+Procedure TFileTypecontentHints.SetindexableText(AIndex : Integer; const AValue : String);
 
 begin
   If (FindexableText=AValue) then exit;
@@ -2209,7 +2215,7 @@ end;
 
 
 
-Procedure TFileTypecontentHints.Setthumbnail(AIndex : Integer; const AValue : TFileTypecontentHintsTypethumbnail); 
+Procedure TFileTypecontentHints.Setthumbnail(AIndex : Integer; const AValue : TFileTypecontentHintsTypethumbnail);
 
 begin
   If (Fthumbnail=AValue) then exit;
@@ -2226,7 +2232,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFileTypeimageMediaMetadataTypelocation.Setaltitude(AIndex : Integer; const AValue : double); 
+Procedure TFileTypeimageMediaMetadataTypelocation.Setaltitude(AIndex : Integer; const AValue : double);
 
 begin
   If (Faltitude=AValue) then exit;
@@ -2236,7 +2242,7 @@ end;
 
 
 
-Procedure TFileTypeimageMediaMetadataTypelocation.Setlatitude(AIndex : Integer; const AValue : double); 
+Procedure TFileTypeimageMediaMetadataTypelocation.Setlatitude(AIndex : Integer; const AValue : double);
 
 begin
   If (Flatitude=AValue) then exit;
@@ -2246,7 +2252,7 @@ end;
 
 
 
-Procedure TFileTypeimageMediaMetadataTypelocation.Setlongitude(AIndex : Integer; const AValue : double); 
+Procedure TFileTypeimageMediaMetadataTypelocation.Setlongitude(AIndex : Integer; const AValue : double);
 
 begin
   If (Flongitude=AValue) then exit;
@@ -2263,7 +2269,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFileTypeimageMediaMetadata.Setaperture(AIndex : Integer; const AValue : integer); 
+Procedure TFileTypeimageMediaMetadata.Setaperture(AIndex : Integer; const AValue : integer);
 
 begin
   If (Faperture=AValue) then exit;
@@ -2273,7 +2279,7 @@ end;
 
 
 
-Procedure TFileTypeimageMediaMetadata.SetcameraMake(AIndex : Integer; const AValue : String); 
+Procedure TFileTypeimageMediaMetadata.SetcameraMake(AIndex : Integer; const AValue : String);
 
 begin
   If (FcameraMake=AValue) then exit;
@@ -2283,7 +2289,7 @@ end;
 
 
 
-Procedure TFileTypeimageMediaMetadata.SetcameraModel(AIndex : Integer; const AValue : String); 
+Procedure TFileTypeimageMediaMetadata.SetcameraModel(AIndex : Integer; const AValue : String);
 
 begin
   If (FcameraModel=AValue) then exit;
@@ -2293,7 +2299,7 @@ end;
 
 
 
-Procedure TFileTypeimageMediaMetadata.SetcolorSpace(AIndex : Integer; const AValue : String); 
+Procedure TFileTypeimageMediaMetadata.SetcolorSpace(AIndex : Integer; const AValue : String);
 
 begin
   If (FcolorSpace=AValue) then exit;
@@ -2303,7 +2309,7 @@ end;
 
 
 
-Procedure TFileTypeimageMediaMetadata.SetexposureBias(AIndex : Integer; const AValue : integer); 
+Procedure TFileTypeimageMediaMetadata.SetexposureBias(AIndex : Integer; const AValue : integer);
 
 begin
   If (FexposureBias=AValue) then exit;
@@ -2313,7 +2319,7 @@ end;
 
 
 
-Procedure TFileTypeimageMediaMetadata.SetexposureMode(AIndex : Integer; const AValue : String); 
+Procedure TFileTypeimageMediaMetadata.SetexposureMode(AIndex : Integer; const AValue : String);
 
 begin
   If (FexposureMode=AValue) then exit;
@@ -2323,7 +2329,7 @@ end;
 
 
 
-Procedure TFileTypeimageMediaMetadata.SetexposureTime(AIndex : Integer; const AValue : integer); 
+Procedure TFileTypeimageMediaMetadata.SetexposureTime(AIndex : Integer; const AValue : integer);
 
 begin
   If (FexposureTime=AValue) then exit;
@@ -2333,7 +2339,7 @@ end;
 
 
 
-Procedure TFileTypeimageMediaMetadata.SetflashUsed(AIndex : Integer; const AValue : boolean); 
+Procedure TFileTypeimageMediaMetadata.SetflashUsed(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FflashUsed=AValue) then exit;
@@ -2343,7 +2349,7 @@ end;
 
 
 
-Procedure TFileTypeimageMediaMetadata.SetfocalLength(AIndex : Integer; const AValue : integer); 
+Procedure TFileTypeimageMediaMetadata.SetfocalLength(AIndex : Integer; const AValue : integer);
 
 begin
   If (FfocalLength=AValue) then exit;
@@ -2353,7 +2359,7 @@ end;
 
 
 
-Procedure TFileTypeimageMediaMetadata.Setheight(AIndex : Integer; const AValue : integer); 
+Procedure TFileTypeimageMediaMetadata.Setheight(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fheight=AValue) then exit;
@@ -2363,7 +2369,7 @@ end;
 
 
 
-Procedure TFileTypeimageMediaMetadata.SetisoSpeed(AIndex : Integer; const AValue : integer); 
+Procedure TFileTypeimageMediaMetadata.SetisoSpeed(AIndex : Integer; const AValue : integer);
 
 begin
   If (FisoSpeed=AValue) then exit;
@@ -2373,7 +2379,7 @@ end;
 
 
 
-Procedure TFileTypeimageMediaMetadata.Setlens(AIndex : Integer; const AValue : String); 
+Procedure TFileTypeimageMediaMetadata.Setlens(AIndex : Integer; const AValue : String);
 
 begin
   If (Flens=AValue) then exit;
@@ -2383,7 +2389,7 @@ end;
 
 
 
-Procedure TFileTypeimageMediaMetadata.Setlocation(AIndex : Integer; const AValue : TFileTypeimageMediaMetadataTypelocation); 
+Procedure TFileTypeimageMediaMetadata.Setlocation(AIndex : Integer; const AValue : TFileTypeimageMediaMetadataTypelocation);
 
 begin
   If (Flocation=AValue) then exit;
@@ -2393,7 +2399,7 @@ end;
 
 
 
-Procedure TFileTypeimageMediaMetadata.SetmaxApertureValue(AIndex : Integer; const AValue : integer); 
+Procedure TFileTypeimageMediaMetadata.SetmaxApertureValue(AIndex : Integer; const AValue : integer);
 
 begin
   If (FmaxApertureValue=AValue) then exit;
@@ -2403,7 +2409,7 @@ end;
 
 
 
-Procedure TFileTypeimageMediaMetadata.SetmeteringMode(AIndex : Integer; const AValue : String); 
+Procedure TFileTypeimageMediaMetadata.SetmeteringMode(AIndex : Integer; const AValue : String);
 
 begin
   If (FmeteringMode=AValue) then exit;
@@ -2413,7 +2419,7 @@ end;
 
 
 
-Procedure TFileTypeimageMediaMetadata.Setrotation(AIndex : Integer; const AValue : integer); 
+Procedure TFileTypeimageMediaMetadata.Setrotation(AIndex : Integer; const AValue : integer);
 
 begin
   If (Frotation=AValue) then exit;
@@ -2423,7 +2429,7 @@ end;
 
 
 
-Procedure TFileTypeimageMediaMetadata.Setsensor(AIndex : Integer; const AValue : String); 
+Procedure TFileTypeimageMediaMetadata.Setsensor(AIndex : Integer; const AValue : String);
 
 begin
   If (Fsensor=AValue) then exit;
@@ -2433,7 +2439,7 @@ end;
 
 
 
-Procedure TFileTypeimageMediaMetadata.SetsubjectDistance(AIndex : Integer; const AValue : integer); 
+Procedure TFileTypeimageMediaMetadata.SetsubjectDistance(AIndex : Integer; const AValue : integer);
 
 begin
   If (FsubjectDistance=AValue) then exit;
@@ -2443,7 +2449,7 @@ end;
 
 
 
-Procedure TFileTypeimageMediaMetadata.Settime(AIndex : Integer; const AValue : String); 
+Procedure TFileTypeimageMediaMetadata.Settime(AIndex : Integer; const AValue : String);
 
 begin
   If (Ftime=AValue) then exit;
@@ -2453,7 +2459,7 @@ end;
 
 
 
-Procedure TFileTypeimageMediaMetadata.SetwhiteBalance(AIndex : Integer; const AValue : String); 
+Procedure TFileTypeimageMediaMetadata.SetwhiteBalance(AIndex : Integer; const AValue : String);
 
 begin
   If (FwhiteBalance=AValue) then exit;
@@ -2463,7 +2469,7 @@ end;
 
 
 
-Procedure TFileTypeimageMediaMetadata.Setwidth(AIndex : Integer; const AValue : integer); 
+Procedure TFileTypeimageMediaMetadata.Setwidth(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fwidth=AValue) then exit;
@@ -2493,7 +2499,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFileTypevideoMediaMetadata.SetdurationMillis(AIndex : Integer; const AValue : String); 
+Procedure TFileTypevideoMediaMetadata.SetdurationMillis(AIndex : Integer; const AValue : String);
 
 begin
   If (FdurationMillis=AValue) then exit;
@@ -2503,7 +2509,7 @@ end;
 
 
 
-Procedure TFileTypevideoMediaMetadata.Setheight(AIndex : Integer; const AValue : integer); 
+Procedure TFileTypevideoMediaMetadata.Setheight(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fheight=AValue) then exit;
@@ -2513,7 +2519,7 @@ end;
 
 
 
-Procedure TFileTypevideoMediaMetadata.Setwidth(AIndex : Integer; const AValue : integer); 
+Procedure TFileTypevideoMediaMetadata.Setwidth(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fwidth=AValue) then exit;
@@ -2530,7 +2536,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFile.SetappProperties(AIndex : Integer; const AValue : TFileTypeappProperties); 
+Procedure TFile.SetappProperties(AIndex : Integer; const AValue : TFileTypeappProperties);
 
 begin
   If (FappProperties=AValue) then exit;
@@ -2540,7 +2546,7 @@ end;
 
 
 
-Procedure TFile.Setcapabilities(AIndex : Integer; const AValue : TFileTypecapabilities); 
+Procedure TFile.Setcapabilities(AIndex : Integer; const AValue : TFileTypecapabilities);
 
 begin
   If (Fcapabilities=AValue) then exit;
@@ -2550,7 +2556,7 @@ end;
 
 
 
-Procedure TFile.SetcontentHints(AIndex : Integer; const AValue : TFileTypecontentHints); 
+Procedure TFile.SetcontentHints(AIndex : Integer; const AValue : TFileTypecontentHints);
 
 begin
   If (FcontentHints=AValue) then exit;
@@ -2560,7 +2566,7 @@ end;
 
 
 
-Procedure TFile.SetcreatedTime(AIndex : Integer; const AValue : TDatetime); 
+Procedure TFile.SetcreatedTime(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (FcreatedTime=AValue) then exit;
@@ -2570,7 +2576,7 @@ end;
 
 
 
-Procedure TFile.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TFile.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -2580,7 +2586,7 @@ end;
 
 
 
-Procedure TFile.SetexplicitlyTrashed(AIndex : Integer; const AValue : boolean); 
+Procedure TFile.SetexplicitlyTrashed(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FexplicitlyTrashed=AValue) then exit;
@@ -2590,7 +2596,7 @@ end;
 
 
 
-Procedure TFile.SetfileExtension(AIndex : Integer; const AValue : String); 
+Procedure TFile.SetfileExtension(AIndex : Integer; const AValue : String);
 
 begin
   If (FfileExtension=AValue) then exit;
@@ -2600,7 +2606,7 @@ end;
 
 
 
-Procedure TFile.SetfolderColorRgb(AIndex : Integer; const AValue : String); 
+Procedure TFile.SetfolderColorRgb(AIndex : Integer; const AValue : String);
 
 begin
   If (FfolderColorRgb=AValue) then exit;
@@ -2610,7 +2616,7 @@ end;
 
 
 
-Procedure TFile.SetfullFileExtension(AIndex : Integer; const AValue : String); 
+Procedure TFile.SetfullFileExtension(AIndex : Integer; const AValue : String);
 
 begin
   If (FfullFileExtension=AValue) then exit;
@@ -2620,7 +2626,7 @@ end;
 
 
 
-Procedure TFile.SetheadRevisionId(AIndex : Integer; const AValue : String); 
+Procedure TFile.SetheadRevisionId(AIndex : Integer; const AValue : String);
 
 begin
   If (FheadRevisionId=AValue) then exit;
@@ -2630,7 +2636,7 @@ end;
 
 
 
-Procedure TFile.SeticonLink(AIndex : Integer; const AValue : String); 
+Procedure TFile.SeticonLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FiconLink=AValue) then exit;
@@ -2640,7 +2646,7 @@ end;
 
 
 
-Procedure TFile.Setid(AIndex : Integer; const AValue : String); 
+Procedure TFile.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -2650,7 +2656,7 @@ end;
 
 
 
-Procedure TFile.SetimageMediaMetadata(AIndex : Integer; const AValue : TFileTypeimageMediaMetadata); 
+Procedure TFile.SetimageMediaMetadata(AIndex : Integer; const AValue : TFileTypeimageMediaMetadata);
 
 begin
   If (FimageMediaMetadata=AValue) then exit;
@@ -2660,7 +2666,7 @@ end;
 
 
 
-Procedure TFile.SetisAppAuthorized(AIndex : Integer; const AValue : boolean); 
+Procedure TFile.SetisAppAuthorized(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FisAppAuthorized=AValue) then exit;
@@ -2670,7 +2676,7 @@ end;
 
 
 
-Procedure TFile.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TFile.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -2680,7 +2686,7 @@ end;
 
 
 
-Procedure TFile.SetlastModifyingUser(AIndex : Integer; const AValue : TUser); 
+Procedure TFile.SetlastModifyingUser(AIndex : Integer; const AValue : TUser);
 
 begin
   If (FlastModifyingUser=AValue) then exit;
@@ -2690,7 +2696,7 @@ end;
 
 
 
-Procedure TFile.Setmd5Checksum(AIndex : Integer; const AValue : String); 
+Procedure TFile.Setmd5Checksum(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmd5Checksum=AValue) then exit;
@@ -2700,7 +2706,7 @@ end;
 
 
 
-Procedure TFile.SetmimeType(AIndex : Integer; const AValue : String); 
+Procedure TFile.SetmimeType(AIndex : Integer; const AValue : String);
 
 begin
   If (FmimeType=AValue) then exit;
@@ -2710,7 +2716,7 @@ end;
 
 
 
-Procedure TFile.SetmodifiedByMeTime(AIndex : Integer; const AValue : TDatetime); 
+Procedure TFile.SetmodifiedByMeTime(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (FmodifiedByMeTime=AValue) then exit;
@@ -2720,7 +2726,7 @@ end;
 
 
 
-Procedure TFile.SetmodifiedTime(AIndex : Integer; const AValue : TDatetime); 
+Procedure TFile.SetmodifiedTime(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (FmodifiedTime=AValue) then exit;
@@ -2730,7 +2736,7 @@ end;
 
 
 
-Procedure TFile.Setname(AIndex : Integer; const AValue : String); 
+Procedure TFile.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -2740,7 +2746,7 @@ end;
 
 
 
-Procedure TFile.SetoriginalFilename(AIndex : Integer; const AValue : String); 
+Procedure TFile.SetoriginalFilename(AIndex : Integer; const AValue : String);
 
 begin
   If (ForiginalFilename=AValue) then exit;
@@ -2750,7 +2756,7 @@ end;
 
 
 
-Procedure TFile.SetownedByMe(AIndex : Integer; const AValue : boolean); 
+Procedure TFile.SetownedByMe(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FownedByMe=AValue) then exit;
@@ -2760,7 +2766,7 @@ end;
 
 
 
-Procedure TFile.Setowners(AIndex : Integer; const AValue : TFileTypeownersArray); 
+Procedure TFile.Setowners(AIndex : Integer; const AValue : TFileTypeownersArray);
 
 begin
   If (Fowners=AValue) then exit;
@@ -2770,7 +2776,7 @@ end;
 
 
 
-Procedure TFile.Setparents(AIndex : Integer; const AValue : TStringArray); 
+Procedure TFile.Setparents(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Fparents=AValue) then exit;
@@ -2780,7 +2786,7 @@ end;
 
 
 
-Procedure TFile.Setpermissions(AIndex : Integer; const AValue : TFileTypepermissionsArray); 
+Procedure TFile.Setpermissions(AIndex : Integer; const AValue : TFileTypepermissionsArray);
 
 begin
   If (Fpermissions=AValue) then exit;
@@ -2790,7 +2796,7 @@ end;
 
 
 
-Procedure TFile.Setproperties(AIndex : Integer; const AValue : TFileTypeproperties); 
+Procedure TFile.Setproperties(AIndex : Integer; const AValue : TFileTypeproperties);
 
 begin
   If (Fproperties=AValue) then exit;
@@ -2800,7 +2806,7 @@ end;
 
 
 
-Procedure TFile.SetquotaBytesUsed(AIndex : Integer; const AValue : String); 
+Procedure TFile.SetquotaBytesUsed(AIndex : Integer; const AValue : String);
 
 begin
   If (FquotaBytesUsed=AValue) then exit;
@@ -2810,7 +2816,7 @@ end;
 
 
 
-Procedure TFile.Setshared(AIndex : Integer; const AValue : boolean); 
+Procedure TFile.Setshared(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fshared=AValue) then exit;
@@ -2820,7 +2826,7 @@ end;
 
 
 
-Procedure TFile.SetsharedWithMeTime(AIndex : Integer; const AValue : TDatetime); 
+Procedure TFile.SetsharedWithMeTime(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (FsharedWithMeTime=AValue) then exit;
@@ -2830,7 +2836,7 @@ end;
 
 
 
-Procedure TFile.SetsharingUser(AIndex : Integer; const AValue : TUser); 
+Procedure TFile.SetsharingUser(AIndex : Integer; const AValue : TUser);
 
 begin
   If (FsharingUser=AValue) then exit;
@@ -2840,7 +2846,7 @@ end;
 
 
 
-Procedure TFile.Setsize(AIndex : Integer; const AValue : String); 
+Procedure TFile.Setsize(AIndex : Integer; const AValue : String);
 
 begin
   If (Fsize=AValue) then exit;
@@ -2850,7 +2856,7 @@ end;
 
 
 
-Procedure TFile.Setspaces(AIndex : Integer; const AValue : TStringArray); 
+Procedure TFile.Setspaces(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Fspaces=AValue) then exit;
@@ -2860,7 +2866,7 @@ end;
 
 
 
-Procedure TFile.Setstarred(AIndex : Integer; const AValue : boolean); 
+Procedure TFile.Setstarred(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fstarred=AValue) then exit;
@@ -2870,7 +2876,7 @@ end;
 
 
 
-Procedure TFile.SetthumbnailLink(AIndex : Integer; const AValue : String); 
+Procedure TFile.SetthumbnailLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FthumbnailLink=AValue) then exit;
@@ -2880,7 +2886,7 @@ end;
 
 
 
-Procedure TFile.Settrashed(AIndex : Integer; const AValue : boolean); 
+Procedure TFile.Settrashed(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Ftrashed=AValue) then exit;
@@ -2890,7 +2896,7 @@ end;
 
 
 
-Procedure TFile.Setversion(AIndex : Integer; const AValue : String); 
+Procedure TFile.Setversion(AIndex : Integer; const AValue : String);
 
 begin
   If (Fversion=AValue) then exit;
@@ -2900,7 +2906,7 @@ end;
 
 
 
-Procedure TFile.SetvideoMediaMetadata(AIndex : Integer; const AValue : TFileTypevideoMediaMetadata); 
+Procedure TFile.SetvideoMediaMetadata(AIndex : Integer; const AValue : TFileTypevideoMediaMetadata);
 
 begin
   If (FvideoMediaMetadata=AValue) then exit;
@@ -2910,7 +2916,7 @@ end;
 
 
 
-Procedure TFile.SetviewedByMe(AIndex : Integer; const AValue : boolean); 
+Procedure TFile.SetviewedByMe(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FviewedByMe=AValue) then exit;
@@ -2920,7 +2926,7 @@ end;
 
 
 
-Procedure TFile.SetviewedByMeTime(AIndex : Integer; const AValue : TDatetime); 
+Procedure TFile.SetviewedByMeTime(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (FviewedByMeTime=AValue) then exit;
@@ -2930,7 +2936,7 @@ end;
 
 
 
-Procedure TFile.SetviewersCanCopyContent(AIndex : Integer; const AValue : boolean); 
+Procedure TFile.SetviewersCanCopyContent(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FviewersCanCopyContent=AValue) then exit;
@@ -2940,7 +2946,7 @@ end;
 
 
 
-Procedure TFile.SetwebContentLink(AIndex : Integer; const AValue : String); 
+Procedure TFile.SetwebContentLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FwebContentLink=AValue) then exit;
@@ -2950,7 +2956,7 @@ end;
 
 
 
-Procedure TFile.SetwebViewLink(AIndex : Integer; const AValue : String); 
+Procedure TFile.SetwebViewLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FwebViewLink=AValue) then exit;
@@ -2960,7 +2966,7 @@ end;
 
 
 
-Procedure TFile.SetwritersCanShare(AIndex : Integer; const AValue : boolean); 
+Procedure TFile.SetwritersCanShare(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FwritersCanShare=AValue) then exit;
@@ -2971,7 +2977,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TFile.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TFile.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2993,7 +2999,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFileList.Setfiles(AIndex : Integer; const AValue : TFileListTypefilesArray); 
+Procedure TFileList.Setfiles(AIndex : Integer; const AValue : TFileListTypefilesArray);
 
 begin
   If (Ffiles=AValue) then exit;
@@ -3003,7 +3009,7 @@ end;
 
 
 
-Procedure TFileList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TFileList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -3013,7 +3019,7 @@ end;
 
 
 
-Procedure TFileList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TFileList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -3024,7 +3030,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TFileList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TFileList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -3043,7 +3049,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TGeneratedIds.Setids(AIndex : Integer; const AValue : TStringArray); 
+Procedure TGeneratedIds.Setids(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Fids=AValue) then exit;
@@ -3053,7 +3059,7 @@ end;
 
 
 
-Procedure TGeneratedIds.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TGeneratedIds.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -3063,7 +3069,7 @@ end;
 
 
 
-Procedure TGeneratedIds.Setspace(AIndex : Integer; const AValue : String); 
+Procedure TGeneratedIds.Setspace(AIndex : Integer; const AValue : String);
 
 begin
   If (Fspace=AValue) then exit;
@@ -3074,7 +3080,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TGeneratedIds.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TGeneratedIds.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -3093,7 +3099,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPermission.SetallowFileDiscovery(AIndex : Integer; const AValue : boolean); 
+Procedure TPermission.SetallowFileDiscovery(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FallowFileDiscovery=AValue) then exit;
@@ -3103,7 +3109,7 @@ end;
 
 
 
-Procedure TPermission.SetdisplayName(AIndex : Integer; const AValue : String); 
+Procedure TPermission.SetdisplayName(AIndex : Integer; const AValue : String);
 
 begin
   If (FdisplayName=AValue) then exit;
@@ -3113,7 +3119,7 @@ end;
 
 
 
-Procedure TPermission.Setdomain(AIndex : Integer; const AValue : String); 
+Procedure TPermission.Setdomain(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdomain=AValue) then exit;
@@ -3123,7 +3129,7 @@ end;
 
 
 
-Procedure TPermission.SetemailAddress(AIndex : Integer; const AValue : String); 
+Procedure TPermission.SetemailAddress(AIndex : Integer; const AValue : String);
 
 begin
   If (FemailAddress=AValue) then exit;
@@ -3133,7 +3139,7 @@ end;
 
 
 
-Procedure TPermission.Setid(AIndex : Integer; const AValue : String); 
+Procedure TPermission.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -3143,7 +3149,7 @@ end;
 
 
 
-Procedure TPermission.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TPermission.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -3153,7 +3159,7 @@ end;
 
 
 
-Procedure TPermission.SetphotoLink(AIndex : Integer; const AValue : String); 
+Procedure TPermission.SetphotoLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FphotoLink=AValue) then exit;
@@ -3163,7 +3169,7 @@ end;
 
 
 
-Procedure TPermission.Setrole(AIndex : Integer; const AValue : String); 
+Procedure TPermission.Setrole(AIndex : Integer; const AValue : String);
 
 begin
   If (Frole=AValue) then exit;
@@ -3173,7 +3179,7 @@ end;
 
 
 
-Procedure TPermission.Set_type(AIndex : Integer; const AValue : String); 
+Procedure TPermission.Set_type(AIndex : Integer; const AValue : String);
 
 begin
   If (F_type=AValue) then exit;
@@ -3201,7 +3207,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPermissionList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TPermissionList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -3211,7 +3217,7 @@ end;
 
 
 
-Procedure TPermissionList.Setpermissions(AIndex : Integer; const AValue : TPermissionListTypepermissionsArray); 
+Procedure TPermissionList.Setpermissions(AIndex : Integer; const AValue : TPermissionListTypepermissionsArray);
 
 begin
   If (Fpermissions=AValue) then exit;
@@ -3222,7 +3228,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TPermissionList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TPermissionList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -3241,7 +3247,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TReply.Setaction(AIndex : Integer; const AValue : String); 
+Procedure TReply.Setaction(AIndex : Integer; const AValue : String);
 
 begin
   If (Faction=AValue) then exit;
@@ -3251,7 +3257,7 @@ end;
 
 
 
-Procedure TReply.Setauthor(AIndex : Integer; const AValue : TUser); 
+Procedure TReply.Setauthor(AIndex : Integer; const AValue : TUser);
 
 begin
   If (Fauthor=AValue) then exit;
@@ -3261,7 +3267,7 @@ end;
 
 
 
-Procedure TReply.Setcontent(AIndex : Integer; const AValue : String); 
+Procedure TReply.Setcontent(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcontent=AValue) then exit;
@@ -3271,7 +3277,7 @@ end;
 
 
 
-Procedure TReply.SetcreatedTime(AIndex : Integer; const AValue : TDatetime); 
+Procedure TReply.SetcreatedTime(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (FcreatedTime=AValue) then exit;
@@ -3281,7 +3287,7 @@ end;
 
 
 
-Procedure TReply.Setdeleted(AIndex : Integer; const AValue : boolean); 
+Procedure TReply.Setdeleted(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fdeleted=AValue) then exit;
@@ -3291,7 +3297,7 @@ end;
 
 
 
-Procedure TReply.SethtmlContent(AIndex : Integer; const AValue : String); 
+Procedure TReply.SethtmlContent(AIndex : Integer; const AValue : String);
 
 begin
   If (FhtmlContent=AValue) then exit;
@@ -3301,7 +3307,7 @@ end;
 
 
 
-Procedure TReply.Setid(AIndex : Integer; const AValue : String); 
+Procedure TReply.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -3311,7 +3317,7 @@ end;
 
 
 
-Procedure TReply.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TReply.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -3321,7 +3327,7 @@ end;
 
 
 
-Procedure TReply.SetmodifiedTime(AIndex : Integer; const AValue : TDatetime); 
+Procedure TReply.SetmodifiedTime(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (FmodifiedTime=AValue) then exit;
@@ -3338,7 +3344,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TReplyList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TReplyList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -3348,7 +3354,7 @@ end;
 
 
 
-Procedure TReplyList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TReplyList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -3358,7 +3364,7 @@ end;
 
 
 
-Procedure TReplyList.Setreplies(AIndex : Integer; const AValue : TReplyListTyperepliesArray); 
+Procedure TReplyList.Setreplies(AIndex : Integer; const AValue : TReplyListTyperepliesArray);
 
 begin
   If (Freplies=AValue) then exit;
@@ -3369,7 +3375,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TReplyList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TReplyList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -3388,7 +3394,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TRevision.Setid(AIndex : Integer; const AValue : String); 
+Procedure TRevision.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -3398,7 +3404,7 @@ end;
 
 
 
-Procedure TRevision.SetkeepForever(AIndex : Integer; const AValue : boolean); 
+Procedure TRevision.SetkeepForever(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FkeepForever=AValue) then exit;
@@ -3408,7 +3414,7 @@ end;
 
 
 
-Procedure TRevision.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TRevision.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -3418,7 +3424,7 @@ end;
 
 
 
-Procedure TRevision.SetlastModifyingUser(AIndex : Integer; const AValue : TUser); 
+Procedure TRevision.SetlastModifyingUser(AIndex : Integer; const AValue : TUser);
 
 begin
   If (FlastModifyingUser=AValue) then exit;
@@ -3428,7 +3434,7 @@ end;
 
 
 
-Procedure TRevision.Setmd5Checksum(AIndex : Integer; const AValue : String); 
+Procedure TRevision.Setmd5Checksum(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmd5Checksum=AValue) then exit;
@@ -3438,7 +3444,7 @@ end;
 
 
 
-Procedure TRevision.SetmimeType(AIndex : Integer; const AValue : String); 
+Procedure TRevision.SetmimeType(AIndex : Integer; const AValue : String);
 
 begin
   If (FmimeType=AValue) then exit;
@@ -3448,7 +3454,7 @@ end;
 
 
 
-Procedure TRevision.SetmodifiedTime(AIndex : Integer; const AValue : TDatetime); 
+Procedure TRevision.SetmodifiedTime(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (FmodifiedTime=AValue) then exit;
@@ -3458,7 +3464,7 @@ end;
 
 
 
-Procedure TRevision.SetoriginalFilename(AIndex : Integer; const AValue : String); 
+Procedure TRevision.SetoriginalFilename(AIndex : Integer; const AValue : String);
 
 begin
   If (ForiginalFilename=AValue) then exit;
@@ -3468,7 +3474,7 @@ end;
 
 
 
-Procedure TRevision.SetpublishAuto(AIndex : Integer; const AValue : boolean); 
+Procedure TRevision.SetpublishAuto(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FpublishAuto=AValue) then exit;
@@ -3478,7 +3484,7 @@ end;
 
 
 
-Procedure TRevision.Set_published(AIndex : Integer; const AValue : boolean); 
+Procedure TRevision.Set_published(AIndex : Integer; const AValue : boolean);
 
 begin
   If (F_published=AValue) then exit;
@@ -3488,7 +3494,7 @@ end;
 
 
 
-Procedure TRevision.SetpublishedOutsideDomain(AIndex : Integer; const AValue : boolean); 
+Procedure TRevision.SetpublishedOutsideDomain(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FpublishedOutsideDomain=AValue) then exit;
@@ -3498,7 +3504,7 @@ end;
 
 
 
-Procedure TRevision.Setsize(AIndex : Integer; const AValue : String); 
+Procedure TRevision.Setsize(AIndex : Integer; const AValue : String);
 
 begin
   If (Fsize=AValue) then exit;
@@ -3526,7 +3532,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TRevisionList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TRevisionList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -3536,7 +3542,7 @@ end;
 
 
 
-Procedure TRevisionList.Setrevisions(AIndex : Integer; const AValue : TRevisionListTyperevisionsArray); 
+Procedure TRevisionList.Setrevisions(AIndex : Integer; const AValue : TRevisionListTyperevisionsArray);
 
 begin
   If (Frevisions=AValue) then exit;
@@ -3547,7 +3553,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TRevisionList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TRevisionList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -3566,7 +3572,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TStartPageToken.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TStartPageToken.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -3576,7 +3582,7 @@ end;
 
 
 
-Procedure TStartPageToken.SetstartPageToken(AIndex : Integer; const AValue : String); 
+Procedure TStartPageToken.SetstartPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FstartPageToken=AValue) then exit;
@@ -3593,7 +3599,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TUser.SetdisplayName(AIndex : Integer; const AValue : String); 
+Procedure TUser.SetdisplayName(AIndex : Integer; const AValue : String);
 
 begin
   If (FdisplayName=AValue) then exit;
@@ -3603,7 +3609,7 @@ end;
 
 
 
-Procedure TUser.SetemailAddress(AIndex : Integer; const AValue : String); 
+Procedure TUser.SetemailAddress(AIndex : Integer; const AValue : String);
 
 begin
   If (FemailAddress=AValue) then exit;
@@ -3613,7 +3619,7 @@ end;
 
 
 
-Procedure TUser.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TUser.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -3623,7 +3629,7 @@ end;
 
 
 
-Procedure TUser.Setme(AIndex : Integer; const AValue : boolean); 
+Procedure TUser.Setme(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fme=AValue) then exit;
@@ -3633,7 +3639,7 @@ end;
 
 
 
-Procedure TUser.SetpermissionId(AIndex : Integer; const AValue : String); 
+Procedure TUser.SetpermissionId(AIndex : Integer; const AValue : String);
 
 begin
   If (FpermissionId=AValue) then exit;
@@ -3643,7 +3649,7 @@ end;
 
 
 
-Procedure TUser.SetphotoLink(AIndex : Integer; const AValue : String); 
+Procedure TUser.SetphotoLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FphotoLink=AValue) then exit;
@@ -4642,7 +4648,7 @@ begin
   Result[6].Description:='View the files in your Google Drive';
   Result[7].Name:='https://www.googleapis.com/auth/drive.scripts';
   Result[7].Description:='Modify your Google Apps Script scripts'' behavior';
-  
+
 end;
 
 Class Function TDriveAPI.APINeedsAuth : Boolean;

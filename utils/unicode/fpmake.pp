@@ -2,7 +2,11 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses
+  {$ifdef unix}
+  cthreads,
+  {$endif}
+  fpmkunit;
 {$endif ALLPACKAGES}
 
 procedure add_unicode(const ADirectory: string);
@@ -16,7 +20,7 @@ begin
     begin
     P:=AddPackage('utils-unicode');
     P.ShortName:='ucd';
-    P.OSes:=AllOSes-[embedded,msdos,win16,macosclassic,palmos,zxspectrum,msxdos,amstradcpc,sinclairql];
+    P.OSes:=AllOSes-[embedded,msdos,win16,macosclassic,palmos,zxspectrum,msxdos,amstradcpc,sinclairql,human68k,ps1,wasip2];
     if Defaults.CPU=jvm then
       P.OSes := P.OSes - [java,android];
 

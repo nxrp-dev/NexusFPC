@@ -4,7 +4,7 @@
  *
  *  Copyright (c) 2000-2006 Apple Computer, Inc. All rights reserved.
  *
- *  For bug reports, consult the following page onthe World Wide Web:
+ *  For bug reports, consult the following page on the World Wide Web:
  *  http://bugs.freepascal.org
  *
  *----------------------------------------------------------------------------------------------------------------------------}
@@ -24,7 +24,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit ICADevice;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -209,7 +211,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.ICAApplication;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,ICAApplication;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -221,7 +227,7 @@ uses MacTypes,ICAApplication;
 {!
     @header ICADevice.h
     @discussion
-        ICADevice.h defines structures and functions that are used by native Image Capture device modules. 
+        ICADevice.h defines structures and functions that are used by native Image Capture device modules.
 }
 
 //-------------------------------------------------------------------------------------------------------------------- ICDHeader
@@ -262,7 +268,7 @@ type
     @discussion
         Parameter block passed to function <code>ICDNewObject</code>.
     @field header
-        The function returns error code in the <code>err</code> field of this structure. 
+        The function returns error code in the <code>err</code> field of this structure.
         The <code>refcon</code> field of this structure is used to pass a pointer to the callback function if <code>ICDNewObject</code> is called asynchronously.
     @field  parentObject
         Parent object of the new object.
@@ -289,7 +295,7 @@ type
     @param pb
         An <code>ICD_NewObjectPB</code> structure.
     @param completion
-        A pointer to a callback function that conforms to the interface of <code>ICDCompletion</code>. Pass <code>NULL</code> to make a synchronous call. 
+        A pointer to a callback function that conforms to the interface of <code>ICDCompletion</code>. Pass <code>NULL</code> to make a synchronous call.
     @result
         Returns an error code. If the function is called asynchronously, it returns <code>0</code> if the the call is accepted for asynchronous
         processing and returns an error code in the header passed to the callback function.
@@ -303,7 +309,7 @@ function ICDNewObject( var pb: ICD_NewObjectPB; completion: ICDCompletion ): ICA
     @discussion
         Parameter block passed to function <code>ICDDisposeObject</code>.
     @field header
-        The function returns error code in the <code>err</code> field of this structure. 
+        The function returns error code in the <code>err</code> field of this structure.
         The <code>refcon</code> field of this structure is used to pass a pointer to the callback function if <code>ICDDisposeObject</code> is called asynchronously.
     @field object
         Object to be disposed.
@@ -324,9 +330,9 @@ type
     @param pb
         An <code>ICD_DisposeObjectPB</code> structure.
     @param completion
-        A pointer to a callback function that conforms to the interface of <code>ICDCompletion</code>. Pass <code>NULL</code> to make a synchronous call. 
+        A pointer to a callback function that conforms to the interface of <code>ICDCompletion</code>. Pass <code>NULL</code> to make a synchronous call.
     @result
-        Returns an error code. If the function is called asynchronously, it returns <code>0</code> if the the call is accepted for asynchronous 
+        Returns an error code. If the function is called asynchronously, it returns <code>0</code> if the the call is accepted for asynchronous
         processing and returns an error code in the header passed to the callback function.
 }
 function ICDDisposeObject( var pb: ICD_DisposeObjectPB; completion: ICDCompletion ): ICAError; external name '_ICDDisposeObject';

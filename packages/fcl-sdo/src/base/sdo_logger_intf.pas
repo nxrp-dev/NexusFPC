@@ -14,12 +14,19 @@
 
  **********************************************************************}
 {$INCLUDE sdo_global.inc}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit sdo_logger_intf;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
 uses
-  SysUtils; 
+  System.SysUtils;
+{$ELSE FPC_DOTTEDUNITS}
+uses
+  SysUtils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
 
@@ -52,10 +59,11 @@ type
   function HasLogger() : Boolean;
   function SetLogger(ALogger : ILogger) : ILogger;
   function GetLogger() : ILogger;
-  
+
 implementation
 
 var FLogger : ILogger = nil;
+
 function SetLogger(ALogger : ILogger) : ILogger;
 begin
   Result := FLogger;

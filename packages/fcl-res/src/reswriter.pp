@@ -13,15 +13,22 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit reswriter;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$MODE OBJFPC} {$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, System.Resources.Resource;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, resource;
-  
+{$ENDIF FPC_DOTTEDUNITS}
+
 type
 
   { TResResourceWriter }
@@ -99,7 +106,7 @@ begin
   WriteNameId(aStream,aRes._Type);            //type
   WriteNameId(aStream,aRes.Name);             //name
   AlignDword(aStream);
-  
+
   DataVersion:=aRes.DataVersion;
   MemoryFlags:=aRes.MemoryFlags;
   LanguageID:=aRes.LangID;

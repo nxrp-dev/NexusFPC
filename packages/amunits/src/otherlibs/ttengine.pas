@@ -29,15 +29,21 @@
 }
 
 
+{$IFNDEF FPC_DOTTEDUNITS}
 UNIT TTENGINE;
+{$ENDIF FPC_DOTTEDUNITS}
 
 INTERFACE
+{$IFDEF FPC_DOTTEDUNITS}
+USES Amiga.Core.Exec,Amiga.Core.Utility,Amiga.Core.Agraphics;
+{$ELSE FPC_DOTTEDUNITS}
 USES Exec,utility,agraphics;
+{$ENDIF FPC_DOTTEDUNITS}
 
 VAR TTEngineBase : pLibrary = nil;
 
 const
-    TTENGINENAME : PChar = 'ttengine.library';
+    TTENGINENAME : PAnsiChar = 'ttengine.library';
 
 
   { $VER: ttengine.h 6.0 (3.1.2003) (c) by Grzegorz Kraszewski 2002.  }
@@ -183,7 +189,7 @@ const
      TTRQ_InitialLeftEdge = $6EDA2007;
   { WORD,             centered on screen  }
      TTRQ_InitialTopEdge = $6EDA2008;
-  { WORD,             max(200, 25% of sceeen width)  }
+  { WORD,             max(200, 25% of screen width)  }
      TTRQ_InitialWidth = $6EDA2009;
   { WORD,             max(200, 50% of screen height)  }
      TTRQ_InitialHeight = $6EDA200A;

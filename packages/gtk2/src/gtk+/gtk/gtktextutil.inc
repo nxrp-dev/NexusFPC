@@ -37,16 +37,16 @@ Type
 {$define __GTK_TEXT_UTIL_H__}
 {$include gtkwidget.inc}
 {$include gtkmenushell.inc}
-{ C++ extern C conditionnal removed }
+{ C++ extern C conditional removed }
 { __cplusplus  }
 { This is a private uninstalled header shared between GtkTextView and GtkEntry  }
 
 type
 
-   TGtkTextUtilCharChosenFunc = procedure (text:Pchar; data:gpointer); cdecl;
+   TGtkTextUtilCharChosenFunc = procedure (text:PAnsiChar; data:gpointer); cdecl;
 
 procedure _gtk_text_util_append_special_char_menuitems(menushell:PGtkMenuShell; func:TGtkTextUtilCharChosenFunc; data:gpointer); cdecl; external gtklib;
-{ C++ end of extern C conditionnal removed }
+{ C++ end of extern C conditional removed }
 { __cplusplus  }
 {$endif}
 { __GTK_TEXT_UTIL_H__  }

@@ -19,6 +19,9 @@
 program fpmake;
 
 uses
+{$ifdef unix}
+  cthreads,
+{$endif}
   fpmkunit,
 {$IFDEF HAS_UNIT_PROCESS}
   process,
@@ -201,7 +204,7 @@ begin
     begin
     P:=AddPackage('utils-fpcm');
     P.ShortName:='fpcm';
-    P.OSes:=AllOSes-[embedded,msdos,nativent,win16,macosclassic,atari,palmos,zxspectrum,msxdos,amstradcpc,sinclairql];
+    P.OSes:=AllOSes-[embedded,msdos,nativent,win16,macosclassic,atari,palmos,zxspectrum,msxdos,amstradcpc,sinclairql,human68k,ps1,wasip2];
     if Defaults.CPU=jvm then
       P.OSes := P.OSes - [java,android];
 
@@ -218,6 +221,9 @@ begin
     P.Version:='3.3.1';
 
     P.Dependencies.Add('fcl-base');
+{$ifdef TEST_FPMKUNIT}
+    P.Dependencies.Add('fpmkunit');
+{$endif}
 
     T:=P.Targets.AddProgram('fpcmake.pp');
 

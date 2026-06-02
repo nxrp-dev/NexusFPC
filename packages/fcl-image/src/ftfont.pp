@@ -13,16 +13,25 @@
 
  **********************************************************************}
 {$mode objfpc}{$h+}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit ftfont;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
 {$DEFINE DYNAMIC}
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.SysUtils, System.Classes, FpImage.Canvas, FpImage.Common, System.Math,
+  {$IFDEF DYNAMIC}Api.Freetypehdyn{$ELSE} Api.Freetypeh{$ENDIF},
+  Api.Freetype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   SysUtils, Classes, FPCanvas, fpimgcmn, math,
   {$IFDEF DYNAMIC}freetypehdyn{$ELSE} freetypeh{$ENDIF},
   freetype;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
 
@@ -52,21 +61,22 @@ type
     procedure DoAllocateResources; override;
     procedure DoDeAllocateResources; override;
     procedure DoCopyProps (From:TFPCanvasHelper); override;
-    procedure DoDrawText (atx,aty:integer; atext:string); override;
-    procedure DoGetTextSize (text:string; var w,h:integer); override;
-    function DoGetTextHeight (text:string) : integer; override;
-    function DoGetTextWidth (text:string) : integer; override;
+    procedure DoDrawText (atx,aty:integer; atext:Ansistring); override;
+    procedure DoGetTextSize (text:ansistring; var w,h:integer); override;
+    function DoGetTextHeight (text:ansistring) : integer; override;
+    function DoGetTextWidth (text:ansistring) : integer; override;
     procedure DoDrawText (atx,aty:integer; atext: unicodestring); override;
     procedure DoGetTextSize (text:unicodestring; var w,h:integer); override;
     function DoGetTextHeight (text:unicodestring) : integer; override;
     function DoGetTextWidth (text: unicodestring) : integer; override;
-    procedure GetText (aText:string);
+    procedure GetText (aText:ansistring);
     procedure GetText (aText:unicodestring);
     procedure GetFace;
   public
     constructor Create; override;
     destructor Destroy; override;
     property FontIndex : integer read FIndex write SetIndex;
+    property FontID : integer read FFontID;
     property Resolution : longword read FResolution write FResolution;
     property AntiAliased : boolean read FAntiAliased write FAntiAliased;
     property Size : real read FRealSize write SetRealSize;
@@ -82,7 +92,11 @@ procedure DoneEngine;
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses FpImage;
+{$ELSE FPC_DOTTEDUNITS}
 uses fpimage;
+{$ENDIF FPC_DOTTEDUNITS}
 
 procedure InitEngine;
 
@@ -175,7 +189,7 @@ procedure TFreeTypeFont.DoDeAllocateResources;
 begin
 end;
 
-procedure TFreeTypeFont.DoGetTextSize (text:string; var w,h:integer);
+procedure TFreeTypeFont.DoGetTextSize (text:ansistring; var w,h:integer);
 var r : TRect;
 begin
   GetText (text);
@@ -187,7 +201,7 @@ begin
     end;
 end;
 
-function TFreeTypeFont.DoGetTextHeight (text:string) : integer;
+function TFreeTypeFont.DoGetTextHeight (text:ansistring) : integer;
 var r : TRect;
 begin
   GetText (text);
@@ -196,7 +210,7 @@ begin
     result := top - bottom;
 end;
 
-function TFreeTypeFont.DoGetTextWidth (text:string) : integer;
+function TFreeTypeFont.DoGetTextWidth (text:ansistring) : integer;
 var r : TRect;
 begin
   GetText (text);
@@ -263,7 +277,7 @@ begin
     result := inherited GetFlags (index);
 end;
 
-procedure TFreeTypeFont.GetText (aText:string);
+procedure TFreeTypeFont.GetText (aText:AnsiString);
 var b : boolean;
 begin
   if assigned (FLastText) then
@@ -341,7 +355,7 @@ begin
   DrawLastText(atX,atY);
 end;
 
-procedure TFreeTypeFont.DoDrawText (atX,atY:integer; atext:string);
+procedure TFreeTypeFont.DoDrawText (atX,atY:integer; atext:AnsiString);
 
 begin
   GetText (atext);
@@ -374,14 +388,15 @@ procedure TFreeTypeFont.DrawChar (x,y:integer; data:PByteArray; pitch, width, he
   var
     pixelcolor: TFPColor;
   begin
+    if t = 0 then exit;
     case canv.DrawingMode of
       dmOpaque:
       begin
-        pixelcolor := FPImage.FPColor(c.red, c.green,c.blue, (t+1) shl 8 - 1); // opaque: ignore c.Alpha
+        pixelcolor := FpImage.FPColor(c.red, c.green,c.blue, (t+1) shl 8 - 1); // opaque: ignore c.Alpha
         canv.colors[x,y] := AlphaBlend(canv.colors[x,y], pixelcolor);
       end;
     else
-      pixelcolor := FPImage.FPColor(c.red, c.green,c.blue, ((t+1) shl 8 - 1) * c.Alpha div $ffff); // apply c.Alpha
+      pixelcolor := FpImage.FPColor(c.red, c.green,c.blue, ((t+1) shl 8 - 1) * c.Alpha div $ffff); // apply c.Alpha
       canv.DrawPixel(x,y,pixelcolor);
     end;
   end;

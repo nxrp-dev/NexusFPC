@@ -7,11 +7,11 @@
 
     MorphOS port was done on a free Pegasos II/G4 machine
     provided by Genesi S.a.r.l. <www.genesi.lu>
-    
+
     This unit is based on the MorphOS one and is adapted for Gameboy Advance
-    simply by stripping out all stuff inside funcs and procs. 
+    simply by stripping out all stuff inside funcs and procs.
     Copyright (c) 2006 by Francesco Lombardi
-    
+
     See the file COPYING.FPC, included in this distribution,
     for details about the copyright.
 
@@ -21,7 +21,9 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit Dos;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
@@ -91,7 +93,7 @@ procedure DeleteExtIO ();
 begin
 end;
 
-function Createport(name : PChar; pri : longint): integer;
+function Createport(name : PAnsiChar; pri : longint): integer;
 begin
   result := -1;
 end;
@@ -241,7 +243,7 @@ procedure AddDevice(str : String);
 begin
 end;
 
-function MakeDeviceName(str : pchar): string;
+function MakeDeviceName(str : PAnsiChar): string;
 begin
   result := '';
 end;

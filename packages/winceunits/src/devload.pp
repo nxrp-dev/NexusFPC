@@ -25,13 +25,19 @@
 //  Microsoft Windows Mobile 6.0 for PocketPC SDK.
 //
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit devload;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$CALLING cdecl}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses WinApi.Windows;
+{$ELSE FPC_DOTTEDUNITS}
 uses Windows;
+{$ENDIF FPC_DOTTEDUNITS}
 
 // @doc DRIVERS
 
@@ -44,7 +50,7 @@ const
       DEVLOAD_PCMCIA_KEY   = 'Drivers\PCMCIA';
       DEVLOAD_ACTIVE_KEY   = 'Drivers\Active';
       DEVLOAD_DETECT_KEY   = DEVLOAD_PCMCIA_KEY + '\Detect';
-      
+
 //
 // These are the required and optional values under a device key.
 //
@@ -109,7 +115,7 @@ const
       DEVFLAGS_TRUSTEDCALLERONLY = $00010000;  // This driver only can be opened by trusted application.
 
 //
-// Structure passed in the input buffer of DeviceIoControl() for the 
+// Structure passed in the input buffer of DeviceIoControl() for the
 // post initialization ioctl
 //
 type
@@ -162,7 +168,7 @@ const
 // namespaces).  If a Prefix value is specified in the device's device key and a BusPrefix value
 // is specified, they must match.  The BusName provides the Device Manager with the name that the
 // device driver will expose in the $bus namespace.  This name must be unique and is completely
-// specified by the bus driver; it is not decorated with an instance index; if a duplicate name 
+// specified by the bus driver; it is not decorated with an instance index; if a duplicate name
 // is found, the driver will not load.
 //
 const

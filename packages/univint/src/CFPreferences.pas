@@ -15,7 +15,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CFPreferences;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -200,7 +202,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CFDictionary,MacOsApi.CFBase,MacOsApi.CFArray,MacOsApi.CFPropertyList,MacOsApi.CFString;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CFDictionary,CFBase,CFArray,CFPropertyList,CFString;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 {$ALIGN POWER}
@@ -262,7 +268,7 @@ location specified by app-user-host is searched.  The returned
 CFType must be released by the caller when it is finished with it. }
 function CFPreferencesCopyValue( key: CFStringRef; applicationID: CFStringRef; userName: CFStringRef; hostName: CFStringRef ): CFPropertyListRef; external name '_CFPreferencesCopyValue';
 
-{ Convenience to fetch multiple keys at once.  Keys in 
+{ Convenience to fetch multiple keys at once.  Keys in
 keysToFetch that are not present in the returned dictionary
 are not present in the domain.  If keysToFetch is NULL, all
 keys are fetched. }

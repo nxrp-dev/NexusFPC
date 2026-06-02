@@ -42,7 +42,9 @@
 
 // $Id: JwaNtStatus.pas,v 1.8 2007/09/05 11:58:51 dezipaitor Exp $
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaNtStatus;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 {$WEAKPACKAGEUNIT}
@@ -57,8 +59,13 @@ unit JwaNtStatus;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 {$IFNDEF JWA_IMPLEMENTATIONSECTION}
 /////////////////////////////////////////////////////////////////////////
@@ -226,10 +233,10 @@ const
   STATUS_ABANDONED_WAIT_63 = NTSTATUS($000000BF);
   {$EXTERNALSYM STATUS_ABANDONED_WAIT_63}
 
-//                                                             
+//
 // The success status codes 256, 257, 258, and 258 are reserved for
-// User APC, Kernel APC, Alerted, and Timeout.                 
-//                                                             
+// User APC, Kernel APC, Alerted, and Timeout.
+//
 //
 // MessageId: STATUS_USER_APC
 //
@@ -1066,7 +1073,7 @@ const
 //
 // MessageText:
 //
-//  The CPUs in this multiprocessor system are not all the same revision level.  To use all processors the operating system restricts itself to the features of the least capable processor in the system.  Should problems occur with this system, contact the CPU manufacturer to see if this mix of processors is supported. 
+//  The CPUs in this multiprocessor system are not all the same revision level.  To use all processors the operating system restricts itself to the features of the least capable processor in the system.  Should problems occur with this system, contact the CPU manufacturer to see if this mix of processors is supported.
 //
 
   STATUS_MP_PROCESSOR_MISMATCH = NTSTATUS($40000029);
@@ -1132,7 +1139,7 @@ const
 //
 // MessageText:
 //
-//  Debugger printerd exception on control C.
+//  Debugger printed exception on control C.
 //
 
   DBG_PRINTEXCEPTION_C = NTSTATUS($40010006);
@@ -1143,7 +1150,7 @@ const
 //
 // MessageText:
 //
-//  Debugger recevice RIP exception.
+//  Debugger receive RIP exception.
 //
 
   DBG_RIPEXCEPTION = NTSTATUS($40010007);
@@ -8160,7 +8167,7 @@ const
 //
 //  {System Standby Failed}
 //  The driver %hs does not support standby mode. Updating this
-//  driver may allow the system to go to standby mode.  
+//  driver may allow the system to go to standby mode.
 //
 
   STATUS_DRIVER_FAILED_SLEEP = NTSTATUS($C00002C2);
@@ -8229,7 +8236,7 @@ const
 // MessageText:
 //
 //  {Virtual Memory Minimum Too Low}
-//  Your system is low on virtual memory. Windows is increasing the size of your virtual memory paging file. 
+//  Your system is low on virtual memory. Windows is increasing the size of your virtual memory paging file.
 //  During this process, memory requests for some applications may be denied. For more information, see Help.
 //
 
@@ -10561,7 +10568,7 @@ const
 //
 // MessageText:
 //
-//  A device is missing in the system BIOS MPS table. This device will not be used. 
+//  A device is missing in the system BIOS MPS table. This device will not be used.
 //  Please contact your system vendor for system BIOS update.
 //
 

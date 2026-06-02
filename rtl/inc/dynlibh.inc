@@ -17,6 +17,7 @@
 { These are fallback declarations }
 type
   TLibHandle = THandle;
+  HINST = TLibHandle;
 
 const
   NilHandle = TLibHandle(0);
@@ -35,7 +36,7 @@ type
   TGetProcAddressHandler = function(Lib: TLibHandle; const ProcName: AnsiString): {$ifdef cpui8086}FarPointer{$else}Pointer{$endif};
   TGetProcAddressOrdinalHandler = function(Lib: TLibHandle; Ordinal: TOrdinalEntry): {$ifdef cpui8086}FarPointer{$else}Pointer{$endif};
   TUnloadLibraryHandler = function(Lib: TLibHandle): Boolean;
-  TGetLoadErrorStrHandler = function: String;
+  TGetLoadErrorStrHandler = function: AnsiString;
 
   TDynLibsManager = record
     LoadLibraryU: TLoadLibraryUHandler;
@@ -54,9 +55,9 @@ Function LoadLibrary(const Name : UnicodeString) : TLibHandle;
 Function GetProcedureAddress(Lib : TlibHandle; const ProcName : AnsiString) : {$ifdef cpui8086}FarPointer{$else}Pointer{$endif};
 Function GetProcedureAddress(Lib : TLibHandle; Ordinal: TOrdinalEntry) : {$ifdef cpui8086}FarPointer{$else}Pointer{$endif};
 Function UnloadLibrary(Lib : TLibHandle) : Boolean;
-Function GetLoadErrorStr: string;
+Function GetLoadErrorStr: AnsiString;
 
-// Kylix/Delphi compability
+// Kylix/Delphi compatibility
 
 Function FreeLibrary(Lib : TLibHandle) : Boolean; inline;
 Function GetProcAddress(Lib : TlibHandle; const ProcName : AnsiString) : {$ifdef cpui8086}FarPointer{$else}Pointer{$endif}; inline;
@@ -64,4 +65,12 @@ Function GetProcAddress(Lib : TlibHandle; const ProcName : AnsiString) : {$ifdef
 Procedure GetDynLibsManager (Out Manager : TDynLibsManager);
 Procedure SetDynLibsManager (Const New : TDynLibsManager);
 Procedure SetDynLibsManager (Const New : TDynLibsManager; out Old: TDynLibsManager);
+
+// Delphi compatibility, needs to be expanded when packages arrive.
+Type
+  TEnumModuleFuncLW = function (HInstance: THandle; Data: Pointer): Boolean;
+
+procedure EnumModules(Func: TEnumModuleFuncLW; Data: Pointer);
+
+
 

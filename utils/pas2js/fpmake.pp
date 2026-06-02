@@ -2,10 +2,18 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses
+  {$ifdef unix}
+  cthreads,
+  {$endif}
+  fpmkunit;
 {$endif ALLPACKAGES}
 
 procedure add_pas2js(const ADirectory: string);
+
+Const
+  DefaultOSes = AllUnixOSes+AllBSDOSes+AllWindowsOSes-[WinCE];
+  AllPas2JSOses = DefaultOSes+[wasip1,wasip1threads];
 
 Var
   P : TPackage;
@@ -26,21 +34,21 @@ begin
 
     P.Directory:=ADirectory;
     P.Version:='3.3.1';
-    P.OSes:=AllUnixOSes+AllBSDOSes+AllWindowsOSes-[WinCE];
+    P.OSes:=AllPas2JSOses;
     if Defaults.CPU=jvm then
       P.OSes := P.OSes - [java,android];
     P.Dependencies.Add('fcl-json');
     P.Dependencies.Add('fcl-js');
     P.Dependencies.Add('fcl-passrc');
     P.Dependencies.Add('pastojs');
-    P.Dependencies.Add('fcl-web');
+    P.Dependencies.Add('fcl-web',DefaultOSes);
     P.Dependencies.Add('webidl');
     PT:=P.Targets.AddProgram('pas2js.pp');
     PT:=P.Targets.AddLibrary('pas2jslib.pp');
-    PT:=P.Targets.AddUnit('dirwatch.pp');
-    PT:=P.Targets.AddUnit('httpcompiler.pp');
-    PT.Dependencies.AddUnit('dirwatch');
-    PT:=P.Targets.AddProgram('compileserver.pp');
+    PT:=P.Targets.AddUnit('dirw.pp',DefaultOSes);
+    PT:=P.Targets.AddUnit('httpcompiler.pp',DefaultOSes);
+    PT.Dependencies.AddUnit('dirw');
+    PT:=P.Targets.AddProgram('compileserver.pp',DefaultOSes);
     PT.Dependencies.AddUnit('httpcompiler');
     PT:=P.Targets.AddProgram('webidl2pas.pp');
     PT:=P.Targets.AddProgram('dts2pas.pp');

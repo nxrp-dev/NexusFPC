@@ -1,8 +1,10 @@
+{$mode objfpc}
+{$h+}
 program helloworld;
 
 uses classes,ctypes, wasmtime;
 
-procedure exit_with_error(message : Pchar; error : Pwasmtime_error_t; trap: Pwasm_trap_t); cdecl;
+procedure exit_with_error(message : PAnsiChar; error : Pwasmtime_error_t; trap: Pwasm_trap_t); cdecl;
 
 var
   error_message : Twasm_byte_vec_t ;
@@ -68,19 +70,19 @@ begin
     F.Free;
   end;
 
-  error:=wasmtime_wat2wasm(pchar(wat.data), wat.size, @wasm);
+  error:=wasmtime_wat2wasm(PAnsiChar(wat.data), wat.size, @wasm);
   if (error<>Nil) then
     exit_with_error('failed to parse wat', error, Nil);
   wasm_byte_vec_delete(@wat);
 
-  Writeln('Compiling module...\n');
+  Writeln('Compiling module...');
 
   error:=wasmtime_module_new(engine, Puint8_t(wasm.data), wasm.size, @module);
   wasm_byte_vec_delete(@wasm);
   if (error <> nil) then
     exit_with_error('failed to compile module', error, nil);
 
-  Writeln('Creating callback...\n');
+  Writeln('Creating callback...');
   hello_ty:=wasm_functype_new_0_0();
   wasmtime_func_new(context, hello_ty, @hello_callback, Nil, Nil, @hello);
 
@@ -91,8 +93,8 @@ begin
   if (error<>nil) or (trap <>Nil) then
     exit_with_error('failed to instantiate', error, trap);
 
-  Writeln('Extracting export...\n');
-  ok:=wasmtime_instance_export_get(context, @instance, PChar('run'), 3, @run) ;
+  Writeln('Extracting export...');
+  ok:=wasmtime_instance_export_get(context, @instance, PAnsiChar('run'), 3, @run) ;
   if OK=0 then
     exit_with_error('failed to get run export', nil, nil);
   if run.kind<>WASMTIME_EXTERN_FUNC then
@@ -103,7 +105,7 @@ begin
   if (error<>nil) or (trap<>nil) then
     exit_with_error('failed to call function', error, trap);
 
-  Writeln('All finished!\n');
+  Writeln('All finished!');
   wasmtime_module_delete(module);
   wasmtime_store_delete(store);
   wasm_engine_delete(engine);

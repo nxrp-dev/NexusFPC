@@ -30,9 +30,9 @@ begin
 end;
 
 
-procedure do_erase(p : pchar; pchangeable: boolean);
+procedure do_erase(p : PAnsiChar; pchangeable: boolean);
 var
-  oldp: pchar;
+  oldp: PAnsiChar;
   dosResult: longint;
 begin
   oldp:=p;
@@ -45,9 +45,9 @@ begin
 end;
 
 
-procedure do_rename(p1,p2 : pchar; p1changeable, p2changeable: boolean);
+procedure do_rename(p1,p2 : PAnsiChar; p1changeable, p2changeable: boolean);
 var
-  oldp1, oldp2 : pchar;
+  oldp1, oldp2 : PAnsiChar;
   dosResult: longint;
 begin
   oldp1:=p1;
@@ -71,7 +71,7 @@ var
   dosResult: longint;
 begin
   do_write:=0;
-  if (len<=0) or (h=-1) then 
+  if (len<=0) or (h=-1) then
     exit;
 
   dosResult:=gemdos_fwrite(h, len, addr);
@@ -92,10 +92,10 @@ begin
   if (len<=0) or (h=-1) then exit;
 
   dosResult:=gemdos_fread(h, len, addr);
-  if dosResult<0 then 
+  if dosResult<0 then
     begin
       Error2InOutRes(dosResult);
-    end 
+    end
   else
     do_read:=dosResult;
 end;
@@ -163,7 +163,7 @@ begin
 end;
 
 
-procedure do_open(var f;p:pchar;flags:longint; pchangeable: boolean);
+procedure do_open(var f;p:PAnsiChar;flags:longint; pchangeable: boolean);
 {
   filerec and textrec have both handle and mode as the first items so
   they could use the same routine for opening/creating.
@@ -172,7 +172,7 @@ procedure do_open(var f;p:pchar;flags:longint; pchangeable: boolean);
   when (flags and $10000) there is no check for close (needed for textfiles)
 }
 var
-  oldp     : pchar;
+  oldp     : PAnsiChar;
   dosResult: longint;
 begin
 { close first if opened }

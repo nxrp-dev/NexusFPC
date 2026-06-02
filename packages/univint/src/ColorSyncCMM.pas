@@ -19,7 +19,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit ColorSyncCMM;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -204,7 +206,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.ColorSyncProfile,MacOsApi.ColorSyncTransform,MacOsApi.CFBase,MacOsApi.CFArray,MacOsApi.CFBundle,MacOsApi.CFDictionary;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,ColorSyncProfile,ColorSyncTransform,CFBase,CFArray,CFBundle,CFDictionary;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -218,7 +224,7 @@ uses MacTypes,ColorSyncProfile,ColorSyncTransform,CFBase,CFArray,CFBundle,CFDict
  *  - Color conversions are performed by a Color Management Module (CMM) which is a plugin to ColorSync.
  *  - ColorSync contains Apple CMM, which is not replaceable, but third parties can install their own CMMs
  *  - ColorSync provides access to installed CMMs as well as those that can be part of the application bundle.
- *  - CMM can be selected and specified as a preferred CMM per color transform created by the application 
+ *  - CMM can be selected and specified as a preferred CMM per color transform created by the application
  *  - if the third party CMM fails to perform a task, Apple CMM will take it over
  *  - ColorSyncCMMRef is a light weight wrapper of CFBundleRef
  *  - See /Developer/Examples/ColorSync/DemoCMM

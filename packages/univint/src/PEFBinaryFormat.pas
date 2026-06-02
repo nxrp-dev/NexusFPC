@@ -1,9 +1,9 @@
 {
      File:       CarbonCore/PEFBinaryFormat.h
- 
+
      Contains:   PEF Types and Macros
                  The contents of this header file are deprecated.
- 
+
      Copyright:  © 1993-2011 by Apple Inc. All rights reserved.
 }
 {
@@ -20,7 +20,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit PEFBinaryFormat;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -205,7 +207,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -573,7 +579,7 @@ const
 {      (                                                                                       }
 {          SInt32  exponent;                                                                   }
 {          const SInt32    kExponentLimit      = 16;   // Arbitrary, but must not exceed 30.   }
-{          const SInt32    kAverageChainLimit  = 10;   // Arbitrary, for space/time tradeoff.  }
+{          const SInt32    kAverageChainLimit  = 10;   // Arbitrary, for space/time trade-off. }
 {          for ( exponent = 0; exponent < kExponentLimit; exponent += 1 ) (                    }
 {              if ( (exportCount / (1 << exponent)) < kAverageChainLimit ) break;              }
 {          )                                                                                   }

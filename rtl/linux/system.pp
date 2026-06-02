@@ -36,17 +36,8 @@ Unit System;
 
 {$I sysunixh.inc}
 
-{$if defined(VER3_0) and defined(CPUX86_64)}
-{$define FPC_BOOTSTRAP_INDIRECT_ENTRY}
-const
-  { this constant only exists during bootstrapping of the RTL with FPC 3.0.x,
-    so that the whole condition doesn't need to be repeated in si_intf }
-  indirect_bootstrap = true;
-{$endif defined(VER3_0) and defined(CPUX86_64)}
-
-
-function get_cmdline:Pchar; deprecated 'use paramstr' ;
-property cmdline:Pchar read get_cmdline;
+function get_cmdline:PAnsiChar; deprecated 'use paramstr' ;
+property cmdline:PAnsiChar read get_cmdline;
 
 {$if defined(CPURISCV32) or defined(CPURISCV64) or defined(CPUARM) or defined(CPUM68K) or defined(CPUXTENSA)}
 {$define FPC_LOAD_SOFTFPU}
@@ -77,13 +68,8 @@ property cmdline:Pchar read get_cmdline;
                                  implementation
 {*****************************************************************************}
 
-{$if defined(CPUI386) and not defined(FPC_USE_LIBC)}
-var
-  sysenter_supported: LongInt = 0;
-{$endif}
-
 const
-  calculated_cmdline:Pchar=nil;
+  calculated_cmdline:PAnsiChar=nil;
 {$ifdef FPC_HAS_INDIRECT_ENTRY_INFORMATION}
 {$define FPC_SYSTEM_HAS_OSSETUPENTRYINFORMATION}
 procedure OsSetupEntryInformation(constref info: TEntryInformation); forward;
@@ -243,7 +229,6 @@ procedure InitTLS; [public,alias:'FPC_INITTLS'];
   var
     phdr : pphdr;
     phnum : dword;
-    i   : integer;
     tls : pointer;
     auxp : ppointer;
     found : boolean;
@@ -256,7 +241,7 @@ procedure InitTLS; [public,alias:'FPC_INITTLS'];
     inc(auxp);
     phdr:=nil;
     phnum:=0;
-    { now we are at the auxillary vector }
+    { now we are at the auxiliary vector }
     while assigned(auxp^) do
       begin
         case plongint(auxp)^ of
@@ -269,7 +254,7 @@ procedure InitTLS; [public,alias:'FPC_INITTLS'];
       end;
     found:=false;
     size:=0;
-    for i:=1 to phnum do
+    while phnum>0 do
       begin
         case phdr^.p_type of
           PT_TLS:
@@ -289,6 +274,7 @@ procedure InitTLS; [public,alias:'FPC_INITTLS'];
             exit;
         end;
         inc(phdr);
+        dec(phnum);
       end;
     if found then
       begin
@@ -427,7 +413,7 @@ Begin
 End;
 
 
-{function BackPos(c:char; const s: shortstring): integer;
+{function BackPos(c:AnsiChar; const s: shortstring): integer;
 var
  i: integer;
 Begin
@@ -454,12 +440,12 @@ begin
   { it must also be an absolute filename, linux 2.0 points to a memory
     location so this will skip that }
   if (i>0) and (execpathstr[1]='/') then
-     execpathstr[0]:=char(i);
+     execpathstr[0]:=AnsiChar(i);
 end;
 
-function paramstr(l: longint) : string;
+function paramstr(l: longint) : shortstring;
  begin
-   { stricly conforming POSIX applications  }
+   { strictly conforming POSIX applications }
    { have the executing filename as argv[0] }
    if l=0 then
      begin
@@ -506,11 +492,11 @@ var
   len,j,
   size,i : longint;
   found  : boolean;
-  buf    : pchar;
+  buf    : PAnsiChar;
 
   procedure AddBuf;
   var
-    p : Pchar;
+    p : PAnsiChar;
   begin
     p:=SysGetmem(size+bufsize);
     move(calculated_cmdline^,p^,size);
@@ -569,7 +555,7 @@ begin
   SysFreeMem(buf);
 end;
 
-function get_cmdline:Pchar;
+function get_cmdline:PAnsiChar;
 
 begin
   if calculated_cmdline=nil then

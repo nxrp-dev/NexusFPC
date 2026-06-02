@@ -10,7 +10,7 @@
 {                                                          }
 {****************[ THIS CODE IS FREEWARE ]*****************}
 {                                                          }
-{     This sourcecode is released for the purpose to       }
+{     This source code is released for the purpose to      }
 {   promote the pascal language on all platforms. You may  }
 {   redistribute it and/or modify with the following       }
 {   DISCLAIMER.                                            }
@@ -44,11 +44,13 @@
 {  1.51     03 Nov 99   FPC windows support added          }
 {**********************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 {$ifdef FV_UNICODE}
 UNIT UHistList;
 {$else FV_UNICODE}
 UNIT HistList;
 {$endif FV_UNICODE}
+{$ENDIF FPC_DOTTEDUNITS}
 
 {<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>}
                                   INTERFACE
@@ -79,6 +81,15 @@ UNIT HistList;
 {$V-} { Turn off strict VAR strings }
 {====================================================================}
 
+{$IFDEF FPC_DOTTEDUNITS}
+USES
+{$ifdef FV_UNICODE}
+  FreeVision.Ufvcommon,
+{$else FV_UNICODE}
+  FreeVision.Fvcommon,
+{$endif FV_UNICODE}
+  System.Objects;                                 { Standard GFV units }
+{$ELSE FPC_DOTTEDUNITS}
 USES
 {$ifdef FV_UNICODE}
   UFVCommon,
@@ -86,6 +97,7 @@ USES
   FVCommon,
 {$endif FV_UNICODE}
   Objects;                                 { Standard GFV units }
+{$ENDIF FPC_DOTTEDUNITS}
 
 {***************************************************************************}
 {                            INTERFACE ROUTINES                             }
@@ -302,10 +314,10 @@ BEGIN
 END;
 {$else FV_UNICODE}
 PROCEDURE DeleteString;
-VAR Len: Sw_Integer; P, P2: PChar;
+VAR Len: Sw_Integer; P, P2: PAnsiChar;
 BEGIN
-   P := PChar(CurString);                             { Current string }
-   P2 := PChar(CurString);                            { Current string }
+   P := PAnsiChar(CurString);                             { Current string }
+   P2 := PAnsiChar(CurString);                            { Current string }
    Len := PByte(P2)^+3;                               { Length of data }
    Dec(P, 2);                                         { Correct position }
    Inc(P2, PByte(P2)^+1);                             { Next hist record }
@@ -319,7 +331,7 @@ END;
 {  AdvanceStringPtr -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 30Sep99 LdB  }
 {---------------------------------------------------------------------------}
 PROCEDURE AdvanceStringPtr;
-VAR P: PChar;
+VAR P: PAnsiChar;
 {$ifdef FV_UNICODE}
     Len: SizeUInt;
 {$endif FV_UNICODE}
@@ -333,14 +345,14 @@ BEGIN
      Len := DecodeSizeUInt(CurString);
      Inc(CurString, Len);                             { Move to next string }
 {$else FV_UNICODE}
-     Inc(PChar(CurString), PByte(CurString)^+1);      { Move to next string }
+     Inc(PAnsiChar(CurString), PByte(CurString)^+1);      { Move to next string }
 {$endif FV_UNICODE}
      If (Pointer(CurString) >= Pointer(HistoryBlock) + HistoryUsed) Then Begin{ Last string check }
        CurString := Nil;                              { Clear current string }
        Exit;                                          { Now exit }
      End;
-     P := PChar(CurString);                        { Transfer record ptr }
-     Inc(PChar(CurString), 2);                        { Move to string }
+     P := PAnsiChar(CurString);                        { Transfer record ptr }
+     Inc(PAnsiChar(CurString), 2);                        { Move to string }
      if (P^<>#0) then
        RunError(215);
      Inc(P);
@@ -359,13 +371,13 @@ BEGIN
   StrU8 := Str;
   while (HistoryUsed+Length(StrU8)+EncodedSizeLengthInBytes(Length(StrU8))+2>HistorySize) do
    begin
-       P:=HistoryBlock;
+       P:=HistoryBlock+1;
        while Pointer(P)<Pointer(HistoryBlock)+HistorySize do
          begin
            if Pointer(P)+StoredStringSize(P+2)+4+Length(StrU8)+EncodedSizeLengthInBytes(Length(StrU8)) >
               Pointer(HistoryBlock)+HistorySize then
              begin
-               Dec(HistoryUsed,Length(PShortString(P+2)^)+3);
+               HistoryUsed:=P-HistoryBlock;
                FillChar(P^,Pointer(HistoryBlock)+HistorySize-Pointer(P),#0);
                break;
              end;
@@ -387,32 +399,36 @@ BEGIN
 END;
 {$else FV_UNICODE}
 PROCEDURE InsertString (Id: Byte; Const Str: String);
-VAR P, P1, P2: PChar;
+VAR P, P1, P2: PAnsiChar;
+    Len: Sw_Word;
 BEGIN
-  while (HistoryUsed+Length(Str)+3>HistorySize) do
+  Len:=Length(Str);
+  while (HistoryUsed+Len+3>HistorySize) do
    begin
-       P:=PChar(HistoryBlock);
+       P:=PAnsiChar(HistoryBlock)+1;
        while Pointer(P)<Pointer(HistoryBlock)+HistorySize do
          begin
-           if Pointer(P)+Length(PShortString(P+2)^)+6+Length(Str) >
+           if Pointer(P)+Length(PShortString(P+2)^)+6+Len >
               Pointer(HistoryBlock)+HistorySize then
              begin
-               Dec(HistoryUsed,Length(PShortString(P+2)^)+3);
+               HistoryUsed:=P-HistoryBlock;
                FillChar(P^,Pointer(HistoryBlock)+HistorySize-Pointer(P),#0);
                break;
              end;
            Inc(P,Length(PShortString(P+2)^)+3);
          end;
    end;
-   P1 := PChar(HistoryBlock)+1;                     { First history record }
-   P2 := P1+Length(Str)+3;                          { History record after }
+   P1 := PAnsiChar(HistoryBlock)+1;                 { First history record }
+   P2 := P1+Len+3;                                  { History record after }
    Move(P1^, P2^, HistoryUsed - 1);                 { Shuffle history data }
-   P1^:=#0;                         { Set marker byte }
+   P1^:=#0;                                         { Set marker byte }
    Inc(P1);
-   P1^:=Chr(Id);                          { Set history id }
+   P1^:=Chr(Id);                                    { Set history id }
    Inc(P1);
-   Move(Str[0], P1^, Length(Str)+1);  { Set history string }
-   Inc(HistoryUsed, Length(Str)+3);                 { Inc history used }
+   P1^:=Chr(Len);                                   { Set length of string }
+   Inc(P1);
+   Move(Str[1], P1^, Len);                          { Set history string }
+   Inc(HistoryUsed, Len+3);                         { Inc history used }
 END;
 {$endif FV_UNICODE}
 
@@ -458,7 +474,7 @@ VAR Count: Word;
 BEGIN
    StartId(Id);                                       { Set to first record }
    Count := 0;                                        { Clear count }
-   If (HistoryBlock <> Nil) Then Begin                { History initalized }
+   If (HistoryBlock <> Nil) Then Begin                { History initialized }
      AdvanceStringPtr;                                { Move to first string }
      While (CurString <> Nil) Do Begin
        Inc(Count);                                    { Add one to count }
@@ -479,7 +495,7 @@ VAR I: Sw_Integer;
 {$endif FV_UNICODE}
 BEGIN
    StartId(Id);                                       { Set to first record }
-   If (HistoryBlock <> Nil) Then Begin                { History initalized }
+   If (HistoryBlock <> Nil) Then Begin                { History initialized }
      For I := 0 To Index Do AdvanceStringPtr;         { Find indexed string }
      If (CurString <> Nil) Then Begin
 {$ifdef FV_UNICODE}
@@ -501,7 +517,7 @@ END;
 PROCEDURE ClearHistory;
 BEGIN
    If (HistoryBlock <> Nil) Then Begin                { History initiated }
-     PChar(HistoryBlock)^ := #0;                      { Clear first byte }
+     PAnsiChar(HistoryBlock)^ := #0;                      { Clear first byte }
      HistoryUsed := 1;        { Set position }
    End;
 END;

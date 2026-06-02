@@ -2,7 +2,7 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses {$ifdef unix}cthreads,{$endif} fpmkunit;
 
 Var
   P : TPackage;
@@ -44,6 +44,10 @@ begin
     T:=P.Targets.AddExampleProgram('gemwin.pas');
     T:=P.Targets.AddExampleProgram('gemcube.pas');
     T:=P.Targets.AddExampleProgram('showpic.pas');
+
+    P.Sources.AddDoc('README.txt');
+
+    P.NamespaceMap:='namespaces.lst';
 
 {$ifndef ALLPACKAGES}
     Run;

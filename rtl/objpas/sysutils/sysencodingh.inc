@@ -1,3 +1,4 @@
+{%MainUnit sysutils.pp}
 {
     *********************************************************************
     Copyright (C) 2012 Paul Ishenin,
@@ -27,32 +28,38 @@ type
         seBigEndianUnicode,
         seUTF7,
         seUTF8);
-    var
-      FStandardEncodings: array[TStandardEncoding] of TEncoding; static;
-      FSystemEncodings: array of TEncoding; static;
+      TCreateEncodingProc = function: TEncoding; // "case Se of" or the like is simpler but would link all encodings into the executable.
     Class Var
-      FLock : TRTLCriticalSection;
-    class function GetANSI: TEncoding; static;
-    class function GetASCII: TEncoding; static;
-    class function GetBigEndianUnicode: TEncoding; static;
+      FStandardEncodings: array[TStandardEncoding] of TEncoding;
+      FSystemEncodingsList: TEncoding;
+    var
+      FNext: TEncoding;
+    class function GetStandard(Se: TStandardEncoding; Ctr: TCreateEncodingProc): TEncoding; static;
+    class function CreateANSI: TEncoding; static;
+    class function GetANSI: TEncoding; static; inline;
+    class function CreateASCII: TEncoding; static;
+    class function GetASCII: TEncoding; static; inline;
+    class function CreateBigEndianUnicode: TEncoding; static;
+    class function GetBigEndianUnicode: TEncoding; static; inline;
     class function GetDefault: TEncoding; static;
     class function GetSystemEncoding: TEncoding; static;
-    class function GetUnicode: TEncoding; static;
-    class function GetUTF7: TEncoding; static;
-    class function GetUTF8: TEncoding; static;
+    class function CreateUnicode: TEncoding; static;
+    class function GetUnicode: TEncoding; static; inline;
+    class function CreateUTF7: TEncoding; static;
+    class function GetUTF7: TEncoding; static; inline;
+    class function CreateUTF8: TEncoding; static;
+    class function GetUTF8: TEncoding; static; inline;
 
-    class constructor Create;
     class destructor Destroy;
   strict protected
     FIsSingleByte: Boolean;
     FMaxCharSize: Integer;
-    class procedure FreeEncodings;
     function GetByteCount(Chars: PUnicodeChar; CharCount: Integer): Integer; overload; virtual; abstract;
     function GetBytes(Chars: PUnicodeChar; CharCount: Integer; Bytes: PByte; ByteCount: Integer): Integer; overload; virtual; abstract;
     function GetCharCount(Bytes: PByte; ByteCount: Integer): Integer; overload; virtual; abstract;
     function GetChars(Bytes: PByte; ByteCount: Integer; Chars: PUnicodeChar; CharCount: Integer): Integer; overload; virtual; abstract;
-    function GetAnsiBytes(Chars: PChar; CharCount: Integer): TBytes; virtual; abstract;
-    function GetAnsiString(Bytes: PByte; ByteCount: Integer): string; virtual; abstract;
+    function GetAnsiBytes(Chars: PAnsiChar; CharCount: Integer): TBytes; virtual; abstract;
+    function GetAnsiString(Bytes: PByte; ByteCount: Integer): ansistring; virtual; abstract;
     function GetCodePage: Cardinal; virtual; abstract;
     function GetEncodingName: UnicodeString; virtual; abstract;
   public
@@ -87,10 +94,10 @@ type
     function GetPreamble: TBytes; virtual; abstract;
     function GetString(const Bytes: TBytes): UnicodeString; overload;
     function GetString(const Bytes: TBytes; ByteIndex, ByteCount: Integer): UnicodeString; overload;
-    function GetAnsiBytes(const S: string): TBytes; overload;
-    function GetAnsiBytes(const S: string; CharIndex, CharCount: Integer): TBytes; overload;
-    function GetAnsiString(const Bytes: TBytes): string; overload;
-    function GetAnsiString(const Bytes: TBytes; ByteIndex, ByteCount: Integer): string; overload;
+    function GetAnsiBytes(const S: Ansistring): TBytes; overload;
+    function GetAnsiBytes(const S: Ansistring; CharIndex, CharCount: Integer): TBytes; overload;
+    function GetAnsiString(const Bytes: TBytes): ansistring; overload;
+    function GetAnsiString(const Bytes: TBytes; ByteIndex, ByteCount:  Integer):ansistring; overload;
 
     property CodePage: Cardinal read GetCodePage;
     property EncodingName: UnicodeString read GetEncodingName;
@@ -118,8 +125,8 @@ type
     function GetBytes(Chars: PUnicodeChar; CharCount: Integer; Bytes: PByte; ByteCount: Integer): Integer; overload; override;
     function GetCharCount(Bytes: PByte; ByteCount: Integer): Integer; overload; override;
     function GetChars(Bytes: PByte; ByteCount: Integer; Chars: PUnicodeChar; CharCount: Integer): Integer; overload; override;
-    function GetAnsiBytes(Chars: PChar; CharCount: Integer): TBytes; override;
-    function GetAnsiString(Bytes: PByte; ByteCount: Integer): string; override;
+    function GetAnsiBytes(Chars: PAnsiChar; CharCount: Integer): TBytes; override;
+    function GetAnsiString(Bytes: PByte; ByteCount: Integer): ansistring; override;
     function GetCodePage: Cardinal; override;
     function GetEncodingName: UnicodeString; override;
   public
@@ -161,8 +168,8 @@ type
     function GetBytes(Chars: PUnicodeChar; CharCount: Integer; Bytes: PByte; ByteCount: Integer): Integer; overload; override;
     function GetCharCount(Bytes: PByte; ByteCount: Integer): Integer; overload; override;
     function GetChars(Bytes: PByte; ByteCount: Integer; Chars: PUnicodeChar; CharCount: Integer): Integer; overload; override;
-    function GetAnsiBytes(Chars: PChar; CharCount: Integer): TBytes; override;
-    function GetAnsiString(Bytes: PByte; ByteCount: Integer): string; override;
+    function GetAnsiBytes(Chars: PAnsiChar; CharCount: Integer): TBytes; override;
+    function GetAnsiString(Bytes: PByte; ByteCount: Integer): ansistring; override;
     function GetCodePage: Cardinal; override;
     function GetEncodingName: UnicodeString; override;
   public
@@ -180,8 +187,8 @@ type
     procedure Swap(var B: TBytes);
     function GetBytes(Chars: PUnicodeChar; CharCount: Integer; Bytes: PByte; ByteCount: Integer): Integer; overload; override;
     function GetChars(Bytes: PByte; ByteCount: Integer; Chars: PUnicodeChar; CharCount: Integer): Integer; overload; override;
-    function GetAnsiBytes(Chars: PChar; CharCount: Integer): TBytes; override;
-    function GetAnsiString(Bytes: PByte; ByteCount: Integer): string; override;
+    function GetAnsiBytes(Chars: PAnsiChar; CharCount: Integer): TBytes; override;
+    function GetAnsiString(Bytes: PByte; ByteCount: Integer): ansistring; override;
     function GetCodePage: Cardinal; override;
     function GetEncodingName: UnicodeString; override;
   public

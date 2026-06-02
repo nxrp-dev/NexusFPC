@@ -43,7 +43,9 @@
 // $Id: JwaBits.pas,v 1.9 2007/09/05 11:58:49 dezipaitor Exp $
 
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaBits;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -57,8 +59,13 @@ unit JwaBits;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Winbase, WinApi.Jedi.Wintype, WinApi.Jedi.Bitsmsg;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaWinBase, JwaWinType, JwaBitsMsg;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 {$IFNDEF JWA_IMPLEMENTATIONSECTION}
@@ -209,7 +216,7 @@ type
     BG_JOB_STATE_CANCELLED);
   {$EXTERNALSYM BG_JOB_STATE}
   TBgJobState = BG_JOB_STATE;
-  PBgJobState = ^BG_JOB_STATE;  
+  PBgJobState = ^BG_JOB_STATE;
 
   BG_JOB_TYPE = (
     BG_JOB_TYPE_DOWNLOAD,
@@ -406,7 +413,7 @@ type
     function JobError(pJob: IBackgroundCopyJob; pError: IBackgroundCopyError): HRESULT; stdcall;
 
     //
-    // The job has been modified.   Intendended for user interfaces.
+    // The job has been modified.   Intended for user interfaces.
     //
     function JobModification(pJob: IBackgroundCopyJob; dwReserved: DWORD): HRESULT; stdcall;
 

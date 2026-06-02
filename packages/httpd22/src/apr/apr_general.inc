@@ -32,7 +32,7 @@
 
 {
  * @defgroup apr_general Miscellaneous library routines
- * @ingroup APR 
+ * @ingroup APR
  * This is collection of oddballs that didn't fit anywhere else,
  * and might move to more appropriate headers with the release
  * of APR 1.0.
@@ -41,7 +41,7 @@
 const
 { a space }
   APR_ASCII_BLANK = #040;
-{ a carrige return }
+{ a carriage return }
   APR_ASCII_CR    = #015;
 { a line feed }
   APR_ASCII_LF    = #012;
@@ -78,7 +78,7 @@ type
 //#else { ! (CRAY || __arm) }
 
 //#define APR_OFFSET(p_type,field) \
-//        ((long) (((char *) (&(((p_type)NULL)->field))) - ((char *) NULL)))
+//        ((long) (((AnsiChar *) (&(((p_type)NULL)->field))) - ((AnsiChar *) NULL)))
 
 //#endif { !CRAY }
 
@@ -102,13 +102,13 @@ type
 {#if (!APR_HAVE_STRCASECMP) && (APR_HAVE_STRICMP)
 #define strcasecmp(s1, s2) stricmp(s1, s2)
 #elif (!APR_HAVE_STRCASECMP)
-int strcasecmp(const char *a, const char *b);
+int strcasecmp(const AnsiChar *a, const AnsiChar *b);
 #endif
 
 #if (!APR_HAVE_STRNCASECMP) && (APR_HAVE_STRNICMP)
 #define strncasecmp(s1, s2, n) strnicmp(s1, s2, n)
 #elif (!APR_HAVE_STRNCASECMP)
-int strncasecmp(const char *a, const char *b, size_t n);
+int strncasecmp(const AnsiChar *a, const AnsiChar *b, size_t n);
 #endif}
 
 {$endif}
@@ -150,7 +150,7 @@ void *memchr(const void *s, int c, size_t n);
  }
 
 {
- * Setup any APR internal data structures.  This MUST be the first function 
+ * Setup any APR internal data structures.  This MUST be the first function
  * called for any APR library.
  * @remark See apr_app_initialize if this is an application, rather than
  * a library consumer of apr.
@@ -171,14 +171,14 @@ function apr_initialize: apr_status_t;
  * Otherwise, this call is identical to apr_initialize, and must be closed
  * with a call to apr_terminate at the end of program execution.
  }
-function apr_app_initialize(argc: PInteger; argv, env: PPChar): apr_status_t;
+function apr_app_initialize(argc: PInteger; argv, env: PPAnsiChar): apr_status_t;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibAPR name LibNamePrefix + 'apr_app_initialize' + LibSuff12;
 
 {
- * Tear down any APR internal data structures which aren't torn down 
+ * Tear down any APR internal data structures which aren't torn down
  * automatically.
- * @remark An APR program must call this function at termination once it 
+ * @remark An APR program must call this function at termination once it
  *         has stopped using APR services.  The APR developers suggest using
  *         atexit to ensure this is called.  When using APR from a language
  *         other than C that has problems with the calling convention, use
@@ -188,12 +188,12 @@ procedure apr_terminate;
  cdecl; external LibAPR name 'apr_terminate';
 
 {
- * Tear down any APR internal data structures which aren't torn down 
+ * Tear down any APR internal data structures which aren't torn down
  * automatically, same as apr_terminate
- * @remark An APR program must call either the apr_terminate or apr_terminate2 
- *         function once it it has finished using APR services.  The APR 
+ * @remark An APR program must call either the apr_terminate or apr_terminate2
+ *         function once it it has finished using APR services.  The APR
  *         developers suggest using atexit(apr_terminate) to ensure this is done.
- *         apr_terminate2 exists to allow non-c language apps to tear down apr, 
+ *         apr_terminate2 exists to allow non-c language apps to tear down apr,
  *         while apr_terminate is recommended from c language applications.
  }
 procedure apr_terminate2;
@@ -211,7 +211,7 @@ procedure apr_terminate2;
  * @param buf Buffer to fill with random bytes
  * @param length Length of buffer in bytes (becomes apr_size_t in APR 1.0)
  }
-function apr_generate_random_bytes(buf: PChar; length: Integer): apr_status_t;
+function apr_generate_random_bytes(buf: PAnsiChar; length: Integer): apr_status_t;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibAPR name LibNamePrefix + 'apr_generate_random_bytes' + LibSuff8;
 

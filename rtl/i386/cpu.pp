@@ -15,15 +15,22 @@
  **********************************************************************}
 {$mode objfpc}
 {$goto on}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit cpu;
+{$ENDIF FPC_DOTTEDUNITS}
 
   interface
 
-    uses
-      sysutils;
-
     { returns true, if the processor supports the cpuid instruction }
     function cpuid_support : boolean;
+
+type
+    TCpuidResult = record
+      eax, ebx, ecx, edx: uint32;
+    end;
+
+    function CPUID(in_eax: uint32; in_ecx: uint32 = 0): TCpuidResult; inline;
+    function CPUBrandString: shortstring;
 
     { returns true, if floating point is done by an emulator }
     function floating_point_emulation : boolean;
@@ -31,31 +38,50 @@ unit cpu;
     { returns the contents of the cr0 register }
     function cr0 : longint;
 
-    function CMOVSupport : boolean;inline;
-    function InterlockedCompareExchange128Support : boolean;
-    function AESSupport : boolean;inline;
+    function InterlockedCompareExchange128Support: boolean;
+    function TSCSupport: boolean;inline;
+    function MMXSupport: boolean;inline;
+    function CMOVSupport: boolean;inline;
+    function AESSupport: boolean;inline;
     function AVXSupport: boolean;inline;
     function AVX2Support: boolean;inline;
-    function AVX512FSupport: boolean;inline;    
-    function AVX512DQSupport: boolean;inline;    
-    function AVX512IFMASupport: boolean;inline;    
-    function AVX512PFSupport: boolean;inline;    
-    function AVX512ERSupport: boolean;inline;    
-    function AVX512CDSupport: boolean;inline;    
-    function AVX512BWSupport: boolean;inline;    
-    function AVX512VLSupport: boolean;inline;    
+    function AVX101Support: boolean;inline; { AVX10.1 }
+    function AVX102Support: boolean;inline; { AVX10.2 }
+    function AVX10_256Support: boolean;inline; { AVX10/256 indicates that 256-bit vector support is present }
+    function AVX10_512Support: boolean;inline; { AVX10/512 indicates that 512-bit vector support is present }
+    function APXSupport: boolean;inline;  { APX_F Advanced Performance Extension Foundation }
+    function AVX512FSupport: boolean;inline;
+    function AVX512DQSupport: boolean;inline;
+    function AVX512IFMASupport: boolean;inline;
+    function AVX512PFSupport: boolean;inline;
+    function AVX512ERSupport: boolean;inline;
+    function AVX512CDSupport: boolean;inline;
+    function AVX512BWSupport: boolean;inline;
+    function AVX512VLSupport: boolean;inline;
     function AVX512VBMISupport: boolean;inline;
     function AVX512VBMI2Support: boolean;inline;
     function AVX512VNNISupport: boolean;inline;
+    function AVX512VPOPCNTDQSupport: boolean;inline;
+    function AVX512BF16Support: boolean;inline;
+    function AVX512FP16Support: boolean;inline;
+    function AVX512VP2INTERSECTSupport: boolean;inline;
+    function AVX5124VNNIWSupport: boolean;inline;
+    function AVX5124FMAPSSupport: boolean;inline;
+    function GFNISupport: boolean;inline;
     function VAESSupport: boolean;inline;
     function VCLMULSupport: boolean;inline;
     function AVX512BITALGSupport: boolean;inline;
     function RDSEEDSupport: boolean;inline;
     function ADXSupport: boolean;inline;
-    function SHASupport: boolean;inline;    
+    function SHASupport: boolean;inline;
+    function SHA512Support: boolean;inline;
+    function SM3Support: boolean;inline;
+    function SM4Support: boolean;inline;
     function FMASupport: boolean;inline;
     function POPCNTSupport: boolean;inline;
     function LZCNTSupport: boolean;inline;
+    function SSESupport: boolean;inline;
+    function SSE2Support: boolean;inline;
     function SSE3Support: boolean;inline;
     function SSSE3Support: boolean;inline;
     function SSE41Support: boolean;inline;
@@ -74,42 +100,13 @@ unit cpu;
 
   implementation
 
-{$ASMMODE INTEL}
     var
-      _CMOVSupport,
-      _AESSupport,
-      _AVXSupport,
-      _AVX2Support,
-      _AVX512FSupport,
-      _AVX512DQSupport,
-      _AVX512IFMASupport,
-      _AVX512PFSupport,
-      _AVX512ERSupport,
-      _AVX512CDSupport,
-      _AVX512BWSupport,
-      _AVX512VLSupport,
-      _AVX512VBMISupport,
-      _AVX512VBMI2Support,
-      _VAESSupport,
-      _VCLMULSupport,
-      _AVX512VNNISupport,
-      _AVX512BITALGSupport,
-      _RDSEEDSupport,
-      _ADXSupport,
-      _SHASupport,
-      _FMASupport,
-      _POPCNTSupport,
-      _LZCNTSupport,
-      _SSE3Support,
-      _SSSE3Support,
-      _SSE41Support,
-      _SSE42Support,
-      _MOVBESupport,
-      _F16CSupport,
-      _RDRANDSupport,
-      _RTMSupport,
-      _BMI1Support,
-      _BMI2Support: boolean;
+      data: record
+        cpuid1, cpuid7_0, cpuid7_1 : TCpuidResult;
+        cpuid24_0_ebx : dword;
+        AVXSupport,
+        LZCNTSupport: boolean;
+      end;
 
 {$ASMMODE ATT}
 
@@ -117,7 +114,7 @@ unit cpu;
       begin
 {$if FPC_FULLVERSION >= 30101}
 {$ifndef FPC_PIC}
-        if _RTMSupport then
+        if RTMSupport then
           begin
             asm
 {$ifdef USE_REAL_INSTRUCTIONS}
@@ -173,6 +170,41 @@ unit cpu;
       end;
 
 
+    procedure CPUID(in_eax: uint32; in_ecx: uint32; out res: TCpuidResult); assembler; nostackframe;
+      // eax = in_eax, edx = in_ecx, ecx = res
+      asm
+        push ebx
+        push esi
+        mov  esi, ecx // esi = res
+        mov  ecx, edx // ecx = in_ecx
+        cpuid
+        mov  TCpuidResult.eax[esi], eax
+        mov  TCpuidResult.ebx[esi], ebx
+        mov  TCpuidResult.ecx[esi], ecx
+        mov  TCpuidResult.edx[esi], edx
+        pop  esi
+        pop  ebx
+      end;
+
+
+    function CPUID(in_eax: uint32; in_ecx: uint32 = 0): TCpuidResult;
+      begin
+        CPUID(in_eax, in_ecx, result);
+      end;
+
+
+    function CPUBrandString: shortstring;
+      begin
+        if not cpuid_support or (CPUID($80000000).eax<$80000004) then
+          exit('');
+        TCpuidResult(pointer(@result[1])^):=CPUID($80000002);
+        TCpuidResult(pointer(@result[17])^):=CPUID($80000003);
+        TCpuidResult(pointer(@result[33])^):=CPUID($80000004);
+        result[49]:=#0;
+        result[0]:=chr(length(PAnsiChar(@result[1])));
+      end;
+
+
     function cr0 : longint;assembler;
       asm
 {$ifdef USE_REAL_INSTRUCTIONS}
@@ -209,95 +241,31 @@ unit cpu;
 
     procedure SetupSupport;
       var
-        _edx,_ecx,_ebx,maxcpuidvalue : longint;
+        maxcpuidvalue : longint;
       begin
-        is_sse3_cpu:=false;
-         if cpuid_support then
-           begin
-              asm
-                 pushl %ebx
-                 movl $0,%eax
-                 cpuid
-                 movl %eax,maxcpuidvalue
-                 popl %ebx
+        if cpuid_support then
+          begin
+            maxcpuidvalue:=CPUID(0).eax;
+            CPUID(1, 0, data.cpuid1);
+            if maxcpuidvalue>=7 then
+              begin
+                CPUID(7, 0, data.cpuid7_0);
+                CPUID(7, 1, data.cpuid7_1);
               end;
-              asm
-                 pushl %ebx
-                 movl $1,%eax
-                 cpuid
-                 movl %edx,_edx
-                 movl %ecx,_ecx
-                 popl %ebx
-              end;
-              _CMOVSupport:=(_edx and $8000)<>0;
-              _AESSupport:=(_ecx and $2000000)<>0;
-              _POPCNTSupport:=(_ecx and $800000)<>0;
-              _SSE3Support:=(_ecx and $1)<>0;
-              _SSSE3Support:=(_ecx and $200)<>0;
-              _SSE41Support:=(_ecx and $80000)<>0;
-              _SSE42Support:=(_ecx and $100000)<>0;
-              _MOVBESupport:=(_ecx and $400000)<>0;
-              _F16CSupport:=(_ecx and $20000000)<>0;
-              _RDRANDSupport:=(_ecx and $40000000)<>0;
 
-              _AVXSupport:=
-                { XGETBV suspport? }
-                ((_ecx and $08000000)<>0) and
-                { xmm and ymm state enabled? }
-                ((XGETBV(0) and %110)=%110) and
-                { avx supported? }
-                ((_ecx and $10000000)<>0);
+            is_sse3_cpu:=(data.cpuid1.ecx and (1 shl 0))<>0;
 
-              is_sse3_cpu:=(_ecx and $1)<>0;
+            data.AVXSupport:=
+              { cpuid(1).ecx[27]: XGETBV support, cpuid(1).ecx[28]: AVX support }
+              (data.cpuid1.ecx shr 27 and %11=%11) and
+              { xmm and ymm state enabled? }
+              ((XGETBV(0) and %110)=%110);
 
-              _FMASupport:=_AVXSupport and ((_ecx and $1000)<>0);
+            if (data.cpuid7_1.edx and (1 shl 19))<>0 then { CPUID.(EAX=24H) leaf is supported }
+              data.cpuid24_0_ebx:=CPUID($24, 0).ebx;
 
-              asm
-                pushl %ebx
-                movl $0x80000001,%eax
-                cpuid
-                movl %ecx,_ecx
-                movl %edx,_edx
-                popl %ebx
-              end;
-              _LZCNTSupport:=(_ecx and $20)<>0;
-
-
-              if maxcpuidvalue>=7 then
-                begin
-                  asm
-                    pushl %ebx
-                    movl $7,%eax
-                    movl $0,%ecx
-                    cpuid
-                    movl %ebx,_ebx
-                    movl %ecx,_ecx
-                    movl %edx,_edx
-                    popl %ebx
-                  end;
-                  _AVX2Support:=_AVXSupport and ((_ebx and $20)<>0);
-                  _AVX512FSupport:=(_ebx and $10000)<>0;
-                  _AVX512DQSupport:=(_ebx and $20000)<>0;
-                  _RDSEEDSupport:=(_ebx and $40000)<>0;
-                  _ADXSupport:=(_ebx and $80000)<>0;
-                  _AVX512IFMASupport:=(_ebx and $200000)<>0;
-                  _AVX512PFSupport:=(_ebx and $4000000)<>0;
-                  _AVX512ERSupport:=(_ebx and $8000000)<>0;
-                  _AVX512CDSupport:=(_ebx and $10000000)<>0;
-                  _AVX512BWSupport:=(_ebx and $40000000)<>0;
-                  _AVX512VBMISupport:=(_ecx and $00000002)<>0;
-                  _AVX512VBMI2Support:=(_ecx and $00000040)<>0;
-                   _VAESSupport:=(_ecx and $00000200)<>0;
-                  _VCLMULSupport:=(_ecx and $00000400)<>0;
-                  _AVX512VNNISupport:=(_ecx and $00000800)<>0;
-                  _AVX512BITALGSupport:=(_ecx and $00001000)<>0;
-                  _SHASupport:=(_ebx and $20000000)<>0;
-                  _AVX512VLSupport:=(_ebx and $80000000)<>0;
-                  _BMI1Support:=(_ebx and $8)<>0;
-                  _BMI2Support:=(_ebx and $100)<>0;
-                  _RTMSupport:=((_ebx and $800)<>0);
-                end;
-           end;
+            data.LZCNTSupport:=(CPUID($80000001).ecx and (1 shl 5))<>0;
+         end;
       end;
 
 
@@ -305,211 +273,325 @@ unit cpu;
       begin
         { 32 Bit CPUs have no 128 Bit interlocked exchange support,
           but it can simulated using RTM }
-        result:=_RTMSupport;
+        result:=RTMSupport;
+      end;
+
+
+    function TSCSupport: boolean;
+      begin
+        result:=(data.cpuid1.edx and (1 shl 4))<>0;
+      end;
+
+
+    function MMXSupport: boolean;
+      begin
+        result:=(data.cpuid1.edx and (1 shl 23))<>0;
       end;
 
 
     function CMOVSupport : boolean;
       begin
-        result:=_CMOVSupport;
+        result:=(data.cpuid1.edx and (1 shl 15))<>0;
       end;
 
 
     function AESSupport : boolean;
       begin
-        result:=_AESSupport;
+        result:=(data.cpuid1.ecx and (1 shl 25))<>0;
       end;
 
 
     function AVXSupport: boolean;inline;
       begin
-        result:=_AVXSupport;
+        result:=data.AVXSupport;
       end;
 
 
     function AVX2Support: boolean;inline;
       begin
-        result:=_AVX2Support;
+        result:=data.AVXSupport and ((data.cpuid7_0.ebx and (1 shl 5))<>0);
+      end;
+
+
+    function AVX101Support: boolean;inline; { AVX10.1 }
+      begin
+        result:=(data.cpuid24_0_ebx and $ff)>=1;
+      end;
+
+
+    function AVX102Support: boolean;inline; { AVX10.2 }
+      begin
+        result:=(data.cpuid24_0_ebx and $ff)>=2;
+      end;
+
+
+    function AVX10_256Support: boolean;inline; { AVX10/256 }
+      begin
+        result:=(data.cpuid24_0_ebx and (1 shl 17))<>0;
+      end;
+
+
+    function AVX10_512Support: boolean;inline; { AVX10/512 }
+      begin
+        result:=(data.cpuid24_0_ebx and (1 shl 18))<>0;
+      end;
+
+
+    function APXSupport: boolean;inline;  { APX_F Advanced Performance Extension Foundation }
+      begin
+        result:=(data.cpuid7_1.edx and (1 shl 21))<>0;
       end;
 
 
     function AVX512FSupport: boolean;inline;
       begin
-        result:=_AVX512FSupport;
+        result:=(data.cpuid7_0.ebx and (1 shl 16))<>0;
       end;
 
 
     function AVX512DQSupport: boolean;inline;
       begin
-        result:=_AVX512DQSupport;
+        result:=(data.cpuid7_0.ebx and (1 shl 17))<>0;
       end;
 
 
-    function AVX512IFMASupport: boolean;inline;    
+    function AVX512IFMASupport: boolean;inline;
       begin
-        result:=_AVX512IFMASupport;
+        result:=(data.cpuid7_0.ebx and (1 shl 21))<>0;
       end;
 
 
-    function AVX512PFSupport: boolean;inline;    
+    function AVX512PFSupport: boolean;inline;
       begin
-        result:=_AVX512PFSupport;
+        result:=(data.cpuid7_0.ebx and (1 shl 26))<>0;
       end;
 
 
-    function AVX512ERSupport: boolean;inline;    
+    function AVX512ERSupport: boolean;inline;
       begin
-        result:=_AVX512ERSupport;
+        result:=(data.cpuid7_0.ebx and (1 shl 27))<>0;
       end;
 
 
-    function AVX512CDSupport: boolean;inline;    
+    function AVX512CDSupport: boolean;inline;
       begin
-        result:=_AVX512CDSupport;
+        result:=(data.cpuid7_0.ebx and (1 shl 28))<>0;
       end;
 
 
-    function AVX512BWSupport: boolean;inline;    
+    function AVX512BWSupport: boolean;inline;
       begin
-        result:=_AVX512BWSupport;
+        result:=(data.cpuid7_0.ebx and (1 shl 30))<>0;
       end;
 
 
-    function AVX512VLSupport: boolean;inline;    
+    function AVX512VLSupport: boolean;inline;
       begin
-        result:=_AVX512VLSupport;
+        result:=(data.cpuid7_0.ebx and (1 shl 31))<>0;
       end;
 
 
     function AVX512VBMISupport: boolean;inline;
       begin
-        result:=_AVX512VBMISupport;
+        result:=(data.cpuid7_0.ecx and (1 shl 1))<>0;
       end;
 
 
     function AVX512VBMI2Support: boolean;inline;
       begin
-        result:=_AVX512VBMI2Support;
+        result:=(data.cpuid7_0.ecx and (1 shl 6))<>0;
+      end;
+
+
+    function GFNISupport: boolean;inline;
+      begin
+        result:=(data.cpuid7_0.ecx and (1 shl 8))<>0;
       end;
 
 
     function VAESSupport: boolean;inline;
       begin
-        result:=_VAESSupport;
+        result:=(data.cpuid7_0.ecx and (1 shl 9))<>0;
       end;
 
 
     function VCLMULSupport: boolean;inline;
       begin
-        result:=_VCLMULSupport;
+        result:=(data.cpuid7_0.ecx and (1 shl 10))<>0;
       end;
 
 
-    function AVX512VNNISupport: boolean;inline;    
+    function AVX512VNNISupport: boolean;inline;
       begin
-        result:=_AVX512VNNISupport;
+        result:=(data.cpuid7_0.ecx and (1 shl 11))<>0;
       end;
 
 
-    function AVX512BITALGSupport: boolean;inline;    
+    function AVX512BITALGSupport: boolean;inline;
       begin
-        result:=_AVX512BITALGSupport;
+        result:=(data.cpuid7_0.ecx and (1 shl 12))<>0;
+      end;
+
+
+    function AVX512VPOPCNTDQSupport: boolean;inline;
+      begin
+        result:=(data.cpuid7_0.ecx and (1 shl 14))<>0;
+      end;
+
+
+    function AVX512BF16Support: boolean;inline;
+      begin
+        result:=(data.cpuid7_1.eax and (1 shl 5))<>0;
+      end;
+
+
+    function AVX512FP16Support: boolean;inline;
+      begin
+        result:=(data.cpuid7_0.edx and (1 shl 23))<>0;
+      end;
+
+
+    function AVX512VP2INTERSECTSupport: boolean;inline;
+      begin
+        result:=(data.cpuid7_0.edx and (1 shl 8))<>0;
+      end;
+
+
+    function AVX5124VNNIWSupport: boolean;inline;
+      begin
+        result:=(data.cpuid7_0.edx and (1 shl 2))<>0;
+      end;
+
+
+    function AVX5124FMAPSSupport: boolean;inline;
+      begin
+        result:=(data.cpuid7_0.edx and (1 shl 3))<>0;
       end;
 
 
     function RDSEEDSupport: boolean;inline;
       begin
-        result:=_RDSEEDSupport;
+        result:=(data.cpuid7_0.ebx and (1 shl 18))<>0;
       end;
 
 
     function ADXSupport: boolean;inline;
       begin
-        result:=_ADXSupport;
+        result:=(data.cpuid7_0.ebx and (1 shl 19))<>0;
       end;
 
 
-     function SHASupport: boolean;inline;    
+    function SHASupport: boolean;inline;
       begin
-        result:=_SHASupport;
+        result:=(data.cpuid7_0.ebx and (1 shl 29))<>0;
       end;
 
 
-   function FMASupport: boolean;inline;
+    function SHA512Support: boolean;inline;
       begin
-        result:=_FMASupport;
+        result:=(data.cpuid7_1.eax and 1)<>0;
+      end;
+
+
+    function SM3Support: boolean;inline;
+      begin
+        result:=(data.cpuid7_1.eax and (1 shl 1))<>0;
+      end;
+
+
+    function SM4Support: boolean;inline;
+      begin
+        result:=(data.cpuid7_1.eax and (1 shl 2))<>0;
+      end;
+
+
+    function FMASupport: boolean;inline;
+      begin
+        result:=data.AVXSupport and ((data.cpuid1.ecx and (1 shl 12))<>0);
       end;
 
 
     function POPCNTSupport: boolean;inline;
       begin
-        result:=_POPCNTSupport;
+        result:=(data.cpuid1.ecx and (1 shl 23))<>0;
       end;
 
 
     function LZCNTSupport: boolean;inline;
       begin
-        result:=_LZCNTSupport;
+        result:=data.LZCNTSupport;
+      end;
+
+
+    function SSESupport: boolean;inline;
+      begin
+        result:=(data.cpuid1.edx and (1 shl 25))<>0;
+      end;
+
+
+    function SSE2Support: boolean;inline;
+      begin
+        result:=(data.cpuid1.edx and (1 shl 26))<>0;
       end;
 
 
     function SSE3Support: boolean;inline;
       begin
-        result:=_SSE3Support;
+        result:=(data.cpuid1.ecx and (1 shl 0))<>0;
       end;
 
 
     function SSSE3Support: boolean;inline;
       begin
-        result:=_SSSE3Support;
+        result:=(data.cpuid1.ecx and (1 shl 9))<>0;
       end;
 
 
     function SSE41Support: boolean;inline;
       begin
-        result:=_SSE41Support;
+        result:=(data.cpuid1.ecx and (1 shl 19))<>0;
       end;
 
 
     function SSE42Support: boolean;inline;
       begin
-        result:=_SSE42Support;
+        result:=(data.cpuid1.ecx and (1 shl 20))<>0;
       end;
 
 
     function MOVBESupport: boolean;inline;
       begin
-        result:=_MOVBESupport;
+        result:=(data.cpuid1.ecx and (1 shl 22))<>0;
       end;
 
 
     function F16CSupport: boolean;inline;
       begin
-        result:=_F16CSupport;
+        result:=(data.cpuid1.ecx and (1 shl 29))<>0;
       end;
 
 
     function RDRANDSupport: boolean;inline;
       begin
-        result:=_RDRANDSupport;
+        result:=(data.cpuid1.ecx and (1 shl 30))<>0;
       end;
 
 
     function RTMSupport: boolean;inline;
       begin
-        result:=_RTMSupport;
+        result:=((data.cpuid7_0.ebx and (1 shl 11))<>0) and (data.cpuid7_0.edx and (1 shl 11)=0 {RTM_ALWAYS_ABORT});
       end;
 
 
     function BMI1Support: boolean;inline;
       begin
-        result:=_BMI1Support;
+        result:=(data.cpuid7_0.ebx and (1 shl 3))<>0;
       end;
 
 
     function BMI2Support: boolean;inline;
       begin
-        result:=_BMI2Support;
+        result:=(data.cpuid7_0.ebx and (1 shl 8))<>0;
       end;
 
 begin

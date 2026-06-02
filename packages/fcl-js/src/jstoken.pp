@@ -1,18 +1,20 @@
-{ ********************************************************************* 
+{ *********************************************************************
     This file is part of the Free Component Library (FCL)
     Copyright (c) 2016 Michael Van Canneyt.
-       
+
     Javascript token definitions
-            
+
     See the file COPYING.FPC, included in this distribution,
     for details about the copyright.
-                   
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-                                
+
   **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit jstoken;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
@@ -26,7 +28,7 @@ type
      tjsANDAND, tjsANDEQ,
      tjsBraceOpen,tjsBraceClose,tjsSQuaredBraceOpen,tjsSQuaredBraceClose,tjsCurlyBraceOpen,tjsCurlyBraceClose,
      tjsCOMMA,tjsCOLON,  tjsDOT,tjsSEMICOLON, tjsASSIGN,tjsGT,tjsLT, tjsConditional,
-     tjsPLUS,tjsMINUS,tjsMUL,tjsDIV,tjsAnd,tjsOR, tjsInv, tjsMod, tjsXOR, tjsNot,
+     tjsPLUS,tjsMINUS,tjsMUL,tjsDIV,tjsPower, tjsAnd,tjsOR, tjsInv, tjsMod, tjsXOR, tjsNot,
      tjsEQ,
      tjsGE,
      tjsLE, tjsLSHIFT, tjsLSHIFTEQ,
@@ -60,11 +62,11 @@ const
 
   TokenInfos: array[TJSToken] of String = ('unknown',
        // Specials
-        'EOF','whitespace','Char','String', 'identifier','number','comment','regular expression', 'reserved word',
+        'EOF','whitespace','AnsiChar','String', 'identifier','number','comment','regular expression', 'reserved word',
         '&&','&=',
         '(',')','[',']','{','}',
         ',',':','.',';','=','>','<','?',
-        '+','-','*','/','&','|','~','%','^','!',
+        '+','-','*','/','**','&','|','~','%','^','!',
         '==',
         '>=',
         '<=', '<<', '<<=',

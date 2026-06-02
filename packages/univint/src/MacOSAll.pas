@@ -9,7 +9,9 @@
 {$calling mwpascal}
 
 {$setc MACOSALLINCLUDE := TRUE}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit MacOSAll;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 
 {$ifc (defined CPUPOWERPC32 or defined CPUI386) and not defined(iphonesim)}
@@ -2027,7 +2029,7 @@ function LoWord(arg: UInt32): UInt16; inline;
 begin
   LoWord := UInt16(arg);
 end;
-  
+
 
 {$endc} {TARGET_OS_MAC}
 
@@ -2036,22 +2038,22 @@ end;
 
 {$R-}
 
-function CFCopyLocalizedString( key: CFStringRef; comment: PChar ): CFStringRef; inline;
+function CFCopyLocalizedString( key: CFStringRef; comment: PAnsiChar ): CFStringRef; inline;
 begin
 	CFCopyLocalizedString := CFBundleCopyLocalizedString( CFBundleGetMainBundle, key, key, nil );
 end;
 
-function CFCopyLocalizedStringFromTable( key: CFStringRef; tableName: CFStringRef; comment: PChar ): CFStringRef; inline;
+function CFCopyLocalizedStringFromTable( key: CFStringRef; tableName: CFStringRef; comment: PAnsiChar ): CFStringRef; inline;
 begin
 	CFCopyLocalizedStringFromTable := CFBundleCopyLocalizedString( CFBundleGetMainBundle, key, key, tableName );
 end;
 
-function CFCopyLocalizedStringFromTableInBundle( key: CFStringRef; tableName: CFStringRef; bundle: CFBundleRef; comment: PChar ): CFStringRef; inline;
+function CFCopyLocalizedStringFromTableInBundle( key: CFStringRef; tableName: CFStringRef; bundle: CFBundleRef; comment: PAnsiChar ): CFStringRef; inline;
 begin
 	CFCopyLocalizedStringFromTableInBundle := CFBundleCopyLocalizedString( bundle, key, key, tableName );
 end;
 
-function CFCopyLocalizedStringWithDefaultValue( key: CFStringRef; tableName: CFStringRef; bundle: CFBundleRef; value: CFStringRef; comment: PChar ): CFStringRef; inline;
+function CFCopyLocalizedStringWithDefaultValue( key: CFStringRef; tableName: CFStringRef; bundle: CFBundleRef; value: CFStringRef; comment: PAnsiChar ): CFStringRef; inline;
 begin
 	CFCopyLocalizedStringWithDefaultValue := CFBundleCopyLocalizedString( bundle, key, value, tableName );
 end;
@@ -2179,7 +2181,7 @@ begin
 	kQLGeneratorTypeID := CFUUIDGetConstantUUIDWithBytes(kCFAllocatorDefault, $5E, $2D, $96, $80, $50, $22, $40, $FA, $B8, $06, $43, $34, $96, $22, $E5, $B9)
 end;
 
-function kQLGeneratorCallbacksInterfaceID: CFUUIDRef; inline; 
+function kQLGeneratorCallbacksInterfaceID: CFUUIDRef; inline;
 begin
 	kQLGeneratorCallbacksInterfaceID := CFUUIDGetConstantUUIDWithBytes(kCFAllocatorDefault, $86, $5A, $F5, $E0, $6D, $30, $43, $45, $95, $1B, $D3, $71, $05, $75, $4F, $2D)
 end;

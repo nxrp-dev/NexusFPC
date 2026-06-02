@@ -2471,7 +2471,7 @@ const
   B3500000 = &010016;
   B4000000 = &010017;
   __MAX_BAUD=  B4000000;
-  
+
   CIBAUD = &02003600000;
   CMSPAR = &10000000000;
   CRTSCTS = &20000000000;
@@ -3049,7 +3049,7 @@ Type
     c_oflag,
     c_cflag,
     c_lflag  : cardinal;
-    c_line   : char;
+    c_line   : AnsiChar;
     c_cc     : array[0..NCCS-1] of byte;
     c_ispeed,
     c_ospeed : cardinal;

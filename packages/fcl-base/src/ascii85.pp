@@ -14,7 +14,9 @@
 
 // I, Danny Milosavljevic, hereby release this code into the public domain.
 
-unit ascii85;
+{$IFNDEF FPC_DOTTEDUNITS}
+unit Ascii85;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$M+}
 {$MODE OBJFPC}
@@ -23,7 +25,11 @@ unit ascii85;
 //   which is based on C code from <http://www.stillhq.com/cgi-bin/cvsweb/ascii85/>.
 
 interface
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils, System.Classes;
+{$ELSE FPC_DOTTEDUNITS}
 uses sysutils, classes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   TASCII85State = (ascInitial = 0, ascOneEncodedChar = 1, ascTwoEncodedChars = 2, ascThreeEncodedChars = 3, ascFourEncodedChars = 4, ascNoEncodedChar = 5, ascPrefix = 6);
@@ -80,18 +86,18 @@ type
     FCount,
     FWidth : Integer;
     FBoundary : Boolean;
-  protected  
+  protected
     Procedure WriteBoundary;
     Procedure Flush;
     procedure Encode;
   public
-    Constructor Create(ADest: TStream; AWidth : Integer = 72; ABoundary : Boolean = False); 
+    Constructor Create(ADest: TStream; AWidth : Integer = 72; ABoundary : Boolean = False);
     Destructor Destroy; Override;
     function Write(Const aBuffer; aCount : longint) : longint; override;
     Property Width : Integer Read FWidth;
     Property Boundary : Boolean Read FBoundary;
-  end;                      
-        
+  end;
+
 
 implementation
 
@@ -113,7 +119,7 @@ Var
   S : String[7];
   I,J : Integer;
   Buf : Array[0..4] of Byte;
-  
+
 begin
   If (FTuple=0) then
     begin
@@ -127,18 +133,18 @@ begin
       end;
     end
   else
-    begin  
+    begin
     For I:=0 to 4 do
       begin
       Buf[i]:=FTuple mod 85;
       FTuple:=FTuple div 85;
       end;
-    J:=0;  
+    J:=0;
     S:='';
     For I:=FCount+1 downto 0 do
       begin
       Inc(j);
-      S[J]:=Char(Buf[i]+Ord('!'));
+      S[J]:=AnsiChar(Buf[i]+Ord('!'));
       SetLength(S,J);
       Inc(FPos);
       If (FPos>FWidth) then
@@ -157,12 +163,12 @@ end;
 
 Procedure TASCII85EncoderStream.Flush;
 
-Const 
+Const
   Boundary1 = '~>'+slinebreak;
   Boundary2 = slinebreak+Boundary1;
-  
+
 Var
-  S : String;
+  S : Ansistring;
 
 begin
   If FCount>0 then
@@ -188,7 +194,7 @@ begin
     WriteBoundary;
 end;
 
-Destructor TASCII85EncoderStream.Destroy; 
+Destructor TASCII85EncoderStream.Destroy;
 
 begin
   Flush;
@@ -200,9 +206,9 @@ function TASCII85EncoderStream.Write(Const aBuffer; aCount : longint) : longint;
 Var
   P : PByte;
   C : Byte;
-  
+
 begin
-  P:=@Abuffer;  
+  P:=@Abuffer;
   Result:=ACount;
   While ACount>0 do
     begin
@@ -215,13 +221,13 @@ begin
           FTuple:=FTuple or C;
           encode;
           end;
-     end;     
+     end;
      Inc(FCount);
      Inc(P);
      Dec(ACount);
      end;
 end;
-                     
+
 { TRingBuffer }
 
 function TASCII85RingBuffer.GetBufferSize() : Cardinal; inline;

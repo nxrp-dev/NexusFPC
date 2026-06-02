@@ -1,8 +1,10 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit sdl_mixer;
+{$ENDIF FPC_DOTTEDUNITS}
 {******************************************************************************}
 {
   $Id: sdl_mixer.pas,v 1.18 2007/05/29 21:31:44 savage Exp $
-  
+
 }
 {                                                                              }
 {       Borland Delphi SDL_Mixer - Simple DirectMedia Layer Mixer Library      }
@@ -153,6 +155,21 @@ unit sdl_mixer;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+{$IFDEF __GPC__}
+  gpc,
+{$ENDIF}
+{$IFNDEF DARWIN}
+{$IFNDEF no_smpeg}
+  Api.Sdl.SMpeg,
+{$ENDIF}
+{$ENDIF}
+{$IFDEF MORPHOS}
+  Amiga.Core.Exec,
+{$ENDIF}
+  Api.Sdl;
+{$ELSE FPC_DOTTEDUNITS}
 uses
 {$IFDEF __GPC__}
   gpc,
@@ -166,6 +183,7 @@ uses
   exec,
 {$ENDIF}
   sdl;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
 {$IFDEF WINDOWS}
@@ -204,7 +222,7 @@ const
   MIX_MAJOR_VERSION = SDL_MIXER_MAJOR_VERSION;
   MIX_MINOR_VERSION = SDL_MIXER_MINOR_VERSION;
   MIX_PATCHLEVEL    = SDL_MIXER_PATCHLEVEL;
-  
+
   // SDL_Mixer.h constants
   { The default mixer has 8 simultaneous mixing channels }
 {$IFNDEF MIX_CHANNELS}
@@ -244,8 +262,8 @@ type
   //music_cmd.h types
   PMusicCMD = ^TMusicCMD;
   TMusicCMD = record
-    filename : array[ 0..PATH_MAX - 1 ] of char;
-    cmd : array[ 0..PATH_MAX - 1 ] of char;
+    filename : array[ 0..PATH_MAX - 1 ] of AnsiChar;
+    cmd : array[ 0..PATH_MAX - 1 ] of AnsiChar;
     pid : TSYS_ThreadHandle;
   end;
 
@@ -362,9 +380,9 @@ type
   PMODULE = ^TMODULE;
   TMODULE = record
     (* general module information *)
-    //CHAR*       songname;    (* name of the song *)
-    //CHAR*       modtype;     (* string type of module loaded *)
-    //CHAR*       comment;     (* module comments *)
+    //AnsiChar*       songname;    (* name of the song *)
+    //AnsiChar*       modtype;     (* string type of module loaded *)
+    //AnsiChar*       comment;     (* module comments *)
     //UWORD       flags;       (* See module flags above *)
     //UBYTE       numchn;      (* number of module channels *)
     //UBYTE       numvoices;   (* max # voices used for full NNA playback *)
@@ -524,9 +542,9 @@ function Mix_LoadWAV_RW( src : PSDL_RWops; freesrc : integer ) : PMix_Chunk;
 cdecl; external {$IFDEF __GPC__}name 'Mix_LoadWAV_RW'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_LoadWAV_RW}
 
-function Mix_LoadWAV( filename : PChar ) : PMix_Chunk;
+function Mix_LoadWAV( filename : PAnsiChar ) : PMix_Chunk;
 
-function Mix_LoadMUS( const filename : PChar ) : PMix_Music;
+function Mix_LoadMUS( const filename : PAnsiChar ) : PMix_Music;
 cdecl; external {$IFDEF __GPC__}name 'Mix_LoadMUS'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_LoadMUS}
 
@@ -758,10 +776,10 @@ const
   function Mix_SetPanning( channel : integer; left : Uint8; right : Uint8  ) : integer;
   cdecl; external {$IFDEF __GPC__}name 'Mix_SetPanning'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
   {$EXTERNALSYM Mix_SetPanning}
-  
+
   { * set the position ofa channel.( angle ) is an integer from 0 to 360, that
     * specifies the location of the sound in relation to the listener.( angle )
-    * will be reduced as neccesary( 540 becomes 180 degrees, -100 becomes 260 ).
+    * will be reduced as necessary( 540 becomes 180 degrees, -100 becomes 260 ).
     * Angle 0 is due north, and rotates clockwise as the value increases.
     * for efficiency, the precision of this effect may be limited( angles 1
     * through 7 might all produce the same effect, 8 through 15 are equal, etc ).
@@ -934,7 +952,7 @@ cdecl; external {$IFDEF __GPC__}name 'Mix_PlayChannelTimed'{$ELSE} SDL_MixerLibN
 { Play an audio chunk on a specific channel.
    If the specified channel is -1, play on the first free channel.
    If 'loops' is greater than zero, loop the sound that many times.
-   If 'loops' is -1, loop inifinitely (~65000 times).
+   If 'loops' is -1, loop infinitely (~65000 times).
    Returns which channel was used to play the sound.
 }
 function Mix_PlayChannel( channel : integer; chunk : PMix_Chunk; loops : integer ) : integer;
@@ -1067,7 +1085,7 @@ cdecl; external {$IFDEF __GPC__}name 'Mix_PlayingMusic'{$ELSE} SDL_MixerLibName{
 {$EXTERNALSYM Mix_PlayingMusic}
 
 { Stop music and set external music playback command }
-function Mix_SetMusicCMD( const command : PChar ) : integer;
+function Mix_SetMusicCMD( const command : PAnsiChar ) : integer;
 cdecl; external {$IFDEF __GPC__}name 'Mix_SetMusicCMD'{$ELSE} SDL_MixerLibName{$ENDIF __GPC__};
 {$EXTERNALSYM Mix_SetMusicCMD}
 
@@ -1096,9 +1114,9 @@ cdecl; external {$IFDEF __GPC__}name 'Mix_CloseAudio'{$ELSE} SDL_MixerLibName{$E
 {$ENDIF MORPHOS}
 
 { We'll use SDL for reporting errors }
-procedure Mix_SetError( fmt : PChar );
+procedure Mix_SetError( fmt : PAnsiChar );
 
-function Mix_GetError : PChar;
+function Mix_GetError : PAnsiChar;
 
 {------------------------------------------------------------------------------}
 { initialization                                                               }
@@ -1119,7 +1137,7 @@ begin
   X.patch := SDL_MIXER_PATCHLEVEL;
 end;
 
-function Mix_LoadWAV( filename : PChar ) : PMix_Chunk;
+function Mix_LoadWAV( filename : PAnsiChar ) : PMix_Chunk;
 begin
   result := Mix_LoadWAV_RW( SDL_RWFromFile( filename, 'rb' ), 1 );
 end;
@@ -1135,12 +1153,12 @@ begin
   result := Mix_FadeInChannelTimed( channel, chunk, loops, ms, -1 );
 end;
 
-procedure Mix_SetError( fmt : PChar );
+procedure Mix_SetError( fmt : PAnsiChar );
 begin
   SDL_SetError( fmt );
 end;
 
-function Mix_GetError : PChar;
+function Mix_GetError : PAnsiChar;
 begin
   result := SDL_GetError;
 end;

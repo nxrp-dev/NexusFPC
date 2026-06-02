@@ -42,7 +42,9 @@
 
 // $Id: JwaMprError.pas,v 1.7 2007/09/05 11:58:51 dezipaitor Exp $
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaMprError;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -153,7 +155,7 @@ const
   {$EXTERNALSYM ERROR_INTERFACE_CONFIGURATION}
 
 (*
- * The interface confugration in invalid. There is already another interface that is connected to the same inteface on the remote router.%0
+ * The interface configuration in invalid. There is already another interface that is connected to the same interface on the remote router.%0
  *)
 
   ERROR_NOT_CLIENT_PORT = ROUTEBASE + 13;
@@ -343,7 +345,7 @@ const
 
 (*
  * An invalid response was received from the RADIUS authentication server.
- * Make sure that the case sensitive secret pasword for the RADIUS server is set correctly.%0
+ * Make sure that the case sensitive secret password for the RADIUS server is set correctly.%0
  *)
 
   ERROR_DIALIN_HOURS_RESTRICTION = ROUTEBASE + 40;

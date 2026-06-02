@@ -1,12 +1,12 @@
 {
   Copyright 1999-2005 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
-  
+
   You may not use this file except in compliance with the License.
   obtain a copy of the License at
-  
+
     http://www.imagemagick.org/script/license.php
-  
+
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -142,7 +142,7 @@ type
 
 type
   ElementReference = record
-    id: PChar;
+    id: PAnsiChar;
 
     type_: ReferenceType;
 
@@ -159,7 +159,7 @@ type
 type
   DrawInfo = record
     primitive,
-    geometry: PChar;
+    geometry: PAnsiChar;
 
     viewbox: RectangleInfo;
 
@@ -195,36 +195,36 @@ type
 
     compose: CompositeOperator;
 
-    text: PChar;
+    text: PAnsiChar;
 
     face: culong;
 
     font,
     metrics,
-    family: PChar;
+    family: PAnsiChar;
 
     style: StyleType;
 
     stretch: StretchType;
 
     weight: culong;
-    
-    encoding: PChar;
+
+    encoding: PAnsiChar;
 
     pointsize: double;
 
-    density: PChar;
+    density: PAnsiChar;
 
     align: AlignType;
 
     undercolor,
     border_color: PixelPacket;
 
-    server_name: PChar;
+    server_name: PAnsiChar;
 
     dash_pattern: Pdouble;
 
-    clip_path: PChar;
+    clip_path: PAnsiChar;
 
     bounds: SegmentInfo;
 
@@ -240,16 +240,16 @@ type
 
     signature: culong;
   end;
-  
+
   PDrawInfo = ^DrawInfo;
-  
+
   PPDrawInfo = ^PDrawInfo;
 
 type
   PointInfo = record
     x, y: double;
   end;
-  
+
   PPointInfo = ^PointInfo;
 
 type
@@ -262,7 +262,7 @@ type
 
     method: PaintMethod;
 
-    text: PChar;
+    text: PAnsiChar;
   end;
 
 type
@@ -286,9 +286,9 @@ type
 
 extern MagickExport MagickBooleanType
   DrawAffineImage(Image *,const Image *,const AffineMatrix *),
-  DrawClipPath(Image *,const DrawInfo *,const char *),
+  DrawClipPath(Image *,const DrawInfo *,const AnsiChar *),
   DrawImage(Image *,const DrawInfo *),
-  DrawPatternPath(Image *,const DrawInfo *,const char *,Image **),
+  DrawPatternPath(Image *,const DrawInfo *,const AnsiChar *,Image **),
   DrawPrimitive(Image *,const DrawInfo *,const PrimitiveInfo *);
 
 extern MagickExport void

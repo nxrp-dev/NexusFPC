@@ -173,11 +173,11 @@ type sigset_t = array[0..3] of Longint;
     Sa_Mask     : TSigSet;
   end;
   PSigActionRec = ^SigActionRec;
-  
+
 
   pstack_t = ^stack_t;
   stack_t = record
-    ss_sp   : pChar;                    {* signal stack base *}
+    ss_sp   : PAnsiChar;                    {* signal stack base *}
     ss_size : size_t;                   {* signal stack length *}
     ss_flags: cint32;                   {* SS_DISABLE and/or SS_ONSTACK *}
   end;

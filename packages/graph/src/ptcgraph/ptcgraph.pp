@@ -14,7 +14,9 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit ptcgraph;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {//$define logging}
 {$define FPC_GRAPH_SUPPORTS_TRUECOLOR}
@@ -24,8 +26,13 @@ unit ptcgraph;
                                     interface
 {******************************************************************************}
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  Ptc, PTC.Wrapper;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   ptc, ptcwrapper;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$ifdef VER2_6}
 type
@@ -279,7 +286,7 @@ const
      chiptype,           { Chiptype detected }
      memory,             { videomemory in KB }
      linewidth_unit: Longint;    { Use only a multiple of this as parameter for                                   set_displaystart }
-     linear_aperture: PChar;     { points to mmap secondary mem aperture of card }
+     linear_aperture: PAnsiChar;     { points to mmap secondary mem aperture of card }
      aperture_size: Longint;     { size of aperture in KB if size>=videomemory.}
 
      set_aperture_page: procedure (page: Longint);
@@ -604,7 +611,7 @@ begin
   CurrentCGABkColor := 0;
 end;
 
-procedure ptc_InternalOpen(const ATitle: string; AWidth, AHeight: Integer; AFormat: IPTCFormat; AVirtualPages: Integer);
+procedure ptc_InternalOpen(const ATitle: ShortString; AWidth, AHeight: Integer; AFormat: IPTCFormat; AVirtualPages: Integer);
 var
   ConsoleWidth, ConsoleHeight: Integer;
 begin
@@ -1615,7 +1622,7 @@ begin
 
   pixels := ptc_surface_lock;
 
-  { number of times to go throuh the 8x8 pattern }
+  { number of times to go through the 8x8 pattern }
   NrIterations := abs(x2 - x1+8) div 8;
   for i := 0 to NrIterations do
     for j := 0 to 7 do
@@ -1668,7 +1675,7 @@ begin
 
   pixels := ptc_surface_lock;
 
-  { number of times to go throuh the 8x8 pattern }
+  { number of times to go through the 8x8 pattern }
   NrIterations := abs(x2 - x1+8) div 8;
   for i := 0 to NrIterations do
     for j := 0 to 7 do
@@ -1722,7 +1729,7 @@ begin
 
   pixels := ptc_surface_lock;
 
-  { number of times to go throuh the 8x8 pattern }
+  { number of times to go through the 8x8 pattern }
   NrIterations := abs(x2 - x1+8) div 8;
   for i := 0 to NrIterations do
     for j := 0 to 7 do
@@ -1779,10 +1786,10 @@ end;
 { Displays the image contained in a bitmap starting at X,Y }
 { the first 2 bytes of the bitmap structure define the     }
 { width and height of the bitmap                           }
-{ note: This optomized version does not use PutPixel       }
+{ note: This optimized version does not use PutPixel       }
 {   Which would be checking the viewport for every pixel   }
 {   Instead it just does it's own viewport check once then }
-{   puts all the pixels within the veiwport without further}
+{   puts all the pixels within the viewport without further}
 {   checking.  Also instead of checking BitBlt every pixel }
 {   it is only checked once before all the pixels are      }
 {   displayed at once   (JMR)                              }
@@ -2160,8 +2167,8 @@ end;
 { note: we only need the pixels inside the ViewPort! (JM)  }
 { note2: extended so you can specify start and end X coord }
 {   so it is usable for GetImage too (JM)                  }
-{ note3: This optomized version does not use GetPixel,     }
-{   Whcih would be checking the viewport for every pixel.  }
+{ note3: This optimized version does not use GetPixel,     }
+{   Which would be checking the viewport for every pixel.  }
 {   Instead it just does it's own viewport check once then }
 {   gets all the pixels on the scan line without further   }
 {   checking  (JMR)                                        }
@@ -2262,17 +2269,17 @@ End;
 {**********************************************************}
 { Procedure GetImage()                                     }
 {----------------------------------------------------------}
-{ Returns a bitmap full the video specified by a rectagle  }
+{ Returns a bitmap for the video specified by a rectangle  }
 { defined by X1,Y1 to X2,Y2                                }
 { the first 2 bytes of the bitmap structure define the     }
 { width and height of the rectangle                        }
 { These are later used by PutImage() so the bitmap is      }
 { properly represented                                     }
 { there is a 3rd reserved byte before data starts          }
-{ note: This optomized version does not use GetScanLine or }
-{   GetPixel, Whcih would be checking the viewport for     }
+{ note: This optimized version does not use GetScanLine or }
+{   GetPixel, Which would be checking the viewport for     }
 {   every pixel. Instead it just does it's own viewport    }
-{   check once then gets all the pixels within the veiwport}
+{   check once then gets all the pixels within the viewport}
 {   without further checking  (JMR)                        }
 {**********************************************************}
 

@@ -23,7 +23,7 @@ var
 {
  * Send a broadcast signal
  }
-procedure BusSend(sigvalue: PChar);
+procedure BusSend(sigvalue: PAnsiChar);
 var
   msg: PDBusMessage;
   args: DBusMessageIter;
@@ -66,7 +66,7 @@ begin
     WriteLn('Out Of Memory!');
     Exit;
   end;
-  
+
   dbus_connection_flush(conn);
 
   WriteLn('Signal Sent');
@@ -82,7 +82,7 @@ procedure BusReceive;
 var
   msg: PDBusMessage;
   args: DBusMessageIter;
-  sigvalue: PChar;
+  sigvalue: PAnsiChar;
 begin
   WriteLn('Listening for signals');
 
@@ -105,7 +105,7 @@ begin
   end;
   WriteLn('Match rule sent');
 
-  // loop listening for signals being emmitted
+  // loop listening for signals being emitted
   while (true) do
   begin
 
@@ -146,7 +146,7 @@ var
   stat: Boolean = true;
   level: dbus_uint32_t = 21614;
   serial: dbus_uint32_t = 0;
-  param: PChar = '';
+  param: PAnsiChar = '';
 begin
    // read the arguments
    if (dbus_message_iter_init(msg, @args) = 0) then
@@ -193,7 +193,7 @@ procedure BusListen;
 var
   msg, reply: PDBusMessage;
   args: DBusMessageIter;
-  param: PChar;
+  param: PAnsiChar;
 begin
   WriteLn('Listening for method calls');
 
@@ -234,7 +234,7 @@ end;
 {
  * Call a method on a remote object
  }
-procedure BusCall(param: PChar);
+procedure BusCall(param: PAnsiChar);
 var
   msg: PDBusMessage;
   args: DBusMessageIter;
@@ -329,7 +329,7 @@ end;
 begin
   { Initializes the errors }
   dbus_error_init(@err);
-  
+
   { Connection }
   conn := dbus_bus_get(DBUS_BUS_SESSION, @err);
 
@@ -338,18 +338,18 @@ begin
     WriteLn('Connection Error: ' + err.message);
     dbus_error_free(@err);
   end;
-  
+
   if conn = nil then Exit;
-  
+
   { Parses parameters }
-  
+
   if (ParamCount <> 1) and (ParamCount <> 2) then WriteLn(SINTAX_TEXT)
   else
   begin
-    if ParamStr(1) = 'send' then BusSend(PChar(ParamStr(2)))
+    if ParamStr(1) = 'send' then BusSend(PAnsiChar(ParamStr(2)))
     else if ParamStr(1) = 'receive' then BusReceive()
     else if ParamStr(1) = 'listen' then BusListen()
-    else if ParamStr(1) = 'call' then BusCall(PChar(ParamStr(2)))
+    else if ParamStr(1) = 'call' then BusCall(PAnsiChar(ParamStr(2)))
     else WriteLn(SINTAX_TEXT);
   end;
 

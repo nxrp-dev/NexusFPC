@@ -25,13 +25,13 @@
 
 {
  * @defgroup apr_time Time Routines
- * @ingroup APR 
+ * @ingroup APR
  }
 
 { month names }
-//APR_DECLARE_DATA extern const char apr_month_snames[12][4];
+//APR_DECLARE_DATA extern const AnsiChar apr_month_snames[12][4];
 { day names }
-//APR_DECLARE_DATA extern const char apr_day_snames[7][4];
+//APR_DECLARE_DATA extern const AnsiChar apr_day_snames[7][4];
 
 
 { number of microseconds since 00:00:00 january 1, 1970 UTC }
@@ -158,7 +158,7 @@ function apr_time_exp_lt(result: Papr_time_exp_t;
  external LibAPR name LibNamePrefix + 'apr_time_exp_lt' + LibSuff12;
 
 {
- * Convert time value from human readable format to a numeric apr_time_t 
+ * Convert time value from human readable format to a numeric apr_time_t
  * e.g. elapsed usec since epoch
  * @param result the resulting imploded time
  * @param input the input exploded time
@@ -182,7 +182,7 @@ function apr_time_exp_gmt_get(result: Papr_time_t;
 {
  * Sleep for the specified number of micro-seconds.
  * @param t desired amount of time to sleep.
- * @warning May sleep for longer than the specified time. 
+ * @warning May sleep for longer than the specified time.
  }
 procedure apr_sleep(t: apr_interval_time_t);
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
@@ -196,9 +196,9 @@ const APR_RFC822_DATE_LEN = (30);
  * format which requires the indicated amount of storage,
  * including the trailing null byte.
  * @param date_str String to write to.
- * @param t the time to convert 
+ * @param t the time to convert
  }
-function apr_rfc822_date(date_str: PChar; t: apr_time_t): apr_status_t;
+function apr_rfc822_date(date_str: PAnsiChar; t: apr_time_t): apr_status_t;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibAPR name LibNamePrefix + 'apr_rfc822_date' + LibSuff12;
 
@@ -212,9 +212,9 @@ const APR_CTIME_LEN = (25);
  * Unlike ANSI/ISO C ctime(), apr_ctime() does not include
  * a \n at the end of the string.
  * @param date_str String to write to.
- * @param t the time to convert 
+ * @param t the time to convert
  }
-function apr_ctime(date_str: PChar; t: apr_time_t): apr_status_t;
+function apr_ctime(date_str: PAnsiChar; t: apr_time_t): apr_status_t;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibAPR name LibNamePrefix + 'apr_ctime' + LibSuff12;
 
@@ -226,17 +226,17 @@ function apr_ctime(date_str: PChar; t: apr_time_t): apr_status_t;
  * @param format The format for the time string
  * @param tm The time to convert
  }
-function apr_strftime(s: PChar; retsize: apr_size_t;
- max: apr_size_t; const format: PChar;
+function apr_strftime(s: PAnsiChar; retsize: apr_size_t;
+ max: apr_size_t; const format: PAnsiChar;
  tm: Papr_time_exp_t): apr_status_t;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibAPR name LibNamePrefix + 'apr_strftime' + LibSuff20;
 
 {
  * Improve the clock resolution for the lifetime of the given pool.
- * Generally this is only desireable on benchmarking and other very
+ * Generally this is only desirable on benchmarking and other very
  * time-sensitive applications, and has no impact on most platforms.
- * @param p The pool to associate the finer clock resolution 
+ * @param p The pool to associate the finer clock resolution
  }
 procedure apr_time_clock_hires(p: Papr_pool_t);
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}

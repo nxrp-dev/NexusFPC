@@ -14,11 +14,18 @@
 
  **********************************************************************}
 {$INCLUDE sdo_global.inc}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit sdo_utils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  Sdo.Base, Sdo.Types;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   sdo, sdo_types;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   TListValueExtractProc = procedure (const AList : ISDODataObjectList; var AValueBuffer : TValueBuffer);
@@ -45,8 +52,13 @@ type
   function InheritsFrom(const AChild, AParent : ISDOType) : Boolean;
 
 implementation
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.SysUtils;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   SysUtils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 function InheritsFrom(const AChild, AParent : ISDOType) : Boolean;
 var
@@ -298,7 +310,7 @@ var
     {$IFDEF ATT_PROC_ADDRESS}@{$ENDIF}list_extractor_integer , //IntegerType,
 {$IFDEF HAS_SDO_LONG}
     {$IFDEF ATT_PROC_ADDRESS}@{$ENDIF}list_extractor_long, // LongType,
-{$ENDIF HAS_SDO_LONG}    
+{$ENDIF HAS_SDO_LONG}
     {$IFDEF ATT_PROC_ADDRESS}@{$ENDIF}list_extractor_object, // ObjectType,
 {$IFDEF HAS_SDO_SHORT}
     {$IFDEF ATT_PROC_ADDRESS}@{$ENDIF}list_extractor_short, // ShortType,

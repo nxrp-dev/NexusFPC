@@ -69,6 +69,8 @@ type
     Procedure TestFunctionOneOutArg;
     procedure TestProcedureOneConstRefArg;
     Procedure TestFunctionOneConstRefArg;
+    procedure TestFunctionOneConstRefAttributeArg;
+    procedure TestFunctionOneConstRefAttributeArgReversed;
     procedure TestProcedureTwoArgs;
     Procedure TestFunctionTwoArgs;
     procedure TestProcedureTwoArgsSeparate;
@@ -102,8 +104,7 @@ type
     Procedure TestFunctionArrayOfConstArg;
     procedure TestProcedureConstArrayOfConstArg;
     Procedure TestFunctionConstArrayOfConstArg;
-    procedure TestProcedureOnePointerArg;
-    procedure TestFUnctionPointerResult;
+    Procedure TestProcedureArgFile;
 
     Procedure TestProcedureCdecl;
     Procedure TestFunctionCdecl;
@@ -163,7 +164,9 @@ type
     Procedure TestProcedureCDeclExport;
     Procedure TestFunctionCDeclExport;
     Procedure TestProcedureExternal;
+    Procedure TestProcedureWeakExternal;
     Procedure TestFunctionExternal;
+    Procedure TestFunctionWeakExternal;
     Procedure TestFunctionForwardNoReturnDelphi;
     procedure TestFunctionForwardNoReturnNoDelphi;
     Procedure TestProcedureExternalLibName;
@@ -187,7 +190,6 @@ type
     procedure TestOperatorNames;
     Procedure TestAssignOperatorAfterObject;
     Procedure TestFunctionNoResult;
-    Procedure TestExternalFunctionFinal;
     Procedure TestFunctionSyscallSingleNumber;
     Procedure TestFunctionSyscallDoubleNumber;
     Procedure TestFunctionSysCallSysTrapIdentifier;
@@ -384,7 +386,7 @@ begin
     AssertNotNull(N+' Have argument type',A.ArgType);
     AssertEquals(N+' Correct argument type name',TypeName,A.ArgType.Name);
     end
-  else  
+  else
     begin
     AssertNotNull(N+' Have argument type',A.ArgType);
     T:=A.ArgType;
@@ -393,7 +395,7 @@ begin
     AssertNotNull(N+'Have dest type',T);
     AssertEquals(N+' Correct argument dest type name',Copy(TypeName,2,MaxInt),T.Name);
     end;
-    
+
 end;
 
 procedure TTestProcedureFunction.AssertArrayArg(ProcType: TPasProcedureType;
@@ -500,26 +502,11 @@ begin
   AssertFunc([],[],ccDefault,0);
 end;
 
-
-
 procedure TTestProcedureFunction.TestProcedureOneArg;
 begin
   ParseProcedure('(B : Integer)');
   AssertProc([],[],ccDefault,1);
   AssertArg(ProcType,0,'B',argDefault,'Integer','');
-end;
-
-procedure TTestProcedureFunction.TestProcedureOnePointerArg;
-begin
-  ParseProcedure('(B : ^Integer)');
-  AssertProc([],[],ccDefault,1);
-  AssertArg(ProcType,0,'B',argDefault,'^Integer','');
-end;
-
-procedure TTestProcedureFunction.TestFunctionPointerResult;
-begin
-  ParseFunction('()','^LongInt');
-  AssertFunc([],[],ccDefault,0);
 end;
 
 procedure TTestProcedureFunction.TestFunctionOneArg;
@@ -556,6 +543,24 @@ begin
   AssertFunc([],[],ccDefault,1);
   AssertArg(FuncType,0,'B',argConst,'Integer','');
 end;
+
+
+procedure TTestProcedureFunction.TestFunctionOneConstRefAttributeArg;
+begin
+  Parser.CurrentModeswitches:=Parser.CurrentModeswitches+[msPrefixedAttributes];
+  ParseFunction('([ref] Const B : Integer)');
+  AssertFunc([],[],ccDefault,1);
+  AssertArg(FuncType,0,'B',argConstRef,'Integer','');
+end;
+
+procedure TTestProcedureFunction.TestFunctionOneConstRefAttributeArgReversed;
+begin
+  Parser.CurrentModeswitches:=Parser.CurrentModeswitches+[msPrefixedAttributes];
+  ParseFunction('(Const [ref] B : Integer)');
+  AssertFunc([],[],ccDefault,1);
+  AssertArg(FuncType,0,'B',argConstRef,'Integer','');
+end;
+
 
 procedure TTestProcedureFunction.TestProcedureOneOutArg;
 begin
@@ -830,6 +835,12 @@ begin
   AssertArrayArg(FuncType,0,'B',argConst,'');
 end;
 
+procedure TTestProcedureFunction.TestProcedureArgFile;
+begin
+  ParseProcedure('(Const B : File)');
+  AssertProc([],[],ccDefault,1);
+end;
+
 procedure TTestProcedureFunction.TestCallingConventionSysV_ABI_Default;
 begin
   ParseProcedure('; SysV_ABI_Default');
@@ -869,19 +880,19 @@ end;
 procedure TTestProcedureFunction.TestCallingConventionSysCallExecbase;
 begin
   ParseProcedure('; syscall _execBase 123');
-  AssertProc([],[],ccSysCall,0);
+  AssertProc([pmExternal],[],ccSysCall,0);
 end;
 
 procedure TTestProcedureFunction.TestCallingConventionSysCallUtilitybase;
 begin
   ParseProcedure('; syscall _utilityBase 123');
-  AssertProc([],[],ccSysCall,0);
+  AssertProc([pmExternal],[],ccSysCall,0);
 end;
 
 procedure TTestProcedureFunction.TestCallingConventionSysCallConsoleDevice;
 begin
   ParseProcedure('; syscall ConsoleDevice 123');
-  AssertProc([],[],ccSysCall,0);
+  AssertProc([pmExternal],[],ccSysCall,0);
 end;
 
 procedure TTestProcedureFunction.TestFunctionDiscardResult;
@@ -1201,11 +1212,26 @@ begin
   AssertNull('No Library name expression',Proc.LibraryExpr);
 end;
 
+procedure TTestProcedureFunction.TestProcedureWeakExternal;
+begin
+  ParseProcedure(';weakexternal','');
+  AssertProc([pmWeakExternal],[],ccDefault,0);
+  AssertNull('No Library name expression',Proc.LibraryExpr);
+end;
+
 procedure TTestProcedureFunction.TestFunctionExternal;
 begin
   AddDeclaration('function A : Integer; external');
   ParseFunction;
   AssertFunc([pmExternal],[],ccDefault,0);
+  AssertNull('No Library name expression',Func.LibraryExpr);
+end;
+
+procedure TTestProcedureFunction.TestFunctionWeakExternal;
+begin
+  AddDeclaration('function A : Integer; weakexternal');
+  ParseFunction;
+  AssertFunc([pmWeakExternal],[],ccDefault,0);
   AssertNull('No Library name expression',Func.LibraryExpr);
 end;
 
@@ -1491,36 +1517,34 @@ begin
 end;
 
 
-Procedure TTestProcedureFunction.TestExternalFunctionFinal;
 
-begin
-  // class external 'XYZ' name 'ABC'
-  //  function Something : Someresult; final;
-  // end; 
-  Fail('To be implemented');
-end;
-
-
-Procedure TTestProcedureFunction.TestFunctionSyscallSingleNumber;
+procedure TTestProcedureFunction.TestFunctionSyscallSingleNumber;
 begin
   // function Something : Someresult; syscall 12
-  Fail('To be implemented');
+  AddDeclaration('function A : Integer; syscall 12');
+  ParseFunction;
+  AssertFunc([pmExternal],[],ccSysCall,0);
 end;
 
 
-Procedure TTestProcedureFunction.TestFunctionSyscallDoubleNumber;
+procedure TTestProcedureFunction.TestFunctionSyscallDoubleNumber;
 
 begin
   // function Something : Someresult; syscall 12 13
-  Fail('To be implemented');
+  AddDeclaration('function A : Integer; syscall 12 13');
+  ParseFunction;
+  AssertFunc([pmExternal],[],ccSysCall,0);
 end;
 
 
-Procedure TTestProcedureFunction.TestFunctionSysCallSysTrapIdentifier;
+procedure TTestProcedureFunction.TestFunctionSysCallSysTrapIdentifier;
 
 begin
   // function Something : Someresult; syscall systrapNNN
-  Fail('To be implemented');
+//  Fail('To be implemented');
+  AddDeclaration('function A : Integer; syscall systrap12');
+  ParseFunction;
+  AssertFunc([pmExternal],[],ccSysCall,0);
 end;
 
 

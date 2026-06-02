@@ -1,12 +1,13 @@
 program testappexit;
-
+{$mode objfpc}
+{$h+}
 uses sysutils,custapp;
 
 type
   TApplication = Class(TCustomApplication)
     Procedure DoRun; override;
   end;
-  
+
 Procedure TApplication.DoRun;
 
 begin
@@ -16,8 +17,8 @@ begin
   else if Paramstr(1)='-e' then
     Raise Exception.Create('Stopping with exception')
   else
-    Writeln('Normal stop');  
-  Terminate;  
+    Writeln('Normal stop');
+  Terminate;
 end;
 
 begin
@@ -28,5 +29,5 @@ begin
       Run;
     finally
       Free;
-    end;     
+    end;
 end.

@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit esp8266;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
@@ -236,7 +238,7 @@ begin
       pdst^:=0;
       inc(pdst);
     end;
-  
+
   PascalMain;
   Haltproc;
 end;

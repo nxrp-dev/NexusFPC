@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 Unit JcAPIstd;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { Original : jcapistd.c ; Copyright (C) 1994-1996, Thomas G. Lane. }
 
@@ -17,6 +19,15 @@ interface
 
 {$I jconfig.inc}
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Jpeg.Jmorecfg,
+  System.Jpeg.Jinclude,
+  System.Jpeg.Jdeferr,
+  System.Jpeg.Jerror,
+  System.Jpeg.Jpeglib,
+  System.Jpeg.Jcapimin, System.Jpeg.Jcinit;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   jmorecfg,
   jinclude,
@@ -24,13 +35,14 @@ uses
   jerror,
   jpeglib,
   jcapimin, jcinit;
+{$ENDIF FPC_DOTTEDUNITS}
 
 
 
 { Compression initialization.
   Before calling this, all parameters and a data destination must be set up.
 
-  We require a write_all_tables parameter as a failsafe check when writing
+  We require a write_all_tables parameter as a fail safe check when writing
   multiple datastreams from the same compression object.  Since prior runs
   will have left all the tables marked sent_table=TRUE, a subsequent run
   would emit an abbreviated stream (no tables) by default.  This may be what
@@ -76,7 +88,7 @@ implementation
 { Compression initialization.
   Before calling this, all parameters and a data destination must be set up.
 
-  We require a write_all_tables parameter as a failsafe check when writing
+  We require a write_all_tables parameter as a fail safe check when writing
   multiple datastreams from the same compression object.  Since prior runs
   will have left all the tables marked sent_table=TRUE, a subsequent run
   would emit an abbreviated stream (no tables) by default.  This may be what

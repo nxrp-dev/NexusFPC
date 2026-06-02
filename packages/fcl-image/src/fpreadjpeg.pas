@@ -19,19 +19,30 @@
 
     2023-07  - Massimo Magnano
              - procedure inside InternalRead moved to protected methods (virtual)
+             - added Resolution support
 }
+{$IFNDEF FPC_DOTTEDUNITS}
 unit FPReadJPEG;
+{$ENDIF FPC_DOTTEDUNITS}
 
-{$mode objfpc}{$H+}
-
+{$mode objfpc}
+{$H+}
+{$openstrings on}
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
 uses
-  Classes, SysUtils, Types, FPImage, JPEGLib, JdAPImin, JDataSrc, JdAPIstd, JmoreCfg;
+  System.Classes, System.SysUtils, System.Types, FpImage, System.Jpeg.Jpeglib, System.Jpeg.Jdapimin, System.Jpeg.Jdatasrc, System.Jpeg.Jdapistd, System.Jpeg.Jmorecfg, FpImage.Common.Jpeg;
+{$ELSE FPC_DOTTEDUNITS}
+uses
+  Classes, SysUtils, Types, FpImage, JPEGcomn, JPEGLib, JdAPImin, JDataSrc, JdAPIstd, JmoreCfg;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
+  //MaxM: these common types should stay only in JPEGcomn units, but we should change LCL uses
+  TFPJPEGCompressionQuality = 1..100;   // 100 = best quality, 25 = pretty awful
   { TFPReaderJPEG }
-  { This is a FPImage reader for jpeg images. }
+  { This is a FpImage reader for jpeg images. }
 
   TFPReaderJPEG = class;
 
@@ -53,6 +64,9 @@ type
     eoMirrorHorRot270, eoRotate90, eoMirrorHorRot90, eoRotate270
   );
 
+  { TFPReaderJPEG }
+  { This is a FPImage reader for jpeg images. }
+
   TFPReaderJPEG = class(TFPCustomImageReader)
   private
     FSmoothing,
@@ -65,6 +79,7 @@ type
     FProgressiveEncoding: boolean;
     FError: jpeg_error_mgr;
     FProgressMgr: TFPJPEGProgressManager;
+    FExtensions: jpeg_extensions;
     FInfo: jpeg_decompress_struct;
     FScale: TJPEGScale;
     FPerformance: TJPEGReadPerformance;
@@ -73,6 +88,10 @@ type
     procedure SetPerformance(const AValue: TJPEGReadPerformance);
     procedure SetSmoothing(const AValue: boolean);
   protected
+    function CMYKToRGB(const C, M, Y, K: Byte): TFPColor; virtual;
+    procedure ReadExtAPPn(Marker: int; var Header: array of JOCTET; HeaderLen: uint;
+      var Remaining: INT32; ReadData: jpeg_ext_appn_readdata); virtual;
+
     procedure ReadHeader(Str: TStream; Img: TFPCustomImage); virtual;
     procedure ReadPixels(Str: TStream; Img: TFPCustomImage); virtual;
     procedure InternalRead(Str: TStream; Img: TFPCustomImage); override;
@@ -92,14 +111,38 @@ type
     property MinHeight:integer read FMinHeight write FMinHeight;
   end;
 
+
 implementation
+
+{$IFDEF FPC_DOTTEDUNITS}
+uses FpImage.ColorSpace;
+{$ELSE}
+uses FPColorSpace;
+{$ENDIF}
+
+type
+  int_Color_Table = array[0..MAXJSAMPLE+1-1] of int;
+  int_table_ptr = ^int_Color_Table;
+  INT32_Color_Table = array[0..MAXJSAMPLE+1-1] of INT32;
+  INT32_table_ptr = ^INT32_Color_Table;
+  my_cconvert_ptr = ^my_color_deconverter;
+  my_color_deconverter = record
+    pub : jpeg_color_deconverter; { public fields }
+
+    { Private state for YCC^.RGB conversion }
+    Cr_r_tab : int_table_ptr;   { => table for Cr to R conversion }
+    Cb_b_tab : int_table_ptr;   { => table for Cb to B conversion }
+    Cr_g_tab : INT32_table_ptr; { => table for Cr to G conversion }
+    Cb_g_tab : INT32_table_ptr; { => table for Cb to G conversion }
+  end;
+
 
 procedure ReadCompleteStreamToStream(SrcStream, DestStream: TStream;
                                      StartSize: integer);
 var
   NewLength: Integer;
   ReadLen: Integer;
-  Buffer: string;
+  Buffer: AnsiString;
 begin
   if (SrcStream is TMemoryStream) or (SrcStream is TFileStream)
   or (SrcStream is TStringStream)
@@ -139,7 +182,7 @@ begin
   if CurInfo=nil then exit;
 end;
 
-procedure FormatMessage(CurInfo: j_common_ptr; var buffer: string);
+procedure FormatMessage(CurInfo: j_common_ptr; var buffer: shortstring);
 begin
   if CurInfo=nil then exit;
   {$ifdef FPC_Debug_Image}
@@ -164,12 +207,25 @@ begin
   // ToDo
 end;
 
+procedure ReadExtAPPnCallback(cinfo : j_decompress_ptr; marker : int; var header : array of JOCTET; headerlen : uint;
+  var remaining : int32; readdata: jpeg_ext_appn_readdata);
+begin
+  if (cinfo=nil) or (cinfo^.client_data=nil) then exit;
+
+  TFPReaderJPEG(cinfo^.client_data).ReadExtAPPn(marker, header, headerlen, remaining, readdata);
+end;
+
 { TFPReaderJPEG }
 
 procedure TFPReaderJPEG.SetSmoothing(const AValue: boolean);
 begin
   if FSmoothing=AValue then exit;
   FSmoothing:=AValue;
+end;
+
+procedure TFPReaderJPEG.ReadExtAPPn(Marker: int; var Header: array of JOCTET; HeaderLen: uint; var Remaining: INT32; ReadData: jpeg_ext_appn_readdata);
+begin
+  // override to read extended APPn data
 end;
 
 procedure TFPReaderJPEG.SetPerformance(const AValue: TJPEGReadPerformance);
@@ -179,34 +235,26 @@ begin
 end;
 
 procedure TFPReaderJPEG.ReadHeader(Str: TStream; Img: TFPCustomImage);
-var
-   S: TSize;
-
-  function TranslateSize(const Sz: TSize): TSize;
-  begin
-    case FOrientation of
-      eoUnknown, eoNormal, eoMirrorHor, eoMirrorVert, eoRotate180: Result := Sz;
-      eoMirrorHorRot270, eoRotate90, eoMirrorHorRot90, eoRotate270:
-      begin
-        Result.Width := Sz.Height;
-        Result.Height := Sz.Width;
-      end;
-    end;
-  end;
-
 begin
   jpeg_read_header(@FInfo, TRUE);
+
+  FWidth := FInfo.image_width;
+  FHeight := FInfo.image_height;
+
+  if (FWidth <= 0) or (FHeight <= 0) or (FWidth > 65535) or (FHeight > 65535) then
+    raise FPImageException.Create('Invalid JPEG dimensions');
 
   if FInfo.saw_EXIF_marker and (FInfo.orientation >= Ord(Low(TExifOrientation))) and (FInfo.orientation <= Ord(High(TExifOrientation))) then
     FOrientation := TExifOrientation(FInfo.orientation)
   else
     FOrientation := Low(TExifOrientation);
-  S := TranslateSize(TSize.Create(FInfo.image_width, FInfo.image_height));
-  FWidth := S.Width;
-  FHeight := S.Height;
 
   FGrayscale := FInfo.jpeg_color_space = JCS_GRAYSCALE;
   FProgressiveEncoding := jpeg_has_multiple_scans(@FInfo);
+
+  Img.ResolutionUnit:=density_unitToResolutionUnit(CompressInfo.density_unit);
+  Img.ResolutionX :=CompressInfo.X_density;
+  Img.ResolutionY :=CompressInfo.Y_density;
 end;
 
 procedure TFPReaderJPEG.ReadPixels(Str: TStream; Img: TFPCustomImage);
@@ -220,6 +268,7 @@ var
   c: word;
   Status,Scan: integer;
   ReturnValue,RestartLoop: Boolean;
+  LOutputSize: TSize;
 
   procedure InitReadingPixels;
   var d1,d2:integer;
@@ -319,39 +368,15 @@ var
     Img.Colors[P.x, P.y] := C;
   end;
 
-  function CorrectCMYK(const C: TFPColor): TFPColor;
-  var
-    MinColor: word;
-  begin
-    // accuracy not 100%
-    if C.red<C.green then MinColor:=C.red
-    else MinColor:= C.green;
-    if C.blue<MinColor then MinColor:= C.blue;
-    if MinColor+ C.alpha>$FF then MinColor:=$FF-C.alpha;
-    Result.red:=(C.red-MinColor) shl 8;
-    Result.green:=(C.green-MinColor) shl 8;
-    Result.blue:=(C.blue-MinColor) shl 8;
-    Result.alpha:=alphaOpaque;
-  end;
-
-  function CorrectYCCK(const C: TFPColor): TFPColor;
-  var
-    MinColor: word;
-  begin
-    if C.red<C.green then MinColor:=C.red
-    else MinColor:= C.green;
-    if C.blue<MinColor then MinColor:= C.blue;
-    if MinColor+ C.alpha>$FF then MinColor:=$FF-C.alpha;
-    Result.red:=(C.red-MinColor) shl 8;
-    Result.green:=(C.green-MinColor) shl 8;
-    Result.blue:=(C.blue-MinColor) shl 8;
-    Result.alpha:=alphaOpaque;
-  end;
-
-
   procedure OutputScanLines();
   var
     x: integer;
+    //ycbcr:TYCbCr;
+    cmyk:TStdCMYK;
+    yy,cb,cr :Int;
+    shift_temp : INT32;
+    cconvert : my_cconvert_ptr;
+
   begin
     Color.Alpha:=alphaOpaque;
     y:=0;
@@ -362,44 +387,81 @@ var
         ReturnValue:=false;
         break;
       end;
-      if (FInfo.jpeg_color_space = JCS_CMYK) then
-      for x:=0 to FInfo.output_width-1 do begin
-        Color.Red:=SampRow^[x*4+0];
-        Color.Green:=SampRow^[x*4+1];
-        Color.Blue:=SampRow^[x*4+2];
-        Color.alpha:=SampRow^[x*4+3];
-        SetPixel(x, y, CorrectCMYK(Color));
-      end
+
+      Case FInfo.out_color_space of
+      JCS_GRAYSCALE :
+        for x:=0 to FInfo.output_width-1 do
+        begin
+          c:= SampRow^[x] * 257;
+          Color.Red:=c;
+          Color.Green:=c;
+          Color.Blue:=c;
+          SetPixel(x, y, Color);
+        end;
+      JCS_YCbCr :
+        for x:=0 to FInfo.output_width-1 do
+        begin
+          //MaxM: YCbCr is defined per CCIR 601-1
+          //      Y (0 to 1.0) and Cb,Cr (-0.5 to 0.5) is normalized to the range 0..MAXJSAMPLE
+          //      We have two ways to convert them, the most accurate is to denormalize
+          //      the values like the following commented code, or as is and set SamplePrecision to CENTERJSAMPLE
+          //      ycbcr.Y :=SampRow^[x*3+0]/256;
+          //      ycbcr.Cb :=(SampRow^[x*3+1]-128)/256;
+          //      ycbcr.Cr :=(SampRow^[x*3+2]-128)/256;
+          //ycbcr :=TYCbCr.New(SampRow^[x*3+0], SampRow^[x*3+1], SampRow^[x*3+2]);
+          //SetPixel(x, y, ycbcr.ToStdRGBA(YCBCr_601, CENTERJSAMPLE).ToExpandedPixel.ToFPColor(false));
+
+          //Use the same Code of PasJPeg (ycc_rgb_convert function)
+          yy :=SampRow^[x*3+0];
+          cb :=SampRow^[x*3+1];
+          cr :=SampRow^[x*3+2];
+          cconvert :=my_cconvert_ptr(FInfo.cconvert);
+          Color.Red :=  (FInfo.sample_range_limit^[yy + cconvert^.Cr_r_tab^[cr]]);
+          shift_temp := cconvert^.Cb_g_tab^[cb] + cconvert^.Cr_g_tab^[cr];
+          if shift_temp < 0 then   { SHIFT arithmetic RIGHT }
+            Color.Green := (FInfo.sample_range_limit^[yy + int((shift_temp shr 16)
+                                  or ( (not INT32(0)) shl (32-16)))])
+          else
+            Color.Green := (FInfo.sample_range_limit^[yy + int(shift_temp shr 16)]);
+
+          Color.Blue :=  (FInfo.sample_range_limit^[yy + cconvert^.Cb_b_tab^[cb]]);
+
+          Color.Red:=Color.Red * 257;
+          Color.Green:=Color.Green * 257;
+          Color.Blue:=Color.Blue * 257;
+
+          SetPixel(x, y, Color);
+        end;
+      JCS_CMYK, JCS_YCCK:
+        for x:=0 to FInfo.output_width-1 do
+          SetPixel(x, y, CMYKToRGB(SampRow^[x*4+0], SampRow^[x*4+1], SampRow^[x*4+2], SampRow^[x*4+3]));
       else
-      if (FInfo.jpeg_color_space = JCS_YCCK) then
-      for x:=0 to FInfo.output_width-1 do begin
-        Color.Red:=SampRow^[x*4+0];
-        Color.Green:=SampRow^[x*4+1];
-        Color.Blue:=SampRow^[x*4+2];
-        Color.alpha:=SampRow^[x*4+3];
-        SetPixel(x, y, CorrectYCCK(Color));
-      end
-      else
-      if fgrayscale then begin
-       for x:=0 to FInfo.output_width-1 do begin
-         c:= SampRow^[x] shl 8;
-         Color.Red:=c;
-         Color.Green:=c;
-         Color.Blue:=c;
-         SetPixel(x, y, Color);
-       end;
-      end
-      else begin
-       for x:=0 to FInfo.output_width-1 do begin
-         Color.Red:=SampRow^[x*3+0] shl 8;
-         Color.Green:=SampRow^[x*3+1] shl 8;
-         Color.Blue:=SampRow^[x*3+2] shl 8;
-         SetPixel(x, y, Color);
-       end;
+        if (FInfo.out_color_components = 3) then 
+          for x:=0 to FInfo.output_width-1 do begin
+            Color.Red:=SampRow^[x*3+0] * 257;
+            Color.Green:=SampRow^[x*3+1] * 257;
+            Color.Blue:=SampRow^[x*3+2] * 257;
+            SetPixel(x, y, Color);
+          end;
       end;
+
       inc(y);
     end;
   end;
+
+  function TranslateSize(out ASize: TSize): TSize;
+  var
+    iInt: Integer;
+  begin
+    // returning image dimension depending on orientation
+    if FOrientation in [eoMirrorHorRot270, eoRotate90,  eoMirrorHorRot90, eoRotate270] then
+    begin
+      iInt := ASize.Width;
+      ASize.Width := ASize.Height;
+      ASize.Height := iInt;
+    end;
+  end;
+
 begin
   InitReadingPixels;
 
@@ -409,7 +471,11 @@ begin
 
   jpeg_start_decompress(@FInfo);
 
-  Img.SetSize(FWidth,FHeight);
+  LOutputSize := Size(FInfo.output_width, FInfo.output_height);
+  TranslateSize(LOutputSize);
+  FWidth := LOutputSize.Width;
+  FHeight := LOutputSize.Height;
+  Img.SetSize(FWidth, FHeight);
 
   GetMem(SampArray,SizeOf(JSAMPROW));
   GetMem(SampRow,FInfo.output_width*FInfo.output_components);
@@ -529,6 +595,11 @@ begin
         MemStream.Position:=0;
         jpeg_stdio_src(@FInfo, @MemStream);
 
+        FInfo.extensions := @FExtensions;
+        FExtensions.read_ext_appn := @ReadExtAPPnCallback;
+
+        FInfo.client_data := Self;
+
         ReadHeader(MemStream, Img);
         ReadPixels(MemStream, Img);
       finally
@@ -580,6 +651,14 @@ begin
   FScale:=jsFullSize;
   FPerformance:=jpBestSpeed;
   inherited Create;
+end;
+
+function TFPReaderJPEG.CMYKToRGB(const C, M, Y, K: Byte): TFPColor;
+begin
+  Result.Red := ((C*K) div 255) * 257;
+  Result.Green := ((M*K) div 255) * 257;
+  Result.Blue := ((Y*K) div 255) * 257;
+  Result.Alpha := alphaOpaque;
 end;
 
 destructor TFPReaderJPEG.Destroy;

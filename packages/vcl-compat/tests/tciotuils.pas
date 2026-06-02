@@ -5,11 +5,13 @@ unit tciotuils;
 interface
 
 uses
-  Classes, SysUtils, fpcunit, testutils, testregistry, system.ioutils;
+  Types, Classes, SysUtils, fpcunit, testregistry, system.ioutils;
 
 type
 
   { TTestTPath }
+
+  { TTestIO }
 
   TTestIO = class(TTestCase)
   Private
@@ -17,6 +19,7 @@ type
     FBaseDir : String;
   protected
     Procedure CreateTestDirs;
+    procedure CreateTestFiles(aCount: Integer=3; InTestPath: Boolean=True);
     Procedure CleanDirs(aDir : String);
     procedure SetUp; override;
     procedure TearDown; override;
@@ -41,6 +44,7 @@ type
     Procedure TestMatchesPattern;
     Procedure TestChangeExtension;
     Procedure TestCombine;
+    Procedure TestCombineMulti;
     Procedure TestGetDirectoryName;
     Procedure TestGetExtension;
     Procedure TestGetFileName;
@@ -82,6 +86,16 @@ type
     Procedure TestPathSeparator;
     Procedure TestVolumeSeparatorChar;
   end;
+
+  { TTestTDirectory }
+
+  TTestTDirectory = Class(TTestIO)
+  Published
+    Procedure TestGetDirectories;
+  end;
+
+
+
 
 implementation
 
@@ -188,15 +202,15 @@ procedure TTestTPath.TestGetExtendedPrefix;
     DoDirSeparators(aPath);
     Str(aExpected,S);
     {$IFNDEF WINDOWS}
-    aExpected:=pptNoPrefix;
+    aExpected:=TPathPrefixType.pptNoPrefix;
     {$ENDIF}
     AssertTrue(aPath+' -> '+S,aExpected=TPath.GetExtendedPrefix(aPath));
   end;
 
 begin
-  TestIt(pptNoPrefix,'/a/b/c.txt');
-  TestIt(pptExtended,'//?/a/b/c.txt');
-  TestIt(pptExtendedUNC,'//?/UNC/a/b/c.txt');
+  TestIt(TPathPrefixType.pptNoPrefix,'/a/b/c.txt');
+  TestIt(TPathPrefixType.pptExtended,'//?/a/b/c.txt');
+  TestIt(TPathPrefixType.pptExtendedUNC,'//?/UNC/a/b/c.txt');
 end;
 
 procedure TTestTPath.TestIsDriveRooted;
@@ -390,6 +404,79 @@ begin
   TestIt('/path/a.doc','/path/','a.doc');
 end;
 
+procedure TTestTPath.TestCombineMulti;
+
+  procedure DoTest(const Paths: array of String; Validate: Boolean; Expected: string; ExceptionExpected: Boolean=False);
+
+    function ArgsToStr: string;
+    var
+      i: Integer;
+    begin
+      Result := '';
+      for i := Low(Paths) to High(Paths) do
+        Result := Result+''''+Paths[i] + ''',';
+      if (Result <> '') then SetLength(Result, Length(Result)-1);
+      Result := '['+Result+']';
+    end;
+
+  var
+    Res,FailMsg: String;
+    P : Array of string;
+    I : Integer;
+
+  begin
+    P:=[];
+    FailMsg:='';
+    try
+      SetLength(P,Length(Paths));
+      for I:=0 to Length(Paths)-1 do
+        begin
+        P[i]:=Paths[i];
+        DoDirSeparators(P[i]);
+        end;
+      DoDirSeparators(Expected);
+      Res := TPath.Combine(P,Validate);
+      AssertEquals(ArgsToStr,Expected,Res)
+    except
+      on E: Exception do
+        if not ExceptionExpected then
+          FailMsg:=Format('%s : an unexpected exception %s occurred: %s',[ArgsToStr,E.ClassName,E.Message])
+    end;
+    if FailMsg<>'' then
+      Fail(FailMsg);
+  end;
+
+
+begin
+  //EInOutError
+  DoTest([''],True,'');
+  DoTest(['',''],True,'');
+  DoTest(['','',''],True,'');
+  DoTest(['a','b','c'],True,'a\b\c');
+  DoTest(['a','b','\c'],True,'\c');
+  DoTest(['a','\b','c'],True,'\b\c');
+  DoTest(['\a','\b','c'],True,'\b\c');
+  DoTest(['\a','\b','\c'],True,'\c');
+  DoTest(['\a','b','\c:'],True,'\c:');
+  DoTest(['a','<>','\b','c','\d'],True,'',True);
+  {$IFDEF WINDOWS}
+  DoTest(['c:','a','b'],True,'c:a\b',False);
+  {$ENDIF}
+  DoTest(['\1','..\2','..\3','..4'],True,'\1\..\2\..\3\..4');
+  DoTest(['\1','','','4','','6',''],True,'\1\4\6');
+  DoTest(['','','','<>|'],True,'<>|',True);
+  DoTest([''],False,'');
+  DoTest(['',''],False,'');
+  DoTest(['','',''],False,'');
+  DoTest(['a','b','c'],False,'a\b\c');
+  DoTest(['a','b','\c'],False,'\c');
+  DoTest(['a','\b','c'],False,'\b\c');
+  DoTest(['\a','\b','c'],False,'\b\c');
+  DoTest(['\a','\b','\c'],False,'\c');
+  DoTest(['\a','b','\c:'],False,'\c:');
+  DoTest(['a','<>','\b','c','\d'],False,'\d',False);
+end;
+
 procedure TTestTPath.TestGetDirectoryName;
 
   Procedure TestIt(aResult,aFile : String);
@@ -502,7 +589,7 @@ Const
 Var
   CA : TCharArray;
   C : Char;
-  I,P : Integer;
+  P : Integer;
 
 begin
   CA:=TPath.GetInvalidFileNameChars;
@@ -533,7 +620,7 @@ Const
 Var
   CA : TCharArray;
   C : Char;
-  I,P : Integer;
+  P : Integer;
 
 begin
   CA:=TPath.GetInvalidPathChars;
@@ -1024,10 +1111,10 @@ procedure TTestTPath.TestGetSetAttributes;
 
 Const
 {$IFDEF UNIX}
-  FAS = [faOwnerRead, faOwnerWrite, faOwnerExecute,
-         faGroupRead, faGroupWrite, faGroupExecute,
-         faOthersRead, faOthersWrite, faOthersExecute,
-         faUserIDExecution, faGroupIDExecution, faStickyBit];
+  FAS = [TFileAttribute.faOwnerRead, TFileAttribute.faOwnerWrite, TFileAttribute.faOwnerExecute,
+         TFileAttribute.faGroupRead, TFileAttribute.faGroupWrite, TFileAttribute.faGroupExecute,
+         TFileAttribute.faOthersRead, TFileAttribute.faOthersWrite, TFileAttribute.faOthersExecute,
+         TFileAttribute.faUserIDExecution, TFileAttribute.faGroupIDExecution, TFileAttribute.faStickyBit];
 {$ENDIF}
 
 
@@ -1142,6 +1229,33 @@ begin
 {$endif}
 end;
 
+{ TTestTDirectory }
+
+procedure TTestTDirectory.TestGetDirectories;
+
+var
+  Dirs : TStringDynArray;
+
+  Function Find(D : String) : Integer;
+
+  begin
+    Result:=Length(Dirs)-1;
+    While (Result>=0) and (ExtractFileName(Dirs[Result])<>D) do
+      Dec(Result);
+  end;
+
+
+begin
+  CreateTestFiles(1,True);
+  Dirs:=TDirectory.GetDirectories(FBaseDir+'testpath/');
+  AssertEquals('Count',3,Length(dirs));
+  AssertTrue('Dir 1',Find('dir1')<>-1);
+  AssertTrue('Dir 2',Find('dir2')<>-1);
+  AssertTrue('Dir 2',Find('dir3')<>-1);
+end;
+
+{ TTestIO }
+
 procedure TTestIO.CreateTestDirs;
 
   procedure DoCreateDir(const aDir : string);
@@ -1158,6 +1272,36 @@ begin
   DoCreateDir('testpath/dir3');
 end;
 
+procedure TTestIO.CreateTestFiles(aCount : Integer = 3; InTestPath : Boolean = True);
+
+  procedure DoCreateFile(const aName : string);
+  var
+    FN : String;
+    FD : THandle;
+
+  begin
+    FN:=IncludeTrailingPathDelimiter(FBaseDir);
+    if InTestPath then
+      FN:=IncludeTrailingPathDelimiter(FN+'testpath');
+    FN:=FN+aName;
+    if not FileExists(FN) then
+      begin
+      FD:=FileCreate(FN);
+      FileWrite(FD,FN[1],Length(FN));
+      FileClose(FD);
+      end;
+  end;
+
+var
+  I : integer;
+
+begin
+  if InTestPath then
+    CreateTestDirs;
+  For I:=1 to aCount do
+    DoCreateFile(Format('testfile%d.txt',[I]));
+end;
+
 procedure TTestIO.CleanDirs(aDir: String);
 
 Var
@@ -1172,14 +1316,16 @@ begin
         lFull:=lDir+Info.Name;
         if Info.IsDirectory then
           begin
-          if not Info.IsCurrentOrParentDir then
+          if not (Info.IsCurrentOrParentDir) then
+            begin
             CleanDirs(lFull);
-          if not RemoveDir(lFull) then
-            Fail('Failed to remove directory %s',[lFull])
+            if not RemoveDir(lFull) then
+              Fail('Failed to remove directory %s',[lFull])
+            end;
           end
-        else if not DeleteFIle(lFull) then
+        else if not DeleteFile(lFull) then
           Fail('Failed to remove file %s',[lFull])
-      until FIndNext(Info)>0;
+      until FindNext(Info)<>0;
     finally
       FindClose(Info);
     end;
@@ -1199,6 +1345,6 @@ end;
 
 initialization
 
-  RegisterTest(TTestTPath);
+  RegisterTests([TTestTPath,TTestTDirectory]);
 end.
 

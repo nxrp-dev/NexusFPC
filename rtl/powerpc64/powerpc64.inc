@@ -274,7 +274,7 @@ end;
 
 {$ifndef FPC_SYSTEM_HAS_INDEXCHAR0}
 {$define FPC_SYSTEM_HAS_INDEXCHAR0}
-function IndexChar0(const buf;len:SizeInt;b:Char):int64; assembler; nostackframe;
+function IndexChar0(const buf;len:SizeInt;b:AnsiChar):int64; assembler; nostackframe;
 { input: r3 = buf, r4 = len, r5 = b                         }
 { output: r3 = position of found position (-1 if not found) }
 asm
@@ -406,7 +406,7 @@ end;
 {$define FPC_SYSTEM_HAS_FPC_SHORTSTR_COMPARE}
 function fpc_shortstr_compare(const dstr, sstr:shortstring): SizeInt; [public,alias:'FPC_SHORTSTR_COMPARE']; compilerproc;
 assembler;
-{ TODO: improve, because the main compare loop does an unaligned access everytime.. :(
+{ TODO: improve, because the main compare loop does an unaligned access every time.. :(
   TODO: needs some additional opcodes not yet known to the compiler :( }
 asm
   { load length sstr }
@@ -467,7 +467,7 @@ end;
 
 {$ifndef FPC_SYSTEM_HAS_FPC_PCHAR_TO_SHORTSTR}
 {$define FPC_SYSTEM_HAS_FPC_PCHAR_TO_SHORTSTR}
-procedure fpc_pchar_to_shortstr(out res : shortstring;p:pchar);[public,alias:'FPC_PCHAR_TO_SHORTSTR']; compilerproc;
+procedure fpc_pchar_to_shortstr(out res : shortstring;p:PAnsiChar);[public,alias:'FPC_PCHAR_TO_SHORTSTR']; compilerproc;
 assembler; nostackframe;
 {
   r3: result address
@@ -518,7 +518,7 @@ end;
 (*
 {$ifndef FPC_SYSTEM_HAS_FPC_PCHAR_LENGTH}
 {$define FPC_SYSTEM_HAS_FPC_PCHAR_LENGTH}
-function fpc_pchar_length(p:pchar):longint;assembler;[public,alias:'FPC_PCHAR_LENGTH']; {$ifdef hascompilerproc} compilerproc; {$endif} nostackframe;
+function fpc_pchar_length(p:PAnsiChar):longint;assembler;[public,alias:'FPC_PCHAR_LENGTH']; {$ifdef hascompilerproc} compilerproc; {$endif} nostackframe;
 {$include strlen.inc}
 {$endif FPC_SYSTEM_HAS_FPC_PCHAR_LENGTH}
 *)
@@ -531,7 +531,7 @@ asm
 end;
 
 {$define FPC_SYSTEM_HAS_GET_CALLER_ADDR}
-function get_caller_addr(framebp:pointer;addr:pointer=nil):pointer;assembler;{$ifdef SYSTEMINLINE}inline;{$endif} nostackframe;
+function get_caller_addr(framebp:pointer;addr:pointer=nil):pointer;assembler; nostackframe;
 asm
   cmpldi  r3,0
   beq     .Lcaller_addr_frame_null
@@ -545,7 +545,7 @@ end;
 
 
 {$define FPC_SYSTEM_HAS_GET_CALLER_FRAME}
-function get_caller_frame(framebp:pointer;addr:pointer=nil):pointer;assembler;{$ifdef SYSTEMINLINE}inline;{$endif} nostackframe;
+function get_caller_frame(framebp:pointer;addr:pointer=nil):pointer;assembler; nostackframe;
 asm
   cmpldi  r3,0
   beq     .Lcaller_frame_null
@@ -626,7 +626,12 @@ asm
     bne-    .LIncLockedLoop
 end;
 
+{$ifdef VER3_2}
 function InterLockedDecrement (var Target: longint) : longint; assembler; nostackframe;
+{$else VER3_2}
+{$define FPC_SYSTEM_HAS_ATOMIC_DEC_32}
+function fpc_atomic_dec_32 (var Target: longint) : longint; assembler; nostackframe;
+{$endif VER3_2}
 { input:  address of target in r3 }
 { output: target-1 in r3          }
 { side-effect: target := target-1 }
@@ -640,7 +645,12 @@ asm
 end;
 
 
+{$ifdef VER3_2}
 function InterLockedIncrement (var Target: longint) : longint; assembler; nostackframe;
+{$else VER3_2}
+{$define FPC_SYSTEM_HAS_ATOMIC_INC_32}
+function fpc_atomic_inc_32 (var Target: longint) : longint; assembler; nostackframe;
+{$endif VER3_2}
 { input:  address of target in r3 }
 { output: target+1 in r3          }
 { side-effect: target := target+1 }
@@ -654,7 +664,12 @@ asm
 end;
 
 
+{$ifdef VER3_2}
 function InterLockedExchange (var Target: longint;Source : longint) : longint; assembler; nostackframe;
+{$else VER3_2}
+{$define FPC_SYSTEM_HAS_ATOMIC_XCHG_32}
+function fpc_atomic_xchg_32 (var Target: longint;Source : longint) : longint; assembler; nostackframe;
+{$endif VER3_2}
 { input:  address of target in r3, source in r4 }
 { output: target in r3                          }
 { side-effect: target := source                 }
@@ -667,7 +682,12 @@ asm
 end;
 
 
+{$ifdef VER3_2}
 function InterLockedExchangeAdd (var Target: longint;Source : longint) : longint; assembler; nostackframe;
+{$else VER3_2}
+{$define FPC_SYSTEM_HAS_ATOMIC_ADD_32}
+function fpc_atomic_add_32 (var Target: longint;Value : longint) : longint; assembler; nostackframe;
+{$endif VER3_2}
 { input:  address of target in r3, source in r4 }
 { output: target in r3                          }
 { side-effect: target := target+source          }
@@ -680,7 +700,12 @@ asm
         sub     r3,r10,r4
 end;
 
+{$ifdef VER3_2}
 function InterlockedCompareExchange(var Target: longint; NewValue: longint; Comperand: longint): longint; assembler; nostackframe;
+{$else VER3_2}
+{$define FPC_SYSTEM_HAS_ATOMIC_CMP_XCHG_32}
+function fpc_atomic_cmp_xchg_32 (var Target: longint; NewValue: longint; Comparand: longint) : longint; assembler; nostackframe;
+{$endif VER3_2}
 { input:  address of target in r3, newvalue in r4, comparand in r5 }
 { output: value stored in target before entry of the function      }
 { side-effect: NewValue stored in target if (target = comparand)   }
@@ -702,7 +727,12 @@ asm
 end;
 
 
+{$ifdef VER3_2}
 function InterLockedDecrement64(var Target: Int64) : Int64; assembler; nostackframe;
+{$else VER3_2}
+{$define FPC_SYSTEM_HAS_ATOMIC_DEC_64}
+function fpc_atomic_dec_64 (var Target: int64) : int64; assembler; nostackframe;
+{$endif VER3_2}
 { input:  address of target in r3 }
 { output: target-1 in r3          }
 { side-effect: target := target-1 }
@@ -716,7 +746,12 @@ asm
 end;
 
 
+{$ifdef VER3_2}
 function InterLockedIncrement64(var Target: Int64) : Int64; assembler; nostackframe;
+{$else VER3_2}
+{$define FPC_SYSTEM_HAS_ATOMIC_INC_64}
+function fpc_atomic_inc_64 (var Target: int64) : int64; assembler; nostackframe;
+{$endif VER3_2}
 { input:  address of target in r3 }
 { output: target+1 in r3          }
 { side-effect: target := target+1 }
@@ -730,7 +765,12 @@ asm
 end;
 
 
+{$ifdef VER3_2}
 function InterLockedExchange64(var Target: Int64; Source : Int64) : Int64; assembler; nostackframe;
+{$else VER3_2}
+{$define FPC_SYSTEM_HAS_ATOMIC_XCHG_64}
+function fpc_atomic_xchg_64 (var Target: Int64; Source : Int64) : Int64; assembler; nostackframe;
+{$endif VER3_2}
 { input:  address of target in r3, source in r4 }
 { output: target in r3                          }
 { side-effect: target := source                 }
@@ -743,7 +783,12 @@ asm
 end;
 
 
+{$ifdef VER3_2}
 function InterLockedExchangeAdd64(var Target: Int64; Source : Int64) : Int64; assembler; nostackframe;
+{$else VER3_2}
+{$define FPC_SYSTEM_HAS_ATOMIC_ADD_64}
+function fpc_atomic_add_64 (var Target: Int64; Value : Int64) : Int64; assembler; nostackframe;
+{$endif VER3_2}
 { input:  address of target in r3, source in r4 }
 { output: target in r3                          }
 { side-effect: target := target+source          }
@@ -756,7 +801,12 @@ asm
         sub     r3,r10,r4
 end;
 
+{$ifdef VER3_2}
 function InterlockedCompareExchange64(var Target: Int64; NewValue: Int64; Comperand: Int64): Int64; assembler; nostackframe;
+{$else VER3_2}
+{$define FPC_SYSTEM_HAS_ATOMIC_CMP_XCHG_64}
+function fpc_atomic_cmp_xchg_64 (var Target: Int64; NewValue: Int64; Comparand: Int64) : Int64; [public,alias:'FPC_ATOMIC_CMP_XCHG_64']; assembler; nostackframe;
+{$endif VER3_2}
 { input:  address of target in r3, newvalue in r4, comparand in r5 }
 { output: value stored in target before entry of the function      }
 { side-effect: NewValue stored in target if (target = comparand)   }
@@ -777,17 +827,17 @@ end;
 {$ifndef FPC_SYSTEM_HAS_MEM_BARRIER}
 {$define FPC_SYSTEM_HAS_MEM_BARRIER}
 
-procedure ReadBarrier;assembler;nostackframe;{$ifdef SYSTEMINLINE}inline;{$endif}
+procedure ReadBarrier;assembler;nostackframe;
 asm
   isync
 end;
 
-procedure ReadDependencyBarrier;{$ifdef SYSTEMINLINE}inline;{$endif}
+procedure ReadDependencyBarrier;
 begin
   { reads imply barrier on earlier reads depended on }
 end;
 
-procedure ReadWriteBarrier;assembler;nostackframe;{$ifdef SYSTEMINLINE}inline;{$endif}
+procedure ReadWriteBarrier;assembler;nostackframe;
 asm
   isync
 {$ifdef FPC_HAS_LWSYNC}
@@ -795,7 +845,7 @@ asm
 {$endif}
 end;
 
-procedure WriteBarrier;assembler;nostackframe;{$ifdef SYSTEMINLINE}inline;{$endif}
+procedure WriteBarrier;assembler;nostackframe;
 asm
 {$ifdef FPC_HAS_LWSYNC}
   lwsync

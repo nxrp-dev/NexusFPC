@@ -25,13 +25,13 @@ var
   libc_init_proc: TProcedure; weakexternal name '_init';
   libc_fini_proc: TProcedure; weakexternal name '_fini';
 
-procedure libc_start_main(main: TProcedure; argc: ptruint; argv: ppchar; init, fini, rtld_fini: TProcedure; stack_end: pointer); cdecl; external name '__libc_start_main';
+procedure libc_start_main(main: TProcedure; argc: ptruint; argv: PPAnsiChar; init, fini, rtld_fini: TProcedure; stack_end: pointer); cdecl; external name '__libc_start_main';
 procedure libc_exit(code: ptruint); cdecl; external name 'exit';
 
 procedure _FPC_xtensa_enter(at_exit: TProcedure; sp: pptruint);
   var
     argc: ptruint;
-    argv: ppchar;
+    argv: PPAnsiChar;
   begin
     argc:=sp[0];
     argv:=@sp[1];
@@ -53,7 +53,7 @@ procedure _FPC_proc_start; assembler; public name '_start';
 
 procedure _FPC_xtensa_exit(e:longint); assembler;
   asm
-    mov a6,a3
+    mov a6,a2
     movi a2,119
     syscall
   end;

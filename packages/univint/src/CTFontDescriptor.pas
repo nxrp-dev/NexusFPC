@@ -22,7 +22,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CTFontDescriptor;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -207,7 +209,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CTFontTraits,MacOsApi.CFBase,MacOsApi.CFArray,MacOsApi.CFCharacterSet,MacOsApi.CFData,MacOsApi.CFDictionary,MacOsApi.CFNumber,MacOsApi.CFSet,MacOsApi.CGBase,MacOsApi.CGAffineTransforms;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CTFontTraits,CFBase,CFArray,CFCharacterSet,CFData,CFDictionary,CFNumber,CFSet,CGBase,CGAffineTransforms;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -645,16 +651,16 @@ type
 const
     kCTFontDescriptorMatchingDidBegin = 0;              // called once at the beginning.
     kCTFontDescriptorMatchingDidFinish = 1;             // called once at the end.
-    
+
     kCTFontDescriptorMatchingWillBeginQuerying = 2;     // called once before talking to the server.  Skipped if not necessary.
     kCTFontDescriptorMatchingStalled = 3;               // called when stalled. (e.g. while waiting for server response.)
-    
+
     // Downloading and activating are repeated for each descriptor.
     kCTFontDescriptorMatchingWillBeginDownloading = 4;  // Downloading part may be skipped if all the assets are already downloaded
     kCTFontDescriptorMatchingDownloading = 5;
     kCTFontDescriptorMatchingDidFinishDownloading = 6;
     kCTFontDescriptorMatchingDidMatch = 7;              // called when font descriptor is matched.
-    
+
     kCTFontDescriptorMatchingDidFailWithError = 8;       // called when an error occurred.  (may be called multiple times.)
 
 {!

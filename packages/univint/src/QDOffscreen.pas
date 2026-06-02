@@ -1,17 +1,17 @@
 {
      File:       QD/QDOffscreen.h
- 
+
      Contains:   Quickdraw Offscreen GWorld Interfaces.
- 
+
      Version:    Quickdraw-262~1
- 
+
      Copyright:  © 1985-2008 by Apple Inc. all rights reserved.
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 {   Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2009 }
 {
@@ -28,7 +28,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit QDOffscreen;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -213,7 +215,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.MacErrors,MacOsApi.QuickdrawTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,MacErrors,QuickdrawTypes;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -276,7 +282,7 @@ type
 {$ifc not TARGET_CPU_64}
 {
  *  NewGWorld()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -303,7 +309,7 @@ const
 {$ifc TARGET_OS_WIN32}
 {
  *  GetGDeviceSurface()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -313,7 +319,7 @@ const
 
 {
  *  GetGDeviceAttributes()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -324,7 +330,7 @@ const
 { to allocate non-mac-rgb GWorlds use QTNewGWorld (ImageCompression.h) }
 {
  *  NewGWorldFromHBITMAP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -337,7 +343,7 @@ const
 {$ifc not TARGET_CPU_64}
 {
  *  NewGWorldFromPtr()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.1 and later
@@ -349,7 +355,7 @@ function NewGWorldFromPtr( var offscreenGWorld: GWorldPtr; PixelFormat: UInt32; 
 
 {
  *  LockPixels()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -361,7 +367,7 @@ function LockPixels( pm: PixMapHandle ): Boolean; external name '_LockPixels';
 
 {
  *  UnlockPixels()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -373,7 +379,7 @@ procedure UnlockPixels( pm: PixMapHandle ); external name '_UnlockPixels';
 
 {
  *  UpdateGWorld()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -385,7 +391,7 @@ function UpdateGWorld( var offscreenGWorld: GWorldPtr; pixelDepth: SInt16; const
 
 {
  *  DisposeGWorld()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -397,7 +403,7 @@ procedure DisposeGWorld( offscreenGWorld: GWorldPtr ); external name '_DisposeGW
 
 {
  *  GetGWorld()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -409,7 +415,7 @@ procedure GetGWorld( var port: CGrafPtr; var gdh: GDHandle ); external name '_Ge
 
 {
  *  SetGWorld()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -421,7 +427,7 @@ procedure SetGWorld( port: CGrafPtr; gdh: GDHandle ); external name '_SetGWorld'
 
 {
  *  CTabChanged()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -433,7 +439,7 @@ procedure CTabChanged( ctab: CTabHandle ); external name '_CTabChanged';
 
 {
  *  PixPatChanged()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -445,7 +451,7 @@ procedure PixPatChanged( ppat: PixPatHandle ); external name '_PixPatChanged';
 
 {
  *  PortChanged()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -457,7 +463,7 @@ procedure PortChanged( port: GrafPtr ); external name '_PortChanged';
 
 {
  *  GDeviceChanged()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -469,7 +475,7 @@ procedure GDeviceChanged( gdh: GDHandle ); external name '_GDeviceChanged';
 
 {
  *  AllowPurgePixels()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -481,7 +487,7 @@ procedure AllowPurgePixels( pm: PixMapHandle ); external name '_AllowPurgePixels
 
 {
  *  NoPurgePixels()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -493,7 +499,7 @@ procedure NoPurgePixels( pm: PixMapHandle ); external name '_NoPurgePixels';
 
 {
  *  GetPixelsState()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -505,7 +511,7 @@ function GetPixelsState( pm: PixMapHandle ): GWorldFlags; external name '_GetPix
 
 {
  *  SetPixelsState()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -517,7 +523,7 @@ procedure SetPixelsState( pm: PixMapHandle; state: GWorldFlags ); external name 
 
 {
  *  GetPixBaseAddr()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only]
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -529,7 +535,7 @@ function GetPixBaseAddr( pm: PixMapHandle ): Ptr; external name '_GetPixBaseAddr
 
 {
  *  GetPixRowBytes()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -541,7 +547,7 @@ function GetPixRowBytes( pm: PixMapHandle ): SInt32; external name '_GetPixRowBy
 
 {
  *  NewScreenBuffer()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -553,7 +559,7 @@ function NewScreenBuffer( const (*var*) globalRect: Rect; purgeable: Boolean; va
 
 {
  *  DisposeScreenBuffer()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -565,7 +571,7 @@ procedure DisposeScreenBuffer( offscreenPixMap: PixMapHandle ); external name '_
 
 {
  *  GetGWorldDevice()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -577,7 +583,7 @@ function GetGWorldDevice( offscreenGWorld: GWorldPtr ): GDHandle; external name 
 
 {
  *  QDDone()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -589,7 +595,7 @@ function QDDone( port: GrafPtr ): Boolean; external name '_QDDone';
 
 {
  *  OffscreenVersion()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -601,7 +607,7 @@ function OffscreenVersion: SInt32; external name '_OffscreenVersion';
 
 {
  *  NewTempScreenBuffer()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -613,7 +619,7 @@ function NewTempScreenBuffer( const (*var*) globalRect: Rect; purgeable: Boolean
 
 {
  *  PixMap32Bit()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -625,7 +631,7 @@ function PixMap32Bit( pmHandle: PixMapHandle ): Boolean; external name '_PixMap3
 
 {
  *  GetGWorldPixMap()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later

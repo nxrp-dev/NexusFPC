@@ -24,13 +24,19 @@
 //  Microsoft Windows Mobile 6.0 for PocketPC SDK.
 //
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit PM;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$CALLING cdecl}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses WinApi.Windows, WinceAPI.Winioctl;
+{$ELSE FPC_DOTTEDUNITS}
 uses Windows, WinIOCtl;
+{$ENDIF FPC_DOTTEDUNITS}
 
 //**********************************************************************
 // WinCE Device Interface GUIDs for Power Manager controlled devices.
@@ -81,7 +87,7 @@ const
       POWER_STATE_UNATTENDED   = $00400000;        // Unattended state.
       POWER_STATE_RESET        = $00800000;        // reset state
       POWER_STATE_USERIDLE     = $01000000;        // user idle state
-      POWER_STATE_BACKLIGHTON  = $02000000;        // device scree backlight on
+      POWER_STATE_BACKLIGHTON  = $02000000;        // device screen backlight on
       POWER_STATE_PASSWORD     = $10000000;        // This state is password protected.
 
       PM_DEFAULT_SZ            = 'Default';

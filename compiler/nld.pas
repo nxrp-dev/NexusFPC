@@ -44,7 +44,7 @@ interface
          loadnf_inherited,
          { the loadnode is generated internally and a varspez=vs_const should be ignore,
            this requires that the parameter is actually passed by value
-           Be really carefull when using this flag! }
+           Be really careful when using this flag! }
          loadnf_isinternal_ignoreconst,
 
          loadnf_only_uninitialized_hint
@@ -77,18 +77,25 @@ interface
 {$ifdef DEBUG_NODE_XML}
           procedure XMLPrintNodeData(var T: Text); override;
 {$endif DEBUG_NODE_XML}
-          procedure setprocdef(p : tprocdef);
-          property procdef: tprocdef read fprocdef write setprocdef;
+          procedure setprocdef(p : tprocdef;forfuncref:boolean);
+          property procdef: tprocdef read fprocdef;
        end;
        tloadnodeclass = class of tloadnode;
 
        { different assignment types }
        tassigntype = (at_normal,at_plus,at_minus,at_star,at_slash);
 
+       TAssignmentNodeFlag = (
+         anf_assign_done_in_right
+       );
+
+       TAssignmentNodeFlags = set of TAssignmentNodeFlag;
+
        tassignmentnode = class(tbinarynode)
          protected
           function direct_shortstring_assignment: boolean; virtual;
          public
+          assignmentnodeflags : TAssignmentNodeFlags;
           assigntype : tassigntype;
           constructor create(l,r : tnode);virtual;
           { no checks for validity of assignment }
@@ -104,6 +111,7 @@ interface
        {$endif state_tracking}
           function docompare(p: tnode): boolean; override;
 {$ifdef DEBUG_NODE_XML}
+          procedure XMLPrintNodeInfo(var T: Text); override;
           procedure XMLPrintNodeData(var T: Text); override;
 {$endif DEBUG_NODE_XML}
        end;
@@ -116,14 +124,24 @@ interface
        end;
        tarrayconstructorrangenodeclass = class of tarrayconstructorrangenode;
 
+       TArrayConstructorNodeFlag = (
+         acnf_allow_array_constructor,
+         acnf_forcevaria,
+         acnf_novariaallowed
+       );
+
+       TArrayConstructorNodeFlags = set of TArrayConstructorNodeFlag;
+
        tarrayconstructornode = class(tbinarynode)
-          allow_array_constructor : boolean;
+          arrayconstructornodeflags : TArrayConstructorNodeFlags;
          private
           function has_range_node:boolean;
          protected
-          procedure wrapmanagedvarrec(var n: tnode);virtual;abstract;
+          procedure wrapmanagedvarrec(var n : tnode);virtual;abstract;
          public
           constructor create(l,r : tnode);virtual;
+          constructor ppuload(t : tnodetype;ppufile : tcompilerppufile);override;
+          procedure ppuwrite(ppufile : tcompilerppufile);override;
           function dogetcopy : tnode;override;
           function pass_1 : tnode;override;
           function pass_typecheck:tnode;override;
@@ -131,6 +149,9 @@ interface
           procedure force_type(def:tdef);
           procedure insert_typeconvs;
           function isempty : boolean;
+{$ifdef DEBUG_NODE_XML}
+          procedure XMLPrintNodeInfo(var t : text);override;
+{$endif DEBUG_NODE_XML}
        end;
        tarrayconstructornodeclass = class of tarrayconstructornode;
 
@@ -350,6 +371,8 @@ implementation
              begin
                if tconstsym(symtableentry).consttyp=constresourcestring then
                  resultdef:=getansistringdef
+               else if tconstsym(symtableentry).consttyp=constwresourcestring then
+                 resultdef:=cunicodestringtype
                else
                  internalerror(22799);
              end;
@@ -375,6 +398,7 @@ implementation
            localvarsym :
              begin
                tabstractvarsym(symtableentry).IncRefCountBy(1);
+               resultdef:=tabstractvarsym(symtableentry).vardef;
                { Nested variable? The we need to load the framepointer of
                  the parent procedure }
                if assigned(current_procinfo) and
@@ -386,7 +410,7 @@ implementation
                    left:=cloadparentfpnode.create(tprocdef(symtable.defowner),lpf_forload);
                    current_procinfo.set_needs_parentfp(tprocdef(symtable.defowner).parast.symtablelevel);
                    { reference this as a captured symbol }
-                   current_procinfo.add_captured_sym(symtableentry,fileinfo);
+                   current_procinfo.add_captured_sym(symtableentry,resultdef,fileinfo);
                    { reference in nested procedures, variable needs to be in memory }
                    { and behaves as if its address escapes its parent block         }
                    make_not_regable(self,[ra_different_scope]);
@@ -396,8 +420,7 @@ implementation
                else if assigned(current_procinfo) and
                    (vo_is_self in tabstractvarsym(symtableentry).varoptions) and
                    (symtable.symtablelevel>normal_function_level) then
-                 current_procinfo.add_captured_sym(symtableentry,fileinfo);
-               resultdef:=tabstractvarsym(symtableentry).vardef;
+                 current_procinfo.add_captured_sym(symtableentry,resultdef,fileinfo);
 
                { e.g. self for objects is passed as var-parameter on the caller
                  side, but on the callee-side we use it as a pointer ->
@@ -481,7 +504,7 @@ implementation
               ;
             constsym:
               begin
-                if tconstsym(symtableentry).consttyp=constresourcestring then
+                if tconstsym(symtableentry).consttyp in [constresourcestring,constwresourcestring] then
                   expectloc:=LOC_CREFERENCE;
               end;
             staticvarsym,
@@ -505,9 +528,11 @@ implementation
               end;
             procsym :
               begin
-                { initialise left for nested procs if necessary }
+                { initialise left for nested procs if necessary (this won't need
+                  to pass true for the forfuncref parameter, cause code that would
+                  need that wouldn't have been reworked before it reaches pass_1) }
                 if (m_nested_procvars in current_settings.modeswitches) then
-                  setprocdef(fprocdef);
+                  setprocdef(fprocdef,false);
                 { method pointer or nested proc ? }
                 if assigned(left) then
                   begin
@@ -557,13 +582,14 @@ implementation
       end;
 {$endif DEBUG_NODE_XML}
 
-    procedure tloadnode.setprocdef(p : tprocdef);
+    procedure tloadnode.setprocdef(p : tprocdef;forfuncref:boolean);
       begin
         fprocdef:=p;
         resultdef:=p;
         { nested procedure? }
         if assigned(p) and
            is_nested_pd(p) and
+           not forfuncref and
            (
              not (po_anonymous in p.procoptions) or
              (po_delphi_nested_cc in p.procoptions)
@@ -611,6 +637,7 @@ implementation
 
       begin
          inherited create(assignn,l,r);
+         assignmentnodeflags:=[];
          assigntype:=at_normal;
          if r.nodetype = typeconvn then
            ttypeconvnode(r).warn_pointer_to_signed:=false;
@@ -627,6 +654,7 @@ implementation
     constructor tassignmentnode.ppuload(t:tnodetype;ppufile:tcompilerppufile);
       begin
         inherited ppuload(t,ppufile);
+        ppufile.getset(tppuset1(assignmentnodeflags));
         assigntype:=tassigntype(ppufile.getbyte);
       end;
 
@@ -634,6 +662,7 @@ implementation
     procedure tassignmentnode.ppuwrite(ppufile:tcompilerppufile);
       begin
         inherited ppuwrite(ppufile);
+        ppufile.putset(tppuset1(assignmentnodeflags));
         ppufile.putbyte(byte(assigntype));
       end;
 
@@ -645,6 +674,7 @@ implementation
 
       begin
          n:=tassignmentnode(inherited dogetcopy);
+         n.assignmentnodeflags:=assignmentnodeflags;
          n.assigntype:=assigntype;
          result:=n;
       end;
@@ -702,7 +732,7 @@ implementation
           exit;
 
         { just in case the typecheckpass of right optimized something here }
-        if nf_assign_done_in_right in flags then
+        if anf_assign_done_in_right in assignmentnodeflags then
           begin
             result:=right;
             right:=nil;
@@ -716,8 +746,12 @@ implementation
           maybe_call_procvar(right,true);
 
         { assignments to formaldefs and open arrays aren't allowed }
-        if is_open_array(left.resultdef) then
-          CGMessage(type_e_assignment_not_allowed)
+        if is_open_array(left.resultdef) or is_array_of_const(left.resultdef) then
+          begin
+            CGMessage(type_e_assignment_not_allowed);
+            result:=cerrornode.create;
+            exit;
+          end
         else if (left.resultdef.typ=formaldef) then
           if not(target_info.system in systems_managed_vm) then
             CGMessage(type_e_assignment_not_allowed)
@@ -767,12 +801,12 @@ implementation
          end;
 
         { shortstring helpers can do the conversion directly,
-          so treat them separatly }
+          so treat them separately }
         if (is_shortstring(left.resultdef)) then
          begin
            { insert typeconv, except for chars that are handled in
              secondpass and except for ansi/wide string that can
-             be converted immediatly }
+             be converted immediately }
            if not direct_shortstring_assignment then
              inserttypeconv(right,left.resultdef);
            if right.resultdef.typ=stringdef then
@@ -820,7 +854,7 @@ implementation
 
 {$ifdef arm}
                 { the assignment node code can't convert a single in
-                  an interger register to a double in an mmregister or
+                  an integer register to a double in an mmregister or
                   vice versa }
                 and (use_vectorfpu(left.resultdef) and
                      use_vectorfpu(right.resultdef) and
@@ -886,6 +920,36 @@ implementation
 
 
     function tassignmentnode.pass_1 : tnode;
+
+      function tempreturnfromcall:boolean;
+        var
+          node:tnode;
+        begin
+          result:=false;
+          if not is_managed_type(right.resultdef) then
+            exit;
+          node:=right;
+          while assigned(node) do
+            begin
+              case node.nodetype of
+              blockn:
+                node:=tblocknode(node).left;
+              statementn:
+                if assigned(tstatementnode(node).right) then
+                  node:=tstatementnode(node).right
+                else
+                  node:=tstatementnode(node).left;
+              else
+                break;
+              end;
+            end;
+          if not assigned(node) then
+            internalerror(2024111101);
+          if (node.nodetype=calln) and assigned(tcallnode(node).funcretnode) then
+            node:=tcallnode(node).funcretnode;
+          result:=(node.nodetype=temprefn) and (nf_is_funcret in node.flags);
+        end;
+
       var
         hp: tnode;
         oldassignmentnode : tassignmentnode;
@@ -898,7 +962,7 @@ implementation
 
          firstpass(left);
 
-         { Optimize the reuse of the destination of the assingment in left.
+         { Optimize the reuse of the destination of the assignment in left.
            Allow the use of the left inside the tree generated on the right.
            This is especially useful for string routines where the destination
            is pushed as a parameter. Using the final destination of left directly
@@ -907,7 +971,7 @@ implementation
          aktassignmentnode:=self;
          firstpass(right);
          aktassignmentnode:=oldassignmentnode;
-         if nf_assign_done_in_right in flags then
+         if anf_assign_done_in_right in assignmentnodeflags then
            begin
              result:=right;
              right:=nil;
@@ -959,7 +1023,10 @@ implementation
                ccallparanode.create(ctypeconvnode.create_internal(
                  caddrnode.create_internal(right),voidpointertype),
                nil)));
-           result:=ccallnode.createintern('fpc_copy_proc',hp);
+           if tempreturnfromcall then
+             result:=ccallnode.createintern('fpc_copy_with_move_semantics_proc',hp)
+           else
+             result:=ccallnode.createintern('fpc_copy_proc',hp);
            firstpass(result);
            left:=nil;
            right:=nil;
@@ -1070,6 +1137,28 @@ implementation
 
 
 {$ifdef DEBUG_NODE_XML}
+    procedure TAssignmentNode.XMLPrintNodeInfo(var T: Text);
+      var
+        i: TAssignmentNodeFlag;
+        First: Boolean;
+      begin
+        inherited XMLPrintNodeInfo(T);
+        First := True;
+        for i in assignmentnodeflags do
+          begin
+            if First then
+              begin
+                Write(T, ' assignmentnodeflags="', i);
+                First := False;
+              end
+            else
+              Write(T, ',', i)
+          end;
+        if not First then
+          Write(T, '"');
+      end;
+
+
     procedure TAssignmentNode.XMLPrintNodeData(var T: Text);
       begin
         { For assignments, put the left and right branches on the same level for clarity }
@@ -1118,7 +1207,21 @@ implementation
     constructor tarrayconstructornode.create(l,r : tnode);
       begin
          inherited create(arrayconstructorn,l,r);
-         allow_array_constructor:=false;
+         arrayconstructornodeflags:=[];
+      end;
+
+
+    constructor tarrayconstructornode.ppuload(t:tnodetype;ppufile:tcompilerppufile);
+      begin
+        inherited ppuload(t,ppufile);
+        ppufile.getset(tppuset1(arrayconstructornodeflags));
+      end;
+
+
+    procedure tarrayconstructornode.ppuwrite(ppufile:tcompilerppufile);
+      begin
+        inherited ppuwrite(ppufile);
+        ppufile.putset(tppuset1(arrayconstructornodeflags));
       end;
 
 
@@ -1127,6 +1230,7 @@ implementation
          n : tarrayconstructornode;
       begin
          n:=tarrayconstructornode(inherited dogetcopy);
+         n.arrayconstructornodeflags:=arrayconstructornodeflags;
          result:=n;
       end;
 
@@ -1171,7 +1275,7 @@ implementation
         Do this only if we didn't convert the arrayconstructor yet. This
         is needed for the cases where the resultdef is forced for a second
         run }
-        if not allow_array_constructor or has_range_node then
+        if not (acnf_allow_array_constructor in arrayconstructornodeflags) or has_range_node then
          begin
            hp:=tarrayconstructornode(getcopy);
            arrayconstructor_to_set(tnode(hp));
@@ -1227,7 +1331,7 @@ implementation
                            hdef:=hp.left.resultdef;
                        end
                      else
-                       if (nf_novariaallowed in flags) then
+                       if (acnf_novariaallowed in arrayconstructornodeflags) then
                          varia:=true;
                    end;
                end;
@@ -1277,7 +1381,7 @@ implementation
         hp        : tarrayconstructornode;
         dovariant : boolean;
       begin
-        dovariant:=(nf_forcevaria in flags) or (ado_isvariant in tarraydef(resultdef).arrayoptions);
+        dovariant:=(acnf_forcevaria in arrayconstructornodeflags) or (ado_isvariant in tarraydef(resultdef).arrayoptions);
         { only pass left tree, right tree contains next construct if any }
         if assigned(left) then
          begin
@@ -1301,7 +1405,7 @@ implementation
         do_variant,
         do_managed_variant:boolean;
       begin
-        do_variant:=(nf_forcevaria in flags) or (ado_isvariant in tarraydef(resultdef).arrayoptions);
+        do_variant:=(acnf_forcevaria in arrayconstructornodeflags) or (ado_isvariant in tarraydef(resultdef).arrayoptions);
         do_managed_variant:=
           do_variant and
           (target_info.system in systems_managed_vm);
@@ -1344,6 +1448,28 @@ implementation
         docompare:=inherited docompare(p);
       end;
 
+{$ifdef DEBUG_NODE_XML}
+    procedure TArrayConstructorNode.XMLPrintNodeInfo(var T: Text);
+      var
+        i: TArrayConstructorNodeFlag;
+        First: Boolean;
+      begin
+        inherited XMLPrintNodeInfo(T);
+        First := True;
+        for i in arrayconstructornodeflags do
+          begin
+            if First then
+              begin
+                Write(T, ' arrayconstructornodeflags="', i);
+                First := False;
+              end
+            else
+              Write(T, ',', i)
+          end;
+        if not First then
+          Write(T, '"');
+      end;
+{$endif DEBUG_NODE_XML}
 
 {*****************************************************************************
                               TTYPENODE

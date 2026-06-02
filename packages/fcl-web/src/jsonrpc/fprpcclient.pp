@@ -12,14 +12,21 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fprpcclient;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode ObjFPC}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.TypInfo, System.Classes, System.SysUtils, FpJson.Data, FpWeb.Client, FpWeb.Client.Http, System.Rtti, FpJson.Value;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   TypInfo, Classes, SysUtils, fpjson, fpwebclient, fphttpwebclient, rtti, fpjsonvalue;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
   ERPCClient = Class(Exception);
@@ -62,10 +69,10 @@ Type
     function EncodeParams(aMethod: TRttiMethod; const aArgs: TValueArray; out VarParamCount: Integer): TJSONData;
     // Decode JSON-RPC result to method call result and var/out params.
     function DecodeResult(Response: TJSONObject; aMethod: TRttiMethod; const aArgs: TValueArray; HaveReturnValues: Boolean): TValue;
-    // Find registered interfacen return instance in aObj. Return true if successful.
+    // Find registered interface return instance in aObj. Return true if successful.
     function DoCreateProxy(constref aIID: TGuid; out aObj): Boolean;
     function DoCreateProxy(const aName: String; out aObj): Boolean;
-    // Called from TFPRPCVirtualInterface to actuall handle call.
+    // Called from TFPRPCVirtualInterface to actual handle call.
     procedure HandleInvoke(const aClassName : String; aMethod: TRttiMethod; const aArgs: TValueArray; out aResult: TValue); virtual;
     // Do actual HTTP request.
     function DoRequest(aRequest : TJSONObject) : TJSONObject; virtual;
@@ -125,7 +132,11 @@ Function RPCServiceRegistry : TFPRPCServiceRegistry;
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses FpWeb.JsonRpc.Strings;
+{$ELSE FPC_DOTTEDUNITS}
 uses fprpcstrings;
+{$ENDIF FPC_DOTTEDUNITS}
 
 function IsGUIDEqual(const guid1, guid2: tguid): boolean;
   begin
@@ -322,7 +333,7 @@ begin
   Result := TJSONObject.Create;
   try
     Result.Add('method', aMethodName);
-    Result.Add('classname', aClassName);
+    Result.Add('class', aClassName);
     Result.Add('jsonrpc','2.0');
     // In case of notification, do not send an ID
     if Not (IsNotification and (rcoNotifications in Options))  then

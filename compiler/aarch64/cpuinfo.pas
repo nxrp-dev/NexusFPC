@@ -42,7 +42,10 @@ Type
        cpu_armv83a,
        cpu_armv84a,
        cpu_armv85a,
-       cpu_armv86a
+       cpu_armv86a,
+       cpu_armv87a,
+       cpu_armv88a,
+       cpu_armv89a
       );
 
 Type
@@ -94,6 +97,7 @@ Const
       );
    {$POP}
 
+var
    { calling conventions supported by the code generator }
    supported_calling_conventions : tproccalloptions = [
      pocall_internproc,
@@ -112,6 +116,7 @@ Const
      pocall_interrupt
    ];
 
+const
    cputypestr : array[tcputype] of string[9] = ('',
      'ARMV8',
      'ARMV8-A',
@@ -120,7 +125,10 @@ Const
      'ARMV8.3-A',
      'ARMV8.4-A',
      'ARMV8.5-A',
-     'ARMV8.6-A'
+     'ARMV8.6-A',
+     'ARMV8.7-A',
+     'ARMV8.8-A',
+     'ARMV8.9-A'
    );
 
    fputypestr : array[tfputype] of string[9] = ('',
@@ -155,26 +163,31 @@ type
       CPUAARCH64_HAS_PROFILE, { CPU supports the profile extension }
       CPUAARCH64_HAS_MEMTAG,  { CPU supports the memtag extension }
       CPUAARCH64_HAS_TME,     { CPU supports the tme extension }
-      CPUAARCH64_HAS_PAUTH    { CPU supports the pauth extension }
+      CPUAARCH64_HAS_PAUTH,   { CPU supports the pauth extension }
+      CPUAARCH64_HAS_CSSC     { CPU supports the Common Short Sequence Compression (CSSC) extension }
      );
 
    tfpuflags =
      (CPUAARCH64_HAS_VFP       { CPU supports VFP }
      );
 
-const
+var
    cpu_capabilities : array[tcputype] of set of tcpuflags =
      ( { cpu_none      } [],
        { cpu_armv8     } [],
        { cpu_armv8a    } [],
        { cpu_armv81a   } [CPUAARCH64_HAS_LSE],
        { cpu_armv82a   } [CPUAARCH64_HAS_LSE],
-       { cpu_armv83a   } [CPUAARCH64_HAS_LSE],
-       { cpu_armv84a   } [CPUAARCH64_HAS_LSE],
-       { cpu_armv85a   } [CPUAARCH64_HAS_LSE],
-       { cpu_armv86a   } [CPUAARCH64_HAS_LSE]
+       { cpu_armv83a   } [CPUAARCH64_HAS_LSE,CPUAARCH64_HAS_PAUTH],
+       { cpu_armv84a   } [CPUAARCH64_HAS_LSE,CPUAARCH64_HAS_DOTPROD,CPUAARCH64_HAS_PAUTH],
+       { cpu_armv85a   } [CPUAARCH64_HAS_LSE,CPUAARCH64_HAS_DOTPROD,CPUAARCH64_HAS_PAUTH],
+       { cpu_armv86a   } [CPUAARCH64_HAS_LSE,CPUAARCH64_HAS_DOTPROD,CPUAARCH64_HAS_PAUTH],
+       { cpu_armv87a   } [CPUAARCH64_HAS_LSE,CPUAARCH64_HAS_DOTPROD,CPUAARCH64_HAS_PAUTH],
+       { cpu_armv88a   } [CPUAARCH64_HAS_LSE,CPUAARCH64_HAS_DOTPROD,CPUAARCH64_HAS_PAUTH],
+       { cpu_armv89a   } [CPUAARCH64_HAS_LSE,CPUAARCH64_HAS_DOTPROD,CPUAARCH64_HAS_PAUTH,CPUAARCH64_HAS_CSSC]
      );
 
+const
    fpu_capabilities : array[tfputype] of set of tfpuflags =
      ( { fpu_none         } [],
        { fpu_vfp          } [CPUAARCH64_HAS_VFP]

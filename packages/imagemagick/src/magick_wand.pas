@@ -1,12 +1,12 @@
 {
   Copyright 1999-2005 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
-  
+
   You may not use this file except in compliance with the License.
   obtain a copy of the License at
-  
+
     http://www.imagemagick.org/script/license.php
-  
+
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,7 +24,9 @@
 	Thanks to Marc Geldon and RuBBeR
 }
 {Version 0.4}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit magick_wand;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$IFDEF FPC}
   {$mode objfpc}
@@ -35,13 +37,17 @@ unit magick_wand;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses Api.Imagemagick, System.CTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses ImageMagick, ctypes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { Various types }
 type
   MagickWand = record
     id: culong;
-    name: array[1..MaxTextExtent] of Char;
+    name: array[1..MaxTextExtent] of AnsiChar;
     exception: ExceptionInfo;
     image_info: PImageInfo;
     quantize_info: PQuantizeInfo;

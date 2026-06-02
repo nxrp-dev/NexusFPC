@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit shlwapi;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {
     This file is part of the Free Pascal run time library.
@@ -18,7 +20,11 @@ unit shlwapi;
 interface
 {$mode delphi}
 
+{$IFDEF FPC_DOTTEDUNITS}
+Uses WinApi.Windows,WinApi.Activex;
+{$ELSE FPC_DOTTEDUNITS}
 Uses Windows,ActiveX;
+{$ENDIF FPC_DOTTEDUNITS}
   const
     SHLWAPIDLL='shlwapi.dll'; {Setup as you need}
 
@@ -271,7 +277,7 @@ Type
       FTA_NoEditDesc              = $00000100, // no editing of file type description
       FTA_NoEditIcon              = $00000200, // no editing of doc icon
       FTA_NoEditDflt              = $00000400, // no changing of default verb
-      FTA_NoEditVerbCmd           = $00000800, // no modification of the commnds associated with the verbs
+      FTA_NoEditVerbCmd           = $00000800, // no modification of the commands associated with the verbs
       FTA_NoEditVerbExe           = $00001000, // no editing of the verb's exe
       FTA_NoDDE                   = $00002000, // no editing of the DDE fields
 
@@ -453,7 +459,7 @@ const
     CTF_INHERITWOW64           = $00000100;   // new thread should inherit the wow64 disable state for the file system redirector IE7+
 
 
-    CTF_WAIT_NO_REENTRANCY  = $00000200;   // don't allow re-entrancy when waiting for the sync proc, this won't work with marshalled objects or SendMessages() from the sync proc Vista+
+    CTF_WAIT_NO_REENTRANCY  = $00000200;   // don't allow re-entrance when waiting for the sync proc, this won't work with marshalled objects or SendMessages() from the sync proc Vista+
 
     //#if (NTDDI_VERSION >= NTDDI_WIN7)
     CTF_KEYBOARD_LOCALE        = $00000400;   // carry the keyboard locale from creating to created thread
@@ -483,7 +489,7 @@ const
      OS_WIN2000TERMINAL          = 12;          // Windows 2000 Terminal Server in "Application Server" mode (now simply called "Terminal Server")
 
      OS_EMBEDDED                 = 13;          // Embedded Windows Edition
-     OS_TERMINALCLIENT           = 14;          // Windows Terminal Client (eg user is comming in via tsclient)
+     OS_TERMINALCLIENT           = 14;          // Windows Terminal Client (eg user is coming in via tsclient)
      OS_TERMINALREMOTEADMIN      = 15;          // Terminal Server in "Remote Administration" mode
      OS_WIN95_GOLD               = 16;          // Windows 95 Gold (Version 4.0 Build 1995)
      OS_MEORGREATER              = 17;          // Windows Millennium (Version 5.0)
@@ -586,7 +592,7 @@ const
   function  StrCatChainW(pszDst:PWSTR; cchDst:DWORD; ichAt:DWORD; pszSrc:PCWSTR):DWORD;stdcall;external SHLWAPIDLL name 'StrCatChainW';
   function  StrRetToBSTR(pstr:PSTRRET; pidl:PCUITEMID_CHILD; out pbstr:BSTR):HRESULT;stdcall;external SHLWAPIDLL name 'StrRetToBSTR';
   function  SHLoadIndirectString(pszSource:PCWSTR; pszOutBuf:PWSTR; cchOutBuf:UINT; ppvReserved:Ppointer):HRESULT;stdcall;external SHLWAPIDLL name 'SHLoadIndirectString';
-  function  IsCharSpaceA(wch:CHAR):BOOL;stdcall;external SHLWAPIDLL name 'IsCharSpaceA';
+  function  IsCharSpaceA(wch:AnsiChar):BOOL;stdcall;external SHLWAPIDLL name 'IsCharSpaceA';
   function  IsCharSpaceW(wch:WCHAR):BOOL;stdcall;external SHLWAPIDLL name 'IsCharSpaceW';
   function  StrCmpCA(pszStr1:LPCSTR; pszStr2:LPCSTR):longint;stdcall;external SHLWAPIDLL name 'StrCmpCA';
   function  StrCmpCW(pszStr1:LPCWSTR; pszStr2:LPCWSTR):longint;stdcall;external SHLWAPIDLL name 'StrCmpCW';
@@ -757,7 +763,7 @@ const
   function SHRegGetValueW(hKey:HKEY; pszSubKey:LPCWSTR; pszValue:LPCWSTR; srrfFlags:SRRF; pdwType:PDWORD;
              pvData:pointer; pcbData:PDWORD):LSTATUS;stdcall;external SHLWAPIDLL name 'SHRegGetValueW';
   function SHRegSetValue(hkey:HKEY; pszSubKey:LPCWSTR; pszValue:LPCWSTR; srrfFlags:SRRF; dwType:DWORD;
-             pvData:LPCVOID; cbData:DWORD):LSTATUS;stdcall;external SHLWAPIDLL name 'SHRegSetValue';
+             pvData:LPCVOID; cbData:DWORD):LSTATUS;deprecated 'Since at least W7, use RegSetValue' ; stdcall; external SHLWAPIDLL name 'SHRegSetValue';
 
   function SHRegGetValueFromHKCUHKLM(pwszKey:PCWSTR; pwszValue:PCWSTR; srrfFlags:SRRF; pdwType:PDWORD; pvData:pointer;
              pcbData:PDWORD):LSTATUS;stdcall;external SHLWAPIDLL name 'SHRegGetValueFromHKCUHKLM';
@@ -937,7 +943,7 @@ const
 
  function SHSendMessageBroadcastA(uMsg:UINT; wParam:WPARAM; lParam:LPARAM):LRESULT;stdcall;external SHLWAPIDLL name 'SHSendMessageBroadcastA';
  function SHSendMessageBroadcastW(uMsg:UINT; wParam:WPARAM; lParam:LPARAM):LRESULT;stdcall;external SHLWAPIDLL name 'SHSendMessageBroadcastW';
- function SHStripMneumonicA(pszMenu:LPSTR):CHAR;stdcall;external SHLWAPIDLL name 'SHStripMneumonicA';
+ function SHStripMneumonicA(pszMenu:LPSTR):AnsiChar;stdcall;external SHLWAPIDLL name 'SHStripMneumonicA';
  function SHStripMneumonicW(pszMenu:LPWSTR):WCHAR;stdcall;external SHLWAPIDLL name 'SHStripMneumonicW';
  function IsOS(dwOS:DWORD):BOOL;stdcall;external SHLWAPIDLL name 'IsOS';
 (* Const before type ignored *)

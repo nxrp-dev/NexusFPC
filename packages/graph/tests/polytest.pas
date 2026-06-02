@@ -1,7 +1,7 @@
 {
  test for graph unit's DrawPoly and FillPoly procedures
  compiles with Turbo Pascal 7 and Free Pascal
- used for TP7 compatibily testing
+ used for TP7 compatibility testing
 }
 
 program PolyTest;
@@ -43,7 +43,7 @@ end;
 procedure Tralala;
 var
   I: Integer;
-  IStr: string;
+  IStr: shortstring;
 begin
   if ParamStr(1) <> '' then
     Assign(InF, ParamStr(1))

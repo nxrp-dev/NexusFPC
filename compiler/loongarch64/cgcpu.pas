@@ -57,7 +57,7 @@ unit cgcpu;
         procedure a_loadaddr_ref_reg(list : TAsmList;const ref : treference;r : tregister);override;
 
         { bit scan instructions }
-        procedure a_bit_scan_reg_reg(list: TAsmList; reverse: boolean; srcsize, dstsize: tcgsize; src, dst: TRegister); override;
+        procedure a_bit_scan_reg_reg(list: TAsmList; reverse,not_zero: boolean; srcsize, dstsize: tcgsize; src, dst: TRegister); override;
 
         { fpu move instructions }
         procedure a_loadfpu_reg_reg(list: TAsmList; fromsize, tosize: tcgsize; reg1, reg2: tregister); override;
@@ -93,7 +93,8 @@ unit cgcpu;
         procedure g_proc_exit(list: TAsmList; parasize: longint; nostackframe: boolean); override;
 
       protected
-        function fixref(list: TAsmList; var ref: treference; mode : tfixref): boolean;
+        function fixref(list: TAsmList; var ref: treference; mode : tfixref;out tmpreg, tmpreg2 : tregister): boolean;
+        procedure ungetregister(r : tregister;list :TAsmList);
         procedure maybeadjustresult(list: TAsmList; op: topcg; size: tcgsize; dst: tregister);
       end;
 
@@ -134,10 +135,16 @@ implementation
         inherited init_register_allocators;
         { From GCC REG_ALLOC_ORDER }
         rg[R_INTREGISTER]:=trgintcpu.create(R_INTREGISTER,R_SUBWHOLE,
-          [RS_R12,RS_R13,RS_R14,RS_R16,RS_R16,RS_R17,RS_R18,RS_R19,RS_R20,
+           { scratch registers r12(t0) to r31(t7) }
+          [RS_R12,RS_R13,RS_R14,RS_R15,RS_R16,RS_R17,RS_R18,RS_R19,RS_R20,
+           { parameter registers r4(a0) to r11(a7) }
            RS_R4,RS_R5,RS_R6,RS_R7,RS_R8,RS_R9,RS_R10,RS_R11,
+	   { register r1(ra) }
            RS_R1,
-           RS_R23,RS_R24,RS_R25,RS_R26,RS_R27,RS_R28,RS_R29,RS_R30,RS_R31],first_int_imreg,[]);
+           { callee saved registers r23(s0) to r31(s8) }
+           RS_R23,RS_R24,RS_R25,RS_R26,RS_R27,RS_R28,RS_R29,RS_R30,RS_R31],
+	   first_int_imreg,[]);
+	   { registers r0(zero), r2(tp), r3(sp), r21(x) and r22(sp) are excluded }
         rg[R_FPUREGISTER]:=trgcpu.create(R_FPUREGISTER,R_SUBNONE,
           [RS_F0,RS_F1,RS_F2,RS_F3,RS_F4,RS_F5,RS_F6,RS_F7,RS_F8,
            RS_F9,RS_F10,RS_F11,RS_F12,RS_F13,RS_F14,RS_F15,RS_F16,
@@ -326,6 +333,7 @@ implementation
         href: treference;
         op: TAsmOp;
         hlist: TAsmList;
+        tmpreg,tmpreg2 : tregister;
       const
         st_ops: array[boolean,OS_8..OS_INT] of TAsmOp = (
           (A_ST_B,A_ST_H,A_ST_W,A_ST_D),
@@ -343,18 +351,25 @@ implementation
         if stptr_ops[tosize]<>A_NONE then
           begin
             href:=ref;
-            if fixref(hlist,href,fr_big) then
+            if fixref(hlist,href,fr_big,tmpreg,tmpreg2) then
               begin
                 list.concatList(hlist);
                 hlist.free;
                 list.concat(taicpu.op_reg_ref(stptr_ops[tosize],reg,href));
                 exit;
+              end
+            else
+              begin
+                if (tmpreg<>NR_NO) then
+                  ungetregister(tmpreg,hlist);
+                if (tmpreg2<>NR_NO) then
+                  ungetregister(tmpreg2,hlist);
               end;
           end;
         hlist.Clear;
         hlist.free;
         href:=ref;
-        op:=st_ops[fixref(list,href,fr_reg),tosize];
+        op:=st_ops[fixref(list,href,fr_reg,tmpreg,tmpreg2),tosize];
         list.concat(taicpu.op_reg_ref(op,reg,href));
       end;
 
@@ -367,6 +382,7 @@ implementation
         have_done: boolean;
         hlist: TAsmList;
         samesign: boolean;
+        tmpreg, tmpreg2 : tregister;
       const
         ld_ops: array[boolean,boolean,OS_8..OS_INT] of TAsmOp = (
           ((A_LD_B,A_LD_H,A_LD_W,A_LD_D),
@@ -375,6 +391,8 @@ implementation
            (A_LDX_BU,A_LDX_HU,A_LDX_WU,A_LDX_D))
         );
       begin
+        tmpreg:=NR_NO;
+        tmpreg2:=NR_NO;
         if not (fromsize in [OS_8..OS_INT,OS_S8..OS_SINT]) then
           internalerror(2022111938);
         if not (tosize in [OS_8..OS_INT,OS_S8..OS_SINT]) then
@@ -388,7 +406,7 @@ implementation
         if (fromsize=OS_S32) then
           begin
             href:=ref;
-            if fixref(hlist,href,fr_big) then
+            if fixref(hlist,href,fr_big,tmpreg,tmpreg2) then
               begin
                 hlist.concat(taicpu.op_reg_ref(A_LDPTR_W,reg,href));
                 have_done:=true;
@@ -397,7 +415,7 @@ implementation
         else if (fromsize=OS_S64) or (fromsize=OS_64) then
           begin
             href:=ref;
-            if fixref(hlist,href,fr_big) then
+            if fixref(hlist,href,fr_big,tmpreg,tmpreg2) then
               begin
                 hlist.concat(taicpu.op_reg_ref(A_LDPTR_D,reg,href));
                 have_done:=true;
@@ -406,9 +424,13 @@ implementation
 
         if not(have_done) then
           begin
+            if (tmpreg<>NR_NO) then
+              ungetregister(tmpreg,hlist);
+            if (tmpreg2<>NR_NO) then
+              ungetregister(tmpreg2,hlist);
             hlist.Clear;
             href:=ref;
-            op:=ld_ops[fixref(list,href,fr_reg),fromsize=usizef,usizef];
+            op:=ld_ops[fixref(list,href,fr_reg,tmpreg,tmpreg2),fromsize=usizef,usizef];
             list.concat(taicpu.op_reg_ref(op,reg,href));
           end
         else
@@ -453,7 +475,7 @@ implementation
         utosize:=tcgsize2unsigned[tosize];
         ufrom:=ufromsize=fromsize;
         uto:=utosize=tosize;
-        if (fromsize=tosize) or ((ufromsize=OS_INT) and (utosize=OS_INT)) then
+        if (ufromsize=OS_INT) and (utosize=OS_INT) then
           begin
             ai:=taicpu.op_reg_reg(A_MOVE,reg2,reg1);
             list.concat(ai);
@@ -489,10 +511,11 @@ implementation
       var
         href: treference;
         l: TAsmLabel;
+        tmpreg, tmpreg2 : tregister;
       begin
         href:=ref;
-        fixref(list,href,fr_normal);
-        { Fixref, so simplely work here. }
+        fixref(list,href,fr_normal,tmpreg,tmpreg2);
+        { Fixref, so simply work here. }
         if href.offset=0 then
           a_load_reg_reg(list,OS_ADDR,OS_ADDR,href.base,r)
         else if is_simm12(href.offset) and (href.base<>NR_NO) then
@@ -502,7 +525,7 @@ implementation
       end;
 
 
-    procedure tcgloongarch64.a_bit_scan_reg_reg(list: TAsmList; reverse: boolean; srcsize, dstsize: tcgsize; src, dst: TRegister);
+    procedure tcgloongarch64.a_bit_scan_reg_reg(list: TAsmList; reverse,not_zero: boolean; srcsize, dstsize: tcgsize; src, dst: TRegister);
       begin
         internalerror(2022111943);
       end;
@@ -804,6 +827,7 @@ implementation
       var
         op: TAsmOp;
         href: treference;
+        tmpreg, tmpreg2 : tregister;
       const
         fld_ops: array[boolean,boolean] of TAsmOp = (
           (A_FLD_D, A_FLD_S),
@@ -811,7 +835,7 @@ implementation
         );
       begin
         href:=ref;
-        op:=fld_ops[fixref(list,href,fr_reg),fromsize=OS_F32];
+        op:=fld_ops[fixref(list,href,fr_reg,tmpreg,tmpreg2),fromsize=OS_F32];
         list.concat(taicpu.op_reg_ref(op,reg,href));
         if fromsize<>tosize then
           a_loadfpu_reg_reg(list,fromsize,tosize,reg,reg);
@@ -822,6 +846,7 @@ implementation
         op: TAsmOp;
         tmpfreg: TRegister;
         href: treference;
+        tmpreg, tmpreg2 : tregister;
         fst_ops: array[boolean,boolean] of TAsmOp = (
           (A_FST_D, A_FST_S),
           (A_FSTX_D, A_FSTX_S)
@@ -835,7 +860,7 @@ implementation
           end;
 
         href:=ref;
-        op:=fst_ops[fixref(list,href,fr_reg),tosize=OS_F32];
+        op:=fst_ops[fixref(list,href,fr_reg,tmpreg,tmpreg2),tosize=OS_F32];
         list.concat(taicpu.op_reg_ref(op,reg,href));
       end;
 
@@ -944,7 +969,7 @@ implementation
               regs:=regs+[RS_RETURN_ADDRESS_REG];
             { Float registers }
             fregs:=rg[R_FPUREGISTER].used_in_proc-paramanager.get_volatile_registers_fpu(pocall_stdcall);
-            { Calculate the stackcount of all regesters. }
+            { Calculate the stackcount of all registers. }
             stackcount:=16;
             for r:=RS_R1 to RS_R31 do
               if (r in regs) and (r<>RS_FRAME_POINTER_REG) and (r<>RS_RETURN_ADDRESS_REG) then
@@ -1016,7 +1041,7 @@ implementation
                   list.concat(taicpu.op_reg_ref(A_FST_D,newreg(R_FPUREGISTER,r,R_SUBWHOLE),href));
                   current_asmdata.asmcfi.cfa_offset(list,newreg(R_FPUREGISTER,r,R_SUBWHOLE),href.offset);
                 end;
-            { Decrese the remaining stack size. }
+            { Decrease the remaining stack size. }
             if (localsize-stackadjust)>2048 then
               begin
                 a_load_const_reg(list,OS_INT,localsize-stackadjust,NR_RETURN_ADDRESS_REG);
@@ -1440,11 +1465,54 @@ implementation
         a_op_reg_reg_reg(list,op,size,src1,src2,dst);
     end;
 
-    function tcgloongarch64.fixref(list: TAsmList; var ref: treference; mode : tfixref): boolean;
+
+    procedure tcgloongarch64.ungetregister(r : tregister;list : TAsmList);
       var
-        tmpreg: TRegister;
-        href: treference;
+        supreg : tsuperregister;
+        rt : tregistertype;
+        live : tai;
+      function is_in_list(t : tai;hlist : TAsmList) : boolean;
+        var
+          current : tai;
+        begin
+          result:=false;
+          if not assigned(t) then
+            exit;
+          current:=tai(hlist.first);
+          while assigned(current) do
+            begin
+              if (current=t) then
+                begin
+                  result:=true;
+                  exit;
+                end
+              else
+                current:=tai(current.next);
+            end;
+        end;
+
       begin
+        if not assigned(list) then
+          exit;
+        supreg:=getsupreg(r);
+        rt:=getregtype(r);
+        if assigned(rg[rt]) then
+          begin
+            if is_in_list(rg[rt].live_start[supreg],list) then
+              rg[rt].live_start[supreg]:=nil;
+            if is_in_list(rg[rt].live_end[supreg],list) then
+              rg[rt].live_end[supreg]:=nil;
+          end;
+      end;
+
+    function tcgloongarch64.fixref(list: TAsmList; var ref: treference; mode : tfixref; out tmpreg, tmpreg2 : tregister): boolean;
+      var
+        href: treference;
+	ltmpreg : tregister;
+      begin
+        tmpreg:=NR_NO;
+        tmpreg2:=NR_NO;
+	result:=false;
         if ref.refaddr=addr_reg_12i then
           begin
             result:=mode=fr_normal;
@@ -1455,7 +1523,7 @@ implementation
             result:=mode=fr_reg;
             exit;
           end
-        else if ref.refaddr=addr_reg_reg then
+        else if ref.refaddr=addr_reg_14i then
           begin
             result:=mode=fr_big;
             exit;
@@ -1465,10 +1533,7 @@ implementation
         if assigned(ref.symbol) then
           begin
             tmpreg:=getintregister(list,OS_INT);
-            if ((cs_create_pic in current_settings.moduleswitches) and
-                (ref.symbol.bind in [AB_LOCAL,AB_TEMP])) or
-               ((not(cs_create_pic in current_settings.moduleswitches)) and
-                (ref.symbol.bind in [AB_LOCAL,AB_GLOBAL,AB_TEMP])) then
+            if (ref.symbol.bind in [AB_LOCAL,AB_TEMP]) then
               begin
                 { Load symbol address as local. }
                 reference_reset_symbol(href,ref.symbol,ref.offset,ref.alignment,ref.volatility);
@@ -1500,7 +1565,7 @@ implementation
             else { ref.index=NR_NO }
               ref.index:=tmpreg;
           end
-        { Refernce only offset, make offset become a reg. }
+        { Reference only offset, make offset become a reg. }
         else if (ref.index=NR_NO) and (ref.base=NR_NO) then
           begin
             tmpreg:=getintregister(list,OS_INT);
@@ -1524,7 +1589,8 @@ implementation
           begin
             if ref.index<>NR_R0 then
               begin
-                tmpreg:=getintregister(list,OS_INT);
+                if tmpreg=NR_NO then
+                  tmpreg:=getintregister(list,OS_INT);
                 a_op_reg_reg_reg(list,OP_ADD,OS_INT,ref.base,ref.index,tmpreg);
                 ref.base:=tmpreg;
               end;
@@ -1538,7 +1604,8 @@ implementation
           begin
             if ref.index<>NR_NO then
               begin
-                tmpreg:=getintregister(list,OS_INT);
+                if tmpreg=NR_NO then
+                  tmpreg:=getintregister(list,OS_INT);
                 a_op_reg_reg_reg(list,OP_ADD,OS_INT,ref.base,ref.index,tmpreg);
                 ref.base:=tmpreg;
               end;
@@ -1552,15 +1619,21 @@ implementation
           begin
             if ref.offset<>0 then
               begin
-                tmpreg:=getintregister(list,OS_INT);
-                a_load_const_reg(list,OS_INT,ref.offset,tmpreg);
-                if ref.index<>NR_R0 then
+                if (tmpreg<>NR_NO) and ((ref.index=tmpreg) or (ref.base=tmpreg)) then
                   begin
-                    a_op_reg_reg(list,OP_ADD,OS_INT,ref.index,tmpreg);
-                    ref.index:=tmpreg;
+                    tmpreg2:=getintregister(list,OS_INT);
+                    ltmpreg:=tmpreg2;
                   end
                 else
-                  ref.index:=tmpreg;
+                  begin
+                    if tmpreg=NR_NO then
+                      tmpreg:=getintregister(list,OS_INT);
+                    ltmpreg:=tmpreg;
+                  end;
+                a_load_const_reg(list,OS_INT,ref.offset,ltmpreg);
+                if ref.index<>NR_R0 then
+                  a_op_reg_reg(list,OP_ADD,OS_INT,ref.index,ltmpreg);
+                ref.index:=ltmpreg;
               end;
             ref.refaddr:=addr_reg_reg;
             ref.offset:=0;
@@ -1568,12 +1641,22 @@ implementation
             exit;
           end;
 
-        tmpreg:=getintregister(list,OS_INT);
-        a_load_const_reg(list,OS_INT,ref.offset,tmpreg);
+        if (tmpreg<>NR_NO) and ((tmpreg=ref.base) or (tmpreg=ref.index)) then
+          begin
+            tmpreg2:=getintregister(list,OS_INT);
+            ltmpreg:=tmpreg2;
+          end
+        else
+          begin
+            if tmpreg=NR_NO then
+              tmpreg:=getintregister(list,OS_INT);
+            ltmpreg:=tmpreg;
+          end;
+        a_load_const_reg(list,OS_INT,ref.offset,ltmpreg);
         if ref.index<>NR_R0 then
-          a_op_reg_reg(list,OP_ADD,OS_INT,ref.index,tmpreg);
-        a_op_reg_reg(list,OP_ADD,OS_INT,ref.base,tmpreg);
-        ref.base:=tmpreg;
+          a_op_reg_reg(list,OP_ADD,OS_INT,ref.index,ltmpreg);
+        a_op_reg_reg(list,OP_ADD,OS_INT,ref.base,ltmpreg);
+        ref.base:=ltmpreg;
         ref.index:=NR_NO;
         ref.offset:=0;
         result:=mode=fr_normal;

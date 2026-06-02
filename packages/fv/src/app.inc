@@ -10,7 +10,7 @@
 {                                                          }
 {****************[ THIS CODE IS FREEWARE ]*****************}
 {                                                          }
-{     This sourcecode is released for the purpose to       }
+{     This source code is released for the purpose to      }
 {   promote the pascal language on all platforms. You may  }
 {   redistribute it and/or modify with the following       }
 {   DISCLAIMER.                                            }
@@ -25,17 +25,13 @@
 {                                                          }
 {**********************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 {$ifdef FV_UNICODE}
 UNIT UApp;
 {$else FV_UNICODE}
 UNIT App;
 {$endif FV_UNICODE}
-
-{2.0 compatibility}
-{$ifdef VER2_0}
-  {$macro on}
-  {$define resourcestring := const}
-{$endif}
+{$ENDIF FPC_DOTTEDUNITS}
 
 {<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>}
                                   INTERFACE
@@ -55,6 +51,34 @@ UNIT App;
 {$V-} { Turn off strict VAR strings }
 {====================================================================}
 
+{$IFDEF FPC_DOTTEDUNITS}
+USES
+   {$IFDEF OS_WINDOWS}                                { WIN/NT CODE }
+       WinApi.Windows,                                       { Standard units }
+   {$ENDIF}
+
+   {$IFDEF OS_OS2}                                    { OS2 CODE }
+     {$IFDEF PPC_FPC}
+     OS2Api.os2def, OS2Api.doscalls, OS2Api.pmwin,                       { Standard units }
+     {$ELSE}
+      OS2Api.os2def, Os2Base, OS2PmApi,                       { Standard units }
+     {$ENDIF}
+   {$ENDIF}
+   TP.DOS,
+   System.Console.Video,
+{$ifdef FV_UNICODE}
+   FreeVision.Ufvcommon, {FreeVision.Memory,}                                { GFV standard units }
+{$else FV_UNICODE}
+   FreeVision.Fvcommon, {FreeVision.Memory,}                                { GFV standard units }
+{$endif FV_UNICODE}
+   System.Objects,
+{$ifdef FV_UNICODE}
+   FreeVision.Udrivers, FreeVision.Uviews, FreeVision.Umenus, FreeVision.Uhistlist, FreeVision.Udialogs, FreeVision.Umsgbox,
+{$else FV_UNICODE}
+   FreeVision.Drivers, FreeVision.Views, FreeVision.Menus, FreeVision.Histlist, FreeVision.Dialogs, FreeVision.Msgbox,
+{$endif FV_UNICODE}
+   FreeVision.Fvconsts;
+{$ELSE FPC_DOTTEDUNITS}
 USES
    {$IFDEF OS_WINDOWS}                                { WIN/NT CODE }
        Windows,                                       { Standard units }
@@ -81,6 +105,7 @@ USES
    Drivers, Views, Menus, HistList, Dialogs, msgbox,
 {$endif FV_UNICODE}
    fvconsts;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {***************************************************************************}
 {                              PUBLIC CONSTANTS                             }
@@ -123,19 +148,19 @@ CONST
          #$81#$70#$78#$74#$20#$28#$24#$17#$1F#$1A#$31#$31#$1E#$71#$1F +
      #$37#$3F#$3A#$13#$13#$3E#$21#$3F#$70#$7F#$7A#$13#$13#$70#$7F#$7E +
      #$70#$7F#$7A#$13#$13#$70#$70#$7F#$7E#$20#$2B#$2F#$78#$2E#$70#$30 +
-     #$3F#$3E#$1F#$2F#$1A#$20#$72#$31#$31#$30#$2F#$3E#$31#$13#$38#$00;
+     #$3F#$3E#$1F#$2F#$1A#$20#$72#$31#$31#$30#$2F#$3E#$31#$13#$38#$31;
 
    CBlackWhite =
          #$70#$70#$78#$7F#$07#$07#$0F#$07#$0F#$07#$70#$70#$07#$70#$0F +
      #$07#$0F#$07#$70#$70#$07#$70#$0F#$70#$7F#$7F#$70#$07#$70#$07#$0F +
      #$70#$7F#$7F#$70#$07#$70#$70#$7F#$7F#$07#$0F#$0F#$78#$0F#$78#$07 +
-     #$0F#$0F#$0F#$70#$0F#$07#$70#$70#$70#$07#$70#$0F#$07#$07#$78#$00;
+     #$0F#$0F#$0F#$70#$0F#$07#$70#$70#$70#$07#$70#$0F#$07#$07#$78#$07;
 
    CMonochrome =
          #$70#$07#$07#$0F#$70#$70#$70#$07#$0F#$07#$70#$70#$07#$70#$00 +
      #$07#$0F#$07#$70#$70#$07#$70#$00#$70#$70#$70#$07#$07#$70#$07#$00 +
      #$70#$70#$70#$07#$07#$70#$70#$70#$0F#$07#$07#$0F#$70#$0F#$70#$07 +
-     #$0F#$0F#$07#$70#$07#$07#$70#$07#$07#$07#$70#$0F#$07#$07#$70#$00;
+     #$0F#$0F#$07#$70#$07#$07#$70#$07#$07#$07#$70#$0F#$07#$07#$70#$07;
 
    { Turbo Vision 2.0 Color Palettes }
 
@@ -143,31 +168,31 @@ CONST
          #$71#$70#$78#$74#$20#$28#$24#$17#$1F#$1A#$31#$31#$1E#$71#$1F +
      #$37#$3F#$3A#$13#$13#$3E#$21#$3F#$70#$7F#$7A#$13#$13#$70#$7F#$7E +
      #$70#$7F#$7A#$13#$13#$70#$70#$7F#$7E#$20#$2B#$2F#$78#$2E#$70#$30 +
-     #$3F#$3E#$1F#$2F#$1A#$20#$72#$31#$31#$30#$2F#$3E#$31#$13#$38#$00 +
+     #$3F#$3E#$1F#$2F#$1A#$20#$72#$31#$31#$30#$2F#$3E#$31#$13#$38#$31 +
      #$17#$1F#$1A#$71#$71#$1E#$17#$1F#$1E#$20#$2B#$2F#$78#$2E#$10#$30 +
-     #$3F#$3E#$70#$2F#$7A#$20#$12#$31#$31#$30#$2F#$3E#$31#$13#$38#$00 +
+     #$3F#$3E#$70#$2F#$7A#$20#$12#$31#$31#$30#$2F#$3E#$31#$13#$38#$31 +
      #$37#$3F#$3A#$13#$13#$3E#$30#$3F#$3E#$20#$2B#$2F#$78#$2E#$30#$70 +
-     #$7F#$7E#$1F#$2F#$1A#$20#$32#$31#$71#$70#$2F#$7E#$71#$13#$38#$00;
+     #$7F#$7E#$1F#$2F#$1A#$20#$32#$31#$71#$70#$2F#$7E#$71#$13#$38#$71;
 
    CAppBlackWhite =
          #$70#$70#$78#$7F#$07#$07#$0F#$07#$0F#$07#$70#$70#$07#$70#$0F +
      #$07#$0F#$07#$70#$70#$07#$70#$0F#$70#$7F#$7F#$70#$07#$70#$07#$0F +
      #$70#$7F#$7F#$70#$07#$70#$70#$7F#$7F#$07#$0F#$0F#$78#$0F#$78#$07 +
-     #$0F#$0F#$0F#$70#$0F#$07#$70#$70#$70#$07#$70#$0F#$07#$07#$78#$00 +
+     #$0F#$0F#$0F#$70#$0F#$07#$70#$70#$70#$07#$70#$0F#$07#$07#$78#$07 +
      #$07#$0F#$0F#$07#$70#$07#$07#$0F#$0F#$70#$78#$7F#$08#$7F#$08#$70 +
-     #$7F#$7F#$7F#$0F#$70#$70#$07#$70#$70#$70#$07#$7F#$70#$07#$78#$00 +
+     #$7F#$7F#$7F#$0F#$70#$70#$07#$70#$70#$70#$07#$7F#$70#$07#$78#$70 +
      #$70#$7F#$7F#$70#$07#$70#$70#$7F#$7F#$07#$0F#$0F#$78#$0F#$78#$07 +
-     #$0F#$0F#$0F#$70#$0F#$07#$70#$70#$70#$07#$70#$0F#$07#$07#$78#$00;
+     #$0F#$0F#$0F#$70#$0F#$07#$70#$70#$70#$07#$70#$0F#$07#$07#$78#$07;
 
    CAppMonochrome =
          #$70#$07#$07#$0F#$70#$70#$70#$07#$0F#$07#$70#$70#$07#$70#$00 +
      #$07#$0F#$07#$70#$70#$07#$70#$00#$70#$70#$70#$07#$07#$70#$07#$00 +
      #$70#$70#$70#$07#$07#$70#$70#$70#$0F#$07#$07#$0F#$70#$0F#$70#$07 +
-     #$0F#$0F#$07#$70#$07#$07#$70#$07#$07#$07#$70#$0F#$07#$07#$70#$00 +
+     #$0F#$0F#$07#$70#$07#$07#$70#$07#$07#$07#$70#$0F#$07#$07#$70#$07 +
      #$70#$70#$70#$07#$07#$70#$70#$70#$0F#$07#$07#$0F#$70#$0F#$70#$07 +
-     #$0F#$0F#$07#$70#$07#$07#$70#$07#$07#$07#$70#$0F#$07#$07#$70#$00 +
+     #$0F#$0F#$07#$70#$07#$07#$70#$07#$07#$07#$70#$0F#$07#$07#$70#$07 +
      #$70#$70#$70#$07#$07#$70#$70#$70#$0F#$07#$07#$0F#$70#$0F#$70#$07 +
-     #$0F#$0F#$07#$70#$07#$07#$70#$07#$07#$07#$70#$0F#$07#$07#$70#$00;
+     #$0F#$0F#$07#$70#$07#$07#$70#$07#$07#$07#$70#$0F#$07#$07#$70#$07;
 
 {---------------------------------------------------------------------------}
 {                     STANDRARD HELP CONTEXT CONSTANTS                      }
@@ -275,6 +300,7 @@ TYPE
       PROCEDURE GetTileRect (Var R: TRect); Virtual;
       PROCEDURE HandleEvent (Var Event: TEvent); Virtual;
       procedure WriteShellMsg; virtual;
+      procedure ResizeApplication(x, y : sw_integer); Virtual;
    END;
    PApplication = ^TApplication;                      { Application ptr }
 
@@ -370,19 +396,50 @@ CONST
                                 IMPLEMENTATION
 {<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>}
 
-uses    Mouse{,Resource};
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+{$ifdef GO32V2}
+  DOSApi.dpmiexcp,
+{$endif}
+  System.Console.Mouse;
+{$ELSE FPC_DOTTEDUNITS}
+uses
+{$ifdef GO32V2}
+  Dpmiexcp,
+{$endif}
+  Mouse;
+{$ENDIF FPC_DOTTEDUNITS}
 
-resourcestring  sVideoFailed='Video initialization failed.';
+{$ifdef USE_RESOURCESTRING}
+  resourcestring
+{$else}
+  const
+{$endif}
+                sVideoFailed='Video initialization failed.';
                 sTypeExitOnReturn='Type EXIT to return...';
 
 
 {***************************************************************************}
 {                        PRIVATE DEFINED CONSTANTS                          }
 {***************************************************************************}
+{$ifdef OS_WINDOWS}
+Const
+   fvConsoleMode =(ENABLE_MOUSE_INPUT or
+                   ENABLE_WINDOW_INPUT or
+                   ENABLE_EXTENDED_FLAGS)
+           and not (ENABLE_PROCESSED_INPUT or
+                    ENABLE_LINE_INPUT or
+                    ENABLE_ECHO_INPUT or
+                    ENABLE_INSERT_MODE or
+                    ENABLE_QUICK_EDIT_MODE);
+{$endif OS_WINDOWS}
 
 {***************************************************************************}
-{                      PRIVATE INITIALIZED VARIABLES                        }
+{                      PRIVATE UNINITIALIZED VARIABLES                      }
 {***************************************************************************}
+{$ifdef go32v2}
+var Ctrl_c_state : boolean;
+{$endif}
 
 {---------------------------------------------------------------------------}
 {                      INITIALIZED PRIVATE VARIABLES                        }
@@ -496,7 +553,7 @@ END;
 {--TDesktop-----------------------------------------------------------------}
 {  Init -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 12Sep97 LdB              }
 {---------------------------------------------------------------------------}
-CONSTRUCTOR TDesktop.Init (Var Bounds: Objects.TRect);
+CONSTRUCTOR TDesktop.Init (Var Bounds: {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}Objects.TRect);
 BEGIN
    Inherited Init(Bounds);                            { Call ancestor }
    GrowMode := gfGrowHiX + gfGrowHiY;                 { Set growmode }
@@ -695,9 +752,9 @@ BEGIN
    Application := PApplication(@Self);                { Set application ptr }
    InitScreen;                                        { Initialize screen }
    State := sfVisible + sfSelected + sfFocused +
-      sfModal + sfExposed;                            { Deafult states }
+      sfModal + sfExposed;                            { Default states }
    Options := 0;                                      { No options set }
-   Size.X := ScreenWidth;                             { Set x size value }
+   Size.X := Min(ScreenWidth,MaxViewWidth);           { Set x size value }
    Size.Y := ScreenHeight;                            { Set y size value }
    InitStatusLine;                                    { Create status line }
    InitMenuBar;                                       { Create a bar menu }
@@ -714,10 +771,10 @@ DESTRUCTOR TProgram.Done;
 BEGIN
    { Do not free the Buffer of Video Unit }
 {$ifdef FV_UNICODE}
-   If Buffer = UViews.PVideoBuf(EnhancedVideoBuf) then
+   If Buffer = {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}UViews.PVideoBuf(EnhancedVideoBuf) then
      Buffer:=nil;
 {$else FV_UNICODE}
-   If Buffer = Views.PVideoBuf(VideoBuf) then
+   If Buffer = {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}Views.PVideoBuf(VideoBuf) then
      Buffer:=nil;
 {$endif FV_UNICODE}
    If (Desktop <> Nil) Then Dispose(Desktop, Done);   { Destroy desktop }
@@ -756,14 +813,14 @@ BEGIN
    ValidView := Nil;                                  { Preset failure }
    If (P <> Nil) Then Begin
 (*
-     If LowMemory Then Begin                          { Check memroy }
+     If LowMemory Then Begin                          { Check memory }
        Dispose(P, Done);                              { Dispose view }
        OutOfMemory;                                   { Call out of memory }
        Exit;                                          { Now exit }
      End;
 *)
      If NOT P^.Valid(cmValid) Then Begin              { Check view valid }
-       Dispose(P, Done);                              { Dipose view }
+       Dispose(P, Done);                              { Dispose view }
        Exit;                                          { Now exit }
      End;
      ValidView := P;                                  { Return view }
@@ -830,16 +887,16 @@ END;
 PROCEDURE TProgram.InitScreen;
 
 {Initscreen is passive only, i.e. it detects the video size and capabilities
- after initalization. Active video initalization is the task of Tapplication.}
+ after initialization. Active video initialization is the task of Tapplication.}
 
 BEGIN
-  { the orginal code can't be used here because of the limited
+  { the original code can't be used here because of the limited
     video unit capabilities, the mono modus can't be handled
   }
 {$ifdef FV_UNICODE}
-  UDrivers.DetectVideo;
+  {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}Udrivers.DetectVideo;
 {$else FV_UNICODE}
-  Drivers.DetectVideo;
+  {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}Drivers.DetectVideo;
 {$endif FV_UNICODE}
 { ScreenMode.Row may be 0 if there's no console on startup }
   if ScreenMode.Row = 0 then
@@ -861,16 +918,16 @@ BEGIN
   ShadowSize.Y := 1;
   ShowMarkers := False;
 {$ifdef FV_UNICODE}
-  Buffer := UViews.PVideoBuf(EnhancedVideoBuf);
+  Buffer := {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}UViews.PVideoBuf(EnhancedVideoBuf);
 {$else FV_UNICODE}
-  Buffer := Views.PVideoBuf(VideoBuf);
+  Buffer := {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}Views.PVideoBuf(VideoBuf);
 {$endif FV_UNICODE}
 END;
 
 
 {procedure TProgram.DoneScreen;
 begin
-  Drivers.DoneVideo;
+  {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}Drivers.DoneVideo;
   Buffer:=nil;
 end;}
 
@@ -931,9 +988,9 @@ begin
 {  InitMemory;}
   InitScreen;
 {$ifdef FV_UNICODE}
-  Buffer := UViews.PVideoBuf(EnhancedVideoBuf);
+  Buffer := {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}UViews.PVideoBuf(EnhancedVideoBuf);
 {$else FV_UNICODE}
-  Buffer := Views.PVideoBuf(VideoBuf);
+  Buffer := {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}Views.PVideoBuf(VideoBuf);
 {$endif FV_UNICODE}
   R.Assign(0, 0, ScreenWidth, ScreenHeight);
   ChangeBounds(R);
@@ -954,16 +1011,16 @@ begin
    Warning: InitScreen calls DetectVideo which
     resets ScreenMode to old value, call it after
     video mode was changed instead of before }
-  Video.SetVideoMode(Mode);
+  {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Video.SetVideoMode(Mode);
 
   { Update ScreenMode to new value }
   InitScreen;
-  ScreenWidth:=Video.ScreenWidth;
-  ScreenHeight:=Video.ScreenHeight;
+  ScreenWidth:={$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Video.ScreenWidth;
+  ScreenHeight:={$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Video.ScreenHeight;
 {$ifdef FV_UNICODE}
-  Buffer := UViews.PVideoBuf(EnhancedVideoBuf);
+  Buffer := {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}UViews.PVideoBuf(EnhancedVideoBuf);
 {$else FV_UNICODE}
-  Buffer := Views.PVideoBuf(VideoBuf);
+  Buffer := {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}Views.PVideoBuf(VideoBuf);
 {$endif FV_UNICODE}
   R.Assign(0, 0, ScreenWidth, ScreenHeight);
   ChangeBounds(R);
@@ -999,22 +1056,28 @@ BEGIN
            End;
          If (Event.What = evNothing) Then Begin       { No mouse event }
 {$ifdef FV_UNICODE}
-           UDrivers.GetMouseEvent(Event);              { Load mouse event }
+           {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}Udrivers.GetMouseEvent(Event);              { Load mouse event }
 {$else FV_UNICODE}
-           Drivers.GetMouseEvent(Event);              { Load mouse event }
+           {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}Drivers.GetMouseEvent(Event);              { Load mouse event }
 {$endif FV_UNICODE}
            If (Event.What = evNothing) Then
              begin
 {$IFNDEF HASAMIGA}
-               { due to isses with the event handling in FV itself,
+               { due to issues with the event handling in FV itself,
                  we skip this here, and let the IDE to handle it
                  directly on Amiga-like systems. The FV itself cannot
                  handle the System Events anyway. (KB) }
 {$ifdef FV_UNICODE}
-               UDrivers.GetSystemEvent(Event);         { Load system event }
+               {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}Udrivers.GetSystemEvent(Event);         { Load system event }
 {$else FV_UNICODE}
-               Drivers.GetSystemEvent(Event);         { Load system event }
+               {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}Drivers.GetSystemEvent(Event);         { Load system event }
 {$endif FV_UNICODE}
+               if Event.What <> evNothing then
+                   { System events handle right away.
+                     Needed to respond correctly to cmResizeApp.
+                     If you need Event before hand then call GetSystemEvent(Event) instead. }
+                   HandleEvent (Event);
+
                If (Event.What = evNothing) Then
 {$ENDIF}
                  Idle;     { Idle if no event }
@@ -1029,10 +1092,10 @@ END;
 {  HandleEvent -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 12Sep97 LdB       }
 {---------------------------------------------------------------------------}
 PROCEDURE TProgram.HandleEvent (Var Event: TEvent);
-VAR C: Char;
+VAR C: AnsiChar;
 BEGIN
    If (Event.What = evKeyDown) Then Begin             { Key press event }
-     C := GetAltChar(Event.KeyCode);                  { Get alt char code }
+     C := GetAltChar(Event.KeyCode);                  { Get alt AnsiChar code }
      If (C >= '1') AND (C <= '9') Then
        If (Message(Desktop, evBroadCast, cmSelectWindowNum,
          Pointer(Byte(C) - $30)) <> Nil)              { Select window }
@@ -1064,9 +1127,9 @@ BEGIN
      end;}
    initkeyboard;
 {$ifdef FV_UNICODE}
-   if not UDrivers.InitVideo then                              { Start video up }
+   if not {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}UDrivers.InitVideo then                              { Start video up }
 {$else FV_UNICODE}
-   if not Drivers.InitVideo then                              { Start video up }
+   if not {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}Drivers.InitVideo then                              { Start video up }
 {$endif FV_UNICODE}
      begin
        donekeyboard;
@@ -1074,18 +1137,24 @@ BEGIN
        halt(1);
      end;
 {$ifdef FV_UNICODE}
-   UDrivers.InitEvents;                                        { Start event drive }
-   UDrivers.InitSysError;                                      { Start system error }
+   {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}UDrivers.InitEvents;                                        { Start event drive }
+   {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}UDrivers.InitSysError;                                      { Start system error }
 {$else FV_UNICODE}
-   Drivers.InitEvents;                                        { Start event drive }
-   Drivers.InitSysError;                                      { Start system error }
+   {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}Drivers.InitEvents;                                        { Start event drive }
+   {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}Drivers.InitSysError;                                      { Start system error }
 {$endif FV_UNICODE}
    InitHistory;                                               { Start history up }
    Inherited Init;                                            { Call ancestor }
    InitMsgBox;
    { init mouse and cursor }
-   Video.SetCursorType(crHidden);
-   Mouse.SetMouseXY(1,1);
+   {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Video.SetCursorType(crHidden);
+   SetMouseXY(0,0);    { mouse is zero based, set to left upper corner }
+   {$ifdef OS_WINDOWS}
+   SetConsoleMode(GetStdHandle(cardinal(Std_Input_Handle)),fvConsoleMode);
+   {$endif OS_WINDOWS}
+{$ifdef go32v2}
+   Ctrl_c_state:=djgpp_set_ctrl_c(false);
+{$endif go32v2}
 END;
 
 {--TApplication-------------------------------------------------------------}
@@ -1096,17 +1165,23 @@ BEGIN
    Inherited Done;                                    { Call ancestor }
    DoneHistory;                                       { Close history }
 {$ifdef FV_UNICODE}
-   UDrivers.DoneSysError;                                      { Close system error }
-   UDrivers.DoneEvents;                                        { Close event drive }
-   Udrivers.donevideo;
+   {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}UDrivers.DoneSysError;                                      { Close system error }
+   {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}UDrivers.DoneEvents;                                        { Close event drive }
+   {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}Udrivers.donevideo;
 {$else FV_UNICODE}
-   Drivers.DoneSysError;                                      { Close system error }
-   Drivers.DoneEvents;                                        { Close event drive }
-   drivers.donevideo;
+   {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}Drivers.DoneSysError;                                      { Close system error }
+   {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}Drivers.DoneEvents;                                        { Close event drive }
+   {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}drivers.donevideo;
 {$endif FV_UNICODE}
 {   DoneMemory;}                                       { Close memory }
    donekeyboard;
 {   DoneResource;}
+   {$ifdef OS_WINDOWS}
+   SetConsoleMode(GetStdHandle(cardinal(Std_Input_Handle)),StartupConsoleMode);
+   {$endif OS_WINDOWS}
+{$ifdef go32v2}
+   djgpp_set_ctrl_c(Ctrl_c_state);
+{$endif go32v2}
 END;
 
 {--TApplication-------------------------------------------------------------}
@@ -1134,19 +1209,26 @@ END;
 {---------------------------------------------------------------------------}
 PROCEDURE TApplication.DosShell;
 
+var PrevHeight,PrevWidth : Sw_Word;
 {$ifdef unix}
 var s:string;
 {$endif}
 
-BEGIN                                                 { Compatability only }
+BEGIN                                                 { Compatibility only }
+{$ifdef go32v2}
+   djgpp_set_ctrl_c(Ctrl_c_state);
+{$endif go32v2}
+  {$ifdef OS_WINDOWS}
+  SetConsoleMode(GetStdHandle(cardinal(Std_Input_Handle)),StartupConsoleMode);
+  {$endif OS_WINDOWS}
   DoneSysError;
   DoneEvents;
 {$ifdef FV_UNICODE}
-  udrivers.donevideo;
-  udrivers.donekeyboard;
+  {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}udrivers.donevideo;
+  {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}udrivers.donekeyboard;
 {$else FV_UNICODE}
-  drivers.donevideo;
-  drivers.donekeyboard;
+  {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}drivers.donevideo;
+  {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}drivers.donekeyboard;
 {$endif FV_UNICODE}
 {  DoneDosMem;}
   WriteShellMsg;
@@ -1161,18 +1243,31 @@ BEGIN                                                 { Compatability only }
   SwapVectors;
 {$endif}
 {  InitDosMem;}
+  PrevHeight:=ScreenHeight;
+  PrevWidth:=ScreenWidth;
 {$ifdef FV_UNICODE}
-  udrivers.initkeyboard;
-  udrivers.initvideo;
+  {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}udrivers.initkeyboard;
+  {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}udrivers.initvideo;
 {$else FV_UNICODE}
-  drivers.initkeyboard;
-  drivers.initvideo;
+  {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}drivers.initkeyboard;
+  {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}drivers.initvideo;
 {$endif FV_UNICODE}
-  Video.SetCursorType(crHidden);
+  {$IFDEF FPC_DOTTEDUNITS}System.Console.{$ENDIF}Video.SetCursorType(crHidden);
   InitScreen;
   InitEvents;
   InitSysError;
-  Redraw;
+  {$ifdef OS_WINDOWS}
+  SetConsoleMode(GetStdHandle(cardinal(Std_Input_Handle)),fvConsoleMode);
+  {$endif OS_WINDOWS}
+{$ifdef go32v2}
+  Ctrl_c_state:=djgpp_set_ctrl_c(false);
+{$endif go32v2}
+  if (PrevHeight<>ScreenHeight) or (PrevWidth<>ScreenWidth) then
+    { acknowledge new screen dimensions }
+    { prevents to draw out of boundaries of new video buffer }
+    ResizeApplication(ScreenWidth,ScreenHeight)
+  else
+    Redraw;
 END;
 
 {--TApplication-------------------------------------------------------------}
@@ -1195,6 +1290,7 @@ BEGIN
        cmTile: Tile;                                  { Tile request }
        cmCascade: Cascade;                            { Cascade request }
        cmDosShell: DosShell;                          { DOS shell request }
+       cmResizeApp: ResizeApplication(Event.Id, Event.InfoWord); { Resize App }
        Else Exit;                                     { Unhandled exit }
      End;
      ClearEvent(Event);                               { Clear the event }
@@ -1207,6 +1303,23 @@ begin
   writeln(sTypeExitOnReturn);
 end;
 
+procedure TApplication.ResizeApplication(x, y : sw_integer);
+var
+  OldR : TRect;
+  Mode : TVideoMode;
+begin
+  GetBounds(OldR);
+  { adapt to new size }
+  if (OldR.B.Y-OldR.A.Y<>y) or
+     (OldR.B.X-OldR.A.X<>x) then
+    begin
+      Mode.color:=ScreenMode.Color;
+      Mode.col:=x;
+      Mode.row:=y;
+      SetScreenVideoMode(Mode);
+      Redraw;
+    end;
+end;
 
 {***************************************************************************}
 {                            INTERFACE ROUTINES                             }

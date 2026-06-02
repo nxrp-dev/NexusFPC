@@ -1,13 +1,19 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit googleserviceregistry;
+{$ENDIF FPC_DOTTEDUNITS}
 {$MODE objfpc}
 {$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils, System.Classes, GoogleApi.Service, FpWeb.Rest.Base, GoogleApi.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses sysutils, classes, googleservice, restbase, googlebase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
-  
+
   //Top-level schema types
   TEndpoint = Class;
   TEndpointEndpointVisibility = Class;
@@ -29,11 +35,11 @@ type
   TOperationTypewarningsItemTypedataArray = Array of TOperationTypewarningsItemTypedataItem;
   TOperationTypewarningsArray = Array of TOperationTypewarningsItem;
   TOperationsListResponseTypeoperationsArray = Array of TOperation;
-  
+
   { --------------------------------------------------------------------
     TEndpoint
     --------------------------------------------------------------------}
-  
+
   TEndpoint = Class(TGoogleBaseObject)
   Private
     Faddress : String;
@@ -72,11 +78,11 @@ type
     Property visibility : TEndpointEndpointVisibility Index 72 Read Fvisibility Write Setvisibility;
   end;
   TEndpointClass = Class of TEndpoint;
-  
+
   { --------------------------------------------------------------------
     TEndpointEndpointVisibility
     --------------------------------------------------------------------}
-  
+
   TEndpointEndpointVisibility = Class(TGoogleBaseObject)
   Private
     FinternalDnsName : String;
@@ -95,11 +101,11 @@ type
     Property networks : TStringArray Index 8 Read Fnetworks Write Setnetworks;
   end;
   TEndpointEndpointVisibilityClass = Class of TEndpointEndpointVisibility;
-  
+
   { --------------------------------------------------------------------
     TEndpointsListResponse
     --------------------------------------------------------------------}
-  
+
   TEndpointsListResponse = Class(TGoogleBaseObject)
   Private
     Fendpoints : TEndpointsListResponseTypeendpointsArray;
@@ -118,11 +124,11 @@ type
     Property nextPageToken : String Index 8 Read FnextPageToken Write SetnextPageToken;
   end;
   TEndpointsListResponseClass = Class of TEndpointsListResponse;
-  
+
   { --------------------------------------------------------------------
     TOperationTypeerrorTypeerrorsItem
     --------------------------------------------------------------------}
-  
+
   TOperationTypeerrorTypeerrorsItem = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -140,11 +146,11 @@ type
     Property message : String Index 16 Read Fmessage Write Setmessage;
   end;
   TOperationTypeerrorTypeerrorsItemClass = Class of TOperationTypeerrorTypeerrorsItem;
-  
+
   { --------------------------------------------------------------------
     TOperationTypeerror
     --------------------------------------------------------------------}
-  
+
   TOperationTypeerror = Class(TGoogleBaseObject)
   Private
     Ferrors : TOperationTypeerrorTypeerrorsArray;
@@ -160,11 +166,11 @@ type
     Property errors : TOperationTypeerrorTypeerrorsArray Index 0 Read Ferrors Write Seterrors;
   end;
   TOperationTypeerrorClass = Class of TOperationTypeerror;
-  
+
   { --------------------------------------------------------------------
     TOperationTypewarningsItemTypedataItem
     --------------------------------------------------------------------}
-  
+
   TOperationTypewarningsItemTypedataItem = Class(TGoogleBaseObject)
   Private
     Fkey : String;
@@ -179,11 +185,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TOperationTypewarningsItemTypedataItemClass = Class of TOperationTypewarningsItemTypedataItem;
-  
+
   { --------------------------------------------------------------------
     TOperationTypewarningsItem
     --------------------------------------------------------------------}
-  
+
   TOperationTypewarningsItem = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -205,11 +211,11 @@ type
     Property message : String Index 16 Read Fmessage Write Setmessage;
   end;
   TOperationTypewarningsItemClass = Class of TOperationTypewarningsItem;
-  
+
   { --------------------------------------------------------------------
     TOperation
     --------------------------------------------------------------------}
-  
+
   TOperation = Class(TGoogleBaseObject)
   Private
     FclientOperationId : String;
@@ -291,11 +297,11 @@ type
     Property zone : String Index 176 Read Fzone Write Setzone;
   end;
   TOperationClass = Class of TOperation;
-  
+
   { --------------------------------------------------------------------
     TOperationsListResponse
     --------------------------------------------------------------------}
-  
+
   TOperationsListResponse = Class(TGoogleBaseObject)
   Private
     FnextPageToken : String;
@@ -314,21 +320,21 @@ type
     Property operations : TOperationsListResponseTypeoperationsArray Index 8 Read Foperations Write Setoperations;
   end;
   TOperationsListResponseClass = Class of TOperationsListResponse;
-  
+
   { --------------------------------------------------------------------
     TEndpointsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TEndpointsResource, method List
-  
+
   TEndpointsListOptions = Record
     filter : String;
     maxResults : integer;
     orderBy : String;
     pageToken : String;
   end;
-  
+
   TEndpointsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -341,22 +347,22 @@ type
     Function Patch(endpoint: string; project: string; aEndpoint : TEndpoint) : TOperation;
     Function Update(endpoint: string; project: string; aEndpoint : TEndpoint) : TOperation;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TOperationsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TOperationsResource, method List
-  
+
   TOperationsListOptions = Record
     filter : String;
     maxResults : integer;
     orderBy : String;
     pageToken : String;
   end;
-  
+
   TOperationsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -365,12 +371,12 @@ type
     Function List(project: string; AQuery : string  = '') : TOperationsListResponse;
     Function List(project: string; AQuery : TOperationslistOptions) : TOperationsListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TServiceregistryAPI
     --------------------------------------------------------------------}
-  
+
   TServiceregistryAPI = Class(TGoogleAPI)
   Private
     FEndpointsInstance : TEndpointsResource;
@@ -417,7 +423,7 @@ implementation
   --------------------------------------------------------------------}
 
 
-Procedure TEndpoint.Setaddress(AIndex : Integer; const AValue : String); 
+Procedure TEndpoint.Setaddress(AIndex : Integer; const AValue : String);
 
 begin
   If (Faddress=AValue) then exit;
@@ -427,7 +433,7 @@ end;
 
 
 
-Procedure TEndpoint.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TEndpoint.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -437,7 +443,7 @@ end;
 
 
 
-Procedure TEndpoint.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TEndpoint.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -447,7 +453,7 @@ end;
 
 
 
-Procedure TEndpoint.Setfingerprint(AIndex : Integer; const AValue : String); 
+Procedure TEndpoint.Setfingerprint(AIndex : Integer; const AValue : String);
 
 begin
   If (Ffingerprint=AValue) then exit;
@@ -457,7 +463,7 @@ end;
 
 
 
-Procedure TEndpoint.Setid(AIndex : Integer; const AValue : String); 
+Procedure TEndpoint.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -467,7 +473,7 @@ end;
 
 
 
-Procedure TEndpoint.Setname(AIndex : Integer; const AValue : String); 
+Procedure TEndpoint.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -477,7 +483,7 @@ end;
 
 
 
-Procedure TEndpoint.Setport(AIndex : Integer; const AValue : integer); 
+Procedure TEndpoint.Setport(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fport=AValue) then exit;
@@ -487,7 +493,7 @@ end;
 
 
 
-Procedure TEndpoint.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TEndpoint.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -497,7 +503,7 @@ end;
 
 
 
-Procedure TEndpoint.Setstate(AIndex : Integer; const AValue : String); 
+Procedure TEndpoint.Setstate(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstate=AValue) then exit;
@@ -507,7 +513,7 @@ end;
 
 
 
-Procedure TEndpoint.Setvisibility(AIndex : Integer; const AValue : TEndpointEndpointVisibility); 
+Procedure TEndpoint.Setvisibility(AIndex : Integer; const AValue : TEndpointEndpointVisibility);
 
 begin
   If (Fvisibility=AValue) then exit;
@@ -524,7 +530,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TEndpointEndpointVisibility.SetinternalDnsName(AIndex : Integer; const AValue : String); 
+Procedure TEndpointEndpointVisibility.SetinternalDnsName(AIndex : Integer; const AValue : String);
 
 begin
   If (FinternalDnsName=AValue) then exit;
@@ -534,7 +540,7 @@ end;
 
 
 
-Procedure TEndpointEndpointVisibility.Setnetworks(AIndex : Integer; const AValue : TStringArray); 
+Procedure TEndpointEndpointVisibility.Setnetworks(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Fnetworks=AValue) then exit;
@@ -545,7 +551,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TEndpointEndpointVisibility.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TEndpointEndpointVisibility.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -564,7 +570,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TEndpointsListResponse.Setendpoints(AIndex : Integer; const AValue : TEndpointsListResponseTypeendpointsArray); 
+Procedure TEndpointsListResponse.Setendpoints(AIndex : Integer; const AValue : TEndpointsListResponseTypeendpointsArray);
 
 begin
   If (Fendpoints=AValue) then exit;
@@ -574,7 +580,7 @@ end;
 
 
 
-Procedure TEndpointsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TEndpointsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -585,7 +591,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TEndpointsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TEndpointsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -604,7 +610,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperationTypeerrorTypeerrorsItem.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TOperationTypeerrorTypeerrorsItem.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -614,7 +620,7 @@ end;
 
 
 
-Procedure TOperationTypeerrorTypeerrorsItem.Setlocation(AIndex : Integer; const AValue : String); 
+Procedure TOperationTypeerrorTypeerrorsItem.Setlocation(AIndex : Integer; const AValue : String);
 
 begin
   If (Flocation=AValue) then exit;
@@ -624,7 +630,7 @@ end;
 
 
 
-Procedure TOperationTypeerrorTypeerrorsItem.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TOperationTypeerrorTypeerrorsItem.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -641,7 +647,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperationTypeerror.Seterrors(AIndex : Integer; const AValue : TOperationTypeerrorTypeerrorsArray); 
+Procedure TOperationTypeerror.Seterrors(AIndex : Integer; const AValue : TOperationTypeerrorTypeerrorsArray);
 
 begin
   If (Ferrors=AValue) then exit;
@@ -652,7 +658,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOperationTypeerror.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOperationTypeerror.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -671,7 +677,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperationTypewarningsItemTypedataItem.Setkey(AIndex : Integer; const AValue : String); 
+Procedure TOperationTypewarningsItemTypedataItem.Setkey(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkey=AValue) then exit;
@@ -681,7 +687,7 @@ end;
 
 
 
-Procedure TOperationTypewarningsItemTypedataItem.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TOperationTypewarningsItemTypedataItem.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -698,7 +704,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperationTypewarningsItem.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TOperationTypewarningsItem.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -708,7 +714,7 @@ end;
 
 
 
-Procedure TOperationTypewarningsItem.Setdata(AIndex : Integer; const AValue : TOperationTypewarningsItemTypedataArray); 
+Procedure TOperationTypewarningsItem.Setdata(AIndex : Integer; const AValue : TOperationTypewarningsItemTypedataArray);
 
 begin
   If (Fdata=AValue) then exit;
@@ -718,7 +724,7 @@ end;
 
 
 
-Procedure TOperationTypewarningsItem.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TOperationTypewarningsItem.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -729,7 +735,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOperationTypewarningsItem.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOperationTypewarningsItem.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -748,7 +754,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperation.SetclientOperationId(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SetclientOperationId(AIndex : Integer; const AValue : String);
 
 begin
   If (FclientOperationId=AValue) then exit;
@@ -758,7 +764,7 @@ end;
 
 
 
-Procedure TOperation.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -768,7 +774,7 @@ end;
 
 
 
-Procedure TOperation.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TOperation.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -778,7 +784,7 @@ end;
 
 
 
-Procedure TOperation.SetendTime(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SetendTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FendTime=AValue) then exit;
@@ -788,7 +794,7 @@ end;
 
 
 
-Procedure TOperation.Seterror(AIndex : Integer; const AValue : TOperationTypeerror); 
+Procedure TOperation.Seterror(AIndex : Integer; const AValue : TOperationTypeerror);
 
 begin
   If (Ferror=AValue) then exit;
@@ -798,7 +804,7 @@ end;
 
 
 
-Procedure TOperation.SethttpErrorMessage(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SethttpErrorMessage(AIndex : Integer; const AValue : String);
 
 begin
   If (FhttpErrorMessage=AValue) then exit;
@@ -808,7 +814,7 @@ end;
 
 
 
-Procedure TOperation.SethttpErrorStatusCode(AIndex : Integer; const AValue : integer); 
+Procedure TOperation.SethttpErrorStatusCode(AIndex : Integer; const AValue : integer);
 
 begin
   If (FhttpErrorStatusCode=AValue) then exit;
@@ -818,7 +824,7 @@ end;
 
 
 
-Procedure TOperation.Setid(AIndex : Integer; const AValue : String); 
+Procedure TOperation.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -828,7 +834,7 @@ end;
 
 
 
-Procedure TOperation.SetinsertTime(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SetinsertTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FinsertTime=AValue) then exit;
@@ -838,7 +844,7 @@ end;
 
 
 
-Procedure TOperation.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOperation.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -848,7 +854,7 @@ end;
 
 
 
-Procedure TOperation.Setname(AIndex : Integer; const AValue : String); 
+Procedure TOperation.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -858,7 +864,7 @@ end;
 
 
 
-Procedure TOperation.SetoperationType(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SetoperationType(AIndex : Integer; const AValue : String);
 
 begin
   If (FoperationType=AValue) then exit;
@@ -868,7 +874,7 @@ end;
 
 
 
-Procedure TOperation.Setprogress(AIndex : Integer; const AValue : integer); 
+Procedure TOperation.Setprogress(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fprogress=AValue) then exit;
@@ -878,7 +884,7 @@ end;
 
 
 
-Procedure TOperation.Setregion(AIndex : Integer; const AValue : String); 
+Procedure TOperation.Setregion(AIndex : Integer; const AValue : String);
 
 begin
   If (Fregion=AValue) then exit;
@@ -888,7 +894,7 @@ end;
 
 
 
-Procedure TOperation.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -898,7 +904,7 @@ end;
 
 
 
-Procedure TOperation.SetstartTime(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SetstartTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FstartTime=AValue) then exit;
@@ -908,7 +914,7 @@ end;
 
 
 
-Procedure TOperation.Setstatus(AIndex : Integer; const AValue : String); 
+Procedure TOperation.Setstatus(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -918,7 +924,7 @@ end;
 
 
 
-Procedure TOperation.SetstatusMessage(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SetstatusMessage(AIndex : Integer; const AValue : String);
 
 begin
   If (FstatusMessage=AValue) then exit;
@@ -928,7 +934,7 @@ end;
 
 
 
-Procedure TOperation.SettargetId(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SettargetId(AIndex : Integer; const AValue : String);
 
 begin
   If (FtargetId=AValue) then exit;
@@ -938,7 +944,7 @@ end;
 
 
 
-Procedure TOperation.SettargetLink(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SettargetLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FtargetLink=AValue) then exit;
@@ -948,7 +954,7 @@ end;
 
 
 
-Procedure TOperation.Setuser(AIndex : Integer; const AValue : String); 
+Procedure TOperation.Setuser(AIndex : Integer; const AValue : String);
 
 begin
   If (Fuser=AValue) then exit;
@@ -958,7 +964,7 @@ end;
 
 
 
-Procedure TOperation.Setwarnings(AIndex : Integer; const AValue : TOperationTypewarningsArray); 
+Procedure TOperation.Setwarnings(AIndex : Integer; const AValue : TOperationTypewarningsArray);
 
 begin
   If (Fwarnings=AValue) then exit;
@@ -968,7 +974,7 @@ end;
 
 
 
-Procedure TOperation.Setzone(AIndex : Integer; const AValue : String); 
+Procedure TOperation.Setzone(AIndex : Integer; const AValue : String);
 
 begin
   If (Fzone=AValue) then exit;
@@ -979,7 +985,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOperation.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOperation.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -998,7 +1004,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperationsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TOperationsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -1008,7 +1014,7 @@ end;
 
 
 
-Procedure TOperationsListResponse.Setoperations(AIndex : Integer; const AValue : TOperationsListResponseTypeoperationsArray); 
+Procedure TOperationsListResponse.Setoperations(AIndex : Integer; const AValue : TOperationsListResponseTypeoperationsArray);
 
 begin
   If (Foperations=AValue) then exit;
@@ -1019,7 +1025,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOperationsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOperationsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1339,7 +1345,7 @@ begin
   Result[2].Description:='View and manage your Google Cloud Platform management resources and deployment status information';
   Result[3].Name:='https://www.googleapis.com/auth/ndev.cloudman.readonly';
   Result[3].Description:='View your Google Cloud Platform management resources and deployment status information';
-  
+
 end;
 
 Class Function TServiceregistryAPI.APINeedsAuth : Boolean;

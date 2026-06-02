@@ -30,7 +30,7 @@ Const
                 that only care about gross token distinctions.
         Major/minor numbers: Within their class, tokens have a major
                 number, and may also have a minor number to further
-                distinquish tokens with the same major number.
+                distinguish tokens with the same major number.
 
         *** Class, major and minor token numbers are all >= 0 ***
 
@@ -412,7 +412,7 @@ TRTFFuncPtr = procedure of object;
 
 PRTFFONT = ^TRTFFONT;
 TRTFFont = Record
-        rtfFName    : string;           { font name }
+        rtfFName    : AnsiString;           { font name }
         rtfFNum     : integer;          { font number }
         rtfFFamily  : integer;          { font family }
         rtfNextFont : PRTFFONT;         { next font in list }
@@ -439,13 +439,13 @@ TRTFStyleElt = record
         rtfSEMajor,                     { token major number }
         rtfSEMinor,                     { token minor number }
         rtfSEParam : Integer;           { control symbol parameter }
-        rtfSEText : String;             { text of symbol }
+        rtfSEText : AnsiString;             { text of symbol }
         rtfNextSE : PRTFStyleElt;       { next element in style }
 end;
 
 PRTFSTyle = ^TRTFStyle;
 TRTFStyle = record
-        rtfSName : string;              { style name }
+        rtfSName : Ansistring;              { style name }
         rtfSNum,                        { style number }
         rtfSBasedOn,                    { style this one's based on }
         rtfSNextPar : integer;          { style next paragraph style }
@@ -463,7 +463,7 @@ Type
   TRTFKey = record
     rtfKMajor : Integer;        { major number }
     rtfKMinor : Integer;        { minor number }
-    rtfKStr   : string[20];     { symbol name }
+    rtfKStr   : String[20];     { symbol name }
     rtfKHash  : Integer;        { symbol name hash value }
     End;
 

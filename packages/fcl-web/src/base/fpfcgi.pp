@@ -1,5 +1,5 @@
 {
-    This file is part of the Free Component Library (FCL)
+    This file is part of the Free Component Library (Fcl)
     Copyright (c) 1999-2009 by the Free Pascal development team
 
     See the file COPYING.FPC, included in this distribution,
@@ -12,11 +12,17 @@
  **********************************************************************}
 {$mode objfpc}
 {$H+}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fpfcgi;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils,System.Classes,FpWeb.HostApp.Custom.Fcgi;
+{$ELSE FPC_DOTTEDUNITS}
 uses SysUtils,Classes,custfcgi;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
 
@@ -28,10 +34,14 @@ Type
 Var
   Application : TFCGIApplication;
   ShowCleanUpErrors : Boolean = False;
-  
+
 Implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses Fcl.CustApp;
+{$ELSE FPC_DOTTEDUNITS}
 uses CustApp;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Procedure InitFCGI;
 
@@ -56,8 +66,8 @@ end;
 
 Initialization
   InitFCGI;
-  
+
 Finalization
   DoneFCGI;
-  
+
 end.

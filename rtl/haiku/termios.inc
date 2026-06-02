@@ -51,11 +51,11 @@ Type
   TWinSize=winsize;
 
 // typedef unsigned long tcflag_t;
-// typedef unsigned char speed_t;
-// typedef unsigned char cc_t;
+// typedef unsigned AnsiChar speed_t;
+// typedef unsigned AnsiChar cc_t;
  tcflag_t = Cardinal;
  speed_t = byte;
- cc_t = char;
+ cc_t = AnsiChar;
 
 type
   Termios = packed record
@@ -63,7 +63,7 @@ type
     c_oflag,
     c_cflag,
     c_lflag  : tcflag_t;
-    c_line   : char;
+    c_line   : AnsiChar;
     c_ixxxxx : speed_t;
     c_oxxxxx : speed_t;
     c_cc     : array[0..NCCS-1] of speed_t;
@@ -93,7 +93,7 @@ CONST
         IUCLC			=	  $200;		{ maps all upper case to lower }
         IXON            =     $400;     { enable output flow control }
         IXANY           =     $800;     { enable input flow control }
-        IXOFF           =    $1000;	    { any char will restart after stop }
+        IXOFF           =    $1000;	    { any AnsiChar will restart after stop }
 
 {
  * Output flags - software output processing
@@ -182,7 +182,7 @@ CRTSCTS		= RTSFLOW or CTSFLOW;
  * the letter "I" and look like they belong in the
  * input flag.
  }
- 
+
 {
   c_lflag - local modes
 }
@@ -205,7 +205,7 @@ EV_RING			= $0001;
 EV_BREAK		= $0002;
 EV_CARRIER		= $0004;
 EV_CARRIERLOST	= $0008;
- 
+
 {
  * Commands passed to tcsetattr() for setting the termios structure.
 }
@@ -215,7 +215,7 @@ CONST
         TCSANOW         = $01;             { make change immediate }
         TCSADRAIN       = $02;             { drain output, then change }
         TCSAFLUSH       = $04;             { drain output, flush input }
-        
+
         // TCASOFT undefined under BeOS
         TCSASOFT        = $10;           { flag - don't alter h.w. state }
 
@@ -293,7 +293,7 @@ struct winsize {
 	                                                { 127-124 compat }
 
 // BeOS values
-		TIOCGETA		= $8000;		
+		TIOCGETA		= $8000;
 		TIOCSETA		= TIOCGETA + 1;
 		TIOCSETAF		= TIOCGETA + 2;
 		TIOCSETAW		= TIOCGETA + 3;
@@ -308,11 +308,11 @@ struct winsize {
 		TIOCGWINSZ		= TIOCGETA + 12;
 		TIOCSWINSZ		= TIOCGETA + 13;
 		TCVTIME			= TIOCGETA + 14;
-		
-		
+
+
 //		TIOCTIMESTAMP 	= TCVTIME;
 // end BeOS values
-(*		      
+(*
 //        TIOCSBRK         =IOCTLVOID+$7400+ 123;         { set break bit }
         TIOCCBRK         =IOCTLVOID+$7400+ 122;         { clear break bit }
 //        TIOCSDTR         =IOCTLVOID+$7400+ 121;         { set data terminal ready }
@@ -411,13 +411,13 @@ struct winsize {
 {
  *        TTYDEFCHARS to include an array of default control characters.
 }
-    ttydefchars : array[0..NCCS-1] OF char =(
+    ttydefchars : array[0..NCCS-1] OF AnsiChar =(
         Chr(VINTR), Chr(VQUIT), Chr(VERASE), Chr(VKILL), Chr(VEOF), Chr(VEOL),
         Chr(VEOL2), Chr(VSWTCH), Chr(VSTART), Chr(VSTOP), Chr(VSUSP));
 
 {
   According to posix/sys/ioctl.h
-  /* these currently work only on sockets */	
+  /* these currently work only on sockets */
 }
 	FIONBIO  = $be000000;
 	FIONREAD = $be000001;

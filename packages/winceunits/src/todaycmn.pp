@@ -21,11 +21,17 @@
 // Microsoft Windows Mobile 6.0 for PocketPC SDK.
 //
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit TodayCmn;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses WinApi.Windows;
+{$ELSE FPC_DOTTEDUNITS}
 uses Windows;
+{$ENDIF FPC_DOTTEDUNITS}
 
 // list item types
 type
@@ -104,7 +110,7 @@ const
       TODAYM_RESERVEDSTART      = WM_USER + 300;
       TODAYM_RESERVEDEND        = WM_USER + 399;
 
-      
+
 // maximum number of today items
 const
       k_cTodayItemsMax          = 30;

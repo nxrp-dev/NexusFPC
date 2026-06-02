@@ -1,12 +1,12 @@
 {
   Copyright 1999-2005 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
-  
+
   You may not use this file except in compliance with the License.
   obtain a copy of the License at
-  
+
     http://www.imagemagick.org/script/license.php
-  
+
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -47,7 +47,7 @@ type
     path,
     name,
     description,
-    family: PChar;
+    family: PAnsiChar;
 
     style: StyleType;
 
@@ -59,7 +59,7 @@ type
     foundry,
     format,
     metrics,
-    glyphs: PChar;
+    glyphs: PAnsiChar;
 
     stealth: MagickBooleanType;
 
@@ -71,16 +71,16 @@ type
     signature: culong;
   end;
 
-{function GetTypeList(const char *,unsigned long *,ExceptionInfo *): PPChar; external MagickExport;
+{function GetTypeList(const AnsiChar *,unsigned long *,ExceptionInfo *): PPAnsiChar; external MagickExport;
 
 extern MagickExport MagickBooleanType
   ListTypeInfo(FILE *,ExceptionInfo *);
 
 extern MagickExport const TypeInfo
-  *GetTypeInfo(const char *,ExceptionInfo *),
-  *GetTypeInfoByFamily(const char *,const StyleType,const StretchType,
+  *GetTypeInfo(const AnsiChar *,ExceptionInfo *),
+  *GetTypeInfoByFamily(const AnsiChar *,const StyleType,const StretchType,
     const unsigned long,ExceptionInfo *),
-  **GetTypeInfoList(const char *,unsigned long *,ExceptionInfo *);
+  **GetTypeInfoList(const AnsiChar *,unsigned long *,ExceptionInfo *);
 
 MagickExport void
   DestroyTypeList(void);}

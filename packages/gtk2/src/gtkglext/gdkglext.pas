@@ -24,16 +24,22 @@
 
 {$mode objfpc}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit gdkglext;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses Api.Glib2, Api.Gdk2;
+{$ELSE FPC_DOTTEDUNITS}
 uses Glib2, Gdk2;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
-  GdkGLExtLib = 
+  GdkGLExtLib =
     {$ifdef WINDOWS} 'libgdkglext-win32-1.0-0.dll'
-    {$else}        
+    {$else}
       {$ifdef DARWIN}
         'gdkglext-x11-1.0'
         {$linklib gdkglext-x11-1.0}

@@ -1,8 +1,8 @@
 {
     This file is part of the fpgtk package
     Copyright (c) 1999-2000 by Michael van Canney, Sebastian Guenther
- 
-    glib like list object.   
+
+    glib like list object.
 
     See the file COPYING.FPC, included in this distribution,
     for details about the copyright.
@@ -18,7 +18,11 @@ unit FPGlib;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.Classes, Api.Gtk1.Glib;
+{$ELSE FPC_DOTTEDUNITS}
 uses classes, glib;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
 

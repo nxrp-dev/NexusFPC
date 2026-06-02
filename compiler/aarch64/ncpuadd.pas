@@ -34,6 +34,8 @@ interface
           function  GetResFlags(unsigned:Boolean):TResFlags;
           function  GetFPUResFlags:TResFlags;
        protected
+          function try_second_bit_test: Boolean;
+
           function use_fma : boolean;override;
           procedure second_addfloat;override;
           procedure second_cmpfloat;override;
@@ -45,19 +47,21 @@ interface
           procedure second_cmp64bit; override;
        public
           function use_generic_mul32to64: boolean; override;
+          function pass_1 : tnode;override;
        end;
 
   implementation
 
     uses
-      systems,
+      systems,symconst,symtype,symdef,
+      globals,globtype,
       cutils,verbose,
       paramgr,procinfo,
       aasmtai,aasmdata,aasmcpu,defutil,
       cgbase,cgcpu,cgutils,
       cpupara,
-      ncon,nset,nadd,
-      hlcgobj, ncgutil,cgobj;
+      ncon,nset,nadd,nmat,
+      hlcgobj, ncgutil,cgobj,pass_2;
 
 {*****************************************************************************
                                taarch64addnode
@@ -332,10 +336,91 @@ interface
       end;
 
 
+    function taarch64addnode.try_second_bit_test: Boolean;
+
+      function try_arrangement(compvaln: TOrdConstNode; andn: TAddNode): Boolean;
+        var
+          ResFlags: TResFlags;
+          andconstn: TOrdConstNode;
+          inputn: TNode;
+        begin
+          Result:=False;
+          if andn.right.nodetype=ordconstn then
+            begin
+              andconstn:=TOrdConstNode(andn.right);
+              inputn:=andn.left;
+            end
+          else if andn.left.nodetype=ordconstn then
+            begin
+              andconstn:=TOrdConstNode(andn.left);
+              inputn:=andn.right;
+            end
+          else
+            Exit;
+
+          { An earlier node optimisation turns (x and const) = x into (x and const) <> 0
+            if PopCnt(const) = 1, so don't bother checking anything other than 0 }
+          if (compvaln.value.svalue<>0) or (nodetype in [gten,ltn]) or
+            { If the condition is <= or >, the optimisation can still work as
+              long as the bit in question isn't the sign bit }
+            (
+              (nodetype in [gtn,lten]) and
+              (
+                ((inputn.location.size=OS_S64) and (andconstn.value.svalue=$8000000000000000)) or
+                (not (inputn.location.size in [OS_64,OS_S64,OS_32]) and (longword(andconstn.value.uvalue)=$80000000))
+              )
+            )
+            then
+            Exit;
+
+          { Skip processing the constant and and nodes }
+          Include(compvaln.transientflags,tnf_do_not_execute);
+          Include(andn.transientflags,tnf_do_not_execute);
+
+          secondpass(inputn);
+
+          hlcg.location_force_reg(current_asmdata.CurrAsmList,inputn.location,inputn.resultdef,inputn.resultdef,true);
+
+          if not is_shifter_const(andconstn.value.svalue, inputn.location.size) then
+            begin
+              secondpass(andconstn);
+              hlcg.location_force_reg(current_asmdata.CurrAsmList,andconstn.location,andconstn.resultdef,andconstn.resultdef,false);
+              current_asmdata.CurrAsmList.concat(taicpu.op_reg_reg(A_TST,inputn.location.register,andconstn.location.register));
+            end
+          else
+            begin
+              Include(andconstn.transientflags,tnf_do_not_execute);
+              current_asmdata.CurrAsmList.concat(taicpu.op_reg_const(A_TST,inputn.location.register,andconstn.value.svalue));
+            end;
+
+          location_reset(location,LOC_FLAGS,OS_NO);
+          if (nodetype in [equaln,lten]) then
+            { Can't be less than zero because the sign bit isn't set }
+            ResFlags:=F_EQ
+          else
+            ResFlags:=F_NE;
+
+          location.resflags:=ResFlags;
+          Result:=True;
+        end;
+
+      begin
+        Result:=False;
+
+        { Optimise "(x and const) = 0" and "(x and const) = const" to use TST rather than AND/CMP }
+        if ((right.nodetype=ordconstn) and (left.nodetype=andn) and try_arrangement(TOrdConstNode(right), TAddNode(left))) or
+          ((left.nodetype=ordconstn) and (right.nodetype=andn) and try_arrangement(TOrdConstNode(left), TAddNode(right))) then
+          Result:=True;
+      end;
+
+
     procedure taarch64addnode.second_cmpordinal;
       var
         unsigned : boolean;
       begin
+        if try_second_bit_test then
+          Exit;
+
         pass_left_right;
         force_reg_left_right(true,true);
 
@@ -364,6 +449,7 @@ interface
         multops: array[boolean] of TAsmOp = (A_SMULL,A_UMULL);
       var
         unsigned: boolean;
+        logical_not_op: TAsmOp;
       begin
         { 32x32->64 multiplication }
         if (nodetype=muln) and
@@ -382,9 +468,87 @@ interface
             location_reset(location,LOC_REGISTER,def_cgsize(resultdef));
             location.register:=cg.getintregister(current_asmdata.CurrAsmList,def_cgsize(resultdef));
             current_asmdata.CurrAsmList.Concat(taicpu.op_reg_reg_reg(multops[unsigned],location.register,left.location.register,right.location.register));
+            Exit;
           end
-        else
-          inherited second_addordinal;
+        else if (cs_opt_level2 in current_settings.optimizerswitches) then
+          begin
+            { Can we turn "x and (not y)" into an ANDN instruction instead? }
+            if (nodetype in [andn, orn, xorn]) and
+              (
+                (
+                  (left.nodetype = notn) and
+                  (tnotnode(left).left.location.loc <> LOC_CONSTANT)
+                ) or
+                (
+                  (right.nodetype = notn) and
+                  (tnotnode(right).left.location.loc <> LOC_CONSTANT)
+                )
+              ) then
+              begin
+                { BIC only supports the second operand being inverted; however,
+                  since we're dealing with ordinals, there won't be any Boolean
+                  shortcutting, so we can safely swap the parameters }
+
+                if (left.nodetype = notn) and (tnotnode(left).left.location.loc <> LOC_CONSTANT) then
+                  { If the left node is "not" but is inverting a constant, then
+                    the right node must also be a "not", but with a non-constant
+                    input }
+                  swapleftright;
+
+                secondpass(left);
+
+                { Skip the not node completely }
+                Include(right.transientflags, tnf_do_not_execute);
+                secondpass(tnotnode(right).left);
+
+                { allocate registers }
+                if not (tnotnode(right).left.location.loc in [LOC_REGISTER, LOC_CREGISTER]) then
+                  hlcg.location_force_reg(
+                    current_asmdata.CurrAsmList,
+                    tnotnode(right).left.location,
+                    tnotnode(right).left.resultdef,
+                    tnotnode(right).left.resultdef,
+                    // tnotnode(right).resultdef, { In case the "not" node does some implicit typecasting }
+                    false
+                  );
+
+                if not (left.location.loc in [LOC_REGISTER, LOC_CREGISTER]) then
+                  hlcg.location_force_reg(
+                    current_asmdata.CurrAsmList,
+                    left.location,
+                    left.resultdef,
+                    left.resultdef,
+                    false
+                  );
+
+                set_result_location_reg;
+
+                case nodetype of
+                  andn:
+                    logical_not_op := A_BIC;
+                  orn:
+                    logical_not_op := A_ORN;
+                  xorn:
+                    logical_not_op := A_EON;
+                  else
+                    InternalError(2022102130);
+                end;
+
+                current_asmdata.CurrAsmList.Concat(taicpu.op_reg_reg_reg(logical_not_op,location.register,left.location.register,tnotnode(right).left.location.register));
+
+                { We have to make sure trailing bits are cut off for unsigned
+                  extensions since it will be full of 1s, so do this by
+                  downsizing the register from 32-bit to the target size }
+                if (def_cgsize(resultdef) in [OS_8, OS_16]) then
+                  hlcg.a_load_reg_reg(current_asmdata.CurrAsmList,torddef(u32inttype),resultdef,self.location.register,self.location.register);
+
+                { Overflow can't happen with bic/orn/eon }
+                Exit;
+              end;
+          end;
+
+        { Default behaviour }
+        inherited second_addordinal;
       end;
 
 
@@ -403,6 +567,18 @@ interface
     function taarch64addnode.use_generic_mul32to64: boolean;
       begin
         result:=false;
+      end;
+
+    function taarch64addnode.pass_1: tnode;
+      begin
+        Result:=inherited pass_1;
+        { if the result is not nil, a new node has been generated and the current node will be discarded }
+        if Result=nil then
+          begin
+            if left.resultdef.typ=floatdef then
+              if needs_check_for_fpu_exceptions then
+                Include(current_procinfo.flags,pi_do_call);
+          end;
       end;
 
 

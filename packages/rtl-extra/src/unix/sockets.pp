@@ -10,26 +10,36 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit Sockets;
+{$ENDIF FPC_DOTTEDUNITS}
 Interface
 {$ModeSwitch out}
 
 {$ifdef Unix}
+
+{$IFDEF FPC_DOTTEDUNITS}
+Uses UnixApi.Base,UnixApi.Types;
+{$ELSE}
 Uses baseunix,UnixType;
+{$ENDIF}
+
 {$endif}
+
 
 {$i osdefs.inc}       { Compile time defines }
 
-{$if 
-     defined(FreeBSD) or 
-     defined(Darwin) or 
-     defined(Haiku)
+{$if
+     defined(FreeBSD) or
+     defined(Darwin) or
+     defined(Haiku) or
+     defined(OpenBSD)
 }
 {$DEFINE SOCK_HAS_SINLEN}               // BSD definition of socketaddr
 {$endif}
 
-Type 
- TSockLen = BaseUnix.TSocklen;
+Type
+ TSockLen = {$IFDEF FPC_DOTTEDUNITS}UnixApi.Base{$ELSE}BaseUnix{$ENDIF}.TSocklen;
 
 {$i unxsockh.inc}
 {$i socketsh.inc}
@@ -40,11 +50,11 @@ type
                     sa_len     : cuchar;
                  {$endif}
                   family       : sa_family_t;
-                  path:array[0..107] of char;    //104 total for freebsd.
+                  path:array[0..107] of AnsiChar;    //104 total for freebsd.
                   end;
 
 const
-  EsockEINTR            = EsysEINTR;   
+  EsockEINTR            = EsysEINTR;
   EsockEBADF            = EsysEBADF;
   EsockEFAULT           = EsysEFAULT;
   EsockEINVAL           = EsysEINVAL;
@@ -55,7 +65,7 @@ const
 {$endif beos}
   EsockENOBUFS          = ESysENoBufs;
   EsockENOTCONN         = ESysENotConn;
-{$ifndef beos}  
+{$ifndef beos}
   EsockENOTSOCK         = ESysENotSock;
 {$endif beos}
   EsockEPROTONOSUPPORT  = ESysEProtoNoSupport;
@@ -63,12 +73,12 @@ const
   EsockADDRINUSE        = ESysEADDRINUSE;
 
 { unix socket specific functions }
-Procedure Str2UnixSockAddr(const addr:string;var t:TUnixSockAddr;var len:longint); deprecated;
-Function Bind(Sock:longint;const addr:string):boolean; deprecated;
-Function Connect(Sock:longint;const addr:string;var SockIn,SockOut:text):Boolean; deprecated;
-Function Connect(Sock:longint;const addr:string;var SockIn,SockOut:file):Boolean; deprecated;
-Function Accept(Sock:longint;var addr:string;var SockIn,SockOut:text):Boolean;    deprecated;
-Function Accept(Sock:longint;var addr:string;var SockIn,SockOut:File):Boolean;    deprecated;
+Procedure Str2UnixSockAddr(const addr:ansistring;var t:TUnixSockAddr;var len:longint); deprecated;
+Function Bind(Sock:longint;const addr:ansistring):boolean; deprecated;
+Function Connect(Sock:longint;const addr:ansistring;var SockIn,SockOut:text):Boolean; deprecated;
+Function Connect(Sock:longint;const addr:ansistring;var SockIn,SockOut:file):Boolean; deprecated;
+Function Accept(Sock:longint;var addr:ansistring;var SockIn,SockOut:text):Boolean;    deprecated;
+Function Accept(Sock:longint;var addr:ansistring;var SockIn,SockOut:File):Boolean;    deprecated;
 
 //function  fpaccept      (s:cint; addrx : psockaddr; addrlen : psocklen):cint; maybelibc
 //function  fpbind      (s:cint; addrx : psockaddr; addrlen : tsocklen):cint;  maybelibc
@@ -76,8 +86,13 @@ Function Accept(Sock:longint;var addr:string;var SockIn,SockOut:File):Boolean;  
 
 Implementation
 
-Uses {$ifndef FPC_USE_LIBC}SysCall{$else}initc{$endif};
-
+{$IFDEF FPC_DOTTEDUNITS}
+Uses
+  {$ifndef FPC_USE_LIBC}UnixApi.SysCall{$else}System.InitC{$endif};
+{$ELSE}
+Uses
+  {$ifndef FPC_USE_LIBC}SysCall{$else}initc{$endif};
+{$ENDIF}
 threadvar internal_socketerror : cint;
 
 {******************************************************************************

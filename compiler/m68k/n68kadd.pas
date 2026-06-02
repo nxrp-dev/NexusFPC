@@ -525,7 +525,7 @@ implementation
            else
              begin
                hlcg.location_force_reg(current_asmdata.CurrAsmList,left.location,left.resultdef,left.resultdef,true);
-               if (current_settings.cputype = cpu_mc68000) and isaddressregister(left.location.register) then
+               if (not (CPUM68K_HAS_TSTAREG in cpu_capabilities[current_settings.cputype])) and isaddressregister(left.location.register) then
                  begin
                    tmpreg:=cg.getintregister(current_asmdata.CurrAsmList,cmpsize);
                    cg.a_load_reg_reg(current_asmdata.CurrAsmList,OS_ADDR,cmpsize,left.location.register,tmpreg);
@@ -624,7 +624,6 @@ implementation
         list:=current_asmdata.CurrAsmList;
         pass_left_right;
         location_reset(location,LOC_REGISTER,def_cgsize(resultdef));
-        hlcg.location_force_reg(list,left.location,left.resultdef,left.resultdef,true);
 
         { calculate 32-bit terms lo(right)*hi(left) and hi(left)*lo(right) }
         hreg1:=NR_NO;
@@ -632,6 +631,19 @@ implementation
         tmpreg:=NR_NO;
         if (right.location.loc=LOC_CONSTANT) then
           begin
+            { if left has side effects, it could be that this code is called with right.location.value64=0,
+              see also #40182 }
+            if right.location.value64=0 then
+              begin
+                location.register64.reglo:=cg.getintregister(list,OS_INT);
+                cg.a_load_const_reg(list,OS_INT,0,location.register64.reglo);
+                location.register64.reghi:=cg.getintregister(list,OS_INT);
+                cg.a_load_const_reg(list,OS_INT,0,location.register64.reghi);
+                exit;
+              end;
+
+            hlcg.location_force_reg(list,left.location,left.resultdef,left.resultdef,true);
+
             //list.concat(tai_comment.create(strpnew('second_mul64bit: with const')));
             { Omit zero terms, if any }
             if hi(right.location.value64)<>0 then
@@ -652,6 +664,7 @@ implementation
         else
           begin
             //list.concat(tai_comment.create(strpnew('second_mul64bit: no const')));
+            hlcg.location_force_reg(list,left.location,left.resultdef,left.resultdef,true);
             hlcg.location_force_reg(list,right.location,right.resultdef,right.resultdef,true);
             tmpreg:=right.location.register64.reglo;
             hreg1:=cg.getintregister(list,OS_INT);

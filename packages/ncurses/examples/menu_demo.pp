@@ -2,7 +2,7 @@ uses
   ncurses,menu;
 
 const
-  choices : array[0..5] of pchar = (
+  choices : array[0..5] of PAnsiChar = (
                         'Choice 1',
                         'Choice 2',
                         'Choice 3',
@@ -10,7 +10,7 @@ const
                         'Exit',
                         nil
                   );
-procedure print_in_middle(win : PWINDOW;starty,startx,width : longint;_string : pchar;color : chtype);
+procedure print_in_middle(win : PWINDOW;starty,startx,width : longint;_string : PAnsiChar;color : chtype);
   var
     length,x,y : longint;
     temp : single;
@@ -52,7 +52,8 @@ begin
 
         { Create items }
         n_choices := high(choices);
-        getmem(my_items,n_choices*sizeof(pitem));
+        getmem(my_items,(n_choices+1)*sizeof(pitem));
+        my_items[n_choices]:=nil;
         for i:=0 to n_choices-1 do
           my_items[i] := new_item(choices[i], choices[i]);
 

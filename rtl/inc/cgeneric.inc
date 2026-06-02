@@ -39,8 +39,11 @@ procedure memset(var x; value: byte; count: size_t); cdecl; external clib;
 
 Procedure FillChar(var x;count: sizeint;value:byte);{$ifdef SYSTEMINLINE}inline;{$endif}
 begin
-  if count <= 0 then
-    exit;
+  { don't exit if count is <= 0, this makes the compiler think x is uninitialized,
+    as FillChar is probably rarely called with count <= 0, the performance hit is
+    probably negligible }
+  if count < 0 then
+    count := 0;
   memset(x,value,size_t(count));
 end;
 {$endif FPC_SYSTEM_HAS_FILLCHAR}
@@ -51,6 +54,10 @@ end;
 
 {$ifdef LINUX}
   {$define BUGGYMEMCHR}
+{$endif}
+
+{$ifdef AIX}
+  {$define MEMCHR_NEEDS_LEN_POSITIVE}
 {$endif}
 
 function memchr(const buf; b: cint; len: size_t): pointer; cdecl; external clib;
@@ -71,6 +78,11 @@ begin
   if len = -1 then
     res := rawmemchr(buf,cint(b))
   else
+{$else not BUGGYMEMCHR}
+{$ifdef MEMCHR_NEEDS_LEN_POSITIVE}
+  if len = -1 then
+    len := high(sizeint);
+{$endif MEMCHR_NEEDS_LEN_POSITIVE}
 {$endif BUGGYMEMCHR}
     res := memchr(buf,cint(b),size_t(sizeuint(len)));
   if (res <> nil) then
@@ -120,9 +132,9 @@ end;
 {$ifndef FPC_SYSTEM_HAS_FPC_PCHAR_LENGTH}
 {$define FPC_SYSTEM_HAS_FPC_PCHAR_LENGTH}
 
-function libc_pchar_length(p:pchar):size_t; cdecl; external clib name 'strlen';
+function libc_pchar_length(p:PAnsiChar):size_t; cdecl; external clib name 'strlen';
 
-function fpc_pchar_length(p:pchar):sizeint;[public,alias:'FPC_PCHAR_LENGTH']; compilerproc;
+function fpc_pchar_length(p:PAnsiChar):sizeint;[public,alias:'FPC_PCHAR_LENGTH']; compilerproc;
 begin
   if assigned(p) then
     fpc_pchar_length:=libc_pchar_length(p)

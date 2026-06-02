@@ -13,15 +13,22 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit versiontypes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$MODE OBJFPC}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, System.Resources.Resource;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, resource;
-  
+{$ENDIF FPC_DOTTEDUNITS}
+
 type
   EVersionStringTableException = class(Exception);
   ENameNotAllowedException = class(EVersionStringTableException);
@@ -35,7 +42,7 @@ resourcestring
 
 type
   TFileProductVersion = array[0..3] of word;
-  
+
   TVerTranslationInfo = packed record
     language : word;
     codepage : word;
@@ -118,7 +125,7 @@ type
     property Count : integer read GetCount;
     property Items[index : integer] : TVersionStringTable read GetItem write SetItem; default;
   end;
-  
+
   { TVersionVarFileInfo }
 
   TVersionVarFileInfo = class
@@ -141,8 +148,13 @@ type
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Resources.VersionConsts;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   versionconsts;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { TVersionStringTable }
 

@@ -141,12 +141,12 @@ end;
     {parameter mpw affects how the root volume is denoted. If mpw is true, }
     {the path is intended for use in MPW, and the environment variable Boot is}
     {prepended. Otherwise the actual boot volume name is appended.}
-    {All kinds of paths are attempted to be translated, except the unusal }
+    {All kinds of paths are attempted to be translated, except the unusual }
     {dos construct: a relative path on a certain drive like : C:xxx\yyy}
 
-  function TranslatePathToMac (const path: string; mpw: Boolean): string;
+  function TranslatePathToMac (const path: shortstring; mpw: Boolean): Shortstring;
 
-    function GetVolumeIdentifier: string;
+    function GetVolumeIdentifier: Shortstring;
 
       var
         s: Str255;
@@ -228,7 +228,7 @@ end;
                 end
               else if (oldpos + 1 > oldlen) or (path[oldPos + 1] in AllowDirectorySeparators) then
                 begin
-                  {It is "./" or "."  ignor it }
+                  {It is "./" or "."  ignore it }
                   oldPos := oldPos + 2;
                   continue;  {Start over again}
                 end;
@@ -268,8 +268,8 @@ end;
       TranslatePathToMac := path;  {its a mac path}
   end;
 
-  {Concats the relative or full path path1 and the relative path path2.}
-  function ConcatMacPath (path1, path2: string): string;
+  {Concatenate the relative or full path path1 and the relative path path2.}
+  function ConcatMacPath (path1, path2: Shortstring): Shortstring;
 
   begin
     if Pos(':', path1) = 0 then    {its partial}
@@ -295,7 +295,7 @@ end;
       end;
   end;
 
-  function IsMacFullPath (const path: string): Boolean;
+  function IsMacFullPath (const path: Shortstring): Boolean;
 
   begin
     if Pos(':', path) = 0 then    {its partial}
@@ -391,7 +391,7 @@ begin
   FSpGetFullPath := res;
 end;
 
-function PathArgToFSSpec(s: string; var spec: FSSpec): Integer;
+function PathArgToFSSpec(s: Shortstring; var spec: FSSpec): Integer;
 var
   err: OSErr;
 begin
@@ -406,7 +406,7 @@ begin
     PathArgToFSSpec := 3; {Empty paths are invalid paths}
 end;
 
-function PathArgToFullPath(s: string; var fullpath: RawByteString): Integer;
+function PathArgToFullPath(s: Shortstring; var fullpath: RawByteString): Integer;
 
 var
   err: OSErr;
@@ -424,7 +424,7 @@ begin
     PathArgToFullPath:=res;
 end;
 
-function GetVolumeName(vRefNum: Integer; var volName: String): OSErr;
+function GetVolumeName(vRefNum: Integer; var volName: ShortString): OSErr;
 
 var
   pb: HParamBlockRec;

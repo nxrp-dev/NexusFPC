@@ -13,7 +13,9 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit espidf_40100;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
@@ -37,6 +39,7 @@ interface
 {$linklib libg,static}
 {$linklib c,static}
 {$linklib esp_event,static}
+{$linklib efuse, static}
 
 implementation
 

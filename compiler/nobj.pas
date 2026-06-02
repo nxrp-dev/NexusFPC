@@ -53,7 +53,7 @@ interface
       end;
 
 
-{ convenince routine to build the VMT for an objectdef
+{ convenience routine to build the VMT for an objectdef
   Note: also ensures that the procdefs of the objectdef have their hidden
   parameters inserted }
 procedure build_vmt(def:tobjectdef);
@@ -91,7 +91,16 @@ implementation
           descendent Objective-C class }
         if not allowoverridingmethod and
            (po_overridingmethod in pd.procoptions) then
-          MessagePos1(pd.fileinfo,parser_e_nothing_to_be_overridden,pd.fullprocname(false));
+          begin
+            MessagePos1(pd.fileinfo,parser_e_nothing_to_be_overridden,pd.fullprocname(true));
+            for i:=0 to _class.vmtentries.count-1 do
+              begin
+                vmtentry:=pvmtentry(_class.vmtentries[i]);
+                vmtpd:=tprocdef(vmtentry^.procdef);
+                if (upper(vmtpd.procsym.realname)=upper(pd.procsym.realname)) then
+                  MessagePos1(vmtpd.fileinfo,sym_h_param_list,vmtpd.fullprocname(true));
+	      end;
+          end;
 
         { check that all methods have overload directive }
         if not(m_fpc in current_settings.modeswitches) then
@@ -254,7 +263,7 @@ implementation
                   { if the mangled names are different, the inheritance trees
                     are different too in Java; exception: when the parent method
                     is a virtual class method or virtual constructor, because
-                    those are looked up dynamicall by name }
+                    those are looked up dynamical by name }
                   javanewtreeok:=
                     is_java_class_or_interface(_class) and
                     (tcpuprocdef(pd).jvmmangledbasename(false)<>tcpuprocdef(vmtpd).jvmmangledbasename(false)) and
@@ -348,7 +357,7 @@ implementation
               if hasequalpara and
                  compatible_childmethod_resultdef(vmtpd.returndef,pd.returndef) then
                 begin
-                  { inherite calling convention when it was explicit and the
+                  { inherit calling convention when it was explicit and the
                     current definition has none explicit set }
                   if (po_hascallingconvention in vmtpd.procoptions) and
                      not(po_hascallingconvention in pd.procoptions) then
@@ -424,7 +433,7 @@ implementation
               { different parameters }
               else
                begin
-                 { when we got an override directive then can search futher for
+                 { when we got an override directive then can search further for
                    the procedure to override.
                    If we are starting a new virtual tree then hide the old tree }
                  if not(po_overridingmethod in pd.procoptions) and
@@ -668,17 +677,10 @@ implementation
           weight: longint;
           compintf: longint;
         end;
-        { Max 1000 interface in the class header interfaces it's enough imho }
-        tcompintfs = array[0..1000] of tcompintfentry;
-        pcompintfs = ^tcompintfs;
-        tequals    = array[0..1000] of longint;
-        pequals    = ^tequals;
-        timpls    = array[0..1000] of longint;
-        pimpls    = ^timpls;
       var
-        aequals: pequals;
-        compats: pcompintfs;
-        impls: pimpls;
+        aequals: array of longint;
+        compats: array of tcompintfentry;
+        impls: array of longint;
         ImplIntfCount,
         w,i,j,k: longint;
         ImplIntfI,
@@ -687,14 +689,14 @@ implementation
         cji: boolean;
       begin
         ImplIntfCount:=_class.ImplementedInterfaces.count;
-        if ImplIntfCount>=High(tequals) then
-          Internalerror(200006135);
-        getmem(compats,sizeof(tcompintfentry)*ImplIntfCount);
-        getmem(aequals,sizeof(longint)*ImplIntfCount);
-        getmem(impls,sizeof(longint)*ImplIntfCount);
-        filldword(compats^,(sizeof(tcompintfentry) div sizeof(dword))*ImplIntfCount,dword(-1));
-        filldword(aequals^,ImplIntfCount,dword(-1));
-        filldword(impls^,ImplIntfCount,dword(-1));
+        if ImplIntfCount=0 then
+          exit;
+        SetLength(compats,ImplIntfCount);
+        SetLength(aequals,ImplIntfCount);
+        SetLength(impls,ImplIntfCount);
+        filldword(compats[0],(sizeof(tcompintfentry) div sizeof(dword))*ImplIntfCount,dword(-1));
+        filldword(aequals[0],ImplIntfCount,dword(-1));
+        filldword(impls[0],ImplIntfCount,dword(-1));
         { ismergepossible is a containing relation
           meaning of ismergepossible(a,b,w) =
           if implementorfunction map of a is contained implementorfunction map of b
@@ -712,32 +714,32 @@ implementation
                 if cij and cji then { i equal j }
                   begin
                     { get minimum index of equal }
-                    if aequals^[j]=-1 then
-                      aequals^[j]:=i;
+                    if aequals[j]=-1 then
+                      aequals[j]:=i;
                   end
                 else if cij then
                   begin
                     { get minimum index of maximum weight  }
-                    if compats^[i].weight<w then
+                    if compats[i].weight<w then
                       begin
-                        compats^[i].weight:=w;
-                        compats^[i].compintf:=j;
+                        compats[i].weight:=w;
+                        compats[i].compintf:=j;
                       end;
                   end
                 else if cji then
                   begin
                     { get minimum index of maximum weight  }
-                    if (compats^[j].weight<w) then
+                    if (compats[j].weight<w) then
                       begin
-                        compats^[j].weight:=w;
-                        compats^[j].compintf:=i;
+                        compats[j].weight:=w;
+                        compats[j].compintf:=i;
                       end;
                   end;
               end;
           end;
         { Reset, no replacements by default }
         for i:=0 to ImplIntfCount-1 do
-          impls^[i]:=i;
+          impls[i]:=i;
         { Replace vtbls when equal or compat, repeat
           until there are no replacements possible anymore. This is
           needed for the cases like:
@@ -748,10 +750,10 @@ implementation
           k:=0;
           for i:=0 to ImplIntfCount-1 do
             begin
-              if compats^[impls^[i]].compintf<>-1 then
-                impls^[i]:=compats^[impls^[i]].compintf
-              else if aequals^[impls^[i]]<>-1 then
-                impls^[i]:=aequals^[impls^[i]]
+              if compats[impls[i]].compintf<>-1 then
+                impls[i]:=compats[impls[i]].compintf
+              else if aequals[impls[i]]<>-1 then
+                impls[i]:=aequals[impls[i]]
               else
                 inc(k);
             end;
@@ -760,11 +762,8 @@ implementation
         for i:=0 to ImplIntfCount-1 do
           begin
             ImplIntfI:=TImplementedInterface(_class.ImplementedInterfaces[i]);
-            ImplIntfI.VtblImplIntf:=TImplementedInterface(_class.ImplementedInterfaces[impls^[i]]);
+            ImplIntfI.VtblImplIntf:=TImplementedInterface(_class.ImplementedInterfaces[impls[i]]);
           end;
-        freemem(compats);
-        freemem(aequals);
-        freemem(impls);
       end;
 
 
@@ -978,6 +977,7 @@ implementation
                       prot_get_procdefs_recursive(ImplIntf,ImplIntf.IntfDef);
                     end;
                   handledprotocols.free;
+                  handledprotocols := nil;
                 end
               else
                 internalerror(2009091801);
@@ -993,6 +993,7 @@ implementation
         vmtbuilder:=TVMTBuilder.create(def);
         vmtbuilder.build;
         vmtbuilder.free;
+        vmtbuilder := nil;
       end;
 
 end.

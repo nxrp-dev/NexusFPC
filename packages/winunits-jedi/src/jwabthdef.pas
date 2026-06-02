@@ -41,7 +41,9 @@
 // $Id: JwaBtHDef.pas,v 1.13 2007/09/06 14:57:11 marquardt Exp $
 
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaBtHDef;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -55,8 +57,13 @@ unit JwaBtHDef;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Wintype, WinApi.Jedi.Bthsdpdef;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaWinType, JwaBthSdpDef;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 
@@ -484,7 +491,7 @@ const
     COD_SERVICE_NETWORKING or COD_SERVICE_RENDERING or
     COD_SERVICE_CAPTURING or COD_SERVICE_OBJECT_XFER or
     COD_SERVICE_AUDIO or COD_SERVICE_TELEPHONY or
-    COD_SERVICE_INFORMATION;   
+    COD_SERVICE_INFORMATION;
   {$EXTERNALSYM COD_SERVICE_VALID_MASK}
 
   COD_SERVICE_MAX_COUNT = 9;
@@ -576,7 +583,7 @@ const
   COD_AUDIO_MINOR_VIDEO_DISPLAY_LOUDSPEAKER = $0F;
   {$EXTERNALSYM COD_AUDIO_MINOR_VIDEO_DISPLAY_LOUDSPEAKER}
   COD_AUDIO_MINOR_VIDEO_DISPLAY_CONFERENCING = $10;
-  {$EXTERNALSYM COD_AUDIO_MINOR_VIDEO_DISPLAY_CONFERENCING}  
+  {$EXTERNALSYM COD_AUDIO_MINOR_VIDEO_DISPLAY_CONFERENCING}
   //COD_AUDIO_MINOR_RESERVED = $11:
   COD_AUDIO_MINOR_GAMING_TOY = $12;
   {$EXTERNALSYM COD_AUDIO_MINOR_GAMING_TOY}
@@ -779,7 +786,7 @@ const
   BTH_ERROR_INSTANT_PASSED = $28;
   {$EXTERNALSYM BTH_ERROR_INSTANT_PASSED}
   BTH_ERROR_PAIRING_WITH_UNIT_KEY_NOT_SUPPORTED = $29;
-  {$EXTERNALSYM BTH_ERROR_PAIRING_WITH_UNIT_KEY_NOT_SUPPORTED}  
+  {$EXTERNALSYM BTH_ERROR_PAIRING_WITH_UNIT_KEY_NOT_SUPPORTED}
 
   BTH_ERROR_UNSPECIFIED = $FF;
   {$EXTERNALSYM BTH_ERROR_UNSPECIFIED}
@@ -808,7 +815,7 @@ const
 
 //
 // the following two structures provides information about
-// disocvered remote radios.
+// discovered remote radios.
 //
 
 const
@@ -850,7 +857,7 @@ type
     //
     // name of the device
     //
-    name: array [0..BTH_MAX_NAME_SIZE - 1] of CHAR;
+    name: array [0..BTH_MAX_NAME_SIZE - 1] of AnsiChar;
   end;
   {$EXTERNALSYM _BTH_DEVICE_INFO}
   BTH_DEVICE_INFO = _BTH_DEVICE_INFO;
@@ -912,7 +919,7 @@ type
 
     //
     // If != 0, then the local host iniated the l2cap connection.  If == 0, then
-    // the remote host initated the connection.  This field is only valid if
+    // the remote host initiated the connection.  This field is only valid if
     // connect is != 0.
     //
     initiated: UCHAR;
@@ -949,7 +956,7 @@ type
 
     //
     // If != 0, then the underlying connection to the remote radio has just
-    // been estrablished.  If == 0, then the underlying conneciton has just been
+    // been established.  If == 0, then the underlying connection has just been
     // destroyed.
     //
     connected: UCHAR;

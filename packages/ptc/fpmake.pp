@@ -2,7 +2,7 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses {$ifdef unix}cthreads,{$endif} fpmkunit;
 
 Var
   P : TPackage;
@@ -22,7 +22,7 @@ begin
     P.License := 'LGPL with modification, ';
     P.HomepageURL := 'http://ptcpas.sourceforge.net/';
     P.Description := 'A free, portable framebuffer library.';
-    p.OSes:=[linux,win32,win64,go32v2,macosx,openbsd,freebsd];
+    p.OSes:=[linux,win32,win64,go32v2,macosx,openbsd,freebsd,netbsd];
 
     P.SourcePath.Add('src');
     P.SourcePath.Add('src/ptcwrapper');
@@ -241,6 +241,9 @@ begin
     P.Targets.AddExampleProgram('ptcgl.pp', AllUnixOSes + [win32, win64]);
     P.Targets.AddExampleProgram('ptcgl2.pp', AllUnixOSes + [win32, win64]);
     P.Sources.AddExampleFiles('examples/*',P.Directory,false,'.');
+
+
+    P.NamespaceMap:='namespaces.lst';
 
 {$ifndef ALLPACKAGES}
     Run;

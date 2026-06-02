@@ -14,12 +14,20 @@
 
  **********************************************************************}
 {$INCLUDE sdo_global.inc}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit sdo;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.SysUtils, System.Classes, System.Types, System.Variants,
+  Sdo.BaseTypes, Sdo.LinkedList, Sdo.DateUtils;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   SysUtils, Classes, Types,
   sdo_types, sdo_linked_list, sdo_date_utils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   sdo_namespace = 'commonj.sdo';
@@ -71,7 +79,7 @@ const
   DateType = DateTimeType;
   IntType = IntegerType;
   StringsType = StringType;
-  
+
   SDOTypeDefaultTypeNames : array[TSDOTypeKind] of string = (
     //OtherTypes , // for 'unknown type; - all data objects'
     'Boolean',
@@ -150,7 +158,7 @@ type
   {$IFDEF USE_UNICODE}
     TSDOChar = WideChar;
   {$ELSE USE_UNICODE}
-    TSDOChar = Char;
+    TSDOChar = AnsiChar;
   {$ENDIF USE_UNICODE}
 {$ENDIF HAS_SDO_CHAR}
 {$IFDEF HAS_SDO_CURRENCY}
@@ -163,9 +171,9 @@ type
 {$ENDIF HAS_SDO_DOUBLE}
 {$IFDEF HAS_SDO_FLOAT}
   TSDOFloat = Single;
-{$ENDIF HAS_SDO_FLOAT}  
+{$ENDIF HAS_SDO_FLOAT}
   TSDOInteger = Integer;
-{$IFDEF HAS_SDO_LONG}  
+{$IFDEF HAS_SDO_LONG}
   TSDOLong = Int64;
 {$ENDIF HAS_SDO_LONG}
 {$IFDEF HAS_SDO_SHORT}
@@ -300,13 +308,13 @@ type
     ['{76F00A3A-A6F8-4D78-8514-570207853453}']
 	{  getName returns the name of the type
      *
-	 * This method returns a const char* name of the type.
+	 * This method returns a const AnsiChar* name of the type.
 	 }
     function getName() : string;
 
 	{  getAlias returns the n'th alias
      *
-	 * This method returns a const char* corresponding to the
+	 * This method returns a const AnsiChar* corresponding to the
 	 * alias at index n of the list of aliases. Use getAliasCount to
 	 * discover the size of the list.
 	 }
@@ -431,11 +439,11 @@ type
 	 * Returns the name of the property.
 	 }
  	  function getName() : string;
-  
+
 	{  getAlias returns the n'th alias
      *
-	 * This method returns a const char* corresponding to the
-	 * alias at index n of the list of aliases. Use getAliasCount to 
+	 * This method returns a const AnsiChar* corresponding to the
+	 * alias at index n of the list of aliases. Use getAliasCount to
 	 * discover the size of the list.
 	 }
     function getAlias(const AIndex : Integer) : string;
@@ -453,7 +461,7 @@ type
 	 }
     function getType() : ISDOType;
 
-	{  getTypeEnum gets the enum for this type. 
+	{  getTypeEnum gets the enum for this type.
 	 *
 	 * Each DataType has a defined value in the list of Types.
 	 }
@@ -474,19 +482,19 @@ type
 	 }
    function isContainment() : Boolean;
 
- 	{  isReference is true if the property value is not contained 
+ 	{  isReference is true if the property value is not contained
 	 *
 	 * IsReference returns true if this property represents a DataObjectType,
 	 * and that DataObjectType is not contained. I.E the property value is a pointer
 	 * to a DataObject somewhere else in the graph not an actual value.
 	 }
    function isReference() : Boolean;
-  
+
 	{  getContainingType give the type which holds this property.
 	 *
-	 * Although many types may have a property of the same name, any given 
+	 * Although many types may have a property of the same name, any given
 	 * instance of a property belongs to only one type.
-	 * This method returns the type which holds this proeprty.
+	 * This method returns the type which holds this property.
 	 }
    function getContainingType() : ISDOType;
 
@@ -555,7 +563,7 @@ type
     function getStringDefault() : TSDOString;
 {$IFDEF HAS_SDO_BYTES}
     function getBytesDefault() : TSDOBytes;
-{$ENDIF HAS_SDO_BYTES}    
+{$ENDIF HAS_SDO_BYTES}
     function getBooleanDefault() : TSDOBoolean;
     function getByteDefault() : TSDOByte;
 {$IFDEF HAS_SDO_CHAR}
@@ -643,7 +651,7 @@ type
 		{
 		 *  DataFactory::addType adds a type definition.
 		 *
-		 * Add a type defintion to the factory. (Properties may be added later).
+		 * Add a type definition to the factory. (Properties may be added later).
 		 * The type is defined by its uri and name.
 		 * -# The type may be sequenced - and therefore work with a sequence API.
 		 * -# The type may be open, indicating that it may have extra properties
@@ -821,7 +829,7 @@ type
 
     {  getDataObject returns a data object by path, index or property
      *
-     * Returns the value of a property of either this object or an object 
+     * Returns the value of a property of either this object or an object
        * reachable from it, as identified by the specified path.
      }
     function getDataObject(const APath : string) : ISDODataObject; overload;
@@ -840,7 +848,7 @@ type
 
     {  getBoolean returns a TSDOBoolean by path, index or property
      *
-     * Returns the value of a property of either this object or an object 
+     * Returns the value of a property of either this object or an object
        * reachable from it, as identified by the specified path.
      }
     function getBoolean(const APath : string) : TSDOBoolean; overload;
@@ -851,9 +859,9 @@ type
     procedure setBoolean(const APropertyIndex : PtrUInt; const AValue : TSDOBoolean); overload;
     procedure setBoolean(const AProperty : ISDOProperty; const AValue : TSDOBoolean); overload;
 
-    {  getByte returns a char by path, index or property
+    {  getByte returns a AnsiChar by path, index or property
      *
-     * Returns the value of a property of either this object or an object 
+     * Returns the value of a property of either this object or an object
        * reachable from it, as identified by the specified path.
      }
     function getByte(const APath : string) : TSDOByte;overload;
@@ -894,13 +902,13 @@ type
      *
      * A DataObject of type Bytes holds an array of bytes as its value. These
      * methods transfer the contents of that buffer into an array of chars allocated
-     * by the users program. The return value is the number of bytes actually 
+     * by the users program. The return value is the number of bytes actually
      * copied.
      * The byte array is not necessarily null terminated. If a null terminated
      * C style string is required, then getCString is an alternative.
-     * The third paarameter is the length of the allocated buffer, which may be more
+     * The third parameter is the length of the allocated buffer, which may be more
      * than the length of the byte array. If the length specified is less than the
-     * length of the byte array, then only a portion of the 
+     * length of the byte array, then only a portion of the
      * byte array is returned.
        }
     function getBytes(const APath : string) : TSDOBytes;overload;
@@ -912,14 +920,14 @@ type
     procedure setBytes(const AProperty : ISDOProperty; AValue : TSDOBytes);overload;
 {$ENDIF HAS_SDO_BYTES}
 
-    {  getString returns a wide char buffer
+    {  getString returns a wide AnsiChar buffer
      *
      * A DataObject of type String holds an array of wide characters as its value. These
      * methods transfer the contents of that buffer into an array of wchar_t allocated
-     * by the users program. The return value is the number of wchar_t actually 
+     * by the users program. The return value is the number of wchar_t actually
      * copied.
-     * The array is not necessarily null terminated. 
-     * The third paarameter is the length of the allocated buffer, which may be more
+     * The array is not necessarily null terminated.
+     * The third parameter is the length of the allocated buffer, which may be more
      * than the length of the array. If the length specified is less than the
      * length of the array, then only a portion of the array is returned.
        }
@@ -943,7 +951,7 @@ type
 
     {  getDate returns an SDODate by path, index or property
      *
-     * Returns the value of a property of either this object or an object 
+     * Returns the value of a property of either this object or an object
        * reachable from it, as identified by the specified path.
      }
     function getDate(const APath : string) : TSDODate;overload;
@@ -957,7 +965,7 @@ type
 {$IFDEF HAS_SDO_DOUBLE}
     {  getDouble returns a long double by path, index or property
      *
-     * Returns the value of a property of either this object or an object 
+     * Returns the value of a property of either this object or an object
        * reachable from it, as identified by the specified path.
      }
     function getDouble(const APath : string) : TSDODouble;overload;
@@ -972,7 +980,7 @@ type
 {$IFDEF HAS_SDO_FLOAT}
     {  getFloat returns a float by path, index or property
      *
-     * Returns the value of a property of either this object or an object 
+     * Returns the value of a property of either this object or an object
        * reachable from it, as identified by the specified path.
      }
     function getFloat(const APath : string) : TSDOFloat;overload;
@@ -986,7 +994,7 @@ type
 
     {  getInteger returns a long by path, index or property
      *
-     * Returns the value of a property of either this object or an object 
+     * Returns the value of a property of either this object or an object
        * reachable from it, as identified by the specified path.
      }
     function getInteger(const APath : string) : TSDOInteger;overload;
@@ -999,7 +1007,7 @@ type
 
     {  getLong returns a int64_t by path, index or property
      *
-     * Returns the value of a property of either this object or an object 
+     * Returns the value of a property of either this object or an object
        * reachable from it, as identified by the specified path.
      }
     function getLong(const APath : string) : TSDOLong;overload;
@@ -1012,7 +1020,7 @@ type
 
     {  getShort returns a short by path, index or property
      *
-     * Returns the value of a property of either this object or an object 
+     * Returns the value of a property of either this object or an object
        * reachable from it, as identified by the specified path.
      }
     function getShort(const APath : string) : TSDOShort;overload;
@@ -1042,7 +1050,7 @@ type
 
     {  isSet test whether the value has been set
      *
-     * Returns whether a property of either this object or an object reachable 
+     * Returns whether a property of either this object or an object reachable
      * from it, as identified by the specified path,
      * is considered to be set.
      }
@@ -1053,7 +1061,7 @@ type
 
     { unset unsets a value previously set.
      *
-     * unsets a property of either this object or an object reachable 
+     * unsets a property of either this object or an object reachable
      * from it, as identified by the specified path.
      }
 
@@ -1063,16 +1071,16 @@ type
 
     { setUserData sets a reserved field in the data object.
      *
-     * Each data object has precisely one 32 bit slot available to 
+     * Each data object has precisely one 32 bit slot available to
      * be used by applications. This is not part of the data, its
-     * just a place to store anything for later retrieval. 
+     * just a place to store anything for later retrieval.
      }
 
-    {virtual SDO_API void setUserData(const char* path,void* value) = 0;
+    {virtual SDO_API void setUserData(const AnsiChar* path,void* value) = 0;
     virtual SDO_API void setUserData(unsigned int propertyIndex, void* value) = 0;
     virtual SDO_API void setUserData(const Property& property, void* value) = 0;
     virtual SDO_API void setUserData(void* value) = 0;
-    virtual SDO_API void* getUserData(const char* path) = 0;
+    virtual SDO_API void* getUserData(const AnsiChar* path) = 0;
     virtual SDO_API void* getUserData(unsigned int propertyIndex) = 0;
     virtual SDO_API void* getUserData(const Property& property) = 0;
     virtual SDO_API void* getUserData() = 0;
@@ -1080,12 +1088,12 @@ type
 
     {  getSequence returns the sequence for a data object
      *
-     * Returns the value of a Sequence property identified by 
+     * Returns the value of a Sequence property identified by
      * the specified path. See Sequence.
      }
 
     {virtual SDO_API SequencePtr getSequence() = 0;
-    virtual SDO_API SequencePtr getSequence(const char* path) = 0;
+    virtual SDO_API SequencePtr getSequence(const AnsiChar* path) = 0;
     virtual SDO_API SequencePtr getSequence(unsigned int propertyIndex) = 0;
     virtual SDO_API SequencePtr getSequence(const Property& property) = 0;
     }
@@ -1093,7 +1101,7 @@ type
 
     {  createDataObject creates a data object value
      *
-     * Returns a new data object contained by this object using the 
+     * Returns a new data object contained by this object using the
      * specified property,which must be a containment property.
      * The type of the created object is the declared type
      * of the specified property.
@@ -1114,10 +1122,10 @@ type
 
     {  clear unsets all the properties
      *
-     * This method unsets all the properties, and deletes all the data object 
-     * propertiy values from this data object.
+     * This method unsets all the properties, and deletes all the data object
+     * property values from this data object.
      }
- 
+
     procedure clear();
 
 
@@ -1142,7 +1150,7 @@ type
      * The summary is not necessarily attached to the data object, it may be
      * the summary for a parent data object. No object with a summary attached
      * may be a child of another object with a summary attached.
-     * See the ChangeSummary API for details of using the change sumamry.
+     * See the ChangeSummary API for details of using the change summary.
      }
     function getChangeSummary() : ISDOChangeSummary;overload;
     {function getChangeSummary(const APath : string) : ISDOChangeSummary;overload;
@@ -1155,7 +1163,7 @@ type
      * object from the root data object of the graph.
      }
 
-    //virtual SDO_SPI const char* objectToXPath() = 0;
+    //virtual SDO_SPI const AnsiChar* objectToXPath() = 0;
 
   end;
 
@@ -1383,7 +1391,7 @@ type
     );overload;
     function  GetDataFactory() : ISDODataFactory;
   end;
-  
+
   ISDOSerializer = interface
     ['{AE41D827-E606-43A4-A56C-22CBFCA5F197}']
     procedure save(
@@ -1451,12 +1459,12 @@ type
       IntegerType     : ( IntegerValue : TSDOInteger );
 {$IFDEF HAS_SDO_LONG}
       LongType        : ( LongValue : TSDOLong );
-{$ENDIF HAS_SDO_LONG}      
+{$ENDIF HAS_SDO_LONG}
       ObjectType      : ( ObjectValue : PSDODataObject );
 {$IFDEF HAS_SDO_SHORT}
       ShortType       : ( ShortValue : TSDOShort );
-{$ENDIF HAS_SDO_SHORT}      
-      StringType      : ( StringValue : PSDOString ); 
+{$ENDIF HAS_SDO_SHORT}
+      StringType      : ( StringValue : PSDOString );
   end;
   TValueSetting = class
   private
@@ -1664,8 +1672,13 @@ const
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.StrUtils;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   StrUtils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 procedure InitBufferResources(const ADataType : TSDOTypeKind; var ABuffer : TValueBuffer);
 begin
@@ -2099,7 +2112,7 @@ end;
 procedure TValueSetting.PrepareBuffer();
 begin
   case FProperty.getTypeEnum() of
-{$IFDEF HAS_SDO_BYTES}  
+{$IFDEF HAS_SDO_BYTES}
     BytesType     : New(FValue.BytesValue);
 {$ENDIF HAS_SDO_BYTES}
     ObjectType    : New(FValue.ObjectValue);
@@ -2135,7 +2148,7 @@ begin
     ObjectType    : FValue.ObjectValue^ := ISDODataObject(ABuffer);
 {$IFDEF HAS_SDO_SHORT}
     ShortType     : FValue.ShortValue := TSDOShort(ABuffer);
-{$ENDIF HAS_SDO_SHORT}    
+{$ENDIF HAS_SDO_SHORT}
     StringType    : FValue.StringValue^ := TSDOString(ABuffer);
   end;
 end;
@@ -2158,7 +2171,7 @@ begin
              );
   FTypeName := ATypeName;
   FPropertyType := APropertyType;
-  FPropertyName := APropertyName; 
+  FPropertyName := APropertyName;
 end;
 
 { ESDOInvalidPathException }

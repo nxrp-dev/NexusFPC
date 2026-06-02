@@ -58,7 +58,7 @@ procedure glFogi(pname: GLenum; param: GLint); inline;
 function  glGenLists(range: GLsizei): GLuint; inline;
 procedure glGetIntegerv(pname: GLenum; params: PGLint); inline;
 procedure glGetFloatv(pname: GLenum; params: PGLfloat); inline;
-function  glGetString(name: GLenum): PChar; inline;
+function  glGetString(name: GLenum): PAnsiChar; inline;
 
 procedure glHint(target, mode: GLenum); inline;
 
@@ -126,6 +126,7 @@ procedure glBlendFunc(sfactor, dfactor: GLenum); inline;
 procedure glVertexPointer(size: GLint; atype: GLenum; stride: GLsizei; const pointer: Pointer); inline;
 
 procedure glViewport(x, y: GLint; width, height: GLsizei); inline;
+procedure glScissor(x, y: GLint; width, height: GLsizei); inline;
 {$ENDIF GL_UNIT}
 
 { ****************************************************************************************************** }
@@ -144,12 +145,12 @@ procedure gluPickMatrix(x:GLdouble; y:GLdouble; delX:GLdouble; delY:GLdouble; vi
 { ****************************************************************************************************** }
 
 {$IFDEF GLUT_UNIT}
-procedure GLUTInit(argcp: PLongInt; argv: PPChar); inline;
+procedure GLUTInit(argcp: PLongInt; argv: PPAnsiChar); inline;
 procedure GLUTInitDisplayMode(mode: Word); inline;
 procedure GLUTInitWindowPosition(x, y: Integer); inline;
 procedure GLUTInitWindowSize(width, height: LongInt); inline;
 
-function  GLUTCreateWindow(const title: PChar): LongInt; inline;
+function  GLUTCreateWindow(const title: PAnsiChar): LongInt; inline;
 procedure GLUTDestroyWindow(win: LongInt); inline;
 procedure GLUTDisplayFunc(f: TGlutVoidCallback); inline;
 procedure GLUTIdleFunc(f: TGlutVoidCallback); inline;
@@ -161,13 +162,15 @@ procedure GLUTMouseFunc(f: TGlut4IntCallback); inline;
 procedure GLUTSpecialFunc(f: TGlut3IntCallback); inline;
 procedure GLUTReshapeFunc(f: TGlut2IntCallback); inline;
 procedure GLUTMotionFunc(f: TGlut2IntCallback); inline;
+procedure GLUTPositionWindow(x, y: Integer); inline;
+procedure GLUTReshapeWindow(width, height: Integer); inline;
 procedure GLUTPassiveMotionFunc(f: TGlut2IntCallback); inline;
 
 procedure GLUTSwapBuffers; inline;
 procedure GLUTPostRedisplay; inline;
 
 function  GLUTGet(t: GLenum): LongInt; inline;
-  
+
 procedure GLUTMainLoop; inline;
 
 procedure GLUTFullScreen; inline;

@@ -1,3 +1,4 @@
+{%MainUnit sysutils.pp}
 {
     This file is part of the Free Pascal run time library.
     Copyright (c) 2012 by the Free Pascal development team
@@ -87,7 +88,7 @@ var
       begin
         APath:=ExtractFilePath(ADir);
         //this can happen on Windows if user specifies Dir like \user\name/test/
-        //and would, if not checked for, cause an infinite recusrsion and a stack overflow
+        //and would, if not checked for, cause an infinite recursion and a stack overflow
         if (APath=ADir) then
           Result:=False
         else
@@ -109,7 +110,7 @@ begin
   Result:=False;
   ADrv:=ExtractFileDrive(Dir);
   if (ADrv<>'') and
-     (not DirectoryExists(ADrv))
+     (not DirectoryExists(ADrv+DirectorySeparator))
      {$IFNDEF FORCEDIR_NO_UNC_SUPPORT} and (not IsUncDrive(ADrv)){$ENDIF} then
     Exit;
   if Dir='' then

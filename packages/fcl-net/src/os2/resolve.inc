@@ -23,7 +23,7 @@ const
   NETDB_INTERNAL= -1;       { see errno }
   NETDB_SUCCESS = 0;        { no problem }
   HOST_NOT_FOUND= 1;        { Authoritative Answer Host not found }
-  TRY_AGAIN     = 2;        { Non-Authoritive Host not found, or SERVERFAIL }
+  TRY_AGAIN     = 2;        { Non-Authoritative Host not found, or SERVERFAIL }
   NO_RECOVERY   = 3;        { Non recoverable errors, FORMERR, REFUSED, NOTIMP }
   NO_DATA       = 4;        { Valid name, no data record of requested type }
   NO_ADDRESS    = NO_DATA;  { no address, look for MX record }
@@ -33,28 +33,28 @@ Type
 
   { THostEnt Object }
   THostEnt = record
-    H_Name     : pchar;   { Official name }
-    H_Aliases  : ppchar;  { Null-terminated list of aliases}
+    H_Name     : PAnsiChar;   { Official name }
+    H_Aliases  : PPAnsiChar;  { Null-terminated list of aliases}
     H_Addrtype : longint;   { Host address type }
     H_length  : longint;   { Length of address }
-    H_Addr : ppchar;    { null-terminated list of adresses }
+    H_Addr : PPAnsiChar;    { null-terminated list of addresses }
   end;
   PHostEntry = ^THostEnt;
 
   { TNetEnt object }
   TNetEnt = record
-    N_Name     : pchar;   { Official name }
-    N_Aliases  : ppchar;  { Nill-terminated alias list }
+    N_Name     : PAnsiChar;   { Official name }
+    N_Aliases  : PPAnsiChar;  { Nil-terminated alias list }
     N_AddrType : longint; { Net address type }
     N_net      : Cardinal; { Network number }
   end;
   PNetEntry = ^TNetEnt;
 
   TServEnt = record
-    s_name    : pchar;    { Service name }
-    s_aliases : ppchar;   { Null-terminated alias list }
+    s_name    : PAnsiChar;    { Service name }
+    s_aliases : PPAnsiChar;   { Null-terminated alias list }
     s_port    : longint;  { Port number }
-    s_proto   : pchar;    { Protocol to use }
+    s_proto   : PAnsiChar;    { Protocol to use }
   end;
   PServEntry = ^TServEnt;
 
@@ -72,11 +72,11 @@ procedure setservent (StayOpen : longint); cdecl; external socklib index 25;
 procedure endservent; cdecl; external socklib index 26;
 
 function getnetbyaddr ( Net : Longint; nettype : Longint) : PNetEntry; cdecl; external socklib index 14;
-function gethostbyname ( Name : Pchar) : PHostEntry; cdecl; external socklib index 11;
-function gethostbyaddr ( Addr : PChar; Len : Longint; HType : Longint) : PHostentry ; cdecl; external socklib index 12;
-function getnetbyname ( Name : pchar) : PNetEntry; cdecl; external socklib index 13;
-function getservbyname (name : pchar  ; protocol : pchar) : PServEntry; cdecl; external socklib index 24;
-function getservbyport (port : longint; protocol : pchar) : PServEntry; cdecl; external socklib index 23;
+function gethostbyname ( Name : PAnsiChar) : PHostEntry; cdecl; external socklib index 11;
+function gethostbyaddr ( Addr : PAnsiChar; Len : Longint; HType : Longint) : PHostentry ; cdecl; external socklib index 12;
+function getnetbyname ( Name : PAnsiChar) : PNetEntry; cdecl; external socklib index 13;
+function getservbyname (name : PAnsiChar  ; protocol : PAnsiChar) : PServEntry; cdecl; external socklib index 24;
+function getservbyport (port : longint; protocol : PAnsiChar) : PServEntry; cdecl; external socklib index 23;
 
 function  GetDNSError : LongInt;
 begin

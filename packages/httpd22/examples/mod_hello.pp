@@ -25,7 +25,7 @@ var
 
 const
   MODULE_NAME = 'mod_hello.so';
-  
+
 exports
  test_module name 'hello_module';
 
@@ -35,7 +35,7 @@ exports
 function DefaultHandler(r: Prequest_rec): Integer; cdecl;
 var
   RequestedHandler: string;
-  
+
 begin
   RequestedHandler := r^.handler;
 
@@ -49,7 +49,7 @@ begin
   { The following line just prints a message to the errorlog }
   ap_log_error(MODULE_NAME, 54, APLOG_NOERRNO or APLOG_NOTICE,
    {$ifndef Apache1_3}0,{$endif} r^.server,
-   'mod_hello: %s', [PChar('Before content is output')]);
+   'mod_hello: %s', [PAnsiChar('Before content is output')]);
 
   { We set the content type before doing anything else }
   {$ifdef Apache1_3}
@@ -58,7 +58,7 @@ begin
   {$else}
     ap_set_content_type(r, 'text/html');
   {$endif}
-  
+
   { If the request is for a header only, and not a request for
    the whole content, then return OK now. We don't have to do
    anything else. }

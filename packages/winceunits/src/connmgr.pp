@@ -36,13 +36,19 @@
 //  Microsoft Windows Mobile 6.0 for PocketPC SDK.
 //
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit connmgr;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$CALLING cdecl}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses WinApi.Windows, WinApi.Winsock2;
+{$ELSE FPC_DOTTEDUNITS}
 uses Windows, WinSock2;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
       CellcoreDLL = 'cellcore.dll';
@@ -407,7 +413,7 @@ const
 
       CONNMGR_PRIORITY_EXTERNALINTERACTIVE = $00000020;
 // @constdefine Connection is requested on behalf of an external entity, but
-// is an interactive session (e.g. AT Command Iterpreter)
+// is an interactive session (e.g. AT Command Interpreter)
 
       CONNMGR_PRIORITY_LOWBKGND            = $00000008;
 // @constdefine Lowest priority. Only connects if another higher priority client is already using the same path.

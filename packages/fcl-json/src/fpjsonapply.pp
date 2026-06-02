@@ -12,14 +12,21 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
-unit fpjsonapply;
+{$IFNDEF FPC_DOTTEDUNITS}
+unit fpJsonApply;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode ObjFPC}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, FpJson.Data;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, fpJSON;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
   TOwnsJSON = (ojSource,ojApply);
@@ -49,7 +56,7 @@ Type
     procedure SetSourceJSON(AValue: TJSONObject);
   Protected
     procedure Apply(aSrc, aApply: TJSONObject); virtual;
-    procedure SaveDestJSON(aFileName : string);
+    procedure SaveDestJSON(const aFileName : string);
     procedure SaveDestJSON(aStream : TStream);
   Public
     destructor destroy; override;
@@ -194,7 +201,7 @@ begin
     end;
 end;
 
-procedure TJSONApplier.SaveDestJSON(aFileName: string);
+procedure TJSONApplier.SaveDestJSON(const aFileName: string);
 
 Var
   F : TFileStream;

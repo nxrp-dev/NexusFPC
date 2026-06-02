@@ -29,6 +29,7 @@ type
     function GetP1: TPasProperty;
     function GetP2: TPasProperty;
     function GetT(AIndex : Integer) : TPasType;
+    procedure TestExternalClassFunctionFinal;
   protected
     Procedure StartClass (AncestorName : String = 'TObject'; InterfaceList : String = ''; aClassType : TClassDeclType = cdtClass);
     Procedure StartExternalClass (AParent : String; AExternalName,AExternalNameSpace : String );
@@ -49,6 +50,8 @@ type
     procedure AssertMemberType(AType : TClass; Member : TPaselement = Nil);
     procedure AssertMemberName(AName : string; Member : TPaselement = Nil);
     Procedure AssertProperty(P : TPasProperty; AVisibility : TPasMemberVisibility;AName,ARead,AWrite,AStored,AImplements : String; AArgCount : Integer; ADefault,ANodefault : Boolean);
+    Procedure TestDirectiveRTTI(Param: string; ExpectedExplicit: boolean;
+        const ExpectedFields, ExpectedMethods, ExpectedProperties: TPasMembersType.TRTTIVisibilitySections);
     Property TheClass : TPasClassType Read FClass;
     Property Members[AIndex : Integer] : TPasElement Read GetM;
     Property Member1 : TPasElement Read FMember1;
@@ -74,12 +77,15 @@ type
     Procedure TestForward;
     Procedure TestForwardAndDeclaration;
     Procedure TestForwardAndDeclarationKeepForward;
+    Procedure TestForwardExternalObjCClass;
     Procedure TestOneInterface;
     Procedure TestTwoInterfaces;
     procedure TestOneSpecializedClass;
     procedure TestOneSpecializedClassInterface;
     Procedure TestOneField;
     Procedure TestOneFieldComment;
+    procedure TestOneFieldWithAttribute;
+    procedure TestOneFieldVarWithAttribute;
     Procedure TestOneClassOfField;
     procedure TestOneFieldStatic;
     Procedure TestOneHelperField;
@@ -170,6 +176,7 @@ type
     Procedure TestLocalSimpleTypes;
     Procedure TestLocalSimpleConst;
     Procedure TestLocalSimpleConsts;
+    Procedure TestLocalGenericType;
     Procedure TestClassTypeAttributes;
     Procedure TestClassConstAttributes;
     procedure TestClassHelperEmpty;
@@ -200,6 +207,12 @@ type
     procedure TestRecordHelperOneMethod;
     procedure TestEscapedVisibilityVar;
     procedure TestEscapedAbsoluteVar;
+    procedure TestClassRTTIInherit;
+    procedure TestClassRTTIExplicit;
+    procedure TestClassRTTIExplicitFields;
+    procedure TestClassRTTIExplicitFieldsPublic;
+    procedure TestClassRTTIExplicitMethodsAll;
+    procedure TestClassRTTIExplicitAllPublic;
   end;
 
 implementation
@@ -530,6 +543,30 @@ begin
   Assertequals(P.Name+': nodefault',ANodefault,P.IsNoDefault);
 end;
 
+procedure TTestClassType.TestDirectiveRTTI(Param: string; ExpectedExplicit: boolean;
+  const ExpectedFields, ExpectedMethods, ExpectedProperties: TPasMembersType.TRTTIVisibilitySections
+  );
+
+  procedure Check(const El: string; const Expected, Actual: TPasMembersType.TRTTIVisibilitySections);
+  var
+    s: String;
+  begin
+    if Expected=Actual then exit;
+    Fail(El+' visibility expected '+dbgs(Expected)+', but found '+dbgs(Actual));
+  end;
+
+begin
+  Parser.Options:=Parser.Options+[po_CheckDirectiveRTTI];
+  Add('{$RTTI '+Param+'}');
+  FStarted:=True;
+  FDecl.add('TMyClass = Class');
+  ParseClass;
+  AssertEquals('rtti directive explicit (not inherit)',ExpectedExplicit,FClass.RTTIVisibility.Explicit);
+  Check('Fields',FClass.RTTIVisibility.Fields,ExpectedFields);
+  Check('Methods',FClass.RTTIVisibility.Methods,ExpectedMethods);
+  Check('Properties',FClass.RTTIVisibility.Properties,ExpectedProperties);
+end;
+
 procedure TTestClassType.TestEmpty;
 begin
   EndClass('');
@@ -587,6 +624,15 @@ begin
   FStarted:=True;
   FEnded:=True;
   FDecl.Add('TMyClass = Class');
+  ParseClass;
+end;
+
+procedure TTestClassType.TestForwardExternalObjCClass;
+begin
+  FStarted:=True;
+  FEnded:=True;
+  Parser.CurrentModeswitches:=Parser.CurrentModeswitches+[msObjectiveC1];
+  FDecl.Add('TMyClass = ObjcClass external');
   ParseClass;
 end;
 
@@ -703,6 +749,26 @@ begin
   AssertMemberName('a');
   AssertVisibility;
 end;
+
+procedure TTestClassType.TestOneFieldWithAttribute;
+begin
+  Parser.CurrentModeswitches:=Parser.CurrentModeswitches+[msPrefixedAttributes];
+  AddMember('[volatile] a : integer');
+  ParseClass;
+  AssertEquals('Have 2 members',2,TheClass.Members.Count);
+  AssertMemberName('a',Members[1]);
+  AssertVisibility;
+end;
+
+procedure TTestClassType.TestOneFieldVarWithAttribute;
+begin
+  Parser.CurrentModeswitches:=Parser.CurrentModeswitches+[msPrefixedAttributes];
+  AddMember('var [volatile] a : integer');
+  ParseClass;
+  AssertEquals('Have 2 members',2,TheClass.Members.Count);
+  AssertMemberName('a',Members[1]);
+end;
+
 
 procedure TTestClassType.TestOneFieldStatic;
 begin
@@ -1941,6 +2007,25 @@ begin
   AssertEquals('method name','Something', Method3.Name);
 end;
 
+procedure TTestClassType.TestLocalGenericType;
+begin
+  Add([
+  '{$mode objfpc}',
+  'type',
+  'TLazListAspectCapacityFieldConst = class(TLazListAspectCapacityFieldMem)',
+  'public type',
+  '  TCAWrap = class',
+  '    public type',
+  '    generic TCapacityAccessor<TMemHeaderT; TData> = object',
+  '    public',
+  '      class function ReadCapacity(const AMem: Pointer): Cardinal; inline; static;',
+  '    end;',
+  '  end;',
+  'end;'
+  ]);
+  ParseDeclarations;
+end;
+
 procedure TTestClassType.TestClassTypeAttributes;
 begin
   Add([
@@ -1954,7 +2039,7 @@ begin
   '    TWord = word;',
   '    [Blue]',
   '    [Green]',
-  '    TChar = char;',
+  '    TChar = AnsiChar;',
   '  end;',
   '']);
   ParseDeclarations;
@@ -2302,22 +2387,80 @@ end;
 procedure TTestClassType.TestExternalClassFinalVar;
 
 begin
-  // final var Xyz : Integer;
- Fail  ('To be implemented');
+  Parser.CurrentModeswitches:=[msObjfpc,msexternalClass];
+  FStarted:=True;
+  FDecl.add('TMyClass = Class external name ''me'' ');
+  FDecl.add('final var X : integer');
+  ParseClass;
+  AssertNotNull('Have 1 field',Field1);
+  AssertMemberName('X');
+  AssertVisibility;
 end;
+
+procedure TTestClassType.TestExternalClassFunctionFinal;
+
+begin
+  Parser.CurrentModeswitches:=[msObjfpc,msexternalClass];
+  FStarted:=True;
+  FDecl.add('TMyClass = Class external name ''me'' ');
+  FDecl.add('function Something : Someresult; final');
+  ParseClass;
+  AssertNotNull('Have 1 field',Field1);
+  AssertMemberName('Something');
+  AssertVisibility;
+end;
+
 
 procedure TTestClassType.TestEscapedVisibilityVar;
 
 begin
-  //  &Public : Integer;
-  Fail('To be implemented');
+  AddMember('&public : integer');
+  ParseClass;
+  AssertNotNull('Have 1 field',Field1);
+  AssertMemberName('public');
+  AssertVisibility;
 end;
 
 procedure TTestClassType.TestEscapedAbsoluteVar;
 
 begin
-  // var absolute  : integer;
-  Fail('To be implemented.');
+  AddMember('&absolute : integer');
+  ParseClass;
+  AssertNotNull('Have 1 field',Field1);
+  AssertMemberName('absolute');
+  AssertVisibility;
+end;
+
+procedure TTestClassType.TestClassRTTIInherit;
+begin
+  TestDirectiveRTTI('inherit',false,[],[],[]);
+end;
+
+procedure TTestClassType.TestClassRTTIExplicit;
+begin
+  TestDirectiveRTTI('explicit',true,[],[],[]);
+end;
+
+procedure TTestClassType.TestClassRTTIExplicitFields;
+begin
+  TestDirectiveRTTI('explicit fields([])',true,[],[],[]);
+end;
+
+procedure TTestClassType.TestClassRTTIExplicitFieldsPublic;
+begin
+  TestDirectiveRTTI('explicit fields ( [vcPublic] ) ',true,[vcPublic],[],[]);
+end;
+
+procedure TTestClassType.TestClassRTTIExplicitMethodsAll;
+begin
+  TestDirectiveRTTI('explicit methods([vcPublic,vcPrivate,vcPublished,vcProtected])',true,
+    [],[vcPrivate,vcProtected,vcPublic,vcPublished],[]);
+end;
+
+procedure TTestClassType.TestClassRTTIExplicitAllPublic;
+begin
+  TestDirectiveRTTI('explicit fields([vcPublic]) Methods([vcPublic]) Properties([vcPublic])',true,
+    [vcPublic],[vcPublic],[vcPublic]);
 end;
 
 initialization

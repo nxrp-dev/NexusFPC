@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit FPDDPopCode;
+{$ENDIF FPC_DOTTEDUNITS}
 {
     This file is part of the Free Pascal run time library.
     Copyright (c) 1999-2022 by Michael van Canneyt and other members of the
@@ -18,14 +20,19 @@ unit FPDDPopCode;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, System.TypInfo, Data.Dict.Base, Data.Db;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, typinfo, fpdatadict, db;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
   TDDCodeGenOption = (dcoFields,dcoIndexes,dcoProcedurePerTable,dcoUseWith,
                       dcoClassDecl,dcoGenerators,dcoDomains,dcoMergeDomains);
   TDDCodeGenOptions = Set of TDDCodeGenoption;
-  
+
   { TFPDDPopulateCodeGenerator }
 
   TFPDDPopulateCodeGenerator = Class(TComponent)
@@ -52,7 +59,7 @@ Type
     procedure AddLine(ALine: String; Lines: TStrings); virtual;
     Function EscapeString(Const S : String) : string;
     procedure CreateClassDecl(Lines: TStrings); virtual;
-    // Data dictionare specific
+    // Data dictionary specific
     procedure CheckDatadict;
     procedure CreateFooter(Lines: TStrings);
     procedure CreateHeader(Lines: TStrings);
@@ -90,13 +97,13 @@ Type
     Property DDVarName : String Read FDDV Write FDDV;
     Property ClassName : String Read FClassName Write FClassName;
   end;
-  
+
 implementation
 
 Resourcestring
   SErrNoDataDictionary = 'Cannot perform this operation without datadictionary';
   SErrNoDataDictionaryName = 'Cannot perform this operation without datadictionary name';
-  
+
 
 { TFPDDPopulateCodeGenerator }
 

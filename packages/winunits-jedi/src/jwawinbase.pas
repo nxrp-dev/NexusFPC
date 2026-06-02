@@ -42,7 +42,9 @@
 
 // $Id: JwaWinBase.pas,v 1.17 2007/09/14 06:48:47 marquardt Exp $
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaWinBase;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 {$WEAKPACKAGEUNIT}
@@ -59,11 +61,19 @@ unit JwaWinBase;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  {$IFDEF USE_DELPHI_TYPES}
+  WinApi.Windows,
+  {$ENDIF USE_DELPHI_TYPES}
+  WinApi.Jedi.Ntstatus, WinApi.Jedi.Winnt, WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   {$IFDEF USE_DELPHI_TYPES}
   Windows,
   {$ENDIF USE_DELPHI_TYPES}
   JwaNtStatus, JwaWinNT, JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 {$IFNDEF JWA_IMPLEMENTATIONSECTION}
@@ -398,10 +408,10 @@ type
   LPSYSTEMTIME = ^SYSTEMTIME;
   {$EXTERNALSYM LPSYSTEMTIME}
   {$IFDEF USE_DELPHI_TYPES}
-  _SYSTEMTIME = Windows._SYSTEMTIME;
-  SYSTEMTIME = Windows.SYSTEMTIME;
-  TSystemTime = Windows.TSystemTime;
-  PSystemtime = Windows.PSystemTime;
+  _SYSTEMTIME = {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows._SYSTEMTIME;
+  SYSTEMTIME = {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.SYSTEMTIME;
+  TSystemTime = {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.TSystemTime;
+  PSystemtime = {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.PSystemTime;
   {$ELSE}
   _SYSTEMTIME = record
     wYear: Word;
@@ -448,7 +458,7 @@ type
   LPCRITICAL_SECTION_DEBUG = PRTL_CRITICAL_SECTION_DEBUG;
   {$EXTERNALSYM LPCRITICAL_SECTION_DEBUG}
   TCriticalSectionDebug = CRITICAL_SECTION_DEBUG;
-  PCriticalSectionDebug = PCRITICAL_SECTION_DEBUG;  
+  PCriticalSectionDebug = PCRITICAL_SECTION_DEBUG;
 
   LPLDT_ENTRY = PLDT_ENTRY;
   {$EXTERNALSYM LPLDT_ENTRY}
@@ -745,11 +755,11 @@ type
     ByteSize: BYTE;        // Number of bits/byte, 4-8
     Parity: BYTE;          // 0-4=None,Odd,Even,Mark,Space
     StopBits: BYTE;        // 0,1,2 = 1, 1.5, 2
-    XonChar: Char;         // Tx and Rx X-ON character
-    XoffChar: Char;        // Tx and Rx X-OFF character
-    ErrorChar: Char;       // Error replacement char
-    EofChar: Char;         // End of Input character
-    EvtChar: Char;         // Received Event character
+    XonChar: AnsiChar;         // Tx and Rx X-ON character
+    XoffChar: AnsiChar;        // Tx and Rx X-OFF character
+    ErrorChar: AnsiChar;       // Error replacement AnsiChar
+    EofChar: AnsiChar;         // End of Input character
+    EvtChar: AnsiChar;         // Received Event character
     wReserved1: WORD;      // Fill for now.
   end;
   {$EXTERNALSYM _DCB}
@@ -798,7 +808,7 @@ type
   _SYSTEM_INFO = record
     case Integer of
     0: (
-      dwOemId: DWORD); // absolete, do not use
+      dwOemId: DWORD); // obsolete, do not use
     1: (
       wProcessorArchitecture: WORD;
       wReserved: WORD;
@@ -1347,7 +1357,7 @@ const
   {$EXTERNALSYM EV_RXCHAR}
   EV_RXFLAG   = $0002; // Received certain character
   {$EXTERNALSYM EV_RXFLAG}
-  EV_TXEMPTY  = $0004; // Transmitt Queue Empty
+  EV_TXEMPTY  = $0004; // Transmit Queue Empty
   {$EXTERNALSYM EV_TXEMPTY}
   EV_CTS      = $0008; // CTS changed state
   {$EXTERNALSYM EV_CTS}
@@ -1574,7 +1584,7 @@ type
     nErrCode: Word;
     Reserved1: Word;
     Reserved2: Word;
-    szPathName: array [0..OFS_MAXPATHNAME - 1] of CHAR;
+    szPathName: array [0..OFS_MAXPATHNAME - 1] of AnsiChar;
   end;
   {$EXTERNALSYM _OFSTRUCT}
   OFSTRUCT = _OFSTRUCT;
@@ -2596,7 +2606,7 @@ function SetCommState(hFile: HANDLE; const lpDCB: DCB): BOOL; stdcall;
 function SetCommTimeouts(hFile: HANDLE; const lpCommTimeouts: COMMTIMEOUTS): BOOL; stdcall;
 {$EXTERNALSYM SetCommTimeouts}
 
-function TransmitCommChar(hFile: HANDLE; cChar: Char): BOOL; stdcall;
+function TransmitCommChar(hFile: HANDLE; cChar: AnsiChar): BOOL; stdcall;
 {$EXTERNALSYM TransmitCommChar}
 
 function WaitCommEvent(hFile: HANDLE; var lpEvtMask: DWORD;
@@ -3277,8 +3287,8 @@ type
     nFileSizeLow: DWORD;
     dwReserved0: DWORD;
     dwReserved1: DWORD;
-    cFileName: array [0..MAX_PATH - 1] of CHAR;
-    cAlternateFileName: array [0..13] of CHAR;
+    cFileName: array [0..MAX_PATH - 1] of AnsiChar;
+    cAlternateFileName: array [0..13] of AnsiChar;
   end;
   {$EXTERNALSYM _WIN32_FIND_DATAA}
   WIN32_FIND_DATAA = _WIN32_FIND_DATAA;
@@ -5511,8 +5521,8 @@ type
   {$EXTERNALSYM LPHW_PROFILE_INFOA}
   tagHW_PROFILE_INFOA = record
     dwDockInfo: DWORD;
-    szHwProfileGuid: array [0..HW_PROFILE_GUIDLEN - 1] of CHAR;
-    szHwProfileName: array [0..MAX_PROFILE_LEN - 1] of CHAR;
+    szHwProfileGuid: array [0..HW_PROFILE_GUIDLEN - 1] of AnsiChar;
+    szHwProfileName: array [0..MAX_PROFILE_LEN - 1] of AnsiChar;
   end;
   {$EXTERNALSYM tagHW_PROFILE_INFOA}
   HW_PROFILE_INFOA = tagHW_PROFILE_INFOA;
@@ -5946,7 +5956,7 @@ type
   {$EXTERNALSYM PCACTCTX_SECTION_KEYED_DATA_ASSEMBLY_METADATA}
   TActCtxSectionKeyedDataAssemblyMetadata = ACTCTX_SECTION_KEYED_DATA_ASSEMBLY_METADATA;
   PActCtxSectionKeyedDataAssemblyMetadata = PACTCTX_SECTION_KEYED_DATA_ASSEMBLY_METADATA;
-  
+
   tagACTCTX_SECTION_KEYED_DATA = record
     cbSize: ULONG;
     ulDataFormatVersion: ULONG;
@@ -6047,7 +6057,7 @@ const
 //
 // String are placed after the structs.
 //
-  
+
 function QueryActCtxW(dwFlags: DWORD; hActCtx: HANDLE; pvSubInstance: PVOID;
   ulInfoClass: ULONG; pvBuffer: PVOID; cbBuffer: SIZE_T;
   pcbWrittenOrRequired: PSIZE_T): BOOL; stdcall;
@@ -6259,10 +6269,10 @@ begin
 end;
 
 { MVB:
-  The implementation of CreateMutex only interpretes bInitialOwner as True if
+  The implementation of CreateMutex only interprets bInitialOwner as True if
   it's ordinal value is 1, all other values are interpreted as False. Delphi
   compiles Longbool(True) as $FFFFFFFF which is consequently interpreted as
-  False. Changing the bInitalOwner parameter type to Boolean fixes the problem
+  False. Changing the bInitialOwner parameter type to Boolean fixes the problem
   (Boolean(True) = 1) but that would be implementation specific and might break
   in the future, though unlikely. Hence the CreateMutex function here which
   explicitly passes LongBool(1) instead of LongBool(True). }

@@ -21,7 +21,9 @@ const
    INVALID_HANDLE_VALUE = THandle(-1);
 
    IGNORE = 0;               { Ignore signal }
+{$IF NOT DECLARED(INFINITE)}
    INFINITE = longint($FFFFFFFF);     { Infinite timeout }
+{$ENDIF}
 
    { flags for CreateFile }
    GENERIC_READ=$80000000;
@@ -130,9 +132,9 @@ type
    LPTSTR  = ^word;
    LPCTSTR = ^word;
 {$else FPC_OS_UNICODE}
-   LPTCH   = ^char;
-   LPTSTR  = ^char;
-   LPCTSTR = ^char;
+   LPTCH   = ^AnsiChar;
+   LPTSTR  = ^AnsiChar;
+   LPCTSTR = ^AnsiChar;
 {$endif FPC_OS_UNICODE}
    LPWSTR  = ^wchar;
    PVOID   = pointer;
@@ -140,8 +142,8 @@ type
    LPCVOID = pointer;
    LPDWORD = ^DWORD;
    HLocal  = THandle;
-   PStr    = pchar;
-   LPStr   = pchar;
+   PStr    = PAnsiChar;
+   LPStr   = PAnsiChar;
    PLPSTR  = ^LPSTR;
    PLPWSTR = ^LPWSTR;
 
@@ -150,7 +152,7 @@ type
      is not implemented for FPC
      va_list is just a dummy record
      MvdV: Nevertheless it should be a pointer type, not a record}
-   va_list = pchar;
+   va_list = PAnsiChar;
 
   PSecurityAttributes = ^TSecurityAttributes;
   TSecurityAttributes = record
@@ -186,7 +188,7 @@ type
     wMilliseconds: Word;
   end;
 
-  TTlsDirectory=packed record
+  TTlsDirectory = record
     data_start, data_end : pointer;
     index_pointer, callbacks_pointer : pointer;
     zero_fill_size : dword;
@@ -270,9 +272,23 @@ type
   function GetModuleFileNameW(l1:THandle;p:PWideChar;l2:longint):longint;
     stdcall;external KernelDLL name 'GetModuleFileNameW';
 
-  function GetModuleHandle(p : PChar) : THandle;
+  function GetModuleHandle(p : PAnsiChar) : THandle;
     stdcall;external KernelDLL name 'GetModuleHandleA';
 
+{$ifdef win64}
+  { all win64 versions have this function, including 64 bit XP }
+  function SetThreadStackGuarantee(StackSizeInBytes : PUint32) : BOOL;
+    stdcall;external KernelDLL name 'SetThreadStackGuarantee';
+{$else win64}
+var
+  SetThreadStackGuarantee: function(StackSizeInBytes : PUint32) : BOOL; stdcall;
+{$endif win64}
+
+  { Helper to pass StackMargin. SetThreadStackGuarantee accepts PULONG (which is PUint32, not PPtrUint) and writes previous guarantee to the same place. }
+  procedure SetThreadStackGuaranteeTo(guarantee: uint32); inline;
+  begin
+    SetThreadStackGuarantee(@guarantee);
+  end;
 {$else WINCE}
 
    { module functions }
@@ -283,6 +299,19 @@ type
      cdecl;external KernelDLL name 'GetModuleHandleW';
 
 {$endif WINCE}
+  { memory functions }
+const
+  HEAP_ZERO_MEMORY = $8;
+
+  function GetProcessHeap : THandle;
+    {$ifdef wince}cdecl{$else}stdcall{$endif};external KernelDLL name 'GetProcessHeap';
+  function HeapAlloc(hHeap : THandle; dwFlags : DWord; dwBytes : SIZE_T) : pointer;
+    {$ifdef wince}cdecl{$else}stdcall{$endif};external KernelDLL name 'HeapAlloc';
+  function HeapFree(hHeap : THandle; dwFlags : dword; lpMem: pointer) : LongBool;
+    {$ifdef wince}cdecl{$else}stdcall{$endif};external KernelDLL name 'HeapFree';
+  function HeapReAlloc(hHeap : THandle; dwFlags : dword; lpMem: pointer; dwBytes : SizeUint) : pointer;
+    {$ifdef wince}cdecl{$else}stdcall{$endif};external KernelDLL name 'HeapReAlloc';
+
    { file functions }
    function WriteFile(fh:thandle;buf:pointer;len:longint;var loaded:longint;
      overlap:pointer):longint;
@@ -302,11 +331,11 @@ type
    procedure GetSystemInfo(lpSystemInfo: PSystemInfo); {$ifdef wince}cdecl{$else}stdcall{$endif};external KernelDLL name 'GetSystemInfo';
 
    function WinLoadLibraryW(lpLibFileName:pwidechar):THandle; {$ifdef wince}cdecl{$else}stdcall{$endif}; external KernelDLL name 'LoadLibraryW';
-   function WinLoadLibraryA(lpLibFileName:pwidechar):THandle; {$ifdef wince}cdecl{$else}stdcall{$endif}; external KernelDLL name 'LoadLibraryA';
+   function WinGetModuleHandleW(lpModuleName:pwidechar):THandle; {$ifdef wince}cdecl{$else}stdcall{$endif}; external KernelDLL name 'GetModuleHandleW';
    {$ifdef wince}
-   function WinGetProcAddress(hModule:THandle; lpProcName:pchar):pointer; {$ifdef wince}cdecl{$else}stdcall{$endif}; external KernelDLL name 'GetProcAddressA';
+   function WinGetProcAddress(hModule:THandle; lpProcName:PAnsiChar):pointer; {$ifdef wince}cdecl{$else}stdcall{$endif}; external KernelDLL name 'GetProcAddressA';
    {$else}
-   function WinGetProcAddress(hModule:THandle; lpProcName:pchar):pointer; {$ifdef wince}cdecl{$else}stdcall{$endif}; external KernelDLL name 'GetProcAddress';
+   function WinGetProcAddress(hModule:THandle; lpProcName:PAnsiChar):pointer; {$ifdef wince}cdecl{$else}stdcall{$endif}; external KernelDLL name 'GetProcAddress';
    {$endif}
    function WinFreeLibrary(hLibModule:THandle):ByteBool; {$ifdef wince}cdecl{$else}stdcall{$endif};external KernelDLL name 'FreeLibrary';
 
@@ -351,12 +380,44 @@ type
    function GetOEMCP: UINT;
      stdcall; external KernelDLL name 'GetOEMCP';
 
-   function SysAllocStringLen(psz:pointer;len:dword):pointer;
-     stdcall; external 'oleaut32.dll' name 'SysAllocStringLen';
-   procedure SysFreeString(bstr:pointer);
-     stdcall; external 'oleaut32.dll' name 'SysFreeString';
-   function SysReAllocStringLen(var bstr:pointer;psz: pointer;
-     len:dword): Integer; stdcall;external 'oleaut32.dll' name 'SysReAllocStringLen';
+   function FirstSysAllocStringLen(psz:pointer;len:dword):pointer; stdcall; forward;
+   procedure FirstSysFreeString(bstr:pointer); stdcall; forward;
+   function FirstSysReAllocStringLen(var bstr:pointer;psz: pointer;len:dword): Integer; stdcall; forward;
+
+var
+   OleAut32Dll: THandle = 0; { Unloaded at win32 & win64 system_exit. }
+   SysAllocStringLen: function(psz:pointer;len:dword):pointer; stdcall = @FirstSysAllocStringLen;
+   SysFreeString: procedure(bstr:pointer); stdcall = @FirstSysFreeString;
+   SysReAllocStringLen: function(var bstr:pointer;psz: pointer;len:dword): Integer; stdcall = @FirstSysReAllocStringLen;
+
+   function EnsureOleAut32Dll: THandle;
+   begin
+     if OleAut32Dll = 0 then
+       begin
+         Result := WinLoadLibraryW('oleaut32.dll');
+         if InterlockedCompareExchange(Pointer(OleAut32Dll), Pointer(Result), nil) <> nil then
+           WinFreeLibrary(Result);
+       end;
+     Result := OleAut32Dll;
+   end;
+
+   function FirstSysAllocStringLen(psz:pointer;len:dword):pointer; stdcall;
+   begin
+     CodePointer(SysAllocStringLen) := WinGetProcAddress(EnsureOleAut32Dll, 'SysAllocStringLen');
+     Result := SysAllocStringLen(psz,len);
+   end;
+
+   procedure FirstSysFreeString(bstr:pointer); stdcall;
+   begin
+     CodePointer(SysFreeString) := WinGetProcAddress(EnsureOleAut32Dll, 'SysFreeString');
+     SysFreeString(bstr);
+   end;
+
+   function FirstSysReAllocStringLen(var bstr:pointer;psz: pointer;len:dword): Integer; stdcall;
+   begin
+     CodePointer(SysReAllocStringLen) := WinGetProcAddress(EnsureOleAut32Dll, 'SysReAllocStringLen');
+     Result := SysReAllocStringLen(bstr,psz,len);
+   end;
 {$endif WINCE}
 
    Procedure Errno2InOutRes(oserror: longword);
@@ -411,7 +472,7 @@ type
   function StringToOleStr(const source : ansistring) : PWideChar;inline;
     begin
       result:=nil;
-      widestringmanager.Ansi2WideMoveProc(pchar(pointer(source)),StringCodePage(source),widestring(pointer(result)),length(source));
+      widestringmanager.Ansi2WideMoveProc(PAnsiChar(pointer(source)),StringCodePage(source),widestring(pointer(result)),length(source));
     end;
 
 

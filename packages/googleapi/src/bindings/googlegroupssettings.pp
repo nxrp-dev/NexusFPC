@@ -1,22 +1,28 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit googlegroupssettings;
+{$ENDIF FPC_DOTTEDUNITS}
 {$MODE objfpc}
 {$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils, System.Classes, GoogleApi.Service, FpWeb.Rest.Base, GoogleApi.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses sysutils, classes, googleservice, restbase, googlebase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
-  
+
   //Top-level schema types
   TGroups = Class;
   TGroupsArray = Array of TGroups;
   //Anonymous types, using auto-generated names
-  
+
   { --------------------------------------------------------------------
     TGroups
     --------------------------------------------------------------------}
-  
+
   TGroups = Class(TGoogleBaseObject)
   Private
     FallowExternalMembers : String;
@@ -112,11 +118,11 @@ type
     Property whoCanViewMembership : String Index 224 Read FwhoCanViewMembership Write SetwhoCanViewMembership;
   end;
   TGroupsClass = Class of TGroups;
-  
+
   { --------------------------------------------------------------------
     TGroupsResource
     --------------------------------------------------------------------}
-  
+
   TGroupsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -125,12 +131,12 @@ type
     Function Patch(groupUniqueId: string; aGroups : TGroups) : TGroups;
     Function Update(groupUniqueId: string; aGroups : TGroups) : TGroups;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TGroupssettingsAPI
     --------------------------------------------------------------------}
-  
+
   TGroupssettingsAPI = Class(TGoogleAPI)
   Private
     FGroupsInstance : TGroupsResource;
@@ -172,7 +178,7 @@ implementation
   --------------------------------------------------------------------}
 
 
-Procedure TGroups.SetallowExternalMembers(AIndex : Integer; const AValue : String); 
+Procedure TGroups.SetallowExternalMembers(AIndex : Integer; const AValue : String);
 
 begin
   If (FallowExternalMembers=AValue) then exit;
@@ -182,7 +188,7 @@ end;
 
 
 
-Procedure TGroups.SetallowGoogleCommunication(AIndex : Integer; const AValue : String); 
+Procedure TGroups.SetallowGoogleCommunication(AIndex : Integer; const AValue : String);
 
 begin
   If (FallowGoogleCommunication=AValue) then exit;
@@ -192,7 +198,7 @@ end;
 
 
 
-Procedure TGroups.SetallowWebPosting(AIndex : Integer; const AValue : String); 
+Procedure TGroups.SetallowWebPosting(AIndex : Integer; const AValue : String);
 
 begin
   If (FallowWebPosting=AValue) then exit;
@@ -202,7 +208,7 @@ end;
 
 
 
-Procedure TGroups.SetarchiveOnly(AIndex : Integer; const AValue : String); 
+Procedure TGroups.SetarchiveOnly(AIndex : Integer; const AValue : String);
 
 begin
   If (FarchiveOnly=AValue) then exit;
@@ -212,7 +218,7 @@ end;
 
 
 
-Procedure TGroups.SetcustomReplyTo(AIndex : Integer; const AValue : String); 
+Procedure TGroups.SetcustomReplyTo(AIndex : Integer; const AValue : String);
 
 begin
   If (FcustomReplyTo=AValue) then exit;
@@ -222,7 +228,7 @@ end;
 
 
 
-Procedure TGroups.SetdefaultMessageDenyNotificationText(AIndex : Integer; const AValue : String); 
+Procedure TGroups.SetdefaultMessageDenyNotificationText(AIndex : Integer; const AValue : String);
 
 begin
   If (FdefaultMessageDenyNotificationText=AValue) then exit;
@@ -232,7 +238,7 @@ end;
 
 
 
-Procedure TGroups.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TGroups.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -242,7 +248,7 @@ end;
 
 
 
-Procedure TGroups.Setemail(AIndex : Integer; const AValue : String); 
+Procedure TGroups.Setemail(AIndex : Integer; const AValue : String);
 
 begin
   If (Femail=AValue) then exit;
@@ -252,7 +258,7 @@ end;
 
 
 
-Procedure TGroups.SetincludeInGlobalAddressList(AIndex : Integer; const AValue : String); 
+Procedure TGroups.SetincludeInGlobalAddressList(AIndex : Integer; const AValue : String);
 
 begin
   If (FincludeInGlobalAddressList=AValue) then exit;
@@ -262,7 +268,7 @@ end;
 
 
 
-Procedure TGroups.SetisArchived(AIndex : Integer; const AValue : String); 
+Procedure TGroups.SetisArchived(AIndex : Integer; const AValue : String);
 
 begin
   If (FisArchived=AValue) then exit;
@@ -272,7 +278,7 @@ end;
 
 
 
-Procedure TGroups.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TGroups.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -282,7 +288,7 @@ end;
 
 
 
-Procedure TGroups.SetmaxMessageBytes(AIndex : Integer; const AValue : integer); 
+Procedure TGroups.SetmaxMessageBytes(AIndex : Integer; const AValue : integer);
 
 begin
   If (FmaxMessageBytes=AValue) then exit;
@@ -292,7 +298,7 @@ end;
 
 
 
-Procedure TGroups.SetmembersCanPostAsTheGroup(AIndex : Integer; const AValue : String); 
+Procedure TGroups.SetmembersCanPostAsTheGroup(AIndex : Integer; const AValue : String);
 
 begin
   If (FmembersCanPostAsTheGroup=AValue) then exit;
@@ -302,7 +308,7 @@ end;
 
 
 
-Procedure TGroups.SetmessageDisplayFont(AIndex : Integer; const AValue : String); 
+Procedure TGroups.SetmessageDisplayFont(AIndex : Integer; const AValue : String);
 
 begin
   If (FmessageDisplayFont=AValue) then exit;
@@ -312,7 +318,7 @@ end;
 
 
 
-Procedure TGroups.SetmessageModerationLevel(AIndex : Integer; const AValue : String); 
+Procedure TGroups.SetmessageModerationLevel(AIndex : Integer; const AValue : String);
 
 begin
   If (FmessageModerationLevel=AValue) then exit;
@@ -322,7 +328,7 @@ end;
 
 
 
-Procedure TGroups.Setname(AIndex : Integer; const AValue : String); 
+Procedure TGroups.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -332,7 +338,7 @@ end;
 
 
 
-Procedure TGroups.SetprimaryLanguage(AIndex : Integer; const AValue : String); 
+Procedure TGroups.SetprimaryLanguage(AIndex : Integer; const AValue : String);
 
 begin
   If (FprimaryLanguage=AValue) then exit;
@@ -342,7 +348,7 @@ end;
 
 
 
-Procedure TGroups.SetreplyTo(AIndex : Integer; const AValue : String); 
+Procedure TGroups.SetreplyTo(AIndex : Integer; const AValue : String);
 
 begin
   If (FreplyTo=AValue) then exit;
@@ -352,7 +358,7 @@ end;
 
 
 
-Procedure TGroups.SetsendMessageDenyNotification(AIndex : Integer; const AValue : String); 
+Procedure TGroups.SetsendMessageDenyNotification(AIndex : Integer; const AValue : String);
 
 begin
   If (FsendMessageDenyNotification=AValue) then exit;
@@ -362,7 +368,7 @@ end;
 
 
 
-Procedure TGroups.SetshowInGroupDirectory(AIndex : Integer; const AValue : String); 
+Procedure TGroups.SetshowInGroupDirectory(AIndex : Integer; const AValue : String);
 
 begin
   If (FshowInGroupDirectory=AValue) then exit;
@@ -372,7 +378,7 @@ end;
 
 
 
-Procedure TGroups.SetspamModerationLevel(AIndex : Integer; const AValue : String); 
+Procedure TGroups.SetspamModerationLevel(AIndex : Integer; const AValue : String);
 
 begin
   If (FspamModerationLevel=AValue) then exit;
@@ -382,7 +388,7 @@ end;
 
 
 
-Procedure TGroups.SetwhoCanAdd(AIndex : Integer; const AValue : String); 
+Procedure TGroups.SetwhoCanAdd(AIndex : Integer; const AValue : String);
 
 begin
   If (FwhoCanAdd=AValue) then exit;
@@ -392,7 +398,7 @@ end;
 
 
 
-Procedure TGroups.SetwhoCanContactOwner(AIndex : Integer; const AValue : String); 
+Procedure TGroups.SetwhoCanContactOwner(AIndex : Integer; const AValue : String);
 
 begin
   If (FwhoCanContactOwner=AValue) then exit;
@@ -402,7 +408,7 @@ end;
 
 
 
-Procedure TGroups.SetwhoCanInvite(AIndex : Integer; const AValue : String); 
+Procedure TGroups.SetwhoCanInvite(AIndex : Integer; const AValue : String);
 
 begin
   If (FwhoCanInvite=AValue) then exit;
@@ -412,7 +418,7 @@ end;
 
 
 
-Procedure TGroups.SetwhoCanJoin(AIndex : Integer; const AValue : String); 
+Procedure TGroups.SetwhoCanJoin(AIndex : Integer; const AValue : String);
 
 begin
   If (FwhoCanJoin=AValue) then exit;
@@ -422,7 +428,7 @@ end;
 
 
 
-Procedure TGroups.SetwhoCanLeaveGroup(AIndex : Integer; const AValue : String); 
+Procedure TGroups.SetwhoCanLeaveGroup(AIndex : Integer; const AValue : String);
 
 begin
   If (FwhoCanLeaveGroup=AValue) then exit;
@@ -432,7 +438,7 @@ end;
 
 
 
-Procedure TGroups.SetwhoCanPostMessage(AIndex : Integer; const AValue : String); 
+Procedure TGroups.SetwhoCanPostMessage(AIndex : Integer; const AValue : String);
 
 begin
   If (FwhoCanPostMessage=AValue) then exit;
@@ -442,7 +448,7 @@ end;
 
 
 
-Procedure TGroups.SetwhoCanViewGroup(AIndex : Integer; const AValue : String); 
+Procedure TGroups.SetwhoCanViewGroup(AIndex : Integer; const AValue : String);
 
 begin
   If (FwhoCanViewGroup=AValue) then exit;
@@ -452,7 +458,7 @@ end;
 
 
 
-Procedure TGroups.SetwhoCanViewMembership(AIndex : Integer; const AValue : String); 
+Procedure TGroups.SetwhoCanViewMembership(AIndex : Integer; const AValue : String);
 
 begin
   If (FwhoCanViewMembership=AValue) then exit;
@@ -640,7 +646,7 @@ begin
   SetLength(Result,1);
   Result[0].Name:='https://www.googleapis.com/auth/apps.groups.settings';
   Result[0].Description:='View and manage the settings of a Google Apps Group';
-  
+
 end;
 
 Class Function TGroupssettingsAPI.APINeedsAuth : Boolean;

@@ -1,17 +1,17 @@
 {
      File:       OSServices/SCSI.h
- 
+
      Contains:   SCSI Family Interfaces.
- 
+
      Version:    OSServices-352~2
- 
+
      Copyright:  © 1986-2008 by Apple Computer, Inc., all rights reserved
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 {      Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2009 }
 {
@@ -28,7 +28,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit SCSI;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -213,7 +215,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.MixedMode,MacOsApi.AppleDiskPartitions;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,MixedMode,AppleDiskPartitions;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -242,7 +248,7 @@ type
 	end;
 {
  *  SCSIReset()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -252,7 +258,7 @@ type
 
 {
  *  SCSIGet()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -262,7 +268,7 @@ type
 
 {
  *  SCSISelect()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -272,7 +278,7 @@ type
 
 {
  *  SCSICmd()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -282,7 +288,7 @@ type
 
 {
  *  SCSIRead()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -292,7 +298,7 @@ type
 
 {
  *  SCSIRBlind()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -302,7 +308,7 @@ type
 
 {
  *  SCSIWrite()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -312,7 +318,7 @@ type
 
 {
  *  SCSIWBlind()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -322,7 +328,7 @@ type
 
 {
  *  SCSIComplete()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -332,7 +338,7 @@ type
 
 {
  *  SCSIStat()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -342,7 +348,7 @@ type
 
 {
  *  SCSISelAtn()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -352,7 +358,7 @@ type
 
 {
  *  SCSIMsgIn()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -362,7 +368,7 @@ type
 
 {
  *  SCSIMsgOut()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -382,7 +388,7 @@ type
 	SCSICallbackUPP = SCSICallbackProcPtr;
 {
  *  NewSCSICallbackUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.3 and later
@@ -393,7 +399,7 @@ function NewSCSICallbackUPP( userRoutine: SCSICallbackProcPtr ): SCSICallbackUPP
 
 {
  *  DisposeSCSICallbackUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.3 and later
@@ -404,7 +410,7 @@ procedure DisposeSCSICallbackUPP( userUPP: SCSICallbackUPP ); external name '_Di
 
 {
  *  InvokeSCSICallbackUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.3 and later
@@ -413,8 +419,8 @@ procedure DisposeSCSICallbackUPP( userUPP: SCSICallbackUPP ); external name '_Di
 procedure InvokeSCSICallbackUPP( scsiPB: UnivPtr; userUPP: SCSICallbackUPP ); external name '_InvokeSCSICallbackUPP';
 (* AVAILABLE_MAC_OS_X_VERSION_10_0_AND_LATER_BUT_DEPRECATED_IN_MAC_OS_X_VERSION_10_2 *)
 
-{ 
-   SCSI Manager 4.3 function codes 
+{
+   SCSI Manager 4.3 function codes
  }
 const
 	SCSINop = $00; { Execute nothing                          }
@@ -631,14 +637,14 @@ type
 		scsiMaxTarget: UInt16;          { <- maximum Target number supported           }
 		scsiMaxLUN: UInt16;             { <- maximum Logical Unit number supported    }
 
-		scsiSIMVendor: packed array [0..15] of char;			{ <- Vendor ID of SIM (or XPT if bus<FF)        }
-		scsiHBAVendor: packed array [0..15] of char;			{ <- Vendor ID of the HBA                }
-		scsiControllerFamily:	packed array [0..15] of char;			{ <- Family of SCSI Controller           }
-		scsiControllerType: packed array [0..15] of char;			{ <- Specific Model of SCSI Controller used  }
+		scsiSIMVendor: packed array [0..15] of AnsiChar;			{ <- Vendor ID of SIM (or XPT if bus<FF)        }
+		scsiHBAVendor: packed array [0..15] of AnsiChar;			{ <- Vendor ID of the HBA                }
+		scsiControllerFamily:	packed array [0..15] of AnsiChar;			{ <- Family of SCSI Controller           }
+		scsiControllerType: packed array [0..15] of AnsiChar;			{ <- Specific Model of SCSI Controller used  }
 
-		scsiXPTversion: packed array [0..3] of char;			{ <- version number of XPT              }
-		scsiSIMversion: packed array [0..3] of char;			{ <- version number of SIM              }
-		scsiHBAversion: packed array [0..3] of char;			{ <- version number of HBA              }
+		scsiXPTversion: packed array [0..3] of AnsiChar;			{ <- version number of XPT              }
+		scsiSIMversion: packed array [0..3] of AnsiChar;			{ <- version number of SIM              }
+		scsiHBAversion: packed array [0..3] of AnsiChar;			{ <- version number of HBA              }
 
 		scsiHBAslotType: UInt8;        { <- type of "slot" that this HBA is in       }
 		scsiHBAslotNumber: UInt8;      { <- slot number of this HBA                  }
@@ -1028,12 +1034,12 @@ const
 
 { scsiWeirdStuff field bits }
 const
-	scsiOddDisconnectUnsafeRead1 = $0001; { Disconnects on odd byte boundries are unsafe with DMA and/or blind reads }
-	scsiOddDisconnectUnsafeWrite1 = $0002; { Disconnects on odd byte boundries are unsafe with DMA and/or blind writes }
+	scsiOddDisconnectUnsafeRead1 = $0001; { Disconnects on odd byte boundaries are unsafe with DMA and/or blind reads }
+	scsiOddDisconnectUnsafeWrite1 = $0002; { Disconnects on odd byte boundaries are unsafe with DMA and/or blind writes }
 	scsiBusErrorsUnsafe = $0004; { Non-handshaked delays or disconnects during blind transfers may cause a crash }
 	scsiRequiresHandshake = $0008; { Non-handshaked delays or disconnects during blind transfers may cause data corruption }
 	scsiTargetDrivenSDTRSafe = $0010; { Targets which initiate synchronous negotiations are supported }
-	scsiOddCountForPhysicalUnsafe = $0020; { If using physical addrs all counts must be even, and disconnects must be on even boundries }
+	scsiOddCountForPhysicalUnsafe = $0020; { If using physical addrs all counts must be even, and disconnects must be on even boundaries }
 	scsiAbortCmdFixed = $0040; { Set if abort command is fixed to properly make callbacks }
 	scsiMeshACKTimingFixed = $0080; { Set if bug allowing Mesh to release ACK prematurely is fixed }
 
@@ -1097,14 +1103,14 @@ const
 {$ifc not TARGET_CPU_64}
 {
  *  SCSIAction()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    Use the SCSITaskUserClient API instead.
- *  
+ *
  *  Discussion:
  *    This routine is deprecated. It is exported and callable, but it
  *    is no longer being maintained.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework [32-bit only] but deprecated in 10.2
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1118,7 +1124,7 @@ function SCSIAction( var parameterBlock: SCSI_PB ): OSErr; external name '_SCSIA
 
 {
  *  SCSIRegisterBus()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -1128,7 +1134,7 @@ function SCSIAction( var parameterBlock: SCSI_PB ): OSErr; external name '_SCSIA
 
 {
  *  SCSIDeregisterBus()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -1138,7 +1144,7 @@ function SCSIAction( var parameterBlock: SCSI_PB ): OSErr; external name '_SCSIA
 
 {
  *  SCSIReregisterBus()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -1148,7 +1154,7 @@ function SCSIAction( var parameterBlock: SCSI_PB ): OSErr; external name '_SCSIA
 
 {
  *  SCSIKillXPT()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available

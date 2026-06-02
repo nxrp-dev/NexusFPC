@@ -34,7 +34,7 @@
 
 var
   libc_fpc_ret, libc_fpc_ret_ebx, libc_fpc_ret_ebp: ptrint; { return address to libc }
-  __progname : pchar; cvar;
+  __progname : PAnsiChar; cvar;
 
 procedure get_rtld_cleanup; external name 'get_rtld_cleanup';
 procedure atexit; external name 'atexit';
@@ -43,7 +43,7 @@ procedure libc_start_main; external name '__libc_start_main';
 
 procedure PASCALMAIN; external name 'PASCALMAIN';
 
-var progname : pchar cvar; // = '';
+var progname : PAnsiChar cvar; // = '';
     __fpucw  : word; cvar; // = 0x1332;
 
 {******************************************************************************
@@ -119,7 +119,7 @@ asm
         call main
         pushl %eax
         jmp   _haltproc
-.LTLS:  
+.LTLS:
 	call _init_tls
 	jmp .L9
 get_rtld_cleanup:
@@ -136,7 +136,7 @@ end;
 
 procedure _FPC_libc_haltproc; assembler; nostackframe; public name '_haltproc';
 asm
-           mov $1,%eax  
+           mov $1,%eax
            movzwl operatingsystem_result,%ebx
            pushl %ebx
            call .Lactualsyscall

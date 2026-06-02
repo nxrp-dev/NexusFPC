@@ -14,11 +14,17 @@
  **********************************************************************}
 {$mode objfpc}
 {$h+}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CustApp;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils,System.Classes,Fcl.SingleInstance;
+{$ELSE FPC_DOTTEDUNITS}
 uses SysUtils,Classes,singleinstance;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
   TStringArray = Array of string;
@@ -38,13 +44,17 @@ Type
     FHelpFile,
     FTitle : String;
     FOptionChar : Char;
-    FCaseSensitiveOptions : Boolean;
+    FCaseSensitiveShortOptions : Boolean;
+    FCaseSensitiveLongOptions : Boolean;
     FStopOnException : Boolean;
     FExceptionExitCode : Integer;
+    FRunAborted:Boolean;
+    function GetCaseSensitiveOptions: Boolean;
     function GetEnvironmentVar(const VarName : String): String;
     function GetExeName: string;
     Function GetLocation : String;
     function GetSingleInstance: TBaseSingleInstance;
+    procedure SetCaseSensitiveOptions(AValue: Boolean);
     procedure SetSingleInstanceClass(
       const ASingleInstanceClass: TBaseSingleInstanceClass);
     function GetTitle: string;
@@ -53,6 +63,8 @@ Type
     procedure SetTitle(const AValue: string); Virtual;
     Function GetConsoleApplication : boolean; Virtual;
     Procedure DoRun; Virtual;
+    // Descendants can use this to stop the run loop without setting terminated.
+    procedure AbortRun; virtual;
     Function GetParams(Index : Integer) : String;virtual;
     function GetParamCount: Integer;Virtual;
     Procedure DoLog(EventType : TEventType; const Msg : String);  virtual;
@@ -97,7 +109,11 @@ Type
     Property ParamCount : Integer Read GetParamCount;
     Property EnvironmentVariable[envName : String] : String Read GetEnvironmentVar;
     Property OptionChar : Char Read FoptionChar Write FOptionChar;
-    Property CaseSensitiveOptions : Boolean Read FCaseSensitiveOptions Write FCaseSensitiveOptions;
+    Property CaseSensitiveOptions : Boolean Read GetCaseSensitiveOptions Write SetCaseSensitiveOptions;
+    Property CaseSensitiveShortOptions : Boolean Read FCaseSensitiveShortOptions
+                                                Write FCaseSensitiveShortOptions;
+    Property CaseSensitiveLongOptions : Boolean Read FCaseSensitiveLongOptions
+                                               Write FCaseSensitiveLongOptions;
     Property StopOnException : Boolean Read FStopOnException Write FStopOnException;
     Property ExceptionExitCode : Longint Read FExceptionExitCode Write FExceptionExitCode;
     Property EventLogFilter : TEventLogTypes Read FEventLogFilter Write FEventLogFilter;
@@ -111,8 +127,13 @@ var CustomApplication : TCustomApplication = nil;
 Implementation
 
 {$ifdef darwin}
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  MacOsApi.MacOSAll;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   MacOSAll;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endif}
 
 { TCustomApplication }
@@ -172,32 +193,35 @@ begin
 end;
 {$endif darwin}
 
-Procedure SysGetEnvironmentList(List : TStrings;NamesOnly : Boolean);
+Procedure SysGetEnvironmentList(List : TStrings; NamesOnly : Boolean);
 
 var
-   s : string;
-   i,l,j,count : longint;
+   S : String;
+   I,J,Count : Integer;
 
 begin
-  count:=GetEnvironmentVariableCount;
-  if count>0 then
-    for j:=1 to count  do
-     begin
-       s:=GetEnvironmentString(j);
-       l:=Length(s);
-       If NamesOnly then
-          begin
-            I:=pos('=',s);
-            If (I>0) then
-              S:=Copy(S,1,I-1);
-          end;
-       List.Add(S);
+  Count:=GetEnvironmentVariableCount;
+  for J:=1 to Count do
+    begin
+    S:=GetEnvironmentString(J);
+    If NamesOnly then
+      begin
+      I:=Pos('=',S);
+      If (I>1) then
+        SetLength(S,I-1);
+      end;
+    List.Add(S);
     end;
 end;
 
 function TCustomApplication.GetEnvironmentVar(const VarName : String): String;
 begin
   Result:=GetEnvironmentVariable(VarName);
+end;
+
+function TCustomApplication.GetCaseSensitiveOptions: Boolean;
+begin
+  Result:=FCaseSensitiveLongOptions; // Ignore FCaseSensitiveShortOptions here.
 end;
 
 procedure TCustomApplication.GetEnvironmentList(List: TStrings;
@@ -245,6 +269,12 @@ begin
   Result := FSingleInstance;
 end;
 
+procedure TCustomApplication.SetCaseSensitiveOptions(AValue: Boolean);
+begin
+  FCaseSensitiveShortOptions:=AValue;
+  FCaseSensitiveLongOptions:=AValue;
+end;
+
 procedure TCustomApplication.SetTitle(const AValue: string);
 begin
   FTitle:=AValue;
@@ -262,6 +292,11 @@ begin
       FSingleInstance.ServerCheckMessages;
 
   // Override in descendent classes.
+end;
+
+procedure TCustomApplication.AbortRun;
+begin
+  FRunAborted:=True;
 end;
 
 procedure TCustomApplication.DoLog(EventType: TEventType; const Msg: String);
@@ -292,7 +327,7 @@ constructor TCustomApplication.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   FOptionChar:='-';
-  FCaseSensitiveOptions:=True;
+  CaseSensitiveOptions:=True;
   FStopOnException:=False;
   FSingleInstanceClass := DefaultSingleInstanceClass;
 end;
@@ -305,7 +340,7 @@ end;
 procedure TCustomApplication.HandleException(Sender: TObject);
 begin
   If Not (ExceptObject is Exception) then
-    SysUtils.showexception(ExceptObject,ExceptAddr)
+    {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SysUtils.showexception(ExceptObject,ExceptAddr)
   else
     begin
     If Not Assigned(FOnexception) then
@@ -344,7 +379,7 @@ begin
     except
       HandleException(Self);
     end;
-  Until FTerminated;
+  Until FTerminated or FRunAborted;
 end;
 
 procedure TCustomApplication.SetSingleInstanceClass(
@@ -357,7 +392,7 @@ end;
 procedure TCustomApplication.ShowException(E: Exception);
 
 begin
-  Sysutils.ShowException(E,ExceptAddr)
+  {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}Sysutils.ShowException(E,ExceptAddr)
 end;
 
 procedure TCustomApplication.Terminate;
@@ -471,27 +506,15 @@ begin
   Until (I=-1);
 end;
 
-function TCustomApplication.HasOption(const S: String): Boolean;
-
-Var
-  B : Boolean;
-
-begin
-  Result:=FindOptionIndex(S,B)<>-1;
-end;
-
 function TCustomApplication.FindOptionIndex(const S: String;
   var Longopt: Boolean; StartAt : Integer = -1): Integer;
 
 Var
   SO,O : String;
   I,P : Integer;
+  CaseSens : Boolean;
 
 begin
-  If Not CaseSensitiveOptions then
-    SO:=UpperCase(S)
-  else
-    SO:=S;
   Result:=-1;
   I:=StartAt;
   if (I=-1) then
@@ -503,36 +526,48 @@ begin
     If (Length(O)>1) and (O[1]=FOptionChar) then
       begin
       Delete(O,1,1);
-      LongOpt:=(Length(O)>0) and (O[1]=FOptionChar);
+      LongOpt:=(O[1]=FOptionChar);
       If LongOpt then
         begin
+        CaseSens:=CaseSensitiveLongOptions;
         Delete(O,1,1);
         P:=Pos('=',O);
         If (P<>0) then
-          O:=Copy(O,1,P-1);
-        end;
-      If Not CaseSensitiveOptions then
+          SetLength(O,P-1);
+        end
+      else
+        CaseSens:=CaseSensitiveShortOptions;
+      If Not CaseSens then
         O:=UpperCase(O);
-      If (O=SO) then
+      if SO='' then begin  // Update SO when we know the opt is Long / Short
+        If Not CaseSens then
+          SO:=UpperCase(S)
+        else
+          SO:=S;
+      end;
+      If O=SO then
         Result:=i;
       end;
     Dec(i);
     end;
 end;
 
-function TCustomApplication.HasOption(const C: Char; const S: String): Boolean;
-
+function TCustomApplication.HasOption(const S: String): Boolean;
 Var
   B : Boolean;
+begin
+  Result:=FindOptionIndex(S,B)<>-1;
+end;
 
+function TCustomApplication.HasOption(const C: Char; const S: String): Boolean;
+Var
+  B : Boolean;
 begin
   Result:=(FindOptionIndex(C,B)<>-1) or (FindOptionIndex(S,B)<>-1);
 end;
 
-
 function TCustomApplication.CheckOptions(const ShortOptions: String;
   const Longopts: TStrings; AllErrors: Boolean): String;
-
 begin
   Result:=CheckOptions(ShortOptions,LongOpts,Nil,Nil,AllErrors);
 end;
@@ -549,7 +584,7 @@ function TCustomApplication.CheckOptions(const ShortOptions: String;
 Var
   I,J,L,P : Integer;
   O,OV,SO : String;
-  UsedArg,HaveArg : Boolean;
+  UsedArg,HaveArg,OptionsTerminated : Boolean;
 
   Function FindLongOpt(S : String) : boolean;
 
@@ -560,7 +595,7 @@ Var
     Result:=Assigned(LongOpts);
     if Not Result then
       exit;
-    If CaseSensitiveOptions then
+    If CaseSensitiveLongOptions then
       begin
       I:=LongOpts.Count-1;
       While (I>=0) and (LongOpts[i]<>S) do
@@ -585,16 +620,23 @@ Var
   end;
 
 begin
-  If CaseSensitiveOptions then
+  If CaseSensitiveShortOptions then
     SO:=Shortoptions
   else
     SO:=LowerCase(Shortoptions);
   Result:='';
   I:=1;
+  OptionsTerminated:=False;
   While (I<=ParamCount) and ((Result='') or AllErrors) do
     begin
-    O:=Paramstr(I);
-    If (Length(O)=0) or (O[1]<>FOptionChar) then
+    O:=Params[I];
+    if (O=FOptionChar+FOptionChar) then
+      begin
+      OptionsTerminated:=True;
+      Inc(i);
+      Continue;
+      end;
+    If OptionsTerminated or (Length(O)=0) or (O[1]<>FOptionChar) then
       begin
       If Assigned(NonOpts) then
         NonOpts.Add(O);
@@ -641,9 +683,9 @@ begin
           end
         else // Short Option.
           begin
-          HaveArg:=(I<ParamCount) and (Length(ParamStr(I+1))>0) and (ParamStr(I+1)[1]<>FOptionChar);
+          HaveArg:=(I<ParamCount) and (Length(Params[I+1])>0) and (Params[I+1][1]<>FOptionChar);
           UsedArg:=False;
-          If Not CaseSensitiveOptions then
+          If Not CaseSensitiveShortOptions then
             O:=LowerCase(O);
           L:=Length(O);
           J:=2;
@@ -670,7 +712,7 @@ begin
           If HaveArg then
             begin
             Inc(I); // Skip argument.
-            OV:=Paramstr(I);
+            OV:=Params[I];
             end;
           end;
         If HaveArg and ((Result='') or AllErrors) then

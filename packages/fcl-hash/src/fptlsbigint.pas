@@ -10,13 +10,19 @@
 {$R-}
 {$Q-}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fpTLSBigInt;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WARN 6058 off : Call to subroutine "$1" marked as inline is not inlined}
 
 interface
 
-uses SysUtils;
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils, System.Hash.Utils;
+{$ELSE FPC_DOTTEDUNITS}
+uses SysUtils, fphashutils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {off $DEFINE BIGINT_DEBUG}         // Enable debug output/functions for BitInt unit
 
@@ -150,12 +156,12 @@ begin
   if BI.References <= 0 then
   begin
     writeln('BICheck - Zero or negative References in TBigInt');
-    raise Exception.Create('20220428201452');
+    raise EHashUtil.Create('20220428201452');
   end;
   if BI.Next <> nil then
   begin
     writeln('BICheck - Attempt to use a TBigInt from the free list');
-    raise Exception.Create('20220428201508');
+    raise EHashUtil.Create('20220428201508');
   end;
   {$ENDIF}
   Result:=True;
@@ -188,7 +194,7 @@ begin
   begin
     Result := Context.FreeList;
     if Result^.References <> 0 then
-      raise Exception.Create('20220428200026');
+      raise EHashUtil.Create('20220428200026');
     Context.FreeList := Result^.Next;
     Dec(Context.FreeCount);
     BIResizeComponents(Result, Size);
@@ -389,7 +395,7 @@ begin
     Carry := 0;
     RIndex := I;
     J := 0;
-    if (OuterPartial > 0) and ((OuterPartial-I) > 0) and (OuterPartial < N) then
+    if (OuterPartial > I) and (OuterPartial < N) then
     begin
       RIndex := OuterPartial-1;
       J := OuterPartial-I-1;
@@ -520,6 +526,7 @@ Var
   BI,BNext : PBigInt;
 
 begin
+  BIDepermanent(Context.BIRadix);
   BIRelease(Context, Context.BIRadix);
   Context.BIRadix := nil;
   BI:=Context.FreeList;
@@ -540,7 +547,7 @@ begin
   if not BICheck(BI^) then
     Exit;
   if BI^.References <> 1 then
-    raise Exception.Create('20220428195735');
+    raise EHashUtil.Create('20220428195735');
   BI^.References := BIGINT_PERMANENT;
 end;
 
@@ -550,7 +557,7 @@ begin
   if not BICheck(BI^) then
     Exit;
   if BI^.References <> BIGINT_PERMANENT then
-    raise Exception.Create('20220428203636');
+    raise EHashUtil.Create('20220428203636');
   BI^.References := 1;
 end;
 
@@ -570,7 +577,7 @@ begin
   Dec(Context.ActiveCount);
   {$IFDEF BIGINT_DEBUG}
   if Context.ActiveCount < 0 then
-    raise Exception.Create('20220428203546');
+    raise EHashUtil.Create('20220428203546');
   {$ENDIF}
 end;
 
@@ -977,6 +984,7 @@ begin
     BIDepermanent(Context.G[I]);
     BIRelease(Context, Context.G[I]);
   end;
+  FreeMem(Context.G);
   BIRelease(Context, BI);
   BIRelease(Context, BIExp);
   Result := BIR;
@@ -1176,7 +1184,7 @@ end;
 
 function BIToString(BI: PBigInt): AnsiString;
 const
-  Digits: Array[0..15] of char = ('0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F');
+  Digits: Array[0..15] of AnsiChar = ('0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F');
 var
   I,J,K: Integer;
   Num: TBIComponent;

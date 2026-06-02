@@ -19,7 +19,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CGEvent;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -204,7 +206,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CFBase,MacOsApi.CFData,MacOsApi.CFMachPort,MacOsApi.CGBase,MacOsApi.CGDirectDisplay,MacOsApi.CGEventTypes,MacOsApi.CGGeometry,MacOsApi.CGErrors,MacOsApi.CGRemoteOperation,MacOsApi.CGEventSource;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CFBase,CFData,CFMachPort,CGBase,CGDirectDisplay,CGEventTypes,CGGeometry,CGErrors,CGRemoteOperation,CGEventSource;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 {$ALIGN POWER}
@@ -242,7 +248,7 @@ function CGEventCreateFromData( allocator: CFAllocatorRef; data: CFDataRef ): CG
    is ignored unless `mouseType' is one of `kCGEventOtherMouseDown',
    `kCGEventOtherMouseDragged', or `kCGEventOtherMouseUp'.
 
-   The current implemementation of the event system supports a maximum of
+   The current implementation of the event system supports a maximum of
    thirty-two buttons. Mouse button 0 is the primary button on the mouse.
    Mouse button 1 is the secondary mouse button (right). Mouse button 2 is
    the center button, and the remaining buttons are in USB device order. }
@@ -268,7 +274,7 @@ function CGEventCreateMouseEvent( source: CGEventSourceRef; mouseType: CGEventTy
 
 function CGEventCreateKeyboardEvent( source: CGEventSourceRef; virtualKey: CGKeyCode; keyDown: CBool ): CGEventRef; external name '_CGEventCreateKeyboardEvent';
 (* CG_AVAILABLE_STARTING(__MAC_10_4, __IPHONE_NA) *)
-                                                 
+
 { Return a new scrollwheel event.
 
    The event source may be taken from another event, or may be NULL. The
@@ -284,7 +290,7 @@ function CGEventCreateKeyboardEvent( source: CGEventSourceRef; virtualKey: CGKey
    line. The scale between the two is about 10 pixels per line by default.
    The scale can be altered by setting a custom value for the event source,
    using `CGEventSourceSetPixelsPerLine'. }
- 
+
 function CGEventCreateScrollWheelEvent( source: CGEventSourceRef; units: CGScrollEventUnit; wheelCount: UInt32; wheel1: SInt32; ... ): CGEventRef; external name '_CGEventCreateScrollWheelEvent';
 (* CG_AVAILABLE_STARTING(__MAC_10_5, __IPHONE_NA) *)
 
@@ -292,7 +298,7 @@ function CGEventCreateScrollWheelEvent( source: CGEventSourceRef; units: CGScrol
 
 function CGEventCreateCopy( event: CGEventRef ): CGEventRef; external name '_CGEventCreateCopy';
 (* CG_AVAILABLE_STARTING(__MAC_10_4, __IPHONE_NA) *)
-{ 
+{
  * CFRetain() and CFRelease() may be used to retain and release CGEventRefs.
  }
 
@@ -428,7 +434,7 @@ procedure CGEventSetDoubleValueField( event: CGEventRef; field: CGEventField; va
    A function registers an event tap, taking a pointer to the program's tap
    function and an arbitrary reference to be passed to the tap function, and
    returning a `CFMachPortRef' the program can add to the appropriate run
-   loop by creating a surce and using `CFRunLoopAddSource'.
+   loop by creating a source and using `CFRunLoopAddSource'.
 
    Taps may be placed at the point where HIDSystem events enter the server,
    at the point where HIDSystem and remote control events enter a session,

@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 Unit JdMarker;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { This file contains routines to decode JPEG datastream markers.
   Most of the complexity arises from our desire to support input
@@ -15,7 +17,17 @@ Unit JdMarker;
 interface
 
 {$I jconfig.inc}
+{$modeswitch nestedprocvars}
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Jpeg.Jmorecfg,
+  System.Jpeg.Jinclude,
+  System.Jpeg.Jdeferr,
+  System.Jpeg.Jerror,
+  System.Jpeg.Jcomapi,
+  System.Jpeg.Jpeglib;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   jmorecfg,
   jinclude,
@@ -23,6 +35,7 @@ uses
   jerror,
   jcomapi,
   jpeglib;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const                   { JPEG marker codes }
   M_SOF0  = $c0;
@@ -149,11 +162,16 @@ procedure jpeg_set_marker_processor (cinfo : j_decompress_ptr;
                                      routine : jpeg_marker_parser_method);
 Var
   on_unknown_marker : function (cinfo : j_decompress_ptr) : int; far;
-  
+
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Jpeg.Jutils;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   jutils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { At all times, cinfo1.src.next_input_byte and .bytes_in_buffer reflect
   the current restart point; we update them only when we have reached a
@@ -537,17 +555,23 @@ end;  { get_sof }
 {LOCAL}
 function get_sos (cinfo : j_decompress_ptr) : boolean;
 { Process a SOS marker }
+{$IFNDEF NOGOTO}
 label
   id_found;
+{$ENDIF}
+
 var
   length : INT32;
   i, ci, n, c, cc : int;
   compptr : jpeg_component_info_ptr;
+  foundid : boolean;
+
 { Declare and initialize local copies of input pointer/count }
 var
   datasrc : jpeg_source_mgr_ptr;
   next_input_byte : JOCTETptr;    { Array[] of JOCTET; }
   bytes_in_buffer : size_t;
+
 begin
   datasrc := cinfo^.src;
   next_input_byte := datasrc^.next_input_byte;
@@ -674,16 +698,29 @@ begin
     Inc(next_input_byte);
 
     compptr := jpeg_component_info_ptr(cinfo^.comp_info);
+
+    FoundID:=False;
+
     for ci := 0 to Pred(cinfo^.num_components) do
     begin
-      if (cc = compptr^.component_id) then
+      FoundID:=(cc = compptr^.component_id);
+      if FoundID then
+        begin
+      {$IFDEF NOGOTO}
+        Break;
+      {$ELSE}
         goto id_found;
+      {$ENDIF}
+        end;
       Inc(compptr);
     end;
 
-    ERREXIT1(j_common_ptr(cinfo), JERR_BAD_COMPONENT_ID, cc);
+    if not FoundID then
+      ERREXIT1(j_common_ptr(cinfo), JERR_BAD_COMPONENT_ID, cc);
 
+  {$IFNDEF NOGOTO}
   id_found:
+  {$ENDIF}
 
     cinfo^.cur_comp_info[i] := compptr;
     compptr^.dc_tbl_no := (c shr 4) and 15;
@@ -1629,13 +1666,13 @@ begin
 end;
 
 {LOCAL}
-function examine_app1 (cinfo : j_decompress_ptr;
+procedure examine_app1 (cinfo : j_decompress_ptr;
                         var header : array of JOCTET;
                         headerlen : uint;
                         var remaining : INT32;
                         datasrc : jpeg_source_mgr_ptr;
                         var next_input_byte : JOCTETptr;
-                        var bytes_in_buffer : size_t): Boolean;
+                        var bytes_in_buffer : size_t);
 
 { Read Exif marker.
   headerlen is # of bytes at header[], remaining is length of rest of marker header.
@@ -1754,7 +1791,7 @@ begin
 
     // read data
     if not Read16(numRecords) then
-      Exit(False);
+      Exit;
 
     for i:=1 to numRecords do
     begin
@@ -1768,8 +1805,12 @@ begin
       ifdRec.tag_id := FixEndian16(ifdRec.tag_id);
       ifdRec.data_type := FixEndian16(ifdRec.data_type);
 
+      if (ifdRec.data_type < 1) or (ifdRec.data_type > 13) then
+        Continue;
       ifdRec.data_count := FixEndian32(ifdRec.data_count);
       byteCount := Integer(ifdRec.data_count) * TagElementSize[ifdRec.data_type];
+      if byteCount > 65536 then
+        Continue;
       if byteCount>0 then
       begin
         SetLength(data, bytecount);
@@ -1784,6 +1825,12 @@ begin
         my_marker_ptr(cinfo^.marker)^.handle_exif_tag(cinfo, ifdRec, BigEndian, data, EXIF_TAGPARENT_PRIMARY);
       end;
     end;
+  end else
+  if Assigned(cinfo.extensions) and Assigned(cinfo.extensions^.read_ext_appn) and (headerlen>0) then
+  begin
+    BigEndian := False;
+    Offset := APP1_HEADER_LEN;
+    cinfo.extensions^.read_ext_appn(cinfo, M_APP1, header, headerlen, remaining, Read);
   end;
 end;
 
@@ -1900,7 +1947,7 @@ begin
       numtoread := uint(length)
     else
       numtoread := 0;
-      
+
   if numtoread > 0 then
   begin
     for i := 0 to numtoread-1 do
@@ -2549,7 +2596,7 @@ begin
           end;
         { // This is the previous code.
           ERREXIT1(j_common_ptr(cinfo) , JERR_UNKNOWN_MARKER,cinfo^.unread_marker);
-        }  
+        }
     end; { end of case }
     { Successfully processed marker, so reset state variable }
     cinfo^.unread_marker := 0;

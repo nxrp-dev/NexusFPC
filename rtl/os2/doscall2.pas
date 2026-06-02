@@ -23,14 +23,21 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit DosCall2;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {***************************************************************************}
 interface
 {***************************************************************************}
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  OS2Api.doscalls, System.Strings;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   DosCalls, Strings;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
 (* Status in DosGet/SetProcessorStatus *)
@@ -108,7 +115,7 @@ type
   PCPUUtil = ^TCPUUtil;
 
 
-function DosOpenL (FileName: PChar; var Handle: THandle;
+function DosOpenL (FileName: PAnsiChar; var Handle: THandle;
                         var Action: cardinal; InitSize: int64;
                         Attrib, OpenFlags, FileMode: cardinal;
                                                  EA: pointer): cardinal; cdecl;
@@ -118,7 +125,7 @@ function DosSetFilePtrL (Handle: THandle; Pos: int64; Method: cardinal;
 
 function DosSetFileSizeL (Handle: THandle; Size: int64): cardinal; cdecl;
 
-function DosProtectOpen (FileName: PChar; var Handle: longint;
+function DosProtectOpen (FileName: PAnsiChar; var Handle: longint;
                          var Action: longint; InitSize, Attrib,
                          OpenFlags, OpenMode: longint; ea: PEAOp2;
                               var FileHandleLockID: cardinal): cardinal; cdecl;
@@ -163,7 +170,7 @@ function DosProtectEnumAttribute (const FileName: string; Entry: cardinal;
                                   var Count: cardinal; InfoLevel: cardinal;
                                          FileHandleLockID: cardinal): cardinal;
 
-function DosProtectOpen (FileName: PChar; var Handle: THandle;
+function DosProtectOpen (FileName: PAnsiChar; var Handle: THandle;
                               var Action: cardinal; InitSize, Attrib,
                               OpenFlags, OpenMode: cardinal; ea: PEAOp2;
                               var FileHandleLockID: cardinal): cardinal; cdecl;
@@ -233,12 +240,12 @@ function DosCancelLockRequestL (Handle: THandle;
                                         var Lock: TFileLockL): cardinal; cdecl;
 
 (*
-DosProtectSetFileLocksL locks and unlocks a range of an open file. 
+DosProtectSetFileLocksL locks and unlocks a range of an open file.
 
 Parameters:
  Handle = file handle
  Unlock = record containing the offset and length of a range to be unlocked
- Lock = record containing the offset and length of a range to be locked 
+ Lock = record containing the offset and length of a range to be locked
  Timeout = the maximum time that the process is to wait for the requested locks
            (in milliseconds)
  Flags = bit mask specifying action to be taken.
@@ -261,14 +268,14 @@ Parameters:
  FileHandleLockID = filehandle lockid returned by a previous DosProtectOpenL.
 
 Possible return codes:
-0 NO_ERROR 
-6 ERROR_INVALID_HANDLE 
-33 ERROR_LOCK_VIOLATION 
-36 ERROR_SHARING_BUFFER_EXCEEDED 
-87 ERROR_INVALID_PARAMETER 
-95 ERROR_INTERRUPT 
-174 ERROR_ATOMIC_LOCK_NOT_SUPPORTED 
-175 ERROR_READ_LOCKS_NOT_SUPPORTED 
+0 NO_ERROR
+6 ERROR_INVALID_HANDLE
+33 ERROR_LOCK_VIOLATION
+36 ERROR_SHARING_BUFFER_EXCEEDED
+87 ERROR_INVALID_PARAMETER
+95 ERROR_INTERRUPT
+174 ERROR_ATOMIC_LOCK_NOT_SUPPORTED
+175 ERROR_READ_LOCKS_NOT_SUPPORTED
 
 Remarks:
 DosProtectSetFileLocksL allows a process to lock and unlock a range in a file.
@@ -363,7 +370,7 @@ function DosProtectSetFileLocksL (Handle: THandle; var Unlock: TFileLockL;
                                   FileHandleLockID: cardinal): cardinal; cdecl;
 
 (*
-DosSetFileLocksL locks and unlocks a range of an open file. 
+DosSetFileLocksL locks and unlocks a range of an open file.
 
 Parameters:
  Handle = file handle
@@ -389,15 +396,15 @@ Parameters:
         any other file range with exclusive access.
 
 Possible return codes:
-  0 NO_ERROR 
-  1 ERROR_INVALID_FUNCTION 
-  6 ERROR_INVALID_HANDLE 
- 33 ERROR_LOCK_VIOLATION 
- 36 ERROR_SHARING_BUFFER_EXCEEDED 
- 87 ERROR_INVALID_PARAMETER 
- 95 ERROR_INTERRUPT 
-174 ERROR_ATOMIC_LOCK_NOT_SUPPORTED 
-175 ERROR_READ_LOCKS_NOT_SUPPORTED 
+  0 NO_ERROR
+  1 ERROR_INVALID_FUNCTION
+  6 ERROR_INVALID_HANDLE
+ 33 ERROR_LOCK_VIOLATION
+ 36 ERROR_SHARING_BUFFER_EXCEEDED
+ 87 ERROR_INVALID_PARAMETER
+ 95 ERROR_INTERRUPT
+174 ERROR_ATOMIC_LOCK_NOT_SUPPORTED
+175 ERROR_READ_LOCKS_NOT_SUPPORTED
 
 Remarks:
 DosSetFileLocksL allows a process to lock and unlock a range in a file. The
@@ -509,7 +516,7 @@ Parameters:
             or replace a file with a nonzero length if the OpenMode
             Access-Mode flag is set to read-only.
  Attrib = file attributes; this parameter contains the following bit fields:
-      Bits Description 
+      Bits Description
 
      31..6 - reserved, must be 0.
          5 FILE_ARCHIVED (0x00000020) - file has been archived.
@@ -528,25 +535,25 @@ individually or in combination. For example, an attribute value of 0x00000021
 
  OpenFlags = the action to be taken depending on whether the file exists or
              does not exist. This parameter contains the following bit fields:
-     Bits Description 
+     Bits Description
     31..8 - reserved, must be 0.
      7..4 - the following flags apply if the file does not exist:
-        0000 OPEN_ACTION_FAIL_IF_NEW 
-             Open an existing file; fail if the file does not exist. 
-        0001 OPEN_ACTION_CREATE_IF_NEW 
-             Create the file if the file does not exist. 
+        0000 OPEN_ACTION_FAIL_IF_NEW
+             Open an existing file; fail if the file does not exist.
+        0001 OPEN_ACTION_CREATE_IF_NEW
+             Create the file if the file does not exist.
      3..0 The following flags apply if the file does not exist:
-        0000 OPEN_ACTION_FAIL_IF_EXISTS 
-             Open the file; fail if the file already exists. 
-        0001 OPEN_ACTION_OPEN_IF_EXISTS 
-             Open the file if it already exists. 
-        0010 OPEN_ACTION_REPLACE_IF_EXISTS 
-             Replace the file if it already exists. 
+        0000 OPEN_ACTION_FAIL_IF_EXISTS
+             Open the file; fail if the file already exists.
+        0001 OPEN_ACTION_OPEN_IF_EXISTS
+             Open the file if it already exists.
+        0010 OPEN_ACTION_REPLACE_IF_EXISTS
+             Replace the file if it already exists.
 
  OpenMode = the mode of the open function. This parameter contains the
             following bit fields:
-      Bits Description 
-        31 - reserved, must be zero. 
+      Bits Description
+        31 - reserved, must be zero.
         30 OPEN_FLAGS_PROTECTED_HANDLE (0x40000000) - protected file handle flag.
              0 - unprotected Handle
              1 - protected Handle
@@ -568,10 +575,10 @@ individually or in combination. For example, an attribute value of 0x00000021
     28..16 - reserved, must be zero.
         15 OPEN_FLAGS_DASD (0x00008000)
            Direct Open flag:
-             0 - FileName represents a file to be opened normally. 
+             0 - FileName represents a file to be opened normally.
              1 - FileName is drive (such as C or A), and represents a mounted
                  disk or diskette volume to be opened for direct access.
-        14 OPEN_FLAGS_WRITE_THROUGH (0x00004000) 
+        14 OPEN_FLAGS_WRITE_THROUGH (0x00004000)
            Write-Through flag:
              0 - writes to the file may go through the file-system driver's
                  cache; the file-system driver writes the sectors when the
@@ -583,8 +590,8 @@ individually or in combination. For example, an attribute value of 0x00000021
                  file. For synchronous files, this bit must be set, because the
                  data must be written to the medium for synchronous write
                  operations.
-  This bit flag is not inherited by child processes. 
-       13 OPEN_FLAGS_FAIL_ON_ERROR (0x00002000) 
+  This bit flag is not inherited by child processes.
+       13 OPEN_FLAGS_FAIL_ON_ERROR (0x00002000)
           Fail-Errors flag. Media I/O errors are handled as follows:
             0 - reported through the system critical-error handler.
             1 - reported directly to the caller by way of a return code.
@@ -593,9 +600,9 @@ individually or in combination. For example, an attribute value of 0x00000021
   The Fail-Errors function applies only to non-IOCtl handle-based file I/O
   calls.
 
-  This flag bit is not inherited by child processes. 
+  This flag bit is not inherited by child processes.
 
-       12 OPEN_FLAGS_NO_CACHE (0x00001000) 
+       12 OPEN_FLAGS_NO_CACHE (0x00001000)
           No-Cache/Cache flag:
             0 - the file-system driver should place data from I/O operations
                 into its cache.
@@ -603,7 +610,7 @@ individually or in combination. For example, an attribute value of 0x00000021
                 file-system driver's cache.
   The setting of this bit determines whether file-system drivers should place
   data into the cache. Like the write-through bit, this is a per-handle bit,
-  and is not inherited by child processes. 
+  and is not inherited by child processes.
        11 - reserved; must be 0.
     10..8 - the locality of reference flags contain information about how the
             application is to get access to the file. The values are as
@@ -621,7 +628,7 @@ individually or in combination. For example, an attribute value of 0x00000021
             0 - file handle is inherited by a process created from a call to
                 DosExecPgm.
             1 - file handle is private to the current process.
-  This bit is not inherited by child processes. 
+  This bit is not inherited by child processes.
     6..4 Sharing Mode flags; this field defines any restrictions to file
          access placed by the caller on other processes. The values are as
          follows:
@@ -633,8 +640,8 @@ individually or in combination. For example, an attribute value of 0x00000021
              Deny read access.
          100 OPEN_SHARE_DENYNONE (0x00000040)
              Deny neither read nor write access (deny none).
-         Any other value is invalid. 
-       3 Reserved; must be 0. 
+         Any other value is invalid.
+       3 Reserved; must be 0.
     2..0 Access-Mode flags. This field defines the file access required by the
          caller. The values are as follows:
          000 OPEN_ACCESS_READONLY (0x00000000)
@@ -643,7 +650,7 @@ individually or in combination. For example, an attribute value of 0x00000021
          Write-only access
          010 OPEN_ACCESS_READWRITE (0x00000002)
          Read/write access.
-         Any other value is invalid, as are any other combinations.   
+         Any other value is invalid, as are any other combinations.
 
 File sharing requires the cooperation of sharing processes. This cooperation is
 communicated through sharing and access modes. Any sharing restrictions placed
@@ -758,7 +765,7 @@ results in an ERROR_ACCESS_DENIED return code.
 The DosProtectxxx functions can be used with a NULL filehandle LockID, if the
 subject filehandle was obtained from DosOpen.
 *)
-function DosProtectOpenL (FileName: PChar; var Handle: THandle;
+function DosProtectOpenL (FileName: PAnsiChar; var Handle: THandle;
                          var Action: cardinal; InitSize: int64; Attrib,
                          OpenFlags, OpenMode: cardinal; EA: PEAOp2;
                               var FileHandleLockID: cardinal): cardinal; cdecl;
@@ -774,14 +781,14 @@ Parameters:
  Method = The method of moving - location in the file at which the read/write
           pointer starts before adding the Pos offset. The values and their
           meanings are as shown in the following list:
-    0 FILE_BEGIN - move the pointer from the beginning of the file. 
+    0 FILE_BEGIN - move the pointer from the beginning of the file.
     1 FILE_CURRENT - move the pointer from the current location of the
                      read/write pointer.
     2 FILE_END - move the pointer from the end of the file; use this method
                  to determine a file's size.
  PosActual = address of the new pointer location.
  FileHandleLockID = The filehandle lockid returned by a previous
-                    DosProtectOpenL. 
+                    DosProtectOpenL.
 
 Possible return codes:
   0 NO_ERROR
@@ -801,7 +808,7 @@ the file.
 DosProtectSetFilePtrL cannot be used for a character device or pipe.
 *)
 function DosProtectSetFilePtrL (Handle: THandle; Pos: int64;
-                              Method: cardinal; var PosActual: int64; 
+                              Method: cardinal; var PosActual: int64;
                                   FileHandleLockID: cardinal): cardinal; cdecl;
 (*
 DosProtectSetFileSizeL changes the size of a file.
@@ -823,7 +830,7 @@ Possible return codes:
 Remarks:
 
 When DosProtectSetFileSizeL is issued, the file must be open in a mode that
-allows write access. 
+allows write access.
 
 The size of the open file can be truncated or extended. If the file size is
 being extended, the file system tries to allocate additional bytes in
@@ -838,11 +845,11 @@ DosGetProcessorStatus allows checking status of individual processors
 in a SMP machine.
 
 Parameters:
-ProcID = Procesor ID numbered 1 through n, where there are n processors in
+ProcID = Processor ID numbered 1 through n, where there are n processors in
          total.
 Status = Returned processor status defined as follows:
-  PROC_OFFLINE 0x00000000 Processor is offline 
-  PROC_ONLINE 0x00000001 Processor is online 
+  PROC_OFFLINE 0x00000000 Processor is offline
+  PROC_ONLINE 0x00000001 Processor is online
 
 Possible return codes:
  0 NO_ERROR
@@ -863,11 +870,11 @@ Parameters:
 ProcID = Processor ID numbered from 1 through n, where there are n processors
          in total.
 Status = Requested processor status defined as follows:
-  PROC_OFFLINE 0x00000000 Processor is offline. 
-  PROC_ONLINE 0x00000001 Processor is online. 
+  PROC_OFFLINE 0x00000000 Processor is offline.
+  PROC_ONLINE 0x00000001 Processor is online.
 
 Possible return codes:
- 0 NO_ERROR 
+ 0 NO_ERROR
 87 ERROR_INVALID_PARAMETER
 *)
 function DosSetProcessorStatus (ProcID: cardinal;
@@ -879,13 +886,13 @@ processor affinity mask and the system's capable processor affinity mask.
 
 Parameters:
 Scope = Scope of the query defined by one of the following values:
-  AFNTY_THREAD Return the current threads processor affinity mask. 
-  AFNTY_SYSTEM Return the system's current capable processor affinity mask. 
+  AFNTY_THREAD Return the current threads processor affinity mask.
+  AFNTY_SYSTEM Return the system's current capable processor affinity mask.
 AffinityMask = Affinity mask is returned here; processors 0..31 are in Mask [0]
                and processors 32..63 are in Mask [1].
 
 Possible return codes:
-13 ERROR_INVALID_DATA 
+13 ERROR_INVALID_DATA
 87 ERROR_INVALID_PARAMETER
 *)
 function DosQueryThreadAffinity (Scope: cardinal;
@@ -909,11 +916,11 @@ Flags - flag indicating when the new path is searched - possible values:
   END_LIBPATH - The new path is searched after the LIBPATH.
 
 Possible return codes:
-  0 NO_ERROR 
- 87 ERROR_INVALID_PARAMETER 
+  0 NO_ERROR
+ 87 ERROR_INVALID_PARAMETER
 122 ERROR_INSUFFICIENT_BUFER
 *)
-function DosQueryExtLibPath (ExtLibPath: PChar; Flags: cardinal): cardinal;
+function DosQueryExtLibPath (ExtLibPath: PAnsiChar; Flags: cardinal): cardinal;
                                                                          cdecl;
 
 (*
@@ -978,12 +985,12 @@ Both BeginLIBPATH and EndLIBPATH can be set from the command line using the SET
 command.
 
 Possible return codes:
-0 NO_ERROR 
-8 ERROR_NOT_ENOUGH_MEMORY 
-87 ERROR_INVALID_PARAMETER 
-161 ERROR_BAD_PATHNAME 
+0 NO_ERROR
+8 ERROR_NOT_ENOUGH_MEMORY
+87 ERROR_INVALID_PARAMETER
+161 ERROR_BAD_PATHNAME
 *)
-function DosSetExtLibPath (ExtLibPath: PChar; Flags: cardinal): cardinal;
+function DosSetExtLibPath (ExtLibPath: PAnsiChar; Flags: cardinal): cardinal;
                                                                          cdecl;
 
 (*
@@ -1002,17 +1009,17 @@ Offset = Address where the offset to the object corresponding to the Address is
 Address = Input address to be queried.
 
 Possible return codes:
-  0 NO_ERROR 
- 87 ERROR_INVALID_PARAMETER 
+  0 NO_ERROR
+ 87 ERROR_INVALID_PARAMETER
 487 ERROR_INVALID_ADDRESS
 *)
 function DosQueryModFromEIP (var HMod: THandle; var ObjNum: cardinal;
-                         BuffLen: cardinal; Buff: PChar; var Offset: cardinal;
+                         BuffLen: cardinal; Buff: PAnsiChar; var Offset: cardinal;
                                             Address: PtrUInt): cardinal; cdecl;
 
 
 (*
-DosDumpProcess initiates a process dump from a specified process. This may be used as part of an error handling routine to gather information about an error that may be analyzed later using the OS/2 System Dump Formatter. Configuration of Process Dump may be done using the PDUMPSYS, PDUMPUSR, and PROCDUMP commands. 
+DosDumpProcess initiates a process dump from a specified process. This may be used as part of an error handling routine to gather information about an error that may be analyzed later using the OS/2 System Dump Formatter. Configuration of Process Dump may be done using the PDUMPSYS, PDUMPUSR, and PROCDUMP commands.
 
 Parameters:
 Flag = Function to be performed (one of DDP_* constants).
@@ -1048,7 +1055,7 @@ PDUMPSYS, AND PROCDUMP commands. For further information, see PROCDUMP.DOC
 in the OS2\SYSTEM\RAS directory. DDP_ENABLEPROCDUMP and DDP_DISABLEPROCDUMP
 are provided for backwards compatibility only.
 *)
-function DosDumpProcess (Flag: cardinal; Drive: char;
+function DosDumpProcess (Flag: cardinal; Drive: AnsiChar;
                                                PID: cardinal): cardinal; cdecl;
 
 
@@ -1092,7 +1099,7 @@ Possible error codes:
  0 NO_ERROR
 87 ERROR_INVALID_PARAMETER
 *)
-function DosSuppressPopups (Flag: cardinal; Drive: char): cardinal; cdecl;
+function DosSuppressPopups (Flag: cardinal; Drive: AnsiChar): cardinal; cdecl;
 
 
 (*
@@ -1106,7 +1113,7 @@ Command = Command to be performed; the following commands are accepted:
                        taking a snapshot of the time stamp counters. To
                        determine CPU utilization, the application must compute
                        the difference between two time stamp snapshots using 64
-                       bit aritimetic.
+                       bit arithmetic.
   CMD_SOFTTRACE_LOG ($14) - records software trace information.
 Parm1 (CPUUtil) = Command-specific. In case of CMD_KI_RDCNT, pointer to
                   TCPUUtil record. In case of CMD_SOFTTRACE_LOG, major code for
@@ -1121,7 +1128,7 @@ Parm3 (HookData) = Command-specific. In case of CMD_KI_RdCnt, it must be 0. In
                    structure (see example code).
 
 Possible return codes:
-0 NO_ERROR 
+0 NO_ERROR
 1 ERROR_INVALID_FUNCTION
 
 Remarks:
@@ -1135,7 +1142,7 @@ is not running on a processor with the required features, a return code will
 indicate an attempt to use an unsupported function.
 
 Example code (C):
-  int main (int argc, char *argv[])
+  int main (int argc, AnsiChar *argv[])
   {
      APIRET     rc;
      BYTE       HookBuffer [256];
@@ -1147,7 +1154,7 @@ Example code (C):
      strcpy((PSZ  HookBuffer[12], "Test of 3 ULONG values and a string.")
      HookData.ulLength = 12 + strlen((PSZ HookBuffer[12]) + 1;
 
-     ulMajor = 0x00b8 
+     ulMajor = 0x00b8
      ulMinor = 0x0001
 
      rc = DosPerfSystCall(CMD_SOFTTRACE_LOG, ulMajor, ulMinor, (ULONG)  HookData);
@@ -1211,8 +1218,13 @@ function DosQueryABIOSSupport (Reserved: cardinal): cardinal; cdecl;
 implementation
 {***************************************************************************}
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  OS2Api.os2def;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   OS2Def;
+{$ENDIF FPC_DOTTEDUNITS}
 
 
 function DummyDosCancelLockRequestL (Handle: THandle; var Lock: TFileLockL): cardinal; cdecl;
@@ -1276,7 +1288,7 @@ begin
 end;
 
 
-function DummyDosProtectOpenL (FileName: PChar; var Handle: THandle;
+function DummyDosProtectOpenL (FileName: PAnsiChar; var Handle: THandle;
                          var Action: cardinal; InitSize: int64; Attrib,
                          OpenFlags, OpenMode: cardinal; EA: PEAOp2;
                               var FileHandleLockID: cardinal): cardinal; cdecl;
@@ -1290,7 +1302,7 @@ end;
 
 
 function DummyDosProtectSetFilePtrL (Handle: THandle; Pos: int64;
-                              Method: cardinal; var PosActual: int64; 
+                              Method: cardinal; var PosActual: int64;
                                   FileHandleLockID: cardinal): cardinal; cdecl;
 var
   PosActual0: cardinal;
@@ -1330,7 +1342,7 @@ begin
 end;
 
 
-function DummyDosProtectOpen (FileName: PChar; var Handle: THandle;
+function DummyDosProtectOpen (FileName: PAnsiChar; var Handle: THandle;
                               var Action: cardinal; InitSize, Attrib,
                               OpenFlags, OpenMode: cardinal; ea: PEAOp2;
                               var FileHandleLockID: cardinal): cardinal; cdecl;
@@ -1454,7 +1466,7 @@ begin
 end;
 
 
-function DummyDosQueryExtLibPath (ExtLibPath: PChar;
+function DummyDosQueryExtLibPath (ExtLibPath: PAnsiChar;
                                              Flags: cardinal): cardinal; cdecl;
 begin
   if ExtLibPath <> nil then
@@ -1467,7 +1479,7 @@ begin
 end;
 
 
-function DummyDosSetExtLibPath (ExtLibPath: PChar; Flags: cardinal): cardinal;
+function DummyDosSetExtLibPath (ExtLibPath: PAnsiChar; Flags: cardinal): cardinal;
                                                                          cdecl;
 begin
   DummyDosSetExtLibPath := Error_Not_Enough_Memory;
@@ -1475,7 +1487,7 @@ end;
 
 
 function DummyDosQueryModFromEIP (var HMod: THandle; var ObjNum: cardinal;
-                         BuffLen: cardinal; Buff: PChar; var Offset: cardinal;
+                         BuffLen: cardinal; Buff: PAnsiChar; var Offset: cardinal;
                                             Address: PtrUInt): cardinal; cdecl;
 begin
   DummyDosQueryModFromEIP := Error_Invalid_Parameter;
@@ -1494,7 +1506,7 @@ begin
 end;
 
 
-function DummyDosSuppressPopups (Flag: cardinal; Drive: char): cardinal; cdecl;
+function DummyDosSuppressPopups (Flag: cardinal; Drive: AnsiChar): cardinal; cdecl;
 begin
   DummyDosSuppressPopups := Error_Invalid_Function;
 end;
@@ -1522,7 +1534,7 @@ end;
 
 
 type
-  TDosProtectOpen = function (FileName: PChar; var Handle: THandle;
+  TDosProtectOpen = function (FileName: PAnsiChar; var Handle: THandle;
                               var Action: cardinal; InitSize, Attrib,
                               OpenFlags, OpenMode: cardinal; ea: PEAOp2;
                               var FileHandleLockID: cardinal): cardinal; cdecl;
@@ -1578,7 +1590,7 @@ type
   TDosSetFileLocksL = function (Handle: THandle; var Unlock: TFileLockL;
     var Lock: TFileLockL; Timeout: cardinal; Flags: cardinal): cardinal; cdecl;
 
-  TDosProtectOpenL = function (FileName: PChar; var Handle: THandle;
+  TDosProtectOpenL = function (FileName: PAnsiChar; var Handle: THandle;
                          var Action: cardinal; InitSize: int64; Attrib,
                          OpenFlags, OpenMode: cardinal; EA: PEAOp2;
                               var FileHandleLockID: cardinal): cardinal; cdecl;
@@ -1602,20 +1614,20 @@ type
   TDosSetThreadAffinity = function (var AffinityMask: TMPAffinity): cardinal;
                                                                          cdecl;
 
-  TDosQueryExtLibPath = function (ExtLibPath: PChar;
+  TDosQueryExtLibPath = function (ExtLibPath: PAnsiChar;
                                              Flags: cardinal): cardinal; cdecl;
 
-  TDosSetExtLibPath = function (ExtLibPath: PChar; Flags: cardinal): cardinal;
+  TDosSetExtLibPath = function (ExtLibPath: PAnsiChar; Flags: cardinal): cardinal;
                                                                          cdecl;
 
   TDosQueryModFromEIP = function (var HMod: THandle; var ObjNum: cardinal;
-                         BuffLen: cardinal; Buff: PChar; var Offset: cardinal;
+                         BuffLen: cardinal; Buff: PAnsiChar; var Offset: cardinal;
                                             Address: PtrUInt): cardinal; cdecl;
 
   TDosDumpProcess = function (Flag: cardinal; Drive: cardinal;
                                                PID: cardinal): cardinal; cdecl;
 
-  TDosSuppressPopups = function (Flag: cardinal; Drive: char): cardinal; cdecl;
+  TDosSuppressPopups = function (Flag: cardinal; Drive: AnsiChar): cardinal; cdecl;
 
   TDosPerfSysCall = function (Command, Parm1, Parm2,
                                              Parm3: cardinal): cardinal; cdecl;
@@ -1675,7 +1687,7 @@ const
 
 
 
-function DosOpenL (FileName: PChar; var Handle: THandle;
+function DosOpenL (FileName: PAnsiChar; var Handle: THandle;
                         var Action: cardinal; InitSize: int64;
                         Attrib, OpenFlags, FileMode: cardinal;
                                          EA: pointer): cardinal; cdecl; inline;
@@ -1699,7 +1711,7 @@ begin
 end;
 
 
-function DosProtectOpen (FileName: PChar; var Handle: THandle;
+function DosProtectOpen (FileName: PAnsiChar; var Handle: THandle;
                               var Action: cardinal; InitSize, Attrib,
                               OpenFlags, OpenMode: cardinal; EA: PEAOp2;
                       var FileHandleLockID: cardinal): cardinal; cdecl; inline;
@@ -1804,7 +1816,7 @@ begin
 end;
 
 
-function DosProtectOpen (FileName: PChar; var Handle: longint;
+function DosProtectOpen (FileName: PAnsiChar; var Handle: longint;
                          var Action: longint; InitSize, Attrib,
                          OpenFlags, OpenMode: longint; ea: PEAOp2;
                       var FileHandleLockID: cardinal): cardinal; cdecl; inline;
@@ -1820,7 +1832,7 @@ function DosProtectOpen (const FileName: string; var Handle: longint;
                          OpenFlags, OpenMode: longint; ea: PEAOp2;
                                      var FileHandleLockID: cardinal): cardinal;
 var
-  T: array [0..255] of char;
+  T: array [0..255] of AnsiChar;
 begin
   StrPCopy (@T, FileName);
   DosProtectOpen := Sys_DosProtectOpen (@T, THandle (Handle),
@@ -1834,7 +1846,7 @@ function DosProtectOpen (const FileName: string; var Handle: THandle;
                          OpenFlags, OpenMode: cardinal; ea: PEAOp2;
                                var FileHandleLockID: cardinal): cardinal;
 var
-  T: array [0..255] of char;
+  T: array [0..255] of AnsiChar;
 begin
   StrPCopy (@T, FileName);
   DosProtectOpen := Sys_DosProtectOpen (@T, Handle, Action, InitSize, Attrib,
@@ -1909,7 +1921,7 @@ function DosProtectEnumAttribute (const FileName: string; Entry: cardinal;
                                   var Count: cardinal; InfoLevel: cardinal;
                                          FileHandleLockID: cardinal): cardinal;
 var
-  T: array [0..255] of char;
+  T: array [0..255] of AnsiChar;
 begin
   StrPCopy (@T, FileName);
   DosProtectEnumAttribute := DosProtectEnumAttribute (1, @T, Entry, Buf,
@@ -1942,7 +1954,7 @@ begin
 end;
 
 
-function DosProtectOpenL (FileName: PChar; var Handle: THandle;
+function DosProtectOpenL (FileName: PAnsiChar; var Handle: THandle;
                          var Action: cardinal; InitSize: int64; Attrib,
                          OpenFlags, OpenMode: cardinal; EA: PEAOp2;
                       var FileHandleLockID: cardinal): cardinal; cdecl; inline;
@@ -1953,7 +1965,7 @@ end;
 
 
 function DosProtectSetFilePtrL (Handle: THandle; Pos: int64;
-                              Method: cardinal; var PosActual: int64; 
+                              Method: cardinal; var PosActual: int64;
                           FileHandleLockID: cardinal): cardinal; cdecl; inline;
 begin
   DosProtectSetFilePtrL := Sys_DosProtectSetFilePtrL (Handle, Pos, Method,
@@ -1997,14 +2009,14 @@ begin
 end;
 
 
-function DosQueryExtLibPath (ExtLibPath: PChar; Flags: cardinal): cardinal;
+function DosQueryExtLibPath (ExtLibPath: PAnsiChar; Flags: cardinal): cardinal;
                                                                  cdecl; inline;
 begin
   DosQueryExtLibPath := Sys_DosQueryExtLibPath (ExtLibPath, Flags);
 end;
 
 
-function DosSetExtLibPath (ExtLibPath: PChar; Flags: cardinal): cardinal;
+function DosSetExtLibPath (ExtLibPath: PAnsiChar; Flags: cardinal): cardinal;
                                                                  cdecl; inline;
 begin
   DosSetExtLibPath := Sys_DosSetExtLibPath (ExtLibPath, Flags);
@@ -2012,7 +2024,7 @@ end;
 
 
 function DosQueryModFromEIP (var HMod: THandle; var ObjNum: cardinal;
-                         BuffLen: cardinal; Buff: PChar; var Offset: cardinal;
+                         BuffLen: cardinal; Buff: PAnsiChar; var Offset: cardinal;
                                     Address: PtrUInt): cardinal; cdecl; inline;
 begin
   DosQueryModFromEIP := Sys_DosQueryModFromEIP (HMod, ObjNum, BuffLen, Buff,
@@ -2020,7 +2032,7 @@ begin
 end;
 
 
-function DosDumpProcess (Flag: cardinal; Drive: char;
+function DosDumpProcess (Flag: cardinal; Drive: AnsiChar;
                                        PID: cardinal): cardinal; cdecl; inline;
 begin
   DosDumpProcess := Sys_DosDumpProcess (Flag, cardinal (Drive), PID);
@@ -2028,7 +2040,7 @@ end;
 
 
 function DosSuppressPopups (Flag: cardinal;
-                                         Drive: char): cardinal; cdecl; inline;
+                                         Drive: AnsiChar): cardinal; cdecl; inline;
 begin
   DosSuppressPopups := Sys_DosSuppressPopups (Flag, Drive);
 end;

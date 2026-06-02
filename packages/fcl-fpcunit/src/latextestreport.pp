@@ -4,7 +4,7 @@
     This file is part of the Free Component Library (FCL)
     Copyright (c) 2006 by Dean Zobec
 
-    an example of latex report for FPCUnit tests.
+    an example of latex report for FpcUnit tests.
 
     See the file COPYING.FPC, included in this distribution,
     for details about the copyright.
@@ -14,15 +14,22 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit latextestreport;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, FpcUnit.Test, FpcUnit.Reports, System.StrUtils;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   classes, SysUtils, fpcunit, fpcunitreport, strutils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
-   
+
   { TLatexResultsWriter }
 
   TLatexResultsWriter = class(TCustomResultsWriter)
@@ -36,8 +43,8 @@ type
     procedure WriteTestHeader(ATest: TTest; ALevel: integer; ACount: integer); override;
     procedure WriteTestFooter(ATest: TTest; ALevel: integer; ATiming: TDateTime); override;
     procedure WriteSuiteHeader(ATestSuite: TTestSuite; ALevel: integer); override;
-    procedure WriteSuiteFooter(ATestSuite: TTestSuite; ALevel: integer; 
-      ATiming: TDateTime; ANumRuns: integer; ANumErrors: integer; 
+    procedure WriteSuiteFooter(ATestSuite: TTestSuite; ALevel: integer;
+      ATiming: TDateTime; ANumRuns: integer; ANumErrors: integer;
       ANumFailures: integer; ANumIgnores: integer); override;
   public
     constructor Create(aOwner: TComponent); override;
@@ -56,7 +63,11 @@ function GetSuiteAsLatex(aSuite: TTestSuite): string;
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.DateUtils;
+{$ELSE FPC_DOTTEDUNITS}
 uses dateutils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 function TLatexResultsWriter.TimeFormat(ATiming: TDateTime): String;
 Var
@@ -118,8 +129,8 @@ begin
   FDoc.Add('\definecolor{Red}{rgb}{1,0,0}');
   FDoc.Add('\definecolor{Pink}{rgb}{1,0,1}');
   FDoc.Add('\definecolor{Yellow}{rgb}{1,1,0}');
-  FDoc.Add('\author{FPCUnit}');
-  FDoc.Add('\title{Unit tests run by FPCUnit}');
+  FDoc.Add('\author{FpcUnit}');
+  FDoc.Add('\title{Unit tests run by FpcUnit}');
   FDoc.Add('\begin{document}');
   FDoc.Add('\maketitle');
   FDoc.Add('\flushleft');
@@ -128,9 +139,9 @@ end;
 procedure TLatexResultsWriter.WriteFooter;
 begin
   inherited WriteFooter;
-  
+
 end;
-    
+
 procedure TLatexResultsWriter.WriteResult(aResult: TTestResult);
 var
   f: text;
@@ -151,9 +162,9 @@ begin
   writeln(f, FDoc.Text);
   close(f);
 end;
-  
+
 {ITestListener}
-    
+
 procedure TLatexResultsWriter.AddFailure(ATest: TTest; AFailure: TTestFailure);
 begin
   inherited AddFailure(ATest, AFailure);
@@ -165,7 +176,7 @@ begin
   inherited;
   FTempFailure := AError;
 end;
-    
+
 procedure TLatexResultsWriter.WriteTestHeader(ATest: TTest; ALevel: integer; ACount: integer);
 begin
   inherited;
@@ -184,8 +195,8 @@ begin
   FDoc.Add(S);
   if Assigned(FTempFailure) then
   begin
-    //check if it's an error 
-    if not FTempFailure.IsFailure then 
+    //check if it's an error
+    if not FTempFailure.IsFailure then
     begin
       FDoc[FDoc.Count -1] := '{\color{Red}'+FDoc[FDoc.Count -1];
       FDoc.Add('\begin{description}');
@@ -199,12 +210,12 @@ begin
     else
       if FTempFailure.IsIgnoredTest then
       begin
-        FDoc[FDoc.Count -1] := '{\color{Yellow}'+FDoc[FDoc.Count -1] + '  {\bf IGNORED TEST: ' + 
+        FDoc[FDoc.Count -1] := '{\color{Yellow}'+FDoc[FDoc.Count -1] + '  {\bf IGNORED TEST: ' +
           EscapeText(FTempFailure.ExceptionMessage) +'}}'
       end
       else
         //is a failure
-        FDoc[FDoc.Count -1] := '{\color{Pink}'+FDoc[FDoc.Count -1] + '  {\bf FAILED: ' + 
+        FDoc[FDoc.Count -1] := '{\color{Pink}'+FDoc[FDoc.Count -1] + '  {\bf FAILED: ' +
           EscapeText(FTempFailure.ExceptionMessage) +'}}';
   end;
   FTempFailure := nil;
@@ -213,7 +224,7 @@ end;
 procedure TLatexResultsWriter.WriteSuiteHeader(ATestSuite: TTestSuite; ALevel: integer);
 begin
   inherited;
-  FDoc.Add('{\bf {\color{Blue}'+ StringOfChar(' ',ALevel*2)+ '\item[-] '+ 
+  FDoc.Add('{\bf {\color{Blue}'+ StringOfChar(' ',ALevel*2)+ '\item[-] '+
     EscapeText(ATestSuite.TestName)+ '}}');
   FSuiteHeaderIdx.Add(Pointer(FDoc.Count - 1));
   FDoc.Add(StringOfChar(' ',ALevel*2)+ '\begin{itemize}');
@@ -243,11 +254,11 @@ procedure TLatexResultsWriter.StartTest(ATest: TTest);
 begin
   inherited StartTest(ATest);
 end;
-    
+
 procedure TLatexResultsWriter.EndTest(ATest: TTest);
 begin
   inherited EndTest(ATest);
-  
+
 end;
 
 function TestSuiteAsLatex(aSuite:TTest): string;

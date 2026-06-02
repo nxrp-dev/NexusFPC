@@ -1,3 +1,4 @@
+{%MainUnit classes.pp}
 {
     This file is part of the Free Component Library (FCL)
     Copyright (c) 1999-2000 by the Free Pascal development team
@@ -81,7 +82,7 @@ begin
     if op = opInsert then
       comp.FreeNotification(Self)
     else
-      comp.RemoveFreeNotification(Self); 
+      comp.RemoveFreeNotification(Self);
    end;
 end;
 
@@ -104,6 +105,26 @@ begin
     Result:=-1;
 end;
 
+function TComponent.GetObservers: TObservers;
+begin
+  if FDObservers=Nil then
+    begin
+    FDObservers:=TObservers.Create;
+    FDObservers.OnCanObserve:=@CanObserve;
+    FDObservers.OnObserverAdded:=@ObserverAdded;
+    end;
+  Result:=FDObservers;
+end;
+
+function TComponent.CanObserve(const ID: Integer): Boolean;
+begin
+  Result:=False;
+end;
+
+procedure TComponent.ObserverAdded(const ID: Integer; const Observer: IObserver);
+begin
+  // Do nothing, can be used in descendants
+end;
 
 Procedure TComponent.Insert(AComponent: TComponent);
 
@@ -291,7 +312,7 @@ end;
 Procedure TComponent.Notification(AComponent: TComponent;
   Operation: TOperation);
 
-Var 
+Var
   C : Longint;
 
 begin
@@ -306,7 +327,7 @@ begin
     Dec(C);
     if C>=FComponents.Count then
       C:=FComponents.Count-1;
-    end;  
+    end;
 end;
 
 
@@ -321,6 +342,30 @@ begin
   Reader.ReadData(Self);
 end;
 
+procedure TComponent.RemoveFreeNotifications;
+var
+  I: Integer;
+  C: TComponent;
+begin
+  If Assigned(FFreeNotifies) then
+  begin
+    I := FFreeNotifies.Count - 1;
+    while I >= 0 do
+    begin
+      C := TComponent(FFreeNotifies.Items[I]);
+      // Delete, so one component is not notified twice, if it is owned.
+      FFreeNotifies.Delete(I);
+      C.Notification (Self, opRemove);
+      If FFreeNotifies = nil then
+        I := 0
+      else
+        if I > FFreeNotifies.Count then
+          I := FFreeNotifies.Count;
+      Dec(I);
+    end;
+    FreeAndNil(FFreeNotifies);
+  end;
+end;
 
 Procedure TComponent.SetAncestor(Value: Boolean);
 
@@ -437,7 +482,8 @@ end;
 Procedure TComponent.ValidateContainer(AComponent: TComponent);
 
 begin
-  AComponent.ValidateInsert(Self);
+  if Assigned(aComponent) then
+    AComponent.ValidateInsert(Self);
 end;
 
 
@@ -464,35 +510,32 @@ end;
 
 
 Destructor TComponent.Destroy;
-
-Var
-  I : Integer;
-  C : TComponent;
-
 begin
   Destroying;
-  If Assigned(FFreeNotifies) then
-    begin
-    I:=FFreeNotifies.Count-1;
-    While (I>=0) do
-      begin
-      C:=TComponent(FFreeNotifies.Items[I]);
-      // Delete, so one component is not notified twice, if it is owned.
-      FFreeNotifies.Delete(I);
-      C.Notification (self,opRemove);
-      If (FFreeNotifies=Nil) then
-        I:=0
-      else if (I>FFreeNotifies.Count) then
-        I:=FFreeNotifies.Count;
-      dec(i);
-      end;
-    FreeAndNil(FFreeNotifies);
-    end;
+  FreeAndNil(FDObservers);
+  RemoveFreeNotifications;
   DestroyComponents;
   If FOwner<>Nil Then FOwner.RemoveComponent(Self);
   inherited destroy;
 end;
 
+
+function TComponent.ToString : RTLString;
+
+begin
+  Case ToStringNameMode of
+    snmName :
+      Result:=Name;
+    snmClassName :
+      Result:=Inherited;
+    snmNameClassName :
+      begin
+      Result:=Inherited;
+      if (Name<>'') then
+       Result:=Name+' ('+Result+')';
+      end;
+  end;
+end;
 
 Procedure TComponent.BeforeDestruction;
 begin
@@ -721,3 +764,33 @@ begin
   else
     Result := E_NOTIMPL;
 end;
+
+{ Delta stream support }
+
+
+procedure TComponent.GetDeltaStreams(aProc: TGetStreamProc);
+
+begin
+  // To be implemented by descendants
+end;
+
+procedure TComponent.ReadDeltaStream(const S: TStream);
+begin
+  S.ReadComponent(Self);
+end;
+
+procedure TComponent.ReadDeltaState;
+
+var
+  Done : boolean;
+
+begin
+  if (csDesigning in ComponentState) then
+    exit;
+  Done:=False;
+  if Assigned(FOnGetDeltaStreams) then
+    FOnGetDeltaStreams(Self,@ReadDeltaStream,Done);
+  if not Done then
+    GetDeltaStreams(@ReadDeltaStream);
+end;
+

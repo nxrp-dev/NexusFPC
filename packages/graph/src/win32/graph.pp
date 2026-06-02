@@ -12,7 +12,9 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit Graph;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
@@ -26,7 +28,7 @@ interface
 {
   To be able to use standard file handles in the graph thread,
   we need to use the system functions handling threads,
-  to ensure that thread varaibles are correctly initialized.
+  to ensure that thread variables are correctly initialized.
   This new default setting can be overridden by defining
   USE_WINDOWS_API_THREAD_FUNCTIONS macro.
 
@@ -44,8 +46,13 @@ interface
   {$define USE_SYSTEM_BEGIN_THREAD}
 {$endif ndef USE_WINDOWS_API_THREAD_FUNCTIONS}
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Windows;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   windows;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$i graphh.inc}
 
@@ -72,7 +79,7 @@ uses
     { handle double clicks on it's own }
     graphwindowstyle : DWord = cs_hRedraw or cs_vRedraw;
 
-    windowtitle : pchar = 'Graph window application';
+    windowtitle : PAnsiChar = 'Graph window application';
     menu : hmenu = 0;
     icon : hicon = 0;
     drawtoscreen : boolean = true;
@@ -129,8 +136,13 @@ CONST
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Strings;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   strings;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {
    Remarks:
@@ -245,7 +257,7 @@ function GetPixel16Win32GUI(x,y : smallint) : word;
     if graphrunning then
       begin
          EnterCriticalSection(graphdrawing);
-         c:=Windows.GetPixel(bitmapdc,x,y);
+         c:={$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.GetPixel(bitmapdc,x,y);
          LeaveCriticalSection(graphdrawing);
          GetPixel16Win32GUI:=GetPaletteEntry(GetRValue(c),GetGValue(c),GetBValue(c));
       end
@@ -270,7 +282,7 @@ procedure DirectPutPixel16Win32GUI(x,y : smallint);
          case currentwritemode of
            XorPut:
              Begin
-                c2:=Windows.GetPixel(windc,x,y);
+                c2:={$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.GetPixel(windc,x,y);
                 c:=RGB(pal[col].red,pal[col].green,pal[col].blue) xor c2;
                 if drawtobitmap then
                   SetPixelV(bitmapdc,x,y,c);
@@ -279,7 +291,7 @@ procedure DirectPutPixel16Win32GUI(x,y : smallint);
              End;
            AndPut:
              Begin
-                c2:=Windows.GetPixel(windc,x,y);
+                c2:={$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.GetPixel(windc,x,y);
                 c:=RGB(pal[col].red,pal[col].green,pal[col].blue) and c2;
                 if drawtobitmap then
                   SetPixelV(bitmapdc,x,y,c);
@@ -288,7 +300,7 @@ procedure DirectPutPixel16Win32GUI(x,y : smallint);
              End;
            OrPut:
              Begin
-                c2:=Windows.GetPixel(windc,x,y);
+                c2:={$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.GetPixel(windc,x,y);
                 c:=RGB(pal[col].red,pal[col].green,pal[col].blue) or c2;
                 if drawtobitmap then
                   SetPixelV(bitmapdc,x,y,c);
@@ -315,7 +327,7 @@ var
    bitmapfontverticalcache : array[0..255] of HBITMAP;
    bitmapfonthorizoncache : array[0..255] of HBITMAP;
 
-procedure OutTextXYWin32GUI(x,y : smallint;const TextString : string);
+procedure OutTextXYWin32GUI(x,y : smallint;const TextString : ShortString);
 
   type
    Tpoint = record
@@ -333,7 +345,7 @@ procedure OutTextXYWin32GUI(x,y : smallint;const TextString : string);
      oldvalues     : linesettingstype;
      fontbitmap    : TBitmapChar;
      fontbitmapbyte: byte;
-     chr           : char;
+     chr           : AnsiChar;
      curx2i,cury2i,
      xpos2i,ypos2i : longint;
      charbitmap,oldcharbitmap : HBITMAP;
@@ -796,7 +808,7 @@ procedure HLine16Win32GUI(x,x2,y: smallint);
                   col:=CurrentColor;
                   for i:=x to x2 do
                     begin
-                       c2:=Windows.GetPixel(windc,i,y);
+                       c2:={$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.GetPixel(windc,i,y);
                        c:=RGB(pal[col].red,pal[col].green,pal[col].blue) and c2;
                        if drawtobitmap then
                          SetPixelV(bitmapdc,i,y,c);
@@ -812,7 +824,7 @@ procedure HLine16Win32GUI(x,x2,y: smallint);
                   col:=CurrentColor;
                   for i:=x to x2 do
                     begin
-                       c2:=Windows.GetPixel(windc,i,y);
+                       c2:={$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.GetPixel(windc,i,y);
                        c:=RGB(pal[col].red,pal[col].green,pal[col].blue) xor c2;
 
                        if drawtobitmap then
@@ -829,7 +841,7 @@ procedure HLine16Win32GUI(x,x2,y: smallint);
                   col:=CurrentColor;
                   for i:=x to x2 do
                     begin
-                       c2:=Windows.GetPixel(windc,i,y);
+                       c2:={$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.GetPixel(windc,i,y);
                        c:=RGB(pal[col].red,pal[col].green,pal[col].blue) or c2;
 
                        if drawtobitmap then
@@ -877,16 +889,16 @@ procedure HLine16Win32GUI(x,x2,y: smallint);
                        if drawtobitmap then
                          begin
                             oldpen:=SelectObject(bitmapdc,pen);
-                            Windows.MoveToEx(bitmapdc,x,y,nil);
-                            Windows.LineTo(bitmapdc,x2+1,y);
+                            {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.MoveToEx(bitmapdc,x,y,nil);
+                            {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.LineTo(bitmapdc,x2+1,y);
                             SelectObject(bitmapdc,oldpen);
                          end;
 
                        if drawtoscreen then
                          begin
                             oldpen:=SelectObject(windc,pen);
-                            Windows.MoveToEx(windc,x,y,nil);
-                            Windows.LineTo(windc,x2+1,y);
+                            {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.MoveToEx(windc,x,y,nil);
+                            {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.LineTo(windc,x2+1,y);
                             SelectObject(windc,oldpen);
                          end;
 
@@ -962,16 +974,16 @@ Begin
             if drawtobitmap then
               begin
                  oldpen:=SelectObject(bitmapdc,pen);
-                 Windows.MoveToEx(bitmapdc,x,y,nil);
-                 Windows.LineTo(bitmapdc,x,y2+1);
+                 {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.MoveToEx(bitmapdc,x,y,nil);
+                 {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.LineTo(bitmapdc,x,y2+1);
                  SelectObject(bitmapdc,oldpen);
               end;
 
             if drawtoscreen then
               begin
                  oldpen:=SelectObject(windc,pen);
-                 Windows.MoveToEx(windc,x,y,nil);
-                 Windows.LineTo(windc,x,y2+1);
+                 {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.MoveToEx(windc,x,y,nil);
+                 {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.LineTo(windc,x,y2+1);
                  SelectObject(windc,oldpen);
               end;
             if (col<0) or (col>high(pens)) then
@@ -1053,7 +1065,7 @@ procedure Circle16Win32GUI(X, Y: smallint; Radius:Word);
           if drawtobitmap then
             begin
                oldpen:=SelectObject(bitmapdc,pen);
-               windows.arc(bitmapdc,x-radius,y-radius,x+radius,y+radius,
+               {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.arc(bitmapdc,x-radius,y-radius,x+radius,y+radius,
                  x,y-radius,x,y-radius);
                SelectObject(bitmapdc,oldpen);
             end;
@@ -1061,7 +1073,7 @@ procedure Circle16Win32GUI(X, Y: smallint; Radius:Word);
           if drawtoscreen then
             begin
                oldpen:=SelectObject(windc,pen);
-               windows.arc(windc,x-radius,y-radius,x+radius,y+radius,
+               {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.arc(windc,x-radius,y-radius,x+radius,y+radius,
                  x,y-radius,x,y-radius);
                SelectObject(windc,oldpen);
             end;
@@ -1253,6 +1265,9 @@ begin
     wm_command:
       if assigned(commandmessagehandler) then
         WindowProcGraph:=commandmessagehandler(window,amessage,wparam,lparam);
+    wm_syskeyup,
+    wm_syskeydown,
+    {wm_syschar,}
     wm_keydown,
     wm_keyup,
     wm_char:
@@ -1307,13 +1322,13 @@ begin
          // clear everything
          oldpen:=SelectObject(bitmapdc,GetStockObject(BLACK_PEN));
          oldbrush:=SelectObject(bitmapdc,GetStockObject(BLACK_BRUSH));
-         Windows.Rectangle(bitmapdc,0,0,maxx,maxy);
+         {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.Rectangle(bitmapdc,0,0,maxx,maxy);
          SelectObject(bitmapdc,oldpen);
          SelectObject(bitmapdc,oldbrush);
          // ... the window too
          oldpen:=SelectObject(windc,GetStockObject(BLACK_PEN));
          oldbrush:=SelectObject(windc,GetStockObject(BLACK_BRUSH));
-         Windows.Rectangle(windc,0,0,maxx,maxy);
+         {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.Rectangle(windc,0,0,maxx,maxy);
          SelectObject(windc,oldpen);
          SelectObject(windc,oldbrush);
          // clear font cache
@@ -1369,6 +1384,9 @@ function WindowProcParent(Window: HWnd; AMessage:UInt; WParam : WParam;
 begin
   WindowProcParent := 0;
   case AMessage of
+    wm_syskeyup,
+    wm_syskeydown,
+    {wm_syschar,}
     wm_keydown,
     wm_keyup,
     wm_char:
@@ -1518,7 +1536,7 @@ const
    winregistered : boolean = false;
 
    { Thread functions have different return type and calling convention
-     for system unit funcitons andfor windows API. }
+     for system unit functions andfor windows API. }
 {$ifdef USE_SYSTEM_BEGIN_THREAD}
 function MessageHandleThread(p : pointer) : ptrint;
 {$else not USE_SYSTEM_BEGIN_THREAD}
@@ -1539,7 +1557,7 @@ function MessageHandleThread(p : pointer) : DWord; stdcall;
 {$ifdef USE_SYSTEM_BEGIN_THREAD}
                     System.EndThread(1);
 {$else not USE_SYSTEM_BEGIN_THREAD}
-                    Windows.ExitThread(1);
+                    {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.ExitThread(1);
 {$endif not USE_SYSTEM_BEGIN_THREAD}
                  end;
             end
@@ -1551,7 +1569,7 @@ function MessageHandleThread(p : pointer) : DWord; stdcall;
 {$ifdef USE_SYSTEM_BEGIN_THREAD}
                     System.EndThread(1);
 {$else not USE_SYSTEM_BEGIN_THREAD}
-                    Windows.ExitThread(1);
+                    {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.ExitThread(1);
 {$endif not USE_SYSTEM_BEGIN_THREAD}
                  end;
             end;
@@ -1563,7 +1581,7 @@ function MessageHandleThread(p : pointer) : DWord; stdcall;
 {$ifdef USE_SYSTEM_BEGIN_THREAD}
        System.EndThread(1);
 {$else not USE_SYSTEM_BEGIN_THREAD}
-       Windows.ExitThread(1);
+       {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.ExitThread(1);
 {$endif not USE_SYSTEM_BEGIN_THREAD}
      end;
      while longint(GetMessage(@AMessage, 0, 0, 0))=longint(true) do
@@ -1592,7 +1610,7 @@ procedure InitWin32GUI16colors;
      { start graph subsystem }
      InitializeCriticalSection(graphdrawing);
      graphrunning:=false;
-     {Use system BeginThread instead of CreteThreead
+     {Use system BeginThread instead of CreteThread
      function BeginThread(sa : Pointer;stacksize : SizeUInt;
   ThreadFunction : tthreadfunc;p : pointer;creationFlags : dword;
   var ThreadId : TThreadID) : TThreadID;}
@@ -1710,13 +1728,13 @@ procedure LineWin32GUI(X1, Y1, X2, Y2: smallint); {$ifndef fpc}far;{$endif fpc}
 
                       oldpen:=SelectObject(windc,pen);
                       MoveToEx(windc,x1,y1,nil);
-                      Windows.LineTo(windc,x2,y2);
+                      {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.LineTo(windc,x2,y2);
                       SetPixel(windc,x2,y2,col);
                       SelectObject(windc,oldpen);
 
                       oldpen:=SelectObject(bitmapdc,pen);
                       MoveToEx(bitmapdc,x1,y1,nil);
-                      Windows.LineTo(bitmapdc,x2,y2);
+                      {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.LineTo(bitmapdc,x2,y2);
                       SetPixel(bitmapdc,x2,y2,col);
                       SelectObject(bitmapdc,oldpen);
 
@@ -1953,7 +1971,7 @@ procedure LineWin32GUI(X1, Y1, X2, Y2: smallint); {$ifndef fpc}far;{$endif fpc}
                    end
                   else
                    Begin
-                    { instead of putting in loop , substract by one now }
+                    { instead of putting in loop , subtract by one now }
                     TmpNumPixels := NumPixels-1;
                    { NormWidth }
                     for i := 0 to TmpNumPixels do
@@ -2031,7 +2049,7 @@ function queryadapterinfo : pmodeinfo;
      ScreenHeight:=GetSystemMetrics(SM_CYSCREEN)-
        2*GetSystemMetrics(SM_CYFRAME)-
        GetSystemMetrics(SM_CYCAPTION);
-     { for maximozed windows it's again different }
+     { for maximized windows it's again different }
      { here we've only a caption }
      ScreenWidthMaximized:=GetSystemMetrics(SM_CXFULLSCREEN);
      { neither GetSystemMetrics(SM_CYFULLSCREEN nor     }

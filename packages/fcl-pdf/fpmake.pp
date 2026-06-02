@@ -2,7 +2,7 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses {$ifdef unix}cthreads,{$endif} fpmkunit;
 
 Var
   P : TPackage;
@@ -24,7 +24,7 @@ begin
     P.Email := '';
     P.Description := 'PDF generating and TTF file info library';
     P.NeedLibC:= false;
-    P.OSes:=P.OSes-[embedded,win16,msdos,nativent,macosclassic,palmos,zxspectrum,msxdos,amstradcpc,sinclairql,wasi];
+    P.OSes:=P.OSes-[embedded,win16,wince,msdos,nativent,macosclassic,palmos,zxspectrum,msxdos,amstradcpc,sinclairql,human68k,ps1,wasip2];
     if Defaults.CPU=jvm then
       P.OSes := P.OSes - [java,android];
 
@@ -34,6 +34,7 @@ begin
     P.Dependencies.Add('fcl-xml');
     P.Dependencies.Add('paszlib');
     P.Dependencies.add('winunits-base',AllWindowsOSes-[wince]);
+    P.Dependencies.add('libfontconfig',[linux, solaris] + AllBSDOses);
     P.Version:='3.3.1';
     T:=P.Targets.AddUnit('src/fpttfencodings.pp');
     T:=P.Targets.AddUnit('src/fpparsettf.pp');
@@ -61,7 +62,7 @@ begin
     T:=P.Targets.AddUnit('src/fppdfconsts.pp');
     T:=P.Targets.AddUnit('src/fppdfpredict.pp');
     T:=P.Targets.AddUnit('src/fppdfsource.pp');
-    
+
     T:=P.Targets.AddUnit('src/fppdfobjects.pp');
     T.Dependencies.AddUnit('fppdfconsts');
 
@@ -72,15 +73,18 @@ begin
     T.ResourceStrings:=true;
     T.Dependencies.AddUnit('fppdfobjects');
     T.Dependencies.AddUnit('fppdfsource');
-    
+
     T:=P.Targets.AddUnit('src/fppdfparser.pp');
     T.ResourceStrings:=true;
     T.Dependencies.AddUnit('fppdfobjects');
     T.Dependencies.AddUnit('fppdfsource');
     T.Dependencies.AddUnit('fppdfconsts');
     T.Dependencies.AddUnit('fppdfpredict');
-     
+
     // md5.ref
+
+    P.NamespaceMap:='namespaces.lst';
+
 {$ifndef ALLPACKAGES}
     Run;
     end;

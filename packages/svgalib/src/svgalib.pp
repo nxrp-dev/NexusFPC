@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit SVGALib;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {*************************************************************************
   VGAlib version 1.2 - (c) 1993 Tommy Frandsen
@@ -150,7 +152,7 @@ const
   ACCEL_SETTRANSPARENCY    = 7; { Set transparency mode. }
   ACCEL_SETRASTEROP        = 8; { Set raster-operation. }
   ACCEL_PUTBITMAP          = 9; { Color-expand bitmap. }
-  ACCEL_SCREENCOPYBITMAP   = 10;        { Color-exand from screen. }
+  ACCEL_SCREENCOPYBITMAP   = 10;        { Color-expand from screen. }
   ACCEL_DRAWHLINELIST      = 11;        { Draw horizontal spans. }
   ACCEL_SETMODE            = 12;        { Set blit strategy. }
   ACCEL_SYNC               = 13;        { Wait for blits to finish. }
@@ -165,7 +167,7 @@ const
   ACCELFLAG_SETTRANSPARENCY   = $40;    { Set transparency mode. }
   ACCELFLAG_SETRASTEROP       = $80;    { Set raster-operation. }
   ACCELFLAG_PUTBITMAP         = $100;   { Color-expand bitmap. }
-  ACCELFLAG_SCREENCOPYBITMAP  = $200;   { Color-exand from screen. }
+  ACCELFLAG_SCREENCOPYBITMAP  = $200;   { Color-expand from screen. }
   ACCELFLAG_DRAWHLINELIST     = $400;   { Draw horizontal spans. }
   ACCELFLAG_SETMODE           = $800;   { Set blit strategy. }
   ACCELFLAG_SYNC              = $1000;  { Wait for blits to finish. }
@@ -242,7 +244,7 @@ type
     memory,             { videomemory in KB }
     linewidth_unit: Longint;    { Use only a multiple of this as parameter for set_logicalwidth and
                                   set_displaystart }
-    linear_aperture: PChar;     { points to mmap secondary mem aperture of card (NULL if unavailable) }
+    linear_aperture: PAnsiChar;     { points to mmap secondary mem aperture of card (NULL if unavailable) }
     aperture_size: Longint;     { size of aperture in KB if size>=videomemory. 0 if unavail }
     set_aperture_page: procedure (page: Longint);
     { if aperture_size<videomemory select a memory page }
@@ -252,7 +254,7 @@ type
   shutdown_routine_ptr = procedure;
 
 var
-  graph_mem: PChar;
+  graph_mem: PAnsiChar;
 
 Function vga_setmode(mode: Longint): Longint; cdecl; external;
 Function vga_hasmode(mode: Longint): Boolean; cdecl; external;
@@ -290,11 +292,11 @@ Function vga_getmodeinfo(mode: Longint): pvga_modeinfo; cdecl; external;
 Function vga_getdefaultmode: Longint; cdecl; external;
 Function vga_getcurrentmode: Longint; cdecl; external;
 Function vga_getcurrentchipset: Longint; cdecl; external;
-Function vga_getmodename(mode: Longint): PChar; cdecl; external;
-Function vga_getmodenumber(name: PChar): Longint; cdecl; external;
+Function vga_getmodename(mode: Longint): PAnsiChar; cdecl; external;
+Function vga_getmodenumber(name: PAnsiChar): Longint; cdecl; external;
 Function vga_lastmodenumber: Longint; cdecl; external;
 
-Function vga_getgraphmem: PChar; cdecl; external;
+Function vga_getgraphmem: PAnsiChar; cdecl; external;
 
 Procedure vga_setpage(p: Longint); cdecl; external;
 Procedure vga_setreadpage(p: Longint); cdecl; external;
@@ -314,10 +316,10 @@ Procedure vga_unlockvc; cdecl; external;
 Function vga_getkey: Longint; cdecl; external;
 Procedure vga_runinbackground(s: Longint); cdecl; external;
 Function vga_oktowrite: Longint; cdecl; external;
-Procedure vga_copytoplanar256(virtualp: PChar; pitch: Longint;
+Procedure vga_copytoplanar256(virtualp: PAnsiChar; pitch: Longint;
                                   voffset: Longint; vpitch: Longint; w: Longint; h: Longint);cdecl; external;
-Procedure vga_copytoplanar16(virtualp: PChar; pitch, voffset, vpitch, w, h: Longint); cdecl; external;
-Procedure vga_copytoplane(virtualp: PChar; pitch, voffset, vpitch, w, h, plane: Longint); cdecl; external;
+Procedure vga_copytoplanar16(virtualp: PAnsiChar; pitch, voffset, vpitch, w, h: Longint); cdecl; external;
+Procedure vga_copytoplane(virtualp: PAnsiChar; pitch, voffset, vpitch, w, h, plane: Longint); cdecl; external;
 Function vga_setlinearaddressing: Longint; cdecl; external;
 Procedure vga_safety_fork(shutdown_routine: shutdown_routine_ptr); cdecl; external;
 
@@ -347,7 +349,7 @@ int vga_accel(unsigned operation,...);
 
 {
  * wait for keypress, mousemove, I/O, timeout. cf. select (3) for details on
- * all parameters execept which.
+ * all parameters except which.
  * NULL is a valid argument for any of the ptrs.
  }
 
@@ -480,11 +482,11 @@ Procedure gl_expandfont(fw, fh, c: LongInt; sfdp, dfdp: pointer); cdecl; externa
 Procedure gl_setfont(fw, fh: LongInt; fdp: pointer); cdecl; external;
 Procedure gl_colorfont(fw, fh, c: LongInt; fdp: pointer); cdecl; external;
 Procedure gl_setwritemode(wm: LongInt); cdecl; external;
-Procedure gl_write(x, y: LongInt; s: PChar); cdecl; external;
-Procedure gl_writen(x, y, n: LongInt; s: PChar); cdecl; external;
+Procedure gl_write(x, y: LongInt; s: PAnsiChar); cdecl; external;
+Procedure gl_writen(x, y, n: LongInt; s: PAnsiChar); cdecl; external;
 Procedure gl_setfontcolors(bg, fg: LongInt); cdecl; external;
 
-{extern unsigned char *gl_font8x8;      /* compressed 8x8 font */}
+{extern unsigned AnsiChar *gl_font8x8;      /* compressed 8x8 font */}
 
 type
   TRGB = record

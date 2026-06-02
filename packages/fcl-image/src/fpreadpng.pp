@@ -13,19 +13,25 @@
 
  **********************************************************************}
 {$mode objfpc}{$h+}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit FPReadPNG;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
 uses
-  SysUtils,Classes, FPImage, FPImgCmn, PNGComn, ZStream;
+  System.SysUtils,System.Classes, FpImage, FpImage.Common, FpImage.Common.PNG, System.ZLib.Zstream;
+{$ELSE FPC_DOTTEDUNITS}
+uses
+  SysUtils,Classes, FpImage, FPImgCmn, PNGComn, ZStream;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
+  { TFPReaderPNG }
 
   TSetPixelProc = procedure (x,y:integer; CD : TColordata) of object;
   TConvertColorProc = function (CD:TColorData) : TFPColor of object;
-
-  { TFPReaderPNG }
 
   TFPReaderPNG = class (TFPCustomImageReader)
     private
@@ -80,6 +86,8 @@ Type
       procedure HandleChunk; virtual;
       procedure HandlePalette; virtual;
       procedure HandleAlpha; virtual;
+      procedure PredefinedResolutionValues; virtual;
+      procedure ReadResolutionValues; virtual;
       function CalcX (relX:integer) : integer;
       function CalcY (relY:integer) : integer;
       function CalcColor: TColorData;
@@ -241,6 +249,8 @@ procedure TFPReaderPNG.HandleAlpha;
         a : word;
         c : TFPColor;
     begin
+      if not assigned(ThePalette) then
+        raise PNGImageException.Create('tRNS chunk before PLTE chunk');
       with chunk do
         begin
         if alength > longword(ThePalette.count) then
@@ -292,6 +302,25 @@ begin
     0 : TransparentGray;
     2 : TransparentColor;
   end;
+end;
+
+procedure TFPReaderPNG.PredefinedResolutionValues;
+begin
+  //According with Standard: If the pHYs chunk is not present, pixels are assumed to be square
+  TheImage.ResolutionUnit :=ruNone;
+  TheImage.ResolutionX :=1;
+  TheImage.ResolutionY :=1;
+end;
+
+procedure TFPReaderPNG.ReadResolutionValues;
+begin
+  if (chunk.alength<>sizeof(TPNGPhysicalDimensions))
+  then raise Exception.Create('ctpHYs Chunk Size not Valid for TPNGPhysicalDimensions');
+  if (PPNGPhysicalDimensions(chunk.data)^.Unit_Specifier = 1)
+  then TheImage.ResolutionUnit :=ruPixelsPerCentimeter
+  else TheImage.ResolutionUnit :=ruNone;
+  TheImage.ResolutionX :=BEtoN(PPNGPhysicalDimensions(chunk.data)^.X_Pixels)/100;
+  TheImage.ResolutionY :=BEtoN(PPNGPhysicalDimensions(chunk.data)^.Y_Pixels)/100;
 end;
 
 procedure TFPReaderPNG.HandlePalette;
@@ -506,7 +535,7 @@ begin
     end
 end;
 
-function TFPReaderPNG.ColorGray1 (CD:TColorDAta) : TFPColor;
+function TFPReaderPNG.ColorGray1(CD: TColorData): TFPColor;
 begin
   if CD = 0 then
     result := colBlack
@@ -514,7 +543,7 @@ begin
     result := colWhite;
 end;
 
-function TFPReaderPNG.ColorGray2 (CD:TColorDAta) : TFPColor;
+function TFPReaderPNG.ColorGray2(CD: TColorData): TFPColor;
 var c : word;
 begin
   c := CD and 3;
@@ -530,7 +559,7 @@ begin
     end;
 end;
 
-function TFPReaderPNG.ColorGray4 (CD:TColorDAta) : TFPColor;
+function TFPReaderPNG.ColorGray4(CD: TColorData): TFPColor;
 var c : word;
 begin
   c := CD and $F;
@@ -545,7 +574,7 @@ begin
     end;
 end;
 
-function TFPReaderPNG.ColorGray8 (CD:TColorDAta) : TFPColor;
+function TFPReaderPNG.ColorGray8(CD: TColorData): TFPColor;
 var c : word;
 begin
   c := CD and $FF;
@@ -559,7 +588,7 @@ begin
     end;
 end;
 
-function TFPReaderPNG.ColorGray16 (CD:TColorDAta) : TFPColor;
+function TFPReaderPNG.ColorGray16(CD: TColorData): TFPColor;
 var c : word;
 begin
   c := CD and $FFFF;
@@ -575,15 +604,24 @@ end;
 function TFPReaderPNG.ColorGrayAlpha8 (CD:TColorData) : TFPColor;
 var c : word;
 begin
+  {$ifdef FPC_LITTLE_ENDIAN}
   c := CD and $00FF;
+  {$else}
+  c:=(CD shr 8) and $FF;
+  {$endif}
   c := c + (c shl 8);
   with result do
     begin
     red := c;
     green := c;
     blue := c;
-    c := CD and $FF00;
-    alpha := c + (c shr 8);
+    {$ifdef FPC_LITTLE_ENDIAN}
+     c := CD and $FF00;
+     alpha := c + (c shr 8);
+    {$else}
+     c := CD and $00FF;
+     alpha := c + (c shl 8);
+    {$endif}
     end;
 end;
 
@@ -759,6 +797,8 @@ procedure TFPReaderPNG.DoDecompress;
               FConvertColor := @ColorColorAlpha16; //CFmt := cfABGR64;
               ByteWidth := 8;
               end;
+      else
+        raise PNGImageException.Create('Invalid PNG color type');
       end;
       //ByteWidth := BytesNeeded[CFmt];
       case BitDepth of
@@ -789,6 +829,7 @@ procedure TFPReaderPNG.DoDecompress;
   procedure Decode;
   var y, rp, ry, rx, l : integer;
       lf : byte;
+      bytesRead : integer;
   begin
     FSetPixel := DecideSetPixel;
     for rp := StartPass to EndPass do
@@ -819,7 +860,9 @@ procedure TFPReaderPNG.DoDecompress;
             FPreviousLine := FSwitchLine;
             Y := CalcY(ry);
             Decompress.Read (lf, sizeof(lf));
-            Decompress.Read (FCurrentLine^, l);
+            bytesRead := Decompress.Read (FCurrentLine^, l);
+            if bytesRead < l then
+              fillchar (FCurrentLine^[bytesRead], l - bytesRead, 0);
             if lf <> 0 then  // Do nothing when there is no filter used
               for rx := 0 to l-1 do
                 FCurrentLine^[rx] := DoFilter (lf, rx, FCurrentLine^[rx]);
@@ -846,6 +889,7 @@ begin
     ctIDAT : HandleData;
     ctIEND : EndOfFile := True;
     cttRNS : HandleAlpha;
+    ctpHYs : ReadResolutionValues;
     else HandleUnknown;
   end;
 end;
@@ -861,12 +905,15 @@ procedure TFPReaderPNG.InternalRead (Str:TStream; Img:TFPCustomImage);
 begin
   {$ifdef FPC_Debug_Image}
   if Str<>TheStream then
-    writeln('WARNING: TFPReaderPNG.InternalRead Str<>TheStream');  
+    writeln('WARNING: TFPReaderPNG.InternalRead Str<>TheStream');
   {$endif}
   with Header do
     Img.SetSize (Width, Height);
   ZData := TMemoryStream.Create;
   try
+    //Resolution: If the pHYs chunk is not present, pixels are assumed to be square
+    PredefinedResolutionValues;
+
     EndOfFile := false;
     while not EndOfFile do
       begin
@@ -930,7 +977,7 @@ var SigCheck : array[0..7] of byte;
     r : integer;
 begin
   Result:=False;
-  if Str=Nil then 
+  if Str=Nil then
     exit;
   // Check Signature
   if Str.Read(SigCheck, SizeOf(SigCheck)) <> SizeOf(SigCheck) then
@@ -942,7 +989,11 @@ begin
     end;
   // Check IHDR
   ReadChunk;
-  move (chunk.data^, FHeader, sizeof(Header));
+  if chunk.alength < 13 then  // IHDR is always 13 bytes (2*longword + 5*byte)
+    exit;
+  if chunk.aType <> ctIHDR then
+    exit;
+  move (chunk.data^, FHeader, 13);  // copy exactly IHDR data size, not sizeof(record) which may have padding
   with header do
     begin
     {$IFDEF ENDIAN_LITTLE}

@@ -34,7 +34,7 @@ PROGRAM SortDemo;
 
     nils.sjoholm@mailbox.swipnet.se
 
-    One last remark, the heapsort can't be stoped
+    One last remark, the heapsort can't be stopped
     so you have to wait until it's finished.
 }
 
@@ -42,7 +42,7 @@ uses Exec, Intuition, AGraphics, Utility, GadTools, amsgbox;
 
 
 CONST
-      vers : string = '$VER: SortDemo 1.3 ' + {$I %DATE%} + ' ' + {$I %TIME%}#0;
+      vers : ShortString = '$VER: SortDemo 1.3 ' + {$I %DATE%} + ' ' + {$I %TIME%}#0;
 
       nmax=2000;
 
@@ -67,7 +67,7 @@ CONST
 
       { The easiest way to use gadtoolsmenus in FPC is
         to have them as const types. No need to cast
-        strings to PChar. That we have to use recordmembers
+        strings to PAnsiChar. That we have to use recordmembers
         name is a pain.
       }
 
@@ -131,7 +131,7 @@ VAR sort: ARRAY[1..nmax] OF Real;
     wintitle        : string[80];
     scrtitle        : string[80];
 
-Procedure CleanUp(s : string; err : Integer);
+Procedure CleanUp(s : ShortString; err : Integer);
 begin
     if assigned(MenuStrip) then begin
        ClearMenuStrip(w);
@@ -227,9 +227,9 @@ BEGIN
   descending := sort[i]>sort[j];
 END;
 
-Function IntToStr (I : Longint) : String;
+Function IntToStr (I : Longint) : ShortString;
 
-     Var S : String;
+     Var S : ShortString;
 
      begin
       Str (I,S);
@@ -338,8 +338,8 @@ END;
 
 PROCEDURE a_sort;
 { Pick out: Preparation is one half of a life }
-{ Take a look at the ridiculous low percentage of successful comparisions:  }
-{ Although there are only n swaps, there are n^2/2 comparisions!            }
+{ Take a look at the ridiculous low percentage of successful comparisons:   }
+{ Although there are only n swaps, there are n^2/2 comparisons!             }
 { Both is a record, one in a good sense, the other one in a bad sense.      }
 
 VAR i,j,minpos: Integer;
@@ -361,7 +361,7 @@ BEGIN
 END;
 
 PROCEDURE shellsort;
-{ brilliant extension of E-Sort, stunning improvement of efficience }
+{ brilliant extension of E-Sort, stunning improvement of efficiency }
 VAR i,j,gap: Integer;
 BEGIN
   LockWinSize(w^.Width,w^.Height,w^.Width,w^.Height);
@@ -422,7 +422,7 @@ END;
 PROCEDURE quicksort;
 { "divide and rule": a classic, but recursive  >>-( }
 { In this demonstration it is faster than heapsort, but does considerable }
-{ more unsuccessful comparisions. }
+{ more unsuccessful comparisons. }
 VAR stack: ARRAY[1..100] OF RECORD li,re: Integer; END;
     sp,l,r,m,i,j: Integer;
 BEGIN
@@ -439,7 +439,7 @@ BEGIN
       IF j>i THEN swapit(i,j);
       IF m=i THEN m := j ELSE IF m=j THEN m := i; { ahem ... }
       { This "Following" of the reference data is only required because  }
-      { I stubborn call the comparision function, and this one only gets }
+      { I stubborn call the comparison function, and this one only gets  }
       { indices on the values which have to be compared. }
     UNTIL i>=j;
     IF i>l THEN BEGIN
@@ -452,7 +452,7 @@ END;
 
 PROCEDURE mergesort;
 { *the* algorithm for lists with pointers on it, for arrays rather }
-{ inacceptable. The non.recursive implementation came out pretty more }
+{ unacceptable. The non.recursive implementation came out pretty more }
 { complicated than the one for quicksort, as quicksort first does }
 { something and then recurses; with mergesort it is the other way round. }
 VAR stack: ARRAY[1..100] OF RECORD li,re,mi: Integer; END;
@@ -463,7 +463,7 @@ BEGIN
   REPEAT
     l := stack[sp].li; r := stack[sp].re; m := stack[sp].mi; Dec(sp);
     showstack(sp);
-    IF m>0 THEN BEGIN { put two halfs together }
+    IF m>0 THEN BEGIN { put two halves together }
       { Unfortunately it is only possible in an efficient way by using }
       { extra memory; mergesort really is something for lists with }
       { pointers originally ... }
@@ -479,7 +479,7 @@ BEGIN
         setpixel(k);
       END;
     END ELSE IF l<r THEN BEGIN
-      { create two halfs and the order to put them together }
+      { create two halves and the order to put them together }
       m := (l+r) DIV 2;
       Inc(sp); stack[sp].li := l; stack[sp].mi := m; stack[sp].re := r;
       Inc(sp); stack[sp].li := m+1; stack[sp].mi := 0; stack[sp].re := r;
@@ -523,7 +523,7 @@ begin
     Rast := w^.RPort;
 
     { Here we set the barlabel }
-    nm[3].nm_Label := PChar(NM_BARLABEL);
+    nm[3].nm_Label := PAnsiChar(NM_BARLABEL);
     if pExecBase(_ExecBase)^.LibNode.Lib_Version >= 39 then begin
         MenuStrip := CreateMenus(@nm,[
                      GTMN_FrontPen, 1, TAG_END]);

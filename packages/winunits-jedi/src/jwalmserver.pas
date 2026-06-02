@@ -43,7 +43,9 @@
 // $Id: JwaLmServer.pas,v 1.13 2007/09/05 11:58:51 dezipaitor Exp $
 
 {$IFNDEF JWA_OMIT_SECTIONS_LM}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaLmServer;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS_LM}
@@ -57,8 +59,13 @@ unit JwaLmServer;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Lmcons, WinApi.Jedi.Winsvc, WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaLmCons, JwaWinSvc, JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS_LM}
 
 
@@ -102,7 +109,7 @@ function NetServerTransportAdd(servername: LMSTR; level: DWORD; bufptr: LPBYTE):
 
 function NetServerTransportAddEx(servername: LMSTR; level: DWORD; bufptr: LPBYTE): NET_API_STATUS; stdcall;
 {$EXTERNALSYM NetServerTransportAddEx}
-     
+
 function NetServerTransportDel(servername: LMSTR; level: DWORD; bufptr: LPBYTE): NET_API_STATUS; stdcall;
 {$EXTERNALSYM NetServerTransportDel}
 
@@ -2380,7 +2387,7 @@ const
   {$EXTERNALSYM SVI3_NUM_ELEMENTS}
 
 //
-//      Maxmimum length for command string to NetServerAdminCommand.
+//      Maximum length for command string to NetServerAdminCommand.
 //
 
   SV_MAX_CMD_LEN = PATHLEN;

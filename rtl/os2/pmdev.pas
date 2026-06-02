@@ -17,12 +17,19 @@
 {Warning: This code is alfa. Future versions
  of this unit might not be compatible.}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit pmdev;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  OS2Api.os2def;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   os2def;
+{$ENDIF FPC_DOTTEDUNITS}
 
 //General DEV return values
 const
@@ -466,7 +473,7 @@ in define line 83 *)
     { -----------------------------------------------------------------
           DJP_SJ_PAPERSIZE
 
-          Note: it is recommended to use DJP_CJ_FORM to chage the papersize.
+          Note: it is recommended to use DJP_CJ_FORM to change the papersize.
                                                         approximate size
         }
     {  inches       millimeters  }
@@ -645,7 +652,7 @@ in define line 83 *)
     { -----------------------------------------------------------------
           DJP_SJ_TRAYTYPE
 
-          Note: it is recommended to use DJP_CJ_FORM to chage the tray type.
+          Note: it is recommended to use DJP_CJ_FORM to change the tray type.
         }
 
     const
@@ -673,7 +680,7 @@ in define line 83 *)
     { -----------------------------------------------------------------
           DJP_SJ_MEDIA
 
-          Note: it is recommended to use DJP_CJ_FORM to chage the media type.
+          Note: it is recommended to use DJP_CJ_FORM to change the media type.
         }
 
     const
@@ -940,7 +947,7 @@ in define line 83 *)
     { -----------------------------------------------------------------
           DJP_CJ_TRAYNAME
 
-          Setting will match only szTrayname.  The perfered way to set which
+          Setting will match only szTrayname.  The preferred way to set which
           tray to use is DJP_CJ_FORM.  Otherwise, you are not guaranteed a
           unique match for all three form, tray, and media possibilities.
 
@@ -961,17 +968,17 @@ in define line 83 *)
        TPDJPT_TRAYNAME = ^TdjpInputTray;
 
 
-function DevOpenDC(ahab: HAB; lType: Longint; pszToken: PChar; lCount: Longint; var pdopData: DevOpenStruc; hdcComp: cardinal): cardinal; cdecl;
+function DevOpenDC(ahab: HAB; lType: Longint; pszToken: PAnsiChar; lCount: Longint; var pdopData: DevOpenStruc; hdcComp: cardinal): cardinal; cdecl;
 function DevCloseDC(ahdc: cardinal): cardinal; cdecl;
 function DevEscape(ahdc: cardinal; lCode, lInCount: Longint; var pbInData; var plOutCount: Longint; var pbOutData): Longint; cdecl;
 function DevQueryCaps(ahdc: cardinal; lStart, lCount: Longint; var alArray: Longint): Longbool; cdecl;
-function DevQueryDeviceNames(ahab: HAB; pszDriverName: PChar; var pldn: Longint; aDeviceName: Str32; aDeviceDesc: Str64; var pldt: Longint; aDataType: Str16): Longbool; cdecl;
+function DevQueryDeviceNames(ahab: HAB; pszDriverName: PAnsiChar; var pldn: Longint; aDeviceName: Str32; aDeviceDesc: Str64; var pldt: Longint; aDataType: Str16): Longbool; cdecl;
 function DevQueryHardcopyCaps(ahdc: cardinal; lStartForm, lForms: Longint; var phciHcInfo: HCInfo): Longint; cdecl;
-function DevPostDeviceModes(ahab: HAB; var pdrivDriverData: DrivData; pszDriverName, pszDeviceName, pszName: PChar; flOptions: cardinal): Longint; cdecl;
+function DevPostDeviceModes(ahab: HAB; var pdrivDriverData: DrivData; pszDriverName, pszDeviceName, pszName: PAnsiChar; flOptions: cardinal): Longint; cdecl;
 
 implementation
 
-function DevOpenDC(ahab: HAB; lType: Longint; pszToken: PChar; lCount: Longint; var pdopData: DevOpenStruc; hdcComp: cardinal): cardinal; cdecl;
+function DevOpenDC(ahab: HAB; lType: Longint; pszToken: PAnsiChar; lCount: Longint; var pdopData: DevOpenStruc; hdcComp: cardinal): cardinal; cdecl;
     external 'PMGPI' index 610;
 function DevCloseDC(ahdc: cardinal): cardinal; cdecl;
     external 'PMGPI' index 604;
@@ -979,11 +986,11 @@ function DevEscape(ahdc: cardinal; lCode, lInCount: Longint; var pbInData; var p
     external 'PMGPI' index 605;
 function DevQueryCaps(ahdc: cardinal; lStart, lCount: Longint;var alArray: Longint): Longbool; cdecl;
     external 'PMGPI' index 606;
-function DevQueryDeviceNames(ahab: HAB; pszDriverName: PChar; var pldn: Longint; aDeviceName: Str32; aDeviceDesc: Str64; var pldt: Longint; aDataType: Str16): Longbool; cdecl;
+function DevQueryDeviceNames(ahab: HAB; pszDriverName: PAnsiChar; var pldn: Longint; aDeviceName: Str32; aDeviceDesc: Str64; var pldt: Longint; aDataType: Str16): Longbool; cdecl;
     external 'PMGPI' index 607;
 function DevQueryHardcopyCaps(ahdc: cardinal; lStartForm, lForms: Longint; var phciHcInfo: HCInfo): Longint; cdecl;
     external 'PMGPI' index 608;
-function DevPostDeviceModes(ahab: HAB; var pdrivDriverData: DrivData; pszDriverName, pszDeviceName, pszName: PChar; flOptions: cardinal): Longint; cdecl;
+function DevPostDeviceModes(ahab: HAB; var pdrivDriverData: DrivData; pszDriverName, pszDeviceName, pszName: PAnsiChar; flOptions: cardinal): Longint; cdecl;
     external 'PMGPI' index 609;
 
     { was

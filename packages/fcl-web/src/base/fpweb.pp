@@ -1,6 +1,6 @@
 {
     $Id: header,v 1.1 2000/07/13 06:33:45 michael Exp $
-    This file is part of the Free Component Library (FCL)
+    This file is part of the Free Component Library (Fcl)
     Copyright (c) 1999-2000 by the Free Pascal development team
 
     See the file COPYING.FPC, included in this distribution,
@@ -13,12 +13,19 @@
  **********************************************************************}
 {$mode objfpc}
 {$H+}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fpWeb;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
 uses
-  Classes, SysUtils, httpdefs, fphttp, fptemplate;
+  System.Classes, System.SysUtils, System.StrUtils, FpWeb.Http.Defs, FpWeb.Http.Base, Fcl.Template;
+{$ELSE FPC_DOTTEDUNITS}
+uses
+  Classes, SysUtils, StrUtils, httpdefs, fphttp, fptemplate;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
 
@@ -32,7 +39,7 @@ Type
     function  GetContents: TStrings;
     procedure SetContents(const AValue: TStrings);
     Procedure SetTemplate(const AValue : TFPTemplate);
-  Protected  
+  Protected
     Procedure DoHandleRequest(ARequest : TRequest; AResponse : TResponse; Var Handled : Boolean); override;
     Procedure DoGetContent(ARequest : TRequest; Content : TStream; Var Handled : Boolean); virtual;
     Procedure GetContent(ARequest : TRequest; Content : TStream; Var Handled : Boolean);
@@ -44,7 +51,7 @@ Type
     Property Contents : TStrings Read GetContents Write SetContents;
     Property OnRequest: TWebActionEvent Read FOnrequest Write FOnrequest;
     Property Template : TFPTemplate Read FTemplate Write SetTemplate;
-  end;  
+  end;
 
   { TFPWebActions }
 
@@ -122,6 +129,10 @@ Type
     function CreateTemplateVars: TTemplateVars; virtual;
     function CreateTemplate: TFPTemplate; virtual;
     function CreateActions: TFPWebActions; virtual;
+    // Override if you wish to add a method
+    class function IsWriteRequest(const aMethod: string): boolean; virtual;
+    // Check if request contains the CSRF token
+    class function HasToken(ARequest: TRequest; const aToken: string): boolean; virtual;
     Function HandleActions(ARequest : TRequest): Boolean; virtual;
     procedure DoOnRequest(ARequest: TRequest; AResponse: TResponse; var AHandled: Boolean); virtual;
     Procedure DoBeforeRequest(ARequest : TRequest); virtual;
@@ -146,7 +157,7 @@ Type
     Property Request: TRequest Read FRequest;
     Property Response: TResponse Read FResponse;
   end;
-  
+
   { TFPWebModule }
 
   TFPWebModule = Class(TCustomFPWebModule)
@@ -392,10 +403,10 @@ begin
 end;
 
 procedure TCustomFPWebModule.GetParam(const ParamName: String; out Value: String);
-  
+
 Var
   T : TTemplateVar;
-  
+
 begin
   If (0=CompareText(ParamName,'CONTENT')) then
     Value:=GetContent
@@ -412,10 +423,14 @@ end;
 
 procedure TCustomFPWebModule.GetTemplateContent(ARequest: TRequest;
   AResponse: TResponse);
-  
+
 begin
   TFPWebTemplate(FTemplate).Request:=ARequest;
+  {$IF SIZEOF(CHAR)=2}
+  AResponse.Content:=UTF8Encode(FTemplate.GetContent);
+  {$ELSE}
   AResponse.Content:=FTemplate.GetContent;
+  {$ENDIF}
 end;
 
 function TCustomFPWebModule.GetContent: String;
@@ -423,7 +438,7 @@ function TCustomFPWebModule.GetContent: String;
 Var
   S : TStringStream;
   B : Boolean;
-  
+
 begin
   S:=TStringStream.Create('');
   Try
@@ -453,35 +468,48 @@ begin
   inherited Destroy;
 end;
 
-Function TCustomFPWebModule.CreateTemplateVars : TTemplateVars;
+function TCustomFPWebModule.CreateTemplateVars: TTemplateVars;
 
 begin
   Result:=TTemplateVars.Create(TTemplateVar);
 end;
 
-Function TCustomFPWebModule.CreateTemplate : TFPTemplate;
+function TCustomFPWebModule.CreateTemplate: TFPTemplate;
 
 begin
   Result:=TFPWebTemplate.Create(Self);
 end;
 
-Function TCustomFPWebModule.CreateActions : TFPWebActions;
+function TCustomFPWebModule.CreateActions: TFPWebActions;
 
 begin
   Result:=TFPWebActions.Create(TFPWebAction);
 end;
 
-procedure TCustomFPWebModule.DoOnRequest(ARequest: TRequest; AResponse: TResponse; Var AHandled : Boolean);
+procedure TCustomFPWebModule.DoOnRequest(ARequest: TRequest; AResponse: TResponse; var AHandled: Boolean);
 
 begin
   If Assigned(FOnRequest) then
     FOnRequest(Self,ARequest,AResponse,AHandled);
 end;
 
+class function TCustomFPWebModule.IsWriteRequest(const aMethod: string): boolean;
+
+begin
+  Result:=IndexStr(UpperCase(aMethod),['POST','PUT','DELETE','PATCH','BATCH'])<>-1;
+end;
+
+
+class function TCustomFPWebModule.HasToken(ARequest: TRequest; const aToken : string) : boolean;
+begin
+  Result:=(ARequest.ContentFields.Values[cCSRFVariable]=aToken)
+end;
+
 procedure TCustomFPWebModule.HandleRequest(ARequest: TRequest; AResponse: TResponse);
 
 Var
   B : Boolean;
+  Err : EHTTP;
 
 begin
 {$ifdef cgidebug}
@@ -496,6 +524,16 @@ begin
     InitSession(AResponse);
     if not CORS.HandleRequest(aRequest,aResponse,[hcDetect,hcSend]) then
       begin
+      if IsWriteRequest(aRequest.Method) and (Session.Variables[cCSRFVariable]<>'') then
+        begin
+        if not HasToken(aRequest,Session.Variables[cCSRFVariable]) then
+          begin
+          Err:=EHTTP.Create('CSRF Token mismatch');
+          Err.StatusCode:=403;
+          Err.StatusText:='FORBIDDEN';
+          Raise Err;
+          end;
+        end;
       DoOnRequest(ARequest,AResponse,B);
       If B then
         begin

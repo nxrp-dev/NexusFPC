@@ -21,7 +21,7 @@
  ****************************************************************************
 }
 {# @abstract(Abstract code generator unit)
-   Abstreact code generator unit. This contains the base class
+   Abstract code generator unit. This contains the base class
    to implement for all new supported processors.
 
    WARNING: None of the routines implemented in these modules,
@@ -124,6 +124,8 @@ unit cgobj;
 
           {# Emit a label to the instruction stream. }
           procedure a_label(list : TAsmList;l : tasmlabel);virtual;
+          {# Emit a label that can be a target of a Pascal goto statement to the instruction stream. }
+          procedure a_label_pascal_goto_target(list : TAsmList;l : tasmlabel);virtual;
 
           {# Allocates register r by inserting a pai_realloc record }
           procedure a_reg_alloc(list : TAsmList;r : tregister);
@@ -265,7 +267,7 @@ unit cgobj;
           procedure a_loadaddr_ref_reg(list : TAsmList;const ref : treference;r : tregister);virtual; abstract;
 
           { bit scan instructions }
-          procedure a_bit_scan_reg_reg(list: TAsmList; reverse: boolean; srcsize, dstsize: tcgsize; src, dst: TRegister); virtual;
+          procedure a_bit_scan_reg_reg(list: TAsmList; reverse,not_zero: boolean; srcsize, dstsize: tcgsize; src, dst: TRegister); virtual;
 
           { Multiplication with doubling result size.
             dstlo or dsthi may be NR_NO, in which case corresponding half of result is discarded. }
@@ -369,6 +371,14 @@ unit cgobj;
           }
           procedure optimize_op_const(size: TCGSize; var op: topcg; var a : tcgint);virtual;
 
+
+          {# This emits code to copy len bytes from the source using the move procedure
+
+             @param(source Source reference of copy)
+             @param(dest Destination reference of copy)
+
+          }
+          procedure g_concatcopy_move(list : TAsmList;const source,dest : treference;len : tcgint);virtual;
 
           {# This should emit the opcode to copy len bytes from the source
              to destination.
@@ -590,7 +600,7 @@ implementation
        cpuinfo;
 
 {*****************************************************************************
-                            basic functionallity
+                            basic functionality
 ******************************************************************************}
 
     constructor tcg.create;
@@ -953,6 +963,12 @@ implementation
       end;
 
 
+    procedure tcg.a_label_pascal_goto_target(list : TAsmList;l : tasmlabel);
+      begin
+        a_label(list,l);
+      end;
+
+
 {*****************************************************************************
           for better code generation these methods should be overridden
 ******************************************************************************}
@@ -1237,7 +1253,8 @@ implementation
             begin
               hreg:=paraloc.register;
               cgsize:=paraloc.size;
-              if paraloc.shiftval>0 then
+              if (paraloc.shiftval>0) and
+	        not ((target_info.endian=endian_big) and (sizeleft in [3,5,6,7])) then
                 a_op_const_reg_reg(list,OP_SHL,OS_INT,paraloc.shiftval,paraloc.register,paraloc.register)
               { in case the original size was 3 or 5/6/7 bytes, the value was
                 shifted to the top of the to 4 resp. 8 byte register on the
@@ -1886,7 +1903,7 @@ implementation
               end;
             LOC_REGISTER,LOC_CREGISTER:
               begin
-                { paramfpu_ref does the check_simpe_location check here if necessary }
+                { paramfpu_ref does the check_simple_location check here if necessary }
                 tg.GetTemp(list,TCGSize2Size[size],TCGSize2Size[size],tt_normal,ref);
                 a_loadfpu_reg_ref(list,size,size,r,ref);
                 a_loadfpu_ref_cgpara(list,size,ref,cgpara);
@@ -2651,6 +2668,33 @@ implementation
       end;
 
 
+    procedure tcg.g_concatcopy_move(list : TAsmList;const source,dest : treference;len : tcgint);
+      var
+        paraloc1,paraloc2,paraloc3 : TCGPara;
+        pd : tprocdef;
+      begin
+        pd:=search_system_proc('MOVE');
+        paraloc1.init;
+        paraloc2.init;
+        paraloc3.init;
+        paramanager.getcgtempparaloc(list,pd,1,paraloc1);
+        paramanager.getcgtempparaloc(list,pd,2,paraloc2);
+        paramanager.getcgtempparaloc(list,pd,3,paraloc3);
+        a_load_const_cgpara(list,OS_SINT,len,paraloc3);
+        a_loadaddr_ref_cgpara(list,dest,paraloc2);
+        a_loadaddr_ref_cgpara(list,source,paraloc1);
+        paramanager.freecgpara(list,paraloc3);
+        paramanager.freecgpara(list,paraloc2);
+        paramanager.freecgpara(list,paraloc1);
+        allocallcpuregisters(list);
+        a_call_name(list,'FPC_MOVE',false);
+        deallocallcpuregisters(list);
+        paraloc3.done;
+        paraloc2.done;
+        paraloc1.done;
+      end;
+
+
     procedure tcg.g_concatcopy_unaligned(list : TAsmList;const source,dest : treference;len : tcgint);
       begin
         g_concatcopy(list,source,dest,len);
@@ -2982,7 +3026,7 @@ implementation
       end;
 
 
-    procedure tcg.a_bit_scan_reg_reg(list: TAsmList; reverse: boolean; srcsize, dstsize: tcgsize; src, dst: TRegister);
+    procedure tcg.a_bit_scan_reg_reg(list: TAsmList; reverse,not_zero: boolean; srcsize, dstsize: tcgsize; src, dst: TRegister);
       begin
         internalerror(2014070601);
       end;

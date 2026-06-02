@@ -26,7 +26,7 @@ interface
 
     uses
        { common }
-       cutils,compinnr,
+       sysutils,cutils,compinnr,
        { target }
        globtype,globals,widestr,constexp,
        { symtable }
@@ -363,6 +363,9 @@ interface
          { do not override this routine in platform-specific subclasses,
            override ppuwrite_platform instead }
          procedure ppuwrite(ppufile:tcompilerppufile);override;final;
+         { returns the symbol type of the local variable or local parameter
+           referenced by the absolute symbol }
+         function reftyp : tsymtyp;
       end;
       tabsolutevarsymclass = class of tabsolutevarsym;
 
@@ -412,6 +415,7 @@ interface
          0: (valueord : tconstexprint);
          1: (valueordptr : tconstptruint);
          2: (valueptr : pointer; len : longint);
+         3: (valuews : tcompilerwidestring);
        end;
 
        tconstsym = class(tstoredsym)
@@ -423,7 +427,7 @@ interface
           constructor create_ordptr(const n : TSymStr;t : tconsttyp;v : tconstptruint;def:tdef);virtual;
           constructor create_ptr(const n : TSymStr;t : tconsttyp;v : pointer;def:tdef);virtual;
           constructor create_string(const n : TSymStr;t : tconsttyp;str:pchar;l:longint;def:tdef);virtual;
-          constructor create_wstring(const n : TSymStr;t : tconsttyp;pw:pcompilerwidestring);virtual;
+          constructor create_wstring(const n : TSymStr;t : tconsttyp;pw:tcompilerwidestring);virtual;
           constructor create_undefined(const n : TSymStr;def:tdef);virtual;
           constructor ppuload(ppufile:tcompilerppufile);
           destructor  destroy;override;
@@ -469,20 +473,19 @@ interface
        maxmacrolen=16*1024;
 
     type
-       pmacrobuffer = ^tmacrobuffer;
-       tmacrobuffer = array[0..maxmacrolen-1] of char;
-
        tmacro = class(tstoredsym)
           {Normally true, but false when a previously defined macro is undef-ed}
           defined : boolean;
           {True if this is a mac style compiler variable, in which case no macro
            substitutions shall be done.}
           is_compiler_var : boolean;
+          { true if the macro is a C macro, i.e used := }
+          is_c_macro : boolean;
           {Whether the macro was used. NOTE: A use of a macro which was never defined}
           {e. g. an IFDEF which returns false, will not be registered as used,}
           {since there is no place to register its use. }
           is_used : boolean;
-          buftext : pchar;
+          buftext : TAnsiCharDynArray;
           buflen  : longint;
           constructor create(const n : TSymStr);
           constructor ppuload(ppufile:tcompilerppufile);
@@ -490,6 +493,8 @@ interface
             override ppuwrite_platform instead }
           procedure ppuwrite(ppufile:tcompilerppufile);override;final;
           destructor  destroy;override;
+          function allocate_buftext(len:longint) : pchar;
+          procedure free_buftext;
           function GetCopy:tmacro;
        end;
 
@@ -525,7 +530,7 @@ implementation
 
     uses
        { global }
-       verbose,
+       verbose,cmsgs,
        { target }
        systems,
        { symtable }
@@ -573,6 +578,7 @@ implementation
           constreal,
           constset,
           constresourcestring,
+          constwresourcestring,
           constwstring,
           constguid: begin
             if value1.len<>value2.len then
@@ -590,22 +596,34 @@ implementation
 
 
     procedure check_hints(const srsym: tsym; const symoptions: tsymoptions; const deprecatedmsg : pshortstring;filepos:tfileposinfo);
+      var
+        def : tdef;
+        name : tmsgstr;
       begin
         if not assigned(srsym) then
           internalerror(200602051);
+        if symoptions*[sp_hint_deprecated,sp_hint_experimental,sp_hint_platform,sp_hint_library,sp_hint_unimplemented]<>[] then
+          begin
+            name:=srsym.realname;
+            def:=tdef(srsym.owner.defowner);
+            if assigned(def) then
+              name:=def.typesymbolprettyname+'.'+name;
+          end
+        else
+          name:='';
         if sp_hint_deprecated in symoptions then
           if (sp_has_deprecated_msg in symoptions) and (deprecatedmsg <> nil) then
-            MessagePos2(filepos,sym_w_deprecated_symbol_with_msg,srsym.realname,deprecatedmsg^)
+            MessagePos2(filepos,sym_w_deprecated_symbol_with_msg,name,deprecatedmsg^)
           else
-            MessagePos1(filepos,sym_w_deprecated_symbol,srsym.realname);
+            MessagePos1(filepos,sym_w_deprecated_symbol,name);
         if sp_hint_experimental in symoptions then
-          MessagePos1(filepos,sym_w_experimental_symbol,srsym.realname);
+          MessagePos1(filepos,sym_w_experimental_symbol,name);
         if sp_hint_platform in symoptions then
-          MessagePos1(filepos,sym_w_non_portable_symbol,srsym.realname);
+          MessagePos1(filepos,sym_w_non_portable_symbol,name);
         if sp_hint_library in symoptions then
-          MessagePos1(filepos,sym_w_library_symbol,srsym.realname);
+          MessagePos1(filepos,sym_w_library_symbol,name);
         if sp_hint_unimplemented in symoptions then
-          MessagePos1(filepos,sym_w_non_implemented_symbol,srsym.realname);
+          MessagePos1(filepos,sym_w_non_implemented_symbol,name);
       end;
 
 {****************************************************************************
@@ -640,7 +658,7 @@ implementation
 
     procedure tstoredsym.ppuwrite(ppufile:tcompilerppufile);
       var
-        oldintfcrc : boolean;
+        oldcrc : boolean;
       begin
 {$ifdef symansistr}
          ppufile.putansistring(realname);
@@ -657,12 +675,12 @@ implementation
            This does mean that changing e.g. the "deprecated" state of a symbol
            by itself will not trigger a recompilation of dependent units.
          }
-         oldintfcrc:=ppufile.do_interface_crc;
-         ppufile.do_interface_crc:=false;
+         oldcrc:=ppufile.do_crc;
+         ppufile.do_crc:=false;
          ppufile.putset(tppuset2(symoptions));
          if sp_has_deprecated_msg in symoptions then
            ppufile.putstring(deprecatedmsg^);
-         ppufile.do_interface_crc:=oldintfcrc;
+         ppufile.do_crc:=oldcrc;
          trtti_attribute_list.ppuwrite(rtti_attribute_list,ppufile);
       end;
 
@@ -718,19 +736,34 @@ implementation
     destructor tstoredsym.destroy;
       begin
         rtti_attribute_list.free;
+        rtti_attribute_list := nil;
         inherited destroy;
       end;
 
 
     procedure tstoredsym.register_sym;
+      var
+        tmod : tmodule;
       begin
         if registered then
           exit;
-        { Register in current_module }
-        if assigned(current_module) then
+        if assigned(owner) then
           begin
-            current_module.symlist.Add(self);
-            SymId:=current_module.symlist.Count-1;
+            tmod:=find_module_from_symtable(owner);
+            if assigned(tmod) and assigned(current_module) and (tmod<>current_module) then
+              begin
+                comment(v_error,'Symbol '+realname+' from module '+tmod.mainsource+' registered with current module '+current_module.mainsource);
+              end;
+            if not assigned(tmod) then
+              tmod:=current_module;
+          end
+        else
+          tmod:=current_module;
+        { Register in current_module }
+        if assigned(tmod) then
+          begin
+            tmod.symlist.Add(self);
+            SymId:=tmod.symlist.Count-1;
           end
         else
           SymId:=symid_registered_nost;
@@ -954,10 +987,13 @@ implementation
     destructor tprocsym.destroy;
       begin
         FProcdefList.Free;
-        if assigned(FProcdefDerefList) then
-          FProcdefDerefList.Free;
+        FProcdefList := nil;
+        FProcdefDerefList.Free;
+        FProcdefDerefList := nil;
         fgenprocsymovlds.free;
+        fgenprocsymovlds := nil;
         fgenprocsymovldsderefs.free;
+        fgenprocsymovldsderefs := nil;
         inherited destroy;
       end;
 
@@ -1013,7 +1049,9 @@ implementation
         for i:=0 to ProcdefList.Count-1 do
           begin
             pd:=tprocdef(ProcdefList[i]);
-            if (pd.owner=owner) and (pd.forwarddef) then
+            { Don't check for is_specialization, but whether it's somehow part
+              of a specialization }
+            if (pd.owner=owner) and (pd.forwarddef) and not (df_specialization in pd.defoptions) then
               begin
                 { For mode macpas. Make implicit externals (procedures declared in the interface
                   section which do not have a counterpart in the implementation)
@@ -1061,17 +1099,21 @@ implementation
           end;
         if sp_generic_dummy in symoptions then
           begin
-            if not assigned(fgenprocsymovlds) then
-              internalerror(2021010602);
             if not assigned(fgenprocsymovldsderefs) then
               fgenprocsymovldsderefs:=tfplist.create
             else
               fgenprocsymovldsderefs.clear;
-            for i:=0 to fgenprocsymovlds.count-1 do
+            { this might happen for procsyms in classes that override symbols
+              in a parent class that generic overloads }
+            if assigned(fgenprocsymovlds) then
               begin
-                sym:=tprocsym(fgenprocsymovlds[i]);
-                d.build(sym);
-                fgenprocsymovldsderefs.add(pointer(ptrint(d.dataidx)));
+                fgenprocsymovldsderefs.capacity:=fgenprocsymovldsderefs.count+fgenprocsymovlds.count;
+                for i:=0 to fgenprocsymovlds.count-1 do
+                  begin
+                    sym:=tprocsym(fgenprocsymovlds[i]);
+                    d.build(sym);
+                    fgenprocsymovldsderefs.add(pointer(ptrint(d.dataidx)));
+                  end;
               end;
           end;
       end;
@@ -1088,6 +1130,7 @@ implementation
         ProcdefList.Clear;
         if not assigned(FProcdefDerefList) then
           internalerror(200611031);
+        ProcdefList.capacity:=FProcdefDerefList.count;
         for i:=0 to FProcdefDerefList.Count-1 do
           begin
             d.dataidx:=PtrInt(FProcdefDerefList[i]);
@@ -1096,16 +1139,20 @@ implementation
           end;
         if sp_generic_dummy in symoptions then
           begin
-            if not assigned(fgenprocsymovlds) then
-              internalerror(2021010603);
+            {if not assigned(fgenprocsymovlds) then
+              internalerror(2021010603);}
             if not assigned(fgenprocsymovldsderefs) then
               internalerror(2021010302);
-            fgenprocsymovlds.clear;
-            for i:= 0 to fgenprocsymovldsderefs.count-1 do
+            if assigned(fgenprocsymovlds) then
               begin
-                d.dataidx:=ptrint(fgenprocsymovldsderefs[i]);
-                sym:=tprocsym(d.resolve);
-                fgenprocsymovlds.add(sym);
+                fgenprocsymovlds.clear;
+                fgenprocsymovlds.capacity:=fgenprocsymovldsderefs.count;
+                for i:= 0 to fgenprocsymovldsderefs.count-1 do
+                  begin
+                    d.dataidx:=ptrint(fgenprocsymovldsderefs[i]);
+                    sym:=tprocsym(d.resolve);
+                    fgenprocsymovlds.add(sym);
+                  end;
               end;
           end;
       end;
@@ -1516,9 +1563,9 @@ implementation
 
     function tprocsym.could_be_implicitly_specialized:boolean;
       begin
-        result:=(m_implicit_function_specialization in current_settings.modeswitches) and 
+        result:=(m_implicit_function_specialization in current_settings.modeswitches) and
                 (sp_generic_dummy in symoptions) and
-                assigned(genprocsymovlds);          
+                assigned(genprocsymovlds);
       end;
 
 {****************************************************************************
@@ -1567,8 +1614,15 @@ implementation
 
 
     constructor tpropertysym.ppuload(ppufile:tcompilerppufile);
+      type
+         small_interval = 0..31;
+         small_set = set of small_interval;
+         psmall_set = ^small_set;
       var
         pap : tpropaccesslisttypes;
+        d : entryreal;
+        s : single;
+        aset : small_set;
       begin
          inherited ppuload(propertysym,ppufile);
          ppufile.getset(tppuset2(propoptions));
@@ -1576,7 +1630,19 @@ implementation
            ppufile.getderef(overriddenpropsymderef);
          ppufile.getderef(propdefderef);
          index:=ppufile.getlongint;
-         default:=ppufile.getlongint;
+         if ppo_default_is_single in propoptions then
+           begin
+             d:=ppufile.getreal;
+	     s:=d;
+             default:=plongint(@s)^;
+           end
+         else if ppo_default_is_set in propoptions then
+           begin
+             ppufile.getset(tppuset4(aset));
+             default:=plongint(@aset)^;
+           end
+         else
+           default:=ppufile.getlongint;
          ppufile.getderef(indexdefderef);
          for pap:=low(tpropaccesslisttypes) to high(tpropaccesslisttypes) do
            propaccesslist[pap]:=ppufile.getpropaccesslist;
@@ -1596,8 +1662,9 @@ implementation
         pap : tpropaccesslisttypes;
       begin
          for pap:=low(tpropaccesslisttypes) to high(tpropaccesslisttypes) do
-           propaccesslist[pap].free;
+           FreeAndNil(propaccesslist[pap]);
          parast.free;
+         parast := nil;
          inherited destroy;
       end;
 
@@ -1789,8 +1856,14 @@ implementation
 
 
     procedure tpropertysym.ppuwrite(ppufile:tcompilerppufile);
+      type
+         small_interval = 0..31;
+         small_set = set of small_interval;
+         psmall_set = ^small_set;
       var
         pap : tpropaccesslisttypes;
+        s : single;
+        aset : small_set;
       begin
         inherited ppuwrite(ppufile);
         ppufile.putset(tppuset2(propoptions));
@@ -1798,7 +1871,18 @@ implementation
           ppufile.putderef(overriddenpropsymderef);
         ppufile.putderef(propdefderef);
         ppufile.putlongint(index);
-        ppufile.putlongint(default);
+        if ppo_default_is_single in propoptions then
+          begin
+            s:=psingle(@default)^;
+            ppufile.putreal(s);
+          end
+        else if ppo_default_is_set in propoptions then
+          begin
+            aset:=psmall_set(@default)^;
+            ppufile.putset(tppuset4(aset));
+          end
+        else
+          ppufile.putlongint(default);
         ppufile.putderef(indexdefderef);
         for pap:=low(tpropaccesslisttypes) to high(tpropaccesslisttypes) do
           ppufile.putpropaccesslist(propaccesslist[pap]);
@@ -1853,15 +1937,15 @@ implementation
 
     procedure tabstractvarsym.ppuwrite(ppufile:tcompilerppufile);
       var
-        oldintfcrc : boolean;
+        oldcrc : boolean;
       begin
          inherited ppuwrite(ppufile);
          ppufile.putbyte(byte(varspez));
-         oldintfcrc:=ppufile.do_crc;
+         oldcrc:=ppufile.do_crc;
          ppufile.do_crc:=false;
          ppufile.putbyte(byte(varregable));
          ppufile.putset(tppuset1(varsymaccess));
-         ppufile.do_crc:=oldintfcrc;
+         ppufile.do_crc:=oldcrc;
          ppufile.putderef(vardefderef);
          ppufile.putset(tppuset4(varoptions));
       end;
@@ -2448,7 +2532,7 @@ implementation
 
     procedure tparavarsym.ppuwrite(ppufile:tcompilerppufile);
       var
-        oldintfcrc : boolean;
+        oldcrc : boolean;
       begin
          inherited ppuwrite(ppufile);
          ppufile.putword(paranr);
@@ -2458,13 +2542,13 @@ implementation
            we write them to the unit file.
            This enables constant folding for inline procedures loaded from units
          }
-         oldintfcrc:=ppufile.do_crc;
+         oldcrc:=ppufile.do_crc;
          ppufile.do_crc:=false;
          ppufile.putbyte(ord(varstate));
          { write also info about the usage of parameters,
            the absolute usage does not matter }
          ppufile.putbyte(min(1,refs));
-         ppufile.do_crc:=oldintfcrc;
+         ppufile.do_crc:=oldcrc;
 
          if vo_has_explicit_paraloc in varoptions then
            begin
@@ -2515,6 +2599,7 @@ implementation
       begin
         if assigned(ref) then
           ref.free;
+          ref := nil;
         inherited destroy;
       end;
 
@@ -2582,6 +2667,21 @@ implementation
          end;
       end;
 
+         { returns the symbol type of the local variable or local parameter
+           referenced by the absolute symbol }
+    function tabsolutevarsym.reftyp : tsymtyp;
+      var
+        plist : ppropaccesslistitem;
+      begin
+        reftyp:=typ;
+        if abstyp=tovar then
+          begin
+            plist:=ref.firstsym;
+            if assigned(plist) and (plist^.sltype=sl_load) and
+               assigned(plist^.sym) and not(assigned(plist^.next)) then
+              reftyp:=plist^.sym.typ;
+          end;
+      end;
 
 {****************************************************************************
                                   TCONSTSYM
@@ -2635,12 +2735,12 @@ implementation
       end;
 
 
-    constructor tconstsym.create_wstring(const n : TSymStr;t : tconsttyp;pw:pcompilerwidestring);
+    constructor tconstsym.create_wstring(const n : TSymStr;t : tconsttyp;pw:tcompilerwidestring);
       begin
          inherited create(constsym,n);
          fillchar(value, sizeof(value), #0);
          consttyp:=t;
-         pcompilerwidestring(value.valueptr):=pw;
+         value.valuews:=pw;
          constdef:=carraydef.getreusable(cwidechartype,getlengthwidestring(pw));
          constdefderef.reset;
          value.len:=getlengthwidestring(pw);
@@ -2661,8 +2761,30 @@ implementation
          pd : pbestreal;
          ps : pnormalset;
          pc : pchar;
-         pw : pcompilerwidestring;
+         pw : tcompilerwidestring;
          i  : longint;
+
+         procedure do_widestring_const;
+         var
+            i  : longint;
+         begin
+           initwidestring(pw);
+           setlengthwidestring(pw,ppufile.getlongint);
+           { don't use getdata, because the compilerwidechars may have to
+             be byteswapped
+           }
+{$if sizeof(tcompilerwidechar) = 2}
+           for i:=0 to pw.len-1 do
+             pw.data[i]:=ppufile.getword;
+{$elseif sizeof(tcompilerwidechar) = 4}
+           for i:=0 to pw.len-1 do
+             pw.data[i]:=cardinal(ppufile.getlongint);
+{$else}
+          {$error Unsupported tcompilerwidechar size}
+{$endif}
+           value.valuews:=pw;
+         end;
+
       begin
          inherited ppuload(constsym,ppufile);
          constdef:=nil;
@@ -2681,31 +2803,22 @@ implementation
              end;
            constwstring :
              begin
-               initwidestring(pw);
-               setlengthwidestring(pw,ppufile.getlongint);
-               { don't use getdata, because the compilerwidechars may have to
-                 be byteswapped
-               }
-{$if sizeof(tcompilerwidechar) = 2}
-               for i:=0 to pw^.len-1 do
-                 pw^.data[i]:=ppufile.getword;
-{$elseif sizeof(tcompilerwidechar) = 4}
-               for i:=0 to pw^.len-1 do
-                 pw^.data[i]:=cardinal(ppufile.getlongint);
-{$else}
-              {$error Unsupported tcompilerwidechar size}
-{$endif}
-               pcompilerwidestring(value.valueptr):=pw;
+               do_widestring_const;
              end;
            conststring,
            constresourcestring :
+              begin
+              ppufile.getderef(constdefderef);
+              value.len:=ppufile.getlongint;
+              getmem(pc,value.len+1);
+              ppufile.getdata(pc^,value.len);
+              pc[value.len]:=#0;
+              value.valueptr:=pc;
+              end;
+           constwresourcestring :
              begin
                ppufile.getderef(constdefderef);
-               value.len:=ppufile.getlongint;
-               getmem(pc,value.len+1);
-               ppufile.getdata(pc^,value.len);
-               pc[value.len]:=#0;
-               value.valueptr:=pc;
+               do_widestring_const;
              end;
            constreal :
              begin
@@ -2747,8 +2860,9 @@ implementation
           conststring,
           constresourcestring :
             freemem(pchar(value.valueptr),value.len+1);
-          constwstring :
-            donewidestring(pcompilerwidestring(value.valueptr));
+          constwstring,
+          constwresourcestring:
+            donewidestring(value.valuews);
           constreal :
             dispose(pbestreal(value.valueptr));
           constset :
@@ -2764,7 +2878,7 @@ implementation
       begin
         inherited;
         case consttyp  of
-          constnil,constord,constreal,constpointer,constset,conststring,constresourcestring,constguid:
+          constnil,constord,constreal,constpointer,constset,conststring,constresourcestring,constwresourcestring,constguid:
             constdefderef.build(constdef);
           constwstring:
             ;
@@ -2777,10 +2891,10 @@ implementation
     procedure tconstsym.deref;
       begin
         case consttyp of
-          constnil,constord,constreal,constpointer,constset,conststring,constresourcestring,constguid:
+          constnil,constord,constreal,constpointer,constset,conststring,constresourcestring,constwresourcestring,constguid:
             constdef:=tdef(constdefderef.resolve);
           constwstring:
-            constdef:=carraydef.getreusable(cwidechartype,getlengthwidestring(pcompilerwidestring(value.valueptr)));
+            constdef:=carraydef.getreusable(cwidechartype,getlengthwidestring(value.valuews));
           else
             internalerror(2015120801);
         end
@@ -2788,6 +2902,19 @@ implementation
 
 
     procedure tconstsym.ppuwrite(ppufile:tcompilerppufile);
+
+      procedure do_widestring_const;
+
+      var
+        len : integer;
+      begin
+        len:=getlengthwidestring(value.valuews);
+        ppufile.putlongint(len);
+        if len>0 then
+          ppufile.putdata(value.valuews.data[0],value.valuews.len*sizeof(tcompilerwidechar));
+      end;
+
+
       begin
          inherited ppuwrite(ppufile);
          ppufile.putbyte(byte(consttyp));
@@ -2807,15 +2934,18 @@ implementation
            constwstring :
              begin
                { no need to store the def, we can reconstruct it }
-               ppufile.putlongint(getlengthwidestring(pcompilerwidestring(value.valueptr)));
-               ppufile.putdata(pcompilerwidestring(value.valueptr)^.data^,pcompilerwidestring(value.valueptr)^.len*sizeof(tcompilerwidechar));
+               do_widestring_const;
              end;
-           conststring,
-           constresourcestring :
+           conststring,constresourcestring:
+             begin
+             ppufile.putderef(constdefderef);
+             ppufile.putlongint(value.len);
+             ppufile.putdata(pchar(value.valueptr)^,value.len);
+             end;
+            constwresourcestring:
              begin
                ppufile.putderef(constdefderef);
-               ppufile.putlongint(value.len);
-               ppufile.putdata(pchar(value.valueptr)^,value.len);
+               do_widestring_const
              end;
            constreal :
              begin
@@ -2848,6 +2978,7 @@ implementation
             ;
           conststring,
           constresourcestring,
+          constwresourcestring,
           constwstring:
             begin
               WriteLn(T, PrintNodeIndention, '<length>', value.len, '</length>');
@@ -2871,7 +3002,7 @@ implementation
 
         WriteLn(T, PrintNodeIndention, '<visibility>', visibility, '</visibility>');
 
-        if not (consttyp in [conststring, constresourcestring, constwstring]) then
+        if not (consttyp in [conststring, constresourcestring, constwresourcestring, constwstring]) then
           { constdef.size will return an internal error for string
             constants because constdef is an open array internally }
           WriteLn(T, PrintNodeIndention, '<size>', constdef.size, '</size>');
@@ -3063,20 +3194,14 @@ implementation
          defined:=ppufile.getboolean;
          is_compiler_var:=ppufile.getboolean;
          is_used:=false;
-         buflen:= ppufile.getlongint;
-         if buflen > 0 then
-           begin
-             getmem(buftext, buflen);
-             ppufile.getdata(buftext^, buflen)
-           end
-         else
-           buftext:=nil;
+         allocate_buftext(ppufile.getlongint);
+         if buflen>0 then
+           ppufile.getdata(buftext)
       end;
 
     destructor tmacro.destroy;
       begin
-         if assigned(buftext) then
-           freemem(buftext);
+         buftext:=nil;
          inherited destroy;
       end;
 
@@ -3087,8 +3212,23 @@ implementation
          ppufile.putboolean(is_compiler_var);
          ppufile.putlongint(buflen);
          if buflen > 0 then
-           ppufile.putdata(buftext^,buflen);
+           ppufile.putdata(buftext);
          writeentry(ppufile,ibmacrosym);
+      end;
+
+
+    function tmacro.allocate_buftext(len:longint) : pchar;
+      begin
+        setlength(buftext,len);
+        buflen:=len;
+        result:=PAnsiChar(buftext);
+      end;
+
+
+    procedure tmacro.free_buftext;
+      begin
+        buftext:=nil;
+        buflen:=0;
       end;
 
 
@@ -3100,12 +3240,10 @@ implementation
         p.defined:=defined;
         p.is_used:=is_used;
         p.is_compiler_var:=is_compiler_var;
-        p.buflen:=buflen;
-        if assigned(buftext) then
-          begin
-            getmem(p.buftext,buflen);
-            move(buftext^,p.buftext^,buflen);
-          end;
+        p.is_c_macro:=is_c_macro;
+        p.allocate_buftext(buflen);
+        if buflen>0 then
+          move(buftext[0],p.buftext[0],buflen);
         Result:=p;
       end;
 
@@ -3119,6 +3257,7 @@ implementation
     procedure done_symsym;
       begin
         syssym_list.free;
+        syssym_list := nil;
       end;
 
 

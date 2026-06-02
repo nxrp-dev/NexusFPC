@@ -27,7 +27,7 @@
 @created(17 Dec 2002)
 @lastmod(19 Jan 2003)
 OS/2 Multimedia structures and definitions
-Warning: This code is alfa. Future versions of this unit will propably
+Warning: This code is alfa. Future versions of this unit will probably
 not be compatible.
 }
 //****************************************************************************/
@@ -45,17 +45,23 @@ not be compatible.
 //* Revised by Yuri Prokushev (prokushev@freemail.ru)                        */
 //****************************************************************************/
 
+{$IFNDEF FPC_DOTTEDUNITS}
 Unit mmbase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$MODE ObjFPC}
 
 Interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+Uses OS2Api.os2def;
+{$ELSE FPC_DOTTEDUNITS}
 Uses Os2Def;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
         VERSION = WORD;
-        LPSTR = ^Char;
+        LPSTR = ^AnsiChar;
         LPTR = Pointer;
         LPRECT = Pointer;
         HANDLE = HWND;
@@ -69,7 +75,7 @@ type
 
 TYPE
         PFNMCI = ^FNMCI;
-        SZ = Char;              //* ASCIIZ char string type*/
+        SZ = AnsiChar;              //* ASCIIZ AnsiChar string type*/
         MMTIME = LongInt;       //* universal Chinatown time (1/3000 second)*/
         PMMTIME = ^MMTIME;      //* Ptr to MMTIME unit*/
         HMMIO = LongInt;        //* Handle to an MMIO object*/
@@ -895,7 +901,7 @@ TYPE MCI_AUDIO_INIT = RECORD
         sMode:Integer;
         sChannels:Integer;
         lResolution:LongInt;
-        abLoadPath:ARRAY [0..LOAD_PATH] of CHAR;
+        abLoadPath:ARRAY [0..LOAD_PATH] of AnsiChar;
         ulFlags:LongInt;
         ulOperation:LongInt;
         sReturnCode:Integer;
@@ -983,7 +989,7 @@ TYPE _MCI_AUDIO_CAPS = RECORD
     ulResourceUnits:LongInt;          //    out Resource units this mode            */
     ulResourceClass:LongInt;          //    out Resource class for this mode        */
     ulBlockAlign:LongInt;             //    out Block alignment for this mode.      */
-    fCanRecord:LongInt;               //    out Is recording possbile - this mode   */
+    fCanRecord:LongInt;               //    out Is recording possible - this mode   */
     ulFlags:LongInt;                  //    out                                     */
     ulCapability:LongInt;             //    out Capability of the device.           */
     end;
@@ -1184,7 +1190,7 @@ CONST
 
 
 TYPE MCI_AUDIO_LOAD = RECORD
-        pbBuffer:^Char;
+        pbBuffer:^AnsiChar;
         ulSize:LongInt;
         ulFlags:LongInt;
         end;
@@ -1219,14 +1225,14 @@ CONST
 
 TYPE _MCI_AUDIO_IOBUFFER = RECORD
         lSize:LongInt;
-        pHead:^Char;
-        pTail:^Char;
+        pHead:^AnsiChar;
+        pTail:^AnsiChar;
         lCount:LongInt;
         ulPosition:LongInt;
         lDelay:LongInt;
         usRunFlags:Integer;
         usSelInc:Integer;
-        pBuffer:^Char;
+        pBuffer:^AnsiChar;
         end;
 
 TYPE PMCI_AUDIO_IOBUFFER = ^_MCI_AUDIO_IOBUFFER;
@@ -1271,8 +1277,8 @@ TYPE PMCI_AUDIO_HPI = ^MCI_AUDIO_HPI;
 //**************************/
 TYPE AUDIO_UPDATE = RECORD
 
-  iobuf_type:Char;              //* 0 - XMITIO, 1 - RECIO to be updated      */
-  buffer_address:^Char;     //* address to buffer to be added to array   */
+  iobuf_type:AnsiChar;              //* 0 - XMITIO, 1 - RECIO to be updated      */
+  buffer_address:^AnsiChar;     //* address to buffer to be added to array   */
   buffer_length:LongInt;          //* length of buffer to be added             */
   rc:Integer;                    //* return code                              */
   reserved:Pointer;           //* future use                               */
@@ -1439,7 +1445,7 @@ MCI_CD_READLONG_MMTIME       =$00000200;
 TYPE MCI_CD_READLONG_PARMS=RECORD
    dwFrom:WORD;                        //* read from this position   */
    wCount:WORD;                        //* Number of sectors to read */
-   lpstrReturn:^CHAR;                  //* Pointer to return buffer  */
+   lpstrReturn:^AnsiChar;                  //* Pointer to return buffer  */
    dwRetSize:WORD;                     //* Return buffer size        */
    end;
 
@@ -1462,7 +1468,7 @@ CDHW_CAP_CAN_WRITE    =$00000008; //* Can write to disc               */
 CDHW_CAP_CAN_PLAY     =$00000010; //* Can play CD-DA tracks           */
 CDHW_CAP_CAN_INTERLEV =$00000020; //* Supports ISO-9660 interleaving  */
 CDHW_CAP_CAN_PREFETCH =$00000080; //* Can prefetch internally         */
-CDHW_CAP_MANIP_AUDIO  =$00000100; //* Can manipulte audio channels    */
+CDHW_CAP_MANIP_AUDIO  =$00000100; //* Can manipulate audio channels   */
 CDHW_CAP_USES_REDBOOK =$00000200; //* Can use Red Book mode           */
 CDHW_CAP_READS_XA     =$00000400; //* Can read CD-ROM/XA data         */
 CDHW_CAP_CONT_READS   =$00000800; //* Continues to read DA after stop */
@@ -1503,7 +1509,7 @@ TYPE MMPMCD_REC=RECORD
  usEntryVer:INTEGER;                     //* Entry version                 */
  ulCaps1:LONGINT;                        //* Capability flag I             */
  ulCaps2:LONGINT;                        //* Capability flag II            */
- VSDName:ARRAY [0..CDINI_VSD_NAME_SIZE] of CHAR;   //* DLL name for VSD              */
+ VSDName:ARRAY [0..CDINI_VSD_NAME_SIZE] of AnsiChar;   //* DLL name for VSD              */
  ulMinStart:LONGINT;                     //* Min starting addr, 0x00MMSSFF */
  usVolCnt:INTEGER;                       //* volume level counter          */
  ausVolValues:ARRAY [0..VOLUME_CONTROL] of INTEGER;  //* volume control values         */
@@ -1547,7 +1553,7 @@ TYPE PVIDEO_FRAME_HDR = ^_VIDEO_FRAME_HDR;
 //                                                                          */
 // DESCRIPTIVE NAME: Ultimotion File Format Headers (Beta)                  */
 //                                                                          */
-//   An Ultimotion file consists of interlevaed audio and video and text    */
+//   An Ultimotion file consists of interleaved audio and video and text    */
 //   chunks within the data list chunk.                                     */
 //                                                                          */
 //   A file may contain interleaved audio chunks or the soundtrack may      */
@@ -1588,7 +1594,7 @@ TYPE PVIDEO_FRAME_HDR = ^_VIDEO_FRAME_HDR;
 //    - An audio frame has the same duration as its corresponding video     */
 //         frame                                                            */
 //    - Audio frames always follow their corresponding video frame, and     */
-//         as such preceed the next video frame                             */
+//         as such precede the next video frame                             */
 //                                                                          */
 // Legend:                                                                  */
 //     [<element name>]      optional                                       */
@@ -1704,7 +1710,7 @@ type UMCHUNKHEADER =record  // umch */
    UMVIDEOHEADER = record   // umvh */
    ulTotalDuration:LongInt;        // Video duration in MMTIME            */
    ulMaxFrameSize:LongInt;         // Max video frame size in bytes       */
-   ulMaxAvgDataRate:LongInt;       // Max avergage data rate              */
+   ulMaxAvgDataRate:LongInt;       // Max average data rate               */
    ulMaxBurstInterval:LongInt;     // Max interval for max data rate      */
    ulCompressionRatioX100:LongInt; // Compression ratio                   */
    ulPosterFrameOffset:LongInt;    // Poster for video (from beginning)   */
@@ -1724,7 +1730,7 @@ type UMCHUNKHEADER =record  // umch */
 //***************************************************************************/
    EXTAUDIONAME = record    // umea */
      usTrackNumber:Word;          // Audio track number for this format  */
-     szFileName:Array [0..UMAUDIOFILENAMELENGTH] of Char;
+     szFileName:Array [0..UMAUDIOFILENAMELENGTH] of AnsiChar;
    end;
   PEXTAUDIONAME=^EXTAUDIONAME;  // pumea */
 
@@ -1760,7 +1766,7 @@ type UMCHUNKHEADER =record  // umch */
 //***************************************************************************/
    TITLE =record  // ttl */
            usCountryCode:Word;         // Country code for this title         */
-           szTitle:Array [0..1] of Char;            // Video title null-terminated         */
+           szTitle:Array [0..1] of AnsiChar;            // Video title null-terminated         */
    end;
    PTITLE=^TITLE; // pttl */
 
@@ -1780,7 +1786,7 @@ type UMCHUNKHEADER =record  // umch */
 //***************************************************************************/
    TEXTFRAME =record  // umtf */
            usTrackNumber:Word;         // Text track number                   */
-           szText:Array [0..1] of Char;             // Text null-terminated                */
+           szText:Array [0..1] of AnsiChar;             // Text null-terminated                */
    end;
 
 
@@ -1868,7 +1874,7 @@ UM_VIDEO_COMPRESSION_TYPE_BH211UCS4       =12;   // unique chroma sub4 */
 // *
 // **********************************************/
   _spcb = record
-   ulSPCBLen       : LongInt;       // SPCB struture length
+   ulSPCBLen       : LongInt;       // SPCB structure length
    spcbkey         : SPCBKEY;
    ulDataFlags     : LongInt;       // Data type flags
    ulNumRec        : LongInt;       // Max # records/buffer (Only used for Split streams)
@@ -1994,7 +2000,7 @@ const
 // Module Name: SHDD.H
 //
 // OS/2 2.0 Multimedia Extensions Stream Handler Device Driver Interfaces
-// Block defintions.
+// Block definitions.
 //
 // Copyright (c) International Business Machines Corporation 1990,1991
 //                         All Rights Reserved
@@ -2008,7 +2014,7 @@ const
 //***************************************************************************/
 
 // Multimedia Extensions Stream Handler Device Driver Interfaces
-// Block defintions.
+// Block definitions.
 
 type
   shdfn   = pointer;
@@ -2488,7 +2494,7 @@ CONST
         LINE_OUT_ON =$00000004;
 
 TYPE
-        PSZ = PChar;
+        PSZ = PAnsiChar;
         SHandle = Word;
         HFile = SHandle;
 //        HMTX = Longint;
@@ -2511,8 +2517,8 @@ TYPE _MCI_PORT_LIST = Record   // devid */
 //------------------------------------------------------------------------*/
 
 TYPE _MCI_AMP_INSTANCE = Record
-        szDeviceName:Array [0..128] of char;
-        szDriverName:Array [0..15] of char;
+        szDeviceName:Array [0..128] of AnsiChar;
+        szDriverName:Array [0..15] of AnsiChar;
         hFile:HFile;
         usDeviceID:Integer;
         ulGlobalFile:LongInt;
@@ -2588,7 +2594,7 @@ TYPE _MCI_AMP_INSTANCE = Record
 
 
         pAudioModeData:Pointer;      // ptr to dev. specific resource data */
-        pResourceDLL:Array [0.. 128 ] of Char;
+        pResourceDLL:Array [0.. 128 ] of AnsiChar;
 
         pProdInfo:PSZ;         // pointer to the product name        */
         ulDeviceID:LongInt;        // pointer to the device id.          */
@@ -2635,7 +2641,7 @@ type
     ulReserved        : LongInt;                 // Reserved
     MidiTypeEntry     : array[0..midiPatchNum-1] of MIDITYPEENTRY;
                                                // Array of MIDITYPEENTRYs
-    szPatchAndPercKeyName: array[0..2*MIDIPATCHNUM*MIDINAMESIZE-1] of char;
+    szPatchAndPercKeyName: array[0..2*MIDIPATCHNUM*MIDINAMESIZE-1] of AnsiChar;
                                                // List of 128 Patch Names
                                                // that are null terminated, then a
                                                // list of 128 Percussion key names that
@@ -2680,7 +2686,7 @@ CONST
 
 type
   MidiHeader = record // midi header //
-    chHeaderChunk               : array[0..3] of Char;
+    chHeaderChunk               : array[0..3] of AnsiChar;
     case Boolean of
     true: (
         dwHeaderLength : Dword;
@@ -2721,7 +2727,7 @@ type
 // Module Name: EVCB.H                                                      */
 //                                                                          */
 // OS/2 2.0 Multimedia Extensions Sync/Stream Manager Event Control         */
-// Block defintitions.                                                      */
+// Block definitions.                                                       */
 //                                                                          */
 // Copyright (c) International Business Machines Corporation 1991, 1992     */
 //                        All Rights Reserved                               */
@@ -2981,7 +2987,7 @@ TYPE PSTATUS_EVCB = ^_STATUS_LEVEL_EVCB;     // Ptr to a  EVCB       */
 // Module Name: DCB.H                                                       */
 //                                                                          */
 // OS/2 2.0 Multimedia Extensions Sync/Stream Manager Device Control        */
-// Block defintitions.                                                      */
+// Block definitions.                                                       */
 //                                                                          */
 // Copyright (c) International Business Machines Corporation 1991, 1992     */
 //                        All Rights Reserved                               */
@@ -3000,7 +3006,7 @@ CONST MAX_SPI_NAME = 9;
 // ***************************************************************************/
 TYPE _DCB = RECORD              // dcb  -  Device Control Block                      */
         ulDCBLen : LongInt;     // length of structure                 */
-        szDevName: Array [0..MAX_SPI_NAME] of char;// device driver name                  */
+        szDevName: Array [0..MAX_SPI_NAME] of AnsiChar;// device driver name                  */
         end;
 TYPE PDCB = ^_DCB;
 
@@ -3018,7 +3024,7 @@ TYPE PDCB = ^_DCB;
 
 TYPE E_DCB = RECORD             // e_dcb  -  Extended Device Control Block          */
         ulDCBLen : LongInt;     // length of structure                 */
-        szDevName: Array [0..MAX_SPI_NAME] of char;// device driver name                  */
+        szDevName: Array [0..MAX_SPI_NAME] of AnsiChar;// device driver name                  */
         ulSysFileNum: LongInt;  // file handle number                  */
         end;
 TYPE PE_DCB = ^E_DCB;
@@ -3036,7 +3042,7 @@ TYPE PDCB_AUDIOSH = ^E_DCB;
 // ***************************************************************************/
 TYPE _VSD_DCB = RECORD          // vsd_dcb - VSD Device Control Block            */
         ulDCBLen : Longint;     // length of structure                 */
-        szDevName: Array [0..MAX_SPI_NAME] of char;// device driver name                  */
+        szDevName: Array [0..MAX_SPI_NAME] of AnsiChar;// device driver name                  */
         ulSysFileNum: LongInt;  // file handle number                  */
         hvsd : LongInt;         // Handle to VSD instance              */
         pfnEntryPoint : ^PFN;   // Address of VSD entry point          */
@@ -3122,7 +3128,7 @@ CONST
 TYPE _ACB_CDDA = RECORD         //* acbcdda - CD Assoc. Control Block          */
         ulACBLen : LongInt;     //* length of structure                   */
         ulObjType : LongInt;    //* ACBTYPE_CDDA                          */
-        bCDDrive : Char;        //* CD drive letter                       */
+        bCDDrive : AnsiChar;        //* CD drive letter                       */
         end;
 TYPE PACB_CDDA = ^_ACB_CDDA;    //* Ptr to an ACB  */
 
@@ -3228,7 +3234,7 @@ TYPE PACB_CODECSH = ^_ACB_CODECSH;//* Ptr to associate control block */
 
 Implementation
 
-Function mmioFOURCC(ch0,ch1,ch2,ch3:Char): Cardinal;
+Function mmioFOURCC(ch0,ch1,ch2,ch3:AnsiChar): Cardinal;
 begin
   mmioFOURCC:=Cardinal(ord(ch0)) or (Cardinal(ord(ch1)) shl 8) or
               (Cardinal(ord(ch2)) shl 16) or (Cardinal(ord(ch3)) shl 24);

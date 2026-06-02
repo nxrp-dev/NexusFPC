@@ -1,10 +1,10 @@
 {
      File:       CarbonCore/Components.h
- 
+
      Contains:   Component Manager Interfaces.
                  The contents of this header file are deprecated.
                  Use Foundation or CoreFoundation bundles and plugins instead.
- 
+
      Copyright:  © 1991-2011 by Apple Inc. All rights reserved.
 }
 {
@@ -21,7 +21,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit Components;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -206,7 +208,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.MacErrors,MacOsApi.Files,MacOsApi.MixedMode,MacOsApi.Resources;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,MacErrors,Files,MixedMode,Resources;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -272,9 +278,9 @@ const
 type
 	ComponentDescriptionPtr = ^ComponentDescription;
 	ComponentDescription = record
-		componentType: OSType;          { A unique 4-byte code indentifying the command set }
+		componentType: OSType;          { A unique 4-byte code identifying the command set }
 		componentSubType: OSType;       { Particular flavor of this instance }
-		componentManufacturer: OSType;  { Vendor indentification }
+		componentManufacturer: OSType;  { Vendor identification }
 		componentFlags: UInt32;         { 8 each for Component,Type,SubType,Manuf/revision }
 		componentFlagsMask: UInt32;     { Mask for specifying which flags to consider in search, zero during registration }
 	end;
@@ -415,11 +421,11 @@ const
 
 {
  *  CSSetComponentsThreadMode()
- *  
+ *
  *  Summary:
  *    Set whether or not using thread-unsafe components is allowed on
  *    the current thread.
- *  
+ *
  *  Discussion:
  *    When set to kCSAcceptThreadSafeComponentsOnlyMode, the current
  *    thread can only make thread-safe calls. Applications and other
@@ -429,17 +435,17 @@ const
  *    beforehand. The safeguard flag should only be left
  *    kCSAcceptAllComponentsMode for the main thread and other threads
  *    that participate in cooperative locking with it (such as the
- *    Carbon Thread Manager-style cooperative threads and application 
+ *    Carbon Thread Manager-style cooperative threads and application
  *    threads that perform private locking).
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Parameters:
- *    
+ *
  *    mode:
  *      The thread-safety mode in current thread.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.3 and later in CoreServices.framework
  *    CarbonLib:        not available
@@ -451,18 +457,18 @@ procedure CSSetComponentsThreadMode( mode: CSComponentsThreadMode ); external na
 
 {
  *  CSGetComponentsThreadMode()
- *  
+ *
  *  Summary:
  *    Get the current thread's thread-safety mode.
- *  
+ *
  *  Discussion:
  *    Returns kCSAcceptThreadSafeComponentsOnlyMode if only thread-safe
  *    components are allowed in current thread and
  *    kCSAcceptAllComponentsMode if all components are accepted
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.3 and later in CoreServices.framework
  *    CarbonLib:        not available
@@ -498,15 +504,15 @@ type
 	ComponentFunctionUPP = UniversalProcPtr;
 {
  *  NewComponentFunctionUPP()
- *  
+ *
  *  Discussion:
  *    For use in writing a Carbon compliant Component.  It is used to
  *    create a ComponentFunctionUPP needed to call
  *    CallComponentFunction in the Components dispatch routine.
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.0
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -518,15 +524,15 @@ function NewComponentFunctionUPP( userRoutine: ProcPtr; procInfo: ProcInfoType )
 
 {
  *  DisposeComponentFunctionUPP()
- *  
+ *
  *  Discussion:
  *    For use in writing a Carbon compliant Component.  It is used to
  *    dispose of a ComponentFunctionUPP created by
  *    NewComponentFunctionUPP.
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.0
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -546,10 +552,10 @@ procedure DisposeComponentFunctionUPP( userUPP: ComponentFunctionUPP ); external
 *******************************************************}
 {
  *  RegisterComponent()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -562,10 +568,10 @@ function RegisterComponent( var cd: ComponentDescription; componentEntryPoint: C
 
 {
  *  RegisterComponentResource()
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -578,10 +584,10 @@ function RegisterComponentResource( cr: ComponentResourceHandle; global: SInt16 
 
 {
  *  UnregisterComponent()
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -594,10 +600,10 @@ function UnregisterComponent( aComponent: Component ): OSErr; external name '_Un
 
 {
  *  FindNextComponent()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -610,10 +616,10 @@ function FindNextComponent( aComponent: Component; var looking: ComponentDescrip
 
 {
  *  CountComponents()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -626,10 +632,10 @@ function CountComponents( var looking: ComponentDescription ): SIGNEDLONG; exter
 
 {
  *  GetComponentInfo()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -642,10 +648,10 @@ function GetComponentInfo( aComponent: Component; var cd: ComponentDescription; 
 
 {
  *  GetComponentListModSeed()
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -658,10 +664,10 @@ function GetComponentListModSeed: SInt32; external name '_GetComponentListModSee
 
 {
  *  GetComponentTypeModSeed()
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -677,10 +683,10 @@ function GetComponentTypeModSeed( componentType: OSType ): SInt32; external name
 *******************************************************}
 {
  *  OpenAComponent()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -693,10 +699,10 @@ function OpenAComponent( aComponent: Component; var ci: ComponentInstance ): OSE
 
 {
  *  OpenComponent()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -709,10 +715,10 @@ function OpenComponent( aComponent: Component ): ComponentInstance; external nam
 
 {
  *  CloseComponent()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -725,10 +731,10 @@ function CloseComponent( aComponentInstance: ComponentInstance ): OSErr; externa
 
 {
  *  GetComponentInstanceError()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.4
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -744,10 +750,10 @@ function GetComponentInstanceError( aComponentInstance: ComponentInstance ): OSE
 *******************************************************}
 {
  *  ResolveComponentAlias()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -764,10 +770,10 @@ function ResolveComponentAlias( aComponent: Component ): Component; external nam
 { Note: GetComponentPublicResource returns a Handle, not a resource.  The caller must dispose it with DisposeHandle. }
 {
  *  GetComponentPublicResource()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0.2 and later
@@ -779,10 +785,10 @@ function GetComponentPublicResource( aComponent: Component; resourceType: OSType
 
 {
  *  GetComponentPublicResourceList()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0.2 and later
@@ -794,10 +800,10 @@ function GetComponentPublicResourceList( resourceType: OSType; resourceID: SInt1
 
 {
  *  GetComponentPublicIndString()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.3 and later
@@ -817,10 +823,10 @@ function GetComponentPublicIndString( aComponent: Component; var theString: Str2
 *******************************************************}
 {
  *  SetComponentInstanceError()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.4
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -833,10 +839,10 @@ procedure SetComponentInstanceError( aComponentInstance: ComponentInstance; theE
 
 {
  *  GetComponentRefcon()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.4
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -849,10 +855,10 @@ function GetComponentRefcon( aComponent: Component ): SIGNEDLONG; external name 
 
 {
  *  SetComponentRefcon()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.4
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -865,10 +871,10 @@ procedure SetComponentRefcon( aComponent: Component; theRefcon: SIGNEDLONG ); ex
 
 {
  *  OpenComponentResFile()
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -881,10 +887,10 @@ function OpenComponentResFile( aComponent: Component ): ResFileRefNum; external 
 
 {
  *  OpenAComponentResFile()
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -897,10 +903,10 @@ function OpenAComponentResFile( aComponent: Component; var resRef: ResFileRefNum
 
 {
  *  CloseComponentResFile()
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -914,10 +920,10 @@ function CloseComponentResFile( refnum: ResFileRefNum ): OSErr; external name '_
 { Note: GetComponentResource returns a Handle, not a resource.  The caller must dispose it with DisposeHandle. }
 {
  *  GetComponentResource()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -930,10 +936,10 @@ function GetComponentResource( aComponent: Component; resType: OSType; resID: SI
 
 {
  *  GetComponentIndString()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -949,10 +955,10 @@ function GetComponentIndString( aComponent: Component; var theString: Str255; st
 *******************************************************}
 {
  *  GetComponentInstanceStorage()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.4
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -965,10 +971,10 @@ function GetComponentInstanceStorage( aComponentInstance: ComponentInstance ): H
 
 {
  *  SetComponentInstanceStorage()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.4
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -981,10 +987,10 @@ procedure SetComponentInstanceStorage( aComponentInstance: ComponentInstance; th
 
 {
  *  CountComponentInstances()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.4
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -998,10 +1004,10 @@ function CountComponentInstances( aComponent: Component ): SIGNEDLONG; external 
 { useful helper routines for convenient method dispatching }
 {
  *  CallComponentFunction()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1013,10 +1019,10 @@ function CallComponentFunction( var params: ComponentParameters; func: Component
 
 {
  *  CallComponentFunctionWithStorage()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1029,10 +1035,10 @@ function CallComponentFunctionWithStorage( storage: Handle; var params: Componen
 
 {
  *  CallComponentFunctionWithStorageProcInfo()
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1044,10 +1050,10 @@ function CallComponentFunctionWithStorageProcInfo( storage: Handle; var params: 
 
 {
  *  DelegateComponentCall()
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1060,10 +1066,10 @@ function DelegateComponentCall( var originalParams: ComponentParameters; ci: Com
 
 {
  *  SetDefaultComponent()
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1076,10 +1082,10 @@ function SetDefaultComponent( aComponent: Component; flags: SInt16 ): OSErr; ext
 
 {
  *  OpenDefaultComponent()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1092,10 +1098,10 @@ function OpenDefaultComponent( componentType: OSType; componentSubType: OSType )
 
 {
  *  OpenADefaultComponent()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1108,10 +1114,10 @@ function OpenADefaultComponent( componentType: OSType; componentSubType: OSType;
 
 {
  *  CaptureComponent()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.4
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1124,10 +1130,10 @@ function CaptureComponent( capturedComponent: Component; capturingComponent: Com
 
 {
  *  UncaptureComponent()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.4
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1140,10 +1146,10 @@ function UncaptureComponent( aComponent: Component ): OSErr; external name '_Unc
 
 {
  *  RegisterComponentResourceFile()
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1158,10 +1164,10 @@ function RegisterComponentResourceFile( resRefNum: SInt16; global: SInt16 ): SIn
 {$ifc not TARGET_CPU_64}
 {
  *  GetComponentIconSuite()
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework [32-bit only]
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1178,19 +1184,19 @@ function GetComponentIconSuite( aComponent: Component; var iconSuite: Handle ): 
  * These calls allow you to register a file system entity.  The
  * Component Manager will "do the right thing" with the entity,
  * whether it is a standard resource fork based CFM component, CFM
- * bundle, mach-o bundle, or packaged bundle.  
+ * bundle, mach-o bundle, or packaged bundle.
  *
  * The *Entries calls allow you to specify a component description
  * which will be used to register selective components.  (Passing
- * NULL, 0 means to register all components.  
+ * NULL, 0 means to register all components.
  }
 {$ifc not TARGET_CPU_64}
 {
  *  RegisterComponentFile()   *** DEPRECATED ***
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        not available
@@ -1202,10 +1208,10 @@ function RegisterComponentFile( const (*var*) spec: FSSpec; global: SInt16 ): OS
 
 {
  *  RegisterComponentFileEntries()   *** DEPRECATED ***
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        not available
@@ -1219,10 +1225,10 @@ function RegisterComponentFileEntries( const (*var*) spec: FSSpec; global: SInt1
 
 {
  *  RegisterComponentFileRef()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        not available
@@ -1234,10 +1240,10 @@ function RegisterComponentFileRef( const (*var*) ref: FSRef; global: SInt16 ): O
 
 {
  *  RegisterComponentFileRefEntries()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        not available
@@ -1257,10 +1263,10 @@ function RegisterComponentFileRefEntries( const (*var*) ref: FSRef; global: SInt
 {$ifc not TARGET_CPU_64}
 {
  *  ComponentFunctionImplemented()   *** DEPRECATED ***
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1273,10 +1279,10 @@ function ComponentFunctionImplemented( ci: ComponentInstance; ftnNumber: SInt16 
 
 {
  *  GetComponentVersion()   *** DEPRECATED ***
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1289,10 +1295,10 @@ function GetComponentVersion( ci: ComponentInstance ): ComponentResult; external
 
 {
  *  ComponentSetTarget()   *** DEPRECATED ***
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1309,10 +1315,10 @@ function ComponentSetTarget( ci: ComponentInstance; target: ComponentInstance ):
 
 {
  *  CallComponentOpen()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1325,10 +1331,10 @@ function CallComponentOpen( ci: ComponentInstance; self: ComponentInstance ): Co
 
 {
  *  CallComponentClose()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1341,10 +1347,10 @@ function CallComponentClose( ci: ComponentInstance; self: ComponentInstance ): C
 
 {
  *  CallComponentCanDo()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1357,10 +1363,10 @@ function CallComponentCanDo( ci: ComponentInstance; ftnNumber: SInt16 ): Compone
 
 {
  *  CallComponentVersion()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1373,10 +1379,10 @@ function CallComponentVersion( ci: ComponentInstance ): ComponentResult; externa
 
 {
  *  CallComponentRegister()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1389,10 +1395,10 @@ function CallComponentRegister( ci: ComponentInstance ): ComponentResult; extern
 
 {
  *  CallComponentTarget()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1405,10 +1411,10 @@ function CallComponentTarget( ci: ComponentInstance; target: ComponentInstance )
 
 {
  *  CallComponentUnregister()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1421,10 +1427,10 @@ function CallComponentUnregister( ci: ComponentInstance ): ComponentResult; exte
 
 {
  *  CallComponentGetMPWorkFunction()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1437,10 +1443,10 @@ function CallComponentGetMPWorkFunction( ci: ComponentInstance; var workFunction
 
 {
  *  CallComponentGetPublicResource()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.1 and later
@@ -1456,10 +1462,10 @@ function CallComponentGetPublicResource( ci: ComponentInstance; resourceType: OS
  }
 {
  *  CallComponentDispatch()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.3
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1472,7 +1478,7 @@ function CallComponentDispatch( var cp: ComponentParameters ): ComponentResult; 
 { UPP call backs }
 {
  *  NewComponentMPWorkFunctionUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1483,7 +1489,7 @@ function NewComponentMPWorkFunctionUPP( userRoutine: ComponentMPWorkFunctionProc
 
 {
  *  NewComponentRoutineUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1494,7 +1500,7 @@ function NewComponentRoutineUPP( userRoutine: ComponentRoutineProcPtr ): Compone
 
 {
  *  NewGetMissingComponentResourceUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1505,7 +1511,7 @@ function NewGetMissingComponentResourceUPP( userRoutine: GetMissingComponentReso
 
 {
  *  DisposeComponentMPWorkFunctionUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1516,7 +1522,7 @@ procedure DisposeComponentMPWorkFunctionUPP( userUPP: ComponentMPWorkFunctionUPP
 
 {
  *  DisposeComponentRoutineUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1527,7 +1533,7 @@ procedure DisposeComponentRoutineUPP( userUPP: ComponentRoutineUPP ); external n
 
 {
  *  DisposeGetMissingComponentResourceUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1538,7 +1544,7 @@ procedure DisposeGetMissingComponentResourceUPP( userUPP: GetMissingComponentRes
 
 {
  *  InvokeComponentMPWorkFunctionUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1549,7 +1555,7 @@ function InvokeComponentMPWorkFunctionUPP( globalRefCon: UnivPtr; header: Compon
 
 {
  *  InvokeComponentRoutineUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -1560,7 +1566,7 @@ function InvokeComponentRoutineUPP( var cp: ComponentParameters; componentStorag
 
 {
  *  InvokeGetMissingComponentResourceUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later

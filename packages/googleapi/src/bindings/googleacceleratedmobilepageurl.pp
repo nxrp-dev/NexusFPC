@@ -1,13 +1,19 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit googleacceleratedmobilepageurl;
+{$ENDIF FPC_DOTTEDUNITS}
 {$MODE objfpc}
 {$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils, System.Classes, GoogleApi.Service, FpWeb.Rest.Base, GoogleApi.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses sysutils, classes, googleservice, restbase, googlebase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
-  
+
   //Top-level schema types
   TAmpUrl = Class;
   TAmpUrlError = Class;
@@ -20,11 +26,11 @@ type
   //Anonymous types, using auto-generated names
   TBatchGetAmpUrlsResponseTypeurlErrorsArray = Array of TAmpUrlError;
   TBatchGetAmpUrlsResponseTypeampUrlsArray = Array of TAmpUrl;
-  
+
   { --------------------------------------------------------------------
     TAmpUrl
     --------------------------------------------------------------------}
-  
+
   TAmpUrl = Class(TGoogleBaseObject)
   Private
     FampUrl : String;
@@ -42,11 +48,11 @@ type
     Property cdnAmpUrl : String Index 16 Read FcdnAmpUrl Write SetcdnAmpUrl;
   end;
   TAmpUrlClass = Class of TAmpUrl;
-  
+
   { --------------------------------------------------------------------
     TAmpUrlError
     --------------------------------------------------------------------}
-  
+
   TAmpUrlError = Class(TGoogleBaseObject)
   Private
     ForiginalUrl : String;
@@ -64,11 +70,11 @@ type
     Property errorMessage : String Index 16 Read FerrorMessage Write SeterrorMessage;
   end;
   TAmpUrlErrorClass = Class of TAmpUrlError;
-  
+
   { --------------------------------------------------------------------
     TBatchGetAmpUrlsRequest
     --------------------------------------------------------------------}
-  
+
   TBatchGetAmpUrlsRequest = Class(TGoogleBaseObject)
   Private
     Furls : TStringArray;
@@ -84,11 +90,11 @@ type
     Property urls : TStringArray Index 0 Read Furls Write Seturls;
   end;
   TBatchGetAmpUrlsRequestClass = Class of TBatchGetAmpUrlsRequest;
-  
+
   { --------------------------------------------------------------------
     TBatchGetAmpUrlsResponse
     --------------------------------------------------------------------}
-  
+
   TBatchGetAmpUrlsResponse = Class(TGoogleBaseObject)
   Private
     FurlErrors : TBatchGetAmpUrlsResponseTypeurlErrorsArray;
@@ -107,23 +113,23 @@ type
     Property ampUrls : TBatchGetAmpUrlsResponseTypeampUrlsArray Index 8 Read FampUrls Write SetampUrls;
   end;
   TBatchGetAmpUrlsResponseClass = Class of TBatchGetAmpUrlsResponse;
-  
+
   { --------------------------------------------------------------------
     TAmpUrlsResource
     --------------------------------------------------------------------}
-  
+
   TAmpUrlsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
     Class Function DefaultAPI : TGoogleAPIClass; override;
     Function BatchGet(aBatchGetAmpUrlsRequest : TBatchGetAmpUrlsRequest) : TBatchGetAmpUrlsResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TAcceleratedmobilepageurlAPI
     --------------------------------------------------------------------}
-  
+
   TAcceleratedmobilepageurlAPI = Class(TGoogleAPI)
   Private
     FAmpUrlsInstance : TAmpUrlsResource;
@@ -165,7 +171,7 @@ implementation
   --------------------------------------------------------------------}
 
 
-Procedure TAmpUrl.SetampUrl(AIndex : Integer; const AValue : String); 
+Procedure TAmpUrl.SetampUrl(AIndex : Integer; const AValue : String);
 
 begin
   If (FampUrl=AValue) then exit;
@@ -175,7 +181,7 @@ end;
 
 
 
-Procedure TAmpUrl.SetoriginalUrl(AIndex : Integer; const AValue : String); 
+Procedure TAmpUrl.SetoriginalUrl(AIndex : Integer; const AValue : String);
 
 begin
   If (ForiginalUrl=AValue) then exit;
@@ -185,7 +191,7 @@ end;
 
 
 
-Procedure TAmpUrl.SetcdnAmpUrl(AIndex : Integer; const AValue : String); 
+Procedure TAmpUrl.SetcdnAmpUrl(AIndex : Integer; const AValue : String);
 
 begin
   If (FcdnAmpUrl=AValue) then exit;
@@ -202,7 +208,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAmpUrlError.SetoriginalUrl(AIndex : Integer; const AValue : String); 
+Procedure TAmpUrlError.SetoriginalUrl(AIndex : Integer; const AValue : String);
 
 begin
   If (ForiginalUrl=AValue) then exit;
@@ -212,7 +218,7 @@ end;
 
 
 
-Procedure TAmpUrlError.SeterrorCode(AIndex : Integer; const AValue : String); 
+Procedure TAmpUrlError.SeterrorCode(AIndex : Integer; const AValue : String);
 
 begin
   If (FerrorCode=AValue) then exit;
@@ -222,7 +228,7 @@ end;
 
 
 
-Procedure TAmpUrlError.SeterrorMessage(AIndex : Integer; const AValue : String); 
+Procedure TAmpUrlError.SeterrorMessage(AIndex : Integer; const AValue : String);
 
 begin
   If (FerrorMessage=AValue) then exit;
@@ -239,7 +245,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TBatchGetAmpUrlsRequest.Seturls(AIndex : Integer; const AValue : TStringArray); 
+Procedure TBatchGetAmpUrlsRequest.Seturls(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Furls=AValue) then exit;
@@ -250,7 +256,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TBatchGetAmpUrlsRequest.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TBatchGetAmpUrlsRequest.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -269,7 +275,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TBatchGetAmpUrlsResponse.SeturlErrors(AIndex : Integer; const AValue : TBatchGetAmpUrlsResponseTypeurlErrorsArray); 
+Procedure TBatchGetAmpUrlsResponse.SeturlErrors(AIndex : Integer; const AValue : TBatchGetAmpUrlsResponseTypeurlErrorsArray);
 
 begin
   If (FurlErrors=AValue) then exit;
@@ -279,7 +285,7 @@ end;
 
 
 
-Procedure TBatchGetAmpUrlsResponse.SetampUrls(AIndex : Integer; const AValue : TBatchGetAmpUrlsResponseTypeampUrlsArray); 
+Procedure TBatchGetAmpUrlsResponse.SetampUrls(AIndex : Integer; const AValue : TBatchGetAmpUrlsResponseTypeampUrlsArray);
 
 begin
   If (FampUrls=AValue) then exit;
@@ -290,7 +296,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TBatchGetAmpUrlsResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TBatchGetAmpUrlsResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -445,7 +451,7 @@ Class Function TAcceleratedmobilepageurlAPI.APIAuthScopes : TScopeInfoArray;
 
 begin
   SetLength(Result,0);
-  
+
 end;
 
 Class Function TAcceleratedmobilepageurlAPI.APINeedsAuth : Boolean;

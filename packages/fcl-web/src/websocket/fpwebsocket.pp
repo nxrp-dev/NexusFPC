@@ -14,7 +14,9 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fpwebsocket;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}
 {$h+}
@@ -23,8 +25,13 @@ unit fpwebsocket;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, System.Net.Sockets, System.Net.Ssockets;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, sockets, ssockets;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Const
   SSecWebSocketGUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
@@ -286,7 +293,7 @@ type
   TWSOption = (woPongExplicit,      // Send Pong explicitly, not implicitly.
                woCloseExplicit,     // SeDo Close explicitly, not implicitly.
                woIndividualFrames,  // Send frames one by one, do not concatenate.
-               woSkipUpgradeCheck,  // Skip handshake "Upgrade:" HTTP header cheack.
+               woSkipUpgradeCheck,  // Skip handshake "Upgrade:" HTTP header check.
                woSkipVersionCheck,  // Skip handshake "Sec-WebSocket-Version' HTTP header check.
                woSendErrClosesConn  // Don't raise an exception when writing to a broken connection
               );
@@ -347,7 +354,7 @@ type
     // read & process incoming message. Return nil if connection was close.
     function ReadMessage: Boolean;
     // Disconnect
-    Procedure Disconnect;
+    Procedure Disconnect; inline;
     // Descendents can override this to provide custom frames
     Function FrameClass : TWSFrameClass; virtual;
     // Send raw frame. No checking is done !
@@ -491,7 +498,11 @@ function EncodeBytesBase64(const aBytes : TBytes) : String;
 
 implementation
 
-uses strutils, sha1,base64;
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.StrUtils, System.Hash.Sha1, System.Hash.Base64;
+{$ELSE FPC_DOTTEDUNITS}
+uses strutils, sha1, base64;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { TFrameTypeHelper }
 
@@ -544,7 +555,7 @@ procedure TWSHandShakeResponse.ToStrings(aHandShake: TWSHandshakeRequest; aRespo
     // respond key
     b:=[];
     k:= Trim(aHandshake.Key) + SSecWebSocketGUID;
-    hash:=sha1.SHA1String(k);
+    hash:=SHA1String(k);
     SetLength(B,SizeOf(hash));
     Move(Hash,B[0],Length(B));
     Result:=EncodeBytesBase64(B);
@@ -588,7 +599,7 @@ end;
 
 procedure TWSTransport.CloseSocket;
 begin
-  sockets.CloseSocket(FStream.Handle);
+  {$IFDEF FPC_DOTTEDUNITS}System.Net.{$ENDIF}sockets.CloseSocket(FStream.Handle);
 end;
 
 { TWSTransport }
@@ -1591,8 +1602,6 @@ end;
 procedure TWSConnection.Disconnect;
 begin
   DoDisconnect;
-  if Assigned(FOnDisconnect) then
-    FOnDisconnect(Self);
 end;
 
 procedure TWSConnection.Close(aData: TBytes);
@@ -1653,7 +1662,6 @@ begin
 end;
 
 function TWSConnection.CheckIncoming(aTimeout: Integer; DoRead: Boolean = True): TIncomingResult;
-
 begin
   if not Transport.CanRead(aTimeOut) then
     Result:=irNone

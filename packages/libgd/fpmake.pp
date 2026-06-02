@@ -2,7 +2,7 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses {$ifdef unix}cthreads,{$endif} fpmkunit;
 
 Var
   P : TPackage;
@@ -20,7 +20,7 @@ begin
 {$endif ALLPACKAGES}
     P.Version:='3.3.1';
     P.SourcePath.Add('src');
-    P.OSes := P.OSes - [embedded,nativent,msdos,wii,win16,atari,macosclassic,palmos,symbian,freertos,zxspectrum,msxdos,amstradcpc,sinclairql,wasi];
+    P.OSes := P.OSes - [embedded,nativent,msdos,wii,win16,atari,macosclassic,palmos,symbian,freertos,zxspectrum,msxdos,amstradcpc,sinclairql,human68k,wasip1,wasip1threads,ps1,wasip2];
     if Defaults.CPU=jvm then
       P.OSes := P.OSes - [java,android];
 
@@ -30,6 +30,9 @@ begin
     P.Targets.AddExampleProgram('gdtestcgi.pp');
     P.Targets.AddExampleProgram('gdtest.pp');
     P.Sources.AddExampleFiles('examples/*',P.Directory,false,'.');
+
+
+    P.NamespaceMap:='namespaces.lst';
 
 {$ifndef ALLPACKAGES}
     Run;

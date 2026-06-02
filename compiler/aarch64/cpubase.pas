@@ -241,6 +241,7 @@ unit cpubase;
 
       shiftedregmodes = [SM_LSL,SM_UXTB,SM_UXTH,SM_UXTW,SM_UXTX,SM_SXTB,SM_SXTH,SM_SXTW,SM_SXTX];
       extendedregmodes = [SM_LSL,SM_LSR,SM_ASR];
+      logicalshiftedregmodes = [SM_LSL,SM_LSR,SM_ASR,SM_ROR];
 
 
 {*****************************************************************************
@@ -323,6 +324,7 @@ unit cpubase;
     function reg_cgsize(const reg: tregister) : tcgsize;
     function cgsize2subreg(regtype: tregistertype; s:Tcgsize):Tsubregister;
     function is_calljmp(o:tasmop):boolean;{$ifdef USEINLINE}inline;{$endif USEINLINE}
+    function is_calljmpmaybeuncondret(o:tasmop):boolean;{$ifdef USEINLINE}inline;{$endif USEINLINE}
     procedure inverse_flags(var f: TResFlags);
     function flags_to_cond(const f: TResFlags) : TAsmCond;
     function findreg_by_number(r:Tregister):tregisterindex;
@@ -447,6 +449,13 @@ unit cpubase;
     function is_calljmp(o:tasmop):boolean;{$ifdef USEINLINE}inline;{$endif USEINLINE}
       begin
         is_calljmp:=o in [A_B,A_BL,A_BLR,A_RET,A_CBNZ,A_CBZ,A_TBNZ,A_TBZ];
+      end;
+
+
+    function is_calljmpmaybeuncondret(o:tasmop):boolean;{$ifdef USEINLINE}inline;{$endif USEINLINE}
+      begin
+        { Note that the caller still has to check the instruction's condition }
+        is_calljmpmaybeuncondret:=(o in [A_B,A_BL,A_BLR,A_RET]);
       end;
 
 
@@ -644,7 +653,7 @@ unit cpubase;
                 checkpattern:=pattern;
                 while replicatedlen<maxbits do
                   begin
-                    { douplicate current pattern }
+                    { duplicate current pattern }
                     checkpattern:=checkpattern or (checkpattern shl replicatedlen);
                     replicatedlen:=replicatedlen*2;
                   end;

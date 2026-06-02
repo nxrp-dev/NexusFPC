@@ -12,7 +12,9 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit ffi.manager;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
@@ -20,8 +22,13 @@ interface
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.TypInfo, System.Rtti, Api.Ffi;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   TypInfo, Rtti, ffi;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   Tpffi_typeArray = array of pffi_type;
@@ -41,27 +48,46 @@ begin
   Dispose(t);
 end;
 
+
 function TypeInfoToFFIType(aTypeInfo: PTypeInfo; aFlags: TParamFlags): pffi_type; forward;
+function ArgIsIndirect(aTypeInfo: PTypeInfo; aFlags: TParamFlags; aIsResult: Boolean): Boolean; forward;
 
 function RecordOrObjectToFFIType(aTypeInfo: PTypeInfo): pffi_type;
 var
   curindex: SizeInt;
   elements: Tpffi_typeArray;
 
-  procedure AddElement(t: pffi_type);
+  function AddElement(t: pffi_type) : Integer;
+  var
+    aCif : ffi_cif;
+    t2 : ffi_type;
+
   begin
-    if curindex = Length(elements) then begin
+    Result:=0;
+    if assigned(t) then
+      begin
+      aCIF:=Default(ffi_cif);
+      FillChar(aCIF,SizeOf(aCIF),0);
+      t2:=t^;
+      if ffi_prep_cif(@aCIF, FFI_DEFAULT_ABI, 0, @t2, Nil) = FFI_OK then
+        Result:=t2.size;
+      end;
+    if curindex = Length(elements) then
       SetLength(elements, Length(elements) * 2);
-    end;
     elements[curindex] := t;
     Inc(curindex);
   end;
 
 var
   td, fieldtd: PTypeData;
-  i, j, curoffset, remoffset: SizeInt;
+  i, j, asize,expoffset, curoffset, remoffset: SizeInt;
   field: PManagedField;
   ffitype: pffi_type;
+  {$IFDEF TESTCIFSIZE}
+  aCif : ffi_cif;
+  r2 : ffi_type;
+  {$ENDIF}
+
 begin
   td := GetTypeData(aTypeInfo);
   if td^.TotalFieldCount = 0 then
@@ -71,18 +97,20 @@ begin
   FillChar(Result^, SizeOf(Result), 0);
   Result^._type := _FFI_TYPE_STRUCT;
   Result^.elements := Nil;
+  expoffset := 0;
   curoffset := 0;
   curindex := 0;
+  asize := 0;
   field := PManagedField(PByte(@td^.TotalFieldCount) + SizeOf(td^.TotalFieldCount));
   { assume first that there are no paddings }
   SetLength(elements, td^.TotalFieldCount);
   for i := 0 to td^.TotalFieldCount - 1 do begin
-    { ToDo: what about fields that are larger that what we have currently? }
-    if field^.FldOffset < curoffset then begin
+    curoffset := field^.FldOffset;
+    if (curoffset < expoffset) then begin
       Inc(field);
       Continue;
     end;
-    remoffset := field^.FldOffset - curoffset;
+    remoffset := curoffset - expoffset;
     { insert padding elements }
     while remoffset >= SizeOf(QWord) do begin
       AddElement(@ffi_type_uint64);
@@ -102,21 +130,22 @@ begin
     end;
     { now add the real field type (Note: some are handled differently from
       being passed as arguments, so we handle those here) }
-    if field^.TypeRef^.Kind = tkObject then
-      AddElement(RecordOrObjectToFFIType(field^.TypeRef))
+    aSize:=0;
+    if field^.TypeRef^.Kind in [tkRecord, tkObject] then
+      aSize:=AddElement(RecordOrObjectToFFIType(field^.TypeRef))
     else if field^.TypeRef^.Kind = tkSString then begin
       fieldtd := GetTypeData(field^.TypeRef);
       for j := 0 to fieldtd^.MaxLength + 1 do
-        AddElement(@ffi_type_uint8);
+        aSize:=aSize+AddElement(@ffi_type_uint8);
     end else if field^.TypeRef^.Kind = tkArray then begin
       fieldtd := GetTypeData(field^.TypeRef);
       ffitype := TypeInfoToFFIType(fieldtd^.ArrayData.ElType, []);
       for j := 0 to fieldtd^.ArrayData.ElCount - 1 do
-        AddElement(ffitype);
+        aSize:=aSize+AddElement(ffitype);
     end else
-      AddElement(TypeInfoToFFIType(field^.TypeRef, []));
+      aSize:=AddElement(TypeInfoToFFIType(field^.TypeRef, []));
+    expoffset := field^.FldOffset + aSize;
     Inc(field);
-    curoffset := field^.FldOffset;
   end;
   { add a final Nil element }
   AddElement(Nil);
@@ -124,6 +153,14 @@ begin
   SetLength(elements, curindex);
   { this is a bit cheeky, but it works }
   Tpffi_typeArray(Result^.elements) := elements;
+{$IFDEF TESTCIFSIZE}
+  aCIF:=Default(ffi_cif);
+  r2:=Result^;
+  if ffi_prep_cif(@aCIF, FFI_DEFAULT_ABI, 0, @R2, Nil) = FFI_OK then
+    Writeln('Rec size ',R2.size,' (expected: ',td^.RecSize,')')
+  else
+    Writeln('Fail');
+{$ENDIF}
 end;
 
 function SetToFFIType(aSize: SizeInt): pffi_type;
@@ -183,7 +220,7 @@ begin
   Result := @ffi_type_void;
   if Assigned(aTypeInfo) then begin
     td := GetTypeData(aTypeInfo);
-    if aFlags * [pfArray, pfOut, pfVar, pfConstRef] <> [] then
+    if ArgIsIndirect(aTypeInfo,aFlags,False)  then
       Result := @ffi_type_pointer
     else
       case aTypeInfo^.Kind of
@@ -280,7 +317,27 @@ begin
     Result := @ffi_type_pointer;
 end;
 
-function ArgIsIndirect(aKind: TTypeKind; aFlags: TParamFlags; aIsResult: Boolean): Boolean;
+function ArgIsIndirect(aTypeInfo: PTypeInfo; aFlags: TParamFlags; aIsResult: Boolean): Boolean;
+  function IsManaged(aTypeInfo: PTypeInfo): boolean;
+  begin
+    Result := False;
+    if aTypeInfo = nil then Exit;
+
+    case aTypeInfo^.Kind of
+      tkAString,
+      tkLString,
+      tkWString,
+      tkUString,
+      tkInterface,
+      tkDynArray,
+      tkVariant: Result := True;
+
+      tkRecord,
+      tkObject:
+        Result := GetTypeData(aTypeInfo)^.RecInitData^.ManagedFieldCount > 0;
+    end;
+  end;
+
 const
   ResultTypeNeedsIndirection = [
    tkAString,
@@ -289,12 +346,25 @@ const
    tkInterface,
    tkDynArray
   ];
+var
+  Kind: TTypeKind;
 begin
   Result := False;
-  if (aKind = tkSString) or
-      (aIsResult and (aKind in ResultTypeNeedsIndirection)) or
+  if aTypeInfo = nil then
+    Kind := tkUnknown
+  else
+    Kind := aTypeInfo^.Kind;
+  if (Kind = tkSString) or
+      (aIsResult and (Kind in ResultTypeNeedsIndirection)) or
       (aFlags * [pfArray, pfOut, pfVar, pfConstRef] <> []) or
-      ((aKind = tkUnknown) and (pfConst in aFlags)) then
+      ((pfConst in aFlags) and (Kind in [tkRecord, tkObject]) and (GetTypeData(aTypeInfo)^.RecSize > SizeOf(Pointer)) and IsManaged(aTypeInfo)) or
+      ((Kind = tkUnknown) and (pfConst in aFlags))
+      // This is true for all CPUs except sparc64/xtensa and i386/X86_64 on windows.
+      // The latter 2 are handled by the i386-specific invoke, so need not concern us here.
+{$IF NOT (DEFINED(CPUSPARC64) or DEFINED(CPUXTENSA))}
+      or (Kind=tkVariant)
+{$ENDIF}
+      then
     Result := True;
 end;
 
@@ -424,8 +494,8 @@ var
   abi: ffi_abi;
   i, arglen, argoffset, argstart: LongInt;
   usevalues, retparam: Boolean;
-  kind: TTypeKind;
   types: ppffi_type;
+
 begin
   if not (fcfStatic in aFlags) and (Length(aArgInfos) = 0) then
     raise EInvocationError.Create(SErrMissingSelfParam);
@@ -489,11 +559,7 @@ begin
 
   if not (fcfStatic in aFlags) and retparam then begin
     aData.Types[0] := TypeInfoToFFIType(aArgInfos[0].ParamType, aArgInfos[0].ParamFlags);
-    if Assigned(aArgInfos[0].ParamType) then
-      kind := aArgInfos[0].ParamType^.Kind
-    else
-      kind := tkUnknown;
-    aData.Indirect[0] := ArgIsIndirect(kind, aArgInfos[0].ParamFlags, False);
+    aData.Indirect[0] := ArgIsIndirect(aArgInfos[0].ParamType, aArgInfos[0].ParamFlags, False);
     if usevalues then
       if aData.Indirect[0] then
         aData.Values[0] := @aArgValues[0]
@@ -509,11 +575,7 @@ begin
     aData.Types[i + argoffset] := TypeInfoToFFIType(aArgInfos[i].ParamType, aArgInfos[i].ParamFlags);
     if (pfResult in aArgInfos[i].ParamFlags) and not retparam then
       aData.ResultIndex := i + argoffset;
-    if Assigned(aArgInfos[i].ParamType) then
-      kind := aArgInfos[i].ParamType^.Kind
-    else
-      kind := tkUnknown;
-    aData.Indirect[i + argoffset] := ArgIsIndirect(kind, aArgInfos[i].ParamFlags, False);
+    aData.Indirect[i + argoffset] := ArgIsIndirect(aArgInfos[i].ParamType, aArgInfos[i].ParamFlags, False);
     if usevalues then
       if aData.Indirect[i + argoffset] then
         aData.Values[i + argoffset] := @aArgValues[i]
@@ -523,7 +585,7 @@ begin
 
   if retparam then begin
     aData.Types[aData.ResultIndex] := TypeInfoToFFIType(aResultType, []);
-    aData.Indirect[aData.ResultIndex] := ArgIsIndirect(aResultType^.Kind, [], True);
+    aData.Indirect[aData.ResultIndex] := ArgIsIndirect(aResultType, [], True);
     if usevalues then
       if aData.Indirect[aData.ResultIndex] then
         aData.Values[aData.ResultIndex] := @aResultValue
@@ -595,10 +657,11 @@ begin
   end;
   CreateCIF(arginfos, argvalues, aCallConv, aResultType, aResultValue, aFlags, ffidata);
 
+  ffi_call(@ffidata.CIF, ffi_fn(aCodeAddress), ffidata.ResultValue, @ffidata.Values[0]);
+
   arginfos := Nil;
   argvalues := Nil;
 
-  ffi_call(@ffidata.CIF, ffi_fn(aCodeAddress), ffidata.ResultValue, @ffidata.Values[0]);
 
 {$ifdef USE_EXTENDED_AS_COMP_CURRENCY_RES}
   if Assigned(ffidata.ResultTypeData) then begin
@@ -734,7 +797,7 @@ end;
 
 function TFFIFunctionCallback.GetCodeAddress: CodePointer;
 begin
-  Result := fData;
+  Result := fCode;
 end;
 
 constructor TFFIFunctionCallback.Create(aContext: Pointer; aCallConv: TCallConv; constref aArgs: array of TFunctionCallParameterInfo; aResultType: PTypeInfo; aFlags: TFunctionCallFlags);

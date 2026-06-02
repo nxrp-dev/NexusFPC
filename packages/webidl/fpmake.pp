@@ -2,7 +2,7 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses {$ifdef unix}cthreads,{$endif} fpmkunit;
 
 Var
   T : TTarget;
@@ -25,7 +25,7 @@ begin
     P.Email := '';
     P.Description := 'WEB IDL parser and converter to Object Pascal classes';
     P.NeedLibC:= false;
-    P.OSes:=AllOSes-[embedded,msdos,win16,macosclassic,palmos,zxspectrum,msxdos,amstradcpc,sinclairql];
+    P.OSes:=AllOSes-[embedded,msdos,win16,macosclassic,palmos,zxspectrum,msxdos,amstradcpc,sinclairql,human68k,ps1,wasip2];
     if Defaults.CPU=jvm then
       P.OSes := P.OSes - [java,android];
 
@@ -49,7 +49,14 @@ begin
       AddUnit('webidlparser');
       end;
     T:=P.Targets.AddUnit('webidltopas2js.pp');
+    T.Dependencies.addUnit('webidltopas');
     T:=P.Targets.AddUnit('webidltowasmjob.pp');
+    T.Dependencies.addUnit('webidltopas');
+    T:=P.Targets.AddUnit('webidltowasmstub.pp');
+    T.Dependencies.addUnit('webidltowasmjob');
+
+    P.NamespaceMap:='namespaces.lst';
+
 {$ifndef ALLPACKAGES}
     Run;
     end;

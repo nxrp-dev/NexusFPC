@@ -1,3 +1,4 @@
+{%MainUnit classes.pp}
 {
     This file is part of the Free Pascal Run Time Library (rtl)
     Copyright (c) 2007 by Michael Van Canneyt,
@@ -18,7 +19,7 @@ Type
     Next : TLinkedListItem;
   end;
   TLinkedListItemClass = Class of TLinkedListItem;
-  
+
   { TLinkedListVisitor }
 
   TLinkedListVisitor = Class

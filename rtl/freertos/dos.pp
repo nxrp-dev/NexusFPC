@@ -11,7 +11,7 @@
     This unit is based on the MorphOS one and is adapted for Gameboy Advance
     simply by stripping out all stuff inside funcs and procs.
     Copyright (c) 2006 by Francesco Lombardi
-    
+
     Adapted to FPC FreeRTOS by Florian Klämpfl
 
     See the file COPYING.FPC, included in this distribution,
@@ -23,7 +23,9 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit Dos;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
@@ -95,7 +97,7 @@ procedure DeleteExtIO ();
 begin
 end;
 
-function Createport(name : PChar; pri : longint): integer;
+function Createport(name : PAnsiChar; pri : longint): integer;
 begin
   result := -1;
 end;
@@ -258,7 +260,7 @@ procedure AddDevice(str : String);
 begin
 end;
 
-function MakeDeviceName(str : pchar): string;
+function MakeDeviceName(str : PAnsiChar): string;
 begin
   result := '';
 end;

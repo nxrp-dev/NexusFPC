@@ -13,20 +13,27 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fpcssutils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.TypInfo, System.Classes, System.SysUtils, System.Types, FPCSS.Tree, FPCSS.Parser, FPCSS.Scanner;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   TypInfo, Classes, SysUtils, types, fpcsstree, fpcssparser, fpcssscanner;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
 
-  { TClassNameVisitor }
+  { TCSSClassNameVisitor }
 
-  TClassNameVisitor = Class(TCSSTreeVisitor)
+  TCSSClassNameVisitor = Class(TCSSTreeVisitor)
   private
     FList: TStrings;
   public
@@ -53,14 +60,14 @@ Type
 
 implementation
 
-{ TClassNameVisitor }
+{ TCSSClassNameVisitor }
 
-constructor TClassNameVisitor.Create(aList: TStrings);
+constructor TCSSClassNameVisitor.Create(aList: TStrings);
 begin
   FList:=aList;
 end;
 
-procedure TClassNameVisitor.Visit(obj: TCSSElement);
+procedure TCSSClassNameVisitor.Visit(obj: TCSSElement);
 begin
   if Obj.CSSType=csstCLASSNAME then
     FList.Add(Obj.AsString);
@@ -119,10 +126,10 @@ end;
 procedure TCSSUtils.ExtractClassNames(const aElement: TCSSElement; aList: TStrings);
 
 Var
-  aVis : TClassNameVisitor;
+  aVis : TCSSClassNameVisitor;
 
 begin
-  aVis:=TClassNameVisitor.Create(aList);
+  aVis:=TCSSClassNameVisitor.Create(aList);
   try
     aElement.Iterate(aVis);
   finally

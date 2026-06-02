@@ -1,17 +1,17 @@
 {
      File:       HIToolbox/HIClockView.h
- 
+
      Contains:   Definition of the clock view provided by HIToolbox.
- 
+
      Version:    HIToolbox-624~3
- 
+
      Copyright:  © 2006-2008 by Apple Computer, Inc., all rights reserved.
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 {       Initial Pascal Translation:  Jonas Maebe, <jonas@freepascal.org>, October 2009 }
 {       Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2012 }
@@ -29,7 +29,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit HIClockView;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -214,7 +216,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.Appearance,MacOsApi.CarbonEvents,MacOsApi.Controls,MacOsApi.QuickdrawTypes,MacOsApi.HIObject;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,Appearance,CarbonEvents,Controls,QuickdrawTypes,HIObject;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -225,7 +231,7 @@ uses MacTypes,Appearance,CarbonEvents,Controls,QuickdrawTypes,HIObject;
 
 {
  *  HIClockView.h
- *  
+ *
  *  Discussion:
  *    API definitions for the clock view.
  }
@@ -237,26 +243,26 @@ const
 
 {
  *  kEventClassClockView / kEventClockDateOrTimeChanged
- *  
+ *
  *  Summary:
  *    Allows clients to determine when the user has changed the date or
  *    time in the clock view.
- *  
+ *
  *  Discussion:
  *    This event is sent by the clock view when the user has changed
  *    the date or time. Clients could register for this notification in
  *    order to update some state based on the date or time in the
  *    clock, for instance. This event is sent to the view only, it will
  *    not propagate. It is sent to all handlers installed on the view.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Parameters:
- *    
+ *
  *    --> kEventParamDirectObject (in, typeControlRef)
  *          The view whose date has changed.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.4 and later in Carbon.framework
  *    CarbonLib:        not available
@@ -320,10 +326,10 @@ const
 {$ifc not TARGET_CPU_64}
 {
  *  CreateClockControl()
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        in CarbonLib 1.1 and later

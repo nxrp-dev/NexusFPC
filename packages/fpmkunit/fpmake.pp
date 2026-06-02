@@ -2,7 +2,12 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses
+  {$ifdef unix}
+  cwstring,
+  cthreads,
+  {$endif}
+  fpmkunit;
 
 Var
   P : TPackage;
@@ -25,7 +30,7 @@ begin
     P.Email := '';
     P.Description := 'Basic library of the fpmake/fppkg build system.';
     P.NeedLibC:= false;  // true for headers that indirectly link to libc?
-    P.OSes := P.OSes - [embedded,nativent,msdos,win16,atari,macosclassic,palmos,zxspectrum,msxdos,amstradcpc,sinclairql,wasi];
+    P.OSes := P.OSes - [embedded,nativent,msdos,win16,atari,macosclassic,palmos,zxspectrum,msxdos,amstradcpc,sinclairql,wasip1,wasip1threads,human68k,ps1,wasip2];
     if Defaults.CPU=jvm then
       P.OSes := P.OSes - [java,android];
 
@@ -39,6 +44,8 @@ begin
 
     with P.Targets.AddUnit('src/fpmkunit.pp') do
       ResourceStrings:=true;
+
+
 
 {$ifndef ALLPACKAGES}
     Run;

@@ -43,7 +43,9 @@
 // $Id: JwaWinUser.pas,v 1.19 2007/09/14 06:48:48 marquardt Exp $
 
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaWinUser;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -58,8 +60,13 @@ unit JwaWinUser;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Winbase, WinApi.Jedi.Wingdi, WinApi.Jedi.Winnt, WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaWinBase, JwaWinGDI, JwaWinNT, JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 {$IFNDEF JWA_IMPLEMENTATIONSECTION}
@@ -250,7 +257,7 @@ const
   {$EXTERNALSYM MAXIMUM_RESERVED_MANIFEST_RESOURCE_ID}
 
 type
-  va_list = PChar;
+  va_list = PAnsiChar;
   {$EXTERNALSYM va_list}
 
 function wvsprintfA(Output: LPSTR; Format: LPCSTR; arglist: va_list): Integer; stdcall;
@@ -410,7 +417,7 @@ const
   {$EXTERNALSYM AW_BLEND}
 
 //
-// WM_KEYUP/DOWN/CHAR HIWORD(lParam) flags
+// WM_KEYUP/DOWN/AnsiChar HIWORD(lParam) flags
 //
 
   KF_EXTENDED = $0100;
@@ -3070,7 +3077,7 @@ const
   WS_EX_LAYERED = $00080000;
   {$EXTERNALSYM WS_EX_LAYERED}
 
-  WS_EX_NOINHERITLAYOUT = $00100000; // Disable inheritence of mirroring by children
+  WS_EX_NOINHERITLAYOUT = $00100000; // Disable inheritance of mirroring by children
   {$EXTERNALSYM WS_EX_NOINHERITLAYOUT}
   WS_EX_LAYOUTRTL       = $00400000; // Right to left mirroring
   {$EXTERNALSYM WS_EX_LAYOUTRTL}
@@ -4821,28 +4828,28 @@ function AnsiPrev(lpszStart: LPCSTR; lpszCurrent: LPCSTR): LPSTR;
 // Language dependent Routines
 //
 
-function IsCharAlphaA(ch: CHAR): BOOL; stdcall;
+function IsCharAlphaA(ch: AnsiChar): BOOL; stdcall;
 {$EXTERNALSYM IsCharAlphaA}
 function IsCharAlphaW(ch: WCHAR): BOOL; stdcall;
 {$EXTERNALSYM IsCharAlphaW}
 function IsCharAlpha(ch: TCHAR): BOOL; stdcall;
 {$EXTERNALSYM IsCharAlpha}
 
-function IsCharAlphaNumericA(ch: CHAR): BOOL; stdcall;
+function IsCharAlphaNumericA(ch: AnsiChar): BOOL; stdcall;
 {$EXTERNALSYM IsCharAlphaNumericA}
 function IsCharAlphaNumericW(ch: WCHAR): BOOL; stdcall;
 {$EXTERNALSYM IsCharAlphaNumericW}
 function IsCharAlphaNumeric(ch: TCHAR): BOOL; stdcall;
 {$EXTERNALSYM IsCharAlphaNumeric}
 
-function IsCharUpperA(ch: CHAR): BOOL; stdcall;
+function IsCharUpperA(ch: AnsiChar): BOOL; stdcall;
 {$EXTERNALSYM IsCharUpperA}
 function IsCharUpperW(ch: WCHAR): BOOL; stdcall;
 {$EXTERNALSYM IsCharUpperW}
 function IsCharUpper(ch: TCHAR): BOOL; stdcall;
 {$EXTERNALSYM IsCharUpper}
 
-function IsCharLowerA(ch: CHAR): BOOL; stdcall;
+function IsCharLowerA(ch: AnsiChar): BOOL; stdcall;
 {$EXTERNALSYM IsCharLowerA}
 function IsCharLowerW(ch: WCHAR): BOOL; stdcall;
 {$EXTERNALSYM IsCharLowerW}
@@ -4898,14 +4905,14 @@ function ToUnicode(wVirtKey, wScanCode: UINT; lpKeyState: PBYTE; pwszBuff: LPWST
 function OemKeyScan(wOemChar: WORD): DWORD; stdcall;
 {$EXTERNALSYM OemKeyScan}
 
-function VkKeyScanA(ch: CHAR): SHORT; stdcall;
+function VkKeyScanA(ch: AnsiChar): SHORT; stdcall;
 {$EXTERNALSYM VkKeyScanA}
 function VkKeyScanW(ch: WCHAR): SHORT; stdcall;
 {$EXTERNALSYM VkKeyScanW}
 function VkKeyScan(ch: TCHAR): SHORT; stdcall;
 {$EXTERNALSYM VkKeyScan}
 
-function VkKeyScanExA(ch: CHAR; dwhkl: HKL): SHORT; stdcall;
+function VkKeyScanExA(ch: AnsiChar; dwhkl: HKL): SHORT; stdcall;
 {$EXTERNALSYM VkKeyScanExA}
 function VkKeyScanExW(ch: WCHAR; dwhkl: HKL): SHORT; stdcall;
 {$EXTERNALSYM VkKeyScanExW}
@@ -5406,7 +5413,7 @@ function DrawMenuBar(hWnd: HWND): BOOL; stdcall;
 const
   PMB_ACTIVE = $00000001;
   {$EXTERNALSYM PMB_ACTIVE}
-  
+
 function GetSystemMenu(hWnd: HWND; bRevert: BOOL): HMENU; stdcall;
 {$EXTERNALSYM GetSystemMenu}
 
@@ -5819,7 +5826,7 @@ const
   {$EXTERNALSYM TPM_NOANIMATION}
   TPM_LAYOUTRTL       = $8000;
   {$EXTERNALSYM TPM_LAYOUTRTL}
-  
+
 //
 // Drag-and-drop support
 // Obsolete - use OLE instead
@@ -7965,7 +7972,7 @@ const
   {$EXTERNALSYM SS_ELLIPSISMASK}
 
 //
-// Static Control Mesages
+// Static Control Messages
 //
 
   STM_SETICON  = $0170;
@@ -8344,7 +8351,7 @@ const
   {$EXTERNALSYM LBS_NOSEL}
   LBS_COMBOBOX          = $8000;
   {$EXTERNALSYM LBS_COMBOBOX}
-  
+
   LBS_STANDARD          = LBS_NOTIFY or LBS_SORT or WS_VSCROLL or WS_BORDER;
   {$EXTERNALSYM LBS_STANDARD}
 
@@ -8547,7 +8554,7 @@ const
   {$EXTERNALSYM SBM_SETSCROLLINFO}
   SBM_GETSCROLLINFO  = $00EA;
   {$EXTERNALSYM SBM_GETSCROLLINFO}
-  
+
   SBM_GETSCROLLBARINFO = $00EB;
   {$EXTERNALSYM SBM_GETSCROLLBARINFO}
 
@@ -8732,8 +8739,8 @@ type
   {$EXTERNALSYM LPMULTIKEYHELPA}
   tagMULTIKEYHELPA = record
     mkSize: DWORD;
-    mkKeylist: CHAR;
-    szKeyphrase: array [0..0] of CHAR;
+    mkKeylist: AnsiChar;
+    szKeyphrase: array [0..0] of AnsiChar;
   end;
   {$EXTERNALSYM tagMULTIKEYHELPA}
   MULTIKEYHELPA = tagMULTIKEYHELPA;
@@ -8779,7 +8786,7 @@ type
     dx: Integer;
     dy: Integer;
     wMax: Integer;
-    rgchMember: array [0..1] of CHAR;
+    rgchMember: array [0..1] of AnsiChar;
   end;
   {$EXTERNALSYM tagHELPWININFOA}
   HELPWININFOA = tagHELPWININFOA;
@@ -10063,7 +10070,7 @@ const
   {$IFNDEF JWA_INCLUDEMODE}
   CCHDEVICENAME = 32;
   {$EXTERNALSYM CCHDEVICENAME}
-  {$ENDIF JWA_INCLUDEMODE}  
+  {$ENDIF JWA_INCLUDEMODE}
 
 type
   LPMONITORINFO = ^MONITORINFO;
@@ -10084,7 +10091,7 @@ type
   {$EXTERNALSYM LPMONITORINFOEXA}
   tagMONITORINFOEXA = record
     MonitorInfo: MONITORINFO;
-    szDevice: array [0..CCHDEVICENAME - 1] of CHAR;
+    szDevice: array [0..CCHDEVICENAME - 1] of AnsiChar;
   end;
   {$EXTERNALSYM tagMONITORINFOEXA}
   MONITORINFOEXA = tagMONITORINFOEXA;

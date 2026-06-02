@@ -48,7 +48,7 @@
 
 (**
  * @defgroup apr_pools Memory Pool Functions
- * @ingroup APR 
+ * @ingroup APR
  * @{
  *)
 
@@ -73,7 +73,7 @@ type
  * becomes:
  *    APR_DECLARE(apr_pool_t *) apr_file_pool_get(apr_file_t *ob);
  * </pre>
- * @remark Doxygen unwraps this macro (via doxygen.conf) to provide 
+ * @remark Doxygen unwraps this macro (via doxygen.conf) to provide
  * actual help for each specific occurance of apr_foo_pool_get.
  * @remark the linkage is specified for APR. It would be possible to expand
  *       the macros to support other linkages.
@@ -266,12 +266,12 @@ function apr_pool_create_unmanaged_ex(newpool: PPapr_pool_t;
 //                                                   apr_pool_t *parent,
 //                                                   apr_abortfunc_t abort_fn,
 //                                                   apr_allocator_t *allocator,
-//                                                   const char *file_line);
+//                                                   const AnsiChar *file_line);
 function apr_pool_create_ex_debug(newpool: PPapr_pool_t;
                                   parent: Papr_pool_t;
                                   abort_fn: apr_abortfunc_t;
                                   allocator: Papr_allocator_t;
-                                  const file_line: PChar): apr_status_t;
+                                  const file_line: PAnsiChar): apr_status_t;
   {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
   external LibAPR name LibNamePrefix + 'apr_pool_create_ex_debug' + LibSuff20;
 
@@ -288,11 +288,11 @@ function apr_pool_create_ex_debug(newpool: PPapr_pool_t;
 //APR_DECLARE(apr_status_t) apr_pool_create_core_ex_debug(apr_pool_t **newpool,
 //                                                   apr_abortfunc_t abort_fn,
 //                                                   apr_allocator_t *allocator,
-//                                                   const char *file_line);
+//                                                   const AnsiChar *file_line);
 function apr_pool_create_core_ex_debug(newpool: PPapr_pool_t;
                                        abort_fn: apr_abortfunc_t;
                                        allocator: Papr_allocator_t;
-                                       const file_line: PChar): apr_status_t;
+                                       const file_line: PAnsiChar): apr_status_t;
   {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
   external LibAPR name LibNamePrefix + 'apr_pool_create_core_ex_debug' + LibSuff16;
 
@@ -314,11 +314,11 @@ function apr_pool_create_core_ex_debug(newpool: PPapr_pool_t;
 //APR_DECLARE(apr_status_t) apr_pool_create_unmanaged_ex_debug(apr_pool_t **newpool,
 //                                                   apr_abortfunc_t abort_fn,
 //                                                   apr_allocator_t *allocator,
-//                                                   const char *file_line);
+//                                                   const AnsiChar *file_line);
 function apr_pool_create_unmanaged_ex_debug(newpool: PPapr_pool_t;
                                             abort_fn: apr_abortfunc_t;
                                             allocator: Papr_allocator_t;
-                                            const file_line: PChar): apr_status_t;
+                                            const file_line: PAnsiChar): apr_status_t;
   {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
   external LibAPR name LibNamePrefix + 'apr_pool_create_unmanaged_ex_debug' + LibSuff16;
 
@@ -418,8 +418,8 @@ procedure apr_pool_clear(p: Papr_pool_t);
  *         and don't call apr_pool_destroy_clear directly.
  *}
 //APR_DECLARE(void) apr_pool_clear_debug(apr_pool_t *p,
-//                                       const char *file_line);
-procedure apr_pool_clear_debug(p: Papr_pool_t; const file_line: PChar);
+//                                       const AnsiChar *file_line);
+procedure apr_pool_clear_debug(p: Papr_pool_t; const file_line: PAnsiChar);
   {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
   external LibAPR name LibNamePrefix + 'apr_pool_clear_debug' + LibSuff8;
 
@@ -453,8 +453,8 @@ procedure apr_pool_destroy(p: Papr_pool_t);
  *         and don't call apr_pool_destroy_debug directly.
  *}
 //APR_DECLARE(void) apr_pool_destroy_debug(apr_pool_t *p,
-//                                         const char *file_line);
-procedure apr_pool_destroy_debug(p: Papr_pool_t; const file_line: PChar);
+//                                         const AnsiChar *file_line);
+procedure apr_pool_destroy_debug(p: Papr_pool_t; const file_line: PAnsiChar);
   {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
   external LibAPR name LibNamePrefix + 'apr_pool_destroy_debug' + LibSuff8;
 
@@ -488,9 +488,9 @@ function apr_palloc(p: Papr_pool_t; size: apr_size_t): Pointer;
  * @return See: apr_palloc
  *}
 //APR_DECLARE(void *) apr_palloc_debug(apr_pool_t *p, apr_size_t size,
-//                                     const char *file_line);
+//                                     const AnsiChar *file_line);
 function apr_palloc_debug(p: Papr_pool_t; size: apr_size_t;
-                          const file_line: PChar): Pointer;
+                          const file_line: PAnsiChar): Pointer;
   {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
   external LibAPR name LibNamePrefix + 'apr_palloc_debug' + LibSuff12;
 
@@ -523,9 +523,9 @@ function apr_pcalloc(p: Papr_pool_t; size: apr_size_t): Pointer;
  * @return See: apr_pcalloc
  *}
 //APR_DECLARE(void *) apr_pcalloc_debug(apr_pool_t *p, apr_size_t size,
-//                                      const char *file_line);
+//                                      const AnsiChar *file_line);
 function apr_pcalloc_debug(p: Papr_pool_t; size: apr_size_t;
-                           const file_line: PChar): Pointer;
+                           const file_line: PAnsiChar): Pointer;
   {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
   external LibAPR name LibNamePrefix + 'apr_pcalloc_debug' + LibSuff12;
 
@@ -594,8 +594,8 @@ function apr_pool_is_ancestor(a, b: Papr_pool_t): Integer;
  * @param pool The pool to tag
  * @param tag  The tag
  *}
-//APR_DECLARE(void) apr_pool_tag(apr_pool_t *pool, const char *tag);
-procedure apr_pool_tag(pool: Papr_pool_t; const tag: PChar);
+//APR_DECLARE(void) apr_pool_tag(apr_pool_t *pool, const AnsiChar *tag);
+procedure apr_pool_tag(pool: Papr_pool_t; const tag: PAnsiChar);
   {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
   external LibAPR name LibNamePrefix + 'apr_pool_tag' + LibSuff8;
 
@@ -624,7 +624,7 @@ procedure apr_pool_tag(pool: Papr_pool_t; const tag: PChar);
  *}
 //APR_DECLARE(apr_status_t) apr_pool_userdata_set(
 //    const void *data,
-//    const char *key,
+//    const AnsiChar *key,
 //    apr_status_t (*cleanup)(void *),
 //    apr_pool_t *pool);
 type
@@ -632,7 +632,7 @@ type
 
 function apr_pool_userdata_set(
     const data:pointer;
-    const key:Pchar;
+    const key:PAnsiChar;
     cleanup: cleanup_func_t;
     pool:Papr_pool_t): apr_status_t
   {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
@@ -659,12 +659,12 @@ function apr_pool_userdata_set(
  *}
 //APR_DECLARE(apr_status_t) apr_pool_userdata_setn(
 //    const void *data,
-//    const char *key,
+//    const AnsiChar *key,
 //    apr_status_t (*cleanup)(void *),
 //    apr_pool_t *pool);
 function apr_pool_userdata_setn(
       const data:pointer;
-      const key:Pchar;
+      const key:PAnsiChar;
       cleanup: cleanup_func_t;
       pool:Papr_pool_t): apr_status_t
   {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
@@ -676,9 +676,9 @@ function apr_pool_userdata_setn(
  * @param key The key for the data to retrieve
  * @param pool The current pool.
  *}
-//APR_DECLARE(apr_status_t) apr_pool_userdata_get(void **data, const char *key,
+//APR_DECLARE(apr_status_t) apr_pool_userdata_get(void **data, const AnsiChar *key,
 //                                                apr_pool_t *pool);
-function apr_pool_userdata_get(data: PPointer; const key: PChar;
+function apr_pool_userdata_get(data: PPointer; const key: PAnsiChar;
                                pool: Papr_pool_t): apr_status_t;
   {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
   external LibAPR name LibNamePrefix + 'apr_pool_userdata_get' + LibSuff12;
@@ -723,7 +723,7 @@ procedure apr_pool_cleanup_register(p: Papr_pool_t;
  *
  * Unlike apr_pool_cleanup_register which register a cleanup
  * that is called AFTER all subpools are destroyed this function register
- * a function that will be called before any of the subpool is destoryed.
+ * a function that will be called before any of the subpool is destroyed.
  *
  * @param p The pool register the cleanup with
  * @param data The data to pass to the cleanup function.
@@ -742,7 +742,7 @@ procedure apr_pool_pre_cleanup_register(p: Papr_pool_t;
 
 {**
  * Remove a previously registered cleanup function.
- * 
+ *
  * The cleanup most recently registered with @a p having the same values of
  * @a data and @a cleanup will be removed.
  *
@@ -762,7 +762,7 @@ procedure apr_pool_cleanup_kill(p: Papr_pool_t;
 
 {**
  * Replace the child cleanup function of a previously registered cleanup.
- * 
+ *
  * The cleanup most recently registered with @a p having the same values of
  * @a data and @a plain_cleanup will have the registered child cleanup
  * function replaced with @a child_cleanup.
@@ -806,7 +806,7 @@ procedure apr_pool_cleanup_run(p: Papr_pool_t;
 
 {**
  * An empty cleanup function.
- * 
+ *
  * Passed to apr_pool_cleanup_register() when no cleanup is required.
  *
  * @param data The data to cleanup, will not be used by this function.

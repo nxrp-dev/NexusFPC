@@ -17,6 +17,7 @@ unit FPSwitch;
 {$ifdef cpullvm}
 {$modeswitch nestedprocvars}
 {$endif}
+{$H-}
 
 interface
 
@@ -43,13 +44,16 @@ type
 
     TSwitchMode = (om_Normal,om_Debug,om_Release);
 
+    TCompilerMode = (moNone,moFpc,moObjFpc,moTp,moDelphi,moDelphiUnicode,
+      moMacPas,moIso,moExtendedPascal,moGnu);
+
     TSwitchItemTyp = (ot_Select,ot_Boolean,ot_String,ot_MultiString,ot_Longint);
 
     PSwitchItem = ^TSwitchItem;
     TSwitchItem = object(TObject)
       Typ       : TSwitchItemTyp;
       Name      : string[50];
-      Param     : string[10];
+      Param     : string[30];
       ParamID   : TParamID;
       constructor Init(const n,p:string; AID: TParamID);
       function  NeedParam:boolean;virtual;
@@ -115,8 +119,8 @@ type
 
     PSwitches = ^TSwitches;
     TSwitches = object
-      constructor Init(ch:char);
-      constructor InitSelect(ch:char);
+      constructor Init(ch:AnsiChar);
+      constructor InitSelect(ch:AnsiChar);
       destructor  Done;
       { general items }
       function  ItemCount:integer;
@@ -131,6 +135,7 @@ type
       procedure AddMultiStringItem(const name,param:string;AID: TParamID);
       function  GetCurrSel:integer;
       function  GetCurrSelParam : String;
+      function  GetCurrSelParamID : TParamID;
       function  GetBooleanItem(index:integer):boolean;
       function  GetLongintItem(index:integer):longint;
       function  GetStringItem(index:integer):string;
@@ -146,7 +151,7 @@ type
       function  ReadItemsCfg(const s:string):boolean;
     private
       IsSel  : boolean;
-      Prefix : char;
+      Prefix : AnsiChar;
       SelNr  : array[TSwitchMode] of integer;
       Items  : PCollection;
     end;
@@ -173,16 +178,19 @@ var
     VerboseSwitches,
     CodegenSwitches,
     OptimizationSwitches,
+    OptimizationLevelSwitches,
     ProcessorCodeGenerationSwitches,
     ProcessorOptimizationSwitches,
     AsmReaderSwitches,
     AsmInfoSwitches,
-    AsmOutputSwitches,
     TargetSwitches,
     ConditionalSwitches,
     MemorySwitches,
     BrowserSwitches,
     DirectorySwitches : PSwitches;
+
+    {Every mode can have different target, thus have its own AsmOutput}
+    AsmOutputSwitches: array [TSwitchMode] of PSwitches;
 
 { write/read the Switches to fpc.cfg file }
 procedure WriteSwitches(const fn:string);
@@ -201,6 +209,10 @@ procedure GetCompilerOptionLines(C: PUnsortedStringCollection);
 implementation
 
 uses
+  Version,
+{$ifdef USE_EXTERNAL_COMPILER}
+   fpintf, { supersedes version_string of version unit }
+{$endif USE_EXTERNAL_COMPILER}
   Dos,
   GlobType,
   CpuInfo,
@@ -232,10 +244,13 @@ const
       opt_allowmmxoperations = 'Allow MMX operations';
 
       opt_mode_freepascal = 'Free Pascal dialect';
-      opt_mode_objectpascal = 'Object Pascal extension on';
+      opt_mode_objectpascal = 'Object Pascal extension';
       opt_mode_turbopascal = 'Turbo Pascal compatible';
       opt_mode_delphi = 'Delphi compatible';
+      opt_mode_delphiunicode = 'Delphi Unicode';
       opt_mode_macpascal = 'Macintosh Pascal dialect';
+      opt_mode_iso = 'Standard Pascal, ISO 7185';
+      opt_mode_extendedpascal = 'Extended Pascal, ISO 10206';
       opt_mode_gnupascal = 'GNU Pascal';
       { Verbose options }
       opt_warnings = '~W~arnings';
@@ -259,9 +274,11 @@ const
       opt_generatesmallercode = 'G~e~nerate smaller code';
       opt_useregistervariables = 'Use regis~t~er-variables';
       opt_uncertainoptimizations = '~U~ncertain optimizations';
+      opt_disableoptimizations = '~D~isable optimizations';
       opt_level1optimizations = 'Level ~1~ optimizations';
       opt_level2optimizations = 'Level ~2~ optimizations';
       opt_level3optimizations = 'Level ~3~ optimizations';
+      opt_level4optimizations = 'Level ~4~ optimizations';
       { optimization processor target }
       opt_i386486 = 'i~3~86/i486';
       opt_pentium = 'P~e~ntium (tm)';
@@ -573,7 +590,7 @@ end;
                TSwitch
 *****************************************************************************}
 
-constructor TSwitches.Init(ch:char);
+constructor TSwitches.Init(ch:AnsiChar);
 begin
   new(Items,Init(10,5));
   Prefix:=ch;
@@ -582,7 +599,7 @@ begin
 end;
 
 
-constructor TSwitches.InitSelect(ch:char);
+constructor TSwitches.InitSelect(ch:AnsiChar);
 begin
   new(Items,Init(10,5));
   Prefix:=ch;
@@ -791,6 +808,14 @@ begin
     GetCurrSelParam:='';
 end;
 
+function  TSwitches.GetCurrSelParamID : TParamID;
+begin
+  if IsSel then
+    GetCurrSelParamID:=PSwitchItem(Items^.At(SelNr[SwitchesMode]))^.ParamID
+  else
+    GetCurrSelParamID:=idNone;
+end;
+
 procedure TSwitches.SetCurrSel(index:integer);
 begin
   if index<ItemCount then
@@ -821,7 +846,7 @@ end;
 
 procedure TSwitches.WriteItemsCfg;
 var
-  Pref : char;
+  Pref : AnsiChar;
 
   procedure writeitem(P:PSwitchItem);
   var
@@ -960,12 +985,14 @@ begin
      VerboseSwitches^.WriteItemsCfg;
      SyntaxSwitches^.WriteItemsCfg;
      CodegenSwitches^.WriteItemsCfg;
+     OptimizationLevelSwitches^.WriteItemsCfg; { have to write before OptimizationSwitches }
      OptimizationSwitches^.WriteItemsCfg;
      ProcessorCodeGenerationSwitches^.WriteItemsCfg;
      ProcessorOptimizationSwitches^.WriteItemsCfg;
      AsmReaderSwitches^.WriteItemsCfg;
      AsmInfoSwitches^.WriteItemsCfg;
-     AsmOutputSwitches^.WriteItemsCfg;
+     if assigned(AsmOutputSwitches[SwitchesMode]) then
+       AsmOutputSwitches[SwitchesMode]^.WriteItemsCfg;
      DirectorySwitches^.WriteItemsCfg;
      MemorySwitches^.WriteItemsCfg;
      ConditionalSwitches^.WriteItemsCfg;
@@ -987,15 +1014,19 @@ end;
 
 procedure ReadSwitches(const fn:string);
 var
-  c : char;
+  c : AnsiChar;
   s : string;
   res : boolean;
   OldSwitchesMode,i : TSwitchMode;
+  oFileMode : byte;
 begin
+  oFileMode:=FileMode;   {save file open mode}
+  FileMode:=0;           {Reset will open file in read only mode }
   assign(CfgFile,fn);
   {$I-}
    reset(CfgFile);
   {$I+}
+  FileMode:=oFileMode;   {restore file open mode}
   if ioresult<>0 then
    begin
      SetDefaultSwitches;
@@ -1014,7 +1045,10 @@ begin
       Delete(s,1,2);
       case c of
        'a' : res:=AsmInfoSwitches^.ReadItemsCfg(s);
-       'A' : res:=AsmOutputSwitches^.ReadItemsCfg(s);
+       'A' : begin
+               UpdateAsmOutputSwitches;
+               res:=AsmOutputSwitches[SwitchesMode]^.ReadItemsCfg(s);
+             end;
        'b' : res:=BrowserSwitches^.ReadItemsCfg(s);
        'C' : begin
                res:=CodegenSwitches^.ReadItemsCfg(s);
@@ -1029,6 +1063,8 @@ begin
        'O' : begin
                res:=OptimizationSwitches^.ReadItemsCfg(s);
                if not res then
+                 res:=OptimizationLevelSwitches^.ReadItemsCfg(s);
+               if not res then
                  res:=ProcessorOptimizationSwitches^.ReadItemsCfg(s);
              end;
        'M' : res:=CompilerModeSwitches^.ReadItemsCfg(s);
@@ -1039,7 +1075,12 @@ begin
        'T' : res:=TargetSwitches^.ReadItemsCfg(s);
        'v' : res:=VerboseSwitches^.ReadItemsCfg(s);
        'X' : begin
-               res:=LibLinkerSwitches^.ReadItemsCfg(s);
+               { This is workaround. ReadItemsCfg do UpCase to S
+                   and our -Xs got lost because there are -XS as well.  M. }
+               if (s = 's') then   { -Xs defined }
+                 res:=OtherLinkerSwitches^.ReadItemsCfg(s);
+               if not res then
+                 res:=LibLinkerSwitches^.ReadItemsCfg(s);
                if not res then
                  res:=OtherLinkerSwitches^.ReadItemsCfg(s);
              end;
@@ -1070,7 +1111,7 @@ function  GetSourceDirectories : string;
 var
   P : PStringItem;
   S : String;
-  c : char;
+  c : AnsiChar;
   function checkitem(P:PSwitchItem):boolean;
   begin
     CheckItem:=(P^.Typ=ot_string) and (P^.Param=c);
@@ -1099,24 +1140,46 @@ end;
 procedure UpdateAsmOutputSwitches;
 var
   ta : tasm;
+  zt : tsystem;
+  sy : tsystem;
+  sw : TSwitchMode;
   st : string;
+  L : String;
+  t : string;
 begin
-  if assigned(AsmOutputSwitches) then
-    dispose(AsmOutputSwitches,Done);
-  New(AsmOutputSwitches,InitSelect('A'));
-  with AsmOutputSwitches^ do
+  sw:=SwitchesMode;
+  t:='';
+  if assigned(TargetSwitches) then
+    t:=TargetSwitches^.ItemName(TargetSwitches^.GetCurrSel);
+  sy:=target_info.system;
+  for zt:=low(tsystem) to high(tsystem) do
+    if assigned(targetinfos[zt]) then
+    begin
+      if targetinfos[zt]^.name = t then
+      begin
+        sy:=zt;
+        break;
+      end;
+    end;
+  L:='';
+  if assigned(AsmOutputSwitches[sw]) then
+  begin
+    L:=AsmOutputSwitches[sw]^.GetCurrSelParam;
+    dispose(AsmOutputSwitches[sw],Done);
+  end;
+  New(AsmOutputSwitches[sw],InitSelect('A'));
+  with AsmOutputSwitches[sw]^ do
    begin
-
      AddDefaultSelect(opt_usedefaultas);
      for ta:=low(tasm) to high(tasm) do
        if assigned(asminfos[ta]) and
-         ((target_info.system in asminfos[ta]^.supported_targets) or
+         ((sy in asminfos[ta]^.supported_targets) or
          (system_any in asminfos[ta]^.supported_targets)) then
          begin
            st:='Asm '+asminfos[ta]^.idtxt;
            if asminfos[ta]^.idtxt='AS' then
              st:=opt_usegnuas;
-{$ifdef I386}
+{$if defined(I386) or defined(x86_64)}
            if asminfos[ta]^.idtxt='NASMCOFF' then
              st:=opt_usenasmcoff;
            if asminfos[ta]^.idtxt='NASMOBJ' then
@@ -1147,6 +1210,7 @@ begin
            AddSelectItem(st,asminfos[ta]^.idtxt,idNone);
          end;
    end;
+   AsmOutputSwitches[sw]^.SetCurrSelParam(L);
 end;
 
 {*****************************************************************************
@@ -1182,11 +1246,14 @@ begin
   New(CompilerModeSwitches,InitSelect('M'));
   with CompilerModeSwitches^ do
     begin
-       AddSelectItem(opt_mode_freepascal,'fpc',idNone);
-       AddSelectItem(opt_mode_objectpascal,'objfpc',idNone);
-       AddSelectItem(opt_mode_turbopascal,'tp',idNone);
-       AddSelectItem(opt_mode_delphi,'delphi',idNone);
-       AddSelectItem(opt_mode_macpascal,'macpas',idNone);
+       AddSelectItem(opt_mode_freepascal,'fpc',TParamID(moFpc));
+       AddSelectItem(opt_mode_objectpascal,'objfpc',TParamID(moObjFpc));
+       AddSelectItem(opt_mode_turbopascal,'tp',TParamID(moTp));
+       AddSelectItem(opt_mode_delphi,'delphi',TParamID(moDelphi));
+       AddSelectItem(opt_mode_delphiunicode,'delphiunicode',TParamID(moDelphiUnicode));
+       AddSelectItem(opt_mode_macpascal,'macpas',TParamID(moMacPas));
+       AddSelectItem(opt_mode_iso,'iso',TParamID(moIso));
+       AddSelectItem(opt_mode_extendedpascal,'extendedpascal',TParamID(moExtendedPascal));
 {      GNU Pascal mode doesn't do much, better disable it
        AddSelectItem(opt_mode_gnupascal,'gpc',idNone);}
     end;
@@ -1216,18 +1283,15 @@ begin
   with OptimizationSwitches^ do
    begin
      AddBooleanItem(opt_generatesmallercode,'s',idNone);
-{$ifdef I386}
-     AddBooleanItem(opt_useregistervariables,'oregvar',idNone);
-     AddBooleanItem(opt_uncertainoptimizations,'ouncertain',idNone);
-     AddBooleanItem(opt_level1optimizations,'1',idNone);
-     AddBooleanItem(opt_level2optimizations,'2',idNone);
-     AddBooleanItem(opt_level3optimizations,'3',idNone);
-{$else not I386}
- {$ifdef m68k}
-     AddBooleanItem(opt_level1optimizations,'a',idNone);
-     AddBooleanItem(opt_useregistervariables,'x',idNone);
- {$endif m68k}
-{$endif I386}
+   end;
+  New(OptimizationLevelSwitches,InitSelect('O'));
+  with OptimizationLevelSwitches^ do
+   begin
+     AddSelectItem(opt_disableoptimizations,'-',idNone);
+     AddSelectItem(opt_level1optimizations,'1',idNone);
+     AddSelectItem(opt_level2optimizations,'2',idNone);
+     AddSelectItem(opt_level3optimizations,'3',idNone);
+     AddSelectItem(opt_level4optimizations,'4',idNone);
    end;
   New(ProcessorOptimizationSwitches,InitSelect('O'));
   with ProcessorOptimizationSwitches^ do
@@ -1304,14 +1368,12 @@ begin
   New(AsmReaderSwitches,InitSelect('R'));
   with AsmReaderSwitches^ do
    begin
-{$ifdef I386}
      AddSelectItem(opt_defaultassembler,'default',idNone);
-{     AddSelectItem(opt_directassembler,'direct',idAsmDirect);}
+{$if defined(I386) or defined(x86_64)}
      AddSelectItem(opt_attassembler,'att',idAsmATT);
      AddSelectItem(opt_intelassembler,'intel',idAsmIntel);
 {$endif I386}
 {$ifdef M68K}
-     AddSelectItem(opt_defaultassembler,'default',idNone);
      //AddSelectItem(opt_standardassembler,'standard',idAsmStandard);
      AddSelectItem(opt_motassembler,'motorola',idAsmMot);
 {$endif M68K}
@@ -1395,19 +1457,53 @@ begin
      AddLongIntItem('~S~tack size','s');
      AddLongIntItem('Local ~h~eap size','h');
    end;}
-  SwitchesPath:=LocateFile(SwitchesName);
+  SwitchesPath:=LocateFile(SwitchesFileName);
   if SwitchesPath='' then
-    SwitchesPath:=SwitchesName;
+    SwitchesPath:=SwitchesFileName;
   SwitchesPath:=FExpand(SwitchesPath);
+end;
+
+function GuessDefaultUnitSearchPath: DirStr;
+var UnitPath : DirStr;
+    ver : String;
+    iPos : sw_integer;
+begin
+  ver:=version_string;
+  UnitPath:=FExpand(DirOf(system.paramstr(0))+'../lib/fpc/'+ver+'/units'); { Unix / Linux }
+  If Not ExistsDir(UnitPath) Then
+  begin
+    UnitPath:=FExpand(DirOf(system.paramstr(0))+'../../units'); { Windows / Dos }
+    If Not ExistsDir(UnitPath) Then
+    begin
+      GuessDefaultUnitSearchPath:=''; { guess was not lucky }
+      exit;
+    end;
+  end;
+  iPos:= Pos(ver,UnitPath);
+  if iPos>1 then
+    if (UnitPath[iPos-1] in ['\','/',':']) and (UnitPath[iPos+length(ver)] in ['\','/',':']) then
+      UnitPath:=copy(UnitPath,1,iPos-1)+'$fpcversion'+copy(UnitPath,iPos+length(ver),length(UnitPath));
+  GuessDefaultUnitSearchPath:=UnitPath+DirectorySeparator+'$fpctarget'+DirectorySeparator+'*';
+end;
+
+procedure AddUnitSearchPath(S:String);
+var c:PunsortedStringCollection;
+   i : sw_integer;
+begin
+  i:=0; { Unit search path }
+  c:=directorySwitches^.getMultiStringItem(i);
+  if s<>'' then
+    c^.insert(newstr(s));
 end;
 
 procedure SetDefaultSwitches;
 var
    i,OldSwitchesMode : TSwitchMode;
-
+   UnitPath : DirStr;
 begin
   { setup some useful defaults }
   OldSwitchesMode:=SwitchesMode;
+  UnitPath:=GuessDefaultUnitSearchPath;
   for i:=low(TSwitchMode) to high(TSwitchMode) do
     begin
        SwitchesMode:=i;
@@ -1435,6 +1531,8 @@ begin
        case i of
           om_debug:
             begin
+               {Level 1 optimizations (debugger friendly)}
+               OptimizationLevelSwitches^.SetBooleanItem(1,true);
                { debugging info on }
                DebugInfoSwitches^.SetCurrSel(1);
                { range checking }
@@ -1447,47 +1545,53 @@ begin
                CodegenSwitches^.SetBooleanItem(4,true);
                { assertions on }
                SyntaxSwitches^.SetBooleanItem(4,true);
+               {Default unit search path}
+               AddUnitSearchPath(UnitPath);
             end;
           om_normal:
             begin
                {Register variables.}
-               OptimizationSwitches^.SetBooleanItem(1,true);
-               {Level 1 optimizations.}
-               OptimizationSwitches^.SetBooleanItem(3,true);
+               //OptimizationSwitches^.SetBooleanItem(1,true);
+               {Level 2 optimizations.}
+               OptimizationLevelSwitches^.SetBooleanItem(2,true);
+               {Default unit search path}
+               AddUnitSearchPath(UnitPath);
             end;
           om_release:
             begin
                {Register variables.}
-               OptimizationSwitches^.SetBooleanItem(1,true);
-               {Level 2 optimizations.}
-               OptimizationSwitches^.SetBooleanItem(4,true);
+               //OptimizationSwitches^.SetBooleanItem(1,true);
+               {Level 4 optimizations.}
+               OptimizationLevelSwitches^.SetBooleanItem(4,true);
                {Smart linking.}
                LibLinkerSwitches^.SetCurrSel(3);
                CodegenSwitches^.SetBooleanItem(6,true);
                {Strip debug info}
                OtherLinkerSwitches^.SetBooleanItem(0,true);
+               {Default unit search path}
+               AddUnitSearchPath(UnitPath);
             end;
        end;
-       { set appriopriate default target }
+       { set appropriate default target }
        TargetSwitches^.SetCurrSelParam(target_info.shortname);
     end;
   SwitchesMode:=OldSwitchesMode;
 end;
 
 procedure DoneSwitches;
-
+var sw : TSwitchMode;
 begin
   dispose(SyntaxSwitches,Done);
   dispose(CompilerModeSwitches,Done);
   dispose(VerboseSwitches,Done);
   dispose(CodegenSwitches,Done);
   dispose(OptimizationSwitches,Done);
+  dispose(OptimizationLevelSwitches,Done);
   dispose(ProcessorOptimizationSwitches,Done);
   dispose(ProcessorCodeGenerationSwitches,Done);
   dispose(BrowserSwitches,Done);
   dispose(TargetSwitches,Done);
   dispose(AsmReaderSwitches,Done);
-  dispose(AsmOutputSwitches,Done);
   dispose(AsmInfoSwitches,Done);
   dispose(ConditionalSwitches,Done);
   dispose(MemorySwitches,Done);
@@ -1498,6 +1602,9 @@ begin
   dispose(LinkAfterSwitches,Done);
   dispose(OtherLinkerSwitches,Done);
   dispose(ProfileInfoSwitches,Done);
+  for sw:=low(TSwitchMode) to high(TSwitchMode) do
+    if assigned(AsmOutputSwitches[sw]) then
+      dispose(AsmOutputSwitches[sw],Done);
 end;
 
 procedure GetCompilerOptionLines(C: PUnsortedStringCollection);
@@ -1574,7 +1681,7 @@ begin
   EnumSwitches(ProcessorCodeGenerationSwitches);
   EnumSwitches(AsmReaderSwitches);
   EnumSwitches(AsmInfoSwitches);
-  EnumSwitches(AsmOutputSwitches);
+  EnumSwitches(AsmOutputSwitches[SM]);
   EnumSwitches(TargetSwitches);
   EnumSwitches(ConditionalSwitches);
   EnumSwitches(MemorySwitches);

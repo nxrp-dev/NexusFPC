@@ -42,7 +42,9 @@
 
 // $Id: JwaMsiQuery.pas,v 1.11 2007/09/05 11:58:51 dezipaitor Exp $
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaMsiQuery;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -56,8 +58,13 @@ unit JwaMsiQuery;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Msi, WinApi.Jedi.Winbase, WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaMsi, JwaWinBase, JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 {$IFNDEF JWA_IMPLEMENTATIONSECTION}
@@ -397,7 +404,7 @@ function MsiViewGetError(hView: MSIHANDLE; szColumnNameBuffer: LPTSTR;
   var pcchBuf: DWORD): MSIDBERROR; stdcall;
 {$EXTERNALSYM MsiViewGetError}
 
-// Exectute the view query, supplying parameters as required
+// Execute the view query, supplying parameters as required
 // Returns ERROR_SUCCESS, ERROR_INVALID_HANDLE, ERROR_INVALID_HANDLE_STATE, ERROR_GEN_FAILURE
 // Execution of this function sets the error record, accessible via MsiGetLastErrorRecord
 
@@ -466,7 +473,7 @@ function MsiDatabaseIsTablePersistent(hDatabase: MSIHANDLE; szTableName: LPCTSTR
 // Integer Property IDs:    1, 14, 15, 16, 19
 // DateTime Property IDs:   10, 11, 12, 13
 // Text Property IDs:       2, 3, 4, 5, 6, 7, 8, 9, 18
-// Unsupported Propery IDs: 0 (PID_DICTIONARY), 17 (PID_THUMBNAIL)
+// Unsupported Property IDs: 0 (PID_DICTIONARY), 17 (PID_THUMBNAIL)
 
 // Obtain a handle for the _SummaryInformation stream for an MSI database
 // Execution of this function sets the error record, accessible via MsiGetLastErrorRecord
@@ -524,7 +531,7 @@ function MsiSummaryInfoPersist(hSummaryInfo: MSIHANDLE): UINT; stdcall;
 // Installer database management functions - not used by custom actions
 // --------------------------------------------------------------------------
 
-// Open an installer database, specifying the persistance mode, which is a pointer.
+// Open an installer database, specifying the persistence mode, which is a pointer.
 // Predefined persist values are reserved pointer values, requiring pointer arithmetic.
 // Execution of this function sets the error record, accessible via MsiGetLastErrorRecord
 
@@ -719,7 +726,7 @@ function MsiRecordSetStream(hRecord: MSIHANDLE; iField: UINT; szFilePath: LPCTST
 // The number of bytes transferred is returned through the argument
 // If no more bytes are available, ERROR_SUCCESS is still returned
 
-function MsiRecordReadStream(hRecord: MSIHANDLE; iField: UINT; szDataBuf: PChar;
+function MsiRecordReadStream(hRecord: MSIHANDLE; iField: UINT; szDataBuf: PAnsiChar;
   var pcbDataBuf: DWORD): UINT; stdcall;
 {$EXTERNALSYM MsiRecordReadStream}
 
@@ -816,7 +823,7 @@ function MsiDoActionW(hInstall: MSIHANDLE; szAction: LPCWSTR): UINT; stdcall;
 function MsiDoAction(hInstall: MSIHANDLE; szAction: LPCTSTR): UINT; stdcall;
 {$EXTERNALSYM MsiDoAction}
 
-// Execute another action sequence, as descibed in the specified table
+// Execute another action sequence, as described in the specified table
 // Returns the same error codes as MsiDoAction
 
 function MsiSequenceA(hInstall: MSIHANDLE; szTable: LPCSTR; iSequenceMode: Integer): UINT; stdcall;
@@ -1011,7 +1018,7 @@ function MsiSetTargetPath(hInstall: MSIHANDLE; szFolder: LPCTSTR;
   szFolderPath: LPCTSTR): UINT; stdcall;
 {$EXTERNALSYM MsiSetTargetPath}
 
-// Check to see if sufficent disk space is present for the current installation
+// Check to see if sufficient disk space is present for the current installation
 // Returns ERROR_SUCCESS, ERROR_DISK_FULL, ERROR_INVALID_HANDLE_STATE, or ERROR_INVALID_HANDLE
 
 function MsiVerifyDiskSpace(hInstall: MSIHANDLE): UINT; stdcall;

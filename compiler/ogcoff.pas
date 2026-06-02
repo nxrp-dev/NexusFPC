@@ -40,6 +40,9 @@ interface
        PE_DATADIR_ENTRIES = 16;
 
     type
+
+       TObjSymbolArray = array of TObjSymbol;
+       TObjSectionArray = array of TObjSection;
        tcoffpedatadir = packed record
          vaddr : longword;
          size  : longword;
@@ -175,13 +178,13 @@ interface
        TCoffObjInput = class(tObjInput)
        private
          FCoffsyms : tdynamicarray;
-         FCoffStrs : PChar;
+         FCoffStrs : TAnsiCharDynArray;
          FCoffStrSize: longword;
          { Convert symidx -> TObjSymbol }
-         FSymTbl   : ^TObjSymbolArray;
+         FSymTbl   : TObjSymbolArray;
          { Convert secidx -> TObjSection }
          FSecCount : Longint;
-         FSecTbl   : ^TObjSectionArray;
+         FSecTbl   : TObjSectionArray;
          win32     : boolean;
          bigobj    : boolean;
          function  GetSection(secidx:longint):TObjSection;
@@ -252,9 +255,6 @@ interface
          procedure MemPos_ExeSection(const aname:string);override;
        end;
 
-       TObjSymbolArray = array[0..high(word)] of TObjSymbol;
-       TObjSectionArray = array[0..high(smallint)] of TObjSection;
-
        TDJCoffAssembler = class(tinternalassembler)
          constructor create(info: pasminfo; smart:boolean);override;
        end;
@@ -295,6 +295,9 @@ interface
        COFF_BIG_OBJ_VERSION = 2;
 
     function ReadDLLImports(const dllname:string;readdllproc:Treaddllproc):boolean;
+    procedure MaybeSwap(var v : tcoffsechdr);
+    procedure MaybeSwap(var v : tcoffheader);
+    procedure MaybeSwap(var v : tcoffpeoptheader);
 
 implementation
 
@@ -566,11 +569,368 @@ implementation
 
        { This is defined in rtl/win/sysos.inc source }
        tlsdirectory=packed record
+         data_start, data_end : globtype.PUInt;
+         index_pointer, callbacks_pointer : globtype.PUInt;
+         zero_fill_size : dword;
+         flags : dword;
+       end;
+
+       TPECoffExpDir=packed record
+         flag,
+         stamp      : cardinal;
+         Major,
+         Minor      : word;
+         Name,
+         Base,
+         NumFuncs,
+         NumNames,
+         AddrFuncs,
+         AddrNames,
+         AddrOrds   : cardinal;
+       end;
+       { MaybeSwap procedures
+       tcoffpedatadir = packed record
+         vaddr : longword;
+         size  : longword;
+       end; }
+   procedure MaybeSwap(var v : tcoffpedatadir);
+      begin
+        if source_info.endian<>target_info.endian then
+          begin
+            v.vaddr:=SwapEndian(v.vaddr);
+            v.size:=SwapEndian(v.size);
+          end;
+      end;
+ (*
+       tcoffheader = packed record
+         mach   : word;
+         nsects : word;
+         time   : longword;
+         sympos : longword;
+         syms   : longword;
+         opthdr : word;
+         flag   : word;
+       end; *)
+   procedure MaybeSwap(var v : tcoffheader);
+      begin
+        if source_info.endian<>target_info.endian then
+          begin
+            v.mach:=SwapEndian(v.mach);
+            v.nsects:=SwapEndian(v.nsects);
+            v.time:=SwapEndian(v.time);
+            v.sympos:=SwapEndian(v.sympos);
+            v.syms:=SwapEndian(v.syms);
+            v.opthdr:=SwapEndian(v.opthdr);
+            v.flag:=SwapEndian(v.flag);
+          end;
+      end;
+(*
+       tcoffbigobjheader = packed record
+         Sig1 : word;
+         Sig2 : word;
+         Version : word;
+         Machine : word;
+         TimeDateStame : longword;
+         UUID : array[0..15] of byte;
+         unused : array[0..3] of longword;
+         NumberOfSections : longword;
+         PointerToSymbolTable : longword;
+         NumberOfSymbols : longword;
+       end; *)
+   procedure MaybeSwap(var v : tcoffbigobjheader);
+      begin
+        if source_info.endian<>target_info.endian then
+          begin
+            v.Sig1:=SwapEndian(v.Sig1);
+            v.Sig2:=SwapEndian(v.Sig2);
+            v.Version:=SwapEndian(v.Version);
+            v.Machine:=SwapEndian(v.Machine);
+            v.TimeDateStame:=SwapEndian(v.TimeDateStame);
+	    { UUID byte array no swap needed }
+	    { Assume unused fields are indeed really unused }
+            v.NumberOfSections:=SwapEndian(v.NumberOfSections);
+            v.PointerToSymbolTable:=SwapEndian(v.PointerToSymbolTable);
+            v.NumberOfSymbols:=SwapEndian(v.NumberOfSymbols);
+          end;
+      end;
+
+(*       tcoffpeoptheader = packed record
+         Magic : word;
+         MajorLinkerVersion : byte;
+         MinorLinkerVersion : byte;
+         tsize : longword;
+         dsize : longword;
+         bsize : longword;
+         entry : longword;
+         text_start : longword;
+{$ifndef cpu64bitaddr}
+         data_start : longword;
+{$endif cpu64bitaddr}
+         ImageBase : aword;
+         SectionAlignment : longword;
+         FileAlignment : longword;
+         MajorOperatingSystemVersion : word;
+         MinorOperatingSystemVersion : word;
+         MajorImageVersion : word;
+         MinorImageVersion : word;
+         MajorSubsystemVersion : word;
+         MinorSubsystemVersion : word;
+         Win32Version : longword;
+         SizeOfImage : longword;
+         SizeOfHeaders : longword;
+         CheckSum : longword;
+         Subsystem : word;
+         DllCharacteristics : word;
+         SizeOfStackReserve : aword;
+         SizeOfStackCommit : aword;
+         SizeOfHeapReserve : aword;
+         SizeOfHeapCommit : aword;
+         LoaderFlags : longword;          { This field is obsolete }
+         NumberOfRvaAndSizes : longword;
+         DataDirectory : array[0..PE_DATADIR_ENTRIES-1] of tcoffpedatadir;
+       end; *)
+    procedure MaybeSwap(var v : tcoffpeoptheader);
+      var
+        i : longint;
+      begin
+        if source_info.endian<>target_info.endian then
+          begin
+            v.Magic:=SwapEndian(v.Magic);
+            v.tsize:=SwapEndian(v.tsize);
+            v.dsize:=SwapEndian(v.dsize);
+            v.bsize:=SwapEndian(v.bsize);
+            v.entry:=SwapEndian(v.entry);
+            v.text_start:=SwapEndian(v.text_start);
+{$ifndef cpu64bitaddr}
+            v.data_start:=SwapEndian(v.data_start);
+{$endif cpu64bitaddr}
+            v.ImageBase:=SwapEndian(v.ImageBase);
+            v.SectionAlignment:=SwapEndian(v.SectionAlignment);
+            v.FileAlignment:=SwapEndian(v.FileAlignment);
+            v.MajorOperatingSystemVersion:=SwapEndian(v.MajorOperatingSystemVersion);
+            v.MinorOperatingSystemVersion:=SwapEndian(v.MinorOperatingSystemVersion);
+            v.MajorImageVersion:=SwapEndian(v.MajorImageVersion);
+            v.MinorImageVersion:=SwapEndian(v.MinorImageVersion);
+            v.MajorSubsystemVersion:=SwapEndian(v.MajorSubsystemVersion);
+            v.MinorSubsystemVersion:=SwapEndian(v.MinorSubsystemVersion);
+            v.Win32Version:=SwapEndian(v.Win32Version);
+            v.SizeOfImage:=SwapEndian(v.SizeOfImage);
+            v.SizeOfHeaders:=SwapEndian(v.SizeOfHeaders);
+            v.CheckSum:=SwapEndian(v.CheckSum);
+            v.Subsystem:=SwapEndian(v.Subsystem);
+            v.DllCharacteristics:=SwapEndian(v.DllCharacteristics);
+            v.SizeOfStackReserve:=SwapEndian(v.SizeOfStackReserve);
+            v.SizeOfStackCommit:=SwapEndian(v.SizeOfStackCommit);
+            v.SizeOfHeapReserve:=SwapEndian(v.SizeOfHeapReserve);
+            v.SizeOfHeapCommit:=SwapEndian(v.SizeOfHeapCommit);
+            v.LoaderFlags:=SwapEndian(v.LoaderFlags);
+            v.NumberOfRvaAndSizes:=SwapEndian(v.NumberOfRvaAndSizes);
+	    for i:=0 to PE_DATADIR_ENTRIES-1 do
+              MaybeSwap(v.DataDirectory[i]);
+          end;
+      end;
+
+(*
+       tcoffsechdr = packed record
+         name     : array[0..7] of char;
+         vsize    : longword;
+         rvaofs   : longword;
+         datasize : longword;
+         datapos  : longword;
+         relocpos : longword;
+         lineno1  : longword;
+         nrelocs  : word;
+         lineno2  : word;
+         flags    : longword;
+       end; *)
+    procedure MaybeSwap(var v : tcoffsechdr);
+      begin
+        if source_info.endian<>target_info.endian then
+          begin
+            v.vsize:=SwapEndian(v.vsize);
+            v.rvaofs:=SwapEndian(v.rvaofs);
+            v.datasize:=SwapEndian(v.datasize);
+            v.datapos:=SwapEndian(v.datapos);
+            v.relocpos:=SwapEndian(v.relocpos);
+            v.lineno1:=SwapEndian(v.lineno1);
+            v.nrelocs:=SwapEndian(v.nrelocs);
+            v.lineno2:=SwapEndian(v.lineno2);
+            v.flags:=SwapEndian(v.flags);
+          end;
+      end;
+(*
+      coffdjoptheader=packed record
+         magic  : word;
+         vstamp : word;
+         tsize  : longint;
+         dsize  : longint;
+         bsize  : longint;
+         entry  : longint;
+         text_start : longint;
+         data_start : longint;
+       end; *)
+    procedure MaybeSwap(var v : coffdjoptheader);
+      begin
+        if source_info.endian<>target_info.endian then
+          begin
+            v.magic:=SwapEndian(v.magic);
+            v.vstamp:=SwapEndian(v.vstamp);
+            v.tsize:=SwapEndian(v.tsize);
+            v.dsize:=SwapEndian(v.dsize);
+            v.bsize:=SwapEndian(v.bsize);
+            v.entry:=SwapEndian(v.entry);
+            v.text_start:=SwapEndian(v.text_start);
+            v.data_start:=SwapEndian(v.data_start);
+          end;
+      end;
+(*
+       coffsectionrec=packed record
+         len     : longword;
+         nrelocs : word;
+         nlines  : word;
+         checksum: longword;
+         assoc   : word;
+         select  : byte;
+         empty   : array[0..2] of char;
+       end; *)
+    procedure MaybeSwap(var v : coffsectionrec);
+      begin
+        if source_info.endian<>target_info.endian then
+          begin
+            v.len:=SwapEndian(v.len);
+            v.nrelocs:=SwapEndian(v.nrelocs);
+            v.nlines:=SwapEndian(v.nlines);
+            v.checksum:=SwapEndian(v.checksum);
+            v.assoc:=SwapEndian(v.assoc);
+          end;
+      end;
+(*
+       coffreloc=packed record
+         address  : longword;
+         sym      : longword;
+         reloctype : word;
+       end; *)
+    procedure MaybeSwap(var v : coffreloc);
+      begin
+        if source_info.endian<>target_info.endian then
+          begin
+            v.address:=SwapEndian(v.address);
+            v.sym:=SwapEndian(v.sym);
+            v.reloctype:=SwapEndian(v.reloctype);
+          end;
+      end;
+(*
+       strtableoffset=packed record
+         Zeroes : longword;
+         Offset : longword;
+       end;*)
+    procedure MaybeSwap(var v : strtableoffset);
+      begin
+        if source_info.endian<>target_info.endian then
+          begin
+            v.Zeroes:=SwapEndian(v.Zeroes);
+            v.Offset:=SwapEndian(v.Offset);
+          end;
+      end;
+(*
+       coffsymbol=packed record
+         name    : array[0..3] of char; { real is [0..7], which overlaps the strpos ! }
+         strpos  : longword;
+         value   : longword;
+         section : smallint;
+         empty   : word;                { actually type, $20: function, 0: not a function }
+         typ     : byte;
+         aux     : byte;
+       end; *)
+    procedure MaybeSwap(var v : coffsymbol);
+      begin
+        if source_info.endian<>target_info.endian then
+          begin
+            if v.name[0]=#0 then
+              v.strpos:=SwapEndian(v.strpos);
+            v.value:=SwapEndian(v.value);
+            v.section:=SwapEndian(v.section);
+            v.empty:=SwapEndian(v.empty);
+          end;
+      end;
+(*
+       coffbigobjsymbol=packed record
+         Name               : record
+                                case boolean of
+                                  True: (ShortName : array[0..7] of char);
+                                  False: (Offset : strtableoffset)
+                              end;
+         Value              : longword;
+         SectionNumber      : longword;
+         _Type              : word;
+         StorageClass       : byte;
+         NumberOfAuxSymbols : byte;
+       end; *)
+
+    procedure MaybeSwap(var v : coffbigobjsymbol);
+      begin
+        if source_info.endian<>target_info.endian then
+          begin
+            if (true) then
+              MaybeSwap(v.Name.Offset);
+            v.Value:=SwapEndian(v.Value);
+            v.SectionNumber:=SwapEndian(v.SectionNumber);
+            v._Type:=SwapEndian(v._Type);
+          end;
+      end;
+(*
+       { This is defined in rtl/win/sysos.inc source }
+       tlsdirectory=packed record
          data_start, data_end : PUInt;
          index_pointer, callbacks_pointer : PUInt;
          zero_fill_size : dword;
          flags : dword;
        end;
+     *)
+    procedure MaybeSwap(var v : tlsdirectory);
+      begin
+        if source_info.endian<>target_info.endian then
+          begin
+            v.data_start:=SwapEndian(v.data_start);
+            v.data_end:=SwapEndian(v.data_end);
+            v.index_pointer:=SwapEndian(v.index_pointer);
+            v.callbacks_pointer:=SwapEndian(v.callbacks_pointer);
+            v.zero_fill_size:=SwapEndian(v.zero_fill_size);
+            v.flags:=SwapEndian(v.flags);
+          end;
+      end;
+(*
+      TPECoffExpDir=packed record
+         flag,
+         stamp      : cardinal;
+         Major,
+         Minor      : word;
+         Name,
+         Base,
+         NumFuncs,
+         NumNames,
+         AddrFuncs,
+         AddrNames,
+         AddrOrds   : cardinal;
+       end;
+     *)
+    procedure MaybeSwap(var v : TPECoffExpDir);
+      begin
+        if source_info.endian<>target_info.endian then
+          begin
+            v.flag:=SwapEndian(v.flag);
+            v.stamp:=SwapEndian(v.stamp);
+            v.Major:=SwapEndian(v.Major);
+            v.Minor:=SwapEndian(v.Minor);
+            v.Name:=SwapEndian(v.Name);
+            v.Base:=SwapEndian(v.Base);
+            v.NumFuncs:=SwapEndian(v.NumFuncs);
+            v.NumNames:=SwapEndian(v.NumNames);
+            v.AddrFuncs:=SwapEndian(v.AddrFuncs);
+            v.AddrNames:=SwapEndian(v.AddrNames);
+            v.AddrOrds:=SwapEndian(v.AddrOrds);
+          end;
+     end;
 
      const
        SymbolMaxGrow = 200*sizeof(coffsymbol);
@@ -587,7 +947,7 @@ implementation
           '.stab','.stabstr',
           '.idata$2','.idata$4','.idata$5','.idata$6','.idata$7','.edata',
           '.eh_frame',
-          '.debug_frame','.debug_info','.debug_line','.debug_abbrev','.debug_aranges','.debug_ranges',
+          '.debug_frame','.debug_info','.debug_line','.debug_abbrev','.debug_aranges','.debug_ranges','.debug_loc','.debug_loclists',
           '.fpc',
           '',
           '.init',
@@ -629,7 +989,8 @@ implementation
           '.stack',
           '.heap',
           '.gcc_except_table',
-          '.ARM.attributes'
+          '.ARM.attributes',
+          '.note'
         );
 
 const go32v2stub : array[0..2047] of byte=(
@@ -1242,7 +1603,7 @@ const pemagic : array[0..3] of byte = (
         sep     : string[3];
         secname : string;
       begin
-        { section type user gives the user full controll on the section name }
+        { section type user gives the user full control on the section name }
         if atype=sec_user then
           result:=aname
         else
@@ -1282,7 +1643,18 @@ const pemagic : array[0..3] of byte = (
 
 
     procedure TCoffObjData.writereloc(data:aint;len:aword;p:TObjSymbol;reloctype:TObjRelocationType);
+      type
+        multi = record
+          case integer of
+          0 : (ba : array[0..sizeof(aint)-1] of byte);
+          1 : (b : byte);
+          2 : (w : word);
+          4 : (d : dword);
+          8 : (q : qword);
+        end;
+
       var
+        ba : multi;
         curraddr,
         symaddr : aword;
       begin
@@ -1366,7 +1738,31 @@ const pemagic : array[0..3] of byte = (
             if reloctype=RELOC_RVA then
               internalerror(200603033);
           end;
-        CurrObjSec.write(data,len);
+        if target_info.endian<>source_info.endian then
+          begin
+            ba.q:=0;
+            if (len<=sizeof(data)) then
+              case len of
+                1 : ba.b:=byte(data);
+                2 : begin
+                      ba.w:=word(data);
+                      ba.w:=swapendian(ba.w);
+                    end;
+                4 : begin
+                      ba.d:=dword(data);
+                      ba.d:=swapendian(ba.d);
+                    end;
+                8 : begin
+                      ba.q:=qword(data);
+                      ba.q:=swapendian(ba.q);
+                    end;
+              else
+                internalerror(2024012501);
+              end;
+            CurrObjSec.write(ba,len);
+          end
+        else
+          CurrObjSec.write(data,len);
       end;
 
 
@@ -1404,7 +1800,9 @@ const pemagic : array[0..3] of byte = (
     destructor TCoffObjOutput.destroy;
       begin
         FCoffSyms.free;
+        FCoffSyms := nil;
         FCoffStrs.free;
+        FCoffStrs := nil;
         inherited destroy;
       end;
 
@@ -1437,6 +1835,7 @@ const pemagic : array[0..3] of byte = (
             bosym.StorageClass:=typ;
             bosym.NumberOfAuxSymbols:=aux;
             inc(symidx);
+	    MaybeSwap(bosym);
             FCoffSyms.write(bosym,sizeof(bosym));
           end
         else
@@ -1453,6 +1852,7 @@ const pemagic : array[0..3] of byte = (
             sym.typ:=typ;
             sym.aux:=aux;
             inc(symidx);
+	    MaybeSwap(sym);
             FCoffSyms.write(sym,sizeof(sym));
           end;
       end;
@@ -1482,6 +1882,7 @@ const pemagic : array[0..3] of byte = (
             else
               secrec.nrelocs:=65535;
             inc(symidx);
+	    MaybeSwap(secrec);
             FCoffSyms.write(secrec,sizeof(secrec));
             { aux recs have the same size as symbols, so we need to add two
               Byte of padding in case of a Big Obj Coff }
@@ -1503,6 +1904,7 @@ const pemagic : array[0..3] of byte = (
             rel.address:=TObjSection(p).ObjRelocations.Count+1;
             rel.sym:=0;
             rel.reloctype:=0;
+	    MaybeSwap(rel);
             FWriter.Write(rel,sizeof(rel));
           end;
         for i:=0 to TObjSection(p).ObjRelocations.Count-1 do
@@ -1614,6 +2016,7 @@ const pemagic : array[0..3] of byte = (
               else
                 internalerror(200905071);
             end;
+	    MaybeSwap(rel);
             FWriter.write(rel,sizeof(rel));
           end;
       end;
@@ -1745,6 +2148,7 @@ const pemagic : array[0..3] of byte = (
               end
             else
               sechdr.flags:=djencodesechdrflags(secoptions);
+            MaybeSwap(sechdr);
             FWriter.write(sechdr,sizeof(sechdr));
           end;
       end;
@@ -1794,6 +2198,7 @@ const pemagic : array[0..3] of byte = (
                boheader.NumberOfSymbols:=longword(symidx);
                boheader.PointerToSymbolTable:=sympos;
                Move(COFF_BIG_OBJ_MAGIC,boheader.UUID,length(boheader.UUID));
+	       MaybeSwap(boheader);
                FWriter.write(boheader,sizeof(boheader));
              end
            else
@@ -1814,6 +2219,7 @@ const pemagic : array[0..3] of byte = (
                  end
                else
                  header.flag:=COFF_FLAG_AR32WR or COFF_FLAG_NOLINES or COFF_FLAG_NOLSYMS;
+	       MaybeSwap(header);
                FWriter.write(header,sizeof(header));
              end;
            { Section headers }
@@ -1828,6 +2234,8 @@ const pemagic : array[0..3] of byte = (
            FWriter.writearray(FCoffSyms);
            { Strings }
            i:=FCoffStrs.size+4;
+           if source_info.endian<>target_info.endian then
+             i:=SwapEndian(i);
            FWriter.write(i,4);
            FWriter.writearray(FCoffStrs);
          end;
@@ -1868,12 +2276,10 @@ const pemagic : array[0..3] of byte = (
     destructor TCoffObjInput.destroy;
       begin
         FCoffSyms.free;
-        if assigned(FCoffStrs) then
-          freemem(FCoffStrs);
-        if assigned(FSymTbl) then
-          freemem(FSymTbl);
-        if assigned(FSecTbl) then
-          freemem(FSecTbl);
+        FCoffSyms := nil;
+        FCoffStrs:=nil;
+        FSymTbl:=nil;
+        FSecTbl:=nil;
         inherited destroy;
       end;
 
@@ -1886,7 +2292,7 @@ const pemagic : array[0..3] of byte = (
             InputError('Failed reading coff file, invalid section index');
             exit;
           end;
-        result:=FSecTbl^[secidx];
+        result:=FSecTbl[secidx];
       end;
 
 
@@ -1910,6 +2316,7 @@ const pemagic : array[0..3] of byte = (
             { If number of relocations exceeds 65535, it is stored in address field
               of the first record, and includes this first fake relocation. }
             FReader.read(rel,sizeof(rel));
+	    MaybeSwap(rel);
             s.coffrelocs:=rel.address-1;
             if s.coffrelocs<=65535 then
               InternalError(2013012503);
@@ -1917,6 +2324,7 @@ const pemagic : array[0..3] of byte = (
         for i:=1 to s.coffrelocs do
          begin
            FReader.read(rel,sizeof(rel));
+	   MaybeSwap(rel);
            case rel.reloctype of
 {$ifdef arm}
              IMAGE_REL_ARM_ABSOLUTE:
@@ -2004,7 +2412,7 @@ const pemagic : array[0..3] of byte = (
              end;
            end;
 
-           p:=FSymTbl^[rel.sym];
+           p:=FSymTbl[rel.sym];
            if assigned(p) then
              s.addsymreloc(rel.address-s.mempos,p,rel_type)
            else
@@ -2030,7 +2438,8 @@ const pemagic : array[0..3] of byte = (
         strname   : string;
         auxrec    : array[0..sizeof(coffsymbol)-1] of byte;
         boauxrec  : array[0..sizeof(coffbigobjsymbol)-1] of byte;
-        secrec    : pcoffsectionrec;
+        psecrec   : pcoffsectionrec;
+        secrec    : coffsectionrec;
         objsec    : TObjSection;
         secidx    : longint;
         symvalue  : longword;
@@ -2052,7 +2461,7 @@ const pemagic : array[0..3] of byte = (
            else
              nsyms:=FCoffSyms.Size div sizeof(CoffSymbol);
            { Allocate memory for symidx -> TObjSymbol table }
-           FSymTbl:=AllocMem(nsyms*sizeof(TObjSymbol));
+           SetLength(FSymTbl,nsyms);
            { Load the Symbols }
            FCoffSyms.Seek(0);
            symidx:=0;
@@ -2061,6 +2470,7 @@ const pemagic : array[0..3] of byte = (
               if bigobj then
                 begin
                   FCoffSyms.Read(bosym,sizeof(bosym));
+		  MaybeSwap(bosym);
                   if bosym.Name.Offset.Zeroes<>0 then
                     begin
                       { Added for sake of global data analysis }
@@ -2081,6 +2491,7 @@ const pemagic : array[0..3] of byte = (
               else
                 begin
                   FCoffSyms.Read(sym,sizeof(sym));
+		  MaybeSwap(sym);
                   if plongint(@sym.name)^<>0 then
                     begin
                       { Added for sake of global data analysis }
@@ -2169,7 +2580,7 @@ const pemagic : array[0..3] of byte = (
                 else
                   UnsupportedSymbolType;
               end;
-              FSymTbl^[symidx]:=objsym;
+              FSymTbl[symidx]:=objsym;
               { read aux records }
 
               { handle COMDAT symbols }
@@ -2178,15 +2589,17 @@ const pemagic : array[0..3] of byte = (
                   if bigobj then
                     begin
                       FCoffSyms.Read(boauxrec,sizeof(boauxrec));
-                      secrec:=pcoffsectionrec(@boauxrec[0]);
+                      psecrec:=pcoffsectionrec(@boauxrec[0]);
                     end
                   else
                     begin
                       FCoffSyms.Read(auxrec,sizeof(auxrec));
-                      secrec:=pcoffsectionrec(@auxrec);
+                      psecrec:=pcoffsectionrec(@auxrec);
                     end;
+                  secrec:=psecrec^;
+                  MaybeSwap(secrec);
 
-                  case secrec^.select of
+                  case secrec.select of
                     IMAGE_COMDAT_SELECT_NODUPLICATES:
                       comdatsel:=oscs_none;
                     IMAGE_COMDAT_SELECT_ANY:
@@ -2201,14 +2614,18 @@ const pemagic : array[0..3] of byte = (
                       comdatsel:=oscs_largest;
                     else begin
                       comdatsel:=oscs_none;
-                      Message2(link_e_comdat_select_unsupported,inttostr(secrec^.select),objsym.objsection.name);
+                      { there are object files out here that have comdat symbols
+                        including an associative section, but with a comdat selection
+                        of 0; it seems that other linkers just ignore those... }
+                      if secrec.select<>0 then
+                        Message2(link_e_comdat_select_unsupported,inttostr(secrec.select),objsym.objsection.name);
                     end;
                   end;
 
-                  if comdatsel in [oscs_associative,oscs_exact_match] then
+                  if comdatsel in [oscs_associative] then
                     { only temporary }
-                    Comment(V_Error,'Associative or exact match COMDAT sections are not yet supported (symbol: '+objsym.objsection.Name+')')
-                  else if (comdatsel=oscs_associative) and (secrec^.assoc=0) then
+                    Comment(V_Error,'Associative COMDAT sections are not yet supported (symbol: '+objsym.objsection.Name+')')
+                  else if (comdatsel=oscs_associative) and (secrec.assoc=0) then
                     Message1(link_e_comdat_associative_section_expected,objsym.objsection.name)
                   else if (objsym.objsection.ComdatSelection<>oscs_none) and (comdatsel<>oscs_none) and (objsym.objsection.ComdatSelection<>comdatsel) then
                     Message2(link_e_comdat_not_matching,objsym.objsection.Name,objsym.Name)
@@ -2216,9 +2633,9 @@ const pemagic : array[0..3] of byte = (
                     begin
                       objsym.objsection.ComdatSelection:=comdatsel;
 
-                      if (secrec^.assoc<>0) and not assigned(objsym.objsection.AssociativeSection) then
+                      if (secrec.assoc<>0) and not assigned(objsym.objsection.AssociativeSection) then
                         begin
-                          objsym.objsection.AssociativeSection:=GetSection(secrec^.assoc);
+                          objsym.objsection.AssociativeSection:=GetSection(secrec.assoc-1);
                           if not assigned(objsym.objsection.AssociativeSection) then
                             Message1(link_e_comdat_associative_section_not_found,objsym.objsection.Name);
                         end;
@@ -2293,6 +2710,7 @@ const pemagic : array[0..3] of byte = (
                InputError('Can''t read COFF Header');
                exit;
              end;
+           MaybeSwap(header);
            if (header.mach=0) and (header.nsects=$ffff) then
              begin
                { either a library or big obj COFF }
@@ -2302,6 +2720,7 @@ const pemagic : array[0..3] of byte = (
                    InputError('Can''t read Big Obj COFF Header');
                    exit;
                  end;
+               MaybeSwap(boheader);
                if CompareByte(boheader.UUID,COFF_BIG_OBJ_MAGIC,length(boheader.uuid))<>0 then
                  begin
                    { ToDo: this should be treated as a library }
@@ -2356,7 +2775,7 @@ const pemagic : array[0..3] of byte = (
            if (FCoffStrSize>4) then
              begin
                { allocate an extra byte and null-terminate }
-               GetMem(FCoffStrs,FCoffStrSize+1);
+               SetLength(FCoffStrs,FCoffStrSize+1);
                FCoffStrs[FCoffStrSize]:=#0;
                for i:=0 to 3 do
                  FCoffStrs[i]:=#0;
@@ -2372,7 +2791,7 @@ const pemagic : array[0..3] of byte = (
              FSecCount:=longint(boheader.NumberOfSections)
            else
              FSecCount:=header.nsects;
-           FSecTbl:=AllocMem((FSecCount+1)*sizeof(TObjSection));
+           SetLength(FSecTbl,(FSecCount+1));
            if bigobj then
              secofs:=sizeof(tcoffbigobjheader)
            else
@@ -2385,6 +2804,7 @@ const pemagic : array[0..3] of byte = (
                   InputError('Error reading COFF Section Headers');
                   exit;
                 end;
+               MaybeSwap(sechdr);
                move(sechdr.name,secnamebuf,8);
                secnamebuf[8]:=#0;
                secname:=strpas(secnamebuf);
@@ -2434,7 +2854,7 @@ const pemagic : array[0..3] of byte = (
                      end;
                  end;
                objsec:=TCoffObjSection(createsection(secname,secalign,secoptions,false));
-               FSecTbl^[i]:=objsec;
+               FSecTbl[i]:=objsec;
                if not win32 then
                  objsec.mempos:=sechdr.rvaofs;
                objsec.orgmempos:=sechdr.rvaofs;
@@ -2455,8 +2875,6 @@ const pemagic : array[0..3] of byte = (
            { Relocs }
            ObjSectionList.ForEachCall(@objsections_read_relocs,nil);
          end;
-        if assigned(FCoffStrs) then
-          freemem(FCoffStrs);
         FCoffStrs:=nil;
         FCoffSyms.Free;
         FCoffSyms:=nil;
@@ -2513,6 +2931,7 @@ const pemagic : array[0..3] of byte = (
         sym.section:=section;
         sym.typ:=typ;
         sym.aux:=aux;
+	MaybeSwap(sym);
         FWriter.write(sym,sizeof(sym));
       end;
 
@@ -2612,6 +3031,7 @@ const pemagic : array[0..3] of byte = (
               end
             else
               sechdr.flags:=djencodesechdrflags(SecOptions);
+            MaybeSwap(sechdr);
             FWriter.write(sechdr,sizeof(sechdr));
           end;
       end;
@@ -2843,6 +3263,7 @@ const pemagic : array[0..3] of byte = (
           end
         else
           header.flag:=COFF_FLAG_AR32WR or COFF_FLAG_EXE or COFF_FLAG_NORELOCS or COFF_FLAG_NOLINES;
+        MaybeSwap(header);
         FWriter.write(header,sizeof(header));
         { Optional COFF Header }
         if win32 then
@@ -2938,6 +3359,7 @@ const pemagic : array[0..3] of byte = (
             UpdateDataDir('.rsrc',PE_DATADIR_RSRC);
             UpdateDataDir('.pdata',PE_DATADIR_PDATA);
             UpdateDataDir('.reloc',PE_DATADIR_RELOC);
+	    MaybeSwap(peoptheader);
             FWriter.write(peoptheader,sizeof(peoptheader));
           end
         else
@@ -2951,6 +3373,7 @@ const pemagic : array[0..3] of byte = (
             djoptheader.text_start:=TextExeSec.mempos;
             djoptheader.data_start:=DataExeSec.mempos;
             djoptheader.entry:=EntrySym.Address;
+	    MaybeSwap(djoptheader);
             FWriter.write(djoptheader,sizeof(djoptheader));
           end;
 
@@ -2980,11 +3403,14 @@ const pemagic : array[0..3] of byte = (
           begin
             { Strings }
             i:=FCoffStrs.size+4;
+            if source_info.endian<>target_info.endian then
+              i:=SwapEndian(i);
             FWriter.write(i,4);
             FWriter.writearray(FCoffStrs);
           end;
         { Release }
         FCoffStrs.Free;
+        FCoffStrs := nil;
         result:=true;
       end;
 
@@ -3132,6 +3558,7 @@ const pemagic : array[0..3] of byte = (
           );
         var
           ordint: dword;
+          word_ordint: word;
 
           procedure WriteTableEntry(objsec:TObjSection);
           begin
@@ -3147,14 +3574,20 @@ const pemagic : array[0..3] of byte = (
                 ordint:=AOrdNr;
                 if target_info.system in systems_peoptplus then
                   begin
-                    objsec.write(ordint,sizeof(ordint));
+                    if source_info.endian<>target_info.endian then
+                      ordint:=SwapEndian(ordint);
+                    objsec.write(ordint,4);
                     ordint:=$80000000;
-                    objsec.write(ordint,sizeof(ordint));
+                    if source_info.endian<>target_info.endian then
+                      ordint:=SwapEndian(ordint);
+                    objsec.write(ordint,4);
                   end
                 else
                   begin
                     ordint:=ordint or $80000000;
-                    objsec.write(ordint,sizeof(ordint));
+                    if source_info.endian<>target_info.endian then
+                      ordint:=SwapEndian(ordint);
+                    objsec.write(ordint,4);
                   end;
               end;
           end;
@@ -3196,8 +3629,10 @@ const pemagic : array[0..3] of byte = (
           if (AOrdNr<=0) then
             begin
               { index hint, function name, null terminator and align }
-              ordint:=abs(AOrdNr);
-              idata6objsection.write(ordint,2);
+              word_ordint:=abs(AOrdNr);
+              if source_info.endian<>target_info.endian then
+                      word_ordint:=SwapEndian(word_ordint);
+              idata6objsection.write(word_ordint,2);
               idata6objsection.writestr(afuncname);
               idata6objsection.writezeros(align(idata6objsection.size,2)-idata6objsection.size);
             end;
@@ -3291,6 +3726,8 @@ const pemagic : array[0..3] of byte = (
         p:=internalObjData.CurrObjSec.Data.Pos;
         internalObjData.CurrObjSec.Data.seek(hdrpos+4);
         len:=p-hdrpos;
+        if source_info.endian<>target_info.endian then
+          len:=SwapEndian(len);
         internalObjData.CurrObjSec.Data.write(len,4);
         internalObjData.CurrObjSec.Data.seek(p);
         hdrpos:=longword(-1);
@@ -3335,9 +3772,11 @@ const pemagic : array[0..3] of byte = (
                         FinishBlock;
                         pgaddr:=(offset div 4096)*4096;
                         hdrpos:=internalObjData.CurrObjSec.Data.Pos;
+                        if source_info.endian<>target_info.endian then
+                          pgaddr:=SwapEndian(pgaddr);
                         internalObjData.writebytes(pgaddr,4);
                         { Reserving space for block size. The size will be written later in FinishBlock }
-                        internalObjData.writebytes(k,4);
+                        internalObjData.writebytes(pgaddr,4);
                       end;
 {$ifdef cpu64bitaddr}
                     if objreloc.typ = RELOC_ABSOLUTE then
@@ -3346,6 +3785,8 @@ const pemagic : array[0..3] of byte = (
 {$endif cpu64bitaddr}
                       w:=IMAGE_REL_BASED_HIGHLOW;
                     w:=(w shl 12) or (offset-pgaddr);
+                    if source_info.endian<>target_info.endian then
+                      w:=SwapEndian(w);
                     internalObjData.writebytes(w,2);
                   end;
               end;
@@ -3414,20 +3855,6 @@ const pemagic : array[0..3] of byte = (
 {$endif win32}
 
     function ReadDLLImports(const dllname:string;readdllproc:Treaddllproc):boolean;
-      type
-       TPECoffExpDir=packed record
-         flag,
-         stamp      : cardinal;
-         Major,
-         Minor      : word;
-         Name,
-         Base,
-         NumFuncs,
-         NumNames,
-         AddrFuncs,
-         AddrNames,
-         AddrOrds   : cardinal;
-       end;
       var
         DLLReader : TObjectReader;
         DosHeader : array[0..$7f] of byte;
@@ -3440,6 +3867,7 @@ const pemagic : array[0..3] of byte = (
         expdir    : TPECoffExpDir;
         i         : longint;
         found     : boolean;
+	header_ok : boolean;
         sechdr    : tCoffSecHdr;
 {$ifdef win32}
         p : pointer;
@@ -3473,7 +3901,9 @@ const pemagic : array[0..3] of byte = (
             Comment(V_Error,'Invalid DLL '+dllname+': invalid magic code');
             exit;
           end;
-        if not DLLReader.Read(Header,sizeof(TCoffHeader)) or
+	header_ok:=DLLReader.Read(Header,sizeof(TCoffHeader));
+	MaybeSwap(Header);
+        if not header_ok or
            (Header.mach<>COFF_MAGIC) or
            (Header.opthdr<>sizeof(tcoffpeoptheader)) then
           begin
@@ -3482,6 +3912,7 @@ const pemagic : array[0..3] of byte = (
           end;
         { Read optheader }
         DLLreader.Read(peheader,sizeof(tcoffpeoptheader));
+	MaybeSwap(peheader);
         { Section headers }
         found:=false;
         for i:=1 to header.nsects do
@@ -3491,6 +3922,7 @@ const pemagic : array[0..3] of byte = (
                 Comment(V_Error,'Error reading coff file '+DLLName);
                 exit;
               end;
+            MaybeSwap(sechdr);
             if (sechdr.rvaofs<=peheader.DataDirectory[PE_DATADIR_EDATA].vaddr) and
                (peheader.DataDirectory[PE_DATADIR_EDATA].vaddr<sechdr.rvaofs+sechdr.vsize) then
               begin
@@ -3506,6 +3938,7 @@ const pemagic : array[0..3] of byte = (
         { Process edata }
         DLLReader.Seek(sechdr.datapos+peheader.DataDirectory[PE_DATADIR_EDATA].vaddr-sechdr.rvaofs);
         DLLReader.Read(expdir,sizeof(expdir));
+	MaybeSwap(expdir);
         for i:=0 to expdir.NumNames-1 do
           begin
             DLLReader.Seek(sechdr.datapos+expdir.AddrNames-sechdr.rvaofs+i*4);
@@ -3525,6 +3958,7 @@ const pemagic : array[0..3] of byte = (
             readdllproc(DLLName,FuncName);
           end;
         DLLReader.Free;
+        DLLReader := nil;
       end;
 
 {$ifdef arm}

@@ -1,11 +1,32 @@
- unit fpthreadpool;
+{
+    This file is part of the Free Component Library (FCL)
+    Copyright (c) 1999-2000 by Free Pascal team.
+
+    A threadpool class.
+
+    See the file COPYING.FPC, included in this distribution,
+    for details about the copyright.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+ **********************************************************************}
+
+{$IFNDEF FPC_DOTTEDUNITS}
+ unit fpThreadPool;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode ObjFPC}{$H+}
 { $DEFINE DEBUGTHREADPOOL}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+Uses System.Classes, System.SysUtils, System.DateUtils, System.SyncObjs;
+{$ELSE FPC_DOTTEDUNITS}
 Uses Classes, SysUtils, DateUtils, SyncObjs;
+{$ENDIF FPC_DOTTEDUNITS}
 
 
 Const
@@ -451,7 +472,29 @@ begin
 end;
 
 destructor TFPCustomSimpleThreadPool.TThreadPoolList.Destroy;
+var
+  Threads: array of TThread = ();
+  Thread: TThread;
+  TempList: TList;
+  I: Integer;
 begin
+  TempList := FList.LockList;
+
+  { Copy threads to a separate array to avoid holding the lock while terminating threads }
+  SetLength(Threads, TempList.Count);
+  for I := 0 to TempList.Count - 1 do
+    Threads[I] := TThread(TempList[I]);
+
+  FList.UnlockList;
+
+  { Now terminate and free threads outside the lock }
+  for Thread in Threads do
+  begin
+    Thread.Terminate;
+    Thread.WaitFor;
+    Thread.Free;
+  end;
+
   FreeAndNil(FList);
   Inherited;
 end;

@@ -22,7 +22,7 @@
 {$I ctypes.inc}
 {$packrecords c}
 
-const 
+const
     SEM_SAFE=255;
 type
 
@@ -58,7 +58,7 @@ type
 {$ifdef CPU64}
     size_t   = cuint64;
 {$else}
-    size_t   = cuint32;         { as definied in the C standard}
+    size_t   = cuint32;         { as defined in the C standard}
 {$endif}
     TSize    = size_t;
     pSize    = ^size_t;
@@ -109,7 +109,7 @@ type
   TTimeVal = timeval;
 
   timespec = packed record
-    tv_sec   : time_t;                  // should be time_t, bug compability
+    tv_sec   : time_t;                  // should be time_t, bug compatibility
     tv_nsec  : clong;
   end;
   ptimespec= ^timespec;
@@ -133,7 +133,7 @@ type
    pthread_key_t        = cint;
    pthread_rwlock_t     = ^pthread_rwlock_t_rec;
    pthread_rwlockattr_t = ^pthread_rwlockattr_t_rec;
-  
+
    psem_t = ^sem_t;
    ppsem_t= ^psem_t;
    semid_t= pointer;
@@ -147,7 +147,7 @@ type
        sysse   : cint;
        entry   : psem_t;
        backpointer : ppsem_t;
-       spare   : array[0..SEM_SAFE] of char;
+       spare   : array[0..SEM_SAFE] of AnsiChar;
 
     end;
 
@@ -180,11 +180,11 @@ type
   fsid_t  = array[0..1] of cint32;
 
 Const
-     MNAMELEN   = 88;
-     MFSNamELen = 16;	
+     MNAMELEN   = 1024;
+     MFSNamELen = 16;
      STATFS_VERSION = $20030518;
      OMNAMLEN   = 88-2*sizeof(clong); // slightly machine specific.
-     OMFSNamLen = 16;	
+     OMFSNamLen = 16;
 
 // fieldnames start with f_ in headers. Probably 1.0.x simplification that somehow
 // managed to escape the unix rewrite. Make an union+ deprecate after newstatfs is stable.
@@ -240,7 +240,7 @@ Type TStatFS =  {?} Record
         f_mntonname   : array[0..MNAMELEN-1]   of ansichar; { directory on which mounted }
           );
 	end;
- 
+
      PStatFS=^TStatFS;
 
 
@@ -259,21 +259,21 @@ Type TStatFS =  {?} Record
     fflags         : cint; {copy of mount flags}
     fsyncwrites,
     fasyncwrites   : clong;
-    fstypename     : array[0..OMFSNamLen-1] of char;
-    mountpoint     : array[0..OMNAMLEN-1] of char;
+    fstypename     : array[0..OMFSNamLen-1] of AnsiChar;
+    mountpoint     : array[0..OMNAMLEN-1] of AnsiChar;
     fsyncreads,            { count of sync reads since mount }
     fasyncreads    : clong;
     fspares1       : cshort;
-    mnfromname     : array[0..OMNAMLEN-1] of char;
+    mnfromname     : array[0..OMNAMLEN-1] of AnsiChar;
     fspares2       : cshort;
     fspare3        : array[0..1] of clong;
   end;
- 
+
   PStatFS4=^TStatFs4;
 
   mbstate_t = record
       case byte of
-        0: (__mbstate8: array[0..127] of char);
+        0: (__mbstate8: array[0..127] of AnsiChar);
         1: (_mbstateL: cint64); { for alignment }
     end;
     pmbstate_t = ^mbstate_t;

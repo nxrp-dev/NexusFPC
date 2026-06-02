@@ -35,15 +35,6 @@ type
    tdynarraytypedata =
 {$ifndef FPC_REQUIRES_PROPER_ALIGNMENT}
    packed
-{$else}
-  {$ifdef powerpc64}
-    { 3.0.0 does not align elType field on a 8-byte boundary,
-      thus use packed also in this case }
-    {$ifdef VER3_0_0}
-      packed
-    {$endif VER3_0_0}
-  {$endif powerpc64}
-
 {$endif FPC_REQUIRES_PROPER_ALIGNMENT}
    record
      {$if declared(TRttiDataCommon)}
@@ -52,17 +43,9 @@ type
      case TTypeKind of
        tkArray: (
          elSize : SizeUInt;
-         {$ifdef VER3_0}
-         elType2 : Pointer;
-         {$else}
          elType2 : PPointer;
-         {$endif}
          varType : Longint;
-         {$ifdef VER3_0}
-         elType : Pointer;
-         {$else}
          elType : PPointer;
-         {$endif}
        );
        { include for proper alignment }
        tkInt64: (
@@ -97,26 +80,19 @@ function fpc_dynarray_high(p : pointer) : tdynarrayindex;[Public,Alias:'FPC_DYNA
 
 procedure fpc_dynarray_clear(var p : pointer;ti : pointer); [Public,Alias:'FPC_DYNARRAY_CLEAR']; compilerproc;
   var
-     realp : pdynarray;
+    pv : pdynarray;
   begin
-    if (P=Nil) then
+    pv:=p;
+    if not assigned(pv) then
       exit;
-    realp:=pdynarray(p-sizeof(tdynarray));
-    if realp^.refcount=0 then
-      HandleErrorAddrFrameInd(204,get_pc_addr,get_frame);
-
-    if (realp^.refcount>0) and declocked(realp^.refcount) then
-      begin
-{$ifdef VER3_0}
-        ti:=aligntoptr(ti+2+PByte(ti)[1]);
-{$else VER3_0}
-        ti:=aligntoqword(ti+2+PByte(ti)[1]);
-{$endif VER3_0}
-        if assigned(pdynarraytypedata(ti)^.elType) then
-          int_finalizearray(p,pdynarraytypedata(ti)^.elType{$ifndef VER3_0}^{$endif},realp^.high+1);
-        freemem(realp);
-      end;
     p:=nil;
+    if (pv[-1].refcount=1) or (pv[-1].refcount>0) and declocked(pv[-1].refcount) then
+      begin
+        ti:=pdynarraytypedata(aligntoqword(ti+2+PByte(ti)[1]))^.elType;
+        if assigned(ti) then
+          int_finalizearray(pv,PPointer(ti)^,pv[-1].high+1);
+        freemem(pv-1);
+      end;
   end;
 
 { alias for internal use }
@@ -124,17 +100,9 @@ Procedure fpc_dynarray_clear (var p : pointer;ti : pointer);[external name 'FPC_
 
 
 procedure fpc_dynarray_incr_ref(p : pointer);[Public,Alias:'FPC_DYNARRAY_INCR_REF']; compilerproc;
-  var
-     realp : pdynarray;
   begin
-     if p=nil then
-       exit;
-
-     realp:=pdynarray(p-sizeof(tdynarray));
-     if realp^.refcount=0 then
-       HandleErrorAddrFrameInd(204,get_pc_addr,get_frame)
-     else if realp^.refcount>0 then
-       inclocked(realp^.refcount);
+     if assigned(p) and (pdynarray(p)[-1].refcount>0) then
+       inclocked(pdynarray(p)[-1].refcount);
   end;
 
 { provide local access to dynarr_decr_ref for dynarr_setlength }
@@ -159,98 +127,56 @@ procedure fpc_dynarray_setlength(var p : pointer;pti : pointer;
 
   var
      i : tdynarrayindex;
-     movelen,
-     size : sizeint;
+     movelen,size,_size,elesize,oldlen,newlen : sizeint;
      { contains the "fixed" pointers where the refcount }
      { and high are at positive offsets                 }
      realp,newp : pdynarray;
-     ti : pointer;
-     elesize : sizeint;
-     eletype,eletypemngd : pointer;
-     movsize : sizeint;
+     ti,eletypemngd : pointer;
 
   begin
+     newlen:=dims[0];
      { negative or zero length? }
-     if dims[0]<=0 then
-       { negative length is not allowed }
-       if dims[0]<0 then
-         HandleErrorAddrFrameInd(201,get_pc_addr,get_frame)
-       else
-         begin
-           { if the new dimension is 0, we've to release all data }
-           fpc_dynarray_clear(p,pti);
-           exit;
-         end;
+     if newlen<=0 then
+       begin
+         { negative length is not allowed }
+         if newlen<0 then
+           HandleErrorAddrFrameInd(201,get_pc_addr,get_frame);
+         { if the new dimension is 0, we've to release all data }
+         fpc_dynarray_clear(p,pti);
+         exit;
+       end;
 
      { skip kind and name }
-{$ifdef VER3_0}
-     ti:=aligntoptr(Pointer(pti)+2+PByte(pti)[1]);
-{$else VER3_0}
      ti:=aligntoqword(Pointer(pti)+2+PByte(pti)[1]);
-{$endif VER3_0}
 
      elesize:=pdynarraytypedata(ti)^.elSize;
-     {$ifdef VER3_0}
-     eletype:=pdynarraytypedata(ti)^.elType2;
-     {$else}
-     eletype:=pdynarraytypedata(ti)^.elType2^;
-     {$endif}
      { only set if type needs finalization }
-     {$ifdef VER3_0}
      eletypemngd:=pdynarraytypedata(ti)^.elType;
-     {$else}
-     if assigned(pdynarraytypedata(ti)^.elType) then
-       eletypemngd:=pdynarraytypedata(ti)^.elType^
-     else
-       eletypemngd:=nil;
-     {$endif}
+     if assigned(eletypemngd) then
+       eletypemngd:=PPointer(eletypemngd)^;
 
      { determine new memory size, throw a runtime error on overflow }
 {$push} {$q+,r+}
-     size:=elesize*dims[0]+sizeof(tdynarray);
+     size:=elesize*newlen+sizeof(tdynarray);
 {$pop}
 
-     { not assigned yet? }
-     if not(assigned(p)) then
+     if assigned(p) then
        begin
-          newp:=AllocMem(size);
-{$ifndef VER3_0}
-          { call int_InitializeArray for management operators }
-          if assigned(eletypemngd) and (PTypeKind(eletype)^ in [tkRecord, tkObject]) then
-            int_InitializeArray(pointer(newp)+sizeof(tdynarray), eletype, dims[0]);
-{$endif VER3_0}
-       end
-     else
-       begin
-          realp:=pdynarray(p-sizeof(tdynarray));
-          newp := realp;
-
-          if realp^.refcount<>1 then
+          oldlen:=pdynarray(p-sizeof(tdynarray))^.high+1;
+          if pdynarray(p-sizeof(tdynarray))^.refcount<>1 then
             begin
-               { make an unique copy }
                newp:=getmem(size);
-               fillchar(newp^,sizeof(tdynarray),0);
-               if realp^.high < dims[0] then
-                 movelen := realp^.high+1
-               else
-                 movelen := dims[0];
-               movsize := elesize*movelen;
-               move(p^,(pointer(newp)+sizeof(tdynarray))^, movsize);
-               if size-sizeof(tdynarray)>movsize then
-                 begin
-                   fillchar((pointer(newp)+sizeof(tdynarray)+movsize)^,size-sizeof(tdynarray)-movsize,0);
-{$ifndef VER3_0}
-                   if assigned(eletypemngd) and (PTypeKind(eletype)^ in [tkRecord, tkObject]) then
-                     int_InitializeArray(pointer(newp)+sizeof(tdynarray)+movsize, eletype, dims[0]-movelen);
-{$endif VER3_0}
-                 end;
-
+               { make an unique copy }
+               movelen:=oldlen;
+               if newlen<movelen then
+                 movelen:=newlen;
+               move(p^,(pointer(newp)+sizeof(tdynarray))^,elesize*movelen);
                { increment ref. count of managed members }
                if assigned(eletypemngd) then
                  int_AddRefArray(pointer(newp)+sizeof(tdynarray),eletypemngd,movelen);
 
                { a declock(ref. count) isn't enough here }
-               { it could be that the in MT environments  }
+               { it could be that the in MT environments }
                { in the mean time the refcount was       }
                { decremented                             }
 
@@ -258,41 +184,38 @@ procedure fpc_dynarray_setlength(var p : pointer;pti : pointer;
                { if the array is now removed             }
                fpc_dynarray_clear(p,pti);
             end
-          else if dims[0]<newp^.high+1 then
+          else
             begin
-               { shrink the array }
-               if assigned(eletypemngd) then
-                 int_finalizearray(pointer(newp)+sizeof(tdynarray)+
-                    elesize*dims[0],
-                    eletypemngd,newp^.high-dims[0]+1);
-               reallocmem(realp,size);
-               newp := realp;
-            end
-          else if dims[0]>newp^.high+1 then
-            begin
-               { grow the array }
-               reallocmem(realp,size);
-               newp := realp;
-               fillchar((pointer(newp)+sizeof(tdynarray)+elesize*(newp^.high+1))^,
-                 (dims[0]-newp^.high-1)*elesize,0);
-{$ifndef VER3_0}
-               { call int_InitializeArray for management operators }
-               if assigned(eletypemngd) and (PTypeKind(eletype)^ in [tkRecord, tkObject]) then
-                 int_InitializeArray(pointer(newp)+sizeof(tdynarray)+elesize*(newp^.high+1),
-                   eletype, dims[0]-newp^.high-1);
-{$endif VER3_0}
+               { Finalize if shrinking. }
+               if assigned(eletypemngd) and (newlen<oldlen) then
+                 int_finalizearray(p+elesize*newlen,eletypemngd,oldlen-newlen);
+               realp:=p-sizeof(tdynarray);
+               newp:=reallocmem(realp,size);
             end;
+       end
+     else
+       begin
+          oldlen:=0;
+          newp:=AllocMem(size);
        end;
-    p:=pointer(newp)+sizeof(tdynarray);
-    newp^.refcount:=1;
-    newp^.high:=dims[0]-1;
-    { handle nested arrays }
-    if dimcount>1 then
-      begin
-         for i:=0 to dims[0]-1 do
-           int_dynarray_setlength(pointer((pointer(newp)+sizeof(tdynarray)+i*elesize)^),
-             eletype,dimcount-1,@dims[1]);
-      end;
+     if newlen>oldlen then
+       begin
+          { Initialize new items. }
+          if oldlen<>0 then { Skip if AllocMem was used. CAREFUL: Assigned(p) won’t work because of fpc_dynarray_clear above. }
+            fillchar((pointer(newp)+sizeof(tdynarray)+elesize*oldlen)^,(newlen-oldlen)*elesize,0);
+          if assigned(eletypemngd) and (PTypeKind(eletypemngd)^ in [tkRecord, tkObject, tkArray]) and RTTIManagementAndSize(eletypemngd, rotInitialize, _size, true) then
+            int_InitializeArray(pointer(newp)+sizeof(tdynarray)+elesize*oldlen,eletypemngd,newlen-oldlen);
+       end;
+     p:=pointer(newp)+sizeof(tdynarray);
+     newp^.refcount:=1;
+     newp^.high:=newlen-1;
+     { handle nested arrays }
+     if dimcount>1 then
+       begin
+          for i:=0 to newlen-1 do
+            int_dynarray_setlength(pointer((pointer(newp)+sizeof(tdynarray)+i*elesize)^),
+              pdynarraytypedata(ti)^.elType2^,dimcount-1,@dims[1]);
+       end;
   end;
 
 
@@ -304,7 +227,7 @@ function int_array_to_dynarray_copy(psrc : pointer;ti : pointer;
     ) : fpc_stub_dynarray;[external name 'FPC_ARR_TO_DYNARR_COPY'];
 
 
-{$if defined(VER3_0) or defined(VER3_2)}
+{$if defined(VER3_2)}
 function fpc_dynarray_copy(psrc : pointer;ti : pointer;
     lowidx,count:tdynarrayindex) : fpc_stub_dynarray;[Public,Alias:'FPC_DYNARR_COPY'];compilerproc;
   var
@@ -315,29 +238,19 @@ function fpc_dynarray_copy(psrc : pointer;ti : pointer;
      fpc_dynarray_clear(pointer(result),ti);
      if psrc=nil then
        exit;
-
      realpsrc:=pdynarray(psrc-sizeof(tdynarray));
 
-{$ifdef VER3_0}
-     tti:=aligntoptr(ti+2+PByte(ti)[1]);
-{$else VER3_0}
      tti:=aligntoqword(ti+2+PByte(ti)[1]);
-{$endif VER3_0}
-
      elesize:=pdynarraytypedata(tti)^.elSize;
-{$ifdef VER3_0}
-     eletype:=pdynarraytypedata(tti)^.elType;
-{$else VER3_0}
      { only set if type needs finalization }
      if assigned(pdynarraytypedata(tti)^.elType) then
        eletype:=pdynarraytypedata(tti)^.elType^
      else
        eletype:=nil;
-{$endif VER3_0}
 
      fpc_array_to_dynarray_copy(psrc,ti,lowidx,count,realpsrc^.high+1,elesize,eletype);
   end;
-{$endif VER3_0 or VER3_2}
+{$endif VER3_2}
 
 { copy a custom array (open/dynamic/static) to dynamic array }
 function fpc_array_to_dynarray_copy(psrc : pointer;ti : pointer;
@@ -388,72 +301,58 @@ function fpc_array_to_dynarray_copy(psrc : pointer;ti : pointer;
   end;
 
 
-{$ifndef VER3_0}
 procedure fpc_dynarray_delete(var p : pointer;source,count : SizeInt;pti : pointer);
    var
-      newhigh : tdynarrayindex;
-      size : sizeint;
-      { contains the "fixed" pointers where the refcount }
-      { and high are at positive offsets                 }
-      realp,newp : pdynarray;
-      ti : pointer;
+      newlen : tdynarrayindex;
       elesize : sizeint;
-      eletype,eletypemngd : pointer;
+      { oldp is the same as p, actual header is accessed as oldp[-1].
+        newp fairly points to the new header, array data starts at newp[1].
+        realp takes the hit of being a var-parameter to ReallocMem not eligible for living in a register. }
+      oldp,newp,realp : pdynarray;
+      ti,eletypemngd : pointer;
 
    begin
-     { if source > high then nothing to do }
-     if not assigned(p) or
-         (source>pdynarray(p-sizeof(tdynarray))^.high) or
-         (count<=0) or
-         (source<0) then
+     oldp:=p;
+     if not assigned(oldp) or (count<=0) then
        exit;
-     { cap count }
-     if source+count-1>pdynarray(p-sizeof(tdynarray))^.high then
-       count:=pdynarray(p-sizeof(tdynarray))^.high-source+1;
-
-     { fast path: delete whole array }
-     if (source=0) and (count=pdynarray(p-sizeof(tdynarray))^.high+1) then
+     newlen:=oldp[-1].high+1;
+     { Checks source < 0 or source >= len, using the fact that len is never negative. }
+     if SizeUint(source)>=SizeUint(newlen) then
+       exit;
+     { cap count, and maybe delete whole array }
+     if count>=newlen-source then
        begin
-         fpc_dynarray_clear(p,pti);
-         exit;
+         if source=0 then
+           begin
+             fpc_dynarray_clear(p,pti);
+             exit;
+           end;
+         count:=newlen-source;
        end;
 
      { skip kind and name }
-{$ifdef VER3_0}
-     ti:=aligntoptr(Pointer(pti)+2+PByte(pti)[1]);
-{$else VER3_0}
      ti:=aligntoqword(Pointer(pti)+2+PByte(pti)[1]);
-{$endif VER3_0}
 
      elesize:=pdynarraytypedata(ti)^.elSize;
-     eletype:=pdynarraytypedata(ti)^.elType2^;
      { only set if type needs finalization }
-     if assigned(pdynarraytypedata(ti)^.elType) then
-       eletypemngd:=pdynarraytypedata(ti)^.elType^
-     else
-       eletypemngd:=nil;
+     eletypemngd:=pdynarraytypedata(ti)^.elType;
+     if assigned(eletypemngd) then
+       eletypemngd:=PPointer(eletypemngd)^;
 
-     realp:=pdynarray(p-sizeof(tdynarray));
-     newp:=realp;
+     newlen:=newlen-count;
 
-     { determine new memory size }
-     newhigh:=realp^.high-count;
-     size:=elesize*(newhigh+1)+sizeof(tdynarray);
-
-     if realp^.refcount<>1 then
+     if oldp[-1].refcount<>1 then
        begin
           { make an unique copy }
-          getmem(newp,size);
-          fillchar(newp^,sizeof(tdynarray),0);
+          newp:=getmem(elesize*newlen+sizeof(tdynarray));
+          newp^.refcount:=1;
           { copy the elements that we still need }
-          if source>0 then
-            move(p^,(pointer(newp)+sizeof(tdynarray))^,source*elesize);
-          if source+count-1<realp^.high then
-            move((p+(source+count)*elesize)^,(pointer(newp)+sizeof(tdynarray)+source*elesize)^,(realp^.high-(source+count)+1)*elesize);
+          move(oldp^,pointer(newp+1)^,source*elesize);
+          move((pointer(oldp)+(source+count)*elesize)^,(pointer(newp+1)+source*elesize)^,(newlen-source)*elesize);
 
           { increment ref. count of managed members }
           if assigned(eletypemngd) then
-            int_AddRefArray(pointer(newp)+sizeof(tdynarray),eletypemngd,newhigh+1);
+            int_AddRefArray(newp+1,eletypemngd,newlen);
 
           { a declock(ref. count) isn't enough here }
           { it could be that the in MT environments  }
@@ -468,166 +367,134 @@ procedure fpc_dynarray_delete(var p : pointer;source,count : SizeInt;pti : point
         begin
           { finalize the elements that will be removed }
           if assigned(eletypemngd) then
-            int_FinalizeArray(p+source*elesize,eletype,count);
+            int_FinalizeArray(pointer(oldp)+source*elesize,eletypemngd,count);
 
           { close the gap by moving the trailing elements to the front }
-          move((p+(source+count)*elesize)^,(p+source*elesize)^,(realp^.high-(source+count)+1)*elesize);
+          move((pointer(oldp)+(source+count)*elesize)^,(pointer(oldp)+source*elesize)^,(newlen-source)*elesize);
 
           { resize the array }
-          reallocmem(realp,size);
-          newp:=realp;
+          realp:=oldp-1;
+          newp:=reallocmem(realp,elesize*newlen+sizeof(tdynarray));
         end;
-    p:=pointer(newp)+sizeof(tdynarray);
-    newp^.refcount:=1;
-    newp^.high:=newhigh;
+    newp^.high:=newlen-1;
+    p:=newp+1;
   end;
 
 
 procedure fpc_dynarray_insert(var p : pointer;source : SizeInt;data : pointer;count : SizeInt;pti : pointer);compilerproc;
   var
-    newhigh : tdynarrayindex;
-    size : sizeint;
-    realp,
-    newp : pdynarray;
-    ti : pointer;
-    elesize : sizeint;
-    eletype,eletypemngd : pointer;
+    newlen : tdynarrayindex;
+    elesize,dataofs : sizeint;
+    oldp,newp,realp : pdynarray;
+    ti,eletypemngd : pointer;
   begin
-    if not assigned(data) or
-        (count=0) then
+    if count=0 then
       exit;
 
-    if assigned(p) then
-      realp:=pdynarray(p-sizeof(tdynarray))
-    else
-      realp:=nil;
-    newp:=realp;
-
-    { cap insert index }
-    if assigned(p) then
+    oldp:=p;
+    if assigned(oldp) then
       begin
-        if source<0 then
-          source:=0
-        else if source>realp^.high+1 then
-          source:=realp^.high+1;
+        dec(oldp);
+        { cap insert index }
+        newlen:=oldp^.high+1;
+        if SizeUint(source)>SizeUint(newlen) then { Checks for not (0 <= source <= len), using the fact than 'newlen' is never negative. }
+          if source<0 then
+            source:=0
+          else
+            source:=newlen;
+        newlen:=newlen+count;
       end
     else
-      source:=0;
+      begin
+        source:=0;
+        newlen:=count;
+      end;
 
     { skip kind and name }
-{$ifdef VER3_0}
-     ti:=aligntoptr(Pointer(pti)+2+PByte(pti)[1]);
-{$else VER3_0}
-     ti:=aligntoqword(Pointer(pti)+2+PByte(pti)[1]);
-{$endif VER3_0}
+    ti:=aligntoqword(Pointer(pti)+2+PByte(pti)[1]);
 
     elesize:=pdynarraytypedata(ti)^.elSize;
-    eletype:=pdynarraytypedata(ti)^.elType2^;
     { only set if type needs initialization }
-    if assigned(pdynarraytypedata(ti)^.elType) then
-      eletypemngd:=pdynarraytypedata(ti)^.elType^
-    else
-      eletypemngd:=nil;
+    eletypemngd:=pdynarraytypedata(ti)^.elType;
+    if assigned(eletypemngd) then
+      eletypemngd:=PPointer(eletypemngd)^;
 
-    { determine new memory size }
-    if assigned(p) then
-      newhigh:=realp^.high+count
-    else
-      newhigh:=count-1;
-    size:=elesize*(newhigh+1)+sizeof(tdynarray);
-
-    if assigned(p) then
+    if not assigned(oldp) or (oldp^.refcount<>1) then
       begin
-        if realp^.refcount<>1 then
-          begin
-            { make an unique copy }
-            getmem(newp,size);
-            fillchar(newp^,sizeof(tdynarray),0);
+        newp:=getmem(elesize*newlen+sizeof(tdynarray));
 
-            { copy leading elements }
-            if source>0 then
-              move(p^,(pointer(newp)+sizeof(tdynarray))^,source*elesize);
-            { insert new elements }
-            move(data^,(pointer(newp)+sizeof(tdynarray)+source*elesize)^,count*elesize);
-            { copy trailing elements }
-            if realp^.high-source+1>0 then
-              move((p+source*elesize)^,(pointer(newp)+sizeof(tdynarray)+(source+count)*elesize)^,(realp^.high-source+1)*elesize);
+        { copy leading elements. No-op when not Assigned(oldp) because in this case source = 0. }
+        move(oldp[1],newp[1],source*elesize);
+        { insert new elements }
+        move(data^,(pointer(newp+1)+source*elesize)^,count*elesize);
+        { copy trailing elements. This time must be careful with not Assigned(oldp). }
+        if assigned(oldp) then
+          move((pointer(oldp+1)+source*elesize)^,(pointer(newp+1)+(source+count)*elesize)^,(oldp^.high-source+1)*elesize);
 
-            { increment ref. count of managed members }
-            if assigned(eletypemngd) then
-              int_AddRefArray(pointer(newp)+sizeof(tdynarray),eletypemngd,newhigh+1);
+        { increment ref. count of managed members }
+        if assigned(eletypemngd) then
+          int_AddRefArray(newp+1,eletypemngd,newlen);
 
-            { a declock(ref. count) isn't enough here }
-            { it could be that the in MT environments  }
-            { in the mean time the refcount was       }
-            { decremented                             }
+        { a declock(ref. count) isn't enough here }
+        { it could be that the in MT environments }
+        { in the mean time the refcount was       }
+        { decremented                             }
 
-            { it is, because it doesn't really matter }
-            { if the array is now removed             }
-            fpc_dynarray_clear(p,pti);
-          end
-        else
-          begin
-            { resize the array }
-            reallocmem(realp,size);
-
-            { p might no longer be correct }
-            p:=pointer(realp)+sizeof(tdynarray);
-
-            { move the trailing part after the inserted data }
-            if source<=realp^.high then
-              move((p+source*elesize)^,(p+(source+count)*elesize)^,(realp^.high-source+1)*elesize);
-
-            { move the inserted data to the destination }
-            move(data^,(p+source*elesize)^,count*elesize);
-
-            { increase reference counts of inserted elements }
-            if assigned(eletypemngd) then
-              int_AddRefArray(p+source*elesize,eletypemngd,count);
-
-            newp:=realp;
-          end;
+        { it is, because it doesn't really matter }
+        { if the array is now removed             }
+        fpc_dynarray_clear(p,pti);
       end
     else
       begin
-        { allocate new array }
-        getmem(newp,size);
-        fillchar(newp^,sizeof(tdynarray),0);
+        { dataofs >= 0 means that 'data' points into the source array with byte offset 'dataofs' from the header.
+          dataofs < 0 means that 'data' does not point into the array. }
+        dataofs:=-1;
+        if (data>=oldp) and (data<=pointer(oldp+1)+oldp^.high*elesize) then
+          dataofs:=data-pointer(oldp);
 
-        { insert data }
-        move(data^,(pointer(newp)+sizeof(tdynarray))^,count*elesize);
+        { resize the array }
+        realp:=oldp; { 'realp' as a 'var'-parameter avoids taking 'oldp' address. }
+        newp:=reallocmem(realp,elesize*newlen+sizeof(tdynarray));
+
+        { Fixup overlapping 'data'. }
+        if dataofs>=0 then
+          begin
+            data:=pointer(newp)+dataofs;
+            { If 'data' points into the trailing part, account for it being moved by 'count'. }
+            if data>=pointer(newp+1)+source*elesize then
+              data:=data+count*elesize;
+          end;
+
+        { move the trailing part after the inserted data }
+        move((pointer(newp+1)+source*elesize)^,(pointer(newp+1)+(source+count)*elesize)^,(newp^.high-source+1)*elesize);
+
+        { move the inserted data to the destination }
+        move(data^,(pointer(newp+1)+source*elesize)^,count*elesize);
 
         { increase reference counts of inserted elements }
         if assigned(eletypemngd) then
-          int_AddRefArray(pointer(newp)+sizeof(tdynarray),eletypemngd,count);
+          int_AddRefArray(pointer(newp+1)+source*elesize,eletypemngd,count);
       end;
 
-    p:=pointer(newp)+sizeof(tdynarray);
     newp^.refcount:=1;
-    newp^.high:=newhigh;
+    newp^.high:=newlen-1;
+    p:=newp+1;
   end;
 
 
 procedure fpc_dynarray_concat_multi(var dest : pointer; pti: pointer; const sarr:array of pointer); compilerproc;
   var
-    i,
-    offset,
-    totallen : sizeint;
-    newp,
-    realp,
-    srealp : pdynarray;
-    ti : pointer;
-    elesize : sizeint;
-    eletypemngd : pointer;
+    i,firstnonempty,elesize,totallen,copybytes,newdestdatapos : sizeint;
+    newp,realp,copysrc,olddestp : pdynarray;
+    ti,eletypemngd,copydest : pointer;
   begin
-    { sanity check }
-    if length(sarr)=0 then
-      exit;
-
     totallen:=0;
-    for i:=0 to high(sarr) do
+    for i:=high(sarr) downto 0 do
       if assigned(sarr[i]) then
-        inc(totallen,pdynarray(sarr[i]-sizeof(tdynarray))^.high+1);
+        begin
+          inc(totallen,pdynarray(sarr[i])[-1].high+1);
+          firstnonempty:=i; { 1) allows for append optimization to work even with some prepended []s, 2) required for the reuse optimization. }
+        end;
 
     if totallen=0 then
       begin
@@ -635,125 +502,166 @@ procedure fpc_dynarray_concat_multi(var dest : pointer; pti: pointer; const sarr
         exit;
       end;
 
+    { Reuse the only nonempty input? }
+    if totallen=pdynarray(sarr[firstnonempty])[-1].high+1 then
+      begin
+        fpc_dynarray_assign(dest,sarr[firstnonempty],pti);
+        exit;
+      end;
+
     { skip kind and name }
-{$ifdef VER3_0}
-     ti:=aligntoptr(Pointer(pti)+2+PByte(pti)[1]);
-{$else VER3_0}
-     ti:=aligntoqword(Pointer(pti)+2+PByte(pti)[1]);
-{$endif VER3_0}
+    ti:=aligntoqword(Pointer(pti)+2+PByte(pti)[1]);
 
     elesize:=pdynarraytypedata(ti)^.elSize;
-
     { only set if type needs initialization }
-    if assigned(pdynarraytypedata(ti)^.elType) then
-      eletypemngd:=pdynarraytypedata(ti)^.elType^
+    eletypemngd:=pdynarraytypedata(ti)^.elType;
+    if Assigned(eletypemngd) then
+      eletypemngd:=PPointer(eletypemngd)^;
+
+    olddestp:=dest;
+    { Reallocate when possible; in the hope this will reuse the chunk more often than do a redundant copy. }
+    if assigned(olddestp) and (olddestp[-1].refcount=1) then
+      begin
+        if assigned(eletypemngd) then
+          begin
+            { Find dest occurrence among inputs. If found, reuse: remember its position, don't finalize now and don't AddRef later. }
+            newdestdatapos:=0;
+            for i:=0 to high(sarr) do
+              if assigned(sarr[i]) then
+                if sarr[i]<>olddestp then
+                  inc(newdestdatapos,pdynarray(sarr[i])[-1].high+1)
+                else
+                  break;
+            if newdestdatapos=totallen then { Dest doesn't occur among inputs. }
+              int_FinalizeArray(olddestp,eletypemngd,olddestp[-1].high+1);
+          end;
+        realp:=olddestp-1;
+        newp:=reallocmem(realp,totallen*elesize+sizeof(tdynarray));
+        { First array can be skipped if appending. }
+        if olddestp=sarr[firstnonempty] then
+          inc(firstnonempty);
+      end
     else
-      eletypemngd:=nil;
+      begin
+        olddestp:=nil; { Realloc case is distinguished later as assigned(olddestp). }
+        { allocate new array }
+        newp:=getmem(totallen*elesize+sizeof(tdynarray));
+        newp^.refcount:=1;
+      end;
 
-    { copy the elements of each source array }
-    offset:=0;
+    { Copy arrays from last to the first, so that possible occurences of Dest could read from the beginning of the reallocated Dest. }
+    copydest:=pointer(newp+1)+totallen*elesize;
+    for i:=high(sarr) downto firstnonempty do
+      begin
+        copysrc:=sarr[i];
+        if not assigned(copysrc) then
+          continue;
+        if copysrc=olddestp then
+          { Dest used as one of the pieces! Use new pointer instead. Array header still conveniently contains original 'high'.
+            Can trigger only in the ReallocMem case, as otherwise olddestp = nil. }
+          copysrc:=newp+1;
+        copybytes:=(copysrc[-1].high+1)*elesize;
+        dec(copydest,copybytes);
+        move(copysrc^,copydest^,copybytes);
+      end;
 
-    { the idea to reuse the first array, re-allocate it and append the other entries is not possible as the first entry
-      might be finalized later on by the caller however in case of a re-allocate, the entry itself might be gone }
-    { allocate new array }
-    getmem(newp,totallen*elesize+sizeof(tdynarray));
-
-    for i:=0 to high(sarr) do
-      if assigned(sarr[i]) then
-        begin
-          srealp:=pdynarray(sarr[i]-sizeof(tdynarray));
-          if srealp^.high>=0 then
-            begin
-              move(sarr[i]^,(pointer(newp)+sizeof(tdynarray)+offset*elesize)^,(srealp^.high+1)*elesize);
-              inc(offset,srealp^.high+1);
-            end;
-        end;
-    { increase reference counts of all the elements }
     if assigned(eletypemngd) then
-      int_AddRefArray(pointer(newp)+sizeof(tdynarray),eletypemngd,totallen);
+      begin
+        { AddRef everything in GetMem case or if Dest data was not reused in the ReallocMem case. }
+        if not assigned(olddestp) or (newdestdatapos=totallen) then
+          int_AddRefArray(pointer(newp+1),eletypemngd,totallen)
+        else
+          begin
+            { Dest := A + Dest + B, Dest data reused. }
+            if newdestdatapos>0 then
+              { AddRef A. Since Dest := Dest + B is a common case, shortcut if nothing to do. }
+              int_AddRefArray(newp+1,eletypemngd,newdestdatapos);
+            { AddRef B. }
+            int_AddRefArray(pointer(newp+1)+(newdestdatapos+newp^.high+1)*elesize,eletypemngd,totallen-(newdestdatapos+newp^.high+1));
+          end;
+      end;
 
-    { clear at the end, dest could be a reference to an array being used also as source }
-    fpc_dynarray_clear(dest,pti);
-    dest:=pointer(newp)+sizeof(tdynarray);
-    newp^.refcount:=1;
+    if not assigned(olddestp) then
+      { clear at the end, dest could be a reference to an array being used also as source }
+      fpc_dynarray_clear(dest,pti);
+
     newp^.high:=totallen-1;
+    dest:=newp+1;
   end;
 
 
 procedure fpc_dynarray_concat(var dest : pointer; pti: pointer; const src1,src2 : pointer); compilerproc;
   var
-    offset,
-    totallen : sizeint;
-    newp,
-    realp,
-    srealp : pdynarray;
-    ti : pointer;
-    elesize : sizeint;
-    eletypemngd : pointer;
+    totallen,elesize,ofs2 : sizeint;
+    newp,realp,olddestp,copysrc : pdynarray;
+    ti,eletypemngd : pointer;
   begin
-    totallen:=0;
-    if assigned(src1) then
-      inc(totallen,pdynarray(src1-sizeof(tdynarray))^.high+1);
-    if assigned(src2) then
-      inc(totallen,pdynarray(src2-sizeof(tdynarray))^.high+1);
-
-    if totallen=0 then
+    if not assigned(src1) or not assigned(src2) then
       begin
-        fpc_dynarray_clear(dest,pti);
-        exit;
+        fpc_dynarray_assign(dest, pointer(ptruint(src1) or ptruint(src2)), pti);
+        exit; { From now on, both src1 and src2 are non-nil. }
       end;
+    totallen:=pdynarray(src1)[-1].high+pdynarray(src2)[-1].high+2;
 
     { skip kind and name }
-{$ifdef VER3_0}
-     ti:=aligntoptr(Pointer(pti)+2+PByte(pti)[1]);
-{$else VER3_0}
-     ti:=aligntoqword(Pointer(pti)+2+PByte(pti)[1]);
-{$endif VER3_0}
+    ti:=aligntoqword(Pointer(pti)+2+PByte(pti)[1]);
 
     elesize:=pdynarraytypedata(ti)^.elSize;
-
     { only set if type needs initialization }
-    if assigned(pdynarraytypedata(ti)^.elType) then
-      eletypemngd:=pdynarraytypedata(ti)^.elType^
-    else
-      eletypemngd:=nil;
-
-    { the idea to reuse the first array, re-allocate it and append the other entries is not possible as the first entry
-      might be finalized later on by the caller however in case of a re-allocate, the entry itself might be gone }
-    { allocate new array }
-    getmem(newp,totallen*elesize+sizeof(tdynarray));
-
-    { copy the elements of each source array }
-    offset:=0;
-    if assigned(src1) then
-      begin
-        srealp:=pdynarray(src1-sizeof(tdynarray));
-        if srealp^.high>=0 then
-          begin
-            move(src1^,(pointer(newp)+sizeof(tdynarray)+offset*elesize)^,(srealp^.high+1)*elesize);
-            inc(offset,srealp^.high+1);
-          end;
-      end;
-
-    if assigned(src2) then
-      begin
-        srealp:=pdynarray(src2-sizeof(tdynarray));
-        if srealp^.high>=0 then
-          move(src2^,(pointer(newp)+sizeof(tdynarray)+offset*elesize)^,(srealp^.high+1)*elesize);
-      end;
-
-    { increase reference counts of all the elements }
+    eletypemngd:=pdynarraytypedata(ti)^.elType;
     if assigned(eletypemngd) then
-      int_AddRefArray(pointer(newp)+sizeof(tdynarray),eletypemngd,totallen);
+      eletypemngd:=PPointer(eletypemngd)^;
+    ofs2:=(pdynarray(src1)[-1].high+1)*elesize; { Offset of src2 data in the resulting array. }
 
-    { clear at the end, dest could be a reference to an array being also source }
-    fpc_dynarray_clear(dest,pti);
-    dest:=pointer(newp)+sizeof(tdynarray);
-    newp^.refcount:=1;
+    olddestp:=dest;
+    { Reallocate when possible; in the hope this will reuse the chunk more often than do a redundant copy. }
+    if assigned(olddestp) and (olddestp[-1].refcount=1) then
+      begin
+        { Finalize old dest contents, if they aren't going to be reused. }
+        if assigned(eletypemngd) and (olddestp<>src1) and (olddestp<>src2) then
+          int_FinalizeArray(olddestp,eletypemngd,olddestp[-1].high+1);
+
+        realp:=olddestp-1;
+        newp:=reallocmem(realp,totallen*elesize+sizeof(tdynarray));
+        { Copy src2 first, as in the case of olddestp = src2 it must be copied first and in other cases the order does not matter. }
+        copysrc:=src2;
+        if copysrc=olddestp then
+          { Use new pointer instead. Array header still conveniently contains original 'high'. }
+          copysrc:=newp+1;
+        move(copysrc^,(pointer(newp+1)+ofs2)^,(copysrc[-1].high+1)*elesize);
+        if olddestp<>src1 then { Not an append, need to copy src1? }
+          move(src1^,newp[1],(pdynarray(src1)[-1].high+1)*elesize);
+
+        { AddRef new data. }
+        if assigned(eletypemngd) then
+          if src1=olddestp then
+            { Dest data stayed in the same position; AddRef only copied src2. }
+            int_AddRefArray(pointer(newp+1)+ofs2,eletypemngd,copysrc[-1].high+1)
+          else if src2=olddestp then
+            { Dest data was moved as if it was src2; AddRef only copied src1. }
+            int_AddRefArray(newp+1,eletypemngd,pdynarray(src1)[-1].high+1)
+          else
+            { Dest data was not used, AddRef everything. }
+            int_AddRefArray(newp+1,eletypemngd,totallen);
+      end
+    else
+      begin
+        { allocate new array }
+        newp:=getmem(totallen*elesize+sizeof(tdynarray));
+        newp^.refcount:=1;
+        move(src1^,newp[1],ofs2);
+        move(src2^,(pointer(newp+1)+ofs2)^,(pdynarray(src2)[-1].high+1)*elesize);
+
+        { increase reference counts of all the elements }
+        if assigned(eletypemngd) then
+          int_AddRefArray(newp+1,eletypemngd,totallen);
+
+        { clear at the end, dest could be a reference to an array being also source }
+        fpc_dynarray_clear(dest,pti);
+      end;
     newp^.high:=totallen-1;
+    dest:=newp+1;
   end;
-{$endif VER3_0}
-
 
 procedure DynArraySetLength(var a: Pointer; typeInfo: Pointer; dimCnt: SizeInt; lengthVec: PSizeInt);
   external name 'FPC_DYNARR_SETLENGTH';
@@ -773,18 +681,10 @@ function DynArrayDim(typeInfo: Pointer): Integer;
     while (typeInfo <> nil) and (pdynarraytypeinfo(typeInfo)^.kind = tkDynArray) do
     begin
       { skip kind and name }
-{$ifdef VER3_0}
-      typeInfo:=aligntoptr(typeInfo+2+PByte(typeInfo)[1]);
-{$else VER3_0}
       typeInfo:=aligntoqword(typeInfo+2+PByte(typeInfo)[1]);
-{$endif VER3_0}
 
       { element type info}
-      {$ifdef VER3_0}
-      typeInfo:=pdynarraytypedata(typeInfo)^.elType2;
-      {$else VER3_0}
       typeInfo:=pdynarraytypedata(typeInfo)^.elType2^;
-      {$endif VER3_0}
 
       Inc(result);
     end;
@@ -802,8 +702,8 @@ function DynArrayBounds(a: Pointer; typeInfo: Pointer): TBoundArray;
         exit
       else
       begin
-        result[i]:=DynArraySize(a)-1;
         a:=PPointerArray(a)^[0];
+        result[i]:=DynArraySize(a)-1;
       end;
   end;
 
@@ -834,20 +734,12 @@ function DynArrayIndex(a: Pointer; const indices: array of SizeInt; typeInfo: Po
     for i:=0 to h do
     begin
       { skip kind and name }
-{$ifdef VER3_0}
-      typeInfo:=aligntoptr(Pointer(typeInfo)+2+PByte(typeInfo)[1]);
-{$else VER3_0}
       typeInfo:=aligntoqword(Pointer(typeInfo)+2+PByte(typeInfo)[1]);
-{$endif VER3_0}
       if i=h then
         break;
       a := PPointerArray(a)^[indices[i]];
       { element type info}
-      {$ifdef VER3_0}
-      typeInfo:=pdynarraytypedata(typeInfo)^.elType2;
-      {$else VER3_0}
       typeInfo:=pdynarraytypedata(typeInfo)^.elType2^;
-      {$endif VER3_0}
     end;
     result:=a+SizeUint(indices[h])*pdynarraytypedata(typeInfo)^.elSize;
   end;

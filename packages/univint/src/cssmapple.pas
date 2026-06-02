@@ -40,7 +40,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit cssmapple;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -225,7 +227,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.MacOSXPosix,MacOsApi.Cssmerr,MacOsApi.Cssmtype,MacOsApi.X509defs,MacOsApi.Certextensions;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,MacOSXPosix,cssmerr,cssmtype,x509defs,certextensions;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -859,7 +865,7 @@ const
 	{ Given a CSSM_KEY_PTR in any format, obtain the SHA-1 hash of the
 	 * associated key blob.
 	 * Key is specified in CSSM_CSP_CreatePassThroughContext.
-	 * Hash is allocated bythe CSP, in the App's memory, and returned
+	 * Hash is allocated by the CSP, in the App's memory, and returned
 	 * in *outData. }
 	CSSM_APPLECSP_KEYDIGEST = $100;
 
@@ -933,19 +939,19 @@ const
 
 	{
 	 * Prompt string for CSSM_ALGID_SECURE_PASSPHRASE key acquisition.
-	 * Data is a UTF8-encoded external representation of a CFString. 
+	 * Data is a UTF8-encoded external representation of a CFString.
 	 }
 	CSSM_ATTRIBUTE_PROMPT = (CSSM_ATTRIBUTE_DATA_CSSM_DATA or (CSSM_ATTRIBUTE_VENDOR_DEFINED + 6));
 
 	{
 	 * Alert panel title for CSSM_ALGID_SECURE_PASSPHRASE key acquisition.
-	 * Data is a UTF8-encoded external representation of a CFString. 
+	 * Data is a UTF8-encoded external representation of a CFString.
 	 }
 	CSSM_ATTRIBUTE_ALERT_TITLE = (CSSM_ATTRIBUTE_DATA_CSSM_DATA or (CSSM_ATTRIBUTE_VENDOR_DEFINED + 7));
 
 	{
-	 * Boolean to specify whether secure passphrase is being used to encrypt or to 
-	 * recover data. In the former case the user will be prompted to enter the 
+	 * Boolean to specify whether secure passphrase is being used to encrypt or to
+	 * recover data. In the former case the user will be prompted to enter the
 	 * passphrase twice. Value is integer, nonzero (verify passphrase) or zero.
 	 }
 	CSSM_ATTRIBUTE_VERIFY_PASSPHRASE = (CSSM_ATTRIBUTE_DATA_UINT32 or (CSSM_ATTRIBUTE_VENDOR_DEFINED + 8));

@@ -42,7 +42,9 @@
 
 // $Id: JwaDbt.pas,v 1.10 2007/09/06 14:57:11 marquardt Exp $
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaDbt;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -56,8 +58,13 @@ unit JwaDbt;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Wintype, WinApi.Jedi.Winuser;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaWinType, JwaWinUser;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 {$IFNDEF JWA_IMPLEMENTATIONSECTION}
@@ -72,15 +79,15 @@ const
   {$EXTERNALSYM WM_DEVICECHANGE}
 
 (*
- * Broadcast message and receipient flags.
+ * Broadcast message and recipient flags.
  *
  * Note that there is a third "flag". If the wParam has:
  *
- * bit 15 on:   lparam is a pointer and bit 14 is meaningfull.
+ * bit 15 on:   lparam is a pointer and bit 14 is meaningful.
  * bit 15 off:  lparam is just a UNLONG data type.
  *
  * bit 14 on:   lparam is a pointer to an ASCIIZ string.
- * bit 14 off:  lparam is a pointer to a binary struture starting with
+ * bit 14 off:  lparam is a pointer to a binary structure starting with
  *              a dword describing the length of the structure.
  *)
 
@@ -341,7 +348,7 @@ const
  * lParam  = drive number of drive that is low on disk space (1-based)
  *
  * Message issued by VFAT when it detects that a drive it has mounted
- * has the remaning free space below a threshold specified by the
+ * has the remaining free space below a threshold specified by the
  * registry or by a disk space management application.
  * The broadcast is issued by VFAT ONLY when space is either allocated
  * or freed by VFAT.
@@ -458,7 +465,7 @@ type
     dbcp_size: DWORD;
     dbcp_devicetype: DWORD;
     dbcp_reserved: DWORD;
-    dbcp_name: array [0..0] of Char;
+    dbcp_name: array [0..0] of AnsiChar;
   end;
   {$EXTERNALSYM _DEV_BROADCAST_PORT_A}
   DEV_BROADCAST_PORT_A = _DEV_BROADCAST_PORT_A;
@@ -518,7 +525,7 @@ type
     dbcc_devicetype: DWORD;
     dbcc_reserved: DWORD;
     dbcc_classguid: GUID;
-    dbcc_name: array [0..0] of char;
+    dbcc_name: array [0..0] of AnsiChar;
   end;
   {$EXTERNALSYM _DEV_BROADCAST_DEVICEINTERFACE_A}
   DEV_BROADCAST_DEVICEINTERFACE_A = _DEV_BROADCAST_DEVICEINTERFACE_A;
@@ -658,7 +665,7 @@ type
   {$EXTERNALSYM PDEV_BROADCAST_USERDEFINED}
   _DEV_BROADCAST_USERDEFINED = record
     dbud_dbh: DEV_BROADCAST_HDR;
-    dbud_szName: array [0..0] of Char;
+    dbud_szName: array [0..0] of AnsiChar;
     //  BYTE        dbud_rgbUserDefined[];*/ /* User-defined contents */
   end;
   {$EXTERNALSYM _DEV_BROADCAST_USERDEFINED}
@@ -668,7 +675,7 @@ type
   PDevBroadcastUserDefined = PDEV_BROADCAST_USERDEFINED;
 
 // (rom) added own message type for WM_DEVICECHANGE
-// see Messages.pas TWMNoParams ff. 
+// see Messages.pas TWMNoParams ff.
 
 type
   TWMDeviceChange = record

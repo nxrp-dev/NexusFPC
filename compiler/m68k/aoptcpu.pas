@@ -25,7 +25,9 @@ unit aoptcpu;
 
 {$i fpcdefs.inc}
 
+{$ifdef EXTDEBUG}
 {$define DEBUG_AOPTCPU}
+{$endif EXTDEBUG}
 
   Interface
 
@@ -38,10 +40,13 @@ unit aoptcpu;
         function RegLoadedWithNewValue(reg: tregister; hp: tai): boolean; override;
         function PeepHoleOptPass1Cpu(var p: tai): boolean; override;
 
+        function TryToFoldDoubleAND(var p: tai): boolean;
+        function TryToRemoveTST(var p: tai): boolean;
         function TryToOptimizeMove(var p: tai): boolean;
         function MaybeRealConstOperSimplify(var p: tai): boolean;
         function OptPass1LEA(var p: tai): Boolean;
         function OptPass1MOVEM(var p: tai): Boolean;
+        function OptPass1Bitwise(var p: tai): Boolean;
 
         { outputs a debug message into the assembler file }
         procedure DebugMsg(const s: string; p: tai);
@@ -217,6 +222,50 @@ unit aoptcpu;
     end;
 {$endif DEBUG_AOPTCPU}
 
+  function TCpuAsmOptimizer.TryToFoldDoubleAND(var p: tai): boolean;
+    var
+      next, next2: tai;
+      opstr: string[15];
+    begin
+      result:=false;
+
+      if ((taicpu(p).oper[0]^.typ=top_const) and (taicpu(p).oper[1]^.typ=top_reg)) and
+        GetNextInstruction(p,next) and
+        MatchInstruction(next,A_AND,[]) and
+        (taicpu(next).oper[0]^.typ=top_const) and
+        MatchOperand(taicpu(p).oper[1]^,taicpu(next).oper[1]^) then
+       begin
+         DebugMsg('Optimizer: folding double AND',p);
+         if taicpu(p).opsize<taicpu(next).opsize then
+           taicpu(p).opsize:=taicpu(next).opsize;
+         taicpu(p).oper[0]^.val:=taicpu(p).oper[0]^.val and taicpu(next).oper[0]^.val;
+         RemoveInstruction(next);
+         result:=true;
+       end;
+    end;
+
+  function TCpuAsmOptimizer.TryToRemoveTST(var p: tai): boolean;
+    var
+      next, next2: tai;
+      opstr: string[15];
+    begin
+      result:=false;
+
+      if not((taicpu(p).oper[1]^.typ=top_reg) and isaddressregister(taicpu(p).oper[1]^.reg)) and
+        GetNextInstruction(p,next) and
+        MatchInstruction(next,A_TST,[taicpu(p).opsize]) and
+        MatchOperand(taicpu(p).oper[1]^,taicpu(next).oper[0]^) and
+        GetNextInstruction(next,next2) and
+        MatchInstruction(next2,[A_BXX,A_SXX],[S_NO,S_B]) and
+        (taicpu(next2).condition in [C_NE,C_EQ,C_PL,C_MI]) then
+        begin
+          opstr:=opname(p);
+          DebugMsg('Optimizer: '+opstr+', TST, Jxx/Sxx to '+opstr+', Jxx/Sxx',p);
+          RemoveInstruction(next);
+          result:=true;
+        end;
+    end;
+
   function TCpuAsmOptimizer.TryToOptimizeMove(var p: tai): boolean;
     var
       next, next2: tai;
@@ -224,21 +273,11 @@ unit aoptcpu;
     begin
       result:=false;
 
-      if (taicpu(p).opcode=A_MOVE) and
-        GetNextInstruction(p,next) and
-        MatchInstruction(next,A_TST,[taicpu(p).opsize]) and
-        MatchOperand(taicpu(p).oper[1]^,taicpu(next).oper[0]^) and
-        { for movea, it won't work }
-        not((taicpu(p).oper[1]^.typ=top_reg) and isaddressregister(taicpu(p).oper[1]^.reg)) and
-        GetNextInstruction(next,next2) and
-        MatchInstruction(next2,[A_BXX,A_SXX],[S_NO]) and
-        (taicpu(next2).condition in [C_NE,C_EQ,C_PL,C_MI]) then
+      if (taicpu(p).opcode=A_MOVE) then
         begin
-          DebugMsg('Optimizer: MOVE, TST, Jxx/Sxx to MOVE, Jxx',p);
-          asml.remove(next);
-          next.free;
-          result:=true;
-          exit;
+          result:=TryToRemoveTST(p);
+          if result then
+            exit;
         end;
       if GetNextInstruction(p,next) and
          (next.typ = ait_instruction) and
@@ -253,15 +292,15 @@ unit aoptcpu;
               opstr:=opname(p);
               case taicpu(p).oper[0]^.typ of
                 top_reg:
-                  { do not optimize away FPU to INT to FPU reg moves. These are used for 
+                  { do not optimize away FPU to INT to FPU reg moves. These are used for
                     to-single-rounding on FPUs which have no FSMOVE/FDMOVE. (KB) }
                   if not ((taicpu(p).opcode = A_FMOVE) and
                     (getregtype(taicpu(p).oper[0]^.reg) <> getregtype(taicpu(p).oper[1]^.reg))) then
                     begin
                       {  move %reg0, %tmpreg; move %tmpreg, <ea> -> move %reg0, <ea> }
                       taicpu(p).loadOper(1,taicpu(next).oper[1]^);
-                      asml.remove(next);
-                      next.free;
+                      UpdateUsedRegs(p);
+                      RemoveInstruction(next);
                       result:=true;
                       { also remove leftover move %reg0, %reg0, which can occur as the result
                         of the previous optimization, if %reg0 and %tmpreg was different types
@@ -269,10 +308,7 @@ unit aoptcpu;
                       if MatchOperand(taicpu(p).oper[0]^,taicpu(p).oper[1]^) then
                         begin
                           DebugMsg('Optimizer: '+opstr+' + '+opstr+' removed',p);
-                          GetNextInstruction(p,next);
-                          asml.remove(p);
-                          p.free;
-                          p:=next;
+                          RemoveCurrentP(p);
                         end
                       else
                         DebugMsg('Optimizer: '+opstr+' + '+opstr+' to '+opstr+' #1',p)
@@ -296,8 +332,8 @@ unit aoptcpu;
                         begin
                           DebugMsg('Optimizer: '+opstr+' + '+opstr+' to '+opstr+' #3',p);
                           taicpu(p).loadOper(1,taicpu(next).oper[1]^);
-                          asml.remove(next);
-                          next.free;
+                          UpdateUsedRegs(p);
+                          RemoveInstruction(next);
                           result:=true;
                         end;
                   end;
@@ -365,12 +401,9 @@ unit aoptcpu;
          (taicpu(p).oper[0]^.ref^.offset = 0) then
         begin
           DebugMsg('Optimizer: LEA 0(Ax),Ax removed',p);
-          GetNextInstruction(p,next);
-          asml.remove(p);
-          p.free;
-          p:=next;
-          result:=true;
-          exit;
+          result:=RemoveCurrentP(p);
+          if result then
+            exit;
         end;
       if (taicpu(p).oper[1]^.reg=NR_A7) and
         (taicpu(p).oper[0]^.ref^.base=NR_A7) and
@@ -384,14 +417,12 @@ unit aoptcpu;
         (taicpu(next).oper[1]^.ref^.base=NR_A7) and
         (taicpu(next).oper[1]^.ref^.index=NR_NO) and
         (taicpu(next).oper[1]^.ref^.symbol=nil) and
-        (taicpu(next).oper[1]^.ref^.direction=dir_none) and 
+        (taicpu(next).oper[1]^.ref^.direction=dir_none) and
         not (current_settings.cputype in cpu_coldfire) then
         begin
           DebugMsg('Optimizer: LEA, MOVE(M) to MOVE(M) predecremented',p);
           taicpu(next).oper[1]^.ref^.direction:=dir_dec;
-          asml.remove(p);
-          p.free;
-          p:=next;
+          RemoveCurrentP(p,next);
           result:=true;
           exit;
         end;
@@ -419,11 +450,26 @@ unit aoptcpu;
         begin
           DebugMsg('Optimizer: MOVE(M), LEA to MOVE(M) postincremented',p);
           taicpu(p).oper[0]^.ref^.direction:=dir_inc;
-          asml.remove(next);
-          next.free;
+          RemoveInstruction(next);
           result:=true;
           exit;
         end;
+    end;
+
+  function TCpuAsmOptimizer.OptPass1Bitwise(var p: tai): Boolean;
+    begin
+      result:=false;
+      case p.typ of
+        ait_instruction:
+          begin
+            if taicpu(p).opcode = A_AND then
+              result:=TryToFoldDoubleAND(p);
+            if not result then
+              result:=TryToRemoveTST(p);
+          end;
+        else
+          ;
+      end;
     end;
 
   function TCpuAsmOptimizer.PeepHoleOptPass1Cpu(var p: tai): boolean;
@@ -443,7 +489,10 @@ unit aoptcpu;
               A_MOVEM:
                 result:=OptPass1MOVEM(p);
               A_LEA:
-                Result:=OptPass1LEA(p);
+                result:=OptPass1LEA(p);
+              { Bitwise operations }
+              A_AND,A_OR,A_EOR:
+                result:=OptPass1Bitwise(p);
               { Address register sub/add can be replaced with ADDQ/SUBQ or LEA if the value is in the
                 SmallInt range, which is shorter to encode and faster to execute on most 68k }
               A_SUB,A_SUBA,A_ADD,A_ADDA:
@@ -473,7 +522,11 @@ unit aoptcpu;
                           taicpu(p).loadref(0,tmpref);
                           result:=true;
                         end;
-                  end;
+                  end
+                else
+                  result:=TryToRemoveTST(p);
+              A_SUBQ,A_ADDQ:
+                result:=TryToRemoveTST(p);
               { MOVEA #0,Ax to SUBA Ax,Ax, because it's shorter }
               A_MOVEA:
                 if (taicpu(p).oper[0]^.typ = top_const) and
@@ -510,20 +563,23 @@ unit aoptcpu;
 
                       Actually, as in this case the stack pointer is no used as a frame pointer and
                       there will be more instructions to restore the stack frame before jsr, so this
-                      is unlikedly to happen }
+                      is unlikely to happen }
                     (current_procinfo.maxpushedparasize=0) then
                     begin
                       DebugMsg('Optimizer: JSR, RTS to JMP',p);
                       taicpu(p).opcode:=A_JMP;
-                      asml.remove(next);
-                      next.free;
+                      RemoveInstruction(next);
                       result:=true;
                     end;
                 end;
               { CMP #0,<ea> equals to TST <ea>, just shorter and TST is more flexible anyway }
               A_CMP,A_CMPI:
-                if (taicpu(p).oper[0]^.typ = top_const) and
-                   (taicpu(p).oper[0]^.val = 0) then
+                if ((taicpu(p).oper[0]^.typ = top_const) and
+                    (taicpu(p).oper[0]^.val = 0)) and
+                   ((taicpu(p).oper[1]^.typ = top_ref) or
+                    ((taicpu(p).oper[1]^.typ = top_reg) and
+                     not (isaddressregister(taicpu(p).oper[1]^.reg) and
+                      not (CPUM68K_HAS_TSTAREG in cpu_capabilities[current_settings.cputype])))) then
                   begin
                     DebugMsg('Optimizer: CMP #0 to TST',p);
                     taicpu(p).opcode:=A_TST;
@@ -536,7 +592,7 @@ unit aoptcpu;
                 if (taicpu(p).oper[0]^.typ = top_realconst) then
                   begin
                     if (taicpu(p).oper[0]^.val_real = 0.0) then
-                      begin 
+                      begin
                         DebugMsg('Optimizer: FCMP #0.0 to FTST',p);
                         taicpu(p).opcode:=A_FTST;
                         taicpu(p).opsize:=S_FX;

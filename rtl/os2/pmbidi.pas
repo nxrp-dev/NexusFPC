@@ -17,11 +17,17 @@
 {Warning: This code is alfa. Future versions
  of this unit might not be compatible.}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit pmbidi;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses OS2Api.os2def, OS2Api.pmwin;
+{$ELSE FPC_DOTTEDUNITS}
 uses os2def, pmwin;
+{$ENDIF FPC_DOTTEDUNITS}
 
 
 {$PACKRECORDS C}
@@ -491,7 +497,7 @@ Function WinQueryCpType(ahmq: HMQ): Cardinal; cdecl;
 const
     {                                                                       }
     { New CURSOR flags for Left-To-Right and Right-To-Left cursors          }
-    { These are in addtion to those in the CURSOR section in PMWIN.H        }
+    { These are in addition to those in the CURSOR section in PMWIN.H       }
     {                                                                       }
        CURSOR_DIR_LTR = $0100;
        CURSOR_DIR_RTL = $0300;

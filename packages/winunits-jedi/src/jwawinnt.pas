@@ -42,7 +42,9 @@
 
 // $Id: JwaWinNT.pas,v 1.15 2007/10/20 18:08:49 dezipaitor Exp $
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaWinNT;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -60,8 +62,13 @@ unit JwaWinNT;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 {$IFNDEF JWA_IMPLEMENTATIONSECTION}
@@ -627,7 +634,7 @@ type
 
 //
 // Disable these two pramas that evaluate to "sti" "cli" on x86 so that driver
-// writers to not leave them inadvertantly in their code.
+// writers to not leave them inadvertently in their code.
 //
 
 function GetFiberData: PVOID;
@@ -708,7 +715,7 @@ type
 // Context Frame
 //
 //  This frame has a several purposes: 1) it is used as an argument to
-//  NtContinue, 2) is is used to constuct a call frame for APC delivery,
+//  NtContinue, 2) is is used to construct a call frame for APC delivery,
 //  and 3) it is used in the user level thread creation routines.
 //
 //  The layout of the record conforms to a standard call frame.
@@ -753,14 +760,14 @@ type
 
     //
     // This section is specified/returned if the
-    // ContextFlags word contians the flag CONTEXT_FLOATING_POINT.
+    // ContextFlags word contains the flag CONTEXT_FLOATING_POINT.
     //
 
     FloatSave: FLOATING_SAVE_AREA;
 
     //
     // This section is specified/returned if the
-    // ContextFlags word contians the flag CONTEXT_SEGMENTS.
+    // ContextFlags word contains the flag CONTEXT_SEGMENTS.
     //
 
     SegGs: DWORD;
@@ -770,7 +777,7 @@ type
 
     //
     // This section is specified/returned if the
-    // ContextFlags word contians the flag CONTEXT_INTEGER.
+    // ContextFlags word contains the flag CONTEXT_INTEGER.
     //
 
     Edi: DWORD;
@@ -782,7 +789,7 @@ type
 
     //
     // This section is specified/returned if the
-    // ContextFlags word contians the flag CONTEXT_CONTROL.
+    // ContextFlags word contains the flag CONTEXT_CONTROL.
     //
 
     Ebp: DWORD;
@@ -958,7 +965,7 @@ type
   PACCESS_MASK = ^ACCESS_MASK;
   {$EXTERNALSYM PACCESS_MASK}
   TAccessMask = ACCESS_MASK;
-  PAccessMask = PACCESS_MASK;  
+  PAccessMask = PACCESS_MASK;
 
 ////////////////////////////////////////////////////////////////////////
 //                                                                    //
@@ -1914,7 +1921,7 @@ type
     Header: ACE_HEADER;
     Mask: ACCESS_MASK;
     SidStart: DWORD;
-    // Opaque resouce manager specific data
+    // Opaque resource manager specific data
   end;
   {$EXTERNALSYM _ACCESS_ALLOWED_CALLBACK_ACE}
   ACCESS_ALLOWED_CALLBACK_ACE = _ACCESS_ALLOWED_CALLBACK_ACE;
@@ -1922,13 +1929,13 @@ type
   PACCESS_ALLOWED_CALLBACK_ACE = ^ACCESS_ALLOWED_CALLBACK_ACE;
   {$EXTERNALSYM PACCESS_ALLOWED_CALLBACK_ACE}
   TAccessAllowedCallBackAce = ACCESS_ALLOWED_CALLBACK_ACE;
-  PAccessAllowedCallBackAce = PACCESS_ALLOWED_CALLBACK_ACE;  
+  PAccessAllowedCallBackAce = PACCESS_ALLOWED_CALLBACK_ACE;
 
   _ACCESS_DENIED_CALLBACK_ACE = record
     Header: ACE_HEADER;
     Mask: ACCESS_MASK;
     SidStart: DWORD;
-    // Opaque resouce manager specific data
+    // Opaque resource manager specific data
   end;
   {$EXTERNALSYM _ACCESS_DENIED_CALLBACK_ACE}
   ACCESS_DENIED_CALLBACK_ACE = _ACCESS_DENIED_CALLBACK_ACE;
@@ -1942,7 +1949,7 @@ type
     Header: ACE_HEADER;
     Mask: ACCESS_MASK;
     SidStart: DWORD;
-    // Opaque resouce manager specific data
+    // Opaque resource manager specific data
   end;
   {$EXTERNALSYM _SYSTEM_AUDIT_CALLBACK_ACE}
   SYSTEM_AUDIT_CALLBACK_ACE = _SYSTEM_AUDIT_CALLBACK_ACE;
@@ -1956,7 +1963,7 @@ type
     Header: ACE_HEADER;
     Mask: ACCESS_MASK;
     SidStart: DWORD;
-    // Opaque resouce manager specific data
+    // Opaque resource manager specific data
   end;
   {$EXTERNALSYM _SYSTEM_ALARM_CALLBACK_ACE}
   SYSTEM_ALARM_CALLBACK_ACE = _SYSTEM_ALARM_CALLBACK_ACE;
@@ -1973,7 +1980,7 @@ type
     ObjectType: GUID;
     InheritedObjectType: GUID;
     SidStart: DWORD;
-    // Opaque resouce manager specific data
+    // Opaque resource manager specific data
   end;
   {$EXTERNALSYM _ACCESS_ALLOWED_CALLBACK_OBJECT_ACE}
   ACCESS_ALLOWED_CALLBACK_OBJECT_ACE = _ACCESS_ALLOWED_CALLBACK_OBJECT_ACE;
@@ -1990,7 +1997,7 @@ type
     ObjectType: GUID;
     InheritedObjectType: GUID;
     SidStart: DWORD;
-    // Opaque resouce manager specific data
+    // Opaque resource manager specific data
   end;
   {$EXTERNALSYM _ACCESS_DENIED_CALLBACK_OBJECT_ACE}
   ACCESS_DENIED_CALLBACK_OBJECT_ACE = _ACCESS_DENIED_CALLBACK_OBJECT_ACE;
@@ -2007,7 +2014,7 @@ type
     ObjectType: GUID;
     InheritedObjectType: GUID;
     SidStart: DWORD;
-    // Opaque resouce manager specific data
+    // Opaque resource manager specific data
   end;
   {$EXTERNALSYM _SYSTEM_AUDIT_CALLBACK_OBJECT_ACE}
   SYSTEM_AUDIT_CALLBACK_OBJECT_ACE = _SYSTEM_AUDIT_CALLBACK_OBJECT_ACE;
@@ -2024,7 +2031,7 @@ type
     ObjectType: GUID;
     InheritedObjectType: GUID;
     SidStart: DWORD;
-    // Opaque resouce manager specific data
+    // Opaque resource manager specific data
   end;
   {$EXTERNALSYM _SYSTEM_ALARM_CALLBACK_OBJECT_ACE}
   SYSTEM_ALARM_CALLBACK_OBJECT_ACE = _SYSTEM_ALARM_CALLBACK_OBJECT_ACE;
@@ -2160,14 +2167,14 @@ const
 //          SID pointed to by the Owner field was provided by a
 //          defaulting mechanism rather than explicitly provided by the
 //          original provider of the security descriptor.  This may
-//          affect the treatment of the SID with respect to inheritence
+//          affect the treatment of the SID with respect to inheritance
 //          of an owner.
 //
 //      SE_GROUP_DEFAULTED - This boolean flag, when set, indicates that the
 //          SID in the Group field was provided by a defaulting mechanism
 //          rather than explicitly provided by the original provider of
 //          the security descriptor.  This may affect the treatment of
-//          the SID with respect to inheritence of a primary group.
+//          the SID with respect to inheritance of a primary group.
 //
 //      SE_DACL_PRESENT - This boolean flag, when set, indicates that the
 //          security descriptor contains a discretionary ACL.  If this
@@ -2178,7 +2185,7 @@ const
 //          ACL pointed to by the Dacl field was provided by a defaulting
 //          mechanism rather than explicitly provided by the original
 //          provider of the security descriptor.  This may affect the
-//          treatment of the ACL with respect to inheritence of an ACL.
+//          treatment of the ACL with respect to inheritance of an ACL.
 //          This flag is ignored if the DaclPresent flag is not set.
 //
 //      SE_SACL_PRESENT - This boolean flag, when set,  indicates that the
@@ -2191,7 +2198,7 @@ const
 //          ACL pointed to by the Sacl field was provided by a defaulting
 //          mechanism rather than explicitly provided by the original
 //          provider of the security descriptor.  This may affect the
-//          treatment of the ACL with respect to inheritence of an ACL.
+//          treatment of the ACL with respect to inheritance of an ACL.
 //          This flag is ignored if the SaclPresent flag is not set.
 //
 //      SE_SELF_RELATIVE - This boolean flag, when set, indicates that the
@@ -2769,7 +2776,7 @@ type
   PTOKEN_SOURCE = ^TOKEN_SOURCE;
   {$EXTERNALSYM PTOKEN_SOURCE}
   _TOKEN_SOURCE = record
-    SourceName: array [0..TOKEN_SOURCE_LENGTH - 1] of CHAR;
+    SourceName: array [0..TOKEN_SOURCE_LENGTH - 1] of AnsiChar;
     SourceIdentifier: LUID;
   end;
   {$EXTERNALSYM _TOKEN_SOURCE}
@@ -2821,7 +2828,7 @@ type
   PTOKEN_ORIGIN = ^TOKEN_ORIGIN;
   {$EXTERNALSYM PTOKEN_ORIGIN}
   TTokenOrigin = TOKEN_ORIGIN;
-  PTokenOrigin = PTOKEN_ORIGIN;  
+  PTokenOrigin = PTOKEN_ORIGIN;
 
 //
 // Security Tracking Mode
@@ -2887,7 +2894,7 @@ type
   PSECURITY_INFORMATION = ^SECURITY_INFORMATION;
   {$EXTERNALSYM PSECURITY_INFORMATION}
   TSecurityInformation = SECURITY_INFORMATION;
-  PSecurityInformation = PSECURITY_INFORMATION;  
+  PSecurityInformation = PSECURITY_INFORMATION;
 
 const
   OWNER_SECURITY_INFORMATION = $00000001;
@@ -3191,7 +3198,7 @@ type
   PQUOTA_LIMITS_EX = ^QUOTA_LIMITS_EX;
   {$EXTERNALSYM PQUOTA_LIMITS_EX}
   TQuotaLimitsEx = QUOTA_LIMITS_EX;
-  PQuotaLimitsEx = PQUOTA_LIMITS_EX;  
+  PQuotaLimitsEx = PQUOTA_LIMITS_EX;
 
   PIO_COUNTERS = ^IO_COUNTERS;
   {$EXTERNALSYM PIO_COUNTERS}
@@ -3345,7 +3352,7 @@ type
   PJOBOBJECT_JOBSET_INFORMATION = ^JOBOBJECT_JOBSET_INFORMATION;
   {$EXTERNALSYM PJOBOBJECT_JOBSET_INFORMATION}
   TJobObjectSetInformation = JOBOBJECT_JOBSET_INFORMATION;
-  PJobObjectSetInformation = PJOBOBJECT_JOBSET_INFORMATION;  
+  PJobObjectSetInformation = PJOBOBJECT_JOBSET_INFORMATION;
 
 const
   JOB_OBJECT_TERMINATE_AT_END_OF_JOB = 0;
@@ -3557,7 +3564,7 @@ type
   {$EXTERNALSYM SYSTEM_LOGICAL_PROCESSOR_INFORMATION}
   PSYSTEM_LOGICAL_PROCESSOR_INFORMATION = ^SYSTEM_LOGICAL_PROCESSOR_INFORMATION;
   TSystemLogicalProcessorInformation = SYSTEM_LOGICAL_PROCESSOR_INFORMATION;
-  PSystemLogicalProcessorInformation = PSYSTEM_LOGICAL_PROCESSOR_INFORMATION;  
+  PSystemLogicalProcessorInformation = PSYSTEM_LOGICAL_PROCESSOR_INFORMATION;
 
 const
   PROCESSOR_INTEL_386     = 386;
@@ -3967,7 +3974,7 @@ type
   PFileNotifyInformation = PFILE_NOTIFY_INFORMATION;
 
 //
-// Define segement buffer structure for scatter/gather read/write.
+// Define segment buffer structure for scatter/gather read/write.
 //
 
 type
@@ -4179,7 +4186,7 @@ type
 
 //-----------------------------------------------------------------------------
 // Device Power Information
-// Accessable via CM_Get_DevInst_Registry_Property_Ex(CM_DRP_DEVICE_POWER_DATA)
+// Accessible via CM_Get_DevInst_Registry_Property_Ex(CM_DRP_DEVICE_POWER_DATA)
 //-----------------------------------------------------------------------------
 
 const
@@ -4594,8 +4601,8 @@ type
   {$EXTERNALSYM PIMAGE_OS2_HEADER}
   _IMAGE_OS2_HEADER = record
     ne_magic: Word;        // Magic number
-    ne_ver: CHAR;          // Version number
-    ne_rev: CHAR;          // Revision number
+    ne_ver: AnsiChar;          // Version number
+    ne_rev: AnsiChar;          // Revision number
     ne_enttab: Word;       // Offset of Entry Table
     ne_cbenttab: Word;     // Number of bytes in Entry Table
     ne_crc: Longint;       // Checksum of whole file
@@ -4722,13 +4729,13 @@ const
 
   IMAGE_FILE_RELOCS_STRIPPED         = $0001; // Relocation info stripped from file.
   {$EXTERNALSYM IMAGE_FILE_RELOCS_STRIPPED}
-  IMAGE_FILE_EXECUTABLE_IMAGE        = $0002; // File is executable  (i.e. no unresolved externel references).
+  IMAGE_FILE_EXECUTABLE_IMAGE        = $0002; // File is executable  (i.e. no unresolved external references).
   {$EXTERNALSYM IMAGE_FILE_EXECUTABLE_IMAGE}
   IMAGE_FILE_LINE_NUMS_STRIPPED      = $0004; // Line nunbers stripped from file.
   {$EXTERNALSYM IMAGE_FILE_LINE_NUMS_STRIPPED}
   IMAGE_FILE_LOCAL_SYMS_STRIPPED     = $0008; // Local symbols stripped from file.
   {$EXTERNALSYM IMAGE_FILE_LOCAL_SYMS_STRIPPED}
-  IMAGE_FILE_AGGRESIVE_WS_TRIM       = $0010; // Agressively trim working set
+  IMAGE_FILE_AGGRESIVE_WS_TRIM       = $0010; // Aggressively trim working set
   {$EXTERNALSYM IMAGE_FILE_AGGRESIVE_WS_TRIM}
   IMAGE_FILE_LARGE_ADDRESS_AWARE     = $0020; // App can handle >2gb addresses
   {$EXTERNALSYM IMAGE_FILE_LARGE_ADDRESS_AWARE}
@@ -5167,7 +5174,7 @@ type
 
 function IMAGE_FIRST_SECTION(NtHeader: PImageNtHeaders): PImageSectionHeader;
 {$EXTERNALSYM IMAGE_FIRST_SECTION}
-  
+
 const
   IMAGE_SIZEOF_SECTION_HEADER = 40;
   {$EXTERNALSYM IMAGE_SIZEOF_SECTION_HEADER}
@@ -5277,7 +5284,7 @@ const
   {$EXTERNALSYM IMAGE_SCN_MEM_WRITE}
 
 //
-// TLS Chaacteristic Flags
+// TLS Characteristic Flags
 //
 
   IMAGE_SCN_SCALE_INDEX = $00000001; // Tls index is scaled
@@ -6511,7 +6518,7 @@ type
 //
 // This structure allows fast lookup by either name or number, but for any
 // given resource entry only one form of lookup is supported, not both.
-// This is consistant with the syntax of the .RC file and the .RES file.
+// This is consistent with the syntax of the .RC file and the .RES file.
 //
 
   PIMAGE_RESOURCE_DIRECTORY = ^IMAGE_RESOURCE_DIRECTORY;
@@ -6597,7 +6604,7 @@ type
   {$EXTERNALSYM PIMAGE_RESOURCE_DIRECTORY_STRING}
   _IMAGE_RESOURCE_DIRECTORY_STRING = record
     Length: Word;
-    NameString: array [0..0] of CHAR;
+    NameString: array [0..0] of AnsiChar;
   end;
   {$EXTERNALSYM _IMAGE_RESOURCE_DIRECTORY_STRING}
   IMAGE_RESOURCE_DIRECTORY_STRING = _IMAGE_RESOURCE_DIRECTORY_STRING;
@@ -6900,7 +6907,7 @@ type
 // flag in the Characteristics field of the file header.  The beginning of
 // the .DBG file contains the following structure which captures certain
 // information from the image file.  This allows a debug to proceed even if
-// the original image file is not accessable.  This header is followed by
+// the original image file is not accessible.  This header is followed by
 // zero of more IMAGE_SECTION_HEADER structures, followed by zero or more
 // IMAGE_DEBUG_DIRECTORY structures.  The latter structures and those in
 // the image file contain file offsets relative to the beginning of the
@@ -6968,7 +6975,7 @@ const
 //
 //  The .arch section is made up of headers, each describing an amask position/value
 //  pointing to an array of IMAGE_ARCHITECTURE_ENTRY's.  Each "array" (both the header
-//  and entry arrays) are terminiated by a quadword of 0xffffffffL.
+//  and entry arrays) are terminated by a quadword of 0xffffffffL.
 //
 //  NOTE: There may be quadwords of 0 sprinkled around and must be skipped.
 //
@@ -7177,7 +7184,7 @@ type
   PSLIST_ENTRY = PSINGLE_LIST_ENTRY;
   {$EXTERNALSYM PSLIST_ENTRY}
   TSListEntry = SLIST_ENTRY;
-  PSListEntry = PSLIST_ENTRY;  
+  PSListEntry = PSLIST_ENTRY;
 
 type
   _SLIST_HEADER = record
@@ -7195,7 +7202,7 @@ type
   PSLIST_HEADER = ^SLIST_HEADER;
   {$EXTERNALSYM PSLIST_HEADER}
   TSListHeader = SLIST_HEADER;
-  PSListHeader = PSLIST_HEADER;  
+  PSListHeader = PSLIST_HEADER;
 
 procedure RtlInitializeSListHead(ListHead: PSLIST_HEADER); stdcall;
 function RtlFirstEntrySList(ListHead: PSLIST_HEADER): PSLIST_ENTRY; stdcall;
@@ -7351,7 +7358,7 @@ type
     dwMinorVersion: DWORD;
     dwBuildNumber: DWORD;
     dwPlatformId: DWORD;
-    szCSDVersion: array [0..127] of CHAR; // Maintenance string for PSS usage
+    szCSDVersion: array [0..127] of AnsiChar; // Maintenance string for PSS usage
   end;
   {$EXTERNALSYM _OSVERSIONINFOA}
   OSVERSIONINFOA = _OSVERSIONINFOA;
@@ -7402,7 +7409,7 @@ type
     dwMinorVersion: DWORD;
     dwBuildNumber: DWORD;
     dwPlatformId: DWORD;
-    szCSDVersion: array [0..127] of CHAR;     // Maintenance string for PSS usage
+    szCSDVersion: array [0..127] of AnsiChar;     // Maintenance string for PSS usage
     wServicePackMajor: WORD;
     wServicePackMinor: WORD;
     wSuiteMask: WORD;
@@ -7611,7 +7618,7 @@ type
   PRTL_VERIFIER_THUNK_DESCRIPTOR = ^RTL_VERIFIER_THUNK_DESCRIPTOR;
   {$EXTERNALSYM PRTL_VERIFIER_THUNK_DESCRIPTOR}
   _RTL_VERIFIER_THUNK_DESCRIPTOR = record
-    ThunkName: PCHAR;
+    ThunkName: PAnsiChar;
     ThunkOldAddress: PVOID;
     ThunkNewAddress: PVOID;
   end;
@@ -7658,8 +7665,8 @@ type
 
     //
     // Filled by verifier provider DLL
-    // 
-    
+    //
+
     ProviderNtdllHeapFreeCallback: RTL_VERIFIER_NTDLLHEAPFREE_CALLBACK;
   end;
   {$EXTERNALSYM _RTL_VERIFIER_PROVIDER_DESCRIPTOR}
@@ -7859,11 +7866,11 @@ const
 VOID NTAPI
 RtlApplicationVerifierStop (
     ULONG_PTR Code,
-    PCHAR Message,
-    ULONG_PTR Param1, PCHAR Description1,
-    ULONG_PTR Param2, PCHAR Description2,
-    ULONG_PTR Param3, PCHAR Description3,
-    ULONG_PTR Param4, PCHAR Description4
+    PAnsiChar Message,
+    ULONG_PTR Param1, PAnsiChar Description1,
+    ULONG_PTR Param2, PAnsiChar Description2,
+    ULONG_PTR Param3, PAnsiChar Description3,
+    ULONG_PTR Param4, PAnsiChar Description4
     );
 *)
 
@@ -8197,7 +8204,7 @@ type
     // SID   UserSid
     // WCHAR Strings[]
     // BYTE  Data[]
-    // CHAR  Pad[]
+    // AnsiChar  Pad[]
     // DWORD Length;
     //
   end;
@@ -9017,7 +9024,7 @@ end;
 function NtCurrentTeb: PNT_TIB;
 asm
 {$ifdef cpu386}
-        MOV     EAX, FS:[024]   // was zero        
+        MOV     EAX, FS:[024]   // was zero
 {$endif cpu386}
 {$ifdef cpux86_64}
         mov     RAX, GS:[48]

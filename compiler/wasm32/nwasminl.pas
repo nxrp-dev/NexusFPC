@@ -59,6 +59,7 @@ interface
         procedure second_atomic_rmw_x_y(op: TAsmOp);
         procedure second_atomic_rmw_x_y_z(op: TAsmOp);
         procedure second_tls_get(const SymStr: string);
+        procedure second_set_base_pointer;
       protected
         function first_sqr_real: tnode; override;
       public
@@ -72,12 +73,15 @@ interface
 implementation
 
     uses
+      globtype,globals,
+      procinfo,
       ninl,ncal,compinnr,
       aasmbase,aasmdata,aasmcpu,
       cgbase,cgutils,
       hlcgobj,hlcgcpu,
       defutil,pass_2,verbose,
-      symtype,symdef;
+      symtype,symdef,symcpu,
+      tgobj,tgcpu;
 
 {*****************************************************************************
                                twasminlinenode
@@ -200,9 +204,15 @@ implementation
 
         case left.location.size of
           OS_F32:
-            current_asmdata.CurrAsmList.Concat(taicpu.op_none(a_i64_trunc_f32_s));
+            if ts_wasm_saturating_float_to_int in current_settings.targetswitches then
+              current_asmdata.CurrAsmList.Concat(taicpu.op_none(a_i64_trunc_sat_f32_s))
+            else
+              current_asmdata.CurrAsmList.Concat(taicpu.op_none(a_i64_trunc_f32_s));
           OS_F64:
-            current_asmdata.CurrAsmList.Concat(taicpu.op_none(a_i64_trunc_f64_s));
+            if ts_wasm_saturating_float_to_int in current_settings.targetswitches then
+              current_asmdata.CurrAsmList.Concat(taicpu.op_none(a_i64_trunc_sat_f64_s))
+            else
+              current_asmdata.CurrAsmList.Concat(taicpu.op_none(a_i64_trunc_f64_s));
           else
             internalerror(2021092904);
         end;
@@ -224,12 +234,18 @@ implementation
           OS_F32:
             begin
               current_asmdata.CurrAsmList.Concat(taicpu.op_none(a_f32_nearest));
-              current_asmdata.CurrAsmList.Concat(taicpu.op_none(a_i64_trunc_f32_s));
+              if ts_wasm_saturating_float_to_int in current_settings.targetswitches then
+                current_asmdata.CurrAsmList.Concat(taicpu.op_none(a_i64_trunc_sat_f32_s))
+              else
+                current_asmdata.CurrAsmList.Concat(taicpu.op_none(a_i64_trunc_f32_s));
             end;
           OS_F64:
             begin
               current_asmdata.CurrAsmList.Concat(taicpu.op_none(a_f64_nearest));
-              current_asmdata.CurrAsmList.Concat(taicpu.op_none(a_i64_trunc_f64_s));
+              if ts_wasm_saturating_float_to_int in current_settings.targetswitches then
+                current_asmdata.CurrAsmList.Concat(taicpu.op_none(a_i64_trunc_sat_f64_s))
+              else
+                current_asmdata.CurrAsmList.Concat(taicpu.op_none(a_i64_trunc_f64_s));
             end
           else
             internalerror(2021092905);
@@ -424,7 +440,10 @@ implementation
     procedure twasminlinenode.second_throw_fpcexception;
       begin
         location_reset(location,LOC_VOID,OS_NO);
-        current_asmdata.CurrAsmList.Concat(taicpu.op_sym(a_throw,current_asmdata.WeakRefAsmSymbol(FPC_EXCEPTION_TAG_SYM,AT_WASM_EXCEPTION_TAG)));
+        if ts_wasm_native_legacy_exceptions in current_settings.targetswitches then
+          current_asmdata.CurrAsmList.Concat(taicpu.op_sym(a_legacy_throw,current_asmdata.WeakRefAsmSymbol(FPC_EXCEPTION_TAG_SYM,AT_WASM_EXCEPTION_TAG)))
+        else
+          current_asmdata.CurrAsmList.Concat(taicpu.op_sym(a_throw,current_asmdata.WeakRefAsmSymbol(FPC_EXCEPTION_TAG_SYM,AT_WASM_EXCEPTION_TAG)));
       end;
 
 
@@ -543,13 +562,35 @@ implementation
 
 
     procedure twasminlinenode.second_tls_get(const SymStr: string);
+      var
+        sym: TWasmGlobalAsmSymbol;
       begin
-        current_asmdata.CurrAsmList.Concat(taicpu.op_sym(a_global_get,current_asmdata.RefAsmSymbol(SymStr,AT_WASM_GLOBAL)));
+        sym:=TWasmGlobalAsmSymbol(current_asmdata.RefAsmSymbolByClass(TWasmGlobalAsmSymbol,SymStr,AT_WASM_GLOBAL));
+        sym.WasmGlobalType:=wbt_i32;
+        current_asmdata.CurrAsmList.Concat(taicpu.op_sym(a_global_get,sym));
         thlcgwasm(hlcg).incstack(current_asmdata.CurrAsmList,1);
 
         location_reset(location,LOC_REGISTER,def_cgsize(resultdef));
         location.register:=hlcg.getregisterfordef(current_asmdata.CurrAsmList,resultdef);
         thlcgwasm(hlcg).a_load_stack_loc(current_asmdata.CurrAsmList,resultdef,location);
+      end;
+
+
+    procedure twasminlinenode.second_set_base_pointer;
+      var
+        pd: tcpuprocdef;
+      begin
+        location_reset(location,LOC_VOID,OS_NO);
+        secondpass(left);
+
+        hlcg.location_force_reg(current_asmdata.CurrAsmList,left.location,left.resultdef,left.resultdef,false);
+        thlcgwasm(hlcg).a_load_reg_stack(current_asmdata.CurrAsmList,left.resultdef,left.location.register);
+
+        pd:=tcpuprocdef(current_procinfo.procdef);
+        if pd.base_pointer_ref.base<>NR_LOCAL_STACK_POINTER_REG then
+          ttgwasm(tg).allocbasepointer(current_asmdata.CurrAsmList,pd.base_pointer_ref);
+        current_asmdata.CurrAsmList.Concat(taicpu.op_ref(a_local_set,pd.base_pointer_ref));
+        thlcgwasm(hlcg).decstack(current_asmdata.CurrAsmList,1);
       end;
 
 
@@ -564,6 +605,11 @@ implementation
       begin
         Result:=nil;
         case inlinenumber of
+          in_wasm32_set_base_pointer:
+            begin
+              CheckParameters(1);
+              resultdef:=voidtype;
+            end;
           in_wasm32_memory_size:
             begin
               CheckParameters(0);
@@ -726,6 +772,7 @@ implementation
           in_wasm32_memory_size,
           in_wasm32_memory_grow:
             expectloc:=LOC_REGISTER;
+          in_wasm32_set_base_pointer,
           in_wasm32_memory_fill,
           in_wasm32_memory_copy,
           in_wasm32_unreachable,
@@ -963,6 +1010,8 @@ implementation
             second_tls_get(TLS_ALIGN_SYM);
           in_wasm32_tls_base:
             second_tls_get(TLS_BASE_SYM);
+          in_wasm32_set_base_pointer:
+            second_set_base_pointer;
           else
             inherited pass_generate_code_cpu;
         end;

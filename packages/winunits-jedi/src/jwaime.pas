@@ -42,7 +42,9 @@
 
 // $Id: JwaIme.pas,v 1.12 2007/09/14 06:48:46 marquardt Exp $
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaIme;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -56,8 +58,13 @@ unit JwaIme;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 {$IFNDEF JWA_IMPLEMENTATIONSECTION}
@@ -83,7 +90,7 @@ type
     wParam: WPARAM;  // word parameter
     wCount: UINT;    // word counter
     dchSource: UINT; // offset to Source from top of memory object
-    dchDest: UINT;   // offset to Desrination from top of memory object
+    dchDest: UINT;   // offset to Destination from top of memory object
     lParam1: LPARAM;
     lParam2: LPARAM;
     lParam3: LPARAM;
@@ -279,7 +286,7 @@ const
   {$EXTERNALSYM IME_RS_NOIME}
   IME_RS_TOOLONG     = $05; // given string is too long
   {$EXTERNALSYM IME_RS_TOOLONG}
-  IME_RS_ILLEGAL     = $06; // illegal charactor(s) is string
+  IME_RS_ILLEGAL     = $06; // illegal character(s) is string
   {$EXTERNALSYM IME_RS_ILLEGAL}
   IME_RS_NOTFOUND    = $07; // no (more) candidate
   {$EXTERNALSYM IME_RS_NOTFOUND}
@@ -295,7 +302,7 @@ const
   {$EXTERNALSYM IME_RS_SYSTEMMODAL}
 
 //
-//   report messge from IME to WinApps
+//   report message from IME to WinApps
 //
 
   WM_IME_REPORT = $0280;

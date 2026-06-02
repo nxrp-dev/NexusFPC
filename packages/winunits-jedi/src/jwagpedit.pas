@@ -42,7 +42,9 @@
 
 // $Id: JwaGPEdit.pas,v 1.11 2007/09/14 06:48:45 marquardt Exp $
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaGPEdit;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -56,8 +58,13 @@ unit JwaGPEdit;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Activex, WinApi.Jedi.Prsht, WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaActiveX, JwaPrSht, JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 {$IFNDEF JWA_IMPLEMENTATIONSECTION}
@@ -613,7 +620,7 @@ type
     //    SetOptions (GPO_OPTION_DISABLED, GPO_OPTION_DISABLED);
     //
     // dwOptions specifies one or more GPO_OPTION_* flags
-    // dwMask specificies which of the dwOptions to change
+    // dwMask specifies which of the dwOptions to change
     //
 
     function SetOptions(dwOptions, dwMask: DWORD): HRESULT; stdcall;
@@ -659,7 +666,7 @@ type
     //
 
     function GetPropertySheetPages(var hPages: PHPROPSHEETPAGE; var uPageCount: UINT): HRESULT; stdcall;
-    
+
   end;
   {$EXTERNALSYM IGroupPolicyObject}
 

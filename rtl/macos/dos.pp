@@ -11,11 +11,18 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 Unit Dos;
+{$ENDIF FPC_DOTTEDUNITS}
 Interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+Uses
+  MacOSApi.MacOSTP;
+{$ELSE FPC_DOTTEDUNITS}
 Uses
   macostp;
+{$ENDIF FPC_DOTTEDUNITS}
 
 
 Const
@@ -47,7 +54,7 @@ Implementation
  For this, PBXGetVolInfoSync can be used. However, this function
  is not available on older versions of Mac OS, so the function has
  to be weak linked. An alternative is to directly look into the VCB
- (Volume Control Block), but since this is on low leveel it is a
+ (Volume Control Block), but since this is on low level it is a
  compatibility risque.}
 
 {TODO Perhaps make SearchRec.paramBlock opaque, so that uses macostp;
@@ -60,9 +67,13 @@ Implementation
 {TODO Perhaps use LongDateTime for time functions. But the function
  calls must then be weak linked.}
 
+{$IFDEF FPC_DOTTEDUNITS}
 Uses
-  macutils,
-  unixutil {for FNMatch};
+  MacOSApi.MacUtils;
+{$ELSE FPC_DOTTEDUNITS}
+Uses
+  macutils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$UNDEF USE_FEXPAND_INC}
 //{$DEFINE USE_FEXPAND_INC}
@@ -70,7 +81,7 @@ Uses
 {$IFNDEF USE_FEXPAND_INC}
 
 {$DEFINE HAS_FEXPAND}
-{Own implemetation of fexpand.inc}
+{Own implementation of fexpand.inc}
 {$I dos.inc}
 
 {$ELSE}
@@ -184,7 +195,7 @@ End;
 ******************************************************************************}
 
 { Create a DoScript AppleEvent that targets the given application with text as the direct object. }
-function CreateDoScriptEvent (applCreator: OSType; scriptText: PChar; var theEvent: AppleEvent): OSErr;
+function CreateDoScriptEvent (applCreator: OSType; scriptText: PAnsiChar; var theEvent: AppleEvent): OSErr;
 
   var
    err: OSErr;
@@ -220,13 +231,13 @@ begin
   if desc.descriptorType = FourCharCodeToLongword(typeChar) then
     begin
       HLock(desc.dataHandle);
-      Fpc_WriteBuffer(f, PChar(desc.dataHandle^)^, GetHandleSize(desc.dataHandle));
+      Fpc_WriteBuffer(f, PAnsiChar(desc.dataHandle^)^, GetHandleSize(desc.dataHandle));
       Flush(f);
       HUnLock(desc.dataHandle);
     end;
 end;
 
-function ExecuteToolserverScript(scriptText: PChar; var statusCode: Longint): OSErr;
+function ExecuteToolserverScript(scriptText: PAnsiChar; var statusCode: Longint): OSErr;
 
   var
     err: OSErr;
@@ -301,13 +312,13 @@ Begin
   {Make ToolServers working directory in sync with our working directory}
   PathArgToFullPath(':', wdpath);
   wdpath:= 'Directory ''' + wdpath + '''';
-  err:= ExecuteToolserverScript(PChar(wdpath), LastDosExitCode);
+  err:= ExecuteToolserverScript(PAnsiChar(wdpath), LastDosExitCode);
     {TODO Only change path when actually needed. But this requires some
      change counter to be incremented each time wd is changed. }
 
   s:= path + ' ' + comline;
 
-  err:= ExecuteToolserverScript(PChar(s), LastDosExitCode);
+  err:= ExecuteToolserverScript(PAnsiChar(s), LastDosExitCode);
   if err = afpItemNotFound then
     DosError := 900
   else
@@ -432,7 +443,7 @@ End;
                 if (i <= LenPat) then
                   begin
                     repeat
-                                        {find a letter (not only first !) which maches pattern[i]}
+                                        {find a letter (not only first !) which matches pattern[i]}
                       while (j <= LenName) and (name[j] <> pattern[i]) do
                         j := j + 1;
                       if (j < LenName) then
@@ -906,7 +917,7 @@ End;
 Function EnvCount: Longint;
 var
   envcnt : longint;
-  p      : ppchar;
+  p      : PPAnsiChar;
 Begin
   envcnt:=0;
   p:=envp;      {defined in system}
@@ -923,7 +934,7 @@ Function EnvStr (Index: longint): String;
 
 Var
   i : longint;
-  p : ppchar;
+  p : PPAnsiChar;
 Begin
   if Index <= 0 then
     envstr:=''
@@ -944,12 +955,12 @@ Begin
 end;
 
 
-function c_getenv(varname: PChar): PChar; {TODO perhaps move to a separate inc file.}
+function c_getenv(varname: PAnsiChar): PAnsiChar; {TODO perhaps move to a separate inc file.}
   external 'StdCLib' name 'getenv';
 
 Function GetEnv(EnvVar: String): String;
 var
-  p: PChar;
+  p: PAnsiChar;
   name: String;
 Begin
   name:= EnvVar+#0;

@@ -24,7 +24,9 @@
 #**********************************************************************
 *)
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit nwpre;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
@@ -36,8 +38,8 @@ procedure _nlm_main; external  name '_nlm_main';
 procedure FPC_NW_CHECKFUNCTION; external name 'FPC_NW_CHECKFUNCTION';
 function _StartNLM (NLMHandle              : longint;
                    initErrorScreenID       : longint;
-                   cmdLineP                : pchar;
-                   loadDirectoryPath       : pchar;
+                   cmdLineP                : PAnsiChar;
+                   loadDirectoryPath       : PAnsiChar;
                    uninitializedDataLength : longint;
                    NLMFileHandle           : longint;
                    readRoutineP            : pointer;
@@ -45,7 +47,7 @@ function _StartNLM (NLMHandle              : longint;
                    customDataSize          : longint;
                    NLMInformation          : pointer;
                    userStartFunc           : pointer) : longint; cdecl; external '!clib' name '_StartNLM';
-                                                                                                                                                                                                                                                          
+
 
 function _TerminateNLM  (NLMInformation          : pointer;
                          threadID, status        : longint) : longint; cdecl; external '!clib' name '_TerminateNLM';
@@ -53,7 +55,7 @@ function _TerminateNLM  (NLMInformation          : pointer;
 
 procedure _Stop; cdecl; forward;
 
-// This is the main program (not loader) Entry-Point that will be called by netware    
+// This is the main program (not loader) Entry-Point that will be called by netware
 // it sets up the argc and argv and calls _nlm_main (in system.pp)
 
 procedure _pasStart; assembler; export; [alias:'_pasStart_'];
@@ -63,7 +65,7 @@ asm
     addl	$4,%esp
     ret
 // this is a hack to avoid that FPC_NW_CHECKFUNCTION will be
-// eleminated by the linker (with smartlinking)
+// eliminated by the linker (with smartlinking)
 // TODO: change the internal linker to allow check and stop
     call	FPC_NW_CHECKFUNCTION
     call	_Stop
@@ -73,14 +75,14 @@ end;
 // structure needed by clib
 type kNLMInfoT =
    packed record
-      Signature      : array [0..3] of char;	// LONG 'NLMI'
+      Signature      : array [0..3] of AnsiChar;	// LONG 'NLMI'
       Flavor         : longint;			// TRADINIONAL_FLAVOR = 0
       Version        : longint;			// TRADINIONAL_VERSION = 0, LIBERTY_VERSION = 1
       LongDoubleSize : longint;			// gcc nwpre defines 12, watcom 8
       wchar_tSize    : longint;
     end;
 
-var 
+var
   _kNLMInfo:kNLMInfoT = (Signature:'NLMI';Flavor:0;Version:1;LongDoubleSize:8;wChar_tSize:2);
 
 
@@ -99,8 +101,8 @@ procedure CSetB(value:byte; var addr; count:longint); cdecl; external '!' name '
 // created thread
 function _Prelude (NLMHandle               : longint;
                    initErrorScreenID       : longint;
-                   cmdLineP                : pchar;
-                   loadDirectoryPath       : pchar;
+                   cmdLineP                : PAnsiChar;
+                   loadDirectoryPath       : PAnsiChar;
                    uninitializedDataLength : longint;
                    NLMFileHandle           : longint;
                    readRoutineP            : pointer;
@@ -143,7 +145,7 @@ asm
    	pushl	%eax
      	movl	0x24(%ebp),%edx  // 1b7f6
    	pushl	%edx
-       	pushl	%ecx  
+       	pushl	%ecx
    	pushl	%ebx
        	pushl	%esi			// uninitialized data size
        	pushl	%edi

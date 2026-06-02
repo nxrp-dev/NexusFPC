@@ -13,14 +13,16 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit elftypes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$MODE OBJFPC}
 
 interface
 
 type
-  TElfMagic = array[0..3] of char;
+  TElfMagic = array[0..3] of AnsiChar;
 
 type
   TElfIdent = packed record
@@ -93,7 +95,7 @@ type
     EntSize : qword;
   end;
   PElf64SectHdr = ^TElf64SectHdr;
-  
+
   TElf32Symbol = packed record
     Name : longword;
     Value : longword;
@@ -102,7 +104,7 @@ type
     Other : byte;
     SectIdx : word;
   end;
-  
+
   TElf64Symbol = packed record
     Name : longword;
     Info : byte;

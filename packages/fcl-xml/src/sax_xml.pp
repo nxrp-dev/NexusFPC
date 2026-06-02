@@ -17,11 +17,17 @@
 {$mode objfpc}
 {$h+}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit SAX_XML;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
-uses SysUtils, Classes, SAX, DOM;
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils, System.Classes, Xml.Sax, Xml.Dom, Xml.Reader;
+{$ELSE FPC_DOTTEDUNITS}
+uses SysUtils, Classes, SAX, DOM, XmlReader;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
 
@@ -43,7 +49,7 @@ type
     FScannerContext: TXMLScannerContext;
     FTokenText: SAXString;
     FRawTokenText: string;
-    FCurStringValueDelimiter: Char;
+    FCurStringValueDelimiter: AnsiChar;
     FAttrNameRead: Boolean;
   protected
     procedure EnterNewScannerContext(NewContext: TXMLScannerContext);
@@ -51,7 +57,7 @@ type
     constructor Create;
     destructor Destroy; override;
 
-    procedure Parse(AInput: TSAXInputSource); override; overload;
+    procedure Parse(AInput: TXMLInputSource); override; overload;
 
     property EndOfStream: Boolean read FEndOfStream;
     property ScannerContext: TXMLScannerContext read FScannerContext;
@@ -108,9 +114,15 @@ procedure ReadXMLFragment(AParentNode: TDOMNode; f: TStream);
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  Xml.Utils,
+  Html.Defs; // for entities...
+{$ELSE FPC_DOTTEDUNITS}
 uses
   xmlutils,
   htmldefs; // for entities...
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   WhitespaceChars = [#9, #10, #13, ' '];
@@ -134,11 +146,11 @@ begin
   inherited Destroy;
 end;
 
-procedure TSAXXMLReader.Parse(AInput: TSAXInputSource);
+procedure TSAXXMLReader.Parse(AInput: TXMLInputSource);
 const
   MaxBufferSize = 1024;
 var
-  Buffer: array[0..MaxBufferSize - 1] of Char;
+  Buffer: array[0..MaxBufferSize - 1] of AnsiChar;
   BufferSize, BufferPos: Integer;
 begin
   if not FStarted then

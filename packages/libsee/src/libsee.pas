@@ -2,11 +2,18 @@
 
 {$mode objfpc}
 {$h+}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit libsee;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.CTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   ctypes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {
   Automatically converted by H2Pas 1.0.0 from libsee.c
@@ -33,21 +40,21 @@ uses
 
 Type
   Tsize_t = csize_t;
-  tcuchar = char;
+  tcuchar = AnsiChar;
   Tuint16_t = word;
   Tuint32_t = cardinal;
   Tuint64_t = qword;
   Tint16_t = integer;
   Tint32_t = longint;
   Tint64_t = int64;
-  TDouble = double;  
+  TDouble = double;
   tcuint = word;
   tcint = integer;
-  PTcchar = pchar;
+  PTcchar = PAnsiChar;
   PPTcchar = ^PTcchar;
   Ptcint = ^tcint;
   PTcuint = ^tcuint;
-  tcchar = char;
+  tcchar = AnsiChar;
 
 var
   SEE_literal_NaN : array[0..7] of Tcuchar;cvar;external;
@@ -73,7 +80,7 @@ var
   PSEE_value  = ^TSEE_value;
   PTSEE_char_t = ^TSEE_Char_t;
   PTSEE_Code = Pointer;
-  
+
   PTSEE_context  = ^TSEE_context;
   PTSEE_enum  = ^TSEE_enum;
   PTSEE_growable  = ^TSEE_growable;
@@ -96,7 +103,7 @@ var
 //  PTSEE_property = ^TSEE_property;
   PTSEE_property = Pointer;
   TPSEE_object = ^TSEE_object;
-  PTSEE_inputclass = ^TSEE_inputclass; 
+  PTSEE_inputclass = ^TSEE_inputclass;
   PTSEE_traceback = ^TSEE_traceback;
   PTSEE_regex_engine = Pointer;
   PTSEE_stringclass = ^TSEE_stringclass;
@@ -156,7 +163,7 @@ var
     TSEE_boolean_fn_t = function (i:PTSEE_interpreter; obj:PTSEE_object; prop:PTSEE_string):Tcint;cdecl;
     TSEE_hasinstance_fn_t = function (i:PTSEE_interpreter; obj:PTSEE_object; instance:PTSEE_value):Tcint;cdecl;
     TSEE_default_fn_t = procedure (i:PTSEE_interpreter; obj:PTSEE_object; hint:PTSEE_value; res:PTSEE_value);cdecl;
-    TSEE_call_fn_t = procedure (i:PTSEE_interpreter; obj:PTSEE_object; thisobj:PTSEE_object; argc:Tcint; argv:PPTSEE_value; 
+    TSEE_call_fn_t = procedure (i:PTSEE_interpreter; obj:PTSEE_object; thisobj:PTSEE_object; argc:Tcint; argv:PPTSEE_value;
                  res:PTSEE_value);cdecl;
     TSEE_enumerator_fn_t = function (i:PTSEE_interpreter; obj:PTSEE_object):PTSEE_enum;cdecl;
     TSEE_get_sec_domain_fn_t = function (i:PTSEE_interpreter; obj:PTSEE_object):pointer;cdecl;
@@ -183,12 +190,12 @@ var
         Prototype : PTSEE_object;
         host_data : pointer;
       end;
-      
+
     TSEE_enumclass = record
         unused : pointer;
         next : function (i:PTSEE_interpreter; e:PTSEE_enum; flags_return:pTcint):TPSEE_string;cdecl;
       end;
-    
+
     TSEE_enum = record
         enumclass : PTSEE_enumclass;
       end;
@@ -326,7 +333,7 @@ var
         gcollect : procedure (para1:PTSEE_interpreter);
         transit_sec_domain : function (para1:PTSEE_interpreter; para2:pointer):pointer;
         code_alloc : function (para1:PTSEE_interpreter): PTSEE_code;
-        object_construct : procedure (interp:PTSEE_interpreter; self:TPSEE_object; thisobj:TPSEE_object; argc:Tcint; argv:PPTSEE_value; 
+        object_construct : procedure (interp:PTSEE_interpreter; self:TPSEE_object; thisobj:TPSEE_object; argc:Tcint; argv:PPTSEE_value;
                       res:PTSEE_value);
         default_regex_engine : PTSEE_regex_engine;
       end;
@@ -335,17 +342,17 @@ var
         filename : TPSEE_string;
         lineno : Tcint;
       end;
-      
+
     Tjmp_buf = record
       a : array[1..200] of byte;
     end;
-    
+
     TSEE_try_context_t = record
         interpreter : PTSEE_interpreter;
         previous : PTSEE_try_context;
         thrown : TSEE_value;
         done : Tcint;
-        env : Tjmp_buf; // 
+        env : Tjmp_buf; //
         throw_file : PTcchar;
         throw_line : Tcint;
         saved_traceback : PTSEE_traceback;
@@ -380,9 +387,9 @@ var
     SEE_intern_ascii : function(para1:PTSEE_interpreter; para2:PTcchar):TPSEE_string;cdecl;
     SEE_function_is_joined : function(a:PTSEE_object; b:PTSEE_object):Tcint;cdecl;
     SEE_Object_new : function(para1:PTSEE_interpreter):TPSEE_object;cdecl;
-    SEE_object_call : procedure(para1:PTSEE_interpreter; para2:TPSEE_object; para3:TPSEE_object; para4:Tcint; para5:PPTSEE_value; 
+    SEE_object_call : procedure(para1:PTSEE_interpreter; para2:TPSEE_object; para3:TPSEE_object; para4:Tcint; para5:PPTSEE_value;
       para6:PTSEE_value);cdecl;
-    SEE_object_construct : procedure(para1:PTSEE_interpreter; para2:TPSEE_object; para3:TPSEE_object; para4:Tcint; para5:PPTSEE_value; 
+    SEE_object_construct : procedure(para1:PTSEE_interpreter; para2:TPSEE_object; para3:TPSEE_object; para4:Tcint; para5:PPTSEE_value;
       para6:PTSEE_value);cdecl;
     SEE_object_instanceof : function(interp:PTSEE_interpreter; val:PTSEE_value; obj:TPSEE_object):Tcint;cdecl;
 
@@ -409,7 +416,7 @@ var
     SEE_PrintContextTraceback : procedure(i:PTSEE_interpreter; context:PTSEE_try_context; f:PTFILE);cdecl;
 
     SEE_Global_eval : procedure(i:PTSEE_interpreter; input:PTSEE_input; res:PTSEE_value);cdecl;
-    SEE_eval : procedure(i:PTSEE_interpreter; input:PTSEE_input; thisobj:TPSEE_object; variable:TPSEE_object; scope:PTSEE_scope; 
+    SEE_eval : procedure(i:PTSEE_interpreter; input:PTSEE_input; thisobj:TPSEE_object; variable:TPSEE_object; scope:PTSEE_scope;
       res:PTSEE_value);cdecl;
     SEE_Function_new : function(i:PTSEE_interpreter; name:TPSEE_string; param_input:PTSEE_input; body_input:PTSEE_input):TPSEE_object;cdecl;
 
@@ -586,9 +593,14 @@ Function  LibseeLoaded : Boolean;
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+    System.SysUtils, System.DynLibs;
+{$ELSE FPC_DOTTEDUNITS}
 uses
     SysUtils, dynlibs;
-    
+{$ENDIF FPC_DOTTEDUNITS}
+
 {$ifndef libseehelper}
 function new_SEE_interpreter : PSEE_Interpreter;
 
@@ -729,7 +741,7 @@ procedure SEE_SET_BOOLEAN(v : PSEE_value; b : Boolean);
 
 begin
   SEE_SET_TYPE(V,SEE_BOOLEAN);
-  V^.u.boolean:=char(ord(B));
+  V^.u.boolean:=AnsiChar(ord(B));
 end;
 
 procedure SEE_SET_NUMBER(v : PSEE_value; n : TSEE_number_t);
@@ -938,7 +950,7 @@ procedure Loadlibsee(Const Alib : string);
 
 begin
   Freelibsee;
-  hlib:=LoadLibrary(pchar(Alib));
+  hlib:=LoadLibrary(PAnsiChar(Alib));
   if hlib=0 then
     raise Exception.Create(format('Could not load library: %s',[Alib]));
   pointer(_SEE_isnan):=GetProcAddress(hlib,'_SEE_isnan');

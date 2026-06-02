@@ -18,7 +18,7 @@
     History:
 
     Added functions and procedures with array of const.
-    For use with fpc 1.0.7. Thay are in systemvartags.
+    For use with fpc 1.0.7. They are in systemvartags.
     11 Nov 2002.
 
     Added the defines use_amiga_smartlink and
@@ -33,10 +33,16 @@
 }
 {$PACKRECORDS 2}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 UNIT lowlevel;
+{$ENDIF FPC_DOTTEDUNITS}
 
 INTERFACE
+{$IFDEF FPC_DOTTEDUNITS}
+USES Amiga.Core.Exec, Amiga.Core.Utility, Amiga.Core.Timer;
+{$ELSE FPC_DOTTEDUNITS}
 USES exec, utility, timer;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
 { structure for use with QueryKeys() }
@@ -50,7 +56,7 @@ Type
 
 Const
 
- LOWLEVELNAME : PChar = 'lowlevel.library';
+ LOWLEVELNAME : PAnsiChar = 'lowlevel.library';
 
 { bits in the return value of GetKey() }
  LLKB_LSHIFT     = 16;
@@ -128,7 +134,7 @@ Const
  JP_DIRECTION_MASK = JPF_JOY_UP OR JPF_JOY_DOWN OR JPF_JOY_LEFT OR JPF_JOY_RIGHT;
 
 { Mouse position reports, valid for JP_TYPE_MOUSE }
- JP_MHORZ_MASK     = 255;        { horzizontal position }
+ JP_MHORZ_MASK     = 255;        { horizontal position  }
  JP_MVERT_MASK     = 65280;      { vertical position    }
  JP_MOUSE_MASK     = JP_MHORZ_MASK OR JP_MVERT_MASK;
 

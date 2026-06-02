@@ -29,7 +29,7 @@
 
 (**
  * @defgroup apr_allocator Internal Memory Allocation
- * @ingroup APR 
+ * @ingroup APR
  * @{
  *)
 
@@ -50,7 +50,7 @@ type
  *       caller of apr_allocator_alloc(), the remaining fields are read-only.
  *       The next field has to be used with caution and sensibly set when the
  *       memnode is passed back to apr_allocator_free().  See apr_allocator_free()
- *       for details.  
+ *       for details.
  *       The ref and first_avail fields will be properly restored by
  *       apr_allocator_free().
  *}
@@ -59,8 +59,8 @@ type
     ref: PPapr_memnode_t;            //**< reference to self */
     index: apr_uint32_t;             //**< size */
     free_index: apr_uint32_t;        //**< how much free */
-    first_avail: PChar;              //**< pointer to first free memory */
-    endp: PChar;                     //**< pointer to end of free memory */
+    first_avail: PAnsiChar;              //**< pointer to first free memory */
+    endp: PAnsiChar;                     //**< pointer to end of free memory */
   end;
 
 //** The base size of a memory node - aligned.  */

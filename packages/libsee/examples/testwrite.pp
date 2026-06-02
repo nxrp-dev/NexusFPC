@@ -13,12 +13,12 @@ Var
 
 const
    Program_text = 'writeln("Hello, world!");';
-   
+
 begin
   see_init;
   RegisterWriteModule;
   SEE_interpreter_init(@interp);
-  ainput :=SEE_input_utf8(@interp, pchar(program_text));
+  ainput :=SEE_input_utf8(@interp, PAnsiChar(program_text));
   See_global_eval(@interp,ainput,@res);
   see_input_close(ainput);
 end.

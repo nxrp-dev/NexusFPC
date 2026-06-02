@@ -19,11 +19,17 @@
  *
  *****************************************************************************)
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit slotdrvrlib;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses PalmApi.Palmos, PalmApi.Libtraps, PalmApi.Expansionmgr;
+{$ELSE FPC_DOTTEDUNITS}
 uses palmos, libtraps, expansionmgr;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   slotDrvrAPIVersion = $00000002;
@@ -46,10 +52,10 @@ const
 
 type
   CardMetricsType = record
-    totalSectors: UInt32;     // The total number of sectors accessable via SlotCardSector[Read/Write]
+    totalSectors: UInt32;     // The total number of sectors accessible via SlotCardSector[Read/Write]
                               //    (some media may contain extra sectors in case one goes bad,
                               //     or for storing configuration information, but they are handled
-                              //     internally to the slot driver, and not accessable)
+                              //     internally to the slot driver, and not accessible)
     bytesPerSector: UInt16;   // The number of bytes in one sector.
                               //    currently for Palm, this must be the standard 512
     sectorsPerHead: UInt16;   // The number of Sectors per Head

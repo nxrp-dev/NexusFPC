@@ -1,7 +1,9 @@
 // $Id: JwaAdsTLB.pas,v 1.7 2007/09/06 14:57:10 marquardt Exp $
 
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaAdsTLB;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 // ************************************************************************ //
@@ -15,7 +17,7 @@ unit JwaAdsTLB;
 // manual modifications will be lost.
 // ************************************************************************ //
 
-// (rom) deactivated CVS string
+// (rom) deactivated CVS AnsiString
 // PASTLWTR : Revision:   1.88.1.0.1.0
 // File generated on 9/25/2000 11:37:09 AM from Type Library described below.
 
@@ -37,7 +39,7 @@ unit JwaAdsTLB;
 //   (1) v2.0 stdole, (C:\WINNT\System32\stdole2.tlb)
 //   (2) v4.0 StdVCL, (C:\WINNT\System32\STDVCL40.DLL)
 // Errors:
-//   Hint: Member 'String' of '_ADS_CASEIGNORE_LIST' changed to 'String_'
+//   Hint: Member 'AnsiString' of '_ADS_CASEIGNORE_LIST' changed to 'String_'
 //   Hint: Member 'Type' of '__MIDL___MIDL_itf_ads_0000_0005' changed to 'Type_'
 //   Hint: Member 'Type' of '__MIDL___MIDL_itf_ads_0000_0014' changed to 'Type_'
 //   Hint: Member 'Class' of 'IADs' changed to 'Class_'
@@ -76,9 +78,15 @@ unit JwaAdsTLB;
 {$IFNDEF JWA_OMIT_SECTIONS}
 interface
 {$i jediapilib.inc}
+{$IFDEF FPC_DOTTEDUNITS}
 uses
-  Windows, ActiveX, Classes 
+  WinApi.Windows, WinApi.Activex, System.Classes
      {$ifndef FPC} {$IFNDEF NOVCL} , Graphics, OleServer, OleCtrls, StdVCL {$ENDIF} {$endif} ;  // Are these used at all?
+{$ELSE FPC_DOTTEDUNITS}
+uses
+  Windows, ActiveX, Classes
+     {$ifndef FPC} {$IFNDEF NOVCL} , Graphics, OleServer, OleCtrls, StdVCL {$ENDIF} {$endif} ;  // Are these used at all?
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$ENDIF JWA_OMIT_SECTIONS}
 
@@ -90,7 +98,7 @@ Type
            TServerData= Record
                             ClassID:   TGUID;
                             IntfIID:   TGUID;
-                            EventIID:  String;   // probably TGUID too
+                            EventIID:  AnsiString;   // probably TGUID too
                             LicenseKey: pointer;
                             Version: integer
                             end;
@@ -109,8 +117,8 @@ Type
                  end;
 
 
-  SysUINT    = Windows.UINT;
-  SysINT     = Windows.WINT;
+  SysUINT    = {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.UINT;
+  SysINT     = {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.WINT;
 {$endif}
 
 // *********************************************************************//
@@ -955,14 +963,14 @@ type
 
   ADSTYPEENUM = __MIDL___MIDL_itf_ads_0000_0001;
 
-  __MIDL___MIDL_itf_ads_0000_0002 = packed record
+  __MIDL___MIDL_itf_ads_0000_0002 = record
     dwLength: LongWord;
     lpValue: ^Byte;
   end;
 
   ADS_OCTET_STRING = __MIDL___MIDL_itf_ads_0000_0002;
 
-  __MIDL___MIDL_itf_ads_0000_0003 = packed record
+  __MIDL___MIDL_itf_ads_0000_0003 = record
     dwLength: LongWord;
     lpValue: ^Byte;
   end;
@@ -972,7 +980,7 @@ type
 
   {$IFNDEF JWA_INCLUDEMODE}
 
-  _SYSTEMTIME = packed record
+  _SYSTEMTIME = record
     wYear: Word;
     wMonth: Word;
     wDayOfWeek: Word;
@@ -983,20 +991,20 @@ type
     wMilliseconds: Word;
   end;
 
-  _LARGE_INTEGER = packed record
+  _LARGE_INTEGER = record
     QuadPart: Int64;
   end;
 
   {$ENDIF JWA_INCLUDEMODE}
 
-  __MIDL___MIDL_itf_ads_0000_0004 = packed record
+  __MIDL___MIDL_itf_ads_0000_0004 = record
     dwLength: LongWord;
     lpValue: ^Byte;
   end;
 
   ADS_PROV_SPECIFIC = __MIDL___MIDL_itf_ads_0000_0004;
 
-  __MIDL___MIDL_itf_ads_0000_0005 = packed record
+  __MIDL___MIDL_itf_ads_0000_0005 = record
     Type_: LongWord;
     VolumeName: PWideChar;
     Path: PWideChar;
@@ -1004,27 +1012,27 @@ type
 
   ADS_PATH = __MIDL___MIDL_itf_ads_0000_0005;
 
-  __MIDL___MIDL_itf_ads_0000_0006 = packed record
+  __MIDL___MIDL_itf_ads_0000_0006 = record
     PostalAddress: array[0..5] of PWideChar;
   end;
 
   ADS_POSTALADDRESS = __MIDL___MIDL_itf_ads_0000_0006;
 
-  __MIDL___MIDL_itf_ads_0000_0007 = packed record
+  __MIDL___MIDL_itf_ads_0000_0007 = record
     WholeSeconds: LongWord;
     EventID: LongWord;
   end;
 
   ADS_TIMESTAMP = __MIDL___MIDL_itf_ads_0000_0007;
 
-  __MIDL___MIDL_itf_ads_0000_0008 = packed record
+  __MIDL___MIDL_itf_ads_0000_0008 = record
     RemoteID: LongWord;
     ObjectName: PWideChar;
   end;
 
   ADS_BACKLINK = __MIDL___MIDL_itf_ads_0000_0008;
 
-  __MIDL___MIDL_itf_ads_0000_0009 = packed record
+  __MIDL___MIDL_itf_ads_0000_0009 = record
     ObjectName: PWideChar;
     Level: LongWord;
     Interval: LongWord;
@@ -1032,14 +1040,14 @@ type
 
   ADS_TYPEDNAME = __MIDL___MIDL_itf_ads_0000_0009;
 
-  __MIDL___MIDL_itf_ads_0000_0010 = packed record
+  __MIDL___MIDL_itf_ads_0000_0010 = record
     ObjectName: PWideChar;
     Amount: LongWord;
   end;
 
   ADS_HOLD = __MIDL___MIDL_itf_ads_0000_0010;
 
-  __MIDL___MIDL_itf_ads_0000_0011 = packed record
+  __MIDL___MIDL_itf_ads_0000_0011 = record
     AddressType: LongWord;
     AddressLength: LongWord;
     Address: ^Byte;
@@ -1047,7 +1055,7 @@ type
 
   ADS_NETADDRESS = __MIDL___MIDL_itf_ads_0000_0011;
 
-  __MIDL___MIDL_itf_ads_0000_0012 = packed record
+  __MIDL___MIDL_itf_ads_0000_0012 = record
     ServerName: PWideChar;
     ReplicaType: LongWord;
     ReplicaNumber: LongWord;
@@ -1057,7 +1065,7 @@ type
 
   ADS_REPLICAPOINTER = __MIDL___MIDL_itf_ads_0000_0012;
 
-  __MIDL___MIDL_itf_ads_0000_0013 = packed record
+  __MIDL___MIDL_itf_ads_0000_0013 = record
     TelephoneNumber: PWideChar;
     NumberOfBits: LongWord;
     Parameters: ^Byte;
@@ -1065,14 +1073,14 @@ type
 
   ADS_FAXNUMBER = __MIDL___MIDL_itf_ads_0000_0013;
 
-  __MIDL___MIDL_itf_ads_0000_0014 = packed record
+  __MIDL___MIDL_itf_ads_0000_0014 = record
     Address: PWideChar;
     Type_: LongWord;
   end;
 
   ADS_EMAIL = __MIDL___MIDL_itf_ads_0000_0014;
 
-  __MIDL___MIDL_itf_ads_0000_0015 = packed record
+  __MIDL___MIDL_itf_ads_0000_0015 = record
     dwLength: LongWord;
     lpBinaryValue: ^Byte;
     pszDNString: PWideChar;
@@ -1080,19 +1088,19 @@ type
 
   ADS_DN_WITH_BINARY = __MIDL___MIDL_itf_ads_0000_0015;
 
-  __MIDL___MIDL_itf_ads_0000_0016 = packed record
+  __MIDL___MIDL_itf_ads_0000_0016 = record
     pszStringValue: PWideChar;
     pszDNString: PWideChar;
   end;
 
   ADS_DN_WITH_STRING = __MIDL___MIDL_itf_ads_0000_0016;
 
-  _ADS_CASEIGNORE_LIST = packed record
+  _ADS_CASEIGNORE_LIST = record
     Next: PUserType1;
     String_: PWideChar;
   end;
 
-  _ADS_OCTET_LIST = packed record
+  _ADS_OCTET_LIST = record
     Next: PUserType2;
     Length: LongWord;
     Data: ^Byte;
@@ -1131,7 +1139,7 @@ type
 
   ADS_AUTHENTICATION_ENUM = __MIDL___MIDL_itf_ads_0000_0018;
 
-  _ads_object_info = packed record
+  _ads_object_info = record
     pszRDN: PWideChar;
     pszObjectDN: PWideChar;
     pszParentDN: PWideChar;
@@ -1147,12 +1155,12 @@ type
   ADS_CHASE_REFERRALS_ENUM = __MIDL___MIDL_itf_ads_0000_0024;
   ADS_SEARCHPREF_ENUM = __MIDL___MIDL_itf_ads_0000_0025;
 
-  _adsvalue = packed record
+  _adsvalue = record
     dwType: ADSTYPEENUM;
     __MIDL_0010: __MIDL___MIDL_itf_ads_0000_0017;
   end;
 
-  ads_search_column = packed record
+  ads_search_column = record
     pszAttrName: PWideChar;
     dwADsType: ADSTYPEENUM;
     pADsValues: ^_adsvalue;
@@ -1160,7 +1168,7 @@ type
     hReserved: Pointer;
   end;
 
-  _ads_attr_def = packed record
+  _ads_attr_def = record
     pszAttrName: PWideChar;
     dwADsType: ADSTYPEENUM;
     dwMinRange: LongWord;
@@ -1168,7 +1176,7 @@ type
     fMultiValued: Integer;
   end;
 
-  _ads_sortkey = packed record
+  _ads_sortkey = record
     pszAttrType: PWideChar;
     pszReserved: PWideChar;
     fReverseorder: Shortint;
@@ -1183,12 +1191,12 @@ type
       2: (hreftype: LongWord);
   end;
 
-  tagTYPEDESC = packed record
+  tagTYPEDESC = record
     __MIDL_0008: __MIDL_IOleAutomationTypes_0005;
     vt: Word;
   end;
 
-  tagSAFEARRAYBOUND = packed record
+  tagSAFEARRAYBOUND = record
     cElements: LongWord;
     lLbound: Integer;
   end;
@@ -1197,7 +1205,7 @@ type
   ULONG_PTR = PtrUint;
   {$ENDIF JWA_INCLUDEMODE}
 
-  tagIDLDESC = packed record
+  tagIDLDESC = record
     dwReserved: ULONG_PTR;
     wIDLFlags: Word;
   end;
@@ -1206,22 +1214,22 @@ type
   DWORD = LongWord;
   {$ENDIF JWA_INCLUDEMODE}
 
-  tagPARAMDESCEX = packed record
+  tagPARAMDESCEX = record
     cBytes: LongWord;
     varDefaultValue: OleVariant;
   end;
 
-  tagPARAMDESC = packed record
+  tagPARAMDESC = record
     pparamdescex: ^tagPARAMDESCEX;
     wParamFlags: Word;
   end;
 
-  tagELEMDESC = packed record
+  tagELEMDESC = record
     tdesc: tagTYPEDESC;
     paramdesc: tagPARAMDESC;
   end;
 
-  tagFUNCDESC = packed record
+  tagFUNCDESC = record
     memid: Integer;
     lprgscode: ^SCODE;
     lprgelemdescParam: ^tagELEMDESC;
@@ -1242,7 +1250,7 @@ type
       1: (lpvarValue: ^OleVariant);
   end;
 
-  tagVARDESC = packed record
+  tagVARDESC = record
     memid: Integer;
     lpstrSchema: PWideChar;
     __MIDL_0009: __MIDL_IOleAutomationTypes_0006;
@@ -1251,7 +1259,7 @@ type
     varkind: tagVARKIND;
   end;
 
-  tagTLIBATTR = packed record
+  tagTLIBATTR = record
     GUID: TGUID;
     lcid: LongWord;
     syskind: tagSYSKIND;
@@ -1277,7 +1285,7 @@ type
   ADS_DISPLAY_ENUM = __MIDL___MIDL_itf_ads_0164_0003;
   ADS_ESCAPE_MODE_ENUM = __MIDL___MIDL_itf_ads_0164_0004;
 
-  _ads_attr_info = packed record
+  _ads_attr_info = record
     pszAttrName: PWideChar;
     dwControlCode: LongWord;
     dwADsType: ADSTYPEENUM;
@@ -1285,13 +1293,13 @@ type
     dwNumValues: LongWord;
   end;
 
-  ads_searchpref_info = packed record
+  ads_searchpref_info = record
     dwSearchPref: ADS_SEARCHPREF_ENUM;
     vValue: _adsvalue;
     dwStatus: ADS_STATUSENUM;
   end;
 
-  _ads_class_def = packed record
+  _ads_class_def = record
     pszClassName: PWideChar;
     dwMandatoryAttrs: LongWord;
     ppszMandatoryAttrs: ^PWideChar;
@@ -1304,7 +1312,7 @@ type
     fIsContainer: Integer;
   end;
 
-  tagTYPEATTR = packed record
+  tagTYPEATTR = record
     GUID: TGUID;
     lcid: LongWord;
     dwReserved: LongWord;
@@ -1325,7 +1333,7 @@ type
     idldescType: tagIDLDESC;
   end;
 
-  tagARRAYDESC = packed record
+  tagARRAYDESC = record
     tdescElem: tagTYPEDESC;
     cDims: Word;
     rgbounds: ^tagSAFEARRAYBOUND;
@@ -4150,13 +4158,13 @@ type
 // *********************************************************************//
   CoPropertyEntry = class
     class function Create: IADsPropertyEntry;
-    class function CreateRemote(const MachineName: string): IADsPropertyEntry;
+    class function CreateRemote(const MachineName: AnsiString): IADsPropertyEntry;
   end;
 
 // *********************************************************************//
 // OLE Server Proxy class declaration
 // Server Object    : TPropertyEntry
-// Help String      :
+// Help AnsiString      :
 // Default Interface: IADsPropertyEntry
 // Def. Intf. DISP? : No
 // Event   Interface:
@@ -4240,13 +4248,13 @@ type
 // *********************************************************************//
   CoPropertyValue = class
     class function Create: IADsPropertyValue;
-    class function CreateRemote(const MachineName: string): IADsPropertyValue;
+    class function CreateRemote(const MachineName: AnsiString): IADsPropertyValue;
   end;
 
 // *********************************************************************//
 // OLE Server Proxy class declaration
 // Server Object    : TPropertyValue
-// Help String      :
+// Help AnsiString      :
 // Default Interface: IADsPropertyValue
 // Def. Intf. DISP? : No
 // Event   Interface:
@@ -4376,13 +4384,13 @@ type
 // *********************************************************************//
   CoAccessControlEntry = class
     class function Create: IADsAccessControlEntry;
-    class function CreateRemote(const MachineName: string): IADsAccessControlEntry;
+    class function CreateRemote(const MachineName: AnsiString): IADsAccessControlEntry;
   end;
 
 // *********************************************************************//
 // OLE Server Proxy class declaration
 // Server Object    : TAccessControlEntry
-// Help String      :
+// Help AnsiString      :
 // Default Interface: IADsAccessControlEntry
 // Def. Intf. DISP? : No
 // Event   Interface:
@@ -4484,13 +4492,13 @@ type
 // *********************************************************************//
   CoAccessControlList = class
     class function Create: IADsAccessControlList;
-    class function CreateRemote(const MachineName: string): IADsAccessControlList;
+    class function CreateRemote(const MachineName: AnsiString): IADsAccessControlList;
   end;
 
 // *********************************************************************//
 // OLE Server Proxy class declaration
 // Server Object    : TAccessControlList
-// Help String      :
+// Help AnsiString      :
 // Default Interface: IADsAccessControlList
 // Def. Intf. DISP? : No
 // Event   Interface:
@@ -4565,13 +4573,13 @@ type
 // *********************************************************************//
   CoSecurityDescriptor = class
     class function Create: IADsSecurityDescriptor;
-    class function CreateRemote(const MachineName: string): IADsSecurityDescriptor;
+    class function CreateRemote(const MachineName: AnsiString): IADsSecurityDescriptor;
   end;
 
 // *********************************************************************//
 // OLE Server Proxy class declaration
 // Server Object    : TSecurityDescriptor
-// Help String      :
+// Help AnsiString      :
 // Default Interface: IADsSecurityDescriptor
 // Def. Intf. DISP? : No
 // Event   Interface:
@@ -4690,13 +4698,13 @@ type
 // *********************************************************************//
   CoLargeInteger = class
     class function Create: IADsLargeInteger;
-    class function CreateRemote(const MachineName: string): IADsLargeInteger;
+    class function CreateRemote(const MachineName: AnsiString): IADsLargeInteger;
   end;
 
 // *********************************************************************//
 // OLE Server Proxy class declaration
 // Server Object    : {$IFNDEF JWA_INCLUDEMODE} TLargeInteger {$ELSE} TLargeIntegerX {$ENDIF}
-// Help String      :
+// Help AnsiString      :
 // Default Interface: IADsLargeInteger
 // Def. Intf. DISP? : No
 // Event   Interface:
@@ -4768,13 +4776,13 @@ type
 // *********************************************************************//
   CoNameTranslate = class
     class function Create: IADsNameTranslate;
-    class function CreateRemote(const MachineName: string): IADsNameTranslate;
+    class function CreateRemote(const MachineName: AnsiString): IADsNameTranslate;
   end;
 
 // *********************************************************************//
 // OLE Server Proxy class declaration
 // Server Object    : TNameTranslate
-// Help String      :
+// Help AnsiString      :
 // Default Interface: IADsNameTranslate
 // Def. Intf. DISP? : No
 // Event   Interface:
@@ -4845,13 +4853,13 @@ type
 // *********************************************************************//
   CoCaseIgnoreList = class
     class function Create: IADsCaseIgnoreList;
-    class function CreateRemote(const MachineName: string): IADsCaseIgnoreList;
+    class function CreateRemote(const MachineName: AnsiString): IADsCaseIgnoreList;
   end;
 
 // *********************************************************************//
 // OLE Server Proxy class declaration
 // Server Object    : TCaseIgnoreList
-// Help String      :
+// Help AnsiString      :
 // Default Interface: IADsCaseIgnoreList
 // Def. Intf. DISP? : No
 // Event   Interface:
@@ -4916,13 +4924,13 @@ type
 // *********************************************************************//
   CoFaxNumber = class
     class function Create: IADsFaxNumber;
-    class function CreateRemote(const MachineName: string): IADsFaxNumber;
+    class function CreateRemote(const MachineName: AnsiString): IADsFaxNumber;
   end;
 
 // *********************************************************************//
 // OLE Server Proxy class declaration
 // Server Object    : TFaxNumber
-// Help String      :
+// Help AnsiString      :
 // Default Interface: IADsFaxNumber
 // Def. Intf. DISP? : No
 // Event   Interface:
@@ -4993,13 +5001,13 @@ type
 // *********************************************************************//
   CoNetAddress = class
     class function Create: IADsNetAddress;
-    class function CreateRemote(const MachineName: string): IADsNetAddress;
+    class function CreateRemote(const MachineName: AnsiString): IADsNetAddress;
   end;
 
 // *********************************************************************//
 // OLE Server Proxy class declaration
 // Server Object    : TNetAddress
-// Help String      :
+// Help AnsiString      :
 // Default Interface: IADsNetAddress
 // Def. Intf. DISP? : No
 // Event   Interface:
@@ -5070,13 +5078,13 @@ type
 // *********************************************************************//
   CoOctetList = class
     class function Create: IADsOctetList;
-    class function CreateRemote(const MachineName: string): IADsOctetList;
+    class function CreateRemote(const MachineName: AnsiString): IADsOctetList;
   end;
 
 // *********************************************************************//
 // OLE Server Proxy class declaration
 // Server Object    : TOctetList
-// Help String      :
+// Help AnsiString      :
 // Default Interface: IADsOctetList
 // Def. Intf. DISP? : No
 // Event   Interface:
@@ -5141,13 +5149,13 @@ type
 // *********************************************************************//
   CoEmail = class
     class function Create: IADsEmail;
-    class function CreateRemote(const MachineName: string): IADsEmail;
+    class function CreateRemote(const MachineName: AnsiString): IADsEmail;
   end;
 
 // *********************************************************************//
 // OLE Server Proxy class declaration
 // Server Object    : TEmail
-// Help String      :
+// Help AnsiString      :
 // Default Interface: IADsEmail
 // Def. Intf. DISP? : No
 // Event   Interface:
@@ -5219,13 +5227,13 @@ type
 // *********************************************************************//
   CoPath = class
     class function Create: IADsPath;
-    class function CreateRemote(const MachineName: string): IADsPath;
+    class function CreateRemote(const MachineName: AnsiString): IADsPath;
   end;
 
 // *********************************************************************//
 // OLE Server Proxy class declaration
 // Server Object    : TPath
-// Help String      :
+// Help AnsiString      :
 // Default Interface: IADsPath
 // Def. Intf. DISP? : No
 // Event   Interface:
@@ -5303,13 +5311,13 @@ type
 // *********************************************************************//
   CoReplicaPointer = class
     class function Create: IADsReplicaPointer;
-    class function CreateRemote(const MachineName: string): IADsReplicaPointer;
+    class function CreateRemote(const MachineName: AnsiString): IADsReplicaPointer;
   end;
 
 // *********************************************************************//
 // OLE Server Proxy class declaration
 // Server Object    : TReplicaPointer
-// Help String      :
+// Help AnsiString      :
 // Default Interface: IADsReplicaPointer
 // Def. Intf. DISP? : No
 // Event   Interface:
@@ -5398,13 +5406,13 @@ type
 // *********************************************************************//
   CoAcl = class
     class function Create: IADsAcl;
-    class function CreateRemote(const MachineName: string): IADsAcl;
+    class function CreateRemote(const MachineName: AnsiString): IADsAcl;
   end;
 
 // *********************************************************************//
 // OLE Server Proxy class declaration
 // Server Object    : {$IFNDEF JWA_INCLUDEMODE} TAcl {$ELSE} TAclX {$ENDIF}
-// Help String      :
+// Help AnsiString      :
 // Default Interface: IADsAcl
 // Def. Intf. DISP? : No
 // Event   Interface:
@@ -5483,13 +5491,13 @@ type
 // *********************************************************************//
   CoTimestamp = class
     class function Create: IADsTimestamp;
-    class function CreateRemote(const MachineName: string): IADsTimestamp;
+    class function CreateRemote(const MachineName: AnsiString): IADsTimestamp;
   end;
 
 // *********************************************************************//
 // OLE Server Proxy class declaration
 // Server Object    : TTimestamp
-// Help String      :
+// Help AnsiString      :
 // Default Interface: IADsTimestamp
 // Def. Intf. DISP? : No
 // Event   Interface:
@@ -5561,13 +5569,13 @@ type
 // *********************************************************************//
   CoPostalAddress = class
     class function Create: IADsPostalAddress;
-    class function CreateRemote(const MachineName: string): IADsPostalAddress;
+    class function CreateRemote(const MachineName: AnsiString): IADsPostalAddress;
   end;
 
 // *********************************************************************//
 // OLE Server Proxy class declaration
 // Server Object    : TPostalAddress
-// Help String      :
+// Help AnsiString      :
 // Default Interface: IADsPostalAddress
 // Def. Intf. DISP? : No
 // Event   Interface:
@@ -5632,13 +5640,13 @@ type
 // *********************************************************************//
   CoBackLink = class
     class function Create: IADsBackLink;
-    class function CreateRemote(const MachineName: string): IADsBackLink;
+    class function CreateRemote(const MachineName: AnsiString): IADsBackLink;
   end;
 
 // *********************************************************************//
 // OLE Server Proxy class declaration
 // Server Object    : TBackLink
-// Help String      :
+// Help AnsiString      :
 // Default Interface: IADsBackLink
 // Def. Intf. DISP? : No
 // Event   Interface:
@@ -5710,13 +5718,13 @@ type
 // *********************************************************************//
   CoTypedName = class
     class function Create: IADsTypedName;
-    class function CreateRemote(const MachineName: string): IADsTypedName;
+    class function CreateRemote(const MachineName: AnsiString): IADsTypedName;
   end;
 
 // *********************************************************************//
 // OLE Server Proxy class declaration
 // Server Object    : TTypedName
-// Help String      :
+// Help AnsiString      :
 // Default Interface: IADsTypedName
 // Def. Intf. DISP? : No
 // Event   Interface:
@@ -5794,13 +5802,13 @@ type
 // *********************************************************************//
   CoHold = class
     class function Create: IADsHold;
-    class function CreateRemote(const MachineName: string): IADsHold;
+    class function CreateRemote(const MachineName: AnsiString): IADsHold;
   end;
 
 // *********************************************************************//
 // OLE Server Proxy class declaration
 // Server Object    : THold
-// Help String      :
+// Help AnsiString      :
 // Default Interface: IADsHold
 // Def. Intf. DISP? : No
 // Event   Interface:
@@ -5872,13 +5880,13 @@ type
 // *********************************************************************//
   CoPathname = class
     class function Create: IADsPathname;
-    class function CreateRemote(const MachineName: string): IADsPathname;
+    class function CreateRemote(const MachineName: AnsiString): IADsPathname;
   end;
 
 // *********************************************************************//
 // OLE Server Proxy class declaration
 // Server Object    : TPathname
-// Help String      :
+// Help AnsiString      :
 // Default Interface: IADsPathname
 // Def. Intf. DISP? : No
 // Event   Interface:
@@ -5953,13 +5961,13 @@ type
 // *********************************************************************//
   CoADSystemInfo = class
     class function Create: IADsADSystemInfo;
-    class function CreateRemote(const MachineName: string): IADsADSystemInfo;
+    class function CreateRemote(const MachineName: AnsiString): IADsADSystemInfo;
   end;
 
 // *********************************************************************//
 // OLE Server Proxy class declaration
 // Server Object    : TADSystemInfo
-// Help String      :
+// Help AnsiString      :
 // Default Interface: IADsADSystemInfo
 // Def. Intf. DISP? : No
 // Event   Interface:
@@ -6050,13 +6058,13 @@ type
 // *********************************************************************//
   CoWinNTSystemInfo = class
     class function Create: IADsWinNTSystemInfo;
-    class function CreateRemote(const MachineName: string): IADsWinNTSystemInfo;
+    class function CreateRemote(const MachineName: AnsiString): IADsWinNTSystemInfo;
   end;
 
 // *********************************************************************//
 // OLE Server Proxy class declaration
 // Server Object    : TWinNTSystemInfo
-// Help String      :
+// Help AnsiString      :
 // Default Interface: IADsWinNTSystemInfo
 // Def. Intf. DISP? : No
 // Event   Interface:
@@ -6128,13 +6136,13 @@ type
 // *********************************************************************//
   CoDNWithBinary = class
     class function Create: IADsDNWithBinary;
-    class function CreateRemote(const MachineName: string): IADsDNWithBinary;
+    class function CreateRemote(const MachineName: AnsiString): IADsDNWithBinary;
   end;
 
 // *********************************************************************//
 // OLE Server Proxy class declaration
 // Server Object    : TDNWithBinary
-// Help String      :
+// Help AnsiString      :
 // Default Interface: IADsDNWithBinary
 // Def. Intf. DISP? : No
 // Event   Interface:
@@ -6205,13 +6213,13 @@ type
 // *********************************************************************//
   CoDNWithString = class
     class function Create: IADsDNWithString;
-    class function CreateRemote(const MachineName: string): IADsDNWithString;
+    class function CreateRemote(const MachineName: AnsiString): IADsDNWithString;
   end;
 
 // *********************************************************************//
 // OLE Server Proxy class declaration
 // Server Object    : TDNWithString
-// Help String      :
+// Help AnsiString      :
 // Default Interface: IADsDNWithString
 // Def. Intf. DISP? : No
 // Event   Interface:
@@ -6282,7 +6290,11 @@ procedure Register;
 
 {$IFNDEF JWA_OMIT_SECTIONS}
 implementation
+{$IFDEF FPC_DOTTEDUNITS}
+uses WinApi.Comobj;
+{$ELSE FPC_DOTTEDUNITS}
 uses ComObj;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 {$IFNDEF JWA_INTERFACESECTION}
@@ -6292,7 +6304,7 @@ begin
   Result := CreateComObject(CLASS_PropertyEntry) as IADsPropertyEntry;
 end;
 
-class function CoPropertyEntry.CreateRemote(const MachineName: string): IADsPropertyEntry;
+class function CoPropertyEntry.CreateRemote(const MachineName: AnsiString): IADsPropertyEntry;
 begin
   Result := CreateRemoteComObject(MachineName, CLASS_PropertyEntry) as IADsPropertyEntry;
 end;
@@ -6469,7 +6481,7 @@ begin
   Result := CreateComObject(CLASS_PropertyValue) as IADsPropertyValue;
 end;
 
-class function CoPropertyValue.CreateRemote(const MachineName: string): IADsPropertyValue;
+class function CoPropertyValue.CreateRemote(const MachineName: AnsiString): IADsPropertyValue;
 begin
   Result := CreateRemoteComObject(MachineName, CLASS_PropertyValue) as IADsPropertyValue;
 end;
@@ -6806,7 +6818,7 @@ begin
   Result := CreateComObject(CLASS_AccessControlEntry) as IADsAccessControlEntry;
 end;
 
-class function CoAccessControlEntry.CreateRemote(const MachineName: string): IADsAccessControlEntry;
+class function CoAccessControlEntry.CreateRemote(const MachineName: AnsiString): IADsAccessControlEntry;
 begin
   Result := CreateRemoteComObject(MachineName, CLASS_AccessControlEntry) as IADsAccessControlEntry;
 end;
@@ -7038,7 +7050,7 @@ begin
   Result := CreateComObject(CLASS_AccessControlList) as IADsAccessControlList;
 end;
 
-class function CoAccessControlList.CreateRemote(const MachineName: string): IADsAccessControlList;
+class function CoAccessControlList.CreateRemote(const MachineName: AnsiString): IADsAccessControlList;
 begin
   Result := CreateRemoteComObject(MachineName, CLASS_AccessControlList) as IADsAccessControlList;
 end;
@@ -7185,7 +7197,7 @@ begin
   Result := CreateComObject(CLASS_SecurityDescriptor) as IADsSecurityDescriptor;
 end;
 
-class function CoSecurityDescriptor.CreateRemote(const MachineName: string): IADsSecurityDescriptor;
+class function CoSecurityDescriptor.CreateRemote(const MachineName: AnsiString): IADsSecurityDescriptor;
 begin
   Result := CreateRemoteComObject(MachineName, CLASS_SecurityDescriptor) as IADsSecurityDescriptor;
 end;
@@ -7482,7 +7494,7 @@ begin
   Result := CreateComObject(CLASS_LargeInteger) as IADsLargeInteger;
 end;
 
-class function CoLargeInteger.CreateRemote(const MachineName: string): IADsLargeInteger;
+class function CoLargeInteger.CreateRemote(const MachineName: AnsiString): IADsLargeInteger;
 begin
   Result := CreateRemoteComObject(MachineName, CLASS_LargeInteger) as IADsLargeInteger;
 end;
@@ -7614,7 +7626,7 @@ begin
   Result := CreateComObject(CLASS_NameTranslate) as IADsNameTranslate;
 end;
 
-class function CoNameTranslate.CreateRemote(const MachineName: string): IADsNameTranslate;
+class function CoNameTranslate.CreateRemote(const MachineName: AnsiString): IADsNameTranslate;
 begin
   Result := CreateRemoteComObject(MachineName, CLASS_NameTranslate) as IADsNameTranslate;
 end;
@@ -7748,7 +7760,7 @@ begin
   Result := CreateComObject(CLASS_CaseIgnoreList) as IADsCaseIgnoreList;
 end;
 
-class function CoCaseIgnoreList.CreateRemote(const MachineName: string): IADsCaseIgnoreList;
+class function CoCaseIgnoreList.CreateRemote(const MachineName: AnsiString): IADsCaseIgnoreList;
 begin
   Result := CreateRemoteComObject(MachineName, CLASS_CaseIgnoreList) as IADsCaseIgnoreList;
 end;
@@ -7860,7 +7872,7 @@ begin
   Result := CreateComObject(CLASS_FaxNumber) as IADsFaxNumber;
 end;
 
-class function CoFaxNumber.CreateRemote(const MachineName: string): IADsFaxNumber;
+class function CoFaxNumber.CreateRemote(const MachineName: AnsiString): IADsFaxNumber;
 begin
   Result := CreateRemoteComObject(MachineName, CLASS_FaxNumber) as IADsFaxNumber;
 end;
@@ -7992,7 +8004,7 @@ begin
   Result := CreateComObject(CLASS_NetAddress) as IADsNetAddress;
 end;
 
-class function CoNetAddress.CreateRemote(const MachineName: string): IADsNetAddress;
+class function CoNetAddress.CreateRemote(const MachineName: AnsiString): IADsNetAddress;
 begin
   Result := CreateRemoteComObject(MachineName, CLASS_NetAddress) as IADsNetAddress;
 end;
@@ -8124,7 +8136,7 @@ begin
   Result := CreateComObject(CLASS_OctetList) as IADsOctetList;
 end;
 
-class function CoOctetList.CreateRemote(const MachineName: string): IADsOctetList;
+class function CoOctetList.CreateRemote(const MachineName: AnsiString): IADsOctetList;
 begin
   Result := CreateRemoteComObject(MachineName, CLASS_OctetList) as IADsOctetList;
 end;
@@ -8236,7 +8248,7 @@ begin
   Result := CreateComObject(CLASS_Email) as IADsEmail;
 end;
 
-class function CoEmail.CreateRemote(const MachineName: string): IADsEmail;
+class function CoEmail.CreateRemote(const MachineName: AnsiString): IADsEmail;
 begin
   Result := CreateRemoteComObject(MachineName, CLASS_Email) as IADsEmail;
 end;
@@ -8368,7 +8380,7 @@ begin
   Result := CreateComObject(CLASS_Path) as IADsPath;
 end;
 
-class function CoPath.CreateRemote(const MachineName: string): IADsPath;
+class function CoPath.CreateRemote(const MachineName: AnsiString): IADsPath;
 begin
   Result := CreateRemoteComObject(MachineName, CLASS_Path) as IADsPath;
 end;
@@ -8520,7 +8532,7 @@ begin
   Result := CreateComObject(CLASS_ReplicaPointer) as IADsReplicaPointer;
 end;
 
-class function CoReplicaPointer.CreateRemote(const MachineName: string): IADsReplicaPointer;
+class function CoReplicaPointer.CreateRemote(const MachineName: AnsiString): IADsReplicaPointer;
 begin
   Result := CreateRemoteComObject(MachineName, CLASS_ReplicaPointer) as IADsReplicaPointer;
 end;
@@ -8712,7 +8724,7 @@ begin
   Result := CreateComObject(CLASS_Acl) as IADsAcl;
 end;
 
-class function CoAcl.CreateRemote(const MachineName: string): IADsAcl;
+class function CoAcl.CreateRemote(const MachineName: AnsiString): IADsAcl;
 begin
   Result := CreateRemoteComObject(MachineName, CLASS_Acl) as IADsAcl;
 end;
@@ -8869,7 +8881,7 @@ begin
   Result := CreateComObject(CLASS_Timestamp) as IADsTimestamp;
 end;
 
-class function CoTimestamp.CreateRemote(const MachineName: string): IADsTimestamp;
+class function CoTimestamp.CreateRemote(const MachineName: AnsiString): IADsTimestamp;
 begin
   Result := CreateRemoteComObject(MachineName, CLASS_Timestamp) as IADsTimestamp;
 end;
@@ -9001,7 +9013,7 @@ begin
   Result := CreateComObject(CLASS_PostalAddress) as IADsPostalAddress;
 end;
 
-class function CoPostalAddress.CreateRemote(const MachineName: string): IADsPostalAddress;
+class function CoPostalAddress.CreateRemote(const MachineName: AnsiString): IADsPostalAddress;
 begin
   Result := CreateRemoteComObject(MachineName, CLASS_PostalAddress) as IADsPostalAddress;
 end;
@@ -9113,7 +9125,7 @@ begin
   Result := CreateComObject(CLASS_BackLink) as IADsBackLink;
 end;
 
-class function CoBackLink.CreateRemote(const MachineName: string): IADsBackLink;
+class function CoBackLink.CreateRemote(const MachineName: AnsiString): IADsBackLink;
 begin
   Result := CreateRemoteComObject(MachineName, CLASS_BackLink) as IADsBackLink;
 end;
@@ -9245,7 +9257,7 @@ begin
   Result := CreateComObject(CLASS_TypedName) as IADsTypedName;
 end;
 
-class function CoTypedName.CreateRemote(const MachineName: string): IADsTypedName;
+class function CoTypedName.CreateRemote(const MachineName: AnsiString): IADsTypedName;
 begin
   Result := CreateRemoteComObject(MachineName, CLASS_TypedName) as IADsTypedName;
 end;
@@ -9397,7 +9409,7 @@ begin
   Result := CreateComObject(CLASS_Hold) as IADsHold;
 end;
 
-class function CoHold.CreateRemote(const MachineName: string): IADsHold;
+class function CoHold.CreateRemote(const MachineName: AnsiString): IADsHold;
 begin
   Result := CreateRemoteComObject(MachineName, CLASS_Hold) as IADsHold;
 end;
@@ -9529,7 +9541,7 @@ begin
   Result := CreateComObject(CLASS_Pathname) as IADsPathname;
 end;
 
-class function CoPathname.CreateRemote(const MachineName: string): IADsPathname;
+class function CoPathname.CreateRemote(const MachineName: AnsiString): IADsPathname;
 begin
   Result := CreateRemoteComObject(MachineName, CLASS_Pathname) as IADsPathname;
 end;
@@ -9686,7 +9698,7 @@ begin
   Result := CreateComObject(CLASS_ADSystemInfo) as IADsADSystemInfo;
 end;
 
-class function CoADSystemInfo.CreateRemote(const MachineName: string): IADsADSystemInfo;
+class function CoADSystemInfo.CreateRemote(const MachineName: AnsiString): IADsADSystemInfo;
 begin
   Result := CreateRemoteComObject(MachineName, CLASS_ADSystemInfo) as IADsADSystemInfo;
 end;
@@ -9888,7 +9900,7 @@ begin
   Result := CreateComObject(CLASS_WinNTSystemInfo) as IADsWinNTSystemInfo;
 end;
 
-class function CoWinNTSystemInfo.CreateRemote(const MachineName: string): IADsWinNTSystemInfo;
+class function CoWinNTSystemInfo.CreateRemote(const MachineName: AnsiString): IADsWinNTSystemInfo;
 begin
   Result := CreateRemoteComObject(MachineName, CLASS_WinNTSystemInfo) as IADsWinNTSystemInfo;
 end;
@@ -10020,7 +10032,7 @@ begin
   Result := CreateComObject(CLASS_DNWithBinary) as IADsDNWithBinary;
 end;
 
-class function CoDNWithBinary.CreateRemote(const MachineName: string): IADsDNWithBinary;
+class function CoDNWithBinary.CreateRemote(const MachineName: AnsiString): IADsDNWithBinary;
 begin
   Result := CreateRemoteComObject(MachineName, CLASS_DNWithBinary) as IADsDNWithBinary;
 end;
@@ -10152,7 +10164,7 @@ begin
   Result := CreateComObject(CLASS_DNWithString) as IADsDNWithString;
 end;
 
-class function CoDNWithString.CreateRemote(const MachineName: string): IADsDNWithString;
+class function CoDNWithString.CreateRemote(const MachineName: AnsiString): IADsDNWithString;
 begin
   Result := CreateRemoteComObject(MachineName, CLASS_DNWithString) as IADsDNWithString;
 end;

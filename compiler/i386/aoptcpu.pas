@@ -161,6 +161,8 @@ unit aoptcpu;
                   Result:=OptPass1ADD(p);
                 A_AND:
                   Result:=OptPass1And(p);
+                A_CMOVcc:
+                  Result:=OptPass1CMOVcc(p);
                 A_IMUL:
                   Result:=OptPass1Imul(p);
                 A_CMP:
@@ -183,8 +185,11 @@ unit aoptcpu;
                   Result:=OptPass1LEA(p);
                 A_MOV:
                   Result:=OptPass1MOV(p);
+                A_MOVD,
+                A_VMOVD:
+                  Result:=OptPass1MOVD(p);
                 A_MOVSX,
-                A_MOVZX :
+                A_MOVZX:
                   Result:=OptPass1Movx(p);
                 A_TEST:
                   Result:=OptPass1Test(p);
@@ -213,6 +218,8 @@ unit aoptcpu;
                   Result:=OptPass1Sub(p);
                 A_Jcc:
                   Result:=OptPass1Jcc(p);
+                A_NOT:
+                  Result:=OptPass1NOT(p);
                 A_MOVDQA,
                 A_MOVAPD,
                 A_MOVAPS,
@@ -255,6 +262,9 @@ unit aoptcpu;
                 A_VCVTSS2SD,
                 A_CVTSS2SD:
                   Result:=OptPass1_V_Cvtss2sd(p);
+                A_CLC,
+                A_STC:
+                  Result:=OptPass1STCCLC(p);
                 else
                   ;
               end;
@@ -271,9 +281,15 @@ unit aoptcpu;
             if not Result then
               begin
                 if (p.typ in SkipInstr) then
-                  UpdateUsedRegs(p);
-
-                p := tai(p.Next);
+                  begin
+                    UpdateUsedRegs(p);
+                    p := tai(p.Next);
+                  end
+                else
+                  begin
+                    p := tai(p.Next);
+                    UpdateUsedRegs(p);
+                  end;
                 Result := True;
               end;
           end;
@@ -291,6 +307,12 @@ unit aoptcpu;
               case taicpu(p).opcode Of
                 A_ADD:
                   Result:=OptPass2ADD(p);
+                A_CMOVcc:
+                  Result:=OptPass2CMOVcc(p);
+                A_CMP:
+                  Result:=OptPass2CMP(p);
+                A_TEST:
+                  Result:=OptPass2TEST(p);
                 A_Jcc:
                   Result:=OptPass2Jcc(p);
                 A_Lea:
@@ -309,6 +331,9 @@ unit aoptcpu;
                   Result:=OptPass2SUB(p);
                 A_SETcc:
                   Result:=OptPass2SETcc(p);
+                A_CLC,
+                A_STC:
+                  Result:=OptPass2STCCLC(p);
                 else
                   ;
               end;
@@ -316,8 +341,9 @@ unit aoptcpu;
           else
             ;
         end;
-        { If this flag is set, something was optimised ahead of p, so move
-          ahead by 1 instruction but treat as if Result was set to True }
+        { If this flag is set, force another run of pass 2 even if p wasn't
+          changed (-O3 only), but otherwise move p ahead by 1 instruction
+          and treat as if Result was set to True }
         if aoc_ForceNewIteration in OptsToCheck then
           begin
             Exclude(OptsToCheck, aoc_ForceNewIteration);
@@ -325,9 +351,15 @@ unit aoptcpu;
             if not Result then
               begin
                 if (p.typ in SkipInstr) then
-                  UpdateUsedRegs(p);
-
-                p := tai(p.Next);
+                  begin
+                    UpdateUsedRegs(p);
+                    p := tai(p.Next);
+                  end
+                else
+                  begin
+                    p := tai(p.Next);
+                    UpdateUsedRegs(p);
+                  end;
                 Result := True;
               end;
           end;
@@ -419,8 +451,16 @@ unit aoptcpu;
                   Result:=PostPeepholeOptADDSUB(p);
                 A_XOR:
                   Result:=PostPeepholeOptXor(p);
+                A_RET:
+                  Result:=PostPeepholeOptRET(p);
                 A_VPXOR:
                   Result:=PostPeepholeOptVPXOR(p);
+                A_SARX,
+                A_SHLX,
+                A_SHRX:
+                  Result:=PostPeepholeOptSARXSHLXSHRX(p);
+                A_RORX:
+                  Result:=PostPeepholeOptRORX(p);
                 else
                   ;
               end;

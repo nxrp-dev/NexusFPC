@@ -1,4 +1,19 @@
+{
+  This file is part of the Free Component Library.
+  Copyright (c) 2023 by the Free Pascal team.
+
+  RSA routines.
+
+  See the file COPYING.FPC, included in this distribution,
+  for details about the copyright.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fprsa;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode ObjFPC}
 {$H+}
@@ -8,8 +23,13 @@ interface
 
 {off $DEFINE CRYPTO_DEBUG}
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.SysUtils, System.Classes, System.Hash.Sha1, System.Hash.Sha512, System.Hash.Sha256, System.Hash.Tlsbigint, System.Hash.Utils, System.Hash.Asn, Fcl.BaseNEnc;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   sysutils, Classes, sha1, fpsha512, fpsha256, fpTLSBigInt, fphashutils, fpasn, basenenc;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   RSAPublicKeyOID = '1.2.840.113549.1.1.1';
@@ -52,8 +72,8 @@ type
     Exponent1,           // dp
     Exponent2,           // dq
     Coefficient: TBytes; // qi
-    procedure InitWithHexStrings(const n, e, d, p, q, dp, dq, qi: string);
-    procedure InitWithBase64UrlEncoded(const n, e, d, p, q, dp, dq, qi: string);
+    procedure InitWithHexStrings(const n, e, d, p, q, dp, dq, qi: ansistring);
+    procedure InitWithBase64UrlEncoded(const n, e, d, p, q, dp, dq, qi: ansistring);
     procedure WriteASN(ms: TMemoryStream);
     function AsDER: TBytes;
   end;
@@ -63,8 +83,8 @@ type
   TX509RSAPublicKey = record
     Modulus: TBytes; // m or n
     Exponent: TBytes; // e
-    procedure InitWithHexStrings(const n, e: string);
-    procedure InitWithBase64UrlEncoded(const n, e: string);
+    procedure InitWithHexStrings(const n, e: AnsiString);
+    procedure InitWithBase64UrlEncoded(const n, e: ansistring);
     procedure WriteASN(ms: TMemoryStream);
     function AsDER: TBytes;
   end;
@@ -72,9 +92,9 @@ type
 procedure RSACreate(out RSA: TRSA);
 procedure RSAFree(var RSA: TRSA);
 
-procedure RsaPublicKeyToHexa(const Modulus, Exponent: String; var PublicKeyHexa: String);
-procedure RsaPublicKeyFromHexa(const PublicKeyHexa: String; out Modulus, Exponent: String);
-procedure RsaInitFromPublicKey(var RSA: TRSA; const Modulus, Exponent: String); overload;
+procedure RsaPublicKeyToHexa(const Modulus, Exponent: AnsiString; var PublicKeyHexa: AnsiString);
+procedure RsaPublicKeyFromHexa(const PublicKeyHexa: AnsiString; out Modulus, Exponent: AnsiString);
+procedure RsaInitFromPublicKey(var RSA: TRSA; const Modulus, Exponent: AnsiString); overload;
 procedure RSAInitFromPublicKey(var RSA: TRSA; const RSAPublicKey: TX509RSAPublicKey); overload;
 procedure RSAInitFromPublicKeyDER(var RSA: TRSA; const PublicKeyDER: TBytes);
 procedure X509RsaPublicKeyInitFromDER(out RSA: TX509RSAPublicKey; const PublicKeyDER: TBytes);
@@ -190,32 +210,79 @@ end;
 
 procedure RSAFree(var RSA: TRSA);
 begin
-  if RSA.M = nil then
-    Exit;
+  if RSA.Context.BIMod[BIGINT_M_OFFSET] <> nil then
+    BIFreeMod(RSA.Context, BIGINT_M_OFFSET)
+  else if RSA.M <> nil then
+    BIRelease(RSA.Context, RSA.M);
+
+  if RSA.Context.BIMod[BIGINT_P_OFFSET] <> nil then
+    BIFreeMod(RSA.Context, BIGINT_P_OFFSET)
+  else if RSA.P <> nil then
+    BIRelease(RSA.Context, RSA.P);
+
+  if RSA.Context.BIMod[BIGINT_Q_OFFSET] <> nil then
+    BIFreeMod(RSA.Context, BIGINT_Q_OFFSET)
+  else if RSA.Q <> nil then
+    BIRelease(RSA.Context, RSA.Q);
+
+  if RSA.E <> nil then
+  begin
+    if RSA.E^.References = BIGINT_PERMANENT then
+      BIDepermanent(RSA.E);
+    BIRelease(RSA.Context, RSA.E);
+  end;
+
+  if RSA.D <> nil then
+  begin
+    if RSA.D^.References = BIGINT_PERMANENT then
+      BIDepermanent(RSA.D);
+    BIRelease(RSA.Context, RSA.D);
+  end;
+
+  if RSA.DP <> nil then
+  begin
+    if RSA.DP^.References = BIGINT_PERMANENT then
+      BIDepermanent(RSA.DP);
+    BIRelease(RSA.Context, RSA.DP);
+  end;
+
+  if RSA.DQ <> nil then
+  begin
+    if RSA.DQ^.References = BIGINT_PERMANENT then
+      BIDepermanent(RSA.DQ);
+    BIRelease(RSA.Context, RSA.DQ);
+  end;
+
+  if RSA.QInv <> nil then
+  begin
+    if RSA.QInv^.References = BIGINT_PERMANENT then
+      BIDepermanent(RSA.QInv);
+    BIRelease(RSA.Context, RSA.QInv);
+  end;
+
   BITerminate(RSA.Context);
 end;
 
-procedure RsaPublicKeyToHexa(const Modulus, Exponent: String;
-  var PublicKeyHexa: String);
+procedure RsaPublicKeyToHexa(const Modulus, Exponent: AnsiString;
+  var PublicKeyHexa: AnsiString);
 begin
   PublicKeyHexa:=PublicKeyHexa+BytesToHexStr(Exponent)+BytesToHexStr(Modulus);
 end;
 
-procedure RsaPublicKeyFromHexa(const PublicKeyHexa: String; out Modulus,
-  Exponent: String);
+procedure RsaPublicKeyFromHexa(const PublicKeyHexa: AnsiString; out Modulus, Exponent: AnsiString);
 var
   aBytes: TBytes;
 begin
   HexStrToBytes(PublicKeyHexa,aBytes);
   if length(aBytes)<4 then
-    raise Exception.Create('20220426235757');
+    raise EHashUtil.Create('20220426235757');
   SetLength(Exponent{%H-},3);
   Move(aBytes[0],Exponent[1],3);
   SetLength(Modulus{%H-},length(aBytes)-3);
   Move(aBytes[3],Modulus[1],length(Modulus));
 end;
 
-procedure RsaInitFromPublicKey(var RSA: TRSA; const Modulus, Exponent: String);
+procedure RsaInitFromPublicKey(var RSA: TRSA; const Modulus, Exponent: AnsiString);
 begin
   RSA.ModulusLen := length(Modulus);
   RSA.M := BIImport(RSA.Context, Modulus);
@@ -264,24 +331,24 @@ begin
     {$ENDIF}
 
     if List.Count<6 then
-      raise Exception.Create('20220428180055');
+      raise EHashUtil.Create('20220428180055');
 
     // check sequence
     ASNParse_GetItem(List,0,ASNType,ASNSize);
     if ASNType<>ASN1_SEQ then
-      raise Exception.Create('20220428180058');
+      raise EHashUtil.Create('20220428180058');
 
     // check sequence
     ASNParse_GetItem(List,1,ASNType,ASNSize);
     if ASNType<>ASN1_SEQ then
-      raise Exception.Create('20220428183025');
+      raise EHashUtil.Create('20220428183025');
 
     // check algorithm OID
     ASNParse_GetItem(List,2,ASNType,ASNSize);
     if ASNType<>ASN1_OBJID then
-      raise Exception.Create('20220428180512');
+      raise EHashUtil.Create('20220428180512');
     if List[2]<>RSAPublicKeyOID then
-      raise Exception.Create('20220428181542');
+      raise EHashUtil.Create('20220428181542');
 
     // check optional null
     i:=3;
@@ -292,16 +359,16 @@ begin
     // check algorithm params
     ASNParse_GetItem(List,i,ASNType,ASNSize);
     if ASNType<>ASN1_BITSTR then
-      raise Exception.Create('20220428181913');
+      raise EHashUtil.Create('20220428181913');
     inc(i);
 
     if i+2>List.Count then
-      raise Exception.Create('20220428180055');
+      raise EHashUtil.Create('20220428180055');
 
     // check sequence
     ASNParse_GetItem(List,i,ASNType,ASNSize);
     if ASNType<>ASN1_SEQ then
-      raise Exception.Create('20220428181933');
+      raise EHashUtil.Create('20220428181933');
 
     // public key
     RSA.Modulus:=ASNParse_GetIntBytes(List,i+1,20220428182235);
@@ -364,37 +431,79 @@ begin
   RSAInitFromX509PrivateKey(RSA,X509RSA);
 end;
 
+function ExtractRSAFromPKCS8(List : TStrings) : TBytes;
+
+Const
+  SInvalid = 'Invalid PKCS#8 ';
+
+var
+  ASNType, ASNSize: integer;
+
+begin
+  Result:=[];
+  ASNParse_GetItem(List,0,ASNType,ASNSize);
+  if ASNType<>ASN1_SEQ then
+    raise EHashUtil.Create(SInvalid+'Sequence 1');
+  ASNParse_GetItem(List,1,ASNType,ASNSize);
+  if ASNType<>ASN1_INT then
+    raise EHashUtil.Create(SInvalid+'Int 1');
+  if StrToIntDef(List[1],-1)<>0 then
+    raise EHashUtil.Create(SInvalid+'Int 1.a');
+  ASNParse_GetItem(List,2,ASNType,ASNSize);
+  if ASNType<>ASN1_SEQ then
+    raise EHashUtil.Create(SInvalid+'Sequence 2');
+  ASNParse_GetItem(List,3,ASNType,ASNSize);
+  if ASNType<>ASN1_OBJID  then
+    raise EHashUtil.Create(SInvalid+'ObjID');
+  ASNParse_GetItem(List,4,ASNType,ASNSize);
+  if ASNType<>ASN1_NULL then
+    raise EHashUtil.Create(SInvalid+'Attribute');
+  ASNParse_GetItem(List,5,ASNType,ASNSize);
+  if ASNType<>ASN1_OCTSTR then
+    raise EHashUtil.Create(SInvalid+'RSA key');
+  Result:=HexStrToBytes(List[5]);
+end;
+
+
 procedure X509RsaPrivateKeyInitFromDER(out RSA: TX509RSAPrivateKey; const PrivateKeyDER: TBytes);
 var
   List: TStringList;
   ASNType, ASNSize: integer;
+  B : TBytes;
 begin
   RSA:=Default(TX509RSAPrivateKey);
   List:=TStringList.Create;
   try
     ASNParse(PrivateKeyDER,List);
-    if List.Count<10 then
-      raise Exception.Create('20220428161533');
+    if Not List.Count in [6,10] then
+      raise EHashUtil.Create('20220428161533');
+    if List.Count = 6 then
+      begin
+      B:=ExtractRSAFromPKCS8(List);
+      X509RsaPrivateKeyInitFromDER(RSA,B);
+      end
+    else
+      begin
+      // check sequence
+      ASNParse_GetItem(List,0,ASNType,ASNSize);
+      if ASNType<>ASN1_SEQ then
+        raise EHashUtil.Create('20220428161631');
 
-    // check sequence
-    ASNParse_GetItem(List,0,ASNType,ASNSize);
-    if ASNType<>ASN1_SEQ then
-      raise Exception.Create('20220428161631');
+      // version
+      ASNParse_GetItem(List,1,ASNType,ASNSize);
+      if ASNType<>ASN1_INT then
+        raise EHashUtil.Create('20220428161716');
+      RSA.Version:=StrToIntDef(List[1],0);
 
-    // version
-    ASNParse_GetItem(List,1,ASNType,ASNSize);
-    if ASNType<>ASN1_INT then
-      raise Exception.Create('20220428161716');
-    RSA.Version:=StrToIntDef(List[1],0);
-
-    RSA.Modulus:=ASNParse_GetIntBytes(List,2,20220428173827);
-    RSA.PublicExponent:=ASNParse_GetIntBytes(List,3,20220428173840);
-    RSA.PrivateExponent:=ASNParse_GetIntBytes(List,4,20220428173852);
-    RSA.Prime1:=ASNParse_GetIntBytes(List,5,20220428173906);
-    RSA.Prime2:=ASNParse_GetIntBytes(List,6,20220428173915);
-    RSA.Exponent1:=ASNParse_GetIntBytes(List,7,20220428173923);
-    RSA.Exponent2:=ASNParse_GetIntBytes(List,8,20220428173930);
-    RSA.Coefficient:=ASNParse_GetIntBytes(List,9,20220428173939);
+      RSA.Modulus:=ASNParse_GetIntBytes(List,2,20220428173827);
+      RSA.PublicExponent:=ASNParse_GetIntBytes(List,3,20220428173840);
+      RSA.PrivateExponent:=ASNParse_GetIntBytes(List,4,20220428173852);
+      RSA.Prime1:=ASNParse_GetIntBytes(List,5,20220428173906);
+      RSA.Prime2:=ASNParse_GetIntBytes(List,6,20220428173915);
+      RSA.Exponent1:=ASNParse_GetIntBytes(List,7,20220428173923);
+      RSA.Exponent2:=ASNParse_GetIntBytes(List,8,20220428173930);
+      RSA.Coefficient:=ASNParse_GetIntBytes(List,9,20220428173939);
+      end;
 
     {$IFDEF TLS_DEBUG}
     with RSA do begin
@@ -466,7 +575,7 @@ begin
       {$IFDEF CRYPTO_DEBUG}
       for i:=0 to Padding-1 do
         if Imported[2+i]=0 then
-          raise Exception.Create('20220429000653');
+          raise EHashUtil.Create('20220429000653');
       {$ENDIF}
     end;
 
@@ -635,13 +744,13 @@ begin
   end;
 end;
 
-function RsaVerify(const Modulus, Exponent, Hash, Signature: String): Boolean;
+function RsaVerify(const Modulus, Exponent, Hash, Signature: AnsiString): Boolean;
 var
   ASNType, ASNSize: Int32;
   Data: array[0..4095] of byte;
-  Digest: String;
+  Digest: AnsiString;
   DataP, DataEnd: PByte;
-  OID: String;
+  OID: AnsiString;
   RSA: TRSA;
   Size: Integer;
 begin
@@ -718,7 +827,7 @@ end;
 function RS256VerifyFromPublicKeyHexa(const PublicKeyHexa, SignatureBaseHash,
   Signature: String): Boolean;
 var
-  Modulus, Exponent: String;
+  Modulus, Exponent: AnsiString;
 begin
   RsaPublicKeyFromHexa(PublicKeyHexa, Modulus, Exponent);
   Result := RsaVerify(Modulus, Exponent, SignatureBaseHash, Signature);
@@ -737,7 +846,8 @@ const
                +'18BFB311B8377C0FACDED4CD2B1E2692E480BE260BE355F050EBABF89E24F2833F56F0A74C185225DB3B47B63612FB9BDEE1E1B8707807093E1551F24527A763'
                +'1947D033ED7052C439E50B8A46E4D0C06DBC38AF1D64B49766A5CF9A82644650FFD733B61942DB0BD8D47C8EF24A02DC9FD2EF557B12DED804519F2B2B6C284D';
 var
-  Exponent, Modulus, Hash, Signature: string;
+  Exponent, Modulus, Hash, Signature: Ansistring;
+
 begin
   Exponent:=HexStrToString(_Exponent);
   Modulus:=HexStrToString(_Modulus);
@@ -778,14 +888,14 @@ begin
   Result:=-1;
 
   if ((RSA.ModulusBits+7) div 8)<>RSA.ModulusLen then
-    raise Exception.Create('20220502000942 RSA n has leading zeroes');
+    raise EHashUtil.Create('20220502000942 RSA n has leading zeroes');
 
   ModBits:=RSA.ModulusBits-1;
   EncodedLen:=(ModBits+7) div 8; // can be one less than RSA.ModulusLen
   SetLength(EncodedMsg{%H-},EncodedLen);
   r:=EMSA_PSS_Encode(Input,Len, HashFunc, @EncodedMsg[0], ModBits, SaltLen);
   if r<>0 then
-    raise Exception.Create(IntToStr(r));
+    raise EHashUtil.Create(IntToStr(r));
 
   EncodedBI:=BIImport(RSA.Context,EncodedMsg);
   // Sign with Private Key
@@ -1053,14 +1163,14 @@ begin
     c:=c shr 8;
   end;
   if c>0 then
-    raise Exception.Create('20220501190124');
+    raise EHashUtil.Create('20220501190124');
 end;
 
 function MGF1(const InputStr: string; HashFunc: PRSAHashFuncInfo; Len: integer): string;
 begin
   SetLength(Result{%H-},Len);
   if Len=0 then exit;
-  MGF1(PByte(PChar(InputStr)){InputStr might be empty!},length(InputStr), HashFunc, @Result[1], Len);
+  MGF1(PByte(PAnsiChar(InputStr)){InputStr might be empty!},length(InputStr), HashFunc, @Result[1], Len);
 end;
 
 procedure MGF1(Input: PByte; InLen: Integer; HashFunc: PRSAHashFuncInfo;
@@ -1182,7 +1292,7 @@ end;
 
 { TX509RSAPrivateKey }
 
-procedure TX509RSAPrivateKey.InitWithHexStrings(const n, e, d, p, q, dp, dq, qi: string
+procedure TX509RSAPrivateKey.InitWithHexStrings(const n, e, d, p, q, dp, dq, qi: Ansistring
   );
 begin
   Version:=0;
@@ -1197,7 +1307,7 @@ begin
 end;
 
 procedure TX509RSAPrivateKey.InitWithBase64UrlEncoded(const n, e, d, p, q, dp,
-  dq, qi: string);
+  dq, qi: Ansistring);
 begin
   Version:=0;
   Modulus:=Base64URL.Decode(n,false);
@@ -1244,13 +1354,13 @@ end;
 
 { TX509RSAPublicKey }
 
-procedure TX509RSAPublicKey.InitWithHexStrings(const n, e: string);
+procedure TX509RSAPublicKey.InitWithHexStrings(const n, e: ansistring);
 begin
   Modulus:=HexStrToBytes(n);
   Exponent:=HexStrToBytes(e);
 end;
 
-procedure TX509RSAPublicKey.InitWithBase64UrlEncoded(const n, e: string);
+procedure TX509RSAPublicKey.InitWithBase64UrlEncoded(const n, e: ansistring);
 begin
   Modulus:=Base64URL.Decode(n,false);
   Exponent:=Base64URL.Decode(e,false);

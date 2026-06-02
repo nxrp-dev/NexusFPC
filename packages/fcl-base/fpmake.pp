@@ -2,7 +2,7 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses {$ifdef unix}cthreads,{$endif} fpmkunit;
 
 Var
   T : TTarget;
@@ -20,13 +20,14 @@ begin
     P.Version:='3.3.1';
     P.Dependencies.Add('univint',[Darwin,iPhoneSim,ios]);
     p.Dependencies.Add('rtl-objpas');
+    P.Dependencies.Add('pthreads',AllUnixOSes);
 
     P.Author := '<various>';
     P.License := 'LGPL with modification, ';
     P.Email := '';
     P.Description := 'Base library of Free Component Libraries (FCL), FPC''s OOP library.';
     P.NeedLibC:= false;
-    P.OSes:=AllOSes-[embedded,msdos,win16,macosclassic,palmos,zxspectrum,msxdos,amstradcpc,sinclairql];
+    P.OSes:=AllOSes-[embedded,msdos,win16,macosclassic,palmos,zxspectrum,msxdos,amstradcpc,sinclairql,human68k,ps1,wasip2];
     if Defaults.CPU=jvm then
       P.OSes := P.OSes - [java,android];
 
@@ -47,6 +48,8 @@ begin
     T:=P.Targets.AddUnit('fpobserver.pp');
       T.ResourceStrings:=true;
     T:=P.Targets.AddUnit('blowfish.pp');
+      T.ResourceStrings:=true;
+    T:=P.Targets.AddUnit('blowfish2.pp');
       T.ResourceStrings:=true;
     T:=P.Targets.AddUnit('bufstream.pp');
       T.ResourceStrings:=true;
@@ -113,7 +116,17 @@ begin
         begin
           AddUnit('wformat');
         end;
+    T:=P.Targets.AddUnit('wmarkdown.pp');
+      with T.Dependencies do
+        begin
+          AddUnit('wformat');
+        end;
     T:=P.Targets.AddUnit('wtex.pp');
+      with T.Dependencies do
+        begin
+          AddUnit('wformat');
+        end;
+    T:=P.Targets.AddUnit('wtext.pp');
       with T.Dependencies do
         begin
           AddUnit('wformat');
@@ -140,6 +153,11 @@ begin
     // Install windows resources
     P.InstallFiles.Add('src/win/fclel.res',AllWindowsOSes,'$(unitinstalldir)');
     T:=P.Targets.addUnit('basenenc.pp');
+
+    T:=P.Targets.addUnit('dirwatch.pp');
+
+    T:=P.Targets.addUnit('fppromise.pp',AllOSes-[go32v2,nativent,atari]);
+    T.Dependencies.AddUnit('syncobjs');
 
     // Examples
     P.ExamplePath.Add('examples');
@@ -213,6 +231,9 @@ begin
       // simple.xml
       // parser.dat
       // testcgi.html
+
+
+    P.NamespaceMap:='namespaces.lst';
 
 {$ifndef ALLPACKAGES}
     Run;

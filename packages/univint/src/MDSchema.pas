@@ -15,7 +15,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit MDSchema;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -200,7 +202,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CFBase,MacOsApi.CFString,MacOsApi.CFArray,MacOsApi.CFDictionary,MacOsApi.MDItem;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CFBase,CFString,CFArray,CFDictionary,MDItem;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -214,14 +220,14 @@ uses MacTypes,CFBase,CFString,CFArray,CFDictionary,MDItem;
 
 	Functions in MDSchema return meta data about attributes, for example
         the type of an attribute, and a localized string for an attribute that is
-        sutable to display to a user.
+        suitable to display to a user.
 }
 
 {!
 	@function MDSchemaCopyAttributesForContentType
         Returns an dictionary attributes to display or show the
                 user for a given UTI type. This function does not walk up the
-                UTI hiearchy and perform a union of the information.
+                UTI hierarchy and perform a union of the information.
         @param utiType the UTI type to be interrogated.
         @result A CFDictionaryRef with keys ==  to kMDAttributeDisplayValues etc..
 

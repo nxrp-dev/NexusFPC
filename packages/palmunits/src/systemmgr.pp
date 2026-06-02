@@ -35,11 +35,17 @@
  *
  *****************************************************************************)
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit systemmgr;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses PalmApi.Palmos, PalmApi.Coretraps, PalmApi.Libtraps, PalmApi.Errorbase, PalmApi.Bitmap, PalmApi.Datamgr, PalmApi.Systemresources, PalmApi.Event_;
+{$ELSE FPC_DOTTEDUNITS}
 uses palmos, coretraps, libtraps, errorbase, bitmap, datamgr, systemresources, event_;
+{$ENDIF FPC_DOTTEDUNITS}
 
 (************************************************************
  * System Constants
@@ -87,7 +93,7 @@ const
  * PilotMain() function without launching the app.  For these action codes, the
  * application's global and static variables are *not* available, unless the
  * application is already running. Some action codes are synchronized with the
- * currently running UI applcation via the event manager (alarm action codes,
+ * currently running UI application via the event manager (alarm action codes,
  * for example), while others, such as HotSync action codes, are sent from a
  * background thread. To find out if your app is running (is the current UI
  * app) when an action code is received, test the sysAppLaunchFlagSubCall flag
@@ -187,7 +193,7 @@ const
                // is responsible for making any alarm sounds
                // and for displaying the alarm UI.
                // sysAppLaunchCmdDisplayAlarm calls are ordered
-               // chronoligically and are not overlapped.
+               // chronologically and are not overlapped.
                // This means that your app will receive
                // sysAppLaunchCmdDisplayAlarm only after
                // all earlier alarms have been displayed.
@@ -504,7 +510,7 @@ type
   SysAppLaunchCmdCardType = record
     err: Err;
     volRefNum: UInt16;
-    path: PChar;
+    path: PAnsiChar;
     startFlags: UInt16; // See vfsStartFlagXXX constants below
   end;
 
@@ -526,7 +532,7 @@ type
  * Structure of Application info for an application. Applications
  *  do not necessarily have to be on their own thread - there
  *  can be more than 1 app on the same AMX task. Each application
- *  has an assocated SysAppInfoType structure which holds the
+ *  has an associated SysAppInfoType structure which holds the
  *  application specific information like the database MemHandle of the
  *  app, the code MemHandle, the stack chunk pointer, the owner ID, etc.
  *
@@ -873,7 +879,7 @@ const
 // SysCreateDataBaseList can generate a list of database.
 type
   SysDBListItemType = record
-    name: array [0..dmDBNameLength-1] of Char;
+    name: array [0..dmDBNameLength-1] of AnsiChar;
     creator: UInt32;
     type_: UInt32;
     version: UInt16;
@@ -935,7 +941,7 @@ type
 // mVolts: UInt16;
     // Character string received in response to inquiry string
     // (will be NUL terminated)
-    responseBuffer: array [0..sysMaxHSIResponseSize-1] of Char;
+    responseBuffer: array [0..sysMaxHSIResponseSize-1] of AnsiChar;
     // Length of string in responseBuffer
     responseLength: UInt16;
   end;
@@ -1020,7 +1026,7 @@ function SysDisableInts: UInt16; syscall sysTrapSysDisableInts;
 
 procedure SysRestoreStatus(status: UInt16); syscall sysTrapSysRestoreStatus;
 
-function SysGetOSVersionString: PChar; syscall sysTrapSysGetOSVersionString;
+function SysGetOSVersionString: PAnsiChar; syscall sysTrapSysGetOSVersionString;
 
 // The following trap is a public definition of HwrGetROMToken from <Hardware.h>
 // See token definitions (like sysROMTokenSerial) above...
@@ -1035,7 +1041,7 @@ function SysLibLoad(libType, libCreator: UInt32; var refNumP: UInt16): Err; sysc
 
 function SysLibRemove(refNum: UInt16): Err; syscall sysTrapSysLibRemove;
 
-function SysLibFind(const nameP: PChar; var refNumP: UInt16): Err; syscall sysTrapSysLibFind;
+function SysLibFind(const nameP: PAnsiChar; var refNumP: UInt16): Err; syscall sysTrapSysLibFind;
 
 function SysLibTblEntry(refNum: UInt16): SysLibTblEntryPtr; syscall sysTrapSysLibTblEntry;
 
@@ -1049,7 +1055,7 @@ function SysLibWake(refNum: UInt16): Err; syscall sysLibTrapWake;
 // Kernel Prototypes
 //-----------------------------------------------------
 
-// Task Creation and deleation
+// Task Creation and deletion
 function SysTranslateKernelErr(err: Err): Err; syscall sysTrapSysTranslateKernelErr;
 
 function SysTaskCreate(var taskIDP, creator: UInt32; codeP: ProcPtr; stackP: MemPtr;

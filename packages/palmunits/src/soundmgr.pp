@@ -17,11 +17,17 @@
  *
  *****************************************************************************)
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit soundmgr;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses PalmApi.Palmos, PalmApi.Coretraps, PalmApi.Errorbase, Amiga.Other.Preferences;
+{$ELSE FPC_DOTTEDUNITS}
 uses palmos, coretraps, errorbase, preferences;
+{$ENDIF FPC_DOTTEDUNITS}
 
 (************************************************************
  * Sound Manager constants
@@ -64,14 +70,14 @@ const
     // unknown command is passed.
 
   sndCmdNoteOn = Succ(sndCmdFreqDurationAmp); // start a sound given its MIDI key index, max duration and velocity;
-                                            // the call will not wait for the sound to complete, returning imeediately;
+                                            // the call will not wait for the sound to complete, returning immediately;
                                             // any other sound play request made before this one completes will interrupt it.
                                             // param1 = MIDI key index (0-127)
                                             // param2 = maximum duration in milliseconds
                                             // param3 = velocity (0 - 127) (will be interpolated as amplitude)
 
   sndCmdFrqOn = Succ(sndCmdNoteOn);         // start a sound given its frequency in Hz, max duration and amplitude;
-                                            // the call will not wait for the sound to complete, returning imeediately;
+                                            // the call will not wait for the sound to complete, returning immediately;
                                             // any other sound play request made before this one completes will interrupt it.
                                             // param1 = frequency in Hz
                                             // param2 = maximum duration in milliseconds
@@ -139,7 +145,7 @@ type
   SndMidiRecType = record
     hdr: SndMidiRecHdrType;            // offset from the beginning of the record
                                        // to the Standard Midi File data stream
-    name: array [0..2-1] of Char;      // Track name: 1 or more chars including NULL terminator.
+    name: array [0..2-1] of AnsiChar;      // Track name: 1 or more chars including NULL terminator.
                                        // If a track has no name, the NULL character must still
                                        // be provided.
                                        // Set to 2 to pad the structure out to a word boundary.
@@ -147,7 +153,7 @@ type
 
 // Midi records found by SndCreateMidiList.
   SndMidiListItemType = record
-    name: array [0..sndMidiNameLength-1] of Char; // including NULL terminator
+    name: array [0..sndMidiNameLength-1] of AnsiChar; // including NULL terminator
     uniqueRecID: UInt32;
     dbID: LocalID;
     cardNo: UInt16;
@@ -200,7 +206,7 @@ type
 
     interruptible: Boolean;                 // if true, sound play will be interrupted if
                                             // user interacts with the controls (digitizer, buttons, etc.);
-                                            // if false, the paly will not be interrupted; the default behavior
+                                            // if false, the play will not be interrupted; the default behavior
                                             // is "interruptible" if this structure is not passed in
 
     reserved1: UInt8;

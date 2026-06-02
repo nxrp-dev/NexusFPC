@@ -4,7 +4,7 @@ program tclock;
 uses
   ncurses, sysutils, initc;
 
-procedure setlocale(cat : integer; p : pchar); cdecl; external clib;
+procedure setlocale(cat : integer; p : PAnsiChar); cdecl; external clib;
 
 
 const
@@ -52,7 +52,7 @@ begin
   freemem(rest)
 end;
 
-(* Draw a diagonal(arbitrary) line using Bresenham's alogrithm. *)
+(* Draw a diagonal(arbitrary) line using Bresenham's algorithm. *)
 procedure dline(from_y, from_x, end_y,  end_x: Smallint; ch: chtype; var rest: PRchar);
 var
   dx, dy: Smallint;
@@ -194,7 +194,7 @@ begin
   attron(COLOR_PAIR(3));
   mvaddstr(cy - 5, cx - Length(title1) DIV 2, title1);
   mvaddstr(cy - 4, cx - Length(title2) DIV 2, title2);
-  mvaddstr(cy - 3, cx - Length(vstr) DIV 2, PChar(vstr));
+  mvaddstr(cy - 3, cx - Length(vstr) DIV 2, PAnsiChar(vstr));
   attroff(COLOR_PAIR(3));
   attron(A_UNDERLINE);
   mvaddstr(cy + 2, cx - Length(title3) DIV 2, title3);
@@ -248,7 +248,7 @@ begin
       Hour := Hour MOD 12;
 
       timestr := DateTimeToStr(Now);
-      mvaddstr(cy + round(sradius) - 4, cx - Length(timestr) DIV 2, PChar(timestr));
+      mvaddstr(cy + round(sradius) - 4, cx - Length(timestr) DIV 2, PAnsiChar(timestr));
 
       angle := Hour * _2PI / 12;
       dline(cy, cx, cy - A2Y(angle, hradius), cx + A2X(angle, hradius), chtype('*'),Hrest);

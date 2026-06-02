@@ -23,11 +23,17 @@
 {$mode objfpc}
 {$h+}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit FPReadXWD;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
-uses FPImage, classes, sysutils, xwdfile;
+{$IFDEF FPC_DOTTEDUNITS}
+uses FpImage, System.Classes, System.SysUtils, Api.Xwdfile;
+{$ELSE FPC_DOTTEDUNITS}
+uses FpImage, classes, sysutils, xwdfile;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   TXWDColors = array of TXWDColor;
@@ -46,7 +52,7 @@ type
       procedure WriteScanLine(Row: Integer; Img: TFPCustomImage);
     protected
       XWDFileHeader: TXWDFileHeader;  // The header, as read from the file
-      WindowName: array of Char;
+      WindowName: array of AnsiChar;
       XWDColors: TXWDColors;
       LineBuf: PByte;                 // Buffer for 1 line
 
@@ -82,7 +88,7 @@ end;
 constructor TFPReaderXWD.create;
 begin
   inherited create;
-  
+
 end;
 
 destructor TFPReaderXWD.Destroy;
@@ -145,7 +151,7 @@ var
   MyColor: TFPColor;
 begin
   MyColor.alpha := 0;
-  
+
   case XWDFileHeader.bits_per_pixel of
    1 :
      for Column:=0 to Img.Width-1 do
@@ -216,7 +222,7 @@ begin
   Color.alpha := 0;
 
   {****************************************************************************
-    The file is on big-endian format, so it needs to be swaped on little-endian CPUs
+    The file is on big-endian format, so it needs to be swapped on little-endian CPUs
    ****************************************************************************}
   Stream.Position := 0; //* Causes error if removed, but should be
 
@@ -233,7 +239,7 @@ begin
 
   // Avoids allocating too much space for the string
   if Size > 256 then raise Exception.Create('Window name string too big. The file might be corrupted.');
-  
+
   SetLength(WindowName, Size);
 
   Stream.Read(WindowName[0], Size);
@@ -293,5 +299,5 @@ end;
 initialization
 
   ImageHandlers.RegisterImageReader ('XWD Format', 'xwd', TFPReaderXWD);
-  
+
 end.

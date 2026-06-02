@@ -1,13 +1,19 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit googlecloudlatencytest;
+{$ENDIF FPC_DOTTEDUNITS}
 {$MODE objfpc}
 {$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils, System.Classes, GoogleApi.Service, FpWeb.Rest.Base, GoogleApi.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses sysutils, classes, googleservice, restbase, googlebase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
-  
+
   //Top-level schema types
   TAggregatedStats = Class;
   TAggregatedStatsReply = Class;
@@ -28,11 +34,11 @@ type
   TStatsTypedoubleValuesArray = Array of TDoubleValue;
   TStatsTypeintValuesArray = Array of TIntValue;
   TStatsTypestringValuesArray = Array of TStringValue;
-  
+
   { --------------------------------------------------------------------
     TAggregatedStats
     --------------------------------------------------------------------}
-  
+
   TAggregatedStats = Class(TGoogleBaseObject)
   Private
     Fstats : TAggregatedStatsTypestatsArray;
@@ -48,11 +54,11 @@ type
     Property stats : TAggregatedStatsTypestatsArray Index 0 Read Fstats Write Setstats;
   end;
   TAggregatedStatsClass = Class of TAggregatedStats;
-  
+
   { --------------------------------------------------------------------
     TAggregatedStatsReply
     --------------------------------------------------------------------}
-  
+
   TAggregatedStatsReply = Class(TGoogleBaseObject)
   Private
     FtestValue : String;
@@ -64,11 +70,11 @@ type
     Property testValue : String Index 0 Read FtestValue Write SettestValue;
   end;
   TAggregatedStatsReplyClass = Class of TAggregatedStatsReply;
-  
+
   { --------------------------------------------------------------------
     TDoubleValue
     --------------------------------------------------------------------}
-  
+
   TDoubleValue = Class(TGoogleBaseObject)
   Private
     F_label : String;
@@ -84,11 +90,11 @@ type
     Property value : integer Index 8 Read Fvalue Write Setvalue;
   end;
   TDoubleValueClass = Class of TDoubleValue;
-  
+
   { --------------------------------------------------------------------
     TIntValue
     --------------------------------------------------------------------}
-  
+
   TIntValue = Class(TGoogleBaseObject)
   Private
     F_label : String;
@@ -104,11 +110,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TIntValueClass = Class of TIntValue;
-  
+
   { --------------------------------------------------------------------
     TStats
     --------------------------------------------------------------------}
-  
+
   TStats = Class(TGoogleBaseObject)
   Private
     FdoubleValues : TStatsTypedoubleValuesArray;
@@ -133,11 +139,11 @@ type
     Property time : double Index 24 Read Ftime Write Settime;
   end;
   TStatsClass = Class of TStats;
-  
+
   { --------------------------------------------------------------------
     TStatsReply
     --------------------------------------------------------------------}
-  
+
   TStatsReply = Class(TGoogleBaseObject)
   Private
     FtestValue : String;
@@ -149,11 +155,11 @@ type
     Property testValue : String Index 0 Read FtestValue Write SettestValue;
   end;
   TStatsReplyClass = Class of TStatsReply;
-  
+
   { --------------------------------------------------------------------
     TStringValue
     --------------------------------------------------------------------}
-  
+
   TStringValue = Class(TGoogleBaseObject)
   Private
     F_label : String;
@@ -169,11 +175,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TStringValueClass = Class of TStringValue;
-  
+
   { --------------------------------------------------------------------
     TStatscollectionResource
     --------------------------------------------------------------------}
-  
+
   TStatscollectionResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -181,12 +187,12 @@ type
     Function Updateaggregatedstats(aAggregatedStats : TAggregatedStats) : TAggregatedStatsReply;
     Function Updatestats(aStats : TStats) : TStatsReply;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TCloudlatencytestAPI
     --------------------------------------------------------------------}
-  
+
   TCloudlatencytestAPI = Class(TGoogleAPI)
   Private
     FStatscollectionInstance : TStatscollectionResource;
@@ -228,7 +234,7 @@ implementation
   --------------------------------------------------------------------}
 
 
-Procedure TAggregatedStats.Setstats(AIndex : Integer; const AValue : TAggregatedStatsTypestatsArray); 
+Procedure TAggregatedStats.Setstats(AIndex : Integer; const AValue : TAggregatedStatsTypestatsArray);
 
 begin
   If (Fstats=AValue) then exit;
@@ -239,7 +245,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAggregatedStats.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAggregatedStats.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -258,7 +264,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAggregatedStatsReply.SettestValue(AIndex : Integer; const AValue : String); 
+Procedure TAggregatedStatsReply.SettestValue(AIndex : Integer; const AValue : String);
 
 begin
   If (FtestValue=AValue) then exit;
@@ -275,7 +281,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDoubleValue.Set_label(AIndex : Integer; const AValue : String); 
+Procedure TDoubleValue.Set_label(AIndex : Integer; const AValue : String);
 
 begin
   If (F_label=AValue) then exit;
@@ -285,7 +291,7 @@ end;
 
 
 
-Procedure TDoubleValue.Setvalue(AIndex : Integer; const AValue : integer); 
+Procedure TDoubleValue.Setvalue(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -313,7 +319,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TIntValue.Set_label(AIndex : Integer; const AValue : String); 
+Procedure TIntValue.Set_label(AIndex : Integer; const AValue : String);
 
 begin
   If (F_label=AValue) then exit;
@@ -323,7 +329,7 @@ end;
 
 
 
-Procedure TIntValue.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TIntValue.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -351,7 +357,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TStats.SetdoubleValues(AIndex : Integer; const AValue : TStatsTypedoubleValuesArray); 
+Procedure TStats.SetdoubleValues(AIndex : Integer; const AValue : TStatsTypedoubleValuesArray);
 
 begin
   If (FdoubleValues=AValue) then exit;
@@ -361,7 +367,7 @@ end;
 
 
 
-Procedure TStats.SetintValues(AIndex : Integer; const AValue : TStatsTypeintValuesArray); 
+Procedure TStats.SetintValues(AIndex : Integer; const AValue : TStatsTypeintValuesArray);
 
 begin
   If (FintValues=AValue) then exit;
@@ -371,7 +377,7 @@ end;
 
 
 
-Procedure TStats.SetstringValues(AIndex : Integer; const AValue : TStatsTypestringValuesArray); 
+Procedure TStats.SetstringValues(AIndex : Integer; const AValue : TStatsTypestringValuesArray);
 
 begin
   If (FstringValues=AValue) then exit;
@@ -381,7 +387,7 @@ end;
 
 
 
-Procedure TStats.Settime(AIndex : Integer; const AValue : double); 
+Procedure TStats.Settime(AIndex : Integer; const AValue : double);
 
 begin
   If (Ftime=AValue) then exit;
@@ -392,7 +398,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TStats.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TStats.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -413,7 +419,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TStatsReply.SettestValue(AIndex : Integer; const AValue : String); 
+Procedure TStatsReply.SettestValue(AIndex : Integer; const AValue : String);
 
 begin
   If (FtestValue=AValue) then exit;
@@ -430,7 +436,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TStringValue.Set_label(AIndex : Integer; const AValue : String); 
+Procedure TStringValue.Set_label(AIndex : Integer; const AValue : String);
 
 begin
   If (F_label=AValue) then exit;
@@ -440,7 +446,7 @@ end;
 
 
 
-Procedure TStringValue.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TStringValue.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -616,7 +622,7 @@ begin
   SetLength(Result,1);
   Result[0].Name:='https://www.googleapis.com/auth/monitoring.readonly';
   Result[0].Description:='View monitoring data for all of your Google Cloud and API projects';
-  
+
 end;
 
 Class Function TCloudlatencytestAPI.APINeedsAuth : Boolean;

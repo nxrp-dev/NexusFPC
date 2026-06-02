@@ -25,14 +25,21 @@
   are registered.
 
 }
+{$IFNDEF FPC_DOTTEDUNITS}
 unit FPDDRegStd;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, Data.Dict.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, fpdatadict;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
   TDataDictEngine = (teDBF,teFirebird,teOracle,teMySQL40,teMySQL41,teMySQL50,teMySQL55,teMySQL56,teMySQL57,
@@ -42,7 +49,7 @@ Type
 Const
   AllStdDDEngines = [teDBF,teFirebird,teOracle,teMySQL40,teMySQL41,teMySQL50,teMySQL55,teMySQL56,teMySQL57,
                      tePostgreSQL,teSQLite3,teODBC,teMSSQL];
-                     
+
 Type
 
   { TStandardDDEngines }
@@ -69,6 +76,22 @@ Function UnRegisterStdDDEngines(Engines : TDataDictEngines) : TDataDictEngines;
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  Data.Dict.Dbf,
+  Data.Dict.Fb,
+  Data.Dict.Pq,
+  Data.Dict.Oracle,
+  Data.Dict.Sqlite3,
+  Data.Dict.Mysql40,
+  Data.Dict.Mysql41,
+  Data.Dict.Mysql50,
+  Data.Dict.Mysql55,
+  Data.Dict.Mysql56,
+  Data.Dict.Mysql57,
+  Data.Dict.Mssql,
+  Data.Dict.Odbc;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   fpdddbf,
   fpddfb,
@@ -83,14 +106,14 @@ uses
   fpddmysql57,
   fpddmssql,
   fpddodbc;
-  
-Const
+{$ENDIF FPC_DOTTEDUNITS}
 
+Const
   StdEngineClasses : Array [TDataDictEngine] of TFPDDEngineClass
                    = (TDBFDDEngine, TSQLDBFBDDEngine, TSQLDBOracleDDEngine,
                       TSQLDBMySql40DDEngine, TSQLDBMySql41DDEngine ,
-                      TSQLDBMySql5DDEngine, TSQLDBMySql55DDEngine, 
-                      TSQLDBMySql56DDEngine, TSQLDBMySql57DDEngine, 
+                      TSQLDBMySql5DDEngine, TSQLDBMySql55DDEngine,
+                      TSQLDBMySql56DDEngine, TSQLDBMySql57DDEngine,
                       TSQLDBPostGreSQLDDEngine,
                       TSQLDBSQLite3DDEngine,TSQLDBODBCDDEngine, TSQLDBMSSQLDDEngine);
 
@@ -105,11 +128,11 @@ Const
   StdEngineUnRegs : Array [TDataDictEngine] of procedure
                 = (@DoneDBFImporter, @UnRegisterFBDDEngine, @UnRegisterOracleDDEngine,
                   @UnRegisterMySQL40DDEngine, @UnRegisterMySQL41DDEngine,
-                  @UnRegisterMySQL50DDEngine, @UnRegisterMySQL55DDEngine, 
-                  @UnRegisterMySQL56DDEngine, @UnRegisterMySQL57DDEngine, 
+                  @UnRegisterMySQL50DDEngine, @UnRegisterMySQL55DDEngine,
+                  @UnRegisterMySQL56DDEngine, @UnRegisterMySQL57DDEngine,
                   @UnRegisterPostgreSQLDDengine,
                   @UnRegisterSQLite3DDEngine, @UnRegisterODBCDDengine,@UnRegisterMSSQLDDEngine);
-                  
+
 function RegisterStdDDEngines(Engines: TDataDictEngines): TDataDictEngines;
 
 Var

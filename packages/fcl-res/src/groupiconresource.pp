@@ -13,15 +13,22 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit groupiconresource;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$MODE OBJFPC}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, System.Resources.Resource, System.Resources.Group;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, resource, groupresource;
-  
+{$ENDIF FPC_DOTTEDUNITS}
+
 type
 
   { TGroupIconResource }
@@ -49,8 +56,13 @@ type
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Resources.Factory, System.Resources.DataStream, System.Resources.GroupTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   resfactory, resdatastream, icocurtypes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   TIconInfo = record
@@ -167,7 +179,7 @@ begin
   res.LangID:=LangID;
   if OwnerList<>nil then
     index:=OwnerList.AddAutoID(res);
-    
+
   GetMem(pii,sizeof(TIconInfo));
   fItemList.Add(pii);
   pii^.res:=res;

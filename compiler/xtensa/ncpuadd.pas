@@ -167,7 +167,7 @@ interface
         location_reset_jump(location,truelab,falselab);
 
         hlcg.location_force_reg(current_asmdata.CurrAsmList,left.location,left.resultdef,cgsize_orddef(OS_INT),true);
-                                            
+
         if is_signed(left.resultdef) then
           case nodetype of
             equaln:   cond:=OC_EQ;
@@ -357,6 +357,9 @@ interface
               expectloc:=LOC_FLAGS
             else
               expectloc:=LOC_FPUREGISTER;
+
+            if needs_check_for_fpu_exceptions then
+              Include(current_procinfo.flags,pi_do_call);
           end
         else
           result:=first_addfloat_soft;

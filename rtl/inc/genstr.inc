@@ -13,19 +13,11 @@
  **********************************************************************}
 
 {$ifndef FPC_UNIT_HAS_STREND}
- Function StrEnd(P: PChar): PChar;
- var
-  counter: SizeInt;
+ Function StrEnd(P: PAnsiChar): PAnsiChar;
  begin
-   counter := 0;
-   if not Assigned(P) then
-     StrEnd:=Nil
-   else  
-     begin
-     while P[counter] <> #0 do
-        Inc(counter);
-     StrEnd := @(P[Counter]);
-     end;
+   StrEnd := P;
+   if Assigned(StrEnd) then
+     Inc(StrEnd, IndexByte(StrEnd^, -1, 0));
  end;
 {$endif FPC_UNIT_HAS_STREND}
 
@@ -36,7 +28,7 @@
   happen to overlap. So do it in a bit more reliable way.
   Also this implementation should not need per-platform optimization,
   given that IndexByte and Move are optimized. }
- Function StrCopy(Dest, Source:PChar): PChar;
+ Function StrCopy(Dest, Source:PAnsiChar): PAnsiChar;
  var
    counter : SizeInt;
  Begin
@@ -50,7 +42,7 @@
 
 
 {$ifndef FPC_UNIT_HAS_STRUPPER}
- function StrUpper(P: PChar): PChar;
+ function StrUpper(P: PAnsiChar): PAnsiChar;
  var
   counter: SizeInt;
  begin
@@ -67,7 +59,7 @@
 
 
 {$ifndef FPC_UNIT_HAS_STRLOWER}
- function StrLower(P: PChar): PChar;
+ function StrLower(P: PAnsiChar): PAnsiChar;
  var
   counter: SizeInt;
  begin
@@ -85,38 +77,24 @@
 
 
 {$ifndef FPC_UNIT_HAS_STRSCAN}
- function StrScan(P: PChar; C: Char): PChar;
-   Var
-     count: SizeInt;
-  Begin
-   count := 0;
-   { As in Borland Pascal , if looking for NULL return null }
-   if C = #0 then
-   begin
-     StrScan := @(P[StrLen(P)]);
-     exit;
+ function StrScan(P: PAnsiChar; C: AnsiChar): PAnsiChar;
+   Begin
+     dec(P);
+     repeat
+       inc(P);
+     until (P^ = #0) or (P^ = C);
+     if (P^ = #0) and (C <> #0) then
+       P := nil;
+     StrScan := P;
    end;
-   { Find first matching character of Ch in Str }
-   while P[count] <> #0 do
-   begin
-     if C = P[count] then
-      begin
-          StrScan := @(P[count]);
-          exit;
-      end;
-     Inc(count);
-   end;
-   { nothing found. }
-   StrScan := nil;
- end;
 {$endif FPC_UNIT_HAS_STRSCAN}
 
 
 {$ifndef FPC_UNIT_HAS_STRISCAN}
- function StrIScan(P: PChar; C: Char): PChar;
+ function StrIScan(P: PAnsiChar; C: AnsiChar): PAnsiChar;
    Var
      count: SizeInt;
-     UC: Char;
+     UC: AnsiChar;
   Begin
    UC := upcase(C);
    count := 0;
@@ -143,39 +121,28 @@
 
 
 {$ifndef FPC_UNIT_HAS_STRRSCAN}
- function StrRScan(P: PChar; C: Char): PChar;
- Var
-  count: SizeInt;
-  index: SizeInt;
+ function StrRScan(P: PAnsiChar; C: AnsiChar): PAnsiChar;
  Begin
-   count := Strlen(P);
+   StrRScan := P + IndexByte(P^, -1, 0);
    { As in Borland Pascal , if looking for NULL return null }
    if C = #0 then
-   begin
-     StrRScan := @(P[count]);
      exit;
-   end;
-   Dec(count);
-   for index := count downto 0 do
-   begin
-     if C = P[index] then
-      begin
-          StrRScan := @(P[index]);
-          exit;
-      end;
-   end;
-   { nothing found. }
-   StrRScan := nil;
+   while (StrRScan <> P) and (StrRScan[-1] <> C) do
+     dec(StrRScan);
+   if StrRScan = P then
+     StrRScan := nil
+   else
+     dec(StrRScan);
  end;
 {$endif FPC_UNIT_HAS_STRRSCAN}
 
 
 {$ifndef FPC_UNIT_HAS_STRRISCAN}
- function StrRIScan(P: PChar; C: Char): PChar;
+ function StrRIScan(P: PAnsiChar; C: AnsiChar): PAnsiChar;
  Var
   count: SizeInt;
   index: SizeInt;
-  UC: Char;
+  UC: AnsiChar;
  Begin
    UC := upcase(C);
    count := Strlen(P);
@@ -201,7 +168,7 @@
 
 
 {$ifndef FPC_UNIT_HAS_STRECOPY}
-  Function StrECopy(Dest, Source: PChar): PChar;
+  Function StrECopy(Dest, Source: PAnsiChar): PAnsiChar;
  { Equivalent to the following:                                          }
  {  strcopy(Dest,Source);                                                }
  {  StrECopy := StrEnd(Dest);                                            }
@@ -217,109 +184,94 @@
 
 
 {$ifndef FPC_UNIT_HAS_STRLCOPY}
- Function StrLCopy(Dest,Source: PChar; MaxLen: SizeInt): PChar;
+ Function StrLCopy(Dest,Source: PAnsiChar; MaxLen: SizeInt): PAnsiChar;
   var
-   counter: SizeInt;
- Begin
-   counter := 0;
-   { To be compatible with BP, on a null string, put two nulls }
-   If Source[0] = #0 then
-   Begin
-     Dest[0]:=Source[0];
-     Inc(counter);
-   end;
-   while (Source[counter] <> #0)  and (counter < MaxLen) do
-   Begin
-      Dest[counter] := char(Source[counter]);
-      Inc(counter);
-   end;
-   { terminate the string }
-   Dest[counter] := #0;
-   StrLCopy := Dest;
- end;
+   nmove: SizeInt;
+  Begin
+    { To be compatible with BP, on a null string, put two nulls }
+    If Source[0] = #0 then
+      unaligned(PUint16(Dest)^):=0
+    else
+      begin
+        if MaxLen < 0 then MaxLen := 0; { Paranoia. }
+        nmove := IndexByte(Source^,MaxLen,0) + 1;
+        if nmove = 0 then
+          begin
+            nmove := MaxLen;
+            Dest[MaxLen] := #0;
+          end;
+        Move(Source^,Dest^,nmove);
+      end;
+    StrLCopy := Dest;
+  end;
 {$endif FPC_UNIT_HAS_STRLCOPY}
 
 
 {$ifndef FPC_UNIT_HAS_STRCOMP}
- function StrComp(Str1, Str2 : PChar): SizeInt;
+ function StrComp(Str1, Str2 : PAnsiChar): SizeInt;
      var
       counter: SizeInt;
+      sample: char;
      Begin
-        counter := 0;
-       While str1[counter] = str2[counter] do
-       Begin
-         if (str2[counter] = #0) or (str1[counter] = #0) then
-            break;
-         Inc(counter);
-       end;
-       StrComp := ord(str1[counter]) - ord(str2[counter]);
+       counter := -1;
+       repeat
+         inc(counter);
+         sample := str1[counter];
+       until (sample = #0) or (sample <> str2[counter]);
+       StrComp := ord(sample) - ord(str2[counter]);
      end;
 {$endif FPC_UNIT_HAS_STRCOMP}
 
 
 {$ifndef FPC_UNIT_HAS_STRICOMP}
-     function StrIComp(Str1, Str2 : PChar): SizeInt;
-     var
-      counter: SizeInt;
-      c1, c2: char;
+     function StrIComp(Str1, Str2 : PAnsiChar): SizeInt;
      Begin
-        counter := 0;
-        c1 := upcase(str1[counter]);
-        c2 := upcase(str2[counter]);
-       While c1 = c2 do
-       Begin
-         if (c1 = #0) or (c2 = #0) then break;
-         Inc(counter);
-         c1 := upcase(str1[counter]);
-         c2 := upcase(str2[counter]);
-      end;
-       StrIComp := ord(c1) - ord(c2);
+       dec(Str1);
+       dec(Str2);
+       repeat
+         inc(Str1);
+         inc(Str2);
+         StrIComp := ord(Str1^) - ord(Str2^);
+         if Str1^ = #0 then break;
+         if StrIComp = 0 then continue;
+         StrIComp := ord(UpCase(Str1^)) - ord(UpCase(Str2^));
+         if StrIComp <> 0 then break; { Making it the loop condition might be suboptimal because of “continue”. }
+       until false;
      end;
 {$endif FPC_UNIT_HAS_STRICOMP}
 
 
 {$ifndef FPC_UNIT_HAS_STRLCOMP}
-     function StrLComp(Str1, Str2 : PChar; L: SizeInt): SizeInt;
-     var
-      counter: SizeInt;
-      c1, c2: char;
+     function StrLComp(Str1, Str2 : PAnsiChar; L: SizeInt): SizeInt;
      Begin
-        counter := 0;
-       if L = 0 then
-       begin
-         StrLComp := 0;
-         exit;
-       end;
-       Repeat
-         c1 := str1[counter];
-         c2 := str2[counter];
-         if (c1 = #0) or (c2 = #0) then break;
-         Inc(counter);
-      Until (c1 <> c2) or (counter >= L);
-       StrLComp := ord(c1) - ord(c2);
+       while (L > 0) and (Str1^ <> #0) and (Str1^ = Str2^) do
+         begin
+           inc(Str1);
+           inc(Str2);
+           dec(L);
+         end;
+       if L <= 0 then StrLComp := 0 else StrLComp := ord(Str1^) - ord(Str2^);
      end;
 {$endif FPC_UNIT_HAS_STRLCOMP}
 
 
 {$ifndef FPC_UNIT_HAS_STRLICOMP}
-     function StrLIComp(Str1, Str2 : PChar; L: SizeInt): SizeInt;
-     var
-      counter: SizeInt;
-      c1, c2: char;
+     function StrLIComp(Str1, Str2 : PAnsiChar; L: SizeInt): SizeInt;
      Begin
-        counter := 0;
-       if L = 0 then
-       begin
-         StrLIComp := 0;
-         exit;
-       end;
+       dec(Str1);
+       dec(Str2);
+       inc(L);
+       StrLIComp := 0;
        Repeat
-         c1 := upcase(str1[counter]);
-         c2 := upcase(str2[counter]);
-         if (c1 = #0) or (c2 = #0) then break;
-         Inc(counter);
-      Until (c1 <> c2) or (counter >= L);
-       StrLIComp := ord(c1) - ord(c2);
+         dec(L);
+         if L <= 0 then break;
+         inc(Str1);
+         inc(Str2);
+         StrLIComp := ord(Str1^) - ord(Str2^);
+         if Str1^ = #0 then break;
+         if StrLIComp = 0 then continue;
+         StrLIComp := ord(UpCase(Str1^)) - ord(UpCase(Str2^));
+         if StrLIComp <> 0 then break; { Making it the loop condition might be suboptimal because of “continue”. }
+       until false;
      end;
 {$endif FPC_UNIT_HAS_STRLICOMP}
-

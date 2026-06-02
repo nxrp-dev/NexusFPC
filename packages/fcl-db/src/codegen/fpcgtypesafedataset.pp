@@ -3,7 +3,7 @@
     Copyright (c) 1999-2022 by Michael van Canneyt and other members of the
     Free Pascal development team
 
-    Typesafe dataset  
+    Typesafe dataset
 
     See the file COPYING.FPC, included in this distribution,
     for details about the copyright.
@@ -13,14 +13,21 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fpcgtypesafedataset;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, Data.Db, Data.CodeGen.Base,Data.Dict.Base, Data.CodeGen.FieldMap;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, db, fpddcodegen,fpDataDict, fpcgfieldmap;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Const
   SNonInterfacedParentClass = 'TTypeSafeDatasetAccess';
@@ -834,7 +841,7 @@ begin
   Result:=True;
 end;
 
-Class Function TDDTypeSafeDatasetCodeGenerator.NeedsFieldDefs : Boolean; 
+Class Function TDDTypeSafeDatasetCodeGenerator.NeedsFieldDefs : Boolean;
 
 begin
   Result:=True;

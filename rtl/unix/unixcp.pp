@@ -13,11 +13,17 @@
  **********************************************************************}
 
 {$mode objfpc}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit unixcp;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses UnixApi.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses baseunix;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { source: http://win-iconv.googlecode.com/svn-history/r6/trunk/win_iconv.c
   public domain
@@ -630,7 +636,7 @@ const
    (cp:65001; name:'UTF-8'),
    (cp:65001; name:'CP65001'),
    (cp:65001; name:'UTF8'));
-   
+
 { returns index in UnixCpMap with first code page name with matching
 cp number (so that multiple names can be tried if necessary) }
 function GetCodepageData(cp: TSystemCodePage): longint;

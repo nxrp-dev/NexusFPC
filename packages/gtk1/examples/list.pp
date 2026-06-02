@@ -94,7 +94,7 @@ begin
       begin
         list_item := pGTKOBJECT(dlist^.data);
         item_data_string := gtk_object_get_data(list_item,list_item_data_key);
-        write (pchar(item_data_string),' ');
+        write (PAnsiChar(item_data_string),' ');
         dlist := dlist^.next;
       end;
      writeln;
@@ -151,14 +151,14 @@ begin
   gtk_box_pack_start (pGTKBOX(vbox), frame, false, true, 0);
 
   { connect the sigh_button_event() signal handler to the GtkList
-    wich will handle the 'arresting' of list items }
+    which will handle the 'arresting' of list items }
   gtk_signal_connect(pGTKOBJECT(thelist),'button_release_event',GTK_SIGNAL_FUNC(@sigh_button_event),frame);
 
   { create a separator }
   separator := gtk_hseparator_new();
   gtk_box_pack_start (pGTKBOX(vbox), separator, false, true, 0);
 
-  { finaly create a button and connect it's 'clicked' signal
+  { finally create a button and connect it's 'clicked' signal
     to the destroyment of the window }
   button := gtk_button_new_with_label('Close');
   gtk_box_pack_start (pGTKBOX(vbox), button, false, true, 0);
@@ -197,11 +197,11 @@ begin
      buffer:='List Item with Label '+itos(i)+#0;
      list_item := gtk_list_item_new_with_label(buffer);
      dlist := g_list_prepend(dlist, list_item);
-     gtk_object_set_data(pGTKOBJECT(list_item),list_item_data_key,pchar('ListItem with integrated Label'));
+     gtk_object_set_data(pGTKOBJECT(list_item),list_item_data_key,PAnsiChar('ListItem with integrated Label'));
    end;
   gtk_list_append_items(pGTKLIST(thelist), dlist);
 
-  { finaly we want to see the window, don't we? ;) }
+  { finally we want to see the window, don't we? ;) }
   gtk_widget_show_all(window);
 
   { fire up the main event loop of gtk }

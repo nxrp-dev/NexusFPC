@@ -17,11 +17,17 @@
 {$mode objfpc}
 {$H+}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit DOM_HTML;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses Xml.Dom, Html.Defs, Xml.Utils, System.SysUtils;
+{$ELSE FPC_DOTTEDUNITS}
 uses DOM, htmldefs, xmlutils, SysUtils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   THTMLDocument = class;
@@ -662,6 +668,7 @@ type
     procedure Write(const AText: DOMString);
     procedure WriteLn(const AText: DOMString);
     function GetElementsByName(const ElementName: DOMString): TDOMNodeList;
+    function GetElementsByClassName(const ElementName: DOMString): TDOMNodeList;
     function HashForName(const aName: DOMString): PHashItem;
 
     // Helper functions (not in DOM standard):
@@ -1184,6 +1191,30 @@ begin
     Result := frFalse;
 end;
 
+type
+  TByClassNameNodeList = class(TDOMNodeList)
+  protected
+    FFilter: DOMString;
+    function NodeFilter(aNode: TDOMNode): TFilterResult; override;
+  public
+    constructor Create(aNode: TDOMNode; const aFilter: DOMString);
+  end;
+
+constructor TByClassNameNodeList.Create(aNode: TDOMNode;
+  const aFilter: DOMString);
+begin
+  inherited Create(aNode);
+  FFilter := aFilter;
+end;
+
+function TByClassNameNodeList.NodeFilter(aNode: TDOMNode): TFilterResult;
+begin
+  if (aNode.NodeType = ELEMENT_NODE) and (TDOMElement(aNode)['class'] = FFilter) then
+    Result := frTrue
+  else
+    Result := frFalse;
+end;
+
 function THTMLDocument.GetAnchors: THTMLCollection;
 begin
   Result := THTMLCollection.Create(Self, @DocAnchorFilter);
@@ -1247,6 +1278,11 @@ end;
 function THTMLDocument.GetElementsByName(const ElementName: DOMString): TDOMNodeList;
 begin
   Result := TByNameNodeList.Create(Self, ElementName);
+end;
+
+function THTMLDocument.GetElementsByClassName(const ElementName: DOMString): TDOMNodeList;
+begin
+  Result := TByClassNameNodeList.Create(Self, ElementName);
 end;
 
 function THTMLDocument.CreateElement(const tagName: DOMString; UseSpecificClass : Boolean = True): THTMLElement;

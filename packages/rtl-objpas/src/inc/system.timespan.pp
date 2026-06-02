@@ -3,7 +3,7 @@
     Copyright (c) 1999-2022 by Marco van de Voort
         member of the Free Pascal development team.
 
-    Delphi compatibility unit that emulats the C# timespan record
+    Delphi compatibility unit that emulates the C# timespan record
 
     See the file COPYING.FPC, included in this distribution,
     for details about the copyright.
@@ -20,8 +20,13 @@ unit system.timespan;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
     TTimeSpan = record
@@ -117,7 +122,11 @@ Type
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+Uses System.Math;
+{$ELSE FPC_DOTTEDUNITS}
 Uses Math;
+{$ENDIF FPC_DOTTEDUNITS}
 
 // Embacadero documentation is poor, I used MS' http://www1.cs.columbia.edu/~lok/csharp/refdocs/System/types/TimeSpan.html
 // mscorlib's docs seems to be not locale dependent, while C# docs mention "culture".

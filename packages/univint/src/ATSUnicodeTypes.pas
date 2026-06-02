@@ -1,17 +1,17 @@
 {
      File:       QD/ATSUnicodeTypes.h
- 
+
      Contains:   ATSUI types and constants.
- 
+
      Version:    Quickdraw-285~150
- 
+
      Copyright:  © 2003-2008 by Apple Inc. all rights reserved.
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 {  Pascal Translation:  Peter N Lewis, <peter@stairways.com.au>, 2004 }
 {   Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2009 }
@@ -30,7 +30,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit ATSUnicodeTypes;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -215,7 +217,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.MacMemory,MacOsApi.ATSLayoutTypes,MacOsApi.Fonts,MacOsApi.QuickdrawTypes,MacOsApi.SFNTTypes,MacOsApi.SFNTLayoutTypes,MacOsApi.ATSTypes,MacOsApi.TextCommon;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,MacMemory,ATSLayoutTypes,Fonts,QuickdrawTypes,SFNTTypes,SFNTLayoutTypes,ATSTypes,TextCommon;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -232,7 +238,7 @@ uses MacTypes,MacMemory,ATSLayoutTypes,Fonts,QuickdrawTypes,SFNTTypes,SFNTLayout
 
 {
  *  ATSUTextLayout
- *  
+ *
  *  Discussion:
  *    Text layout objects are the heart of ATSUI. These opaque objects
  *    associate Unicode text with style runs, store information about
@@ -250,7 +256,7 @@ type
 
 {
  *  ATSUStyle
- *  
+ *
  *  Discussion:
  *    Style objects retain information about text such as font, point
  *    size, color and other attributes. Styles are associated with text
@@ -268,7 +274,7 @@ type
 
 {
  *  ATSUFontFallbacks
- *  
+ *
  *  Discussion:
  *    ATSUFontFallbacks objects are used to store the desired font
  *    fallback mode, list, and associated cache information. See the
@@ -281,7 +287,7 @@ type
 
 {
  *  ATSUTextMeasurement
- *  
+ *
  *  Discussion:
  *    ATSUTextMeasurement is specific to ATSUI in that measurement
  *    quantities are in fractional Fixed format instead of shorts used
@@ -295,7 +301,7 @@ type
 
 {
  *  ATSUFontID
- *  
+ *
  *  Discussion:
  *    ATSUFontID indicates a particular font family and face.
  *    ATSUFontID's are not guaranteed to remain constant across
@@ -309,7 +315,7 @@ type
 
 {
  *  ATSUFontFeatureType
- *  
+ *
  *  Discussion:
  *    Used to identify a font feature type for a particular font. See
  *    the definitions of the functions ATSUGetAllFontFeatures and
@@ -321,7 +327,7 @@ type
 
 {
  *  ATSUFontFeatureSelector
- *  
+ *
  *  Discussion:
  *    Used to identify a font feature selector for a particular font.
  *    See the definitions of the functions ATSUGetAllFontFeatures and
@@ -333,7 +339,7 @@ type
 
 {
  *  ATSUFontVariationAxis
- *  
+ *
  *  Discussion:
  *    Used to identify a font variation axis for a particular font. See
  *    the definitions of the functions ATSUGetAllFontVariations and
@@ -345,7 +351,7 @@ type
 
 {
  *  ATSUFontVariationValue
- *  
+ *
  *  Discussion:
  *    Used to identify a font variation value for a particular font.
  *    See the definitions of the functions ATSUGetAllFontVariations and
@@ -357,11 +363,11 @@ type
 
 {
  *  ATSUAttributeTag
- *  
+ *
  *  Summary:
  *    Constants used for style attributes, line controls, and layout
  *    controls.
- *  
+ *
  *  Discussion:
  *    The following constants are used to change settings in text
  *    layout and style objects. Use the functions ATSUSetLineControls,
@@ -516,7 +522,7 @@ const
 	kATSUCGContextTag = 32767;
 
   {
-   * (Type: Boolean) (Default value: false) For compatability purposes
+   * (Type: Boolean) (Default value: false) For compatibility purposes
    * only. Choosing typographic styles from font families is preferred.
    * Note this tag will produce a synthetic style for fonts that do not
    * have a typographic style. May be set as a style attribute.
@@ -524,7 +530,7 @@ const
 	kATSUQDBoldfaceTag = 256;
 
   {
-   * (Type: Boolean) (Default value: false) For compatability purposes
+   * (Type: Boolean) (Default value: false) For compatibility purposes
    * only. Choosing typographic styles from font families is preferred.
    * Note this tag will produce a synthetic style for fonts that do not
    * have a typographic style. May be set as a style attribute.
@@ -532,19 +538,19 @@ const
 	kATSUQDItalicTag = 257;
 
   {
-   * (Type: Boolean) (Default value: false) For compatability purposes
+   * (Type: Boolean) (Default value: false) For compatibility purposes
    * only. May be set as a style attribute.
    }
 	kATSUQDUnderlineTag = 258;
 
   {
-   * (Type: Boolean) (Default value: false) For compatability purposes
+   * (Type: Boolean) (Default value: false) For compatibility purposes
    * only. May be set as a style attribute.
    }
 	kATSUQDCondensedTag = 259;
 
   {
-   * (Type: Boolean) (Default value: false) For compatability purposes
+   * (Type: Boolean) (Default value: false) For compatibility purposes
    * only. May be set as a style attribute.
    }
 	kATSUQDExtendedTag = 260;
@@ -642,7 +648,7 @@ const
 
   {
    * (Type: Boolean) (Default value: false) When set to true, ligatures
-   * and compound characters will not have divisable components. May be
+   * and compound characters will not have divisible components. May be
    * set as a style attribute.
    }
 	kATSUNoLigatureSplitTag = 276;
@@ -823,7 +829,7 @@ const
 
 {
  *  ATSUAttributeValuePtr
- *  
+ *
  *  Summary:
  *    Used to provide generic access for storage of attribute values,
  *    which vary in size.
@@ -835,7 +841,7 @@ type
 
 {
  *  ATSUAttributeInfo
- *  
+ *
  *  Discussion:
  *    ATSUAttributeInfo is used to provide a tag/size pairing. This
  *    makes it possible to provide the client information about all the
@@ -858,7 +864,7 @@ type
 
 {
  *  ATSUCaret
- *  
+ *
  *  Discussion:
  *    Contains the complete information needed to render a caret.  fX
  *    and fY is the position of one of the caret's ends relative to the
@@ -880,10 +886,10 @@ type
 
 {
  *  ATSUCursorMovementType
- *  
+ *
  *  Discussion:
  *    Used to indicate how much to move the cursor when using the ATSUI
- *    cusor movement routines. Note that kATSUByCharacterCluster is
+ *    cursor movement routines. Note that kATSUByCharacterCluster is
  *    only available in Mac OS X and in CarbonLib versions 1.3 and
  *    later.
  }
@@ -920,16 +926,16 @@ const
 
 {
  *  ATSULineTruncation
- *  
+ *
  *  Summary:
  *    Constants used with the kATSULineTruncationTag layout and line
  *    control.
- *  
+ *
  *  Discussion:
  *    The constants kATSUTruncateNone, kATSUTruncateStart,
  *    kATSUTruncateEnd, and kATSUTruncateMiddle represent different
  *    places in the text where glyphs should be replaced with an
- *    elipsis should the text not fit within the width set by the
+ *    ellipsis should the text not fit within the width set by the
  *    kATSULineWidthTag line and layout control. The constant
  *    kATSUTruncFeatNoSquishing is special and can be bitwise OR'd with
  *    any of the other constants. It indicates that ATSUI should not
@@ -950,7 +956,7 @@ const
 
 {
  *  ATSUStyleLineCountType
- *  
+ *
  *  Discussion:
  *    ATSUStyleLineCountType is used to designate how many lines will
  *    be drawn for a given style type.  Currently only the underline
@@ -965,7 +971,7 @@ const
 
 {
  *  ATSUVerticalCharacterType
- *  
+ *
  *  Discussion:
  *    Use these constants along with the kATSUVerticalCharacterTag
  *    layout control to determine whether the vertical or horizontal
@@ -981,7 +987,7 @@ const
 
 {
  *  ATSUStyleComparison
- *  
+ *
  *  Discussion:
  *    ATSUStyleComparison is an enumeration with four values, and is
  *    used by ATSUCompareStyles() to indicate if the first style
@@ -999,7 +1005,7 @@ const
 
 {
  *  ATSUFontFallbackMethod
- *  
+ *
  *  Discussion:
  *    ATSUFontFallbackMethod type defines the method by which ATSUI
  *    will try to find an appropriate font for a character if the
@@ -1044,7 +1050,7 @@ const
 
 {
  *  ATSUTabType
- *  
+ *
  *  Discussion:
  *    ATSUTabType type defines the characteristic of ATSUI tabs. A Left
  *    tab type specifies that the left side of affected text is to be
@@ -1071,7 +1077,7 @@ const
 
 {
  *  ATSUTab
- *  
+ *
  *  Discussion:
  *    ATSUTab specifies the position and type of tab stop to be applied
  *    to a ATSUTextLayout set through the ATSUI routine ATSUSetTabArray
@@ -1086,7 +1092,7 @@ type
 
 {
  *  ATSURGBAlphaColor
- *  
+ *
  *  Discussion:
  *    Use this structure with the kATSURGBAlphaColorTag attribute to
  *    specify color for your text in an ATSUStyle. All values range
@@ -1103,7 +1109,7 @@ type
 
 {
  *  GlyphCollection
- *  
+ *
  *  Discussion:
  *    GlyphCollection types represent the specific character
  *    collection.  If the value is zero, kGlyphCollectionGID, then this
@@ -1126,12 +1132,12 @@ const
 
 {
  *  ATSUGlyphSelector
- *  
+ *
  *  Discussion:
  *    ATSUGlyphSelector can direct ATSUI to use a specific glyph
  *    instead of the one that ATSUI normally derives.  The glyph can be
  *    specified either as a glyphID (specific to the font used) or CID
- *    from a specfic collection defined by the collection entry.
+ *    from a specific collection defined by the collection entry.
  }
 type
 	ATSUGlyphSelector = record
@@ -1152,10 +1158,10 @@ type
 
 {
  *  ATSUGlyphInfo
- *  
+ *
  *  Summary:
  *    Structure returned by ATSUGetGlyphInfo
- *  
+ *
  *  Discussion:
  *    ATSUGetGlyphInfo will return an array of these structs, one for
  *    each glyph in the specified range. You can then make changes to
@@ -1179,10 +1185,10 @@ type
 
 {
  *  ATSUGlyphInfoArray
- *  
+ *
  *  Summary:
  *    Structure returned by ATSUGetGlyphInfo
- *  
+ *
  *  Discussion:
  *    This data structure is returned by ATSUGetGlyphInfo. layout is
  *    the same layout you pass in to ATSUGetGlyphInfo, numGlyphs is the
@@ -1205,7 +1211,7 @@ type
 
 {
  *  ATSUHighlightMethod
- *  
+ *
  *  Discussion:
  *    Use the constants with the function ATSUSetHighlightingMethod to
  *    determine the method of highlighting to use. kInvertHighlighting
@@ -1229,7 +1235,7 @@ const
 
 {
  *  ATSUBackgroundDataType
- *  
+ *
  *  Discussion:
  *    Use these constants for the dataType field in the
  *    ATSUUnhighlightData structure. kATSUBackgroundColor refers to a
@@ -1246,7 +1252,7 @@ const
 
 {
  *  ATSUBackgroundColor
- *  
+ *
  *  Discussion:
  *    A background color used by ATSUI to redraw the background after a
  *    call to ATSUUnhighlight text when the highlighting method is set
@@ -1259,7 +1265,7 @@ type
 
 {
  *  RedrawBackgroundProcPtr
- *  
+ *
  *  Discussion:
  *    RedrawBackgroundProcPtr is a pointer to a client-supplied
  *    callback function (e.g. MyRedrawBackgroundProc) for redrawing
@@ -1274,28 +1280,28 @@ type
  *    parameter for the ATSUSetHighlightingMethod call. When finished,
  *    the client should call DisposeRedrawBackgroundUPP with the
  *    RedrawBackgroundUPP.
- *  
+ *
  *  Parameters:
- *    
+ *
  *    iLayout:
  *      The layout to which the highlighting is being applied. The
  *      client function can use this to redraw the text.
- *    
+ *
  *    iTextOffset:
  *      The offset of the text that is being highlighted; can be used
  *      by the client function to redraaw the text.
- *    
+ *
  *    iTextLength:
  *      The length of the text that is being highlighted; can be used
  *      by the client function to redraaw the text.
- *    
+ *
  *    iUnhighlightArea:
  *      An array of ATSTrapezoids that describes the highlight area.
  *      The ATSTrapezoid array is ALWAYS in QD coordinates.
- *    
+ *
  *    iTrapezoidCount:
  *      The count of ATSTrapezoids in iUnhighlightArea.
- *  
+ *
  *  Result:
  *    A Boolean result indicating whether ATSUI should redraw the text.
  *    If the client function redraws the text, it should return false,
@@ -1307,7 +1313,7 @@ type
 	RedrawBackgroundUPP = RedrawBackgroundProcPtr;
 {
  *  NewRedrawBackgroundUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        not available in CarbonLib 1.x, is available on Mac OS X version 10.0 and later
@@ -1318,7 +1324,7 @@ function NewRedrawBackgroundUPP( userRoutine: RedrawBackgroundProcPtr ): RedrawB
 
 {
  *  DisposeRedrawBackgroundUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        not available in CarbonLib 1.x, is available on Mac OS X version 10.0 and later
@@ -1329,7 +1335,7 @@ procedure DisposeRedrawBackgroundUPP( userUPP: RedrawBackgroundUPP ); external n
 
 {
  *  InvokeRedrawBackgroundUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        not available in CarbonLib 1.x, is available on Mac OS X version 10.0 and later
@@ -1341,10 +1347,10 @@ function InvokeRedrawBackgroundUPP( iLayout: ATSUTextLayout; iTextOffset: UniCha
 
 {
  *  ATSUBackgroundData
- *  
+ *
  *  Summary:
  *    Data describing one of two methods for ATSUI to unhighlight text.
- *  
+ *
  *  Discussion:
  *    When you call ATSUUnhighlightText and the highlighting method
  *    used is kRedrawHighlighting, ATSUI must redraw the text,
@@ -1376,20 +1382,20 @@ type
 
 {
  *  ATSUUnhighlightData
- *  
+ *
  *  Summary:
  *    Struct for defining a method for ATSUI to unhighlight text.
- *  
+ *
  *  Discussion:
  *    There are two methods of highlighting available on Mac OS X:
  *    invert and redraw. For the invert method, no unhighlight method
- *    needs to be specified. ATSUI will simply higlight text by
+ *    needs to be specified. ATSUI will simply highlight text by
  *    performing a color inversion on the area surrounding the test.
- *    However, for best results, the redraw method is perferred. With
+ *    However, for best results, the redraw method is preferred. With
  *    this method, ATSUI will redraw text with a new background when
  *    highlighting, and redraw it again when unhighlighting. When using
  *    the redraw method, ATSUI needs to know how to restore the
- *    backround when unhighlighting text. That is where the unhighlight
+ *    background when unhighlighting text. That is where the unhighlight
  *    data comes in. This struct tells ATSUI how to restore the
  *    background after a highlight. There are two methods for
  *    specifying this information to ATSUI. One is by specifying a
@@ -1421,7 +1427,7 @@ type
 {
  *  Summary:
  *    Line direction types
- *  
+ *
  *  Discussion:
  *    These constants are used with the kATSULineDirectionTag control
  *    to determine overall line direction.
@@ -1478,7 +1484,7 @@ const
 {
  *  Summary:
  *    Text buffer convenience constants.
- *  
+ *
  *  Discussion:
  *    These constants refer to the beginning and end of a text buffer.
  *    Functions which accept these constants are marked below. Do not

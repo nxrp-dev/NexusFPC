@@ -12,20 +12,30 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fpcunit;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}
 {$h+}
+{$modeswitch functionreferences}
 
 interface
 
 { Uncomment this define to remove the DUnit compatibility interface. }
 {$DEFINE DUnit}
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.SysUtils
+  ,System.Classes
+  ;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   SysUtils
   ,Classes
   ;
+{$ENDIF FPC_DOTTEDUNITS}
 
 
 { This lets us use a single include file for both the Interface and
@@ -39,7 +49,7 @@ type
   EAssertionFailedError = class(Exception)
     constructor Create; overload;
     constructor Create(const msg :string); overload;
-  end;
+    end;
 
 
   EIgnoredTest = class(EAssertionFailedError);
@@ -49,6 +59,7 @@ type
 
 
   TRunMethod = procedure of object;
+  TRunLocalMethod = reference to procedure;
 
   TTestResult = class;
   TTestSuite = class;
@@ -79,7 +90,7 @@ type
     property TestSuiteName: string read GetTestSuiteName write SetTestSuiteName;
     property LastStep: TTestStep read FLastStep;
     property EnableIgnores: boolean read GetEnableIgnores write SetEnableIgnores;
-  end;
+    end;
   {$M-}
 
 
@@ -89,64 +100,109 @@ type
   protected
     Class var AssertCount : Integer;
   public
+    type
+      TStatusHook = Procedure(const msg : string);
+      TStatusEvent = Procedure(const msg : string) of object;
+    class var StatusHook : TStatusHook;
+    class var StatusEvent : TStatusEvent;
+  public
+    class procedure Status(const aMsg: String); inline;
+    class procedure Status(const aMsg: String; const aArgs: array of const); inline;
     class procedure Fail(const AMessage: string; AErrorAddrs: Pointer = nil);
     class procedure Fail(const AFmt: string; Args : Array of const;  AErrorAddrs: Pointer = nil);
     class procedure FailEquals(const expected, actual: string; const ErrorMsg: string = ''; AErrorAddrs: Pointer = nil);
     class procedure FailNotEquals(const expected, actual: string; const ErrorMsg: string = ''; AErrorAddrs: Pointer = nil);
 
     class procedure AssertTrue(const AMessage: string; ACondition: boolean; AErrorAddrs: Pointer = nil); overload;
+    class procedure AssertTrue(const AMessage: string; const AFormatArgs: array of const; ACondition: boolean; AErrorAddrs: Pointer = nil); overload;
     class procedure AssertTrue(ACondition: boolean); overload;
     class procedure AssertFalse(const AMessage: string; ACondition: boolean; AErrorAddrs: Pointer = nil); overload;
+    class procedure AssertFalse(const AMessage: string; const AFormatArgs: array of const; ACondition: boolean; AErrorAddrs: Pointer = nil); overload;
     class procedure AssertFalse(ACondition: boolean); overload;
-    class procedure AssertEquals(const AMessage: string; Expected, Actual: string); overload;
-    class procedure AssertEquals(Expected, Actual: string); overload;
+    class procedure AssertEquals(const AMessage: string; Expected: AnsiString; Actual: UnicodeString); overload;
+    class procedure AssertEquals(const AMessage: string; const AFormatArgs: array of const; Expected: AnsiString; Actual: UnicodeString); overload;
+    class procedure AssertEquals(const AMessage: string; Expected: UnicodeString; Actual: AnsiString); overload;
+    class procedure AssertEquals(const AMessage: string; const AFormatArgs: array of const; Expected: UnicodeString; Actual: AnsiString); overload;
+    class procedure AssertEquals(const AMessage: string; Expected, Actual: Ansistring); overload;
+    class procedure AssertEquals(const AMessage: string; const AFormatArgs: array of const; Expected, Actual: Ansistring); overload;
+    class procedure AssertEquals(Expected, Actual: Ansistring); overload;
     class procedure AssertEquals(const AMessage: string; Expected, Actual: UnicodeString); overload;
+    class procedure AssertEquals(const AMessage: string; const AFormatArgs: array of const; Expected, Actual: UnicodeString); overload;
     class procedure AssertEquals(Expected, Actual: UnicodeString); overload;
     class procedure AssertEquals(const AMessage: string; Expected, Actual: integer); overload;
+    class procedure AssertEquals(const AMessage: string; const AFormatArgs: array of const; Expected, Actual: integer); overload;
     class procedure AssertEquals(Expected, Actual: integer); overload;
     class procedure AssertEquals(const AMessage: string; Expected, Actual: int64); overload;
+    class procedure AssertEquals(const AMessage: string; const AFormatArgs: array of const; Expected, Actual: int64); overload;
     class procedure AssertEquals(Expected, Actual: int64); overload;
     class procedure AssertEquals(const AMessage: string; Expected, Actual: QWord); overload;
+    class procedure AssertEquals(const AMessage: string; const AFormatArgs: array of const; Expected, Actual: QWord); overload;
     class procedure AssertEquals(Expected, Actual: QWord); overload;
     class procedure AssertEquals(const AMessage: string; Expected, Actual: currency); overload;
+    class procedure AssertEquals(const AMessage: string; const AFormatArgs: array of const; Expected, Actual: currency); overload;
     class procedure AssertEquals(Expected, Actual: currency); overload;
     class procedure AssertEquals(const AMessage: string; Expected, Actual, Delta: double); overload;
+    class procedure AssertEquals(const AMessage: string; const AFormatArgs: array of const; Expected, Actual, Delta: double); overload;
     class procedure AssertEquals(Expected, Actual, Delta: double); overload;
     class procedure AssertEquals(const AMessage: string; Expected, Actual: boolean); overload;
+    class procedure AssertEquals(const AMessage: string; const AFormatArgs: array of const; Expected, Actual: boolean); overload;
     class procedure AssertEquals(Expected, Actual: boolean); overload;
-    class procedure AssertEquals(const AMessage: string; Expected, Actual: char); overload;
-    class procedure AssertEquals(Expected, Actual: char); overload;
+    class procedure AssertEquals(const AMessage: string; Expected, Actual: AnsiChar); overload;
+    class procedure AssertEquals(const AMessage: string; const AFormatArgs: array of const; Expected, Actual: AnsiChar); overload;
+    class procedure AssertEquals(Expected, Actual: AnsiChar); overload;
     class procedure AssertEquals(const AMessage: string; Expected, Actual: TClass); overload;
+    class procedure AssertEquals(const AMessage: string; const AFormatArgs: array of const; Expected, Actual: TClass); overload;
     class procedure AssertEquals(Expected, Actual: TClass); overload;
     class procedure AssertSame(const AMessage: string; Expected, Actual: TObject); overload;
+    class procedure AssertSame(const AMessage: string; const AFormatArgs: array of const; Expected, Actual: TObject); overload;
     class procedure AssertSame(Expected, Actual: TObject); overload;
     class procedure AssertSame(const AMessage: string; Expected, Actual: Pointer); overload;
+    class procedure AssertSame(const AMessage: string; const AFormatArgs: array of const; Expected, Actual: Pointer); overload;
     class procedure AssertSame(Expected, Actual: Pointer); overload;
     class procedure AssertNotSame(const AMessage: string; Expected, Actual: TObject); overload;
+    class procedure AssertNotSame(const AMessage: string; const AFormatArgs: array of const; Expected, Actual: TObject); overload;
     class procedure AssertNotSame(Expected, Actual: TObject); overload;
     class procedure AssertNotSame(const AMessage: string; Expected, Actual: Pointer); overload;
+    class procedure AssertNotSame(const AMessage: string; const AFormatArgs: array of const; Expected, Actual: Pointer); overload;
     class procedure AssertNotSame(Expected, Actual: Pointer); overload;
     class procedure AssertNotNull(const AMessage: string; AObject: TObject); overload;
+    class procedure AssertNotNull(const AMessage: string; const AFormatArgs: array of const; AObject: TObject); overload;
     class procedure AssertNotNull(AObject: TObject); overload;
     class procedure AssertNotNullIntf(const AMessage: string; AInterface: IInterface); overload;
+    class procedure AssertNotNullIntf(const AMessage: string; const AFormatArgs: array of const; AInterface: IInterface); overload;
     class procedure AssertNotNullIntf(AInterface: IInterface); overload;
     class procedure AssertNotNull(const AMessage: string; APointer: Pointer); overload;
+    class procedure AssertNotNull(const AMessage: string; const AFormatArgs: array of const; APointer: Pointer); overload;
     class procedure AssertNotNull(APointer: Pointer); overload;
     class procedure AssertNull(const AMessage: string; AObject: TObject); overload;
+    class procedure AssertNull(const AMessage: string; const AFormatArgs: array of const; AObject: TObject); overload;
     class procedure AssertNull(AObject: TObject); overload;
     class procedure AssertNullIntf(const AMessage: string; AInterface: IInterface); overload;
+    class procedure AssertNullIntf(const AMessage: string; const AFormatArgs: array of const; AInterface: IInterface); overload;
     class procedure AssertNullIntf(AInterface: IInterface); overload;
     class procedure AssertNull(const AMessage: string; APointer: Pointer); overload;
+    class procedure AssertNull(const AMessage: string; const AFormatArgs: array of const; APointer: Pointer); overload;
     class procedure AssertNull(APointer: Pointer); overload;
     class procedure AssertNotNull(const AMessage, AString: string); overload;
+    class procedure AssertNotNull(const AMessage: string; const AFormatArgs: array of const;  AString: string); overload;
     class procedure AssertNotNull(const AString: string); overload;
     class procedure AssertException(const AMessage: string; AExceptionClass: ExceptClass; AMethod: TRunMethod; const AExceptionMessage : String = ''; AExceptionContext : Integer = 0; AErrorAddr : Pointer = Nil); overload;
+    class procedure AssertException(const AMessage: string; const AFormatArgs: array of const; AExceptionClass: ExceptClass; AMethod: TRunMethod; const AExceptionMessage : String = ''; AExceptionContext : Integer = 0; AErrorAddr : Pointer = Nil); overload;
     class procedure AssertException(AExceptionClass: ExceptClass; AMethod: TRunMethod;const AExceptionMessage : String = ''; AExceptionContext : Integer = 0); overload;
+    class procedure AssertNoException(const AMessage : string; AMethod: TRunMethod); overload;
+    class procedure AssertNoException(const AMessage : string; const AFormatArgs: array of const; AMethod: TRunMethod); overload;
+    class procedure AssertNoException(AMethod: TRunMethod); overload;
+    class procedure AssertException(const AMessage: string; AExceptionClass: ExceptClass; AMethod: TRunLocalMethod; const AExceptionMessage : String = ''; AExceptionContext : Integer = 0; AErrorAddr : Pointer = Nil); overload;
+    class procedure AssertException(const AMessage: string; const AFormatArgs: array of const; AExceptionClass: ExceptClass; AMethod: TRunLocalMethod; const AExceptionMessage : String = ''; AExceptionContext : Integer = 0; AErrorAddr : Pointer = Nil); overload;
+    class procedure AssertException(AExceptionClass: ExceptClass; AMethod: TRunLocalMethod;const AExceptionMessage : String = ''; AExceptionContext : Integer = 0); overload;
+    class procedure AssertNoException(const AMessage : string; AMethod: TRunLocalMethod); overload;
+    class procedure AssertNoException(const AMessage : string; const AFormatArgs: array of const; AMethod: TRunLocalMethod); overload;
+    class procedure AssertNoException(AMethod: TRunLocalMethod); overload;
 
     {$IFDEF DUnit}
       {$I DUnitCompatibleInterface.inc}
     {$ENDIF DUnit}
-  end;
+    end;
 
   TTestFailure = class(TObject)
   private
@@ -180,7 +236,7 @@ type
     property LocationInfo: string read GetLocationInfo;
     property FailedMethodName: string read FFailedMethodName write FFailedMethodName;
     property TestLastStep: TTestStep read FTestLastStep write SetTestLastStep;
-  end;
+    end;
 
   ITestListener = interface
   ['{0CE9D3AE-882A-D811-9401-ADEB5E4C7FC1}']
@@ -190,7 +246,7 @@ type
     procedure EndTest(ATest: TTest);
     procedure StartTestSuite(ATestSuite: TTestSuite);
     procedure EndTestSuite(ATestSuite: TTestSuite);
-  end;
+    end;
 
   { TTestCase }
 
@@ -237,7 +293,7 @@ type
     Property ExpectedExceptionContext: Integer Read FExpectedExceptionContext;
   published
     property TestName: string read GetTestName write SetTestName;
-  end;
+    end;
 
   TTestCaseClass = class of TTestCase;
 
@@ -282,8 +338,8 @@ type
     property TestName: string read GetTestName write SetTestName;
     // Only for backwards compatibility. Use Test and ChildTestCount.
     property Tests: TFPList read FTests; deprecated;
-  end;
-  
+    end;
+
   TProtect = procedure(aTest: TTest; aResult: TTestResult);
 
   { TTestResult }
@@ -330,16 +386,16 @@ type
     property NumberOfIgnoredTests: integer read GetNumIgnoredTests;
     property NumberOfSkippedTests: integer read GetNumSkipped;
     property StartingTime: TDateTime read FStartingTime;
-  end;
+    end;
 
-  function ComparisonMsg(const aExpected: string; const aActual: string; const aCheckEqual: boolean=true): string; overload;
+  function ComparisonMsg(const aExpected: AnsiString; const aActual: AnsiString; const aCheckEqual: boolean=true): AnsiString; overload;
   function ComparisonMsg(const aExpected: UnicodeString; const aActual: UnicodeString; const aCheckEqual: boolean=true): Unicodestring; overload;
   function ComparisonMsg(const aMsg: string; const aExpected: string; const aActual: string; const aCheckEqual: boolean=true): string; overload;
 
   // Made public for 3rd party developers extending TTestCase with new AssertXXX methods
   function CallerAddr: Pointer;
 
-  
+
 Resourcestring
 
   SCompare = ' expected: <%s> but was: <%s>';
@@ -348,16 +404,22 @@ Resourcestring
   SExceptionCompare = 'Exception %s expected but %s was raised';
   SExceptionMessageCompare = 'Exception raised but exception property Message differs: ';
   SExceptionHelpContextCompare = 'Exception raised but exception property HelpContext differs: ';
+  SErrUnexpectedException = 'No exception expected but exception %s was raised with message: %s';
   SMethodNotFound = 'Method <%s> not found';
   SNoValidInheritance = ' does not inherit from TTestCase';
   SNoValidTests = 'No valid tests found in ';
   SNoException = 'no exception';
   SAssertNotCalled = 'Assert not called during test.';
-  
+
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  FpcUnit.Utils;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   testutils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Const
   sExpectedButWasFmt = 'Expected:' + LineEnding + '"%s"' + LineEnding + 'But was:' + LineEnding + '"%s"';
@@ -417,7 +479,7 @@ type
     FMessage: String;
   protected
     procedure RunTest; override;
-  end;
+    end;
 
 
 procedure TTestWarning.RunTest;
@@ -426,7 +488,7 @@ begin
 end;
 
 
-function ComparisonMsg(const aExpected: string; const aActual: string; const aCheckEqual: boolean=true): string;
+function ComparisonMsg(const aExpected: Ansistring; const aActual: AnsiString; const aCheckEqual: boolean=true): AnsiString;
 // aCheckEqual=false gives the error message if the test does *not* expect the results to be the same.
 begin
   if aCheckEqual then
@@ -622,6 +684,19 @@ end;
 
 { TAssert }
 
+class procedure TAssert.Status(const aMsg: String);
+begin
+  If Assigned(StatusHook) then
+    StatusHook(aMsg);
+  if Assigned(StatusEvent) then
+    StatusEvent(aMsg);
+end;
+
+class procedure TAssert.Status(const aMsg: String; const aArgs: array of const);
+begin
+  Status(SafeFormat(aMsg,aArgs));
+end;
+
 class procedure TAssert.Fail(const AMessage: string; AErrorAddrs: Pointer);
 begin
   Inc(AssertCount);
@@ -636,7 +711,7 @@ begin
   Inc(AssertCount);
   if AErrorAddrs = nil then
     raise EAssertionFailedError.CreateFmt(AFmt,Args) at CallerAddr
-  else    
+  else
     raise EAssertionFailedError.CreateFmt(AFmt,Args) at AErrorAddrs;
 end;
 
@@ -652,14 +727,28 @@ end;
 
 class procedure TAssert.AssertTrue(const AMessage: string; ACondition: boolean; AErrorAddrs: Pointer = nil);
 begin
+  if ACondition then
+    begin
+    Inc(AssertCount); // Fail will increase AssertCount
+    exit;
+    end;
   if AErrorAddrs=Nil then
     AErrorAddrs:=CallerAddr;
-  if (not ACondition) then
-    Fail(AMessage,AErrorAddrs)
-  else
-    Inc(AssertCount); // Fail will increae AssertCount
+  Fail(AMessage,AErrorAddrs);
 end;
 
+class procedure TAssert.AssertTrue(const AMessage: string; const AFormatArgs: array of const;
+  ACondition: boolean; AErrorAddrs: Pointer);
+begin
+  if ACondition then
+    begin
+    Inc(AssertCount); // Fail will increase AssertCount
+    exit;
+    end;
+  if AErrorAddrs=Nil then
+    AErrorAddrs:=CallerAddr;
+  Fail(Format(AMessage, AFormatArgs),AErrorAddrs);
+end;
 
 class procedure TAssert.AssertTrue(ACondition: boolean);
 
@@ -671,38 +760,139 @@ end;
 class procedure TAssert.AssertFalse(const AMessage: string; ACondition: boolean; AErrorAddrs: Pointer = nil
   );
 begin
+  if not ACondition then
+    begin
+    Inc(AssertCount); // Fail will increase AssertCount
+    exit;
+    end;
   if AErrorAddrs=Nil then
     AErrorAddrs:=CallerAddr;
-  AssertTrue(AMessage, not ACondition,AErrorAddrs);
+  Fail(AMessage, AErrorAddrs);
 end;
 
+class procedure TAssert.AssertFalse(const AMessage: string; const AFormatArgs: array of const;
+  ACondition: boolean; AErrorAddrs: Pointer);
+begin
+  if not ACondition then
+    begin
+    Inc(AssertCount); // Fail will increase AssertCount
+    exit;
+    end;
+  if AErrorAddrs=Nil then
+    AErrorAddrs:=CallerAddr;
+  Fail(Format(AMessage, AFormatArgs), AErrorAddrs);
+end;
 
 class procedure TAssert.AssertFalse(ACondition: boolean);
 begin
   AssertFalse('', ACondition,CallerAddr);
 end;
 
-
-class procedure TAssert.AssertEquals(const AMessage: string; Expected, Actual: string);
+class procedure TAssert.AssertEquals(const AMessage: string;
+  Expected: AnsiString; Actual: UnicodeString);
 begin
-  AssertTrue(ComparisonMsg(AMessage ,Expected, Actual), Expected=Actual,CallerAddr);
+  if UnicodeString(Expected)=Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(AMessage, UnicodeString(Expected), Actual),CallerAddr);
 end;
 
-
-class procedure TAssert.AssertEquals(Expected, Actual: string);
+class procedure TAssert.AssertEquals(const AMessage: string; const AFormatArgs: array of const;
+  Expected: AnsiString; Actual: UnicodeString);
 begin
-  AssertTrue(ComparisonMsg(Expected, Actual), Expected=Actual,CallerAddr);
+  if UnicodeString(Expected)=Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(Format(AMessage, AFormatArgs), UnicodeString(Expected), Actual),CallerAddr);
 end;
 
-class procedure TAssert.AssertEquals(const AMessage: string; Expected, Actual: Unicodestring);
+class procedure TAssert.AssertEquals(const AMessage: string;
+  Expected: UnicodeString; Actual: AnsiString);
 begin
-  AssertTrue(ComparisonMsg(AMessage ,Expected, Actual), Expected=Actual,CallerAddr);
+  if Expected=UnicodeString(Actual) then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(AMessage, Expected, UnicodeString(Actual)),CallerAddr);
 end;
 
-
-class procedure TAssert.AssertEquals(Expected, Actual: Unicodestring);
+class procedure TAssert.AssertEquals(const AMessage: string; const AFormatArgs: array of const;
+  Expected: UnicodeString; Actual: AnsiString);
 begin
-  AssertTrue(ComparisonMsg(Expected, Actual), Expected=Actual,CallerAddr);
+  if Expected=UnicodeString(Actual) then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(Format(AMessage, AFormatArgs), Expected, UnicodeString(Actual)),CallerAddr);
+end;
+
+class procedure TAssert.AssertEquals(const AMessage: string; Expected, Actual: Ansistring);
+begin
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(AMessage, Expected, Actual),CallerAddr);
+end;
+
+class procedure TAssert.AssertEquals(const AMessage: string; const AFormatArgs: array of const;
+  Expected, Actual: Ansistring);
+begin
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(Format(AMessage, AFormatArgs), Expected, Actual),CallerAddr);
+end;
+
+class procedure TAssert.AssertEquals(Expected, Actual: Ansistring);
+begin
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(Expected, Actual),CallerAddr);
+end;
+
+class procedure TAssert.AssertEquals(const AMessage: string; Expected,
+  Actual: UnicodeString);
+begin
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(AMessage, Expected, Actual),CallerAddr);
+end;
+
+class procedure TAssert.AssertEquals(const AMessage: string; const AFormatArgs: array of const;
+  Expected, Actual: UnicodeString);
+begin
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(Format(AMessage, AFormatArgs), Expected, Actual),CallerAddr);
+end;
+
+class procedure TAssert.AssertEquals(Expected, Actual: UnicodeString);
+begin
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(Expected, Actual),CallerAddr);
 end;
 
 
@@ -715,63 +905,161 @@ end;
 
 class procedure TAssert.AssertEquals(const AMessage: string; Expected, Actual: integer);
 begin
-  AssertTrue(ComparisonMsg(AMessage,IntToStr(Expected), IntToStr(Actual)), Expected = Actual,CallerAddr);
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(AMessage, IntToStr(Expected), IntToStr(Actual)),CallerAddr);
 end;
 
+class procedure TAssert.AssertEquals(const AMessage: string; const AFormatArgs: array of const;
+  Expected, Actual: integer);
+begin
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(Format(AMessage, AFormatArgs), IntToStr(Expected), IntToStr(Actual)),CallerAddr);
+end;
 
 class procedure TAssert.AssertEquals(Expected, Actual: integer);
 begin
-  AssertTrue(ComparisonMsg(IntToStr(Expected), IntToStr(Actual)), Expected = Actual,CallerAddr);
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(IntToStr(Expected), IntToStr(Actual)),CallerAddr);
 end;
 
 
 class procedure TAssert.AssertEquals(const AMessage: string; Expected, Actual: int64);
 begin
-  AssertTrue(ComparisonMsg(AMessage,IntToStr(Expected), IntToStr(Actual)), Expected = Actual,CallerAddr);
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(AMessage, IntToStr(Expected), IntToStr(Actual)),CallerAddr);
 end;
 
+class procedure TAssert.AssertEquals(const AMessage: string; const AFormatArgs: array of const;
+  Expected, Actual: int64);
+begin
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(Format(AMessage, AFormatArgs), IntToStr(Expected), IntToStr(Actual)),CallerAddr);
+end;
 
 class procedure TAssert.AssertEquals(Expected, Actual: int64);
 begin
-  AssertTrue(ComparisonMsg(IntToStr(Expected), IntToStr(Actual)), Expected = Actual,CallerAddr);
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(IntToStr(Expected), IntToStr(Actual)),CallerAddr);
 end;
 
 
 class procedure TAssert.AssertEquals(const AMessage: string; Expected, Actual: QWord);
 begin
-  AssertTrue(ComparisonMsg(AMessage,IntToStr(Expected), IntToStr(Actual)), Expected = Actual,CallerAddr);
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(AMessage, IntToStr(Expected), IntToStr(Actual)),CallerAddr);
 end;
 
+class procedure TAssert.AssertEquals(const AMessage: string; const AFormatArgs: array of const;
+  Expected, Actual: QWord);
+begin
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(Format(AMessage, AFormatArgs), IntToStr(Expected), IntToStr(Actual)),CallerAddr);
+end;
 
 class procedure TAssert.AssertEquals(Expected, Actual: QWord);
 begin
-  AssertTrue(ComparisonMsg(IntToStr(Expected), IntToStr(Actual)), Expected = Actual,CallerAddr);
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(IntToStr(Expected), IntToStr(Actual)),CallerAddr);
 end;
 
 
 class procedure TAssert.AssertEquals(const AMessage: string; Expected, Actual: currency);
 begin
-  AssertTrue(ComparisonMsg(AMessage,FloatToStr(Expected), FloatToStr(Actual)), Expected = Actual,CallerAddr);
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(AMessage, FloatToStr(Expected), FloatToStr(Actual)),CallerAddr);
 end;
 
+class procedure TAssert.AssertEquals(const AMessage: string; const AFormatArgs: array of const;
+  Expected, Actual: currency);
+begin
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(Format(AMessage, AFormatArgs), FloatToStr(Expected), FloatToStr(Actual)),CallerAddr);
+end;
 
 class procedure TAssert.AssertEquals(Expected, Actual: currency);
 begin
-  AssertTrue(ComparisonMsg(FloatToStr(Expected), FloatToStr(Actual)), Expected = Actual,CallerAddr);
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(FloatToStr(Expected), FloatToStr(Actual)),CallerAddr);
 end;
 
 
 class procedure TAssert.AssertEquals(const AMessage: string; Expected, Actual, Delta: double);
 begin
-  AssertTrue(ComparisonMsg(AMessage,FloatToStr(Expected),FloatToStr(Actual)),
-    (Abs(Expected - Actual) <= Delta),CallerAddr);
+  if (Abs(Expected - Actual) <= Delta) then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(AMessage, FloatToStr(Expected), FloatToStr(Actual)),CallerAddr);
 end;
 
+class procedure TAssert.AssertEquals(const AMessage: string; const AFormatArgs: array of const;
+  Expected, Actual, Delta: double);
+begin
+  if (Abs(Expected - Actual) <= Delta) then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(Format(AMessage, AFormatArgs), FloatToStr(Expected), FloatToStr(Actual)),CallerAddr);
+end;
 
 class procedure TAssert.AssertEquals(Expected, Actual, Delta: double);
 begin
-  AssertTrue(ComparisonMsg(FloatToStr(Expected),FloatToStr(Actual)),
-    (Abs(Expected - Actual) <= Delta),CallerAddr);
+  if (Abs(Expected - Actual) <= Delta) then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(FloatToStr(Expected), FloatToStr(Actual)),CallerAddr);
 end;
 
 
@@ -780,85 +1068,225 @@ begin
   AssertTrue(AMessage, AString <> '',CallerAddr);
 end;
 
+class procedure TAssert.AssertNotNull(const AMessage: string; const AFormatArgs: array of const;
+  AString: string);
+begin
+  if AString <> '' then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(Format(AMessage, AFormatArgs), CallerAddr);
+end;
 
 class procedure TAssert.AssertEquals(const AMessage: string; Expected, Actual: boolean);
 begin
-  AssertTrue(ComparisonMsg(AMessage,BoolToStr(Expected, true), BoolToStr(Actual, true)), Expected = Actual,CallerAddr);
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(AMessage, BoolToStr(Expected, true), BoolToStr(Actual, true)),CallerAddr);
 end;
 
+class procedure TAssert.AssertEquals(const AMessage: string; const AFormatArgs: array of const;
+  Expected, Actual: boolean);
+begin
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(Format(AMessage, AFormatArgs), BoolToStr(Expected, true), BoolToStr(Actual, true)),CallerAddr);
+end;
 
 class procedure TAssert.AssertEquals(Expected, Actual: boolean);
 begin
-  AssertTrue(ComparisonMsg(BoolToStr(Expected, true), BoolToStr(Actual, true)), Expected = Actual,CallerAddr);
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(BoolToStr(Expected, true), BoolToStr(Actual, true)),CallerAddr);
 end;
 
 
-class procedure TAssert.AssertEquals(const AMessage: string; Expected, Actual: char);
+class procedure TAssert.AssertEquals(const AMessage: string; Expected, Actual: AnsiChar);
 begin
-  AssertTrue(ComparisonMsg(AMessage,Expected, Actual), Expected = Actual,CallerAddr);
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(AMessage, Expected, Actual),CallerAddr);
 end;
 
-
-class procedure TAssert.AssertEquals(Expected, Actual: char);
+class procedure TAssert.AssertEquals(const AMessage: string; const AFormatArgs: array of const;
+  Expected, Actual: AnsiChar);
 begin
-  AssertTrue(ComparisonMsg(Expected, Actual), Expected = Actual,CallerAddr);
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(Format(AMessage, AFormatArgs), Expected, Actual),CallerAddr);
+end;
+
+class procedure TAssert.AssertEquals(Expected, Actual: AnsiChar);
+begin
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(Expected, Actual),CallerAddr);
 end;
 
 
 class procedure TAssert.AssertEquals(const AMessage: string; Expected, Actual: TClass);
 
 begin
-  AssertTrue(ComparisonMsg(AMessage,GetN(Expected), GetN(Actual)), Expected = Actual,CallerAddr);
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(AMessage, GetN(Expected), GetN(Actual)),CallerAddr);
 end;
 
+class procedure TAssert.AssertEquals(const AMessage: string; const AFormatArgs: array of const;
+  Expected, Actual: TClass);
+begin
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(Format(AMessage, AFormatArgs), GetN(Expected), GetN(Actual)),CallerAddr);
+end;
 
 class procedure TAssert.AssertEquals(Expected, Actual: TClass);
 begin
-  AssertTrue(ComparisonMsg(GetN(Expected), GetN(Actual)), Expected = Actual,CallerAddr);
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(GetN(Expected), GetN(Actual)),CallerAddr);
 end;
 
 
 class procedure TAssert.AssertSame(const AMessage: string; Expected, Actual: TObject);
 begin
-  AssertTrue(ComparisonMsg(AMessage,IntToStr(PtrInt(Expected)), IntToStr(PtrInt(Actual))), Expected = Actual,CallerAddr);
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(AMessage, IntToStr(PtrInt(Expected)), IntToStr(PtrInt(Actual))),CallerAddr);
 end;
 
+class procedure TAssert.AssertSame(const AMessage: string; const AFormatArgs: array of const;
+  Expected, Actual: TObject);
+begin
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(Format(AMessage, AFormatArgs), IntToStr(PtrInt(Expected)), IntToStr(PtrInt(Actual))),CallerAddr);
+end;
 
 class procedure TAssert.AssertSame(Expected, Actual: TObject);
 begin
-  AssertTrue(ComparisonMsg(IntToStr(PtrInt(Expected)), IntToStr(PtrInt(Actual))), Expected = Actual,CallerAddr);
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(IntToStr(PtrInt(Expected)), IntToStr(PtrInt(Actual))),CallerAddr);
 end;
 
 
 class procedure TAssert.AssertSame(const AMessage: string; Expected, Actual: Pointer);
 begin
-  AssertTrue(ComparisonMsg(AMessage,IntToStr(PtrInt(Expected)), IntToStr(PtrInt(Actual))), Expected = Actual,CallerAddr);
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(AMessage, IntToStr(PtrInt(Expected)), IntToStr(PtrInt(Actual))),CallerAddr);
 end;
 
+class procedure TAssert.AssertSame(const AMessage: string; const AFormatArgs: array of const;
+  Expected, Actual: Pointer);
+begin
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(Format(AMessage, AFormatArgs), IntToStr(PtrInt(Expected)), IntToStr(PtrInt(Actual))),CallerAddr);
+end;
 
 class procedure TAssert.AssertSame(Expected, Actual: Pointer);
 begin
-  AssertTrue(ComparisonMsg(IntToStr(PtrInt(Expected)), IntToStr(PtrInt(Actual))), Expected = Actual,CallerAddr);
+  if Expected = Actual then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail(ComparisonMsg(IntToStr(PtrInt(Expected)), IntToStr(PtrInt(Actual))),CallerAddr);
 end;
 
 
 class procedure TAssert.AssertNotSame(const AMessage: string; Expected, Actual: TObject);
 begin
-  AssertFalse('"' + aMessage + '"' + SExpectedNotSame, Expected = Actual,CallerAddr);
+  if not(Expected = Actual) then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail('"' + aMessage + '"' + SExpectedNotSame,CallerAddr);
 end;
 
+class procedure TAssert.AssertNotSame(const AMessage: string; const AFormatArgs: array of const;
+  Expected, Actual: TObject);
+begin
+  if not(Expected = Actual) then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail('"' + Format(aMessage + '"' + SExpectedNotSame, AFormatArgs),CallerAddr);
+end;
 
 class procedure TAssert.AssertNotSame(Expected, Actual: TObject);
 begin
-  AssertFalse(SExpectedNotSame, Expected = Actual);
+  AssertFalse(SExpectedNotSame, Expected = Actual,CallerAddr);
 end;
 
 
 class procedure TAssert.AssertNotSame(const AMessage: string; Expected, Actual: Pointer);
 begin
-  AssertFalse('"' + aMessage + '"' + SExpectedNotSame, Expected = Actual,CallerAddr);
+  if not(Expected = Actual) then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail('"' + aMessage + '"' + SExpectedNotSame,CallerAddr);
 end;
 
+class procedure TAssert.AssertNotSame(const AMessage: string; const AFormatArgs: array of const;
+  Expected, Actual: Pointer);
+begin
+  if not(Expected = Actual) then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Fail('"' + Format(aMessage + '"' + SExpectedNotSame, AFormatArgs),CallerAddr);
+end;
 
 class procedure TAssert.AssertNotSame(Expected, Actual: Pointer);
 begin
@@ -871,6 +1299,16 @@ begin
   AssertTrue(AMessage, (AObject <> nil),CallerAddr);
 end;
 
+class procedure TAssert.AssertNotNull(const AMessage: string; const AFormatArgs: array of const;
+  AObject: TObject);
+begin
+  if AObject <> nil then
+    begin
+    Inc(AssertCount); // Fail will increase AssertCount
+    exit;
+    end;
+  Fail(Format(AMessage, AFormatArgs), CallerAddr);
+end;
 
 class procedure TAssert.AssertNotNull(AObject: TObject);
 begin
@@ -883,6 +1321,16 @@ begin
   AssertTrue(AMessage, (AInterface <> nil),CallerAddr);
 end;
 
+class procedure TAssert.AssertNotNullIntf(const AMessage: string;
+  const AFormatArgs: array of const; AInterface: IInterface);
+begin
+  if AInterface <> nil then
+    begin
+    Inc(AssertCount); // Fail will increase AssertCount
+    exit;
+    end;
+  Fail(Format(AMessage, AFormatArgs), CallerAddr);
+end;
 
 class procedure TAssert.AssertNotNullIntf(AInterface: IInterface);
 begin
@@ -895,6 +1343,16 @@ begin
   AssertTrue(AMessage, (APointer <> nil),callerAddr);
 end;
 
+class procedure TAssert.AssertNotNull(const AMessage: string; const AFormatArgs: array of const;
+  APointer: Pointer);
+begin
+  if APointer <> nil then
+    begin
+    Inc(AssertCount); // Fail will increase AssertCount
+    exit;
+    end;
+  Fail(Format(AMessage, AFormatArgs), callerAddr);
+end;
 
 class procedure TAssert.AssertNotNull(APointer: Pointer);
 begin
@@ -907,6 +1365,16 @@ begin
   AssertTrue(AMessage, (AObject = nil),CallerAddr);
 end;
 
+class procedure TAssert.AssertNull(const AMessage: string; const AFormatArgs: array of const;
+  AObject: TObject);
+begin
+  if AObject = nil then
+    begin
+    Inc(AssertCount); // Fail will increase AssertCount
+    exit;
+    end;
+  Fail(Format(AMessage, AFormatArgs), CallerAddr);
+end;
 
 class procedure TAssert.AssertNull(AObject: TObject);
 begin
@@ -919,6 +1387,16 @@ begin
   AssertTrue(AMessage, (AInterface = nil),CallerAddr);
 end;
 
+class procedure TAssert.AssertNullIntf(const AMessage: string; const AFormatArgs: array of const;
+  AInterface: IInterface);
+begin
+  if AInterface = nil then
+    begin
+    Inc(AssertCount); // Fail will increase AssertCount
+    exit;
+    end;
+  Fail(Format(AMessage, AFormatArgs), CallerAddr);
+end;
 
 class procedure TAssert.AssertNullIntf(AInterface: IInterface);
 begin
@@ -931,6 +1409,16 @@ begin
   AssertTrue(AMessage, (APointer = nil),CallerAddr);
 end;
 
+class procedure TAssert.AssertNull(const AMessage: string; const AFormatArgs: array of const;
+  APointer: Pointer);
+begin
+  if APointer = nil then
+    begin
+    Inc(AssertCount); // Fail will increase AssertCount
+    exit;
+    end;
+  Fail(Format(AMessage, AFormatArgs), CallerAddr);
+end;
 
 class procedure TAssert.AssertNull(APointer: Pointer);
 begin
@@ -940,6 +1428,14 @@ end;
 
 class procedure TAssert.AssertException(const AMessage: string; AExceptionClass: ExceptClass;
   AMethod: TRunMethod;const AExceptionMessage : String = ''; AExceptionContext : Integer = 0; AErrorAddr : Pointer = Nil);
+begin
+  AssertException(AMessage, [], AExceptionClass, AMethod, AExceptionMessage,
+      AExceptionContext, AErrorAddr);
+end;
+
+class procedure TAssert.AssertException(const AMessage: string; const AFormatArgs: array of const;
+  AExceptionClass: ExceptClass; AMethod: TRunMethod; const AExceptionMessage: String;
+  AExceptionContext: Integer; AErrorAddr: Pointer);
 
   Function MisMatch (const AClassName : String) : String;
 
@@ -948,10 +1444,8 @@ class procedure TAssert.AssertException(const AMessage: string; AExceptionClass:
   end;
 
 var
-  FailMsg : string;
+  Msg,FailMsg : string;
 begin
-  If AErrorAddr=Nil then
-    AErrorAddr:=CallerAddr;
   FailMsg:='';
   try
     AMethod;
@@ -968,15 +1462,166 @@ begin
       else if (AExceptionContext<>0) and (AExceptionContext<>E.HelpContext) then
         FailMsg:=ComparisonMsg(SExceptionHelpContextCompare,IntToStr(AExceptionContext),IntToStr(E.HelpContext))
       end;
-  end;
-  AssertTrue(AMessage + ': '+FailMsg, FailMsg='', AErrorAddr);
+    end;
+  Msg:=FailMsg;
+
+  if Msg = '' then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  if aMessage<>'' then
+    Msg:=Format(AMessage, AFormatArgs) + ': '+Msg;
+  If AErrorAddr=Nil then
+    AErrorAddr:=CallerAddr;
+  Fail(Msg, AErrorAddr);
 end;
 
 
 class procedure TAssert.AssertException(AExceptionClass: ExceptClass;
   AMethod: TRunMethod;const AExceptionMessage : String = ''; AExceptionContext : Integer = 0);
+
 begin
   AssertException('', AExceptionClass, AMethod, AExceptionMessage, AExceptionContext, CallerAddr);
+end;
+
+
+class procedure TAssert.AssertNoException(const AMessage: string; AMethod: TRunMethod);
+begin
+  AssertNoException(AMessage, [], AMethod);
+end;
+
+class procedure TAssert.AssertNoException(const AMessage: string;
+  const AFormatArgs: array of const; AMethod: TRunMethod);
+
+var
+  Msg,aClass,aExceptionMessage : String;
+
+begin
+  aClass:='';
+  aExceptionMessage:='';
+  Try
+    aMethod;
+  Except
+    On E : Exception do
+      begin
+      aClass:=E.ClassName;
+      aExceptionMessage:=E.Message;
+      end;
+    end;
+
+  if aClass = '' then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Msg:=Format(SErrUnexpectedException,[aClass,aExceptionMessage]);
+  if aMessage<>'' then
+    Msg:=Format(AMessage, AFormatArgs) + ': '+Msg;
+  Fail(Msg,CallerAddr);
+end;
+
+class procedure TAssert.AssertNoException(AMethod: TRunMethod);
+begin
+  AssertNoException('',aMethod);
+end;
+
+class procedure TAssert.AssertException(const AMessage: string; AExceptionClass: ExceptClass; AMethod: TRunLocalMethod;
+  const AExceptionMessage: String; AExceptionContext: Integer; AErrorAddr: Pointer);
+begin
+  AssertException(AMessage, [], AExceptionClass, AMethod, AExceptionMessage,
+      AExceptionContext, AErrorAddr);
+end;
+
+class procedure TAssert.AssertException(const AMessage: string; const AFormatArgs: array of const;
+  AExceptionClass: ExceptClass; AMethod: TRunLocalMethod; const AExceptionMessage: String;
+  AExceptionContext: Integer; AErrorAddr: Pointer);
+
+  Function MisMatch (const AClassName : String) : String;
+
+  begin
+    Result:=Format(SExceptionCompare,[AExceptionClass.ClassName, AClassName])
+  end;
+
+var
+  Msg,FailMsg : string;
+
+begin
+  FailMsg:='';
+  try
+    AMethod;
+    FailMsg:=MisMatch(SNoException);
+  except
+    on E: Exception do
+      begin
+      if Not E.ClassType.InheritsFrom(AExceptionClass) then
+        FailMsg:=MisMatch(E.ClassName)
+      else if not (AExceptionClass.ClassName = E.ClassName) then
+        FailMsg:=MisMatch(E.ClassName)
+      else if (AExceptionMessage<>'') and (AExceptionMessage<>E.Message) then
+        FailMsg:=ComparisonMsg(SExceptionMessageCompare,AExceptionMessage,E.Message)
+      else if (AExceptionContext<>0) and (AExceptionContext<>E.HelpContext) then
+        FailMsg:=ComparisonMsg(SExceptionHelpContextCompare,IntToStr(AExceptionContext),IntToStr(E.HelpContext))
+      end;
+    end;
+  Msg:=FailMsg;
+
+  if Msg = '' then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  if aMessage<>'' then
+    Msg:=Format(AMessage, AFormatArgs) + ': '+Msg;
+  If AErrorAddr=Nil then
+    AErrorAddr:=CallerAddr;
+  Fail(Msg, AErrorAddr);
+end;
+
+class procedure TAssert.AssertException(AExceptionClass: ExceptClass; AMethod: TRunLocalMethod; const AExceptionMessage: String;
+  AExceptionContext: Integer);
+begin
+  AssertException('', AExceptionClass, AMethod, AExceptionMessage, AExceptionContext, CallerAddr);
+end;
+
+class procedure TAssert.AssertNoException(const AMessage: string; AMethod: TRunLocalMethod);
+begin
+  AssertNoException(AMessage, [], AMethod);
+end;
+
+class procedure TAssert.AssertNoException(const AMessage: string;
+  const AFormatArgs: array of const; AMethod: TRunLocalMethod);
+
+var
+  Msg,aClass,aExceptionMessage : String;
+
+begin
+  aClass:='';
+  aExceptionMessage:='';
+  Try
+    aMethod;
+  Except
+    On E : Exception do
+      begin
+      aClass:=E.ClassName;
+      aExceptionMessage:=E.Message;
+      end;
+    end;
+
+  if aClass = '' then
+    begin
+    Inc(AssertCount);
+    exit;
+    end;
+  Msg:=Format(SErrUnexpectedException,[aClass,aExceptionMessage]);
+  if aMessage<>'' then
+    Msg:=Format(AMessage, AFormatArgs) + ': '+Msg;
+  Fail(Msg,CallerAddr);
+end;
+
+class procedure TAssert.AssertNoException(AMethod: TRunLocalMethod);
+begin
+  AssertNoException('',aMethod);
 end;
 
 
@@ -1091,7 +1736,7 @@ begin
     FLastStep := stTearDown;
   finally
     TearDown;
-  end;
+    end;
   FLastStep := stNothing;
 end;
 
@@ -1112,7 +1757,7 @@ begin
   AssertNotNull('name of the test not assigned', FName);
   pMethod := Self.MethodAddress(FName);
   if (Assigned(pMethod)) then
-  begin
+    begin
     m.Code := pMethod;
     m.Data := self;
     RunMethod := TRunMethod(m);
@@ -1123,7 +1768,7 @@ begin
       RunMethod;
       if (FExpectedException<>Nil) then
         FailMessage:=Format(SExceptionCompare, [FExpectedException.ClassName, SNoException]);
-      if CheckAssertCalled and (AssertCount=0) then  
+      if CheckAssertCalled and (AssertCount=0) then
         FailMessage:=SAssertNotCalled;
     except
       On E : Exception do
@@ -1146,7 +1791,7 @@ begin
         FailMessage:=' : '+FailMessage;
       Fail(FExpectedExceptionFailMessage+FailMessage,FExpectedExceptionCaller);
       end;
-  end
+    end
   else
     begin
       Fail(format(SMethodNotFound, [FName]));
@@ -1180,7 +1825,7 @@ Type
     Property Test : TTest Read FTest;
     Property TestName : String Read FName;
     Property OwnsTest : Boolean Read FOwnsTest Write FOwnstest;
-  end;
+    end;
 
 { TTestItem }
 
@@ -1217,7 +1862,7 @@ begin
   TAssert.AssertNotNull(AClass);
   Create(AClass.ClassName);
   if AClass.InheritsFrom(TTestCase) then
-  begin
+    begin
     tc := TTestCaseClass(AClass);
     ml := TStringList.Create;
     try
@@ -1239,7 +1884,7 @@ begin
     finally
       ml.Free;
     end;
-  end
+    end
   else
     AddTest(Warning(AClass.ClassName + SNoValidInheritance));
   if FTests.Count = 0 then
@@ -1359,11 +2004,11 @@ var
   i: integer;
 begin
   if FEnableIgnores <> Value then
-  begin
+    begin
     FEnableIgnores := Value;
     for i := 0 to FTests.Count - 1 do
       TTestItem(FTests[i]).Test.EnableIgnores := Value;
-  end
+    end
 end;
 
 function TTestSuite.CountTestCases: integer;
@@ -1372,9 +2017,7 @@ var
 begin
   Result := 0;
   for i := 0 to FTests.Count - 1 do
-  begin
     Result := Result + TTestItem(FTests[i]).Test.CountTestCases;
-  end;
 end;
 
 procedure TTestCase.ExpectException(const Msg: String;
@@ -1406,7 +2049,7 @@ var
 begin
   if FTests.Count > 0 then
     AResult.StartTestSuite(self);
-    
+
   for i := 0 to FTests.Count - 1 do
     begin
     ti:=TTestItem(FTests[i]);
@@ -1564,11 +2207,11 @@ end;
 procedure TTestResult.Run(ATestCase: TTestCase);
 begin
   if not SkipTest(ATestCase) then
-  begin
+    begin
     StartTest(ATestCase);
     RunProtected(ATestCase, @ProtectTest);
     EndTest(ATestCase);
-  end;
+    end;
 end;
 
 
@@ -1585,7 +2228,7 @@ begin
       begin
         AddError(ATestCase, E, ExceptAddr);
       end;
-  end;
+    end;
 end;
 
 
@@ -1616,10 +2259,10 @@ var
 begin
   Result := false;
   if FSkippedTests.Count = 0 then
-  begin
+    begin
     result := false;
     Exit;
-  end
+    end
   else
     for i := 0 to FSkippedTests.Count - 1 do
     begin

@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 Unit FreeBSD;
+{$ENDIF FPC_DOTTEDUNITS}
 {
    This file is part of the Free Pascal run time library.
    (c) 2005 by Marco van de Voort
@@ -9,8 +11,8 @@ Unit FreeBSD;
    for details about the copyright.
 
    Unit for FreeBSD specific calls. Calls may move to "BSD" unit in time,
-   if turns out that more BSDs include them. 
-   
+   if turns out that more BSDs include them.
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY;without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -26,15 +28,20 @@ Unit FreeBSD;
      {$define extdecl:=inline}
   {$endif}
 {$ENDIF}
-              
+
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  UnixApi.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   BaseUnix;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   SF_NODISKIO = $00000001;  // don't wait for disk IO, similar to non-blocking socket setting
-  
+
   // kernel threads
 
   KSE_VER_0        = 0;
@@ -64,10 +71,10 @@ const
   KSE_INTR_SIGEXIT     = 4;
   KSE_INTR_DBSUSPEND   = 5;
   KSE_INTR_EXECVE      = 6;
-  
+
 {$i ucontexth.inc} // required for kse threads
 
-Type  
+Type
   SF_HDTR = record
     headers: PIOVec;        {* pointer to an array of header struct iovec's *}
     hdr_cnt: cint;          {* number of header iovec's *}
@@ -76,23 +83,23 @@ Type
   end;
   TSF_HDTR = SF_HDTR;
   PSF_HDTR = ^TSF_HDTR;
-  
+
   kld_file_stat = record
     Version: cInt;            {* set to sizeof(linker_file_stat) *}
-    Name: array[0..MAXPATHLEN-1] of Char;
+    Name: array[0..MAXPATHLEN-1] of AnsiChar;
     Refs: cInt;
     ID: cInt;
-    Address: pChar;           {* load address *}
+    Address: PAnsiChar;           {* load address *}
     Size: size_t;             {* size in bytes *}
   end;
   tkld_file_stat = kld_file_stat;
   pkld_file_stat = ^kld_file_stat;
   TKldFileStat = kld_file_stat;
   PKldFileStat = ^kld_file_stat;
-  
+
   kld_sym_lookup = record
     Version: cInt;            {* sizeof(struct kld_sym_lookup) *}
-    SymName: pChar;           {* Symbol name we are looking up *}
+    SymName: PAnsiChar;           {* Symbol name we are looking up *}
     SymValue: culong;
     SymSize: size_t;
   end;
@@ -100,16 +107,16 @@ Type
   pkld_sym_lookup = ^kld_sym_lookup;
   TKldSymLookup = kld_sym_lookup;
   PKldSymLookup = ^kld_sym_lookup;
-  
+
   // kernel threads
 
   pkse_mailbox = ^kse_mailbox;
-  
+
   pkse_func_t = ^kse_func_t;
   kse_func_t = procedure(mbx: pkse_mailbox);
   TKseFunc = kse_func_t;
   PKseFunc = pkse_func_t;
-  
+
   {*
    * Thread mailbox.
    *
@@ -131,14 +138,14 @@ Type
   TKseThrMailBox = kse_thr_mailbox;
   PKseThrMailBox = pkse_thr_mailbox;
 
-  
+
   {*
    * KSE mailbox.
    *
    * Communication path between the UTS and the kernel scheduler specific to
    * a single KSE.
    *}
-   
+
   kse_mailbox = record
     km_version: cuint32;             {* Mailbox version *}
     km_curthread: pkse_thr_mailbox;  {* Currently running thread *}
@@ -159,14 +166,14 @@ Type
 
   function sendfile(fd: cint; s: cint; Offset: TOff; nBytes: TSize;
                       HDTR: PSF_HDTR; sBytes: POff; Flags: cint): cint; extdecl;
-                      
+
   // Kernel modules support
-                    
-  function kldload(FileName: pChar): cInt; extdecl;
+
+  function kldload(FileName: PAnsiChar): cInt; extdecl;
 
   function kldunload(fileid: cInt): cInt; extdecl;
 
-  function kldfind(FileName: pChar): cInt; extdecl;
+  function kldfind(FileName: PAnsiChar): cInt; extdecl;
 
   function kldnext(fileid: cInt): cInt; extdecl;
 
@@ -175,9 +182,9 @@ Type
   function kldfirstmod(fileid: cInt): cInt; extdecl;
 
   function kldsym(fileid: cInt; command: cInt; data: PKldSymLookup): cInt; extdecl;
-  
+
   // kernel threads support
-  
+
   function kse_exit: cInt; extdecl;
   function kse_wakeup(mbx: PKseMailBox): cInt; extdecl;
   function kse_create(mbx: PKseMailBox; newgroup: cInt): cInt; extdecl;
@@ -187,12 +194,12 @@ Type
 
 {$ifndef FPC_USE_LIBC}
 function fpgetfsstat(buf:pstatfs;bufsize:clong;flags:cint):cint;
-{$endif} 
+{$endif}
 
 Const
  MAP_FILE         = $0000;  { map from file (default) }
  MAP_ANON         = $1000;  { allocated from memory, swap space }
-   
+
  MAP_RENAME       = $0020; { Sun: rename private pages to file }
  MAP_NORESERVE    = $0040; { Sun: don't reserve needed swap area }
  //  MAP_INHERIT      = $0080; { region is retained after exec. not anymore in 5.x? }
@@ -236,8 +243,13 @@ function clock_settime(clk_id: clockid_t; tp: ptimespec): cint; {$ifdef FPC_USE_
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+Uses BsdApi.SysCtl,
+{$ifndef FPC_USE_LIBC}  UnixApi.SysCall; {$else} System.InitC; {$endif}
+{$ELSE FPC_DOTTEDUNITS}
 Uses Sysctl,
 {$ifndef FPC_USE_LIBC}  SysCall; {$else} InitC; {$endif}
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$IFNDEF FPC_USE_LIBC}
 
@@ -245,13 +257,13 @@ function SendFile(fd: cint; s: cint; Offset: TOff; nBytes: TSize;
                   HDTR: PSF_HDTR; sBytes: POff; Flags: cint): cint;
 begin
   SendFile:=Do_Syscall(syscall_nr_sendfile, fd, s,
- {$IFNDEF CPU64} 
+ {$IFNDEF CPU64}
    {$IFDEF LITTLE_ENDIAN} // little endian is lo - hi
-      Lo(Offset), Hi(Offset), 
+      Lo(Offset), Hi(Offset),
    {$ELSE}  	          // big endian is hi - lo
-      Hi(Offset), Lo(Offset), 
+      Hi(Offset), Lo(Offset),
    {$ENDIF}
- {$ELSE}  // 64-bit doesn't care. 
+ {$ELSE}  // 64-bit doesn't care.
     TSysParam(Offset),
  {$ENDIF}
     nBytes, TSysParam(HDTR), TSysParam(sBytes), Flags);
@@ -259,7 +271,7 @@ end;
 
 // kernel modules
 
-function kldload(FileName: pChar): cInt;
+function kldload(FileName: PAnsiChar): cInt;
 begin
   kldload:=do_sysCall(syscall_nr_kldload, TSysParam(FileName));
 end;
@@ -269,7 +281,7 @@ begin
   kldunload:=do_sysCall(syscall_nr_kldunload, TSysParam(fileid));
 end;
 
-function kldfind(FileName: pChar): cInt;
+function kldfind(FileName: PAnsiChar): cInt;
 begin
   kldfind:=do_sysCall(syscall_nr_kldfind, TSysParam(FileName));
 end;

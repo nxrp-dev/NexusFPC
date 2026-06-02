@@ -61,7 +61,7 @@ sample_t * a52_init (uint32_t mm_accel);
 Initializes the A/52 library. Takes as a parameter the acceptable
 optimizations which may be used, such as MMX. These are found in the
 included header file 'mm_accel', along with an autodetection function
-(mm_accel()). Currently, the only accelleration implemented is
+(mm_accel()). Currently, the only acceleration implemented is
 MM_ACCEL_MLIB, which uses the 'mlib' library if installed. mlib is
 only available on some Sun Microsystems platforms.
 
@@ -76,7 +76,7 @@ int a52_syncinfo (uint8_t * buf, int * flags,
                   int * sample_rate, int * bit_rate);
 
 The A/52 bitstream is composed of several a52 frames concatenated one
-after each other. An a52 frame is the smallest independantly decodable
+after each other. An a52 frame is the smallest independently decodable
 unit in the stream.
 
 buf must contain at least 7 bytes from the input stream. If these look
@@ -239,15 +239,22 @@ loop on input bytes:
         convert samples to integer and queue to soundcard
 }
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit a52;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}
 {$MINENUMSIZE 4}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.CTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   ctypes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$UNDEF LIBA52_DOUBLE}
 

@@ -1,9 +1,11 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 Unit ZCompres;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { compress.c -- compress a memory buffer
   Copyright (C) 1995-1998 Jean-loup Gailly.
 
-  Pascal tranlastion
+  Pascal translation
   Copyright (C) 1998 by Jacques Nomssi Nzali
   For conditions of distribution and use, see copyright notice in readme.txt
 }
@@ -12,8 +14,13 @@ interface
 
 {$I zconf.inc}
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.ZLib.Zbase, System.ZLib.Zdeflate;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   zbase, zdeflate;
+{$ENDIF FPC_DOTTEDUNITS}
 
                         { utility functions }
 

@@ -6,7 +6,7 @@
 { Portions created by Microsoft are Copyright (C) Microsoft Corporation.       }
 {  All Rights Reserved.                                                        }
 {                                                                              }
-{ The original Pascal code is: JwaVista.pas, released Octobre 2007.            }
+{ The original Pascal code is: JwaVista.pas, released October 2007.            }
 {                                                                              }
 { Portions created by Christian Wimmer are Copyright (C) 2007                  }
 { Christian Wimmer. All Rights Reserved.                                       }
@@ -43,11 +43,17 @@
 { This unit is not part of JwaWindows.pas and MUST be included by uses clause. }
 { To use this unit you must compile JwaWindows.pas with include mode.}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaVista;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses WinApi.Jedi.Windows;
+{$ELSE FPC_DOTTEDUNITS}
 uses JwaWindows;
+{$ENDIF FPC_DOTTEDUNITS}
 
 
 type
@@ -337,7 +343,7 @@ const
   SECURITY_MANDATORY_UNTRUSTED_RID = $0;
   SECURITY_MANDATORY_LOW_RID = $1000;
   SECURITY_MANDATORY_MEDIUM_RID = $2000;
-  SECURITY_MANDATORY_HIGH_RID = $3000;          
+  SECURITY_MANDATORY_HIGH_RID = $3000;
   SECURITY_MANDATORY_SYSTEM_RID = $4000;
   SECURITY_MANDATORY_PROTECTED_PROCESS_RID = $5000;
 
@@ -355,7 +361,11 @@ const
 
 
 implementation
+{$IFDEF FPC_DOTTEDUNITS}
+uses WinApi.Jedi.Windllnames;
+{$ELSE FPC_DOTTEDUNITS}
 uses JwaWinDLLNames;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$IFNDEF DYNAMIC_LINK}
   function AddMandatoryAce(pAcl: PACL; dwAceRevision, AceFlags, MandatoryPolicy: DWORD;

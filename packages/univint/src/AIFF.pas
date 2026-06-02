@@ -1,9 +1,9 @@
 {
      File:       CarbonCore/AIFF.h
- 
+
      Contains:   Definition of AIFF file format components.
                  The contents of this header file are deprecated.
- 
+
      Copyright:  © 1989-2011 by Apple Inc. All rights reserved.
 }
 {
@@ -20,7 +20,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit AIFF;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -205,7 +207,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -261,9 +267,9 @@ const
 
 {
     AIFF.h use to define a type, ID, which causes conflicts with other headers and application which want to use
-    this pretty common name as their own type.  If you were previously relying on this being defined here, you 
+    this pretty common name as their own type.  If you were previously relying on this being defined here, you
     should either define it yourself or change your references to it into a UInt32.
-    
+
     typedef UInt32 ID;
 }
 type

@@ -51,7 +51,7 @@ begin
     end;
   setlength(fdata,length+1);
   JLSystem.ArrayCopy(JLObject(@arr),0,JLObject(fdata),0,length);
-  // last char is already #0 because of setlength
+  // last AnsiChar is already #0 because of setlength
 end;
 
 
@@ -69,7 +69,7 @@ begin
     end;
   widestringmanager.Unicode2AnsiMoveProc(punicodechar(@arr),temp,cp,system.length(arr));
   fdata:=AnsistringClass(temp).fdata;
-  // last char is already #0 because of Unicode2AnsiMoveProc()
+  // last AnsiChar is already #0 because of Unicode2AnsiMoveProc()
 end;
 
 
@@ -87,7 +87,7 @@ begin
     end;
   widestringmanager.Unicode2AnsiMoveProc(punicodechar(JLString(u).toCharArray),temp,cp,system.length(u));
   fdata:=AnsistringClass(temp).fdata;
-  // last char is already #0 because of Unicode2AnsiMoveProc()
+  // last AnsiChar is already #0 because of Unicode2AnsiMoveProc()
 end;
 
 
@@ -118,7 +118,7 @@ begin
   fCodePage:=cp;
   setlength(fdata,2);
   fdata[0]:=ch;
-  // last char is already #0 because of setlength
+  // last AnsiChar is already #0 because of setlength
 end;
 
 
@@ -158,7 +158,7 @@ end;
 
 function AnsistringClass.toUnicodeString: unicodestring;
 begin
-  widestringmanager.Ansi2UnicodeMoveProc(pchar(fdata),TranslatePlaceholderCP(fCodePage),result,system.length(fdata)-1);
+  widestringmanager.Ansi2UnicodeMoveProc(PAnsiChar(fdata),TranslatePlaceholderCP(fCodePage),result,system.length(fdata)-1);
 end;
 
 
@@ -235,7 +235,7 @@ begin
   if a<>'' then
     result:=AnsistringClass(a).fdata
   else
-    { empty pchar: array with one element that is #0 }
+    { empty PAnsiChar: array with one element that is #0 }
     setlength(result,1);
 end;
 
@@ -246,7 +246,7 @@ end;
 
 {$ifndef FPC_HAS_PCHAR_ANSISTR_INTERN_CHARMOVE}
 {$define FPC_HAS_PCHAR_ANSISTR_INTERN_CHARMOVE}
-procedure fpc_pchar_ansistr_intern_charmove(const src: pchar; const srcindex: sizeint; var dst: rawbytestring; const dstindex, len: sizeint); {$ifdef FPC_HAS_CPSTRING}rtlproc;{$endif} {$ifdef SYSTEMINLINE}inline;{$endif}
+procedure fpc_pchar_ansistr_intern_charmove(const src: PAnsiChar; const srcindex: sizeint; var dst: rawbytestring; const dstindex, len: sizeint); rtlproc; {$ifdef SYSTEMINLINE}inline;{$endif}
 begin
   JLSystem.arraycopy(JLObject(src),srcindex,JLObject(AnsistringClass(dst).fdata),dstindex,len);
 end;
@@ -255,7 +255,7 @@ end;
 
 {$ifndef FPC_HAS_PCHAR_PCHAR_INTERN_CHARMOVE}
 {$define FPC_HAS_PCHAR_PCHAR_INTERN_CHARMOVE}
-procedure fpc_pchar_pchar_intern_charmove(const src: pchar; const srcindex: sizeint; const dst: pchar; const dstindex, len: sizeint); {$ifdef FPC_HAS_CPSTRING}rtlproc;{$endif} {$ifdef SYSTEMINLINE}inline;{$endif}
+procedure fpc_pchar_pchar_intern_charmove(const src: PAnsiChar; const srcindex: sizeint; const dst: PAnsiChar; const dstindex, len: sizeint); rtlproc; {$ifdef SYSTEMINLINE}inline;{$endif}
 begin
   JLSystem.arraycopy(JLObject(src),srcindex,JLObject(dst),dstindex,len);
 end;
@@ -264,22 +264,12 @@ end;
 
 {$ifndef FPC_HAS_SHORTSTR_ANSISTR_INTERN_CHARMOVE}
 {$define FPC_HAS_SHORTSTR_ANSISTR_INTERN_CHARMOVE}
-procedure fpc_shortstr_ansistr_intern_charmove(const src: shortstring; const srcindex: sizeint; var dst: rawbytestring; const dstindex, len: sizeint); {$ifdef FPC_HAS_CPSTRING}rtlproc;{$endif} {$ifdef SYSTEMINLINE}inline;{$endif}
+procedure fpc_shortstr_ansistr_intern_charmove(const src: shortstring; const srcindex: sizeint; var dst: rawbytestring; const dstindex, len: sizeint); rtlproc; {$ifdef SYSTEMINLINE}inline;{$endif}
 begin
   JLSystem.arraycopy(JLObject(ShortStringClass(@src).fdata),srcindex-1,JLObject(AnsistringClass(dst).fdata),dstindex,len);
 end;
 {$endif FPC_HAS_SHORTSTR_ANSISTR_INTERN_CHARMOVE}
 
-
-{$define FPC_HAS_NEWANSISTR}
-Function NewAnsiString(Len : SizeInt) : Pointer;
-{
-  Allocate a new AnsiString on the heap.
-  initialize it to zero length and reference count 1.
-}
-begin
-  result:=AnsistringClass.Create(len,DefaultSystemCodePage);
-end;
 
 { not required }
 {$define FPC_SYSTEM_HAS_ANSISTR_DECR_REF}
@@ -298,6 +288,85 @@ begin
   widestringmanager.Unicode2AnsiMoveProc(PUnicodeChar(JLString(U).toCharArray),DestS,cp,Length(U));
 end;
 {$endif FPC_HAS_ANSISTR_CONCAT_COMPLEX}
+
+
+{$ifndef FPC_HAS_ANSISTR_CONCAT}
+{$define FPC_HAS_ANSISTR_CONCAT}
+procedure fpc_AnsiStr_Concat (var DestS:RawByteString;const S1,S2 : RawByteString;cp : TSystemCodePage); compilerproc;
+Var
+  S1Len, S2Len: SizeInt;
+  same : boolean;
+  S1CP, S2CP, DestCP: TSystemCodePage;
+begin
+  DestCP:=cp;
+  if DestCp=CP_NONE then
+    DestCP:=DefaultSystemCodePage;
+  DestCP:=TranslatePlaceholderCP(DestCP);
+  { if codepages are different then concat using unicodestring,
+    but avoid conversions if either addend is empty (StringCodePage will return
+    DefaultSystemCodePage in that case, which may differ from other addend/dest) }
+  if Length(S1)=0 then
+    S1CP:=DestCP
+  else
+    S1CP:=StringCodePage(S1);
+  S1CP:=TranslatePlaceholderCP(S1CP);
+  if Length(S2)=0 then
+    S2CP:=DestCP
+  else
+    S2CP:=StringCodePage(S2);
+  S2CP:=TranslatePlaceholderCP(S2CP);
+  { if the result is rawbytestring and both strings have the same code page,
+    keep that code page or keep the code page if the other string is empty }
+  if cp=CP_NONE then
+    begin
+     if (S1CP=S2CP) or (Length(S2)=0) then
+       DestCP:=S1CP
+     else if Length(S1)=0 then
+       DestCP:=S2CP;
+    end;
+  if ((S1CP<>DestCP) and (Length(s1)>0)) or ((S2CP<>DestCP) and (Length(s2)>0)) then
+    begin
+      ansistr_concat_complex(DestS,S1,S2,DestCP);
+      exit;
+    end;
+  { only assign if s1 or s2 is empty }
+  if (Length(S1)=0) then
+    begin
+      DestS:=s2;
+      exit;
+    end;
+  if (Length(S2)=0) then
+    begin
+      DestS:=s1;
+      exit;
+    end;
+  S1Len:=Length(S1);
+  S2Len:=length(S2);
+  { Use Pointer() typecasts to prevent extra conversion code }
+  if Pointer(DestS)=Pointer(S1) then
+    begin
+      same:=Pointer(S1)=Pointer(S2);
+      SetLength(DestS,S1Len+S2Len);
+      if same then
+        fpc_pchar_ansistr_intern_charmove(PAnsiChar(DestS),0,DestS,S1Len,S2Len)
+      else
+        fpc_pchar_ansistr_intern_charmove(PAnsiChar(S2),0,DestS,S1Len,S2Len+1)
+    end
+  else if Pointer(DestS)=Pointer(S2) then
+    begin
+      SetLength(DestS,S1Len+S2Len);
+      fpc_pchar_ansistr_intern_charmove(PAnsiChar(DestS),0,DestS,S1Len,S2Len+1);
+      fpc_pchar_ansistr_intern_charmove(PAnsiChar(S1),0,DestS,0,S1Len);
+    end
+  else
+    begin
+      SetLength(DestS,S1Len+S2Len);
+      fpc_pchar_ansistr_intern_charmove(PAnsiChar(S1),0,DestS,0,S1Len);
+      fpc_pchar_ansistr_intern_charmove(PAnsiChar(S2),0,DestS,S1Len,S2Len+1);
+    end;
+  SetCodePage(DestS,DestCP,false);
+end;
+{$endif FPC_HAS_ANSISTR_CONCAT}
 
 
 {$define FPC_HAS_ANSISTR_TO_ANSISTR}
@@ -332,7 +401,7 @@ end;
 Function fpc_AnsiStr_To_AnsiStr (const S : RawByteString;cp : TSystemCodePage): RawByteString; [external name 'fpc_ansistr_to_ansistr'];
 
 {$define FPC_HAS_ANSISTR_CONCAT_MULTI}
-procedure fpc_AnsiStr_Concat_multi (var DestS:RawByteString;const sarr:array of RawByteString{$ifdef FPC_HAS_CPSTRING};cp : TSystemCodePage{$endif FPC_HAS_CPSTRING}); compilerproc;
+procedure fpc_AnsiStr_Concat_multi (var DestS:RawByteString;const sarr:array of RawByteString;cp : TSystemCodePage); compilerproc;
 Var
   lowstart,
   nonemptystart,
@@ -351,13 +420,9 @@ begin
       DestS:='';
       exit;
     end;
-{$ifdef FPC_HAS_CPSTRING}
   DestCP:=cp;
   if DestCp=CP_NONE then
     DestCP:=DefaultSystemCodePage;
-{$else FPC_HAS_CPSTRING}
-  DestCP:=StringCodePage(DestS);
-{$endif FPC_HAS_CPSTRING}
   lowstart:=low(sarr);
   { skip empty strings }
   while (lowstart<=high(sarr)) and
@@ -393,12 +458,10 @@ begin
       widestringmanager.Unicode2AnsiMoveProc(PUnicodeChar(JLString(U).toCharArray),DestS,DestCP,Length(U));
       exit;
     end;
-  {$ifdef FPC_HAS_CPSTRING}
-    { if the result is rawbytestring and all strings have the same code page,
-      keep that code page }
-    if cp=CP_NONE then
-      DestCP:=tmpCP;
-  {$endif FPC_HAS_CPSTRING}
+  { if the result is rawbytestring and all strings have the same code page,
+    keep that code page }
+  if cp=CP_NONE then
+    DestCP:=tmpCP;
 
   nonemptystart:=lowstart;
   { Check for another reuse, then we can't use
@@ -414,13 +477,13 @@ begin
               { if DestS is used somewhere in the middle of the expression,
                 we need to make sure the original string still exists after
                 we empty/modify DestS -- not necessary on JVM platform, ansistrings
-                are not explicitly refrence counted there }
+                are not explicitly reference counted there }
               lowstart:=nonemptystart;
               break;
             end;
         end;
     end;
-  { Start with empty DestS if we start with concatting
+  { Start with empty DestS if we start with concatenating
     the first (non-empty) array element }
   if lowstart=nonemptystart then
     DestS:='';
@@ -440,7 +503,7 @@ begin
       if assigned(p) then
         begin
           Size:=length(ansistring(p));
-          fpc_pchar_pchar_intern_charmove(pchar(ansistring(p)),0,pchar(DestS),NewLen,Size+1);
+          fpc_pchar_pchar_intern_charmove(PAnsiChar(ansistring(p)),0,PAnsiChar(DestS),NewLen,Size+1);
           inc(NewLen,size);
         end;
     end;
@@ -475,12 +538,9 @@ end;
 
 
 {$define FPC_HAS_PCHAR_TO_ANSISTR}
-Function fpc_PChar_To_AnsiStr(const p : PAnsiChar{$ifdef FPC_HAS_CPSTRING};cp : TSystemCodePage{$endif FPC_HAS_CPSTRING}): RawByteString; compilerproc;
+Function fpc_PChar_To_AnsiStr(const p : PAnsiChar;cp : TSystemCodePage): RawByteString; compilerproc;
 Var
   L : SizeInt;
-{$ifndef FPC_HAS_CPSTRING}
-  cp : TSystemCodePage;
-{$endif FPC_HAS_CPSTRING}
 begin
   if (not assigned(p)) or (p[0]=#0) Then
     L := 0
@@ -489,13 +549,8 @@ begin
   SetLength(fpc_PChar_To_AnsiStr,L);
   if L > 0 then
     begin
-{$ifdef FPC_HAS_CPSTRING}
-      cp:=TranslatePlaceholderCP(cp);
-{$else FPC_HAS_CPSTRING}
-      cp:=DefaultSystemCodePage;
-{$endif FPC_HAS_CPSTRING}
       fpc_pchar_ansistr_intern_charmove(p,0,fpc_PChar_To_AnsiStr,0,L);
-      SetCodePage(fpc_PChar_To_AnsiStr,cp,False);
+      SetCodePage(fpc_PChar_To_AnsiStr,TranslatePlaceholderCP(cp),False);
     end;
 end;
 
@@ -638,7 +693,7 @@ end;
 
 
 {$define FPC_HAS_ANSISTR_SETLENGTH}
-Procedure fpc_AnsiStr_SetLength (Var S : RawByteString; l : SizeInt{$ifdef FPC_HAS_CPSTRING};cp : TSystemCodePage{$endif FPC_HAS_CPSTRING});[Public,Alias : 'FPC_ANSISTR_SETLENGTH'];  compilerproc;
+Procedure fpc_AnsiStr_SetLength (Var S : RawByteString; l : SizeInt;cp : TSystemCodePage);[Public,Alias : 'FPC_ANSISTR_SETLENGTH'];  compilerproc;
 {
   Sets The length of string S to L.
   Makes sure S is unique, and contains enough room.
@@ -709,9 +764,9 @@ var
 begin
   Pos:=0;
   SubstrLen:=Length(SubStr);
-  if (Length(SubStr)>0) and (Offset>0) and (Offset<=Length(Source)) then
+  if (SubstrLen>0) and (Offset>0) and (Offset<=Length(Source)) then
    begin
-     MaxLen:=Length(source)-Length(SubStr);
+     MaxLen:=Length(source)-SubStrLen;
      i:=Offset-1;
      while (i<=MaxLen) do
       begin
@@ -743,7 +798,7 @@ begin
   SubstrLen:=Length(SubStr);
   if (SubstrLen>0) and (Offset>0) and (Offset<=Length(Source)) then
    begin
-     MaxLen:=Length(source)-Length(SubStr);
+     MaxLen:=Length(source)-SubStrLen;
      i:=Offset-1;
      while (i<=MaxLen) do
       begin
@@ -767,9 +822,9 @@ end;
 
 
 {$define FPC_HAS_POS_ANSICHAR_ANSISTR}
-{ Faster version for a char alone. Must be implemented because   }
-{ pos(c: char; const s: shortstring) also exists, so otherwise   }
-{ using pos(char,pchar) will always call the shortstring version }
+{ Faster version for a AnsiChar alone. Must be implemented because   }
+{ pos(c: AnsiChar; const s: shortstring) also exists, so otherwise   }
+{ using pos(AnsiChar,PAnsiChar) will always call the shortstring version }
 { (exact match for first argument), also with $h+ (JM)           }
 Function Pos(c : AnsiChar; Const s : RawByteString; Offset : Sizeint = 1) : SizeInt;var
   i: SizeInt;

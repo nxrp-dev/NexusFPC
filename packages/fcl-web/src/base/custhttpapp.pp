@@ -16,12 +16,19 @@
 {$mode objfpc}
 {$H+}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit custhttpapp;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, FpWeb.Http.Defs, FpWeb.Handler, System.Net.Ssockets,  FpWeb.Http.Server, System.Net.Sslbase;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, httpdefs, custweb, ssockets,  fphttpserver, sslbase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
   TCustomHTTPApplication = Class;
@@ -351,10 +358,10 @@ begin
   // Exceptions are handled by (Do)HandleRequest. It also frees the response/request
   try
     DoHandleRequest(ARequest,AResponse);
-  finally  
+  finally
     ARequest:=Nil;
     AResponse:=Nil;
-  end;    
+  end;
   if Assigned(OnIdle) then
     OnIdle(Self);
 end;

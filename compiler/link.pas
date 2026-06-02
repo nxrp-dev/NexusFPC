@@ -129,7 +129,7 @@ interface
       protected
          linkscript : TCmdStrList;
          ScriptCount : longint;
-         IsHandled : PBooleanArray;
+         IsHandled : TBooleanDynArray;
          property CArObjectReader:TObjectReaderClass read FCArObjectReader write FCArObjectReader;
          property CObjInput:TObjInputClass read FCObjInput write FCObjInput;
          property CExeOutput:TExeOutputClass read FCExeOutput write FCExeOutput;
@@ -191,7 +191,7 @@ Implementation
         fs : TCStream;
         bufcount,
         bufsize  : Integer;
-        buf      : pbyte;
+        buf      : TByteDynArray;
       begin
         result:=0;
         bufsize:=64*1024;
@@ -199,16 +199,18 @@ Implementation
         if CStreamError<>0 then
           begin
             fs.Free;
+            fs := nil;
             Comment(V_Error,'Can''t open file: '+fn);
             exit;
           end;
-        getmem(buf,bufsize);
+        setlength(buf,bufsize);
         repeat
-          bufcount:=fs.Read(buf^,bufsize);
-          result:=UpdateCrc32(result,buf^,bufcount);
+          bufcount:=fs.Read(buf[0],bufsize);
+          result:=UpdateCrc32(result,buf[0],bufcount);
         until bufcount<bufsize;
-        freemem(buf);
+        buf:=nil;
         fs.Free;
+        fs := nil;
       end;
 
 
@@ -376,10 +378,15 @@ Implementation
     Destructor TLinker.Destroy;
       begin
         ObjectFiles.Free;
+        ObjectFiles := nil;
         SharedLibFiles.Free;
+        SharedLibFiles := nil;
         StaticLibFiles.Free;
+        StaticLibFiles := nil;
         FrameworkFiles.Free;
+        FrameworkFiles := nil;
         OrderedSymbols.Free;
+        OrderedSymbols := nil;
         inherited;
       end;
 
@@ -638,6 +645,7 @@ Implementation
         for i:=0 to p.count-1 do
           src.insert(p[i].Key);
         p.free;
+        p := nil;
       end;
 
 
@@ -677,6 +685,7 @@ Implementation
         symfile.WriteToDisk;
         result:=symfile.fn;
         symfile.Free;
+        symfile := nil;
       end;
 
 
@@ -770,6 +779,7 @@ Implementation
         if result then
           ObjectFiles.concatList(sanitizerlibraryfiles);
         sanitizerlibraryfiles.free;
+        sanitizerlibraryfiles := nil;
       end;
 
 
@@ -931,18 +941,50 @@ Implementation
 
     Function TExternalLinker.MakeStaticLibrary:boolean;
 
+      var
+        total_size, power : longint;
+
         function GetNextFiles(const maxCmdLength : Longint; var item : TCmdStrListItem; const addfilecmd : string) : TCmdStr;
+          var
+            ItemExists : boolean;
+	    ItemSize : longint;
+	    fs : file;
           begin
             result := '';
             while (assigned(item) and ((length(result) + length(item.str) + 1) < maxCmdLength)) do begin
-              result := result + ' ' + addfilecmd + item.str;
+              ItemExists:=FileExists(FixFilename(item.str),true);
+	      ItemSize:=0;
+	      if ItemExists then
+                begin
+                  system.assign(fs,item.str);
+                  system.reset(fs);
+		  ItemSize:=FileSize(fs);
+                  system.close(fs);
+                  system.inc(total_size,align(ItemSize,16));
+                end;
+              if (cs_link_nolink in current_settings.globalswitches) or
+                 (ItemExists and (ItemSize>0)) then
+                result := result + ' ' + addfilecmd + item.str;
               item := TCmdStrListItem(item.next);
             end;
           end;
 
         function get_wlib_record_size: integer;
+	  var
+            nb_pages,page_size : longint;
           begin
-            result:=align(align(SmartLinkOFiles.Count,128) div 128,16);
+            { Set wlib page size to a sensible value }
+            if total_size>0 then
+              begin
+                page_size:=16 div 2;
+                repeat
+                  page_size:=page_size*2;
+                  nb_pages:=(total_size + (page_size-1)*SmartLinkOFiles.count) div page_size;
+		until nb_pages <= high(word);
+                result:=nb_pages;
+              end
+            else
+              result:=max(16,nextpowerof2(SmartLinkOFiles.count div 16, power));
           end;
 
       var
@@ -956,6 +998,7 @@ Implementation
         first : boolean;
       begin
         MakeStaticLibrary:=false;
+	total_size:=0;
       { remove the library, to be sure that it is rewritten }
         DeleteFile(current_module.staticlibfilename);
       { Call AR }
@@ -1075,9 +1118,10 @@ Implementation
         MakeStaticLibrary:=success;
       end;
 
+    var
+      pid: SizeUInt = 0;
+
     function TExternalLinker.UniqueName(const str: TCmdStr): TCmdStr;
-      const
-        pid: SizeUInt = 0;
       begin
         if pid=0 then
           pid:=GetProcessID;
@@ -1510,12 +1554,15 @@ Implementation
     Destructor TInternalLinker.Destroy;
       begin
         FGroupStack.Free;
+        FGroupStack := nil;
         linkscript.free;
-        StaticLibraryList.Free;
-        ImportLibraryList.Free;
+        linkscript := nil;
+        FStaticLibraryList.Free;
+        FStaticLibraryList := nil;
+        FImportLibraryList.Free;
+        FImportLibraryList := nil;
         if assigned(IsHandled) then
           begin
-            FreeMem(IsHandled,sizeof(boolean)*ScriptCount);
             IsHandled:=nil;
             ScriptCount:=0;
           end;
@@ -1678,7 +1725,9 @@ Implementation
           end;
         { release input object }
         objinput.free;
+        objinput := nil;
         objreader.free;
+        objreader := nil;
       end;
 
 
@@ -1712,7 +1761,9 @@ Implementation
                   TFPObjectList(FGroupStack.Last).Add(stmt);
                 end;
               objinput.Free;
+              objinput := nil;
               objreader.Free;
+              objreader := nil;
             end
           else       { try parsing as script }
             begin
@@ -1720,7 +1771,9 @@ Implementation
               ScriptLexer:=TScriptLexer.Create(objreader);
               ParseLdScript(ScriptLexer);
               ScriptLexer.Free;
+              ScriptLexer := nil;
               objreader.Free;
+              objreader := nil;
             end;
       end;
 
@@ -1788,11 +1841,7 @@ Implementation
             hp:=TCmdStrListItem(hp.next);
           end;
         ScriptCount:=i;
-        if ScriptCount>0 then
-          begin
-            GetMem(IsHandled,sizeof(boolean)*ScriptCount);
-            Fillchar(IsHandled^,sizeof(boolean)*ScriptCount,#0);
-          end;
+        SetLength(IsHandled,ScriptCount+1); // 1-based index used.
       end;
 
     procedure TInternalLinker.ParseScript_PostCheck;
@@ -1805,7 +1854,7 @@ Implementation
         while assigned(hp) do
           begin
             inc(i);
-            if not IsHandled^[i] then
+            if not IsHandled[i] then
               begin
                 Comment(V_Warning,'"'+hp.str+
                   '" internal linker script not handled');
@@ -1844,7 +1893,7 @@ Implementation
             s:=hp.str;
             if (s='') or (s[1]='#') then
               begin
-                IsHandled^[i]:=true;
+                IsHandled[i]:=true;
                 hp:=TCmdStrListItem(hp.next);
                 continue;
               end;
@@ -1874,7 +1923,7 @@ Implementation
             else
               handled:=false;
             if handled then
-              IsHandled^[i]:=true;
+              IsHandled[i]:=true;
             hp:=TCmdStrListItem(hp.next);
           end;
       end;
@@ -1928,7 +1977,7 @@ Implementation
             else
               handled:=false;
             if handled then
-              IsHandled^[i]:=true;
+              IsHandled[i]:=true;
             hp:=TCmdStrListItem(hp.next);
           end;
         exeoutput.Order_End;
@@ -1968,7 +2017,7 @@ Implementation
             else
               handled:=false;
             if handled then
-              IsHandled^[i]:=true;
+              IsHandled[i]:=true;
             hp:=TCmdStrListItem(hp.next);
           end;
       end;
@@ -2009,7 +2058,7 @@ Implementation
             else
               handled:=false;
             if handled then
-              IsHandled^[i]:=true;
+              IsHandled[i]:=true;
             hp:=TCmdStrListItem(hp.next);
           end;
       end;
@@ -2216,6 +2265,7 @@ Implementation
       begin
         if assigned(linker) then
          Linker.Free;
+         Linker := nil;
       end;
 
 

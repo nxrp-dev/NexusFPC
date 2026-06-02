@@ -26,7 +26,7 @@ unit cgcpu;
 interface
 
     uses
-       globtype,parabase,
+       sysutils,globtype,parabase,
        cgbase,cgutils,cgobj,cghlcpu,
        aasmbase,aasmtai,aasmdata,aasmcpu,
        cpubase,cpuinfo,
@@ -44,6 +44,7 @@ interface
         function  getfuncrefregister(list:TAsmList):Tregister;
         function  getexternrefregister(list:TAsmList):Tregister;
         procedure do_register_allocation(list:TAsmList;headertai:tai);override;
+        procedure a_label_pascal_goto_target(list : TAsmList;l : tasmlabel);override;
       end;
 
     procedure create_codegen;
@@ -84,11 +85,11 @@ implementation
 
     procedure TCgWasm.done_register_allocators;
       begin
-        rg[R_INTREGISTER].free;
-        rg[R_FPUREGISTER].free;
-        rg[R_MMREGISTER].free;
-        rg[R_FUNCREFREGISTER].free;
-        rg[R_EXTERNREFREGISTER].free;
+        FreeAndNil(rg[R_INTREGISTER]);
+        FreeAndNil(rg[R_FPUREGISTER]);
+        FreeAndNil(rg[R_MMREGISTER]);
+        FreeAndNil(rg[R_FUNCREFREGISTER]);
+        FreeAndNil(rg[R_EXTERNREFREGISTER]);
         inherited done_register_allocators;
       end;
 
@@ -141,9 +142,16 @@ implementation
       end;
 
 
+    procedure tcgwasm.a_label_pascal_goto_target(list : TAsmList;l : tasmlabel);
+      begin
+        tcpuprocinfo(current_procinfo).add_goto_target(l);
+        inherited;
+      end;
+
+
     procedure create_codegen;
       begin
         cg:=tcgwasm.Create;
       end;
-      
+
 end.

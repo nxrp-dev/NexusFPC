@@ -1,17 +1,17 @@
 {
      File:       QD/PictUtils.h
- 
+
      Contains:   Picture Utilities Interfaces.
- 
+
      Version:    Quickdraw-262~1
- 
+
      Copyright:  © 1990-2008 by Apple Computer, Inc., all rights reserved
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 {   Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2009 }
 {
@@ -28,7 +28,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit PictUtils;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -213,7 +215,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.QuickdrawTypes,MacOsApi.Palettes;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,QuickdrawTypes,Palettes;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -244,7 +250,7 @@ const
 type
 	PictInfoID = SIGNEDLONG;
 	CommentSpec = record
-		count: SInt16;                  { number of occurrances of this comment ID }
+		count: SInt16;                  { number of occurrences of this comment ID }
 		ID: SInt16;                     { ID for the comment in the picture }
 	end;
 	CommentSpecPtr = ^CommentSpec;
@@ -254,7 +260,7 @@ type
 		pictFontID: SInt16;             { ID of the font in the picture }
 		sysFontID: SInt16;              { ID of the same font in the current system file }
 		size: array [0..3] of SInt32;                { bit array of all the sizes found (1..127) (bit 0 means > 127) }
-		style: SInt16;                  { combined style of all occurrances of the font }
+		style: SInt16;                  { combined style of all occurrences of the font }
 		nameOffset: SIGNEDLONG;             { offset into the fontNamesHdl handle for the font’s name }
 	end;
 	FontSpecPtr = ^FontSpec;
@@ -301,7 +307,7 @@ type
 	DisposeColorPickMethodUPP = DisposeColorPickMethodProcPtr;
 {
  *  NewInitPickMethodUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -312,7 +318,7 @@ function NewInitPickMethodUPP( userRoutine: InitPickMethodProcPtr ): InitPickMet
 
 {
  *  NewRecordColorsUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -323,7 +329,7 @@ function NewRecordColorsUPP( userRoutine: RecordColorsProcPtr ): RecordColorsUPP
 
 {
  *  NewCalcColorTableUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -334,7 +340,7 @@ function NewCalcColorTableUPP( userRoutine: CalcColorTableProcPtr ): CalcColorTa
 
 {
  *  NewDisposeColorPickMethodUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -345,7 +351,7 @@ function NewDisposeColorPickMethodUPP( userRoutine: DisposeColorPickMethodProcPt
 
 {
  *  DisposeInitPickMethodUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -356,7 +362,7 @@ procedure DisposeInitPickMethodUPP( userUPP: InitPickMethodUPP ); external name 
 
 {
  *  DisposeRecordColorsUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -367,7 +373,7 @@ procedure DisposeRecordColorsUPP( userUPP: RecordColorsUPP ); external name '_Di
 
 {
  *  DisposeCalcColorTableUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -378,7 +384,7 @@ procedure DisposeCalcColorTableUPP( userUPP: CalcColorTableUPP ); external name 
 
 {
  *  DisposeDisposeColorPickMethodUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -389,7 +395,7 @@ procedure DisposeDisposeColorPickMethodUPP( userUPP: DisposeColorPickMethodUPP )
 
 {
  *  InvokeInitPickMethodUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -400,7 +406,7 @@ function InvokeInitPickMethodUPP( colorsRequested: SInt16; var dataRef: UInt32; 
 
 {
  *  InvokeRecordColorsUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -411,7 +417,7 @@ function InvokeRecordColorsUPP( dataRef: UInt32; var colorsArray: RGBColor; colo
 
 {
  *  InvokeCalcColorTableUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -422,7 +428,7 @@ function InvokeCalcColorTableUPP( dataRef: UInt32; colorsRequested: SInt16; colo
 
 {
  *  InvokeDisposeColorPickMethodUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -434,7 +440,7 @@ function InvokeDisposeColorPickMethodUPP( dataRef: UInt32; userUPP: DisposeColor
 {$ifc not TARGET_CPU_64}
 {
  *  GetPictInfo()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -446,7 +452,7 @@ function GetPictInfo( thePictHandle: PicHandle; var thePictInfo: PictInfo; verb:
 
 {
  *  GetPixMapInfo()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -458,7 +464,7 @@ function GetPixMapInfo( thePixMapHandle: PixMapHandle; var thePictInfo: PictInfo
 
 {
  *  NewPictInfo()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -470,7 +476,7 @@ function NewPictInfo( var thePictInfoID: PictInfoID; verb: SInt16; colorsRequest
 
 {
  *  RecordPictInfo()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -482,7 +488,7 @@ function RecordPictInfo( thePictInfoID: PictInfoID; thePictHandle: PicHandle ): 
 
 {
  *  RecordPixMapInfo()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -494,7 +500,7 @@ function RecordPixMapInfo( thePictInfoID: PictInfoID; thePixMapHandle: PixMapHan
 
 {
  *  RetrievePictInfo()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -506,7 +512,7 @@ function RetrievePictInfo( thePictInfoID: PictInfoID; var thePictInfo: PictInfo;
 
 {
  *  DisposePictInfo()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later

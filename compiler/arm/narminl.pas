@@ -52,6 +52,10 @@ interface
         procedure second_prefetch; override;
         procedure second_abs_long; override;
         procedure second_fma; override;
+
+        function first_cpu: tnode; override;
+        procedure pass_generate_code_cpu; override;
+        function pass_typecheck_cpu: tnode; override;
       private
         procedure load_fpu_location(out singleprec: boolean);
       end;
@@ -61,7 +65,9 @@ implementation
 
     uses
       globtype,verbose,globals,
-      cpuinfo, defutil,symdef,aasmdata,aasmcpu,
+      procinfo,
+      compinnr,cpuinfo,defutil,symdef,
+      aasmdata,aasmcpu,aasmtai,
       cgbase,cgutils,pass_1,pass_2,
       cpubase,ncgutil,cgobj,cgcpu, hlcgobj,
       nutils,ncal;
@@ -69,6 +75,49 @@ implementation
 {*****************************************************************************
                               tarminlinenode
 *****************************************************************************}
+
+     function tarminlinenode.pass_typecheck_cpu: tnode;
+       begin
+         Result:=nil;
+         case inlinenumber of
+           in_arm_yield:
+             resultdef:=voidtype;
+           else
+             result:=inherited;
+         end;
+       end;
+
+
+    function tarminlinenode.first_cpu : tnode;
+      begin
+        Result:=nil;
+        case inlinenumber of
+          in_arm_yield:
+            begin
+              expectloc:=LOC_VOID;
+              resultdef:=voidtype;
+            end;
+          else
+            Result:=inherited first_cpu;
+        end;
+      end;
+
+
+     procedure tarminlinenode.pass_generate_code_cpu;
+       begin
+         case inlinenumber of
+           in_arm_yield:
+             if CPUARM_HAS_MP_INSTRUCTIONS in cpu_capabilities[current_settings.cputype] then
+               current_asmdata.CurrAsmList.concat(taicpu.op_none(A_YIELD))
+             else
+               { while yield is a no op operation if not supported by the cpu, assemblers do not
+                 handle it, so encode it in hex if the cpu does not support it }
+               current_asmdata.CurrAsmList.concat(tai_const.Create_32bit(longint($e320f001)));
+           else
+             inherited pass_generate_code_cpu;
+         end;
+       end;
+
 
     procedure tarminlinenode.load_fpu_location(out singleprec: boolean);
       begin
@@ -135,6 +184,9 @@ implementation
               else
                 internalerror(2009112401);
             end;
+            if ([FPUARM_HAS_VFP_EXTENSION,FPUARM_HAS_VFP_DOUBLE]*fpu_capabilities[current_settings.fputype]<>[]) and
+              needs_check_for_fpu_exceptions then
+              Include(current_procinfo.flags,pi_do_call);
             first_abs_real:=nil;
           end;
       end;
@@ -163,6 +215,9 @@ implementation
               else
                 internalerror(2009112402);
             end;
+            if ([FPUARM_HAS_VFP_EXTENSION,FPUARM_HAS_VFP_DOUBLE]*fpu_capabilities[current_settings.fputype]<>[]) and
+              needs_check_for_fpu_exceptions then
+              Include(current_procinfo.flags,pi_do_call);
             first_sqr_real:=nil;
           end;
       end;
@@ -191,6 +246,9 @@ implementation
               else
                 internalerror(2009112403);
             end;
+            if ([FPUARM_HAS_VFP_EXTENSION,FPUARM_HAS_VFP_DOUBLE]*fpu_capabilities[current_settings.fputype]<>[]) and
+              needs_check_for_fpu_exceptions then
+              Include(current_procinfo.flags,pi_do_call);
             first_sqrt_real := nil;
           end;
       end;
@@ -198,11 +256,13 @@ implementation
 
      function tarminlinenode.first_fma : tnode;
        begin
-         if (true) and
-           ((is_double(resultdef)) or (is_single(resultdef))) then
+         if ((is_double(resultdef)) or (is_single(resultdef))) then
            begin
              expectloc:=LOC_MMREGISTER;
              Result:=nil;
+             if ([FPUARM_HAS_VFP_EXTENSION,FPUARM_HAS_VFP_DOUBLE]*fpu_capabilities[current_settings.fputype]<>[]) and
+               needs_check_for_fpu_exceptions then
+               Include(current_procinfo.flags,pi_do_call);
            end
          else
            Result:=inherited first_fma;
@@ -400,8 +460,9 @@ implementation
     procedure tarminlinenode.second_abs_long;
       var
         opsize : tcgsize;
+        ovloc: tlocation;
       begin
-        if GenerateThumbCode then
+        if GenerateThumbCode or is_64bitint(left.resultdef)  then
           begin
             inherited second_abs_long;
             exit;
@@ -419,7 +480,14 @@ implementation
         if GenerateThumb2Code then
           current_asmdata.CurrAsmList.concat(taicpu.op_cond(A_IT,C_MI));
 
-        current_asmdata.CurrAsmList.concat(setcondition(taicpu.op_reg_reg_const(A_RSB,location.register,location.register, 0), C_MI));
+        if cs_check_overflow in current_settings.localswitches then
+          begin
+            current_asmdata.CurrAsmList.concat(setoppostfix(setcondition(taicpu.op_reg_reg_const(A_RSB,location.register,location.register, 0), C_MI),PF_S));
+            location_reset(ovloc,LOC_VOID,opsize);
+            cg.g_overflowCheck_loc(current_asmdata.CurrAsmList,ovloc,resultdef,ovloc);
+          end
+        else
+          current_asmdata.CurrAsmList.concat(setcondition(taicpu.op_reg_reg_const(A_RSB,location.register,location.register, 0), C_MI));
 
         cg.a_reg_dealloc(current_asmdata.CurrAsmList,NR_DEFAULTFLAGS);
       end;

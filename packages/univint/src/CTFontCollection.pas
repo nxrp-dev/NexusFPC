@@ -22,7 +22,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CTFontCollection;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -207,7 +209,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CTFontDescriptor,MacOsApi.CFBase,MacOsApi.CFArray,MacOsApi.CFDictionary,MacOsApi.CFSet;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CTFontDescriptor,CFBase,CFArray,CFDictionary,CFSet;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -505,7 +511,7 @@ type
     @param      options
                 Options to alter the return value.
 
-    @result     This function returns a retained reference to a CFArray, or NULL on error. The caller is reponsible for releasing the array. The array contains one value for each descriptor, in the same order as the results from CTFontCollectionCreateMatchingDescriptors. When the kCTFontCollectionCopyUnique is set, duplicate values will be removed. When kCTFontCollectionCopyStandardSort is set, the values will be sorted in standard UI order.
+    @result     This function returns a retained reference to a CFArray, or NULL on error. The caller is responsible for releasing the array. The array contains one value for each descriptor, in the same order as the results from CTFontCollectionCreateMatchingDescriptors. When the kCTFontCollectionCopyUnique is set, duplicate values will be removed. When kCTFontCollectionCopyStandardSort is set, the values will be sorted in standard UI order.
  }
 function CTFontCollectionCopyFontAttribute( collection: CTFontCollectionRef; attributeName: CFStringRef; options: CTFontCollectionCopyOptions ): CFArrayRef; external name '_CTFontCollectionCopyFontAttribute';
 (* CT_AVAILABLE_STARTING( __MAC_10_7, __IPHONE_NA) *)
@@ -513,7 +519,7 @@ function CTFontCollectionCopyFontAttribute( collection: CTFontCollectionRef; att
 {!
     @function   CTFontCollectionCopyFontAttributes
     @abstract   Returns an array of dictionaries containing font descriptor attribute values.
- 
+
     @param      collection
                 The font collection reference.
 
@@ -523,7 +529,7 @@ function CTFontCollectionCopyFontAttribute( collection: CTFontCollectionRef; att
     @param      options
                 Options to alter the return value.
 
-    @result     This function returns a retained reference to a CFArray, or NULL on error. The caller is reponsible for releasing the array. The array contains one value for each descriptor, in the same order as the results from CTFontCollectionCreateMatchingDescriptors. When the kCTFontCollectionCopyUnique is set, duplicate values will be removed. When kCTFontCollectionCopyStandardSort is set, the values will be sorted in standard UI order.
+    @result     This function returns a retained reference to a CFArray, or NULL on error. The caller is responsible for releasing the array. The array contains one value for each descriptor, in the same order as the results from CTFontCollectionCreateMatchingDescriptors. When the kCTFontCollectionCopyUnique is set, duplicate values will be removed. When kCTFontCollectionCopyStandardSort is set, the values will be sorted in standard UI order.
  }
 function CTFontCollectionCopyFontAttributes( collection: CTFontCollectionRef; attributeNames: CFSetRef; options: CTFontCollectionCopyOptions ): CFArrayRef; external name '_CTFontCollectionCopyFontAttributes';
 (* CT_AVAILABLE_STARTING( __MAC_10_7, __IPHONE_NA) *)

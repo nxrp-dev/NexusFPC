@@ -22,7 +22,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CTFontTraits;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -207,7 +209,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CFBase;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CFBase;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -264,8 +270,8 @@ const
 	kCTFontTraitMonoSpace = 1 shl 10;    // Use fixed-pitch glyphs if available. May have multiple glyph advances (most CJK glyphs may contain two spaces)
 	kCTFontTraitVertical = 1 shl 11;    // Use vertical glyph variants and metrics
 	kCTFontTraitUIOptimized = 1 shl 12;    // Synthesize appropriate attributes for UI rendering such as control titles if necessary
-    kCTFontTraitColorGlyphs         = 1 shl 13;    // Color bitmap glyphs are available. 
-    kCTFontTraitComposite           = 1 shl 14;    // The font is a CFR (Composite font reference), a cascade list is expected per font. 
+    kCTFontTraitColorGlyphs         = 1 shl 13;    // Color bitmap glyphs are available.
+    kCTFontTraitComposite           = 1 shl 14;    // The font is a CFR (Composite font reference), a cascade list is expected per font.
 
 	kCTFontTraitClassMask = 15 shl kCTFontClassMaskShift; // Mask for the font class
 

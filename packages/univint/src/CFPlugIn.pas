@@ -15,7 +15,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CFPlugIn;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -200,7 +202,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CFBase,MacOsApi.CFArray,MacOsApi.CFBundle,MacOsApi.CFString,MacOsApi.CFURL,MacOsApi.CFUUID;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CFBase,CFArray,CFBundle,CFString,CFURL,CFUUID;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 {$ALIGN POWER}
@@ -253,7 +259,7 @@ function CFPlugInIsLoadOnDemand( plugIn: CFPlugInRef ): Boolean; external name '
 
 function CFPlugInFindFactoriesForPlugInType( typeUUID: CFUUIDRef ): CFArrayRef; external name '_CFPlugInFindFactoriesForPlugInType';
     { This function finds all the factories from any plugin for the given type.  Returns an array that the caller must release. }
-    
+
 function CFPlugInFindFactoriesForPlugInTypeInPlugIn( typeUUID: CFUUIDRef; plugIn: CFPlugInRef ): CFArrayRef; external name '_CFPlugInFindFactoriesForPlugInTypeInPlugIn';
     { This function restricts the result to factories from the given plug-in that can create the given type.  Returns an array that the caller must release. }
 

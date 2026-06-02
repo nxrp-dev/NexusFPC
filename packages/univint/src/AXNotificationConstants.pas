@@ -25,7 +25,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit AXNotificationConstants;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -210,7 +212,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -312,7 +318,7 @@ uses MacTypes;
 // layout area notifications
 {$ifc USE_CFSTR_CONSTANT_MACROS}
 {$definec kAXUnitsChangedNotification CFSTRP('AXUnitsChanged')}
-{$endc}  
+{$endc}
 {$ifc USE_CFSTR_CONSTANT_MACROS}
 {$definec kAXSelectedChildrenMovedNotification CFSTRP('AXSelectedChildrenMoved')}
 {$endc}

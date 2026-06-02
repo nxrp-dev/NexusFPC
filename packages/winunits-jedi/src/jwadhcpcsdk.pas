@@ -42,7 +42,9 @@
 
 // $Id: JwaDhcpCSdk.pas,v 1.11 2007/09/06 14:57:11 marquardt Exp $
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaDhcpCSdk;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -56,8 +58,13 @@ unit JwaDhcpCSdk;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 {$IFNDEF JWA_IMPLEMENTATIONSECTION}
@@ -157,7 +164,7 @@ const
   {$EXTERNALSYM OPTION_ETHERNET_ENCAPSULATION}
 
 //
-// TCP Paramters - per host
+// TCP Parameters - per host
 //
 
   OPTION_TTL                  = 37;
@@ -179,7 +186,7 @@ const
   {$EXTERNALSYM OPTION_NETWORK_TIME_SERVERS}
 
 //
-// Vender specific information option
+// Vendor specific information option
 //
 
   OPTION_VENDOR_SPEC_INFO = 43;

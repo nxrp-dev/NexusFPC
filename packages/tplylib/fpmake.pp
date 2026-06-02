@@ -2,7 +2,7 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses {$ifdef unix}cthreads,{$endif} fpmkunit;
 
 Var
   T : TTarget;
@@ -30,6 +30,7 @@ begin
     { avr-embedded and i8086-embedded do not meet needed requirements }
     if Defaults.CPU in [avr,i8086] then
       P.OSes := P.OSes - [embedded];
+    P.OSes := P.OSes - [wasip2];
 
     P.Author := '<various>';
     P.License := 'LGPL with modification';
@@ -45,6 +46,9 @@ begin
 
     P.Targets.AddUnit('lexlib.pas');
     P.Targets.AddUnit('yacclib.pas');
+
+
+    P.NamespaceMap:='namespaces.lst';
 
 {$ifndef ALLPACKAGES}
     Run;

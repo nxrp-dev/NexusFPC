@@ -36,7 +36,7 @@ const
 var
   WStart: integer;
   InLiteral: boolean;
-  LastLiteral: char;
+  LastLiteral: AnsiChar;
 begin
   WStart := 1;
 (* Skip whitespaces at the beginning *)
@@ -71,7 +71,7 @@ begin
    Result := S;
 end;
 
-Procedure TProcess.Execute;
+Procedure TProcess.SysExecute;
 var
   I: integer;
   ExecName, FoundName: string;
@@ -118,7 +118,7 @@ begin
     ChDir (FCurrentDirectory);
    end;
   try
-   FExitCode := ExecuteProcess (ExecName, Params);
+   FExitCode := Cardinal(ExecuteProcess (ExecName, Params));
   except
 (* Normalize the raised exception so that it is aligned to other platforms. *)
     On E: EOSError do
@@ -161,4 +161,39 @@ Procedure TProcess.SetShowWindow (Value : TShowWindowOptions);
 begin
 end;
 
+function TIODescriptor.SysPrepareCreatedHandleForProcess(aHandle: THandle): THandle;
 
+begin
+  Result:=aHandle;
+end;
+
+function TIODescriptor.SysCreateFileNameHandle(const aFileName: string): THandle;
+
+const
+  DefaultRights = 438; // 438 = 666 octal which is rw rw rw
+  ModeNames : Array[Boolean] of String = ('Reading','Writing');
+
+begin
+  if (aFileName='') then
+    Raise EProcess.Create('No filename provided');
+  case ProcessHandleType of
+    phtInput:  Result:=FileOpen(aFileName,fmOpenRead);
+    phtOutput,
+    phtError: if FileExists(aFileName) then
+                Result:=FileOpen(aFileName,fmOpenWrite or fmShareDenyNone)
+              else
+                Result:=FileCreate(aFileName,fmShareDenyNone,DefaultRights)
+  end;
+  if (Result=-1) then
+    Raise EProcess.CreateFmt('Could not open file "%s" for %s',[aFileName,ModeNames[ProcessHandleType<>phtInput]]);
+end;
+
+function TIODescriptor.SysNullFileName: string;
+begin
+  result:='NULL';
+end;
+
+function TIODescriptor.SysIsTypeSupported(AValue: TIOType): Boolean;
+begin
+  Result:=aValue in [ioType,iotDefault];
+end;

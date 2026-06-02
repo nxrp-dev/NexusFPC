@@ -198,7 +198,6 @@ type
 
     var
        infile : string;
-       outfile : text;
        c : char;
        aktspace : string;
        block_type : tblocktype;
@@ -234,7 +233,7 @@ type
   implementation
 
     uses
-       h2poptions, h2pconst;
+       h2poptions, h2pconst, scanbase;
 
     const
        newline = #10;
@@ -645,7 +644,7 @@ begin
                         end
                          else skip_until_eol;
   8:
-                               
+
                         if NotInCPlusBlock then
                         begin
                            (* handle pre- and postfixes *)
@@ -661,7 +660,7 @@ begin
                         else
                          skip_until_eol;
   9:
-                             
+
                         if NotInCPlusBlock then
                         begin
                           return(NUMBER);
@@ -863,41 +862,41 @@ begin
   49:
                         if NotInCPlusBlock then return(VOID) else skip_until_eol;
   50:
-                                                             
+
                         begin
                           if not stripinfo then
-                            writeln(outfile,'{ C++ extern C conditionnal removed }');
+                            writeln(outfile,'{ C++ extern C conditional removed }');
                         end;
   51:
-                                                           
+
                         begin
                           if not stripinfo then
-                            writeln(outfile,'{ C++ extern C conditionnal removed }');
+                            writeln(outfile,'{ C++ extern C conditional removed }');
                         end;
   52:
-                                                
+
                         begin
                           if not stripinfo then
-                            writeln(outfile,'{ C++ end of extern C conditionnal removed }');
+                            writeln(outfile,'{ C++ end of extern C conditional removed }');
                         end;
   53:
-                                              
+
                         begin
                           if not stripinfo then
-                            writeln(outfile,'{ C++ end of extern C conditionnal removed }');
+                            writeln(outfile,'{ C++ end of extern C conditional removed }');
                         end;
   54:
-                               
+
                         begin
                           Inc(cplusblocklevel);
                         end;
   55:
-                                 
+
                         begin
                           Inc(cplusblocklevel);
                         end;
   56:
-             
+
                         begin
                            if cplusblocklevel > 0 then
                              Inc(cplusblocklevel)

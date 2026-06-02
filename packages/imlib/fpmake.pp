@@ -2,7 +2,7 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses {$ifdef unix}cthreads,{$endif} fpmkunit;
 
 Var
   P : TPackage;
@@ -30,7 +30,7 @@ begin
     if Defaults.CPU<>arm then
       P.OSes := P.OSes + [darwin];
 
-    
+
     P.Dependencies.Add('gtk1');
     P.Dependencies.Add('x11');
 
@@ -38,6 +38,9 @@ begin
 
     T:=P.Targets.AddUnit('gdk_imlib.pp');
     T:=P.Targets.AddUnit('imlib.pp');
+
+
+    P.NamespaceMap:='namespaces.lst';
 
 {$ifndef ALLPACKAGES}
     Run;

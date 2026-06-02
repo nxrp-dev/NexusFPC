@@ -1,12 +1,19 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit gitlabclient;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode ObjFPC}{$H+}
 {$modeswitch advancedrecords}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, System.IniFiles, FpJson.Data, FpWeb.Client, FpWeb.Client.Http, FpWeb.Http.Protocol;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, inifiles, fpjson, fpwebclient, fphttpwebclient, httpprotocol;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Const
   LongThrottleSleep = 60 * 1000; // One minute
@@ -370,7 +377,7 @@ begin
       Result:=D as TJSONArray;
     except
       On E :Exception do
-        begin 
+        begin
         E.Message:='Error getting resource'+aName+': '+E.Message;
         Raise;
         end;
@@ -567,7 +574,7 @@ begin
     aResponse:=FClient.ExecuteRequest('GET',aURL,aRequest);
     if (aResponse.StatusCode div 100)<>2 then
       Raise EGitLab.CreateFmt('Failed to get URL "%s" : %d (%s)',[aURL,aResponse.StatusCode,aResponse.StatusText]);
-    aResult.Position:=0;  
+    aResult.Position:=0;
   finally
     aRequest.Free;
     aResponse.Free;

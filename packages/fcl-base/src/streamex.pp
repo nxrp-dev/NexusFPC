@@ -19,12 +19,19 @@
 
 {$mode objfpc}
 {$h+}
-unit streamex;
+{$IFNDEF FPC_DOTTEDUNITS}
+unit StreamEx;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, System.RtlConsts;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, RtlConsts;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   MIN_BUFFER_SIZE = 128;
@@ -42,7 +49,7 @@ type
    public
       property Position: Longint read GetPosition write SetPosition;
    end;
-   
+
    { TBidirBinaryObjectWriter }
 
    TBidirBinaryObjectWriter = class(TBinaryObjectWriter)
@@ -52,7 +59,7 @@ type
    public
       property Position: Longint read GetPosition write SetPosition;
    end;
-  
+
    { TDelphiReader }
 
    TDelphiReader = class(TReader)
@@ -62,7 +69,7 @@ type
       function CreateDriver(Stream: TStream; BufSize: Integer): TAbstractObjectReader; override;
    public
       function GetDriver: TBidirBinaryObjectReader;
-      function ReadStr: string;
+      function ReadStr: AnsiString;
       procedure Read(var Buf; Count: LongInt); override;
       property Position: LongInt read GetPosition write SetPosition;
    end;
@@ -78,7 +85,7 @@ type
       function GetDriver: TBidirBinaryObjectWriter;
       procedure FlushBuffer;
       procedure Write(const Buf; Count: LongInt); override;
-      procedure WriteStr(const Value: string);
+      procedure WriteStr(const Value: Ansistring);
       procedure WriteValue(Value: TValueType);
       property Position: LongInt read GetPosition write SetPosition;
    end;
@@ -92,9 +99,10 @@ type
      constructor Create; virtual;
      procedure Reset; virtual; abstract;
      procedure Close; virtual; abstract;
-     procedure ReadLine(out AString: string); virtual; abstract; overload;
-     function ReadLine: string; overload;
+     procedure ReadLine(out AString: AnsiString); virtual; abstract; overload;
+     function ReadLine: AnsiString; overload;
      property Eof: Boolean read IsEof;
+     property EndOfStream : boolean read IsEof;
    end;
 
    { TStreamReader }
@@ -108,16 +116,18 @@ type
      FStream: TStream;
      FBuffer: array of Byte;
      procedure FillBuffer;
-   Protected  
+   Protected
      function IsEof: Boolean; override;
    public
-     constructor Create(AStream: TStream; ABufferSize: Integer;
-       AOwnsStream: Boolean); virtual;
+     constructor Create(AStream: TStream; ABufferSize: Integer; AOwnsStream: Boolean); virtual;
      constructor Create(AStream: TStream); virtual;
+     constructor Create(const aFilename: string);
+     constructor Create(const aFilename: string; aDetectBOM: Boolean);
+     constructor Create(const aFilename: string; aEncoding: TEncoding; aDetectBOM: Boolean; aBufferSize: Integer); overload;
      destructor Destroy; override;
      procedure Reset; override;
      procedure Close; override;
-     procedure ReadLine(out AString: string); override; overload;
+     procedure ReadLine(out AString:Ansistring ); override; overload;
      property BaseStream: TStream read FStream;
      property OwnsStream: Boolean read FOwnsStream write FOwnsStream;
    end;
@@ -127,15 +137,15 @@ type
    TStringReader = class(TTextReader)
    private
      FReader: TTextReader;
-   Protected  
+   Protected
      function IsEof: Boolean; override;
    public
-     constructor Create(const AString: string; ABufferSize: Integer); virtual;
-     constructor Create(const AString: string); virtual;
+     constructor Create(const AString: AnsiString; ABufferSize: Integer); virtual;
+     constructor Create(const AString: AnsiString); virtual;
      destructor Destroy; override;
      procedure Reset; override;
      procedure Close; override;
-     procedure ReadLine(out AString: string); override; overload;
+     procedure ReadLine(out AString: AnsiString); override; overload;
    end;
 
    { TFileReader }
@@ -155,7 +165,7 @@ type
      destructor Destroy; override;
      procedure Reset; override;
      procedure Close; override;
-     procedure ReadLine(out AString: string); override; overload;
+     procedure ReadLine(out AString: AnsiString); override; overload;
    end;
 
    { TTextWriter }
@@ -294,7 +304,7 @@ type
 
 
 
-  { allows you to represent just a small window of a bigger stream as a substream. 
+  { allows you to represent just a small window of a bigger stream as a substream.
     also makes sure one is actually at the correct position before clobbering stuff. }
 
   TWindowedStream = class(TOwnerStream)
@@ -364,23 +374,22 @@ end;
 
 procedure TStreamWriter.WriteBytes(Bytes: TBytes);
 var
-  ByteLen,Count,WritePos,ToWrite: Integer;
+  BufLen,Count,ToWrite: Integer;
   P : PByte;
 begin
-  ByteLen:=Length(Bytes);
-  ToWrite:=ByteLen;
-  WritePos:=0;
+  BufLen:=Length(FBuffer);
+  ToWrite:=Length(Bytes);
   P:=PByte(Bytes);
   while ToWrite>0 do
     begin
     Count:=ToWrite;
-    if Count>ByteLen-WritePos then
-      Count:=ByteLen-WritePos;
-    Move(P^, FBuffer[FBufferIndex], Count);
-    Inc(WritePos,Count);
+    if Count>BufLen-FBufferIndex then
+      Count:=BufLen-FBufferIndex;
+    Move(P^,FBuffer[FBufferIndex],Count);
     Inc(P,Count);
     Dec(ToWrite,Count);
-    if FBufferIndex >= Length(FBuffer) then
+    Inc(FBufferIndex,Count);
+    if FBufferIndex>=BufLen  then
       Flush;
     end;
   if FAutoFlush then
@@ -619,7 +628,7 @@ end;
 
 constructor TStringWriter.Create(aBuilder: TStringBuilder);
 begin
-  FBuilder := TStringBuilder.Create;
+  FBuilder := aBuilder;
   FFreeBuilder := False;
 end;
 
@@ -855,7 +864,7 @@ begin
 end;
 
 
-function TDelphiReader.ReadStr: string;
+function TDelphiReader.ReadStr: AnsiString ;
 begin
    Result := GetDriver.ReadStr;
 end;
@@ -897,7 +906,7 @@ begin
    GetDriver.Write(Buf, Count);
 end;
 
-procedure TDelphiWriter.WriteStr(const Value: string);
+procedure TDelphiWriter.WriteStr(const Value: AnsiString );
 begin
    GetDriver.WriteStr(Value);
 end;
@@ -914,7 +923,7 @@ begin
   inherited Create;
 end;
 
-function TTextReader.ReadLine: string;
+function TTextReader.ReadLine: AnsiString;
 
 begin
   ReadLine(Result);
@@ -942,6 +951,26 @@ begin
   Create(AStream, BUFFER_SIZE, False);
 end;
 
+constructor TStreamReader.Create(const aFilename: string);
+begin
+  Create(aFileName,False);
+end;
+
+constructor TStreamReader.Create(const aFilename: string; aDetectBOM: Boolean);
+begin
+  Create(aFileName,TEncoding.Default, aDetectBOM, BUFFER_SIZE);
+end;
+
+constructor TStreamReader.Create(const aFilename: string; aEncoding: TEncoding; aDetectBOM: Boolean; aBufferSize: Integer);
+var
+  F : TFileStream;
+
+begin
+  // DetectBOM & encoding ignored for the moment.
+  F:=TFileStream.Create(aFileName,fmOpenRead or fmShareDenyWrite);
+  Create(F,aBufferSize,True);
+end;
+
 destructor TStreamReader.Destroy;
 begin
   Close;
@@ -950,12 +979,12 @@ end;
 
 procedure TStreamReader.FillBuffer;
 begin
-  if FClosed then 
+  if FClosed then
     begin
     FBufferRead:=0;
     FBufferPosition:=0;
     end
-  else  
+  else
     begin
     FBufferRead := FStream.Read(FBuffer[0], Pred(Length(FBuffer)));
     FBuffer[FBufferRead] := 0;
@@ -990,7 +1019,7 @@ begin
   end;
 end;
 
-procedure TStreamReader.ReadLine(out AString: string);
+procedure TStreamReader.ReadLine(out AString: Ansistring);
 var
   VPByte: PByte;
   VPosition, VStrLength, VLength: Integer;
@@ -1042,13 +1071,13 @@ end;
 
 { TStringReader }
 
-constructor TStringReader.Create(const AString: string; ABufferSize: Integer);
+constructor TStringReader.Create(const AString: AnsiString; ABufferSize: Integer);
 begin
   inherited Create;
   FReader := TStreamReader.Create(TStringStream.Create(AString), ABufferSize, True);
 end;
 
-constructor TStringReader.Create(const AString: string);
+constructor TStringReader.Create(const AString: AnsiString);
 begin
   Create(AString, BUFFER_SIZE);
 end;
@@ -1074,7 +1103,7 @@ begin
   Result := FReader.IsEof;
 end;
 
-procedure TStringReader.ReadLine(out AString: string);
+procedure TStringReader.ReadLine(out AString: AnsiString );
 begin
   FReader.ReadLine(AString);
 end;
@@ -1126,7 +1155,7 @@ begin
   Result := FReader.IsEof;
 end;
 
-procedure TFileReader.ReadLine(out AString: string);
+procedure TFileReader.ReadLine(out AString: AnsiString);
 begin
   FReader.ReadLine(AString);
 end;
@@ -1272,7 +1301,7 @@ begin
 
   if vNewSourcePosition + aCount > fFrontier then // trying to access outside.
     aCount := fFrontier - vNewSourcePosition;
-    
+
   Result := Source.Read(aBuffer, aCount);
   Inc(fPositionHere, Result);
 end;
@@ -1291,7 +1320,7 @@ begin
   if vNewSourcePosition + aCount > fFrontier then // trying to access outside.
     Raise EWriteError.Create(SErrCannotWriteOutsideWindow);
     //aCount := fFrontier - vNewSourcePosition;
-    
+
   Result := Source.Write(aBuffer, aCount);
   Inc(fPositionHere, Result);
 end;
@@ -1306,12 +1335,12 @@ begin
   fStartingPositionHere .... fStart
   fPositionHere............. x
   }
-  
+
   if (aOrigin = soCurrent) and (aOffset = 0) then begin // get position.
     Result := fPositionHere;
     Exit;
   end;
-  
+
   if aOrigin = soBeginning then
     vNewPositionHere := aOffset
   else if aOrigin = soCurrent then
@@ -1324,7 +1353,7 @@ begin
   vSourcePosition := fStart + vNewPositionHere - fStartingPositionHere;
   if (vSourcePosition < 0) or (vSourcePosition >= fFrontier) then
     raise EReadError.Create(SErrInvalidSeekWindow);
-    
+
   Result := Source.Seek(vSourcePosition, 0);
   //if Result = -1 ??? can that happen?
   Result := vNewPositionHere;

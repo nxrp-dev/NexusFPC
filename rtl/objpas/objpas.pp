@@ -12,12 +12,12 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+unit objpas;
 {$Mode ObjFpc}
 {$I-}
 {$ifndef Unix}
   {$S-}
 {$endif}
-unit objpas;
 
 interface
 
@@ -37,7 +37,11 @@ interface
 {$endif CPU16}
 
        { Ansistring are the default }
+{$IF SIZEOF(Char)=2}
+       PString = PWideString;
+{$ELSE}
        PString = PAnsiString;
+{$ENDIF}
 
        { array types }
 {$ifdef CPU16}
@@ -55,21 +59,17 @@ interface
        TPointerArray = PointerArray;
        PPointerArray = ^PointerArray;
 
-       // Delphi Berlin compatibility 
+       // Delphi Berlin compatibility
        FixedInt  = Int32;
        FixedUInt = UInt32;
        PFixedInt = ^FixedInt;
        PFixedUInt= ^FixedUInt;
-   
-       
+
+
 {$if FPC_FULLVERSION >= 20701}
 
-      { Generic array type. 
-        Slightly Less useful in FPC, since dyn array compatibility is at the element level. 
-        But still useful for generic methods and of course Delphi compatibility}
-      
-      Generic TArray<T> = Array of T;
-      
+
+
       { Generic support for enumerator interfaces. These are added here, because
         mode (Obj)FPC does currently not allow the overloading of types with
         generic types (this will need a modeswitch...) }
@@ -109,8 +109,8 @@ Var
 
 {$ifdef FPC_HAS_FEATURE_FILEIO}
     { Untyped file support }
-     Procedure AssignFile(out f:File;p:pchar);
-     Procedure AssignFile(out f:File;c:char);
+     Procedure AssignFile(out f:File;p:PAnsiChar);
+     Procedure AssignFile(out f:File;c:AnsiChar);
   {$ifdef FPC_HAS_FEATURE_WIDESTRINGS}
      Procedure AssignFile(out f:File;const Name:UnicodeString);
   {$endif FPC_HAS_FEATURE_WIDESTRINGS}
@@ -122,10 +122,10 @@ Var
 
 {$ifdef FPC_HAS_FEATURE_TEXTIO}
      { Text file support }
-     Procedure AssignFile(out t:Text;p:pchar);
-     Procedure AssignFile(out t:Text;c:char);
-     Procedure AssignFile(out t:Text;p:pchar; aCodePage : TSystemCodePage);
-     Procedure AssignFile(out t:Text;c:char; aCodePage : TSystemCodePage);
+     Procedure AssignFile(out t:Text;p:PAnsiChar);
+     Procedure AssignFile(out t:Text;c:AnsiChar);
+     Procedure AssignFile(out t:Text;p:PAnsiChar; aCodePage : TSystemCodePage);
+     Procedure AssignFile(out t:Text;c:AnsiChar; aCodePage : TSystemCodePage);
   {$ifdef FPC_HAS_FEATURE_WIDESTRINGS}
      Procedure AssignFile(out t:Text;const Name:UnicodeString);
      Procedure AssignFile(out t:Text;const Name:UnicodeString; aCodePage : TSystemCodePage);
@@ -138,9 +138,9 @@ Var
 {$endif FPC_HAS_FEATURE_TEXTIO}
 
 {$ifdef FPC_HAS_FEATURE_FILEIO}
-     { Typed file supoort }
-     Procedure AssignFile(out f:TypedFile;p:pchar);
-     Procedure AssignFile(out f:TypedFile;c:char);
+     { Typed file support }
+     Procedure AssignFile(out f:TypedFile;p:PAnsiChar);
+     Procedure AssignFile(out f:TypedFile;c:AnsiChar);
   {$ifdef FPC_HAS_FEATURE_WIDESTRINGS}
      Procedure AssignFile(out f:TypedFile;const Name:UnicodeString);
   {$endif FPC_HAS_FEATURE_WIDESTRINGS}
@@ -165,7 +165,7 @@ Var
 
 {$ifdef FPC_HAS_FEATURE_RESOURCES}
    type
-     TResourceIterator = Function (Name,Value : AnsiString; Hash : Longint; arg:pointer) : AnsiString;
+     TResourceIterator = Function (Name : AnsiString; Value : RTLString; Hash : Longint; arg:pointer) : RTLString;
 
    Function Hash(S : AnsiString) : LongWord;
    Procedure ResetResourceTables;
@@ -175,9 +175,9 @@ Var
 
    { Delphi compatibility }
    type
-     PResStringRec=^AnsiString;
-     TResStringRec=AnsiString;
-   Function LoadResString(p:PResStringRec):AnsiString;
+     PResStringRec=^RTLString;
+     TResStringRec=RTLString;
+   Function LoadResString(p:PResStringRec):RTLString;
 {$endif FPC_HAS_FEATURE_RESOURCES}
 
   implementation
@@ -190,12 +190,12 @@ Var
 
 { Untyped file support }
 
-Procedure AssignFile(out f:File;p:pchar);
+Procedure AssignFile(out f:File;p:PAnsiChar);
 begin
   System.Assign (F,p);
 end;
 
-Procedure AssignFile(out f:File;c:char);
+Procedure AssignFile(out f:File;c:AnsiChar);
 begin
   System.Assign (F,c);
 end;
@@ -225,24 +225,24 @@ end;
 {$ifdef FPC_HAS_FEATURE_TEXTIO}
 { Text file support }
 
-Procedure AssignFile(out t:Text;p:pchar);
+Procedure AssignFile(out t:Text;p:PAnsiChar);
 begin
   System.Assign (T,p);
 end;
 
-Procedure AssignFile(out t:Text;p:pchar; aCodePage : TSystemCodePage);
+Procedure AssignFile(out t:Text;p:PAnsiChar; aCodePage : TSystemCodePage);
 begin
   System.Assign (T,p);
   SetTextCodePage(T,aCodePage);
 end;
 
-Procedure AssignFile(out t:Text;c:char);
+Procedure AssignFile(out t:Text;c:AnsiChar);
 begin
   System.Assign (T,c);
 end;
 
 
-Procedure AssignFile(out t:Text;c:char; aCodePage : TSystemCodePage);
+Procedure AssignFile(out t:Text;c:AnsiChar; aCodePage : TSystemCodePage);
 begin
   System.Assign (T,c);
   SetTextCodePage(T,aCodePage);
@@ -285,12 +285,12 @@ end;
 {$ifdef FPC_HAS_FEATURE_FILEIO}
 { Typed file support }
 
-Procedure AssignFile(out f:TypedFile;p:pchar);
+Procedure AssignFile(out f:TypedFile;p:PAnsiChar);
 begin
   System.Assign (F,p);
 end;
 
-Procedure AssignFile(out f:TypedFile;c:char);
+Procedure AssignFile(out f:TypedFile;c:AnsiChar);
 begin
   System.Assign (F,c);
 end;
@@ -365,7 +365,7 @@ Type
      Count : sizeint;
      Tables : Array[{$ifdef cpu16}Byte{$else cpu16}Word{$endif cpu16}] of record
        TableStart,
-       TableEnd   : {$ifdef ver3_0}PResourceStringRecord{$else}PPResourceStringRecord{$endif};
+       TableEnd   : PPResourceStringRecord;
      end;
    end;
    PResourceStringTableList = ^TResourceStringTableList;
@@ -402,6 +402,24 @@ begin
         end;
     end;
 end;
+
+procedure FinalizeResourceStringRefs;
+var
+  i: integer;
+  ptable: PResStrInitEntry;
+begin
+  for i:=1 to ResStrInitTable^.Count do
+    begin
+      ptable:=ResStrInitTable^.Tables[i];
+      while Assigned(ptable^.Addr) do
+        begin
+          AnsiString(ptable^.Addr^):='';
+          Inc(ptable);
+        end;
+    end;
+end;
+
+
 {$endif FPC_HAS_RESSTRINITS}
 
 Var
@@ -411,16 +429,16 @@ Procedure SetResourceStrings (SetFunction :  TResourceIterator;arg:pointer);
 Var
   ResStr : PResourceStringRecord;
   i      : integer;
-  s      : AnsiString;
+  s      : RTLString;
 begin
   With ResourceStringTable^ do
     begin
       For i:=0 to Count-1 do
         begin
-          ResStr:=Tables[I].TableStart{$ifndef VER3_0}^{$endif};
+          ResStr:=Tables[I].TableStart^;
           { Skip first entry (name of the Unit) }
           inc(ResStr);
-          while ResStr<Tables[I].TableEnd{$ifndef VER3_0}^{$endif} do
+          while ResStr<Tables[I].TableEnd^ do
             begin
               s:=SetFunction(ResStr^.Name,ResStr^.DefaultValue,Longint(ResStr^.HashValue),arg);
               if s<>'' then
@@ -447,12 +465,12 @@ begin
       UpUnitName:=UpCase(UnitName);
       For i:=0 to Count-1 do
         begin
-          ResStr:=Tables[I].TableStart{$ifndef VER3_0}^{$endif};
+          ResStr:=Tables[I].TableStart^;
           { Check name of the Unit }
           if ResStr^.Name<>UpUnitName then
             continue;
           inc(ResStr);
-          while ResStr<Tables[I].TableEnd{$ifndef VER3_0}^{$endif} do
+          while ResStr<Tables[I].TableEnd^ do
             begin
               s:=SetFunction(ResStr^.Name,ResStr^.DefaultValue,Longint(ResStr^.HashValue),arg);
               if s<>'' then
@@ -478,10 +496,10 @@ begin
     begin
       For i:=0 to Count-1 do
         begin
-          ResStr:=Tables[I].TableStart{$ifndef VER3_0}^{$endif};
+          ResStr:=Tables[I].TableStart^;
           { Skip first entry (name of the Unit) }
           inc(ResStr);
-          while ResStr<Tables[I].TableEnd{$ifndef VER3_0}^{$endif} do
+          while ResStr<Tables[I].TableEnd^ do
             begin
               ResStr^.CurrentValue:=ResStr^.DefaultValue;
               inc(ResStr);
@@ -500,10 +518,10 @@ begin
     begin
       For i:=0 to Count-1 do
         begin
-          ResStr:=Tables[I].TableStart{$ifndef VER3_0}^{$endif};
+          ResStr:=Tables[I].TableStart^;
           { Skip first entry (name of the Unit) }
           inc(ResStr);
-          while ResStr<Tables[I].TableEnd{$ifndef VER3_0}^{$endif} do
+          while ResStr<Tables[I].TableEnd^ do
             begin
               ResStr^.CurrentValue:='';
               inc(ResStr);
@@ -513,7 +531,7 @@ begin
 end;
 
 
-Function LoadResString(p:PResStringRec):AnsiString;
+Function LoadResString(p:PResStringRec):RTLString;
 begin
   Result:=p^;
 end;
@@ -524,6 +542,9 @@ end;
 Initialization
 {  ResetResourceTables;}
 finalization
+  {$ifdef FPC_HAS_RESSTRINITS}
+  FinalizeResourceStringRefs;
+  {$endif FPC_HAS_RESSTRINITS}
   FinalizeResourceTables;
 {$endif FPC_HAS_FEATURE_RESOURCES}
 end.

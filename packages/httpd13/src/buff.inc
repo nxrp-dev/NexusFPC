@@ -57,21 +57,21 @@ type
   PPBUFF = ^PBUFF;
 
   error_t = procedure (fb: PBUFF; op: cint; data: Pointer);
-  
+
   filter_callback_t = procedure (param1: PBUFF; const param2: Pointer; param3: cint);
 
   buff_struct = record
     flags: cint;		{ flags }
-    inptr: PChar;      	        { pointer to next location to read }
+    inptr: PAnsiChar;      	        { pointer to next location to read }
     incnt: cint;		{ number of bytes left to read from input buffer;
 				 * always 0 if had a read error  }
     outchunk: cint;		{ location of chunk header when chunking }
     outcnt: cint;		{ number of byte put in output buffer }
-    inbase: PChar;
-    outbase: PChar;
+    inbase: PAnsiChar;
+    outbase: PAnsiChar;
     bufsiz: cint;
     error: error_t;
-    error_data: PChar;
+    error_data: PAnsiChar;
     bytes_sent: clong;  	{ number of bytes actually written }
 
     pool: Pap_pool;
@@ -84,7 +84,7 @@ type
 {$endif}
 
     { transport handle, for RPC binding handle or some such }
-    t_handle: PChar;
+    t_handle: PAnsiChar;
 
 {$ifdef B_SFIO}
     sf_in: PSfio_t;
@@ -93,7 +93,7 @@ type
 
     callback_data: Pointer;
     filter_callback: filter_callback_t;
-	
+
   end;
 
 {$ifdef B_SFIO}
@@ -146,16 +146,16 @@ procedure ap_bonerror(fb: PBUFF; error: error_t; data: Pointer);
 { I/O }
 function ap_bread(fb: PBUFF; buf: Pointer; nbyte: cint): cint;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF} external LibHTTPD;
-{API_EXPORT(int) ap_bgets(char *s, int n, BUFF *fb);
-API_EXPORT(int) ap_blookc(char *buff, BUFF *fb);
+{API_EXPORT(int) ap_bgets(AnsiChar *s, int n, BUFF *fb);
+API_EXPORT(int) ap_blookc(AnsiChar *buff, BUFF *fb);
 API_EXPORT(int) ap_bskiplf(BUFF *fb);
 API_EXPORT(int) ap_bwrite(BUFF *fb, const void *buf, int nbyte);
 API_EXPORT(int) ap_bflush(BUFF *fb);
-API_EXPORT(int) ap_bputs(const char *x, BUFF *fb);
+API_EXPORT(int) ap_bputs(const AnsiChar *x, BUFF *fb);
 API_EXPORT_NONSTD(int) ap_bvputs(BUFF *fb,...);
-API_EXPORT_NONSTD(int) ap_bprintf(BUFF *fb, const char *fmt,...)
+API_EXPORT_NONSTD(int) ap_bprintf(BUFF *fb, const AnsiChar *fmt,...)
 				__attribute__((format(printf,2,3)));
-API_EXPORT(int) ap_vbprintf(BUFF *fb, const char *fmt, va_list vlist);
+API_EXPORT(int) ap_vbprintf(BUFF *fb, const AnsiChar *fmt, va_list vlist);
 }
 { Internal routines }
 {API_EXPORT(int) ap_bflsbuf(int c, BUFF *fb);
@@ -174,12 +174,12 @@ API_EXPORT(int) ap_bfilbuf(BUFF *fb);
 {
 #define ap_bgetc(fb)   ( ((fb)->incnt == 0) ? ap_bfilbuf(fb) : \
 		    ((fb)->incnt--, (fb->flags & B_ASCII2EBCDIC)\
-		    ?os_toebcdic[(unsigned char)*((fb)->inptr++)]:*((fb)->inptr++)) )
+		    ?os_toebcdic[(unsigned AnsiChar)*((fb)->inptr++)]:*((fb)->inptr++)) )
 
 #define ap_bputc(c, fb) ((((fb)->flags & (B_EOUT|B_WRERR|B_WR)) != B_WR || \
 		     (fb)->outcnt == (fb)->bufsiz) ? ap_bflsbuf(c, (fb)) : \
 		     ((fb)->outbase[(fb)->outcnt++] = (fb->flags & B_EBCDIC2ASCII)\
-		     ?os_toascii[(unsigned char)c]:(c), 0))
+		     ?os_toascii[(unsigned AnsiChar)c]:(c), 0))
 
 #endif} {CHARSET_EBCDIC}
 
@@ -187,7 +187,7 @@ type
   child_info = record
 {$ifdef WINDOWS}
     {
-     *  These handles are used by ap_call_exec to call 
+     *  These handles are used by ap_call_exec to call
      *  create process with pipe handles.
      }
     hPipeInputRead: HANDLE;
@@ -204,9 +204,9 @@ type
     dummy: cint;
 {$endif}
   end;
-  
+
   Pchild_info = ^child_info;
-  
+
   func_t = function (param1: Pointer; param2: Pchild_info): cint;
 
 function ap_bspawn_child(p: PPool;
@@ -227,8 +227,8 @@ procedure ap_bhalfduplex(fb: PBUFF);
 {$if defined(WINDOWS) or defined(NETWARE) or defined(CYGWIN_WINSOCK)}
 
 { ap_recvwithtimeout/ap_sendwithtimeout socket primitives for WinSock }
-//API_EXPORT(int) ap_sendwithtimeout(int sock, const char *buf, int len, int flags);
-//API_EXPORT(int) ap_recvwithtimeout(int sock, char *buf, int len, int flags);
+//API_EXPORT(int) ap_sendwithtimeout(int sock, const AnsiChar *buf, int len, int flags);
+//API_EXPORT(int) ap_recvwithtimeout(int sock, AnsiChar *buf, int len, int flags);
 
 {$endif}
 

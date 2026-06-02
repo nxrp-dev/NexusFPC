@@ -4,7 +4,7 @@
  * Copyright (C) 2002, 2003  Red Hat Inc.
  *
  * Licensed under the Academic Free License version 2.1
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -14,7 +14,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
@@ -74,7 +74,7 @@ type
    uid: cuint; data: Pointer): dbus_bool_t; cdecl;
 
   DBusAllowWindowsUserFunction = function(connection: PDBusConnection;
-   user_sid: PChar; data: Pointer): dbus_bool_t; cdecl;
+   user_sid: PAnsiChar; data: Pointer): dbus_bool_t; cdecl;
 
   DBusPendingCallNotifyFunction = procedure(pending: PDBusPendingCall;
    user_data: Pointer); cdecl;
@@ -82,15 +82,15 @@ type
   DBusHandleMessageFunction = function(connection: PDBusConnection;
    message_: PDBusMessage; user_data: Pointer): DBusHandlerResult; cdecl;
 
-function dbus_connection_open(const address: PChar; error: PDBusError): PDBusConnection; cdecl; external LibDBus;
-function dbus_connection_open_private(const address: PChar; error: PDBusError): PDBusConnection; cdecl; external LibDBus;
+function dbus_connection_open(const address: PAnsiChar; error: PDBusError): PDBusConnection; cdecl; external LibDBus;
+function dbus_connection_open_private(const address: PAnsiChar; error: PDBusError): PDBusConnection; cdecl; external LibDBus;
 function dbus_connection_ref(connection: PDBusConnection): PDBusConnection; cdecl; external LibDBus;
 procedure dbus_connection_unref(connection: PDBusConnection); cdecl; external LibDBus;
 procedure dbus_connection_close(connection: PDBusConnection); cdecl; external LibDBus;
 function dbus_connection_get_is_connected(connection: PDBusConnection): dbus_bool_t; cdecl; external LibDBus;
 function dbus_connection_get_is_authenticated(connection: PDBusConnection): dbus_bool_t; cdecl; external LibDBus;
 function dbus_connection_get_is_anonymous(connection: PDBusConnection): dbus_bool_t; cdecl; external LibDBus;
-function dbus_connection_get_server_id(connection: PDBusConnection):pchar;cdecl; external LibDBus;
+function dbus_connection_get_server_id(connection: PDBusConnection):PAnsiChar;cdecl; external LibDBus;
 procedure dbus_connection_set_exit_on_disconnect(connection: PDBusConnection;
  exit_on_disconnect: dbus_bool_t); cdecl; external LibDBus;
 procedure dbus_connection_flush(connection: PDBusConnection); cdecl; external LibDBus;
@@ -147,7 +147,7 @@ procedure dbus_connection_set_unix_user_function(connection: PDBusConnection;
  free_data_function: DBusFreeFunction); cdecl; external LibDBus;
 
 function dbus_connection_get_windows_user(connection: PDBusConnection;
- windows_sid_p: PPChar): dbus_bool_t; cdecl; external LibDBus;
+ windows_sid_p: PPAnsiChar): dbus_bool_t; cdecl; external LibDBus;
 procedure dbus_connection_set_windows_user_function(connection: PDBusConnection;
  function_: DBusAllowWindowsUserFunction;
  data: Pointer;
@@ -228,7 +228,7 @@ type
 
     unregister_function: DBusObjectPathUnregisterFunction; {< Function to unregister this handler }
     message_function: DBusObjectPathMessageFunction; {< Function to handle messages }
-  
+
     dbus_internal_pad1: dbus_internal_func; {< Reserved for future expansion }
     dbus_internal_pad2: dbus_internal_func; {< Reserved for future expansion }
     dbus_internal_pad3: dbus_internal_func; {< Reserved for future expansion }
@@ -236,31 +236,31 @@ type
   end;
 
 function dbus_connection_try_register_object_path(connection: PDBusConnection;
-  path: PChar; vtable: PDBusObjectPathVTable; user_data: Pointer;
+  path: PAnsiChar; vtable: PDBusObjectPathVTable; user_data: Pointer;
   error: PDBusError): dbus_bool_t; cdecl; external LibDBus;
 
 function dbus_connection_register_object_path(connection: PDBusConnection;
- path: PChar; vtable: PDBusObjectPathVTable;
+ path: PAnsiChar; vtable: PDBusObjectPathVTable;
  user_data: Pointer): dbus_bool_t; cdecl; external LibDBus;
 
 function dbus_connection_try_register_fallback(connection: PDBusConnection;
- path: PChar; vtable: PDBusObjectPathVTable; user_data: Pointer;
+ path: PAnsiChar; vtable: PDBusObjectPathVTable; user_data: Pointer;
  error: PDBusError): dbus_bool_t; cdecl; external LibDBus;
 
 function dbus_connection_register_fallback(connection: PDBusConnection;
- const path: PChar;
+ const path: PAnsiChar;
  const vtable: PDBusObjectPathVTable;
  user_data: Pointer): dbus_bool_t; cdecl; external LibDBus;
 function dbus_connection_unregister_object_path(connection: PDBusConnection;
- const path: PChar): dbus_bool_t; cdecl; external LibDBus;
+ const path: PAnsiChar): dbus_bool_t; cdecl; external LibDBus;
 
 function dbus_connection_get_object_path_data(connection: PDBusConnection;
- const path: PChar;
+ const path: PAnsiChar;
  data_p: PPointer): dbus_bool_t; cdecl; external LibDBus;
 
 function dbus_connection_list_registered(connection: PDBusConnection;
- const parent_path: PChar;
- child_entries: PPPChar): dbus_bool_t; cdecl; external LibDBus;
+ const parent_path: PAnsiChar;
+ child_entries: PPPAnsiChar): dbus_bool_t; cdecl; external LibDBus;
 
 function dbus_connection_get_unix_fd(connection: PDBusConnection;
  fd: Pcint): dbus_bool_t; cdecl; external LibDBus;

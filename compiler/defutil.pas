@@ -113,6 +113,10 @@ interface
        an ordinal or enum }
     function get_unsigned_inttype(def: tdef): torddef;
 
+    {# Returns a signed integer type of the same size as def; def must be
+       an ordinal or enum }
+    function get_signed_inttype(def: tdef): torddef;
+
     {# Returns whether def_from's range is comprised in def_to's if both are
       orddefs, false otherwise                                              }
     function is_in_limit(def_from,def_to : tdef) : boolean;
@@ -253,6 +257,9 @@ interface
     {# Returns true, if def is an extended type }
     function is_extended(def : tdef) : boolean;
 
+    {# Returns true, if def is quad type }
+    function is_quad(def : tdef) : boolean;
+
     {# Returns true, if definition is a "real" real (i.e. single/double/extended) }
     function is_real(def : tdef) : boolean;
 
@@ -282,6 +289,9 @@ interface
 
     {# Returns true, if def is a 64 bit signed integer type }
     function is_s64bitint(def : tdef) : boolean;
+
+    {# Returns true, if def is a qword type }
+    function is_u64bitint(def : tdef) : boolean;
 
     {# Returns true, if def is a 64 bit ordinal type }
     function is_64bit(def : tdef) : boolean;
@@ -313,10 +323,13 @@ interface
     { true, if def is a signed int type, equal in size to the processor's native int size }
     function is_nativesint(def : tdef) : boolean;
 
+    { true, if the char type is a widechar in the system unit }
+    function is_systemunit_unicode : boolean;
+
   type
     tperformrangecheck = (
       rc_internal,  { nothing, internal conversion }
-      rc_explicit,  { no, but this is an explcit user conversion and hence can still give warnings in some cases (or errors in case of enums) }
+      rc_explicit,  { no, but this is an explicit user conversion and hence can still give warnings in some cases (or errors in case of enums) }
       rc_implicit,  { no, but this is an implicit conversion and hence can still give warnings/errors in some cases }
       rc_yes        { yes }
     );
@@ -355,7 +368,7 @@ interface
        to note that the value returned can be @var(OS_NO) }
     function def_cgsize(def: tdef): tcgsize;
 
-    { #Return an orddef (integer) correspondig to a tcgsize }
+    { #Return an orddef (integer) corresponding to a tcgsize }
     function cgsize_orddef(size: tcgsize): torddef;
 
     {# Same as def_cgsize, except that it will interpret certain arrays as
@@ -373,11 +386,11 @@ interface
 
     { # returns the smallest base integer type whose range encompasses that of
         both ld and rd; if keep_sign_if_equal, then if ld and rd have the same
-        signdness, the result will also get that signdness }
+        signedness, the result will also get that signedness }
     function get_common_intdef(ld, rd: torddef; keep_sign_if_equal: boolean): torddef;
 
     { # calculates "not v" based on the provided def; returns true if the def
-        was negatable, false otherwise }
+        was negligible, false otherwise }
     function calc_not_ordvalue(var v:Tconstexprint; var def:tdef):boolean;
 
     { # returns whether the type is potentially a valid type of/for an "univ" parameter
@@ -417,6 +430,7 @@ implementation
 
     uses
        verbose,cutils,
+       symtable, // search_system_type
        symsym,
        cpuinfo;
 
@@ -465,10 +479,19 @@ implementation
       end;
 
 
+    { returns true, if def is an extended type }
     function is_extended(def : tdef) : boolean;
       begin
         result:=(def.typ=floatdef) and
           (tfloatdef(def).floattype in [s80real,sc80real]);
+      end;
+
+
+    { returns true, if def is a quad type }
+    function is_quad(def : tdef) : boolean;
+      begin
+        result:=(def.typ=floatdef) and
+          (tfloatdef(def).floattype=s128real);
       end;
 
 
@@ -765,6 +788,18 @@ implementation
       end;
 
 
+    function get_signed_inttype(def: tdef): torddef;
+      begin
+        case def.typ of
+          orddef,
+          enumdef:
+            result:=cgsize_orddef(tcgsize2signed[def_cgsize(def)]);
+          else
+            internalerror(2022093007);
+        end;
+      end;
+
+
     function is_in_limit(def_from,def_to : tdef) : boolean;
 
       begin
@@ -782,7 +817,7 @@ implementation
              is_in_limit:=(tenumdef(def_from).min>=tenumdef(def_to).min) and
                           (tenumdef(def_from).max<=tenumdef(def_to).max);
            setdef:
-             is_in_limit:=(tsetdef(def_from).setbase>=tsetdef(def_to).setbase) and
+             is_in_limit:=(tsetdef(def_from).setlow>=tsetdef(def_to).setlow) and
                           (tsetdef(def_from).setmax<=tsetdef(def_to).setmax);
          else
            is_in_limit:=false;
@@ -1033,7 +1068,7 @@ implementation
                     is_chararray(tpointerdef(p).pointeddef)));
       end;
 
-    { true if p is a pchar def }
+    { true if p is a pwidechar def }
     function is_pwidechar(p : tdef) : boolean;
       begin
         is_pwidechar:=(p.typ=pointerdef) and
@@ -1145,6 +1180,12 @@ implementation
       end;
 
 
+    function is_u64bitint(def: tdef): boolean;
+      begin
+        is_u64bitint:=(def.typ=orddef) and (torddef(def).ordtype=u64bit)
+      end;
+
+
     { true, if def is a 64 bit type }
     function is_64bit(def : tdef) : boolean;
       begin
@@ -1249,6 +1290,24 @@ implementation
       begin
          result:=is_nativeint(def) and (def.typ=orddef) and (torddef(def).ordtype in [s64bit,s32bit,s16bit,s8bit]);
       end;
+
+    function is_systemunit_unicode: boolean;
+
+    var
+      t : ttypesym;
+
+    begin
+      if cchartype=nil then
+        begin
+          t:=search_system_type('CHAR');
+          if t<>nil then
+            cchartype:=t.typedef;
+        end;
+      if cchartype=nil then
+        is_systemunit_unicode:=(sizeof(char)=2)
+      else
+        is_systemunit_unicode:=(cchartype.size=2);
+    end;
 
     { if l isn't in the range of todef a range check error (if not explicit) is generated and
       the value is placed within the range }
@@ -1492,12 +1551,12 @@ implementation
     function is_vector(p : tdef) : boolean;
       begin
         result:=(p.typ=arraydef) and
-                (tarraydef(p).is_hwvector or
+                (tarraydef(p).is_hwvector { or
                  (not(is_special_array(p)) and
-                  (tarraydef(p).elementdef.typ in [floatdef,orddef]) {and
+                  (tarraydef(p).elementdef.typ in [floatdef,orddef]) and
                   (tarraydef(p).elementdef.typ=floatdef) and
-                  (tfloatdef(tarraydef(p).elementdef).floattype in [s32real,s64real])}
-                 )
+                  (tfloatdef(tarraydef(p).elementdef).floattype in [s32real,s64real])
+                 ) }
                 );
       end;
 

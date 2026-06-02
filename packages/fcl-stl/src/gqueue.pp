@@ -12,16 +12,22 @@
 **********************************************************************}
 {$mode objfpc}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit gqueue;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.Stl.Deque;
+{$ELSE FPC_DOTTEDUNITS}
 uses gdeque;
+{$ENDIF FPC_DOTTEDUNITS}
 
-type 
+type
   generic TQueue<T>=class
   private
-  type 
+  type
     TContainer = specialize TDeque<T>;
   var
     FData:TContainer;

@@ -18,14 +18,21 @@
   See the file COPYING.FPC, included in this distribution,
   for details about the copyright.
 }
+{$IFNDEF FPC_DOTTEDUNITS}
 unit chmsitemap;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode Delphi}{$H+}
 {define preferlower}
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, Fcl.FastHtmlParser, System.Contnrs, System.StrUtils, System.Generics.Collections;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, fasthtmlparser, contnrs, strutils, generics.collections;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   TChmSiteMapItems = class; // forward
@@ -51,7 +58,9 @@ type
                              siteattr_EXWINDOW_STYLES,
                              siteattr_FONT,
                              siteattr_IMAGELIST,
-                             siteattr_IMAGETYPE
+                             siteattr_IMAGETYPE,
+                             siteattr_BACKGROUND,
+                             siteattr_FOREGROUND
                             );
 
   { TChmSiteMapSubItem }
@@ -103,6 +112,8 @@ type
     procedure AddURL(const URL:string);
     procedure AddType(const AType:string);
     procedure Sort(Compare: TListSortCompare);
+  public
+    property SubItem[ index :integer]:TChmSiteMapSubItem read getsubitem;
   published
     property Children: TChmSiteMapItems read FChildren write SetChildren;
     property Name: String read FName write FName;
@@ -117,7 +128,6 @@ type
     property FrameName: String read FFrameName write FFrameName;
     property WindowName: String read FWindowName write FWindowName;
     property Merge: String read FMerge write FMerge;
-    property SubItem[ index :integer]:TChmSiteMapSubItem read getsubitem;
     property SubItemcount  :integer read getsubitemcount;
   end;
 
@@ -149,17 +159,17 @@ type
     property InternalData: Dword read FInternalData write FInternalData;
     property ParentName : String read getparentname;
   end;
-  
+
 
   { TChmSiteMapTree }
   TSiteMapType = (stTOC, stIndex);
-  
+
   TSiteMapTag = (smtUnknown, smtNone, smtHTML, smtHEAD, smtBODY);
   TSiteMapTags = set of TSiteMapTag;
 
   TSiteMapBodyTag = (smbtUnknown, smbtNone, smbtUL, smbtLI, smbtOBJECT, smbtPARAM);
   TSiteMapBodyTags = set of TSiteMapBodyTag;
-  
+
   TLIObjectParamType = (ptName, ptLocal, ptKeyword);
 
   TChmSiteMap = class
@@ -188,8 +198,8 @@ type
     procedure SetItems(const AValue: TChmSiteMapItems);
     procedure CheckLookup;
   protected
-    procedure FoundTag (ACaseInsensitiveTag, AActualTag: string);
-    procedure FoundText(AText: string);
+    procedure FoundTag (ACaseInsensitiveTag, AActualTag: Ansistring);
+    procedure FoundText(AText: Ansistring);
   public
     constructor Create(AType: TSiteMapType);
     destructor Destroy; override;
@@ -217,8 +227,14 @@ type
 
 
 function indexitemcompare(Item1, Item2: Pointer): Integer;
+
 implementation
+
+{$IFDEF FPC_DOTTEDUNITS}
+uses Chm.HtmlUtil;
+{$ELSE FPC_DOTTEDUNITS}
 uses HTMLUtil;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const sitemapkws : array[TChmSiteMapItemAttrName] of string = (
                     '',
@@ -238,7 +254,9 @@ const sitemapkws : array[TChmSiteMapItemAttrName] of string = (
                     'EXWINDOW STYLES',
                     'FONT',
                     'IMAGELIST',
-                    'IMAGETYPE');
+                    'IMAGETYPE',
+                    'BACKGROUND',
+                    'FOREGROUND');
 
 function indexitemcompare(Item1, Item2: Pointer): Integer;
 begin
@@ -274,7 +292,7 @@ begin
     FLoadDict.add(sitemapkws[en],en);
 end;
 
-procedure TChmSiteMap.FoundTag(ACaseInsensitiveTag, AActualTag: string);
+procedure TChmSiteMap.FoundTag(ACaseInsensitiveTag, AActualTag: Ansistring);
     procedure NewSiteMapItem;
     begin
       FCurrentItems.Add(TChmSiteMapItem.Create(FCurrentItems));
@@ -384,6 +402,8 @@ begin
                    siteattr_FONT            : Font:=TagAttributeValue;
                    siteattr_IMAGELIST       : ImageList:=TagAttributeValue;
                    siteattr_IMAGETYPE       : UseFolderImages:=uppercase(TagAttributeValue)='FOLDER';
+                   siteattr_BACKGROUND      : BackgroundColor:=strtointdef(trim(TagAttributeValue),longint(-1));
+                   siteattr_FOREGROUND      : ForegroundColor:=strtointdef(trim(TagAttributeValue),0)
                    end;
              end;
               // writeln('0:',flevel,' ' ,aactualtag,' ',tagname,' ' ,tagattributename, ' ' ,tagattributevalue);
@@ -396,7 +416,7 @@ begin
   //end   {html}
 end;
 
-procedure TChmSiteMap.FoundText(AText: string);
+procedure TChmSiteMap.FoundText(AText: ansistring);
 begin
   //WriteLn('TEXT:', AText);
 end;
@@ -596,10 +616,10 @@ begin
       if WindowName <> '' then WriteParam('WindowName', WindowName);
       if ImageList <> '' then WriteParam('ImageList', ImageList);
       if ImageWidth > 0 then WriteParam('Image Width', IntToStr(ImageWidth));
-      if BackgroundColor <> 0 then WriteParam('Background', hexStr(BackgroundColor, 4));
-      if ForegroundColor <> 0 then WriteParam('Foreground', hexStr(ForegroundColor, 4));
-      if ExWindowStyles <> 0 then WriteParam('ExWindow Styles', hexStr(ExWindowStyles, 4));
-      if WindowStyles <> 0 then WriteParam('Window Styles', hexStr(WindowStyles, 4));
+      if BackgroundColor <> 0 then WriteParam('Background', '0x'+hexStr(BackgroundColor, 8));
+      if ForegroundColor <> 0 then WriteParam('Foreground', '0x'+hexStr(ForegroundColor, 8));
+      if ExWindowStyles <> 0 then WriteParam('ExWindow Styles', '0x'+hexStr(ExWindowStyles, 8));
+      if WindowStyles <> 0 then WriteParam('Window Styles', '0x'+hexStr(WindowStyles, 8));
       if UseFolderImages then WriteParam('ImageType', 'Folder');
     end;
     // both TOC and Index have font
@@ -607,7 +627,7 @@ begin
       WriteParam('Font', Font);
   Dec(Indent, 8);
   WriteString('</OBJECT>');
-  
+
   // And now the items
   if Items.Count > 0 then begin
     WriteString('<UL>');
@@ -617,9 +637,9 @@ begin
     Dec(Indent, 8);
     WriteString('</UL>');
   end;
-  
+
   WriteString('</BODY></HTML>');
-  
+
   AStream.Size := AStream.Position;
 end;
 

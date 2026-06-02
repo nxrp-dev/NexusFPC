@@ -1,17 +1,17 @@
 {
      File:       QuickTime/MoviesFormat.h
- 
+
      Contains:   QuickTime Interfaces.
- 
+
      Version:    QuickTime 7.7.1
- 
+
      Copyright:  © 1990-2012 by Apple Inc., all rights reserved
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 {  Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2009 }
 {  Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2012 }
@@ -29,7 +29,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit MoviesFormat;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -214,7 +216,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.ImageCompression,MacOsApi.Components,MacOsApi.Movies;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,ImageCompression,Components,Movies;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -371,7 +377,7 @@ type
 		sampleDependencyTable: array [0..0] of UInt8;
 	end;
 {
-NOTE: The values for these flags that shipped with QuickTime 7.0 were incorrect. 
+NOTE: The values for these flags that shipped with QuickTime 7.0 were incorrect.
 They matched neither the specification nor the implementation -- the "Yes" and "No" bits
 were reversed.  The flags have been corrected but renamed to ensure that code using
 the incorrect flags is reviewed by developers.

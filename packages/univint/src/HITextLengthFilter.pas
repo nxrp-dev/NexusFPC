@@ -1,17 +1,17 @@
 {
      File:       HIToolbox/HITextLengthFilter.h
- 
+
      Contains:   Header file for HITextLengthFilter object.
- 
+
      Version:    HIToolbox-624~3
- 
+
      Copyright:  © 1984-2008 by Apple Computer, Inc., all rights reserved.
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 {       Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2009 }
 {       Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2012 }
@@ -29,7 +29,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit HITextLengthFilter;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -214,7 +216,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CFString;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CFString;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -224,20 +230,20 @@ uses MacTypes,CFString;
 
 {
     HITextLengthFilter
-    
+
     This object enforces a maximum character length on a text field. It is typically attached as a
     delegate to an editable text view, such as an EditUnicodeText, HIComboBox, HISearchField, or
     HITextView object.
-    
+
     This object handles the following Carbon events:
-        
+
         kEventClassTextField
             kEventTextShouldChangeInRange
-            
+
     This object does not send or post any Carbon events.
-    
+
     This object has no dependencies on other AppObjects.
-    
+
     This object is customizable to specify the maximum length for the text field.
     Your application customizes the maximum length for the text field by specifying
     a value for the kEventParamTextLength param of the kEventHIObjectInitialize event
@@ -247,7 +253,7 @@ uses MacTypes,CFString;
 
 {
  *  kHITextLengthFilterClassID
- *  
+ *
  *  Discussion:
  *    HIObject class ID for the HITextLengthFilter object.
  }

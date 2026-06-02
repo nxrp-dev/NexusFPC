@@ -1,3 +1,4 @@
+{%MainUnit classes.pp}
 {
     This file is part of the Free Component Library (FCL)
     Copyright (c) 1999-2007 by the Free Pascal development team
@@ -17,7 +18,7 @@
 
 const
 {$ifdef CPU16}
-  { Avoid too big local stack use for 
+  { Avoid too big local stack use for
     MSDOS tiny memory model that uses less than 4096
     bytes for total stack by default. }
   ParseBufSize     = 512;
@@ -36,7 +37,7 @@ const
     'WideString'
   );
 
-function TParser.GetTokenName(aTok: char): string;
+function TParser.GetTokenName(aTok: AnsiChar): string;
 begin
   if ord(aTok) <= LastSpecialToken then
     Result:=TokNames[ord(aTok)]
@@ -87,7 +88,7 @@ begin
   Result:=IsAlpha or IsNumber;
 end;
 
-function TParser.GetHexValue(c: char): byte; {$ifdef CLASSESINLINE} inline; {$endif CLASSESINLINE}
+function TParser.GetHexValue(c: AnsiChar): byte; {$ifdef CLASSESINLINE} inline; {$endif CLASSESINLINE}
 begin
   case c of
     '0'..'9' : Result:=ord(c)-$30;
@@ -126,6 +127,8 @@ begin
 end;
 
 procedure TParser.SkipBOM;
+const
+  sbom : string[3] = #$EF#$BB#$BF;
 var
   i : integer;
   bom : string[3];
@@ -141,7 +144,7 @@ begin
     CheckLoadBuffer;
     inc(i);
   end;
-  if (bom<>(#$EF+#$BB+#$BF)) then
+  if (bom<>sBom) then
     fPos:=backup;
 end;
 
@@ -259,7 +262,7 @@ begin
 end;
 
 procedure TParser.HandleDecimalCharacter(var ascii: boolean; out
-  WideChr: widechar; out StringChr: char);
+  WideChr: widechar; out StringChr: AnsiChar);
 var i : integer;
 begin
   inc(fPos);
@@ -285,7 +288,7 @@ procedure TParser.HandleString;
 var ascii : boolean;
   s: string;
   w: WideChar;
-  c: char;
+  c: AnsiChar;
 begin
   fLastTokenWStr:='';
   fLastTokenStr:='';
@@ -313,7 +316,7 @@ begin
     end;
   end;
   if ascii then
-    fToken:=Classes.toString
+    fToken:={$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}Classes.toString
   else
     fToken:=toWString;
 end;
@@ -374,7 +377,7 @@ begin
   FreeMem(fBuf);
 end;
 
-procedure TParser.CheckToken(T: Char);
+procedure TParser.CheckToken(T: AnsiChar);
 begin
   if fToken<>T then
     ErrorFmt(SParWrongTokenType,[GetTokenName(T),GetTokenName(fToken)]);
@@ -433,7 +436,7 @@ begin
   NextToken;
 end;
 
-function TParser.NextToken: Char;
+function TParser.NextToken: AnsiChar;
 
 begin
   SkipWhiteSpace;

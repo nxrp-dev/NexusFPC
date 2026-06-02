@@ -21,12 +21,18 @@
 {$mode objfpc}{$H+}
 {$modeswitch nestedprocvars}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 Unit roo;
+{$ENDIF FPC_DOTTEDUNITS}
 {$i direct.inc}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses NumLib.Typ, NumLib.Spe;
+{$ELSE FPC_DOTTEDUNITS}
 uses typ, spe;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {Find the all roots of the binomial eq. x^n=a, with "a" a complex number}
 
@@ -55,7 +61,7 @@ Procedure rooqua(p, q: ArbFloat; Var z1, z2: complex);
 Procedure roofnr(f: roofnrfunc; n: ArbInt; Var x, residu: ArbFloat; re: ArbFloat;
                  Var term: ArbInt);
 
-{ term : 1     succesful termination
+{ term : 1     successful termination
          2     Couldn't reach the specified precision
                Value X is the best one which could be found.
          3     Wrong input
@@ -153,7 +159,7 @@ Procedure roof1r(f: rfunc1r; a, b, ae, re: ArbFloat; Var x: ArbFloat;
 
 begin
   roof1rn(@nested_f, a, b, ae, re, x, term);
-end;  
+end;
 
 Procedure roof1rn(f: rfunc1rn; a, b, ae, re: ArbFloat; Var x: ArbFloat;
                  Var term: ArbInt);
@@ -511,7 +517,7 @@ Begin
     End
 End {rooqua};
 
-Procedure roo001(uplo, trans, diag: char; n: ArbInt; Var ap1, x1: ArbFloat;
+Procedure roo001(uplo, trans, diag: AnsiChar; n: ArbInt; Var ap1, x1: ArbFloat;
                  incx: ArbInt);
 
 Var
@@ -618,7 +624,7 @@ Begin
     End
 End;
 
-Procedure roo002(uplo, trans, diag: char; n: ArbInt;
+Procedure roo002(uplo, trans, diag: AnsiChar; n: ArbInt;
                   Var ap1, x1: ArbFloat; incx: ArbInt );
 
 Var ap : arfloat1 absolute ap1;
@@ -914,7 +920,7 @@ Begin
     End
 End;
 
-Procedure roo006(trans: char; m, n: ArbInt; alpha: ArbFloat; Var a1: ArbFloat;
+Procedure roo006(trans: AnsiChar; m, n: ArbInt; alpha: ArbFloat; Var a1: ArbFloat;
                  lda: ArbInt; Var x1: ArbFloat; incx : ArbInt; beta: ArbFloat;
                  Var y1: ArbFloat; incy : ArbInt);
 

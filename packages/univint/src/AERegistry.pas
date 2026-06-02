@@ -1,17 +1,17 @@
 {
      File:       AE/AERegistry.h
- 
+
      Contains:   AppleEvents Registry Interface.
- 
-    
- 
+
+
+
      Copyright:  © 1993-2008 by Apple Computer, Inc., all rights reserved
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 {
     Modified for use with Free Pascal
@@ -27,7 +27,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit AERegistry;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -212,7 +214,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.ATSTypes,MacOsApi.MacErrors,MacOsApi.AppleEvents,MacOsApi.AEDataModel;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,ATSTypes,MacErrors,AppleEvents,AEDataModel;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 

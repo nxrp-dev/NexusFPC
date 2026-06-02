@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit logger;
+{$ENDIF FPC_DOTTEDUNITS}
 {
   $Id: logger.pas,v 1.2 2006/11/26 16:58:04 savage Exp $
 
@@ -69,7 +71,7 @@ unit logger;
   Revision 1.1  2004/02/05 00:08:20  savage
   Module 1.0 release
 
-  
+
 }
 
 {$I jedi-sdl.inc}
@@ -78,9 +80,15 @@ unit logger;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes,
+  System.SysUtils;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes,
   SysUtils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   TLogger = class
@@ -186,4 +194,4 @@ begin
 end;
 
 end.
- 
+

@@ -22,7 +22,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CTTextTab;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -207,7 +209,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CTParagraphStyle,MacOsApi.CFBase,MacOsApi.CFCharacterSet,MacOsApi.CFDictionary;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CTParagraphStyle,CFBase,CFCharacterSet,CFDictionary;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -336,7 +342,7 @@ function CTTextTabGetLocation( tab: CTTextTabRef ): Float64; external name '_CTT
 
 {!
 	@function	CTTextTabGetOptions
-	@abstract	Returns the dictionary of attributes associated with the tab. 
+	@abstract	Returns the dictionary of attributes associated with the tab.
 
 	@param		tab
 				The tab whose attributes you wish to access.

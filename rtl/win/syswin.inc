@@ -201,7 +201,7 @@ begin
     CurFilt:=@PFilterRec(Filter+sizeof(Longint))[i];
     if (CurFilt^.RvaClass=$FFFFFFFF) or
       { TODO: exception might be coming from another module, need more advanced comparing }
-      (ExClass.InheritsFrom({$if not defined(ver3_0) and not defined(ver3_2)}PClass(imagebase+CurFilt^.RvaClass)^{$else}TClass(imagebase+CurFilt^.RvaClass){$endif})) then
+      (ExClass.InheritsFrom({$if not defined(ver3_2)}PClass(imagebase+CurFilt^.RvaClass)^{$else}TClass(imagebase+CurFilt^.RvaClass){$endif})) then
     begin
       result:=Pointer(imagebase+CurFilt^.RvaHandler);
       exit;
@@ -213,149 +213,140 @@ end;
                               Parameter Handling
 *****************************************************************************}
 
+function WideCharToMultiByte(CodePage:UINT; dwFlags:DWORD; lpWideCharStr:PWideChar; cchWideChar:longint;
+  lpMultiByteStr:LPSTR;cchMultiByte:longint; lpDefaultChar:PAnsiChar; lpUsedDefaultChar:PLongBool):longint; stdcall; external 'kernel32' name 'WideCharToMultiByte';
+function GetCommandLineA : pansichar; stdcall;external KernelDLL name 'GetCommandLineA';
+
+type
+  { nargs — argument count (without first and without null terminator),
+    nchars — total widechar count in arguments (with null terminators),
+    nachars — total ansichar count in arguments (with null terminators), counted only if args = chars = nil. }
+  ParseCommandLineResult = record
+    nargs, nchars, nachars: SizeInt;
+  end;
+
+function ParseCommandLine(cmdLine: PWideChar; args: PPWideChar; chars: PWideChar): ParseCommandLineResult;
 var
-  argvw: PPWideChar;
+  argsStartInCmdLine: PWideChar;
+  nCharsUpToPrevArg, nCharsPlusQuotes: SizeInt;
+  c, quote: WideChar;
+  skippingFirstArg: boolean;
+begin
+  argsStartInCmdLine:=cmdLine;
+  nCharsUpToPrevArg:=0;
+  FillChar(result,sizeof(result),0);
+  skippingFirstArg:=true;
+  quote:=' ';
+  repeat
+    c:=cmdLine^;
+    inc(cmdLine);
+    case c of
+      #0..#32:
+        if (quote=' ') or (c=#0) then
+          begin
+            if (result.nchars>nCharsUpToPrevArg) then
+              begin
+                // End of an argument found
+                if Assigned(chars) then
+                  chars[result.nchars]:=#0;
+                inc(result.nchars); { Null terminator. }
+                nCharsUpToPrevArg:=result.nchars;
+              end;
+            skippingFirstArg:=false;
+            if c = #0 then
+              break;
+            continue; // Skip whitespace
+          end;
+      '"', '''':
+        if (c='"') and (quote<>'''') or (c='''') and (quote<>'"') then
+          if cmdLine^<>c then
+            begin
+              if quote=c then
+                 quote:=' '
+               else
+                 quote:=c;
+               continue;
+            end
+          else
+            inc(cmdLine);
+    end;
+    if skippingFirstArg then
+      continue;
+    if result.nchars=nCharsUpToPrevArg then
+      begin
+        if Assigned(args) then
+          args[result.nargs]:=chars+result.nchars;
+        inc(result.nargs);
+        if result.nchars=0 then
+          argsStartInCmdLine:=cmdLine-1;
+      end;
+    if Assigned(chars) then
+      chars[result.nchars]:=c;
+    inc(result.nchars);
+  until false;
+
+  if Assigned(chars) then
+    exit;
+  { Number of widechars in command line starting from argsStartInCmdLine, including markdown: cmdLine - 1 - argsStartInCmdLine. Avoid implicit signed div. }
+  nCharsPlusQuotes:=SizeUint(pointer(cmdLine-1)-pointer(argsStartInCmdLine)) div sizeof(widechar);
+  result.nachars:=
+    { Count of ANSI characters, including markdown. }
+    WideCharToMultiByte(DefaultSystemCodePage, 0, argsStartInCmdLine, nCharsPlusQuotes, nil, 0, nil, nil)
+    { Assume each markdown character (quote, space) is ANSI. Subtract markdown, add null terminators; result.nchars already includes null terminators. }
+    -(nCharsPlusQuotes-result.nchars);
+end;
+
+var
+  argvw: PPWideChar; { Start of the memory region. Should very preferably be private as argv can (and WILL, by LazUTF8) be changed from outside. }
 
 procedure setup_arguments;
 var
-  CmdLineW, pw: PWideChar;
-  c: WideChar;
+  CmdLineW, wchars: PWideChar;
   buf: array[0..MaxPathLen] of WideChar;
-  i, len, argvw_size: longint;
-  s: RawByteString;
-  quote: char;
+  iarg, nArg0W, nArg0A: SizeInt;
+  pc: ParseCommandLineResult;
+  achars, acharse: PAnsiChar;
 begin
-  // Get the unicode command line
+  CmdLine:=GetCommandLineA;
   CmdLineW:=GetCommandLineW;
-  // Create the ansi command line
-  s:=ansistring(CmdLineW);
-  len:=Length(s) + 1;
-  CmdLine:=SysGetMem(len);
-  Move(PAnsiChar(s)^, CmdLine^, len);
-  // Alloc initial space for argvw
-  if CmdLineW^ = #0 then
-    argvw_size:=2
-  else
-    argvw_size:=10;
-  argvw:=SysGetMem(argvw_size*SizeOf(pointer));
-  // Get the full module name to be used as the first argument
-  len:=GetModuleFileNameW(0, @buf, Length(buf));
-  // Alloc maximum possible space for all arguments
-  pw:=SysGetMem((len + IndexWord(CmdLineW^, High(longint), 0) + 2)*SizeOf(WideChar));
-  // Copy the module name as the first argument. It will be nil terminated later
-  Move(buf, pw^, len*SizeOf(WideChar));
-  argvw[0]:=pw;
-  Inc(pw, len);
-  // Parse the command line
-  argc:=0;
-  quote:=' ';
-  while True do
-    begin
-      c:=CmdLineW^;
-      Inc(CmdLineW);
-      case c of
-        #0..#32:
-          if (quote = ' ') or (c = #0) then
-            begin
-              // Are there any chars of an argument?
-              if argvw[argc] <> pw then
-                begin
-                  // End of an argument found
-                  pw^:=#0;
-                  Inc(pw);
-                  Inc(argc);
-                  if argc = argvw_size then
-                    begin
-                      // Increase the argvw space
-                      Inc(argvw_size, argvw_size shr 1);
-                      SysReAllocMem(argvw, argvw_size*SizeOf(pointer));
-                    end;
-                  if c = #0 then
-                    break;
-                  argvw[argc]:=pw;
-                  continue;
-                end
-              else
-                if c = #0 then
-                  break
-                else
-                  continue; // Skip whitespace
-            end;
-        '"':
-          begin
-            if quote<>'''' then
-              begin
-                if CmdLineW^<>'"' then
-                  begin
-                    if quote='"' then
-                       quote:=' '
-                     else
-                       quote:='"';
-                     continue;
-                  end
-                else
-                  Inc(CmdLineW);
-              end;
-          end;
-        '''':
-          begin
-            if quote<>'"' then
-              begin
-                if CmdLineW^<>'''' then
-                  begin
-                    if quote='''' then
-                       quote:=' '
-                     else
-                       quote:='''';
-                    continue;
-                  end
-                else
-                  Inc(CmdLineW);
-              end;
-          end;
-      end;
-      // Ignore the first argument, it is already copied
-      if argc <> 0 then
-        begin
-          // Copy the argument's char
-          pw^:=c;
-          Inc(pw);
-        end;
-    end;
+  nArg0W:=GetModuleFileNameW(0, PWideChar(buf), Length(buf));
+  nArg0A:=WideCharToMultiByte(DefaultSystemCodePage, 0, PWideChar(buf), nArg0W, nil, 0, nil, nil);
+  pc:=ParseCommandLine(CmdLineW, nil, nil);
+  argc:=pc.nargs+1;
 
-  // Finalization
-  // argvw is terminated by nil
-  argvw[argc]:=nil;
-  // Trim the memory
-  SysReAllocMem(argvw, (argc + 1)*SizeOf(pointer));
-  SysReAllocMem(argvw[0], ptruint(pw) - ptruint(argvw[0]));
+  { Memory region layout:
+    argc × PWideChar: argvw (internal, not terminated with nil).
+    (argc + 1) × PAnsiChar: argv (terminated with nil).
+    Nw × widechar: chars for argvw.
+    Na × ansichar: chars for argv. }
+  argvw:=nil;
+  repeat { First iteration calculates region size (by adding to nil). Second iteration calculates pointers to region parts (by adding to region start). }
+    argv:=PPAnsiChar(argvw+argc);
+    wchars:=PWideChar(argv+argc+1);
+    achars:=PAnsiChar(wchars+nArg0W+1+pc.nchars);
+    acharse:=achars+nArg0A+1+pc.nachars;
+    if Assigned(argvw) then
+      break;
+    argvw:=SysGetMem(PtrUint(acharse));
+  until not Assigned(argvw); { If ReturnNilIfGrowHeapFails was customized to true, let it crash on allocation failure instead of looping endlessly. }
 
-  // Construct the ansi argv
-  argv:=SysGetMem((argc + 1)*SizeOf(pointer));
-  for i:=0 to argc - 1 do
+  Move(PWideChar(buf)^, wchars^, nArg0W*sizeof(widechar));
+  wchars[nArg0W]:=#0;
+  argvw[0]:=wchars;
+  ParseCommandLine(CmdLineW, argvw+1, wchars+nArg0W+1);
+
+  { Convert argvw to argv. }
+  for iarg:=0 to pc.nargs do
     begin
-      // Convert argvw[i] to argv[i]
-      s:=ansistring(argvw[i]);
-      len:=Length(s) + 1;
-      argv[i]:=SysGetMem(len);
-      Move(s[1], argv[i]^, len);
+      argv[iarg]:=achars;
+      inc(achars, WideCharToMultiByte(DefaultSystemCodePage, 0, argvw[iarg], -1, achars, acharse-achars, nil, nil));
     end;
-  // argv is terminated by nil
   argv[argc]:=nil;
 end;
 
-procedure finalize_arguments;
-var
-  i: longint;
+procedure finalize_arguments; inline;
 begin
-  SysFreeMem(CmdLine);
-  // Free unicode arguments
-  SysFreeMem(argvw[0]);
   SysFreeMem(argvw);
-  // Free ansi arguments
-  for i:=0 to argc - 1 do
-    SysFreeMem(argv[i]);
-  SysFreeMem(argv);
 end;
 
 function paramcount : longint;
@@ -376,7 +367,7 @@ begin
   Result:=AnsiString(ParamStrU(l));
 end;
 
-Function ParamStr(l:Longint): string;
+Function ParamStr(l:Longint): shortstring;
 begin
   if (l >= 0) and (l < argc) then
     Result:=argv[l]
@@ -410,13 +401,16 @@ function Dll_entry{$ifdef FPC_HAS_INDIRECT_ENTRY_INFORMATION}(constref info : TE
      case DLLreason of
        DLL_PROCESS_ATTACH :
          begin
-           MainThreadIdWin32 := Win32GetCurrentThreadId;
+           DllProcessAttachPerformed := true;
 
            If SetJmp(DLLBuf) = 0 then
              begin
 {$ifdef FPC_USE_SEH}
                try
 {$endif}
+{$ifndef LEGACYHEAP}
+               DeferInitHeapProcessWide;
+{$endif ndef LEGACYHEAP}
 {$ifdef FPC_HAS_INDIRECT_ENTRY_INFORMATION}
                EntryInformation.PascalMain();
 {$else FPC_HAS_INDIRECT_ENTRY_INFORMATION}
@@ -457,7 +451,7 @@ function Dll_entry{$ifdef FPC_HAS_INDIRECT_ENTRY_INFORMATION}(constref info : TE
          end;
        DLL_PROCESS_DETACH :
          begin
-           if MainThreadIDWin32=0 then // already been here.
+           if not DllProcessAttachPerformed then // already been here.
              exit;
            If SetJmp(DLLBuf) = 0 then
              begin
@@ -466,10 +460,13 @@ function Dll_entry{$ifdef FPC_HAS_INDIRECT_ENTRY_INFORMATION}(constref info : TE
                InternalExit;
              end;
 
+{$ifndef LEGACYHEAP}
+           DoneHeapProcessWide; { Iterates alive “HeapInc.ThreadState”s so requires alive threadvars, careful. }
+{$endif ndef LEGACYHEAP}
            SysReleaseThreadVars;
            { Free TLS resources used by ThreadVars }
            SysFiniMultiThreading;
-           MainThreadIDWin32:=0;
+           DllProcessAttachPerformed:=false;
          end;
      end;
      DllInitState:=-1;
@@ -480,52 +477,88 @@ function Dll_entry{$ifdef FPC_HAS_INDIRECT_ENTRY_INFORMATION}(constref info : TE
                     Error Message writing using messageboxes
 ****************************************************************************}
 
-function MessageBox(w1:THandle;l1,l2:pointer;w2:longint):longint;
+function MessageBox(hWnd:THandle;lpText,lpCaption:PAnsiChar;uType:uint32):longint;
    stdcall;external 'user32' name 'MessageBoxA';
 
 const
   ErrorBufferLength = 1024;
 var
-  ErrorBuf : array[0..ErrorBufferLength] of char;
+  ErrorBuf : array[0..ErrorBufferLength] of AnsiChar;
   ErrorLen : SizeInt;
+
+procedure ShowError(final: boolean);
+const
+  IDCANCEL = 2;
+var
+  showStart, showEnd, tailStart, errLen: SizeInt;
+begin
+  errLen:=ErrorLen; { Local copy of ErrorLen, to soften (when multithreading) or avoid (with single thread) reenterancy issues. }
+  { See e.g. comment in ErrorOpen about why not set ErrorLen := 0 there. }
+  tailStart:=errLen;
+  if tailStart=0 then
+    exit;
+
+  { Search for last line ending to show prettier message.
+    line1 #13 #10 line2 #13 #10 line3
+                        ^       ^
+                   showEnd     tailStart
+    #0 is then written at showEnd (possibly overwriting EOL character). In the worst case of race, there always will be #0 at ErrorBufferLength. }
+  if not final then
+    begin
+      while (tailStart>ErrorBufferLength div 2) and not (ErrorBuf[tailStart-1] in [#13,#10]) do
+        dec(tailStart);
+      if tailStart=ErrorBufferLength div 2 then
+        tailStart:=errLen;
+    end;
+
+  if not NoErrMsg then
+    begin
+      { Strip trailing EOLs even if final. Required when not final (to have a spare character for #0), but even if final, they aren’t pretty and don’t add to anything. }
+      showEnd:=tailStart;
+      while (showEnd>0) and (ErrorBuf[showEnd-1] in [#13,#10]) do
+        dec(showEnd);
+
+      { Also strip starting EOLs. }
+      showStart:=0;
+      while (showStart<showEnd) and (ErrorBuf[showStart] in [#13,#10]) do
+        inc(showStart);
+
+      ErrorBuf[showEnd]:=#0;
+      NoErrMsg:=NoErrMsg or (MessageBox(0,@ErrorBuf[showStart],nil,ord(not final) {MB_OK is 0 and MB_OKCANCEL is 1})=IDCANCEL);
+    end;
+
+  dec(errLen,tailStart);
+  Move(ErrorBuf[tailStart],ErrorBuf[0],errLen*sizeof(ErrorBuf[0]));
+  ErrorLen:=errLen;
+end;
 
 procedure ErrorWrite(Var F: TextRec);
 {
   An error message should always end with #13#10#13#10
 }
 var
-  i : SizeInt;
+  i,errLen : SizeInt;
 Begin
   while F.BufPos>0 do
     begin
-      begin
-        if F.BufPos+ErrorLen>ErrorBufferLength then
-          i:=ErrorBufferLength-ErrorLen
-        else
-          i:=F.BufPos;
-        Move(F.BufPtr^,ErrorBuf[ErrorLen],i);
-        inc(ErrorLen,i);
-        ErrorBuf[ErrorLen]:=#0;
-      end;
-      if ErrorLen=ErrorBufferLength then
-        begin
-          if not NoErrMsg then
-            MessageBox(0,@ErrorBuf,pchar('Error'),0);
-          ErrorLen:=0;
-        end;
+      errLen:=ErrorLen; { Not required for single thread unlike in ShowError, but still prevents crashes on races. }
+      i:=ErrorBufferLength-errLen;
+      if i>F.BufPos then
+        i:=F.BufPos;
+      Move(F.BufPtr^,ErrorBuf[errLen],i);
+      inc(errLen,i);
+      ErrorLen:=errLen;
+      if errLen=ErrorBufferLength then
+        ShowError(false);
       Dec(F.BufPos,i);
+      Move(PAnsiChar(F.BufPtr^)[i],F.BufPtr^[0],F.BufPos);
     end;
 End;
 
 
 procedure ErrorClose(Var F: TextRec);
 begin
-  if ErrorLen>0 then
-   begin
-     MessageBox(0,@ErrorBuf,pchar('Error'),0);
-     ErrorLen:=0;
-   end;
-  ErrorLen:=0;
+  ShowError(true);
 end;
 
 
@@ -534,7 +567,7 @@ Begin
   TextRec(F).InOutFunc:=@ErrorWrite;
   TextRec(F).FlushFunc:=@ErrorWrite;
   TextRec(F).CloseFunc:=@ErrorClose;
-  ErrorLen:=0;
+  { Better not to set ErrorLen := 0 here: MessageBox performed by ShowError might/will lead to TLS callbacks that might/will open their own stderrs... }
 End;
 
 
@@ -577,14 +610,9 @@ begin
    end;
 end;
 
-{ ProcessID cached to avoid repeated calls to GetCurrentProcess. }
-
-var
-  ProcessID: SizeUInt;
-
 function GetProcessID: SizeUInt;
   begin
-    GetProcessID := ProcessID;
+    GetProcessID := GetCurrentProcessID;
   end;
 
 
@@ -596,9 +624,9 @@ const
   MB_PRECOMPOSED = 1;
   WC_NO_BEST_FIT_CHARS = $400;
 
-function MultiByteToWideChar(CodePage:UINT; dwFlags:DWORD; lpMultiByteStr:PChar; cchMultiByte:longint; lpWideCharStr:PWideChar;cchWideChar:longint):longint;
+function MultiByteToWideChar(CodePage:UINT; dwFlags:DWORD; lpMultiByteStr:PAnsiChar; cchMultiByte:longint; lpWideCharStr:PWideChar;cchWideChar:longint):longint;
     stdcall; external 'kernel32' name 'MultiByteToWideChar';
-function WideCharToMultiByte(CodePage:UINT; dwFlags:DWORD; lpWideCharStr:PWideChar; cchWideChar:longint; lpMultiByteStr:PChar;cchMultiByte:longint; lpDefaultChar:PChar; lpUsedDefaultChar:pointer):longint;
+function WideCharToMultiByte(CodePage:UINT; dwFlags:DWORD; lpWideCharStr:PWideChar; cchWideChar:longint; lpMultiByteStr:PAnsiChar;cchMultiByte:longint; lpDefaultChar:PAnsiChar; lpUsedDefaultChar:pointer):longint;
     stdcall; external 'kernel32' name 'WideCharToMultiByte';
 function CharUpperBuff(lpsz:LPWSTR; cchLength:DWORD):DWORD;
     stdcall; external 'user32' name 'CharUpperBuffW';
@@ -621,7 +649,7 @@ procedure Win32Unicode2AnsiMove(source:punicodechar;var dest:RawByteString;cp : 
       end;
   end;
 
-procedure Win32Ansi2UnicodeMove(source:pchar;cp : TSystemCodePage;var dest:UnicodeString;len:SizeInt);
+procedure Win32Ansi2UnicodeMove(source:PAnsiChar;cp : TSystemCodePage;var dest:UnicodeString;len:SizeInt);
   var
     destlen: SizeInt;
     dwflags: DWORD;
@@ -637,7 +665,7 @@ procedure Win32Ansi2UnicodeMove(source:pchar;cp : TSystemCodePage;var dest:Unico
       end;
     destlen:=MultiByteToWideChar(cp, dwFlags, source, len, nil, 0);
     { destlen=0 means that Windows cannot convert, so call the default
-      handler. This is similiar to what unix does and is a good fallback
+      handler. This is similar to what unix does and is a good fallback
       if rawbyte strings are passed }
     if destlen=0 then
       begin
@@ -675,7 +703,7 @@ function Win32UnicodeLower(const s : UnicodeString) : UnicodeString;
                               Widestring
  ******************************************************************************}
 
-procedure Win32Ansi2WideMove(source:pchar;cp : TSystemCodePage;var dest:widestring;len:SizeInt);
+procedure Win32Ansi2WideMove(source:PAnsiChar;cp : TSystemCodePage;var dest:widestring;len:SizeInt);
   var
     destlen: SizeInt;
     dwFlags: DWORD;
@@ -743,14 +771,13 @@ function Win32GetStandardCodePage(const stdcp: TStandardCodePageEnum): TSystemCo
     end;
   end;
 
-{ there is a similiar procedure in sysutils which inits the fields which
+{ there is a similar procedure in sysutils which inits the fields which
   are only relevant for the sysutils units }
 procedure InitWin32Widestrings;
   var
     i: longint;
     ptable: PWStrInitEntry;
   begin
-{$if not(defined(VER2_2) or defined(VER2_4))}
     { assign initial values to global Widestring typed consts }
     for i:=1 to WStrInitTablesTable^.count do
       begin
@@ -761,7 +788,6 @@ procedure InitWin32Widestrings;
             Inc(ptable);
           end;
       end;
-{$endif}
 
     { Note: since WideChar=UnicodeChar and PWideChar=PUnicodeChar,
       Wide2AnsiMoveProc is identical to Unicode2AnsiStrMoveProc. }
@@ -789,14 +815,14 @@ type
   WINBOOL = longbool;
   PHANDLER_ROUTINE = function (dwCtrlType:DWORD):WINBOOL; stdcall;
 
-function SetConsoleCtrlHandler(HandlerRoutine:PHANDLER_ROUTINE; Add:WINBOOL):WINBOOL; stdcall; 
+function SetConsoleCtrlHandler(HandlerRoutine:PHANDLER_ROUTINE; Add:WINBOOL):WINBOOL; stdcall;
   external 'kernel32' name 'SetConsoleCtrlHandler';
 
 function WinCtrlBreakHandler(dwCtrlType:DWORD): WINBOOL;stdcall;
 const
   CTRL_BREAK_EVENT = 1;
 begin
-  if Assigned(CtrlBreakHandler) then 
+  if Assigned(CtrlBreakHandler) then
     Result:=CtrlBreakHandler((dwCtrlType and CTRL_BREAK_EVENT > 0))
   else
     Result:=false;
@@ -805,7 +831,7 @@ end;
 function SysSetCtrlBreakHandler (Handler: TCtrlBreakHandler): TCtrlBreakHandler;
 begin
   (* Return either nil or previous handler *)
-  if (Assigned(CtrlBreakHandler)) and (not Assigned(Handler)) then   
+  if (Assigned(CtrlBreakHandler)) and (not Assigned(Handler)) then
     SetConsoleCtrlHandler(@WinCtrlBreakHandler, false)
   else if (not Assigned(CtrlBreakHandler)) and (Assigned(Handler)) then
     SetConsoleCtrlHandler(@WinCtrlBreakHandler, true);
@@ -814,7 +840,7 @@ begin
   CtrlBreakHandler := Handler;
 end;
 
-procedure WinFinalizeSystem;
+procedure WinFinalizeSystem; inline;
 begin
   finalize_arguments;
 end;

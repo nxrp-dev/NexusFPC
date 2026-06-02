@@ -3514,7 +3514,7 @@ wpo_cant_create_feedback_file=12019_E_Impossível criar arquivo retorno otimiza�
 #
 option_logo=11023_[
 Compilador Free Pascal versão $FPCFULLVERSION [$FPCDATE] para $FPCCPU
-Copyright (c) 1993-2023 by Florian Klaempfl and others
+Copyright (c) 1993-2026 by Florian Klaempfl and others
 ]
 
 #
@@ -3617,7 +3617,7 @@ S*2Aas_Monta usando o GNU AS
 **2bl_Gera informações símbolos locais
 **1B_Constrói todos os módulos
 **1C<x>_Opções geração de código:
-**2C3<x>_Ligar verificação de erro ieee para constantes
+**2C3<x>_Ligar verificação de erro IEEE para constantes
 **2Ca<x>_Seleciona ABI, veja fpc -i para possíveis valores
 **2Cb_Gera código 'big-endian'
 **2Cc<x>_Ajusta convenção de chamada para <x>

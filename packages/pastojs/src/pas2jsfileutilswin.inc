@@ -28,7 +28,7 @@ var
   ArgsWCount: Integer; // length(ArgsW)+1
   {$IFDEF ArgsWAsUTF8}
   ArgsUTF8: Array of String; // the ArgsW array as UTF8
-  OldArgV: PPChar = nil;
+  OldArgV: PPAnsiChar = nil;
   {$IFEND}
 
 {$ifndef wince}
@@ -73,7 +73,7 @@ begin
   for i:=0 to length(ArgsW)-1 do
   begin
     ArgsUTF8[i]:=ArgsW{%H-}[i];
-    argv[i]:=PChar(ArgsUTF8[i]);
+    argv[i]:=PAnsiChar(ArgsUTF8[i]);
   end;
 end;
 {$endif}
@@ -247,13 +247,13 @@ begin
   begin
     res := GetCurrentDirectoryW(0, nil);
     SetLength(SavedDir{%H-}, res);
-    res:=Windows.GetCurrentDirectoryW(res, @SavedDir[1]);
+    res:={$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.GetCurrentDirectoryW(res, @SavedDir[1]);
     SetLength(SavedDir,res);
 
     D := WideChar(64 + DriveNr) + ':';
     if not SetCurrentDirectoryW(@D[1]) then
     begin
-      Dir := Char(64 + DriveNr) + ':\';
+      Dir := AnsiChar(64 + DriveNr) + ':\';
       SetCurrentDirectoryW(@SavedDir[1]);
       Exit;
     end;
@@ -273,7 +273,7 @@ var
   IsAbs, StartsWithRoot, CanUseBaseDir : Boolean;
   {$ifndef WinCE}
   HasDrive: Boolean;
-  FnDrive, CurDrive, BaseDirDrive: Char;
+  FnDrive, CurDrive, BaseDirDrive: AnsiChar;
   {$endif}
   CurDir, Fn: String;
 begin
@@ -392,7 +392,7 @@ begin
   {$else}
   res:=GetCurrentDirectoryW(0, nil);
   SetLength(w{%H-}, res);
-  res:=Windows.GetCurrentDirectoryW(res, @w[1]);
+  res:={$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.GetCurrentDirectoryW(res, @w[1]);
   SetLength(w, res);
   Result:=UTF16ToUTF8(w);
   {$endif}
@@ -463,7 +463,7 @@ end;
 
 function FileGetAttrUTF8(const FileName: String): Longint;
 begin
-  Result:=Integer(Windows.GetFileAttributesW(PWideChar(UTF8Decode(FileName))));
+  Result:=Integer({$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.GetFileAttributesW(PWideChar(UTF8Decode(FileName))));
 end;
 
 function FileIsWritable(const AFilename: string): boolean;
@@ -512,7 +512,7 @@ end;
 
 function GetEnvironmentVariablePJ(const EnvVar: string): String;
 begin
-  Result:=UTF16ToUTF8(SysUtils.GetEnvironmentVariable(UTF8ToUTF16(EnvVar)));
+  Result:=UTF16ToUTF8({$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SysUtils.GetEnvironmentVariable(UTF8ToUTF16(EnvVar)));
 end;
 
 // AConsole - If false, it is the general system encoding,
@@ -536,120 +536,7 @@ begin
   end;
 end;
 
-function GetConsoleTextEncoding: string;
-begin
-  Result:=GetWindowsEncoding(True);
-end;
-
-{$ifdef WinCe}
-function UTF8ToSystemCP(const s: string): string; inline;
-begin
-  Result := s;
-end;
-{$else}
-function UTF8ToSystemCP(const s: string): string;
-// result has codepage CP_ACP
-var
-  src: UnicodeString;
-  len: LongInt;
-begin
-  Result:=s;
-  if IsASCII(Result) then
-  begin
-    // prevent codepage conversion magic
-    SetCodePage(RawByteString(Result), CP_ACP, False);
-    exit;
-  end;
-  src:=UTF8Decode(s);
-  if src='' then
-    exit;
-  len:=WideCharToMultiByte(CP_ACP,0,PUnicodeChar(src),length(src),nil,0,nil,nil);
-  SetLength(Result,len);
-  if len>0 then
-  begin
-    WideCharToMultiByte(CP_ACP,0,PUnicodeChar(src),length(src),@Result[1],length(Result),nil,nil);
-    // prevent codepage conversion magic
-    SetCodePage(RawByteString(Result), CP_ACP, False);
-  end;
-end;
-{$endif not wince}
-
-{$ifdef WinCE}
-function SystemCPToUTF8(const s: string): string; inline;
-begin
-  Result := SysToUtf8(s);
-end;
-{$else}
-// for all Windows supporting 8bit codepages (e.g. not WinCE)
-function SystemCPToUTF8(const s: string): string;
-// result has codepage CP_ACP
-var
-  UTF16WordCnt: SizeInt;
-  UTF16Str: UnicodeString;
-begin
-  Result:=s;
-  if IsASCII(Result) then
-  begin
-    // prevent codepage conversion magic
-    SetCodePage(RawByteString(Result), CP_ACP, False);
-    exit;
-  end;
-  UTF16WordCnt:=MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, Pointer(s), length(s), nil, 0);
-  // this will null-terminate
-  if UTF16WordCnt>0 then
-  begin
-    setlength(UTF16Str{%H-}, UTF16WordCnt);
-    MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, Pointer(s), length(s), @UTF16Str[1], UTF16WordCnt);
-    Result:=UTF16ToUTF8(UTF16Str);
-  end;
-end;
-{$endif not wince}
-
-{$ifdef WinCe}
-function UTF8ToConsole(const s: string): string; // converts UTF8 to console string (used by Write, WriteLn)
-begin
-  Result := UTF8ToSystemCP(s);
-end;
-{$else}
-function UTF8ToConsole(const s: string): string; // converts UTF8 to console string (used by Write, WriteLn)
-var
-  Dst: PChar;
-begin
-  {$ifndef NO_CP_RTL}
-  Result := UTF8ToSystemCP(s);
-  {$else NO_CP_RTL}
-  Result := s; // Kept for compatibility
-  {$endif NO_CP_RTL}
-  Dst := AllocMem((Length(Result) + 1) * SizeOf(Char));
-  if CharToOEM(PChar(Result), Dst) then
-    Result := StrPas(Dst);
-  FreeMem(Dst);
-  {$ifndef NO_CP_RTL}
-  SetCodePage(RawByteString(Result), CP_OEMCP, False);
-  {$endif NO_CP_RTL}
-end;
-{$endif not WinCE}
-
-{$ifdef WinCE}
-function ConsoleToUTF8(const s: string): string;// converts console encoding to UTF8
-begin
-  Result := SysToUTF8(s);
-end;
-{$else}
-function ConsoleToUTF8(const s: string): string;// converts console encoding to UTF8
-var
-  Dst: PChar;
-begin
-  Dst := AllocMem((Length(s) + 1) * SizeOf(Char));
-  if OemToChar(PChar(s), Dst) then
-    Result := StrPas(Dst)
-  else
-    Result := s;
-  FreeMem(Dst);
-  Result := SystemCPToUTF8(Result);
-end;
-{$endif not wince}
-
+{$DEFINE HAVE_INITPLATFORM}
 procedure InitPlatform;
 begin
   {$ifndef WinCE}
@@ -670,10 +557,11 @@ begin
   end;
 end;
 
+{$DEFINE HAVE_FINALIZEPLATFORM}
 procedure FinalizePlatform;
 {$IFDEF ArgsWAsUTF8}
 var
-  p: PPChar;
+  p: PPAnsiChar;
 {$ENDIF}
 begin
   {$IFDEF ArgsWAsUTF8}

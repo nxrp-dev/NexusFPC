@@ -29,12 +29,19 @@
 
 {$mode objfpc}
 {$H+}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit RttiUtils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.SysUtils, System.Classes, {Graphics, MacOsApi.Controls, Forms,} System.TypInfo, System.StrUtils;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   SysUtils, Classes, {Graphics, Controls, Forms,} TypInfo, StrUtils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
 
@@ -64,7 +71,7 @@ type
   TEraseSectEvent = procedure(const ASection: string) of object;
   TPropStorageOption = (psoAlwaysStoreStringsCount);
   TPropStorageOptions = set of TPropStorageOption;
-  
+
   TPropsStorage = class(TObject)
   private
     FObject: TObject;
@@ -116,7 +123,7 @@ type
     procedure LoadProperties(PropList: TStrings);
     procedure LoadObjectsProps(AComponent: TComponent; StoredList: TStrings);
     procedure StoreObjectsProps(AComponent: TComponent; StoredList: TStrings);
-    Property Options : TPropStorageOptions Read FOptions Write FOptions; 
+    Property Options : TPropStorageOptions Read FOptions Write FOptions;
     property AObject: TObject read FObject write FObject;
     property Prefix: string read FPrefix write FPrefix;
     property Section: string read FSection write FSection;
@@ -469,8 +476,8 @@ begin
   List := TObject(GetObjectProp(Self.FObject, PropInfo));
   SectName := Format('%s.%s', [Section, GetItemName(PropInfo^.Name)]);
   EraseSection(SectName);
-  if (List is TStrings) 
-     and ((TStrings(List).Count > 0) or (psoAlwaysStoreStringsCount in Options)) then 
+  if (List is TStrings)
+     and ((TStrings(List).Count > 0) or (psoAlwaysStoreStringsCount in Options)) then
     begin
     WriteString(SectName, sCount, IntToStr(TStrings(List).Count));
     for I := 0 to TStrings(List).Count - 1 do

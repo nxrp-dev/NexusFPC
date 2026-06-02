@@ -24,7 +24,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit AudioHardwareDeprecated;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -209,7 +211,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes, MacOsApi.CFRunLoop, MacOsApi.CoreAudioTypes, MacOsApi.AudioHardwareBase, MacOsApi.AudioHardware;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes, CFRunLoop, CoreAudioTypes, AudioHardwareBase, AudioHardware;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -269,7 +275,7 @@ const
 
 {!
     @enum           AudioBooleanControl Subclass IDs
-    @abstract       The four char codes that identify the various standard subclasses of
+    @abstract       The four AnsiChar codes that identify the various standard subclasses of
                     AudioBooleanControl.
     @constant       kAudioISubOwnerClassID
                         An AudioBooleanControl where true means that the AudioDevice that
@@ -477,7 +483,7 @@ function AudioHardwareRemoveRunLoopSource( inRunLoopSource: CFRunLoopSourceRef )
                         on exit. This can be NULL if the size information is not being requested.
     @param          outWritable
                         A pointer to a Boolean that receives indication of whether or not the given
-                        property can be set. This can be NULL if the writability is not being
+                        property can be set. This can be NULL if the write ability is not being
                         requested.
     @result         An OSStatus indicating success or failure.
 }
@@ -914,7 +920,7 @@ function AudioDeviceRead( inDevice: AudioDeviceID; const (*var*) inStartTime: Au
                         on exit. This can be NULL if the size information is not being requested.
     @param          outWritable
                         A pointer to a Boolean that receives indication of whether or not the given
-                        property can be set. This can be NULL if the writability is not being
+                        property can be set. This can be NULL if the write ability is not being
                         requested.
     @result         An OSStatus indicating success or failure.
 }
@@ -1132,7 +1138,7 @@ const
                         on exit. This can be NULL if the size information is not being requested.
     @param          outWritable
                         A pointer to a Boolean that receives indication of whether or not the given
-                        property can be set. This can be NULL if the writability is not being
+                        property can be set. This can be NULL if the write ability is not being
                         requested.
     @result         An OSStatus indicating success or failure.
 }

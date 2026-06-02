@@ -14,11 +14,17 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit cd;
+{$ENDIF FPC_DOTTEDUNITS}
 
 INTERFACE
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses Amiga.Core.Exec;
+{$ELSE FPC_DOTTEDUNITS}
 uses exec;
+{$ENDIF FPC_DOTTEDUNITS}
   { Only V40+ }
 
 {*************************************************************************
@@ -107,7 +113,7 @@ const
    CDERR_InvalidState   = 37;   { invalid cmd under current conditions }
 
    CDERR_Phase          = 42;   { illegal or unexpected SCSI phase     }
-   CDERR_NoBoard        = 50;   { open failed for non-existant board   }
+   CDERR_NoBoard        = 50;   { open failed for non-existent board   }
 
 
 
@@ -223,7 +229,7 @@ Type
  *                                                                        *
  *      A CDXL node is a double link node; however only single linkage    *
  *      is used by the device driver.  If you wish to construct a         *
- *      transfer list manually, it is only neccessary to define the       *
+ *      transfer list manually, it is only necessary to define the        *
  *      mln_Succ pointer of the MinNode.  You may also use the Exec       *
  *      list functions by defining a List or MinList structure and by     *
  *      using the AddHead/AddTail functions to create the list.  This     *

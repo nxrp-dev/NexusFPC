@@ -14,12 +14,19 @@
 
  **********************************************************************}
 {$INCLUDE sdo_global.inc}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit sdo_fpc_xml;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, Xml.Dom;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, DOM;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
 
@@ -53,14 +60,19 @@ type
   function FindNode(ANode : TDOMNode;const ANodeName : string) : TDOMNode;{$IFDEF USE_INLINE}inline;{$ENDIF}
 
   function NodeToBuffer(ANode : TDOMNode):string ;
-  
+
 resourcestring
   SERR_NoNodeXpathExpression = 'This XPath expression does not correspond to node(s) : %s.';
   SERR_XpathExpectingOneNode = 'Xpath expression expecting a single node while got %d node : %s.';
 
 implementation
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  Xml.Writer, Xml.XPath;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   XMLWrite, xpath;
+{$ENDIF FPC_DOTTEDUNITS}
 
 function GetNodeItemsCount(const ANode : TDOMNode): Integer;
 var

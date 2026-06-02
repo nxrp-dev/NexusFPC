@@ -13,12 +13,15 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$H-}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 {$ifdef FV_UNICODE}
 unit uoutline;
 {$else FV_UNICODE}
 unit outline;
 {$endif FV_UNICODE}
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$CODEPAGE cp437}
 
@@ -26,11 +29,19 @@ unit outline;
                                   interface
 {***************************************************************************}
 
+{$IFDEF FPC_DOTTEDUNITS}
+{$ifdef FV_UNICODE}
+uses  FreeVision.Udrivers,System.Objects,FreeVision.Uviews;
+{$else FV_UNICODE}
+uses  FreeVision.Drivers,System.Objects,FreeVision.Views;
+{$endif FV_UNICODE}
+{$ELSE FPC_DOTTEDUNITS}
 {$ifdef FV_UNICODE}
 uses  udrivers,objects,uviews;
 {$else FV_UNICODE}
 uses  drivers,objects,views;
 {$endif FV_UNICODE}
+{$ENDIF FPC_DOTTEDUNITS}
 
 type  Pnode=^Tnode;
       Tnode=record
@@ -306,7 +317,7 @@ var position:sw_integer;
       begin
         if not lastchild then
           lines:=lines or (1 shl level);
-        {Iterate all childs.}
+        {Iterate all children}
         childcount:=getnumchildren(cur);
         for i:=0 to childcount-1 do
           begin
@@ -338,7 +349,8 @@ var c_normal,c_normal_x,c_select,c_focus:byte;
   function draw_item(cur:pointer;level,position:sw_integer;
                      lines:longint;flags:word):boolean;
 
-  var c,i:byte;
+  var c:byte;
+      i:sw_integer;
 {$ifdef FV_UNICODE}
       s,t:UnicodeString;
 {$else FV_UNICODE}

@@ -13,14 +13,21 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fpcgsqlconst;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, Data.CodeGen.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, fpddCodeGen;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
 
@@ -39,8 +46,8 @@ Type
     Property Identifier : String Read FIDent Write SetIdent;
     Property Mode : TMode Read FMode Write FMode;
   end;
-  
-  
+
+
   { TDDSQLConstGenerator }
 
   TDDSQLConstGenerator = Class(TDDCustomCodeGenerator)
@@ -62,7 +69,7 @@ Type
 
 Const
   SSQLConst = 'SQLConst';
-  
+
 Resourcestring
   SSQLConstDescr = 'Generate Pascal constant/Stringlist from SQL';
 
@@ -88,7 +95,7 @@ procedure TDDSQLConstOptions.Assign(ASource: TPersistent);
 
 Var
   CO: TDDSQLConstOptions;
-  
+
 begin
   If ASource is TDDSQLConstOptions then
     begin
@@ -111,7 +118,7 @@ procedure TDDSQLConstGenerator.DoGenerateInterface(Strings: TStrings);
 Var
   S : String;
   I,L : Integer;
-  
+
 begin
   If (SQLOptions.Mode=mConst) then
     begin
@@ -200,7 +207,7 @@ end;
 
 Initialization
   RegisterCodeGenerator(SSQLConst, SSQLConstDescr, TDDSQLConstGenerator);
-  
+
 Finalization
   UnRegisterCodeGenerator(TDDSQLConstGenerator);
 

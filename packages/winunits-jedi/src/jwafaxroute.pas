@@ -42,7 +42,9 @@
 
 // $Id: JwaFaxRoute.pas,v 1.8 2007/09/05 11:58:49 dezipaitor Exp $
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaFaxRoute;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -56,8 +58,13 @@ unit JwaFaxRoute;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 
@@ -129,7 +136,7 @@ type
     ReceiverName: LPCWSTR; // Receiver's name
     ReceiverNumber: LPCWSTR; // Receiver's fax number
     DeviceName: LPCWSTR; // Device name for the line that received the fax
-    DeviceId: DWORD; // Permenant line identifier for the receiving device
+    DeviceId: DWORD; // Permanent line identifier for the receiving device
     RoutingInfoData: LPBYTE; // Routing infor data to override configured info
     RoutingInfoDataSize: DWORD; // Size of routing info data
   end;
@@ -168,7 +175,7 @@ type
   {$EXTERNALSYM PFAXROUTEGETROUTINGINFO}
   PFAXROUTESETROUTINGINFO = function(RoutingGuid: LPCWSTR; DeviceId: DWORD; RoutingInfo: LPBYTE; RoutingInfoSize: DWORD): BOOL; stdcall;
   {$EXTERNALSYM PFAXROUTESETROUTINGINFO}
-  
+
 {$ENDIF JWA_IMPLEMENTATIONSECTION}
 
 

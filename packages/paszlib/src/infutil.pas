@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 Unit infutil;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { types and macros common to blocks and codes
   Copyright (C) 1995-1998 Mark Adler
@@ -7,7 +9,7 @@ Unit infutil;
    part of the implementation of the compression library and is
    subject to change.
 
-  Pascal tranlastion
+  Pascal translation
   Copyright (C) 1998 by Jacques Nomssi Nzali
   For conditions of distribution and use, see copyright notice in readme.txt
 }
@@ -16,8 +18,13 @@ interface
 
 {$I zconf.inc}
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.ZLib.Zbase;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   zbase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { copy as much as possible from the sliding window to the output area }
 function inflate_flush(var s : inflate_blocks_state;

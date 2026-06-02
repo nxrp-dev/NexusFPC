@@ -75,12 +75,12 @@ Type
     pPid     = ^pid_t;
 
 {$ifdef cpu64}
-    size_t   = cuint64;         { as definied in the C standard}
+    size_t   = cuint64;         { as defined in the C standard}
     ssize_t  = cint64;          { used by function for returning number of bytes }
     clock_t  = cuint64;
     time_t   = cint64;           { used for returning the time  }
 {$else}
-    size_t   = cuint32;         { as definied in the C standard}
+    size_t   = cuint32;         { as defined in the C standard}
     ssize_t  = cint32;          { used by function for returning number of bytes }
     clock_t  = culong;
     time_t   = clong;           { used for returning the time  }
@@ -98,7 +98,7 @@ Type
     pTime     = ^time_t;
     ptime_t   = ^time_t;
     clockid_t = cint;
-    caddr_t   = ^char;
+    caddr_t   = ^AnsiChar;
 
     uint32_t = cuint32;
     int32_t = cint32;
@@ -176,10 +176,10 @@ Type
     ffree,             { Free file nodes in system }
     favail  : fsblkcnt_t;   { free nodes avail to non-superuser}
     fsid    : clong;   { File system ID }
-    basetype: array [0..15] of char; { null-terminated fs type name }
+    basetype: array [0..15] of AnsiChar; { null-terminated fs type name }
     flag    : culong;  { bit-mask of flags }
     namelen : culong; { Maximum name length in system }
-    fstr    : array[0..31] of char; { fs-specific string }
+    fstr    : array[0..31] of AnsiChar; { fs-specific string }
 {$ifndef cpu64}
     spare   : array[0..15] of clong; { reserved for future use }
 {$endif}
@@ -194,7 +194,7 @@ Type
 {$endif cpu64}
   end;
   pmbstate_t = ^mbstate_t;
-  
+
 
   clock32_t = int32_t;
   timeval32 = record

@@ -247,7 +247,7 @@ unit agz80vasm;
           '.stabstr',
           '.idata$2','.idata$4','.idata$5','.idata$6','.idata$7','.edata',
           '.eh_frame',
-          '.debug_frame','.debug_info','.debug_line','.debug_abbrev','.debug_aranges','.debug_ranges',
+          '.debug_frame','.debug_info','.debug_line','.debug_abbrev','.debug_aranges','.debug_ranges','.debug_loc','.debug_loclists',
           '.fpc',
           '.toc',
           '.init',
@@ -289,7 +289,8 @@ unit agz80vasm;
           '.stack',
           '.heap',
           '.gcc_except_table',
-          '.ARM.attributes'
+          '.ARM.attributes',
+          '.note'
         );
       var
         sep: string[3];
@@ -694,7 +695,7 @@ unit agz80vasm;
                         hp:=tai(hp.next);
                         writer.AsmWrite(',');
                       until false;
-                      { Substract section start for secrel32 type }
+                      { Subtract section start for secrel32 type }
                       {if consttype=aitconst_secrel32_symbol then
                         writer.AsmWrite(' - $$');}
                       writer.AsmLn;
@@ -733,7 +734,7 @@ unit agz80vasm;
                         hp:=tai(hp.next);
                         writer.AsmWrite(',');
                       until false;
-                      { Substract section start for secrel32 type }
+                      { Subtract section start for secrel32 type }
                       if consttype=aitconst_secrel32_symbol then
                         writer.AsmWrite(' - $$');
                       writer.AsmLn;

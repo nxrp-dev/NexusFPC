@@ -39,12 +39,23 @@
    http://gcc.gnu.org/ml/java/1999-q3/msg00174.html
    -------------------------------------------------------------------- *)
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit ffi;
+{$ENDIF FPC_DOTTEDUNITS}
+
+{$IFDEF Darwin}
+{$LinkLib ffi}
+{$ENDIF}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.CTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   ctypes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {
    from the various ffitarget.h
@@ -387,6 +398,9 @@ type
   {$ifndef DARWIN}
     nfixedargs: cuint;
   {$endif}
+{$elseif defined(CPULOONGARCH64)}
+  loongarch_nfixedargs: cuint;
+  loongarch_unused: cuint;
 {$endif}
   end;
 
@@ -491,7 +505,7 @@ type
 {$if not FFI_NATIVE_RAW_API}
     (* If this is enabled, then a raw closure has the same layout
        as a regular closure.  We use this to install an intermediate
-       handler to do the transaltion, void** -> ffi_raw*.  *)
+       handler to do the translation, void** -> ffi_raw*.  *)
     translate_args: ffi_closure_fun;
     this_closure: Pointer;
 {$endif}
@@ -512,7 +526,7 @@ type
 {$if not FFI_NATIVE_RAW_API}
     (* If this is enabled, then a raw closure has the same layout
        as a regular closure.  We use this to install an intermediate
-       handler to do the transaltion, void** -> ffi_raw*.  *)
+       handler to do the translation, void** -> ffi_raw*.  *)
     translate_args: ffi_closure_fun;
     this_closure: Pointer;
 {$endif}

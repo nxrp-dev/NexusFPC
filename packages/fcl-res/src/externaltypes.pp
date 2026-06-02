@@ -13,14 +13,16 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit externaltypes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$MODE OBJFPC} {$H+}
 
 interface
 
 type
-  TExternalResMagic = array[1..6] of char;
+  TExternalResMagic = array[1..6] of AnsiChar;
 
 type
   TExtHeader = packed record
@@ -44,9 +46,9 @@ type
 
 const
   EXTERNAL_RESMAGIC : TExternalResMagic = 'FPCRES';
-  
+
   EXT_CURRENT_VERSION = 1;
-  
+
   EXT_ENDIAN_BIG = 1;
   EXT_ENDIAN_LITTLE = 2;
 

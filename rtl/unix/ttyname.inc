@@ -14,7 +14,7 @@
 
  **********************************************************************}
 
-function TTYName(Handle:cint):string;
+function TTYName(Handle:cint):shortstring;
 {
   Return the name of the current tty described by handle f.
   returns empty string in case of an error.
@@ -24,12 +24,12 @@ var
   myino     : ino_t;
   st        : stat;
 
-  function mysearch(n:string): boolean;
+  function mysearch(n:shortstring): boolean;
   {searches recursively for the device in the directory given by n,
     returns true if found and sets the name of the device in ttyname}
   var dirstream : pdir;
       d         : pdirent;
-      name      : string;
+      name      : shortstring;
       st        : stat;
   begin
     dirstream:=fpopendir(n);
@@ -55,7 +55,7 @@ var
                 exit;
               end;
            end
-{$ifndef beos}	 
+{$ifndef beos}
           else if (ino_t(d^.d_fileno)=myino) and (st.st_dev=mydev) then
            begin
              fpclosedir(dirstream^);
@@ -75,7 +75,7 @@ begin
   TTYName:='';
   if (fpfstat(handle,st)=-1) or (isatty (handle)<>1) then
    exit;
-{$ifndef beos}	 
+{$ifndef beos}
   mydev:=st.st_dev;
   myino:=st.st_ino;
 {$endif}
@@ -83,7 +83,7 @@ begin
 end;
 
 
-function TTYName(var F:Text):string;
+function TTYName(var F:Text):shortstring;
 {
   Idem as previous, only now for text variables;
 }

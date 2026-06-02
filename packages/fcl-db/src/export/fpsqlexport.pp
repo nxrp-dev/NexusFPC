@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fpSQLExport;
+{$ENDIF FPC_DOTTEDUNITS}
 {
     This file is part of the Free Pascal run time library.
     Copyright (c) 1999-2022 by Michael van Canney and other members of the
@@ -18,9 +20,14 @@ unit fpSQLExport;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, Data.Db, Data.Export.Db;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, DB, fpDBExport;
-  
+{$ENDIF FPC_DOTTEDUNITS}
+
 Type
   { TSQLExportFieldItem }
 
@@ -100,7 +107,7 @@ Procedure UnRegisterSQLExportFormat;
 Const
   SSQLExport     = 'SQL';
   SSQLExtensions = '.sql';
-  
+
 Resourcestring
   SSQLDescription         = 'SQL INSERT/Update Statements';
   SErrMissingTableName    = 'No tablename set for SQL Export';

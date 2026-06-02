@@ -1,10 +1,10 @@
 {
      File:       CarbonCore/DriverSynchronization.h
- 
+
      Contains:   Driver Synchronization Interfaces.
                  The contents of this header file are deprecated.
                  Use OSAtomic API instead.
- 
+
      Copyright:  © 1985-2011 by Apple Inc. All rights reserved.
 }
 {
@@ -21,7 +21,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit DriverSynchronization;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -206,7 +208,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -217,12 +223,12 @@ uses MacTypes;
 
 {
  *  CompareAndSwap()
- *  
+ *
  *  Summary:
  *    Compare and swap operation, performed atomically with respect to
  *    all devices that participate in the coherency architecture of the
  *    platform.
- *  
+ *
  *  Discussion:
  *    The CompareAndSwap function compares the value at the specified
  *    address with oldVal. The value of newValue is written to the
@@ -233,21 +239,21 @@ uses MacTypes;
  *    It is specifically unsuitable for use on noncacheable memory such
  *    as that in devices; this function cannot guarantee atomicity, for
  *    example, on memory mapped from a PCI device.
- *  
+ *
  *  Parameters:
- *    
+ *
  *    oldValue:
  *      The value to compare at address.
- *    
+ *
  *    newValue:
  *      The value to write to address if oldValue compares true.
- *    
+ *
  *    address:
  *      The 4-byte aligned address of the data to update atomically.
- *  
+ *
  *  Result:
  *    true if newValue was written to the address.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -259,12 +265,12 @@ function CompareAndSwap( oldValue: UInt32; newValue: UInt32; var address: UInt32
 
 {
  *  TestAndClear()
- *  
+ *
  *  Summary:
  *    Bit test and clear operation, performed atomically with respect
  *    to all devices that participate in the coherency architecture of
  *    the platform.
- *  
+ *
  *  Discussion:
  *    The TestAndClear function clears a single bit in a byte at a
  *    specified address. It returns false if the bit was already clear,
@@ -283,18 +289,18 @@ function CompareAndSwap( oldValue: UInt32; newValue: UInt32; var address: UInt32
  *    It is specifically unsuitable for use on noncacheable memory such
  *    as that in devices; this function cannot guarantee atomicity, for
  *    example, on memory mapped from a PCI device.
- *  
+ *
  *  Parameters:
- *    
+ *
  *    bit:
  *      The bit number in the range 0 through 7.
- *    
+ *
  *    address:
  *      The address of the byte to update atomically.
- *  
+ *
  *  Result:
  *    true if the bit was already clear, false otherwise.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -306,7 +312,7 @@ function TestAndClear( bit: UInt32; address: UnivPtr ): Boolean; external name '
 
 {
  *  TestAndSet()
- *  
+ *
  *  Summary:
  *    Bit test and set operation, performed atomically with respect to
  *    all devices that participate in the coherency architecture of the
@@ -315,23 +321,23 @@ function TestAndClear( bit: UInt32; address: UnivPtr ): Boolean; external name '
  *    It is specifically unsuitable for use on noncacheable memory such
  *    as that in devices; this function cannot guarantee atomicity, for
  *    example, on memory mapped from a PCI device.
- *  
+ *
  *  Discussion:
  *    The TestAndSet function sets a single bit in a byte at a
  *    specified address. It returns true if the bit was already set,
  *    false otherwise.
- *  
+ *
  *  Parameters:
- *    
+ *
  *    bit:
  *      The bit number in the range 0 through 7.
- *    
+ *
  *    address:
  *      The address of the byte to update atomically.
- *  
+ *
  *  Result:
  *    true if the bit was already set, false otherwise.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -343,28 +349,28 @@ function TestAndSet( bit: UInt32; address: UnivPtr ): Boolean; external name '_T
 
 {
  *  IncrementAtomic8()
- *  
+ *
  *  Summary:
  *    8-bit increment operation, performed atomically with respect to
  *    all devices that participate in the coherency architecture of the
  *    platform.
- *  
+ *
  *  Discussion:
  *    The IncrementAtomic8 function increments the value at the
- *    specified address by one and returns the original value. 
+ *    specified address by one and returns the original value.
  *     This function guarantees atomicity only with main system memory.
  *    It is specifically unsuitable for use on noncacheable memory such
  *    as that in devices; this function cannot guarantee atomicity, for
  *    example, on memory mapped from a PCI device.
- *  
+ *
  *  Parameters:
- *    
+ *
  *    address:
  *      The address of the value to update atomically.
- *  
+ *
  *  Result:
  *    The value before the increment.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -376,12 +382,12 @@ function IncrementAtomic8( var address: SInt8 ): SInt8; external name '_Incremen
 
 {
  *  DecrementAtomic8()
- *  
+ *
  *  Summary:
  *    8-bit decrement operation, performed atomically with respect to
  *    all devices that participate in the coherency architecture of the
  *    platform.
- *  
+ *
  *  Discussion:
  *    The DecrementAtomic8 function decrements the value at the
  *    specified address by one and returns the original value.
@@ -389,15 +395,15 @@ function IncrementAtomic8( var address: SInt8 ): SInt8; external name '_Incremen
  *    It is specifically unsuitable for use on noncacheable memory such
  *    as that in devices; this function cannot guarantee atomicity, for
  *    example, on memory mapped from a PCI device.
- *  
+ *
  *  Parameters:
- *    
+ *
  *    address:
  *      The address of the value to update atomically.
- *  
+ *
  *  Result:
  *    The value before the decrement.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -409,12 +415,12 @@ function DecrementAtomic8( var address: SInt8 ): SInt8; external name '_Decremen
 
 {
  *  AddAtomic8()
- *  
+ *
  *  Summary:
  *    8-bit add operation, performed atomically with respect to all
  *    devices that participate in the coherency architecture of the
  *    platform.
- *  
+ *
  *  Discussion:
  *    The AddAtomic8 function adds the specified amount to the value at
  *    the specified address and returns the original value.
@@ -422,18 +428,18 @@ function DecrementAtomic8( var address: SInt8 ): SInt8; external name '_Decremen
  *    It is specifically unsuitable for use on noncacheable memory such
  *    as that in devices; this function cannot guarantee atomicity, for
  *    example, on memory mapped from a PCI device.
- *  
+ *
  *  Parameters:
- *    
+ *
  *    amount:
  *      The amount to add.
- *    
+ *
  *    address:
  *      The address of the value to update atomically.
- *  
+ *
  *  Result:
  *    The value before the addition
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -445,12 +451,12 @@ function AddAtomic8( amount: SInt32; var address: SInt8 ): SInt8; external name 
 
 {
  *  BitAndAtomic8()
- *  
+ *
  *  Summary:
  *    8-bit logical and operation, performed atomically with respect to
  *    all devices that participate in the coherency architecture of the
  *    platform.
- *  
+ *
  *  Discussion:
  *    The BitAndAtomic8 function logically ands the bits of the
  *    specified mask into the value at the specified address and
@@ -459,18 +465,18 @@ function AddAtomic8( amount: SInt32; var address: SInt8 ): SInt8; external name 
  *    It is specifically unsuitable for use on noncacheable memory such
  *    as that in devices; this function cannot guarantee atomicity, for
  *    example, on memory mapped from a PCI device.
- *  
+ *
  *  Parameters:
- *    
+ *
  *    mask:
  *      The mask to logically and with the value.
- *    
+ *
  *    address:
  *      The address of the value to update atomically.
- *  
+ *
  *  Result:
  *    The value before the bitwise operation.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -482,7 +488,7 @@ function BitAndAtomic8( mask: UInt32; var address: UInt8 ): UInt8; external name
 
 {
  *  BitOrAtomic8()
- *  
+ *
  *  Summary:
  *    8-bit logical or operation, performed atomically with respect to
  *    all devices that participate in the coherency architecture of the
@@ -491,23 +497,23 @@ function BitAndAtomic8( mask: UInt32; var address: UInt8 ): UInt8; external name
  *    It is specifically unsuitable for use on noncacheable memory such
  *    as that in devices; this function cannot guarantee atomicity, for
  *    example, on memory mapped from a PCI device.
- *  
+ *
  *  Discussion:
  *    The BitOrAtomic8 function logically ors the bits of the specified
  *    mask into the value at the specified address and returns the
  *    original value.
- *  
+ *
  *  Parameters:
- *    
+ *
  *    mask:
  *      The mask to logically or with the value.
- *    
+ *
  *    address:
  *      The address of the value to update atomically.
- *  
+ *
  *  Result:
  *    The value before the bitwise operation.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -519,7 +525,7 @@ function BitOrAtomic8( mask: UInt32; var address: UInt8 ): UInt8; external name 
 
 {
  *  BitXorAtomic8()
- *  
+ *
  *  Summary:
  *    8-bit logical xor operation, performed atomically with respect to
  *    all devices that participate in the coherency architecture of the
@@ -528,23 +534,23 @@ function BitOrAtomic8( mask: UInt32; var address: UInt8 ): UInt8; external name 
  *    It is specifically unsuitable for use on noncacheable memory such
  *    as that in devices; this function cannot guarantee atomicity, for
  *    example, on memory mapped from a PCI device.
- *  
+ *
  *  Discussion:
  *    The BitXorAtomic8 function logically xors the bits of the
  *    specified mask into the value at the specified address and
  *    returns the original value.
- *  
+ *
  *  Parameters:
- *    
+ *
  *    mask:
  *      The mask to logically or with the value.
- *    
+ *
  *    address:
  *      The address of the value to update atomically.
- *  
+ *
  *  Result:
  *    The value before the bitwise operation.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -556,28 +562,28 @@ function BitXorAtomic8( mask: UInt32; var address: UInt8 ): UInt8; external name
 
 {
  *  IncrementAtomic16()
- *  
+ *
  *  Summary:
  *    16-bit increment operation, performed atomically with respect to
  *    all devices that participate in the coherency architecture of the
  *    platform.
- *  
+ *
  *  Discussion:
  *    The IncrementAtomic16 function increments the value at the
- *    specified address by one and returns the original value. 
+ *    specified address by one and returns the original value.
  *     This function guarantees atomicity only with main system memory.
  *    It is specifically unsuitable for use on noncacheable memory such
  *    as that in devices; this function cannot guarantee atomicity, for
  *    example, on memory mapped from a PCI device.
- *  
+ *
  *  Parameters:
- *    
+ *
  *    address:
  *      The 2-byte aligned address of the value to update atomically.
- *  
+ *
  *  Result:
  *    The value before the increment.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -589,28 +595,28 @@ function IncrementAtomic16( var address: SInt16 ): SInt16; external name '_Incre
 
 {
  *  DecrementAtomic16()
- *  
+ *
  *  Summary:
  *    16-bit decrement operation, performed atomically with respect to
  *    all devices that participate in the coherency architecture of the
  *    platform.
- *  
+ *
  *  Discussion:
  *    The DecrementAtomic16 function decrements the value at the
- *    specified address by one and returns the original value. 
+ *    specified address by one and returns the original value.
  *     This function guarantees atomicity only with main system memory.
  *    It is specifically unsuitable for use on noncacheable memory such
  *    as that in devices; this function cannot guarantee atomicity, for
  *    example, on memory mapped from a PCI device.
- *  
+ *
  *  Parameters:
- *    
+ *
  *    address:
  *      The 2-byte aligned address of the value to update atomically.
- *  
+ *
  *  Result:
  *    The value before the decrement.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -622,12 +628,12 @@ function DecrementAtomic16( var address: SInt16 ): SInt16; external name '_Decre
 
 {
  *  AddAtomic16()
- *  
+ *
  *  Summary:
  *    16-bit add operation, performed atomically with respect to all
  *    devices that participate in the coherency architecture of the
  *    platform.
- *  
+ *
  *  Discussion:
  *    The AddAtomic16 function adds the specified amount to the value
  *    at the specified address and returns the original value.
@@ -635,18 +641,18 @@ function DecrementAtomic16( var address: SInt16 ): SInt16; external name '_Decre
  *    It is specifically unsuitable for use on noncacheable memory such
  *    as that in devices; this function cannot guarantee atomicity, for
  *    example, on memory mapped from a PCI device.
- *  
+ *
  *  Parameters:
- *    
+ *
  *    amount:
  *      The amount to add.
- *    
+ *
  *    address:
  *      The 2-byte aligned address of the value to update atomically.
- *  
+ *
  *  Result:
  *    The value before the addition
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -658,12 +664,12 @@ function AddAtomic16( amount: SInt32; var address: SInt16 ): SInt16; external na
 
 {
  *  BitAndAtomic16()
- *  
+ *
  *  Summary:
  *    16-bit logical and operation, performed atomically with respect
  *    to all devices that participate in the coherency architecture of
  *    the platform.
- *  
+ *
  *  Discussion:
  *    The BitAndAtomic16 function logically ands the bits of the
  *    specified mask into the value at the specified address and
@@ -672,18 +678,18 @@ function AddAtomic16( amount: SInt32; var address: SInt16 ): SInt16; external na
  *    It is specifically unsuitable for use on noncacheable memory such
  *    as that in devices; this function cannot guarantee atomicity, for
  *    example, on memory mapped from a PCI device.
- *  
+ *
  *  Parameters:
- *    
+ *
  *    mask:
  *      The mask to logically and with the value.
- *    
+ *
  *    address:
  *      The 2-byte aligned address of the value to update atomically.
- *  
+ *
  *  Result:
  *    The value before the bitwise operation.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -695,12 +701,12 @@ function BitAndAtomic16( mask: UInt32; var address: UInt16 ): UInt16; external n
 
 {
  *  BitOrAtomic16()
- *  
+ *
  *  Summary:
  *    16-bit logical or operation, performed atomically with respect to
  *    all devices that participate in the coherency architecture of the
  *    platform.
- *  
+ *
  *  Discussion:
  *    The BitOrAtomic16 function logically ors the bits of the
  *    specified mask into the value at the specified address and
@@ -709,18 +715,18 @@ function BitAndAtomic16( mask: UInt32; var address: UInt16 ): UInt16; external n
  *    use on noncacheable memory such as that in devices; this function
  *    cannot guarantee atomicity, for example, on memory mapped from a
  *    PCI device.
- *  
+ *
  *  Parameters:
- *    
+ *
  *    mask:
  *      The mask to logically or with the value.
- *    
+ *
  *    address:
  *      The 2-byte aligned address of the value to update atomically.
- *  
+ *
  *  Result:
  *    The value before the bitwise operation.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -732,12 +738,12 @@ function BitOrAtomic16( mask: UInt32; var address: UInt16 ): UInt16; external na
 
 {
  *  BitXorAtomic16()
- *  
+ *
  *  Summary:
  *    16-bit logical xor operation, performed atomically with respect
  *    to all devices that participate in the coherency architecture of
  *    the platform.
- *  
+ *
  *  Discussion:
  *    The BitXorAtomic16 function logically xors the bits of the
  *    specified mask into the value at the specified address and
@@ -746,18 +752,18 @@ function BitOrAtomic16( mask: UInt32; var address: UInt16 ): UInt16; external na
  *    use on noncacheable memory such as that in devices; this function
  *    cannot guarantee atomicity, for example, on memory mapped from a
  *    PCI device.
- *  
+ *
  *  Parameters:
- *    
+ *
  *    mask:
  *      The mask to logically or with the value.
- *    
+ *
  *    address:
  *      The 2-byte aligned address of the value to update atomically.
- *  
+ *
  *  Result:
  *    The value before the bitwise operation.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -769,12 +775,12 @@ function BitXorAtomic16( mask: UInt32; var address: UInt16 ): UInt16; external n
 
 {
  *  IncrementAtomic()
- *  
+ *
  *  Summary:
  *    32-bit increment operation, performed atomically with respect to
  *    all devices that participate in the coherency architecture of the
  *    platform.
- *  
+ *
  *  Discussion:
  *    The IncrementAtomic function increments the value at the
  *    specified address by one and returns the original value. This
@@ -782,15 +788,15 @@ function BitXorAtomic16( mask: UInt32; var address: UInt16 ): UInt16; external n
  *    specifically unsuitable for use on noncacheable memory such as
  *    that in devices; this function cannot guarantee atomicity, for
  *    example, on memory mapped from a PCI device.
- *  
+ *
  *  Parameters:
- *    
+ *
  *    address:
  *      The 4-byte aligned address of the value to update atomically.
- *  
+ *
  *  Result:
  *    The value before the increment.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -802,12 +808,12 @@ function IncrementAtomic( var address: SInt32 ): SInt32; external name '_Increme
 
 {
  *  DecrementAtomic()
- *  
+ *
  *  Summary:
  *    32-bit decrement operation, performed atomically with respect to
  *    all devices that participate in the coherency architecture of the
  *    platform.
- *  
+ *
  *  Discussion:
  *    The DecrementAtomic function decrements the value at the
  *    specified address by one and returns the original value. This
@@ -815,15 +821,15 @@ function IncrementAtomic( var address: SInt32 ): SInt32; external name '_Increme
  *    specifically unsuitable for use on noncacheable memory such as
  *    that in devices; this function cannot guarantee atomicity, for
  *    example, on memory mapped from a PCI device.
- *  
+ *
  *  Parameters:
- *    
+ *
  *    address:
  *      The 4-byte aligned address of the value to update atomically.
- *  
+ *
  *  Result:
  *    The value before the decrement.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -835,12 +841,12 @@ function DecrementAtomic( var address: SInt32 ): SInt32; external name '_Decreme
 
 {
  *  AddAtomic()
- *  
+ *
  *  Summary:
  *    32-bit add operation, performed atomically with respect to all
  *    devices that participate in the coherency architecture of the
  *    platform.
- *  
+ *
  *  Discussion:
  *    The AddAtomic function adds the specified amount to the value at
  *    the specified address and returns the original value. This
@@ -848,18 +854,18 @@ function DecrementAtomic( var address: SInt32 ): SInt32; external name '_Decreme
  *    specifically unsuitable for use on noncacheable memory such as
  *    that in devices; this function cannot guarantee atomicity, for
  *    example, on memory mapped from a PCI device.
- *  
+ *
  *  Parameters:
- *    
+ *
  *    amount:
  *      The amount to add.
- *    
+ *
  *    address:
  *      The 4-byte aligned address of the value to update atomically.
- *  
+ *
  *  Result:
  *    The value before the addition
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -871,12 +877,12 @@ function AddAtomic( amount: SInt32; var address: SInt32 ): SInt32; external name
 
 {
  *  BitAndAtomic()
- *  
+ *
  *  Summary:
  *    32-bit logical and operation, performed atomically with respect
  *    to all devices that participate in the coherency architecture of
  *    the platform.
- *  
+ *
  *  Discussion:
  *    The BitAndAtomic function logically ands the bits of the
  *    specified mask into the value at the specified address and
@@ -885,18 +891,18 @@ function AddAtomic( amount: SInt32; var address: SInt32 ): SInt32; external name
  *    use on noncacheable memory such as that in devices; this function
  *    cannot guarantee atomicity, for example, on memory mapped from a
  *    PCI device.
- *  
+ *
  *  Parameters:
- *    
+ *
  *    mask:
  *      The mask to logically and with the value.
- *    
+ *
  *    address:
  *      The 4-byte aligned address of the value to update atomically.
- *  
+ *
  *  Result:
  *    The value before the bitwise operation
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -908,12 +914,12 @@ function BitAndAtomic( mask: UInt32; var address: UInt32 ): UInt32; external nam
 
 {
  *  BitOrAtomic()
- *  
+ *
  *  Summary:
  *    32-bit logical or operation, performed atomically with respect to
  *    all devices that participate in the coherency architecture of the
  *    platform.
- *  
+ *
  *  Discussion:
  *    The BitOrAtomic function logically ors the bits of the specified
  *    mask into the value at the specified address and returns the
@@ -922,18 +928,18 @@ function BitAndAtomic( mask: UInt32; var address: UInt32 ): UInt32; external nam
  *    noncacheable memory such as that in devices; this function cannot
  *    guarantee atomicity, for example, on memory mapped from a PCI
  *    device.
- *  
+ *
  *  Parameters:
- *    
+ *
  *    mask:
  *      The mask to logically or with the value.
- *    
+ *
  *    address:
  *      The 4-byte aligned address of the value to update atomically.
- *  
+ *
  *  Result:
  *    The value before the bitwise operation.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -945,7 +951,7 @@ function BitOrAtomic( mask: UInt32; var address: UInt32 ): UInt32; external name
 
 {
  *  BitXorAtomic()
- *  
+ *
  *  Summary:
  *    32-bit logical xor operation, performed atomically with respect
  *    to all devices that participate in the coherency architecture of
@@ -954,23 +960,23 @@ function BitOrAtomic( mask: UInt32; var address: UInt32 ): UInt32; external name
  *    noncacheable memory such as that in devices; this function cannot
  *    guarantee atomicity, for example, on memory mapped from a PCI
  *    device.
- *  
+ *
  *  Discussion:
  *    The BitXorAtomic function logically xors the bits of the
  *    specified mask into the value at the specified address and
  *    returns the original value.
- *  
+ *
  *  Parameters:
- *    
+ *
  *    mask:
  *      The mask to logically or with the value.
- *    
+ *
  *    address:
  *      The 4-byte aligned address of the value to update atomically.
- *  
+ *
  *  Result:
  *    The value before the bitwise operation.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in CoreServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later

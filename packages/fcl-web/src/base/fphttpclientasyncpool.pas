@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit FPHTTPClientAsyncPool;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {
   Default HTTP Client asynchronous pool.
@@ -21,8 +23,13 @@ unit FPHTTPClientAsyncPool;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, FpWeb.Http.Client, FpWeb.Http.Protocol, Fcl.UriParser, System.SyncObjs, System.DateUtils, FpWeb.Http.Client.Pool;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, fphttpclient, httpprotocol, URIParser, syncobjs, DateUtils, FPHTTPClientPool;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   TFPHTTPClientPoolMethodResult = (mrSuccess, mrAbortedByClient, mrAbortedWithException);
@@ -272,7 +279,7 @@ type
     procedure TerminatedSet; override;
 
     // the DoOn* methods do the actual work and can be synchronised by their ExecOn* counterparts
-    // DoOnInit - executed when the request aquired a TFPHTTPClient to setup its extra properties
+    // DoOnInit - executed when the request acquired a TFPHTTPClient to setup its extra properties
     //  should not be synchronized with Synchronize() - it slows down the execution. Better to use CriticalSections
     procedure DoOnInit; virtual;
     // DoOnProgress - show progress during upload&download
@@ -760,7 +767,8 @@ var
   I: Integer;
 begin
   xContentType := GetResponseContentType;
-  xContentType := 'Content-Type: text/html; charset=utf-8';
+  if xContentType='' then
+    xContentType := 'Content-Type: text/html; charset=utf-8';
   xStrL := TStringList.Create;
   try
     xStrL.Delimiter := ';';

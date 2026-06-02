@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fpXMLXSDExport;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {Output XML with (or without) XSD data suitable for input in:
 - databases (e.g. Microsoft Access, Microsoft SQL Server)
@@ -38,8 +40,13 @@ are not needed. Is there any way to remove them from the settings?}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, Data.Db, Data.Export.Db, Xml.Dom, Xml.Writer, System.Hash.Base64, System.TypInfo, System.DateUtils {$IFDEF Unix}, UnixApi.Clocale{$ENDIF Unix};
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, DB, fpDBExport, DOM, XMLWrite, base64, typinfo, dateutils {$IFDEF Unix}, clocale{$ENDIF Unix};
+{$ENDIF FPC_DOTTEDUNITS}
 
 
 type
@@ -1421,7 +1428,7 @@ begin
 
   //Decimal separator - only relevant for Access export:
   //probably can use DefaultFormatsettings too, have to test:
-  FFormatSettingsOriginal := SysUtils.FormatSettings;
+  FFormatSettingsOriginal := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SysUtils.FormatSettings;
   case FormatSettings.ExportFormat of
     AccessCompatible:
     begin
@@ -1431,23 +1438,23 @@ begin
       // else than ASCII 0 is specified:
       if (FormatSettings.DecimalSeparator <> #0) then
       begin
-        SysUtils.FormatSettings.DecimalSeparator := FormatSettings.DecimalSeparator;
+        {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SysUtils.FormatSettings.DecimalSeparator := FormatSettings.DecimalSeparator;
       end;
     end;
     else
     begin
       // ADO.Net, Delphi, Excel export format seem to always expect a . which is much saner.
       // This means you can import a file exported on a computer with another locale setting ;)
-      SysUtils.FormatSettings.DecimalSeparator := '.';
+      {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SysUtils.FormatSettings.DecimalSeparator := '.';
     end;
   end;
   //Date/time settings required for translating dates to strings
-  SysUtils.FormatSettings.DateSeparator := '-';
-  SysUtils.FormatSettings.ShortDateFormat:='yyyy-mm-dd';
-  SysUtils.FormatSettings.LongDateFormat:='yyyy-mm-dd';
-  SysUtils.FormatSettings.TimeSeparator:=':';
-  SysUtils.FormatSettings.ShortTimeFormat:='h:nn:ss';
-  SysUtils.FormatSettings.LongTimeFormat:='h:nn:ss';
+  {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SysUtils.FormatSettings.DateSeparator := '-';
+  {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SysUtils.FormatSettings.ShortDateFormat:='yyyy-mm-dd';
+  {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SysUtils.FormatSettings.LongDateFormat:='yyyy-mm-dd';
+  {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SysUtils.FormatSettings.TimeSeparator:=':';
+  {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SysUtils.FormatSettings.ShortTimeFormat:='h:nn:ss';
+  {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SysUtils.FormatSettings.LongTimeFormat:='h:nn:ss';
 end;
 
 procedure TCustomXMLXSDExporter.DoAfterExecute;
@@ -1460,7 +1467,7 @@ begin
   FOutputDoc.Free;
   CloseTextFile;
   //Restore original, client locale specific setting for formatting
-  SysUtils.FormatSettings := FFormatSettingsOriginal;
+  {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SysUtils.FormatSettings := FFormatSettingsOriginal;
   inherited DoAfterExecute;
 end;
 
@@ -1498,7 +1505,7 @@ var
   //Contains xs:annotation for a table, which contains appinfo node with primary key info etc.
   XSDTableAppinfoNode: TDOMNode; //Contains xs:appinfo node for a table
   XSDTableDataColumnParent: TDOMNode;
-  //xs:sequenc node; contains all columns for a table.
+  //xs:sequence node; contains all columns for a table.
   XSDTableNode: TDOMNode;
   //Contains xs:Element for table, inside: primary key info etc, table data types
   XSDTableDataTypesNode: TDOMNode;
@@ -2029,7 +2036,7 @@ var
 
         FNode := FOutputDoc.CreateElement('xs:maxLength');
         { In Access, the WIDTH denotes the number of characters, not the byte count.
-        Therfore we use .Size, not .DataSize}
+        Therefore we use .Size, not .DataSize}
         TDOMElement(FNode).SetAttribute('value',
           IntToStr(ExportFields.Fields[ItemCounter].Field.Size));
         RestrictionNode.AppendChild(FNode);
@@ -2909,7 +2916,7 @@ begin
     'xmlns', 'urn:schemas-microsoft-com:office:spreadsheet');
   TDOMElement(FRootNode).SetAttribute(
     'xmlns:ss', 'urn:schemas-microsoft-com:office:spreadsheet');
-  // Add some style info for date/time fields that will be referered to by
+  // Add some style info for date/time fields that will be referred to by
   // the data cells
 
   ExcelStyles := FOutputDoc.CreateElement('Styles');

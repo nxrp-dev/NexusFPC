@@ -1,13 +1,19 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit googlestoragetransfer;
+{$ENDIF FPC_DOTTEDUNITS}
 {$MODE objfpc}
 {$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils, System.Classes, GoogleApi.Service, FpWeb.Rest.Base, GoogleApi.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses sysutils, classes, googleservice, restbase, googlebase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
-  
+
   //Top-level schema types
   TGoogleServiceAccount = Class;
   TTransferJob = Class;
@@ -66,11 +72,11 @@ type
   TListOperationsResponseTypeoperationsArray = Array of TOperation;
   TTransferOperationTypeerrorBreakdownsArray = Array of TErrorSummary;
   TErrorSummaryTypeerrorLogEntriesArray = Array of TErrorLogEntry;
-  
+
   { --------------------------------------------------------------------
     TGoogleServiceAccount
     --------------------------------------------------------------------}
-  
+
   TGoogleServiceAccount = Class(TGoogleBaseObject)
   Private
     FaccountEmail : String;
@@ -82,11 +88,11 @@ type
     Property accountEmail : String Index 0 Read FaccountEmail Write SetaccountEmail;
   end;
   TGoogleServiceAccountClass = Class of TGoogleServiceAccount;
-  
+
   { --------------------------------------------------------------------
     TTransferJob
     --------------------------------------------------------------------}
-  
+
   TTransferJob = Class(TGoogleBaseObject)
   Private
     Fname : String;
@@ -122,11 +128,11 @@ type
     Property deletionTime : String Index 64 Read FdeletionTime Write SetdeletionTime;
   end;
   TTransferJobClass = Class of TTransferJob;
-  
+
   { --------------------------------------------------------------------
     TTransferSpec
     --------------------------------------------------------------------}
-  
+
   TTransferSpec = Class(TGoogleBaseObject)
   Private
     FgcsDataSource : TGcsData;
@@ -153,11 +159,11 @@ type
     Property transferOptions : TTransferOptions Index 40 Read FtransferOptions Write SettransferOptions;
   end;
   TTransferSpecClass = Class of TTransferSpec;
-  
+
   { --------------------------------------------------------------------
     TGcsData
     --------------------------------------------------------------------}
-  
+
   TGcsData = Class(TGoogleBaseObject)
   Private
     FbucketName : String;
@@ -169,11 +175,11 @@ type
     Property bucketName : String Index 0 Read FbucketName Write SetbucketName;
   end;
   TGcsDataClass = Class of TGcsData;
-  
+
   { --------------------------------------------------------------------
     TAwsS3Data
     --------------------------------------------------------------------}
-  
+
   TAwsS3Data = Class(TGoogleBaseObject)
   Private
     FbucketName : String;
@@ -188,11 +194,11 @@ type
     Property awsAccessKey : TAwsAccessKey Index 8 Read FawsAccessKey Write SetawsAccessKey;
   end;
   TAwsS3DataClass = Class of TAwsS3Data;
-  
+
   { --------------------------------------------------------------------
     TAwsAccessKey
     --------------------------------------------------------------------}
-  
+
   TAwsAccessKey = Class(TGoogleBaseObject)
   Private
     FaccessKeyId : String;
@@ -207,11 +213,11 @@ type
     Property secretAccessKey : String Index 8 Read FsecretAccessKey Write SetsecretAccessKey;
   end;
   TAwsAccessKeyClass = Class of TAwsAccessKey;
-  
+
   { --------------------------------------------------------------------
     THttpData
     --------------------------------------------------------------------}
-  
+
   THttpData = Class(TGoogleBaseObject)
   Private
     FlistUrl : String;
@@ -223,11 +229,11 @@ type
     Property listUrl : String Index 0 Read FlistUrl Write SetlistUrl;
   end;
   THttpDataClass = Class of THttpData;
-  
+
   { --------------------------------------------------------------------
     TObjectConditions
     --------------------------------------------------------------------}
-  
+
   TObjectConditions = Class(TGoogleBaseObject)
   Private
     FminTimeElapsedSinceLastModification : String;
@@ -252,11 +258,11 @@ type
     Property excludePrefixes : TStringArray Index 24 Read FexcludePrefixes Write SetexcludePrefixes;
   end;
   TObjectConditionsClass = Class of TObjectConditions;
-  
+
   { --------------------------------------------------------------------
     TTransferOptions
     --------------------------------------------------------------------}
-  
+
   TTransferOptions = Class(TGoogleBaseObject)
   Private
     FoverwriteObjectsAlreadyExistingInSink : boolean;
@@ -274,11 +280,11 @@ type
     Property deleteObjectsFromSourceAfterTransfer : boolean Index 16 Read FdeleteObjectsFromSourceAfterTransfer Write SetdeleteObjectsFromSourceAfterTransfer;
   end;
   TTransferOptionsClass = Class of TTransferOptions;
-  
+
   { --------------------------------------------------------------------
     TSchedule
     --------------------------------------------------------------------}
-  
+
   TSchedule = Class(TGoogleBaseObject)
   Private
     FscheduleStartDate : TDate;
@@ -296,11 +302,11 @@ type
     Property startTimeOfDay : TTimeOfDay Index 16 Read FstartTimeOfDay Write SetstartTimeOfDay;
   end;
   TScheduleClass = Class of TSchedule;
-  
+
   { --------------------------------------------------------------------
     TDate
     --------------------------------------------------------------------}
-  
+
   TDate = Class(TGoogleBaseObject)
   Private
     Fyear : integer;
@@ -318,11 +324,11 @@ type
     Property day : integer Index 16 Read Fday Write Setday;
   end;
   TDateClass = Class of TDate;
-  
+
   { --------------------------------------------------------------------
     TTimeOfDay
     --------------------------------------------------------------------}
-  
+
   TTimeOfDay = Class(TGoogleBaseObject)
   Private
     Fhours : integer;
@@ -343,11 +349,11 @@ type
     Property nanos : integer Index 24 Read Fnanos Write Setnanos;
   end;
   TTimeOfDayClass = Class of TTimeOfDay;
-  
+
   { --------------------------------------------------------------------
     TUpdateTransferJobRequest
     --------------------------------------------------------------------}
-  
+
   TUpdateTransferJobRequest = Class(TGoogleBaseObject)
   Private
     FprojectId : String;
@@ -365,11 +371,11 @@ type
     Property updateTransferJobFieldMask : String Index 16 Read FupdateTransferJobFieldMask Write SetupdateTransferJobFieldMask;
   end;
   TUpdateTransferJobRequestClass = Class of TUpdateTransferJobRequest;
-  
+
   { --------------------------------------------------------------------
     TListTransferJobsResponse
     --------------------------------------------------------------------}
-  
+
   TListTransferJobsResponse = Class(TGoogleBaseObject)
   Private
     FtransferJobs : TListTransferJobsResponseTypetransferJobsArray;
@@ -388,11 +394,11 @@ type
     Property nextPageToken : String Index 8 Read FnextPageToken Write SetnextPageToken;
   end;
   TListTransferJobsResponseClass = Class of TListTransferJobsResponse;
-  
+
   { --------------------------------------------------------------------
     TPauseTransferOperationRequest
     --------------------------------------------------------------------}
-  
+
   TPauseTransferOperationRequest = Class(TGoogleBaseObject)
   Private
   Protected
@@ -401,11 +407,11 @@ type
   Published
   end;
   TPauseTransferOperationRequestClass = Class of TPauseTransferOperationRequest;
-  
+
   { --------------------------------------------------------------------
     TEmpty
     --------------------------------------------------------------------}
-  
+
   TEmpty = Class(TGoogleBaseObject)
   Private
   Protected
@@ -414,11 +420,11 @@ type
   Published
   end;
   TEmptyClass = Class of TEmpty;
-  
+
   { --------------------------------------------------------------------
     TResumeTransferOperationRequest
     --------------------------------------------------------------------}
-  
+
   TResumeTransferOperationRequest = Class(TGoogleBaseObject)
   Private
   Protected
@@ -427,11 +433,11 @@ type
   Published
   end;
   TResumeTransferOperationRequestClass = Class of TResumeTransferOperationRequest;
-  
+
   { --------------------------------------------------------------------
     TOperationTypemetadata
     --------------------------------------------------------------------}
-  
+
   TOperationTypemetadata = Class(TGoogleBaseObject)
   Private
   Protected
@@ -441,11 +447,11 @@ type
   Published
   end;
   TOperationTypemetadataClass = Class of TOperationTypemetadata;
-  
+
   { --------------------------------------------------------------------
     TOperationTyperesponse
     --------------------------------------------------------------------}
-  
+
   TOperationTyperesponse = Class(TGoogleBaseObject)
   Private
   Protected
@@ -455,11 +461,11 @@ type
   Published
   end;
   TOperationTyperesponseClass = Class of TOperationTyperesponse;
-  
+
   { --------------------------------------------------------------------
     TOperation
     --------------------------------------------------------------------}
-  
+
   TOperation = Class(TGoogleBaseObject)
   Private
     Fname : String;
@@ -483,11 +489,11 @@ type
     Property response : TOperationTyperesponse Index 32 Read Fresponse Write Setresponse;
   end;
   TOperationClass = Class of TOperation;
-  
+
   { --------------------------------------------------------------------
     TStatusTypedetailsItem
     --------------------------------------------------------------------}
-  
+
   TStatusTypedetailsItem = Class(TGoogleBaseObject)
   Private
   Protected
@@ -497,11 +503,11 @@ type
   Published
   end;
   TStatusTypedetailsItemClass = Class of TStatusTypedetailsItem;
-  
+
   { --------------------------------------------------------------------
     TStatus
     --------------------------------------------------------------------}
-  
+
   TStatus = Class(TGoogleBaseObject)
   Private
     Fcode : integer;
@@ -523,11 +529,11 @@ type
     Property details : TStatusTypedetailsArray Index 16 Read Fdetails Write Setdetails;
   end;
   TStatusClass = Class of TStatus;
-  
+
   { --------------------------------------------------------------------
     TListOperationsResponse
     --------------------------------------------------------------------}
-  
+
   TListOperationsResponse = Class(TGoogleBaseObject)
   Private
     Foperations : TListOperationsResponseTypeoperationsArray;
@@ -546,11 +552,11 @@ type
     Property nextPageToken : String Index 8 Read FnextPageToken Write SetnextPageToken;
   end;
   TListOperationsResponseClass = Class of TListOperationsResponse;
-  
+
   { --------------------------------------------------------------------
     TTransferOperation
     --------------------------------------------------------------------}
-  
+
   TTransferOperation = Class(TGoogleBaseObject)
   Private
     Fname : String;
@@ -590,11 +596,11 @@ type
     Property transferJobName : String Index 64 Read FtransferJobName Write SettransferJobName;
   end;
   TTransferOperationClass = Class of TTransferOperation;
-  
+
   { --------------------------------------------------------------------
     TTransferCounters
     --------------------------------------------------------------------}
-  
+
   TTransferCounters = Class(TGoogleBaseObject)
   Private
     FobjectsFoundFromSource : String;
@@ -651,11 +657,11 @@ type
     Property bytesFailedToDeleteFromSink : String Index 120 Read FbytesFailedToDeleteFromSink Write SetbytesFailedToDeleteFromSink;
   end;
   TTransferCountersClass = Class of TTransferCounters;
-  
+
   { --------------------------------------------------------------------
     TErrorSummary
     --------------------------------------------------------------------}
-  
+
   TErrorSummary = Class(TGoogleBaseObject)
   Private
     FerrorCode : String;
@@ -677,11 +683,11 @@ type
     Property errorLogEntries : TErrorSummaryTypeerrorLogEntriesArray Index 16 Read FerrorLogEntries Write SeterrorLogEntries;
   end;
   TErrorSummaryClass = Class of TErrorSummary;
-  
+
   { --------------------------------------------------------------------
     TErrorLogEntry
     --------------------------------------------------------------------}
-  
+
   TErrorLogEntry = Class(TGoogleBaseObject)
   Private
     Furl : String;
@@ -700,30 +706,30 @@ type
     Property errorDetails : TStringArray Index 8 Read FerrorDetails Write SeterrorDetails;
   end;
   TErrorLogEntryClass = Class of TErrorLogEntry;
-  
+
   { --------------------------------------------------------------------
     TGoogleServiceAccountsResource
     --------------------------------------------------------------------}
-  
+
   TGoogleServiceAccountsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
     Class Function DefaultAPI : TGoogleAPIClass; override;
     Function Get(projectId: string) : TGoogleServiceAccount;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TV1Resource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TV1Resource, method GetGoogleServiceAccount
-  
+
   TV1GetGoogleServiceAccountOptions = Record
     projectId : String;
   end;
-  
+
   TV1Resource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -731,28 +737,28 @@ type
     Function GetGoogleServiceAccount(AQuery : string  = '') : TGoogleServiceAccount;
     Function GetGoogleServiceAccount(AQuery : TV1getGoogleServiceAccountOptions) : TGoogleServiceAccount;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TTransferJobsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TTransferJobsResource, method Get
-  
+
   TTransferJobsGetOptions = Record
     projectId : String;
   end;
-  
-  
+
+
   //Optional query Options for TTransferJobsResource, method List
-  
+
   TTransferJobsListOptions = Record
     filter : String;
     pageSize : integer;
     pageToken : String;
   end;
-  
+
   TTransferJobsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -764,21 +770,21 @@ type
     Function List(AQuery : string  = '') : TListTransferJobsResponse;
     Function List(AQuery : TTransferJobslistOptions) : TListTransferJobsResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TTransferOperationsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TTransferOperationsResource, method List
-  
+
   TTransferOperationsListOptions = Record
     filter : String;
     pageSize : integer;
     pageToken : String;
   end;
-  
+
   TTransferOperationsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -791,12 +797,12 @@ type
     Function Cancel(_name: string) : TEmpty;
     Function Delete(_name: string) : TEmpty;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TStoragetransferAPI
     --------------------------------------------------------------------}
-  
+
   TStoragetransferAPI = Class(TGoogleAPI)
   Private
     FGoogleServiceAccountsInstance : TGoogleServiceAccountsResource;
@@ -853,7 +859,7 @@ implementation
   --------------------------------------------------------------------}
 
 
-Procedure TGoogleServiceAccount.SetaccountEmail(AIndex : Integer; const AValue : String); 
+Procedure TGoogleServiceAccount.SetaccountEmail(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountEmail=AValue) then exit;
@@ -870,7 +876,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTransferJob.Setname(AIndex : Integer; const AValue : String); 
+Procedure TTransferJob.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -880,7 +886,7 @@ end;
 
 
 
-Procedure TTransferJob.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TTransferJob.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -890,7 +896,7 @@ end;
 
 
 
-Procedure TTransferJob.SetprojectId(AIndex : Integer; const AValue : String); 
+Procedure TTransferJob.SetprojectId(AIndex : Integer; const AValue : String);
 
 begin
   If (FprojectId=AValue) then exit;
@@ -900,7 +906,7 @@ end;
 
 
 
-Procedure TTransferJob.SettransferSpec(AIndex : Integer; const AValue : TTransferSpec); 
+Procedure TTransferJob.SettransferSpec(AIndex : Integer; const AValue : TTransferSpec);
 
 begin
   If (FtransferSpec=AValue) then exit;
@@ -910,7 +916,7 @@ end;
 
 
 
-Procedure TTransferJob.Setschedule(AIndex : Integer; const AValue : TSchedule); 
+Procedure TTransferJob.Setschedule(AIndex : Integer; const AValue : TSchedule);
 
 begin
   If (Fschedule=AValue) then exit;
@@ -920,7 +926,7 @@ end;
 
 
 
-Procedure TTransferJob.Setstatus(AIndex : Integer; const AValue : String); 
+Procedure TTransferJob.Setstatus(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -930,7 +936,7 @@ end;
 
 
 
-Procedure TTransferJob.SetcreationTime(AIndex : Integer; const AValue : String); 
+Procedure TTransferJob.SetcreationTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTime=AValue) then exit;
@@ -940,7 +946,7 @@ end;
 
 
 
-Procedure TTransferJob.SetlastModificationTime(AIndex : Integer; const AValue : String); 
+Procedure TTransferJob.SetlastModificationTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FlastModificationTime=AValue) then exit;
@@ -950,7 +956,7 @@ end;
 
 
 
-Procedure TTransferJob.SetdeletionTime(AIndex : Integer; const AValue : String); 
+Procedure TTransferJob.SetdeletionTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FdeletionTime=AValue) then exit;
@@ -967,7 +973,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTransferSpec.SetgcsDataSource(AIndex : Integer; const AValue : TGcsData); 
+Procedure TTransferSpec.SetgcsDataSource(AIndex : Integer; const AValue : TGcsData);
 
 begin
   If (FgcsDataSource=AValue) then exit;
@@ -977,7 +983,7 @@ end;
 
 
 
-Procedure TTransferSpec.SetawsS3DataSource(AIndex : Integer; const AValue : TAwsS3Data); 
+Procedure TTransferSpec.SetawsS3DataSource(AIndex : Integer; const AValue : TAwsS3Data);
 
 begin
   If (FawsS3DataSource=AValue) then exit;
@@ -987,7 +993,7 @@ end;
 
 
 
-Procedure TTransferSpec.SethttpDataSource(AIndex : Integer; const AValue : THttpData); 
+Procedure TTransferSpec.SethttpDataSource(AIndex : Integer; const AValue : THttpData);
 
 begin
   If (FhttpDataSource=AValue) then exit;
@@ -997,7 +1003,7 @@ end;
 
 
 
-Procedure TTransferSpec.SetgcsDataSink(AIndex : Integer; const AValue : TGcsData); 
+Procedure TTransferSpec.SetgcsDataSink(AIndex : Integer; const AValue : TGcsData);
 
 begin
   If (FgcsDataSink=AValue) then exit;
@@ -1007,7 +1013,7 @@ end;
 
 
 
-Procedure TTransferSpec.SetobjectConditions(AIndex : Integer; const AValue : TObjectConditions); 
+Procedure TTransferSpec.SetobjectConditions(AIndex : Integer; const AValue : TObjectConditions);
 
 begin
   If (FobjectConditions=AValue) then exit;
@@ -1017,7 +1023,7 @@ end;
 
 
 
-Procedure TTransferSpec.SettransferOptions(AIndex : Integer; const AValue : TTransferOptions); 
+Procedure TTransferSpec.SettransferOptions(AIndex : Integer; const AValue : TTransferOptions);
 
 begin
   If (FtransferOptions=AValue) then exit;
@@ -1034,7 +1040,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TGcsData.SetbucketName(AIndex : Integer; const AValue : String); 
+Procedure TGcsData.SetbucketName(AIndex : Integer; const AValue : String);
 
 begin
   If (FbucketName=AValue) then exit;
@@ -1051,7 +1057,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAwsS3Data.SetbucketName(AIndex : Integer; const AValue : String); 
+Procedure TAwsS3Data.SetbucketName(AIndex : Integer; const AValue : String);
 
 begin
   If (FbucketName=AValue) then exit;
@@ -1061,7 +1067,7 @@ end;
 
 
 
-Procedure TAwsS3Data.SetawsAccessKey(AIndex : Integer; const AValue : TAwsAccessKey); 
+Procedure TAwsS3Data.SetawsAccessKey(AIndex : Integer; const AValue : TAwsAccessKey);
 
 begin
   If (FawsAccessKey=AValue) then exit;
@@ -1078,7 +1084,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAwsAccessKey.SetaccessKeyId(AIndex : Integer; const AValue : String); 
+Procedure TAwsAccessKey.SetaccessKeyId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccessKeyId=AValue) then exit;
@@ -1088,7 +1094,7 @@ end;
 
 
 
-Procedure TAwsAccessKey.SetsecretAccessKey(AIndex : Integer; const AValue : String); 
+Procedure TAwsAccessKey.SetsecretAccessKey(AIndex : Integer; const AValue : String);
 
 begin
   If (FsecretAccessKey=AValue) then exit;
@@ -1105,7 +1111,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure THttpData.SetlistUrl(AIndex : Integer; const AValue : String); 
+Procedure THttpData.SetlistUrl(AIndex : Integer; const AValue : String);
 
 begin
   If (FlistUrl=AValue) then exit;
@@ -1122,7 +1128,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TObjectConditions.SetminTimeElapsedSinceLastModification(AIndex : Integer; const AValue : String); 
+Procedure TObjectConditions.SetminTimeElapsedSinceLastModification(AIndex : Integer; const AValue : String);
 
 begin
   If (FminTimeElapsedSinceLastModification=AValue) then exit;
@@ -1132,7 +1138,7 @@ end;
 
 
 
-Procedure TObjectConditions.SetmaxTimeElapsedSinceLastModification(AIndex : Integer; const AValue : String); 
+Procedure TObjectConditions.SetmaxTimeElapsedSinceLastModification(AIndex : Integer; const AValue : String);
 
 begin
   If (FmaxTimeElapsedSinceLastModification=AValue) then exit;
@@ -1142,7 +1148,7 @@ end;
 
 
 
-Procedure TObjectConditions.SetincludePrefixes(AIndex : Integer; const AValue : TStringArray); 
+Procedure TObjectConditions.SetincludePrefixes(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FincludePrefixes=AValue) then exit;
@@ -1152,7 +1158,7 @@ end;
 
 
 
-Procedure TObjectConditions.SetexcludePrefixes(AIndex : Integer; const AValue : TStringArray); 
+Procedure TObjectConditions.SetexcludePrefixes(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FexcludePrefixes=AValue) then exit;
@@ -1163,7 +1169,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TObjectConditions.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TObjectConditions.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1183,7 +1189,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTransferOptions.SetoverwriteObjectsAlreadyExistingInSink(AIndex : Integer; const AValue : boolean); 
+Procedure TTransferOptions.SetoverwriteObjectsAlreadyExistingInSink(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FoverwriteObjectsAlreadyExistingInSink=AValue) then exit;
@@ -1193,7 +1199,7 @@ end;
 
 
 
-Procedure TTransferOptions.SetdeleteObjectsUniqueInSink(AIndex : Integer; const AValue : boolean); 
+Procedure TTransferOptions.SetdeleteObjectsUniqueInSink(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FdeleteObjectsUniqueInSink=AValue) then exit;
@@ -1203,7 +1209,7 @@ end;
 
 
 
-Procedure TTransferOptions.SetdeleteObjectsFromSourceAfterTransfer(AIndex : Integer; const AValue : boolean); 
+Procedure TTransferOptions.SetdeleteObjectsFromSourceAfterTransfer(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FdeleteObjectsFromSourceAfterTransfer=AValue) then exit;
@@ -1220,7 +1226,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSchedule.SetscheduleStartDate(AIndex : Integer; const AValue : TDate); 
+Procedure TSchedule.SetscheduleStartDate(AIndex : Integer; const AValue : TDate);
 
 begin
   If (FscheduleStartDate=AValue) then exit;
@@ -1230,7 +1236,7 @@ end;
 
 
 
-Procedure TSchedule.SetscheduleEndDate(AIndex : Integer; const AValue : TDate); 
+Procedure TSchedule.SetscheduleEndDate(AIndex : Integer; const AValue : TDate);
 
 begin
   If (FscheduleEndDate=AValue) then exit;
@@ -1240,7 +1246,7 @@ end;
 
 
 
-Procedure TSchedule.SetstartTimeOfDay(AIndex : Integer; const AValue : TTimeOfDay); 
+Procedure TSchedule.SetstartTimeOfDay(AIndex : Integer; const AValue : TTimeOfDay);
 
 begin
   If (FstartTimeOfDay=AValue) then exit;
@@ -1257,7 +1263,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDate.Setyear(AIndex : Integer; const AValue : integer); 
+Procedure TDate.Setyear(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fyear=AValue) then exit;
@@ -1267,7 +1273,7 @@ end;
 
 
 
-Procedure TDate.Setmonth(AIndex : Integer; const AValue : integer); 
+Procedure TDate.Setmonth(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fmonth=AValue) then exit;
@@ -1277,7 +1283,7 @@ end;
 
 
 
-Procedure TDate.Setday(AIndex : Integer; const AValue : integer); 
+Procedure TDate.Setday(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fday=AValue) then exit;
@@ -1294,7 +1300,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTimeOfDay.Sethours(AIndex : Integer; const AValue : integer); 
+Procedure TTimeOfDay.Sethours(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fhours=AValue) then exit;
@@ -1304,7 +1310,7 @@ end;
 
 
 
-Procedure TTimeOfDay.Setminutes(AIndex : Integer; const AValue : integer); 
+Procedure TTimeOfDay.Setminutes(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fminutes=AValue) then exit;
@@ -1314,7 +1320,7 @@ end;
 
 
 
-Procedure TTimeOfDay.Setseconds(AIndex : Integer; const AValue : integer); 
+Procedure TTimeOfDay.Setseconds(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fseconds=AValue) then exit;
@@ -1324,7 +1330,7 @@ end;
 
 
 
-Procedure TTimeOfDay.Setnanos(AIndex : Integer; const AValue : integer); 
+Procedure TTimeOfDay.Setnanos(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fnanos=AValue) then exit;
@@ -1341,7 +1347,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TUpdateTransferJobRequest.SetprojectId(AIndex : Integer; const AValue : String); 
+Procedure TUpdateTransferJobRequest.SetprojectId(AIndex : Integer; const AValue : String);
 
 begin
   If (FprojectId=AValue) then exit;
@@ -1351,7 +1357,7 @@ end;
 
 
 
-Procedure TUpdateTransferJobRequest.SettransferJob(AIndex : Integer; const AValue : TTransferJob); 
+Procedure TUpdateTransferJobRequest.SettransferJob(AIndex : Integer; const AValue : TTransferJob);
 
 begin
   If (FtransferJob=AValue) then exit;
@@ -1361,7 +1367,7 @@ end;
 
 
 
-Procedure TUpdateTransferJobRequest.SetupdateTransferJobFieldMask(AIndex : Integer; const AValue : String); 
+Procedure TUpdateTransferJobRequest.SetupdateTransferJobFieldMask(AIndex : Integer; const AValue : String);
 
 begin
   If (FupdateTransferJobFieldMask=AValue) then exit;
@@ -1378,7 +1384,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TListTransferJobsResponse.SettransferJobs(AIndex : Integer; const AValue : TListTransferJobsResponseTypetransferJobsArray); 
+Procedure TListTransferJobsResponse.SettransferJobs(AIndex : Integer; const AValue : TListTransferJobsResponseTypetransferJobsArray);
 
 begin
   If (FtransferJobs=AValue) then exit;
@@ -1388,7 +1394,7 @@ end;
 
 
 
-Procedure TListTransferJobsResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TListTransferJobsResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -1399,7 +1405,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TListTransferJobsResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TListTransferJobsResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1465,7 +1471,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperation.Setname(AIndex : Integer; const AValue : String); 
+Procedure TOperation.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -1475,7 +1481,7 @@ end;
 
 
 
-Procedure TOperation.Setmetadata(AIndex : Integer; const AValue : TOperationTypemetadata); 
+Procedure TOperation.Setmetadata(AIndex : Integer; const AValue : TOperationTypemetadata);
 
 begin
   If (Fmetadata=AValue) then exit;
@@ -1485,7 +1491,7 @@ end;
 
 
 
-Procedure TOperation.Setdone(AIndex : Integer; const AValue : boolean); 
+Procedure TOperation.Setdone(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fdone=AValue) then exit;
@@ -1495,7 +1501,7 @@ end;
 
 
 
-Procedure TOperation.Seterror(AIndex : Integer; const AValue : TStatus); 
+Procedure TOperation.Seterror(AIndex : Integer; const AValue : TStatus);
 
 begin
   If (Ferror=AValue) then exit;
@@ -1505,7 +1511,7 @@ end;
 
 
 
-Procedure TOperation.Setresponse(AIndex : Integer; const AValue : TOperationTyperesponse); 
+Procedure TOperation.Setresponse(AIndex : Integer; const AValue : TOperationTyperesponse);
 
 begin
   If (Fresponse=AValue) then exit;
@@ -1535,7 +1541,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TStatus.Setcode(AIndex : Integer; const AValue : integer); 
+Procedure TStatus.Setcode(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fcode=AValue) then exit;
@@ -1545,7 +1551,7 @@ end;
 
 
 
-Procedure TStatus.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TStatus.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -1555,7 +1561,7 @@ end;
 
 
 
-Procedure TStatus.Setdetails(AIndex : Integer; const AValue : TStatusTypedetailsArray); 
+Procedure TStatus.Setdetails(AIndex : Integer; const AValue : TStatusTypedetailsArray);
 
 begin
   If (Fdetails=AValue) then exit;
@@ -1566,7 +1572,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TStatus.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TStatus.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1585,7 +1591,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TListOperationsResponse.Setoperations(AIndex : Integer; const AValue : TListOperationsResponseTypeoperationsArray); 
+Procedure TListOperationsResponse.Setoperations(AIndex : Integer; const AValue : TListOperationsResponseTypeoperationsArray);
 
 begin
   If (Foperations=AValue) then exit;
@@ -1595,7 +1601,7 @@ end;
 
 
 
-Procedure TListOperationsResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TListOperationsResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -1606,7 +1612,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TListOperationsResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TListOperationsResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1625,7 +1631,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTransferOperation.Setname(AIndex : Integer; const AValue : String); 
+Procedure TTransferOperation.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -1635,7 +1641,7 @@ end;
 
 
 
-Procedure TTransferOperation.SetprojectId(AIndex : Integer; const AValue : String); 
+Procedure TTransferOperation.SetprojectId(AIndex : Integer; const AValue : String);
 
 begin
   If (FprojectId=AValue) then exit;
@@ -1645,7 +1651,7 @@ end;
 
 
 
-Procedure TTransferOperation.SettransferSpec(AIndex : Integer; const AValue : TTransferSpec); 
+Procedure TTransferOperation.SettransferSpec(AIndex : Integer; const AValue : TTransferSpec);
 
 begin
   If (FtransferSpec=AValue) then exit;
@@ -1655,7 +1661,7 @@ end;
 
 
 
-Procedure TTransferOperation.SetstartTime(AIndex : Integer; const AValue : String); 
+Procedure TTransferOperation.SetstartTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FstartTime=AValue) then exit;
@@ -1665,7 +1671,7 @@ end;
 
 
 
-Procedure TTransferOperation.SetendTime(AIndex : Integer; const AValue : String); 
+Procedure TTransferOperation.SetendTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FendTime=AValue) then exit;
@@ -1675,7 +1681,7 @@ end;
 
 
 
-Procedure TTransferOperation.Setstatus(AIndex : Integer; const AValue : String); 
+Procedure TTransferOperation.Setstatus(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -1685,7 +1691,7 @@ end;
 
 
 
-Procedure TTransferOperation.Setcounters(AIndex : Integer; const AValue : TTransferCounters); 
+Procedure TTransferOperation.Setcounters(AIndex : Integer; const AValue : TTransferCounters);
 
 begin
   If (Fcounters=AValue) then exit;
@@ -1695,7 +1701,7 @@ end;
 
 
 
-Procedure TTransferOperation.SeterrorBreakdowns(AIndex : Integer; const AValue : TTransferOperationTypeerrorBreakdownsArray); 
+Procedure TTransferOperation.SeterrorBreakdowns(AIndex : Integer; const AValue : TTransferOperationTypeerrorBreakdownsArray);
 
 begin
   If (FerrorBreakdowns=AValue) then exit;
@@ -1705,7 +1711,7 @@ end;
 
 
 
-Procedure TTransferOperation.SettransferJobName(AIndex : Integer; const AValue : String); 
+Procedure TTransferOperation.SettransferJobName(AIndex : Integer; const AValue : String);
 
 begin
   If (FtransferJobName=AValue) then exit;
@@ -1716,7 +1722,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTransferOperation.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTransferOperation.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1735,7 +1741,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTransferCounters.SetobjectsFoundFromSource(AIndex : Integer; const AValue : String); 
+Procedure TTransferCounters.SetobjectsFoundFromSource(AIndex : Integer; const AValue : String);
 
 begin
   If (FobjectsFoundFromSource=AValue) then exit;
@@ -1745,7 +1751,7 @@ end;
 
 
 
-Procedure TTransferCounters.SetbytesFoundFromSource(AIndex : Integer; const AValue : String); 
+Procedure TTransferCounters.SetbytesFoundFromSource(AIndex : Integer; const AValue : String);
 
 begin
   If (FbytesFoundFromSource=AValue) then exit;
@@ -1755,7 +1761,7 @@ end;
 
 
 
-Procedure TTransferCounters.SetobjectsFoundOnlyFromSink(AIndex : Integer; const AValue : String); 
+Procedure TTransferCounters.SetobjectsFoundOnlyFromSink(AIndex : Integer; const AValue : String);
 
 begin
   If (FobjectsFoundOnlyFromSink=AValue) then exit;
@@ -1765,7 +1771,7 @@ end;
 
 
 
-Procedure TTransferCounters.SetbytesFoundOnlyFromSink(AIndex : Integer; const AValue : String); 
+Procedure TTransferCounters.SetbytesFoundOnlyFromSink(AIndex : Integer; const AValue : String);
 
 begin
   If (FbytesFoundOnlyFromSink=AValue) then exit;
@@ -1775,7 +1781,7 @@ end;
 
 
 
-Procedure TTransferCounters.SetobjectsFromSourceSkippedBySync(AIndex : Integer; const AValue : String); 
+Procedure TTransferCounters.SetobjectsFromSourceSkippedBySync(AIndex : Integer; const AValue : String);
 
 begin
   If (FobjectsFromSourceSkippedBySync=AValue) then exit;
@@ -1785,7 +1791,7 @@ end;
 
 
 
-Procedure TTransferCounters.SetbytesFromSourceSkippedBySync(AIndex : Integer; const AValue : String); 
+Procedure TTransferCounters.SetbytesFromSourceSkippedBySync(AIndex : Integer; const AValue : String);
 
 begin
   If (FbytesFromSourceSkippedBySync=AValue) then exit;
@@ -1795,7 +1801,7 @@ end;
 
 
 
-Procedure TTransferCounters.SetobjectsCopiedToSink(AIndex : Integer; const AValue : String); 
+Procedure TTransferCounters.SetobjectsCopiedToSink(AIndex : Integer; const AValue : String);
 
 begin
   If (FobjectsCopiedToSink=AValue) then exit;
@@ -1805,7 +1811,7 @@ end;
 
 
 
-Procedure TTransferCounters.SetbytesCopiedToSink(AIndex : Integer; const AValue : String); 
+Procedure TTransferCounters.SetbytesCopiedToSink(AIndex : Integer; const AValue : String);
 
 begin
   If (FbytesCopiedToSink=AValue) then exit;
@@ -1815,7 +1821,7 @@ end;
 
 
 
-Procedure TTransferCounters.SetobjectsDeletedFromSource(AIndex : Integer; const AValue : String); 
+Procedure TTransferCounters.SetobjectsDeletedFromSource(AIndex : Integer; const AValue : String);
 
 begin
   If (FobjectsDeletedFromSource=AValue) then exit;
@@ -1825,7 +1831,7 @@ end;
 
 
 
-Procedure TTransferCounters.SetbytesDeletedFromSource(AIndex : Integer; const AValue : String); 
+Procedure TTransferCounters.SetbytesDeletedFromSource(AIndex : Integer; const AValue : String);
 
 begin
   If (FbytesDeletedFromSource=AValue) then exit;
@@ -1835,7 +1841,7 @@ end;
 
 
 
-Procedure TTransferCounters.SetobjectsDeletedFromSink(AIndex : Integer; const AValue : String); 
+Procedure TTransferCounters.SetobjectsDeletedFromSink(AIndex : Integer; const AValue : String);
 
 begin
   If (FobjectsDeletedFromSink=AValue) then exit;
@@ -1845,7 +1851,7 @@ end;
 
 
 
-Procedure TTransferCounters.SetbytesDeletedFromSink(AIndex : Integer; const AValue : String); 
+Procedure TTransferCounters.SetbytesDeletedFromSink(AIndex : Integer; const AValue : String);
 
 begin
   If (FbytesDeletedFromSink=AValue) then exit;
@@ -1855,7 +1861,7 @@ end;
 
 
 
-Procedure TTransferCounters.SetobjectsFromSourceFailed(AIndex : Integer; const AValue : String); 
+Procedure TTransferCounters.SetobjectsFromSourceFailed(AIndex : Integer; const AValue : String);
 
 begin
   If (FobjectsFromSourceFailed=AValue) then exit;
@@ -1865,7 +1871,7 @@ end;
 
 
 
-Procedure TTransferCounters.SetbytesFromSourceFailed(AIndex : Integer; const AValue : String); 
+Procedure TTransferCounters.SetbytesFromSourceFailed(AIndex : Integer; const AValue : String);
 
 begin
   If (FbytesFromSourceFailed=AValue) then exit;
@@ -1875,7 +1881,7 @@ end;
 
 
 
-Procedure TTransferCounters.SetobjectsFailedToDeleteFromSink(AIndex : Integer; const AValue : String); 
+Procedure TTransferCounters.SetobjectsFailedToDeleteFromSink(AIndex : Integer; const AValue : String);
 
 begin
   If (FobjectsFailedToDeleteFromSink=AValue) then exit;
@@ -1885,7 +1891,7 @@ end;
 
 
 
-Procedure TTransferCounters.SetbytesFailedToDeleteFromSink(AIndex : Integer; const AValue : String); 
+Procedure TTransferCounters.SetbytesFailedToDeleteFromSink(AIndex : Integer; const AValue : String);
 
 begin
   If (FbytesFailedToDeleteFromSink=AValue) then exit;
@@ -1902,7 +1908,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TErrorSummary.SeterrorCode(AIndex : Integer; const AValue : String); 
+Procedure TErrorSummary.SeterrorCode(AIndex : Integer; const AValue : String);
 
 begin
   If (FerrorCode=AValue) then exit;
@@ -1912,7 +1918,7 @@ end;
 
 
 
-Procedure TErrorSummary.SeterrorCount(AIndex : Integer; const AValue : String); 
+Procedure TErrorSummary.SeterrorCount(AIndex : Integer; const AValue : String);
 
 begin
   If (FerrorCount=AValue) then exit;
@@ -1922,7 +1928,7 @@ end;
 
 
 
-Procedure TErrorSummary.SeterrorLogEntries(AIndex : Integer; const AValue : TErrorSummaryTypeerrorLogEntriesArray); 
+Procedure TErrorSummary.SeterrorLogEntries(AIndex : Integer; const AValue : TErrorSummaryTypeerrorLogEntriesArray);
 
 begin
   If (FerrorLogEntries=AValue) then exit;
@@ -1933,7 +1939,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TErrorSummary.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TErrorSummary.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1952,7 +1958,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TErrorLogEntry.Seturl(AIndex : Integer; const AValue : String); 
+Procedure TErrorLogEntry.Seturl(AIndex : Integer; const AValue : String);
 
 begin
   If (Furl=AValue) then exit;
@@ -1962,7 +1968,7 @@ end;
 
 
 
-Procedure TErrorLogEntry.SeterrorDetails(AIndex : Integer; const AValue : TStringArray); 
+Procedure TErrorLogEntry.SeterrorDetails(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FerrorDetails=AValue) then exit;
@@ -1973,7 +1979,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TErrorLogEntry.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TErrorLogEntry.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2395,7 +2401,7 @@ begin
   SetLength(Result,1);
   Result[0].Name:='https://www.googleapis.com/auth/cloud-platform';
   Result[0].Description:='View and manage your data across Google Cloud Platform services';
-  
+
 end;
 
 Class Function TStoragetransferAPI.APINeedsAuth : Boolean;

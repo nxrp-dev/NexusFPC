@@ -1,9 +1,16 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit pwd;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.InitC,UnixApi.Types,UnixApi.Base,System.CTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   initc,unixtype,baseunix,ctypes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$IFDEF FPC}
 {$PACKRECORDS C}
@@ -13,30 +20,30 @@ const
       External_library= clib;  {Setup as you need}
 
   const
-     _PATH_PWD = '/etc';     
-     _PATH_PASSWD = '/etc/passwd';     
-     _PASSWD = 'passwd';     
-     _PATH_MASTERPASSWD = '/etc/master.passwd';     
+     _PATH_PWD = '/etc';
+     _PATH_PASSWD = '/etc/passwd';
+     _PASSWD = 'passwd';
+     _PATH_MASTERPASSWD = '/etc/master.passwd';
 {$ifdef Darwin}
      _PATH_MASTERPASSWD_LOCK = '/etc/ptmp';
 {$endif}
-     _MASTERPASSWD = 'master.passwd';     
+     _MASTERPASSWD = 'master.passwd';
 
-     _PATH_MP_DB = '/etc/pwd.db';     
-     _MP_DB = 'pwd.db';     
-     _PATH_SMP_DB = '/etc/spwd.db';     
-     _SMP_DB = 'spwd.db';     
-     _PATH_PWD_MKDB = '/usr/sbin/pwd_mkdb';     
+     _PATH_MP_DB = '/etc/pwd.db';
+     _MP_DB = 'pwd.db';
+     _PATH_SMP_DB = '/etc/spwd.db';
+     _SMP_DB = 'spwd.db';
+     _PATH_PWD_MKDB = '/usr/sbin/pwd_mkdb';
 
 
 {$ifdef BSD}
-  _PW_VERSION_MASK = #$F0;     
+  _PW_VERSION_MASK = #$F0;
 
-  function _PW_VERSIONED(x,v : longint) : cuchar; inline; 
+  function _PW_VERSIONED(x,v : longint) : cuchar; inline;
 
 
   const
-     _PW_KEYBYNAME    = #$31;          { stored by name  } 
+     _PW_KEYBYNAME    = #$31;          { stored by name  }
      _PW_KEYBYNUM     = #$32;        { stored by entry in the "file"}
      _PW_KEYBYUID     = #$33;        { stored by uid  }
    {$ifdef FreeBSD}
@@ -48,12 +55,12 @@ const
    * the entries therein.  There may be other, older versioned entries
    * as well. }
 
-const  
+const
    {$ifdef FreeBSD}
     _PWD_VERSION_KEY	 = #$FF+'VERSION';
     _PWD_CURRENT_VERSION = #$4;
    {$endif}
-    _PASSWORD_EFMT1      = '_';      	{ extended encryption format  } 
+    _PASSWORD_EFMT1      = '_';      	{ extended encryption format  }
     _PASSWORD_LEN        = 128;         { max length, not counting NULL  }
   {$ifdef Darwin}
     _PASSWORD_NOUID         = $01;    (* flag for no specified uid. *)
@@ -64,7 +71,7 @@ const
     _PASSWORD_CHGNOW        = -1;     (* special day to force password
                                          * change at next login *)
   {$endif}
- 
+
 {$endif}
 
 type
@@ -72,17 +79,17 @@ type
      PPasswd  = ^TPasswd;
      PPPasswd = ^PPasswd;
      Passwd   = record
-            pw_name    : pchar;        { user name  }
-            pw_passwd  : pchar;	{ encrypted password  }
+            pw_name    : PAnsiChar;        { user name  }
+            pw_passwd  : PAnsiChar;	{ encrypted password  }
             pw_uid     : Tuid;		{ user uid  }
             pw_gid     : Tgid;		{ user gid  }
             {$ifdef bsd}
             pw_change  : Ttime platform;         { password change time  }
-            pw_class   : pchar platform;        { user access class  }
+            pw_class   : PAnsiChar platform;        { user access class  }
             {$endif}
-            pw_gecos   : pchar;        { Honeywell login info  }
-            pw_dir     : pchar;        { home directory  }
-            pw_shell   : pchar;        { default shell  }
+            pw_gecos   : PAnsiChar;        { Honeywell login info  }
+            pw_dir     : PAnsiChar;        { home directory  }
+            pw_shell   : PAnsiChar;        { default shell  }
             {$ifdef bsd}
             pw_expire  : Ttime platform;         { account expiration  }
             {$ifdef FreeBSD}
@@ -107,29 +114,29 @@ const
         _PWF_EXPIRE	 =   $200;
 
 
-        _PWF_SOURCE 	 = $3000;       
-        _PWF_FILES 	 = $1000;       
-        _PWF_NIS 	 = $2000;       
-        _PWF_HESIOD 	 = $3000;       
+        _PWF_SOURCE 	 = $3000;
+        _PWF_FILES 	 = $1000;
+        _PWF_NIS 	 = $2000;
+        _PWF_HESIOD 	 = $3000;
 {$endif}
 
-function  fpgetpwnam (name:pchar):PPasswd; cdecl;external External_library name 'getpwnam';
+function  fpgetpwnam (name:PAnsiChar):PPasswd; cdecl;external External_library name 'getpwnam';
 function  fpgetpwuid (id:tuid):PPasswd;cdecl;external External_library name 'getpwuid';
 
 procedure fpendpwent;cdecl;external External_library name 'endpwent';
 function  fpgetpwent:ppasswd;cdecl;external External_library name 'getpwent';
 procedure fpsetpwent;cdecl;external External_library name 'setpwent';
 
-function  fpgetpwnam_r (namepara1:pchar; pwd:Ppasswd; buffer:pchar; bufsize:size_t; pwresult:PPpasswd):cint;cdecl;external External_library name 'getpwnam_r';
-function  fpgetpwuid_r (uid:uid_t; pwd:Ppasswd; buffer:pchar; buffersize:size_t; pwresult:PPpasswd):cint;cdecl;external External_library name 'getpwuid_r';
+function  fpgetpwnam_r (namepara1:PAnsiChar; pwd:Ppasswd; buffer:PAnsiChar; bufsize:size_t; pwresult:PPpasswd):cint;cdecl;external External_library name 'getpwnam_r';
+function  fpgetpwuid_r (uid:uid_t; pwd:Ppasswd; buffer:PAnsiChar; buffersize:size_t; pwresult:PPpasswd):cint;cdecl;external External_library name 'getpwuid_r';
 {$ifndef Darwin}
-function  fpgetpwent_r (pwd:Ppasswd; buffer:pchar; buffersize:size_t; pwresult:PPpasswd):cint;cdecl;external External_library name 'getpwent_r';
+function  fpgetpwent_r (pwd:Ppasswd; buffer:PAnsiChar; buffersize:size_t; pwresult:PPpasswd):cint;cdecl;external External_library name 'getpwent_r';
 {$endif}
 
 implementation
 
 {$ifdef BSD}
-function _PW_VERSIONED (x,v : longint) : cuchar; inline; 
+function _PW_VERSIONED (x,v : longint) : cuchar; inline;
 
 begin
  _PW_VERSIONED:=  (x and $CF) or  (v shl 4);

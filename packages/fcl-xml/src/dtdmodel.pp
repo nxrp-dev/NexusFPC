@@ -13,7 +13,9 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit dtdmodel;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$ifdef fpc}
 {$MODE objfpc}{$H+}
@@ -21,8 +23,13 @@ unit dtdmodel;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, Xml.Utils;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, xmlutils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   TCPType = (ctName, ctChoice, ctSeq);
@@ -419,7 +426,7 @@ function TAttributeDef.AddEnumToken(Buf: PWideChar; Len: Integer): Boolean;
 var
   I, L: Integer;
 begin
-  // TODO: this implementaion is the slowest possible...
+  // TODO: this implementation is the slowest possible...
   Result := False;
   L := Length(FEnumeration);
   for I := 0 to L-1 do

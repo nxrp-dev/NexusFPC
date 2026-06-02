@@ -17,12 +17,18 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit eig;
+{$ENDIF FPC_DOTTEDUNITS}
 {$I DIRECT.INC}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses NumLib.Typ;
+{$ELSE FPC_DOTTEDUNITS}
 uses typ;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const versie = 'augustus 1993';
 
@@ -92,7 +98,11 @@ procedure eigsv3(var a: ArbFloat; m, n, rwidtha: ArbInt; var sig, u: ArbFloat;
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses NumLib.Eigh1, NumLib.Eigh2;
+{$ELSE FPC_DOTTEDUNITS}
 uses eigh1, eigh2;
+{$ENDIF FPC_DOTTEDUNITS}
 
 procedure eiggs1(var a: ArbFloat; n, rwidth: ArbInt; var lam: ArbFloat;
                  var term: ArbInt);
@@ -800,7 +810,7 @@ begin
               begin
                 jj:=(j-1)*rwidthv;
                 p:=pv^[jj+i]; pv^[jj+i]:=pv^[jj+k]; pv^[jj+k]:=p
-              end { interchange in u and v column i with comlumn k }
+              end { interchange in u and v column i with column k }
           end
     end; {i}
   freemem(e, ns)

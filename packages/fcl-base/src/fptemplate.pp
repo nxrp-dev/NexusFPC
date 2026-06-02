@@ -14,22 +14,30 @@
 {$mode objfpc}
 {$H+}
 {$define NOCONTNRS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fpTemplate;
+{$ENDIF FPC_DOTTEDUNITS}
 
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.SysUtils,
+  System.Classes;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   SysUtils,
   Classes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Const
   DefaultParseDepth = 100;
   MaxDelimLength    = 5;
-  
+
 Type
   TParseDelimiter = String[MaxDelimLength];
-  
+
 Var
   DefaultStartDelimiter : TParseDelimiter = '{';           //Template tag start                  |If you want Delphi-like, set it to '<#'
   DefaultEndDelimiter  : TParseDelimiter = '}';            //Template tag end                    |                                   '>'
@@ -127,7 +135,7 @@ Type
     Property OnReplaceTag : TReplaceTagEvent Read FOnReplaceTag Write FOnReplaceTag;
     Property AllowTagParams : Boolean Read FAllowTagParams Write FAllowTagParams;
   end;
-  
+
   TFPTemplate = Class(TFPCustomTemplate)
   Published
     Property FileName;
@@ -141,7 +149,7 @@ Type
     Property ParamValueSeparator;
     Property OnGetParam;
   end;
-  
+
   ETemplateParser = Class(Exception);
 
 Var
@@ -153,7 +161,7 @@ implementation
 Resourcestring
   SErrParseDepthExceeded = 'Maximum parse level (%d) exceeded.';
   SErrNoEmptyDelimiters = 'Delimiters cannot be empty';
-  
+
 { TTemplateParser }
 Type
 
@@ -298,7 +306,7 @@ procedure TTemplateParser.Clear;
 
 Var
   I : Integer;
-  
+
 begin
   If Assigned(FValues) then
     For I:=0 to FValues.Count-1 do
@@ -307,10 +315,10 @@ begin
 end;
 
 function TTemplateParser.GetParam(const Key: String; out AValue: String): Boolean;
-  
+
 Var
   I : Integer;
-  
+
 begin
   If Assigned(FValues) then
     I:=FValues.IndexOf(Key)
@@ -385,7 +393,7 @@ begin
   if (NChars=0) then Exit;
   SLen:=Length(S);
   SetLength(S,SLen+NChars);
-  Move(P^,S[Slen+1],NChars);
+  Move(P^,S[Slen+1],NChars*SizeOf(Char));
 end;
 
 procedure TTemplateParser.GetTagParams(var TagName:String; var TagParams : TStringList) ;
@@ -415,7 +423,7 @@ begin
         if i>(TS-SP) then
           i := TS-SP;
         SetLength(TP, I);
-        Move(P^, TP[1], I);
+        Move(P^, TP[1], I*SizeOf(Char));
       end;
       inc(TS, Length(FParamStartDelimiter));
       I:=TS-P;//index of param name
@@ -424,7 +432,7 @@ begin
       begin//Found param value separator
         I:=TM-TS;//lenght of param name
         SetLength(PName, I);
-        Move(TS^, PName[1], I);//param name
+        Move(TS^, PName[1], I*SizeOf(Char));//param name
         inc(TS, Length(FParamValueSeparator) + I);
         I := TS - P;//index of param value
       end;
@@ -434,7 +442,7 @@ begin
       begin//Found param end
         I:=TE-TS;//Param length
         Setlength(PValue,I);
-        Move(TS^,PValue[1],I);//Param value
+        Move(TS^,PValue[1],I*SizeOf(Char));//Param value
         if TM=nil then
           TagParams.Add(Trim(PValue))
         else
@@ -475,7 +483,8 @@ begin
       If (TS=Nil) then
         begin//Tag Start Delimiter not found
         TS:=P;
-        P:=SP+SLen;
+        P:=SP;
+        Inc(P,SLen);
         end
       else
         begin
@@ -485,7 +494,8 @@ begin
         If (TE=Nil) then
           begin//Tag End Delimiter not found
           TS:=P;
-          P:=SP+SLen;
+          P:=SP;
+          Inc(P,SLen);
           end
         else//Found start and end delimiters for the Tag
           begin
@@ -494,7 +504,7 @@ begin
           // Retrieve the full template tag (only tag name if no params specified)
           I:=TE-TS;//full Tag length
           Setlength(PN,I);
-          Move(TS^,PN[1],I);//full Tag string (only tag name if no params specified)
+          Move(TS^,PN[1],I*SizeOf(Char));//full Tag string (only tag name if no params specified)
           TagParams := TStringList.Create;
           try
             TagParams.Sorted := True;
@@ -504,7 +514,8 @@ begin
           finally
             TagParams.Free;
           end;
-          P:=TE+Length(FEndDelimiter);
+          P:=TE;
+          Inc(P,Length(FEndDelimiter));
           TS:=P;
           end;
         end
@@ -529,7 +540,8 @@ begin
       If (TS=Nil) then
         begin
         TS:=P;
-        P:=SP+SLen
+        P:=SP;
+        Inc(P,SLen);
         end
       else
         begin
@@ -539,7 +551,8 @@ begin
         If (TE=Nil) then
           begin
           TS:=P;
-          P:=SP+SLen;
+          P:=SP;
+          Inc(P,SLen);
           end
         else
           begin
@@ -548,7 +561,7 @@ begin
           // retrieve template name
           I:=TE-TS;
           Setlength(PN,I);
-          Move(TS^,PN[1],I);
+          Move(TS^,PN[1],I*SizeOf(Char));
           If GetParam(PN,PV) then
             begin
             Result:=Result+PV;
@@ -569,7 +582,7 @@ function TTemplateParser.ParseStream(Src: TStream; Dest: TStream): Integer;
 Var
   SS : TStringStream;
   S,R : String;
-  
+
 begin
   SS:=TStringStream.Create('');
   Try
@@ -579,7 +592,7 @@ begin
     SS.Free;
   end;
   R:=ParseString(S);
-  Result:=Length(R);
+  Result:=Length(R)*SizeOf(Char);
   If (Result>0) then
     Dest.Write(R[1],Result);
 end;
@@ -616,7 +629,7 @@ end;
 { TFPCustomTemplate }
 
 procedure TFPCustomTemplate.GetParam(Sender: TObject; const ParamName: String; out AValue: String);
-  
+
 begin
   If Assigned(FOnGetParam) then
    FOnGetParam(Self,ParamName,AValue);
@@ -663,7 +676,7 @@ Var
   P : TTemplateParser;
   S : TStringStream;
   F : TFileStream;
-  
+
 begin
   F:=Nil;
   S:=Nil;
@@ -672,7 +685,11 @@ begin
     if (FFileName<>'') then
       begin
       F:=TFileStream.Create(FFileName,fmOpenRead);
-      S:=TStringStream.Create('');
+      {$IF SIZEOF(Char)=2}
+      S:=TStringStream.Create('',TEncoding.Unicode);
+      {$ELSE}
+      S:=TStringStream.Create('',TEncoding.UTF8);
+      {$ENDIF}
       end;
     Try
       P:=CreateParser;

@@ -8,7 +8,7 @@
 {                                                          }
 {****************[ THIS CODE IS FREEWARE ]*****************}
 {                                                          }
-{     This sourcecode is released for the purpose to       }
+{     This source code is released for the purpose to      }
 {   promote the pascal language on all platforms. You may  }
 {   redistribute it and/or modify with the following       }
 {   DISCLAIMER.                                            }
@@ -36,7 +36,7 @@
 {  Version  Date        Fix                                }
 {  -------  ---------   ---------------------------------  }
 {  1.00     06 Dec 96   First multi platform release.      }
-{  1.10     06 Jul 97   New functiions added.              }
+{  1.10     06 Jul 97   New functions added.               }
 {  1.20     22 Jul 97   FPC pascal compiler added.         }
 {  1.30     29 Aug 97   Platform.inc sort added.           }
 {  1.40     13 Oct 97   Delphi 2/3 32 bit code added.      }
@@ -45,7 +45,9 @@
 {  1.61     07 Jul 99   Speedsoft SYBIL 2.0 code added.    }
 {**********************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 UNIT Time;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>}
                                   INTERFACE
@@ -141,7 +143,11 @@ PROCEDURE SecondsToTime (Sd: LongInt; Var Hour24, Minute, Second: Word);
 
   {$IFNDEF PPC_SPEED}                                 { NON SPEED COMPILER }
     {$IFDEF PPC_FPC}                                  { FPC WINDOWS COMPILER }
-    USEs Windows;                                     { Standard unit }
+    {$IFDEF FPC_DOTTEDUNITS}
+    USES WinApi.Windows;                                     { Standard unit }
+    {$ELSE}
+    USES Windows;
+    {$ENDIF}
     {$ELSE}                                           { OTHER COMPILERS }
     USES WinTypes, WinProcs;                          { Standard units }
     {$ENDIF}
@@ -176,6 +182,23 @@ PROCEDURE SecondsToTime (Sd: LongInt; Var Hour24, Minute, Second: Word);
 
 {$ENDIF}
 
+{$IFDEF FPC_DOTTEDUNITS}
+{$ifdef OS_UNIX}
+  USES TP.DOS;
+{$endif OS_UNIX}
+
+{$ifdef OS_GO32}
+  USES TP.DOS;
+{$endif OS_GO32}
+
+{$ifdef OS_NETWARE}
+  USES TP.DOS;
+{$endif OS_NETWARE}
+
+{$ifdef OS_AMIGA}
+  USES TP.DOS;
+{$endif OS_AMIGA}
+{$ELSE FPC_DOTTEDUNITS}
 {$ifdef OS_UNIX}
   USES Dos;
 {$endif OS_UNIX}
@@ -191,6 +214,7 @@ PROCEDURE SecondsToTime (Sd: LongInt; Var Hour24, Minute, Second: Word);
 {$ifdef OS_AMIGA}
   USES Dos;
 {$endif OS_AMIGA}
+{$ENDIF FPC_DOTTEDUNITS}
 
 {***************************************************************************}
 {                            INTERFACE ROUTINES                             }
@@ -250,7 +274,7 @@ END;
 {---------------------------------------------------------------------------}
 PROCEDURE SetTime (Hour, Minute, Second, Sec100: Word);
 {$IFDEF OS_DOS}                                       { DOS/DPMI CODE }
-   {$IFDEF ASM_BP}                                    { BP COMPATABLE ASM }
+   {$IFDEF ASM_BP}                                    { BP COMPATIBLE ASM }
    ASSEMBLER;
    ASM
      MOV CH, BYTE PTR Hour;                           { Fetch hour }
@@ -263,7 +287,7 @@ PROCEDURE SetTime (Hour, Minute, Second, Sec100: Word);
      POP BP;                                          { Restore register }
    END;
    {$ENDIF}
-   {$IFDEF ASM_FPC}                                   { FPC COMPATABLE ASM }
+   {$IFDEF ASM_FPC}                                   { FPC COMPATIBLE ASM }
      {$IFDEF BIT_16}
      ASSEMBLER;
      ASM
@@ -330,8 +354,8 @@ PROCEDURE SetTime (Hour, Minute, Second, Sec100: Word);
      DT.wHour := Hour;                                { Transfer hour }
      DT.wMinute := Minute;                            { Transfer minute }
      DT.wSecond := Second;                            { Transfer seconds }
-     DT.wMilliseconds := Sec100 * 10;                 { Transfer millisecs }
-     SetLocalTime(DT);                               { Set the date/time }
+     DT.wMilliseconds := Sec100 * 10;                 { Transfer milliseconds }
+     SetLocalTime(DT);                                { Set the date/time }
    END;
    {$ENDIF}
 {$ENDIF}
@@ -368,7 +392,7 @@ END;
 {---------------------------------------------------------------------------}
 PROCEDURE GetTime (Var Hour, Minute, Second, Sec100: Word);
 {$IFDEF OS_DOS}                                       { DOS/DPMI CODE }
-   {$IFDEF ASM_BP}                                    { BP COMPATABLE ASM }
+   {$IFDEF ASM_BP}                                    { BP COMPATIBLE ASM }
    ASSEMBLER;
    ASM
      MOV AX, $2C00;                                   { Set function id }
@@ -391,7 +415,7 @@ PROCEDURE GetTime (Var Hour, Minute, Second, Sec100: Word);
      STOSW;                                           { Return hours }
    END;
    {$ENDIF}
-   {$IFDEF ASM_FPC}                                   { FPC COMPATABLE ASM }
+   {$IFDEF ASM_FPC}                                   { FPC COMPATIBLE ASM }
      {$IFDEF BIT_16}
        {$IFDEF FPC_X86_DATA_NEAR}
        ASSEMBLER;
@@ -465,7 +489,7 @@ PROCEDURE GetTime (Var Hour, Minute, Second, Sec100: Word);
        unstable on Win2000 because some registers are not properly
        restored if a mouse interrupt is generated while the Dos
        interrupt is called... PM }
-       Dos.GetTime(Hour,Minute,Second,Sec100);
+       {$IFDEF FPC_DOTTEDUNITS}TP.{$ENDIF}DOS.GetTime(Hour,Minute,Second,Sec100);
      END;
      {$ENDIF}
    {$ENDIF}
@@ -570,17 +594,17 @@ END;
 {$ENDIF}
 {$ifdef OS_UNIX}
 BEGIN
-  Dos.GetTime(Hour,Minute,Second,Sec100);
+  {$IFDEF FPC_DOTTEDUNITS}TP.{$ENDIF}DOS.GetTime(Hour,Minute,Second,Sec100);
 END;
 {$endif OS_UNIX}
 {$IFDEF OS_NETWARE}
 BEGIN
-  Dos.GetTime(Hour,Minute,Second,Sec100);
+  {$IFDEF FPC_DOTTEDUNITS}TP.{$ENDIF}DOS.GetTime(Hour,Minute,Second,Sec100);
 END;
 {$ENDIF OS_NETWARE}
 {$IFDEF OS_AMIGA}
 BEGIN
-  Dos.GetTime(Hour,Minute,Second,Sec100);
+  {$IFDEF FPC_DOTTEDUNITS}TP.{$ENDIF}DOS.GetTime(Hour,Minute,Second,Sec100);
 END;
 {$ENDIF OS_AMIGA}
 

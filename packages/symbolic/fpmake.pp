@@ -2,7 +2,7 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses {$ifdef unix}cthreads,{$endif} fpmkunit;
 
 Var
   P : TPackage;
@@ -23,7 +23,7 @@ begin
     P.Email := '';
     P.Description := 'Expression parser with support for fast evaluation';
     P.NeedLibC:= false;
-    P.OSes:=P.OSes-[embedded,msdos,win16,macosclassic,palmos,zxspectrum,msxdos,amstradcpc,sinclairql];
+    P.OSes:=P.OSes-[embedded,msdos,win16,macosclassic,palmos,zxspectrum,msxdos,amstradcpc,sinclairql,human68k,ps1,wasip2];
     if Defaults.CPU=jvm then
       P.OSes := P.OSes - [java,android];
 
@@ -47,6 +47,9 @@ begin
     P.Targets.AddExampleProgram('easyevalexample.pp');
     P.Sources.AddDoc('doc/optimization.txt');
     P.Sources.AddDoc('doc/symbolic.txt');
+
+
+    P.NamespaceMap:='namespaces.lst';
 
 {$ifndef ALLPACKAGES}
     Run;

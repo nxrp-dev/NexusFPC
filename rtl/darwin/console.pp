@@ -22,7 +22,9 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 }
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit console;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$packrecords C}
 
@@ -32,7 +34,7 @@ interface
 to longint because INT is a standard function in TP/FPC}
 
 TYPE
-     uchar = char;
+     uchar = AnsiChar;
      uint  = dword;
      u_int = uint;
      ushort= word;
@@ -319,11 +321,11 @@ const
          V_ADP_INITIALIZED=(1 SHL 17);
          V_ADP_REGISTERED =(1 SHL 18);
 
-{ adapter infromation block }
+{ adapter information block }
 type  video_adapter  = record
                         va_index                : longint;
                         va_type                 : longint;
-                        va_name                 : pchar;
+                        va_name                 : PAnsiChar;
                         va_unit                 : longint;
                         va_minor                : longint;
                         va_flags                : longint;
@@ -355,7 +357,7 @@ type  video_adapter  = record
        video_adapter_info = record
                         va_index                : longint;
                         va_type                 : longint;
-                        va_name                 : array[0..15] of char;
+                        va_name                 : array[0..15] of AnsiChar;
                         va_unit                 : longint;
                         va_flags                : longint;
                         va_io_base              : longint;
@@ -614,7 +616,7 @@ type
 { get/set screen char map }
 
         scrmap   = record
-                    _scrmap : array[0..255] of char;
+                    _scrmap : array[0..255] of AnsiChar;
                     end;
         scrmap_t =  scrmap;
 
@@ -643,7 +645,7 @@ Function CONS_BLANKTIME(fd:longint;var param1 : longint):boolean;
 CONST        maxsaver=16;
 
 type ssaver =record
-                name : array[0..maxsaver-1] of char;
+                name : array[0..maxsaver-1] of AnsiChar;
                 num  : Longint;
                 time : Long;
                 end;
@@ -738,19 +740,19 @@ Function CONS_SAVERSTART(fd:longint;var param1 : longint):boolean;
 TYPE
 { set/get font data }
         fnt8        = record
-                        fnt8x8 : array[0..8*256-1] of char;
+                        fnt8x8 : array[0..8*256-1] of AnsiChar;
                       end;
 
         fnt8_t      = fnt8;
 
         fnt14       = record
-                        fnt8x14: array[0..14*256-1] of char;
+                        fnt8x14: array[0..14*256-1] of AnsiChar;
                       end;
 
         fnt14_t     = fnt14;
 
         fnt16       = record
-                        fnt8x16: array[0..16*256-1] of char;
+                        fnt8x16: array[0..16*256-1] of AnsiChar;
                        end;
         fnt16_t     = fnt16;
 
@@ -764,8 +766,8 @@ Function GIO_FONT8x16(fd:longint;var param1 : fnt16_t):boolean;
 
 { get video mode information }
 type        colors = record
-                       fore : char;
-                       back : char;
+                       fore : AnsiChar;
+                       back : AnsiChar;
                       end;
 
             vid_info = record
@@ -846,8 +848,8 @@ const
 
 TYPE
         vt_mode    = record
-                       mode     :   Char;
-                       waitv    :   char;    { not implemented yet  SOS }
+                       mode     :   AnsiChar;
+                       waitv    :   AnsiChar;    { not implemented yet  SOS }
                        relsig   :   short;
                        acqsig   :   short;
                        frsig    :   short;   { not implemented yet  SOS }
@@ -1060,7 +1062,7 @@ TYPE
 { get keyboard information}
   keyboard_info = Record
                         kb_index : longint;     { kbdio index#}
-                        kb_name  : array[0..15] of char;        { driver name}
+                        kb_name  : array[0..15] of AnsiChar;        { driver name}
                         kb_unit  : longint;     { unit#}
                         kb_type  : longint;     { KB_84, KB_101, KB_OTHER,...}
                         kb_config: longint;     { device configuration flags}
@@ -1149,8 +1151,8 @@ CONST
         DMAC            =$8d;           { macron}
         DBRE            =$8e;           { breve}
         DDOT            =$8f;           { dot}
-        DUML            =$90;           { umlaut/diaresis}
-        DDIA            =$90;           { diaresis}
+        DUML            =$90;           { umlaut/diaeresis}
+        DDIA            =$90;           { diaeresis}
         DSLA            =$91;           { slash}
         DRIN            =$92;           { ring}
         DCED            =$93;           { cedilla}
@@ -1203,8 +1205,8 @@ type acc_t           = record
 
              fkeyarg =record
                         keynum : ushort;
-                        keydef : array[0..MAXFK-1] of char;
-                        flen :char;
+                        keydef : array[0..MAXFK-1] of AnsiChar;
+                        flen :AnsiChar;
                         end;
 
          fkeyarg_t       = fkeyarg;
@@ -1357,7 +1359,7 @@ type  mousemode = record
                     protocol    : longint;              { MOUSE_PROTO_XXX }
                     rate        : longint;              { report rate (per sec), -1 if unknown }
                     resolution  : longint;              { MOUSE_RES_XXX, -1 if unknown }
-                    accelfactor : longint;              { accelation factor (must be 1 or greater) }
+                    accelfactor : longint;              { acceleration factor (must be 1 or greater) }
                     level       : longint;              { driver operation level }
                     packetsize  : longint;              { the length of the data packet }
                     syncmask    : array[0..1] of uchar; { sync. data bits in the header byte }
@@ -1822,7 +1824,11 @@ function physicalconsole(fd:longint) : boolean;
 
 IMPLEMENTATION
 
+{$IFDEF FPC_DOTTEDUNITS}
+Uses UnixApi.Base,UnixApi.TermIO;
+{$ELSE FPC_DOTTEDUNITS}
 Uses BaseUnix,termio;
+{$ENDIF FPC_DOTTEDUNITS}
 
 function physicalconsole(fd:longint) : boolean;
 

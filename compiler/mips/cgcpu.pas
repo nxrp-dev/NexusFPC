@@ -87,7 +87,6 @@ type
     procedure g_proc_exit(list: tasmlist; parasize: longint; nostackframe: boolean); override;
     procedure g_concatcopy(list: tasmlist; const Source, dest: treference; len: tcgint); override;
     procedure g_concatcopy_unaligned(list: tasmlist; const Source, dest: treference; len: tcgint); override;
-    procedure g_concatcopy_move(list: tasmlist; const Source, dest: treference; len: tcgint);
     procedure g_adjust_self_value(list:TAsmList;procdef: tprocdef;ioffset: tcgint); override;
     procedure g_profilecode(list: TAsmList);override;
   end;
@@ -1019,7 +1018,7 @@ end;
 
 
 
-{*************** compare instructructions ****************}
+{*************** compare instructions ****************}
 
 procedure TCGMIPS.a_cmp_const_reg_label(list: tasmlist; size: tcgsize; cmp_op: topcmp; a: tcgint; reg: tregister; l: tasmlabel);
 var
@@ -1348,7 +1347,7 @@ begin
           { IEEE Double values are stored in floating point
             register pairs f2X/f2X+1,
             as the f2X+1 register is not correctly marked as used for now,
-            we simply assume it is also used if f2X is used 
+            we simply assume it is also used if f2X is used
             Should be fixed by a proper inclusion of f2X+1 into used_in_proc }
           if (ord(reg)-ord(RS_F0)) mod 2 = 0 then
             include(rg[R_FPUREGISTER].used_in_proc,succ(reg));
@@ -1525,38 +1524,6 @@ begin
        list.concat(Taicpu.op_none(A_P_SET_REORDER));
     end;
   list.concat(tai_directive.create(asd_ent_end,current_procinfo.procdef.mangledname));
-end;
-
-
-
-{ ************* concatcopy ************ }
-
-procedure TCGMIPS.g_concatcopy_move(list: tasmlist; const Source, dest: treference; len: tcgint);
-var
-  paraloc1, paraloc2, paraloc3: TCGPara;
-  pd: tprocdef;
-begin
-  pd:=search_system_proc('MOVE');
-  paraloc1.init;
-  paraloc2.init;
-  paraloc3.init;
-  paramanager.getcgtempparaloc(list, pd, 1, paraloc1);
-  paramanager.getcgtempparaloc(list, pd, 2, paraloc2);
-  paramanager.getcgtempparaloc(list, pd, 3, paraloc3);
-  a_load_const_cgpara(list, OS_SINT, len, paraloc3);
-  a_loadaddr_ref_cgpara(list, dest, paraloc2);
-  a_loadaddr_ref_cgpara(list, Source, paraloc1);
-  paramanager.freecgpara(list, paraloc3);
-  paramanager.freecgpara(list, paraloc2);
-  paramanager.freecgpara(list, paraloc1);
-  alloccpuregisters(list, R_INTREGISTER, paramanager.get_volatile_registers_int(pocall_default));
-  alloccpuregisters(list, R_FPUREGISTER, paramanager.get_volatile_registers_fpu(pocall_default));
-  a_call_name(list, 'FPC_MOVE', false);
-  dealloccpuregisters(list, R_FPUREGISTER, paramanager.get_volatile_registers_fpu(pocall_default));
-  dealloccpuregisters(list, R_INTREGISTER, paramanager.get_volatile_registers_int(pocall_default));
-  paraloc3.done;
-  paraloc2.done;
-  paraloc1.done;
 end;
 
 
@@ -1960,7 +1927,7 @@ begin
         else
           cg.a_load_reg_reg(list,OS_32,OS_32,regsrc.reglo,regdst.reglo);
 
-        { With overflow checking and unsigned args, this generates slighly suboptimal code
+        { With overflow checking and unsigned args, this generates slightly suboptimal code
          ($80000000 constant loaded twice). Other cases are fine. Getting it perfect does not
          look worth the effort. }
         cg.a_op_const_reg_reg_checkoverflow(list,OP_ADD,hisize,aint(hi(value)),regsrc.reghi,regdst.reghi,setflags,ovloc);

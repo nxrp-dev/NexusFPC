@@ -2,7 +2,7 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses {$ifdef unix}cthreads,{$endif} fpmkunit;
 
 Var
   P : TPackage;
@@ -33,6 +33,11 @@ begin
     P.SourcePath.Add('src/otherlibs');
     P.SourcePath.Add('src/utilunits');
     P.IncludePath.Add('src');
+
+    { Allow finding other unit sources when build unit is not used }
+    P.UnitPath.Add('src/coreunits');
+    P.UnitPath.Add('src/otherlibs');
+    P.UnitPath.Add('src/utilunits');
 
     T:=P.Targets.AddUnit('amigautils.pas');
     T:=P.Targets.AddUnit('wbargs.pas');
@@ -68,6 +73,7 @@ begin
     T:=P.Targets.AddUnit('scsidisk.pas');
     T:=P.Targets.AddUnit('lowlevel.pas');
     T:=P.Targets.AddUnit('configregs.pas');
+    T:=P.Targets.AddUnit('cardres.pas');
     T:=P.Targets.AddUnit('prefs.pas');
     T:=P.Targets.AddUnit('parallel.pas');
     T:=P.Targets.AddUnit('gadtools.pas');
@@ -175,6 +181,9 @@ begin
 
     P.Sources.AddDoc('README.txt');
     P.Sources.AddDoc('units.txt');
+
+
+    P.NamespaceMap:='namespaces.lst';
 
 {$ifndef ALLPACKAGES}
     Run;

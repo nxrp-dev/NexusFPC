@@ -7,7 +7,7 @@
  *  Description: Standard Lua libraries                                       *
  *                                                                            *
  ******************************************************************************)
- 
+
 (*
 ** $Id: lualib.h,v 1.28 2003/03/18 12:24:26 roberto Exp $
 ** Lua standard libraries
@@ -22,12 +22,19 @@
 
 {$IFDEF FPC}{$MODE OBJFPC}{$H+}{$ENDIF}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit lualib;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
 uses
   Lua;
+{$ELSE FPC_DOTTEDUNITS}
+uses
+  Lua;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   LUA_COLIBNAME = 'coroutine';

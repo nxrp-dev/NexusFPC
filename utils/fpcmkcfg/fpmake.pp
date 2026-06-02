@@ -2,7 +2,11 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses
+  {$ifdef unix}
+  cthreads,
+  {$endif}
+  fpmkunit;
 {$endif ALLPACKAGES}
 
 procedure add_fpcmkcfg(const ADirectory: string);
@@ -18,7 +22,7 @@ begin
     begin
     P:=AddPackage('utils-fpcmkcfg');
     P.ShortName:='fcmk';
-    P.OSes:=AllOSes-[embedded,msdos,nativent,win16,atari,macosclassic,palmos,zxspectrum,msxdos,amstradcpc,sinclairql,wasi];
+    P.OSes:=AllOSes-[embedded,msdos,nativent,win16,atari,macosclassic,palmos,zxspectrum,msxdos,amstradcpc,sinclairql,wasip1,wasip1threads,wasip2,human68k,ps1];
     if Defaults.CPU=jvm then
       P.OSes := P.OSes - [java,android];
 

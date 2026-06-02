@@ -19,7 +19,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit ColorSyncProfile;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -204,7 +206,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CFBase,MacOsApi.CFArray,MacOsApi.CFData,MacOsApi.CFDictionary,MacOsApi.CFError,MacOsApi.CFUUID;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CFBase,CFArray,CFData,CFDictionary,CFError,CFUUID;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -247,7 +253,7 @@ function ColorSyncProfileCreate( data: CFDataRef; var error: CFErrorRef ): Color
    {
     *   data   - profile data
     *   error  - (optional) pointer to the error that will be returned in case of failure
-    *   
+    *
     *   returns ColorSyncProfileRef or NULL in case of failure
     }
 
@@ -255,30 +261,30 @@ function ColorSyncProfileCreateWithURL( url: CFURLRef; var error: CFErrorRef ): 
    {
     *   url    - URL to the profile data (caller needs to have privileges to read url).
     *   error  - (optional) pointer to the error that will be returned in case of failure
-    *   
+    *
     *   returns ColorSyncProfileRef or NULL in case of failure
     }
 
 function ColorSyncProfileCreateWithName( name: CFStringRef ): ColorSyncProfileRef; external name '_ColorSyncProfileCreateWithName';
    {
     *   name    - predefined profile name
-    *   
+    *
     *   returns ColorSyncProfileRef or NULL in case of failure
     }
 
 function ColorSyncProfileCreateWithDisplayID( displayID: UInt32 ): ColorSyncProfileRef; external name '_ColorSyncProfileCreateWithDisplayID';
    {
     *   displayID - system-wide unique display ID (defined by IOKIt); pass 0 for main display.
-    *   
+    *
     *   returns ColorSyncProfileRef or NULL in case of failure
     }
 
 function ColorSyncProfileCreateDeviceProfile( deviceClass: CFStringRef; deviceID: CFUUIDRef; profileID: CFTypeRef ): ColorSyncProfileRef; external name '_ColorSyncProfileCreateDeviceProfile';
    {
-    *   deviceClass - ColorSync device class 
+    *   deviceClass - ColorSync device class
     *   deviceID    - deviceID registered with ColorSync
     *   profileID   - profileID registered with ColorSync; pass kColorSyncDeviceDefaultProfileID to get the default profile.
-    *   
+    *
     *   See ColorSyncDevice.h for more info on deviceClass, deviceID and profileID
     *
     *   returns ColorSyncProfileRef or NULL in case of failure
@@ -292,7 +298,7 @@ function ColorSyncProfileCreateMutable: ColorSyncMutableProfileRef; external nam
 function ColorSyncProfileCreateMutableCopy( prof: ColorSyncProfileRef ): ColorSyncMutableProfileRef; external name '_ColorSyncProfileCreateMutableCopy';
    {
     *  prof  - profile from which profile data will be copied to the created profile.
-    *   
+    *
     *   returns ColorSyncMutableProfileRef or NULL in case of failure
     }
 
@@ -300,16 +306,16 @@ function ColorSyncProfileCreateLink( profileInfo: CFArrayRef; options: CFDiction
    {
     *   profileInfo  - array of dictionaries, each one containing a profile object and the
     *                       information on the usage of the profile in the transform.
-    *               
+    *
     *               Required keys:
     *               ==============
     *                      kColorSyncProfile           : ColorSyncProfileRef
     *                      kColorSyncRenderingIntent   : CFStringRef defining rendering intent
-    *                      kColorSyncTransformTag      : CFStringRef defining which tags to use 
+    *                      kColorSyncTransformTag      : CFStringRef defining which tags to use
     *               Optional key:
     *               =============
     *                    kColorSyncBlackPointCompensation : CFBooleanRef to enable/disable BPC
-    *   
+    *
     *   options      - dictionary with additional public global options (e.g. preferred CMM, quality,
     *                       etc... It can also contain custom options that are CMM specific.
     *
@@ -320,9 +326,9 @@ function ColorSyncProfileVerify( prof: ColorSyncProfileRef; var errors: CFErrorR
    {
     *   prof    - profile to be verified
     *
-    *   errors  - returns error strings in case problems are found which 
+    *   errors  - returns error strings in case problems are found which
     *                  would prevent use of the profile.
-    *  
+    *
     *   warnings - returns warning strings indicating problems due to lack of
     *                       conformance with the ICC specification, but not preventing
     *                       use of the profile.
@@ -335,7 +341,7 @@ function ColorSyncProfileEstimateGammaWithDisplayID( {const} displayID: SInt32; 
     *   displayID - system-wide unique display ID (defined by IOKIt)
     *   error     - (optional) pointer to the error that will be returned in
     *               case of failure
-    *   
+    *
     *   returns non-zero value if success or 0.0 in case of error.
     }
 
@@ -344,7 +350,7 @@ function ColorSyncProfileEstimateGamma( prof: ColorSyncProfileRef; var error: CF
     *   prof    - profile to perform estimation on
     *   error   - (optional) pointer to the error that will be returned in
     *             case of failure
-    *   
+    *
     *   returns non-zero value if success or 0.0 in case of error
     }
 
@@ -357,7 +363,7 @@ type
 	end;
 
 function ColorSyncProfileGetMD5( prof: ColorSyncProfileRef ): ColorSyncMD5; external name '_ColorSyncProfileGetMD5';
-   { 
+   {
     *   returns MD5 digest for the profile calculated as defined by
     *           ICC specification or a "zero" signature (filled with zeros)
     *           in case of failure
@@ -367,23 +373,23 @@ function ColorSyncProfileCopyData( prof: ColorSyncProfileRef; var error: CFError
    {
     *   prof    - profile to copy the flattened data from
     *   error  - (optional) pointer to the error that will be returned in case of failure
-    *   
-    *   returns CFDataRef if success or NULL in case of failure 
+    *
+    *   returns CFDataRef if success or NULL in case of failure
     }
 
 function ColorSyncProfileGetURL( prof: ColorSyncProfileRef; var error: CFErrorRef ): CFURLRef; external name '_ColorSyncProfileGetURL';
    {
     *   prof   - profile to get URL from
     *   error  - (optional) pointer to the error that will be returned in case of failure
-    *   
-    *   returns CFURLRef if success or NULL in case of failure 
+    *
+    *   returns CFURLRef if success or NULL in case of failure
     }
 
 function ColorSyncProfileCopyHeader( prof: ColorSyncProfileRef ): CFDataRef; external name '_ColorSyncProfileCopyHeader';
    {
     *   prof    - profile from which to copy the header
-    *   
-    *   returns CFDataRef containing profile header (in host endianess) or NULL in case of failure 
+    *
+    *   returns CFDataRef containing profile header (in host endianess) or NULL in case of failure
     }
 
 procedure ColorSyncProfileSetHeader( prof: ColorSyncMutableProfileRef; header: CFDataRef ); external name '_ColorSyncProfileSetHeader';
@@ -395,31 +401,31 @@ procedure ColorSyncProfileSetHeader( prof: ColorSyncMutableProfileRef; header: C
 function ColorSyncProfileCopyDescriptionString( prof: ColorSyncProfileRef ): CFStringRef; external name '_ColorSyncProfileCopyDescriptionString';
    {
     *   prof    - profile from which to copy description string
-    *   
+    *
     *   returns CFStringRef containing profile description localized to current locale
     }
 
 function ColorSyncProfileCopyTagSignatures( prof: ColorSyncProfileRef ): CFArrayRef; external name '_ColorSyncProfileCopyTagSignatures';
    {
     *   prof    - profile from which to copy tag signatures
-    *   
-    *   returns CFArray with signatures (CFStringRef) of tags in the profile 
+    *
+    *   returns CFArray with signatures (CFStringRef) of tags in the profile
     }
 
 function ColorSyncProfileContainsTag( prof: ColorSyncProfileRef; signature: CFStringRef ): CBool; external name '_ColorSyncProfileContainsTag';
    {
     *   prof        - profile in which to search for the tag
     *   signature   - signature of the tag to be searched for
-    *   
-    *   returns true if tag exists or false if does not 
+    *
+    *   returns true if tag exists or false if does not
     }
 
 function ColorSyncProfileCopyTag( prof: ColorSyncProfileRef; signature: CFStringRef ): CFDataRef; external name '_ColorSyncProfileCopyTag';
    {
     *   prof             - profile from which to copy the tag
     *   signature   - signature of the tag to be copied
-    *   
-    *   returns CFDataRef containing tag data or NULL in case of failure 
+    *
+    *   returns CFDataRef containing tag data or NULL in case of failure
     }
 
 procedure ColorSyncProfileSetTag( prof: ColorSyncMutableProfileRef; signature: CFStringRef; data: CFDataRef ); external name '_ColorSyncProfileSetTag';
@@ -433,8 +439,8 @@ procedure ColorSyncProfileRemoveTag( prof: ColorSyncMutableProfileRef; signature
    {
     *   prof              - profile from which to remove the tag
     *   signature    - signature of the tag to be removed
-    *   
-    *   returns true if success or false in case of failure 
+    *
+    *   returns true if success or false in case of failure
     }
 
 function ColorSyncProfileGetDisplayTransferFormulaFromVCGT( profile: ColorSyncProfileRef; var redMin: Float32; var redMax: Float32; var redGamma: Float32; var greenMin: Float32; var greenMax: Float32; var greenGamma: Float32; var blueMin: Float32; var blueMax: Float32; var blueGamma: Float32 ): CBool; external name '_ColorSyncProfileGetDisplayTransferFormulaFromVCGT';

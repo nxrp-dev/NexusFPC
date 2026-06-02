@@ -1,13 +1,19 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit googlecontent;
+{$ENDIF FPC_DOTTEDUNITS}
 {$MODE objfpc}
 {$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils, System.Classes, GoogleApi.Service, FpWeb.Rest.Base, GoogleApi.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses sysutils, classes, googleservice, restbase, googlebase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
-  
+
   //Top-level schema types
   TAccount = Class;
   TAccountAdwordsLink = Class;
@@ -376,11 +382,11 @@ type
   TTestOrderTypelineItemsArray = Array of TTestOrderLineItem;
   TTestOrderTypepromotionsArray = Array of TOrderPromotion;
   TTestOrderLineItemProductTypevariantAttributesArray = Array of TOrderLineItemProductVariantAttribute;
-  
+
   { --------------------------------------------------------------------
     TAccount
     --------------------------------------------------------------------}
-  
+
   TAccount = Class(TGoogleBaseObject)
   Private
     FadultContent : boolean;
@@ -420,11 +426,11 @@ type
     Property websiteUrl : String Index 64 Read FwebsiteUrl Write SetwebsiteUrl;
   end;
   TAccountClass = Class of TAccount;
-  
+
   { --------------------------------------------------------------------
     TAccountAdwordsLink
     --------------------------------------------------------------------}
-  
+
   TAccountAdwordsLink = Class(TGoogleBaseObject)
   Private
     FadwordsId : String;
@@ -439,11 +445,11 @@ type
     Property status : String Index 8 Read Fstatus Write Setstatus;
   end;
   TAccountAdwordsLinkClass = Class of TAccountAdwordsLink;
-  
+
   { --------------------------------------------------------------------
     TAccountIdentifier
     --------------------------------------------------------------------}
-  
+
   TAccountIdentifier = Class(TGoogleBaseObject)
   Private
     FaggregatorId : String;
@@ -458,11 +464,11 @@ type
     Property merchantId : String Index 8 Read FmerchantId Write SetmerchantId;
   end;
   TAccountIdentifierClass = Class of TAccountIdentifier;
-  
+
   { --------------------------------------------------------------------
     TAccountShipping
     --------------------------------------------------------------------}
-  
+
   TAccountShipping = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -493,11 +499,11 @@ type
     Property services : TAccountShippingTypeservicesArray Index 40 Read Fservices Write Setservices;
   end;
   TAccountShippingClass = Class of TAccountShipping;
-  
+
   { --------------------------------------------------------------------
     TAccountShippingCarrierRate
     --------------------------------------------------------------------}
-  
+
   TAccountShippingCarrierRate = Class(TGoogleBaseObject)
   Private
     Fcarrier : String;
@@ -527,11 +533,11 @@ type
     Property shippingOrigin : String Index 48 Read FshippingOrigin Write SetshippingOrigin;
   end;
   TAccountShippingCarrierRateClass = Class of TAccountShippingCarrierRate;
-  
+
   { --------------------------------------------------------------------
     TAccountShippingCondition
     --------------------------------------------------------------------}
-  
+
   TAccountShippingCondition = Class(TGoogleBaseObject)
   Private
     FdeliveryLocationGroup : String;
@@ -561,11 +567,11 @@ type
     Property weightMax : TWeight Index 48 Read FweightMax Write SetweightMax;
   end;
   TAccountShippingConditionClass = Class of TAccountShippingCondition;
-  
+
   { --------------------------------------------------------------------
     TAccountShippingLocationGroup
     --------------------------------------------------------------------}
-  
+
   TAccountShippingLocationGroup = Class(TGoogleBaseObject)
   Private
     Fcountry : String;
@@ -593,11 +599,11 @@ type
     Property postalCodes : TStringArray Index 32 Read FpostalCodes Write SetpostalCodes;
   end;
   TAccountShippingLocationGroupClass = Class of TAccountShippingLocationGroup;
-  
+
   { --------------------------------------------------------------------
     TAccountShippingPostalCodeRange
     --------------------------------------------------------------------}
-  
+
   TAccountShippingPostalCodeRange = Class(TGoogleBaseObject)
   Private
     F_end : String;
@@ -613,11 +619,11 @@ type
     Property start : String Index 8 Read Fstart Write Setstart;
   end;
   TAccountShippingPostalCodeRangeClass = Class of TAccountShippingPostalCodeRange;
-  
+
   { --------------------------------------------------------------------
     TAccountShippingRateTable
     --------------------------------------------------------------------}
-  
+
   TAccountShippingRateTable = Class(TGoogleBaseObject)
   Private
     Fcontent : TAccountShippingRateTableTypecontentArray;
@@ -639,11 +645,11 @@ type
     Property saleCountry : String Index 16 Read FsaleCountry Write SetsaleCountry;
   end;
   TAccountShippingRateTableClass = Class of TAccountShippingRateTable;
-  
+
   { --------------------------------------------------------------------
     TAccountShippingRateTableCell
     --------------------------------------------------------------------}
-  
+
   TAccountShippingRateTableCell = Class(TGoogleBaseObject)
   Private
     Fcondition : TAccountShippingCondition;
@@ -658,11 +664,11 @@ type
     Property rate : TPrice Index 8 Read Frate Write Setrate;
   end;
   TAccountShippingRateTableCellClass = Class of TAccountShippingRateTableCell;
-  
+
   { --------------------------------------------------------------------
     TAccountShippingShippingService
     --------------------------------------------------------------------}
-  
+
   TAccountShippingShippingService = Class(TGoogleBaseObject)
   Private
     Factive : boolean;
@@ -686,11 +692,11 @@ type
     Property saleCountry : String Index 32 Read FsaleCountry Write SetsaleCountry;
   end;
   TAccountShippingShippingServiceClass = Class of TAccountShippingShippingService;
-  
+
   { --------------------------------------------------------------------
     TAccountShippingShippingServiceCalculationMethod
     --------------------------------------------------------------------}
-  
+
   TAccountShippingShippingServiceCalculationMethod = Class(TGoogleBaseObject)
   Private
     FcarrierRate : String;
@@ -714,11 +720,11 @@ type
     Property rateTable : String Index 32 Read FrateTable Write SetrateTable;
   end;
   TAccountShippingShippingServiceCalculationMethodClass = Class of TAccountShippingShippingServiceCalculationMethod;
-  
+
   { --------------------------------------------------------------------
     TAccountShippingShippingServiceCostRule
     --------------------------------------------------------------------}
-  
+
   TAccountShippingShippingServiceCostRule = Class(TGoogleBaseObject)
   Private
     FcalculationMethod : TAccountShippingShippingServiceCalculationMethod;
@@ -740,11 +746,11 @@ type
     Property condition : TAccountShippingCondition Index 16 Read Fcondition Write Setcondition;
   end;
   TAccountShippingShippingServiceCostRuleClass = Class of TAccountShippingShippingServiceCostRule;
-  
+
   { --------------------------------------------------------------------
     TAccountStatus
     --------------------------------------------------------------------}
-  
+
   TAccountStatus = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -766,11 +772,11 @@ type
     Property kind : String Index 16 Read Fkind Write Setkind;
   end;
   TAccountStatusClass = Class of TAccountStatus;
-  
+
   { --------------------------------------------------------------------
     TAccountStatusDataQualityIssue
     --------------------------------------------------------------------}
-  
+
   TAccountStatusDataQualityIssue = Class(TGoogleBaseObject)
   Private
     Fcountry : String;
@@ -807,11 +813,11 @@ type
     Property submittedValue : String Index 56 Read FsubmittedValue Write SetsubmittedValue;
   end;
   TAccountStatusDataQualityIssueClass = Class of TAccountStatusDataQualityIssue;
-  
+
   { --------------------------------------------------------------------
     TAccountStatusExampleItem
     --------------------------------------------------------------------}
-  
+
   TAccountStatusExampleItem = Class(TGoogleBaseObject)
   Private
     FitemId : String;
@@ -835,11 +841,11 @@ type
     Property valueOnLandingPage : String Index 32 Read FvalueOnLandingPage Write SetvalueOnLandingPage;
   end;
   TAccountStatusExampleItemClass = Class of TAccountStatusExampleItem;
-  
+
   { --------------------------------------------------------------------
     TAccountTax
     --------------------------------------------------------------------}
-  
+
   TAccountTax = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -861,11 +867,11 @@ type
     Property rules : TAccountTaxTyperulesArray Index 16 Read Frules Write Setrules;
   end;
   TAccountTaxClass = Class of TAccountTax;
-  
+
   { --------------------------------------------------------------------
     TAccountTaxTaxRule
     --------------------------------------------------------------------}
-  
+
   TAccountTaxTaxRule = Class(TGoogleBaseObject)
   Private
     Fcountry : String;
@@ -889,11 +895,11 @@ type
     Property useGlobalRate : boolean Index 32 Read FuseGlobalRate Write SetuseGlobalRate;
   end;
   TAccountTaxTaxRuleClass = Class of TAccountTaxTaxRule;
-  
+
   { --------------------------------------------------------------------
     TAccountUser
     --------------------------------------------------------------------}
-  
+
   TAccountUser = Class(TGoogleBaseObject)
   Private
     Fadmin : boolean;
@@ -908,11 +914,11 @@ type
     Property emailAddress : String Index 8 Read FemailAddress Write SetemailAddress;
   end;
   TAccountUserClass = Class of TAccountUser;
-  
+
   { --------------------------------------------------------------------
     TAccountsAuthInfoResponse
     --------------------------------------------------------------------}
-  
+
   TAccountsAuthInfoResponse = Class(TGoogleBaseObject)
   Private
     FaccountIdentifiers : TAccountsAuthInfoResponseTypeaccountIdentifiersArray;
@@ -931,11 +937,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TAccountsAuthInfoResponseClass = Class of TAccountsAuthInfoResponse;
-  
+
   { --------------------------------------------------------------------
     TAccountsCustomBatchRequest
     --------------------------------------------------------------------}
-  
+
   TAccountsCustomBatchRequest = Class(TGoogleBaseObject)
   Private
     Fentries : TAccountsCustomBatchRequestTypeentriesArray;
@@ -951,11 +957,11 @@ type
     Property entries : TAccountsCustomBatchRequestTypeentriesArray Index 0 Read Fentries Write Setentries;
   end;
   TAccountsCustomBatchRequestClass = Class of TAccountsCustomBatchRequest;
-  
+
   { --------------------------------------------------------------------
     TAccountsCustomBatchRequestEntry
     --------------------------------------------------------------------}
-  
+
   TAccountsCustomBatchRequestEntry = Class(TGoogleBaseObject)
   Private
     Faccount : TAccount;
@@ -979,11 +985,11 @@ type
     Property method : String Index 32 Read Fmethod Write Setmethod;
   end;
   TAccountsCustomBatchRequestEntryClass = Class of TAccountsCustomBatchRequestEntry;
-  
+
   { --------------------------------------------------------------------
     TAccountsCustomBatchResponse
     --------------------------------------------------------------------}
-  
+
   TAccountsCustomBatchResponse = Class(TGoogleBaseObject)
   Private
     Fentries : TAccountsCustomBatchResponseTypeentriesArray;
@@ -1002,11 +1008,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TAccountsCustomBatchResponseClass = Class of TAccountsCustomBatchResponse;
-  
+
   { --------------------------------------------------------------------
     TAccountsCustomBatchResponseEntry
     --------------------------------------------------------------------}
-  
+
   TAccountsCustomBatchResponseEntry = Class(TGoogleBaseObject)
   Private
     Faccount : TAccount;
@@ -1027,11 +1033,11 @@ type
     Property kind : String Index 24 Read Fkind Write Setkind;
   end;
   TAccountsCustomBatchResponseEntryClass = Class of TAccountsCustomBatchResponseEntry;
-  
+
   { --------------------------------------------------------------------
     TAccountsListResponse
     --------------------------------------------------------------------}
-  
+
   TAccountsListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -1053,11 +1059,11 @@ type
     Property resources : TAccountsListResponseTyperesourcesArray Index 16 Read Fresources Write Setresources;
   end;
   TAccountsListResponseClass = Class of TAccountsListResponse;
-  
+
   { --------------------------------------------------------------------
     TAccountshippingCustomBatchRequest
     --------------------------------------------------------------------}
-  
+
   TAccountshippingCustomBatchRequest = Class(TGoogleBaseObject)
   Private
     Fentries : TAccountshippingCustomBatchRequestTypeentriesArray;
@@ -1073,11 +1079,11 @@ type
     Property entries : TAccountshippingCustomBatchRequestTypeentriesArray Index 0 Read Fentries Write Setentries;
   end;
   TAccountshippingCustomBatchRequestClass = Class of TAccountshippingCustomBatchRequest;
-  
+
   { --------------------------------------------------------------------
     TAccountshippingCustomBatchRequestEntry
     --------------------------------------------------------------------}
-  
+
   TAccountshippingCustomBatchRequestEntry = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -1101,11 +1107,11 @@ type
     Property method : String Index 32 Read Fmethod Write Setmethod;
   end;
   TAccountshippingCustomBatchRequestEntryClass = Class of TAccountshippingCustomBatchRequestEntry;
-  
+
   { --------------------------------------------------------------------
     TAccountshippingCustomBatchResponse
     --------------------------------------------------------------------}
-  
+
   TAccountshippingCustomBatchResponse = Class(TGoogleBaseObject)
   Private
     Fentries : TAccountshippingCustomBatchResponseTypeentriesArray;
@@ -1124,11 +1130,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TAccountshippingCustomBatchResponseClass = Class of TAccountshippingCustomBatchResponse;
-  
+
   { --------------------------------------------------------------------
     TAccountshippingCustomBatchResponseEntry
     --------------------------------------------------------------------}
-  
+
   TAccountshippingCustomBatchResponseEntry = Class(TGoogleBaseObject)
   Private
     FaccountShipping : TAccountShipping;
@@ -1149,11 +1155,11 @@ type
     Property kind : String Index 24 Read Fkind Write Setkind;
   end;
   TAccountshippingCustomBatchResponseEntryClass = Class of TAccountshippingCustomBatchResponseEntry;
-  
+
   { --------------------------------------------------------------------
     TAccountshippingListResponse
     --------------------------------------------------------------------}
-  
+
   TAccountshippingListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -1175,11 +1181,11 @@ type
     Property resources : TAccountshippingListResponseTyperesourcesArray Index 16 Read Fresources Write Setresources;
   end;
   TAccountshippingListResponseClass = Class of TAccountshippingListResponse;
-  
+
   { --------------------------------------------------------------------
     TAccountstatusesCustomBatchRequest
     --------------------------------------------------------------------}
-  
+
   TAccountstatusesCustomBatchRequest = Class(TGoogleBaseObject)
   Private
     Fentries : TAccountstatusesCustomBatchRequestTypeentriesArray;
@@ -1195,11 +1201,11 @@ type
     Property entries : TAccountstatusesCustomBatchRequestTypeentriesArray Index 0 Read Fentries Write Setentries;
   end;
   TAccountstatusesCustomBatchRequestClass = Class of TAccountstatusesCustomBatchRequest;
-  
+
   { --------------------------------------------------------------------
     TAccountstatusesCustomBatchRequestEntry
     --------------------------------------------------------------------}
-  
+
   TAccountstatusesCustomBatchRequestEntry = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -1220,11 +1226,11 @@ type
     Property method : String Index 24 Read Fmethod Write Setmethod;
   end;
   TAccountstatusesCustomBatchRequestEntryClass = Class of TAccountstatusesCustomBatchRequestEntry;
-  
+
   { --------------------------------------------------------------------
     TAccountstatusesCustomBatchResponse
     --------------------------------------------------------------------}
-  
+
   TAccountstatusesCustomBatchResponse = Class(TGoogleBaseObject)
   Private
     Fentries : TAccountstatusesCustomBatchResponseTypeentriesArray;
@@ -1243,11 +1249,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TAccountstatusesCustomBatchResponseClass = Class of TAccountstatusesCustomBatchResponse;
-  
+
   { --------------------------------------------------------------------
     TAccountstatusesCustomBatchResponseEntry
     --------------------------------------------------------------------}
-  
+
   TAccountstatusesCustomBatchResponseEntry = Class(TGoogleBaseObject)
   Private
     FaccountStatus : TAccountStatus;
@@ -1265,11 +1271,11 @@ type
     Property errors : TErrors Index 16 Read Ferrors Write Seterrors;
   end;
   TAccountstatusesCustomBatchResponseEntryClass = Class of TAccountstatusesCustomBatchResponseEntry;
-  
+
   { --------------------------------------------------------------------
     TAccountstatusesListResponse
     --------------------------------------------------------------------}
-  
+
   TAccountstatusesListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -1291,11 +1297,11 @@ type
     Property resources : TAccountstatusesListResponseTyperesourcesArray Index 16 Read Fresources Write Setresources;
   end;
   TAccountstatusesListResponseClass = Class of TAccountstatusesListResponse;
-  
+
   { --------------------------------------------------------------------
     TAccounttaxCustomBatchRequest
     --------------------------------------------------------------------}
-  
+
   TAccounttaxCustomBatchRequest = Class(TGoogleBaseObject)
   Private
     Fentries : TAccounttaxCustomBatchRequestTypeentriesArray;
@@ -1311,11 +1317,11 @@ type
     Property entries : TAccounttaxCustomBatchRequestTypeentriesArray Index 0 Read Fentries Write Setentries;
   end;
   TAccounttaxCustomBatchRequestClass = Class of TAccounttaxCustomBatchRequest;
-  
+
   { --------------------------------------------------------------------
     TAccounttaxCustomBatchRequestEntry
     --------------------------------------------------------------------}
-  
+
   TAccounttaxCustomBatchRequestEntry = Class(TGoogleBaseObject)
   Private
     FaccountId : String;
@@ -1339,11 +1345,11 @@ type
     Property method : String Index 32 Read Fmethod Write Setmethod;
   end;
   TAccounttaxCustomBatchRequestEntryClass = Class of TAccounttaxCustomBatchRequestEntry;
-  
+
   { --------------------------------------------------------------------
     TAccounttaxCustomBatchResponse
     --------------------------------------------------------------------}
-  
+
   TAccounttaxCustomBatchResponse = Class(TGoogleBaseObject)
   Private
     Fentries : TAccounttaxCustomBatchResponseTypeentriesArray;
@@ -1362,11 +1368,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TAccounttaxCustomBatchResponseClass = Class of TAccounttaxCustomBatchResponse;
-  
+
   { --------------------------------------------------------------------
     TAccounttaxCustomBatchResponseEntry
     --------------------------------------------------------------------}
-  
+
   TAccounttaxCustomBatchResponseEntry = Class(TGoogleBaseObject)
   Private
     FaccountTax : TAccountTax;
@@ -1387,11 +1393,11 @@ type
     Property kind : String Index 24 Read Fkind Write Setkind;
   end;
   TAccounttaxCustomBatchResponseEntryClass = Class of TAccounttaxCustomBatchResponseEntry;
-  
+
   { --------------------------------------------------------------------
     TAccounttaxListResponse
     --------------------------------------------------------------------}
-  
+
   TAccounttaxListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -1413,11 +1419,11 @@ type
     Property resources : TAccounttaxListResponseTyperesourcesArray Index 16 Read Fresources Write Setresources;
   end;
   TAccounttaxListResponseClass = Class of TAccounttaxListResponse;
-  
+
   { --------------------------------------------------------------------
     TDatafeed
     --------------------------------------------------------------------}
-  
+
   TDatafeed = Class(TGoogleBaseObject)
   Private
     FattributeLanguage : String;
@@ -1463,11 +1469,11 @@ type
     Property targetCountry : String Index 80 Read FtargetCountry Write SettargetCountry;
   end;
   TDatafeedClass = Class of TDatafeed;
-  
+
   { --------------------------------------------------------------------
     TDatafeedFetchSchedule
     --------------------------------------------------------------------}
-  
+
   TDatafeedFetchSchedule = Class(TGoogleBaseObject)
   Private
     FdayOfMonth : integer;
@@ -1500,11 +1506,11 @@ type
     Property weekday : String Index 56 Read Fweekday Write Setweekday;
   end;
   TDatafeedFetchScheduleClass = Class of TDatafeedFetchSchedule;
-  
+
   { --------------------------------------------------------------------
     TDatafeedFormat
     --------------------------------------------------------------------}
-  
+
   TDatafeedFormat = Class(TGoogleBaseObject)
   Private
     FcolumnDelimiter : String;
@@ -1522,11 +1528,11 @@ type
     Property quotingMode : String Index 16 Read FquotingMode Write SetquotingMode;
   end;
   TDatafeedFormatClass = Class of TDatafeedFormat;
-  
+
   { --------------------------------------------------------------------
     TDatafeedStatus
     --------------------------------------------------------------------}
-  
+
   TDatafeedStatus = Class(TGoogleBaseObject)
   Private
     FdatafeedId : String;
@@ -1563,11 +1569,11 @@ type
     Property warnings : TDatafeedStatusTypewarningsArray Index 56 Read Fwarnings Write Setwarnings;
   end;
   TDatafeedStatusClass = Class of TDatafeedStatus;
-  
+
   { --------------------------------------------------------------------
     TDatafeedStatusError
     --------------------------------------------------------------------}
-  
+
   TDatafeedStatusError = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -1592,11 +1598,11 @@ type
     Property message : String Index 24 Read Fmessage Write Setmessage;
   end;
   TDatafeedStatusErrorClass = Class of TDatafeedStatusError;
-  
+
   { --------------------------------------------------------------------
     TDatafeedStatusExample
     --------------------------------------------------------------------}
-  
+
   TDatafeedStatusExample = Class(TGoogleBaseObject)
   Private
     FitemId : String;
@@ -1614,11 +1620,11 @@ type
     Property value : String Index 16 Read Fvalue Write Setvalue;
   end;
   TDatafeedStatusExampleClass = Class of TDatafeedStatusExample;
-  
+
   { --------------------------------------------------------------------
     TDatafeedsCustomBatchRequest
     --------------------------------------------------------------------}
-  
+
   TDatafeedsCustomBatchRequest = Class(TGoogleBaseObject)
   Private
     Fentries : TDatafeedsCustomBatchRequestTypeentriesArray;
@@ -1634,11 +1640,11 @@ type
     Property entries : TDatafeedsCustomBatchRequestTypeentriesArray Index 0 Read Fentries Write Setentries;
   end;
   TDatafeedsCustomBatchRequestClass = Class of TDatafeedsCustomBatchRequest;
-  
+
   { --------------------------------------------------------------------
     TDatafeedsCustomBatchRequestEntry
     --------------------------------------------------------------------}
-  
+
   TDatafeedsCustomBatchRequestEntry = Class(TGoogleBaseObject)
   Private
     FbatchId : integer;
@@ -1662,11 +1668,11 @@ type
     Property method : String Index 32 Read Fmethod Write Setmethod;
   end;
   TDatafeedsCustomBatchRequestEntryClass = Class of TDatafeedsCustomBatchRequestEntry;
-  
+
   { --------------------------------------------------------------------
     TDatafeedsCustomBatchResponse
     --------------------------------------------------------------------}
-  
+
   TDatafeedsCustomBatchResponse = Class(TGoogleBaseObject)
   Private
     Fentries : TDatafeedsCustomBatchResponseTypeentriesArray;
@@ -1685,11 +1691,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TDatafeedsCustomBatchResponseClass = Class of TDatafeedsCustomBatchResponse;
-  
+
   { --------------------------------------------------------------------
     TDatafeedsCustomBatchResponseEntry
     --------------------------------------------------------------------}
-  
+
   TDatafeedsCustomBatchResponseEntry = Class(TGoogleBaseObject)
   Private
     FbatchId : integer;
@@ -1707,11 +1713,11 @@ type
     Property errors : TErrors Index 16 Read Ferrors Write Seterrors;
   end;
   TDatafeedsCustomBatchResponseEntryClass = Class of TDatafeedsCustomBatchResponseEntry;
-  
+
   { --------------------------------------------------------------------
     TDatafeedsListResponse
     --------------------------------------------------------------------}
-  
+
   TDatafeedsListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -1733,11 +1739,11 @@ type
     Property resources : TDatafeedsListResponseTyperesourcesArray Index 16 Read Fresources Write Setresources;
   end;
   TDatafeedsListResponseClass = Class of TDatafeedsListResponse;
-  
+
   { --------------------------------------------------------------------
     TDatafeedstatusesCustomBatchRequest
     --------------------------------------------------------------------}
-  
+
   TDatafeedstatusesCustomBatchRequest = Class(TGoogleBaseObject)
   Private
     Fentries : TDatafeedstatusesCustomBatchRequestTypeentriesArray;
@@ -1753,11 +1759,11 @@ type
     Property entries : TDatafeedstatusesCustomBatchRequestTypeentriesArray Index 0 Read Fentries Write Setentries;
   end;
   TDatafeedstatusesCustomBatchRequestClass = Class of TDatafeedstatusesCustomBatchRequest;
-  
+
   { --------------------------------------------------------------------
     TDatafeedstatusesCustomBatchRequestEntry
     --------------------------------------------------------------------}
-  
+
   TDatafeedstatusesCustomBatchRequestEntry = Class(TGoogleBaseObject)
   Private
     FbatchId : integer;
@@ -1778,11 +1784,11 @@ type
     Property method : String Index 24 Read Fmethod Write Setmethod;
   end;
   TDatafeedstatusesCustomBatchRequestEntryClass = Class of TDatafeedstatusesCustomBatchRequestEntry;
-  
+
   { --------------------------------------------------------------------
     TDatafeedstatusesCustomBatchResponse
     --------------------------------------------------------------------}
-  
+
   TDatafeedstatusesCustomBatchResponse = Class(TGoogleBaseObject)
   Private
     Fentries : TDatafeedstatusesCustomBatchResponseTypeentriesArray;
@@ -1801,11 +1807,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TDatafeedstatusesCustomBatchResponseClass = Class of TDatafeedstatusesCustomBatchResponse;
-  
+
   { --------------------------------------------------------------------
     TDatafeedstatusesCustomBatchResponseEntry
     --------------------------------------------------------------------}
-  
+
   TDatafeedstatusesCustomBatchResponseEntry = Class(TGoogleBaseObject)
   Private
     FbatchId : integer;
@@ -1823,11 +1829,11 @@ type
     Property errors : TErrors Index 16 Read Ferrors Write Seterrors;
   end;
   TDatafeedstatusesCustomBatchResponseEntryClass = Class of TDatafeedstatusesCustomBatchResponseEntry;
-  
+
   { --------------------------------------------------------------------
     TDatafeedstatusesListResponse
     --------------------------------------------------------------------}
-  
+
   TDatafeedstatusesListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -1849,11 +1855,11 @@ type
     Property resources : TDatafeedstatusesListResponseTyperesourcesArray Index 16 Read Fresources Write Setresources;
   end;
   TDatafeedstatusesListResponseClass = Class of TDatafeedstatusesListResponse;
-  
+
   { --------------------------------------------------------------------
     TError
     --------------------------------------------------------------------}
-  
+
   TError = Class(TGoogleBaseObject)
   Private
     Fdomain : String;
@@ -1871,11 +1877,11 @@ type
     Property reason : String Index 16 Read Freason Write Setreason;
   end;
   TErrorClass = Class of TError;
-  
+
   { --------------------------------------------------------------------
     TErrors
     --------------------------------------------------------------------}
-  
+
   TErrors = Class(TGoogleBaseObject)
   Private
     Fcode : integer;
@@ -1897,11 +1903,11 @@ type
     Property message : String Index 16 Read Fmessage Write Setmessage;
   end;
   TErrorsClass = Class of TErrors;
-  
+
   { --------------------------------------------------------------------
     TInstallment
     --------------------------------------------------------------------}
-  
+
   TInstallment = Class(TGoogleBaseObject)
   Private
     Famount : TPrice;
@@ -1916,11 +1922,11 @@ type
     Property months : String Index 8 Read Fmonths Write Setmonths;
   end;
   TInstallmentClass = Class of TInstallment;
-  
+
   { --------------------------------------------------------------------
     TInventory
     --------------------------------------------------------------------}
-  
+
   TInventory = Class(TGoogleBaseObject)
   Private
     Favailability : String;
@@ -1956,11 +1962,11 @@ type
     Property sellOnGoogleQuantity : integer Index 64 Read FsellOnGoogleQuantity Write SetsellOnGoogleQuantity;
   end;
   TInventoryClass = Class of TInventory;
-  
+
   { --------------------------------------------------------------------
     TInventoryCustomBatchRequest
     --------------------------------------------------------------------}
-  
+
   TInventoryCustomBatchRequest = Class(TGoogleBaseObject)
   Private
     Fentries : TInventoryCustomBatchRequestTypeentriesArray;
@@ -1976,11 +1982,11 @@ type
     Property entries : TInventoryCustomBatchRequestTypeentriesArray Index 0 Read Fentries Write Setentries;
   end;
   TInventoryCustomBatchRequestClass = Class of TInventoryCustomBatchRequest;
-  
+
   { --------------------------------------------------------------------
     TInventoryCustomBatchRequestEntry
     --------------------------------------------------------------------}
-  
+
   TInventoryCustomBatchRequestEntry = Class(TGoogleBaseObject)
   Private
     FbatchId : integer;
@@ -2004,11 +2010,11 @@ type
     Property storeCode : String Index 32 Read FstoreCode Write SetstoreCode;
   end;
   TInventoryCustomBatchRequestEntryClass = Class of TInventoryCustomBatchRequestEntry;
-  
+
   { --------------------------------------------------------------------
     TInventoryCustomBatchResponse
     --------------------------------------------------------------------}
-  
+
   TInventoryCustomBatchResponse = Class(TGoogleBaseObject)
   Private
     Fentries : TInventoryCustomBatchResponseTypeentriesArray;
@@ -2027,11 +2033,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TInventoryCustomBatchResponseClass = Class of TInventoryCustomBatchResponse;
-  
+
   { --------------------------------------------------------------------
     TInventoryCustomBatchResponseEntry
     --------------------------------------------------------------------}
-  
+
   TInventoryCustomBatchResponseEntry = Class(TGoogleBaseObject)
   Private
     FbatchId : integer;
@@ -2049,11 +2055,11 @@ type
     Property kind : String Index 16 Read Fkind Write Setkind;
   end;
   TInventoryCustomBatchResponseEntryClass = Class of TInventoryCustomBatchResponseEntry;
-  
+
   { --------------------------------------------------------------------
     TInventorySetRequest
     --------------------------------------------------------------------}
-  
+
   TInventorySetRequest = Class(TGoogleBaseObject)
   Private
     Favailability : String;
@@ -2086,11 +2092,11 @@ type
     Property sellOnGoogleQuantity : integer Index 56 Read FsellOnGoogleQuantity Write SetsellOnGoogleQuantity;
   end;
   TInventorySetRequestClass = Class of TInventorySetRequest;
-  
+
   { --------------------------------------------------------------------
     TInventorySetResponse
     --------------------------------------------------------------------}
-  
+
   TInventorySetResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -2102,11 +2108,11 @@ type
     Property kind : String Index 0 Read Fkind Write Setkind;
   end;
   TInventorySetResponseClass = Class of TInventorySetResponse;
-  
+
   { --------------------------------------------------------------------
     TLoyaltyPoints
     --------------------------------------------------------------------}
-  
+
   TLoyaltyPoints = Class(TGoogleBaseObject)
   Private
     Fname : String;
@@ -2124,11 +2130,11 @@ type
     Property ratio : double Index 16 Read Fratio Write Setratio;
   end;
   TLoyaltyPointsClass = Class of TLoyaltyPoints;
-  
+
   { --------------------------------------------------------------------
     TOrder
     --------------------------------------------------------------------}
-  
+
   TOrder = Class(TGoogleBaseObject)
   Private
     Facknowledged : boolean;
@@ -2198,11 +2204,11 @@ type
     Property status : String Index 144 Read Fstatus Write Setstatus;
   end;
   TOrderClass = Class of TOrder;
-  
+
   { --------------------------------------------------------------------
     TOrderAddress
     --------------------------------------------------------------------}
-  
+
   TOrderAddress = Class(TGoogleBaseObject)
   Private
     Fcountry : String;
@@ -2239,11 +2245,11 @@ type
     Property streetAddress : TStringArray Index 56 Read FstreetAddress Write SetstreetAddress;
   end;
   TOrderAddressClass = Class of TOrderAddress;
-  
+
   { --------------------------------------------------------------------
     TOrderCancellation
     --------------------------------------------------------------------}
-  
+
   TOrderCancellation = Class(TGoogleBaseObject)
   Private
     Factor : String;
@@ -2267,11 +2273,11 @@ type
     Property reasonText : String Index 32 Read FreasonText Write SetreasonText;
   end;
   TOrderCancellationClass = Class of TOrderCancellation;
-  
+
   { --------------------------------------------------------------------
     TOrderCustomer
     --------------------------------------------------------------------}
-  
+
   TOrderCustomer = Class(TGoogleBaseObject)
   Private
     Femail : String;
@@ -2289,11 +2295,11 @@ type
     Property fullName : String Index 16 Read FfullName Write SetfullName;
   end;
   TOrderCustomerClass = Class of TOrderCustomer;
-  
+
   { --------------------------------------------------------------------
     TOrderDeliveryDetails
     --------------------------------------------------------------------}
-  
+
   TOrderDeliveryDetails = Class(TGoogleBaseObject)
   Private
     Faddress : TOrderAddress;
@@ -2308,11 +2314,11 @@ type
     Property phoneNumber : String Index 8 Read FphoneNumber Write SetphoneNumber;
   end;
   TOrderDeliveryDetailsClass = Class of TOrderDeliveryDetails;
-  
+
   { --------------------------------------------------------------------
     TOrderLineItem
     --------------------------------------------------------------------}
-  
+
   TOrderLineItem = Class(TGoogleBaseObject)
   Private
     Fcancellations : TOrderLineItemTypecancellationsArray;
@@ -2367,11 +2373,11 @@ type
     Property tax : TPrice Index 104 Read Ftax Write Settax;
   end;
   TOrderLineItemClass = Class of TOrderLineItem;
-  
+
   { --------------------------------------------------------------------
     TOrderLineItemProduct
     --------------------------------------------------------------------}
-  
+
   TOrderLineItemProduct = Class(TGoogleBaseObject)
   Private
     Fbrand : String;
@@ -2429,11 +2435,11 @@ type
     Property variantAttributes : TOrderLineItemProductTypevariantAttributesArray Index 112 Read FvariantAttributes Write SetvariantAttributes;
   end;
   TOrderLineItemProductClass = Class of TOrderLineItemProduct;
-  
+
   { --------------------------------------------------------------------
     TOrderLineItemProductVariantAttribute
     --------------------------------------------------------------------}
-  
+
   TOrderLineItemProductVariantAttribute = Class(TGoogleBaseObject)
   Private
     Fdimension : String;
@@ -2448,11 +2454,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TOrderLineItemProductVariantAttributeClass = Class of TOrderLineItemProductVariantAttribute;
-  
+
   { --------------------------------------------------------------------
     TOrderLineItemReturnInfo
     --------------------------------------------------------------------}
-  
+
   TOrderLineItemReturnInfo = Class(TGoogleBaseObject)
   Private
     FdaysToReturn : integer;
@@ -2470,11 +2476,11 @@ type
     Property policyUrl : String Index 16 Read FpolicyUrl Write SetpolicyUrl;
   end;
   TOrderLineItemReturnInfoClass = Class of TOrderLineItemReturnInfo;
-  
+
   { --------------------------------------------------------------------
     TOrderLineItemShippingDetails
     --------------------------------------------------------------------}
-  
+
   TOrderLineItemShippingDetails = Class(TGoogleBaseObject)
   Private
     FdeliverByDate : String;
@@ -2492,11 +2498,11 @@ type
     Property shipByDate : String Index 16 Read FshipByDate Write SetshipByDate;
   end;
   TOrderLineItemShippingDetailsClass = Class of TOrderLineItemShippingDetails;
-  
+
   { --------------------------------------------------------------------
     TOrderLineItemShippingDetailsMethod
     --------------------------------------------------------------------}
-  
+
   TOrderLineItemShippingDetailsMethod = Class(TGoogleBaseObject)
   Private
     Fcarrier : String;
@@ -2517,11 +2523,11 @@ type
     Property minDaysInTransit : integer Index 24 Read FminDaysInTransit Write SetminDaysInTransit;
   end;
   TOrderLineItemShippingDetailsMethodClass = Class of TOrderLineItemShippingDetailsMethod;
-  
+
   { --------------------------------------------------------------------
     TOrderPaymentMethod
     --------------------------------------------------------------------}
-  
+
   TOrderPaymentMethod = Class(TGoogleBaseObject)
   Private
     FbillingAddress : TOrderAddress;
@@ -2549,11 +2555,11 @@ type
     Property _type : String Index 40 Read F_type Write Set_type;
   end;
   TOrderPaymentMethodClass = Class of TOrderPaymentMethod;
-  
+
   { --------------------------------------------------------------------
     TOrderPromotion
     --------------------------------------------------------------------}
-  
+
   TOrderPromotion = Class(TGoogleBaseObject)
   Private
     Fbenefits : TOrderPromotionTypebenefitsArray;
@@ -2587,11 +2593,11 @@ type
     Property redemptionChannel : String Index 48 Read FredemptionChannel Write SetredemptionChannel;
   end;
   TOrderPromotionClass = Class of TOrderPromotion;
-  
+
   { --------------------------------------------------------------------
     TOrderPromotionBenefit
     --------------------------------------------------------------------}
-  
+
   TOrderPromotionBenefit = Class(TGoogleBaseObject)
   Private
     Fdiscount : TPrice;
@@ -2620,11 +2626,11 @@ type
     Property _type : String Index 32 Read F_type Write Set_type;
   end;
   TOrderPromotionBenefitClass = Class of TOrderPromotionBenefit;
-  
+
   { --------------------------------------------------------------------
     TOrderRefund
     --------------------------------------------------------------------}
-  
+
   TOrderRefund = Class(TGoogleBaseObject)
   Private
     Factor : String;
@@ -2648,11 +2654,11 @@ type
     Property reasonText : String Index 32 Read FreasonText Write SetreasonText;
   end;
   TOrderRefundClass = Class of TOrderRefund;
-  
+
   { --------------------------------------------------------------------
     TOrderReturn
     --------------------------------------------------------------------}
-  
+
   TOrderReturn = Class(TGoogleBaseObject)
   Private
     Factor : String;
@@ -2676,11 +2682,11 @@ type
     Property reasonText : String Index 32 Read FreasonText Write SetreasonText;
   end;
   TOrderReturnClass = Class of TOrderReturn;
-  
+
   { --------------------------------------------------------------------
     TOrderShipment
     --------------------------------------------------------------------}
-  
+
   TOrderShipment = Class(TGoogleBaseObject)
   Private
     Fcarrier : String;
@@ -2714,11 +2720,11 @@ type
     Property trackingId : String Index 48 Read FtrackingId Write SettrackingId;
   end;
   TOrderShipmentClass = Class of TOrderShipment;
-  
+
   { --------------------------------------------------------------------
     TOrderShipmentLineItemShipment
     --------------------------------------------------------------------}
-  
+
   TOrderShipmentLineItemShipment = Class(TGoogleBaseObject)
   Private
     FlineItemId : String;
@@ -2733,11 +2739,11 @@ type
     Property quantity : integer Index 8 Read Fquantity Write Setquantity;
   end;
   TOrderShipmentLineItemShipmentClass = Class of TOrderShipmentLineItemShipment;
-  
+
   { --------------------------------------------------------------------
     TOrdersAcknowledgeRequest
     --------------------------------------------------------------------}
-  
+
   TOrdersAcknowledgeRequest = Class(TGoogleBaseObject)
   Private
     FoperationId : String;
@@ -2749,11 +2755,11 @@ type
     Property operationId : String Index 0 Read FoperationId Write SetoperationId;
   end;
   TOrdersAcknowledgeRequestClass = Class of TOrdersAcknowledgeRequest;
-  
+
   { --------------------------------------------------------------------
     TOrdersAcknowledgeResponse
     --------------------------------------------------------------------}
-  
+
   TOrdersAcknowledgeResponse = Class(TGoogleBaseObject)
   Private
     FexecutionStatus : String;
@@ -2768,11 +2774,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TOrdersAcknowledgeResponseClass = Class of TOrdersAcknowledgeResponse;
-  
+
   { --------------------------------------------------------------------
     TOrdersAdvanceTestOrderResponse
     --------------------------------------------------------------------}
-  
+
   TOrdersAdvanceTestOrderResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -2784,11 +2790,11 @@ type
     Property kind : String Index 0 Read Fkind Write Setkind;
   end;
   TOrdersAdvanceTestOrderResponseClass = Class of TOrdersAdvanceTestOrderResponse;
-  
+
   { --------------------------------------------------------------------
     TOrdersCancelLineItemRequest
     --------------------------------------------------------------------}
-  
+
   TOrdersCancelLineItemRequest = Class(TGoogleBaseObject)
   Private
     Famount : TPrice;
@@ -2815,11 +2821,11 @@ type
     Property reasonText : String Index 40 Read FreasonText Write SetreasonText;
   end;
   TOrdersCancelLineItemRequestClass = Class of TOrdersCancelLineItemRequest;
-  
+
   { --------------------------------------------------------------------
     TOrdersCancelLineItemResponse
     --------------------------------------------------------------------}
-  
+
   TOrdersCancelLineItemResponse = Class(TGoogleBaseObject)
   Private
     FexecutionStatus : String;
@@ -2834,11 +2840,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TOrdersCancelLineItemResponseClass = Class of TOrdersCancelLineItemResponse;
-  
+
   { --------------------------------------------------------------------
     TOrdersCancelRequest
     --------------------------------------------------------------------}
-  
+
   TOrdersCancelRequest = Class(TGoogleBaseObject)
   Private
     FoperationId : String;
@@ -2856,11 +2862,11 @@ type
     Property reasonText : String Index 16 Read FreasonText Write SetreasonText;
   end;
   TOrdersCancelRequestClass = Class of TOrdersCancelRequest;
-  
+
   { --------------------------------------------------------------------
     TOrdersCancelResponse
     --------------------------------------------------------------------}
-  
+
   TOrdersCancelResponse = Class(TGoogleBaseObject)
   Private
     FexecutionStatus : String;
@@ -2875,11 +2881,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TOrdersCancelResponseClass = Class of TOrdersCancelResponse;
-  
+
   { --------------------------------------------------------------------
     TOrdersCreateTestOrderRequest
     --------------------------------------------------------------------}
-  
+
   TOrdersCreateTestOrderRequest = Class(TGoogleBaseObject)
   Private
     FtemplateName : String;
@@ -2894,11 +2900,11 @@ type
     Property testOrder : TTestOrder Index 8 Read FtestOrder Write SettestOrder;
   end;
   TOrdersCreateTestOrderRequestClass = Class of TOrdersCreateTestOrderRequest;
-  
+
   { --------------------------------------------------------------------
     TOrdersCreateTestOrderResponse
     --------------------------------------------------------------------}
-  
+
   TOrdersCreateTestOrderResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -2913,11 +2919,11 @@ type
     Property orderId : String Index 8 Read ForderId Write SetorderId;
   end;
   TOrdersCreateTestOrderResponseClass = Class of TOrdersCreateTestOrderResponse;
-  
+
   { --------------------------------------------------------------------
     TOrdersCustomBatchRequest
     --------------------------------------------------------------------}
-  
+
   TOrdersCustomBatchRequest = Class(TGoogleBaseObject)
   Private
     Fentries : TOrdersCustomBatchRequestTypeentriesArray;
@@ -2933,11 +2939,11 @@ type
     Property entries : TOrdersCustomBatchRequestTypeentriesArray Index 0 Read Fentries Write Setentries;
   end;
   TOrdersCustomBatchRequestClass = Class of TOrdersCustomBatchRequest;
-  
+
   { --------------------------------------------------------------------
     TOrdersCustomBatchRequestEntry
     --------------------------------------------------------------------}
-  
+
   TOrdersCustomBatchRequestEntry = Class(TGoogleBaseObject)
   Private
     FbatchId : integer;
@@ -2982,11 +2988,11 @@ type
     Property updateShipment : TOrdersCustomBatchRequestEntryUpdateShipment Index 88 Read FupdateShipment Write SetupdateShipment;
   end;
   TOrdersCustomBatchRequestEntryClass = Class of TOrdersCustomBatchRequestEntry;
-  
+
   { --------------------------------------------------------------------
     TOrdersCustomBatchRequestEntryCancel
     --------------------------------------------------------------------}
-  
+
   TOrdersCustomBatchRequestEntryCancel = Class(TGoogleBaseObject)
   Private
     Freason : String;
@@ -3001,11 +3007,11 @@ type
     Property reasonText : String Index 8 Read FreasonText Write SetreasonText;
   end;
   TOrdersCustomBatchRequestEntryCancelClass = Class of TOrdersCustomBatchRequestEntryCancel;
-  
+
   { --------------------------------------------------------------------
     TOrdersCustomBatchRequestEntryCancelLineItem
     --------------------------------------------------------------------}
-  
+
   TOrdersCustomBatchRequestEntryCancelLineItem = Class(TGoogleBaseObject)
   Private
     Famount : TPrice;
@@ -3029,11 +3035,11 @@ type
     Property reasonText : String Index 32 Read FreasonText Write SetreasonText;
   end;
   TOrdersCustomBatchRequestEntryCancelLineItemClass = Class of TOrdersCustomBatchRequestEntryCancelLineItem;
-  
+
   { --------------------------------------------------------------------
     TOrdersCustomBatchRequestEntryRefund
     --------------------------------------------------------------------}
-  
+
   TOrdersCustomBatchRequestEntryRefund = Class(TGoogleBaseObject)
   Private
     Famount : TPrice;
@@ -3051,11 +3057,11 @@ type
     Property reasonText : String Index 16 Read FreasonText Write SetreasonText;
   end;
   TOrdersCustomBatchRequestEntryRefundClass = Class of TOrdersCustomBatchRequestEntryRefund;
-  
+
   { --------------------------------------------------------------------
     TOrdersCustomBatchRequestEntryReturnLineItem
     --------------------------------------------------------------------}
-  
+
   TOrdersCustomBatchRequestEntryReturnLineItem = Class(TGoogleBaseObject)
   Private
     FlineItemId : String;
@@ -3076,11 +3082,11 @@ type
     Property reasonText : String Index 24 Read FreasonText Write SetreasonText;
   end;
   TOrdersCustomBatchRequestEntryReturnLineItemClass = Class of TOrdersCustomBatchRequestEntryReturnLineItem;
-  
+
   { --------------------------------------------------------------------
     TOrdersCustomBatchRequestEntryShipLineItems
     --------------------------------------------------------------------}
-  
+
   TOrdersCustomBatchRequestEntryShipLineItems = Class(TGoogleBaseObject)
   Private
     Fcarrier : String;
@@ -3105,11 +3111,11 @@ type
     Property trackingId : String Index 24 Read FtrackingId Write SettrackingId;
   end;
   TOrdersCustomBatchRequestEntryShipLineItemsClass = Class of TOrdersCustomBatchRequestEntryShipLineItems;
-  
+
   { --------------------------------------------------------------------
     TOrdersCustomBatchRequestEntryUpdateShipment
     --------------------------------------------------------------------}
-  
+
   TOrdersCustomBatchRequestEntryUpdateShipment = Class(TGoogleBaseObject)
   Private
     Fcarrier : String;
@@ -3130,11 +3136,11 @@ type
     Property trackingId : String Index 24 Read FtrackingId Write SettrackingId;
   end;
   TOrdersCustomBatchRequestEntryUpdateShipmentClass = Class of TOrdersCustomBatchRequestEntryUpdateShipment;
-  
+
   { --------------------------------------------------------------------
     TOrdersCustomBatchResponse
     --------------------------------------------------------------------}
-  
+
   TOrdersCustomBatchResponse = Class(TGoogleBaseObject)
   Private
     Fentries : TOrdersCustomBatchResponseTypeentriesArray;
@@ -3153,11 +3159,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TOrdersCustomBatchResponseClass = Class of TOrdersCustomBatchResponse;
-  
+
   { --------------------------------------------------------------------
     TOrdersCustomBatchResponseEntry
     --------------------------------------------------------------------}
-  
+
   TOrdersCustomBatchResponseEntry = Class(TGoogleBaseObject)
   Private
     FbatchId : integer;
@@ -3181,11 +3187,11 @@ type
     Property order : TOrder Index 32 Read Forder Write Setorder;
   end;
   TOrdersCustomBatchResponseEntryClass = Class of TOrdersCustomBatchResponseEntry;
-  
+
   { --------------------------------------------------------------------
     TOrdersGetByMerchantOrderIdResponse
     --------------------------------------------------------------------}
-  
+
   TOrdersGetByMerchantOrderIdResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -3200,11 +3206,11 @@ type
     Property order : TOrder Index 8 Read Forder Write Setorder;
   end;
   TOrdersGetByMerchantOrderIdResponseClass = Class of TOrdersGetByMerchantOrderIdResponse;
-  
+
   { --------------------------------------------------------------------
     TOrdersGetTestOrderTemplateResponse
     --------------------------------------------------------------------}
-  
+
   TOrdersGetTestOrderTemplateResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -3219,11 +3225,11 @@ type
     Property template : TTestOrder Index 8 Read Ftemplate Write Settemplate;
   end;
   TOrdersGetTestOrderTemplateResponseClass = Class of TOrdersGetTestOrderTemplateResponse;
-  
+
   { --------------------------------------------------------------------
     TOrdersListResponse
     --------------------------------------------------------------------}
-  
+
   TOrdersListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -3245,11 +3251,11 @@ type
     Property resources : TOrdersListResponseTyperesourcesArray Index 16 Read Fresources Write Setresources;
   end;
   TOrdersListResponseClass = Class of TOrdersListResponse;
-  
+
   { --------------------------------------------------------------------
     TOrdersRefundRequest
     --------------------------------------------------------------------}
-  
+
   TOrdersRefundRequest = Class(TGoogleBaseObject)
   Private
     Famount : TPrice;
@@ -3270,11 +3276,11 @@ type
     Property reasonText : String Index 24 Read FreasonText Write SetreasonText;
   end;
   TOrdersRefundRequestClass = Class of TOrdersRefundRequest;
-  
+
   { --------------------------------------------------------------------
     TOrdersRefundResponse
     --------------------------------------------------------------------}
-  
+
   TOrdersRefundResponse = Class(TGoogleBaseObject)
   Private
     FexecutionStatus : String;
@@ -3289,11 +3295,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TOrdersRefundResponseClass = Class of TOrdersRefundResponse;
-  
+
   { --------------------------------------------------------------------
     TOrdersReturnLineItemRequest
     --------------------------------------------------------------------}
-  
+
   TOrdersReturnLineItemRequest = Class(TGoogleBaseObject)
   Private
     FlineItemId : String;
@@ -3317,11 +3323,11 @@ type
     Property reasonText : String Index 32 Read FreasonText Write SetreasonText;
   end;
   TOrdersReturnLineItemRequestClass = Class of TOrdersReturnLineItemRequest;
-  
+
   { --------------------------------------------------------------------
     TOrdersReturnLineItemResponse
     --------------------------------------------------------------------}
-  
+
   TOrdersReturnLineItemResponse = Class(TGoogleBaseObject)
   Private
     FexecutionStatus : String;
@@ -3336,11 +3342,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TOrdersReturnLineItemResponseClass = Class of TOrdersReturnLineItemResponse;
-  
+
   { --------------------------------------------------------------------
     TOrdersShipLineItemsRequest
     --------------------------------------------------------------------}
-  
+
   TOrdersShipLineItemsRequest = Class(TGoogleBaseObject)
   Private
     Fcarrier : String;
@@ -3368,11 +3374,11 @@ type
     Property trackingId : String Index 32 Read FtrackingId Write SettrackingId;
   end;
   TOrdersShipLineItemsRequestClass = Class of TOrdersShipLineItemsRequest;
-  
+
   { --------------------------------------------------------------------
     TOrdersShipLineItemsResponse
     --------------------------------------------------------------------}
-  
+
   TOrdersShipLineItemsResponse = Class(TGoogleBaseObject)
   Private
     FexecutionStatus : String;
@@ -3387,11 +3393,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TOrdersShipLineItemsResponseClass = Class of TOrdersShipLineItemsResponse;
-  
+
   { --------------------------------------------------------------------
     TOrdersUpdateMerchantOrderIdRequest
     --------------------------------------------------------------------}
-  
+
   TOrdersUpdateMerchantOrderIdRequest = Class(TGoogleBaseObject)
   Private
     FmerchantOrderId : String;
@@ -3406,11 +3412,11 @@ type
     Property operationId : String Index 8 Read FoperationId Write SetoperationId;
   end;
   TOrdersUpdateMerchantOrderIdRequestClass = Class of TOrdersUpdateMerchantOrderIdRequest;
-  
+
   { --------------------------------------------------------------------
     TOrdersUpdateMerchantOrderIdResponse
     --------------------------------------------------------------------}
-  
+
   TOrdersUpdateMerchantOrderIdResponse = Class(TGoogleBaseObject)
   Private
     FexecutionStatus : String;
@@ -3425,11 +3431,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TOrdersUpdateMerchantOrderIdResponseClass = Class of TOrdersUpdateMerchantOrderIdResponse;
-  
+
   { --------------------------------------------------------------------
     TOrdersUpdateShipmentRequest
     --------------------------------------------------------------------}
-  
+
   TOrdersUpdateShipmentRequest = Class(TGoogleBaseObject)
   Private
     Fcarrier : String;
@@ -3453,11 +3459,11 @@ type
     Property trackingId : String Index 32 Read FtrackingId Write SettrackingId;
   end;
   TOrdersUpdateShipmentRequestClass = Class of TOrdersUpdateShipmentRequest;
-  
+
   { --------------------------------------------------------------------
     TOrdersUpdateShipmentResponse
     --------------------------------------------------------------------}
-  
+
   TOrdersUpdateShipmentResponse = Class(TGoogleBaseObject)
   Private
     FexecutionStatus : String;
@@ -3472,11 +3478,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TOrdersUpdateShipmentResponseClass = Class of TOrdersUpdateShipmentResponse;
-  
+
   { --------------------------------------------------------------------
     TPrice
     --------------------------------------------------------------------}
-  
+
   TPrice = Class(TGoogleBaseObject)
   Private
     Fcurrency : String;
@@ -3491,11 +3497,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TPriceClass = Class of TPrice;
-  
+
   { --------------------------------------------------------------------
     TProduct
     --------------------------------------------------------------------}
-  
+
   TProduct = Class(TGoogleBaseObject)
   Private
     FadditionalImageLinks : TStringArray;
@@ -3721,11 +3727,11 @@ type
     Property warnings : TProductTypewarningsArray Index 560 Read Fwarnings Write Setwarnings;
   end;
   TProductClass = Class of TProduct;
-  
+
   { --------------------------------------------------------------------
     TProductAspect
     --------------------------------------------------------------------}
-  
+
   TProductAspect = Class(TGoogleBaseObject)
   Private
     FaspectName : String;
@@ -3743,11 +3749,11 @@ type
     Property intention : String Index 16 Read Fintention Write Setintention;
   end;
   TProductAspectClass = Class of TProductAspect;
-  
+
   { --------------------------------------------------------------------
     TProductCustomAttribute
     --------------------------------------------------------------------}
-  
+
   TProductCustomAttribute = Class(TGoogleBaseObject)
   Private
     Fname : String;
@@ -3769,11 +3775,11 @@ type
     Property value : String Index 24 Read Fvalue Write Setvalue;
   end;
   TProductCustomAttributeClass = Class of TProductCustomAttribute;
-  
+
   { --------------------------------------------------------------------
     TProductCustomGroup
     --------------------------------------------------------------------}
-  
+
   TProductCustomGroup = Class(TGoogleBaseObject)
   Private
     Fattributes : TProductCustomGroupTypeattributesArray;
@@ -3792,11 +3798,11 @@ type
     Property name : String Index 8 Read Fname Write Setname;
   end;
   TProductCustomGroupClass = Class of TProductCustomGroup;
-  
+
   { --------------------------------------------------------------------
     TProductDestination
     --------------------------------------------------------------------}
-  
+
   TProductDestination = Class(TGoogleBaseObject)
   Private
     FdestinationName : String;
@@ -3811,11 +3817,11 @@ type
     Property intention : String Index 8 Read Fintention Write Setintention;
   end;
   TProductDestinationClass = Class of TProductDestination;
-  
+
   { --------------------------------------------------------------------
     TProductShipping
     --------------------------------------------------------------------}
-  
+
   TProductShipping = Class(TGoogleBaseObject)
   Private
     Fcountry : String;
@@ -3845,11 +3851,11 @@ type
     Property service : String Index 48 Read Fservice Write Setservice;
   end;
   TProductShippingClass = Class of TProductShipping;
-  
+
   { --------------------------------------------------------------------
     TProductShippingDimension
     --------------------------------------------------------------------}
-  
+
   TProductShippingDimension = Class(TGoogleBaseObject)
   Private
     F_unit : String;
@@ -3865,11 +3871,11 @@ type
     Property value : double Index 8 Read Fvalue Write Setvalue;
   end;
   TProductShippingDimensionClass = Class of TProductShippingDimension;
-  
+
   { --------------------------------------------------------------------
     TProductShippingWeight
     --------------------------------------------------------------------}
-  
+
   TProductShippingWeight = Class(TGoogleBaseObject)
   Private
     F_unit : String;
@@ -3885,11 +3891,11 @@ type
     Property value : double Index 8 Read Fvalue Write Setvalue;
   end;
   TProductShippingWeightClass = Class of TProductShippingWeight;
-  
+
   { --------------------------------------------------------------------
     TProductStatus
     --------------------------------------------------------------------}
-  
+
   TProductStatus = Class(TGoogleBaseObject)
   Private
     FcreationDate : String;
@@ -3929,11 +3935,11 @@ type
     Property title : String Index 64 Read Ftitle Write Settitle;
   end;
   TProductStatusClass = Class of TProductStatus;
-  
+
   { --------------------------------------------------------------------
     TProductStatusDataQualityIssue
     --------------------------------------------------------------------}
-  
+
   TProductStatusDataQualityIssue = Class(TGoogleBaseObject)
   Private
     Fdetail : String;
@@ -3966,11 +3972,11 @@ type
     Property valueProvided : String Index 56 Read FvalueProvided Write SetvalueProvided;
   end;
   TProductStatusDataQualityIssueClass = Class of TProductStatusDataQualityIssue;
-  
+
   { --------------------------------------------------------------------
     TProductStatusDestinationStatus
     --------------------------------------------------------------------}
-  
+
   TProductStatusDestinationStatus = Class(TGoogleBaseObject)
   Private
     FapprovalStatus : String;
@@ -3988,11 +3994,11 @@ type
     Property intention : String Index 16 Read Fintention Write Setintention;
   end;
   TProductStatusDestinationStatusClass = Class of TProductStatusDestinationStatus;
-  
+
   { --------------------------------------------------------------------
     TProductTax
     --------------------------------------------------------------------}
-  
+
   TProductTax = Class(TGoogleBaseObject)
   Private
     Fcountry : String;
@@ -4019,11 +4025,11 @@ type
     Property taxShip : boolean Index 40 Read FtaxShip Write SettaxShip;
   end;
   TProductTaxClass = Class of TProductTax;
-  
+
   { --------------------------------------------------------------------
     TProductUnitPricingBaseMeasure
     --------------------------------------------------------------------}
-  
+
   TProductUnitPricingBaseMeasure = Class(TGoogleBaseObject)
   Private
     F_unit : String;
@@ -4039,11 +4045,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TProductUnitPricingBaseMeasureClass = Class of TProductUnitPricingBaseMeasure;
-  
+
   { --------------------------------------------------------------------
     TProductUnitPricingMeasure
     --------------------------------------------------------------------}
-  
+
   TProductUnitPricingMeasure = Class(TGoogleBaseObject)
   Private
     F_unit : String;
@@ -4059,11 +4065,11 @@ type
     Property value : double Index 8 Read Fvalue Write Setvalue;
   end;
   TProductUnitPricingMeasureClass = Class of TProductUnitPricingMeasure;
-  
+
   { --------------------------------------------------------------------
     TProductsCustomBatchRequest
     --------------------------------------------------------------------}
-  
+
   TProductsCustomBatchRequest = Class(TGoogleBaseObject)
   Private
     Fentries : TProductsCustomBatchRequestTypeentriesArray;
@@ -4079,11 +4085,11 @@ type
     Property entries : TProductsCustomBatchRequestTypeentriesArray Index 0 Read Fentries Write Setentries;
   end;
   TProductsCustomBatchRequestClass = Class of TProductsCustomBatchRequest;
-  
+
   { --------------------------------------------------------------------
     TProductsCustomBatchRequestEntry
     --------------------------------------------------------------------}
-  
+
   TProductsCustomBatchRequestEntry = Class(TGoogleBaseObject)
   Private
     FbatchId : integer;
@@ -4107,11 +4113,11 @@ type
     Property productId : String Index 32 Read FproductId Write SetproductId;
   end;
   TProductsCustomBatchRequestEntryClass = Class of TProductsCustomBatchRequestEntry;
-  
+
   { --------------------------------------------------------------------
     TProductsCustomBatchResponse
     --------------------------------------------------------------------}
-  
+
   TProductsCustomBatchResponse = Class(TGoogleBaseObject)
   Private
     Fentries : TProductsCustomBatchResponseTypeentriesArray;
@@ -4130,11 +4136,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TProductsCustomBatchResponseClass = Class of TProductsCustomBatchResponse;
-  
+
   { --------------------------------------------------------------------
     TProductsCustomBatchResponseEntry
     --------------------------------------------------------------------}
-  
+
   TProductsCustomBatchResponseEntry = Class(TGoogleBaseObject)
   Private
     FbatchId : integer;
@@ -4155,11 +4161,11 @@ type
     Property product : TProduct Index 24 Read Fproduct Write Setproduct;
   end;
   TProductsCustomBatchResponseEntryClass = Class of TProductsCustomBatchResponseEntry;
-  
+
   { --------------------------------------------------------------------
     TProductsListResponse
     --------------------------------------------------------------------}
-  
+
   TProductsListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -4181,11 +4187,11 @@ type
     Property resources : TProductsListResponseTyperesourcesArray Index 16 Read Fresources Write Setresources;
   end;
   TProductsListResponseClass = Class of TProductsListResponse;
-  
+
   { --------------------------------------------------------------------
     TProductstatusesCustomBatchRequest
     --------------------------------------------------------------------}
-  
+
   TProductstatusesCustomBatchRequest = Class(TGoogleBaseObject)
   Private
     Fentries : TProductstatusesCustomBatchRequestTypeentriesArray;
@@ -4201,11 +4207,11 @@ type
     Property entries : TProductstatusesCustomBatchRequestTypeentriesArray Index 0 Read Fentries Write Setentries;
   end;
   TProductstatusesCustomBatchRequestClass = Class of TProductstatusesCustomBatchRequest;
-  
+
   { --------------------------------------------------------------------
     TProductstatusesCustomBatchRequestEntry
     --------------------------------------------------------------------}
-  
+
   TProductstatusesCustomBatchRequestEntry = Class(TGoogleBaseObject)
   Private
     FbatchId : integer;
@@ -4226,11 +4232,11 @@ type
     Property productId : String Index 24 Read FproductId Write SetproductId;
   end;
   TProductstatusesCustomBatchRequestEntryClass = Class of TProductstatusesCustomBatchRequestEntry;
-  
+
   { --------------------------------------------------------------------
     TProductstatusesCustomBatchResponse
     --------------------------------------------------------------------}
-  
+
   TProductstatusesCustomBatchResponse = Class(TGoogleBaseObject)
   Private
     Fentries : TProductstatusesCustomBatchResponseTypeentriesArray;
@@ -4249,11 +4255,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TProductstatusesCustomBatchResponseClass = Class of TProductstatusesCustomBatchResponse;
-  
+
   { --------------------------------------------------------------------
     TProductstatusesCustomBatchResponseEntry
     --------------------------------------------------------------------}
-  
+
   TProductstatusesCustomBatchResponseEntry = Class(TGoogleBaseObject)
   Private
     FbatchId : integer;
@@ -4274,11 +4280,11 @@ type
     Property productStatus : TProductStatus Index 24 Read FproductStatus Write SetproductStatus;
   end;
   TProductstatusesCustomBatchResponseEntryClass = Class of TProductstatusesCustomBatchResponseEntry;
-  
+
   { --------------------------------------------------------------------
     TProductstatusesListResponse
     --------------------------------------------------------------------}
-  
+
   TProductstatusesListResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -4300,11 +4306,11 @@ type
     Property resources : TProductstatusesListResponseTyperesourcesArray Index 16 Read Fresources Write Setresources;
   end;
   TProductstatusesListResponseClass = Class of TProductstatusesListResponse;
-  
+
   { --------------------------------------------------------------------
     TTestOrder
     --------------------------------------------------------------------}
-  
+
   TTestOrder = Class(TGoogleBaseObject)
   Private
     Fcustomer : TTestOrderCustomer;
@@ -4344,11 +4350,11 @@ type
     Property shippingOption : String Index 64 Read FshippingOption Write SetshippingOption;
   end;
   TTestOrderClass = Class of TTestOrder;
-  
+
   { --------------------------------------------------------------------
     TTestOrderCustomer
     --------------------------------------------------------------------}
-  
+
   TTestOrderCustomer = Class(TGoogleBaseObject)
   Private
     Femail : String;
@@ -4366,11 +4372,11 @@ type
     Property fullName : String Index 16 Read FfullName Write SetfullName;
   end;
   TTestOrderCustomerClass = Class of TTestOrderCustomer;
-  
+
   { --------------------------------------------------------------------
     TTestOrderLineItem
     --------------------------------------------------------------------}
-  
+
   TTestOrderLineItem = Class(TGoogleBaseObject)
   Private
     Fproduct : TTestOrderLineItemProduct;
@@ -4394,11 +4400,11 @@ type
     Property unitTax : TPrice Index 32 Read FunitTax Write SetunitTax;
   end;
   TTestOrderLineItemClass = Class of TTestOrderLineItem;
-  
+
   { --------------------------------------------------------------------
     TTestOrderLineItemProduct
     --------------------------------------------------------------------}
-  
+
   TTestOrderLineItemProduct = Class(TGoogleBaseObject)
   Private
     Fbrand : String;
@@ -4450,11 +4456,11 @@ type
     Property variantAttributes : TTestOrderLineItemProductTypevariantAttributesArray Index 96 Read FvariantAttributes Write SetvariantAttributes;
   end;
   TTestOrderLineItemProductClass = Class of TTestOrderLineItemProduct;
-  
+
   { --------------------------------------------------------------------
     TTestOrderPaymentMethod
     --------------------------------------------------------------------}
-  
+
   TTestOrderPaymentMethod = Class(TGoogleBaseObject)
   Private
     FexpirationMonth : integer;
@@ -4479,11 +4485,11 @@ type
     Property _type : String Index 32 Read F_type Write Set_type;
   end;
   TTestOrderPaymentMethodClass = Class of TTestOrderPaymentMethod;
-  
+
   { --------------------------------------------------------------------
     TWeight
     --------------------------------------------------------------------}
-  
+
   TWeight = Class(TGoogleBaseObject)
   Private
     F_unit : String;
@@ -4499,54 +4505,54 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TWeightClass = Class of TWeight;
-  
+
   { --------------------------------------------------------------------
     TAccountsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TAccountsResource, method Custombatch
-  
+
   TAccountsCustombatchOptions = Record
     dryRun : boolean;
   end;
-  
-  
+
+
   //Optional query Options for TAccountsResource, method Delete
-  
+
   TAccountsDeleteOptions = Record
     dryRun : boolean;
   end;
-  
-  
+
+
   //Optional query Options for TAccountsResource, method Insert
-  
+
   TAccountsInsertOptions = Record
     dryRun : boolean;
   end;
-  
-  
+
+
   //Optional query Options for TAccountsResource, method List
-  
+
   TAccountsListOptions = Record
     maxResults : integer;
     pageToken : String;
   end;
-  
-  
+
+
   //Optional query Options for TAccountsResource, method Patch
-  
+
   TAccountsPatchOptions = Record
     dryRun : boolean;
   end;
-  
-  
+
+
   //Optional query Options for TAccountsResource, method Update
-  
+
   TAccountsUpdateOptions = Record
     dryRun : boolean;
   end;
-  
+
   TAccountsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -4566,41 +4572,41 @@ type
     Function Update(accountId: string; merchantId: string; aAccount : TAccount; AQuery : string  = '') : TAccount;
     Function Update(accountId: string; merchantId: string; aAccount : TAccount; AQuery : TAccountsupdateOptions) : TAccount;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TAccountshippingResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TAccountshippingResource, method Custombatch
-  
+
   TAccountshippingCustombatchOptions = Record
     dryRun : boolean;
   end;
-  
-  
+
+
   //Optional query Options for TAccountshippingResource, method List
-  
+
   TAccountshippingListOptions = Record
     maxResults : integer;
     pageToken : String;
   end;
-  
-  
+
+
   //Optional query Options for TAccountshippingResource, method Patch
-  
+
   TAccountshippingPatchOptions = Record
     dryRun : boolean;
   end;
-  
-  
+
+
   //Optional query Options for TAccountshippingResource, method Update
-  
+
   TAccountshippingUpdateOptions = Record
     dryRun : boolean;
   end;
-  
+
   TAccountshippingResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -4615,20 +4621,20 @@ type
     Function Update(accountId: string; merchantId: string; aAccountShipping : TAccountShipping; AQuery : string  = '') : TAccountShipping;
     Function Update(accountId: string; merchantId: string; aAccountShipping : TAccountShipping; AQuery : TAccountshippingupdateOptions) : TAccountShipping;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TAccountstatusesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TAccountstatusesResource, method List
-  
+
   TAccountstatusesListOptions = Record
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TAccountstatusesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -4638,41 +4644,41 @@ type
     Function List(merchantId: string; AQuery : string  = '') : TAccountstatusesListResponse;
     Function List(merchantId: string; AQuery : TAccountstatuseslistOptions) : TAccountstatusesListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TAccounttaxResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TAccounttaxResource, method Custombatch
-  
+
   TAccounttaxCustombatchOptions = Record
     dryRun : boolean;
   end;
-  
-  
+
+
   //Optional query Options for TAccounttaxResource, method List
-  
+
   TAccounttaxListOptions = Record
     maxResults : integer;
     pageToken : String;
   end;
-  
-  
+
+
   //Optional query Options for TAccounttaxResource, method Patch
-  
+
   TAccounttaxPatchOptions = Record
     dryRun : boolean;
   end;
-  
-  
+
+
   //Optional query Options for TAccounttaxResource, method Update
-  
+
   TAccounttaxUpdateOptions = Record
     dryRun : boolean;
   end;
-  
+
   TAccounttaxResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -4687,55 +4693,55 @@ type
     Function Update(accountId: string; merchantId: string; aAccountTax : TAccountTax; AQuery : string  = '') : TAccountTax;
     Function Update(accountId: string; merchantId: string; aAccountTax : TAccountTax; AQuery : TAccounttaxupdateOptions) : TAccountTax;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TDatafeedsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TDatafeedsResource, method Custombatch
-  
+
   TDatafeedsCustombatchOptions = Record
     dryRun : boolean;
   end;
-  
-  
+
+
   //Optional query Options for TDatafeedsResource, method Delete
-  
+
   TDatafeedsDeleteOptions = Record
     dryRun : boolean;
   end;
-  
-  
+
+
   //Optional query Options for TDatafeedsResource, method Insert
-  
+
   TDatafeedsInsertOptions = Record
     dryRun : boolean;
   end;
-  
-  
+
+
   //Optional query Options for TDatafeedsResource, method List
-  
+
   TDatafeedsListOptions = Record
     maxResults : integer;
     pageToken : String;
   end;
-  
-  
+
+
   //Optional query Options for TDatafeedsResource, method Patch
-  
+
   TDatafeedsPatchOptions = Record
     dryRun : boolean;
   end;
-  
-  
+
+
   //Optional query Options for TDatafeedsResource, method Update
-  
+
   TDatafeedsUpdateOptions = Record
     dryRun : boolean;
   end;
-  
+
   TDatafeedsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -4754,20 +4760,20 @@ type
     Function Update(datafeedId: string; merchantId: string; aDatafeed : TDatafeed; AQuery : string  = '') : TDatafeed;
     Function Update(datafeedId: string; merchantId: string; aDatafeed : TDatafeed; AQuery : TDatafeedsupdateOptions) : TDatafeed;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TDatafeedstatusesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TDatafeedstatusesResource, method List
-  
+
   TDatafeedstatusesListOptions = Record
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TDatafeedstatusesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -4777,26 +4783,26 @@ type
     Function List(merchantId: string; AQuery : string  = '') : TDatafeedstatusesListResponse;
     Function List(merchantId: string; AQuery : TDatafeedstatuseslistOptions) : TDatafeedstatusesListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TInventoryResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TInventoryResource, method Custombatch
-  
+
   TInventoryCustombatchOptions = Record
     dryRun : boolean;
   end;
-  
-  
+
+
   //Optional query Options for TInventoryResource, method Set
-  
+
   TInventorySetOptions = Record
     dryRun : boolean;
   end;
-  
+
   TInventoryResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -4806,15 +4812,15 @@ type
     Function _set(merchantId: string; productId: string; storeCode: string; aInventorySetRequest : TInventorySetRequest; AQuery : string  = '') : TInventorySetResponse;
     Function _set(merchantId: string; productId: string; storeCode: string; aInventorySetRequest : TInventorySetRequest; AQuery : TInventorysetOptions) : TInventorySetResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TOrdersResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TOrdersResource, method List
-  
+
   TOrdersListOptions = Record
     acknowledged : boolean;
     maxResults : integer;
@@ -4824,7 +4830,7 @@ type
     placedDateStart : String;
     statuses : String;
   end;
-  
+
   TOrdersResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -4846,42 +4852,42 @@ type
     Function Updatemerchantorderid(merchantId: string; orderId: string; aOrdersUpdateMerchantOrderIdRequest : TOrdersUpdateMerchantOrderIdRequest) : TOrdersUpdateMerchantOrderIdResponse;
     Function Updateshipment(merchantId: string; orderId: string; aOrdersUpdateShipmentRequest : TOrdersUpdateShipmentRequest) : TOrdersUpdateShipmentResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TProductsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TProductsResource, method Custombatch
-  
+
   TProductsCustombatchOptions = Record
     dryRun : boolean;
   end;
-  
-  
+
+
   //Optional query Options for TProductsResource, method Delete
-  
+
   TProductsDeleteOptions = Record
     dryRun : boolean;
   end;
-  
-  
+
+
   //Optional query Options for TProductsResource, method Insert
-  
+
   TProductsInsertOptions = Record
     dryRun : boolean;
   end;
-  
-  
+
+
   //Optional query Options for TProductsResource, method List
-  
+
   TProductsListOptions = Record
     includeInvalidInsertedItems : boolean;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TProductsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -4896,21 +4902,21 @@ type
     Function List(merchantId: string; AQuery : string  = '') : TProductsListResponse;
     Function List(merchantId: string; AQuery : TProductslistOptions) : TProductsListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TProductstatusesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TProductstatusesResource, method List
-  
+
   TProductstatusesListOptions = Record
     includeInvalidInsertedItems : boolean;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TProductstatusesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -4920,12 +4926,12 @@ type
     Function List(merchantId: string; AQuery : string  = '') : TProductstatusesListResponse;
     Function List(merchantId: string; AQuery : TProductstatuseslistOptions) : TProductstatusesListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TContentAPI
     --------------------------------------------------------------------}
-  
+
   TContentAPI = Class(TGoogleAPI)
   Private
     FAccountsInstance : TAccountsResource;
@@ -5012,7 +5018,7 @@ implementation
   --------------------------------------------------------------------}
 
 
-Procedure TAccount.SetadultContent(AIndex : Integer; const AValue : boolean); 
+Procedure TAccount.SetadultContent(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FadultContent=AValue) then exit;
@@ -5022,7 +5028,7 @@ end;
 
 
 
-Procedure TAccount.SetadwordsLinks(AIndex : Integer; const AValue : TAccountTypeadwordsLinksArray); 
+Procedure TAccount.SetadwordsLinks(AIndex : Integer; const AValue : TAccountTypeadwordsLinksArray);
 
 begin
   If (FadwordsLinks=AValue) then exit;
@@ -5032,7 +5038,7 @@ end;
 
 
 
-Procedure TAccount.Setid(AIndex : Integer; const AValue : String); 
+Procedure TAccount.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -5042,7 +5048,7 @@ end;
 
 
 
-Procedure TAccount.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAccount.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -5052,7 +5058,7 @@ end;
 
 
 
-Procedure TAccount.Setname(AIndex : Integer; const AValue : String); 
+Procedure TAccount.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -5062,7 +5068,7 @@ end;
 
 
 
-Procedure TAccount.SetreviewsUrl(AIndex : Integer; const AValue : String); 
+Procedure TAccount.SetreviewsUrl(AIndex : Integer; const AValue : String);
 
 begin
   If (FreviewsUrl=AValue) then exit;
@@ -5072,7 +5078,7 @@ end;
 
 
 
-Procedure TAccount.SetsellerId(AIndex : Integer; const AValue : String); 
+Procedure TAccount.SetsellerId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsellerId=AValue) then exit;
@@ -5082,7 +5088,7 @@ end;
 
 
 
-Procedure TAccount.Setusers(AIndex : Integer; const AValue : TAccountTypeusersArray); 
+Procedure TAccount.Setusers(AIndex : Integer; const AValue : TAccountTypeusersArray);
 
 begin
   If (Fusers=AValue) then exit;
@@ -5092,7 +5098,7 @@ end;
 
 
 
-Procedure TAccount.SetwebsiteUrl(AIndex : Integer; const AValue : String); 
+Procedure TAccount.SetwebsiteUrl(AIndex : Integer; const AValue : String);
 
 begin
   If (FwebsiteUrl=AValue) then exit;
@@ -5103,7 +5109,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAccount.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAccount.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -5123,7 +5129,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountAdwordsLink.SetadwordsId(AIndex : Integer; const AValue : String); 
+Procedure TAccountAdwordsLink.SetadwordsId(AIndex : Integer; const AValue : String);
 
 begin
   If (FadwordsId=AValue) then exit;
@@ -5133,7 +5139,7 @@ end;
 
 
 
-Procedure TAccountAdwordsLink.Setstatus(AIndex : Integer; const AValue : String); 
+Procedure TAccountAdwordsLink.Setstatus(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -5150,7 +5156,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountIdentifier.SetaggregatorId(AIndex : Integer; const AValue : String); 
+Procedure TAccountIdentifier.SetaggregatorId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaggregatorId=AValue) then exit;
@@ -5160,7 +5166,7 @@ end;
 
 
 
-Procedure TAccountIdentifier.SetmerchantId(AIndex : Integer; const AValue : String); 
+Procedure TAccountIdentifier.SetmerchantId(AIndex : Integer; const AValue : String);
 
 begin
   If (FmerchantId=AValue) then exit;
@@ -5177,7 +5183,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountShipping.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TAccountShipping.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -5187,7 +5193,7 @@ end;
 
 
 
-Procedure TAccountShipping.SetcarrierRates(AIndex : Integer; const AValue : TAccountShippingTypecarrierRatesArray); 
+Procedure TAccountShipping.SetcarrierRates(AIndex : Integer; const AValue : TAccountShippingTypecarrierRatesArray);
 
 begin
   If (FcarrierRates=AValue) then exit;
@@ -5197,7 +5203,7 @@ end;
 
 
 
-Procedure TAccountShipping.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAccountShipping.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -5207,7 +5213,7 @@ end;
 
 
 
-Procedure TAccountShipping.SetlocationGroups(AIndex : Integer; const AValue : TAccountShippingTypelocationGroupsArray); 
+Procedure TAccountShipping.SetlocationGroups(AIndex : Integer; const AValue : TAccountShippingTypelocationGroupsArray);
 
 begin
   If (FlocationGroups=AValue) then exit;
@@ -5217,7 +5223,7 @@ end;
 
 
 
-Procedure TAccountShipping.SetrateTables(AIndex : Integer; const AValue : TAccountShippingTyperateTablesArray); 
+Procedure TAccountShipping.SetrateTables(AIndex : Integer; const AValue : TAccountShippingTyperateTablesArray);
 
 begin
   If (FrateTables=AValue) then exit;
@@ -5227,7 +5233,7 @@ end;
 
 
 
-Procedure TAccountShipping.Setservices(AIndex : Integer; const AValue : TAccountShippingTypeservicesArray); 
+Procedure TAccountShipping.Setservices(AIndex : Integer; const AValue : TAccountShippingTypeservicesArray);
 
 begin
   If (Fservices=AValue) then exit;
@@ -5238,7 +5244,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAccountShipping.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAccountShipping.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -5260,7 +5266,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountShippingCarrierRate.Setcarrier(AIndex : Integer; const AValue : String); 
+Procedure TAccountShippingCarrierRate.Setcarrier(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcarrier=AValue) then exit;
@@ -5270,7 +5276,7 @@ end;
 
 
 
-Procedure TAccountShippingCarrierRate.SetcarrierService(AIndex : Integer; const AValue : String); 
+Procedure TAccountShippingCarrierRate.SetcarrierService(AIndex : Integer; const AValue : String);
 
 begin
   If (FcarrierService=AValue) then exit;
@@ -5280,7 +5286,7 @@ end;
 
 
 
-Procedure TAccountShippingCarrierRate.SetmodifierFlatRate(AIndex : Integer; const AValue : TPrice); 
+Procedure TAccountShippingCarrierRate.SetmodifierFlatRate(AIndex : Integer; const AValue : TPrice);
 
 begin
   If (FmodifierFlatRate=AValue) then exit;
@@ -5290,7 +5296,7 @@ end;
 
 
 
-Procedure TAccountShippingCarrierRate.SetmodifierPercent(AIndex : Integer; const AValue : String); 
+Procedure TAccountShippingCarrierRate.SetmodifierPercent(AIndex : Integer; const AValue : String);
 
 begin
   If (FmodifierPercent=AValue) then exit;
@@ -5300,7 +5306,7 @@ end;
 
 
 
-Procedure TAccountShippingCarrierRate.Setname(AIndex : Integer; const AValue : String); 
+Procedure TAccountShippingCarrierRate.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -5310,7 +5316,7 @@ end;
 
 
 
-Procedure TAccountShippingCarrierRate.SetsaleCountry(AIndex : Integer; const AValue : String); 
+Procedure TAccountShippingCarrierRate.SetsaleCountry(AIndex : Integer; const AValue : String);
 
 begin
   If (FsaleCountry=AValue) then exit;
@@ -5320,7 +5326,7 @@ end;
 
 
 
-Procedure TAccountShippingCarrierRate.SetshippingOrigin(AIndex : Integer; const AValue : String); 
+Procedure TAccountShippingCarrierRate.SetshippingOrigin(AIndex : Integer; const AValue : String);
 
 begin
   If (FshippingOrigin=AValue) then exit;
@@ -5337,7 +5343,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountShippingCondition.SetdeliveryLocationGroup(AIndex : Integer; const AValue : String); 
+Procedure TAccountShippingCondition.SetdeliveryLocationGroup(AIndex : Integer; const AValue : String);
 
 begin
   If (FdeliveryLocationGroup=AValue) then exit;
@@ -5347,7 +5353,7 @@ end;
 
 
 
-Procedure TAccountShippingCondition.SetdeliveryLocationId(AIndex : Integer; const AValue : String); 
+Procedure TAccountShippingCondition.SetdeliveryLocationId(AIndex : Integer; const AValue : String);
 
 begin
   If (FdeliveryLocationId=AValue) then exit;
@@ -5357,7 +5363,7 @@ end;
 
 
 
-Procedure TAccountShippingCondition.SetdeliveryPostalCode(AIndex : Integer; const AValue : String); 
+Procedure TAccountShippingCondition.SetdeliveryPostalCode(AIndex : Integer; const AValue : String);
 
 begin
   If (FdeliveryPostalCode=AValue) then exit;
@@ -5367,7 +5373,7 @@ end;
 
 
 
-Procedure TAccountShippingCondition.SetdeliveryPostalCodeRange(AIndex : Integer; const AValue : TAccountShippingPostalCodeRange); 
+Procedure TAccountShippingCondition.SetdeliveryPostalCodeRange(AIndex : Integer; const AValue : TAccountShippingPostalCodeRange);
 
 begin
   If (FdeliveryPostalCodeRange=AValue) then exit;
@@ -5377,7 +5383,7 @@ end;
 
 
 
-Procedure TAccountShippingCondition.SetpriceMax(AIndex : Integer; const AValue : TPrice); 
+Procedure TAccountShippingCondition.SetpriceMax(AIndex : Integer; const AValue : TPrice);
 
 begin
   If (FpriceMax=AValue) then exit;
@@ -5387,7 +5393,7 @@ end;
 
 
 
-Procedure TAccountShippingCondition.SetshippingLabel(AIndex : Integer; const AValue : String); 
+Procedure TAccountShippingCondition.SetshippingLabel(AIndex : Integer; const AValue : String);
 
 begin
   If (FshippingLabel=AValue) then exit;
@@ -5397,7 +5403,7 @@ end;
 
 
 
-Procedure TAccountShippingCondition.SetweightMax(AIndex : Integer; const AValue : TWeight); 
+Procedure TAccountShippingCondition.SetweightMax(AIndex : Integer; const AValue : TWeight);
 
 begin
   If (FweightMax=AValue) then exit;
@@ -5414,7 +5420,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountShippingLocationGroup.Setcountry(AIndex : Integer; const AValue : String); 
+Procedure TAccountShippingLocationGroup.Setcountry(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcountry=AValue) then exit;
@@ -5424,7 +5430,7 @@ end;
 
 
 
-Procedure TAccountShippingLocationGroup.SetlocationIds(AIndex : Integer; const AValue : TStringArray); 
+Procedure TAccountShippingLocationGroup.SetlocationIds(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FlocationIds=AValue) then exit;
@@ -5434,7 +5440,7 @@ end;
 
 
 
-Procedure TAccountShippingLocationGroup.Setname(AIndex : Integer; const AValue : String); 
+Procedure TAccountShippingLocationGroup.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -5444,7 +5450,7 @@ end;
 
 
 
-Procedure TAccountShippingLocationGroup.SetpostalCodeRanges(AIndex : Integer; const AValue : TAccountShippingLocationGroupTypepostalCodeRangesArray); 
+Procedure TAccountShippingLocationGroup.SetpostalCodeRanges(AIndex : Integer; const AValue : TAccountShippingLocationGroupTypepostalCodeRangesArray);
 
 begin
   If (FpostalCodeRanges=AValue) then exit;
@@ -5454,7 +5460,7 @@ end;
 
 
 
-Procedure TAccountShippingLocationGroup.SetpostalCodes(AIndex : Integer; const AValue : TStringArray); 
+Procedure TAccountShippingLocationGroup.SetpostalCodes(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FpostalCodes=AValue) then exit;
@@ -5465,7 +5471,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAccountShippingLocationGroup.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAccountShippingLocationGroup.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -5486,7 +5492,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountShippingPostalCodeRange.Set_end(AIndex : Integer; const AValue : String); 
+Procedure TAccountShippingPostalCodeRange.Set_end(AIndex : Integer; const AValue : String);
 
 begin
   If (F_end=AValue) then exit;
@@ -5496,7 +5502,7 @@ end;
 
 
 
-Procedure TAccountShippingPostalCodeRange.Setstart(AIndex : Integer; const AValue : String); 
+Procedure TAccountShippingPostalCodeRange.Setstart(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstart=AValue) then exit;
@@ -5524,7 +5530,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountShippingRateTable.Setcontent(AIndex : Integer; const AValue : TAccountShippingRateTableTypecontentArray); 
+Procedure TAccountShippingRateTable.Setcontent(AIndex : Integer; const AValue : TAccountShippingRateTableTypecontentArray);
 
 begin
   If (Fcontent=AValue) then exit;
@@ -5534,7 +5540,7 @@ end;
 
 
 
-Procedure TAccountShippingRateTable.Setname(AIndex : Integer; const AValue : String); 
+Procedure TAccountShippingRateTable.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -5544,7 +5550,7 @@ end;
 
 
 
-Procedure TAccountShippingRateTable.SetsaleCountry(AIndex : Integer; const AValue : String); 
+Procedure TAccountShippingRateTable.SetsaleCountry(AIndex : Integer; const AValue : String);
 
 begin
   If (FsaleCountry=AValue) then exit;
@@ -5555,7 +5561,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAccountShippingRateTable.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAccountShippingRateTable.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -5574,7 +5580,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountShippingRateTableCell.Setcondition(AIndex : Integer; const AValue : TAccountShippingCondition); 
+Procedure TAccountShippingRateTableCell.Setcondition(AIndex : Integer; const AValue : TAccountShippingCondition);
 
 begin
   If (Fcondition=AValue) then exit;
@@ -5584,7 +5590,7 @@ end;
 
 
 
-Procedure TAccountShippingRateTableCell.Setrate(AIndex : Integer; const AValue : TPrice); 
+Procedure TAccountShippingRateTableCell.Setrate(AIndex : Integer; const AValue : TPrice);
 
 begin
   If (Frate=AValue) then exit;
@@ -5601,7 +5607,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountShippingShippingService.Setactive(AIndex : Integer; const AValue : boolean); 
+Procedure TAccountShippingShippingService.Setactive(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Factive=AValue) then exit;
@@ -5611,7 +5617,7 @@ end;
 
 
 
-Procedure TAccountShippingShippingService.SetcalculationMethod(AIndex : Integer; const AValue : TAccountShippingShippingServiceCalculationMethod); 
+Procedure TAccountShippingShippingService.SetcalculationMethod(AIndex : Integer; const AValue : TAccountShippingShippingServiceCalculationMethod);
 
 begin
   If (FcalculationMethod=AValue) then exit;
@@ -5621,7 +5627,7 @@ end;
 
 
 
-Procedure TAccountShippingShippingService.SetcostRuleTree(AIndex : Integer; const AValue : TAccountShippingShippingServiceCostRule); 
+Procedure TAccountShippingShippingService.SetcostRuleTree(AIndex : Integer; const AValue : TAccountShippingShippingServiceCostRule);
 
 begin
   If (FcostRuleTree=AValue) then exit;
@@ -5631,7 +5637,7 @@ end;
 
 
 
-Procedure TAccountShippingShippingService.Setname(AIndex : Integer; const AValue : String); 
+Procedure TAccountShippingShippingService.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -5641,7 +5647,7 @@ end;
 
 
 
-Procedure TAccountShippingShippingService.SetsaleCountry(AIndex : Integer; const AValue : String); 
+Procedure TAccountShippingShippingService.SetsaleCountry(AIndex : Integer; const AValue : String);
 
 begin
   If (FsaleCountry=AValue) then exit;
@@ -5658,7 +5664,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountShippingShippingServiceCalculationMethod.SetcarrierRate(AIndex : Integer; const AValue : String); 
+Procedure TAccountShippingShippingServiceCalculationMethod.SetcarrierRate(AIndex : Integer; const AValue : String);
 
 begin
   If (FcarrierRate=AValue) then exit;
@@ -5668,7 +5674,7 @@ end;
 
 
 
-Procedure TAccountShippingShippingServiceCalculationMethod.Setexcluded(AIndex : Integer; const AValue : boolean); 
+Procedure TAccountShippingShippingServiceCalculationMethod.Setexcluded(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fexcluded=AValue) then exit;
@@ -5678,7 +5684,7 @@ end;
 
 
 
-Procedure TAccountShippingShippingServiceCalculationMethod.SetflatRate(AIndex : Integer; const AValue : TPrice); 
+Procedure TAccountShippingShippingServiceCalculationMethod.SetflatRate(AIndex : Integer; const AValue : TPrice);
 
 begin
   If (FflatRate=AValue) then exit;
@@ -5688,7 +5694,7 @@ end;
 
 
 
-Procedure TAccountShippingShippingServiceCalculationMethod.SetpercentageRate(AIndex : Integer; const AValue : String); 
+Procedure TAccountShippingShippingServiceCalculationMethod.SetpercentageRate(AIndex : Integer; const AValue : String);
 
 begin
   If (FpercentageRate=AValue) then exit;
@@ -5698,7 +5704,7 @@ end;
 
 
 
-Procedure TAccountShippingShippingServiceCalculationMethod.SetrateTable(AIndex : Integer; const AValue : String); 
+Procedure TAccountShippingShippingServiceCalculationMethod.SetrateTable(AIndex : Integer; const AValue : String);
 
 begin
   If (FrateTable=AValue) then exit;
@@ -5715,7 +5721,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountShippingShippingServiceCostRule.SetcalculationMethod(AIndex : Integer; const AValue : TAccountShippingShippingServiceCalculationMethod); 
+Procedure TAccountShippingShippingServiceCostRule.SetcalculationMethod(AIndex : Integer; const AValue : TAccountShippingShippingServiceCalculationMethod);
 
 begin
   If (FcalculationMethod=AValue) then exit;
@@ -5725,7 +5731,7 @@ end;
 
 
 
-Procedure TAccountShippingShippingServiceCostRule.Setchildren(AIndex : Integer; const AValue : TAccountShippingShippingServiceCostRuleTypechildrenArray); 
+Procedure TAccountShippingShippingServiceCostRule.Setchildren(AIndex : Integer; const AValue : TAccountShippingShippingServiceCostRuleTypechildrenArray);
 
 begin
   If (Fchildren=AValue) then exit;
@@ -5735,7 +5741,7 @@ end;
 
 
 
-Procedure TAccountShippingShippingServiceCostRule.Setcondition(AIndex : Integer; const AValue : TAccountShippingCondition); 
+Procedure TAccountShippingShippingServiceCostRule.Setcondition(AIndex : Integer; const AValue : TAccountShippingCondition);
 
 begin
   If (Fcondition=AValue) then exit;
@@ -5746,7 +5752,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAccountShippingShippingServiceCostRule.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAccountShippingShippingServiceCostRule.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -5765,7 +5771,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountStatus.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TAccountStatus.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -5775,7 +5781,7 @@ end;
 
 
 
-Procedure TAccountStatus.SetdataQualityIssues(AIndex : Integer; const AValue : TAccountStatusTypedataQualityIssuesArray); 
+Procedure TAccountStatus.SetdataQualityIssues(AIndex : Integer; const AValue : TAccountStatusTypedataQualityIssuesArray);
 
 begin
   If (FdataQualityIssues=AValue) then exit;
@@ -5785,7 +5791,7 @@ end;
 
 
 
-Procedure TAccountStatus.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAccountStatus.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -5796,7 +5802,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAccountStatus.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAccountStatus.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -5815,7 +5821,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountStatusDataQualityIssue.Setcountry(AIndex : Integer; const AValue : String); 
+Procedure TAccountStatusDataQualityIssue.Setcountry(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcountry=AValue) then exit;
@@ -5825,7 +5831,7 @@ end;
 
 
 
-Procedure TAccountStatusDataQualityIssue.SetdisplayedValue(AIndex : Integer; const AValue : String); 
+Procedure TAccountStatusDataQualityIssue.SetdisplayedValue(AIndex : Integer; const AValue : String);
 
 begin
   If (FdisplayedValue=AValue) then exit;
@@ -5835,7 +5841,7 @@ end;
 
 
 
-Procedure TAccountStatusDataQualityIssue.SetexampleItems(AIndex : Integer; const AValue : TAccountStatusDataQualityIssueTypeexampleItemsArray); 
+Procedure TAccountStatusDataQualityIssue.SetexampleItems(AIndex : Integer; const AValue : TAccountStatusDataQualityIssueTypeexampleItemsArray);
 
 begin
   If (FexampleItems=AValue) then exit;
@@ -5845,7 +5851,7 @@ end;
 
 
 
-Procedure TAccountStatusDataQualityIssue.Setid(AIndex : Integer; const AValue : String); 
+Procedure TAccountStatusDataQualityIssue.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -5855,7 +5861,7 @@ end;
 
 
 
-Procedure TAccountStatusDataQualityIssue.SetlastChecked(AIndex : Integer; const AValue : String); 
+Procedure TAccountStatusDataQualityIssue.SetlastChecked(AIndex : Integer; const AValue : String);
 
 begin
   If (FlastChecked=AValue) then exit;
@@ -5865,7 +5871,7 @@ end;
 
 
 
-Procedure TAccountStatusDataQualityIssue.SetnumItems(AIndex : Integer; const AValue : integer); 
+Procedure TAccountStatusDataQualityIssue.SetnumItems(AIndex : Integer; const AValue : integer);
 
 begin
   If (FnumItems=AValue) then exit;
@@ -5875,7 +5881,7 @@ end;
 
 
 
-Procedure TAccountStatusDataQualityIssue.Setseverity(AIndex : Integer; const AValue : String); 
+Procedure TAccountStatusDataQualityIssue.Setseverity(AIndex : Integer; const AValue : String);
 
 begin
   If (Fseverity=AValue) then exit;
@@ -5885,7 +5891,7 @@ end;
 
 
 
-Procedure TAccountStatusDataQualityIssue.SetsubmittedValue(AIndex : Integer; const AValue : String); 
+Procedure TAccountStatusDataQualityIssue.SetsubmittedValue(AIndex : Integer; const AValue : String);
 
 begin
   If (FsubmittedValue=AValue) then exit;
@@ -5896,7 +5902,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAccountStatusDataQualityIssue.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAccountStatusDataQualityIssue.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -5915,7 +5921,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountStatusExampleItem.SetitemId(AIndex : Integer; const AValue : String); 
+Procedure TAccountStatusExampleItem.SetitemId(AIndex : Integer; const AValue : String);
 
 begin
   If (FitemId=AValue) then exit;
@@ -5925,7 +5931,7 @@ end;
 
 
 
-Procedure TAccountStatusExampleItem.Setlink(AIndex : Integer; const AValue : String); 
+Procedure TAccountStatusExampleItem.Setlink(AIndex : Integer; const AValue : String);
 
 begin
   If (Flink=AValue) then exit;
@@ -5935,7 +5941,7 @@ end;
 
 
 
-Procedure TAccountStatusExampleItem.SetsubmittedValue(AIndex : Integer; const AValue : String); 
+Procedure TAccountStatusExampleItem.SetsubmittedValue(AIndex : Integer; const AValue : String);
 
 begin
   If (FsubmittedValue=AValue) then exit;
@@ -5945,7 +5951,7 @@ end;
 
 
 
-Procedure TAccountStatusExampleItem.Settitle(AIndex : Integer; const AValue : String); 
+Procedure TAccountStatusExampleItem.Settitle(AIndex : Integer; const AValue : String);
 
 begin
   If (Ftitle=AValue) then exit;
@@ -5955,7 +5961,7 @@ end;
 
 
 
-Procedure TAccountStatusExampleItem.SetvalueOnLandingPage(AIndex : Integer; const AValue : String); 
+Procedure TAccountStatusExampleItem.SetvalueOnLandingPage(AIndex : Integer; const AValue : String);
 
 begin
   If (FvalueOnLandingPage=AValue) then exit;
@@ -5972,7 +5978,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountTax.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TAccountTax.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -5982,7 +5988,7 @@ end;
 
 
 
-Procedure TAccountTax.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAccountTax.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -5992,7 +5998,7 @@ end;
 
 
 
-Procedure TAccountTax.Setrules(AIndex : Integer; const AValue : TAccountTaxTyperulesArray); 
+Procedure TAccountTax.Setrules(AIndex : Integer; const AValue : TAccountTaxTyperulesArray);
 
 begin
   If (Frules=AValue) then exit;
@@ -6003,7 +6009,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAccountTax.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAccountTax.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -6022,7 +6028,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountTaxTaxRule.Setcountry(AIndex : Integer; const AValue : String); 
+Procedure TAccountTaxTaxRule.Setcountry(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcountry=AValue) then exit;
@@ -6032,7 +6038,7 @@ end;
 
 
 
-Procedure TAccountTaxTaxRule.SetlocationId(AIndex : Integer; const AValue : String); 
+Procedure TAccountTaxTaxRule.SetlocationId(AIndex : Integer; const AValue : String);
 
 begin
   If (FlocationId=AValue) then exit;
@@ -6042,7 +6048,7 @@ end;
 
 
 
-Procedure TAccountTaxTaxRule.SetratePercent(AIndex : Integer; const AValue : String); 
+Procedure TAccountTaxTaxRule.SetratePercent(AIndex : Integer; const AValue : String);
 
 begin
   If (FratePercent=AValue) then exit;
@@ -6052,7 +6058,7 @@ end;
 
 
 
-Procedure TAccountTaxTaxRule.SetshippingTaxed(AIndex : Integer; const AValue : boolean); 
+Procedure TAccountTaxTaxRule.SetshippingTaxed(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FshippingTaxed=AValue) then exit;
@@ -6062,7 +6068,7 @@ end;
 
 
 
-Procedure TAccountTaxTaxRule.SetuseGlobalRate(AIndex : Integer; const AValue : boolean); 
+Procedure TAccountTaxTaxRule.SetuseGlobalRate(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FuseGlobalRate=AValue) then exit;
@@ -6079,7 +6085,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountUser.Setadmin(AIndex : Integer; const AValue : boolean); 
+Procedure TAccountUser.Setadmin(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fadmin=AValue) then exit;
@@ -6089,7 +6095,7 @@ end;
 
 
 
-Procedure TAccountUser.SetemailAddress(AIndex : Integer; const AValue : String); 
+Procedure TAccountUser.SetemailAddress(AIndex : Integer; const AValue : String);
 
 begin
   If (FemailAddress=AValue) then exit;
@@ -6106,7 +6112,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountsAuthInfoResponse.SetaccountIdentifiers(AIndex : Integer; const AValue : TAccountsAuthInfoResponseTypeaccountIdentifiersArray); 
+Procedure TAccountsAuthInfoResponse.SetaccountIdentifiers(AIndex : Integer; const AValue : TAccountsAuthInfoResponseTypeaccountIdentifiersArray);
 
 begin
   If (FaccountIdentifiers=AValue) then exit;
@@ -6116,7 +6122,7 @@ end;
 
 
 
-Procedure TAccountsAuthInfoResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAccountsAuthInfoResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -6127,7 +6133,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAccountsAuthInfoResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAccountsAuthInfoResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -6146,7 +6152,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountsCustomBatchRequest.Setentries(AIndex : Integer; const AValue : TAccountsCustomBatchRequestTypeentriesArray); 
+Procedure TAccountsCustomBatchRequest.Setentries(AIndex : Integer; const AValue : TAccountsCustomBatchRequestTypeentriesArray);
 
 begin
   If (Fentries=AValue) then exit;
@@ -6157,7 +6163,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAccountsCustomBatchRequest.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAccountsCustomBatchRequest.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -6176,7 +6182,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountsCustomBatchRequestEntry.Setaccount(AIndex : Integer; const AValue : TAccount); 
+Procedure TAccountsCustomBatchRequestEntry.Setaccount(AIndex : Integer; const AValue : TAccount);
 
 begin
   If (Faccount=AValue) then exit;
@@ -6186,7 +6192,7 @@ end;
 
 
 
-Procedure TAccountsCustomBatchRequestEntry.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TAccountsCustomBatchRequestEntry.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -6196,7 +6202,7 @@ end;
 
 
 
-Procedure TAccountsCustomBatchRequestEntry.SetbatchId(AIndex : Integer; const AValue : integer); 
+Procedure TAccountsCustomBatchRequestEntry.SetbatchId(AIndex : Integer; const AValue : integer);
 
 begin
   If (FbatchId=AValue) then exit;
@@ -6206,7 +6212,7 @@ end;
 
 
 
-Procedure TAccountsCustomBatchRequestEntry.SetmerchantId(AIndex : Integer; const AValue : String); 
+Procedure TAccountsCustomBatchRequestEntry.SetmerchantId(AIndex : Integer; const AValue : String);
 
 begin
   If (FmerchantId=AValue) then exit;
@@ -6216,7 +6222,7 @@ end;
 
 
 
-Procedure TAccountsCustomBatchRequestEntry.Setmethod(AIndex : Integer; const AValue : String); 
+Procedure TAccountsCustomBatchRequestEntry.Setmethod(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmethod=AValue) then exit;
@@ -6233,7 +6239,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountsCustomBatchResponse.Setentries(AIndex : Integer; const AValue : TAccountsCustomBatchResponseTypeentriesArray); 
+Procedure TAccountsCustomBatchResponse.Setentries(AIndex : Integer; const AValue : TAccountsCustomBatchResponseTypeentriesArray);
 
 begin
   If (Fentries=AValue) then exit;
@@ -6243,7 +6249,7 @@ end;
 
 
 
-Procedure TAccountsCustomBatchResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAccountsCustomBatchResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -6254,7 +6260,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAccountsCustomBatchResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAccountsCustomBatchResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -6273,7 +6279,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountsCustomBatchResponseEntry.Setaccount(AIndex : Integer; const AValue : TAccount); 
+Procedure TAccountsCustomBatchResponseEntry.Setaccount(AIndex : Integer; const AValue : TAccount);
 
 begin
   If (Faccount=AValue) then exit;
@@ -6283,7 +6289,7 @@ end;
 
 
 
-Procedure TAccountsCustomBatchResponseEntry.SetbatchId(AIndex : Integer; const AValue : integer); 
+Procedure TAccountsCustomBatchResponseEntry.SetbatchId(AIndex : Integer; const AValue : integer);
 
 begin
   If (FbatchId=AValue) then exit;
@@ -6293,7 +6299,7 @@ end;
 
 
 
-Procedure TAccountsCustomBatchResponseEntry.Seterrors(AIndex : Integer; const AValue : TErrors); 
+Procedure TAccountsCustomBatchResponseEntry.Seterrors(AIndex : Integer; const AValue : TErrors);
 
 begin
   If (Ferrors=AValue) then exit;
@@ -6303,7 +6309,7 @@ end;
 
 
 
-Procedure TAccountsCustomBatchResponseEntry.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAccountsCustomBatchResponseEntry.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -6320,7 +6326,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAccountsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -6330,7 +6336,7 @@ end;
 
 
 
-Procedure TAccountsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TAccountsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -6340,7 +6346,7 @@ end;
 
 
 
-Procedure TAccountsListResponse.Setresources(AIndex : Integer; const AValue : TAccountsListResponseTyperesourcesArray); 
+Procedure TAccountsListResponse.Setresources(AIndex : Integer; const AValue : TAccountsListResponseTyperesourcesArray);
 
 begin
   If (Fresources=AValue) then exit;
@@ -6351,7 +6357,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAccountsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAccountsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -6370,7 +6376,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountshippingCustomBatchRequest.Setentries(AIndex : Integer; const AValue : TAccountshippingCustomBatchRequestTypeentriesArray); 
+Procedure TAccountshippingCustomBatchRequest.Setentries(AIndex : Integer; const AValue : TAccountshippingCustomBatchRequestTypeentriesArray);
 
 begin
   If (Fentries=AValue) then exit;
@@ -6381,7 +6387,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAccountshippingCustomBatchRequest.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAccountshippingCustomBatchRequest.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -6400,7 +6406,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountshippingCustomBatchRequestEntry.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TAccountshippingCustomBatchRequestEntry.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -6410,7 +6416,7 @@ end;
 
 
 
-Procedure TAccountshippingCustomBatchRequestEntry.SetaccountShipping(AIndex : Integer; const AValue : TAccountShipping); 
+Procedure TAccountshippingCustomBatchRequestEntry.SetaccountShipping(AIndex : Integer; const AValue : TAccountShipping);
 
 begin
   If (FaccountShipping=AValue) then exit;
@@ -6420,7 +6426,7 @@ end;
 
 
 
-Procedure TAccountshippingCustomBatchRequestEntry.SetbatchId(AIndex : Integer; const AValue : integer); 
+Procedure TAccountshippingCustomBatchRequestEntry.SetbatchId(AIndex : Integer; const AValue : integer);
 
 begin
   If (FbatchId=AValue) then exit;
@@ -6430,7 +6436,7 @@ end;
 
 
 
-Procedure TAccountshippingCustomBatchRequestEntry.SetmerchantId(AIndex : Integer; const AValue : String); 
+Procedure TAccountshippingCustomBatchRequestEntry.SetmerchantId(AIndex : Integer; const AValue : String);
 
 begin
   If (FmerchantId=AValue) then exit;
@@ -6440,7 +6446,7 @@ end;
 
 
 
-Procedure TAccountshippingCustomBatchRequestEntry.Setmethod(AIndex : Integer; const AValue : String); 
+Procedure TAccountshippingCustomBatchRequestEntry.Setmethod(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmethod=AValue) then exit;
@@ -6457,7 +6463,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountshippingCustomBatchResponse.Setentries(AIndex : Integer; const AValue : TAccountshippingCustomBatchResponseTypeentriesArray); 
+Procedure TAccountshippingCustomBatchResponse.Setentries(AIndex : Integer; const AValue : TAccountshippingCustomBatchResponseTypeentriesArray);
 
 begin
   If (Fentries=AValue) then exit;
@@ -6467,7 +6473,7 @@ end;
 
 
 
-Procedure TAccountshippingCustomBatchResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAccountshippingCustomBatchResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -6478,7 +6484,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAccountshippingCustomBatchResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAccountshippingCustomBatchResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -6497,7 +6503,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountshippingCustomBatchResponseEntry.SetaccountShipping(AIndex : Integer; const AValue : TAccountShipping); 
+Procedure TAccountshippingCustomBatchResponseEntry.SetaccountShipping(AIndex : Integer; const AValue : TAccountShipping);
 
 begin
   If (FaccountShipping=AValue) then exit;
@@ -6507,7 +6513,7 @@ end;
 
 
 
-Procedure TAccountshippingCustomBatchResponseEntry.SetbatchId(AIndex : Integer; const AValue : integer); 
+Procedure TAccountshippingCustomBatchResponseEntry.SetbatchId(AIndex : Integer; const AValue : integer);
 
 begin
   If (FbatchId=AValue) then exit;
@@ -6517,7 +6523,7 @@ end;
 
 
 
-Procedure TAccountshippingCustomBatchResponseEntry.Seterrors(AIndex : Integer; const AValue : TErrors); 
+Procedure TAccountshippingCustomBatchResponseEntry.Seterrors(AIndex : Integer; const AValue : TErrors);
 
 begin
   If (Ferrors=AValue) then exit;
@@ -6527,7 +6533,7 @@ end;
 
 
 
-Procedure TAccountshippingCustomBatchResponseEntry.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAccountshippingCustomBatchResponseEntry.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -6544,7 +6550,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountshippingListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAccountshippingListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -6554,7 +6560,7 @@ end;
 
 
 
-Procedure TAccountshippingListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TAccountshippingListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -6564,7 +6570,7 @@ end;
 
 
 
-Procedure TAccountshippingListResponse.Setresources(AIndex : Integer; const AValue : TAccountshippingListResponseTyperesourcesArray); 
+Procedure TAccountshippingListResponse.Setresources(AIndex : Integer; const AValue : TAccountshippingListResponseTyperesourcesArray);
 
 begin
   If (Fresources=AValue) then exit;
@@ -6575,7 +6581,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAccountshippingListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAccountshippingListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -6594,7 +6600,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountstatusesCustomBatchRequest.Setentries(AIndex : Integer; const AValue : TAccountstatusesCustomBatchRequestTypeentriesArray); 
+Procedure TAccountstatusesCustomBatchRequest.Setentries(AIndex : Integer; const AValue : TAccountstatusesCustomBatchRequestTypeentriesArray);
 
 begin
   If (Fentries=AValue) then exit;
@@ -6605,7 +6611,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAccountstatusesCustomBatchRequest.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAccountstatusesCustomBatchRequest.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -6624,7 +6630,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountstatusesCustomBatchRequestEntry.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TAccountstatusesCustomBatchRequestEntry.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -6634,7 +6640,7 @@ end;
 
 
 
-Procedure TAccountstatusesCustomBatchRequestEntry.SetbatchId(AIndex : Integer; const AValue : integer); 
+Procedure TAccountstatusesCustomBatchRequestEntry.SetbatchId(AIndex : Integer; const AValue : integer);
 
 begin
   If (FbatchId=AValue) then exit;
@@ -6644,7 +6650,7 @@ end;
 
 
 
-Procedure TAccountstatusesCustomBatchRequestEntry.SetmerchantId(AIndex : Integer; const AValue : String); 
+Procedure TAccountstatusesCustomBatchRequestEntry.SetmerchantId(AIndex : Integer; const AValue : String);
 
 begin
   If (FmerchantId=AValue) then exit;
@@ -6654,7 +6660,7 @@ end;
 
 
 
-Procedure TAccountstatusesCustomBatchRequestEntry.Setmethod(AIndex : Integer; const AValue : String); 
+Procedure TAccountstatusesCustomBatchRequestEntry.Setmethod(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmethod=AValue) then exit;
@@ -6671,7 +6677,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountstatusesCustomBatchResponse.Setentries(AIndex : Integer; const AValue : TAccountstatusesCustomBatchResponseTypeentriesArray); 
+Procedure TAccountstatusesCustomBatchResponse.Setentries(AIndex : Integer; const AValue : TAccountstatusesCustomBatchResponseTypeentriesArray);
 
 begin
   If (Fentries=AValue) then exit;
@@ -6681,7 +6687,7 @@ end;
 
 
 
-Procedure TAccountstatusesCustomBatchResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAccountstatusesCustomBatchResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -6692,7 +6698,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAccountstatusesCustomBatchResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAccountstatusesCustomBatchResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -6711,7 +6717,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountstatusesCustomBatchResponseEntry.SetaccountStatus(AIndex : Integer; const AValue : TAccountStatus); 
+Procedure TAccountstatusesCustomBatchResponseEntry.SetaccountStatus(AIndex : Integer; const AValue : TAccountStatus);
 
 begin
   If (FaccountStatus=AValue) then exit;
@@ -6721,7 +6727,7 @@ end;
 
 
 
-Procedure TAccountstatusesCustomBatchResponseEntry.SetbatchId(AIndex : Integer; const AValue : integer); 
+Procedure TAccountstatusesCustomBatchResponseEntry.SetbatchId(AIndex : Integer; const AValue : integer);
 
 begin
   If (FbatchId=AValue) then exit;
@@ -6731,7 +6737,7 @@ end;
 
 
 
-Procedure TAccountstatusesCustomBatchResponseEntry.Seterrors(AIndex : Integer; const AValue : TErrors); 
+Procedure TAccountstatusesCustomBatchResponseEntry.Seterrors(AIndex : Integer; const AValue : TErrors);
 
 begin
   If (Ferrors=AValue) then exit;
@@ -6748,7 +6754,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccountstatusesListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAccountstatusesListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -6758,7 +6764,7 @@ end;
 
 
 
-Procedure TAccountstatusesListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TAccountstatusesListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -6768,7 +6774,7 @@ end;
 
 
 
-Procedure TAccountstatusesListResponse.Setresources(AIndex : Integer; const AValue : TAccountstatusesListResponseTyperesourcesArray); 
+Procedure TAccountstatusesListResponse.Setresources(AIndex : Integer; const AValue : TAccountstatusesListResponseTyperesourcesArray);
 
 begin
   If (Fresources=AValue) then exit;
@@ -6779,7 +6785,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAccountstatusesListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAccountstatusesListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -6798,7 +6804,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccounttaxCustomBatchRequest.Setentries(AIndex : Integer; const AValue : TAccounttaxCustomBatchRequestTypeentriesArray); 
+Procedure TAccounttaxCustomBatchRequest.Setentries(AIndex : Integer; const AValue : TAccounttaxCustomBatchRequestTypeentriesArray);
 
 begin
   If (Fentries=AValue) then exit;
@@ -6809,7 +6815,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAccounttaxCustomBatchRequest.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAccounttaxCustomBatchRequest.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -6828,7 +6834,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccounttaxCustomBatchRequestEntry.SetaccountId(AIndex : Integer; const AValue : String); 
+Procedure TAccounttaxCustomBatchRequestEntry.SetaccountId(AIndex : Integer; const AValue : String);
 
 begin
   If (FaccountId=AValue) then exit;
@@ -6838,7 +6844,7 @@ end;
 
 
 
-Procedure TAccounttaxCustomBatchRequestEntry.SetaccountTax(AIndex : Integer; const AValue : TAccountTax); 
+Procedure TAccounttaxCustomBatchRequestEntry.SetaccountTax(AIndex : Integer; const AValue : TAccountTax);
 
 begin
   If (FaccountTax=AValue) then exit;
@@ -6848,7 +6854,7 @@ end;
 
 
 
-Procedure TAccounttaxCustomBatchRequestEntry.SetbatchId(AIndex : Integer; const AValue : integer); 
+Procedure TAccounttaxCustomBatchRequestEntry.SetbatchId(AIndex : Integer; const AValue : integer);
 
 begin
   If (FbatchId=AValue) then exit;
@@ -6858,7 +6864,7 @@ end;
 
 
 
-Procedure TAccounttaxCustomBatchRequestEntry.SetmerchantId(AIndex : Integer; const AValue : String); 
+Procedure TAccounttaxCustomBatchRequestEntry.SetmerchantId(AIndex : Integer; const AValue : String);
 
 begin
   If (FmerchantId=AValue) then exit;
@@ -6868,7 +6874,7 @@ end;
 
 
 
-Procedure TAccounttaxCustomBatchRequestEntry.Setmethod(AIndex : Integer; const AValue : String); 
+Procedure TAccounttaxCustomBatchRequestEntry.Setmethod(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmethod=AValue) then exit;
@@ -6885,7 +6891,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccounttaxCustomBatchResponse.Setentries(AIndex : Integer; const AValue : TAccounttaxCustomBatchResponseTypeentriesArray); 
+Procedure TAccounttaxCustomBatchResponse.Setentries(AIndex : Integer; const AValue : TAccounttaxCustomBatchResponseTypeentriesArray);
 
 begin
   If (Fentries=AValue) then exit;
@@ -6895,7 +6901,7 @@ end;
 
 
 
-Procedure TAccounttaxCustomBatchResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAccounttaxCustomBatchResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -6906,7 +6912,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAccounttaxCustomBatchResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAccounttaxCustomBatchResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -6925,7 +6931,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccounttaxCustomBatchResponseEntry.SetaccountTax(AIndex : Integer; const AValue : TAccountTax); 
+Procedure TAccounttaxCustomBatchResponseEntry.SetaccountTax(AIndex : Integer; const AValue : TAccountTax);
 
 begin
   If (FaccountTax=AValue) then exit;
@@ -6935,7 +6941,7 @@ end;
 
 
 
-Procedure TAccounttaxCustomBatchResponseEntry.SetbatchId(AIndex : Integer; const AValue : integer); 
+Procedure TAccounttaxCustomBatchResponseEntry.SetbatchId(AIndex : Integer; const AValue : integer);
 
 begin
   If (FbatchId=AValue) then exit;
@@ -6945,7 +6951,7 @@ end;
 
 
 
-Procedure TAccounttaxCustomBatchResponseEntry.Seterrors(AIndex : Integer; const AValue : TErrors); 
+Procedure TAccounttaxCustomBatchResponseEntry.Seterrors(AIndex : Integer; const AValue : TErrors);
 
 begin
   If (Ferrors=AValue) then exit;
@@ -6955,7 +6961,7 @@ end;
 
 
 
-Procedure TAccounttaxCustomBatchResponseEntry.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAccounttaxCustomBatchResponseEntry.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -6972,7 +6978,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAccounttaxListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAccounttaxListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -6982,7 +6988,7 @@ end;
 
 
 
-Procedure TAccounttaxListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TAccounttaxListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -6992,7 +6998,7 @@ end;
 
 
 
-Procedure TAccounttaxListResponse.Setresources(AIndex : Integer; const AValue : TAccounttaxListResponseTyperesourcesArray); 
+Procedure TAccounttaxListResponse.Setresources(AIndex : Integer; const AValue : TAccounttaxListResponseTyperesourcesArray);
 
 begin
   If (Fresources=AValue) then exit;
@@ -7003,7 +7009,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAccounttaxListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAccounttaxListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -7022,7 +7028,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDatafeed.SetattributeLanguage(AIndex : Integer; const AValue : String); 
+Procedure TDatafeed.SetattributeLanguage(AIndex : Integer; const AValue : String);
 
 begin
   If (FattributeLanguage=AValue) then exit;
@@ -7032,7 +7038,7 @@ end;
 
 
 
-Procedure TDatafeed.SetcontentLanguage(AIndex : Integer; const AValue : String); 
+Procedure TDatafeed.SetcontentLanguage(AIndex : Integer; const AValue : String);
 
 begin
   If (FcontentLanguage=AValue) then exit;
@@ -7042,7 +7048,7 @@ end;
 
 
 
-Procedure TDatafeed.SetcontentType(AIndex : Integer; const AValue : String); 
+Procedure TDatafeed.SetcontentType(AIndex : Integer; const AValue : String);
 
 begin
   If (FcontentType=AValue) then exit;
@@ -7052,7 +7058,7 @@ end;
 
 
 
-Procedure TDatafeed.SetfetchSchedule(AIndex : Integer; const AValue : TDatafeedFetchSchedule); 
+Procedure TDatafeed.SetfetchSchedule(AIndex : Integer; const AValue : TDatafeedFetchSchedule);
 
 begin
   If (FfetchSchedule=AValue) then exit;
@@ -7062,7 +7068,7 @@ end;
 
 
 
-Procedure TDatafeed.SetfileName(AIndex : Integer; const AValue : String); 
+Procedure TDatafeed.SetfileName(AIndex : Integer; const AValue : String);
 
 begin
   If (FfileName=AValue) then exit;
@@ -7072,7 +7078,7 @@ end;
 
 
 
-Procedure TDatafeed.Setformat(AIndex : Integer; const AValue : TDatafeedFormat); 
+Procedure TDatafeed.Setformat(AIndex : Integer; const AValue : TDatafeedFormat);
 
 begin
   If (Fformat=AValue) then exit;
@@ -7082,7 +7088,7 @@ end;
 
 
 
-Procedure TDatafeed.Setid(AIndex : Integer; const AValue : String); 
+Procedure TDatafeed.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -7092,7 +7098,7 @@ end;
 
 
 
-Procedure TDatafeed.SetintendedDestinations(AIndex : Integer; const AValue : TStringArray); 
+Procedure TDatafeed.SetintendedDestinations(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FintendedDestinations=AValue) then exit;
@@ -7102,7 +7108,7 @@ end;
 
 
 
-Procedure TDatafeed.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TDatafeed.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -7112,7 +7118,7 @@ end;
 
 
 
-Procedure TDatafeed.Setname(AIndex : Integer; const AValue : String); 
+Procedure TDatafeed.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -7122,7 +7128,7 @@ end;
 
 
 
-Procedure TDatafeed.SettargetCountry(AIndex : Integer; const AValue : String); 
+Procedure TDatafeed.SettargetCountry(AIndex : Integer; const AValue : String);
 
 begin
   If (FtargetCountry=AValue) then exit;
@@ -7133,7 +7139,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TDatafeed.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TDatafeed.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -7152,7 +7158,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDatafeedFetchSchedule.SetdayOfMonth(AIndex : Integer; const AValue : integer); 
+Procedure TDatafeedFetchSchedule.SetdayOfMonth(AIndex : Integer; const AValue : integer);
 
 begin
   If (FdayOfMonth=AValue) then exit;
@@ -7162,7 +7168,7 @@ end;
 
 
 
-Procedure TDatafeedFetchSchedule.SetfetchUrl(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedFetchSchedule.SetfetchUrl(AIndex : Integer; const AValue : String);
 
 begin
   If (FfetchUrl=AValue) then exit;
@@ -7172,7 +7178,7 @@ end;
 
 
 
-Procedure TDatafeedFetchSchedule.Sethour(AIndex : Integer; const AValue : integer); 
+Procedure TDatafeedFetchSchedule.Sethour(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fhour=AValue) then exit;
@@ -7182,7 +7188,7 @@ end;
 
 
 
-Procedure TDatafeedFetchSchedule.SetminuteOfHour(AIndex : Integer; const AValue : integer); 
+Procedure TDatafeedFetchSchedule.SetminuteOfHour(AIndex : Integer; const AValue : integer);
 
 begin
   If (FminuteOfHour=AValue) then exit;
@@ -7192,7 +7198,7 @@ end;
 
 
 
-Procedure TDatafeedFetchSchedule.Setpassword(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedFetchSchedule.Setpassword(AIndex : Integer; const AValue : String);
 
 begin
   If (Fpassword=AValue) then exit;
@@ -7202,7 +7208,7 @@ end;
 
 
 
-Procedure TDatafeedFetchSchedule.SettimeZone(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedFetchSchedule.SettimeZone(AIndex : Integer; const AValue : String);
 
 begin
   If (FtimeZone=AValue) then exit;
@@ -7212,7 +7218,7 @@ end;
 
 
 
-Procedure TDatafeedFetchSchedule.Setusername(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedFetchSchedule.Setusername(AIndex : Integer; const AValue : String);
 
 begin
   If (Fusername=AValue) then exit;
@@ -7222,7 +7228,7 @@ end;
 
 
 
-Procedure TDatafeedFetchSchedule.Setweekday(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedFetchSchedule.Setweekday(AIndex : Integer; const AValue : String);
 
 begin
   If (Fweekday=AValue) then exit;
@@ -7239,7 +7245,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDatafeedFormat.SetcolumnDelimiter(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedFormat.SetcolumnDelimiter(AIndex : Integer; const AValue : String);
 
 begin
   If (FcolumnDelimiter=AValue) then exit;
@@ -7249,7 +7255,7 @@ end;
 
 
 
-Procedure TDatafeedFormat.SetfileEncoding(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedFormat.SetfileEncoding(AIndex : Integer; const AValue : String);
 
 begin
   If (FfileEncoding=AValue) then exit;
@@ -7259,7 +7265,7 @@ end;
 
 
 
-Procedure TDatafeedFormat.SetquotingMode(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedFormat.SetquotingMode(AIndex : Integer; const AValue : String);
 
 begin
   If (FquotingMode=AValue) then exit;
@@ -7276,7 +7282,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDatafeedStatus.SetdatafeedId(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedStatus.SetdatafeedId(AIndex : Integer; const AValue : String);
 
 begin
   If (FdatafeedId=AValue) then exit;
@@ -7286,7 +7292,7 @@ end;
 
 
 
-Procedure TDatafeedStatus.Seterrors(AIndex : Integer; const AValue : TDatafeedStatusTypeerrorsArray); 
+Procedure TDatafeedStatus.Seterrors(AIndex : Integer; const AValue : TDatafeedStatusTypeerrorsArray);
 
 begin
   If (Ferrors=AValue) then exit;
@@ -7296,7 +7302,7 @@ end;
 
 
 
-Procedure TDatafeedStatus.SetitemsTotal(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedStatus.SetitemsTotal(AIndex : Integer; const AValue : String);
 
 begin
   If (FitemsTotal=AValue) then exit;
@@ -7306,7 +7312,7 @@ end;
 
 
 
-Procedure TDatafeedStatus.SetitemsValid(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedStatus.SetitemsValid(AIndex : Integer; const AValue : String);
 
 begin
   If (FitemsValid=AValue) then exit;
@@ -7316,7 +7322,7 @@ end;
 
 
 
-Procedure TDatafeedStatus.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedStatus.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -7326,7 +7332,7 @@ end;
 
 
 
-Procedure TDatafeedStatus.SetlastUploadDate(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedStatus.SetlastUploadDate(AIndex : Integer; const AValue : String);
 
 begin
   If (FlastUploadDate=AValue) then exit;
@@ -7336,7 +7342,7 @@ end;
 
 
 
-Procedure TDatafeedStatus.SetprocessingStatus(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedStatus.SetprocessingStatus(AIndex : Integer; const AValue : String);
 
 begin
   If (FprocessingStatus=AValue) then exit;
@@ -7346,7 +7352,7 @@ end;
 
 
 
-Procedure TDatafeedStatus.Setwarnings(AIndex : Integer; const AValue : TDatafeedStatusTypewarningsArray); 
+Procedure TDatafeedStatus.Setwarnings(AIndex : Integer; const AValue : TDatafeedStatusTypewarningsArray);
 
 begin
   If (Fwarnings=AValue) then exit;
@@ -7357,7 +7363,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TDatafeedStatus.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TDatafeedStatus.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -7377,7 +7383,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDatafeedStatusError.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedStatusError.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -7387,7 +7393,7 @@ end;
 
 
 
-Procedure TDatafeedStatusError.Setcount(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedStatusError.Setcount(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcount=AValue) then exit;
@@ -7397,7 +7403,7 @@ end;
 
 
 
-Procedure TDatafeedStatusError.Setexamples(AIndex : Integer; const AValue : TDatafeedStatusErrorTypeexamplesArray); 
+Procedure TDatafeedStatusError.Setexamples(AIndex : Integer; const AValue : TDatafeedStatusErrorTypeexamplesArray);
 
 begin
   If (Fexamples=AValue) then exit;
@@ -7407,7 +7413,7 @@ end;
 
 
 
-Procedure TDatafeedStatusError.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedStatusError.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -7418,7 +7424,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TDatafeedStatusError.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TDatafeedStatusError.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -7437,7 +7443,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDatafeedStatusExample.SetitemId(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedStatusExample.SetitemId(AIndex : Integer; const AValue : String);
 
 begin
   If (FitemId=AValue) then exit;
@@ -7447,7 +7453,7 @@ end;
 
 
 
-Procedure TDatafeedStatusExample.SetlineNumber(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedStatusExample.SetlineNumber(AIndex : Integer; const AValue : String);
 
 begin
   If (FlineNumber=AValue) then exit;
@@ -7457,7 +7463,7 @@ end;
 
 
 
-Procedure TDatafeedStatusExample.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedStatusExample.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -7474,7 +7480,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDatafeedsCustomBatchRequest.Setentries(AIndex : Integer; const AValue : TDatafeedsCustomBatchRequestTypeentriesArray); 
+Procedure TDatafeedsCustomBatchRequest.Setentries(AIndex : Integer; const AValue : TDatafeedsCustomBatchRequestTypeentriesArray);
 
 begin
   If (Fentries=AValue) then exit;
@@ -7485,7 +7491,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TDatafeedsCustomBatchRequest.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TDatafeedsCustomBatchRequest.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -7504,7 +7510,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDatafeedsCustomBatchRequestEntry.SetbatchId(AIndex : Integer; const AValue : integer); 
+Procedure TDatafeedsCustomBatchRequestEntry.SetbatchId(AIndex : Integer; const AValue : integer);
 
 begin
   If (FbatchId=AValue) then exit;
@@ -7514,7 +7520,7 @@ end;
 
 
 
-Procedure TDatafeedsCustomBatchRequestEntry.Setdatafeed(AIndex : Integer; const AValue : TDatafeed); 
+Procedure TDatafeedsCustomBatchRequestEntry.Setdatafeed(AIndex : Integer; const AValue : TDatafeed);
 
 begin
   If (Fdatafeed=AValue) then exit;
@@ -7524,7 +7530,7 @@ end;
 
 
 
-Procedure TDatafeedsCustomBatchRequestEntry.SetdatafeedId(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedsCustomBatchRequestEntry.SetdatafeedId(AIndex : Integer; const AValue : String);
 
 begin
   If (FdatafeedId=AValue) then exit;
@@ -7534,7 +7540,7 @@ end;
 
 
 
-Procedure TDatafeedsCustomBatchRequestEntry.SetmerchantId(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedsCustomBatchRequestEntry.SetmerchantId(AIndex : Integer; const AValue : String);
 
 begin
   If (FmerchantId=AValue) then exit;
@@ -7544,7 +7550,7 @@ end;
 
 
 
-Procedure TDatafeedsCustomBatchRequestEntry.Setmethod(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedsCustomBatchRequestEntry.Setmethod(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmethod=AValue) then exit;
@@ -7561,7 +7567,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDatafeedsCustomBatchResponse.Setentries(AIndex : Integer; const AValue : TDatafeedsCustomBatchResponseTypeentriesArray); 
+Procedure TDatafeedsCustomBatchResponse.Setentries(AIndex : Integer; const AValue : TDatafeedsCustomBatchResponseTypeentriesArray);
 
 begin
   If (Fentries=AValue) then exit;
@@ -7571,7 +7577,7 @@ end;
 
 
 
-Procedure TDatafeedsCustomBatchResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedsCustomBatchResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -7582,7 +7588,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TDatafeedsCustomBatchResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TDatafeedsCustomBatchResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -7601,7 +7607,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDatafeedsCustomBatchResponseEntry.SetbatchId(AIndex : Integer; const AValue : integer); 
+Procedure TDatafeedsCustomBatchResponseEntry.SetbatchId(AIndex : Integer; const AValue : integer);
 
 begin
   If (FbatchId=AValue) then exit;
@@ -7611,7 +7617,7 @@ end;
 
 
 
-Procedure TDatafeedsCustomBatchResponseEntry.Setdatafeed(AIndex : Integer; const AValue : TDatafeed); 
+Procedure TDatafeedsCustomBatchResponseEntry.Setdatafeed(AIndex : Integer; const AValue : TDatafeed);
 
 begin
   If (Fdatafeed=AValue) then exit;
@@ -7621,7 +7627,7 @@ end;
 
 
 
-Procedure TDatafeedsCustomBatchResponseEntry.Seterrors(AIndex : Integer; const AValue : TErrors); 
+Procedure TDatafeedsCustomBatchResponseEntry.Seterrors(AIndex : Integer; const AValue : TErrors);
 
 begin
   If (Ferrors=AValue) then exit;
@@ -7638,7 +7644,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDatafeedsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -7648,7 +7654,7 @@ end;
 
 
 
-Procedure TDatafeedsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -7658,7 +7664,7 @@ end;
 
 
 
-Procedure TDatafeedsListResponse.Setresources(AIndex : Integer; const AValue : TDatafeedsListResponseTyperesourcesArray); 
+Procedure TDatafeedsListResponse.Setresources(AIndex : Integer; const AValue : TDatafeedsListResponseTyperesourcesArray);
 
 begin
   If (Fresources=AValue) then exit;
@@ -7669,7 +7675,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TDatafeedsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TDatafeedsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -7688,7 +7694,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDatafeedstatusesCustomBatchRequest.Setentries(AIndex : Integer; const AValue : TDatafeedstatusesCustomBatchRequestTypeentriesArray); 
+Procedure TDatafeedstatusesCustomBatchRequest.Setentries(AIndex : Integer; const AValue : TDatafeedstatusesCustomBatchRequestTypeentriesArray);
 
 begin
   If (Fentries=AValue) then exit;
@@ -7699,7 +7705,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TDatafeedstatusesCustomBatchRequest.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TDatafeedstatusesCustomBatchRequest.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -7718,7 +7724,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDatafeedstatusesCustomBatchRequestEntry.SetbatchId(AIndex : Integer; const AValue : integer); 
+Procedure TDatafeedstatusesCustomBatchRequestEntry.SetbatchId(AIndex : Integer; const AValue : integer);
 
 begin
   If (FbatchId=AValue) then exit;
@@ -7728,7 +7734,7 @@ end;
 
 
 
-Procedure TDatafeedstatusesCustomBatchRequestEntry.SetdatafeedId(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedstatusesCustomBatchRequestEntry.SetdatafeedId(AIndex : Integer; const AValue : String);
 
 begin
   If (FdatafeedId=AValue) then exit;
@@ -7738,7 +7744,7 @@ end;
 
 
 
-Procedure TDatafeedstatusesCustomBatchRequestEntry.SetmerchantId(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedstatusesCustomBatchRequestEntry.SetmerchantId(AIndex : Integer; const AValue : String);
 
 begin
   If (FmerchantId=AValue) then exit;
@@ -7748,7 +7754,7 @@ end;
 
 
 
-Procedure TDatafeedstatusesCustomBatchRequestEntry.Setmethod(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedstatusesCustomBatchRequestEntry.Setmethod(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmethod=AValue) then exit;
@@ -7765,7 +7771,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDatafeedstatusesCustomBatchResponse.Setentries(AIndex : Integer; const AValue : TDatafeedstatusesCustomBatchResponseTypeentriesArray); 
+Procedure TDatafeedstatusesCustomBatchResponse.Setentries(AIndex : Integer; const AValue : TDatafeedstatusesCustomBatchResponseTypeentriesArray);
 
 begin
   If (Fentries=AValue) then exit;
@@ -7775,7 +7781,7 @@ end;
 
 
 
-Procedure TDatafeedstatusesCustomBatchResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedstatusesCustomBatchResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -7786,7 +7792,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TDatafeedstatusesCustomBatchResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TDatafeedstatusesCustomBatchResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -7805,7 +7811,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDatafeedstatusesCustomBatchResponseEntry.SetbatchId(AIndex : Integer; const AValue : integer); 
+Procedure TDatafeedstatusesCustomBatchResponseEntry.SetbatchId(AIndex : Integer; const AValue : integer);
 
 begin
   If (FbatchId=AValue) then exit;
@@ -7815,7 +7821,7 @@ end;
 
 
 
-Procedure TDatafeedstatusesCustomBatchResponseEntry.SetdatafeedStatus(AIndex : Integer; const AValue : TDatafeedStatus); 
+Procedure TDatafeedstatusesCustomBatchResponseEntry.SetdatafeedStatus(AIndex : Integer; const AValue : TDatafeedStatus);
 
 begin
   If (FdatafeedStatus=AValue) then exit;
@@ -7825,7 +7831,7 @@ end;
 
 
 
-Procedure TDatafeedstatusesCustomBatchResponseEntry.Seterrors(AIndex : Integer; const AValue : TErrors); 
+Procedure TDatafeedstatusesCustomBatchResponseEntry.Seterrors(AIndex : Integer; const AValue : TErrors);
 
 begin
   If (Ferrors=AValue) then exit;
@@ -7842,7 +7848,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDatafeedstatusesListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedstatusesListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -7852,7 +7858,7 @@ end;
 
 
 
-Procedure TDatafeedstatusesListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TDatafeedstatusesListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -7862,7 +7868,7 @@ end;
 
 
 
-Procedure TDatafeedstatusesListResponse.Setresources(AIndex : Integer; const AValue : TDatafeedstatusesListResponseTyperesourcesArray); 
+Procedure TDatafeedstatusesListResponse.Setresources(AIndex : Integer; const AValue : TDatafeedstatusesListResponseTyperesourcesArray);
 
 begin
   If (Fresources=AValue) then exit;
@@ -7873,7 +7879,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TDatafeedstatusesListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TDatafeedstatusesListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -7892,7 +7898,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TError.Setdomain(AIndex : Integer; const AValue : String); 
+Procedure TError.Setdomain(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdomain=AValue) then exit;
@@ -7902,7 +7908,7 @@ end;
 
 
 
-Procedure TError.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TError.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -7912,7 +7918,7 @@ end;
 
 
 
-Procedure TError.Setreason(AIndex : Integer; const AValue : String); 
+Procedure TError.Setreason(AIndex : Integer; const AValue : String);
 
 begin
   If (Freason=AValue) then exit;
@@ -7929,7 +7935,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TErrors.Setcode(AIndex : Integer; const AValue : integer); 
+Procedure TErrors.Setcode(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fcode=AValue) then exit;
@@ -7939,7 +7945,7 @@ end;
 
 
 
-Procedure TErrors.Seterrors(AIndex : Integer; const AValue : TErrorsTypeerrorsArray); 
+Procedure TErrors.Seterrors(AIndex : Integer; const AValue : TErrorsTypeerrorsArray);
 
 begin
   If (Ferrors=AValue) then exit;
@@ -7949,7 +7955,7 @@ end;
 
 
 
-Procedure TErrors.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TErrors.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -7960,7 +7966,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TErrors.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TErrors.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -7979,7 +7985,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstallment.Setamount(AIndex : Integer; const AValue : TPrice); 
+Procedure TInstallment.Setamount(AIndex : Integer; const AValue : TPrice);
 
 begin
   If (Famount=AValue) then exit;
@@ -7989,7 +7995,7 @@ end;
 
 
 
-Procedure TInstallment.Setmonths(AIndex : Integer; const AValue : String); 
+Procedure TInstallment.Setmonths(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmonths=AValue) then exit;
@@ -8006,7 +8012,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInventory.Setavailability(AIndex : Integer; const AValue : String); 
+Procedure TInventory.Setavailability(AIndex : Integer; const AValue : String);
 
 begin
   If (Favailability=AValue) then exit;
@@ -8016,7 +8022,7 @@ end;
 
 
 
-Procedure TInventory.Setinstallment(AIndex : Integer; const AValue : TInstallment); 
+Procedure TInventory.Setinstallment(AIndex : Integer; const AValue : TInstallment);
 
 begin
   If (Finstallment=AValue) then exit;
@@ -8026,7 +8032,7 @@ end;
 
 
 
-Procedure TInventory.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TInventory.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -8036,7 +8042,7 @@ end;
 
 
 
-Procedure TInventory.SetloyaltyPoints(AIndex : Integer; const AValue : TLoyaltyPoints); 
+Procedure TInventory.SetloyaltyPoints(AIndex : Integer; const AValue : TLoyaltyPoints);
 
 begin
   If (FloyaltyPoints=AValue) then exit;
@@ -8046,7 +8052,7 @@ end;
 
 
 
-Procedure TInventory.Setprice(AIndex : Integer; const AValue : TPrice); 
+Procedure TInventory.Setprice(AIndex : Integer; const AValue : TPrice);
 
 begin
   If (Fprice=AValue) then exit;
@@ -8056,7 +8062,7 @@ end;
 
 
 
-Procedure TInventory.Setquantity(AIndex : Integer; const AValue : integer); 
+Procedure TInventory.Setquantity(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fquantity=AValue) then exit;
@@ -8066,7 +8072,7 @@ end;
 
 
 
-Procedure TInventory.SetsalePrice(AIndex : Integer; const AValue : TPrice); 
+Procedure TInventory.SetsalePrice(AIndex : Integer; const AValue : TPrice);
 
 begin
   If (FsalePrice=AValue) then exit;
@@ -8076,7 +8082,7 @@ end;
 
 
 
-Procedure TInventory.SetsalePriceEffectiveDate(AIndex : Integer; const AValue : String); 
+Procedure TInventory.SetsalePriceEffectiveDate(AIndex : Integer; const AValue : String);
 
 begin
   If (FsalePriceEffectiveDate=AValue) then exit;
@@ -8086,7 +8092,7 @@ end;
 
 
 
-Procedure TInventory.SetsellOnGoogleQuantity(AIndex : Integer; const AValue : integer); 
+Procedure TInventory.SetsellOnGoogleQuantity(AIndex : Integer; const AValue : integer);
 
 begin
   If (FsellOnGoogleQuantity=AValue) then exit;
@@ -8103,7 +8109,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInventoryCustomBatchRequest.Setentries(AIndex : Integer; const AValue : TInventoryCustomBatchRequestTypeentriesArray); 
+Procedure TInventoryCustomBatchRequest.Setentries(AIndex : Integer; const AValue : TInventoryCustomBatchRequestTypeentriesArray);
 
 begin
   If (Fentries=AValue) then exit;
@@ -8114,7 +8120,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInventoryCustomBatchRequest.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInventoryCustomBatchRequest.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -8133,7 +8139,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInventoryCustomBatchRequestEntry.SetbatchId(AIndex : Integer; const AValue : integer); 
+Procedure TInventoryCustomBatchRequestEntry.SetbatchId(AIndex : Integer; const AValue : integer);
 
 begin
   If (FbatchId=AValue) then exit;
@@ -8143,7 +8149,7 @@ end;
 
 
 
-Procedure TInventoryCustomBatchRequestEntry.Setinventory(AIndex : Integer; const AValue : TInventory); 
+Procedure TInventoryCustomBatchRequestEntry.Setinventory(AIndex : Integer; const AValue : TInventory);
 
 begin
   If (Finventory=AValue) then exit;
@@ -8153,7 +8159,7 @@ end;
 
 
 
-Procedure TInventoryCustomBatchRequestEntry.SetmerchantId(AIndex : Integer; const AValue : String); 
+Procedure TInventoryCustomBatchRequestEntry.SetmerchantId(AIndex : Integer; const AValue : String);
 
 begin
   If (FmerchantId=AValue) then exit;
@@ -8163,7 +8169,7 @@ end;
 
 
 
-Procedure TInventoryCustomBatchRequestEntry.SetproductId(AIndex : Integer; const AValue : String); 
+Procedure TInventoryCustomBatchRequestEntry.SetproductId(AIndex : Integer; const AValue : String);
 
 begin
   If (FproductId=AValue) then exit;
@@ -8173,7 +8179,7 @@ end;
 
 
 
-Procedure TInventoryCustomBatchRequestEntry.SetstoreCode(AIndex : Integer; const AValue : String); 
+Procedure TInventoryCustomBatchRequestEntry.SetstoreCode(AIndex : Integer; const AValue : String);
 
 begin
   If (FstoreCode=AValue) then exit;
@@ -8190,7 +8196,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInventoryCustomBatchResponse.Setentries(AIndex : Integer; const AValue : TInventoryCustomBatchResponseTypeentriesArray); 
+Procedure TInventoryCustomBatchResponse.Setentries(AIndex : Integer; const AValue : TInventoryCustomBatchResponseTypeentriesArray);
 
 begin
   If (Fentries=AValue) then exit;
@@ -8200,7 +8206,7 @@ end;
 
 
 
-Procedure TInventoryCustomBatchResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TInventoryCustomBatchResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -8211,7 +8217,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInventoryCustomBatchResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInventoryCustomBatchResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -8230,7 +8236,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInventoryCustomBatchResponseEntry.SetbatchId(AIndex : Integer; const AValue : integer); 
+Procedure TInventoryCustomBatchResponseEntry.SetbatchId(AIndex : Integer; const AValue : integer);
 
 begin
   If (FbatchId=AValue) then exit;
@@ -8240,7 +8246,7 @@ end;
 
 
 
-Procedure TInventoryCustomBatchResponseEntry.Seterrors(AIndex : Integer; const AValue : TErrors); 
+Procedure TInventoryCustomBatchResponseEntry.Seterrors(AIndex : Integer; const AValue : TErrors);
 
 begin
   If (Ferrors=AValue) then exit;
@@ -8250,7 +8256,7 @@ end;
 
 
 
-Procedure TInventoryCustomBatchResponseEntry.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TInventoryCustomBatchResponseEntry.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -8267,7 +8273,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInventorySetRequest.Setavailability(AIndex : Integer; const AValue : String); 
+Procedure TInventorySetRequest.Setavailability(AIndex : Integer; const AValue : String);
 
 begin
   If (Favailability=AValue) then exit;
@@ -8277,7 +8283,7 @@ end;
 
 
 
-Procedure TInventorySetRequest.Setinstallment(AIndex : Integer; const AValue : TInstallment); 
+Procedure TInventorySetRequest.Setinstallment(AIndex : Integer; const AValue : TInstallment);
 
 begin
   If (Finstallment=AValue) then exit;
@@ -8287,7 +8293,7 @@ end;
 
 
 
-Procedure TInventorySetRequest.SetloyaltyPoints(AIndex : Integer; const AValue : TLoyaltyPoints); 
+Procedure TInventorySetRequest.SetloyaltyPoints(AIndex : Integer; const AValue : TLoyaltyPoints);
 
 begin
   If (FloyaltyPoints=AValue) then exit;
@@ -8297,7 +8303,7 @@ end;
 
 
 
-Procedure TInventorySetRequest.Setprice(AIndex : Integer; const AValue : TPrice); 
+Procedure TInventorySetRequest.Setprice(AIndex : Integer; const AValue : TPrice);
 
 begin
   If (Fprice=AValue) then exit;
@@ -8307,7 +8313,7 @@ end;
 
 
 
-Procedure TInventorySetRequest.Setquantity(AIndex : Integer; const AValue : integer); 
+Procedure TInventorySetRequest.Setquantity(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fquantity=AValue) then exit;
@@ -8317,7 +8323,7 @@ end;
 
 
 
-Procedure TInventorySetRequest.SetsalePrice(AIndex : Integer; const AValue : TPrice); 
+Procedure TInventorySetRequest.SetsalePrice(AIndex : Integer; const AValue : TPrice);
 
 begin
   If (FsalePrice=AValue) then exit;
@@ -8327,7 +8333,7 @@ end;
 
 
 
-Procedure TInventorySetRequest.SetsalePriceEffectiveDate(AIndex : Integer; const AValue : String); 
+Procedure TInventorySetRequest.SetsalePriceEffectiveDate(AIndex : Integer; const AValue : String);
 
 begin
   If (FsalePriceEffectiveDate=AValue) then exit;
@@ -8337,7 +8343,7 @@ end;
 
 
 
-Procedure TInventorySetRequest.SetsellOnGoogleQuantity(AIndex : Integer; const AValue : integer); 
+Procedure TInventorySetRequest.SetsellOnGoogleQuantity(AIndex : Integer; const AValue : integer);
 
 begin
   If (FsellOnGoogleQuantity=AValue) then exit;
@@ -8354,7 +8360,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInventorySetResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TInventorySetResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -8371,7 +8377,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TLoyaltyPoints.Setname(AIndex : Integer; const AValue : String); 
+Procedure TLoyaltyPoints.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -8381,7 +8387,7 @@ end;
 
 
 
-Procedure TLoyaltyPoints.SetpointsValue(AIndex : Integer; const AValue : String); 
+Procedure TLoyaltyPoints.SetpointsValue(AIndex : Integer; const AValue : String);
 
 begin
   If (FpointsValue=AValue) then exit;
@@ -8391,7 +8397,7 @@ end;
 
 
 
-Procedure TLoyaltyPoints.Setratio(AIndex : Integer; const AValue : double); 
+Procedure TLoyaltyPoints.Setratio(AIndex : Integer; const AValue : double);
 
 begin
   If (Fratio=AValue) then exit;
@@ -8408,7 +8414,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrder.Setacknowledged(AIndex : Integer; const AValue : boolean); 
+Procedure TOrder.Setacknowledged(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Facknowledged=AValue) then exit;
@@ -8418,7 +8424,7 @@ end;
 
 
 
-Procedure TOrder.Setcustomer(AIndex : Integer; const AValue : TOrderCustomer); 
+Procedure TOrder.Setcustomer(AIndex : Integer; const AValue : TOrderCustomer);
 
 begin
   If (Fcustomer=AValue) then exit;
@@ -8428,7 +8434,7 @@ end;
 
 
 
-Procedure TOrder.SetdeliveryDetails(AIndex : Integer; const AValue : TOrderDeliveryDetails); 
+Procedure TOrder.SetdeliveryDetails(AIndex : Integer; const AValue : TOrderDeliveryDetails);
 
 begin
   If (FdeliveryDetails=AValue) then exit;
@@ -8438,7 +8444,7 @@ end;
 
 
 
-Procedure TOrder.Setid(AIndex : Integer; const AValue : String); 
+Procedure TOrder.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -8448,7 +8454,7 @@ end;
 
 
 
-Procedure TOrder.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOrder.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -8458,7 +8464,7 @@ end;
 
 
 
-Procedure TOrder.SetlineItems(AIndex : Integer; const AValue : TOrderTypelineItemsArray); 
+Procedure TOrder.SetlineItems(AIndex : Integer; const AValue : TOrderTypelineItemsArray);
 
 begin
   If (FlineItems=AValue) then exit;
@@ -8468,7 +8474,7 @@ end;
 
 
 
-Procedure TOrder.SetmerchantId(AIndex : Integer; const AValue : String); 
+Procedure TOrder.SetmerchantId(AIndex : Integer; const AValue : String);
 
 begin
   If (FmerchantId=AValue) then exit;
@@ -8478,7 +8484,7 @@ end;
 
 
 
-Procedure TOrder.SetmerchantOrderId(AIndex : Integer; const AValue : String); 
+Procedure TOrder.SetmerchantOrderId(AIndex : Integer; const AValue : String);
 
 begin
   If (FmerchantOrderId=AValue) then exit;
@@ -8488,7 +8494,7 @@ end;
 
 
 
-Procedure TOrder.SetnetAmount(AIndex : Integer; const AValue : TPrice); 
+Procedure TOrder.SetnetAmount(AIndex : Integer; const AValue : TPrice);
 
 begin
   If (FnetAmount=AValue) then exit;
@@ -8498,7 +8504,7 @@ end;
 
 
 
-Procedure TOrder.SetpaymentMethod(AIndex : Integer; const AValue : TOrderPaymentMethod); 
+Procedure TOrder.SetpaymentMethod(AIndex : Integer; const AValue : TOrderPaymentMethod);
 
 begin
   If (FpaymentMethod=AValue) then exit;
@@ -8508,7 +8514,7 @@ end;
 
 
 
-Procedure TOrder.SetpaymentStatus(AIndex : Integer; const AValue : String); 
+Procedure TOrder.SetpaymentStatus(AIndex : Integer; const AValue : String);
 
 begin
   If (FpaymentStatus=AValue) then exit;
@@ -8518,7 +8524,7 @@ end;
 
 
 
-Procedure TOrder.SetplacedDate(AIndex : Integer; const AValue : String); 
+Procedure TOrder.SetplacedDate(AIndex : Integer; const AValue : String);
 
 begin
   If (FplacedDate=AValue) then exit;
@@ -8528,7 +8534,7 @@ end;
 
 
 
-Procedure TOrder.Setpromotions(AIndex : Integer; const AValue : TOrderTypepromotionsArray); 
+Procedure TOrder.Setpromotions(AIndex : Integer; const AValue : TOrderTypepromotionsArray);
 
 begin
   If (Fpromotions=AValue) then exit;
@@ -8538,7 +8544,7 @@ end;
 
 
 
-Procedure TOrder.Setrefunds(AIndex : Integer; const AValue : TOrderTyperefundsArray); 
+Procedure TOrder.Setrefunds(AIndex : Integer; const AValue : TOrderTyperefundsArray);
 
 begin
   If (Frefunds=AValue) then exit;
@@ -8548,7 +8554,7 @@ end;
 
 
 
-Procedure TOrder.Setshipments(AIndex : Integer; const AValue : TOrderTypeshipmentsArray); 
+Procedure TOrder.Setshipments(AIndex : Integer; const AValue : TOrderTypeshipmentsArray);
 
 begin
   If (Fshipments=AValue) then exit;
@@ -8558,7 +8564,7 @@ end;
 
 
 
-Procedure TOrder.SetshippingCost(AIndex : Integer; const AValue : TPrice); 
+Procedure TOrder.SetshippingCost(AIndex : Integer; const AValue : TPrice);
 
 begin
   If (FshippingCost=AValue) then exit;
@@ -8568,7 +8574,7 @@ end;
 
 
 
-Procedure TOrder.SetshippingCostTax(AIndex : Integer; const AValue : TPrice); 
+Procedure TOrder.SetshippingCostTax(AIndex : Integer; const AValue : TPrice);
 
 begin
   If (FshippingCostTax=AValue) then exit;
@@ -8578,7 +8584,7 @@ end;
 
 
 
-Procedure TOrder.SetshippingOption(AIndex : Integer; const AValue : String); 
+Procedure TOrder.SetshippingOption(AIndex : Integer; const AValue : String);
 
 begin
   If (FshippingOption=AValue) then exit;
@@ -8588,7 +8594,7 @@ end;
 
 
 
-Procedure TOrder.Setstatus(AIndex : Integer; const AValue : String); 
+Procedure TOrder.Setstatus(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -8599,7 +8605,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOrder.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOrder.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -8621,7 +8627,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrderAddress.Setcountry(AIndex : Integer; const AValue : String); 
+Procedure TOrderAddress.Setcountry(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcountry=AValue) then exit;
@@ -8631,7 +8637,7 @@ end;
 
 
 
-Procedure TOrderAddress.SetfullAddress(AIndex : Integer; const AValue : TStringArray); 
+Procedure TOrderAddress.SetfullAddress(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FfullAddress=AValue) then exit;
@@ -8641,7 +8647,7 @@ end;
 
 
 
-Procedure TOrderAddress.SetisPostOfficeBox(AIndex : Integer; const AValue : boolean); 
+Procedure TOrderAddress.SetisPostOfficeBox(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FisPostOfficeBox=AValue) then exit;
@@ -8651,7 +8657,7 @@ end;
 
 
 
-Procedure TOrderAddress.Setlocality(AIndex : Integer; const AValue : String); 
+Procedure TOrderAddress.Setlocality(AIndex : Integer; const AValue : String);
 
 begin
   If (Flocality=AValue) then exit;
@@ -8661,7 +8667,7 @@ end;
 
 
 
-Procedure TOrderAddress.SetpostalCode(AIndex : Integer; const AValue : String); 
+Procedure TOrderAddress.SetpostalCode(AIndex : Integer; const AValue : String);
 
 begin
   If (FpostalCode=AValue) then exit;
@@ -8671,7 +8677,7 @@ end;
 
 
 
-Procedure TOrderAddress.SetrecipientName(AIndex : Integer; const AValue : String); 
+Procedure TOrderAddress.SetrecipientName(AIndex : Integer; const AValue : String);
 
 begin
   If (FrecipientName=AValue) then exit;
@@ -8681,7 +8687,7 @@ end;
 
 
 
-Procedure TOrderAddress.Setregion(AIndex : Integer; const AValue : String); 
+Procedure TOrderAddress.Setregion(AIndex : Integer; const AValue : String);
 
 begin
   If (Fregion=AValue) then exit;
@@ -8691,7 +8697,7 @@ end;
 
 
 
-Procedure TOrderAddress.SetstreetAddress(AIndex : Integer; const AValue : TStringArray); 
+Procedure TOrderAddress.SetstreetAddress(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FstreetAddress=AValue) then exit;
@@ -8702,7 +8708,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOrderAddress.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOrderAddress.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -8722,7 +8728,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrderCancellation.Setactor(AIndex : Integer; const AValue : String); 
+Procedure TOrderCancellation.Setactor(AIndex : Integer; const AValue : String);
 
 begin
   If (Factor=AValue) then exit;
@@ -8732,7 +8738,7 @@ end;
 
 
 
-Procedure TOrderCancellation.SetcreationDate(AIndex : Integer; const AValue : String); 
+Procedure TOrderCancellation.SetcreationDate(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationDate=AValue) then exit;
@@ -8742,7 +8748,7 @@ end;
 
 
 
-Procedure TOrderCancellation.Setquantity(AIndex : Integer; const AValue : integer); 
+Procedure TOrderCancellation.Setquantity(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fquantity=AValue) then exit;
@@ -8752,7 +8758,7 @@ end;
 
 
 
-Procedure TOrderCancellation.Setreason(AIndex : Integer; const AValue : String); 
+Procedure TOrderCancellation.Setreason(AIndex : Integer; const AValue : String);
 
 begin
   If (Freason=AValue) then exit;
@@ -8762,7 +8768,7 @@ end;
 
 
 
-Procedure TOrderCancellation.SetreasonText(AIndex : Integer; const AValue : String); 
+Procedure TOrderCancellation.SetreasonText(AIndex : Integer; const AValue : String);
 
 begin
   If (FreasonText=AValue) then exit;
@@ -8779,7 +8785,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrderCustomer.Setemail(AIndex : Integer; const AValue : String); 
+Procedure TOrderCustomer.Setemail(AIndex : Integer; const AValue : String);
 
 begin
   If (Femail=AValue) then exit;
@@ -8789,7 +8795,7 @@ end;
 
 
 
-Procedure TOrderCustomer.SetexplicitMarketingPreference(AIndex : Integer; const AValue : boolean); 
+Procedure TOrderCustomer.SetexplicitMarketingPreference(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FexplicitMarketingPreference=AValue) then exit;
@@ -8799,7 +8805,7 @@ end;
 
 
 
-Procedure TOrderCustomer.SetfullName(AIndex : Integer; const AValue : String); 
+Procedure TOrderCustomer.SetfullName(AIndex : Integer; const AValue : String);
 
 begin
   If (FfullName=AValue) then exit;
@@ -8816,7 +8822,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrderDeliveryDetails.Setaddress(AIndex : Integer; const AValue : TOrderAddress); 
+Procedure TOrderDeliveryDetails.Setaddress(AIndex : Integer; const AValue : TOrderAddress);
 
 begin
   If (Faddress=AValue) then exit;
@@ -8826,7 +8832,7 @@ end;
 
 
 
-Procedure TOrderDeliveryDetails.SetphoneNumber(AIndex : Integer; const AValue : String); 
+Procedure TOrderDeliveryDetails.SetphoneNumber(AIndex : Integer; const AValue : String);
 
 begin
   If (FphoneNumber=AValue) then exit;
@@ -8843,7 +8849,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrderLineItem.Setcancellations(AIndex : Integer; const AValue : TOrderLineItemTypecancellationsArray); 
+Procedure TOrderLineItem.Setcancellations(AIndex : Integer; const AValue : TOrderLineItemTypecancellationsArray);
 
 begin
   If (Fcancellations=AValue) then exit;
@@ -8853,7 +8859,7 @@ end;
 
 
 
-Procedure TOrderLineItem.Setid(AIndex : Integer; const AValue : String); 
+Procedure TOrderLineItem.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -8863,7 +8869,7 @@ end;
 
 
 
-Procedure TOrderLineItem.Setprice(AIndex : Integer; const AValue : TPrice); 
+Procedure TOrderLineItem.Setprice(AIndex : Integer; const AValue : TPrice);
 
 begin
   If (Fprice=AValue) then exit;
@@ -8873,7 +8879,7 @@ end;
 
 
 
-Procedure TOrderLineItem.Setproduct(AIndex : Integer; const AValue : TOrderLineItemProduct); 
+Procedure TOrderLineItem.Setproduct(AIndex : Integer; const AValue : TOrderLineItemProduct);
 
 begin
   If (Fproduct=AValue) then exit;
@@ -8883,7 +8889,7 @@ end;
 
 
 
-Procedure TOrderLineItem.SetquantityCanceled(AIndex : Integer; const AValue : integer); 
+Procedure TOrderLineItem.SetquantityCanceled(AIndex : Integer; const AValue : integer);
 
 begin
   If (FquantityCanceled=AValue) then exit;
@@ -8893,7 +8899,7 @@ end;
 
 
 
-Procedure TOrderLineItem.SetquantityDelivered(AIndex : Integer; const AValue : integer); 
+Procedure TOrderLineItem.SetquantityDelivered(AIndex : Integer; const AValue : integer);
 
 begin
   If (FquantityDelivered=AValue) then exit;
@@ -8903,7 +8909,7 @@ end;
 
 
 
-Procedure TOrderLineItem.SetquantityOrdered(AIndex : Integer; const AValue : integer); 
+Procedure TOrderLineItem.SetquantityOrdered(AIndex : Integer; const AValue : integer);
 
 begin
   If (FquantityOrdered=AValue) then exit;
@@ -8913,7 +8919,7 @@ end;
 
 
 
-Procedure TOrderLineItem.SetquantityPending(AIndex : Integer; const AValue : integer); 
+Procedure TOrderLineItem.SetquantityPending(AIndex : Integer; const AValue : integer);
 
 begin
   If (FquantityPending=AValue) then exit;
@@ -8923,7 +8929,7 @@ end;
 
 
 
-Procedure TOrderLineItem.SetquantityReturned(AIndex : Integer; const AValue : integer); 
+Procedure TOrderLineItem.SetquantityReturned(AIndex : Integer; const AValue : integer);
 
 begin
   If (FquantityReturned=AValue) then exit;
@@ -8933,7 +8939,7 @@ end;
 
 
 
-Procedure TOrderLineItem.SetquantityShipped(AIndex : Integer; const AValue : integer); 
+Procedure TOrderLineItem.SetquantityShipped(AIndex : Integer; const AValue : integer);
 
 begin
   If (FquantityShipped=AValue) then exit;
@@ -8943,7 +8949,7 @@ end;
 
 
 
-Procedure TOrderLineItem.SetreturnInfo(AIndex : Integer; const AValue : TOrderLineItemReturnInfo); 
+Procedure TOrderLineItem.SetreturnInfo(AIndex : Integer; const AValue : TOrderLineItemReturnInfo);
 
 begin
   If (FreturnInfo=AValue) then exit;
@@ -8953,7 +8959,7 @@ end;
 
 
 
-Procedure TOrderLineItem.Setreturns(AIndex : Integer; const AValue : TOrderLineItemTypereturnsArray); 
+Procedure TOrderLineItem.Setreturns(AIndex : Integer; const AValue : TOrderLineItemTypereturnsArray);
 
 begin
   If (Freturns=AValue) then exit;
@@ -8963,7 +8969,7 @@ end;
 
 
 
-Procedure TOrderLineItem.SetshippingDetails(AIndex : Integer; const AValue : TOrderLineItemShippingDetails); 
+Procedure TOrderLineItem.SetshippingDetails(AIndex : Integer; const AValue : TOrderLineItemShippingDetails);
 
 begin
   If (FshippingDetails=AValue) then exit;
@@ -8973,7 +8979,7 @@ end;
 
 
 
-Procedure TOrderLineItem.Settax(AIndex : Integer; const AValue : TPrice); 
+Procedure TOrderLineItem.Settax(AIndex : Integer; const AValue : TPrice);
 
 begin
   If (Ftax=AValue) then exit;
@@ -8984,7 +8990,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOrderLineItem.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOrderLineItem.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -9004,7 +9010,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrderLineItemProduct.Setbrand(AIndex : Integer; const AValue : String); 
+Procedure TOrderLineItemProduct.Setbrand(AIndex : Integer; const AValue : String);
 
 begin
   If (Fbrand=AValue) then exit;
@@ -9014,7 +9020,7 @@ end;
 
 
 
-Procedure TOrderLineItemProduct.Setchannel(AIndex : Integer; const AValue : String); 
+Procedure TOrderLineItemProduct.Setchannel(AIndex : Integer; const AValue : String);
 
 begin
   If (Fchannel=AValue) then exit;
@@ -9024,7 +9030,7 @@ end;
 
 
 
-Procedure TOrderLineItemProduct.Setcondition(AIndex : Integer; const AValue : String); 
+Procedure TOrderLineItemProduct.Setcondition(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcondition=AValue) then exit;
@@ -9034,7 +9040,7 @@ end;
 
 
 
-Procedure TOrderLineItemProduct.SetcontentLanguage(AIndex : Integer; const AValue : String); 
+Procedure TOrderLineItemProduct.SetcontentLanguage(AIndex : Integer; const AValue : String);
 
 begin
   If (FcontentLanguage=AValue) then exit;
@@ -9044,7 +9050,7 @@ end;
 
 
 
-Procedure TOrderLineItemProduct.Setgtin(AIndex : Integer; const AValue : String); 
+Procedure TOrderLineItemProduct.Setgtin(AIndex : Integer; const AValue : String);
 
 begin
   If (Fgtin=AValue) then exit;
@@ -9054,7 +9060,7 @@ end;
 
 
 
-Procedure TOrderLineItemProduct.Setid(AIndex : Integer; const AValue : String); 
+Procedure TOrderLineItemProduct.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -9064,7 +9070,7 @@ end;
 
 
 
-Procedure TOrderLineItemProduct.SetimageLink(AIndex : Integer; const AValue : String); 
+Procedure TOrderLineItemProduct.SetimageLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FimageLink=AValue) then exit;
@@ -9074,7 +9080,7 @@ end;
 
 
 
-Procedure TOrderLineItemProduct.SetitemGroupId(AIndex : Integer; const AValue : String); 
+Procedure TOrderLineItemProduct.SetitemGroupId(AIndex : Integer; const AValue : String);
 
 begin
   If (FitemGroupId=AValue) then exit;
@@ -9084,7 +9090,7 @@ end;
 
 
 
-Procedure TOrderLineItemProduct.Setmpn(AIndex : Integer; const AValue : String); 
+Procedure TOrderLineItemProduct.Setmpn(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmpn=AValue) then exit;
@@ -9094,7 +9100,7 @@ end;
 
 
 
-Procedure TOrderLineItemProduct.SetofferId(AIndex : Integer; const AValue : String); 
+Procedure TOrderLineItemProduct.SetofferId(AIndex : Integer; const AValue : String);
 
 begin
   If (FofferId=AValue) then exit;
@@ -9104,7 +9110,7 @@ end;
 
 
 
-Procedure TOrderLineItemProduct.Setprice(AIndex : Integer; const AValue : TPrice); 
+Procedure TOrderLineItemProduct.Setprice(AIndex : Integer; const AValue : TPrice);
 
 begin
   If (Fprice=AValue) then exit;
@@ -9114,7 +9120,7 @@ end;
 
 
 
-Procedure TOrderLineItemProduct.SetshownImage(AIndex : Integer; const AValue : String); 
+Procedure TOrderLineItemProduct.SetshownImage(AIndex : Integer; const AValue : String);
 
 begin
   If (FshownImage=AValue) then exit;
@@ -9124,7 +9130,7 @@ end;
 
 
 
-Procedure TOrderLineItemProduct.SettargetCountry(AIndex : Integer; const AValue : String); 
+Procedure TOrderLineItemProduct.SettargetCountry(AIndex : Integer; const AValue : String);
 
 begin
   If (FtargetCountry=AValue) then exit;
@@ -9134,7 +9140,7 @@ end;
 
 
 
-Procedure TOrderLineItemProduct.Settitle(AIndex : Integer; const AValue : String); 
+Procedure TOrderLineItemProduct.Settitle(AIndex : Integer; const AValue : String);
 
 begin
   If (Ftitle=AValue) then exit;
@@ -9144,7 +9150,7 @@ end;
 
 
 
-Procedure TOrderLineItemProduct.SetvariantAttributes(AIndex : Integer; const AValue : TOrderLineItemProductTypevariantAttributesArray); 
+Procedure TOrderLineItemProduct.SetvariantAttributes(AIndex : Integer; const AValue : TOrderLineItemProductTypevariantAttributesArray);
 
 begin
   If (FvariantAttributes=AValue) then exit;
@@ -9155,7 +9161,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOrderLineItemProduct.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOrderLineItemProduct.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -9174,7 +9180,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrderLineItemProductVariantAttribute.Setdimension(AIndex : Integer; const AValue : String); 
+Procedure TOrderLineItemProductVariantAttribute.Setdimension(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdimension=AValue) then exit;
@@ -9184,7 +9190,7 @@ end;
 
 
 
-Procedure TOrderLineItemProductVariantAttribute.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TOrderLineItemProductVariantAttribute.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -9201,7 +9207,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrderLineItemReturnInfo.SetdaysToReturn(AIndex : Integer; const AValue : integer); 
+Procedure TOrderLineItemReturnInfo.SetdaysToReturn(AIndex : Integer; const AValue : integer);
 
 begin
   If (FdaysToReturn=AValue) then exit;
@@ -9211,7 +9217,7 @@ end;
 
 
 
-Procedure TOrderLineItemReturnInfo.SetisReturnable(AIndex : Integer; const AValue : boolean); 
+Procedure TOrderLineItemReturnInfo.SetisReturnable(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FisReturnable=AValue) then exit;
@@ -9221,7 +9227,7 @@ end;
 
 
 
-Procedure TOrderLineItemReturnInfo.SetpolicyUrl(AIndex : Integer; const AValue : String); 
+Procedure TOrderLineItemReturnInfo.SetpolicyUrl(AIndex : Integer; const AValue : String);
 
 begin
   If (FpolicyUrl=AValue) then exit;
@@ -9238,7 +9244,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrderLineItemShippingDetails.SetdeliverByDate(AIndex : Integer; const AValue : String); 
+Procedure TOrderLineItemShippingDetails.SetdeliverByDate(AIndex : Integer; const AValue : String);
 
 begin
   If (FdeliverByDate=AValue) then exit;
@@ -9248,7 +9254,7 @@ end;
 
 
 
-Procedure TOrderLineItemShippingDetails.Setmethod(AIndex : Integer; const AValue : TOrderLineItemShippingDetailsMethod); 
+Procedure TOrderLineItemShippingDetails.Setmethod(AIndex : Integer; const AValue : TOrderLineItemShippingDetailsMethod);
 
 begin
   If (Fmethod=AValue) then exit;
@@ -9258,7 +9264,7 @@ end;
 
 
 
-Procedure TOrderLineItemShippingDetails.SetshipByDate(AIndex : Integer; const AValue : String); 
+Procedure TOrderLineItemShippingDetails.SetshipByDate(AIndex : Integer; const AValue : String);
 
 begin
   If (FshipByDate=AValue) then exit;
@@ -9275,7 +9281,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrderLineItemShippingDetailsMethod.Setcarrier(AIndex : Integer; const AValue : String); 
+Procedure TOrderLineItemShippingDetailsMethod.Setcarrier(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcarrier=AValue) then exit;
@@ -9285,7 +9291,7 @@ end;
 
 
 
-Procedure TOrderLineItemShippingDetailsMethod.SetmaxDaysInTransit(AIndex : Integer; const AValue : integer); 
+Procedure TOrderLineItemShippingDetailsMethod.SetmaxDaysInTransit(AIndex : Integer; const AValue : integer);
 
 begin
   If (FmaxDaysInTransit=AValue) then exit;
@@ -9295,7 +9301,7 @@ end;
 
 
 
-Procedure TOrderLineItemShippingDetailsMethod.SetmethodName(AIndex : Integer; const AValue : String); 
+Procedure TOrderLineItemShippingDetailsMethod.SetmethodName(AIndex : Integer; const AValue : String);
 
 begin
   If (FmethodName=AValue) then exit;
@@ -9305,7 +9311,7 @@ end;
 
 
 
-Procedure TOrderLineItemShippingDetailsMethod.SetminDaysInTransit(AIndex : Integer; const AValue : integer); 
+Procedure TOrderLineItemShippingDetailsMethod.SetminDaysInTransit(AIndex : Integer; const AValue : integer);
 
 begin
   If (FminDaysInTransit=AValue) then exit;
@@ -9322,7 +9328,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrderPaymentMethod.SetbillingAddress(AIndex : Integer; const AValue : TOrderAddress); 
+Procedure TOrderPaymentMethod.SetbillingAddress(AIndex : Integer; const AValue : TOrderAddress);
 
 begin
   If (FbillingAddress=AValue) then exit;
@@ -9332,7 +9338,7 @@ end;
 
 
 
-Procedure TOrderPaymentMethod.SetexpirationMonth(AIndex : Integer; const AValue : integer); 
+Procedure TOrderPaymentMethod.SetexpirationMonth(AIndex : Integer; const AValue : integer);
 
 begin
   If (FexpirationMonth=AValue) then exit;
@@ -9342,7 +9348,7 @@ end;
 
 
 
-Procedure TOrderPaymentMethod.SetexpirationYear(AIndex : Integer; const AValue : integer); 
+Procedure TOrderPaymentMethod.SetexpirationYear(AIndex : Integer; const AValue : integer);
 
 begin
   If (FexpirationYear=AValue) then exit;
@@ -9352,7 +9358,7 @@ end;
 
 
 
-Procedure TOrderPaymentMethod.SetlastFourDigits(AIndex : Integer; const AValue : String); 
+Procedure TOrderPaymentMethod.SetlastFourDigits(AIndex : Integer; const AValue : String);
 
 begin
   If (FlastFourDigits=AValue) then exit;
@@ -9362,7 +9368,7 @@ end;
 
 
 
-Procedure TOrderPaymentMethod.SetphoneNumber(AIndex : Integer; const AValue : String); 
+Procedure TOrderPaymentMethod.SetphoneNumber(AIndex : Integer; const AValue : String);
 
 begin
   If (FphoneNumber=AValue) then exit;
@@ -9372,7 +9378,7 @@ end;
 
 
 
-Procedure TOrderPaymentMethod.Set_type(AIndex : Integer; const AValue : String); 
+Procedure TOrderPaymentMethod.Set_type(AIndex : Integer; const AValue : String);
 
 begin
   If (F_type=AValue) then exit;
@@ -9400,7 +9406,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrderPromotion.Setbenefits(AIndex : Integer; const AValue : TOrderPromotionTypebenefitsArray); 
+Procedure TOrderPromotion.Setbenefits(AIndex : Integer; const AValue : TOrderPromotionTypebenefitsArray);
 
 begin
   If (Fbenefits=AValue) then exit;
@@ -9410,7 +9416,7 @@ end;
 
 
 
-Procedure TOrderPromotion.SeteffectiveDates(AIndex : Integer; const AValue : String); 
+Procedure TOrderPromotion.SeteffectiveDates(AIndex : Integer; const AValue : String);
 
 begin
   If (FeffectiveDates=AValue) then exit;
@@ -9420,7 +9426,7 @@ end;
 
 
 
-Procedure TOrderPromotion.SetgenericRedemptionCode(AIndex : Integer; const AValue : String); 
+Procedure TOrderPromotion.SetgenericRedemptionCode(AIndex : Integer; const AValue : String);
 
 begin
   If (FgenericRedemptionCode=AValue) then exit;
@@ -9430,7 +9436,7 @@ end;
 
 
 
-Procedure TOrderPromotion.Setid(AIndex : Integer; const AValue : String); 
+Procedure TOrderPromotion.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -9440,7 +9446,7 @@ end;
 
 
 
-Procedure TOrderPromotion.SetlongTitle(AIndex : Integer; const AValue : String); 
+Procedure TOrderPromotion.SetlongTitle(AIndex : Integer; const AValue : String);
 
 begin
   If (FlongTitle=AValue) then exit;
@@ -9450,7 +9456,7 @@ end;
 
 
 
-Procedure TOrderPromotion.SetproductApplicability(AIndex : Integer; const AValue : String); 
+Procedure TOrderPromotion.SetproductApplicability(AIndex : Integer; const AValue : String);
 
 begin
   If (FproductApplicability=AValue) then exit;
@@ -9460,7 +9466,7 @@ end;
 
 
 
-Procedure TOrderPromotion.SetredemptionChannel(AIndex : Integer; const AValue : String); 
+Procedure TOrderPromotion.SetredemptionChannel(AIndex : Integer; const AValue : String);
 
 begin
   If (FredemptionChannel=AValue) then exit;
@@ -9471,7 +9477,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOrderPromotion.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOrderPromotion.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -9490,7 +9496,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrderPromotionBenefit.Setdiscount(AIndex : Integer; const AValue : TPrice); 
+Procedure TOrderPromotionBenefit.Setdiscount(AIndex : Integer; const AValue : TPrice);
 
 begin
   If (Fdiscount=AValue) then exit;
@@ -9500,7 +9506,7 @@ end;
 
 
 
-Procedure TOrderPromotionBenefit.SetofferIds(AIndex : Integer; const AValue : TStringArray); 
+Procedure TOrderPromotionBenefit.SetofferIds(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FofferIds=AValue) then exit;
@@ -9510,7 +9516,7 @@ end;
 
 
 
-Procedure TOrderPromotionBenefit.SetsubType(AIndex : Integer; const AValue : String); 
+Procedure TOrderPromotionBenefit.SetsubType(AIndex : Integer; const AValue : String);
 
 begin
   If (FsubType=AValue) then exit;
@@ -9520,7 +9526,7 @@ end;
 
 
 
-Procedure TOrderPromotionBenefit.SettaxImpact(AIndex : Integer; const AValue : TPrice); 
+Procedure TOrderPromotionBenefit.SettaxImpact(AIndex : Integer; const AValue : TPrice);
 
 begin
   If (FtaxImpact=AValue) then exit;
@@ -9530,7 +9536,7 @@ end;
 
 
 
-Procedure TOrderPromotionBenefit.Set_type(AIndex : Integer; const AValue : String); 
+Procedure TOrderPromotionBenefit.Set_type(AIndex : Integer; const AValue : String);
 
 begin
   If (F_type=AValue) then exit;
@@ -9552,7 +9558,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOrderPromotionBenefit.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOrderPromotionBenefit.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -9571,7 +9577,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrderRefund.Setactor(AIndex : Integer; const AValue : String); 
+Procedure TOrderRefund.Setactor(AIndex : Integer; const AValue : String);
 
 begin
   If (Factor=AValue) then exit;
@@ -9581,7 +9587,7 @@ end;
 
 
 
-Procedure TOrderRefund.Setamount(AIndex : Integer; const AValue : TPrice); 
+Procedure TOrderRefund.Setamount(AIndex : Integer; const AValue : TPrice);
 
 begin
   If (Famount=AValue) then exit;
@@ -9591,7 +9597,7 @@ end;
 
 
 
-Procedure TOrderRefund.SetcreationDate(AIndex : Integer; const AValue : String); 
+Procedure TOrderRefund.SetcreationDate(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationDate=AValue) then exit;
@@ -9601,7 +9607,7 @@ end;
 
 
 
-Procedure TOrderRefund.Setreason(AIndex : Integer; const AValue : String); 
+Procedure TOrderRefund.Setreason(AIndex : Integer; const AValue : String);
 
 begin
   If (Freason=AValue) then exit;
@@ -9611,7 +9617,7 @@ end;
 
 
 
-Procedure TOrderRefund.SetreasonText(AIndex : Integer; const AValue : String); 
+Procedure TOrderRefund.SetreasonText(AIndex : Integer; const AValue : String);
 
 begin
   If (FreasonText=AValue) then exit;
@@ -9628,7 +9634,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrderReturn.Setactor(AIndex : Integer; const AValue : String); 
+Procedure TOrderReturn.Setactor(AIndex : Integer; const AValue : String);
 
 begin
   If (Factor=AValue) then exit;
@@ -9638,7 +9644,7 @@ end;
 
 
 
-Procedure TOrderReturn.SetcreationDate(AIndex : Integer; const AValue : String); 
+Procedure TOrderReturn.SetcreationDate(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationDate=AValue) then exit;
@@ -9648,7 +9654,7 @@ end;
 
 
 
-Procedure TOrderReturn.Setquantity(AIndex : Integer; const AValue : integer); 
+Procedure TOrderReturn.Setquantity(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fquantity=AValue) then exit;
@@ -9658,7 +9664,7 @@ end;
 
 
 
-Procedure TOrderReturn.Setreason(AIndex : Integer; const AValue : String); 
+Procedure TOrderReturn.Setreason(AIndex : Integer; const AValue : String);
 
 begin
   If (Freason=AValue) then exit;
@@ -9668,7 +9674,7 @@ end;
 
 
 
-Procedure TOrderReturn.SetreasonText(AIndex : Integer; const AValue : String); 
+Procedure TOrderReturn.SetreasonText(AIndex : Integer; const AValue : String);
 
 begin
   If (FreasonText=AValue) then exit;
@@ -9685,7 +9691,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrderShipment.Setcarrier(AIndex : Integer; const AValue : String); 
+Procedure TOrderShipment.Setcarrier(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcarrier=AValue) then exit;
@@ -9695,7 +9701,7 @@ end;
 
 
 
-Procedure TOrderShipment.SetcreationDate(AIndex : Integer; const AValue : String); 
+Procedure TOrderShipment.SetcreationDate(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationDate=AValue) then exit;
@@ -9705,7 +9711,7 @@ end;
 
 
 
-Procedure TOrderShipment.SetdeliveryDate(AIndex : Integer; const AValue : String); 
+Procedure TOrderShipment.SetdeliveryDate(AIndex : Integer; const AValue : String);
 
 begin
   If (FdeliveryDate=AValue) then exit;
@@ -9715,7 +9721,7 @@ end;
 
 
 
-Procedure TOrderShipment.Setid(AIndex : Integer; const AValue : String); 
+Procedure TOrderShipment.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -9725,7 +9731,7 @@ end;
 
 
 
-Procedure TOrderShipment.SetlineItems(AIndex : Integer; const AValue : TOrderShipmentTypelineItemsArray); 
+Procedure TOrderShipment.SetlineItems(AIndex : Integer; const AValue : TOrderShipmentTypelineItemsArray);
 
 begin
   If (FlineItems=AValue) then exit;
@@ -9735,7 +9741,7 @@ end;
 
 
 
-Procedure TOrderShipment.Setstatus(AIndex : Integer; const AValue : String); 
+Procedure TOrderShipment.Setstatus(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -9745,7 +9751,7 @@ end;
 
 
 
-Procedure TOrderShipment.SettrackingId(AIndex : Integer; const AValue : String); 
+Procedure TOrderShipment.SettrackingId(AIndex : Integer; const AValue : String);
 
 begin
   If (FtrackingId=AValue) then exit;
@@ -9756,7 +9762,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOrderShipment.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOrderShipment.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -9775,7 +9781,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrderShipmentLineItemShipment.SetlineItemId(AIndex : Integer; const AValue : String); 
+Procedure TOrderShipmentLineItemShipment.SetlineItemId(AIndex : Integer; const AValue : String);
 
 begin
   If (FlineItemId=AValue) then exit;
@@ -9785,7 +9791,7 @@ end;
 
 
 
-Procedure TOrderShipmentLineItemShipment.Setquantity(AIndex : Integer; const AValue : integer); 
+Procedure TOrderShipmentLineItemShipment.Setquantity(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fquantity=AValue) then exit;
@@ -9802,7 +9808,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersAcknowledgeRequest.SetoperationId(AIndex : Integer; const AValue : String); 
+Procedure TOrdersAcknowledgeRequest.SetoperationId(AIndex : Integer; const AValue : String);
 
 begin
   If (FoperationId=AValue) then exit;
@@ -9819,7 +9825,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersAcknowledgeResponse.SetexecutionStatus(AIndex : Integer; const AValue : String); 
+Procedure TOrdersAcknowledgeResponse.SetexecutionStatus(AIndex : Integer; const AValue : String);
 
 begin
   If (FexecutionStatus=AValue) then exit;
@@ -9829,7 +9835,7 @@ end;
 
 
 
-Procedure TOrdersAcknowledgeResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOrdersAcknowledgeResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -9846,7 +9852,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersAdvanceTestOrderResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOrdersAdvanceTestOrderResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -9863,7 +9869,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersCancelLineItemRequest.Setamount(AIndex : Integer; const AValue : TPrice); 
+Procedure TOrdersCancelLineItemRequest.Setamount(AIndex : Integer; const AValue : TPrice);
 
 begin
   If (Famount=AValue) then exit;
@@ -9873,7 +9879,7 @@ end;
 
 
 
-Procedure TOrdersCancelLineItemRequest.SetlineItemId(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCancelLineItemRequest.SetlineItemId(AIndex : Integer; const AValue : String);
 
 begin
   If (FlineItemId=AValue) then exit;
@@ -9883,7 +9889,7 @@ end;
 
 
 
-Procedure TOrdersCancelLineItemRequest.SetoperationId(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCancelLineItemRequest.SetoperationId(AIndex : Integer; const AValue : String);
 
 begin
   If (FoperationId=AValue) then exit;
@@ -9893,7 +9899,7 @@ end;
 
 
 
-Procedure TOrdersCancelLineItemRequest.Setquantity(AIndex : Integer; const AValue : integer); 
+Procedure TOrdersCancelLineItemRequest.Setquantity(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fquantity=AValue) then exit;
@@ -9903,7 +9909,7 @@ end;
 
 
 
-Procedure TOrdersCancelLineItemRequest.Setreason(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCancelLineItemRequest.Setreason(AIndex : Integer; const AValue : String);
 
 begin
   If (Freason=AValue) then exit;
@@ -9913,7 +9919,7 @@ end;
 
 
 
-Procedure TOrdersCancelLineItemRequest.SetreasonText(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCancelLineItemRequest.SetreasonText(AIndex : Integer; const AValue : String);
 
 begin
   If (FreasonText=AValue) then exit;
@@ -9930,7 +9936,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersCancelLineItemResponse.SetexecutionStatus(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCancelLineItemResponse.SetexecutionStatus(AIndex : Integer; const AValue : String);
 
 begin
   If (FexecutionStatus=AValue) then exit;
@@ -9940,7 +9946,7 @@ end;
 
 
 
-Procedure TOrdersCancelLineItemResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCancelLineItemResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -9957,7 +9963,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersCancelRequest.SetoperationId(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCancelRequest.SetoperationId(AIndex : Integer; const AValue : String);
 
 begin
   If (FoperationId=AValue) then exit;
@@ -9967,7 +9973,7 @@ end;
 
 
 
-Procedure TOrdersCancelRequest.Setreason(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCancelRequest.Setreason(AIndex : Integer; const AValue : String);
 
 begin
   If (Freason=AValue) then exit;
@@ -9977,7 +9983,7 @@ end;
 
 
 
-Procedure TOrdersCancelRequest.SetreasonText(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCancelRequest.SetreasonText(AIndex : Integer; const AValue : String);
 
 begin
   If (FreasonText=AValue) then exit;
@@ -9994,7 +10000,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersCancelResponse.SetexecutionStatus(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCancelResponse.SetexecutionStatus(AIndex : Integer; const AValue : String);
 
 begin
   If (FexecutionStatus=AValue) then exit;
@@ -10004,7 +10010,7 @@ end;
 
 
 
-Procedure TOrdersCancelResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCancelResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -10021,7 +10027,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersCreateTestOrderRequest.SettemplateName(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCreateTestOrderRequest.SettemplateName(AIndex : Integer; const AValue : String);
 
 begin
   If (FtemplateName=AValue) then exit;
@@ -10031,7 +10037,7 @@ end;
 
 
 
-Procedure TOrdersCreateTestOrderRequest.SettestOrder(AIndex : Integer; const AValue : TTestOrder); 
+Procedure TOrdersCreateTestOrderRequest.SettestOrder(AIndex : Integer; const AValue : TTestOrder);
 
 begin
   If (FtestOrder=AValue) then exit;
@@ -10048,7 +10054,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersCreateTestOrderResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCreateTestOrderResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -10058,7 +10064,7 @@ end;
 
 
 
-Procedure TOrdersCreateTestOrderResponse.SetorderId(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCreateTestOrderResponse.SetorderId(AIndex : Integer; const AValue : String);
 
 begin
   If (ForderId=AValue) then exit;
@@ -10075,7 +10081,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersCustomBatchRequest.Setentries(AIndex : Integer; const AValue : TOrdersCustomBatchRequestTypeentriesArray); 
+Procedure TOrdersCustomBatchRequest.Setentries(AIndex : Integer; const AValue : TOrdersCustomBatchRequestTypeentriesArray);
 
 begin
   If (Fentries=AValue) then exit;
@@ -10086,7 +10092,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOrdersCustomBatchRequest.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOrdersCustomBatchRequest.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -10105,7 +10111,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersCustomBatchRequestEntry.SetbatchId(AIndex : Integer; const AValue : integer); 
+Procedure TOrdersCustomBatchRequestEntry.SetbatchId(AIndex : Integer; const AValue : integer);
 
 begin
   If (FbatchId=AValue) then exit;
@@ -10115,7 +10121,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchRequestEntry.Setcancel(AIndex : Integer; const AValue : TOrdersCustomBatchRequestEntryCancel); 
+Procedure TOrdersCustomBatchRequestEntry.Setcancel(AIndex : Integer; const AValue : TOrdersCustomBatchRequestEntryCancel);
 
 begin
   If (Fcancel=AValue) then exit;
@@ -10125,7 +10131,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchRequestEntry.SetcancelLineItem(AIndex : Integer; const AValue : TOrdersCustomBatchRequestEntryCancelLineItem); 
+Procedure TOrdersCustomBatchRequestEntry.SetcancelLineItem(AIndex : Integer; const AValue : TOrdersCustomBatchRequestEntryCancelLineItem);
 
 begin
   If (FcancelLineItem=AValue) then exit;
@@ -10135,7 +10141,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchRequestEntry.SetmerchantId(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCustomBatchRequestEntry.SetmerchantId(AIndex : Integer; const AValue : String);
 
 begin
   If (FmerchantId=AValue) then exit;
@@ -10145,7 +10151,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchRequestEntry.SetmerchantOrderId(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCustomBatchRequestEntry.SetmerchantOrderId(AIndex : Integer; const AValue : String);
 
 begin
   If (FmerchantOrderId=AValue) then exit;
@@ -10155,7 +10161,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchRequestEntry.Setmethod(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCustomBatchRequestEntry.Setmethod(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmethod=AValue) then exit;
@@ -10165,7 +10171,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchRequestEntry.SetoperationId(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCustomBatchRequestEntry.SetoperationId(AIndex : Integer; const AValue : String);
 
 begin
   If (FoperationId=AValue) then exit;
@@ -10175,7 +10181,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchRequestEntry.SetorderId(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCustomBatchRequestEntry.SetorderId(AIndex : Integer; const AValue : String);
 
 begin
   If (ForderId=AValue) then exit;
@@ -10185,7 +10191,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchRequestEntry.Setrefund(AIndex : Integer; const AValue : TOrdersCustomBatchRequestEntryRefund); 
+Procedure TOrdersCustomBatchRequestEntry.Setrefund(AIndex : Integer; const AValue : TOrdersCustomBatchRequestEntryRefund);
 
 begin
   If (Frefund=AValue) then exit;
@@ -10195,7 +10201,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchRequestEntry.SetreturnLineItem(AIndex : Integer; const AValue : TOrdersCustomBatchRequestEntryReturnLineItem); 
+Procedure TOrdersCustomBatchRequestEntry.SetreturnLineItem(AIndex : Integer; const AValue : TOrdersCustomBatchRequestEntryReturnLineItem);
 
 begin
   If (FreturnLineItem=AValue) then exit;
@@ -10205,7 +10211,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchRequestEntry.SetshipLineItems(AIndex : Integer; const AValue : TOrdersCustomBatchRequestEntryShipLineItems); 
+Procedure TOrdersCustomBatchRequestEntry.SetshipLineItems(AIndex : Integer; const AValue : TOrdersCustomBatchRequestEntryShipLineItems);
 
 begin
   If (FshipLineItems=AValue) then exit;
@@ -10215,7 +10221,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchRequestEntry.SetupdateShipment(AIndex : Integer; const AValue : TOrdersCustomBatchRequestEntryUpdateShipment); 
+Procedure TOrdersCustomBatchRequestEntry.SetupdateShipment(AIndex : Integer; const AValue : TOrdersCustomBatchRequestEntryUpdateShipment);
 
 begin
   If (FupdateShipment=AValue) then exit;
@@ -10232,7 +10238,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersCustomBatchRequestEntryCancel.Setreason(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCustomBatchRequestEntryCancel.Setreason(AIndex : Integer; const AValue : String);
 
 begin
   If (Freason=AValue) then exit;
@@ -10242,7 +10248,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchRequestEntryCancel.SetreasonText(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCustomBatchRequestEntryCancel.SetreasonText(AIndex : Integer; const AValue : String);
 
 begin
   If (FreasonText=AValue) then exit;
@@ -10259,7 +10265,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersCustomBatchRequestEntryCancelLineItem.Setamount(AIndex : Integer; const AValue : TPrice); 
+Procedure TOrdersCustomBatchRequestEntryCancelLineItem.Setamount(AIndex : Integer; const AValue : TPrice);
 
 begin
   If (Famount=AValue) then exit;
@@ -10269,7 +10275,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchRequestEntryCancelLineItem.SetlineItemId(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCustomBatchRequestEntryCancelLineItem.SetlineItemId(AIndex : Integer; const AValue : String);
 
 begin
   If (FlineItemId=AValue) then exit;
@@ -10279,7 +10285,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchRequestEntryCancelLineItem.Setquantity(AIndex : Integer; const AValue : integer); 
+Procedure TOrdersCustomBatchRequestEntryCancelLineItem.Setquantity(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fquantity=AValue) then exit;
@@ -10289,7 +10295,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchRequestEntryCancelLineItem.Setreason(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCustomBatchRequestEntryCancelLineItem.Setreason(AIndex : Integer; const AValue : String);
 
 begin
   If (Freason=AValue) then exit;
@@ -10299,7 +10305,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchRequestEntryCancelLineItem.SetreasonText(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCustomBatchRequestEntryCancelLineItem.SetreasonText(AIndex : Integer; const AValue : String);
 
 begin
   If (FreasonText=AValue) then exit;
@@ -10316,7 +10322,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersCustomBatchRequestEntryRefund.Setamount(AIndex : Integer; const AValue : TPrice); 
+Procedure TOrdersCustomBatchRequestEntryRefund.Setamount(AIndex : Integer; const AValue : TPrice);
 
 begin
   If (Famount=AValue) then exit;
@@ -10326,7 +10332,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchRequestEntryRefund.Setreason(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCustomBatchRequestEntryRefund.Setreason(AIndex : Integer; const AValue : String);
 
 begin
   If (Freason=AValue) then exit;
@@ -10336,7 +10342,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchRequestEntryRefund.SetreasonText(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCustomBatchRequestEntryRefund.SetreasonText(AIndex : Integer; const AValue : String);
 
 begin
   If (FreasonText=AValue) then exit;
@@ -10353,7 +10359,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersCustomBatchRequestEntryReturnLineItem.SetlineItemId(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCustomBatchRequestEntryReturnLineItem.SetlineItemId(AIndex : Integer; const AValue : String);
 
 begin
   If (FlineItemId=AValue) then exit;
@@ -10363,7 +10369,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchRequestEntryReturnLineItem.Setquantity(AIndex : Integer; const AValue : integer); 
+Procedure TOrdersCustomBatchRequestEntryReturnLineItem.Setquantity(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fquantity=AValue) then exit;
@@ -10373,7 +10379,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchRequestEntryReturnLineItem.Setreason(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCustomBatchRequestEntryReturnLineItem.Setreason(AIndex : Integer; const AValue : String);
 
 begin
   If (Freason=AValue) then exit;
@@ -10383,7 +10389,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchRequestEntryReturnLineItem.SetreasonText(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCustomBatchRequestEntryReturnLineItem.SetreasonText(AIndex : Integer; const AValue : String);
 
 begin
   If (FreasonText=AValue) then exit;
@@ -10400,7 +10406,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersCustomBatchRequestEntryShipLineItems.Setcarrier(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCustomBatchRequestEntryShipLineItems.Setcarrier(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcarrier=AValue) then exit;
@@ -10410,7 +10416,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchRequestEntryShipLineItems.SetlineItems(AIndex : Integer; const AValue : TOrdersCustomBatchRequestEntryShipLineItemsTypelineItemsArray); 
+Procedure TOrdersCustomBatchRequestEntryShipLineItems.SetlineItems(AIndex : Integer; const AValue : TOrdersCustomBatchRequestEntryShipLineItemsTypelineItemsArray);
 
 begin
   If (FlineItems=AValue) then exit;
@@ -10420,7 +10426,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchRequestEntryShipLineItems.SetshipmentId(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCustomBatchRequestEntryShipLineItems.SetshipmentId(AIndex : Integer; const AValue : String);
 
 begin
   If (FshipmentId=AValue) then exit;
@@ -10430,7 +10436,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchRequestEntryShipLineItems.SettrackingId(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCustomBatchRequestEntryShipLineItems.SettrackingId(AIndex : Integer; const AValue : String);
 
 begin
   If (FtrackingId=AValue) then exit;
@@ -10441,7 +10447,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOrdersCustomBatchRequestEntryShipLineItems.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOrdersCustomBatchRequestEntryShipLineItems.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -10460,7 +10466,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersCustomBatchRequestEntryUpdateShipment.Setcarrier(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCustomBatchRequestEntryUpdateShipment.Setcarrier(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcarrier=AValue) then exit;
@@ -10470,7 +10476,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchRequestEntryUpdateShipment.SetshipmentId(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCustomBatchRequestEntryUpdateShipment.SetshipmentId(AIndex : Integer; const AValue : String);
 
 begin
   If (FshipmentId=AValue) then exit;
@@ -10480,7 +10486,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchRequestEntryUpdateShipment.Setstatus(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCustomBatchRequestEntryUpdateShipment.Setstatus(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -10490,7 +10496,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchRequestEntryUpdateShipment.SettrackingId(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCustomBatchRequestEntryUpdateShipment.SettrackingId(AIndex : Integer; const AValue : String);
 
 begin
   If (FtrackingId=AValue) then exit;
@@ -10507,7 +10513,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersCustomBatchResponse.Setentries(AIndex : Integer; const AValue : TOrdersCustomBatchResponseTypeentriesArray); 
+Procedure TOrdersCustomBatchResponse.Setentries(AIndex : Integer; const AValue : TOrdersCustomBatchResponseTypeentriesArray);
 
 begin
   If (Fentries=AValue) then exit;
@@ -10517,7 +10523,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCustomBatchResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -10528,7 +10534,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOrdersCustomBatchResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOrdersCustomBatchResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -10547,7 +10553,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersCustomBatchResponseEntry.SetbatchId(AIndex : Integer; const AValue : integer); 
+Procedure TOrdersCustomBatchResponseEntry.SetbatchId(AIndex : Integer; const AValue : integer);
 
 begin
   If (FbatchId=AValue) then exit;
@@ -10557,7 +10563,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchResponseEntry.Seterrors(AIndex : Integer; const AValue : TErrors); 
+Procedure TOrdersCustomBatchResponseEntry.Seterrors(AIndex : Integer; const AValue : TErrors);
 
 begin
   If (Ferrors=AValue) then exit;
@@ -10567,7 +10573,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchResponseEntry.SetexecutionStatus(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCustomBatchResponseEntry.SetexecutionStatus(AIndex : Integer; const AValue : String);
 
 begin
   If (FexecutionStatus=AValue) then exit;
@@ -10577,7 +10583,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchResponseEntry.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOrdersCustomBatchResponseEntry.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -10587,7 +10593,7 @@ end;
 
 
 
-Procedure TOrdersCustomBatchResponseEntry.Setorder(AIndex : Integer; const AValue : TOrder); 
+Procedure TOrdersCustomBatchResponseEntry.Setorder(AIndex : Integer; const AValue : TOrder);
 
 begin
   If (Forder=AValue) then exit;
@@ -10604,7 +10610,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersGetByMerchantOrderIdResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOrdersGetByMerchantOrderIdResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -10614,7 +10620,7 @@ end;
 
 
 
-Procedure TOrdersGetByMerchantOrderIdResponse.Setorder(AIndex : Integer; const AValue : TOrder); 
+Procedure TOrdersGetByMerchantOrderIdResponse.Setorder(AIndex : Integer; const AValue : TOrder);
 
 begin
   If (Forder=AValue) then exit;
@@ -10631,7 +10637,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersGetTestOrderTemplateResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOrdersGetTestOrderTemplateResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -10641,7 +10647,7 @@ end;
 
 
 
-Procedure TOrdersGetTestOrderTemplateResponse.Settemplate(AIndex : Integer; const AValue : TTestOrder); 
+Procedure TOrdersGetTestOrderTemplateResponse.Settemplate(AIndex : Integer; const AValue : TTestOrder);
 
 begin
   If (Ftemplate=AValue) then exit;
@@ -10658,7 +10664,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOrdersListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -10668,7 +10674,7 @@ end;
 
 
 
-Procedure TOrdersListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TOrdersListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -10678,7 +10684,7 @@ end;
 
 
 
-Procedure TOrdersListResponse.Setresources(AIndex : Integer; const AValue : TOrdersListResponseTyperesourcesArray); 
+Procedure TOrdersListResponse.Setresources(AIndex : Integer; const AValue : TOrdersListResponseTyperesourcesArray);
 
 begin
   If (Fresources=AValue) then exit;
@@ -10689,7 +10695,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOrdersListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOrdersListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -10708,7 +10714,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersRefundRequest.Setamount(AIndex : Integer; const AValue : TPrice); 
+Procedure TOrdersRefundRequest.Setamount(AIndex : Integer; const AValue : TPrice);
 
 begin
   If (Famount=AValue) then exit;
@@ -10718,7 +10724,7 @@ end;
 
 
 
-Procedure TOrdersRefundRequest.SetoperationId(AIndex : Integer; const AValue : String); 
+Procedure TOrdersRefundRequest.SetoperationId(AIndex : Integer; const AValue : String);
 
 begin
   If (FoperationId=AValue) then exit;
@@ -10728,7 +10734,7 @@ end;
 
 
 
-Procedure TOrdersRefundRequest.Setreason(AIndex : Integer; const AValue : String); 
+Procedure TOrdersRefundRequest.Setreason(AIndex : Integer; const AValue : String);
 
 begin
   If (Freason=AValue) then exit;
@@ -10738,7 +10744,7 @@ end;
 
 
 
-Procedure TOrdersRefundRequest.SetreasonText(AIndex : Integer; const AValue : String); 
+Procedure TOrdersRefundRequest.SetreasonText(AIndex : Integer; const AValue : String);
 
 begin
   If (FreasonText=AValue) then exit;
@@ -10755,7 +10761,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersRefundResponse.SetexecutionStatus(AIndex : Integer; const AValue : String); 
+Procedure TOrdersRefundResponse.SetexecutionStatus(AIndex : Integer; const AValue : String);
 
 begin
   If (FexecutionStatus=AValue) then exit;
@@ -10765,7 +10771,7 @@ end;
 
 
 
-Procedure TOrdersRefundResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOrdersRefundResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -10782,7 +10788,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersReturnLineItemRequest.SetlineItemId(AIndex : Integer; const AValue : String); 
+Procedure TOrdersReturnLineItemRequest.SetlineItemId(AIndex : Integer; const AValue : String);
 
 begin
   If (FlineItemId=AValue) then exit;
@@ -10792,7 +10798,7 @@ end;
 
 
 
-Procedure TOrdersReturnLineItemRequest.SetoperationId(AIndex : Integer; const AValue : String); 
+Procedure TOrdersReturnLineItemRequest.SetoperationId(AIndex : Integer; const AValue : String);
 
 begin
   If (FoperationId=AValue) then exit;
@@ -10802,7 +10808,7 @@ end;
 
 
 
-Procedure TOrdersReturnLineItemRequest.Setquantity(AIndex : Integer; const AValue : integer); 
+Procedure TOrdersReturnLineItemRequest.Setquantity(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fquantity=AValue) then exit;
@@ -10812,7 +10818,7 @@ end;
 
 
 
-Procedure TOrdersReturnLineItemRequest.Setreason(AIndex : Integer; const AValue : String); 
+Procedure TOrdersReturnLineItemRequest.Setreason(AIndex : Integer; const AValue : String);
 
 begin
   If (Freason=AValue) then exit;
@@ -10822,7 +10828,7 @@ end;
 
 
 
-Procedure TOrdersReturnLineItemRequest.SetreasonText(AIndex : Integer; const AValue : String); 
+Procedure TOrdersReturnLineItemRequest.SetreasonText(AIndex : Integer; const AValue : String);
 
 begin
   If (FreasonText=AValue) then exit;
@@ -10839,7 +10845,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersReturnLineItemResponse.SetexecutionStatus(AIndex : Integer; const AValue : String); 
+Procedure TOrdersReturnLineItemResponse.SetexecutionStatus(AIndex : Integer; const AValue : String);
 
 begin
   If (FexecutionStatus=AValue) then exit;
@@ -10849,7 +10855,7 @@ end;
 
 
 
-Procedure TOrdersReturnLineItemResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOrdersReturnLineItemResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -10866,7 +10872,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersShipLineItemsRequest.Setcarrier(AIndex : Integer; const AValue : String); 
+Procedure TOrdersShipLineItemsRequest.Setcarrier(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcarrier=AValue) then exit;
@@ -10876,7 +10882,7 @@ end;
 
 
 
-Procedure TOrdersShipLineItemsRequest.SetlineItems(AIndex : Integer; const AValue : TOrdersShipLineItemsRequestTypelineItemsArray); 
+Procedure TOrdersShipLineItemsRequest.SetlineItems(AIndex : Integer; const AValue : TOrdersShipLineItemsRequestTypelineItemsArray);
 
 begin
   If (FlineItems=AValue) then exit;
@@ -10886,7 +10892,7 @@ end;
 
 
 
-Procedure TOrdersShipLineItemsRequest.SetoperationId(AIndex : Integer; const AValue : String); 
+Procedure TOrdersShipLineItemsRequest.SetoperationId(AIndex : Integer; const AValue : String);
 
 begin
   If (FoperationId=AValue) then exit;
@@ -10896,7 +10902,7 @@ end;
 
 
 
-Procedure TOrdersShipLineItemsRequest.SetshipmentId(AIndex : Integer; const AValue : String); 
+Procedure TOrdersShipLineItemsRequest.SetshipmentId(AIndex : Integer; const AValue : String);
 
 begin
   If (FshipmentId=AValue) then exit;
@@ -10906,7 +10912,7 @@ end;
 
 
 
-Procedure TOrdersShipLineItemsRequest.SettrackingId(AIndex : Integer; const AValue : String); 
+Procedure TOrdersShipLineItemsRequest.SettrackingId(AIndex : Integer; const AValue : String);
 
 begin
   If (FtrackingId=AValue) then exit;
@@ -10917,7 +10923,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOrdersShipLineItemsRequest.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOrdersShipLineItemsRequest.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -10936,7 +10942,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersShipLineItemsResponse.SetexecutionStatus(AIndex : Integer; const AValue : String); 
+Procedure TOrdersShipLineItemsResponse.SetexecutionStatus(AIndex : Integer; const AValue : String);
 
 begin
   If (FexecutionStatus=AValue) then exit;
@@ -10946,7 +10952,7 @@ end;
 
 
 
-Procedure TOrdersShipLineItemsResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOrdersShipLineItemsResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -10963,7 +10969,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersUpdateMerchantOrderIdRequest.SetmerchantOrderId(AIndex : Integer; const AValue : String); 
+Procedure TOrdersUpdateMerchantOrderIdRequest.SetmerchantOrderId(AIndex : Integer; const AValue : String);
 
 begin
   If (FmerchantOrderId=AValue) then exit;
@@ -10973,7 +10979,7 @@ end;
 
 
 
-Procedure TOrdersUpdateMerchantOrderIdRequest.SetoperationId(AIndex : Integer; const AValue : String); 
+Procedure TOrdersUpdateMerchantOrderIdRequest.SetoperationId(AIndex : Integer; const AValue : String);
 
 begin
   If (FoperationId=AValue) then exit;
@@ -10990,7 +10996,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersUpdateMerchantOrderIdResponse.SetexecutionStatus(AIndex : Integer; const AValue : String); 
+Procedure TOrdersUpdateMerchantOrderIdResponse.SetexecutionStatus(AIndex : Integer; const AValue : String);
 
 begin
   If (FexecutionStatus=AValue) then exit;
@@ -11000,7 +11006,7 @@ end;
 
 
 
-Procedure TOrdersUpdateMerchantOrderIdResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOrdersUpdateMerchantOrderIdResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -11017,7 +11023,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersUpdateShipmentRequest.Setcarrier(AIndex : Integer; const AValue : String); 
+Procedure TOrdersUpdateShipmentRequest.Setcarrier(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcarrier=AValue) then exit;
@@ -11027,7 +11033,7 @@ end;
 
 
 
-Procedure TOrdersUpdateShipmentRequest.SetoperationId(AIndex : Integer; const AValue : String); 
+Procedure TOrdersUpdateShipmentRequest.SetoperationId(AIndex : Integer; const AValue : String);
 
 begin
   If (FoperationId=AValue) then exit;
@@ -11037,7 +11043,7 @@ end;
 
 
 
-Procedure TOrdersUpdateShipmentRequest.SetshipmentId(AIndex : Integer; const AValue : String); 
+Procedure TOrdersUpdateShipmentRequest.SetshipmentId(AIndex : Integer; const AValue : String);
 
 begin
   If (FshipmentId=AValue) then exit;
@@ -11047,7 +11053,7 @@ end;
 
 
 
-Procedure TOrdersUpdateShipmentRequest.Setstatus(AIndex : Integer; const AValue : String); 
+Procedure TOrdersUpdateShipmentRequest.Setstatus(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -11057,7 +11063,7 @@ end;
 
 
 
-Procedure TOrdersUpdateShipmentRequest.SettrackingId(AIndex : Integer; const AValue : String); 
+Procedure TOrdersUpdateShipmentRequest.SettrackingId(AIndex : Integer; const AValue : String);
 
 begin
   If (FtrackingId=AValue) then exit;
@@ -11074,7 +11080,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrdersUpdateShipmentResponse.SetexecutionStatus(AIndex : Integer; const AValue : String); 
+Procedure TOrdersUpdateShipmentResponse.SetexecutionStatus(AIndex : Integer; const AValue : String);
 
 begin
   If (FexecutionStatus=AValue) then exit;
@@ -11084,7 +11090,7 @@ end;
 
 
 
-Procedure TOrdersUpdateShipmentResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOrdersUpdateShipmentResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -11101,7 +11107,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPrice.Setcurrency(AIndex : Integer; const AValue : String); 
+Procedure TPrice.Setcurrency(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcurrency=AValue) then exit;
@@ -11111,7 +11117,7 @@ end;
 
 
 
-Procedure TPrice.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TPrice.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -11128,7 +11134,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TProduct.SetadditionalImageLinks(AIndex : Integer; const AValue : TStringArray); 
+Procedure TProduct.SetadditionalImageLinks(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FadditionalImageLinks=AValue) then exit;
@@ -11138,7 +11144,7 @@ end;
 
 
 
-Procedure TProduct.Setadult(AIndex : Integer; const AValue : boolean); 
+Procedure TProduct.Setadult(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fadult=AValue) then exit;
@@ -11148,7 +11154,7 @@ end;
 
 
 
-Procedure TProduct.SetadwordsGrouping(AIndex : Integer; const AValue : String); 
+Procedure TProduct.SetadwordsGrouping(AIndex : Integer; const AValue : String);
 
 begin
   If (FadwordsGrouping=AValue) then exit;
@@ -11158,7 +11164,7 @@ end;
 
 
 
-Procedure TProduct.SetadwordsLabels(AIndex : Integer; const AValue : TStringArray); 
+Procedure TProduct.SetadwordsLabels(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FadwordsLabels=AValue) then exit;
@@ -11168,7 +11174,7 @@ end;
 
 
 
-Procedure TProduct.SetadwordsRedirect(AIndex : Integer; const AValue : String); 
+Procedure TProduct.SetadwordsRedirect(AIndex : Integer; const AValue : String);
 
 begin
   If (FadwordsRedirect=AValue) then exit;
@@ -11178,7 +11184,7 @@ end;
 
 
 
-Procedure TProduct.SetageGroup(AIndex : Integer; const AValue : String); 
+Procedure TProduct.SetageGroup(AIndex : Integer; const AValue : String);
 
 begin
   If (FageGroup=AValue) then exit;
@@ -11188,7 +11194,7 @@ end;
 
 
 
-Procedure TProduct.Setaspects(AIndex : Integer; const AValue : TProductTypeaspectsArray); 
+Procedure TProduct.Setaspects(AIndex : Integer; const AValue : TProductTypeaspectsArray);
 
 begin
   If (Faspects=AValue) then exit;
@@ -11198,7 +11204,7 @@ end;
 
 
 
-Procedure TProduct.Setavailability(AIndex : Integer; const AValue : String); 
+Procedure TProduct.Setavailability(AIndex : Integer; const AValue : String);
 
 begin
   If (Favailability=AValue) then exit;
@@ -11208,7 +11214,7 @@ end;
 
 
 
-Procedure TProduct.SetavailabilityDate(AIndex : Integer; const AValue : String); 
+Procedure TProduct.SetavailabilityDate(AIndex : Integer; const AValue : String);
 
 begin
   If (FavailabilityDate=AValue) then exit;
@@ -11218,7 +11224,7 @@ end;
 
 
 
-Procedure TProduct.Setbrand(AIndex : Integer; const AValue : String); 
+Procedure TProduct.Setbrand(AIndex : Integer; const AValue : String);
 
 begin
   If (Fbrand=AValue) then exit;
@@ -11228,7 +11234,7 @@ end;
 
 
 
-Procedure TProduct.Setchannel(AIndex : Integer; const AValue : String); 
+Procedure TProduct.Setchannel(AIndex : Integer; const AValue : String);
 
 begin
   If (Fchannel=AValue) then exit;
@@ -11238,7 +11244,7 @@ end;
 
 
 
-Procedure TProduct.Setcolor(AIndex : Integer; const AValue : String); 
+Procedure TProduct.Setcolor(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcolor=AValue) then exit;
@@ -11248,7 +11254,7 @@ end;
 
 
 
-Procedure TProduct.Setcondition(AIndex : Integer; const AValue : String); 
+Procedure TProduct.Setcondition(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcondition=AValue) then exit;
@@ -11258,7 +11264,7 @@ end;
 
 
 
-Procedure TProduct.SetcontentLanguage(AIndex : Integer; const AValue : String); 
+Procedure TProduct.SetcontentLanguage(AIndex : Integer; const AValue : String);
 
 begin
   If (FcontentLanguage=AValue) then exit;
@@ -11268,7 +11274,7 @@ end;
 
 
 
-Procedure TProduct.SetcustomAttributes(AIndex : Integer; const AValue : TProductTypecustomAttributesArray); 
+Procedure TProduct.SetcustomAttributes(AIndex : Integer; const AValue : TProductTypecustomAttributesArray);
 
 begin
   If (FcustomAttributes=AValue) then exit;
@@ -11278,7 +11284,7 @@ end;
 
 
 
-Procedure TProduct.SetcustomGroups(AIndex : Integer; const AValue : TProductTypecustomGroupsArray); 
+Procedure TProduct.SetcustomGroups(AIndex : Integer; const AValue : TProductTypecustomGroupsArray);
 
 begin
   If (FcustomGroups=AValue) then exit;
@@ -11288,7 +11294,7 @@ end;
 
 
 
-Procedure TProduct.SetcustomLabel0(AIndex : Integer; const AValue : String); 
+Procedure TProduct.SetcustomLabel0(AIndex : Integer; const AValue : String);
 
 begin
   If (FcustomLabel0=AValue) then exit;
@@ -11298,7 +11304,7 @@ end;
 
 
 
-Procedure TProduct.SetcustomLabel1(AIndex : Integer; const AValue : String); 
+Procedure TProduct.SetcustomLabel1(AIndex : Integer; const AValue : String);
 
 begin
   If (FcustomLabel1=AValue) then exit;
@@ -11308,7 +11314,7 @@ end;
 
 
 
-Procedure TProduct.SetcustomLabel2(AIndex : Integer; const AValue : String); 
+Procedure TProduct.SetcustomLabel2(AIndex : Integer; const AValue : String);
 
 begin
   If (FcustomLabel2=AValue) then exit;
@@ -11318,7 +11324,7 @@ end;
 
 
 
-Procedure TProduct.SetcustomLabel3(AIndex : Integer; const AValue : String); 
+Procedure TProduct.SetcustomLabel3(AIndex : Integer; const AValue : String);
 
 begin
   If (FcustomLabel3=AValue) then exit;
@@ -11328,7 +11334,7 @@ end;
 
 
 
-Procedure TProduct.SetcustomLabel4(AIndex : Integer; const AValue : String); 
+Procedure TProduct.SetcustomLabel4(AIndex : Integer; const AValue : String);
 
 begin
   If (FcustomLabel4=AValue) then exit;
@@ -11338,7 +11344,7 @@ end;
 
 
 
-Procedure TProduct.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TProduct.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -11348,7 +11354,7 @@ end;
 
 
 
-Procedure TProduct.Setdestinations(AIndex : Integer; const AValue : TProductTypedestinationsArray); 
+Procedure TProduct.Setdestinations(AIndex : Integer; const AValue : TProductTypedestinationsArray);
 
 begin
   If (Fdestinations=AValue) then exit;
@@ -11358,7 +11364,7 @@ end;
 
 
 
-Procedure TProduct.SetdisplayAdsId(AIndex : Integer; const AValue : String); 
+Procedure TProduct.SetdisplayAdsId(AIndex : Integer; const AValue : String);
 
 begin
   If (FdisplayAdsId=AValue) then exit;
@@ -11368,7 +11374,7 @@ end;
 
 
 
-Procedure TProduct.SetdisplayAdsLink(AIndex : Integer; const AValue : String); 
+Procedure TProduct.SetdisplayAdsLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FdisplayAdsLink=AValue) then exit;
@@ -11378,7 +11384,7 @@ end;
 
 
 
-Procedure TProduct.SetdisplayAdsSimilarIds(AIndex : Integer; const AValue : TStringArray); 
+Procedure TProduct.SetdisplayAdsSimilarIds(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FdisplayAdsSimilarIds=AValue) then exit;
@@ -11388,7 +11394,7 @@ end;
 
 
 
-Procedure TProduct.SetdisplayAdsTitle(AIndex : Integer; const AValue : String); 
+Procedure TProduct.SetdisplayAdsTitle(AIndex : Integer; const AValue : String);
 
 begin
   If (FdisplayAdsTitle=AValue) then exit;
@@ -11398,7 +11404,7 @@ end;
 
 
 
-Procedure TProduct.SetdisplayAdsValue(AIndex : Integer; const AValue : double); 
+Procedure TProduct.SetdisplayAdsValue(AIndex : Integer; const AValue : double);
 
 begin
   If (FdisplayAdsValue=AValue) then exit;
@@ -11408,7 +11414,7 @@ end;
 
 
 
-Procedure TProduct.SetenergyEfficiencyClass(AIndex : Integer; const AValue : String); 
+Procedure TProduct.SetenergyEfficiencyClass(AIndex : Integer; const AValue : String);
 
 begin
   If (FenergyEfficiencyClass=AValue) then exit;
@@ -11418,7 +11424,7 @@ end;
 
 
 
-Procedure TProduct.SetexpirationDate(AIndex : Integer; const AValue : String); 
+Procedure TProduct.SetexpirationDate(AIndex : Integer; const AValue : String);
 
 begin
   If (FexpirationDate=AValue) then exit;
@@ -11428,7 +11434,7 @@ end;
 
 
 
-Procedure TProduct.Setgender(AIndex : Integer; const AValue : String); 
+Procedure TProduct.Setgender(AIndex : Integer; const AValue : String);
 
 begin
   If (Fgender=AValue) then exit;
@@ -11438,7 +11444,7 @@ end;
 
 
 
-Procedure TProduct.SetgoogleProductCategory(AIndex : Integer; const AValue : String); 
+Procedure TProduct.SetgoogleProductCategory(AIndex : Integer; const AValue : String);
 
 begin
   If (FgoogleProductCategory=AValue) then exit;
@@ -11448,7 +11454,7 @@ end;
 
 
 
-Procedure TProduct.Setgtin(AIndex : Integer; const AValue : String); 
+Procedure TProduct.Setgtin(AIndex : Integer; const AValue : String);
 
 begin
   If (Fgtin=AValue) then exit;
@@ -11458,7 +11464,7 @@ end;
 
 
 
-Procedure TProduct.Setid(AIndex : Integer; const AValue : String); 
+Procedure TProduct.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -11468,7 +11474,7 @@ end;
 
 
 
-Procedure TProduct.SetidentifierExists(AIndex : Integer; const AValue : boolean); 
+Procedure TProduct.SetidentifierExists(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FidentifierExists=AValue) then exit;
@@ -11478,7 +11484,7 @@ end;
 
 
 
-Procedure TProduct.SetimageLink(AIndex : Integer; const AValue : String); 
+Procedure TProduct.SetimageLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FimageLink=AValue) then exit;
@@ -11488,7 +11494,7 @@ end;
 
 
 
-Procedure TProduct.Setinstallment(AIndex : Integer; const AValue : TInstallment); 
+Procedure TProduct.Setinstallment(AIndex : Integer; const AValue : TInstallment);
 
 begin
   If (Finstallment=AValue) then exit;
@@ -11498,7 +11504,7 @@ end;
 
 
 
-Procedure TProduct.SetisBundle(AIndex : Integer; const AValue : boolean); 
+Procedure TProduct.SetisBundle(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FisBundle=AValue) then exit;
@@ -11508,7 +11514,7 @@ end;
 
 
 
-Procedure TProduct.SetitemGroupId(AIndex : Integer; const AValue : String); 
+Procedure TProduct.SetitemGroupId(AIndex : Integer; const AValue : String);
 
 begin
   If (FitemGroupId=AValue) then exit;
@@ -11518,7 +11524,7 @@ end;
 
 
 
-Procedure TProduct.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TProduct.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -11528,7 +11534,7 @@ end;
 
 
 
-Procedure TProduct.Setlink(AIndex : Integer; const AValue : String); 
+Procedure TProduct.Setlink(AIndex : Integer; const AValue : String);
 
 begin
   If (Flink=AValue) then exit;
@@ -11538,7 +11544,7 @@ end;
 
 
 
-Procedure TProduct.SetloyaltyPoints(AIndex : Integer; const AValue : TLoyaltyPoints); 
+Procedure TProduct.SetloyaltyPoints(AIndex : Integer; const AValue : TLoyaltyPoints);
 
 begin
   If (FloyaltyPoints=AValue) then exit;
@@ -11548,7 +11554,7 @@ end;
 
 
 
-Procedure TProduct.Setmaterial(AIndex : Integer; const AValue : String); 
+Procedure TProduct.Setmaterial(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmaterial=AValue) then exit;
@@ -11558,7 +11564,7 @@ end;
 
 
 
-Procedure TProduct.SetmobileLink(AIndex : Integer; const AValue : String); 
+Procedure TProduct.SetmobileLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FmobileLink=AValue) then exit;
@@ -11568,7 +11574,7 @@ end;
 
 
 
-Procedure TProduct.Setmpn(AIndex : Integer; const AValue : String); 
+Procedure TProduct.Setmpn(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmpn=AValue) then exit;
@@ -11578,7 +11584,7 @@ end;
 
 
 
-Procedure TProduct.Setmultipack(AIndex : Integer; const AValue : String); 
+Procedure TProduct.Setmultipack(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmultipack=AValue) then exit;
@@ -11588,7 +11594,7 @@ end;
 
 
 
-Procedure TProduct.SetofferId(AIndex : Integer; const AValue : String); 
+Procedure TProduct.SetofferId(AIndex : Integer; const AValue : String);
 
 begin
   If (FofferId=AValue) then exit;
@@ -11598,7 +11604,7 @@ end;
 
 
 
-Procedure TProduct.SetonlineOnly(AIndex : Integer; const AValue : boolean); 
+Procedure TProduct.SetonlineOnly(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FonlineOnly=AValue) then exit;
@@ -11608,7 +11614,7 @@ end;
 
 
 
-Procedure TProduct.Setpattern(AIndex : Integer; const AValue : String); 
+Procedure TProduct.Setpattern(AIndex : Integer; const AValue : String);
 
 begin
   If (Fpattern=AValue) then exit;
@@ -11618,7 +11624,7 @@ end;
 
 
 
-Procedure TProduct.Setprice(AIndex : Integer; const AValue : TPrice); 
+Procedure TProduct.Setprice(AIndex : Integer; const AValue : TPrice);
 
 begin
   If (Fprice=AValue) then exit;
@@ -11628,7 +11634,7 @@ end;
 
 
 
-Procedure TProduct.SetproductType(AIndex : Integer; const AValue : String); 
+Procedure TProduct.SetproductType(AIndex : Integer; const AValue : String);
 
 begin
   If (FproductType=AValue) then exit;
@@ -11638,7 +11644,7 @@ end;
 
 
 
-Procedure TProduct.SetpromotionIds(AIndex : Integer; const AValue : TStringArray); 
+Procedure TProduct.SetpromotionIds(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FpromotionIds=AValue) then exit;
@@ -11648,7 +11654,7 @@ end;
 
 
 
-Procedure TProduct.SetsalePrice(AIndex : Integer; const AValue : TPrice); 
+Procedure TProduct.SetsalePrice(AIndex : Integer; const AValue : TPrice);
 
 begin
   If (FsalePrice=AValue) then exit;
@@ -11658,7 +11664,7 @@ end;
 
 
 
-Procedure TProduct.SetsalePriceEffectiveDate(AIndex : Integer; const AValue : String); 
+Procedure TProduct.SetsalePriceEffectiveDate(AIndex : Integer; const AValue : String);
 
 begin
   If (FsalePriceEffectiveDate=AValue) then exit;
@@ -11668,7 +11674,7 @@ end;
 
 
 
-Procedure TProduct.SetsellOnGoogleQuantity(AIndex : Integer; const AValue : String); 
+Procedure TProduct.SetsellOnGoogleQuantity(AIndex : Integer; const AValue : String);
 
 begin
   If (FsellOnGoogleQuantity=AValue) then exit;
@@ -11678,7 +11684,7 @@ end;
 
 
 
-Procedure TProduct.Setshipping(AIndex : Integer; const AValue : TProductTypeshippingArray); 
+Procedure TProduct.Setshipping(AIndex : Integer; const AValue : TProductTypeshippingArray);
 
 begin
   If (Fshipping=AValue) then exit;
@@ -11688,7 +11694,7 @@ end;
 
 
 
-Procedure TProduct.SetshippingHeight(AIndex : Integer; const AValue : TProductShippingDimension); 
+Procedure TProduct.SetshippingHeight(AIndex : Integer; const AValue : TProductShippingDimension);
 
 begin
   If (FshippingHeight=AValue) then exit;
@@ -11698,7 +11704,7 @@ end;
 
 
 
-Procedure TProduct.SetshippingLabel(AIndex : Integer; const AValue : String); 
+Procedure TProduct.SetshippingLabel(AIndex : Integer; const AValue : String);
 
 begin
   If (FshippingLabel=AValue) then exit;
@@ -11708,7 +11714,7 @@ end;
 
 
 
-Procedure TProduct.SetshippingLength(AIndex : Integer; const AValue : TProductShippingDimension); 
+Procedure TProduct.SetshippingLength(AIndex : Integer; const AValue : TProductShippingDimension);
 
 begin
   If (FshippingLength=AValue) then exit;
@@ -11718,7 +11724,7 @@ end;
 
 
 
-Procedure TProduct.SetshippingWeight(AIndex : Integer; const AValue : TProductShippingWeight); 
+Procedure TProduct.SetshippingWeight(AIndex : Integer; const AValue : TProductShippingWeight);
 
 begin
   If (FshippingWeight=AValue) then exit;
@@ -11728,7 +11734,7 @@ end;
 
 
 
-Procedure TProduct.SetshippingWidth(AIndex : Integer; const AValue : TProductShippingDimension); 
+Procedure TProduct.SetshippingWidth(AIndex : Integer; const AValue : TProductShippingDimension);
 
 begin
   If (FshippingWidth=AValue) then exit;
@@ -11738,7 +11744,7 @@ end;
 
 
 
-Procedure TProduct.SetsizeSystem(AIndex : Integer; const AValue : String); 
+Procedure TProduct.SetsizeSystem(AIndex : Integer; const AValue : String);
 
 begin
   If (FsizeSystem=AValue) then exit;
@@ -11748,7 +11754,7 @@ end;
 
 
 
-Procedure TProduct.SetsizeType(AIndex : Integer; const AValue : String); 
+Procedure TProduct.SetsizeType(AIndex : Integer; const AValue : String);
 
 begin
   If (FsizeType=AValue) then exit;
@@ -11758,7 +11764,7 @@ end;
 
 
 
-Procedure TProduct.Setsizes(AIndex : Integer; const AValue : TStringArray); 
+Procedure TProduct.Setsizes(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Fsizes=AValue) then exit;
@@ -11768,7 +11774,7 @@ end;
 
 
 
-Procedure TProduct.SettargetCountry(AIndex : Integer; const AValue : String); 
+Procedure TProduct.SettargetCountry(AIndex : Integer; const AValue : String);
 
 begin
   If (FtargetCountry=AValue) then exit;
@@ -11778,7 +11784,7 @@ end;
 
 
 
-Procedure TProduct.Settaxes(AIndex : Integer; const AValue : TProductTypetaxesArray); 
+Procedure TProduct.Settaxes(AIndex : Integer; const AValue : TProductTypetaxesArray);
 
 begin
   If (Ftaxes=AValue) then exit;
@@ -11788,7 +11794,7 @@ end;
 
 
 
-Procedure TProduct.Settitle(AIndex : Integer; const AValue : String); 
+Procedure TProduct.Settitle(AIndex : Integer; const AValue : String);
 
 begin
   If (Ftitle=AValue) then exit;
@@ -11798,7 +11804,7 @@ end;
 
 
 
-Procedure TProduct.SetunitPricingBaseMeasure(AIndex : Integer; const AValue : TProductUnitPricingBaseMeasure); 
+Procedure TProduct.SetunitPricingBaseMeasure(AIndex : Integer; const AValue : TProductUnitPricingBaseMeasure);
 
 begin
   If (FunitPricingBaseMeasure=AValue) then exit;
@@ -11808,7 +11814,7 @@ end;
 
 
 
-Procedure TProduct.SetunitPricingMeasure(AIndex : Integer; const AValue : TProductUnitPricingMeasure); 
+Procedure TProduct.SetunitPricingMeasure(AIndex : Integer; const AValue : TProductUnitPricingMeasure);
 
 begin
   If (FunitPricingMeasure=AValue) then exit;
@@ -11818,7 +11824,7 @@ end;
 
 
 
-Procedure TProduct.SetvalidatedDestinations(AIndex : Integer; const AValue : TStringArray); 
+Procedure TProduct.SetvalidatedDestinations(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FvalidatedDestinations=AValue) then exit;
@@ -11828,7 +11834,7 @@ end;
 
 
 
-Procedure TProduct.Setwarnings(AIndex : Integer; const AValue : TProductTypewarningsArray); 
+Procedure TProduct.Setwarnings(AIndex : Integer; const AValue : TProductTypewarningsArray);
 
 begin
   If (Fwarnings=AValue) then exit;
@@ -11839,7 +11845,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TProduct.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TProduct.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -11870,7 +11876,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TProductAspect.SetaspectName(AIndex : Integer; const AValue : String); 
+Procedure TProductAspect.SetaspectName(AIndex : Integer; const AValue : String);
 
 begin
   If (FaspectName=AValue) then exit;
@@ -11880,7 +11886,7 @@ end;
 
 
 
-Procedure TProductAspect.SetdestinationName(AIndex : Integer; const AValue : String); 
+Procedure TProductAspect.SetdestinationName(AIndex : Integer; const AValue : String);
 
 begin
   If (FdestinationName=AValue) then exit;
@@ -11890,7 +11896,7 @@ end;
 
 
 
-Procedure TProductAspect.Setintention(AIndex : Integer; const AValue : String); 
+Procedure TProductAspect.Setintention(AIndex : Integer; const AValue : String);
 
 begin
   If (Fintention=AValue) then exit;
@@ -11907,7 +11913,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TProductCustomAttribute.Setname(AIndex : Integer; const AValue : String); 
+Procedure TProductCustomAttribute.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -11917,7 +11923,7 @@ end;
 
 
 
-Procedure TProductCustomAttribute.Set_type(AIndex : Integer; const AValue : String); 
+Procedure TProductCustomAttribute.Set_type(AIndex : Integer; const AValue : String);
 
 begin
   If (F_type=AValue) then exit;
@@ -11927,7 +11933,7 @@ end;
 
 
 
-Procedure TProductCustomAttribute.Set_unit(AIndex : Integer; const AValue : String); 
+Procedure TProductCustomAttribute.Set_unit(AIndex : Integer; const AValue : String);
 
 begin
   If (F_unit=AValue) then exit;
@@ -11937,7 +11943,7 @@ end;
 
 
 
-Procedure TProductCustomAttribute.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TProductCustomAttribute.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -11966,7 +11972,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TProductCustomGroup.Setattributes(AIndex : Integer; const AValue : TProductCustomGroupTypeattributesArray); 
+Procedure TProductCustomGroup.Setattributes(AIndex : Integer; const AValue : TProductCustomGroupTypeattributesArray);
 
 begin
   If (Fattributes=AValue) then exit;
@@ -11976,7 +11982,7 @@ end;
 
 
 
-Procedure TProductCustomGroup.Setname(AIndex : Integer; const AValue : String); 
+Procedure TProductCustomGroup.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -11987,7 +11993,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TProductCustomGroup.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TProductCustomGroup.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -12006,7 +12012,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TProductDestination.SetdestinationName(AIndex : Integer; const AValue : String); 
+Procedure TProductDestination.SetdestinationName(AIndex : Integer; const AValue : String);
 
 begin
   If (FdestinationName=AValue) then exit;
@@ -12016,7 +12022,7 @@ end;
 
 
 
-Procedure TProductDestination.Setintention(AIndex : Integer; const AValue : String); 
+Procedure TProductDestination.Setintention(AIndex : Integer; const AValue : String);
 
 begin
   If (Fintention=AValue) then exit;
@@ -12033,7 +12039,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TProductShipping.Setcountry(AIndex : Integer; const AValue : String); 
+Procedure TProductShipping.Setcountry(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcountry=AValue) then exit;
@@ -12043,7 +12049,7 @@ end;
 
 
 
-Procedure TProductShipping.SetlocationGroupName(AIndex : Integer; const AValue : String); 
+Procedure TProductShipping.SetlocationGroupName(AIndex : Integer; const AValue : String);
 
 begin
   If (FlocationGroupName=AValue) then exit;
@@ -12053,7 +12059,7 @@ end;
 
 
 
-Procedure TProductShipping.SetlocationId(AIndex : Integer; const AValue : String); 
+Procedure TProductShipping.SetlocationId(AIndex : Integer; const AValue : String);
 
 begin
   If (FlocationId=AValue) then exit;
@@ -12063,7 +12069,7 @@ end;
 
 
 
-Procedure TProductShipping.SetpostalCode(AIndex : Integer; const AValue : String); 
+Procedure TProductShipping.SetpostalCode(AIndex : Integer; const AValue : String);
 
 begin
   If (FpostalCode=AValue) then exit;
@@ -12073,7 +12079,7 @@ end;
 
 
 
-Procedure TProductShipping.Setprice(AIndex : Integer; const AValue : TPrice); 
+Procedure TProductShipping.Setprice(AIndex : Integer; const AValue : TPrice);
 
 begin
   If (Fprice=AValue) then exit;
@@ -12083,7 +12089,7 @@ end;
 
 
 
-Procedure TProductShipping.Setregion(AIndex : Integer; const AValue : String); 
+Procedure TProductShipping.Setregion(AIndex : Integer; const AValue : String);
 
 begin
   If (Fregion=AValue) then exit;
@@ -12093,7 +12099,7 @@ end;
 
 
 
-Procedure TProductShipping.Setservice(AIndex : Integer; const AValue : String); 
+Procedure TProductShipping.Setservice(AIndex : Integer; const AValue : String);
 
 begin
   If (Fservice=AValue) then exit;
@@ -12110,7 +12116,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TProductShippingDimension.Set_unit(AIndex : Integer; const AValue : String); 
+Procedure TProductShippingDimension.Set_unit(AIndex : Integer; const AValue : String);
 
 begin
   If (F_unit=AValue) then exit;
@@ -12120,7 +12126,7 @@ end;
 
 
 
-Procedure TProductShippingDimension.Setvalue(AIndex : Integer; const AValue : double); 
+Procedure TProductShippingDimension.Setvalue(AIndex : Integer; const AValue : double);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -12148,7 +12154,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TProductShippingWeight.Set_unit(AIndex : Integer; const AValue : String); 
+Procedure TProductShippingWeight.Set_unit(AIndex : Integer; const AValue : String);
 
 begin
   If (F_unit=AValue) then exit;
@@ -12158,7 +12164,7 @@ end;
 
 
 
-Procedure TProductShippingWeight.Setvalue(AIndex : Integer; const AValue : double); 
+Procedure TProductShippingWeight.Setvalue(AIndex : Integer; const AValue : double);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -12186,7 +12192,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TProductStatus.SetcreationDate(AIndex : Integer; const AValue : String); 
+Procedure TProductStatus.SetcreationDate(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationDate=AValue) then exit;
@@ -12196,7 +12202,7 @@ end;
 
 
 
-Procedure TProductStatus.SetdataQualityIssues(AIndex : Integer; const AValue : TProductStatusTypedataQualityIssuesArray); 
+Procedure TProductStatus.SetdataQualityIssues(AIndex : Integer; const AValue : TProductStatusTypedataQualityIssuesArray);
 
 begin
   If (FdataQualityIssues=AValue) then exit;
@@ -12206,7 +12212,7 @@ end;
 
 
 
-Procedure TProductStatus.SetdestinationStatuses(AIndex : Integer; const AValue : TProductStatusTypedestinationStatusesArray); 
+Procedure TProductStatus.SetdestinationStatuses(AIndex : Integer; const AValue : TProductStatusTypedestinationStatusesArray);
 
 begin
   If (FdestinationStatuses=AValue) then exit;
@@ -12216,7 +12222,7 @@ end;
 
 
 
-Procedure TProductStatus.SetgoogleExpirationDate(AIndex : Integer; const AValue : String); 
+Procedure TProductStatus.SetgoogleExpirationDate(AIndex : Integer; const AValue : String);
 
 begin
   If (FgoogleExpirationDate=AValue) then exit;
@@ -12226,7 +12232,7 @@ end;
 
 
 
-Procedure TProductStatus.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TProductStatus.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -12236,7 +12242,7 @@ end;
 
 
 
-Procedure TProductStatus.SetlastUpdateDate(AIndex : Integer; const AValue : String); 
+Procedure TProductStatus.SetlastUpdateDate(AIndex : Integer; const AValue : String);
 
 begin
   If (FlastUpdateDate=AValue) then exit;
@@ -12246,7 +12252,7 @@ end;
 
 
 
-Procedure TProductStatus.Setlink(AIndex : Integer; const AValue : String); 
+Procedure TProductStatus.Setlink(AIndex : Integer; const AValue : String);
 
 begin
   If (Flink=AValue) then exit;
@@ -12256,7 +12262,7 @@ end;
 
 
 
-Procedure TProductStatus.SetproductId(AIndex : Integer; const AValue : String); 
+Procedure TProductStatus.SetproductId(AIndex : Integer; const AValue : String);
 
 begin
   If (FproductId=AValue) then exit;
@@ -12266,7 +12272,7 @@ end;
 
 
 
-Procedure TProductStatus.Settitle(AIndex : Integer; const AValue : String); 
+Procedure TProductStatus.Settitle(AIndex : Integer; const AValue : String);
 
 begin
   If (Ftitle=AValue) then exit;
@@ -12277,7 +12283,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TProductStatus.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TProductStatus.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -12297,7 +12303,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TProductStatusDataQualityIssue.Setdetail(AIndex : Integer; const AValue : String); 
+Procedure TProductStatusDataQualityIssue.Setdetail(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdetail=AValue) then exit;
@@ -12307,7 +12313,7 @@ end;
 
 
 
-Procedure TProductStatusDataQualityIssue.SetfetchStatus(AIndex : Integer; const AValue : String); 
+Procedure TProductStatusDataQualityIssue.SetfetchStatus(AIndex : Integer; const AValue : String);
 
 begin
   If (FfetchStatus=AValue) then exit;
@@ -12317,7 +12323,7 @@ end;
 
 
 
-Procedure TProductStatusDataQualityIssue.Setid(AIndex : Integer; const AValue : String); 
+Procedure TProductStatusDataQualityIssue.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -12327,7 +12333,7 @@ end;
 
 
 
-Procedure TProductStatusDataQualityIssue.Setlocation(AIndex : Integer; const AValue : String); 
+Procedure TProductStatusDataQualityIssue.Setlocation(AIndex : Integer; const AValue : String);
 
 begin
   If (Flocation=AValue) then exit;
@@ -12337,7 +12343,7 @@ end;
 
 
 
-Procedure TProductStatusDataQualityIssue.Setseverity(AIndex : Integer; const AValue : String); 
+Procedure TProductStatusDataQualityIssue.Setseverity(AIndex : Integer; const AValue : String);
 
 begin
   If (Fseverity=AValue) then exit;
@@ -12347,7 +12353,7 @@ end;
 
 
 
-Procedure TProductStatusDataQualityIssue.Settimestamp(AIndex : Integer; const AValue : String); 
+Procedure TProductStatusDataQualityIssue.Settimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (Ftimestamp=AValue) then exit;
@@ -12357,7 +12363,7 @@ end;
 
 
 
-Procedure TProductStatusDataQualityIssue.SetvalueOnLandingPage(AIndex : Integer; const AValue : String); 
+Procedure TProductStatusDataQualityIssue.SetvalueOnLandingPage(AIndex : Integer; const AValue : String);
 
 begin
   If (FvalueOnLandingPage=AValue) then exit;
@@ -12367,7 +12373,7 @@ end;
 
 
 
-Procedure TProductStatusDataQualityIssue.SetvalueProvided(AIndex : Integer; const AValue : String); 
+Procedure TProductStatusDataQualityIssue.SetvalueProvided(AIndex : Integer; const AValue : String);
 
 begin
   If (FvalueProvided=AValue) then exit;
@@ -12384,7 +12390,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TProductStatusDestinationStatus.SetapprovalStatus(AIndex : Integer; const AValue : String); 
+Procedure TProductStatusDestinationStatus.SetapprovalStatus(AIndex : Integer; const AValue : String);
 
 begin
   If (FapprovalStatus=AValue) then exit;
@@ -12394,7 +12400,7 @@ end;
 
 
 
-Procedure TProductStatusDestinationStatus.Setdestination(AIndex : Integer; const AValue : String); 
+Procedure TProductStatusDestinationStatus.Setdestination(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdestination=AValue) then exit;
@@ -12404,7 +12410,7 @@ end;
 
 
 
-Procedure TProductStatusDestinationStatus.Setintention(AIndex : Integer; const AValue : String); 
+Procedure TProductStatusDestinationStatus.Setintention(AIndex : Integer; const AValue : String);
 
 begin
   If (Fintention=AValue) then exit;
@@ -12421,7 +12427,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TProductTax.Setcountry(AIndex : Integer; const AValue : String); 
+Procedure TProductTax.Setcountry(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcountry=AValue) then exit;
@@ -12431,7 +12437,7 @@ end;
 
 
 
-Procedure TProductTax.SetlocationId(AIndex : Integer; const AValue : String); 
+Procedure TProductTax.SetlocationId(AIndex : Integer; const AValue : String);
 
 begin
   If (FlocationId=AValue) then exit;
@@ -12441,7 +12447,7 @@ end;
 
 
 
-Procedure TProductTax.SetpostalCode(AIndex : Integer; const AValue : String); 
+Procedure TProductTax.SetpostalCode(AIndex : Integer; const AValue : String);
 
 begin
   If (FpostalCode=AValue) then exit;
@@ -12451,7 +12457,7 @@ end;
 
 
 
-Procedure TProductTax.Setrate(AIndex : Integer; const AValue : double); 
+Procedure TProductTax.Setrate(AIndex : Integer; const AValue : double);
 
 begin
   If (Frate=AValue) then exit;
@@ -12461,7 +12467,7 @@ end;
 
 
 
-Procedure TProductTax.Setregion(AIndex : Integer; const AValue : String); 
+Procedure TProductTax.Setregion(AIndex : Integer; const AValue : String);
 
 begin
   If (Fregion=AValue) then exit;
@@ -12471,7 +12477,7 @@ end;
 
 
 
-Procedure TProductTax.SettaxShip(AIndex : Integer; const AValue : boolean); 
+Procedure TProductTax.SettaxShip(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FtaxShip=AValue) then exit;
@@ -12488,7 +12494,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TProductUnitPricingBaseMeasure.Set_unit(AIndex : Integer; const AValue : String); 
+Procedure TProductUnitPricingBaseMeasure.Set_unit(AIndex : Integer; const AValue : String);
 
 begin
   If (F_unit=AValue) then exit;
@@ -12498,7 +12504,7 @@ end;
 
 
 
-Procedure TProductUnitPricingBaseMeasure.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TProductUnitPricingBaseMeasure.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -12526,7 +12532,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TProductUnitPricingMeasure.Set_unit(AIndex : Integer; const AValue : String); 
+Procedure TProductUnitPricingMeasure.Set_unit(AIndex : Integer; const AValue : String);
 
 begin
   If (F_unit=AValue) then exit;
@@ -12536,7 +12542,7 @@ end;
 
 
 
-Procedure TProductUnitPricingMeasure.Setvalue(AIndex : Integer; const AValue : double); 
+Procedure TProductUnitPricingMeasure.Setvalue(AIndex : Integer; const AValue : double);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -12564,7 +12570,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TProductsCustomBatchRequest.Setentries(AIndex : Integer; const AValue : TProductsCustomBatchRequestTypeentriesArray); 
+Procedure TProductsCustomBatchRequest.Setentries(AIndex : Integer; const AValue : TProductsCustomBatchRequestTypeentriesArray);
 
 begin
   If (Fentries=AValue) then exit;
@@ -12575,7 +12581,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TProductsCustomBatchRequest.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TProductsCustomBatchRequest.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -12594,7 +12600,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TProductsCustomBatchRequestEntry.SetbatchId(AIndex : Integer; const AValue : integer); 
+Procedure TProductsCustomBatchRequestEntry.SetbatchId(AIndex : Integer; const AValue : integer);
 
 begin
   If (FbatchId=AValue) then exit;
@@ -12604,7 +12610,7 @@ end;
 
 
 
-Procedure TProductsCustomBatchRequestEntry.SetmerchantId(AIndex : Integer; const AValue : String); 
+Procedure TProductsCustomBatchRequestEntry.SetmerchantId(AIndex : Integer; const AValue : String);
 
 begin
   If (FmerchantId=AValue) then exit;
@@ -12614,7 +12620,7 @@ end;
 
 
 
-Procedure TProductsCustomBatchRequestEntry.Setmethod(AIndex : Integer; const AValue : String); 
+Procedure TProductsCustomBatchRequestEntry.Setmethod(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmethod=AValue) then exit;
@@ -12624,7 +12630,7 @@ end;
 
 
 
-Procedure TProductsCustomBatchRequestEntry.Setproduct(AIndex : Integer; const AValue : TProduct); 
+Procedure TProductsCustomBatchRequestEntry.Setproduct(AIndex : Integer; const AValue : TProduct);
 
 begin
   If (Fproduct=AValue) then exit;
@@ -12634,7 +12640,7 @@ end;
 
 
 
-Procedure TProductsCustomBatchRequestEntry.SetproductId(AIndex : Integer; const AValue : String); 
+Procedure TProductsCustomBatchRequestEntry.SetproductId(AIndex : Integer; const AValue : String);
 
 begin
   If (FproductId=AValue) then exit;
@@ -12651,7 +12657,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TProductsCustomBatchResponse.Setentries(AIndex : Integer; const AValue : TProductsCustomBatchResponseTypeentriesArray); 
+Procedure TProductsCustomBatchResponse.Setentries(AIndex : Integer; const AValue : TProductsCustomBatchResponseTypeentriesArray);
 
 begin
   If (Fentries=AValue) then exit;
@@ -12661,7 +12667,7 @@ end;
 
 
 
-Procedure TProductsCustomBatchResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TProductsCustomBatchResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -12672,7 +12678,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TProductsCustomBatchResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TProductsCustomBatchResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -12691,7 +12697,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TProductsCustomBatchResponseEntry.SetbatchId(AIndex : Integer; const AValue : integer); 
+Procedure TProductsCustomBatchResponseEntry.SetbatchId(AIndex : Integer; const AValue : integer);
 
 begin
   If (FbatchId=AValue) then exit;
@@ -12701,7 +12707,7 @@ end;
 
 
 
-Procedure TProductsCustomBatchResponseEntry.Seterrors(AIndex : Integer; const AValue : TErrors); 
+Procedure TProductsCustomBatchResponseEntry.Seterrors(AIndex : Integer; const AValue : TErrors);
 
 begin
   If (Ferrors=AValue) then exit;
@@ -12711,7 +12717,7 @@ end;
 
 
 
-Procedure TProductsCustomBatchResponseEntry.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TProductsCustomBatchResponseEntry.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -12721,7 +12727,7 @@ end;
 
 
 
-Procedure TProductsCustomBatchResponseEntry.Setproduct(AIndex : Integer; const AValue : TProduct); 
+Procedure TProductsCustomBatchResponseEntry.Setproduct(AIndex : Integer; const AValue : TProduct);
 
 begin
   If (Fproduct=AValue) then exit;
@@ -12738,7 +12744,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TProductsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TProductsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -12748,7 +12754,7 @@ end;
 
 
 
-Procedure TProductsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TProductsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -12758,7 +12764,7 @@ end;
 
 
 
-Procedure TProductsListResponse.Setresources(AIndex : Integer; const AValue : TProductsListResponseTyperesourcesArray); 
+Procedure TProductsListResponse.Setresources(AIndex : Integer; const AValue : TProductsListResponseTyperesourcesArray);
 
 begin
   If (Fresources=AValue) then exit;
@@ -12769,7 +12775,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TProductsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TProductsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -12788,7 +12794,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TProductstatusesCustomBatchRequest.Setentries(AIndex : Integer; const AValue : TProductstatusesCustomBatchRequestTypeentriesArray); 
+Procedure TProductstatusesCustomBatchRequest.Setentries(AIndex : Integer; const AValue : TProductstatusesCustomBatchRequestTypeentriesArray);
 
 begin
   If (Fentries=AValue) then exit;
@@ -12799,7 +12805,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TProductstatusesCustomBatchRequest.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TProductstatusesCustomBatchRequest.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -12818,7 +12824,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TProductstatusesCustomBatchRequestEntry.SetbatchId(AIndex : Integer; const AValue : integer); 
+Procedure TProductstatusesCustomBatchRequestEntry.SetbatchId(AIndex : Integer; const AValue : integer);
 
 begin
   If (FbatchId=AValue) then exit;
@@ -12828,7 +12834,7 @@ end;
 
 
 
-Procedure TProductstatusesCustomBatchRequestEntry.SetmerchantId(AIndex : Integer; const AValue : String); 
+Procedure TProductstatusesCustomBatchRequestEntry.SetmerchantId(AIndex : Integer; const AValue : String);
 
 begin
   If (FmerchantId=AValue) then exit;
@@ -12838,7 +12844,7 @@ end;
 
 
 
-Procedure TProductstatusesCustomBatchRequestEntry.Setmethod(AIndex : Integer; const AValue : String); 
+Procedure TProductstatusesCustomBatchRequestEntry.Setmethod(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmethod=AValue) then exit;
@@ -12848,7 +12854,7 @@ end;
 
 
 
-Procedure TProductstatusesCustomBatchRequestEntry.SetproductId(AIndex : Integer; const AValue : String); 
+Procedure TProductstatusesCustomBatchRequestEntry.SetproductId(AIndex : Integer; const AValue : String);
 
 begin
   If (FproductId=AValue) then exit;
@@ -12865,7 +12871,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TProductstatusesCustomBatchResponse.Setentries(AIndex : Integer; const AValue : TProductstatusesCustomBatchResponseTypeentriesArray); 
+Procedure TProductstatusesCustomBatchResponse.Setentries(AIndex : Integer; const AValue : TProductstatusesCustomBatchResponseTypeentriesArray);
 
 begin
   If (Fentries=AValue) then exit;
@@ -12875,7 +12881,7 @@ end;
 
 
 
-Procedure TProductstatusesCustomBatchResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TProductstatusesCustomBatchResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -12886,7 +12892,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TProductstatusesCustomBatchResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TProductstatusesCustomBatchResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -12905,7 +12911,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TProductstatusesCustomBatchResponseEntry.SetbatchId(AIndex : Integer; const AValue : integer); 
+Procedure TProductstatusesCustomBatchResponseEntry.SetbatchId(AIndex : Integer; const AValue : integer);
 
 begin
   If (FbatchId=AValue) then exit;
@@ -12915,7 +12921,7 @@ end;
 
 
 
-Procedure TProductstatusesCustomBatchResponseEntry.Seterrors(AIndex : Integer; const AValue : TErrors); 
+Procedure TProductstatusesCustomBatchResponseEntry.Seterrors(AIndex : Integer; const AValue : TErrors);
 
 begin
   If (Ferrors=AValue) then exit;
@@ -12925,7 +12931,7 @@ end;
 
 
 
-Procedure TProductstatusesCustomBatchResponseEntry.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TProductstatusesCustomBatchResponseEntry.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -12935,7 +12941,7 @@ end;
 
 
 
-Procedure TProductstatusesCustomBatchResponseEntry.SetproductStatus(AIndex : Integer; const AValue : TProductStatus); 
+Procedure TProductstatusesCustomBatchResponseEntry.SetproductStatus(AIndex : Integer; const AValue : TProductStatus);
 
 begin
   If (FproductStatus=AValue) then exit;
@@ -12952,7 +12958,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TProductstatusesListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TProductstatusesListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -12962,7 +12968,7 @@ end;
 
 
 
-Procedure TProductstatusesListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TProductstatusesListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -12972,7 +12978,7 @@ end;
 
 
 
-Procedure TProductstatusesListResponse.Setresources(AIndex : Integer; const AValue : TProductstatusesListResponseTyperesourcesArray); 
+Procedure TProductstatusesListResponse.Setresources(AIndex : Integer; const AValue : TProductstatusesListResponseTyperesourcesArray);
 
 begin
   If (Fresources=AValue) then exit;
@@ -12983,7 +12989,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TProductstatusesListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TProductstatusesListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -13002,7 +13008,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTestOrder.Setcustomer(AIndex : Integer; const AValue : TTestOrderCustomer); 
+Procedure TTestOrder.Setcustomer(AIndex : Integer; const AValue : TTestOrderCustomer);
 
 begin
   If (Fcustomer=AValue) then exit;
@@ -13012,7 +13018,7 @@ end;
 
 
 
-Procedure TTestOrder.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TTestOrder.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -13022,7 +13028,7 @@ end;
 
 
 
-Procedure TTestOrder.SetlineItems(AIndex : Integer; const AValue : TTestOrderTypelineItemsArray); 
+Procedure TTestOrder.SetlineItems(AIndex : Integer; const AValue : TTestOrderTypelineItemsArray);
 
 begin
   If (FlineItems=AValue) then exit;
@@ -13032,7 +13038,7 @@ end;
 
 
 
-Procedure TTestOrder.SetpaymentMethod(AIndex : Integer; const AValue : TTestOrderPaymentMethod); 
+Procedure TTestOrder.SetpaymentMethod(AIndex : Integer; const AValue : TTestOrderPaymentMethod);
 
 begin
   If (FpaymentMethod=AValue) then exit;
@@ -13042,7 +13048,7 @@ end;
 
 
 
-Procedure TTestOrder.SetpredefinedDeliveryAddress(AIndex : Integer; const AValue : String); 
+Procedure TTestOrder.SetpredefinedDeliveryAddress(AIndex : Integer; const AValue : String);
 
 begin
   If (FpredefinedDeliveryAddress=AValue) then exit;
@@ -13052,7 +13058,7 @@ end;
 
 
 
-Procedure TTestOrder.Setpromotions(AIndex : Integer; const AValue : TTestOrderTypepromotionsArray); 
+Procedure TTestOrder.Setpromotions(AIndex : Integer; const AValue : TTestOrderTypepromotionsArray);
 
 begin
   If (Fpromotions=AValue) then exit;
@@ -13062,7 +13068,7 @@ end;
 
 
 
-Procedure TTestOrder.SetshippingCost(AIndex : Integer; const AValue : TPrice); 
+Procedure TTestOrder.SetshippingCost(AIndex : Integer; const AValue : TPrice);
 
 begin
   If (FshippingCost=AValue) then exit;
@@ -13072,7 +13078,7 @@ end;
 
 
 
-Procedure TTestOrder.SetshippingCostTax(AIndex : Integer; const AValue : TPrice); 
+Procedure TTestOrder.SetshippingCostTax(AIndex : Integer; const AValue : TPrice);
 
 begin
   If (FshippingCostTax=AValue) then exit;
@@ -13082,7 +13088,7 @@ end;
 
 
 
-Procedure TTestOrder.SetshippingOption(AIndex : Integer; const AValue : String); 
+Procedure TTestOrder.SetshippingOption(AIndex : Integer; const AValue : String);
 
 begin
   If (FshippingOption=AValue) then exit;
@@ -13093,7 +13099,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTestOrder.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTestOrder.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -13113,7 +13119,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTestOrderCustomer.Setemail(AIndex : Integer; const AValue : String); 
+Procedure TTestOrderCustomer.Setemail(AIndex : Integer; const AValue : String);
 
 begin
   If (Femail=AValue) then exit;
@@ -13123,7 +13129,7 @@ end;
 
 
 
-Procedure TTestOrderCustomer.SetexplicitMarketingPreference(AIndex : Integer; const AValue : boolean); 
+Procedure TTestOrderCustomer.SetexplicitMarketingPreference(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FexplicitMarketingPreference=AValue) then exit;
@@ -13133,7 +13139,7 @@ end;
 
 
 
-Procedure TTestOrderCustomer.SetfullName(AIndex : Integer; const AValue : String); 
+Procedure TTestOrderCustomer.SetfullName(AIndex : Integer; const AValue : String);
 
 begin
   If (FfullName=AValue) then exit;
@@ -13150,7 +13156,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTestOrderLineItem.Setproduct(AIndex : Integer; const AValue : TTestOrderLineItemProduct); 
+Procedure TTestOrderLineItem.Setproduct(AIndex : Integer; const AValue : TTestOrderLineItemProduct);
 
 begin
   If (Fproduct=AValue) then exit;
@@ -13160,7 +13166,7 @@ end;
 
 
 
-Procedure TTestOrderLineItem.SetquantityOrdered(AIndex : Integer; const AValue : integer); 
+Procedure TTestOrderLineItem.SetquantityOrdered(AIndex : Integer; const AValue : integer);
 
 begin
   If (FquantityOrdered=AValue) then exit;
@@ -13170,7 +13176,7 @@ end;
 
 
 
-Procedure TTestOrderLineItem.SetreturnInfo(AIndex : Integer; const AValue : TOrderLineItemReturnInfo); 
+Procedure TTestOrderLineItem.SetreturnInfo(AIndex : Integer; const AValue : TOrderLineItemReturnInfo);
 
 begin
   If (FreturnInfo=AValue) then exit;
@@ -13180,7 +13186,7 @@ end;
 
 
 
-Procedure TTestOrderLineItem.SetshippingDetails(AIndex : Integer; const AValue : TOrderLineItemShippingDetails); 
+Procedure TTestOrderLineItem.SetshippingDetails(AIndex : Integer; const AValue : TOrderLineItemShippingDetails);
 
 begin
   If (FshippingDetails=AValue) then exit;
@@ -13190,7 +13196,7 @@ end;
 
 
 
-Procedure TTestOrderLineItem.SetunitTax(AIndex : Integer; const AValue : TPrice); 
+Procedure TTestOrderLineItem.SetunitTax(AIndex : Integer; const AValue : TPrice);
 
 begin
   If (FunitTax=AValue) then exit;
@@ -13207,7 +13213,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTestOrderLineItemProduct.Setbrand(AIndex : Integer; const AValue : String); 
+Procedure TTestOrderLineItemProduct.Setbrand(AIndex : Integer; const AValue : String);
 
 begin
   If (Fbrand=AValue) then exit;
@@ -13217,7 +13223,7 @@ end;
 
 
 
-Procedure TTestOrderLineItemProduct.Setchannel(AIndex : Integer; const AValue : String); 
+Procedure TTestOrderLineItemProduct.Setchannel(AIndex : Integer; const AValue : String);
 
 begin
   If (Fchannel=AValue) then exit;
@@ -13227,7 +13233,7 @@ end;
 
 
 
-Procedure TTestOrderLineItemProduct.Setcondition(AIndex : Integer; const AValue : String); 
+Procedure TTestOrderLineItemProduct.Setcondition(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcondition=AValue) then exit;
@@ -13237,7 +13243,7 @@ end;
 
 
 
-Procedure TTestOrderLineItemProduct.SetcontentLanguage(AIndex : Integer; const AValue : String); 
+Procedure TTestOrderLineItemProduct.SetcontentLanguage(AIndex : Integer; const AValue : String);
 
 begin
   If (FcontentLanguage=AValue) then exit;
@@ -13247,7 +13253,7 @@ end;
 
 
 
-Procedure TTestOrderLineItemProduct.Setgtin(AIndex : Integer; const AValue : String); 
+Procedure TTestOrderLineItemProduct.Setgtin(AIndex : Integer; const AValue : String);
 
 begin
   If (Fgtin=AValue) then exit;
@@ -13257,7 +13263,7 @@ end;
 
 
 
-Procedure TTestOrderLineItemProduct.SetimageLink(AIndex : Integer; const AValue : String); 
+Procedure TTestOrderLineItemProduct.SetimageLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FimageLink=AValue) then exit;
@@ -13267,7 +13273,7 @@ end;
 
 
 
-Procedure TTestOrderLineItemProduct.SetitemGroupId(AIndex : Integer; const AValue : String); 
+Procedure TTestOrderLineItemProduct.SetitemGroupId(AIndex : Integer; const AValue : String);
 
 begin
   If (FitemGroupId=AValue) then exit;
@@ -13277,7 +13283,7 @@ end;
 
 
 
-Procedure TTestOrderLineItemProduct.Setmpn(AIndex : Integer; const AValue : String); 
+Procedure TTestOrderLineItemProduct.Setmpn(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmpn=AValue) then exit;
@@ -13287,7 +13293,7 @@ end;
 
 
 
-Procedure TTestOrderLineItemProduct.SetofferId(AIndex : Integer; const AValue : String); 
+Procedure TTestOrderLineItemProduct.SetofferId(AIndex : Integer; const AValue : String);
 
 begin
   If (FofferId=AValue) then exit;
@@ -13297,7 +13303,7 @@ end;
 
 
 
-Procedure TTestOrderLineItemProduct.Setprice(AIndex : Integer; const AValue : TPrice); 
+Procedure TTestOrderLineItemProduct.Setprice(AIndex : Integer; const AValue : TPrice);
 
 begin
   If (Fprice=AValue) then exit;
@@ -13307,7 +13313,7 @@ end;
 
 
 
-Procedure TTestOrderLineItemProduct.SettargetCountry(AIndex : Integer; const AValue : String); 
+Procedure TTestOrderLineItemProduct.SettargetCountry(AIndex : Integer; const AValue : String);
 
 begin
   If (FtargetCountry=AValue) then exit;
@@ -13317,7 +13323,7 @@ end;
 
 
 
-Procedure TTestOrderLineItemProduct.Settitle(AIndex : Integer; const AValue : String); 
+Procedure TTestOrderLineItemProduct.Settitle(AIndex : Integer; const AValue : String);
 
 begin
   If (Ftitle=AValue) then exit;
@@ -13327,7 +13333,7 @@ end;
 
 
 
-Procedure TTestOrderLineItemProduct.SetvariantAttributes(AIndex : Integer; const AValue : TTestOrderLineItemProductTypevariantAttributesArray); 
+Procedure TTestOrderLineItemProduct.SetvariantAttributes(AIndex : Integer; const AValue : TTestOrderLineItemProductTypevariantAttributesArray);
 
 begin
   If (FvariantAttributes=AValue) then exit;
@@ -13338,7 +13344,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTestOrderLineItemProduct.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTestOrderLineItemProduct.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -13357,7 +13363,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTestOrderPaymentMethod.SetexpirationMonth(AIndex : Integer; const AValue : integer); 
+Procedure TTestOrderPaymentMethod.SetexpirationMonth(AIndex : Integer; const AValue : integer);
 
 begin
   If (FexpirationMonth=AValue) then exit;
@@ -13367,7 +13373,7 @@ end;
 
 
 
-Procedure TTestOrderPaymentMethod.SetexpirationYear(AIndex : Integer; const AValue : integer); 
+Procedure TTestOrderPaymentMethod.SetexpirationYear(AIndex : Integer; const AValue : integer);
 
 begin
   If (FexpirationYear=AValue) then exit;
@@ -13377,7 +13383,7 @@ end;
 
 
 
-Procedure TTestOrderPaymentMethod.SetlastFourDigits(AIndex : Integer; const AValue : String); 
+Procedure TTestOrderPaymentMethod.SetlastFourDigits(AIndex : Integer; const AValue : String);
 
 begin
   If (FlastFourDigits=AValue) then exit;
@@ -13387,7 +13393,7 @@ end;
 
 
 
-Procedure TTestOrderPaymentMethod.SetpredefinedBillingAddress(AIndex : Integer; const AValue : String); 
+Procedure TTestOrderPaymentMethod.SetpredefinedBillingAddress(AIndex : Integer; const AValue : String);
 
 begin
   If (FpredefinedBillingAddress=AValue) then exit;
@@ -13397,7 +13403,7 @@ end;
 
 
 
-Procedure TTestOrderPaymentMethod.Set_type(AIndex : Integer; const AValue : String); 
+Procedure TTestOrderPaymentMethod.Set_type(AIndex : Integer; const AValue : String);
 
 begin
   If (F_type=AValue) then exit;
@@ -13425,7 +13431,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TWeight.Set_unit(AIndex : Integer; const AValue : String); 
+Procedure TWeight.Set_unit(AIndex : Integer; const AValue : String);
 
 begin
   If (F_unit=AValue) then exit;
@@ -13435,7 +13441,7 @@ end;
 
 
 
-Procedure TWeight.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TWeight.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -14932,7 +14938,7 @@ begin
   SetLength(Result,1);
   Result[0].Name:='https://www.googleapis.com/auth/content';
   Result[0].Description:='Manage your product listings and accounts for Google Shopping';
-  
+
 end;
 
 Class Function TContentAPI.APINeedsAuth : Boolean;

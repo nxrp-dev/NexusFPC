@@ -13,7 +13,9 @@
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 }
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fpwavformat;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
@@ -25,7 +27,7 @@ const
   AUDIO_CHUNK_ID_fmt  = 'fmt ';
   AUDIO_CHUNK_ID_data = 'data';
   AUDIO_FORMAT_PCM = 1;
-  
+
   { WAVE form wFormatTag IDs }
   WAVE_FORMAT_UNKNOWN                    = $0000; { Microsoft Corporation }
   WAVE_FORMAT_PCM                        = $0001; { Microsoft Corporation }
@@ -296,7 +298,7 @@ const
   WAVE_FORMAT_EXTENSIBLE                 = $FFFE; { Microsoft }
 
 type
-  TChunkID = array [0..3] of char;
+  TChunkID = array [0..3] of AnsiChar;
   TChunkHeader = packed record
     ID: TChunkID;
     Size: UInt32;

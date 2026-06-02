@@ -3,7 +3,7 @@
     Copyright (c) 2012 by the Free Pascal development team
 
     SQLDB-based index database
-    
+
     See the file COPYING.FPC, included in this distribution,
     for details about the copyright.
 
@@ -12,14 +12,21 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit SQLDBIndexDB;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.SysUtils, FpIndexer.Indexer, Data.Sqldb, Data.Db;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   SysUtils, fpIndexer, sqldb, db;
+{$ENDIF FPC_DOTTEDUNITS}
 
 // SQLDB Specific, cache query objects
 type

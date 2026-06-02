@@ -13,7 +13,9 @@
  **********************************************************************}
 
 {$PACKRECORDS 2}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit xbios;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
@@ -294,6 +296,8 @@ const
 
     NUMCOLS     = 7;
 
+    VM_INQUIRE  = -1;
+
 {* Values returned by VgetMonitor() *}
     MON_MONO        = 0;
     MON_COLOR       = 1;
@@ -301,7 +305,6 @@ const
     MON_TV          = 3;
 
 {* VsetSync flags - 0=internal, 1=external *}
-
     VID_CLOCK   = 1;
     VID_VSYNC   = 2;
     VID_HSYNC   = 4;
@@ -685,8 +688,8 @@ function xbios_Vsetmode(modecode: smallint): smallint; syscall 14 88;
 function xbios_mon_type: smallint; syscall 14 89;
 procedure xbios_VsetSync(flag: smallint); syscall 14 90;
 function xbios_VgetSize(mode: smallint): LongInt; syscall 14 91;
-procedure xbios_VsetRGB(index, count: smallint; xrgbArray: Array of TRGB); syscall 14 93;
-procedure xbios_VgetRGB(index, count: smallint; var xrgbArray: Array of TRGB); syscall 14 94;
+procedure xbios_VsetRGB(index, count: smallint; xrgbArray: PRGB); syscall 14 93;
+procedure xbios_VgetRGB(index, count: smallint; xrgbArray: PRGB); syscall 14 94;
 function xbios_Validmode(mode: smallint): smallint; syscall 14 95;
 procedure xbios_Dsp_DoBlock(data_in: Pointer; size_in: LongInt; data_out: Pointer; size_out: LongInt); syscall 14 96;
 procedure xbios_Dsp_BlkHandShake(data_in: Pointer; size_in: LongInt; data_out: Pointer; size_out: LongInt); syscall 14 97;
@@ -700,10 +703,10 @@ function xbios_Dsp_Lock: smallint; syscall 14 104;
 procedure xbios_Dsp_Unlock; syscall 14 105;
 procedure xbios_Dsp_Available(var xavailable, yavailable: LongInt); syscall 14 106;
 function xbios_Dsp_Reserve(xreserve, yreserve: LongInt): smallint; syscall 14 107;
-function xbios_Dsp_LoadProg(filename: PChar; ability: smallint; buffer: Pointer): smallint; syscall 14 108;
+function xbios_Dsp_LoadProg(filename: PAnsiChar; ability: smallint; buffer: Pointer): smallint; syscall 14 108;
 procedure xbios_Dsp_ExecProg(codeptr: Pointer; codesize: LongInt; ability: smallint); syscall 14 109;
 procedure xbios_Dsp_ExecBoot(codeptr: Pointer; codesize: LongInt; ability: smallint); syscall 14 110;
-function xbios_Dsp_LodToBinary(filename: PChar; codeptr: Pointer): LongInt; syscall 14 111;
+function xbios_Dsp_LodToBinary(filename: PAnsiChar; codeptr: Pointer): LongInt; syscall 14 111;
 procedure xbios_Dsp_TriggerHC(vector: smallint); syscall 14 112;
 function xbios_Dsp_RequestUniqueAbility: smallint; syscall 14 113;
 function xbios_Dsp_GetProgAbility: smallint; syscall 14 114;

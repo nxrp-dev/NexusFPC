@@ -1,12 +1,12 @@
 {
   Copyright 1999-2005 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
-  
+
   You may not use this file except in compliance with the License.
   obtain a copy of the License at
-  
+
     http://www.imagemagick.org/script/license.php
-  
+
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,7 +24,7 @@ type
   PixelWand = record
     id: culong;
 
-    name: array[1..MaxTextExtent] of char;
+    name: array[1..MaxTextExtent] of AnsiChar;
 
     exception: ExceptionInfo;
 
@@ -36,14 +36,14 @@ type
 
     signature: culong;
   end;
-  
-  PPixelWand = ^PixelWand;
-  
-  PPPixelWand = ^PPixelWand;
-  
 
-function PixelGetException(const wand: PPixelWand; severity: PExceptionType): PChar; cdecl; external WandExport;
-function PixelGetColorAsString(const wand: PPixelWand): PChar; cdecl; external WandExport;
+  PPixelWand = ^PixelWand;
+
+  PPPixelWand = ^PPixelWand;
+
+
+function PixelGetException(const wand: PPixelWand; severity: PExceptionType): PAnsiChar; cdecl; external WandExport;
+function PixelGetColorAsString(const wand: PPixelWand): PAnsiChar; cdecl; external WandExport;
 
 function PixelGetAlpha(const wand: PPixelWand): Double; cdecl; external WandExport;
 function PixelGetBlack(const wand: PPixelWand): Double; cdecl; external WandExport;
@@ -61,7 +61,7 @@ function IsPixelWand(const wand: PPixelWand): MagickBooleanType; cdecl; external
 function IsPixelWandSimilar(p: PPixelWand; q: PPixelWand;
  const fuzz: double): MagickBooleanType; cdecl; external WandExport;
 function PixelClearException(wand: PPixelWand): MagickBooleanType; cdecl; external WandExport;
-function PixelSetColor(wand: PPixelWand; const color: PChar): MagickBooleanType; cdecl; external WandExport;
+function PixelSetColor(wand: PPixelWand; const color: PAnsiChar): MagickBooleanType; cdecl; external WandExport;
 
 function DestroyPixelWand(wand: PPixelWand): PPixelWand; cdecl; external WandExport;
 function DestroyPixelWands(wand: PPPixelWand;

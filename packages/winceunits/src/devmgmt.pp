@@ -33,13 +33,19 @@
 //  Microsoft Windows Mobile 6.0 for PocketPC SDK.
 //
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit devmgmt;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$CALLING cdecl}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses WinApi.Windows, WinceAPI.Aygshell;
+{$ELSE FPC_DOTTEDUNITS}
 uses Windows, aygshell;
+{$ENDIF FPC_DOTTEDUNITS}
 
 // - cfgmgrapi.h
 
@@ -64,7 +70,7 @@ function DMProcessConfigXML(pszWXMLin:LPCWSTR; dwFlags:DWORD; ppszwXMLout:PLPWST
 
 // - devmgmt.h
 
-function QueryPolicy(dwPolicyId:DWORD; pdwPolicyValue:PDWORD):HRESULT; external UserDLLAyg name 'QueryPolicy';  
+function QueryPolicy(dwPolicyId:DWORD; pdwPolicyValue:PDWORD):HRESULT; external UserDLLAyg name 'QueryPolicy';
 
 // - end of devmgmt.h
 

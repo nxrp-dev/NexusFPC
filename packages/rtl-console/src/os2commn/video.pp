@@ -13,7 +13,9 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit Video;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
@@ -21,8 +23,13 @@ interface
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  OS2Api.doscalls, OS2Api.viocalls, System.Console.Mouse, System.Unicode.Graphemebreakproperty, System.Unicode.Eastasianwidth, System.CharSet;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   DosCalls, VioCalls, Mouse, graphemebreakproperty, eastasianwidth, charset;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$i video.inc}
 
@@ -469,7 +476,7 @@ begin
     rType := 2;
     end;
   VioGetState (OrigHighBit, 0);
-  { Register the curent video mode in reserved slot in System Modes}
+  { Register the current video mode in reserved slot in System Modes}
   with OrigVioMode do
     begin
     {Assume we have at least 16 colours available in "colour" modes}

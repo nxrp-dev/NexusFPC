@@ -13,13 +13,19 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit resdatastream;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$MODE OBJFPC}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.Classes, System.SysUtils, System.Resources.Resource;
+{$ELSE FPC_DOTTEDUNITS}
 uses Classes, SysUtils, resource;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
 
@@ -50,9 +56,9 @@ type
     constructor Create(aStream : TStream; aResource : TAbstractResource; aSize : int64); override;
     function Read(var Buffer; Count: Longint): Longint; override;
   end;
-  
+
   TCachedStreamClass = class of TCachedDataStream;
-  
+
 
   TUnderlyingStreamType = (usCached, usMemory, usCustom);
 
@@ -81,7 +87,7 @@ type
     function Seek(const Offset: Int64; Origin: TSeekOrigin): Int64; override;
     property Cached : boolean read GetCached write SetCached;
   end;
-  
+
 implementation
 
 { TCachedDataStream }

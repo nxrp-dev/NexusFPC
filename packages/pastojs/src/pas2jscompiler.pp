@@ -16,7 +16,9 @@ Compiler-ToDos:
   -Fa<x>[,y] (for a program) load units <x> and [y] before uses is parsed
   Add Windows macros, see InitMacros.
 }
+{$IFNDEF FPC_DOTTEDUNITS}
 unit Pas2jsCompiler;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
@@ -28,6 +30,21 @@ unit Pas2jsCompiler;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  {$IFDEF Pas2js}
+  JS,
+  {$ELSE}
+  System.RtlConsts,
+  {$ENDIF}
+  // !! No NdsApi.Filesystem units here.
+  System.Classes, System.SysUtils, System.Contnrs,
+  Js.Base, Js.Tree, Js.Writer, Js.SrcMap, FpJson.Data,
+  Pascal.Scanner, Pascal.Parser, Pascal.Tree, Pascal.Resolver, Pascal.ResolveEval, Pascal.UseAnalyzer,
+  Pas2Js.Utils,
+  Pas2Js.Resources.Strings, Pas2Js.Resources, Pas2Js.Resources.Html, Pas2Js.Resources.Js,
+  Pas2Js.Compiler.Transpiler, Pas2Js.SrcMap, Pas2Js.Logger, Pas2Js.Files.Fs, Pas2Js.Parser, Pas2Js.UseAnalyzer;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   {$IFDEF Pas2js}
   JS,
@@ -41,9 +58,10 @@ uses
   Pas2JSUtils,
   pas2jsresstrfile, pas2jsresources, pas2jshtmlresources, pas2jsjsresources,
   FPPas2Js, FPPJsSrcMap, Pas2jsLogger, Pas2jsFS, Pas2jsPParser, Pas2jsUseAnalyzer;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
-  VersionMajor = 2;
+  VersionMajor = 3;
   VersionMinor = 3;
   VersionRelease = 1;
   VersionExtra = '';
@@ -98,6 +116,8 @@ const
   nRTLIdentifierChanged = 144; sRTLIdentifierChanged = 'RTL identifier %s changed from %s to %s';
   nSkipNoConstResourcestring = 145; sSkipNoConstResourcestring = 'Resource string %s is not a constant, not adding to resourcestrings file.';
   nUnknownOptimizationOption = 146; sUnknownOptimizationOption = 'unknown -Oo option %s';
+  nSubtargetConfigNotFound = 147; sSubtargetConfigNotFound = 'Subtarget %s config file not found';
+
   // Note: error numbers 201+ are used by Pas2jsFileCache
 
 //------------------------------------------------------------------------------
@@ -134,13 +154,13 @@ type
     coWriteDebugLog,
     coWriteMsgToStdErr,
     coPrecompile, // create precompile file
+    coCheckOnly, // Do not analyze or create code. Only parse and resolve.
     // optimizations
     coEnumValuesAsNumbers, // -O1
     coKeepNotUsedPrivates, // -O-
     coKeepNotUsedDeclarationsWPO, // -O-
     coShortRefGlobals, // -O2
     coObfuscateLocalIdentifiers, // -O2
-    coTruncateIntegersOnOverflow,
     // source map
     coSourceMapCreate,
     coSourceMapInclude,
@@ -165,7 +185,7 @@ const
   DefaultResourceMode = rmHTML;
 
   coShowAll = [coShowErrors..coShowDebug];
-  coAllOptimizations = [coEnumValuesAsNumbers..coTruncateIntegersOnOverflow];
+  coAllOptimizations = [coEnumValuesAsNumbers..coObfuscateLocalIdentifiers];
   coO0 = [coKeepNotUsedPrivates,coKeepNotUsedDeclarationsWPO];
   coO1 = [coEnumValuesAsNumbers];
   coO2 = coO1+[coShortRefGlobals
@@ -199,12 +219,12 @@ const
     'Write pas2jsdebug.log',
     'Write messages to StdErr',
     'Create precompiled units',
+    'Skip analyze and convert stages.',
     'Enum values as numbers',
     'Keep not used private declarations',
     'Keep not used declarations (WPO)',
     'Create short local variables for globals',
     'Obfuscate local identifiers',
-    'Truncate integers in case of overflow',
     'Create source map',
     'Include Pascal sources in source map',
     'Do not shorten filenames in source map',
@@ -264,7 +284,7 @@ type
     function IndexOf(const aName: string): integer;
     procedure Delete(Index: integer);
     function FindMacro(const aName: string): TPas2jsMacro;
-    procedure Substitute(var s: string; Sender: TObject = nil; Lvl: integer = 0);
+    procedure Substitute(var s: string; Sender: TObject = nil; Lvl: integer = 0; SkipUnknown : boolean = false);
     property Macros[Index: integer]: TPas2jsMacro read GetMacros; default;
     property MaxLevel: integer read FMaxLevel write FMaxLevel;
   end;
@@ -471,12 +491,14 @@ type
   Protected
     // These must be overridden in descendents
     function FindDefaultConfig: String; virtual; abstract;
+    function FindSubtargetConfig(const aSubTtarget : string): String; virtual; abstract;
     function GetReader(aFileName: string): TSourceLineReader; virtual; abstract;
   Public
     constructor Create(aCompiler: TPas2jsCompiler); override;
     destructor Destroy; override;
     procedure LoadDefaultConfig;
     procedure LoadConfig(Const aFileName: String);virtual;
+    procedure LoadSubTargetConfig(Const aSubTarget: String);virtual;
     property Compiler:  TPas2jsCompiler Read FCompiler;
   end;
 
@@ -591,6 +613,7 @@ type
     // params, cfg files
     FCurParam: string;
     FResourceOutputFile: String;
+    FSubTarget: String;
     procedure LoadConfig(CfgFilename: string);
     procedure ReadEnvironment;
     procedure ReadParam(Param: string; Quick, FromCmdLine: boolean);
@@ -599,6 +622,7 @@ type
     procedure ReadCodeGenerationFlags(Param: String; p: integer);
     procedure ReadSyntaxFlags(Param: String; p: integer);
     procedure ReadVerbosityFlags(Param: String; p: integer);
+    procedure SetSubTarget(AValue: String);
   protected
     // Create various other classes. Virtual so they can be overridden in descendents
     function CreateImportList : TJSSourceElements;
@@ -617,16 +641,16 @@ type
     procedure WriteHelpLine(S: String);
     function LoadFile(Filename: string; Binary: boolean = false): TPas2jsFile;
     // Override these for PCU format
-    procedure HandleLinkLibStatement(Sender: TObject; const aLibName, aLibAlias, aLibOptions: String; var Handled: boolean);
+    procedure HandleLinkLibStatement(Sender: TObject; const aLibName, aLibAlias, aLibOptions: TPasScannerString; var Handled: boolean);
     function CreateCompilerFile(const PasFileName, PCUFilename: String): TPas2jsCompilerFile; virtual;
     // Command-line option handling
     procedure HandleOptionPCUFormat(aValue: String); virtual;
-    function HandleOptionPaths(C: Char; aValue: String; FromCmdLine: Boolean): Boolean; virtual;
-    function HandleOptionJ(C: Char; aValue: String; Quick,FromCmdLine: Boolean): Boolean; virtual;
+    function HandleOptionPaths(C: AnsiChar; aValue: String; FromCmdLine: Boolean): Boolean; virtual;
+    function HandleOptionJ(C: AnsiChar; aValue: String; Quick,FromCmdLine: Boolean): Boolean; virtual;
     function HandleOptionM(aValue: String; Quick: Boolean): Boolean; virtual;
     procedure HandleOptionConfigFile(aPos: Integer; const aFileName: string); virtual;
     procedure HandleOptionInfo(aValue: string);
-    function HandleOptionOptimization(C: Char; aValue: String): Boolean;
+    function HandleOptionOptimization(C: AnsiChar; aValue: String): Boolean;
     // DoWriteJSFile: return false to use the default write function.
     function DoWriteJSFile(const DestFilename, MapFilename: String; aWriter: TPas2JSMapper): Boolean; virtual;
     procedure Compile(StartTime: TDateTime);
@@ -725,6 +749,7 @@ type
     property ShowUsedTools: boolean read GetShowUsedTools write SetShowUsedTools;
     property SkipDefaultConfig: Boolean read GetSkipDefaultConfig write SetSkipDefaultConfig;
     property TargetPlatform: TPasToJsPlatform read GetTargetPlatform write SetTargetPlatform;
+    property SubTarget : String Read FSubTarget Write SetSubTarget;
     property TargetProcessor: TPasToJsProcessor read GetTargetProcessor write SetTargetProcessor;
     property WPOAnalyzer: TPas2JSAnalyzer read FWPOAnalyzer; // Whole Program Optimization
     property WriteDebugLog: boolean read GetWriteDebugLog write SetWriteDebugLog;
@@ -905,8 +930,7 @@ begin
     Result:=nil;
 end;
 
-procedure TPas2jsMacroEngine.Substitute(var s: string; Sender: TObject;
-  Lvl: integer);
+procedure TPas2jsMacroEngine.Substitute(var s: string; Sender: TObject; Lvl: integer; SkipUnknown: boolean);
 // Rules:
 //   $macro or $macro$
 // if Macro.OnSubstitute is set then optional brackets are allowed: $macro(params)
@@ -928,37 +952,44 @@ begin
       MacroName:=copy(s,StartP+1,p-StartP-1);
       Macro:=FindMacro(MacroName);
       if Macro=nil then
-        raise EPas2jsMacro.Create('macro not found "'+MacroName+'" in "'+s+'"');
-      NewValue:='';
-      if Macro.CanHaveParams and (p<=length(s)) and (s[p]='(') then
       begin
-        // read NewValue
-        inc(p);
-        ParamStartP:=p;
-        BracketLvl:=1;
-        repeat
-          if p>length(s) then
-            raise EPas2jsMacro.Create('missing closing bracket ) in "'+s+'"');
-          case s[p] of
-          '(': inc(BracketLvl);
-          ')':
-            if BracketLvl=1 then
-            begin
-              NewValue:=copy(s,ParamStartP,p-ParamStartP);
-              break;
-            end else begin
-              dec(BracketLvl);
+        if not SkipUnknown then
+          raise EPas2jsMacro.Create('macro not found "'+MacroName+'" in "'+s+'"')
+        else
+          NewValue:='$'+MacroName;
+      end
+      else
+      begin
+        if Macro.CanHaveParams and (p<=length(s)) and (s[p]='(') then
+        begin
+          // read NewValue
+          inc(p);
+          ParamStartP:=p;
+          BracketLvl:=1;
+          repeat
+            if p>length(s) then
+              raise EPas2jsMacro.Create('missing closing bracket ) in "'+s+'"');
+            case s[p] of
+            '(': inc(BracketLvl);
+            ')':
+              if BracketLvl=1 then
+              begin
+                NewValue:=copy(s,ParamStartP,p-ParamStartP);
+                break;
+              end else begin
+                dec(BracketLvl);
+              end;
             end;
-          end;
-        until false;
-      end else if (p<=length(s)) and (s[p]='$') then
-        inc(p);
-      if Assigned(Macro.OnSubstitute) then
-      begin
-        if not Macro.OnSubstitute(Sender,NewValue,Lvl+1) then
-          raise EPas2jsMacro.Create('macro "'+MacroName+'" failed in "'+s+'"');
-      end else
-        NewValue:=Macro.Value;
+          until false;
+        end else if (p<=length(s)) and (s[p]='$') then
+          inc(p);
+        if Assigned(Macro) and Assigned(Macro.OnSubstitute) then
+        begin
+          if not Macro.OnSubstitute(Sender,NewValue,Lvl+1) then
+            raise EPas2jsMacro.Create('macro "'+MacroName+'" failed in "'+s+'"');
+        end else
+          NewValue:=Macro.Value;
+      end;
       s:=LeftStr(s,StartP-1)+NewValue+copy(s,p,length(s));
       p:=StartP;
     end;
@@ -1061,32 +1092,27 @@ begin
   Result:=DefaultPasToJSOptions;
 
   if coUseStrict in Compiler.Options then
-    Include(Result,fppas2js.coUseStrict)
+    Include(Result,{$IFDEF FPC_DOTTEDUNITS}Pas2Js.Compiler.Transpiler{$ELSE}fppas2js{$ENDIF}.coUseStrict)
   else
-    Exclude(Result,fppas2js.coUseStrict);
+    Exclude(Result,{$IFDEF FPC_DOTTEDUNITS}Pas2Js.Compiler.Transpiler{$ELSE}fppas2js{$ENDIF}.coUseStrict);
 
   if coEnumValuesAsNumbers in Compiler.Options then
-    Include(Result,fppas2js.coEnumNumbers);
+    Include(Result,{$IFDEF FPC_DOTTEDUNITS}Pas2Js.Compiler.Transpiler{$ELSE}fppas2js{$ENDIF}.coEnumNumbers);
   if (coShortRefGlobals in Compiler.Options) or IsUnitReadFromPCU then
-    Include(Result,fppas2js.coShortRefGlobals);
+    Include(Result,{$IFDEF FPC_DOTTEDUNITS}Pas2Js.Compiler.Transpiler{$ELSE}fppas2js{$ENDIF}.coShortRefGlobals);
   if coObfuscateLocalIdentifiers in Compiler.Options then
-    Include(Result,fppas2js.coObfuscateLocalIdentifiers);
-
-  if coTruncateIntegersOnOverflow in Compiler.Options then
-    Include(Result,fppas2js.coTruncateIntegersOnOverflow)
-  else
-    Exclude(Result,fppas2js.coTruncateIntegersOnOverflow);
+    Include(Result,{$IFDEF FPC_DOTTEDUNITS}Pas2Js.Compiler.Transpiler{$ELSE}fppas2js{$ENDIF}.coObfuscateLocalIdentifiers);
 
   if coLowerCase in Compiler.Options then
-    Include(Result,fppas2js.coLowerCase)
+    Include(Result,{$IFDEF FPC_DOTTEDUNITS}Pas2Js.Compiler.Transpiler{$ELSE}fppas2js{$ENDIF}.coLowerCase)
   else
-    Exclude(Result,fppas2js.coLowerCase);
+    Exclude(Result,{$IFDEF FPC_DOTTEDUNITS}Pas2Js.Compiler.Transpiler{$ELSE}fppas2js{$ENDIF}.coLowerCase);
 
   case Compiler.RTLVersionCheck of
     rvcNone: ;
-    rvcMain: Include(Result,fppas2js.coRTLVersionCheckMain);
-    rvcSystem: Include(Result,fppas2js.coRTLVersionCheckSystem);
-    rvcUnit: Include(Result,fppas2js.coRTLVersionCheckUnit);
+    rvcMain: Include(Result,{$IFDEF FPC_DOTTEDUNITS}Pas2Js.Compiler.Transpiler{$ELSE}fppas2js{$ENDIF}.coRTLVersionCheckMain);
+    rvcSystem: Include(Result,{$IFDEF FPC_DOTTEDUNITS}Pas2Js.Compiler.Transpiler{$ELSE}fppas2js{$ENDIF}.coRTLVersionCheckSystem);
+    rvcUnit: Include(Result,{$IFDEF FPC_DOTTEDUNITS}Pas2Js.Compiler.Transpiler{$ELSE}fppas2js{$ENDIF}.coRTLVersionCheckUnit);
   end;
 end;
 
@@ -1950,6 +1976,21 @@ begin
     Compiler.Log.LogMsgIgnoreFilter(nEndOfReadingConfigFile,[QuoteStr(aFilename)]);
 end;
 
+procedure TPas2JSConfigSupport.LoadSubTargetConfig(const aSubTarget: String);
+var
+  aFileName: string;
+
+begin
+  aFileName:=FindSubTargetConfig(aSubTarget);
+  if aFileName='' then
+    begin
+    Compiler.Log.Log(mtFatal,Format(sSubtargetConfigNotFound,[aSubtarget]),nSubtargetConfigNotFound);
+    Compiler.Terminate(ExitCodeFileNotFound);
+    end
+  else
+    LoadConfig(aFilename);
+end;
+
 procedure TPas2JSConfigSupport.LoadDefaultConfig;
 var
   aFileName: string;
@@ -2048,9 +2089,13 @@ begin
     FMainFile.ReadUnit;
     ProcessQueue;
 
+    if coCheckOnly in Options then
+      exit;
+
     // whole program optimization
     if MainFile.PasModule is TPasProgram then
       OptimizeProgram(MainFile);
+
 
     // check what files need building
     Checked:=CreateSetOfCompilerFiles(kcFilename);
@@ -2400,7 +2445,7 @@ begin
   end;
 end;
 
-procedure TPas2jsCompiler.HandleLinkLibStatement(Sender: TObject; const aLibName, aLibAlias, aLibOptions: String;
+procedure TPas2jsCompiler.HandleLinkLibStatement(Sender: TObject; const aLibName, aLibAlias, aLibOptions: TPasScannerString;
   var Handled: boolean);
 Var
   Imp : TJSImportStatement;
@@ -2410,6 +2455,7 @@ Var
   LibModuleName : String;
 begin
   Handled:=true;
+  if Sender=nil then ;
   if aLibOptions<>'' then
     ParamFatal('[20210919141030] linklib options not supported');
 
@@ -2489,7 +2535,7 @@ begin
     {$ENDIF}
     try
       WithUTF8BOM:=(Log.Encoding='') or (Log.Encoding='utf8');
-      aFileWriter.SaveJSToStream(WithUTF8BOM,ExtractFilename(MapFilename),buf);
+      aFileWriter.SaveJSToStream(WithUTF8BOM, TJSWriterString(ExtractFilename(MapFilename)), buf);
       {$IFDEF Pas2js}
       {$ELSE}
       buf.Position:=0;
@@ -3013,8 +3059,8 @@ begin
         Exc:=Exception(TObject(obj));
         {$ifdef NodeJS}
         {AllowWriteln}
-        if Exc.NodeJSError<>nil then
-          writeln(Exc.NodeJSError.stack);
+        if Exc.JSError<>nil then
+          writeln(Exc.JSError.stack);
         {AllowWriteln-}
         {$endif}
         Log.Log(mtFatal,Msg+': ('+Exc.ClassName+') '+Exc.Message);
@@ -3363,7 +3409,7 @@ begin
   r(mtInfo,nRTLIdentifierChanged,sRTLIdentifierChanged);
   r(mtNote,nSkipNoConstResourcestring,sSkipNoConstResourcestring);
   r(mtWarning,nUnknownOptimizationOption,sUnknownOptimizationOption);
-  Pas2jsPParser.RegisterMessages(Log);
+  {$IFDEF FPC_DOTTEDUNITS}Pas2js.Parser{$ELSE}Pas2jsPParser{$ENDIF}.RegisterMessages(Log);
 end;
 
 procedure TPas2jsCompiler.LoadConfig(CfgFilename: string);
@@ -3407,7 +3453,7 @@ begin
   ParamFatal('No support in this compiler for precompiled format '+aValue);
 end;
 
-function TPas2jsCompiler.HandleOptionPaths(C: Char; aValue: String;
+function TPas2jsCompiler.HandleOptionPaths(C: AnsiChar; aValue: String;
   FromCmdLine: Boolean): Boolean;
 Var
   ErrorMsg: String;
@@ -3424,7 +3470,7 @@ begin
   end;
 end;
 
-function TPas2jsCompiler.HandleOptionJ(C: Char; aValue: String;
+function TPas2jsCompiler.HandleOptionJ(C: AnsiChar; aValue: String;
   Quick, FromCmdLine: Boolean): Boolean;
 
 Var
@@ -3709,7 +3755,7 @@ Var
 
 Var
   P,L: integer;
-  C,c2: Char;
+  C,c2: AnsiChar;
   pr: TPasToJsProcessor;
   pl: TPasToJsPlatform;
   s: string;
@@ -3730,7 +3776,7 @@ begin
   begin
     C:=aValue[P];
     case C of
-    'D': // wite compiler date
+    'D': // write compiler date
       AppendInfo(GetCompiledDate);
     'V': // write short version
       AppendInfo(GetVersion(true));
@@ -3783,7 +3829,6 @@ begin
         Log.LogPlain('RemoveNotUsedPrivates');
         Log.LogPlain('RemoveNotUsedDeclarations');
         Log.LogPlain('ShortRefGlobals');
-        Log.LogPlain('TruncateIntegersOnOverflow');
       end;
     't':
       // write list of supported targets
@@ -3809,7 +3854,7 @@ begin
     Log.LogPlain(InfoMsg);
 end;
 
-function TPas2jsCompiler.HandleOptionOptimization(C: Char; aValue: String): Boolean;
+function TPas2jsCompiler.HandleOptionOptimization(C: AnsiChar; aValue: String): Boolean;
 Var
   Enable: Boolean;
 begin
@@ -3839,7 +3884,6 @@ begin
      'removenotuseddeclarations': SetOption(coKeepNotUsedDeclarationsWPO,not Enable);
      'shortrefglobals': SetOption(coShortRefGlobals,Enable);
      'obfuscatelocalidentifiers': SetOption(coObfuscateLocalIdentifiers,Enable);
-     'truncateintegersonoverflow': SetOption(coTruncateIntegersOnOverflow,Enable);
     else
       Log.LogMsgIgnoreFilter(nUnknownOptimizationOption,[QuoteStr(aValue)]);
     end;
@@ -3859,7 +3903,7 @@ procedure TPas2jsCompiler.ReadParam(Param: string; Quick, FromCmdLine: boolean);
 var
   EnabledFlags, DisabledFlags, Identifier, aValue: string;
   p, l, i: Integer;
-  c: Char;
+  c: AnsiChar;
   aProc: TPasToJsProcessor;
   aPlatform: TPasToJsPlatform;
 
@@ -3872,7 +3916,7 @@ begin
       Log.LogMsgIgnoreFilter(nHandlingOption,[QuoteStr(Param)]);
   if Param='' then exit;
   FCurParam:=Param;
-  ParamMacros.Substitute(Param,Self);
+  ParamMacros.Substitute(Param,Self,0,True);
   if Param='' then exit;
 
   if Quick and ((Param='-h') or (Param='-?') or (Param='--help')) then
@@ -4024,6 +4068,13 @@ begin
           else
             ReadSyntaxFlags(Param,p);
         end;
+      't': // subtarget
+        begin
+        if not FromCmdLine then
+          ParamFatal('subtarget -t parameter can only be passed as cmd line parameter');
+        inc(p);
+        SubTarget:=copy(Param,p,length(Param));
+        end;
       'T': // target platform
         begin
         inc(p);
@@ -4066,6 +4117,7 @@ begin
       if MainSrcFile<>'' then
         ParamFatal('Only one Pascal file is supported, but got "'+MainSrcFile+'" and "'+Param+'".');
       MainSrcFile:=ExpandFileName(Param);
+      Writeln('Info: MainSrcFile ',Param,' -> ',MainSrcFile);
     end;
   end;
 end;
@@ -4074,7 +4126,7 @@ procedure TPas2jsCompiler.ReadSingleLetterOptions(const Param: string;
   p: integer; const Allowed: string; out Enabled, Disabled: string);
 // e.g. 'B' 'lB' 'l-' 'l+B-'
 var
-  Letter: Char;
+  Letter: AnsiChar;
   i, l: Integer;
 begin
   l:=length(Param);
@@ -4112,12 +4164,13 @@ var
   Enabled, Disabled: string;
   i: Integer;
 begin
-  ReadSingleLetterOptions(Param,p,'orR',Enabled,Disabled);
+  ReadSingleLetterOptions(Param,p,'orRN',Enabled,Disabled);
   for i:=1 to length(Enabled) do begin
     case Enabled[i] of
     'o': Options:=Options+[coOverflowChecks];
     'r': Options:=Options+[coRangeChecks];
     'R': Options:=Options+[coObjectChecks];
+    'N': Options:=Options+[coCheckOnly];
     end;
   end;
   for i:=1 to length(Disabled) do begin
@@ -4125,6 +4178,7 @@ begin
     'o': Options:=Options-[coOverflowChecks];
     'r': Options:=Options-[coRangeChecks];
     'R': Options:=Options-[coObjectChecks];
+    'N': Options:=Options-[coCheckOnly];
     end;
   end;
 end;
@@ -4235,6 +4289,14 @@ begin
     'z': WriteMsgToStdErr:=false;
     end;
   end;
+end;
+
+procedure TPas2jsCompiler.SetSubTarget(AValue: String);
+begin
+  if FSubTarget=AValue then Exit;
+  FSubTarget:=AValue;
+  AddDefine('FPC_SUBTARGET',UPPERCASE(aValue));
+  AddDefine('FPC_SUBTARGET_'+UPPERCASE(aValue));
 end;
 
 function TPas2jsCompiler.CreateImportList: TJSSourceElements;
@@ -4567,7 +4629,11 @@ begin
   AddDefine('FPC_WIDESTRING_EQUAL_UNICODESTRING');
   AddDefine('STR_CONCAT_PROCS');
   AddDefine('UNICODE');
-
+  if SubTarget<>'' then
+    begin
+    AddDefine('FPC_SUBTARGET',SubTarget);
+    AddDefine('FPC_SUBTARGET_'+Uppercase(SubTarget));
+    end;
   FHasShownLogo:=false;
   FHasShownEncoding:=false;
   FFS.Reset;
@@ -4602,6 +4668,8 @@ begin
     // read default config
     if Assigned(ConfigSupport) and not SkipDefaultConfig then
       ConfigSupport.LoadDefaultConfig;
+    if Assigned(ConfigSupport) and (SubTarget<>'') then
+      ConfigSupport.LoadSubTargetConfig(SubTarget);
 
     // read env PAS2JS_OPTS
     ReadEnvironment;
@@ -4688,7 +4756,7 @@ begin
   begin
     case s[p] of
     'a'..'z','A'..'Z','0'..'9','_','-','.',',','"','''','`',
-    #128..high(char) :
+    #128..high(AnsiChar) :
       begin
       LastCharStart:=p;
       {$IFDEF FPC_HAS_CPSTRING}
@@ -4778,6 +4846,7 @@ begin
   w('    -iJ  : Write list of supported JavaScript identifiers -JoRTL-<x>');
   w('  -C<x>  : Code generation options. <x> is a combination of the following letters:');
   // -C3        Turn on ieee error checking for constants
+  w('    N    : Skip analysis and conversion. Only parse and resolve.');
   w('    o    : Overflow checking of integer operations');
   // -CO        Check for possible overflow of integer operations
   w('    r    : Range checking');
@@ -4851,7 +4920,6 @@ begin
   {$IFDEF EnableObfuscateIdentifiers}
   w('      -OoObfuscateLocalIdentifiers[-]: Use auto generated names for private and local Pascal identifiers. Default enabled in -O2');
   {$ENDIF}
-  w('      -OoTruncateIntegersOnOverflow [-]: Whether to truncate integers in case of overflow. Default is disabled');
   w('  -P<x>  : Set target processor. Case insensitive:');
   w('    -Pecmascript5: default');
   w('    -Pecmascript6');
@@ -4865,6 +4933,7 @@ begin
   w('  -SI<x>  : Set interface style to <x>');
   w('    -SIcom  : COM, reference counted interface (default)');
   w('    -SIcorba: CORBA interface');
+  w('  -t<x>  : Set subtarget (searches for pas2js-<subtarget>.cfg');
   w('  -T<x>  : Set target platform');
   w('    -Tbrowser: default');
   w('    -Tnodejs : add pas.run(), includes -Jc');
@@ -4906,7 +4975,7 @@ begin
   if FHasShownLogo then exit;
   FHasShownLogo:=true;
   WriteVersionLine;
-  Log.LogPlain('Copyright (c) 2022 Free Pascal team.');
+  Log.LogPlain('Copyright (c) 2025 Free Pascal team.');
   if coShowInfos in Options then
     WriteEncoding;
 end;
@@ -5082,7 +5151,6 @@ begin
   Log.LogPlain('  EnumNumbers');
   Log.LogPlain('  RemoveNotUsedPrivates');
   Log.LogPlain('  ShortRefGlobals');
-  Log.LogPlain('  TruncateIntegersOnOverflow');
   Log.LogLn;
   Log.LogPlain('Supported Whole Program Optimizations:');
   Log.LogPlain('  RemoveNotUsedDeclarations');

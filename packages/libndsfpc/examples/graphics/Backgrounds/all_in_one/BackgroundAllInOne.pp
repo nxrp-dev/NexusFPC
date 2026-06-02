@@ -11,13 +11,13 @@ uses
 type
   Demo = record
     go: fp;
-    name: pchar;
-    description: pchar;
+    name: PAnsiChar;
+    description: PAnsiChar;
   end;
   PDemo = ^Demo;
 
   Category = record
-    name: pchar;
+    name: PAnsiChar;
     demos: PDemo;
     count: integer;
   end;
@@ -129,7 +129,7 @@ begin
 
     demoCount := categories[selectedCategory].count;
     if demoCount = o then exit;
-    
+
     while not (selected) do
     begin
       scanKeys();

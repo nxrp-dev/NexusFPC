@@ -1,17 +1,17 @@
 {
      File:       QD/Palettes.h
- 
+
      Contains:   Palette Manager Interfaces.
- 
+
      Version:    Quickdraw-262~1
- 
+
      Copyright:  © 1987-2008 by Apple Computer, Inc., all rights reserved
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 {   Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2009 }
 {
@@ -28,7 +28,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit Palettes;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -213,7 +215,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.QuickdrawTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,QuickdrawTypes;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -261,7 +267,7 @@ type
 {$ifc not TARGET_CPU_64}
 {
  *  InitPalettes()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -273,7 +279,7 @@ procedure InitPalettes; external name '_InitPalettes';
 
 {
  *  NewPalette()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -285,7 +291,7 @@ function NewPalette( entries: SInt16; srcColors: CTabHandle; srcUsage: SInt16; s
 
 {
  *  GetNewPalette()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -297,7 +303,7 @@ function GetNewPalette( PaletteID: SInt16 ): PaletteHandle; external name '_GetN
 
 {
  *  DisposePalette()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -309,7 +315,7 @@ procedure DisposePalette( srcPalette: PaletteHandle ); external name '_DisposePa
 
 {
  *  ActivatePalette()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -321,7 +327,7 @@ procedure ActivatePalette( srcWindow: WindowRef ); external name '_ActivatePalet
 
 {
  *  SetPalette()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -333,7 +339,7 @@ procedure SetPalette( dstWindow: WindowRef; srcPalette: PaletteHandle; cUpdates:
 
 {
  *  NSetPalette()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -345,7 +351,7 @@ procedure NSetPalette( dstWindow: WindowRef; srcPalette: PaletteHandle; nCUpdate
 
 {
  *  GetPalette()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -357,7 +363,7 @@ function GetPalette( srcWindow: WindowRef ): PaletteHandle; external name '_GetP
 
 {
  *  CopyPalette()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -369,7 +375,7 @@ procedure CopyPalette( srcPalette: PaletteHandle; dstPalette: PaletteHandle; src
 
 {
  *  PmForeColor()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -381,7 +387,7 @@ procedure PmForeColor( dstEntry: SInt16 ); external name '_PmForeColor';
 
 {
  *  PmBackColor()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -393,7 +399,7 @@ procedure PmBackColor( dstEntry: SInt16 ); external name '_PmBackColor';
 
 {
  *  AnimateEntry()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -405,7 +411,7 @@ procedure AnimateEntry( dstWindow: WindowRef; dstEntry: SInt16; const (*var*) sr
 
 {
  *  [Mac]AnimatePalette()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -419,7 +425,7 @@ procedure AnimatePalette( dstWindow: WindowRef; srcCTab: CTabHandle; srcIndex: S
 
 {
  *  GetEntryColor()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -431,7 +437,7 @@ procedure GetEntryColor( srcPalette: PaletteHandle; srcEntry: SInt16; var dstRGB
 
 {
  *  SetEntryColor()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -443,7 +449,7 @@ procedure SetEntryColor( dstPalette: PaletteHandle; dstEntry: SInt16; const (*va
 
 {
  *  GetEntryUsage()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -455,7 +461,7 @@ procedure GetEntryUsage( srcPalette: PaletteHandle; srcEntry: SInt16; var dstUsa
 
 {
  *  SetEntryUsage()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -467,7 +473,7 @@ procedure SetEntryUsage( dstPalette: PaletteHandle; dstEntry: SInt16; srcUsage: 
 
 {
  *  CTab2Palette()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -479,7 +485,7 @@ procedure CTab2Palette( srcCTab: CTabHandle; dstPalette: PaletteHandle; srcUsage
 
 {
  *  Palette2CTab()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -491,7 +497,7 @@ procedure Palette2CTab( srcPalette: PaletteHandle; dstCTab: CTabHandle ); extern
 
 {
  *  Entry2Index()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -503,7 +509,7 @@ function Entry2Index( entry: SInt16 ): SInt32; external name '_Entry2Index';
 
 {
  *  RestoreDeviceClut()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -515,7 +521,7 @@ procedure RestoreDeviceClut( gd: GDHandle ); external name '_RestoreDeviceClut';
 
 {
  *  [Mac]ResizePalette()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -529,7 +535,7 @@ procedure ResizePalette( p: PaletteHandle; size: SInt16 ); external name '_Resiz
 
 {
  *  SaveFore()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -541,7 +547,7 @@ procedure SaveFore( var c: ColorSpec ); external name '_SaveFore';
 
 {
  *  SaveBack()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -553,7 +559,7 @@ procedure SaveBack( var c: ColorSpec ); external name '_SaveBack';
 
 {
  *  RestoreFore()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -565,7 +571,7 @@ procedure RestoreFore( const (*var*) c: ColorSpec ); external name '_RestoreFore
 
 {
  *  RestoreBack()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -577,7 +583,7 @@ procedure RestoreBack( const (*var*) c: ColorSpec ); external name '_RestoreBack
 
 {
  *  SetDepth()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -589,7 +595,7 @@ function SetDepth( gd: GDHandle; depth: SInt16; whichFlags: SInt16; flags: SInt1
 
 {
  *  HasDepth()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -601,7 +607,7 @@ function HasDepth( gd: GDHandle; depth: SInt16; whichFlags: SInt16; flags: SInt1
 
 {
  *  PMgrVersion()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -613,7 +619,7 @@ function PMgrVersion: SInt16; external name '_PMgrVersion';
 
 {
  *  SetPaletteUpdates()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -625,7 +631,7 @@ procedure SetPaletteUpdates( p: PaletteHandle; updates: SInt16 ); external name 
 
 {
  *  GetPaletteUpdates()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -637,7 +643,7 @@ function GetPaletteUpdates( p: PaletteHandle ): SInt16; external name '_GetPalet
 
 {
  *  GetGray()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later

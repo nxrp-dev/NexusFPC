@@ -11,15 +11,23 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit lincd;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  UnixApi.Base,
+  UnixApi.Unix;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   baseunix,
   unix;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { ---------------------------------------------------------------------
     cdrom.h header translation.
@@ -182,7 +190,7 @@ type
    Pcdrom_read = ^Tcdrom_read;
    Tcdrom_read = record
         cdread_lba : longint;
-        cdread_bufaddr : Pchar;
+        cdread_bufaddr : PAnsiChar;
         cdread_buflen : longint;
      end;
 
@@ -710,18 +718,22 @@ procedure set_sense_key(var a : Trequest_sense; __sense_key : Tu8);
   ---------------------------------------------------------------------}
 type
   TCDSearchRec = record
-    Name: String;
+    Name: AnsiString;
     i,j: Integer;
   end;
 
-Function IsCDDevice(Device : String) : Boolean;
+Function IsCDDevice(Device : AnsiString) : Boolean;
 Function FindFirstCD(var ACDSearchRec: TCDSearchRec): Boolean;
 Function FindNextCD(var ACDSearchRec: TCDSearchRec): Boolean;
-Function DetectCd : String;
+Function DetectCd : AnsiString;
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.CDROM.Major,System.SysUtils;
+{$ELSE FPC_DOTTEDUNITS}
 uses major,sysutils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { ---------------------------------------------------------------------
     Functions from cdrom.h translation.
@@ -1087,7 +1099,7 @@ end;
 
 Const
   NrDevices = 16;
-  Devices : Array[1..NrDevices] of string = (
+  Devices : Array[1..NrDevices] of AnsiString = (
   '/dev/cdrom',
   '/dev/cdroms/cdrom?',
   '/dev/hd?',
@@ -1120,8 +1132,8 @@ end;
 function FindNextCD(var ACDSearchRec: TCDSearchRec): Boolean;
 var
   L: integer;
-  S: String;
-  FoundDev: String;
+  S: AnsiString;
+  FoundDev: AnsiString;
 begin
 
   Result := False;
@@ -1160,11 +1172,11 @@ begin
   ACDSearchRec.Name:=FoundDev;
 end;
 
-Function DetectCD : String;
+Function DetectCD : AnsiString;
 
 Var
   I,J,L : Integer;
-  S : String;
+  S : AnsiString;
 
 begin
   Result:='';
@@ -1199,14 +1211,14 @@ Const
               OPTICS_CDROM_MAJOR,AZTECH_CDROM_MAJOR,
               GOLDSTAR_CDROM_MAJOR,CM206_CDROM_MAJOR];
 
-Function TestCDRomIOCTL(Device : String) : Boolean;forward;
+Function TestCDRomIOCTL(Device : AnsiString) : Boolean;forward;
 
 
-Function IsCDDevice(Device : String) : Boolean;
+Function IsCDDevice(Device : AnsiString) : Boolean;
 
 Var
   Info : stat;
-  S : String;
+  S : AnsiString;
   DeviceMajor,F : Integer;
 
 begin
@@ -1230,7 +1242,7 @@ begin
   {$endif}
   If DeviceMajor in [IDE0_MAJOR,IDE1_MAJOR,IDE2_MAJOR,IDE3_MAJOR] then
     Result:=TestCDRomIOCTL(Device)
-  else 
+  else
     begin
     Result:= DeviceMajor=SCSI_CDROM_MAJOR;
     If not Result then
@@ -1248,10 +1260,10 @@ begin
           fpClose(F);
         end;
       end;
-    end;  
+    end;
 end;
 
-Function TestCDRomIOCTL(Device : String) : Boolean;
+Function TestCDRomIOCTL(Device : AnsiString) : Boolean;
 
 Var
   F : Integer;

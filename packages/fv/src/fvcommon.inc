@@ -11,7 +11,7 @@
 {                                                          }
 {****************[ THIS CODE IS FREEWARE ]*****************}
 {                                                          }
-{     This sourcecode is released for the purpose to       }
+{     This source code is released for the purpose to      }
 {   promote the pascal language on all platforms. You may  }
 {   redistribute it and/or modify with the following       }
 {   DISCLAIMER.                                            }
@@ -51,11 +51,13 @@
 {  0.4.0   14 Nov 00  LdB    Revamp of whole unit          }
 {**********************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 {$ifdef FV_UNICODE}
 UNIT UFVCommon;
 {$else FV_UNICODE}
 UNIT FVCommon;
 {$endif FV_UNICODE}
+{$ENDIF FPC_DOTTEDUNITS}
 
 {<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>}
                                   INTERFACE
@@ -65,10 +67,17 @@ UNIT FVCommon;
 {$I platform.inc}
 {====================================================================}
 
+{$IFDEF FPC_DOTTEDUNITS}
+{$ifdef OS_WINDOWS}
+  uses
+    WinApi.Windows;
+{$endif}
+{$ELSE FPC_DOTTEDUNITS}
 {$ifdef OS_WINDOWS}
   uses
     Windows;
 {$endif}
+{$ENDIF FPC_DOTTEDUNITS}
 
 {***************************************************************************}
 {                              PUBLIC CONSTANTS                             }
@@ -156,9 +165,9 @@ CONST
 {$ELSE FV_UNICODE}
 TYPE
    Sw_String = ShortString;
-   Sw_Char = Char;
+   Sw_Char = AnsiChar;
    Sw_PString = PShortString;
-   Sw_ExtendedGraphemeCluster = Char;
+   Sw_ExtendedGraphemeCluster = AnsiChar;
 CONST
    Sw_PString_Empty = Nil;
 {$ENDIF FV_UNICODE}
@@ -230,7 +239,7 @@ Given two SmallInt values returns the lowest SmallInt of the two.
 ---------------------------------------------------------------------}
 FUNCTION MinIntegerOf (A, B: SmallInt): SmallInt;
 
-{-MaxIntegerof-------------------------------------------------------
+{-MaxIntegerOf-------------------------------------------------------
 Given two SmallInt values returns the biggest SmallInt of the two.
 04Oct99 LdB
 ---------------------------------------------------------------------}
@@ -254,7 +263,7 @@ FUNCTION MaxLongIntOf (A, B: LongInt): LongInt;
 
 { ******************************* REMARK ****************************** }
 {  Delphi 3+ does not define these standard routines so I have made     }
-{  some public functions here to complete compatability.                }
+{  some public functions here to complete compatibility.                }
 { ****************************** END REMARK *** Leon de Boer, 14Aug98 * }
 
 {-MemAvail-----------------------------------------------------------
@@ -285,7 +294,7 @@ CONST
 {<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>}
 
 {$IFDEF PPC_DELPHI3}                                  { DELPHI 3+ COMPILER }
-USES WinTypes, WinProcs;                              { Stardard units }
+USES WinTypes, WinProcs;                              { Standard units }
 {$ENDIF}
 
 {***************************************************************************}

@@ -18,11 +18,17 @@
         external declarations for Parallel Port Driver
 }
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit parallel;
+{$ENDIF FPC_DOTTEDUNITS}
 
 INTERFACE
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses Amiga.Core.Exec;
+{$ELSE FPC_DOTTEDUNITS}
 uses exec;
+{$ENDIF FPC_DOTTEDUNITS}
 
 
 Type
@@ -81,8 +87,8 @@ Const
     IOPARF_QUEUED       = 64;   {     "     rqst-queued mask }
     IOPARB_ABORT        = 5;    {     "     rqst-aborted bit }
     IOPARF_ABORT        = 32;   {     "     rqst-aborted mask }
-    IOPARB_ACTIVE       = 4;    {     "     rqst-qued-or-current bit }
-    IOPARF_ACTIVE       = 16;   {     "     rqst-qued-or-current mask }
+    IOPARB_ACTIVE       = 4;    {     "     rqst-queued-or-current bit }
+    IOPARF_ACTIVE       = 16;   {     "     rqst-queued-or-current mask }
     IOPTB_RWDIR         = 3;    { IO_STATUS read=0,write=1 bit }
     IOPTF_RWDIR         = 8;    {     "     read=0,write=1 mask }
     IOPTB_PARSEL        = 2;    {     "     printer selected on the A1000 }
@@ -96,7 +102,7 @@ Const
 
 { Note: previous versions of this include files had bits 0 and 2 swapped }
 
-    PARALLELNAME        : PChar = 'parallel.device';
+    PARALLELNAME        : PAnsiChar = 'parallel.device';
 
     PDCMD_QUERY         = CMD_NONSTD;
     PDCMD_SETPARAMS     = CMD_NONSTD + 1;

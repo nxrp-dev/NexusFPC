@@ -1,9 +1,9 @@
 {
      File:       CarbonCore/MultiprocessingInfo.h
- 
+
      Contains:   Multiprocessing Information interfaces
                  The contents of this header file are deprecated.
- 
+
      Copyright:  © 1995-2011 DayStar Digital, Inc.
 }
 {
@@ -20,7 +20,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit MultiProcessingInfo;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -205,16 +207,20 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.Multiprocessing;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,Multiprocessing;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
 {$ifc TARGET_OS_MAC}
 
 {********************************************************************************************
- 
- The Multiprocessing Utilites are deprecated.  Callers should use blocks, libDispatch, or pthreads.
-  
+
+ The Multiprocessing Utilities are deprecated.  Callers should use blocks, libDispatch, or pthreads.
+
 ********************************************************************************************}
 {
    ==========================================================================================================================
@@ -236,7 +242,7 @@ uses MacTypes,Multiprocessing;
 
 {
    ==========================================================================================================================
-   This is the header file for version 2.3 of the Mac OS multiprocessing information support. 
+   This is the header file for version 2.3 of the Mac OS multiprocessing information support.
    ==========================================================================================================================
 }
 
@@ -284,7 +290,7 @@ uses MacTypes,Multiprocessing;
 
 {
  *  MPGetPageSizeClasses()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -296,7 +302,7 @@ uses MacTypes,Multiprocessing;
 { -------------------------------------------------------------------------------------------}
 {
  *  MPGetPageSize()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -315,7 +321,7 @@ uses MacTypes,Multiprocessing;
 
 {
  *  MPGetNextCoherenceID()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -325,7 +331,7 @@ uses MacTypes,Multiprocessing;
 
 {
  *  MPGetNextCpuID()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.4 and later in CoreServices.framework but deprecated in 10.7
  *    CarbonLib:        not available
@@ -337,7 +343,7 @@ function MPGetNextCpuID( owningCoherenceID: MPCoherenceID; var cpuID: MPCpuID ):
 
 {
  *  MPGetNextProcessID()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -347,7 +353,7 @@ function MPGetNextCpuID( owningCoherenceID: MPCoherenceID; var cpuID: MPCpuID ):
 
 {
  *  MPGetNextAddressSpaceID()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -357,7 +363,7 @@ function MPGetNextCpuID( owningCoherenceID: MPCoherenceID; var cpuID: MPCpuID ):
 
 {
  *  MPGetNextTaskID()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.4 and later in CoreServices.framework but deprecated in 10.7
  *    CarbonLib:        not available
@@ -369,7 +375,7 @@ function MPGetNextTaskID( owningProcessID: MPProcessID; var taskID: MPTaskID ): 
 
 {
  *  MPGetNextQueueID()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -379,7 +385,7 @@ function MPGetNextTaskID( owningProcessID: MPProcessID; var taskID: MPTaskID ): 
 
 {
  *  MPGetNextSemaphoreID()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -389,7 +395,7 @@ function MPGetNextTaskID( owningProcessID: MPProcessID; var taskID: MPTaskID ): 
 
 {
  *  MPGetNextCriticalRegionID()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -399,7 +405,7 @@ function MPGetNextTaskID( owningProcessID: MPProcessID; var taskID: MPTaskID ): 
 
 {
  *  MPGetNextTimerID()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -409,7 +415,7 @@ function MPGetNextTaskID( owningProcessID: MPProcessID; var taskID: MPTaskID ): 
 
 {
  *  MPGetNextEventID()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -419,7 +425,7 @@ function MPGetNextTaskID( owningProcessID: MPProcessID; var taskID: MPTaskID ): 
 
 {
  *  MPGetNextNotificationID()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -429,7 +435,7 @@ function MPGetNextTaskID( owningProcessID: MPProcessID; var taskID: MPTaskID ): 
 
 {
  *  MPGetNextAreaID()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -439,7 +445,7 @@ function MPGetNextTaskID( owningProcessID: MPProcessID; var taskID: MPTaskID ): 
 
 {
  *  MPGetNextConsoleID()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -452,7 +458,7 @@ function MPGetNextTaskID( owningProcessID: MPProcessID; var taskID: MPTaskID ): 
 
 {
  *  MPGetNextID()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -576,7 +582,7 @@ type
 
 {
  *  MPGetQueueInfo()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -586,7 +592,7 @@ type
 
 {
  *  MPGetSemaphoreInfo()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -596,7 +602,7 @@ type
 
 {
  *  MPGetEventInfo()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -606,7 +612,7 @@ type
 
 {
  *  MPGetCriticalRegionInfo()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -616,7 +622,7 @@ type
 
 {
  *  MPGetNotificationInfo()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available
@@ -626,7 +632,7 @@ type
 
 {
  *  MPGetAddressSpaceInfo()
- *  
+ *
  *  Availability:
  *    Mac OS X:         not available
  *    CarbonLib:        not available

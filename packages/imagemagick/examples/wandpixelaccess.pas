@@ -14,11 +14,11 @@ uses SysUtils, magick_wand, ImageMagick, ctypes;
 
 procedure ThrowWandException(wand: PMagickWand);
 var
-  description: PChar;
+  description: PAnsiChar;
   severity: ExceptionType;
 begin
   description := MagickGetException(wand, @severity);
-  WriteLn(Format('An error ocurred. Description: %s', [description]));
+  WriteLn(Format('An error occurred. Description: %s', [description]));
   description := MagickRelinquishMemory(description);
   Abort;
 end;

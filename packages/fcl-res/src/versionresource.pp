@@ -13,14 +13,21 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit versionresource;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$MODE OBJFPC}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.SysUtils, System.Classes, System.Resources.Resource, System.Resources.VersionTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   SysUtils, Classes, resource, versiontypes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   TVerBlockHeader = packed record
@@ -83,9 +90,14 @@ type
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Resources.Factory;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   resfactory;
-  
+{$ENDIF FPC_DOTTEDUNITS}
+
 type
   TVSFixedFileInfo = packed record
     signature : longword;
@@ -176,7 +188,7 @@ begin
   LoadFixedInfos;
   AlignDWordReading;
   dec(toread,RawData.Position);
-  
+
   fStringFileInfo:=TVersionStringFileInfo.Create;
   fVarFileInfo:=TVersionVarFileInfo.Create;
 
@@ -417,10 +429,10 @@ begin
   RawData.WriteBuffer(block,6);
   WriteWideString(block.key);
   AlignDWordWriting;
-  
+
   for i:=0 to fStringFileInfo.Count-1 do
     WriteStringTable(fStringFileInfo[i]);
-  
+
   WriteFixedBlockLength(before);
 end;
 
@@ -454,7 +466,7 @@ var block : TVerBlockHeader;
 begin
   before:=RawData.Position;
   block.length:=0;
-  block.vallength:=length(aValue)+1;
+  block.vallength:=length(WideString(aValue))+1;
   block.valtype:=1;
   block.key:=aKey;
   {$IFDEF ENDIAN_BIG}
@@ -520,6 +532,7 @@ procedure TVersionResource.WriteWideString(const aString: string);
 var ws : widestring;
     w : word;
     i : integer;
+    isnulterminate : boolean;
 begin
   ws:=aString;
   for i:=1 to length(ws) do
@@ -530,8 +543,14 @@ begin
     {$ENDIF}
     RawData.WriteBuffer(w,2);
   end;
-  w:=0;
-  RawData.WriteBuffer(w,2);
+  w:=length(ws);
+
+  isnulterminate:=(w>0) and (ws[w]=#0);
+  if not isnulterminate then
+    begin
+      w:=0;
+      RawData.WriteBuffer(w,2);
+    end;
 end;
 
 function TVersionResource.GetType: TResourceDesc;

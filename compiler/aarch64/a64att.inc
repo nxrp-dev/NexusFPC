@@ -251,7 +251,7 @@
 'saddw',
 'saddw2',
 'scvtf',
-'shac1c',
+'sha1c',
 'sha1h',
 'sha1m',
 'sha1p',
@@ -429,5 +429,7 @@
 'sha512h',
 'sha512h2',
 'sha512su0',
-'sha512su1'
+'sha512su1',
+'abs',
+'ctz'
 );

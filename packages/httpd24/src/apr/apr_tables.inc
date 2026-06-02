@@ -31,7 +31,7 @@
 
 (**
  * @defgroup apr_tables Table and Array Functions
- * @ingroup APR 
+ * @ingroup APR
  * Arrays are used to store data which is referenced sequentially or
  * as a stack.  Functions are provided to push and pop individual
  * elements as well as to operate on the entire array.
@@ -71,7 +71,7 @@ type
     //** The number of elements allocated in the array */
     nalloc: Integer;
     //** The elements in the array */
-    elts: PChar;
+    elts: PAnsiChar;
   end;
 
 {**
@@ -83,11 +83,11 @@ type
 //** The type for each entry in a string-content table */
   apr_table_entry_t = record
     //** The key for the current table entry */
-    key: PChar;          {* maybe NULL in future;
+    key: PAnsiChar;          {* maybe NULL in future;
                          * check when iterating thru table_elts
                          *}
     //** The value for the current table entry */
-    val: PChar;
+    val: PAnsiChar;
 
     //** A checksum for the key, for use by the apr_table internals */
     key_checksum: apr_uint32_t;
@@ -192,7 +192,7 @@ function apr_array_clear(arr: Papr_array_header_t): Pointer;
 
 {**
  * Concatenate two arrays together.
- * @param dst The destination array, and the one to go first in the combined 
+ * @param dst The destination array, and the one to go first in the combined
  *            array
  * @param src The source array to add to the destination array
  *}
@@ -208,7 +208,7 @@ procedure apr_array_cat(dst: Papr_array_header_t;
  * @param p The pool to allocate the copy of the array out of
  * @param arr The array to copy
  * @return An exact copy of the array passed in
- * @remark The alternate apr_array_copy_hdr copies only the header, and arranges 
+ * @remark The alternate apr_array_copy_hdr copies only the header, and arranges
  *         for the elements to be copied if (and only if) the code subsequently
  *         does a push or arraycat.
  *}
@@ -250,22 +250,22 @@ function apr_array_append(p: Papr_pool_t;
   external LibAPR name LibNamePrefix + 'apr_array_append' + LibSuff12;
 
 {**
- * Generate a new string from the apr_pool_t containing the concatenated 
- * sequence of substrings referenced as elements within the array.  The string 
- * will be empty if all substrings are empty or null, or if there are no 
- * elements in the array.  If sep is non-NUL, it will be inserted between 
+ * Generate a new string from the apr_pool_t containing the concatenated
+ * sequence of substrings referenced as elements within the array.  The string
+ * will be empty if all substrings are empty or null, or if there are no
+ * elements in the array.  If sep is non-NUL, it will be inserted between
  * elements as a separator.
  * @param p The pool to allocate the string out of
  * @param arr The array to generate the string from
  * @param sep The separator to use
  * @return A string containing all of the data in the array.
  *}
-//APR_DECLARE(char *) apr_array_pstrcat(apr_pool_t *p,
+//APR_DECLARE(AnsiChar *) apr_array_pstrcat(apr_pool_t *p,
 //				      const apr_array_header_t *arr,
-//				      const char sep);
+//				      const AnsiChar sep);
 function apr_array_pstrcat(p: Papr_pool_t;
                            const arr: Papr_array_header_t;
-                           sep: Char): PChar;
+                           sep: AnsiChar): PAnsiChar;
   {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
   external LibAPR name LibNamePrefix + 'apr_array_pstrcat' + LibSuff12;
 
@@ -322,10 +322,10 @@ procedure apr_table_clear(t: Papr_table_t);
  * the data is still in the table.
  * @param t The table to search for the key
  * @param key The key to search for (case does not matter)
- * @return The value associated with the key, or NULL if the key does not exist. 
+ * @return The value associated with the key, or NULL if the key does not exist.
  *}
-//APR_DECLARE(const char *) apr_table_get(const apr_table_t *t, const char *key);
-function apr_table_get(t: Papr_table_t; key: PChar): PChar;
+//APR_DECLARE(const AnsiChar *) apr_table_get(const apr_table_t *t, const AnsiChar *key);
+function apr_table_get(t: Papr_table_t; key: PAnsiChar): PAnsiChar;
   {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
   external LibAPR name LibNamePrefix + 'apr_table_get' + LibSuff8;
 
@@ -338,9 +338,9 @@ function apr_table_get(t: Papr_table_t; key: PChar): PChar;
  * @remark When adding data, this function makes a copy of both the key and the
  *         value.
  *}
-//APR_DECLARE(void) apr_table_set(apr_table_t *t, const char *key,
-//                                const char *val);
-procedure apr_table_set(t: Papr_table_t; const key, val: PChar);
+//APR_DECLARE(void) apr_table_set(apr_table_t *t, const AnsiChar *key,
+//                                const AnsiChar *val);
+procedure apr_table_set(t: Papr_table_t; const key, val: PAnsiChar);
   {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
   external LibAPR name LibNamePrefix + 'apr_table_set' + LibSuff12;
 
@@ -350,13 +350,13 @@ procedure apr_table_set(t: Papr_table_t; const key, val: PChar);
  * @param t The table to add the data to.
  * @param key The key to use (case does not matter)
  * @param val The value to add
- * @warning When adding data, this function does not make a copy of the key or 
- *          the value, so care should be taken to ensure that the values will 
+ * @warning When adding data, this function does not make a copy of the key or
+ *          the value, so care should be taken to ensure that the values will
  *          not change after they have been added..
  *}
-//APR_DECLARE(void) apr_table_setn(apr_table_t *t, const char *key,
-//                                 const char *val);
-procedure apr_table_setn(t: Papr_table_t; const key, val: PChar);
+//APR_DECLARE(void) apr_table_setn(apr_table_t *t, const AnsiChar *key,
+//                                 const AnsiChar *val);
+procedure apr_table_setn(t: Papr_table_t; const key, val: PAnsiChar);
   {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
   external LibAPR name LibNamePrefix + 'apr_table_setn' + LibSuff12;
 
@@ -365,13 +365,13 @@ procedure apr_table_setn(t: Papr_table_t; const key, val: PChar);
  * @param t The table to remove data from
  * @param key The key of the data being removed (case does not matter)
  *}
-//APR_DECLARE(void) apr_table_unset(apr_table_t *t, const char *key);
-procedure apr_table_unset(t: Papr_table_t; const key: PChar);
+//APR_DECLARE(void) apr_table_unset(apr_table_t *t, const AnsiChar *key);
+procedure apr_table_unset(t: Papr_table_t; const key: PAnsiChar);
   {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
   external LibAPR name LibNamePrefix + 'apr_table_unset' + LibSuff8;
 
 {**
- * Add data to a table by merging the value with data that has already been 
+ * Add data to a table by merging the value with data that has already been
  * stored. The merging is done by concatenating the two values, separated
  * by the string ", ".
  * @param t The table to search for the data
@@ -379,14 +379,14 @@ procedure apr_table_unset(t: Papr_table_t; const key: PChar);
  * @param val The data to add
  * @remark If the key is not found, then this function acts like apr_table_add
  *}
-//APR_DECLARE(void) apr_table_merge(apr_table_t *t, const char *key,
-//                                  const char *val);
-procedure apr_table_merge(t: Papr_table_t; const key, val: PChar);
+//APR_DECLARE(void) apr_table_merge(apr_table_t *t, const AnsiChar *key,
+//                                  const AnsiChar *val);
+procedure apr_table_merge(t: Papr_table_t; const key, val: PAnsiChar);
   {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
   external LibAPR name LibNamePrefix + 'apr_table_merge' + LibSuff12;
 
 {**
- * Add data to a table by merging the value with data that has already been 
+ * Add data to a table by merging the value with data that has already been
  * stored. The merging is done by concatenating the two values, separated
  * by the string ", ".
  * @param t The table to search for the data
@@ -394,9 +394,9 @@ procedure apr_table_merge(t: Papr_table_t; const key, val: PChar);
  * @param val The data to add
  * @remark If the key is not found, then this function acts like apr_table_addn
  *}
-//APR_DECLARE(void) apr_table_mergen(apr_table_t *t, const char *key,
-//                                   const char *val);
-procedure apr_table_mergen(t: Papr_table_t; const key, val: PChar);
+//APR_DECLARE(void) apr_table_mergen(apr_table_t *t, const AnsiChar *key,
+//                                   const AnsiChar *val);
+procedure apr_table_mergen(t: Papr_table_t; const key, val: PAnsiChar);
   {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
   external LibAPR name LibNamePrefix + 'apr_table_mergen' + LibSuff12;
 
@@ -409,9 +409,9 @@ procedure apr_table_mergen(t: Papr_table_t; const key, val: PChar);
  * @remark When adding data, this function makes a copy of both the key and the
  *         value.
  *}
-//APR_DECLARE(void) apr_table_add(apr_table_t *t, const char *key,
-//                                const char *val);
-procedure apr_table_add(t: Papr_table_t; const key, val: PChar);
+//APR_DECLARE(void) apr_table_add(apr_table_t *t, const AnsiChar *key,
+//                                const AnsiChar *val);
+procedure apr_table_add(t: Papr_table_t; const key, val: PAnsiChar);
   {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
   external LibAPR name LibNamePrefix + 'apr_table_add' + LibSuff12;
 
@@ -422,12 +422,12 @@ procedure apr_table_add(t: Papr_table_t; const key, val: PChar);
  * @param key The key to use
  * @param val The value to add.
  * @remark When adding data, this function does not make a copy of the key or the
- *         value, so care should be taken to ensure that the values will not 
+ *         value, so care should be taken to ensure that the values will not
  *         change after they have been added.
  *}
-//APR_DECLARE(void) apr_table_addn(apr_table_t *t, const char *key,
-//                                 const char *val);
-procedure apr_table_addn(t: Papr_table_t; const key, val: PChar);
+//APR_DECLARE(void) apr_table_addn(apr_table_t *t, const AnsiChar *key,
+//                                 const AnsiChar *val);
+procedure apr_table_addn(t: Papr_table_t; const key, val: PAnsiChar);
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibAPR name LibNamePrefix + 'apr_table_addn' + LibSuff12;
 
@@ -453,19 +453,19 @@ function apr_table_overlay(t: Papr_table_t;
  * @param key The key from this iteration of the table
  * @param value The value from this iteration of the table
  * @remark Iteration continues while this callback function returns non-zero.
- * To export the callback function for apr_table_[v]do() it must be declared 
+ * To export the callback function for apr_table_[v]do() it must be declared
  * in the _NONSTD convention.
  *}
-//typedef int (apr_table_do_callback_fn_t)(void *rec, const char *key,
-//                                                    const char *value);
+//typedef int (apr_table_do_callback_fn_t)(void *rec, const AnsiChar *key,
+//                                                    const AnsiChar *value);
 type
-  apr_table_do_callback_fn_t = function (rec: Pointer; const key, value: PChar): Integer; cdecl;
+  apr_table_do_callback_fn_t = function (rec: Pointer; const key, value: PAnsiChar): Integer; cdecl;
   Papr_table_do_callback_fn_t = ^apr_table_do_callback_fn_t;
 
 {**
  * Iterate over a table running the provided function once for every
  * element in the table.  The varargs array must be a list of zero or
- * more (char *) keys followed by a NULL pointer.  If zero keys are
+ * more (AnsiChar *) keys followed by a NULL pointer.  If zero keys are
  * given, the @param comp function will be invoked for every element
  * in the table.  Otherwise, the function is invoked only for those
  * elements matching the keys specified.
@@ -476,7 +476,7 @@ type
  * @param comp The function to run
  * @param rec The data to pass as the first argument to the function
  * @param t The table to iterate over
- * @param ... A varargs array of zero or more (char *) keys followed by NULL
+ * @param ... A varargs array of zero or more (AnsiChar *) keys followed by NULL
  * @return FALSE if one of the comp() iterations returned zero; TRUE if all
  *            iterations returned non-zero
  * @see apr_table_do_callback_fn_t
@@ -497,7 +497,7 @@ function apr_table_do(comp: apr_table_do_callback_fn_t; rec: Pointer;
 {**
  * Iterate over a table running the provided function once for every
  * element in the table.  The @param vp varargs parameter must be a
- * list of zero or more (char *) keys followed by a NULL pointer.  If
+ * list of zero or more (AnsiChar *) keys followed by a NULL pointer.  If
  * zero keys are given, the @param comp function will be invoked for
  * every element in the table.  Otherwise, the function is invoked
  * only for those elements matching the keys specified.
@@ -508,7 +508,7 @@ function apr_table_do(comp: apr_table_do_callback_fn_t; rec: Pointer;
  * @param comp The function to run
  * @param rec The data to pass as the first argument to the function
  * @param t The table to iterate over
- * @param vp List of zero or more (char *) keys followed by NULL
+ * @param vp List of zero or more (AnsiChar *) keys followed by NULL
  * @return FALSE if one of the comp() iterations returned zero; TRUE if all
  *            iterations returned non-zero
  * @see apr_table_do_callback_fn_t

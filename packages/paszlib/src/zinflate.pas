@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit  ZInflate;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {  inflate.c -- zlib interface to inflate modules
    Copyright (C) 1995-1998 Mark Adler
@@ -12,8 +14,13 @@ interface
 
 {$I zconf.inc}
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.ZLib.Zbase, System.ZLib.Infblock, System.ZLib.Infutil;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   zbase, infblock, infutil;
+{$ENDIF FPC_DOTTEDUNITS}
 
 function inflateInit(var z : z_stream) : integer;
 
@@ -133,7 +140,7 @@ function inflate(var z : z_stream;
 
      If a preset dictionary is needed at this point (see inflateSetDictionary
   below), inflate sets strm-adler to the adler32 checksum of the
-  dictionary chosen by the compressor and returns Z_NEED_DICT; otherwise 
+  dictionary chosen by the compressor and returns Z_NEED_DICT; otherwise
   it sets strm->adler to the adler32 checksum of all output produced
   so far (that is, total_out bytes) and returns Z_OK, Z_STREAM_END or
   an error code as described below. At the end of the stream, inflate()
@@ -196,8 +203,13 @@ function inflateSyncPoint(var z : z_stream) : integer;
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.ZLib.Adler;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   adler;
+{$ENDIF FPC_DOTTEDUNITS}
 
 function inflateReset(var z : z_stream) : integer;
 begin

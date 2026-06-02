@@ -43,7 +43,9 @@
 // $Id: JwaDSAdmin.pas,v 1.8 2007/09/05 11:58:49 dezipaitor Exp $
 
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaDSAdmin;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -57,8 +59,13 @@ unit JwaDSAdmin;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Activex, WinApi.Jedi.Adstlb, WinApi.Jedi.Prsht, WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaActiveX, JwaAdsTLB, JwaPrSht, JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 {$IFNDEF JWA_IMPLEMENTATIONSECTION}
@@ -108,9 +115,9 @@ const
   {$EXTERNALSYM IID_IDsAdminNotifyHandler}
 
 // ----------------------------------------------------------------------------
-// 
+//
 // Interface: IDsAdminCreateObj
-//  
+//
 // Implemented by the object (implemented by the system) CLSID_DsAdminCreateObj
 //
 // Used by: any client needing to invoke the creation UI
@@ -128,7 +135,7 @@ type
 //---------------------------------------------------------------------------
 //
 // Interface: IDsAdminNewObj
-// 
+//
 // Implemented by: DS Admin
 //
 // Used by: creation extension in proc server (both primary and regular)
@@ -144,7 +151,7 @@ type
 //---------------------------------------------------------------------------
 //
 // Interface: IDsAdminNewObjPrimarySite
-// 
+//
 // Implemented by: DS Admin
 //
 // Used by: creation extension in proc server (primary only)
@@ -242,7 +249,7 @@ const
 //---------------------------------------------------------------------------
 //
 // Interface: IDsAdminNotifyHandler
-// 
+//
 // Implemented by: notification handler in proc server
 //
 // Used by: DS Admin

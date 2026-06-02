@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit libusb;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$IFDEF FPC}
 {$mode objfpc}
@@ -7,9 +9,20 @@ unit libusb;
 
 interface
 {$ifdef MSWINDOWS}
+
+{$IFDEF FPC_DOTTEDUNITS}
+uses WinApi.Windows;
+{$ELSE FPC_DOTTEDUNITS}
 uses windows;
+{$ENDIF FPC_DOTTEDUNITS}
+
 {$else}
+
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.CTypes,System.Net.Sockets,UnixApi.Types;
+{$ELSE FPC_DOTTEDUNITS}
 uses ctypes,sockets,unixtype;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endif}
 
 
@@ -38,7 +51,7 @@ uses ctypes,sockets,unixtype;
    * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
     }
 {$ifndef LIBUSB_H}
-{$define LIBUSB_H}  
+{$define LIBUSB_H}
 {$ifdef MSWINDOWS}
 
 {$ifdef WIN64}
@@ -99,7 +112,7 @@ uses ctypes,sockets,unixtype;
 {$macro on}
 
 {$ifdef MSWINDOWS}
- 
+
 const libusb1='libusb-1.0.dll';
 {$define LIBUSB_CALL := WINAPI }
 {$else}
@@ -129,10 +142,10 @@ const libusb1='libusb-1.0.so';
   }
 
     const
-      LIBUSB_API_VERSION = $01000104;      
+      LIBUSB_API_VERSION = $01000104;
     { The following is kept for compatibility, but will be deprecated in the future  }
-      LIBUSBX_API_VERSION = LIBUSB_API_VERSION;      
-{ C++ extern C conditionnal removed }
+      LIBUSBX_API_VERSION = LIBUSB_API_VERSION;
+{ C++ extern C conditional removed }
 {*
  * \ingroup misc
  * Convert a 16-bit value from host-endian to little-endian format. On
@@ -142,7 +155,7 @@ const libusb1='libusb-1.0.so';
  * \returns the value in little-endian byte order
   }
 
-function libusb_cpu_to_le16(const x:uint16_t):uint16_t;
+function libusb_cpu_to_le16(const x:uint16_t):uint16_t; inline;
 
 
     {* \def libusb_le16_to_cpu
@@ -154,7 +167,7 @@ function libusb_cpu_to_le16(const x:uint16_t):uint16_t;
      * \returns the value in host-endian byte order
       }
 
-function libusb_le16_to_cpu(const x:uint16_t):uint16_t;
+function libusb_le16_to_cpu(const x:uint16_t):uint16_t; inline;
 
 { standard USB stuff  }
 {* \ingroup desc
@@ -235,20 +248,20 @@ type
     { Descriptor sizes per descriptor type  }
 
     const
-      LIBUSB_DT_DEVICE_SIZE = 18;      
-      LIBUSB_DT_CONFIG_SIZE = 9;      
-      LIBUSB_DT_INTERFACE_SIZE = 9;      
-      LIBUSB_DT_ENDPOINT_SIZE = 7;      
+      LIBUSB_DT_DEVICE_SIZE = 18;
+      LIBUSB_DT_CONFIG_SIZE = 9;
+      LIBUSB_DT_INTERFACE_SIZE = 9;
+      LIBUSB_DT_ENDPOINT_SIZE = 7;
     { Audio extension  }
-      LIBUSB_DT_ENDPOINT_AUDIO_SIZE = 9;      
-      LIBUSB_DT_HUB_NONVAR_SIZE = 7;      
-      LIBUSB_DT_SS_ENDPOINT_COMPANION_SIZE = 6;      
-      LIBUSB_DT_BOS_SIZE = 5;      
-      LIBUSB_DT_DEVICE_CAPABILITY_SIZE = 3;      
+      LIBUSB_DT_ENDPOINT_AUDIO_SIZE = 9;
+      LIBUSB_DT_HUB_NONVAR_SIZE = 7;
+      LIBUSB_DT_SS_ENDPOINT_COMPANION_SIZE = 6;
+      LIBUSB_DT_BOS_SIZE = 5;
+      LIBUSB_DT_DEVICE_CAPABILITY_SIZE = 3;
     { BOS descriptor sizes  }
-      LIBUSB_BT_USB_2_0_EXTENSION_SIZE = 7;      
-      LIBUSB_BT_SS_USB_DEVICE_CAPABILITY_SIZE = 10;      
-      LIBUSB_BT_CONTAINER_ID_SIZE = 20;      
+      LIBUSB_BT_USB_2_0_EXTENSION_SIZE = 7;
+      LIBUSB_BT_SS_USB_DEVICE_CAPABILITY_SIZE = 10;
+      LIBUSB_BT_CONTAINER_ID_SIZE = 20;
     { We unwrap the BOS => define its max size  }
 
     { was #define dname def_expr }
@@ -768,6 +781,7 @@ type
         end;
 
       plibusb_device=^libusb_device;
+      pplibusb_device=^plibusb_device;
       libusb_device = record
           {undefined structure}
         end;
@@ -1052,7 +1066,7 @@ type
     {* A bitwise OR combination of \ref libusb_transfer_flags.  }
     {* Address of the endpoint where this transfer will be sent.  }
     {* Type of the endpoint from \ref libusb_transfer_type  }
-    {* Timeout for this transfer in millseconds. A value of 0 indicates no
+    {* Timeout for this transfer in milliseconds. A value of 0 indicates no
     	 * timeout.  }
     {* The status of the transfer. Read-only, and only for use within
     	 * transfer callback function.
@@ -1135,7 +1149,7 @@ function libusb_init(var ctx:plibusb_context):integer;LIBUSB_CALL;external libus
 procedure libusb_exit(ctx:plibusb_context);LIBUSB_CALL;external libusb1;
 procedure libusb_set_debug(ctc:plibusb_context;level:integer);LIBUSB_CALL;external libusb1;
 
-function libusb_get_version():libusb_version;LIBUSB_CALL;external libusb1;
+function libusb_get_version():plibusb_version;LIBUSB_CALL;external libusb1;
 function libusb_has_capability(capability:uint32_t):integer;LIBUSB_CALL;external libusb1;
 
 function libusb_error_name(errcode:integer):pansichar;LIBUSB_CALL;external libusb1;
@@ -1143,8 +1157,8 @@ function libusb_error_name(errcode:integer):pansichar;LIBUSB_CALL;external libus
 function libusb_setlocale(const locale:pansichar):integer;LIBUSB_CALL;external libusb1;
 
 function libusb_strerror(errcode:libusb_error):pansichar;LIBUSB_CALL;external libusb1;
-function libusb_get_device_list(ctx:plibusb_context;var list:plibusb_device):ssize_t;LIBUSB_CALL;external libusb1;
-procedure libusb_free_device_list(list:plibusb_device;unref_devices:integer);LIBUSB_CALL;external libusb1;
+function libusb_get_device_list(ctx:plibusb_context;var list:pplibusb_device):ssize_t;LIBUSB_CALL;external libusb1;
+procedure libusb_free_device_list(list:pplibusb_device;unref_devices:integer);LIBUSB_CALL;external libusb1;
 function libusb_ref_device(dev:plibusb_device):plibusb_device;LIBUSB_CALL;external libusb1;
 procedure libusb_unref_device(dev:plibusb_device);LIBUSB_CALL;external libusb1;
 function libusb_get_configuration(dev:plibusb_device_handle;
@@ -1324,7 +1338,7 @@ function  libusb_control_transfer_get_data(
   }
 
 function libusb_control_transfer_get_setup(
-  transfer:plibusb_transfer):plibusb_control_setup;
+  transfer:plibusb_transfer):plibusb_control_setup; inline;
 
 
 {* \ingroup asyncio
@@ -1357,7 +1371,7 @@ procedure libusb_fill_control_setup(
   bRequest: uint8_t;
   wValue:uint16_t;
   wIndex:uint16_t;
-  wLength:uint16_t);
+  wLength:uint16_t); inline;
 
 function libusb_alloc_transfer(iso_packets:integer):plibusb_transfer;LIBUSB_CALL;external libusb1;
 function libusb_submit_transfer(transfer:plibusb_transfer):integer;LIBUSB_CALL;external libusb1;
@@ -1404,7 +1418,7 @@ procedure libusb_fill_control_transfer(
   buffer:puint8_t;
   callback:libusb_transfer_cb_fn;
   user_data:pointer;
-  timeout:cardinal);
+  timeout:cardinal); inline;
 
 
 {* \ingroup asyncio
@@ -1429,7 +1443,7 @@ procedure libusb_fill_bulk_transfer(
   length:integer;
   callback:libusb_transfer_cb_fn;
   user_data:pointer;
-  timeout:cardinal);
+  timeout:cardinal); inline;
 
 
 {* \ingroup asyncio
@@ -1458,7 +1472,7 @@ procedure libusb_fill_bulk_stream_transfer(
   length:integer;
   callback:libusb_transfer_cb_fn;
   user_data:pointer;
-  timeout:cardinal);
+  timeout:cardinal); inline;
 
 
 {* \ingroup asyncio
@@ -1483,7 +1497,7 @@ procedure libusb_fill_interrupt_transfer(
   length:integer;
   callback:libusb_transfer_cb_fn;
   user_data:pointer;
-  timeout:cardinal);
+  timeout:cardinal); inline;
 
 
 {* \ingroup asyncio
@@ -1509,7 +1523,7 @@ procedure libusb_fill_iso_transfer(transfer:plibusb_transfer;
   num_iso_packets:integer;
   callback:libusb_transfer_cb_fn;
   user_data:pointer;
-  timeout:cardinal);
+  timeout:cardinal); inline;
 
 
 {* \ingroup asyncio
@@ -1523,7 +1537,7 @@ procedure libusb_fill_iso_transfer(transfer:plibusb_transfer;
 
 procedure libusb_set_iso_packet_lengths(
   transfer:plibusb_transfer;
-  length:cardinal);
+  length:cardinal); inline;
 
 
 {* \ingroup asyncio
@@ -1545,7 +1559,7 @@ procedure libusb_set_iso_packet_lengths(
 
 function libusb_get_iso_packet_buffer(
   	transfer:plibusb_transfer;
-    packet:cardinal):puint8_t;
+    packet:cardinal):puint8_t; inline;
 
 
 {* \ingroup asyncio
@@ -1570,7 +1584,7 @@ function libusb_get_iso_packet_buffer(
 
 function libusb_get_iso_packet_buffer_simple(
   	transfer:plibusb_transfer;
-    packet:cardinal):puint8_t;
+    packet:cardinal):puint8_t; inline;
 
 
 { sync I/O  }

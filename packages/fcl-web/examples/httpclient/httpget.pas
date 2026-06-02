@@ -4,6 +4,9 @@ program httpget;
 {$DEFINE USEGNUTLS}
 
 uses
+  {$IFDEF UNIX}
+  fpwidestring, unicodeducet,
+  {$ENDIF}
   SysUtils, Classes, fphttpclient, ssockets,
 {$IFNDEF USEGNUTLS}
   fpopenssl, opensslsockets,
@@ -85,7 +88,7 @@ procedure TTestApp.ShowRedirect(ASender: TObject; const ASrc: String;
 
 begin
   Writeln('Following redirect from ',ASrc,'  ==> ',ADest);
-end;  
+end;
 
 
 procedure TTestApp.Run;
@@ -98,6 +101,7 @@ begin
     end;
   With TFPHTTPClient.Create(Nil) do
     try
+      RequestCookies.Add.Name:='me';
       AllowRedirect:=True;
       OnRedirect:=@ShowRedirect;
       OnPassword:=@DoPassword;
@@ -141,6 +145,9 @@ begin
 end;
 
 begin
+  {$IFDEF UNIX}
+  SetActiveCollation('DUCET');
+  {$ENDIF}
   With TTestApp.Create do
     try
       Run;

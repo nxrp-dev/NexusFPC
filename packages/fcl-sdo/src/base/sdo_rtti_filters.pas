@@ -14,13 +14,21 @@
 
  **********************************************************************}
 {$INCLUDE sdo_global.inc}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit sdo_rtti_filters;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, System.Contnrs, System.TypInfo,
+  Sdo.Cursor.Intf, Sdo.Types;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, Contnrs, TypInfo,
   sdo_cursor_intf, sdo_types;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
 
@@ -838,7 +846,7 @@ function TRttiExpWideStringNodeItem.Evaluate(AInstance: TRttiFilterCreatorTarget
 begin
   case Operation of
     sfoEqualCaseSensitive   :  Result := ( GetWideStrProp(AInstance,PropInfo) = ComparedValue );
-    sfoEqualCaseInsensitive :  Result := ( LowerCase(GetWideStrProp(AInstance,PropInfo)) = LowerCase(ComparedValue) );
+    sfoEqualCaseInsensitive :  Result := ( SameText(GetWideStrProp(AInstance,PropInfo),ComparedValue));
     sfoNotEqual             :  Result := not SameText(GetWideStrProp(AInstance,PropInfo),ComparedValue);
     else begin
       Assert(False);
@@ -869,7 +877,7 @@ function TRttiExpUnicodeStringNodeItem.Evaluate(
 begin
   case Operation of
     sfoEqualCaseSensitive   :  Result := ( GetUnicodeStrProp(AInstance,PropInfo) = ComparedValue );
-    sfoEqualCaseInsensitive :  Result := ( LowerCase(GetUnicodeStrProp(AInstance,PropInfo)) = LowerCase(ComparedValue));
+    sfoEqualCaseInsensitive :  Result := SameText(GetUnicodeStrProp(AInstance,PropInfo),ComparedValue);
     sfoNotEqual             :  Result := not SameText(GetUnicodeStrProp(AInstance,PropInfo),ComparedValue);
     else
       Assert(False);

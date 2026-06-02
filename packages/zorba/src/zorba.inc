@@ -20,8 +20,13 @@
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.SysUtils,System.CTypes, System.DynLibs, Api.Xqc;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Sysutils,ctypes, dynlibs, xqc;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$IFDEF UNIX}
   {$DEFINE extdecl:=cdecl}
@@ -100,7 +105,7 @@ begin
     if (ZorbaLibraryHandle=nilhandle) then
       Exit;
     inc(RefCount);
-    LoadedLibrary:=LibraryName;    
+    LoadedLibrary:=LibraryName;
     pointer(create_simple_store)   :=GetProcedureAddress(ZorbaLibraryHandle,'create_simple_store');
     pointer(shutdown_simple_store) :=GetProcedureAddress(ZorbaLibraryHandle,'shutdown_simple_store');
     pointer(zorba_implementation)  :=GetProcedureAddress(ZorbaLibraryHandle,'zorba_implementation');

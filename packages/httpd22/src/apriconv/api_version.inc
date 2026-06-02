@@ -20,8 +20,8 @@
 
 {
  * @file api_version.h
- * @brief 
- * 
+ * @brief
+ *
  * APR-iconv's Version
  *
  * There are several different mechanisms for accessing the version. There
@@ -39,7 +39,7 @@
  }
 
 { The numeric compile-time version constants. These constants are the
- * authoritative version numbers for API. 
+ * authoritative version numbers for API.
  }
 
 { major version
@@ -61,7 +61,7 @@ const
 
 {
  *  This symbol is defined for internal, "development" copies of API. This
- *  symbol will be #undef'd for releases. 
+ *  symbol will be #undef'd for releases.
  }
 { #define API_IS_DEV_VERSION }
 
@@ -84,7 +84,7 @@ const
 // external LibAPRIconv name LibNamePrefix + 'api_version' + LibSuff4;
 
 { Return API's version information as a string. }
-//function api_version_string: PChar;
+//function api_version_string: PAnsiChar;
 // {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
 // external LibAPRIconv name LibNamePrefix + 'api_version_string' + LibSuff0;
 

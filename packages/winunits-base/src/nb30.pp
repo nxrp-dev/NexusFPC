@@ -1,9 +1,15 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit nb30;
+{$ENDIF FPC_DOTTEDUNITS}
 //  This module contains the definitions for portable NetBIOS 3.0
 //  support.
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses WinApi.Windows;
+{$ELSE FPC_DOTTEDUNITS}
 uses windows;
+{$ENDIF FPC_DOTTEDUNITS}
 {***************************************************************
  *                                                              *
  *              Data structure templates                        *
@@ -36,7 +42,7 @@ Type
     ncb_sto         : UCHAR;              { send timeout/sys timeout       }
     ncb_post        : ncb_post_type;      { POST routine address        }
     ncb_lana_num    : UCHAR;              { lana (adapter) number          }
-    ncb_cmd_cplt    : UCHAR;              { $ff => commmand pending       }
+    ncb_cmd_cplt    : UCHAR;              { $ff => command pending       }
 {$ifdef WIN64}
     ncb_reserve     : array[0..17] of UCHAR; { reserved, used by BIOS         }
 {$else}

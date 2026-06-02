@@ -12,14 +12,21 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit FPImgQRCode;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, FpImage, FpImage.QRCodeGen;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, fpImage, fpqrcodegen;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
 
@@ -150,7 +157,7 @@ function TImageQRCodeGenerator.SaveToFile(const AFileName: String): Boolean;
     Result := FindWriterFromExtension(ExtractFileExt(filename));
   end;
   {$ENDIF}
-  
+
 Var
   WriterClass : TFPCustomImageWriterClass;
   Writer : TFPCustomImageWriter;

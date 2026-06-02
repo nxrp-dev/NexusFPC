@@ -12,7 +12,9 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit go32;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$S-,R-,I-,Q-} {no stack check, used by DPMIEXCP !! }
 {$inline ON}
@@ -20,7 +22,7 @@ unit go32;
 interface
 
     const
-    { contants for the run modes returned by get_run_mode }
+    { constants for the run modes returned by get_run_mode }
        rm_unknown = 0;
        rm_raw     = 1;     { raw (without HIMEM) }
        rm_xms     = 2;     { XMS (for example with HIMEM, without EMM386) }
@@ -122,7 +124,7 @@ interface
     procedure seg_move(sseg : word;source : longint;dseg : word;dest : longint;count : longint);
 
     { fills a memory area specified by a 48 bit pointer with c }
-    procedure seg_fillchar(seg : word;ofs : longint;count : longint;c : char);
+    procedure seg_fillchar(seg : word;ofs : longint;count : longint;c : AnsiChar);
     procedure seg_fillword(seg : word;ofs : longint;count : longint;w : word);
 
     {************************************}
@@ -156,19 +158,6 @@ interface
     function unlock_data(var data;size : longint) : boolean;
     function unlock_code(functionaddr : pointer;size : longint) : boolean;
 
-{$ifdef VER3_0}
-    { disables and enables interrupts }
-    procedure disable;
-    procedure enable;
-
-    function inportb(port : word) : byte;
-    function inportw(port : word) : word;
-    function inportl(port : word) : longint;
-
-    procedure outportb(port : word;data : byte);
-    procedure outportw(port : word;data : word);
-    procedure outportl(port : word;data : longint);
-{$else VER3_0}
     { disables and enables interrupts }
     procedure disable;inline;
     procedure enable;inline;
@@ -180,7 +169,7 @@ interface
     procedure outportb(port : word;data : byte);inline;
     procedure outportw(port : word;data : word);inline;
     procedure outportl(port : word;data : longint);inline;
-{$endif VER3_0}
+
     function get_run_mode : word;
 
     function transfer_buffer : longint;
@@ -193,7 +182,7 @@ interface
     procedure dpmi_dosmemput(seg : word;ofs : word;var data;count : longint);
     procedure dpmi_dosmemget(seg : word;ofs : word;var data;count : longint);
     procedure dpmi_dosmemmove(sseg,sofs,dseg,dofs : word;count : longint);
-    procedure dpmi_dosmemfillchar(seg,ofs : word;count : longint;c : char);
+    procedure dpmi_dosmemfillchar(seg,ofs : word;count : longint;c : AnsiChar);
     procedure dpmi_dosmemfillword(seg,ofs : word;count : longint;w : word);
 
 
@@ -205,7 +194,7 @@ interface
        dosmemput      : procedure(seg : word;ofs : word;var data;count : longint)=@dpmi_dosmemput;
        dosmemget      : procedure(seg : word;ofs : word;var data;count : longint)=@dpmi_dosmemget;
        dosmemmove     : procedure(sseg,sofs,dseg,dofs : word;count : longint)=@dpmi_dosmemmove;
-       dosmemfillchar : procedure(seg,ofs : word;count : longint;c : char)=@dpmi_dosmemfillchar;
+       dosmemfillchar : procedure(seg,ofs : word;count : longint;c : AnsiChar)=@dpmi_dosmemfillchar;
        dosmemfillword : procedure(seg,ofs : word;count : longint;w : word)=@dpmi_dosmemfillword;
 
   implementation
@@ -232,7 +221,7 @@ interface
          seg_move(dosmemselector,sseg*16+sofs,dosmemselector,dseg*16+dofs,count);
       end;
 
-    procedure dpmi_dosmemfillchar(seg,ofs : word;count : longint;c : char);
+    procedure dpmi_dosmemfillchar(seg,ofs : word;count : longint;c : AnsiChar);
 
       begin
          seg_fillchar(dosmemselector,seg*16+ofs,count,c);
@@ -324,7 +313,7 @@ interface
          end;
       end;
 
-    procedure seg_fillchar(seg : word;ofs : longint;count : longint;c : char);
+    procedure seg_fillchar(seg : word;ofs : longint;count : longint;c : AnsiChar);
 
       begin
          asm
@@ -462,67 +451,7 @@ interface
            end ['ECX','EAX'];
       end;
 
-{$ifdef VER3_0}
-    procedure outportb(port : word;data : byte);
 
-      begin
-         asm
-            movw port,%dx
-            movb data,%al
-            outb %al,%dx
-         end ['EAX','EDX'];
-      end;
-
-    procedure outportw(port : word;data : word);
-
-      begin
-         asm
-            movw port,%dx
-            movw data,%ax
-            outw %ax,%dx
-         end ['EAX','EDX'];
-      end;
-
-    procedure outportl(port : word;data : longint);
-
-      begin
-         asm
-            movw port,%dx
-            movl data,%eax
-            outl %eax,%dx
-         end ['EAX','EDX'];
-      end;
-
-    function inportb(port : word) : byte;
-
-      begin
-         asm
-            movw port,%dx
-            inb %dx,%al
-            movb %al,__RESULT
-         end ['EAX','EDX'];
-      end;
-
-    function inportw(port : word) : word;
-
-      begin
-         asm
-            movw port,%dx
-            inw %dx,%ax
-            movw %ax,__RESULT
-         end ['EAX','EDX'];
-      end;
-
-    function inportl(port : word) : longint;
-
-      begin
-         asm
-            movw port,%dx
-            inl %dx,%eax
-            movl %eax,__RESULT
-         end ['EAX','EDX'];
-      end;
-{$else VER3_0}
     procedure outportb(port : word;data : byte);inline;
       begin
 	    fpc_x86_outportb(port,data);
@@ -552,8 +481,6 @@ interface
       begin
 	    inportl:=fpc_x86_inportl(port);
       end;
-{$endif VER3_0}
-
 
 
     function get_cs : word;assembler;
@@ -1168,19 +1095,6 @@ interface
          end;
       end;
 
-{$ifdef VER3_0}
-    procedure disable;assembler;
-
-      asm
-         cli
-      end;
-
-    procedure enable;assembler;
-
-      asm
-         sti
-      end;
-{$else VER3_0}
     procedure disable;inline;
 
       begin
@@ -1192,8 +1106,6 @@ interface
       begin
          fpc_x86_sti;
       end;
-{$endif VER3_0}
-
 
     var
       _run_mode : word;external name '_run_mode';

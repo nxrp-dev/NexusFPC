@@ -42,7 +42,9 @@
 
 // $Id: JwaLmAt.pas,v 1.10 2007/09/05 11:58:50 dezipaitor Exp $
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaLmAt;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -57,8 +59,13 @@ unit JwaLmAt;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Lmcons, WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaLmCons, JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 {$IFNDEF JWA_IMPLEMENTATIONSECTION}
 
@@ -78,7 +85,7 @@ const
 //
 //  Was there an error last time we tried to exec a program on behalf of
 //  this job.
-//  This flag is meaningfull on output only!
+//  This flag is meaningful on output only!
 //
 
   JOB_EXEC_ERROR                 = $02;    //  set if error
@@ -86,7 +93,7 @@ const
 
 //
 //  Will this job run today or tomorrow.
-//  This flag is meaningfull on output only!
+//  This flag is meaningful on output only!
 //
 
   JOB_RUNS_TODAY                 = $04;    //  set if today
@@ -94,7 +101,7 @@ const
 
 //
 //  Add current day of the month to DaysOfMonth input.
-//  This flag is meaningfull on input only!
+//  This flag is meaningful on input only!
 //
 
   JOB_ADD_CURRENT_DATE            = $08;    // set if to add current date
@@ -148,7 +155,7 @@ type
   LPAT_ENUM = ^AT_ENUM;
   {$EXTERNALSYM LPAT_ENUM}
   TAtEnum = AT_ENUM;
-  PAtEnum = PAT_ENUM;  
+  PAtEnum = PAT_ENUM;
 
 function NetScheduleJobAdd(Servername: LPCWSTR; Buffer: LPBYTE; JobId: LPDWORD): NET_API_STATUS; stdcall;
 {$EXTERNALSYM NetScheduleJobAdd}

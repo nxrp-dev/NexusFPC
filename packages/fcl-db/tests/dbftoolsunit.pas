@@ -57,10 +57,10 @@ type
   TDbfTraceDataset = class(TdbfAutoClean)
   protected
     procedure SetCurrentRecord(Index: longint); override;
-    procedure RefreshInternalCalcFields(Buffer: PChar); override;
+    procedure RefreshInternalCalcFields(Buffer: PAnsiChar); override;
     procedure InternalInitFieldDefs; override;
-    procedure CalculateFields(Buffer: PChar); override;
-    procedure ClearCalcFields(Buffer: PChar); override;
+    procedure CalculateFields(Buffer: PAnsiChar); override;
+    procedure ClearCalcFields(Buffer: PAnsiChar); override;
   end;
 
 
@@ -114,7 +114,7 @@ var
   TableLevelProvided: integer;
 begin
   TableLevelProvided := StrToIntDef(dbconnectorparams, 4);
-  if not (TableLevelProvided in [3, 4, 5, 7, 
+  if not (TableLevelProvided in [3, 4, 5, 7,
     TDBF_TABLELEVEL_FOXPRO, TDBF_TABLELEVEL_VISUALFOXPRO]) then
   begin
     Result := -1; // hope this crashes the tests so user is alerted.
@@ -293,7 +293,7 @@ begin
   inherited SetCurrentRecord(Index);
 end;
 
-procedure TDbfTraceDataset.RefreshInternalCalcFields(Buffer: PChar);
+procedure TDbfTraceDataset.RefreshInternalCalcFields(Buffer: PAnsiChar);
 begin
   DataEvents := DataEvents + 'RefreshInternalCalcFields' + ';';
   inherited RefreshInternalCalcFields(Buffer);
@@ -320,13 +320,13 @@ begin
     end;
 end;
 
-procedure TDbfTraceDataset.CalculateFields(Buffer: PChar);
+procedure TDbfTraceDataset.CalculateFields(Buffer: PAnsiChar);
 begin
   DataEvents := DataEvents + 'CalculateFields' + ';';
   inherited CalculateFields(Buffer);
 end;
 
-procedure TDbfTraceDataset.ClearCalcFields(Buffer: PChar);
+procedure TDbfTraceDataset.ClearCalcFields(Buffer: PAnsiChar);
 begin
   DataEvents := DataEvents + 'ClearCalcFields' + ';';
   inherited ClearCalcFields(Buffer);

@@ -15,14 +15,21 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit SortAlgs;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$MODE objfpc}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.SortBase;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   SortBase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {
                        HeapSort
@@ -349,7 +356,7 @@ begin
     exit;
 
   GetMem(TempBuf, ItemSize);
-  
+
 {$ifdef FPC_HAS_FEATURE_EXCEPTIONS}
   try
 {$endif FPC_HAS_FEATURE_EXCEPTIONS}
@@ -366,7 +373,7 @@ begin
     end;
 {$ifdef FPC_HAS_FEATURE_EXCEPTIONS}
   finally
-{$endif FPC_HAS_FEATURE_EXCEPTIONS}  
+{$endif FPC_HAS_FEATURE_EXCEPTIONS}
     FreeMem(TempBuf, ItemSize);
 {$ifdef FPC_HAS_FEATURE_EXCEPTIONS}
   end;

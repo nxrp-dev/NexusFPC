@@ -1,10 +1,17 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit gctypes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.CTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   ctypes;
-  
+{$ENDIF FPC_DOTTEDUNITS}
+
 const
   LITTLE_ENDIAN = 3412;
   BIG_ENDIAN    = 1234;
@@ -31,7 +38,7 @@ type
     tv_nsec: Longint;
   end;
   ptimespec = ^timespec;
-  
+
 var
   __system_argv: pargv; cvar; external;
 

@@ -1,17 +1,17 @@
 {
      File:       OpenScripting/DigitalHubRegistry.h
- 
+
      Contains:   Digital Hub AppleEvents
- 
+
      Version:    OSA-148~28
- 
+
      Copyright:  © 2002-2008 by Apple Computer, Inc.  All rights reserved
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 
 {  Pascal Translation: Gorazd Krosl <gorazd_1957@yahoo.ca>, October 2009 }
@@ -30,7 +30,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit DigitalHubRegistry;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -215,7 +217,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -239,7 +245,7 @@ const
 
 {
     Parameters for Digital Hub AppleEvents:
-                    
+
         kDigiHubMusicCD
         Required parameters:
         -->     keyDirectObject         typeFSRef
@@ -247,11 +253,11 @@ const
         kDigiHubPictureCD
         Required parameters:
         -->     keyDirectObject         typeFSRef
-                
+
         kDigiHubVideoDVD
         Required parameters:
         -->     keyDirectObject         typeFSRef
-                
+
         kDigiHubBlankCD
         Required parameters:
         -->     keyDirectObject         typeUTF8Text

@@ -14,12 +14,19 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit macutils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  MacOSApi.MacOSTP;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   macostp;
+{$ENDIF FPC_DOTTEDUNITS}
 
 function FourCharCodeToLongword(fourcharcode: Shortstring): Longword;
 
@@ -42,7 +49,7 @@ function MacOSErr2RTEerr(err: OSErr): Integer;
 function TranslatePathToMac (const path: string; mpw: Boolean): string;
 
 
-{Concats the relative or full path1 to the relative path2.}
+{Concatenate the relative or full path1 to the relative path2.}
 function ConcatMacPath (path1, path2: string): string;
 
 

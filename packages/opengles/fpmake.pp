@@ -2,14 +2,14 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses {$ifdef unix}cthreads,{$endif} fpmkunit;
 
 Var
   P : TPackage;
   T : TTarget;
 
 begin
-  With Installer do 
+  With Installer do
     begin
 {$endif ALLPACKAGES}
 
@@ -33,6 +33,9 @@ begin
     P.Targets.AddExampleProgram('examples/es2example1.pas');
     P.Sources.AddExampleFiles('examples/*',P.Directory,false,'.');
 
+
+
+    P.NamespaceMap:='namespaces.lst';
 
 {$ifndef ALLPACKAGES}
     Run;

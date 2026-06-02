@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit sdlutils;
+{$ENDIF FPC_DOTTEDUNITS}
 {
   $Id: sdlutils.pas,v 1.5 2006/11/19 18:56:44 savage Exp $
 
@@ -117,7 +119,7 @@ unit sdlutils;
   Ángel Eduardo García Hernández to fix a colour issue with the function. Many thanks.
 
   Revision 1.2  2004/02/14 00:23:39  savage
-  As UNIX is defined in jedi-sdl.inc this will be used to check linux compatability as well. Units have been changed to reflect this change.
+  As UNIX is defined in jedi-sdl.inc this will be used to check linux compatibility as well. Units have been changed to reflect this change.
 
   Revision 1.1  2004/02/05 00:08:20  savage
   Module 1.0 release
@@ -129,6 +131,17 @@ interface
 
 {$I jedi-sdl.inc}
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+{$IFDEF Unix}
+  System.Types,
+{$IFNDEF DARWIN}
+  Api.X11.Xlib,
+{$ENDIF}
+{$ENDIF}
+  System.SysUtils,
+  Api.Sdl;
+{$ELSE FPC_DOTTEDUNITS}
 uses
 {$IFDEF UNIX}
   Types,
@@ -138,6 +151,7 @@ uses
 {$ENDIF}
   SysUtils,
   sdl;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   TGradientStyle = ( gsHorizontal, gsVertical );
@@ -251,8 +265,13 @@ function SDL_ClipLine( var x1, y1, x2, y2 : Integer; ClipRect : PSDL_Rect ) : bo
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Math;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Math;
+{$ENDIF FPC_DOTTEDUNITS}
 
 function SDL_PixelTest( SrcSurface1 : PSDL_Surface; SrcRect1 : PSDL_Rect; SrcSurface2 :
   PSDL_Surface; SrcRect2 : PSDL_Rect; Left1, Top1, Left2, Top2 : integer ) : boolean;
@@ -2343,8 +2362,7 @@ begin
 
   maxx := DstSurface.w;
   maxy := DstSurface.h;
-  aCos := cos( Angle );
-  aSin := sin( Angle );
+  SinCos(Angle, aSin, aCos);
 
   Width := round( abs( srcrect.h * acos ) + abs( srcrect.w * asin ) );
   Height := round( abs( srcrect.h * asin ) + abs( srcrect.w * acos ) );

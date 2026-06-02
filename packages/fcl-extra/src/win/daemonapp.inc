@@ -13,18 +13,24 @@
  **********************************************************************}
 { Win32 implementation of service application }
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses WinApi.Windows,WinApi.Jedi.Winsvc;
+{$ELSE FPC_DOTTEDUNITS}
 uses windows,jwawinsvc;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Const
   CM_SERVICE_CONTROL_CODE = WM_USER+1;
-  
+
 Resourcestring
   SErrRegisterHandler  = 'Could not register control handler, error code %d';
   SErrNoControlContext = 'Not handling Control message without control context: (%d %d %d).';
   SControlCodeReceived = 'Control message received: (%d %d %d).';
 
+{$IF SIZEOF(CHAR)=1}
 function StartServiceCtrlDispatcher(lpServiceStartTable: LPSERVICE_TABLE_ENTRY): BOOL; stdcall; external 'advapi32.dll' name 'StartServiceCtrlDispatcherA';
 function RegisterServiceCtrlHandlerEx(lpServiceName: LPCSTR;lpHandlerProc: LPHANDLER_FUNCTION_EX; lpContext: LPVOID): SERVICE_STATUS_HANDLE; stdcall;external 'advapi32.dll' name 'RegisterServiceCtrlHandlerExA';
+{$ENDIF}
 function SetServiceStatus(hServiceStatus: SERVICE_STATUS_HANDLE; const lpServiceStatus: SERVICE_STATUS): BOOL; stdcall; external 'advapi32.dll' name 'SetServiceStatus';
 
 { ---------------------------------------------------------------------
@@ -40,7 +46,7 @@ begin
     Application.Log(etError,Format(SerrNoControlContext,[dwControl,dwEventType,ptrint(lpEventData)]));
 end;
 
-Procedure ServiceMainEntry(Argc : DWord; Args : Pchar); stdcall;
+Procedure ServiceMainEntry(Argc : DWord; Args : PChar); stdcall;
 
 begin
   If Assigned(Application) then
@@ -134,7 +140,7 @@ end;
 { ---------------------------------------------------------------------
   TCustomDaemonApplication
   ---------------------------------------------------------------------}
-  
+
 const
   WinServiceTypes : array[TServiceType] of Integer
                   = (SERVICE_WIN32_OWN_PROCESS, SERVICE_KERNEL_DRIVER,
@@ -151,7 +157,7 @@ const
 // Careful, result of this function must be freed !!
 
 Function GetDependencies(D : TDependencies) : PChar;
-  
+
 var
   I,L : Integer;
   P   : PChar;
@@ -190,8 +196,8 @@ Var
   IDTag : DWord;
   PIDTag : LPDWord;
   PDeps,PN,PP : PChar;
-  D : TServiceDescriptionA;
-  
+  D : TServiceDescription;
+
 begin
   SM:=TSMData(FSysData).FHandle;
   DD:=Daemon.Definition;
@@ -203,7 +209,7 @@ begin
     E:=E+' '+DD.RunArguments;
   N:=DD.Name;
   DN:=DD.DisplayName;
-  
+
   With DD.WinBindings do
     begin
     LG:=GroupName;
@@ -221,7 +227,7 @@ begin
       ST:=WinServiceTypes[ServiceType];
     if (doInteractive in DD.Options) and (ServiceType=stWin32)  then
       ST:=ST or SERVICE_INTERACTIVE_PROCESS;
-    // Actually, we should check count of enabled definitons only :/
+    // Actually, we should check count of enabled definitions only :/
     if (ServiceType=stWin32) and (FMapper.DaemonDefs.Count>1) then
       ST:=(ST xor SERVICE_WIN32_OWN_PROCESS) or SERVICE_WIN32_SHARE_PROCESS;
     // StartType STT
@@ -243,7 +249,7 @@ begin
       RaiseLastOSError;
     Try
       SD:=DD.Description;
-      D.lpDescription:=Pchar(SD);
+      D.lpDescription:=PChar(SD);
       ChangeServiceConfig2(SV,SERVICE_CONFIG_DESCRIPTION,@D);
       If (PIDTag<>Nil) then
         DD.WinBindings.IDTag:=IDTag;
@@ -260,11 +266,11 @@ procedure TCustomDaemonApplication.SysUnInstallDaemon(Daemon: TCustomDaemon);
 
 var
   SM,SV : SC_HANDLE;
-  DN : String;
+  DN : AnsiString;
 begin
   SM:=TSMData(FSysData).FHandle;
   DN:=Daemon.Definition.Name;
-  SV:=OpenService(SM,PChar(DN),SERVICE_ALL_ACCESS);
+  SV:=OpenServiceA(SM,PAnsiChar(DN),SERVICE_ALL_ACCESS);
   if (SV=0) then
     RaiseLastOSError;
   try
@@ -297,7 +303,7 @@ procedure TCustomDaemonApplication.SysStartInstallDaemons;
 
 Var
   SM : SC_HANDLE;
-  
+
 begin
   SM:=OpenSCManager(Nil,Nil,SC_MANAGER_ALL_ACCESS);
   if (SM=0) then
@@ -343,10 +349,10 @@ begin
     if not GetClassInfoA(HInstance,AWClass.lpszClassName,TClass) then
       begin
       AWClass.hInstance := HInstance;
-      if Windows.RegisterClassA(AWClass) = 0 then
+      if {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.RegisterClassA(AWClass) = 0 then
         DaemonError(SErrWindowClass);
       end;
-    GUIHandle := CreateWindowA(AWClass.lpszClassName, Pchar(Title),
+    GUIHandle := CreateWindowA(AWClass.lpszClassName, PAnsiChar(Title),
       HandleOpts, 1,1, 0, 0, 0, 0, HInstance, nil);
     end;
   T:=TDaemonStartThread.Create(P,GUIHandle);
@@ -369,7 +375,7 @@ begin
             Terminate;
           end;
         if not Terminated then
-          WaitMessage;  
+          WaitMessage;
       Until Terminated;
       end;
   finally
@@ -384,7 +390,8 @@ Var
   P : PServiceTableEntry;
   I,C : Integer;
   RV : Integer;
-  
+  SN : AnsiString;
+
 begin
   GetMem(P,SizeOf(TServiceTableEntry)*(FMapper.DaemonDefs.Count+1));
   Try
@@ -392,7 +399,7 @@ begin
     For I:=0 to C-1 do
       If Assigned(FMapper.DaemonDefs[i].Instance) then
         begin
-        P[i].lpServiceName:=Pchar(FMapper.DaemonDefs[i].Name);
+        P[i].lpServiceName:=PChar(FMapper.DaemonDefs[i].Name);
         P[i].lpServiceProc:=@ServiceMainEntry;
         end;
     // Set last entry to Nil.
@@ -435,7 +442,7 @@ end;
 
 procedure TCustomDaemonApplication.RemoveController(
   AController: TDaemonController);
-  
+
 begin
   FreeAndNil(AController.FDaemon);
   AController.Free;
@@ -458,7 +465,7 @@ procedure TDaemonThread.StartServiceExecute;
 
 Var
   Msg : TMsg;
-  
+
 begin
   PeekMessage(Msg,0,WM_USER,WM_USER,PM_NOREMOVE);
 end;
@@ -512,7 +519,7 @@ Var
   T : TThread;
   H : SERVICE_STATUS_HANDLE;
   I : Integer;
-  
+
 begin
   For I:=0 to Argc-1 do
     FParams.Add(StrPas(Args[I]));

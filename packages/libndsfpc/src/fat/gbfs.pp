@@ -1,8 +1,10 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit gbfs;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$error  gbfs is no longer supported on  nds}
 
-{$mode objfpc} 
+{$mode objfpc}
 {$apptype arm9}
 {$define arm9}
 
@@ -13,8 +15,13 @@ unit gbfs;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.CTypes, NdsApi.Nds9;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   ctypes, nds9;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$linklib nds9}
 {$linklib fat}

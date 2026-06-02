@@ -1,9 +1,11 @@
-unit CairoFT; 
+{$IFNDEF FPC_DOTTEDUNITS}
+unit CairoFT;
+{$ENDIF FPC_DOTTEDUNITS}
 {
     This file is part of the Free Pascal libraries.
     Copyright (c) 2003-2008 by the Free Pascal development team
 
-    Translation of cairo-ft.h 
+    Translation of cairo-ft.h
 
     See the file COPYING.FPC, included in this distribution,
     for details about the copyright.
@@ -16,7 +18,7 @@ unit CairoFT;
 
 Based on:
 
- Original translation of cairo-ft.h by Jeffrey Pohlmeyer 
+ Original translation of cairo-ft.h by Jeffrey Pohlmeyer
  updated to version 1.4 by Luiz Américo Pereira Câmara 2007
  updated to version 1.12 by Valdinilson Lourenço da Cunha 2012
 
@@ -28,8 +30,13 @@ cairo.pp for the full license.
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  Api.Cairo.Lib, Api.Freetypeh;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Cairo, freetypeh;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   //todo: properly define FcPattern:

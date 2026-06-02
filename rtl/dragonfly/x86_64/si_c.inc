@@ -2,38 +2,40 @@
 Type
     TCleanup = procedure; cdecl;
 
-var 
-  environ : ppchar; cvar; public  name '__environ';
-  progname: pchar = #0#0; cvar; public name '__progname';
-  dynamic : pchar;  external name '_DYNAMIC'; // #pragma weak
+var
+  environ : PPAnsiChar; cvar; public  name '__environ';
+  progname: PAnsiChar = #0#0; cvar; public name '__progname';
+  dynamic : PAnsiChar;  external name '_DYNAMIC'; // #pragma weak
+
+{$linklib c}
 
 procedure atexit(prc:TCleanup); cdecl external name 'atexit';
-procedure cleanup(prc:TCleanup); cdecl external name 'cleanup';			
-procedure init_tls; cdecl; external name 'init_tls';
+procedure cleanup(prc:TCleanup); cdecl external name 'cleanup';
+procedure init_tls; cdecl; external name '_init_tls';
 procedure fini; cdecl; external name '_fini';
 procedure init; cdecl; external name '_init';
 procedure libc_exit(exitcode:longint);cdecl; external name 'exit';
-function  main(nrarg:longint;pp:ppchar;env:ppchar):longint; cdecl; external name 'main';
+function  main(nrarg:longint;pp:PPAnsiChar;env:PPAnsiChar):longint; cdecl; external name 'main';
 
 {$ifdef gcrt}
  procedure cmcleanup; cdecl; external name '_mcleanup';
  procedure monstratup(p,p2:pointer); cdecl; external name 'monstartup';
 
-var 
- eprol:longint; external name 'eprol'; 
+var
+ eprol:longint; external name 'eprol';
  etext:longint; external name 'etext';
 {$endif}
 
-procedure start(ap:ppchar;cleanup:TCleanup);
+procedure start(ap:PPAnsiChar;cleanup:TCleanup);
 
 var argc: longint;
-    argv: ppchar;
-    env : ppchar;
-    s   : pchar;
+    argv: PPAnsiChar;
+    env : PPAnsiChar;
+    s   : PAnsiChar;
 begin
-  argc:=plongint(ap)^; 
-  argv:=ppchar(ap[1]);
-  env:=	ppchar(ap[2+argc]);
+  argc:=plongint(ap)^;
+  argv:=PPAnsiChar(ap[1]);
+  env:=	PPAnsiChar(ap[2+argc]);
   environ:=env;
   if (argc>0) and (argv[0]<>#0) Then
    begin
@@ -44,9 +46,9 @@ begin
           if s^='/' then
             progname:=@s[1];
           inc(s);
-	end; 
+	end;
     end;
-  if assigned(pchar(@dynamic)) then // I suspect this is a trick to find
+  if assigned(PAnsiChar(@dynamic)) then // I suspect this is a trick to find
 				    // out runtime if we are shared
 				    // linking, so the same code can be used
 				    // for static and shared linking
@@ -59,13 +61,13 @@ begin
   atexit(@fini);
   {$ifdef GCRT}
     monstartup(@eprol,@etext);
-  {$endif} 
+  {$endif}
   init;
   {$ifdef GCRT}
    asm
     eprol:
    end;
-  {$endif} 
+  {$endif}
 
   libc_exit(main(argc,argv,env)); // doesn't return
  asm
@@ -75,7 +77,7 @@ begin
     .section ".note.ABI-tag", "a"
     .align 4
     .long 10
-    .long 4 
+    .long 4
     .long  1
     .asciz "DragonFly"
     .align 4

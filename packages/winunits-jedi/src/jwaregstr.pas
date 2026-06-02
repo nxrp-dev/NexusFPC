@@ -43,7 +43,9 @@
 // $Id: JwaRegStr.pas,v 1.10 2007/09/05 11:58:52 dezipaitor Exp $
 
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaRegStr;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -59,8 +61,13 @@ interface
 
 {.$DEFINE NEC_98}
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 {$IFNDEF JWA_IMPLEMENTATIONSECTION}
@@ -635,7 +642,7 @@ const
   {$EXTERNALSYM DOSOPTF_PROVIDESUMB}
   DOSOPTF_NEEDSETUP   = $00000020; // Need to configure option
   {$EXTERNALSYM DOSOPTF_NEEDSETUP}
-  DOSOPTF_INDOSSTART  = $00000040; // Suppored by DOSSTART.BAT
+  DOSOPTF_INDOSSTART  = $00000040; // Supported by DOSSTART.BAT
   {$EXTERNALSYM DOSOPTF_INDOSSTART}
   DOSOPTF_MULTIPLE    = $00000080; // Load multiple configuration lines
   {$EXTERNALSYM DOSOPTF_MULTIPLE}
@@ -930,7 +937,7 @@ const
   REGSTR_VAL_NOIDE        = 'NoIDE';
   {$EXTERNALSYM REGSTR_VAL_NOIDE}
 
-// The foll. clase name definitions should be the same as in dirkdrv.inx and
+// The foll. class name definitions should be the same as in dirkdrv.inx and
 // cdrom.inx
 
   REGSTR_VAL_DISKCLASSNAME  = 'DiskDrive';
@@ -2210,7 +2217,7 @@ const
 //
 
 type
-  _DSKTLSYSTEMTIME = packed record
+  _DSKTLSYSTEMTIME = record
     wYear: WORD;
     wMonth: WORD;
     wDayOfWeek: WORD;

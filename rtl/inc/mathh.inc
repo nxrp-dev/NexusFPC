@@ -98,9 +98,6 @@ ThreadVar
 Var
 {$endif FPC_HAS_FEATURE_THREADING}
   softfloat_exception_flags : TFPUExceptionMask;
-
-{ global/shared just like the native ones }
-var
   softfloat_exception_mask : TFPUExceptionMask;
   softfloat_rounding_mode : TFPURoundingMode;
 
@@ -142,10 +139,10 @@ procedure float_raise(i: TFPUExceptionMask);
 
 {$ifdef SUPPORT_DOUBLE}
     function Real2Double(r : real48) : double;
-    operator := (b:real48) d:double;
+    operator := (b:real48) d:double; {$ifdef SYSTEMINLINE}inline;{$endif}
 {$endif}
 {$ifdef SUPPORT_EXTENDED}
-    operator := (b:real48) e:extended;
+    operator := (b:real48) e:extended; {$ifdef SYSTEMINLINE}inline;{$endif}
 {$endif SUPPORT_EXTENDED}
 
     type

@@ -1,5 +1,7 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit gcmodplay;
-{$mode objfpc} 
+{$ENDIF FPC_DOTTEDUNITS}
+{$mode objfpc}
 {$J+}
 {$INLINE ON}
 {$MACRO ON}
@@ -7,8 +9,13 @@ unit gcmodplay;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.CTypes, WiiApi.Gctypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   ctypes, gctypes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   MAX_VOICES = 32;

@@ -13,20 +13,27 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fpcgdbcoll;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, Data.Db, Data.CodeGen.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, db, fpddcodegen;
-  
+{$ENDIF FPC_DOTTEDUNITS}
+
 Type
   TListMode = (lmNone,lmList,lmObjectList,lmCollection,lmDBCollection,lmGenericList);
   TClassOption = (coCreateLoader,coUseFieldMap,coCreateArrayProperty,coCreateAssign, coRecord);
   TClassOptions = Set of TClassOption;
-  
+
   { TDBCollOptions }
 
   TDBCollOptions = Class(TClassCodeGeneratorOptions)
@@ -65,7 +72,7 @@ Type
     Property ArrayPropName : String Read GetArrayPropName Write SetArrayPropName;
     Property AncestorClass;
   end;
-  
+
   { TDDDBCollCodeGenerator }
 
   TDDDBCollCodeGenerator = Class(TDDClassCodeGenerator)
@@ -728,7 +735,7 @@ procedure TDDDBCollCodeGenerator.WriteFieldMapAssign(Strings : TStrings; F : TFi
 
 Var
   FN,PN,S : String;
-  
+
 begin
   PN:=F.PropertyName;
   FN:='Self.F'+F.FieldName;
@@ -1095,7 +1102,7 @@ end;
 
 Initialization
   RegisterCodeGenerator('DBColl','Simple object/record collection/list for the data',TDDDBCollCodeGenerator);
-  
+
 Finalization
   UnRegisterCodeGenerator(TDDDBCollCodeGenerator);
 end.

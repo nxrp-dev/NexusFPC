@@ -31,7 +31,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit AudioFileComponents;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -216,7 +218,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CFBase,MacOsApi.CoreAudioTypes,MacOsApi.Files,MacOsApi.AudioFile,MacOsApi.AudioComponents;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CFBase,CoreAudioTypes,Files,AudioFile,AudioComponents;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 {$ALIGN POWER}
@@ -239,7 +245,7 @@ type
 	AudioFileComponentPtr = ^AudioFileComponent;
 {!
     @typedef	AudioFileComponentPropertyID
-    @abstract		a four char code for a property ID.
+    @abstract		a four AnsiChar code for a property ID.
 }
 type
 	AudioFileComponentPropertyID = UInt32;
@@ -254,7 +260,7 @@ type
     @param inFileRef		an CFURLRef fully specifying the path of the file to create/initialise
     @param inFormat			an AudioStreamBasicDescription describing the data format that will be
 							added to the audio file.
-    @param inFlags			relevant flags for creating/opening the file. 
+    @param inFlags			relevant flags for creating/opening the file.
 								if kAudioFileFlags_EraseFile is set, it will erase an existing file
 								 if not set, then the Create call will fail if the URL is an existing file
     @result					returns noErr if successful.
@@ -298,7 +304,7 @@ function AudioFileComponentOpenWithCallbacks( inComponent: AudioFileComponent; i
 	@param inWriteFunc		a function that will be called when AudioFile needs to write data.
 	@param inGetSizeFunc	a function that will be called when AudioFile needs to know the file size.
 	@param inSetSizeFunc	a function that will be called when AudioFile needs to set the file size.
-    @param inFileType 		an AudioFileTypeID indicating the type of audio file to which to initialize the file. 
+    @param inFileType 		an AudioFileTypeID indicating the type of audio file to which to initialize the file.
     @param inFormat			an AudioStreamBasicDescription describing the data format that will be
 							added to the audio file.
     @param inFlags			relevant flags for creating/opening the file. Currently zero.
@@ -316,7 +322,7 @@ function AudioFileComponentInitializeWithCallbacks( inComponent: AudioFileCompon
 }
 function AudioFileComponentCloseFile( inComponent: AudioFileComponent ): OSStatus; external name '_AudioFileComponentCloseFile';
 (* API_AVAILABLE(macos(10.4)) API_UNAVAILABLE(ios, watchos, tvos) *)
-				
+
 {!
     @function	AudioFileComponentOptimize
     @abstract   implements AudioFileOptimize.
@@ -325,23 +331,23 @@ function AudioFileComponentCloseFile( inComponent: AudioFileComponent ): OSStatu
 }
 function AudioFileComponentOptimize( inComponent: AudioFileComponent ): OSStatus; external name '_AudioFileComponentOptimize';
 (* API_AVAILABLE(macos(10.4)) API_UNAVAILABLE(ios, watchos, tvos) *)
-				
+
 {!
     @function	AudioFileComponentReadBytes
-    @abstract   implements AudioFileReadBytes. 
-				
+    @abstract   implements AudioFileReadBytes.
+
     @discussion				Returns kAudioFileEndOfFileError when read encounters end of file.
     @param inComponent		an AudioFileComponent
     @param inUseCache 		true if it is desired to cache the data upon read, else false
     @param inStartingByte	the byte offset of the audio data desired to be returned
     @param ioNumBytes 		on input, the number of bytes to read, on output, the number of
 							bytes actually read.
-    @param outBuffer 		outBuffer should be a void * to user allocated memory large enough for the requested bytes. 
+    @param outBuffer 		outBuffer should be a void * to user allocated memory large enough for the requested bytes.
     @result					returns noErr if successful.
 }
 function AudioFileComponentReadBytes( inComponent: AudioFileComponent; inUseCache: Boolean; inStartingByte: SInt64; var ioNumBytes: UInt32; outBuffer: UnivPtr ): OSStatus; external name '_AudioFileComponentReadBytes';
 (* API_AVAILABLE(macos(10.4)) API_UNAVAILABLE(ios, watchos, tvos) *)
-						
+
 {!
     @function				AudioFileComponentWriteBytes
     @abstract				implements AudioFileWriteBytes.
@@ -350,12 +356,12 @@ function AudioFileComponentReadBytes( inComponent: AudioFileComponent; inUseCach
     @param inStartingByte	the byte offset where the audio data should be written
     @param ioNumBytes 		on input, the number of bytes to write, on output, the number of
 							bytes actually written.
-    @param inBuffer 		inBuffer should be a void * containing the bytes to be written 
+    @param inBuffer 		inBuffer should be a void * containing the bytes to be written
     @result					returns noErr if successful.
 }
 function AudioFileComponentWriteBytes( inComponent: AudioFileComponent; inUseCache: Boolean; inStartingByte: SInt64; var ioNumBytes: UInt32; inBuffer: {const} UnivPtr ): OSStatus; external name '_AudioFileComponentWriteBytes';
 (* API_AVAILABLE(macos(10.4)) API_UNAVAILABLE(ios, watchos, tvos) *)
-						
+
 {!
     @function	AudioFileComponentReadPackets
     @abstract   implements AudioFileReadPackets.
@@ -367,37 +373,37 @@ function AudioFileComponentWriteBytes( inComponent: AudioFileComponent; inUseCac
     @param outNumBytes				on output, the number of bytes actually returned
     @param outPacketDescriptions 	on output, an array of packet descriptions describing
 									the packets being returned. NULL may be passed for this
-									parameter. Nothing will be returned for linear pcm data.   
+									parameter. Nothing will be returned for linear pcm data.
     @param inStartingPacket 		the packet index of the first packet desired to be returned
     @param ioNumPackets 			on input, the number of packets to read, on output, the number of
 									packets actually read.
-    @param outBuffer 				outBuffer should be a pointer to user allocated memory of size: 
+    @param outBuffer 				outBuffer should be a pointer to user allocated memory of size:
 									number of packets requested times file's maximum (or upper bound on)
 									packet size.
     @result							returns noErr if successful.
 }
 function AudioFileComponentReadPackets( inComponent: AudioFileComponent; inUseCache: Boolean; var outNumBytes: UInt32; outPacketDescriptions: AudioStreamPacketDescriptionPtr {* __nullable}; inStartingPacket: SInt64; var ioNumPackets: UInt32; outBuffer: UnivPtr ): OSStatus; external name '_AudioFileComponentReadPackets';
 (* API_AVAILABLE(macos(10.4)) API_UNAVAILABLE(ios, watchos, tvos) *)
-									
+
 
 {!
     @function	AudioFileComponentReadPacketData
     @abstract   implements AudioFileReadPacketData.
     @discussion For all uncompressed formats, packets == frames.
-				If the byte size of the number packets requested is 
+				If the byte size of the number packets requested is
 				less than the buffer size, ioNumBytes will be reduced.
-				If the buffer is too small for the number of packets 
-				requested, ioNumPackets and ioNumBytes will be reduced 
+				If the buffer is too small for the number of packets
+				requested, ioNumPackets and ioNumBytes will be reduced
 				to the number of packets that can be accommodated and their byte size.
 				Returns kAudioFileEndOfFileError when read encounters end of file.
 
     @param inComponent				an AudioFileComponent
     @param inUseCache 				true if it is desired to cache the data upon read, else false
-    @param ioNumBytes				on input the size of outBuffer in bytes. 
+    @param ioNumBytes				on input the size of outBuffer in bytes.
 									on output, the number of bytes actually returned.
     @param outPacketDescriptions 	on output, an array of packet descriptions describing
 									the packets being returned. NULL may be passed for this
-									parameter. Nothing will be returned for linear pcm data.   
+									parameter. Nothing will be returned for linear pcm data.
     @param inStartingPacket 		the packet index of the first packet desired to be returned
     @param ioNumPackets 			on input, the number of packets to read, on output, the number of
 									packets actually read.
@@ -406,7 +412,7 @@ function AudioFileComponentReadPackets( inComponent: AudioFileComponent; inUseCa
 }
 function AudioFileComponentReadPacketData( inComponent: AudioFileComponent; inUseCache: Boolean; var ioNumBytes: UInt32; outPacketDescriptions: AudioStreamPacketDescriptionPtr {* __nullable}; inStartingPacket: SInt64; var ioNumPackets: UInt32; outBuffer: UnivPtr ): OSStatus; external name '_AudioFileComponentReadPacketData';
 (* API_AVAILABLE(macos(10.4)) API_UNAVAILABLE(ios, watchos, tvos) *)
-									
+
 {!
     @function	AudioFileComponentWritePackets
     @abstract   implements AudioFileWritePackets.
@@ -414,9 +420,9 @@ function AudioFileComponentReadPacketData( inComponent: AudioFileComponent; inUs
     @param inComponent				an AudioFileComponent
     @param inUseCache 				true if it is desired to cache the data upon write, else false
     @param inNumBytes				the number of bytes being provided for write
-    @param inPacketDescriptions 	an array of packet descriptions describing the packets being 
-									provided. Not all formats require packet descriptions to be 
-									provided. NULL may be passed if no descriptions are required.   
+    @param inPacketDescriptions 	an array of packet descriptions describing the packets being
+									provided. Not all formats require packet descriptions to be
+									provided. NULL may be passed if no descriptions are required.
     @param inStartingPacket 		the packet index of where the first packet provided should be placed.
     @param ioNumPackets 			on input, the number of packets to write, on output, the number of
 									packets actually written.
@@ -432,7 +438,7 @@ function AudioFileComponentWritePackets( inComponent: AudioFileComponent; inUseC
     @abstract   implements AudioFileGetPropertyInfo.
     @param		inComponent			an AudioFileComponent
     @param      inPropertyID		an AudioFileProperty constant.
-    @param      outPropertySize		the size in bytes of the current value of the property. In order to get the property value, 
+    @param      outPropertySize		the size in bytes of the current value of the property. In order to get the property value,
 									you will need a buffer of this size.
     @param      outWritable			will be set to 1 if writable, or 0 if read only.
     @result							returns noErr if successful.
@@ -469,11 +475,11 @@ function AudioFileComponentSetProperty( inComponent: AudioFileComponent; inPrope
 {!
     @function	AudioFileComponentCountUserData
     @abstract   implements AudioFileCountUserData
-    @discussion		"User Data" refers to chunks in AIFF, CAF and WAVE files, or resources 
+    @discussion		"User Data" refers to chunks in AIFF, CAF and WAVE files, or resources
 					in Sound Designer II files, and possibly other things in other files.
 					For simplicity, referred to below as "chunks".
     @param inComponent				an AudioFileComponent
-    @param inUserDataID				the four char code of the chunk.
+    @param inUserDataID				the four AnsiChar code of the chunk.
     @param outNumberItems			on output, if successful, number of chunks of this type in the file.
     @result							returns noErr if successful.
 }
@@ -484,7 +490,7 @@ function AudioFileComponentCountUserData( inComponent: AudioFileComponent; inUse
     @function	AudioFileComponentGetUserDataSize
     @abstract   implements AudioFileGetUserDataSize
     @param inComponent				an AudioFileComponent
-    @param inUserDataID				the four char code of the chunk.
+    @param inUserDataID				the four AnsiChar code of the chunk.
     @param inIndex					an index specifying which chunk if there are more than one.
     @param outUserDataSize			on output, if successful, the size of the user data chunk.
     @result							returns noErr if successful.
@@ -496,9 +502,9 @@ function AudioFileComponentGetUserDataSize( inComponent: AudioFileComponent; inU
     @function	AudioFileGetUserData
     @abstract   implements AudioFileGetUserData.
     @param		inComponent			an AudioFileComponent
-    @param      inUserDataID		the four char code of the chunk.
+    @param      inUserDataID		the four AnsiChar code of the chunk.
     @param      inIndex				an index specifying which chunk if there are more than one.
-	@param		ioUserDataSize		the size of the buffer on input, size of bytes copied to buffer on output 
+	@param		ioUserDataSize		the size of the buffer on input, size of bytes copied to buffer on output
     @param      outUserData			a pointer to a buffer in which to copy the chunk data.
     @result							returns noErr if successful.
 }
@@ -509,10 +515,10 @@ function AudioFileComponentGetUserData( inComponent: AudioFileComponent; inUserD
     @function	AudioFileComponentSetUserData
     @abstract   implements AudioFileSetUserData.
     @param		inComponent			an AudioFileComponent
-    @param      inUserDataID		the four char code of the chunk.
+    @param      inUserDataID		the four AnsiChar code of the chunk.
     @param      inIndex				an index specifying which chunk if there are more than one.
-	@param		inUserDataSize		on input the size of the data to copy, on output, size of bytes copied from the buffer  
-    @param      inUserData			a pointer to a buffer from which to copy the chunk data 
+	@param		inUserDataSize		on input the size of the data to copy, on output, size of bytes copied from the buffer
+    @param      inUserData			a pointer to a buffer from which to copy the chunk data
 									(only the contents of the chunk, not including the chunk header).
     @result							returns noErr if successful.
 }
@@ -524,7 +530,7 @@ function AudioFileComponentSetUserData( inComponent: AudioFileComponent; inUserD
     @function	AudioFileComponentRemoveUserData
     @abstract   implements AudioFileRemoveUserData.
     @param		inComponent			an AudioFileComponent
-    @param      inUserDataID		the four char code of the chunk.
+    @param      inUserDataID		the four AnsiChar code of the chunk.
     @param      inIndex				an index specifying which chunk if there are more than one.
     @result							returns noErr if successful.
 }
@@ -533,7 +539,7 @@ function AudioFileComponentRemoveUserData( inComponent: AudioFileComponent; inUs
 
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 //	The following calls are not made on AudioFile instances.
-//  These calls are used to determine the audio file type of some data. 
+//  These calls are used to determine the audio file type of some data.
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 {!
     @function	AudioFileComponentExtensionIsThisFormat
@@ -561,7 +567,7 @@ function AudioFileComponentFileDataIsThisFormat( inComponent: AudioFileComponent
 
 {$ifc false}
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-//	The following two calls are deprecated. 
+//	The following two calls are deprecated.
 //  Please implement AudioFileComponentFileDataIsThisFormat instead.
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 {!
@@ -573,8 +579,8 @@ function AudioFileComponentFileDataIsThisFormat( inComponent: AudioFileComponent
     @result							returns noErr if successful.
 }
 function AudioFileComponentFileIsThisFormat( inComponent: AudioFileComponent; inFileRefNum: SInt16; var outResult: UInt32 ): OSStatus; external name '_AudioFileComponentFileIsThisFormat';
-(* API_DEPRECATED("no longer supported", macos(10.4, 10.5)) API_UNAVAILABLE(ios, watchos, tvos) *) 
-	
+(* API_DEPRECATED("no longer supported", macos(10.4, 10.5)) API_UNAVAILABLE(ios, watchos, tvos) *)
+
 {!
     @function	AudioFileComponentDataIsThisFormat
     @abstract   deprecated. use AudioFileComponentFileDataIsThisFormat instead.
@@ -588,7 +594,7 @@ function AudioFileComponentFileIsThisFormat( inComponent: AudioFileComponent; in
     @result							returns noErr if successful.
 }
 function AudioFileComponentDataIsThisFormat( inComponent: AudioFileComponent; inClientData: UnivPtr {__nullable}; inReadFunc: AudioFile_ReadProc {__nullable}; inWriteFunc: AudioFile_WriteProc {__nullable}; inGetSizeFunc: AudioFile_GetSizeProc {__nullable}; inSetSizeFunc: AudioFile_SetSizeProc {__nullable}; var outResult: UInt32 ): OSStatus; external name '_AudioFileComponentDataIsThisFormat';
-(* API_DEPRECATED("no longer supported", macos(10.4, 10.5)) API_UNAVAILABLE(ios, watchos, tvos) *) 
+(* API_DEPRECATED("no longer supported", macos(10.4, 10.5)) API_UNAVAILABLE(ios, watchos, tvos) *)
 {$endc}
 
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -603,7 +609,7 @@ function AudioFileComponentDataIsThisFormat( inComponent: AudioFileComponent; in
     @param      inPropertyID		an AudioFileGlobalInfo property constant.
     @param      inSpecifierSize		The size of the specifier data.
     @param      inSpecifier			A specifier is a buffer of data used as an input argument to some of the global info properties.
-    @param      outPropertySize		the size in bytes of the current value of the property. In order to get the property value, 
+    @param      outPropertySize		the size in bytes of the current value of the property. In order to get the property value,
 									you will need a buffer of this size.
     @result							returns noErr if successful.
 }
@@ -625,35 +631,35 @@ function AudioFileComponentGetGlobalInfo( inComponent: AudioFileComponent; inPro
 (* API_AVAILABLE(macos(10.4)) API_UNAVAILABLE(ios, watchos, tvos) *)
 
 //==================================================================================================
-//	Properties for AudioFileComponentGetGlobalInfo. 
+//	Properties for AudioFileComponentGetGlobalInfo.
 //==================================================================================================
 
 {!
     @enum AudioFileComponent specific properties
     @constant   kAudioFileComponent_CanRead
-					Is file type readable? Returns a UInt32 1 or 0. 
+					Is file type readable? Returns a UInt32 1 or 0.
     @constant   kAudioFileComponent_CanWrite
-					Is file type writeable? Returns a UInt32 1 or 0. 
+					Is file type writeable? Returns a UInt32 1 or 0.
     @constant   kAudioFileComponent_FileTypeName
-					Returns a CFString containing the name for the file type. 
+					Returns a CFString containing the name for the file type.
     @constant   kAudioFileComponent_ExtensionsForType
-					Returns a CFArray of CFStrings containing the file extensions 
-					that are recognized for this file type. 
+					Returns a CFArray of CFStrings containing the file extensions
+					that are recognized for this file type.
     @constant   kAudioFileComponent_UTIsForType
-					Returns a CFArray of CFStrings containing the universal type identifiers 
-					for this file type. 
+					Returns a CFArray of CFStrings containing the universal type identifiers
+					for this file type.
     @constant   kAudioFileComponent_MIMETypesForType
-					Returns a CFArray of CFStrings containing the MIME types 
-					for this file type. 
+					Returns a CFArray of CFStrings containing the MIME types
+					for this file type.
     @constant   kAudioFileComponent_AvailableFormatIDs
-					Returns a array of format IDs for formats that can be read. 
+					Returns a array of format IDs for formats that can be read.
     @constant   kAudioFileComponent_AvailableStreamDescriptionsForFormat
 					The specifier is the format ID for the requested format.
-					Returns an array of AudioStreamBasicDescriptions which have all of the 
+					Returns an array of AudioStreamBasicDescriptions which have all of the
 					formats for a particular file type and format ID. The AudioStreamBasicDescriptions
 					have the following fields filled in: mFormatID, mFormatFlags, mBitsPerChannel
     @constant   kAudioFileComponent_FastDispatchTable
-					Deprecated. This selector is no longer called by the implementation. 
+					Deprecated. This selector is no longer called by the implementation.
     @constant   kAudioFileComponent_HFSTypeCodesForType
 					Returns an array of HFSTypeCodes corresponding to this file type.
 					The first type in the array is the preferred one for use when
@@ -669,10 +675,10 @@ const
 	kAudioFileComponent_AvailableFormatIDs = FourCharCode('fmid');
 	kAudioFileComponent_AvailableStreamDescriptionsForFormat = FourCharCode('sdid');
 	kAudioFileComponent_FastDispatchTable = FourCharCode('fdft');
-	kAudioFileComponent_HFSTypeCodesForType = FourCharCode('fhfs'); 
+	kAudioFileComponent_HFSTypeCodesForType = FourCharCode('fhfs');
 
 //==================================================================================================
-//	Selectors for the component routines 
+//	Selectors for the component routines
 //==================================================================================================
 
 const
@@ -703,7 +709,7 @@ const
 	kAudioFileCreateURLSelect = $0019;
 	kAudioFileOpenURLSelect = $001A;
 	kAudioFileFileDataIsThisFormatSelect = $001B;
-	kAudioFileReadPacketDataSelect = $001C; 
+	kAudioFileReadPacketDataSelect = $001C;
 
 
 //#pragma mark -
@@ -715,10 +721,10 @@ const
 
 type
 	ReadBytesFDF = function( inComponentStorage: UnivPtr; inUseCache: Boolean; inStartingByte: SInt64; var ioNumBytes: UInt32; outBuffer: UnivPtr ): OSStatus;
-								
+
 type
 	WriteBytesFDF = function( inComponentStorage: UnivPtr; inUseCache: Boolean; inStartingByte: SInt64; var ioNumBytes: UInt32; inBuffer: {const} UnivPtr ): OSStatus;
-							
+
 type
 	ReadPacketsFDF = function( inComponentStorage: UnivPtr; inUseCache: Boolean; var outNumBytes: UInt32; outPacketDescriptions: AudioStreamPacketDescriptionPtr {* __nullable}; inStartingPacket: SInt64; var ioNumPackets: UInt32; outBuffer: UnivPtr ): OSStatus;
 
@@ -727,13 +733,13 @@ type
 
 type
 	WritePacketsFDF = function( inComponentStorage: UnivPtr; inUseCache: Boolean; inNumBytes: UInt32; {const} inPacketDescriptions: AudioStreamPacketDescriptionPtr {* __nullable}; inStartingPacket: SInt64; var ioNumPackets: UInt32; inBuffer: {const} UnivPtr ): OSStatus;
-								
+
 type
 	GetPropertyInfoFDF = function( inComponentStorage: UnivPtr; inPropertyID: AudioFilePropertyID; outDataSize: UInt32Ptr {* __nullable}; isWritable: UInt32Ptr {* __nullable} ): OSStatus;
-								
+
 type
 	GetPropertyFDF = function( inComponentStorage: UnivPtr; inPropertyID: AudioFilePropertyID; var ioDataSize: UInt32; ioPropertyData: UnivPtr ): OSStatus;
-							
+
 type
 	SetPropertyFDF = function( inComponentStorage: UnivPtr; inPropertyID: AudioFilePropertyID; inDataSize: UInt32; inPropertyData: {const} UnivPtr ): OSStatus;
 
@@ -748,7 +754,7 @@ type
 
 type
 	SetUserDataFDF = function( inComponentStorage: UnivPtr; inUserDataID: UInt32; inIndex: UInt32; inUserDataSize: UInt32; inUserData: {const} UnivPtr ): OSStatus;
-										
+
 { no fast dispatch for kAudioFileRemoveUserDataSelect }
 
 //#pragma /mark -
@@ -769,7 +775,7 @@ type
 		mGetPropertyInfoFDF: GetPropertyInfoFDF;
 		mGetPropertyFDF: GetPropertyFDF;
 		mSetPropertyFDF: SetPropertyFDF;
-	
+
 		mCountUserDataFDF: CountUserDataFDF;
 		mGetUserDataSizeFDF: GetUserDataSizeFDF;
 		mGetUserDataFDF: GetUserDataFDF;
@@ -789,7 +795,7 @@ type
 		mGetPropertyInfoFDF: GetPropertyInfoFDF;
 		mGetPropertyFDF: GetPropertyFDF;
 		mSetPropertyFDF: SetPropertyFDF;
-	
+
 		mCountUserDataFDF: CountUserDataFDF;
 		mGetUserDataSizeFDF: GetUserDataSizeFDF;
 		mGetUserDataFDF: GetUserDataFDF;
@@ -820,7 +826,7 @@ type
 }
 function AudioFileComponentCreate( inComponent: AudioFileComponent; {const} inParentRef: FSRefPtr; inFileName: CFStringRef; const (*var*) inFormat: AudioStreamBasicDescription; inFlags: UInt32; outNewFileRef: FSRefPtr ): OSStatus; external name '_AudioFileComponentCreate';
 (* API_DEPRECATED("no longer supported", macos(10.4, 10.6)) API_UNAVAILABLE(ios, watchos, tvos) *)
-                                
+
 
 {!
     @function	AudioFileComponentInitialize
@@ -834,7 +840,7 @@ function AudioFileComponentCreate( inComponent: AudioFileComponent; {const} inPa
 }
 function AudioFileComponentInitialize( inComponent: AudioFileComponent; {const} inFileRef: FSRefPtr; const (*var*) inFormat: AudioStreamBasicDescription; inFlags: UInt32 ): OSStatus; external name '_AudioFileComponentInitialize';
 (* API_DEPRECATED("no longer supported", macos(10.4, 10.6)) API_UNAVAILABLE(ios, watchos, tvos) *)
-							
+
 {!
     @function	AudioFileComponentOpenFile
     @abstract   implements AudioFileOpen
@@ -854,7 +860,7 @@ function AudioFileComponentOpenFile( inComponent: AudioFileComponent; {const} in
 type
 	AudioFileComponentCreateURLProc = function( self: UnivPtr; inFileRef: CFURLRef; const (*var*) inFormat: AudioStreamBasicDescription; inFlags: UInt32 ): OSStatus;
 	AudioFileComponentOpenURLProc = function( self: UnivPtr; inFileRef: CFURLRef; inPermissions: SInt8; inFileDescriptor: SInt32 ): OSStatus;
-								
+
 type
 	AudioFileComponentOpenWithCallbacksProc = function( self: UnivPtr; inClientData: UnivPtr; inReadFunc: AudioFile_ReadProc; inWriteFunc: AudioFile_WriteProc; inGetSizeFunc: AudioFile_GetSizeProc; inSetSizeFunc: AudioFile_SetSizeProc ): OSStatus;
 
@@ -863,23 +869,23 @@ type
 
 type
 	AudioFileComponentCloseProc = function( self: UnivPtr ): OSStatus;
-				
-type
-	AudioFileComponentOptimizeProc = function( self: UnivPtr ): OSStatus;
-				
-type
-	AudioFileComponentReadBytesProc = function( self: UnivPtr; inUseCache: Boolean; inStartingByte: SInt64; var ioNumBytes: UInt32; outBuffer: UnivPtr ): OSStatus;	
-						
-type
-	AudioFileComponentWriteBytesProc = function( self: UnivPtr; inUseCache: Boolean; inStartingByte: SInt64; var ioNumBytes: UInt32; inBuffer: {const} UnivPtr ): OSStatus;	
-						
-type
-	AudioFileComponentReadPacketsProc = function( self: UnivPtr; inUseCache: Boolean; var outNumBytes: UInt32; outPacketDescriptions: AudioStreamPacketDescriptionPtr {* __nullable}; inStartingPacket: SInt64; var ioNumPackets: UInt32; outBuffer: UnivPtr ): OSStatus;	
-									
 
 type
-	AudioFileComponentReadPacketDataProc = function( self: UnivPtr; inUseCache: Boolean; var ioNumBytes: UInt32; outPacketDescriptions: AudioStreamPacketDescription {* __nullable}; inStartingPacket: SInt64; var ioNumPackets: UInt32; outBuffer: UnivPtr ): OSStatus;	
-									
+	AudioFileComponentOptimizeProc = function( self: UnivPtr ): OSStatus;
+
+type
+	AudioFileComponentReadBytesProc = function( self: UnivPtr; inUseCache: Boolean; inStartingByte: SInt64; var ioNumBytes: UInt32; outBuffer: UnivPtr ): OSStatus;
+
+type
+	AudioFileComponentWriteBytesProc = function( self: UnivPtr; inUseCache: Boolean; inStartingByte: SInt64; var ioNumBytes: UInt32; inBuffer: {const} UnivPtr ): OSStatus;
+
+type
+	AudioFileComponentReadPacketsProc = function( self: UnivPtr; inUseCache: Boolean; var outNumBytes: UInt32; outPacketDescriptions: AudioStreamPacketDescriptionPtr {* __nullable}; inStartingPacket: SInt64; var ioNumPackets: UInt32; outBuffer: UnivPtr ): OSStatus;
+
+
+type
+	AudioFileComponentReadPacketDataProc = function( self: UnivPtr; inUseCache: Boolean; var ioNumBytes: UInt32; outPacketDescriptions: AudioStreamPacketDescription {* __nullable}; inStartingPacket: SInt64; var ioNumPackets: UInt32; outBuffer: UnivPtr ): OSStatus;
+
 type
 	AudioFileComponentWritePacketsProc = function( self: UnivPtr; inUseCache: Boolean; inNumBytes: UInt32; {const} inPacketDescriptions: AudioStreamPacketDescription {* __nullable}; inStartingPacket: SInt64; var ioNumPackets: UInt32; inBuffer: {const} UnivPtr ): OSStatus;
 
@@ -912,11 +918,11 @@ type
 	AudioFileComponentRemoveUserDataProc = function( self: UnivPtr; inUserDataID: UInt32; inIndex: UInt32 ): OSStatus;
 
 type
-	AudioFileComponentExtensionIsThisFormatProc = function( self: UnivPtr; inExtension: CFStringRef; var outResult: UInt32 ): OSStatus;	
+	AudioFileComponentExtensionIsThisFormatProc = function( self: UnivPtr; inExtension: CFStringRef; var outResult: UInt32 ): OSStatus;
 
 
 type
-	AudioFileComponentFileDataIsThisFormatProc = function( self: UnivPtr; inDataByteSize: UInt32; inData: {const} UnivPtr; var outResult: UInt32 ): OSStatus;	
+	AudioFileComponentFileDataIsThisFormatProc = function( self: UnivPtr; inDataByteSize: UInt32; inData: {const} UnivPtr; var outResult: UInt32 ): OSStatus;
 
 
 type

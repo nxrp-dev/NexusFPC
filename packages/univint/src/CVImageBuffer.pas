@@ -23,7 +23,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CVImageBuffer;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -208,19 +210,23 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.CFBase, MacOsApi.CFDictionary, MacOsApi.CGColorSpace, MacOsApi.CGGeometry,MacOsApi.CVBuffer;
+{$ELSE FPC_DOTTEDUNITS}
 uses CFBase, CFDictionary, CGColorSpace, CGGeometry,CVBuffer;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
 {$ALIGN POWER}
 
- 
+
  {! @header CVImageBuffer.h
 	@copyright 2004 Apple Computer, Inc. All rights reserved.
 	@availability Mac OS X 10.4 or later
     @discussion CVImageBufferRef types are abstract and define various attachments and convenience
 		calls for retreiving image related bits of data.
-		   
+
 }
 
 //#pragma mark CVImageBufferRef attachment keys
@@ -361,7 +367,7 @@ function CVImageBufferGetEncodedSize( imageBuffer: CVImageBufferRef ): CGSize; e
 
 {!
     @function   CVImageBufferGetDisplaySize
-    @abstract   Returns the nominal output display size (in square pixels) of a CVImageBuffer.  
+    @abstract   Returns the nominal output display size (in square pixels) of a CVImageBuffer.
                 For example, for an NTSC DV frame this would be 640x480
     @param      imageBuffer A CVImageBuffer that you wish to retrieve the display size from.
     @result     A CGSize returning the nominal display size of the buffer
@@ -374,7 +380,7 @@ function CVImageBufferGetDisplaySize( imageBuffer: CVImageBufferRef ): CGSize; e
     @function   CVImageBufferGetCleanRect
     @abstract   Returns the source rectangle of a CVImageBuffer that represents the clean aperture
 		of the buffer in encoded pixels.    For example, an NTSC DV frame would return a CGRect with an
-		origin of 8,0 and a size of 704,480.		
+		origin of 8,0 and a size of 704,480.
 		Note that the origin of this rect always the lower left	corner.   This is the same coordinate system as
 		used by CoreImage.
     @param      imageBuffer A CVImageBuffer that you wish to retrieve the display size from.
@@ -416,7 +422,7 @@ function CVImageBufferGetColorSpace( imageBuffer: CVImageBufferRef ): CGColorSpa
 		1. kCVImageBufferICCProfile
 		2. kCVImageBufferColorPrimariesKey, kCVImageBufferTransferFunctionKey, and kCVImageBufferYCbCrMatrixKey (and possibly kCVImageBufferGammaLevelKey)
 	The client is responsible for releasing the CGColorSpaceRef when it is done with it (CGColorSpaceRelease() or CFRelease())
-		
+
 }
 function CVImageBufferCreateColorSpaceFromAttachments( attachments: CFDictionaryRef ): CGColorSpaceRef; external name '_CVImageBufferCreateColorSpaceFromAttachments';
 (* __OSX_AVAILABLE_STARTING(__MAC_10_8,__IPHONE_NA) *)

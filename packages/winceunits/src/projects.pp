@@ -24,13 +24,19 @@
 //  Microsoft Windows Mobile 6.0 for PocketPC SDK.
 //
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit projects;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$CALLING cdecl}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses WinApi.Windows;
+{$ELSE FPC_DOTTEDUNITS}
 uses Windows;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
       Note_prjDLL = 'note_prj.dll';
@@ -103,7 +109,7 @@ function is EnumProjectsEx.
 function EnumProjects(lpEnumProc:PROJECTS_ENUMPROC; dwOid:DWORD; dwFlags:DWORD; lParam:LPARAM):longint; external Note_prjDLL name 'EnumProjects';
 
 {*****************************************************************************
-EnumProjectsFiles	Exported API: Enumaretes all files in a project on the
+EnumProjectsFiles	Exported API: Enumerates all files in a project on the
 					specified file system.
 
 PARAMETERS:
@@ -118,7 +124,7 @@ dwOidFlash	Only used for (dwFlags & PRJ_ENUM_FLASH).  This is the OID of
 			the flash card to look at; the value returned by
 			FindFirstFlashCard or FindNextFlashCard.
 
-dwFlags	
+dwFlags
 			Any combo of the following (specifying the LOCATION to check):
 			PRJ_ENUM_MEMORY - check all main memory projects/folders,
 							  dwOidFlash is not used
@@ -138,7 +144,7 @@ szProj		Only used for when (dwFlags & PRJ_ENUM_ALL_PROJ) is NOT set.  This
 
 szFileName	pointer to name of file to search for. (i.e. '*.wav' or '*.*')
 
-lParam		user defined parameter passed to pfnEnumProc 
+lParam		user defined parameter passed to pfnEnumProc
 
 
 RETURN:
@@ -217,7 +223,7 @@ type
 const
       PA_MAX_PATHNAME = 96;		// including null terminator, practically speaking,
                              // might be " \storage card 3\My Documents\document
-                             // folder 7\very long filename.wav" or 69 char's max
+                             // folder 7\very long filename.wav" or 69 AnsiChar's max
 
 // Pure-NT machines don't necessarily define CEOID.  In the future, we'll want
 // to replace this define with the actual typedef (JParks).
@@ -283,7 +289,7 @@ function EnumProjectsEx(pfnEnumProc:PROJECTS_ENUMPROC_EX;
 
 
 {*****************************************************************************
-EnumProjectsFiles	Exported API: Enumaretes all files in a project on the
+EnumProjectsFiles	Exported API: Enumerates all files in a project on the
 					specified file system.
 
 PARAMETERS:

@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit IBConnection;
+{$ENDIF FPC_DOTTEDUNITS}
 {
     This file is part of the Free Pascal run time library.
     Copyright (c) 1999-2022 by Michael van Canney and other members of the
@@ -20,6 +22,15 @@ unit IBConnection;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, Data.Sqldb, Data.Db, Data.Consts, Data.BufDataset,
+{$IfDef LinkDynamically}
+  Api.Ibase60dyn;
+{$Else}
+  Api.Ibase60;
+{$EndIf}
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, sqldb, db, dbconst, bufdataset,
 {$IfDef LinkDynamically}
@@ -27,6 +38,7 @@ uses
 {$Else}
   ibase60;
 {$EndIf}
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   DEFDIALECT = 3;
@@ -36,8 +48,8 @@ type
   TDatabaseInfo = record
     Dialect             : integer; //Dialect set in database
     ODSMajorVersion     : integer; //On-Disk Structure version of file
-    ServerVersion       : string;  //Representation of major.minor (.build)
-    ServerVersionString : string;  //Complete version string, including name, platform
+    ServerVersion       : ansistring;  //Representation of major.minor (.build)
+    ServerVersionString : ansistring;  //Complete version string, including name, platform
   end;
 
   TStatusVector = array [0..19] of ISC_STATUS;
@@ -63,7 +75,7 @@ type
     in_SQLDA             : PXSQLDA;
     ParamBinding         : array of integer;
     FieldBinding         : array of integer;
-    CursorName : String;
+    CursorName : AnsiString;
   end;
 
   TIBTrans = Class(TSQLHandle)
@@ -82,7 +94,7 @@ type
     FStatus                : TStatusVector;
     FDatabaseInfo          : TDatabaseInfo;
     FDialect               : integer;
-    FBlobSegmentSize       : word; //required for backward compatibilty; not used
+    FBlobSegmentSize       : word; //required for backward compatibility; not used
     FUseConnectionCharSetIfNone: Boolean;
     FWireCompression       : Boolean;
     FCursorCount : Integer;
@@ -160,9 +172,9 @@ type
     Property UseConnectionCharSetIfNone : Boolean Read FUseConnectionCharSetIfNone Write FUseConnectionCharSetIfNone;
     property WireCompression: Boolean read FWireCompression write FWireCompression default False;
   end;
-  
+
   { TIBConnectionDef }
-  
+
   TIBConnectionDef = Class(TConnectionDef)
     Class Function TypeName : String; override;
     Class Function ConnectionClass : TSQLConnectionClass; override;
@@ -172,17 +184,17 @@ type
     Class Function UnLoadFunction : TLibraryUnLoadFunction; override;
     Class Function LoadedLibraryName: string; override;
   end;
-                  
+
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.StrUtils, Data.FMTBcd;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   StrUtils, FmtBCD;
+{$ENDIF FPC_DOTTEDUNITS}
 
-const
-  SQL_BOOLEAN_INTERBASE = 590;
-  SQL_BOOLEAN_FIREBIRD = 32764;
-  SQL_NULL = 32767;
-  INVALID_DATA = -1;
 
 procedure TIBConnection.CheckError(const ProcName : string; Status : PISC_STATUS);
 
@@ -194,7 +206,7 @@ procedure TIBConnection.CheckError(const ProcName : string; Status : PISC_STATUS
 var
   i,ErrorCode : longint;
   Msg, SQLState : string;
-  Buf : array [0..1023] of char;
+  Buf : array [0..1023] of AnsiChar;
   aStatusVector: TStatusVector;
   Exc : EIBDatabaseError;
 
@@ -305,7 +317,7 @@ begin
       Dec(P);
     Result:=P>0;
     if Result then
-      TPB:=Char(P);
+      TPB:=AnsiChar(P);
     end;
 end;
 
@@ -356,14 +368,14 @@ Begin
             Begin
             If prVal='' Then
               DatabaseErrorFmt('Table name must be specified for "%s"',[S],Self);
-            LTPB:=LTPB+Char(Length(prVal))+prVal;
+            LTPB:=LTPB+AnsiChar(Length(prVal))+prVal;
             End;
           isc_tpb_lock_timeout:
             Begin
             //In case of using lock timeout we need add timeout
             If prVal='' Then
               DatabaseErrorFmt('Timeout must be specified for "%s"',[S],Self);
-            LTPB:=LTPB+Char(SizeOf(ISC_LONG));
+            LTPB:=LTPB+AnsiChar(SizeOf(ISC_LONG));
             SetLength(LTPB,Length(LTPB)+SizeOf(ISC_LONG));
             pInt:=@LTPB[Length(LTPB)-SizeOf(ISC_LONG)+1];
             pInt^:=StrToInt(prVal);
@@ -379,7 +391,7 @@ Begin
   // Construct block.
   With IBTrans do
     begin
-    TPB:=Char(Ord(Version)-Ord('0'))+LTPB;
+    TPB:=AnsiChar(Ord(Version)-Ord('0'))+LTPB;
     TransactionHandle:=Nil;
     If isc_start_transaction(@Status[0],@TransactionHandle,1,[@DBHandle,Length(TPB),@TPB[1]])<>0 Then
       CheckError('StartTransaction',Status)
@@ -489,8 +501,10 @@ begin
   ReleaseIBase60;
 {$ELSE}
   // Shutdown embedded subsystem with timeout 300ms (Firebird 2.5+)
-  // Required before unloading library; has no effect on non-embedded client
-  if (pointer(fb_shutdown)<>nil) and (fb_shutdown(300,1)<>0) then
+  // Only call fb_shutdown for embedded Firebird; calling it for a
+  // client connection shuts down the networking subsystem, causing
+  // subsequent reconnect attempts to fail with "connection shutdown".
+  if UseEmbeddedFirebird and (pointer(fb_shutdown)<>nil) and (fb_shutdown(300,1)<>0) then
   begin
     //todo: log error; still try to unload library below as the timeout may have been insufficient
   end;
@@ -547,7 +561,7 @@ begin
     ReqBuf[2] := isc_info_db_sql_dialect;
     ReqBuf[3] := isc_info_end;
     if isc_database_info(@FStatus[0], @FDatabaseHandle, Length(ReqBuf),
-      pchar(@ReqBuf[0]), SizeOf(ResBuf), pchar(@ResBuf[0])) <> 0 then
+      PAnsiChar(@ReqBuf[0]), SizeOf(ResBuf), PAnsiChar(@ResBuf[0])) <> 0 then
         CheckError('CacheServerInfo', FStatus);
     x := 0;
     while x < ResBufHigh+1 do
@@ -555,23 +569,23 @@ begin
         isc_info_db_sql_dialect :
           begin
           Inc(x);
-          Len := isc_vax_integer(pchar(@ResBuf[x]), 2);
+          Len := isc_vax_integer(PAnsiChar(@ResBuf[x]), 2);
           Inc(x, 2);
-          FDatabaseInfo.Dialect := isc_vax_integer(pchar(@ResBuf[x]), Len);
+          FDatabaseInfo.Dialect := isc_vax_integer(PAnsiChar(@ResBuf[x]), Len);
           Inc(x, Len);
           end;
         isc_info_ods_version :
           begin
           Inc(x);
-          Len := isc_vax_integer(pchar(@ResBuf[x]), 2);
+          Len := isc_vax_integer(PAnsiChar(@ResBuf[x]), 2);
           Inc(x, 2);
-          FDatabaseInfo.ODSMajorVersion := isc_vax_integer(pchar(@ResBuf[x]), Len);
+          FDatabaseInfo.ODSMajorVersion := isc_vax_integer(PAnsiChar(@ResBuf[x]), Len);
           Inc(x, Len);
           end;
         isc_info_version :
           begin
           Inc(x);
-          Len := isc_vax_integer(pchar(@ResBuf[x]), 2);
+          Len := isc_vax_integer(PAnsiChar(@ResBuf[x]), 2);
           Inc(x, 2);
           SetString(FDatabaseInfo.ServerVersionString, PAnsiChar(@ResBuf[x + 2]), Len-2);
           FDatabaseInfo.ServerVersion := ParseServerVersion(FDatabaseInfo.ServerVersionString);
@@ -662,7 +676,7 @@ var
   ADatabaseName: String;
   DPB: string;
   HN : String;
-  
+
 begin
   DPB := chr(isc_dpb_version1);
   if (UserName <> '') then
@@ -681,13 +695,13 @@ begin
 
   FDatabaseHandle := nil;
   HN:=HostName;
-  if HN <> '' then 
+  if HN <> '' then
     begin
     if Port<>0 then
       HN:=HN+'/'+IntToStr(Port);
     ADatabaseName := HN+':'+DatabaseName
     end
-  else 
+  else
     ADatabaseName := DatabaseName;
   if isc_attach_database(@FStatus[0], Length(ADatabaseName), @ADatabaseName[1],
     @FDatabaseHandle, Length(DPB), @DPB[1]) <> 0 then
@@ -787,6 +801,9 @@ begin
         TrType := ftFloat;
     SQL_BOOLEAN_INTERBASE, SQL_BOOLEAN_FIREBIRD :
         TrType := ftBoolean;
+    SQL_INT128,
+    SQL_DEC16, SQL_DEC34:
+        TrType := ftFmtBCD;
     else
         TrType := ftUnknown;
   end;
@@ -994,7 +1011,7 @@ begin
       begin
       if isc_dsql_free_statement(@Status, @StatementHandle, DSQL_close)<>0 then
         // If transaction was closed (keepOpenOnCommit, then the cursor is already closed.
-        CheckError('Close Cursor', Status, [335544577]); 
+        CheckError('Close Cursor', Status, [335544577]);
       end;
     end;
 end;
@@ -1003,7 +1020,6 @@ procedure TIBConnection.Execute(cursor: TSQLCursor;atransaction:tSQLtransaction;
 var
   TransactionHandle : pointer;
   out_SQLDA : PXSQLDA;
-  S: String;
 
 begin
   TransactionHandle := aTransaction.Handle;
@@ -1025,7 +1041,7 @@ begin
         Inc(FCursorCount);
         CursorName:='sqldbcursor'+IntToStr(FCursorCount);
         end;
-      if isc_dsql_set_cursor_name(@Status[0], @StatementHandle, PChar(CursorName) , 0) <> 0 then
+      if isc_dsql_set_cursor_name(@Status[0], @StatementHandle, PAnsiChar(CursorName) , 0) <> 0 then
         CheckError('Open Cursor', Status);
     end
     else
@@ -1047,11 +1063,10 @@ var
   function GetBlobCharset(TableName,ColumnName: Pointer): smallint;
   var TransactionHandle: pointer;
       BlobDesc: TISC_BLOB_DESC;
-      Global: array[0..31] of AnsiChar;
   begin
     TransactionHandle := TIBCursor(cursor).TransactionHandle;
     if isc_blob_lookup_desc(@FStatus[0], @FDatabaseHandle, @TransactionHandle,
-         TableName, ColumnName, @BlobDesc, @Global) <> 0 then
+         TableName, ColumnName, @BlobDesc, nil) <> 0 then
       CheckError('Blob Charset', FStatus);
     Result := BlobDesc.blob_desc_charset;
   end;
@@ -1183,8 +1198,9 @@ var
   SQLVarNr : integer;
   si       : smallint;
   li       : LargeInt;
-  CurrBuff : pchar;
+  CurrBuff : PAnsiChar;
   w        : word;
+  i128     : Int128Rec;
 
 begin
   {$push}
@@ -1268,6 +1284,13 @@ begin
           SetDateTime(VSQLVar^.SQLData, AParam.AsDateTime, VSQLVar^.SQLType);
         SQL_BOOLEAN_FIREBIRD:
           PByte(VSQLVar^.SQLData)^ := Byte(AParam.AsBoolean);
+        SQL_INT128:
+          begin
+            i128 := BCDToInt128(AParam.AsFMTBCD);
+            Move(i128, VSQLVar^.SQLData^, VSQLVar^.SQLLen);
+          end;
+        SQL_DEC16:
+          PQWord(VSQLVar^.SQLData)^ := BCDToDPDec64(AParam.AsFMTBCD);
       else
         if (VSQLVar^.sqltype <> SQL_NULL) then
           DatabaseErrorFmt(SUnsupportedParameter,[FieldTypeNames[AParam.DataType]],self);
@@ -1279,12 +1302,14 @@ end;
 
 function TIBConnection.LoadField(cursor : TSQLCursor; FieldDef : TFieldDef; buffer : pointer; out CreateBlob : boolean) : boolean;
 
+type
+  PInt128Rec = ^Int128Rec;
 var
   VSQLVar    : PXSQLVAR;
   VarcharLen : word;
-  CurrBuff     : pchar;
-  c            : currency;
-  AFmtBcd      : tBCD;
+  CurrBuff   : PAnsiChar;
+  c          : currency;
+  AFmtBcd    : tBCD;
 
   function BcdDivPower10(Dividend: largeint; e: integer): TBCD;
   var d: double;
@@ -1304,12 +1329,12 @@ begin
     // Joost, 5 jan 2006: I disabled the following, since it's useful for
     // debugging, but it also slows things down. In principle things can only go
     // wrong when FieldDefs is changed while the dataset is opened. A user just
-    // shoudn't do that. ;) (The same is done in PQConnection)
+    // shouldn't do that. ;) (The same is done in PQConnection)
 
     // if VSQLVar^.AliasName <> FieldDef.Name then
     // DatabaseErrorFmt(SFieldNotFound,[FieldDef.Name],self);
     if assigned(VSQLVar^.SQLInd) and (VSQLVar^.SQLInd^ = -1) then
-      result := false
+      Result := False
     else
       begin
 
@@ -1325,7 +1350,7 @@ begin
           VarCharLen := FieldDef.Size;
           end;
 
-      Result := true;
+      Result := True;
       case FieldDef.DataType of
         ftBCD :
           begin
@@ -1343,15 +1368,23 @@ begin
           end;
         ftFMTBcd :
           begin
-            case VSQLVar^.SQLLen of
-              2 : AFmtBcd := BcdDivPower10(PSmallint(CurrBuff)^, -VSQLVar^.SQLScale);
-              4 : AFmtBcd := BcdDivPower10(PLongint(CurrBuff)^,  -VSQLVar^.SQLScale);
-              8 : if Dialect < 3 then
-                    AFmtBcd := PDouble(CurrBuff)^
-                  else
-                    AFmtBcd := BcdDivPower10(PLargeint(CurrBuff)^, -VSQLVar^.SQLScale);
+            case (VSQLVar^.sqltype and not 1) of
+              SQL_DEC16:
+                AFmtBcd := DPDec64ToBcd(PQWord(CurrBuff)^);
+              SQL_DEC34:
+                Result := False; // Not implemented yet
               else
-                Result := False; // Just to be sure, in principle this will never happen
+                case VSQLVar^.SQLLen of
+                  2 : AFmtBcd := BcdDivPower10(PSmallint(CurrBuff)^, -VSQLVar^.SQLScale);
+                  4 : AFmtBcd := BcdDivPower10(PLongint(CurrBuff)^,  -VSQLVar^.SQLScale);
+                  8 : if Dialect < 3 then
+                        AFmtBcd := PDouble(CurrBuff)^
+                      else
+                        AFmtBcd := BcdDivPower10(PLargeint(CurrBuff)^, -VSQLVar^.SQLScale);
+                  16: AFmtBcd := Int128ToBcd(PInt128Rec(CurrBuff)^);
+                  else
+                    Result := False; // Just to be sure, in principle this will never happen
+                end; {case}
             end; {case}
             Move(AFmtBcd, buffer^ , sizeof(AFmtBcd));
           end;
@@ -1375,7 +1408,7 @@ begin
         ftString, ftFixedChar  :
           begin
             Move(CurrBuff^, Buffer^, VarCharLen);
-            PChar(Buffer + VarCharLen)^ := #0;
+            PAnsiChar(Buffer + VarCharLen)^ := #0;
           end;
         ftFloat   :
           GetFloat(CurrBuff, Buffer, VSQLVar^.SQLLen);
@@ -1394,8 +1427,8 @@ begin
           end
         else
           begin
-            result := false;
-            databaseerrorfmt(SUnsupportedFieldType, [Fieldtypenames[FieldDef.DataType], Self]);
+            Result := False;
+            DatabaseErrorFmt(SUnsupportedFieldType, [Fieldtypenames[FieldDef.DataType], Self]);
           end
       end;  { case }
       end; { if/else }
@@ -1486,7 +1519,7 @@ var
 begin
   {$IFNDEF SUPPORT_MSECS}
   DateTimeToSystemTime(PTime,STime);
-  
+
   CTime.tm_year := STime.Year - 1900;
   CTime.tm_mon  := STime.Month -1;
   CTime.tm_mday := STime.Day;
@@ -1593,7 +1626,7 @@ begin
                         'WHERE '+
                           '(r.rdb$system_flag = 0 or r.rdb$system_flag is null) and (rdb$relation_name = ''' + Uppercase(SchemaObjectName) + ''') ' +
                         'ORDER BY '+
-                          'r.rdb$field_name';
+                          'r.rdb$field_position';
     stSequences  : s := 'SELECT ' +
                           'rdb$generator_id         as recno,' +
                           '''' + DatabaseName + ''' as sequence_catalog,' +
@@ -1785,7 +1818,7 @@ var info_request       : string;
     subBlockSize       : integer;
     SelectedRows,
     InsertedRows       : integer;
-    
+
 begin
   SelectedRows:=-1;
   InsertedRows:=-1;
@@ -1829,12 +1862,12 @@ class function TIBConnectionDef.TypeName: String;
 begin
   Result:='Firebird';
 end;
-  
+
 class function TIBConnectionDef.ConnectionClass: TSQLConnectionClass;
 begin
   Result:=TIBConnection;
 end;
-    
+
 class function TIBConnectionDef.Description: String;
 begin
   Result:='Connect to Firebird/Interbase directly via the client library';

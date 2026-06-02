@@ -118,12 +118,12 @@ Type
     pPid     = ^pid_t;
 
 {$ifdef cpu64}
-    size_t   = cuint64;         { as definied in the C standard}
+    size_t   = cuint64;         { as defined in the C standard}
     ssize_t  = cint64;          { used by function for returning number of bytes }
     clock_t  = cuint64;
     time_t   = cint64;           { used for returning the time  }
 {$else}
-    size_t   = cuint32;         { as definied in the C standard}
+    size_t   = cuint32;         { as defined in the C standard}
     ssize_t  = cint32;          { used by function for returning number of bytes }
     clock_t  = culong;
     time_t   = clong;           { used for returning the time  }
@@ -185,7 +185,7 @@ Type
   {$ifdef cpu64}
   TStatfs = record
     fstype,            { File system type }
-    bsize   : clong;    { Optimal block trensfer size }
+    bsize   : clong;    { Optimal block transfer size }
     blocks,            { Data blocks in system }
     bfree,             { free blocks in system }
     bavail,            { Available free blocks to non-root users }
@@ -194,18 +194,18 @@ Type
     fsid    : array[0..1] of cint;          { File system ID }
     namelen : clong; { Maximum name length in system }
     frsize  : clong;
-    flags   : clong; 
+    flags   : clong;
     spare   : array [0..3] of clong; { For later use }
   end;
   {$else}
   TStatfs = record
     fstype,            { File system type }
-    bsize   : cint;    { Optimal block trensfer size }
+    bsize   : cint;    { Optimal block transfer size }
     blocks,            { Data blocks in system }
     bfree,             { free blocks in system }
     bavail,            { Available free blocks to non-root users }
     files,             { File nodes in system }
-    ffree   : 
+    ffree   :
 {$ifdef __USE_LARGEFILE64}
     culonglong;  { Free file nodes in system }
 {$else}
@@ -214,7 +214,7 @@ Type
     fsid    : array[0..1] of cint;          { File system ID }
     namelen,           { Maximum name length in system }
     frsize  : cint;
-    flags   : cint; 
+    flags   : cint;
     spare   : array [0..3] of cint; { For later use }
   end;
   {$endif}
@@ -223,7 +223,7 @@ Type
   mbstate_value_t = record
     case byte of
       0: (__wch: wint_t);
-      1: (__wchb: array[0..3] of char);
+      1: (__wchb: array[0..3] of AnsiChar);
   end;
 
   mbstate_t = record
@@ -241,7 +241,7 @@ Type
   pthread_attr_t = record
     case byte of
       0 : (
-             __size : array[0..__SIZEOF_PTHREAD_ATTR_T-1] of char;
+             __size : array[0..__SIZEOF_PTHREAD_ATTR_T-1] of AnsiChar;
           );
       1 : (
              __align : clong;
@@ -262,7 +262,7 @@ Type
   pthread_mutexattr_t = record
     case byte of
       0 : (
-             __size : array[0..__SIZEOF_PTHREAD_MUTEXATTR_T-1] of char;
+             __size : array[0..__SIZEOF_PTHREAD_MUTEXATTR_T-1] of AnsiChar;
           );
       1 : (
              __align : cint;
@@ -272,7 +272,7 @@ Type
   pthread_cond_t = record
     case byte of
       0 : (
-             __size : array[0..__SIZEOF_PTHREAD_COND_T-1] of char;
+             __size : array[0..__SIZEOF_PTHREAD_COND_T-1] of AnsiChar;
           );
       1 : (
              ___align : clonglong;
@@ -282,7 +282,7 @@ Type
   pthread_condattr_t = record
     case byte of
       0 : (
-             __size : array[0..__SIZEOF_PTHREAD_CONDATTR_T-1] of char;
+             __size : array[0..__SIZEOF_PTHREAD_CONDATTR_T-1] of AnsiChar;
           );
       1 : (
              __align : cint;
@@ -295,7 +295,7 @@ type
   pthread_rwlock_t = record // should be 56 for 64-bit, 32 bytes for 32-bit mantis #21552
     case byte of
       0 : (
-             __size : array[0..__SIZEOF_PTHREAD_RWLOCK_T-1] of char;
+             __size : array[0..__SIZEOF_PTHREAD_RWLOCK_T-1] of AnsiChar;
           );
       1 : (
              __align : clong;
@@ -305,7 +305,7 @@ type
   pthread_rwlockattr_t = record
     case byte of
       0 : (
-             __size : array[0..__SIZEOF_PTHREAD_RWLOCKATTR_T-1] of char;
+             __size : array[0..__SIZEOF_PTHREAD_RWLOCKATTR_T-1] of AnsiChar;
           );
       1 : (
              __align : cint;
@@ -315,7 +315,7 @@ type
   sem_t = record
     case byte of
       0 : (
-             __size : array[0..__SIZEOF_SEM_T-1] of char;
+             __size : array[0..__SIZEOF_SEM_T-1] of AnsiChar;
           );
       1 : (
              __align : clonglong;

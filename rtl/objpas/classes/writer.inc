@@ -1,3 +1,4 @@
+{%MainUnit classes.pp}
 {
     This file is part of the Free Component Library (FCL)
     Copyright (c) 1999-2000 by the Free Pascal development team
@@ -309,7 +310,7 @@ begin
   WriteStr('');
 end;
 
-procedure TBinaryObjectWriter.WriteString(const Value: String);
+procedure TBinaryObjectWriter.WriteString(const Value: RawByteString);
 var
   i: Integer;
   b: byte;
@@ -351,7 +352,7 @@ begin
     {$ENDIF}
   end;
 end;
-                      
+
 procedure TBinaryObjectWriter.WriteUnicodeString(const Value: UnicodeString);
 var len : longword;
 {$IFDEF ENDIAN_BIG}
@@ -438,7 +439,7 @@ end;
 procedure TBinaryObjectWriter.Write(const Buffer; Count: Longint);
 var
   CopyNow: LongInt;
-  SourceBuf: PChar;
+  SourceBuf: PAnsiChar;
 begin
   SourceBuf:=@Buffer;
   while Count > 0 do
@@ -446,7 +447,7 @@ begin
     CopyNow := Count;
     if CopyNow > FBufSize - FBufPos then
       CopyNow := FBufSize - FBufPos;
-    Move(SourceBuf^, PChar(FBuffer)[FBufPos], CopyNow);
+    Move(SourceBuf^, PAnsiChar(FBuffer)[FBufPos], CopyNow);
     Dec(Count, CopyNow);
     Inc(FBufPos, CopyNow);
     inc(SourceBuf, CopyNow);
@@ -463,7 +464,7 @@ begin
   Write(b, 1);
 end;
 
-procedure TBinaryObjectWriter.WriteStr(const Value: String);
+procedure TBinaryObjectWriter.WriteStr(const Value: RawByteString);
 var
   i: integer;
   b: byte;
@@ -604,7 +605,7 @@ begin
   Driver.WriteBoolean(Value);
 end;
 
-procedure TWriter.WriteChar(Value: Char);
+procedure TWriter.WriteChar(Value: AnsiChar);
 begin
   WriteString(Value);
 end;
@@ -704,9 +705,9 @@ Var
   SRoot, SRootA : TComponent;
   SList : TStringList;
   SPos, I , SAncestorPos: Integer;
-  
+
 begin
-  // Write children list. 
+  // Write children list.
   // While writing children, the ancestor environment must be saved
   // This is recursive...
   SRoot:=FRoot;
@@ -732,10 +733,10 @@ begin
       Component.GetChildren(@WriteComponent, FRoot);
     Finally
       If Assigned(Fancestors) then
-        For I:=0 to FAncestors.Count-1 do 
+        For I:=0 to FAncestors.Count-1 do
           FAncestors.Objects[i].Free;
       FreeAndNil(FAncestors);
-    end;    
+    end;
   finally
     FAncestors:=Slist;
     FRoot:=SRoot;
@@ -746,7 +747,7 @@ begin
 end;
 
 procedure TWriter.WriteComponentData(Instance: TComponent);
-var 
+var
   Flags: TFilerFlags;
 begin
   Flags := [];
@@ -844,12 +845,12 @@ var PropCount,i : integer;
     PropList  : PPropList;
 begin
   PropCount:=GetPropList(Instance,PropList);
-  if PropCount>0 then 
+  if PropCount>0 then
     try
       for i := 0 to PropCount-1 do
         if IsStoredProp(Instance,PropList^[i]) then
           WriteProperty(Instance,PropList^[i]);
-    Finally    
+    Finally
       Freemem(PropList);
     end;
   Instance.DefineProperties(Self);
@@ -1075,7 +1076,7 @@ begin
             if (AncestorObj<> ObjValue) and
              (TComponent(AncestorObj).Owner = FRootAncestor) and
              (TComponent(ObjValue).Owner = Root) and
-             (UpperCase(TComponent(AncestorObj).Name) = UpperCase(TComponent(ObjValue).Name)) then
+             (SameText(TComponent(AncestorObj).Name,TComponent(ObjValue).Name)) then
             begin
               // different components, but with the same name
               // treat it like an override
@@ -1098,7 +1099,7 @@ begin
           begin
           { Subcomponents are streamed the same way as persistents }
           if ObjValue.InheritsFrom(TComponent)
-            and ((not (csSubComponent in TComponent(ObjValue).ComponentStyle)) 
+            and ((not (csSubComponent in TComponent(ObjValue).ComponentStyle))
                  or ((TComponent(ObjValue).Owner<>Instance) and (TComponent(ObjValue).Owner<>Nil))) then
             begin
             Component := TComponent(ObjValue);
@@ -1124,7 +1125,7 @@ begin
                 Name:=C.Name + Name;
                 C:= C.Owner;
                 end;
-              if (C=nil) and (Component.Owner=nil) then 
+              if (C=nil) and (Component.Owner=nil) then
                 if (Name<>'') then              //foreign root
                   Name:=Name+'.Owner';
               if Length(Name) > 0 then
@@ -1214,7 +1215,7 @@ begin
               if (AncestorObj<> Component) and
                (TComponent(AncestorObj).Owner = FRootAncestor) and
                (Component.Owner = Root) and
-               (UpperCase(TComponent(AncestorObj).Name) = UpperCase(Component.Name)) then
+               (SameText(TComponent(AncestorObj).Name,Component.Name)) then
               begin
                 // different components, but with the same name
                 // treat it like an override

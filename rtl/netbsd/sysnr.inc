@@ -417,7 +417,7 @@ const
      syscall_nr_mlockall = syscall_nr_base + 242;
   { syscall: "munlockall" ret: "int" args:  }
      syscall_nr_munlockall = syscall_nr_base + 243;
-  { syscall: "__sigtimedwait" ret:"int" args: "const sigset_t *" "siginfo_t *" 
+  { syscall: "__sigtimedwait" ret:"int" args: "const sigset_t *" "siginfo_t *"
              "struct timespec *" }
      syscall_nr_sigtimedwait = syscall_nr_base + 244;
   { syscall: "__posix_rename" ret: "int" args: "const char  " "const char  "  }
@@ -528,9 +528,12 @@ const
     syscall_nr___fstat50 = syscall_nr_base + 440;
   { syscall: "__lstat50" ret: "int" args: "const char *" "struct stat *" }
     syscall_nr___lstat50 = syscall_nr_base + 441;
+  { 472	STD  RUMP ( int|sys||futimens(int fd, const struct timespec *tptr); ) }
+  { Added in rev 1.252 dated 2011/08/17 }
+    syscall_nr_futimens = syscall_nr_base + 472;
 
-     syscall_nr_MAXSYSCALL = syscall_nr_base + 390;
-     syscall_nr_NSYSENT = syscall_nr_base + 512;
+    syscall_nr_MAXSYSCALL = syscall_nr_base + 472;
+    syscall_nr_NSYSENT = syscall_nr_base + 512;
 
 
 { More or less checked BSD syscalls }

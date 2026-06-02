@@ -2,7 +2,7 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses {$ifdef unix}cthreads,{$endif} fpmkunit;
 
 Var
   T : TTarget;
@@ -20,13 +20,14 @@ begin
     P.Version:='3.3.1';
     P.Dependencies.Add('fcl-base');
     P.Dependencies.Add('rtl-objpas');
+    P.Dependencies.Add('fcl-fpcunit');
     P.Author := 'Michael van Canneyt';
     P.License := 'LGPL with modification, ';
     P.HomepageURL := 'www.freepascal.org';
     P.Email := '';
     P.Description := 'Json interfacing, part of Free Component Libraries (FCL), FPC''s OOP library.';
     P.NeedLibC:= false;
-    P.OSes:=AllOSes-[embedded,msdos,win16,macosclassic,palmos,zxspectrum,msxdos,amstradcpc,sinclairql];
+    P.OSes:=AllOSes-[embedded,msdos,win16,macosclassic,palmos,zxspectrum,msxdos,amstradcpc,sinclairql,human68k,ps1,wasip2];
     if Defaults.CPU=jvm then
       P.OSes := P.OSes - [java,android];
 
@@ -42,7 +43,20 @@ begin
       AddUnit('fpjson');
       AddUnit('jsonparser');
      end;
-        
+
+    T:=P.Targets.AddUnit('jsoncomparer.pp');
+    T.ResourceStrings:=true;
+    with T.Dependencies do
+      begin
+      AddUnit('fpjson');
+     end;
+    T:=P.Targets.AddUnit('jsonfpcunit.pp');
+    T.ResourceStrings:=true;
+    with T.Dependencies do
+      begin
+      AddUnit('fpjson');
+     end;
+
     T:=P.Targets.AddUnit('jsonparser.pp');
     T.ResourceStrings:=true;
     with T.Dependencies do
@@ -58,10 +72,17 @@ begin
       AddUnit('fpjson');
       AddUnit('jsonscanner');
       end;
-        
+
+    T:=P.Targets.AddUnit('jsonwriter.pp');
+    T.ResourceStrings:=true;
+    with T.Dependencies do
+      begin
+      AddUnit('fpjson');
+      end;
+
     T:=P.Targets.AddUnit('jsonscanner.pp');
     T.ResourceStrings:=true;
-    
+
     T:=P.Targets.AddUnit('fpjsonrtti.pp');
     T.ResourceStrings:=true;
     with T.Dependencies do
@@ -69,7 +90,7 @@ begin
       AddUnit('fpjson');
       AddUnit('jsonparser');
       end;
-      
+
     T:=P.Targets.AddUnit('fpjsontopas.pp');
     T.ResourceStrings:=true;
     with T.Dependencies do
@@ -112,6 +133,9 @@ begin
     // simpledemo.lpi
     // confdemo.lpi
     // parsedemo.lpi
+
+
+    P.NamespaceMap:='namespaces.lst';
 
 {$ifndef ALLPACKAGES}
     Run;

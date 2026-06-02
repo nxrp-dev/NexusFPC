@@ -24,7 +24,7 @@ var
 begin
   checkCTRLC;
   tmpStr:=PathConv(s);
-  tmpLock:=dosCreateDir(pchar(tmpStr));
+  tmpLock:=dosCreateDir(PAnsiChar(tmpStr));
   if tmpLock=0 then begin
     dosError2InOut(IoErr);
     exit;
@@ -43,7 +43,7 @@ begin
       exit;
     end;
   tmpStr:=PathConv(s);
-  if not dosDeleteFile(pchar(tmpStr)) then
+  if not dosDeleteFile(PAnsiChar(tmpStr)) then
     dosError2InOut(IoErr);
 end;
 
@@ -60,7 +60,7 @@ begin
   { Changing the directory is a pretty complicated affair }
   {   1) Obtain a lock on the directory                   }
   {   2) CurrentDir the lock                              }
-  tmpLock:=Lock(pchar(tmpStr),SHARED_LOCK);
+  tmpLock:=Lock(PAnsiChar(tmpStr),SHARED_LOCK);
   if tmpLock=0 then begin
     dosError2InOut(IoErr);
     exit;
@@ -85,14 +85,14 @@ end;
 
 procedure do_GetDir (DriveNr: byte; var Dir: RawByteString);
 var
-  tmpbuf: array[0..255] of char;
+  tmpbuf: array[0..255] of AnsiChar;
   lockDir: BPTR;
 begin
   checkCTRLC;
   Dir := '';
 
   { dos.library's GetCurrentDirName() doesn't work when called from
-    Workbench (ie. when the process has no CLI sructure) }
+    Workbench (ie. when the process has no CLI structure) }
   { it also doesn't seem to work when invoked from make on AROS }
   LockDir := CurrentDir(0);
   NameFromLock(LockDir, tmpBuf, 256);

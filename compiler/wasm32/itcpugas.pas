@@ -98,8 +98,10 @@ interface
       'i64.trunc_sat_f32_u',
       'i64.trunc_sat_f64_s',
       'i64.trunc_sat_f64_u',
-      // exceptions
+      // exceptions (legacy)
       'try','catch','catch_all','delegate','throw','rethrow','end_try',
+      // exceptions (with exnref)
+      'try_table','catch','catch_ref','catch_all','catch_all_ref','throw','throw_ref','end_try_table',
       // atomic memory accesses - load/store
       'i32.atomic.load8_u', 'i32.atomic.load16_u', 'i32.atomic.load',
       'i64.atomic.load8_u', 'i64.atomic.load16_u', 'i64.atomic.load32_u',
@@ -129,7 +131,7 @@ interface
       'memory.atomic.wait32', 'memory.atomic.wait64', 'memory.atomic.notify', 'atomic.fence'
     );
 
-    gas_wasm_basic_type_str : array [TWasmBasicType] of string = ('i32','i64','f32','f64','funcref','externref','v128');
+    gas_wasm_basic_type_str : array [TWasmBasicType] of string = ('unknown','i32','i64','f32','f64','funcref','externref','v128');
 
     function gas_regname(r:Tregister):string;
 

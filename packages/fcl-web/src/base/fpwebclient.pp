@@ -1,31 +1,40 @@
 { **********************************************************************
   This file is part of the Free Component Library (FCL)
   Copyright (c) 2015 by the Free Pascal development team
-        
+
   FPWebclient - abstraction for client execution of HTTP requests.
-            
+
   See the file COPYING.FPC, included in this distribution,
   for details about the copyright.
-                   
+
   This program is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
   **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fpwebclient;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
+{$modeswitch functionreferences}
+{$modeswitch advancedrecords}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
 
   { TRequestResponse }
-  
+
   // Some IIS servers react badly to svAny. So we set up a system where you can set a min/max SSL version.
-  
+
   TSSLVersion = (svNone,svAny,svSSLv2,svSSLv3,svTLSv1,svTLSv11,svTLSv12,svTLSv13);
   TSSLVersions = Set of TSSLVersion;
   TSSLVersionArray = Array of TSSLVersion;
@@ -36,17 +45,26 @@ Type
     FStream : TStream;
     FOwnsStream : Boolean;
     FSSLVersion : TSSLVersion;
+    FRequestID : String;
+    FIsAsync : Boolean;
   Protected
     function GetHeaders: TStrings;virtual;
     function GetStream: TStream;virtual;
+    procedure SetStream(aValue : TStream); virtual;
+    property IsAsync : Boolean read FIsAsync;
   Public
+    constructor create(aASync : Boolean; const aRequestID : String = '');
     Destructor Destroy; override;
     Procedure SetContentFromString(Const S : String) ;
     Function GetContentAsString : String;
+    // Unique request ID
+    Property RequestID : String Read FRequestID;
     // Request headers or response headers
     Property Headers : TStrings Read GetHeaders;
     // Request content or response content
-    Property Content: TStream Read GetStream;
+    Property Content: TStream Read GetStream Write SetStream;
+    // Request/Response own the stream, i.e. free the stream when destroyed.
+    Property OwnsStream : Boolean Read FOwnsStream Write FOwnsStream;
     // SSLVersion : Which version to use
     Property SSLVersion : TSSLVersion Read FSSLVersion Write FSSLVersion;
   end;
@@ -74,11 +92,15 @@ Type
   { TWebClientResponse }
 
   TWebClientResponse = Class(TRequestResponse)
+  private
+    FOwnsRequest: Boolean;
+    FRequest: TWebClientRequest;
   Protected
     Function GetStatusCode : Integer; virtual;
     Function GetStatusText : String; virtual;
   Public
-    Constructor Create(ARequest : TWebClientRequest); virtual;
+    Constructor Create(ARequest : TWebClientRequest); virtual; reintroduce;
+    Destructor Destroy; override;
     // Status code of request
     Property StatusCode : Integer Read GetStatusCode;
     // Status text of request
@@ -105,6 +127,15 @@ Type
 
   { TAbstractWebClient }
 
+  { TWebClientResponseResult }
+
+  TWebClientResponseResult = record
+    Response : TWebClientResponse;
+    Error : Exception;
+    function Success : Boolean;
+  end;
+
+  TAsyncResponseCallback = reference to procedure (aResponse : TWebClientResponseResult);
 
   TAbstractWebClient = Class(TComponent)
   private
@@ -114,12 +145,14 @@ Type
     FLogStream : TStream;
     FMinSSLVersion: TSSLVersion;
     FMaxSSLVersion: TSSLVersion;
+    FRequestID : Integer;
     Procedure LogRequest(AMethod, AURL: String; ARequest: TWebClientRequest);
     Procedure LogResponse(AResponse: TWebClientResponse);
     procedure SetLogFile(const AValue: String);
     procedure SetSSLVersion(AValue : TSSLVersion);
     Function GetSSLVersion : TSSLVersion;
   protected
+    function GetNextRequestID : String; virtual;
     // Determine min/max version to try
     procedure GetVersionLimits(out PMin, PMax: TSSLVersion);
     // Write a string to the log file
@@ -127,17 +160,18 @@ Type
     // Must execute the requested method using request/response. Must take ResponseContent stream into account
     Function DoHTTPMethod(Const AMethod,AURL : String; ARequest : TWebClientRequest) : TWebClientResponse; virtual; abstract;
     // Must create a request.
-    Function DoCreateRequest : TWebClientRequest; virtual; abstract;
+    Function DoCreateRequest(aIsAsync :Boolean; const aRequestID : String) : TWebClientRequest; virtual; abstract;
   Public
     Destructor Destroy; override;
 
     // Executes the HTTP method AMethod on AURL. Raises an exception on error.
     // On success, TWebClientResponse is returned. It must be freed by the caller.
     Function ExecuteRequest(Const AMethod,AURL : String; ARequest : TWebClientRequest) : TWebClientResponse;
+    Function ExecuteRequest(Const AMethod,AURL : String; ARequest : TWebClientRequest; aCallback : TAsyncResponseCallback) : String;
     // Same as HTTPMethod, but signs the request first using signer.
     Function ExecuteSignedRequest(Const AMethod,AURL : String; ARequest : TWebClientRequest) : TWebClientResponse;
     // Create a new request. The caller is responsible for freeing the request.
-    Function CreateRequest : TWebClientRequest;
+    Function CreateRequest(aForAsync : Boolean = False; const aRequestID : String = '') : TWebClientRequest;
     // These can be set to sign/examine the request/response.
     Property RequestSigner : TAbstractRequestSigner Read FSigner Write FSigner;
     Property ResponseExaminer : TAbstractResponseExaminer Read FExaminer Write FExaminer;
@@ -158,7 +192,11 @@ Var
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses FpWeb.Http.Defs;
+{$ELSE FPC_DOTTEDUNITS}
 uses httpdefs;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { TAbstractRequestSigner }
 
@@ -175,6 +213,13 @@ begin
   DoExamineResponse(AResponse);
 end;
 
+{ TWebClientResponseResult }
+
+function TWebClientResponseResult.Success: Boolean;
+begin
+  Result:=(Error=Nil)
+end;
+
 { TWebClientRequest }
 
 function TWebClientRequest.GetExtraParams: TStrings;
@@ -183,7 +228,6 @@ begin
     FExtraParams:=TStringList.Create;
   Result:=FExtraParams;
 end;
-
 
 destructor TWebClientRequest.Destroy;
 begin
@@ -222,8 +266,18 @@ begin
 end;
 
 constructor TWebClientResponse.Create(ARequest: TWebClientRequest);
+
 begin
+  Inherited Create(aRequest.IsAsync,aRequest.RequestID);
+  FRequest:=aRequest;
   FStream:=ARequest.ResponseContent;
+end;
+
+destructor TWebClientResponse.Destroy;
+begin
+  if IsAsync then
+    FreeAndNil(FRequest);
+  inherited Destroy;
 end;
 
 { TAbstractWebClient }
@@ -267,7 +321,7 @@ begin
   if Assigned(FLogStream) then
     begin
     S:=Str+sLineBreak;
-    FlogStream.Write(S[1],length(str));
+    FlogStream.Write(S[1],length(S));
     end;
 end;
 
@@ -313,6 +367,15 @@ begin
   StringToStream('');
 end;
 
+function TAbstractWebClient.GetNextRequestID : String;
+
+var
+  lNextID : Integer;
+
+begin
+  LNextID:=InterlockedIncrement(FRequestID);
+end;
+
 procedure TAbstractWebClient.GetVersionLimits(out PMin, PMax: TSSLVersion);
 
 begin
@@ -330,7 +393,7 @@ end;
 
 function TAbstractWebClient.ExecuteRequest(const AMethod, AURL: String;
   ARequest: TWebClientRequest): TWebClientResponse;
-  
+
 Var
   P,PMax,PMin : TSSLVersion;
   S: String;
@@ -372,6 +435,34 @@ begin
     StringToStream('Request generated no response');
 end;
 
+function TAbstractWebClient.ExecuteRequest(const AMethod, AURL: String; ARequest: TWebClientRequest;
+  aCallback: TAsyncResponseCallback): String;
+
+var
+  lResponse : TWebClientResponse;
+  lResult : TWebClientResponseResult;
+
+begin
+  lResponse:=nil;
+  try
+    lResult:=Default(TWebClientResponseResult);
+    Result:=aRequest.RequestID;
+    try
+      lResponse:=ExecuteRequest(aMethod,aURL,aRequest);
+      lResult.Response:=lResponse;
+      aCallBack(lResult);
+    except
+      on E : Exception do
+        begin
+        lResult.Error:=E;
+        aCallback(lResult);
+        end;
+    end;
+  finally
+    lResponse.Free;
+  end;
+end;
+
 function TAbstractWebClient.ExecuteSignedRequest(const AMethod, AURL: String;
   ARequest: TWebClientRequest): TWebClientResponse;
 begin
@@ -380,9 +471,18 @@ begin
   Result:=ExecuteRequest(AMethod,AURl,ARequest);
 end;
 
-function TAbstractWebClient.CreateRequest: TWebClientRequest;
+function TAbstractWebClient.CreateRequest(aForAsync: Boolean; const aRequestID: String): TWebClientRequest;
+
+var
+  lID : String;
+
 begin
-  Result:=DoCreateRequest;
+  lID:=aRequestID;
+  if lID='' then
+    lID:=GetNextRequestID;
+  Result:=DoCreateRequest(aForAsync,lID);
+  if (Result.FRequestID='') then
+    Result.FRequestID:=lID;
 end;
 
 { TRequestResponse }
@@ -406,6 +506,23 @@ begin
     end;
   Result:=FStream;
 end;
+
+procedure TRequestResponse.SetStream(aValue : TStream);
+begin
+  if aValue=FStream then
+    exit;
+  if FOwnsStream then
+    FreeAndNil(FStream);
+  FStream:=aValue;
+end;
+
+constructor TRequestResponse.Create(aAsync: Boolean; const aRequestID : String);
+
+begin
+  FRequestID:=aRequestID;
+  FIsAsync:=aAsync;
+end;
+
 
 Destructor TRequestResponse.Destroy;
 begin

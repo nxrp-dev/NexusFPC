@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fprtfexport;
+{$ENDIF FPC_DOTTEDUNITS}
 {
     This file is part of the Free Pascal run time library.
     Copyright (c) 1999-2022 by Michael van Canney and other members of the
@@ -18,13 +20,18 @@ unit fprtfexport;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, Data.Db, Data.Export.Db;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, DB, fpdbexport;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
   TRTFExportOption = (reHeaderRow,reHeaderLine,reTopLine,reBottomLine);
   TRTFExportOptions = Set of TrtfExportOption;
-  
+
   { TRTFExportFormatSettings }
 
   TRTFExportFormatSettings = Class(TExportFormatSettings)
@@ -104,7 +111,7 @@ Procedure UnRegisterRTFExporter;
 Const
   SRTFExport    = 'RTF export';
   SRTFExportExt = '.rtf';
-  
+
 
 Resourcestring
   SRTFExportDescr = 'Export to RTF table';
@@ -173,7 +180,7 @@ Var
   FL : TRTFExportFieldItem;
   F : TField;
   W : Integer;
-  
+
 begin
   inherited BuildDefaultFieldMap(AMap);
   For I:=0 to AMap.Count-1 do
@@ -205,7 +212,7 @@ Var
   I : Integer;
   B2 : Boolean;
   EF : TRTFExportFieldItem;
-  
+
 begin
   B2:=reHeaderRow in FEO;
   If B2 then
@@ -299,7 +306,7 @@ procedure TCustomRTFExporter.ExportField(EF: TExportFieldItem);
 Var
   S : String;
   RF : TRTFExportFieldItem;
-  
+
 begin
   RF:=EF as TRTFExportFieldItem;
   S:=MakeCell(FormatField(EF.Field),RF.LineBefore,RF.LineAfter);

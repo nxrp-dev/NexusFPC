@@ -1,12 +1,12 @@
 {
   Copyright 1999-2005 ImageMagick Studio LLC, a non-profit organization
   dedicated to making software imaging solutions freely available.
-  
+
   You may not use this file except in compliance with the License.
   obtain a copy of the License at
-  
+
     http://www.imagemagick.org/script/license.php
-  
+
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,7 +17,7 @@
 }
 
 type
-  NoiseType = ( 
+  NoiseType = (
   UndefinedNoise,
   UniformNoise,
   GaussianNoise,
@@ -61,11 +61,11 @@ type
     const double,const double,const double,ExceptionInfo *);
 
 extern MagickExport MagickBooleanType
-  BlackThresholdImage(Image *,const char *),
+  BlackThresholdImage(Image *,const AnsiChar *),
   BilevelImage(Image *,const double),
   BilevelImageChannel(Image *,const ChannelType,const double),
-  RandomThresholdImage(Image *,const char *,ExceptionInfo *),
-  RandomThresholdImageChannel(Image *,const ChannelType,const char *,
+  RandomThresholdImage(Image *,const AnsiChar *,ExceptionInfo *),
+  RandomThresholdImageChannel(Image *,const ChannelType,const AnsiChar *,
     ExceptionInfo *),
-  WhiteThresholdImage(Image *,const char *);}
+  WhiteThresholdImage(Image *,const AnsiChar *);}
 

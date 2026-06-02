@@ -1,17 +1,17 @@
 {
      File:       HIToolbox/Scrap.h
- 
+
      Contains:   Scrap Manager Interfaces.
- 
+
      Version:    HIToolbox-437~1
- 
+
      Copyright:  © 1985-2008 by Apple Computer, Inc., all rights reserved
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 {       Pascal Translation Updated:  Peter N Lewis, <peter@stairways.com.au>, August 2005 }
 {       Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2009 }
@@ -30,7 +30,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit Scrap;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -215,7 +217,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CFBase,MacOsApi.MixedMode,MacOsApi.MacErrors,MacOsApi.CFString;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CFBase,MixedMode,MacErrors,CFString;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -267,13 +273,13 @@ const
 {$ifc not TARGET_CPU_64}
 {
  *  LoadScrap()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    LoadScrap does nothing on Mac OS X.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -285,13 +291,13 @@ function LoadScrap: OSStatus; external name '_LoadScrap';
 
 {
  *  UnloadScrap()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    UnloadScrap does nothing on Mac OS X.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -367,7 +373,7 @@ type
 	ScrapRef = ^OpaqueScrapRef; { an opaque type }
 	OpaqueScrapRef = record end;
 {
-    kScrapRefNone is guaranteed to be an invalid ScrapRef.  This 
+    kScrapRefNone is guaranteed to be an invalid ScrapRef.  This
     is convenient when initializing application variables.
 }
 const
@@ -399,7 +405,7 @@ const
         GetScrapByName( kScrapClipboardScrap, kScrapGetNamedScrap, &scrap );
 
     is an exact match to the call:
-    
+
         GetCurrentScrap( &scrap );
 
     Additionally, a call to:
@@ -407,27 +413,27 @@ const
         GetScrapByName( kScrapClipboardScrap, kScrapClearNamedScrap, &scrap );
 
     is a replacement for the sequence:
-    
+
         ClearCurrentScrap();
         GetCurrentScrap( &scrap );
 
     You can use this API to generate your own private scraps to use as a high
     level interprocess communication between your main and helper apps.  The Java
     naming convention is suggested for your scraps ( ie. com.joeco.scrap.secret ).
-    
+
     CarbonLib does not support arbitrary named scraps; when calling this API on
     CarbonLib, kScrapClipboardScrap is the only supported value for the name parameter.
 }
 {$ifc not TARGET_CPU_64}
 {
  *  GetScrapByName()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    The Scrap Manager is deprecated. Use PasteboardCreate instead.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.1 and later in Carbon.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.5 and later
@@ -445,13 +451,13 @@ function GetScrapByName( name: CFStringRef; options: OptionBits; var scrap: Scra
 
 {
  *  GetCurrentScrap()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    The Scrap Manager is deprecated. Use PasteboardCreate instead.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -471,14 +477,14 @@ function GetCurrentScrap( var scrap: ScrapRef ): OSStatus; external name '_GetCu
 
 {
  *  GetScrapFlavorFlags()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    The Scrap Manager is deprecated. Use PasteboardGetItemFlavorFlags
  *    instead.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -497,14 +503,14 @@ function GetScrapFlavorFlags( scrap: ScrapRef; flavorType: ScrapFlavorType; var 
 
 {
  *  GetScrapFlavorSize()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    The Scrap Manager is deprecated. Use PasteboardCopyItemFlavorData
  *    instead.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -524,14 +530,14 @@ function GetScrapFlavorSize( scrap: ScrapRef; flavorType: ScrapFlavorType; var b
 
 {
  *  GetScrapFlavorData()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    The Scrap Manager is deprecated. Use PasteboardCopyItemFlavorData
  *    instead.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -555,13 +561,13 @@ function GetScrapFlavorData( scrap: ScrapRef; flavorType: ScrapFlavorType; var b
 
 {
  *  ClearCurrentScrap()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    The Scrap Manager is deprecated. Use PasteboardClear instead.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -576,19 +582,19 @@ function ClearCurrentScrap: OSStatus; external name '_ClearCurrentScrap';
         ScrapRef value. ClearScrap behaves similarly to GetScrapByName
         when called with the kScrapClearNamedScrap option with the
         benefit of not requiring a name in the event one is not available.
-        
+
         CarbonLib does not support arbitrary named scraps; when calling this
         API on CarbonLib, only clearing the current scrap is supported.
 }
 {
  *  ClearScrap()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    The Scrap Manager is deprecated. Use PasteboardClear instead.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.1 and later in Carbon.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.5 and later
@@ -619,7 +625,7 @@ function ClearScrap( var inOutScrap: ScrapRef ): OSStatus; external name '_Clear
 
         The method for setting Scrap Manager promises differs from that for Drag Manger promises.
         This chart describes the method for setting scrap promises via PutScrapFlavor().
-    
+
         dataPtr         dataSize                                result
      pointer value  actual data size    The data of size dataSize pointed to by dataPtr is added to the scrap.
            0        actual data size    A promise for data of size dataSize is placed on the scrap.
@@ -628,14 +634,14 @@ function ClearScrap( var inOutScrap: ScrapRef ): OSStatus; external name '_Clear
 }
 {
  *  PutScrapFlavor()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    The Scrap Manager is deprecated. Use PasteboardPutItemFlavor
  *    instead.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -659,7 +665,7 @@ type
 	ScrapPromiseKeeperUPP = ScrapPromiseKeeperProcPtr;
 {
  *  NewScrapPromiseKeeperUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -670,7 +676,7 @@ function NewScrapPromiseKeeperUPP( userRoutine: ScrapPromiseKeeperProcPtr ): Scr
 
 {
  *  DisposeScrapPromiseKeeperUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -681,7 +687,7 @@ procedure DisposeScrapPromiseKeeperUPP( userUPP: ScrapPromiseKeeperUPP ); extern
 
 {
  *  InvokeScrapPromiseKeeperUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -704,14 +710,14 @@ function InvokeScrapPromiseKeeperUPP( scrap: ScrapRef; flavorType: ScrapFlavorTy
 {$ifc not TARGET_CPU_64}
 {
  *  SetScrapPromiseKeeper()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    The Scrap Manager is deprecated. Use PasteboardSetPromiseKeeper
  *    instead.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -728,14 +734,14 @@ function SetScrapPromiseKeeper( scrap: ScrapRef; upp: ScrapPromiseKeeperUPP; use
 
 {
  *  GetScrapFlavorCount()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    The Scrap Manager is deprecated. Use PasteboardCopyItemFlavors
  *    instead.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -757,14 +763,14 @@ function GetScrapFlavorCount( scrap: ScrapRef; var infoCount: UInt32 ): OSStatus
 
 {
  *  GetScrapFlavorInfoList()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    The Scrap Manager is deprecated. Use PasteboardCopyItemFlavors
  *    instead.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -790,14 +796,14 @@ function GetScrapFlavorInfoList( scrap: ScrapRef; var infoCount: UInt32; info: {
 
 {
  *  CallInScrapPromises()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    The Scrap Manager is deprecated. Use PasteboardResolvePromises
  *    instead.
- *  
+ *
  *  Mac OS X threading:
  *    Not thread safe
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.0 and later

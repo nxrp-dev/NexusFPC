@@ -13,7 +13,7 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
- 
+
 {***********************************************************************}
 {                         POSIX STRUCTURES                              }
 {***********************************************************************}
@@ -28,7 +28,7 @@ Type
   end;
   ptimezone =^timezone;
   TTimeZone = timezone;
-  
+
   rusage = packed record
         ru_utime    : timeval;          { user time used }
         ru_stime    : timeval;          { system time used }
@@ -77,19 +77,19 @@ CONST                		// OS specific parameters for general<fd,sig>set behaviou
 //   SIG_MAXSIG      = 32;    //128;	// highest signal version
    FD_MAXFDSET	   = 1024;
 //   wordsinsigset   = 4;		// words in sigset_t
-   ln2bitsinword   = 5;         { 32bit : ln(32)/ln(2)=5 } 
+   ln2bitsinword   = 5;         { 32bit : ln(32)/ln(2)=5 }
    ln2bitmask	   = 2 shl ln2bitsinword - 1;
-   wordsinfdset    = FD_MAXFDSET DIV BITSINWORD;        // words in fdset_t   
-   wordsinsigset   = SIG_MAXSIG  DIV BITSINWORD;      
+   wordsinfdset    = FD_MAXFDSET DIV BITSINWORD;        // words in fdset_t
+   wordsinsigset   = SIG_MAXSIG  DIV BITSINWORD;
 
 TYPE
    { system information services }
    utsname = record
-              sysname : Array[0..SYS_NMLN-1] OF Char;   // Name of this OS
-              nodename: Array[0..SYS_NMLN-1] OF Char;   // Name of this network node.
-              release : Array[0..SYS_NMLN-1] OF Char;   // Release level.
-              version : Array[0..SYS_NMLN-1] OF Char;   // Version level.
-              machine : Array[0..SYS_NMLN-1] OF Char;   // Hardware type.
+              sysname : Array[0..SYS_NMLN-1] OF AnsiChar;   // Name of this OS
+              nodename: Array[0..SYS_NMLN-1] OF AnsiChar;   // Name of this network node.
+              release : Array[0..SYS_NMLN-1] OF AnsiChar;   // Release level.
+              version : Array[0..SYS_NMLN-1] OF AnsiChar;   // Version level.
+              machine : Array[0..SYS_NMLN-1] OF AnsiChar;   // Hardware type.
              end;
   TUtsName= utsname;
   pUtsName= ^utsname;
@@ -129,7 +129,7 @@ TYPE
    stat = packed record
       st_dev:longint;     {"device" that this file resides on}
       st_ino:int64;       {this file's inode #, unique per device}
-      st_mode:dword;      {mode bits (rwx for user, group, etc)}      
+      st_mode:dword;      {mode bits (rwx for user, group, etc)}
       st_nlink:longint;   {number of hard links to this file}
       st_uid:dword;       {user id of the owner of this file}
       st_gid:dword;       {group id of the owner of this file}
@@ -141,7 +141,7 @@ TYPE
       st_ctime:longint;   {last change time, not creation time}
       crtime:longint;  {creation time}
    end;
-   
+
    TStat = stat;
    pStat = ^stat;
 
@@ -152,7 +152,7 @@ TYPE
         d_ino:int64;
         d_pino:int64;
         d_reclen:word;
-        d_name:array[0..255] of char;
+        d_name:array[0..255] of AnsiChar;
    end;
 (*   dirent  = record
      d_dev : dev_t;
@@ -160,12 +160,12 @@ TYPE
      d_ino : ino_t;
      d_pino : ino_t;
      d_reclen : word;
-     d_name : Char;
+     d_name : AnsiChar;
 //        d_fileno      : cuint32;                        // file number of entry
 //        d_reclen      : cuint16;                        // length of this record
 //        d_type        : cuint8;                         // file type, see below
 //        d_namlen      : cuint8;                         // length of string in d_name
-//        d_name        : array[0..(255 + 1)-1] of char;  // name must be no longer than this
+//        d_name        : array[0..(255 + 1)-1] of AnsiChar;  // name must be no longer than this
    end;*)
    TDirent = dirent;
    pDirent = ^dirent;
@@ -175,7 +175,7 @@ TYPE
         ent : dirent;
 //        dd_loc    : clong;        // offset in current buffer
 //        dd_size   : clong;        // amount of data returned by getdirentries
-//        dd_buf    : pchar;        // data buffer
+//        dd_buf    : PAnsiChar;        // data buffer
 //        dd_len    : cint;         // size of data buffer
 {$ifdef netbsdpowerpc}
 //	dd_pad1   : cint;
@@ -215,7 +215,7 @@ TYPE
  TTms= tms;
  pTms= ^tms;
 
- TFDSetEl  = Cardinal; 
+ TFDSetEl  = Cardinal;
  TFDSet    = ARRAY[0..(FD_MAXFDSET div 32)-1] of TFDSetEl;
  pFDSet    = ^TFDSet;
 
@@ -264,11 +264,11 @@ CONST
     WNOHANG   =          1;     { don't block waiting               }
     WUNTRACED =          2;     { report status of stopped children }
 
-Type 
+Type
         TRLimit  = record
                      rlim_cur,               { current (soft) limit }
           	     rlim_max : TRLim;     { maximum value for rlim_cur }
-		    end;	
+		    end;
         PRLimit  = ^TRLimit;
 
  iovec = record
@@ -276,7 +276,7 @@ Type
 	    iov_len  : size_t;
 	   end;
   tiovec=iovec;
-  piovec=^tiovec;		
+  piovec=^tiovec;
 
 
     {*************************************************************************}
@@ -334,7 +334,7 @@ const
    B_SYSTEM_IMAGE  = 4;
 type
     image_info = packed record
-     id      : image_id;   
+     id      : image_id;
      _type   : longint;
      sequence: longint;
      init_order: longint;
@@ -342,7 +342,7 @@ type
      term_routine: pointer;
      device: dev_t;
      node: ino_t;
-     name: array[0..1024{MAXPATHLEN}-1] of char;
+     name: array[0..1024{MAXPATHLEN}-1] of AnsiChar;
 {     name: string[255];
      name2: string[255];
      name3: string[255];
@@ -354,14 +354,14 @@ type
      text_size: longint;
      data_size: longint;
     end;
-    
+
 (*----- symbol types and functions ------------------------*)
 
 const B_SYMBOL_TYPE_DATA = $1;
 const B_SYMBOL_TYPE_TEXT = $2;
 const B_SYMBOL_TYPE_ANY  = $5;
 
-{ Constansts for MMAP }
+{ Constants for MMAP }
 const
   MAP_ANONYMOUS =$1000;
 
@@ -388,3 +388,5 @@ type
   tpollfd = pollfd;
   ppollfd = ^pollfd;
 
+type
+  TTimespecArr  = array[0..1] of ttimespec;

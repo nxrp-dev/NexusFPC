@@ -57,15 +57,15 @@
 
 (* Const before type ignored *)
 (* Const before type ignored *)
-  procedure gst_type_find_suggest_simple(find:PGstTypeFind; probability:Tguint; media_type:Pchar; fieldname:Pchar; args:array of const);cdecl;external gstreamerlib name 'gst_type_find_suggest_simple';
+  procedure gst_type_find_suggest_simple(find:PGstTypeFind; probability:Tguint; media_type:PAnsiChar; fieldname:PAnsiChar; args:array of const);cdecl;external gstreamerlib name 'gst_type_find_suggest_simple';
 
-  procedure gst_type_find_suggest_simple(find:PGstTypeFind; probability:Tguint; media_type:Pchar; fieldname:Pchar);cdecl;external gstreamerlib name 'gst_type_find_suggest_simple';
+  procedure gst_type_find_suggest_simple(find:PGstTypeFind; probability:Tguint; media_type:PAnsiChar; fieldname:PAnsiChar);cdecl;external gstreamerlib name 'gst_type_find_suggest_simple';
 
   function gst_type_find_get_length(find:PGstTypeFind):Tguint64;cdecl;external gstreamerlib name 'gst_type_find_get_length';
 
 (* Const before type ignored *)
 (* Const before type ignored *)
-  function gst_type_find_register(plugin:PGstPlugin; name:Pgchar; rank:Tguint; func:TGstTypeFindFunction; extensions:Pgchar; 
+  function gst_type_find_register(plugin:PGstPlugin; name:Pgchar; rank:Tguint; func:TGstTypeFindFunction; extensions:Pgchar;
              possible_caps:PGstCaps; data:Tgpointer; data_notify:TGDestroyNotify):Tgboolean;cdecl;external gstreamerlib name 'gst_type_find_register';
 
 

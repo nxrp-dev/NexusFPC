@@ -2,21 +2,15 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
-
-{$endif not ALLPACKAGES}
-
-procedure add_dblib(const ADirectory: string);
-
-Const
-  DBLibOSes         = [linux,freebsd,netbsd,openbsd,solaris,win32,win64,haiku,android,dragonfly,beos];
+uses {$ifdef unix}cthreads,{$endif} fpmkunit;
 
 Var
   P : TPackage;
-
+  T : TTarget;
 begin
   With Installer do
     begin
+{$endif ALLPACKAGES}
       P:=AddPackage('dblib');
       P.ShortName := 'dblb';
       P.Directory:=ADirectory;
@@ -31,17 +25,16 @@ begin
       P.SourcePath.Add('src');
       P.IncludePath.Add('src');
 
-      P.OSes := DBLibOSes;
+      P.OSes := [linux,freebsd,netbsd,openbsd,solaris,win32,win64,haiku,android,dragonfly,beos];
       if Defaults.CPU=jvm then
         P.OSes := P.OSes - [android];
 
-      T:=P.Targets.AddUnit('dblib.pp',DBLibOSes);
-    end;
-end;
+      T:=P.Targets.AddUnit('dblib.pp',P.OSes);
+
+      P.NamespaceMap:='namespaces.lst';
 
 {$ifndef ALLPACKAGES}
-begin
-  add_dblib('');
-  Installer.Run;
+      Run;
+    end;
 end.
 {$endif ALLPACKAGES}

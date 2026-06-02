@@ -19,7 +19,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CGRemoteOperation;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -204,7 +206,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CFMachPort,MacOsApi.CGBase,MacOsApi.CGGeometry,MacOsApi.CGErrors,MacOsApi.CFDate;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CFMachPort,CGBase,CGGeometry,CGErrors,CFDate;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 {$ALIGN POWER}
@@ -427,7 +433,7 @@ function CGWarpMouseCursorPosition( newCursorPosition: CGPoint ): CGError; exter
    dead" problems.
 
    Mouse-down conditions of arbitrary length may be produced deliberately,
-   as when scrolling through a lengthly document. }
+   as when scrolling through a lengthy document. }
 
 {$endc}
 
@@ -532,7 +538,7 @@ function CGInhibitLocalEvents( inhibit: boolean_t ): CGError; external name '_CG
    Pass true for `updateMouseCursorPosition' if the on-screen cursor should
    be moved to the location specified in the `mouseCursorPosition'
    parameter; otherwise, pass false.
-   
+
    The parameter `buttonCount' specifies the number of mouse buttons, up to
    a maximum of 32.
 

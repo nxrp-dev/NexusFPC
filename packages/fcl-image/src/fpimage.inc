@@ -43,7 +43,7 @@ var
 begin
   if FileExists (filename) then
     begin
-    fs := TFileStream.Create (filename, fmOpenRead);
+    fs := TFileStream.Create (filename, fmOpenRead or fmShareDenyWrite);
     try
       LoadFromStream (fs, handler);
     finally
@@ -181,7 +181,7 @@ begin
     begin
     if h = nil then
       begin
-      f := TFileStream.Create (filename, fmOpenRead);
+      f := TFileStream.Create (filename, fmOpenRead or fmShareDenyWrite);
       try
         LoadFromStream (f);
       finally
@@ -398,6 +398,48 @@ begin
   result := GetInternalColor(x,y);
 end;
 
+procedure TFPCustomImage.SetResolutionUnit(AResolutionUnit: TResolutionUnit);
+begin
+  if (AResolutionUnit<>FResolutionUnit) then
+  begin
+    Case AResolutionUnit of
+    ruPixelsPerInch : if (FResolutionUnit=ruPixelsPerCentimeter) then //Old Resolution is in Cm
+             begin
+               FResolutionX :=FResolutionX*2.54;
+               FResolutionY :=FResolutionY*2.54;
+             end;
+    ruPixelsPerCentimeter: if (FResolutionUnit=ruPixelsPerInch) then //Old Resolution is in Inch
+                  begin
+                    FResolutionX :=FResolutionX/2.54;
+                    FResolutionY :=FResolutionY/2.54;
+                  end;
+    end;
+    FResolutionUnit :=AResolutionUnit;
+  end;
+end;
+
+function TFPCustomImage.GetResolutionWidth: Single;
+begin
+  if (FResolutionUnit=ruNone)
+  then Result :=FWidth
+  else begin
+         Result :=0;
+         if (FResolutionX<>0)
+         then Result :=FWidth/FResolutionX;
+       end;
+end;
+
+function TFPCustomImage.GetResolutionHeight: Single;
+begin
+  if (FResolutionUnit=ruNone)
+  then Result :=FHeight
+  else begin
+         Result :=0;
+         if (FResolutionY<>0)
+         then Result :=FHeight/FResolutionY;
+       end;
+end;
+
 procedure TFPCustomImage.SetInternalColor (x,y:integer; const Value:TFPColor);
 var i : integer;
 begin
@@ -469,6 +511,11 @@ begin
   If Source is TFPCustomImage then
     begin
     Src:=TFPCustomImage(Source);
+
+    // Copy Resolution info
+    ResolutionUnit :=Src.ResolutionUnit;
+    ResolutionX :=Src.ResolutionX;
+    ResolutionY :=Src.ResolutionY;
     // Copy extra info
     FExtra.Assign(Src.Fextra);
     // Copy palette if needed.
@@ -548,29 +595,30 @@ begin
 end;
 
 procedure TFPMemoryImage.SetSize (AWidth, AHeight : integer);
-var w, h, r, old : integer;
+var w, h, r: integer;
+    rr , old  : ptruint;
     NewData : PFPIntegerArray;
 begin
   if (AWidth <> Width) or (AHeight <> Height) then
     begin
     old := Height * Width;
-    r:=AWidth*AHeight;
+    rr:=AWidth*AHeight;
     if Assigned(FPalette)
     then
-      r:=SizeOf(integer)*r
+      rr:=SizeOf(integer)*rr
     else
-      r:=SizeOf(TFPColor)*r;
-    if r = 0 then
+      rr:=SizeOf(TFPColor)*rr;
+    if rr = 0 then
       NewData := nil
     else
       begin
-      GetMem (NewData, r);
-      FillWord (Newdata^[0], r div sizeof(word), 0);
+      GetMem (NewData, rr);
+      FillWord (Newdata^[0], rr div sizeof(word), 0);
       end;
     // MG: missing "and (NewData<>nil)"
     if (old <> 0) and assigned(FData) and (NewData<>nil) then
       begin
-      if r <> 0 then
+      if rr <> 0 then
         begin
         w := Lowest(Width, AWidth);
         h := Lowest(Height, AHeight);

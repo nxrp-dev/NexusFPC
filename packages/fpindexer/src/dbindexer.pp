@@ -3,7 +3,7 @@
     Copyright (c) 2012 by the Free Pascal development team
 
     Database indexer
-    
+
     See the file COPYING.FPC, included in this distribution,
     for details about the copyright.
 
@@ -12,15 +12,22 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
- 
+
+{$IFNDEF FPC_DOTTEDUNITS}
 unit DBIndexer;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, FpIndexer.Reader.Txt, Data.Db, Data.Sqldb, Data.SqlDb.Ib, FpIndexer.Indexer;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, ireadertxt, db, sqldb, ibconnection, fpindexer;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
 
@@ -68,7 +75,11 @@ Type
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.DateUtils;
+{$ELSE FPC_DOTTEDUNITS}
 uses dateutils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { TIBIndexer }
 

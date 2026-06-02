@@ -42,7 +42,9 @@
 
 // $Id: JwaDhcpsApi.pas,v 1.12 2007/09/06 14:57:11 marquardt Exp $
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaDhcpsApi;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 
@@ -57,8 +59,13 @@ unit JwaDhcpsApi;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 {$IFNDEF JWA_IMPLEMENTATIONSECTION}
@@ -319,7 +326,7 @@ type
 //  releases.
 //
 // The idea behind this subnet state is, when the admin wants to stop
-//  serving a subnet, he moves the state from Enbaled to Disabled so
+//  serving a subnet, he moves the state from Enabled to Disabled so
 //  that the clients from the subnets smoothly move to another servers
 //  serving that subnet. When all or most of the clients move to
 //  another server, the admin can delete the subnet without any force
@@ -465,7 +472,7 @@ function DhcpGetSubnetInfo(ServerIpAddress: PWideChar; SubnetAddress: DHCP_IP_AD
 function DhcpGetOptionValue(ServerIpAddress: PWideChar; OptionID: DHCP_OPTION_ID; const ScopeInfo: DHCP_OPTION_SCOPE_INFO; out OptionValue: LPDHCP_OPTION_VALUE): DWORD; stdcall;
 {$EXTERNALSYM DhcpGetOptionValue}
 procedure DhcpRpcFreeMemory(BufferPointer: PVOID); stdcall;
-{$EXTERNALSYM DhcpRpcFreeMemory}     
+{$EXTERNALSYM DhcpRpcFreeMemory}
 
 {$ENDIF JWA_IMPLEMENTATIONSECTION}
 
@@ -638,7 +645,7 @@ begin
         POP     EBP
         JMP     [_DhcpRpcFreeMemory]
   end;
-end;     
+end;
 
 {$ELSE}
 

@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit allwinner_a20;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$goto on}
 
@@ -109,7 +111,7 @@ unit allwinner_a20;
 
     var
       _stack_top: record end; external name '_stack_top';
-      
+
     procedure _FPC_start; assembler; nostackframe;
       label
         _start;

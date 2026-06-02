@@ -15,14 +15,21 @@
 
 }
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit FPImgGauss;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Math, System.Classes, FpImage;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Math, Classes, FPimage;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { Fast Gaussian blur to Area (excluding Area.Right and Area.Bottom)
   Pixels outside the image are treated as having the same color as the edge.
@@ -183,7 +190,7 @@ begin
   if SrcArea.Top>=SrcArea.Bottom then exit;
 
   // blur  -- RingBuffer of Size 147 is needed. range=(0,(int)(N_CELLS/4/1.73))
-  //                     N_CELLS=1024 don't ask! see paper: gauss.pdf, 3.sourcecdoe
+  //                     N_CELLS=1024 don't ask! see paper: gauss.pdf, 3.source code
   //                     Or 4*Radius+1, sounds better. see Comment underneath
   //Radius:=round(sqrt(3*Radius*Radius));
   buffer.Init(4*Radius);

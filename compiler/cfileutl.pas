@@ -70,7 +70,7 @@ interface
 
       TCachedSearchRec = record
         Name       : TCmdStr;
-        Attr       : byte;
+        Attr       : longint;
         Pattern    : TCmdStr;
         CachedDir  : TCachedDirectory;
         EntryIndex : longint;
@@ -143,6 +143,7 @@ interface
 
 { * Since native Amiga commands can't handle Unix-style relative paths used by the compiler,
     and some GNU tools, Unix2AmigaPath is needed to handle such situations (KB) * }
+
 
 {$IFDEF HASAMIGA}
 { * PATHCONV is implemented in the Amiga/MorphOS system unit * }
@@ -218,6 +219,7 @@ end;
       begin
         FreeDirectoryEntries;
         FDirectoryEntries.Free;
+        FDirectoryEntries := nil;
         inherited destroy;
       end;
 
@@ -389,6 +391,7 @@ end;
     destructor TDirectoryCache.destroy;
       begin
         FDirectories.Free;
+        FDirectories := nil;
         inherited destroy;
       end;
 
@@ -603,30 +606,36 @@ end;
                3. UPPERCASE
             }
             FoundFile:=path+fn;
-            If FileExists(FoundFile,allowcache) then
+            If (ftNone in AllowedFilenameTransFormations) and FileExists(FoundFile,allowcache) then
              begin
                result:=true;
                exit;
              end;
-            fn2:=Lower(fn);
-            if fn2<>fn then
+            if (ftLowerCase in AllowedFilenameTransFormations) then
               begin
-                FoundFile:=path+fn2;
-                If FileExists(FoundFile,allowcache) then
-                 begin
-                   result:=true;
-                   exit;
-                 end;
+                fn2:=Lower(fn);
+                if (fn2<>fn) then
+                  begin
+                    FoundFile:=path+fn2;
+                    If FileExists(FoundFile,allowcache) then
+                     begin
+                       result:=true;
+                       exit;
+                     end;
+                  end;
               end;
-            fn2:=Upper(fn);
-            if fn2<>fn then
+            if (ftUpperCase in AllowedFilenameTransFormations)  then
               begin
-                FoundFile:=path+fn2;
-                If FileExists(FoundFile,allowcache) then
-                 begin
-                   result:=true;
-                   exit;
-                 end;
+                fn2:=Upper(fn);
+                if (fn2<>fn) then
+                  begin
+                  FoundFile:=path+fn2;
+                  If FileExists(FoundFile,allowcache) then
+                    begin
+                      result:=true;
+                      exit;
+                    end;
+                  end;
               end;
           end
         else
@@ -825,7 +834,7 @@ end;
                 end
               else if (oldpos + 1 > oldlen) or (path[oldPos + 1] in ['/', '\']) then
                 begin
-                  {It is "./" or "."  ignor it }
+                  {It is "./" or "."  ignore it }
                   oldPos := oldPos + 2;
                   continue;  {Start over again}
                 end;
@@ -1109,6 +1118,7 @@ end;
              Insert(s);
            end;
           hl.Free;
+          hl := nil;
         end
        else
         begin
@@ -1541,6 +1551,7 @@ end;
 
     procedure InitFileUtils;
       begin
+        CachedCurrentDir:='';
         DirCache:=TDirectoryCache.Create;
       end;
 
@@ -1548,6 +1559,7 @@ end;
     procedure DoneFileUtils;
       begin
         DirCache.Free;
+        DirCache := nil;
       end;
 
 end.

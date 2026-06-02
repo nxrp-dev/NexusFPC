@@ -15,7 +15,7 @@
   at <http://www.gnu.org/copyleft/gpl.html>. You can also obtain it by writing
   to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
   Boston, MA 02110-1301, USA.
-  
+
 
   Purpose:
     This unit contains an XML TestListener for use with the fpcUnit testing
@@ -27,11 +27,23 @@
 
 }
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit xmlreporter;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes
+  ,System.SysUtils
+  ,FpcUnit.Test
+  ,FpcUnit.Utils
+  ,Xml.Dom
+  ,Xml.Writer
+  ;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes
   ,SysUtils
@@ -40,7 +52,8 @@ uses
   ,dom
   ,XMLWrite
   ;
-  
+{$ENDIF FPC_DOTTEDUNITS}
+
 
 type
   { XML Test Listener }
@@ -104,7 +117,7 @@ begin
   n := FDoc.CreateElement('NumberOfFailures');
   n.AppendChild(FDoc.CreateTextNode(IntToStr(pTestResult.NumberOfFailures)));
   lResults.AppendChild(n);
-  
+
   n := FDoc.CreateElement('NumberOfIgnoredTests');
   n.AppendChild(FDoc.CreateTextNode(IntToStr(pTestResult.NumberOfIgnoredTests)));
   lResults.AppendChild(n);
@@ -127,7 +140,7 @@ end;
 procedure TXMLResultsWriter.WriteHeader;
 begin
   FResults := FDoc.CreateElement('TestResults');
-  FResults.AppendChild(FDoc.CreateComment(' Generated using FPCUnit on '
+  FResults.AppendChild(FDoc.CreateComment(' Generated using FpcUnit on '
       + FormatDateTime('yyyy-mm-dd hh:mm:ss', Now) ));
   FDoc.AppendChild(FResults);
   FListing := FDoc.CreateElement('TestListing');

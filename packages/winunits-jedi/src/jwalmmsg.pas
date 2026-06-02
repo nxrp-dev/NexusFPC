@@ -5,7 +5,7 @@
 { Portions created by Microsoft are Copyright (C) 1995-2001 Microsoft          }
 { Corporation. All Rights Reserved.                                            }
 {                                                                              }
-{ The original file is: lmmsg.h, released November 2001. The original Pascal   } 
+{ The original file is: lmmsg.h, released November 2001. The original Pascal   }
 { code is: LmMsg.pas, released Februari 2002. The initial developer of the     }
 { Pascal code is Marcel van Brakel (brakelm att chello dott nl).               }
 {                                                                              }
@@ -43,7 +43,9 @@
 // $Id: JwaLmMsg.pas,v 1.11 2007/09/05 11:58:50 dezipaitor Exp $
 
 {$IFNDEF JWA_OMIT_SECTIONS_LM}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaLmMsg;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS_LM}
@@ -57,8 +59,13 @@ unit JwaLmMsg;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Lmcons, WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaLmCons, JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS_LM}
 
 {$IFNDEF JWA_IMPLEMENTATIONSECTION}

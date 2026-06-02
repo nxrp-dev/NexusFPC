@@ -1,17 +1,17 @@
 {
      File:       SecurityHI/URLAccess.h
- 
+
      Contains:   URL Access Interfaces.
- 
+
      Version:    SecurityHI-55002~751
- 
+
      Copyright:  © 1994-2008 by Apple Computer, Inc., all rights reserved
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 {  Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2009 }
 {  Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2012 }
@@ -29,7 +29,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit URLAccess;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -214,7 +216,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.Files,MacOsApi.CodeFragments,MacOsApi.MacErrors,MacOsApi.Events;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,Files,CodeFragments,MacErrors,Events;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -246,7 +252,7 @@ const
                                         { interested in later resuming the download.}
 	kURLResumeDownloadFlag = 1 shl 13; { The passed in file is partially downloaded, attempt to resume}
                                         { it.  Currently works for HTTP only.  If no FSSpec passed in,}
-                                        { this flag will be ignored. Overriden by kURLReplaceExistingFlag. }
+                                        { this flag will be ignored. Overridden by kURLReplaceExistingFlag. }
 	kURLReservedFlag = $80000000; { reserved for Apple internal use}
 
 type
@@ -370,7 +376,7 @@ const
 
 {
  *  URLGetURLAccessVersion()   *** DEPRECATED ***
- *  
+ *
  *  Deprecated:
  *    Return the version number ( in the same format as a
  *    NumVersionVariant.whole ) of the URLAccess libraries
@@ -378,7 +384,7 @@ const
  *    URLAccess is deprecated on Mac OS X.  See Technical Q&A 1291 for
  *    more information on the replacements available.
  *     http://developer.apple.com/qa/qa2001/qa1291.html
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -406,7 +412,7 @@ type
 	URLSystemEventUPP = URLSystemEventProcPtr;
 {
  *  NewURLNotifyUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -417,7 +423,7 @@ function NewURLNotifyUPP( userRoutine: URLNotifyProcPtr ): URLNotifyUPP; externa
 
 {
  *  NewURLSystemEventUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -428,7 +434,7 @@ function NewURLSystemEventUPP( userRoutine: URLSystemEventProcPtr ): URLSystemEv
 
 {
  *  DisposeURLNotifyUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -439,7 +445,7 @@ procedure DisposeURLNotifyUPP( userUPP: URLNotifyUPP ); external name '_DisposeU
 
 {
  *  DisposeURLSystemEventUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -450,7 +456,7 @@ procedure DisposeURLSystemEventUPP( userUPP: URLSystemEventUPP ); external name 
 
 {
  *  InvokeURLNotifyUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -461,7 +467,7 @@ function InvokeURLNotifyUPP( userContext: UnivPtr; event: URLEvent; var callback
 
 {
  *  InvokeURLSystemEventUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -473,7 +479,7 @@ function InvokeURLSystemEventUPP( userContext: UnivPtr; var event: EventRecord; 
 {$ifc not TARGET_CPU_64}
 {
  *  URLSimpleDownload()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -485,7 +491,7 @@ function URLSimpleDownload( url: ConstCStringPtr; destination: FSSpecPtr { can b
 
 {
  *  URLDownload()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -497,7 +503,7 @@ function URLDownload( urlRef: URLReference; destination: FSSpecPtr { can be NULL
 
 {
  *  URLSimpleUpload()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -509,7 +515,7 @@ function URLSimpleUpload( url: ConstCStringPtr; const (*var*) source: FSSpec; op
 
 {
  *  URLUpload()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -521,7 +527,7 @@ function URLUpload( urlRef: URLReference; const (*var*) source: FSSpec; openFlag
 
 {
  *  URLNewReference()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -533,7 +539,7 @@ function URLNewReference( url: ConstCStringPtr; var urlRef: URLReference ): OSSt
 
 {
  *  URLDisposeReference()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -545,7 +551,7 @@ function URLDisposeReference( urlRef: URLReference ): OSStatus; external name '_
 
 {
  *  URLOpen()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -557,7 +563,7 @@ function URLOpen( urlRef: URLReference; fileSpec: FSSpecPtr { can be NULL }; ope
 
 {
  *  URLAbort()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -569,7 +575,7 @@ function URLAbort( urlRef: URLReference ): OSStatus; external name '_URLAbort';
 
 {
  *  URLGetDataAvailable()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -581,7 +587,7 @@ function URLGetDataAvailable( urlRef: URLReference; var dataSize: Size ): OSStat
 
 {
  *  URLGetBuffer()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -593,7 +599,7 @@ function URLGetBuffer( urlRef: URLReference; var buffer: UnivPtr; var bufferSize
 
 {
  *  URLReleaseBuffer()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -605,7 +611,7 @@ function URLReleaseBuffer( urlRef: URLReference; buffer: UnivPtr ): OSStatus; ex
 
 {
  *  URLGetProperty()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -617,7 +623,7 @@ function URLGetProperty( urlRef: URLReference; proprty: ConstCStringPtr; propert
 
 {
  *  URLGetPropertySize()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -629,7 +635,7 @@ function URLGetPropertySize( urlRef: URLReference; proprty: ConstCStringPtr; var
 
 {
  *  URLSetProperty()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -641,7 +647,7 @@ function URLSetProperty( urlRef: URLReference; proprty: ConstCStringPtr; propert
 
 {
  *  URLGetCurrentState()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -653,7 +659,7 @@ function URLGetCurrentState( urlRef: URLReference; var state: URLState ): OSStat
 
 {
  *  URLGetError()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -665,7 +671,7 @@ function URLGetError( urlRef: URLReference; var urlError: OSStatus ): OSStatus; 
 
 {
  *  URLIdle()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -677,7 +683,7 @@ function URLIdle: OSStatus; external name '_URLIdle';
 
 {
  *  URLGetFileInfo()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later

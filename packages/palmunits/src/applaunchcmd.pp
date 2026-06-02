@@ -19,11 +19,17 @@
  *
  *****************************************************************************)
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit applaunchcmd;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses  PalmApi.Palmos, PalmApi.Systemmgr;
+{$ELSE FPC_DOTTEDUNITS}
 uses  palmos, systemmgr;
+{$ENDIF FPC_DOTTEDUNITS}
 
 (*
 #define LaunchWithCommand(type, creator, command, commandParams) \
@@ -62,7 +68,7 @@ uses  palmos, systemmgr;
 *)
 
 (************************************************************
- * Param Block passsed with the sysAppLaunchCmdLookup Command
+ * Param Block passed with the sysAppLaunchCmdLookup Command
  *************************************************************)
 
 //-------------------------------------------------------------------
@@ -107,13 +113,13 @@ const
 
 type
   AddrLookupParamsType = record
-    title: PChar;
+    title: PAnsiChar;
       // Title to appear in the title bar.  If NULL the default is used.
 
-    pasteButtonText: PChar;
+    pasteButtonText: PAnsiChar;
       // Text to appear in paste button.  If NULL "paste" is used.
 
-    lookupString: array [0..addrLookupStringLength-1] of Char;
+    lookupString: array [0..addrLookupStringLength-1] of AnsiChar;
       // Buffer containing string to lookup.  If the string matches
       // only one record then that record is used without
       // presenting the user with the lookup dialog.
@@ -143,7 +149,7 @@ type
       // lookups.  False means a non unique and complete lookup
       // returns resultStringH set to 0 and recordID set to 0;
 
-    formatStringP: PChar;
+    formatStringP: PAnsiChar;
       // When the user selects the paste button a string is generated
       // to return data from the record.  The format of the result string
       // is controlled by this string.  All characters which appear
@@ -169,7 +175,7 @@ type
   AddrLookupParamsPtr = ^AddrLookupParamsType;
 
 (************************************************************
- * Param Block passsed with the sysAppLaunchCmdSetActivePanel Command
+ * Param Block passed with the sysAppLaunchCmdSetActivePanel Command
  *************************************************************)
 
 const
@@ -188,13 +194,13 @@ type
   PrefActivePanelParamsPtr = ^PrefActivePanelParamsType;
 
 (************************************************************
- * Param Block passsed with the sysAppLaunchCmdAddRecord Command
+ * Param Block passed with the sysAppLaunchCmdAddRecord Command
  *************************************************************)
 
 //-------------------------------------------------------------------
 // sysAppLaunchCmdAddRecord parameter block for the Mail application
 //-------------------------------------------------------------------
-// Param Block passsed with the sysAppLaunchCmdAddRecord Command
+// Param Block passed with the sysAppLaunchCmdAddRecord Command
 
 type
   MailMsgPriorityType = Enum;
@@ -214,37 +220,37 @@ type
       // should be attached to the message.
 
     confirmRead: Boolean;
-      // True means that a comfirmation should be sent when the message
+      // True means that a confirmation should be sent when the message
       // is read.
 
     confirmDelivery: Boolean;
-      // True means that a comfirmation should be sent when the message
-      // is deliveried
+      // True means that a confirmation should be sent when the message
+      // is delivered
 
     priority: MailMsgPriorityType;
-      // high, normial, or low.
+      // high, normal, or low.
 
     padding: UInt8;
 
-    subject: PChar;
+    subject: PAnsiChar;
       // Message's subject, a null-terminated string (optional).
 
-    from: PChar;
+    from: PAnsiChar;
       // Message's send, a null-terminated string (not currently used).
 
-    to_: PChar;
+    to_: PAnsiChar;
       // Address the the recipient, a null-terminated string (required).
 
-    cc: PChar;
+    cc: PAnsiChar;
       // Copy Addresses, a null-terminated string (required).
 
-    bcc: PChar;
+    bcc: PAnsiChar;
       // Blind copy Addresses, a null-terminated string (required).
 
-    replyTo: PChar;
+    replyTo: PAnsiChar;
       // Reply to address, a null-terminated string (required).
 
-    body: PChar;
+    body: PAnsiChar;
       // The text of the message, a null-terminated string (required).
   end;
 
@@ -253,7 +259,7 @@ type
 //-------------------------------------------------------------------
 // sysAppLaunchCmdAddRecord parameter block for the Messaging application
 //-------------------------------------------------------------------
-// Param Block passsed with the sysAppLaunchCmdAddRecord Command
+// Param Block passed with the sysAppLaunchCmdAddRecord Command
 
 //category defines
 const
@@ -266,7 +272,7 @@ const
 type
   MsgAddRecordParamsType = record
     category: UInt16;
-      //is this an outgoing mesage? Or should it be put into a different category
+      //is this an outgoing message? Or should it be put into a different category
 
     edit: Boolean;
       // True means that the message should be opened in the editor,instead of
@@ -276,19 +282,19 @@ type
       // True means that signature from the Mail application's preferences
       // should be attached to the message.
 
-    subject: PChar;
+    subject: PAnsiChar;
       // Message's subject, a null-terminated string (optional).
 
-    from: PChar;
+    from: PAnsiChar;
       // Message's send, a null-terminated string (not currently used).
 
-    to_: PChar;
+    to_: PAnsiChar;
       // Address the the recipient, a null-terminated string (required).
 
-    replyTo: PChar;
+    replyTo: PAnsiChar;
       // Reply to address, a null-terminated string (required).
 
-    body: PChar;
+    body: PAnsiChar;
       // The text of the message, a null-terminated string (required).
   end;
 

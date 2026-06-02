@@ -18,14 +18,21 @@
   See the file COPYING.FPC, included in this distribution,
   for details about the copyright.
 }
+{$IFNDEF FPC_DOTTEDUNITS}
 unit chmtypes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils,Xml.Config;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils,xmlcfg;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   TSectionName = (snMSCompressed, snUnCompressed);
@@ -160,7 +167,7 @@ type
   PTOCEntryPageBookInfo = ^TTOCEntryPageBookInfo;
   TTOCEntryPageBookInfo = record
     Unknown1: Word; //  = 0
-    EntryIndex: Word; // multiple entry info's can have this value but the TTocEntry it points to points back to the first item with this number. Wierd.
+    EntryIndex: Word; // multiple entry info's can have this value but the TTocEntry it points to points back to the first item with this number. Weird.
     Props: DWord; // BitField. See TOC_ENTRY_*
     TopicsIndexOrStringsOffset: DWord; // if TOC_ENTRY_HAS_LOCAL is in props it's the Topics Index
                                        // else it's the Offset In Strings of the Item Text
@@ -244,7 +251,12 @@ function PageBookInfoRecordSize(ARecord: PTOCEntryPageBookInfo): Integer;
 Const defvalidflags = [valid_Navigation_pane_style,valid_Window_style_flags,valid_Initial_window_position,valid_Navigation_pane_width,valid_Buttons,valid_Tab_position];
 
 implementation
+
+{$IFDEF FPC_DOTTEDUNITS}
+uses Chm.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses chmbase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 function PageBookInfoRecordSize(ARecord: PTOCEntryPageBookInfo): Integer;
 begin
@@ -301,7 +313,7 @@ begin
 
   Stream.Write(Buffer[0], $1000);
   {$IFDEF DEBUG_CHM_CHUNKS}
-  WriteLn('Writing ', Copy(PChar(@Buffer[0]),0,4),' ChunkToStream');
+  WriteLn('Writing ', Copy(PAnsiChar(@Buffer[0]),0,4),' ChunkToStream');
   {$ENDIF}
 end;
 
@@ -506,7 +518,7 @@ begin
   nav_style         :=getnextint(txt,ind,len,flags,valid_navigation_pane_style);
   navpanewidth      :=getnextint(txt,ind,len,flags,valid_navigation_pane_width);
   buttons           :=getnextint(txt,ind,len,flags,valid_buttons);
-  
+
   (* initialize arr[] *)
   arr[0] :=0;
   arr[1] :=0;
@@ -525,7 +537,7 @@ begin
     (* looking for a max 4 int followed by a closing "]" *)
     repeat
       if k > 0 then s2:=getnext(txt,ind,len);
-      
+
       j:=pos(']',s2);
       if j>0 then delete(s2,j,1);
       if length(trim(s2))>0 then
@@ -534,7 +546,7 @@ begin
       inc(k);
     until (bArr <> True) or (j<>0) or (ind>len);
   end;
-   
+
   left  :=arr[0];
   top   :=arr[1];
   right :=arr[2];

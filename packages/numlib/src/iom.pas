@@ -18,12 +18,18 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit iom;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 {$I direct.inc}
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses NumLib.Typ;
+{$ELSE FPC_DOTTEDUNITS}
 uses typ;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
     npos  : ArbInt = 78;
@@ -120,11 +126,11 @@ var
   ci: ArbInt;
 begin
   pa:=@a;
-  
+
   k:=1;
   m:=0;
   n:=0;
-  
+
   //parse the text
   i:= 1;
   while i < Length(inp) do
@@ -158,12 +164,12 @@ begin
       Inc(k);
       if err <> 0 then
         writeln('Val(',s,') failed at position ', err);
-        
+
       Inc(ci);
     end;
 
     k := ((k div c) + 1) * c + 1;
-    
+
     Inc(ni);
     if ni > n then n := ni;
 
@@ -176,7 +182,7 @@ procedure iomwrms(var out: ArbString; var a: ArbFloat; m, n, form, c: ArbInt);
 var
   pa: ^arfloat1;
   i, l, kk: ArbInt;
-  s: string;
+  s: ShortString;
 BEGIN
   if (n<1) or (m<1) then
     exit;
@@ -198,7 +204,7 @@ BEGIN
     BEGIN
       str(pa^[kk]:form, s);
       Inc(kk);
-      
+
       if i <> n then
         out := out + s + ' '
       else

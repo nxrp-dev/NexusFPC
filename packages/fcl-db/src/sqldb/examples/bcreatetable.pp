@@ -20,16 +20,16 @@ uses
 
 begin
   ReadIniFile;
-  
+
   CreateFConnection;
   CreateFTransaction;
 
   Fconnection.Transaction := Ftransaction;
-  
+
   Fconnection.ExecuteDirect('create table FPDEV (       ' +
                             '  id INT NOT NULL,           ' +
                             '  Name VARCHAR(50),          ' +
-                            '  Email CHAR(50),            ' +
+                            '  Email AnsiChar(50),            ' +
                             '  Birthdate Date,            ' +
                             '  PRIMARY KEY (id)           ' +
                             ')                            ');

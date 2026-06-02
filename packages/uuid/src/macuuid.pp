@@ -1,32 +1,42 @@
 {$mode objfpc}
 {$H+}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit macuuid;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils;
+{$ELSE FPC_DOTTEDUNITS}
 uses SysUtils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Function CreateMacGUID(Out GUID : TGUID) : Integer;
 
 
 Implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses UnixApi.Types, System.Net.Sockets, UnixApi.Base, UnixApi.Unix;
+{$ELSE FPC_DOTTEDUNITS}
 uses unixtype, sockets, baseunix, unix;
+{$ENDIF FPC_DOTTEDUNITS}
 
-Const 
+Const
   MAX_ADJUSTMENT = 10;
   IPPROTO_IP     = 0;
 //  AF_INET        = 2;
-//  SOCK_DGRAM     = 2; 
+//  SOCK_DGRAM     = 2;
   IF_NAMESIZE    = 16;
   SIOCGIFCONF    = $8912;
   SIOCGIFHWADDR  = $8927;
-  
+
 Type
   {$packrecords c}
   tifr_ifrn = record
     case integer of
-      0 : (ifrn_name: array [0..IF_NAMESIZE-1] of char);
+      0 : (ifrn_name: array [0..IF_NAMESIZE-1] of AnsiChar);
   end;
   tifmap = record
     mem_start : culong;
@@ -49,10 +59,10 @@ Type
       6 : (ifru_ivalue    : cint);
       7 : (ifru_mtu       : cint);
       8 : (ifru_map       : tifmap);
-      9 : (ifru_slave     : Array[0..IF_NAMESIZE-1] of char);
-      10 : (ifru_newname  : Array[0..IF_NAMESIZE-1] of char);
+      9 : (ifru_slave     : Array[0..IF_NAMESIZE-1] of AnsiChar);
+      10 : (ifru_newname  : Array[0..IF_NAMESIZE-1] of AnsiChar);
       11 : (ifru_data     : pointer);
-  end; 
+  end;
   TIFConf = record
     ifc_len : cint;
     case integer of
@@ -60,7 +70,7 @@ Type
       1 : (ifcu_req : ^tifrec);
   end;
 
-  tuuid = record 
+  tuuid = record
     time_low : cardinal;
     time_mid : Word;
     time_hi_and_version : Word;
@@ -87,7 +97,7 @@ begin
   For I:=0 to NBytes-1 do
     P[i]:=Random(256);
 end;
-  
+
 Function GetMacAddr : Boolean;
 
 var
@@ -96,23 +106,23 @@ var
   ifc : TIfConf;
   ifr : TIFRec;
   ifp : PIFRec;
-  p   : PChar;
+  p   : PAnsiChar;
 begin
   Result:=MacAddrTried>0;
   If Result then
     Result:=MacAddrTried>1
-  else  
+  else
     begin
     MacAddrTried:=1;
     sd:=fpSocket(AF_INET,SOCK_DGRAM,IPPROTO_IP);
-    if (sd<0) then 
+    if (sd<0) then
       exit;
     Try
       ifc.ifc_len:=Sizeof(Buf);
       ifc.ifcu_buf:=@buf;
       if fpioctl(sd, SIOCGIFCONF, @ifc)<0 then
         Exit;
-      n:= ifc.ifc_len;  
+      n:= ifc.ifc_len;
       i:=0;
       While (Not Result) and (I<N) do
         begin
@@ -120,31 +130,31 @@ begin
         move(ifp^.ifr_ifrn.ifrn_name,ifr.ifr_ifrn.ifrn_name,IF_NAMESIZE);
         if (fpioctl(sd, SIOCGIFHWADDR, @ifr) >= 0) then
           begin
-          P:=Pchar(@ifr.ifru_hwaddr.sa_data);
-          Result:=(p[0]<>#0) or (p[1]<>#0) or (p[2]<>#0) 
+          P:=PAnsiChar(@ifr.ifru_hwaddr.sa_data);
+          Result:=(p[0]<>#0) or (p[1]<>#0) or (p[2]<>#0)
                   or (p[3]<>#0) or (p[4]<>#0) or (p[5]<>#0);
           If Result Then
             begin
-            Move(P^,MacAddr,SizeOf(MacAddr));  
+            Move(P^,MacAddr,SizeOf(MacAddr));
             MacAddrTried:=2;
             // DumpMacAddr;
             end;
           end;
         I:=I+sizeof(tifrec);
         end;
-    Finally  
+    Finally
       fileClose(sd);
     end;
     end;
 end;
 
-  
+
 Function GetClock(Var ClockHigh,ClockLow : Cardinal; Var RetClockSeq : Word) : boolean;
 
 Var
   TV       : TTImeVal;
-  ClockReg : QWord;  
-  OK       : Boolean; 
+  ClockReg : QWord;
+  OK       : Boolean;
 
 begin
   OK:=True;
@@ -157,7 +167,7 @@ begin
       last:=TV;
       Dec(last.tv_sec);
       end;
-    if (tv.tv_sec<last.tv_sec) or 
+    if (tv.tv_sec<last.tv_sec) or
         ((tv.tv_sec=last.tv_sec) and (tv.tv_usec<last.tv_usec)) then
       begin
       ClockSeq:=(ClockSeq+1) and $1FFF;
@@ -168,7 +178,7 @@ begin
       begin
       If Adjustment>=MAX_ADJUSTMENT then
         OK:=False
-      else  
+      else
         inc(AdjustMent);
       end
     else
@@ -176,14 +186,14 @@ begin
       AdjustMent:=0;
       Last:=tv;
       end;
-  Until OK;  
+  Until OK;
   ClockReg:=tv.tv_usec*10+adjustment;
   Inc(ClockReg,tv.tv_sec*10000000);
   Inc(ClockReg,($01B21DD2 shl 32) + $13814000);
   ClockHigh   :=Hi(ClockReg);
   ClockLow    :=Lo(ClockReg);
   RetClockSeq :=ClockSeq;
-  Result      :=True;                  
+  Result      :=True;
 end;
 
 Procedure UUIDPack(Const UU : TUUID; Var GUID : TGUID);
@@ -191,10 +201,10 @@ Procedure UUIDPack(Const UU : TUUID; Var GUID : TGUID);
 Var
   tmp : Cardinal;
   P   : PByte;
-  
+
 begin
   P:=PByte(@GUID);
-  
+
   tmp:=uu.time_low;
   P[3]:=tmp and $FF;
   tmp:=tmp shr 8;
@@ -203,22 +213,22 @@ begin
   P[1]:=tmp and $FF;
   tmp:=tmp shr 8;
   P[0]:=tmp and $FF;
-  
+
   tmp:=uu.time_mid;
   P[5]:=tmp and $FF;
   tmp:=tmp shr 8;
   P[4]:=tmp and $FF;
-  
+
   tmp:=uu.time_hi_and_version;
   P[7]:=tmp and $FF;
   tmp:=tmp shr 8;
   P[6]:=tmp and $FF;
-  
+
   tmp:=uu.clock_seq;
   P[9]:=tmp and $FF;
   tmp:=tmp shr 8;
   P[8]:=tmp and $FF;
-  
+
   Move(uu.node,P[10],6);
 end;
 

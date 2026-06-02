@@ -12,11 +12,17 @@
  **********************************************************************}
 {$mode objfpc}
 
-unit iostream;
+{$IFNDEF FPC_DOTTEDUNITS}
+unit IoStream;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.Classes;
+{$ELSE FPC_DOTTEDUNITS}
 uses Classes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   TIOSType = (iosInput,iosOutPut,iosError);

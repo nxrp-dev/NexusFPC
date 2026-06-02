@@ -10,7 +10,7 @@
 {                                                          }
 {****************[ THIS CODE IS FREEWARE ]*****************}
 {                                                          }
-{     This sourcecode is released for the purpose to       }
+{     This source code is released for the purpose to      }
 {   promote the pascal language on all platforms. You may  }
 {   redistribute it and/or modify with the following       }
 {   DISCLAIMER.                                            }
@@ -43,7 +43,9 @@
 {  1.41     03 Nov 99   FPC Windows support added          }
 {**********************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 UNIT Memory;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {====Include file to sort compiler platform out =====================}
 {$I platform.inc}
@@ -74,7 +76,11 @@ UNIT Memory;
 {$V-} { Turn off strict VAR strings }
 {====================================================================}
 
+{$IFDEF FPC_DOTTEDUNITS}
+USES FreeVision.Fvcommon;
+{$ELSE FPC_DOTTEDUNITS}
 USES FVCommon;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {***************************************************************************}
 {                            INTERFACE ROUTINES                             }
@@ -165,14 +171,14 @@ PROCEDURE NewBuffer (Var P: Pointer; Size: Word);
 
 {-InitDosMem---------------------------------------------------------
 Initialize memory manager routine for a shell to launch a DOS window.
-Interface for compatability only under DPMI/WIN/NT/OS2 platforms.
+Interface for compatibility only under DPMI/WIN/NT/OS2 platforms.
 01Oct99 LdB
 ---------------------------------------------------------------------}
 PROCEDURE InitDosMem;
 
 {-DoneDosMem---------------------------------------------------------
 Finished shell to a DOS window so reset memory manager again.
-Interface for compatability only under DPMI/WIN/NT/OS2 platforms.
+Interface for compatibility only under DPMI/WIN/NT/OS2 platforms.
 01Oct99 LdB
 ---------------------------------------------------------------------}
 PROCEDURE DoneDosMem;
@@ -191,6 +197,24 @@ CONST
 {<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>}
                                 IMPLEMENTATION
 {<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>}
+
+{$IFDEF FPC_DOTTEDUNITS}
+{$IFDEF OS_WINDOWS}                                   { WIN/NT CODE }
+   {$IFDEF PPC_FPC}                                   { FPC WinApi.Windows COMPILER }
+   USES WinApi.Windows;                                      { Standard unit }
+   {$ELSE}                                            { OTHER COMPILERS }
+   USES WinApi.WinProcs, WinApi.WinTypes;                           { Standard units }
+   {$ENDIF}
+{$ENDIF}
+
+{$IFDEF OS_OS2}                                       { OS2 CODE }
+  {$IFDEF PPC_FPC}
+     USES OS2Api.doscalls;                                        { Standard unit }
+  {$ELSE}
+     USES Os2Base;                                         { Standard unit }
+  {$ENDIF}
+{$ENDIF}
+{$ELSE FPC_DOTTEDUNITS}
 {$IFDEF OS_WINDOWS}                                   { WIN/NT CODE }
    {$IFDEF PPC_FPC}                                   { FPC WINDOWS COMPILER }
    USES Windows;                                      { Standard unit }
@@ -206,6 +230,7 @@ CONST
      USES Os2Base;                                         { Standard unit }
   {$ENDIF}
 {$ENDIF}
+{$ENDIF FPC_DOTTEDUNITS}
 
 {***************************************************************************}
 {                      PRIVATE RECORD TYPE DEFINITIONS                      }
@@ -586,12 +611,12 @@ PROCEDURE NewCache (Var P: Pointer; Size: Word);
 {$IFDEF PROC_REAL}                                    { REAL MODE DOS CODE }
 ASSEMBLER;
 ASM
-   LES DI, P;                                         { Addres of var P }
+   LES DI, P;                                         { Address of var P }
    MOV AX, Size;
    ADD AX, (TYPE TCache)+15;                          { Add offset }
    MOV CL, 4;
    SHR AX, CL;
-   MOV DX, CachePtr.Word[2];                          { Reteive cache ptr }
+   MOV DX, CachePtr.Word[2];                          { Retrieve cache ptr }
    SUB DX, AX;
    JC @@1;
    CMP DX, HeapPtr.Word[2];                           { Heap ptr end }
@@ -785,7 +810,7 @@ PROCEDURE DisposeBuffer (P: Pointer);
 BEGIN
    If (P <> Nil) Then Begin
      {$IFDEF PROC_REAL}                               { REAL MODE DOS CODE }
-     Dec(PtrRec(P).Seg);                              { Prior segement }
+     Dec(PtrRec(P).Seg);                              { Prior segment }
      SetBufSize(P, 0);                                { Release memory }
      {$ELSE}                                          { DPMI/WIN/NT/OS2 CODE }
 {$ifdef fpc}
@@ -817,7 +842,7 @@ VAR BufSize: Word; Buffer: PBuffer;
 BEGIN
    {$IFDEF PROC_REAL}                                 { REAL MODE DOS CODE }
    BufSize := (Size + 15) SHR 4 + 1;                  { Paragraphs to alloc }
-   If (BufHeapPtr+BufSize > BufHeapEnd) Then P := Nil { Exceeeds heap }
+   If (BufHeapPtr+BufSize > BufHeapEnd) Then P := Nil { Exceeds heap }
    Else Begin
      Buffer := Ptr(BufHeapPtr, 0);                    { Current position }
      Buffer^.Size := Size;                            { Set size }

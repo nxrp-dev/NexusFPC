@@ -45,7 +45,9 @@
 
 // $Id: JwaHtmlHelp.pas,v 1.15 2007/09/14 06:48:45 marquardt Exp $
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaHtmlHelp;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$I jediapilib.inc}
 
@@ -66,11 +68,19 @@ interface
 (*$HPPEMIT ''*)
 
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  {$IFDEF HAS_UNIT_VARIANTS}
+  System.Variants,
+  {$ENDIF HAS_UNIT_VARIANTS}
+  WinApi.Jedi.Wintype, WinApi.Jedi.Winuser;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   {$IFDEF HAS_UNIT_VARIANTS}
   Variants,
   {$ENDIF HAS_UNIT_VARIANTS}
   JwaWinType, JwaWinUser;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 // Commands to pass to HtmlHelp()
 
@@ -384,7 +394,7 @@ const
 
 type
   PHHLastError = ^THHLastError;
-  tagHH_LAST_ERROR = packed record
+  tagHH_LAST_ERROR = record
     cbStruct: INT;          // size of this structure
     hr: HRESULT;            // the last error code.
     description: LPWSTR;    // a description of the error (unicode string - BSTR).
@@ -392,7 +402,7 @@ type
   THHLastError = tagHH_LAST_ERROR;
 
   PHHNNotify = ^THHNNotify;
-  tagHHN_NOTIFY = packed record
+  tagHHN_NOTIFY = record
     hdr: NMHDR;
     pszUrl: PCSTR;                         // multibyte null-terminated string
   end;
@@ -402,7 +412,7 @@ type
   THHNNotify = tagHHN_NOTIFY;
 
   PHHPopup = ^THHPopup;
-  tagHH_POPUP = packed record
+  tagHH_POPUP = record
     cbStruct: Integer;                     // sizeof this structure
     hinst_: HINST;                     // instance handle for string resource
     idString: UINT;                        // string resource id, or text id if pszFile is specified in HtmlHelp call
@@ -411,7 +421,7 @@ type
     clrForeGround: COLORREF;               // use -1 for default
     clrBackground: COLORREF;               // use -1 for default
     rcMargins: RECT;                       // amount of space between edges of window and text, -1 for each member to ignore
-    pszFont: LPCTSTR;                      // facename, point size, char set, BOLD ITALIC UNDERLINE
+    pszFont: LPCTSTR;                      // facename, point size, AnsiChar set, BOLD ITALIC UNDERLINE
   end;
   {$EXTERNALSYM tagHH_POPUP}
   HH_POPUP = tagHH_POPUP;
@@ -419,7 +429,7 @@ type
   THHPopup = tagHH_POPUP;
 
   PHHAKLink = ^THHAKLink;
-  tagHH_AKLINK = packed record
+  tagHH_AKLINK = record
     cbStruct: Integer;                     // sizeof this structure
     fReserved: BOOL;                       // must be FALSE (really!)
     pszKeywords: LPCTSTR;                  // semi-colon separated keywords
@@ -467,12 +477,12 @@ const
 
 type
   PHHEnumIT = ^THHEnumIT;
-  tagHH_ENUM_IT = packed record
+  tagHH_ENUM_IT = record
     cbStruct: Integer;        // size of this structure
     iType: Integer;           // the type of the information type ie. Inclusive, Exclusive, or Hidden
     pszCatName: LPCSTR;       // Set to the name of the Category to enumerate the info types in a category; else NULL
-    pszITName: LPCSTR;        // volitile pointer to the name of the infotype. Allocated by call. Caller responsible for freeing
-    pszITDescription: LPCSTR; // volitile pointer to the description of the infotype.
+    pszITName: LPCSTR;        // volatile pointer to the name of the infotype. Allocated by call. Caller responsible for freeing
+    pszITDescription: LPCSTR; // volatile pointer to the description of the infotype.
   end;
   {$EXTERNALSYM tagHH_ENUM_IT}
   HH_ENUM_IT = tagHH_ENUM_IT;
@@ -482,10 +492,10 @@ type
   THHEnumIT = tagHH_ENUM_IT;
 
   PHHEnumCat = ^THHEnumCat;
-  tagHH_ENUM_CAT = packed record
+  tagHH_ENUM_CAT = record
     cbStruct: Integer;         // size of this structure
-    pszCatName: LPCSTR;        // volitile pointer to the category name
-    pszCatDescription: LPCSTR; // volitile pointer to the category description
+    pszCatName: LPCSTR;        // volatile pointer to the category name
+    pszCatDescription: LPCSTR; // volatile pointer to the category description
   end;
   {$EXTERNALSYM tagHH_ENUM_CAT}
   HH_ENUM_CAT = tagHH_ENUM_CAT;
@@ -495,7 +505,7 @@ type
   THHEnumCat = tagHH_ENUM_CAT;
 
   PHHSetInfoType = ^THHSetInfoType;
-  tagHH_SET_INFOTYPE = packed record
+  tagHH_SET_INFOTYPE = record
     cbStruct: Integer;        // the size of this structure
     pszCatName: LPCSTR;       // the name of the category, if any, the InfoType is a member of.
     pszInfoTypeName: LPCSTR;  // the name of the info type to add to the filter
@@ -561,7 +571,7 @@ const
 
 type
   PHHFtsQuery = ^THHFtsQuery;
-  tagHH_FTS_QUERY = packed record
+  tagHH_FTS_QUERY = record
     cbStruct: Integer;         // Sizeof structure in bytes.
     fUniCodeStrings: BOOL;     // TRUE if all strings are unicode.
     pszSearchQuery: LPCTSTR;   // String containing the search query.
@@ -577,7 +587,7 @@ type
   THHFtsQuery = tagHH_FTS_QUERY;
 
   PHHWinType = ^THHWinType;
-  tagHH_WINTYPE = packed record
+  tagHH_WINTYPE = record
     cbStruct: Integer;      // IN: size of this structure including all Information Types
     fUniCodeStrings: BOOL;  // IN/OUT: TRUE if all strings are in UNICODE
     pszType: LPCTSTR;       // IN/OUT: Name of a type of window
@@ -607,7 +617,7 @@ type
     pszIndex: LPCTSTR;      // IN: Location of the index file
     pszFile: LPCTSTR;       // IN: Default location of the html file
     pszHome: LPCTSTR;       // IN/OUT: html file to display when Home button is clicked
-    fsToolBarFlags: DWORD;  // IN: flags controling the appearance of the toolbar
+    fsToolBarFlags: DWORD;  // IN: flags controlling the appearance of the toolbar
     fNotExpanded: BOOL;     // IN: TRUE/FALSE to contract or expand, OUT: current state
     curNavType: Integer;    // IN/OUT: UI to display in the navigational pane
     tabpos: Integer;        // IN/OUT: HHWIN_NAVTAB_TOP, HHWIN_NAVTAB_LEFT, or HHWIN_NAVTAB_BOTTOM
@@ -683,7 +693,7 @@ const
 
 type
   PHHNTrack = ^THHNTrack;
-  tagHHNTRACK = packed record
+  tagHHNTRACK = record
     hdr: NMHDR;
     pszCurUrl: PCSTR;        // Multi-byte, null-terminated string
     idAction: Integer;       // HHACT_ value
@@ -764,26 +774,26 @@ const
 
 {$IFDEF DYNAMIC_LINK}
 
-function GetOCXPath: string;
+function GetOCXPath: ansistring;
 const
   HHPathRegKey = 'CLSID\{adb880a6-d8ff-11cf-9377-00aa003b7a11}\InprocServer32';
 var
   HHKey: HKEY;
   R, PathSize, ValueType: DWORD;
-  Path: string;
+  Path: ansistring;
 begin
   R := ERROR_PATH_NOT_FOUND;
-  if RegOpenKeyExA(HKEY_CLASSES_ROOT, PChar(HHPathRegKey), 0, KEY_QUERY_VALUE, HHKey) = ERROR_SUCCESS then
+  if RegOpenKeyExA(HKEY_CLASSES_ROOT, PAnsiChar(HHPathRegKey), 0, KEY_QUERY_VALUE, HHKey) = ERROR_SUCCESS then
   begin
     ValueType := 0;
     PathSize := 0;
-    if RegQueryValueExA(HHKey, PChar(''), nil, @ValueType, nil, @PathSize) = ERROR_SUCCESS then
+    if RegQueryValueExA(HHKey, PAnsiChar(''), nil, @ValueType, nil, @PathSize) = ERROR_SUCCESS then
     begin
       if ValueType = REG_SZ then
       begin
         SetLength(Path, PathSize);
-        R := RegQueryValueExA(HHKey, PChar(''), nil, @ValueType, PByte(Path), @PathSize);
-        Result := PChar(Path);
+        R := RegQueryValueExA(HHKey, PAnsiChar(''), nil, @ValueType, PByte(Path), @PathSize);
+        Result := PAnsiChar(Path);
       end;
     end;
     RegCloseKey(HHKey);

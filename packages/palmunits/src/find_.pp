@@ -17,11 +17,17 @@
  *
  *****************************************************************************)
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit find_;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses PalmApi.Palmos, PalmApi.Coretraps, PalmApi.Rect;
+{$ELSE FPC_DOTTEDUNITS}
 uses palmos, coretraps, rect;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   maxFinds      = 9;
@@ -37,7 +43,7 @@ type
     dbCardNo: UInt16;       // card number of the database record was found in
     dbID: LocalID;                   // LocalID of the database record was found in
     recordNum: UInt16;      // index of record that contain a match
-    matchPos: UInt16;       // postion in record of the match.
+    matchPos: UInt16;       // position in record of the match.
     matchFieldNum: UInt16;  // field number
     matchCustom: UInt32;    // app specific data
   end;
@@ -49,8 +55,8 @@ type
     dbAccesMode: UInt16;                          // read mode and maybe show secret
     recordNum: UInt16;                            // index of last record that contained a match
     more: Boolean;                                // true of more matches to display
-    strAsTyped: array [0..maxFindStrLen] of Char; // search string as entered
-    strToFind: array [0..maxFindStrLen] of Char;  // search string is lower case
+    strAsTyped: array [0..maxFindStrLen] of AnsiChar; // search string as entered
+    strToFind: array [0..maxFindStrLen] of AnsiChar;  // search string is lower case
     reserved1: UInt8;
 
     // The lineNumber field can be modified by the app. The continuation field can
@@ -58,8 +64,8 @@ type
     // should NOT be accessed by applications.
   {$ifdef ALLOW_ACCESS_TO_INTERNALS_OF_FINDPARAMS} // These fields will not be available in the next OS release!
     numMatches: UInt16;                           // # of matches
-    lineNumber: UInt16;                           // next line in the results tabel
-    continuation: Boolean;                        // true if contining search of same app
+    lineNumber: UInt16;                           // next line in the results table
+    continuation: Boolean;                        // true if containing search of same app
     searchedCaller: Boolean;                      // true after we've searched app that initiated the find
 
     callerAppDbID: LocalID;                       // dbID of app that initiated search
@@ -74,21 +80,21 @@ type
     match: array [0..maxFinds-1] of FindMatchType;
   {$else}
     noAccessAllowed1: UInt16;  // # of matches
-    lineNumber: UInt16;        // next line in the results tabel
-    continuation: Boolean;     // true if contining search of same app
+    lineNumber: UInt16;        // next line in the results table
+    continuation: Boolean;     // true if containing search of same app
     noAccessAllowed2: Boolean; // padding
   {$endif}
   end;
 
   FindParamsPtr = ^FindParamsType;
 
-// Param Block passsed with the sysAppLaunchCmdGoto Command
+// Param Block passed with the sysAppLaunchCmdGoto Command
   GoToParamsType = record
     searchStrLen: Int16;   // length of search string.
     dbCardNo: UInt16;      // card number of the database
     dbID: LocalID;         // LocalID of the database
     recordNum: UInt16;     // index of record that contain a match
-    matchPos: UInt16;      // postion in record of the match.
+    matchPos: UInt16;      // position in record of the match.
     matchFieldNum: UInt16; // field number string was found int
     matchCustom: UInt32;   // application specific info
   end;
@@ -101,14 +107,14 @@ type
 
 procedure Find(goToP: GoToParamsPtr); syscall sysTrapFind;
 
-function FindStrInStr(strToSearch, strToFind: PChar; var posP: UInt16): Boolean; syscall sysTrapFindStrInStr;
+function FindStrInStr(strToSearch, strToFind: PAnsiChar; var posP: UInt16): Boolean; syscall sysTrapFindStrInStr;
 
 function FindSaveMatch(findParams: FindParamsPtr; recordNum, pos, fieldNum: UInt16;
                        appCustom: UInt32; cardNo: UInt16; dbID: LocalID): Boolean; syscall sysTrapFindSaveMatch;
 
 procedure FindGetLineBounds(const findParams: FindParamsPtr; r: RectanglePtr); syscall sysTrapFindGetLineBounds;
 
-function FindDrawHeader(findParams: FindParamsPtr; title: PChar): Boolean; syscall sysTrapFindDrawHeader;
+function FindDrawHeader(findParams: FindParamsPtr; title: PAnsiChar): Boolean; syscall sysTrapFindDrawHeader;
 
 implementation
 

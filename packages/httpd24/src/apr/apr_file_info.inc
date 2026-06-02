@@ -35,20 +35,20 @@
 
 (**
  * @defgroup apr_file_info File Information
- * @ingroup APR 
+ * @ingroup APR
  * @{
  *)
 
 {* Many applications use the type member to determine the
- * existance of a file or initialization of the file info,
+ * existence of a file or initialization of the file info,
  * so the APR_NOFILE value must be distinct from APR_UNKFILE.
  *}
 
 {** apr_filetype_e values for the filetype member of the
  * apr_file_info_t structure
  * @warning: Not all of the filetypes below can be determined.
- * For example, a given platform might not correctly report 
- * a socket descriptor as APR_SOCK if that type isn't 
+ * For example, a given platform might not correctly report
+ * a socket descriptor as APR_SOCK if that type isn't
  * well-identified on that platform.  In such cases where
  * a filetype exists but cannot be described by the recognized
  * flags below, the filetype will be APR_UNKFILE.  If the
@@ -68,7 +68,7 @@ type
   );
 
 (**
- * @defgroup apr_file_permissions File Permissions flags 
+ * @defgroup apr_file_permissions File Permissions flags
  * @{
  *)
 const
@@ -91,7 +91,7 @@ const
 
 //* additional permission flags for apr_file_copy  and apr_file_append */
   APR_FPROT_FILE_SOURCE_PERMS = $1000; //**< Copy source file's permissions */
-    
+
 //* backcompat */
   APR_USETID            = APR_FPROT_USETID;             //**< @deprecated @see APR_FPROT_USETID     */
   APR_UREAD             = APR_FPROT_UREAD;              //**< @deprecated @see APR_FPROT_UREAD      */
@@ -107,7 +107,7 @@ const
   APR_WEXECUTE          = APR_FPROT_WEXECUTE;           //**< @deprecated @see APR_FPROT_WEXECUTE   */
   APR_OS_DEFAULT        = APR_FPROT_OS_DEFAULT;         //**< @deprecated @see APR_FPROT_OS_DEFAULT */
   APR_FILE_SOURCE_PERMS =  APR_FPROT_FILE_SOURCE_PERMS; //**< @deprecated @see APR_FPROT_FILE_SOURCE_PERMS */
-    
+
 (** @} *)
 
 
@@ -214,31 +214,31 @@ type
     { The time the file was last changed }
     ctime: apr_time_t;
     { The pathname of the file (possibly unrooted) }
-    fname: PChar;
+    fname: PAnsiChar;
     { The file's name (no path) in filesystem case }
-    name: PChar;
+    name: PAnsiChar;
     { The file's handle, if accessed (can be submitted to apr_duphandle) }
     filehand: Papr_file_t;
   end;
   Papr_finfo_t = ^apr_finfo_t;
 
 {**
- * get the specified file's stats.  The file is specified by filename, 
+ * get the specified file's stats.  The file is specified by filename,
  * instead of using a pre-opened file.
  * @param finfo Where to store the information about the file, which is
  * never touched if the call fails.
  * @param fname The name of the file to stat.
  * @param wanted The desired apr_finfo_t fields, as a bit flag of APR_FINFO_
-                 values 
- * @param pool the pool to use to allocate the new file. 
+                 values
+ * @param pool the pool to use to allocate the new file.
  *
  * @note If @c APR_INCOMPLETE is returned all the fields in @a finfo may
  *       not be filled in, and you need to check the @c finfo->valid bitmask
  *       to verify that what you're looking for is there.
  *}
-//APR_DECLARE(apr_status_t) apr_stat(apr_finfo_t *finfo, const char *fname,
+//APR_DECLARE(apr_status_t) apr_stat(apr_finfo_t *finfo, const AnsiChar *fname,
 //                                   apr_int32_t wanted, apr_pool_t *pool);
-function apr_stat(finfo: Papr_finfo_t; const fname: PChar;
+function apr_stat(finfo: Papr_finfo_t; const fname: PAnsiChar;
                   wanted: apr_int32_t; pool: Papr_pool_t): apr_status_t;
   {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
   external LibAPR name LibNamePrefix + 'apr_stat' + LibSuff16;
@@ -256,16 +256,16 @@ function apr_stat(finfo: Papr_finfo_t; const fname: PChar;
  * @param pool The pool to use.
  *)
 //APR_DECLARE(apr_status_t) apr_dir_open(apr_dir_t **new_dir,
-//                                       const char *dirname,
+//                                       const AnsiChar *dirname,
 //                                       apr_pool_t *pool);
 function apr_dir_open(new_dir: PPapr_dir_t;
-                      const dirname: PChar;
+                      const dirname: PAnsiChar;
                       pool: Papr_pool_t): apr_status_t;
   {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
   external LibAPR name LibNamePrefix + 'apr_dir_open' + LibSuff12;
 
 (**
- * close the specified directory. 
+ * close the specified directory.
  * @param thedir the directory descriptor to close.
  *)
 //APR_DECLARE(apr_status_t) apr_dir_close(apr_dir_t *thedir);
@@ -274,10 +274,10 @@ function apr_dir_close(thedir: Papr_dir_t): apr_status_t;
   external LibAPR name LibNamePrefix + 'apr_dir_close' + LibSuff4;
 
 (**
- * Read the next entry from the specified directory. 
+ * Read the next entry from the specified directory.
  * @param finfo the file info structure and filled in by apr_dir_read
  * @param wanted The desired apr_finfo_t fields, as a bit flag of APR_FINFO_
-                 values 
+                 values
  * @param thedir the directory descriptor returned from apr_dir_open
  * @remark No ordering is guaranteed for the entries read.
  *
@@ -336,7 +336,7 @@ const
   APR_FILEPATH_NATIVE =        $10;
 
 {** Resolve the true case of existing directories and file elements
- * of addpath, (resolving any aliases on Win32) and append a proper 
+ * of addpath, (resolving any aliases on Win32) and append a proper
  * trailing slash if a directory
  *}
   APR_FILEPATH_TRUENAME =      $20;
@@ -347,28 +347,28 @@ const
  * @param filepath the pathname to parse for its root component
  * @param flags the desired rules to apply, from
  * <PRE>
- *      APR_FILEPATH_NATIVE    Use native path seperators (e.g. '\' on Win32)
+ *      APR_FILEPATH_NATIVE    Use native path separators (e.g. '\' on Win32)
  *      APR_FILEPATH_TRUENAME  Tests that the root exists, and makes it proper
  * </PRE>
  * @param p the pool to allocate the new path string from
  * @remark on return, filepath points to the first non-root character in the
- * given filepath.  In the simplest example, given a filepath of "/foo", 
- * returns the rootpath of "/" and filepath points at "foo".  This is far 
+ * given filepath.  In the simplest example, given a filepath of "/foo",
+ * returns the rootpath of "/" and filepath points at "foo".  This is far
  * more complex on other platforms, which will canonicalize the root form
- * to a consistant format, given the APR_FILEPATH_TRUENAME flag, and also
- * test for the validity of that root (e.g., that a drive d:/ or network 
- * share //machine/foovol/). 
+ * to a consistent format, given the APR_FILEPATH_TRUENAME flag, and also
+ * test for the validity of that root (e.g., that a drive d:/ or network
+ * share //machine/foovol/).
  * The function returns APR_ERELATIVE if filepath isn't rooted (an
- * error), APR_EINCOMPLETE if the root path is ambigious (but potentially
+ * error), APR_EINCOMPLETE if the root path is ambiguous (but potentially
  * legitimate, e.g. "/" on Windows is incomplete because it doesn't specify
  * the drive letter), or APR_EBADPATH if the root is simply invalid.
  * APR_SUCCESS is returned if filepath is an absolute path.
  *}
-//APR_DECLARE(apr_status_t) apr_filepath_root(const char **rootpath,
-//                                            const char **filepath,
+//APR_DECLARE(apr_status_t) apr_filepath_root(const AnsiChar **rootpath,
+//                                            const AnsiChar **filepath,
 //                                            apr_int32_t flags,
 //                                            apr_pool_t *p);
-function apr_filepath_root(const rootpath, filepath: PPChar;
+function apr_filepath_root(const rootpath, filepath: PPAnsiChar;
                            flags: apr_int32_t;
                            p: Papr_pool_t): apr_status_t;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
@@ -381,19 +381,19 @@ function apr_filepath_root(const rootpath, filepath: PPChar;
  * @param addpath the path to add to the root path
  * @param flags the desired APR_FILEPATH_ rules to apply when merging
  * @param p the pool to allocate the new path string from
- * @remark if the flag APR_FILEPATH_TRUENAME is given, and the addpath 
- * contains wildcard characters ('*', '?') on platforms that don't support 
- * such characters within filenames, the paths will be merged, but the 
+ * @remark if the flag APR_FILEPATH_TRUENAME is given, and the addpath
+ * contains wildcard characters ('*', '?') on platforms that don't support
+ * such characters within filenames, the paths will be merged, but the
  * result code will be APR_EPATHWILD, and all further segments will not
  * reflect the true filenames including the wildcard and following segments.
  *}
-//APR_DECLARE(apr_status_t) apr_filepath_merge(char **newpath,
-//                                             const char *rootpath,
-//                                             const char *addpath,
+//APR_DECLARE(apr_status_t) apr_filepath_merge(AnsiChar **newpath,
+//                                             const AnsiChar *rootpath,
+//                                             const AnsiChar *addpath,
 //                                             apr_int32_t flags,
 //                                             apr_pool_t *p);
-function apr_filepath_merge(newpath: PPChar;
-                            const rootpath, addpath: PPChar;
+function apr_filepath_merge(newpath: PPAnsiChar;
+                            const rootpath, addpath: PPAnsiChar;
                             flags: apr_int32_t;
                             p: Papr_pool_t): apr_status_t;
   {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
@@ -404,15 +404,15 @@ function apr_filepath_merge(newpath: PPChar;
  * @param pathelts the returned components of the search path
  * @param liststr the search path (e.g., <tt>getenv("PATH")</tt>)
  * @param p the pool to allocate the array and path components from
- * @remark empty path componenta do not become part of @a pathelts.
+ * @remark empty path component do not become part of @a pathelts.
  * @remark the path separator in @a liststr is system specific;
  * e.g., ':' on Unix, ';' on Windows, etc.
  *}
 //APR_DECLARE(apr_status_t) apr_filepath_list_split(apr_array_header_t **pathelts,
-//                                                  const char *liststr,
+//                                                  const AnsiChar *liststr,
 //                                                  apr_pool_t *p);
 function apr_filepath_list_split(pathelts: PPapr_array_header_t;
-                                 const liststr: PChar;
+                                 const liststr: PAnsiChar;
                                  p: Papr_pool_t): apr_status_t;
   {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
   external LibAPR name LibNamePrefix + 'apr_filepath_list_split' + LibSuff12;
@@ -422,14 +422,14 @@ function apr_filepath_list_split(pathelts: PPapr_array_header_t;
  * @param liststr the returned search path; may be NULL if @a pathelts is empty
  * @param pathelts the components of the search path
  * @param p the pool to allocate the search path from
- * @remark emtpy strings in the source array are ignored.
+ * @remark empty strings in the source array are ignored.
  * @remark the path separator in @a liststr is system specific;
  * e.g., ':' on Unix, ';' on Windows, etc.
  *}
-//APR_DECLARE(apr_status_t) apr_filepath_list_merge(char **liststr,
+//APR_DECLARE(apr_status_t) apr_filepath_list_merge(AnsiChar **liststr,
 //                                                  apr_array_header_t *pathelts,
 //                                                  apr_pool_t *p);
-function apr_filepath_list_merge(liststr: PPChar;
+function apr_filepath_list_merge(liststr: PPAnsiChar;
                                  pathelts: Papr_array_header_t;
                                  p: Papr_pool_t): apr_status_t;
   {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
@@ -442,9 +442,9 @@ function apr_filepath_list_merge(liststr: PPChar;
  *              default file path in os-native format.
  * @param p the pool to allocate the default path string from
  *}
-//APR_DECLARE(apr_status_t) apr_filepath_get(char **path, apr_int32_t flags,
+//APR_DECLARE(apr_status_t) apr_filepath_get(AnsiChar **path, apr_int32_t flags,
 //                                           apr_pool_t *p);
-function apr_filepath_get(path: PPChar; flags: apr_int32_t;
+function apr_filepath_get(path: PPAnsiChar; flags: apr_int32_t;
                           p: Papr_pool_t): apr_status_t;
    {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
    external LibAPR name LibNamePrefix + 'apr_filepath_get' + LibSuff12;
@@ -454,8 +454,8 @@ function apr_filepath_get(path: PPChar; flags: apr_int32_t;
  * @param path the default path returned
  * @param p the pool to allocate any working storage
  *}
-//APR_DECLARE(apr_status_t) apr_filepath_set(const char *path, apr_pool_t *p);
-function apr_filepath_set(const path: PChar; p: Papr_pool_t): apr_status_t;
+//APR_DECLARE(apr_status_t) apr_filepath_set(const AnsiChar *path, apr_pool_t *p);
+function apr_filepath_set(const path: PAnsiChar; p: Papr_pool_t): apr_status_t;
   {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
   external LibAPR name LibNamePrefix + 'apr_filepath_set' + LibSuff8;
 

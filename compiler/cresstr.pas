@@ -34,7 +34,7 @@ uses
    SysUtils,
    cclasses,widestr,
    cutils,globtype,globals,systems,
-   symbase,symconst,symtype,symdef,symsym,symtable,
+   symbase,symconst,symtype,defutil, symdef,symsym,symtable,
    verbose,fmodule,ppu,
    aasmtai,aasmdata,aasmcnst,
    aasmcpu;
@@ -44,9 +44,11 @@ uses
       TResourceStringItem = class(TLinkedListItem)
         Sym   : TConstSym;
         Name  : String;
-        Value : Pchar;
-        Len   : Longint;
+        AValue : TAnsiCharDynArray;
+        WValue : tcompilerwidestring; // just a reference, do not free.
+        Len   : Longint; // in bytes, not characters
         hash  : Cardinal;
+        isUnicode : Boolean;
         constructor Create(asym:TConstsym);
         destructor  Destroy;override;
         procedure CalcHash;
@@ -71,33 +73,67 @@ uses
   ---------------------------------------------------------------------}
 
     constructor TResourceStringItem.Create(asym:TConstsym);
+
+    var
+      pw : tcompilerwidestring;
+      t : TDef;
+
       begin
         inherited Create;
         Sym:=Asym;
         Name:=lower(asym.owner.name^+'.'+asym.Name);
-        Len:=asym.value.len;
-        GetMem(Value,Len);
-        Move(asym.value.valueptr^,Value^,Len);
+        isUnicode:=is_systemunit_unicode;
+        if IsUnicode then
+          begin
+          T:=aSym.constdef;
+          WValue:=asym.value.valuews;
+          Len:=WValue.len*sizeOf(tcompilerwidechar);
+          end
+        else
+          begin
+          Len:=asym.value.len;
+          SetLength(AValue,Len);
+          if len>0 then
+            Move(asym.value.valueptr^,AValue[0],Len);
+          end;
         CalcHash;
       end;
 
 
     destructor TResourceStringItem.Destroy;
       begin
-        FreeMem(Value);
+        AValue:=nil;
       end;
 
 
     procedure TResourceStringItem.CalcHash;
       Var
         g : Cardinal;
-        I : longint;
+        llen,wlen,I : longint;
+        P : PByte;
+        pc : PAnsiChar;
+
       begin
+        pc:=nil;
         hash:=0;
-        For I:=0 to Len-1 do { 0 terminated }
+        if IsUnicode then
+          begin
+          // Need to calculate hash on UTF8 encoded string, GNU gettext.
+          llen:=UnicodeToUtf8(nil,0,PUnicodeChar(wValue.data),wValue.len);
+          getmem(pc,llen);
+          UnicodeToUtf8(PC,llen,wValue.asconstpunicodechar,len);
+          P:=PByte(pc);
+          llen:=llen-1; // Take of terminating #0
+          end
+        else
+          begin
+          llen:=Len;
+          P:=PByte(AValue);
+          end;
+        For I:=0 to lLen-1 do { 0 terminated }
          begin
            hash:=hash shl 4;
-           inc(Hash,Ord(Value[i]));
+           inc(Hash,P[i]);
            g:=hash and ($f shl 28);
            if g<>0 then
             begin
@@ -105,6 +141,8 @@ uses
               hash:=hash xor g;
             end;
          end;
+        if Assigned(Pc) then
+          FreeMem(PC);
         If Hash=0 then
           Hash:=$ffffffff;
       end;
@@ -123,6 +161,7 @@ uses
     Destructor Tresourcestrings.Destroy;
       begin
         List.Free;
+        List := nil;
       end;
 
 
@@ -133,6 +172,11 @@ uses
         R : TResourceStringItem;
         resstrdef: tdef;
         tcb : ttai_typedconstbuilder;
+        enc : tstringencoding;
+        charlen : longint;
+        st : tstringtype;
+        strcharpointertype: tdef;
+
       begin
         resstrdef:=search_system_type('TRESOURCESTRINGRECORD').typedef;
 
@@ -157,28 +201,42 @@ uses
         while assigned(R) do
           begin
             tcb:=ctai_typedconstbuilder.create([tcalo_vectorized_dead_strip_item,tcalo_data_force_indirect]);
-            if assigned(R.value) and (R.len<>0) then
-              valuelab:=tcb.emit_ansistring_const(current_asmdata.asmlists[al_const],R.Value,R.Len,getansistringcodepage)
-            else
+            valuelab.lab:=nil;
+            valuelab.ofs:=0;
+            charlen:=R.Len;
+            st:=st_ansistring;
+            strcharpointertype:=charpointertype;;
+            if (R.len<>0) then
               begin
-                valuelab.lab:=nil;
-                valuelab.ofs:=0;
+              if R.isUnicode and assigned(R.WValue) then
+                begin
+                  enc:=tstringdef(cunicodestringtype).encoding;
+                  valuelab:=tcb.emit_unicodestring_const(current_asmdata.asmlists[al_const],R.WValue,enc,False);
+                  charlen:=getlengthwidestring(R.WValue);
+                  st:=st_unicodestring;
+                  strcharpointertype:=widecharpointertype;;
+                end
+              else
+                begin
+                  if assigned(R.AValue) then
+                    valuelab:=tcb.emit_ansistring_const(current_asmdata.asmlists[al_const],PAnsiChar(R.AValue),R.Len,getansistringcodepage);
+                end;
               end;
             current_asmdata.asmlists[al_const].concat(cai_align.Create(sizeof(pint)));
             namelab:=tcb.emit_ansistring_const(current_asmdata.asmlists[al_const],@R.Name[1],length(R.name),getansistringcodepage);
             {
               Resourcestring index:
                   TResourceStringRecord = Packed Record
-                     Name,
+                     Name: AnsiString;
                      CurrentValue,
-                     DefaultValue : AnsiString;
+                     DefaultValue : AnsiString/Widestring;
                      HashValue    : LongWord;
                    end;
             }
             tcb.maybe_begin_aggregate(resstrdef);
             tcb.emit_string_offset(namelab,length(R.name),st_ansistring,false,charpointertype);
-            tcb.emit_string_offset(valuelab,R.Len,st_ansistring,false,charpointertype);
-            tcb.emit_string_offset(valuelab,R.Len,st_ansistring,false,charpointertype);
+            tcb.emit_string_offset(valuelab,charlen,st,false,strcharpointertype);
+            tcb.emit_string_offset(valuelab,charlen,st,false,strcharpointertype);
             tcb.emit_ord_const(R.hash,u32inttype);
             tcb.maybe_end_aggregate(resstrdef);
             current_asmdata.asmlists[al_resourcestrings].concatList(
@@ -187,6 +245,7 @@ uses
             );
             R:=TResourceStringItem(R.Next);
             tcb.free;
+            tcb := nil;
           end;
         tcb:=ctai_typedconstbuilder.create([tcalo_vectorized_dead_strip_end,tcalo_data_force_indirect,tcalo_is_public_asm]);
         tcb.begin_anonymous_record(internaltypeprefixName[itp_emptyrec],
@@ -198,6 +257,7 @@ uses
           )
         );
         tcb.free;
+        tcb := nil;
       end;
 
     procedure Tresourcestrings.WriteRSJFile;
@@ -205,9 +265,11 @@ uses
         F: Text;
         R: TResourceStringItem;
         ResFileName: string;
-        I: Integer;
+        I,Len: Integer;
         C: tcompilerwidechar;
-        W: pcompilerwidestring;
+        W: tcompilerwidestring;
+        P : PByte;
+
       begin
         ResFileName:=ChangeFileExt(current_module.ppufilename,'.rsj');
         message1 (general_i_writingresourcefile,ExtractFileName(ResFileName));
@@ -229,18 +291,29 @@ uses
         while assigned(R) do
           begin
             write(f, '{"hash":',R.Hash,',"name":"',R.Name,'","sourcebytes":[');
+            if R.isUnicode then
+              P:=PByte(R.WValue.asconstpunicodechar)
+            else
+              P:=PByte(R.AValue);
             for i:=0 to R.Len-1 do
               begin
-                write(f,ord(R.Value[i]));
+                write(f,P[i]);
                 if i<>R.Len-1 then
                   write(f,',');
               end;
             write(f,'],"value":"');
-            initwidestring(W);
-            ascii2unicode(R.Value,R.Len,current_settings.sourcecodepage,W);
-            for I := 0 to W^.len - 1 do
+            if Not r.isUnicode then
               begin
-                C := W^.Data[I];
+              initwidestring(W);
+              ascii2unicode(PAnsiChar(R.AValue),R.Len,current_settings.sourcecodepage,W);
+              end
+            else
+              begin
+              W:=R.WValue;
+              end;
+            for I := 0 to W.len - 1 do
+              begin
+                C := W.Data[I];
                 case C of
                   Ord('"'), Ord('\'), Ord('/'):
                     write(f, '\', Chr(C));
@@ -261,7 +334,8 @@ uses
                     write(f,Chr(C));
                 end;
               end;
-            donewidestring(W);
+            if W<>R.WValue then
+              donewidestring(W);
             write(f,'"}');
             R:=TResourceStringItem(R.Next);
             if assigned(R) then
@@ -276,7 +350,7 @@ uses
     procedure Tresourcestrings.ConstSym_Register(p:TObject;arg:pointer);
       begin
         if (tsym(p).typ=constsym) and
-           (tconstsym(p).consttyp=constresourcestring) then
+           (tconstsym(p).consttyp in [constresourcestring,constwresourcestring]) then
           List.Concat(TResourceStringItem.Create(TConstsym(p)));
       end;
 
@@ -306,6 +380,7 @@ uses
             resstrs.WriteRSJFile;
           end;
         resstrs.Free;
+        resstrs := nil;
         symtablestack.pop(current_module.localsymtable);
         if assigned(current_module.globalsymtable) then
           symtablestack.pop(current_module.globalsymtable);

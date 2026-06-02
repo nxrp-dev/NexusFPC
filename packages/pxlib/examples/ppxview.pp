@@ -9,9 +9,9 @@ procedure DumpInfo (Doc : PPX_Doc);
 
 Var
   I : Integer;
-  S : String;
+  S : AnsiString;
   pxf : Ppxfield_t;
-  
+
 begin
   I:=1;
   pxf:=PX_get_fields(Doc);
@@ -20,7 +20,7 @@ begin
     Write('Field ',I:3,': ',strpas(pxf^.px_fname):18,' : ');
     S:='';
     Case (pxf^.px_ftype) of
-      pxfAlpha:    S:=Format('char(%d)',[pxf^.px_flen]);
+      pxfAlpha:    S:=Format('AnsiChar(%d)',[pxf^.px_flen]);
       pxfDate:     S:=Format('date(%d)',[pxf^.px_flen]);
       pxfShort:    S:=Format('int(%d)',[pxf^.px_flen]);
       pxfLong:     S:=Format('int(%d)',[pxf^.px_flen]);
@@ -34,7 +34,7 @@ begin
       pxfGraphic:  S:=Format('graphic(%d)',[pxf^.px_flen]);
       pxfTime:     S:=Format('time(%d)',[pxf^.px_flen]);
       pxfTimestamp: S:=Format('timestamp(%d)',[pxf^.px_flen]);
-      pxfAutoInc:  S:=Format('autoinc(%d)',[pxf^.px_flen]);       
+      pxfAutoInc:  S:=Format('autoinc(%d)',[pxf^.px_flen]);
       pxfBCD:      S:=Format('decimal(%d,%d)',[pxf^.px_flen*2, pxf^.px_fdc]);
       pxfBytes:    S:=Format('bytes(%d)',[pxf^.px_flen]);
     else
@@ -51,14 +51,14 @@ Procedure DumpRecords(Doc : PPX_Doc);
 var
   I,J,K,flen : Integer;
   pxf : Ppxfield_t;
-  s : string;          
-  buf, fbuf,value : Pchar;
+  s : AnsiString;
+  buf, fbuf,value : PAnsiChar;
   longv : clong;
   y,m,d : cint;
   si: shortint;
   R : Double;
-  c : char;
-  
+  c : AnsiChar;
+
 begin
   I:=0;
   Buf:=GetMem(PX_get_recordSize(Doc));
@@ -73,7 +73,7 @@ begin
       begin
       flen:=pxf^.px_flen;
       Case (pxf^.px_ftype) of
-        pxfAlpha: 
+        pxfAlpha:
           if PX_get_data_alpha(Doc,fbuf,flen,@value)>0 then
             begin
             S:=Strpas(value);
@@ -115,7 +115,7 @@ begin
             Y:=PX_get_data_graphic(Doc,FBuf,FLen,@M,@D,@Value)
           else if (pxf^.px_ftype=pxfBytes) then
             Y:=PX_get_data_bytes(Doc,FBuf,FLen,@Value)
-          else  
+          else
             Y:=PX_get_data_blob(Doc,FBuf,FLen,@M,@D,@Value);
           If (Y>0) then
             If Assigned(Value) then
@@ -127,15 +127,15 @@ begin
                 SetLength(S,D);
                 Move(Value^,S[1],D);
                 end
-              else  
+              else
                 For K:=0 to D-1 do
                   S:=S+' '+HexStr(Ord(Value[K]),2);
               doc^.free(doc,value);
               end
             else
               S:='<Null>';
-          end;     
-        pxfTime:   
+          end;
+        pxfTime:
           if (PX_get_data_long(Doc,fbuf,flen,@longv)>0) then
             S:=TimeToStr(longv/MSecsPerDay);
         pxfTimestamp:
@@ -144,7 +144,7 @@ begin
             value:=PX_timestamp2string(Doc,R,'Y-m-d H:i:s');
             S:=Strpas(Value);
             doc^.free(doc,value);
-            end; 
+            end;
         pxfBCD:
           if (PX_get_data_bcd(Doc,pcuchar(FBuf),pxf^.px_fdc,@Value)>0) then
             begin
@@ -158,13 +158,13 @@ begin
       Inc(fbuf,Flen);
       Inc(Pxf);
       end;
-    end;  
+    end;
   FreeMem(Buf);
 end;
 
 Var
   Doc : PPX_Doc;
-  FN,BFN : String;
+  FN,BFN : AnsiString;
 
 begin
   LoadPXlib(pxlibraryname);
@@ -174,18 +174,18 @@ begin
     Try
       FN:=ParamStr(1);
       BFN:=ChangeFileExt(FN,'.mb');
-      px_open_file(Doc,Pchar(FN));
+      px_open_file(Doc,PAnsiChar(FN));
       try
         if FileExists(BFN) then
-          PX_set_blob_file(Doc,PChar(BFN));
+          PX_set_blob_file(Doc,PAnsiChar(BFN));
         DumpInfo(Doc);
         DumpRecords(Doc);
-      Finally  
+      Finally
         PX_close(Doc);
-      end;  
+      end;
     Finally
       PX_Delete(Doc);
-    end;  
+    end;
   finally
     PX_Shutdown;
   end;

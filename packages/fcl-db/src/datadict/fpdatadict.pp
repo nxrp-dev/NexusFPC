@@ -13,14 +13,21 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fpdatadict;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils,Fcl.IniCollection, System.IniFiles, System.Contnrs, Data.Db, Data.Sql.Types;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils,inicol, inifiles, contnrs, db, sqltypes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
   // Supported objects in this data dictionary
@@ -146,7 +153,7 @@ Type
     Procedure FillFieldList(Const AFieldNames: String; List : TFPDDFieldList);
     Property Fields[Index : Integer] : TDDFieldDef Read GetField Write SetField; default;
   end;
-  
+
   { TDDIndexDef }
   TDDIndexDef = Class(TIniCollectionItem)
   private
@@ -173,7 +180,7 @@ Type
     property Options: TIndexOptions read FOptions write FOptions;
     property Source: string read FSource write FSource;
   end;
-  
+
   { TDDIndexDefs }
   TDDIndexDefs = Class(TDDTableCollection)
   private
@@ -191,9 +198,9 @@ Type
     function IndexOfIndex(const AIndexName: String): Integer;
     Property Indexes[Index : Integer] : TDDIndexDef Read GetIndex Write SetIndex; default;
   end;
-  
+
   { TDDForeignKeyDef }
-  
+
   TDDForeignKeyDef = Class(TIniCollectionItem)
   private
     FKeyFields: String;
@@ -214,7 +221,7 @@ Type
     Property KeyFields : String Read FKeyFields Write FKeyFields;
     Property ReferencedFields : String Read FReferencedFields Write FReferencedFields;
   end;
-  
+
   { TDDForeignKeyDefs }
 
   TDDForeignKeyDefs = Class(TIniCollection)
@@ -267,7 +274,7 @@ Type
     Property TableName : String Read FTableName Write SetTableName;
     Property PrimaryKeyConstraintName : String Read GetPrimaryKeyName Write FPrimaryKeyName;
   end;
-  
+
   { TDDTableDefs }
 
   TDDTableDefs = Class(TIniCollection)
@@ -424,7 +431,7 @@ Type
     Constructor CreateFromFieldDefs(FD : TDDFieldDefs);
     Property FieldDefs[Index : Integer] : TDDFieldDef Read GetFieldDef Write SetFieldDef; default;
   end;
-  
+
   { TFPDDIndexList }
 
   TFPDDIndexList = Class(TObjectList)
@@ -436,7 +443,7 @@ Type
     Property IndexDefs[AIndex : Integer] : TDDIndexDef Read GetIndexDef Write SetIndexDef; default;
   end;
 
-  
+
   { TFPDDSequenceList }
 
   TFPDDSequenceList = Class(TObjectList)
@@ -464,7 +471,7 @@ Type
                       eoQuoteFieldNames,eoLineFeedAfterAndTerm,eoAddTerminator,
                       eoSkipForeignkeys);
   TSQLEngineOptions = Set of TSQLEngineOption;
-  
+
 
   TFPDDSQLEngine = Class(TPersistent)
   private
@@ -544,10 +551,11 @@ Type
     Property Indent : Integer Read FIndent Write FIndent default 2;
     Property Options : TSQLEngineOptions Read FOptions Write FOptions;
   end;
-  
+
   { TFPDDEngine }
   TFPDDEngineCapability =(ecImport,ecCreateTable,ecViewTable, ecTableIndexes,
-                          ecRunQuery, ecRowsAffected, ecSequences, ecDomains);
+                          ecRunQuery, ecRowsAffected, ecSequences, ecDomains,
+                          ecParams);
   TFPDDEngineCapabilities = set of TFPDDEngineCapability;
   {
     to avoid dependencies on GUI elements in the data dictionary engines,
@@ -591,7 +599,11 @@ Type
     // Should not open the dataset.
     Function ViewTable(Const TableName: String; DatasetOwner : TComponent) : TDataset; virtual;
     // Run a non-select query. If possible, returns the number of modified records.
-    Function RunQuery(SQL : String) : Integer; Virtual;
+    Function RunQuery(SQL : String) : Integer; Virtual; overload;
+    // Run a non-select query. If possible, apply parameters and returns the number of modified records.
+    Function RunQuery(SQL : String; Params : TParams) : Integer; virtual; overload;
+    // Apply parameters to a dataset, if possible
+    Procedure ApplyParams(DS : TDataset; Params : TParams); virtual;
     // Create a select query TDataset. Do not open the resulting dataset.
     Function CreateQuery(SQL : String; DatasetOwner : TComponent) : TDataset; Virtual;
     // Assign a select query and open the resulting dataset.
@@ -620,21 +632,25 @@ Function IndexOptionsToString (Options : TIndexOptions) : String;
 
 Var
   DefaultDDExt : String = '.fpd';
-  
+
   // Default values for SQL Engine properties.
-  
+
   DefaultSQLEngineOptions : TSQLEngineOptions
                           = [eoLineFeedAfterField,eoUseOldInWhereParams,
                              eoAndTermsInBrackets,eoLineFeedAfterAndTerm];
-                             
+
   DefaultSQLEngineIndent     : Integer = 2;
   DefaultSQLEngineLineLength : Integer = 72;
   DefaultSQLTerminatorChar   : Char = ';';
   DefaultSQLFieldQuoteChar   : Char = '"';
-  
+
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.TypInfo;
+{$ELSE FPC_DOTTEDUNITS}
 uses typinfo;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { ---------------------------------------------------------------------
   Constants, not to be localized
@@ -649,7 +665,7 @@ Const
   SDataDictTables           = SDataDict+'_Tables';
   KeyTableName              = 'TableName';
   KeyPrimaryKeyConstraint   = 'PrimaryKeyConstraint';
-  
+
   // Fields Saving
   SFieldSuffix              = '_Fields';
   KeyAlignMent              = 'AlignMent';
@@ -670,7 +686,7 @@ Const
   KeyFieldType              = 'FieldType';
   KeyHint                   = 'Hint';
   KeyProviderFlags          = 'Providerflags';
-  
+
   // Index saving
   SIndexSuffix              = '_Indices';
   KeyExpression             = 'Expression';
@@ -679,7 +695,7 @@ Const
   KeyDescFields             = 'DescFields';
   KeySource                 = 'Source';
   KeyOptions                = 'Options';
-  
+
   // Foreign key Saving
   SKeySuffix                = '_FOREIGNKEYS';
   KeyKeyFields              = 'KeyFields';
@@ -723,7 +739,7 @@ Const
     '', '', '', '', '',
     '', '', 'TIMESTAMP', 'DECIMAL','CHAR','BLOB',
     '', '', '', '', '', '','FLOAT');
-    
+
 { ---------------------------------------------------------------------
   Constants which can be localized
   ---------------------------------------------------------------------}
@@ -750,16 +766,11 @@ Resourcestring
   SErrViewTableNotSupported   = 'Viewing tables is not supported by the "%s" engine.';
   SErrRunQueryNotSupported    = 'Running queries is not supported by the "%s" engine.';
   SErrOpenQueryNotSupported   = 'Running and opening SELECT queries is not supported by the "%s" engine.';
+  SErrApplyParamsNotSupported = 'Cannot apply parameters to a dataset in engine "%s".';
   SErrSetQueryStatementNotSupported = 'Setting the SQL statement is not supported by the "%s" engine.';
   SErrGetTableIndexDefsNotSupported = 'Getting index definitions of a table is not supported by the "%s" engine.';
   SSavingFieldsFrom           = 'Saving fields from %s';
   SLoadingFieldsFrom          = 'Loading fields from %s';
-  SIndexOptionPrimary         = 'Primary key';
-  SIndexOptionUnique          = 'Unique';
-  SIndexOptionDescending      = 'Descending';
-  SIndexOptionCaseInsensitive = 'Case insensitive';
-  SIndexOptionExpression      = 'Expression';
-  SIndexOptionNonMaintained   = 'Not maintained';
   SWarnFieldNotFound          = 'Could not find field "%s".';
   SLogFieldFoundIn            = 'Field "%s" found in table "%s".';
   SErrSequenceNotFound        = 'Sequence "%s" not found.';
@@ -770,18 +781,26 @@ Resourcestring
   SErrResolveDomain           = 'Cannot resolve domain';
 
 Const
+  SIndexOptionPrimary         = 'Primary key';
+  SIndexOptionUnique          = 'Unique';
+  SIndexOptionDescending      = 'Descending';
+  SIndexOptionCaseInsensitive = 'Case insensitive';
+  SIndexOptionExpression      = 'Expression';
+  SIndexOptionNonMaintained   = 'Not maintained';
+
+Const
   IndexOptionNames : Array [TIndexOption] of String
                    = (SIndexOptionPrimary, SIndexOptionUnique,
                       SIndexOptionDescending, SIndexOptionCaseInsensitive,
                       SIndexOptionExpression, SIndexOptionNonMaintained);
-                      
+
 { ---------------------------------------------------------------------
   Dictionary Engine registration
   ---------------------------------------------------------------------}
 
 Var
   DDEngines : TStringList = nil;
-  
+
 Type
 
   { TEngineRegistration }
@@ -823,7 +842,7 @@ procedure UnRegisterDictionaryEngine(AEngine: TFPDDEngineClass);
 
 Var
   I : Integer;
-  
+
 begin
   If Assigned(DDEngines) then
     begin
@@ -934,7 +953,7 @@ Function  GetDictionaryEngineInfo(Const AName : String; out ADescription,ADBType
 
 Var
   DDEC : TFPDDEngineClass;
-  
+
 begin
   DDEC:=FindDictionaryClass(AName);
   Result:=DDEC<>Nil;
@@ -971,7 +990,7 @@ end;
 { ---------------------------------------------------------------------
   TDDFieldDef
   ---------------------------------------------------------------------}
-  
+
 function TDDFieldDef.IsSizeStored: Boolean;
 begin
   Result:=FieldType in [ftUnknown, ftString, ftBCD,
@@ -1131,7 +1150,7 @@ procedure TDDFieldDef.Assign(Source: TPersistent);
 
 Var
   DF : TDDFieldDef;
-  
+
 begin
   if Source is TField then
     ImportFromField(TField(Source))
@@ -1307,7 +1326,7 @@ function TDDFieldDefs.FindField(const AFieldName: String): TDDFieldDef;
 
 Var
   I : integer;
-  
+
 begin
   I:=IndexOfField(AFieldName);
   If (I=-1) then
@@ -1330,7 +1349,7 @@ Var
   I : Integer;
   S,T : String;
   F : TDDFieldDef;
-  
+
 begin
   T:=Trim(AFieldNames);
   Repeat
@@ -1346,8 +1365,8 @@ end;
 { ---------------------------------------------------------------------
   TDDTableDef
   ---------------------------------------------------------------------}
-  
-  
+
+
 procedure TDDTableDef.SetTableName(const AValue: String);
 begin
   FTableName:=AValue;
@@ -1438,7 +1457,7 @@ Var
   FD : TDDFieldDef;
   F : TField;
   FieldExists : Boolean;
-  
+
 begin
   if DoClear then
     FFieldDefs.Clear;
@@ -1471,7 +1490,7 @@ var
   I  : integer;
   FD : TDDFieldDef;
   F  : TField;
-  
+
 begin
   For I:=0 to Dataset.FieldCount-1 do
     begin
@@ -1584,7 +1603,7 @@ function TDDTableDefs.AddTable(ATableName: String): TDDTableDef;
 
 Var
   I : Integer;
-  
+
 begin
   If (ATableName<>'') and (IndexOfTable(ATableName)<>-1) then
     Raise EDataDict.CreateFmt(SErrDuplicateTableName,[ATableName]);
@@ -1736,7 +1755,7 @@ Var
   FD : TDDFieldDef;
   FN,TN : String;
   Allow : Boolean;
-  
+
 begin
   For I:=0 to ADataset.Fields.Count-1 do
     begin
@@ -1795,7 +1814,7 @@ Var
   TD : TDDTableDef;
   FN,TN : String;
   I : Integer;
-  
+
 begin
   Result:=Nil;
   If CanonicalizeFieldName(FieldName,TD,FN) then
@@ -1849,12 +1868,12 @@ end;
 
 procedure TFPDDEngine.IndexDefsToDDIndexDefs(IDS: TIndexDefs; DDIDS: TDDindexDefs
   );
-  
+
 Var
   D : TIndexDef;
   DD : TDDindexDef;
   I : Integer;
-  
+
 begin
   DDIDS.Clear;
   For I:=0 to IDS.Count-1 do
@@ -1875,7 +1894,7 @@ function TFPDDEngine.GetConnectString: String;
 
 Var
   CB : TGetConnectionEvent;
-  
+
 begin
   CB:=GetEngineConnectionStringCallBack(Self.ClassName);
   if (CB=Nil) then
@@ -2004,6 +2023,18 @@ function TFPDDEngine.RunQuery(SQL: String): Integer;
 
 begin
   Raise EDataDict.CreateFmt(SErrRunQueryNotSupported,[DBType]);
+end;
+
+function TFPDDEngine.RunQuery(SQL: String; Params: TParams): Integer;
+begin
+  if Assigned(Params) then
+    Raise EDataDict.CreateFmt(SErrApplyParamsNotSupported,[DBType]);
+  Result:=RunQuery(SQL);
+end;
+
+procedure TFPDDEngine.ApplyParams(DS: TDataset; Params: TParams);
+begin
+  Raise EDataDict.CreateFmt(SErrApplyParamsNotSupported,[DBType]);
 end;
 
 function TFPDDEngine.CreateQuery(SQL: String; DatasetOwner : TComponent): TDataset;
@@ -2257,15 +2288,15 @@ begin
 end;
 
 { SQL Creation functions. Can be overridden if needed. }
-  
+
 function TFPDDSQLEngine.CreateSelectSQL(FieldList, KeyFields: TFPDDFieldList
   ): String;
-  
+
 Var
   i : Integer;
   FD : TDDFieldDef;
   S : String;
-  
+
 begin
   CheckTableDef;
   Result:='';
@@ -2378,11 +2409,11 @@ end;
 
 function TFPDDSQLEngine.CreateCreateSQL(Fields, KeyFields: TFPDDFieldList
   ): String;
-  
+
 Var
   S : String;
   I : integer;
-  
+
 begin
   CheckTableDef;
   Result:='';
@@ -2434,7 +2465,7 @@ function TFPDDSQLEngine.CreateIndexSQL(Index: TDDIndexDef): String;
 Var
   L : TFPDDFieldList;
   I : Integer;
-  
+
 begin
   Result:='CREATE ';
   If ixUnique in Index.Options then
@@ -2838,7 +2869,7 @@ procedure TDDIndexDef.SaveToIni(Ini: TCustomInifile; ASection: String);
 Var
   O : Integer;
   T : PTypeInfo;
-  
+
 begin
   With Ini do
     begin

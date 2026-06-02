@@ -15,6 +15,8 @@
 {.$DEFINE DEBUG}
 unit WANSI;
 
+{$H-}
+
 interface
 
 uses Objects,Drivers,
@@ -91,8 +93,8 @@ type
        procedure   GotoXY(X,Y: integer); virtual;
        procedure   Write(Const S: string); virtual;
        procedure   WriteLn(Const S: string); virtual;
-       procedure   WriteChar(C: char); virtual;
-       procedure   WriteCharRaw(C: char); virtual;
+       procedure   WriteChar(C: AnsiChar); virtual;
+       procedure   WriteCharRaw(C: AnsiChar); virtual;
        procedure   DelLine(LineCount: integer); virtual;
        procedure   InsLine(LineCount: integer); virtual;
        procedure   HighVideo; virtual;
@@ -112,7 +114,7 @@ type
        procedure   PutKey(S: string); virtual;
        destructor  Done; virtual;
        private
-       procedure   ProcessChar(C: char); virtual;
+       procedure   ProcessChar(C: AnsiChar); virtual;
      end;
 
      PANSIConsole = ^TANSIConsole;
@@ -122,7 +124,7 @@ type
        ANSICurPosStack    : array[1..ANSICurPosStackSize] of TPoint;
        ANSICurPosStackPtr : byte;
        constructor Init(AReplyHook, AKeyHook, AWriteHook: PHookProc);
-       procedure   ProcessChar(C: char); virtual;
+       procedure   ProcessChar(C: AnsiChar); virtual;
        function    GetANSIParam: integer; virtual;
        { --- ANSI functions --- }
        procedure   PushCurPos; virtual;
@@ -142,7 +144,7 @@ type
        procedure   CursorOff; virtual;
        procedure   ClrScr; virtual;
        procedure   ClrEol; virtual;
-       procedure   WriteChar(C: char); virtual;
+       procedure   WriteChar(C: AnsiChar); virtual;
        procedure   DelLine(LineCount: integer); virtual;
        procedure   InsLine(LineCount: integer); virtual;
        procedure   UpdateCursor; virtual;
@@ -152,7 +154,11 @@ type
 {$endif WITH_CRT}
 
 const
+{$if defined(unix) or defined(windows)}
+      MaxVideoLine = 65520 div ({2*}255); { maximum number of lines (don't have to fit in 64K) }
+{$else}
       MaxVideoLine = 65520 div (2*MaxViewWidth); { maximum number of lines that fit in 64K }
+{$endif}
 
 type
      TAnsiBuffer = array[0..MaxViewWidth*MaxVideoLine] of word;
@@ -168,8 +174,8 @@ type
        procedure   CursorOff; virtual;
        procedure   ClrScr; virtual;
        procedure   ClrEol; virtual;
-       procedure   WriteChar(C: char); virtual;
-       procedure   WriteCharRaw(C: char); virtual;
+       procedure   WriteChar(C: AnsiChar); virtual;
+       procedure   WriteCharRaw(C: AnsiChar); virtual;
        procedure   DelLine(LineCount: integer); virtual;
        procedure   InsLine(LineCount: integer); virtual;
        procedure   UpdateCursor; virtual;
@@ -203,7 +209,7 @@ type
        procedure   CursorOff; virtual;
        procedure   ClrScr; virtual;
        procedure   ClrEol; virtual;
-       procedure   WriteChar(C: char); virtual;
+       procedure   WriteChar(C: AnsiChar); virtual;
        procedure   DelLine(LineCount: integer); virtual;
        procedure   InsLine(LineCount: integer); virtual;
        procedure   UpdateCursor; virtual;
@@ -285,17 +291,17 @@ begin
   UpdateCursor;
 end;
 
-procedure TConsoleObject.ProcessChar(C: char);
+procedure TConsoleObject.ProcessChar(C: AnsiChar);
 begin
   WriteChar(C);
 end;
 
-procedure TConsoleObject.WriteChar(C: char);
+procedure TConsoleObject.WriteChar(C: AnsiChar);
 begin
   Abstract;
 end;
 
-procedure TConsoleObject.WriteCharRaw(C: char);
+procedure TConsoleObject.WriteCharRaw(C: AnsiChar);
 begin
   Abstract;
 end;
@@ -452,7 +458,7 @@ begin
   GotoXY(Crt.WhereX,Crt.WhereY);
 end;
 
-procedure TCrtConsole.WriteChar(C: char);
+procedure TCrtConsole.WriteChar(C: AnsiChar);
 {var OK: boolean;}
 begin
 {  OK:=((C>=#32) and (WhereX<Size.X)) or (C<#32);
@@ -501,7 +507,7 @@ begin
   ANSIParam:=''; ANSILevel:=0; ANSICurPosStackPtr:=0;
 end;
 
-procedure TANSIConsole.ProcessChar(C: char);
+procedure TANSIConsole.ProcessChar(C: AnsiChar);
 var SkipThis : boolean;
     ANSIDone : boolean;
     X,Y,Z    : integer;
@@ -509,7 +515,7 @@ begin
   SkipThis:=false;
   if C=Esc then
     begin
-       { Treat EscEsc as a request to print a single Escape #27 char PM }
+       { Treat EscEsc as a request to print a single Escape #27 AnsiChar PM }
       if AnsiLevel=0 then
         begin
           ANSILevel:=1;
@@ -531,7 +537,7 @@ begin
                     SkipThis:=true;
                   end;
        else
-       { Treat Esc+ AnyChar as a request to print that single char raw PM }
+       { Treat Esc+ AnyChar as a request to print that single AnsiChar raw PM }
          begin
            WriteCharRaw(c);
            SkipThis:=true;
@@ -685,7 +691,7 @@ begin
 end;
 
 procedure TANSIViewConsole.ClrScr;
-var X,Y: word;
+var X,Y: sw_word;
     Pos: longint;
 begin
   GotoXY(1,1);
@@ -698,7 +704,7 @@ begin
 end;
 
 procedure TANSIViewConsole.ClrEol;
-var X,Y: word;
+var X,Y: sw_word;
     Pos: longint;
 begin
   if Owner<>nil then
@@ -712,7 +718,7 @@ begin
   end;
 end;
 
-procedure TANSIViewConsole.WriteChar(C: char);
+procedure TANSIViewConsole.WriteChar(C: AnsiChar);
 var Pos: longint;
 begin
   case C of
@@ -738,7 +744,7 @@ begin
   end;
 end;
 
-procedure TANSIViewConsole.WriteCharRaw(C: char);
+procedure TANSIViewConsole.WriteCharRaw(C: AnsiChar);
 var Pos: longint;
 begin
   Pos:=(CurPos.Y-1)*MaxViewWidth+(WhereX-1);
@@ -763,7 +769,7 @@ begin
 end;
 
 procedure TANSIViewConsole.GotoXY(X,Y: integer);
-var W: word;
+var W: sw_word;
 begin
   if Owner<>nil then
   while Y>MaxVideoLine do
@@ -793,7 +799,7 @@ end;
 function TANSIView.LoadFile(const FileName: string): boolean;
 var S: PBufStream;
     OK: boolean;
-    B: array[0..1023] of char;
+    B: array[0..1023] of AnsiChar;
     I,FragSize: integer;
 begin
 {$I-}
@@ -902,7 +908,7 @@ begin
 end;
 
 procedure TANSIBackgroundConsole.ClrScr;
-var X,Y: word;
+var X,Y: sw_word;
     Pos: longint;
 begin
   GotoXY(1,1);
@@ -916,7 +922,7 @@ begin
 end;
 
 procedure TANSIBackgroundConsole.ClrEol;
-var X,Y: word;
+var X,Y: sw_word;
     Pos: longint;
 begin
   if Owner<>nil then
@@ -930,7 +936,7 @@ begin
   end;
 end;
 
-procedure TANSIBackgroundConsole.WriteChar(C: char);
+procedure TANSIBackgroundConsole.WriteChar(C: AnsiChar);
 var Pos: longint;
 begin
   case C of
@@ -973,7 +979,7 @@ begin
 end;
 
 procedure TANSIBackgroundConsole.GotoXY(X,Y: integer);
-var W: word;
+var W: sw_word;
 begin
   if Owner<>nil then
   while Y>MaxVideoLine do
@@ -992,7 +998,8 @@ begin
   LockCount:=0;
   GrowMode:=gfGrowHiX or gfGrowHiY;
   New(Console, Init(@Self));
-  Console^.Size.X:=Bounds.B.X+1; Console^.Size.Y:=Bounds.B.Y+1;
+  Console^.Size.X:=Max(Bounds.B.X+1,80); { 80 is for LoadFile to not wrap lines around too soon}
+  Console^.Size.Y:=Bounds.B.Y+1;
   Console^.ClrScr;
   Console^.CursorOn;
 end;
@@ -1000,7 +1007,7 @@ end;
 function TANSIBackground.LoadFile(const FileName: string): boolean;
 var S: PBufStream;
     OK: boolean;
-    B: array[0..1023] of char;
+    B: array[0..1023] of AnsiChar;
     I,FragSize: integer;
 begin
 {$I-}

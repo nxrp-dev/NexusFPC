@@ -1,13 +1,19 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit googleyoutubereporting;
+{$ENDIF FPC_DOTTEDUNITS}
 {$MODE objfpc}
 {$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils, System.Classes, GoogleApi.Service, FpWeb.Rest.Base, GoogleApi.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses sysutils, classes, googleservice, restbase, googlebase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
-  
+
   //Top-level schema types
   TMedia = Class;
   TListReportTypesResponse = Class;
@@ -29,11 +35,11 @@ type
   TListReportTypesResponseTypereportTypesArray = Array of TReportType;
   TListJobsResponseTypejobsArray = Array of TJob;
   TListReportsResponseTypereportsArray = Array of TReport;
-  
+
   { --------------------------------------------------------------------
     TMedia
     --------------------------------------------------------------------}
-  
+
   TMedia = Class(TGoogleBaseObject)
   Private
     FresourceName : String;
@@ -45,11 +51,11 @@ type
     Property resourceName : String Index 0 Read FresourceName Write SetresourceName;
   end;
   TMediaClass = Class of TMedia;
-  
+
   { --------------------------------------------------------------------
     TListReportTypesResponse
     --------------------------------------------------------------------}
-  
+
   TListReportTypesResponse = Class(TGoogleBaseObject)
   Private
     FreportTypes : TListReportTypesResponseTypereportTypesArray;
@@ -68,11 +74,11 @@ type
     Property nextPageToken : String Index 8 Read FnextPageToken Write SetnextPageToken;
   end;
   TListReportTypesResponseClass = Class of TListReportTypesResponse;
-  
+
   { --------------------------------------------------------------------
     TReportType
     --------------------------------------------------------------------}
-  
+
   TReportType = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -93,11 +99,11 @@ type
     Property systemManaged : boolean Index 24 Read FsystemManaged Write SetsystemManaged;
   end;
   TReportTypeClass = Class of TReportType;
-  
+
   { --------------------------------------------------------------------
     TJob
     --------------------------------------------------------------------}
-  
+
   TJob = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -124,11 +130,11 @@ type
     Property systemManaged : boolean Index 40 Read FsystemManaged Write SetsystemManaged;
   end;
   TJobClass = Class of TJob;
-  
+
   { --------------------------------------------------------------------
     TListJobsResponse
     --------------------------------------------------------------------}
-  
+
   TListJobsResponse = Class(TGoogleBaseObject)
   Private
     Fjobs : TListJobsResponseTypejobsArray;
@@ -147,11 +153,11 @@ type
     Property nextPageToken : String Index 8 Read FnextPageToken Write SetnextPageToken;
   end;
   TListJobsResponseClass = Class of TListJobsResponse;
-  
+
   { --------------------------------------------------------------------
     TEmpty
     --------------------------------------------------------------------}
-  
+
   TEmpty = Class(TGoogleBaseObject)
   Private
   Protected
@@ -160,11 +166,11 @@ type
   Published
   end;
   TEmptyClass = Class of TEmpty;
-  
+
   { --------------------------------------------------------------------
     TListReportsResponse
     --------------------------------------------------------------------}
-  
+
   TListReportsResponse = Class(TGoogleBaseObject)
   Private
     Freports : TListReportsResponseTypereportsArray;
@@ -183,11 +189,11 @@ type
     Property nextPageToken : String Index 8 Read FnextPageToken Write SetnextPageToken;
   end;
   TListReportsResponseClass = Class of TListReportsResponse;
-  
+
   { --------------------------------------------------------------------
     TReport
     --------------------------------------------------------------------}
-  
+
   TReport = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -217,33 +223,33 @@ type
     Property downloadUrl : String Index 48 Read FdownloadUrl Write SetdownloadUrl;
   end;
   TReportClass = Class of TReport;
-  
+
   { --------------------------------------------------------------------
     TMediaResource
     --------------------------------------------------------------------}
-  
+
   TMediaResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
     Class Function DefaultAPI : TGoogleAPIClass; override;
     Function Download(_resourceName: string) : TMedia;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TReportTypesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TReportTypesResource, method List
-  
+
   TReportTypesListOptions = Record
     onBehalfOfContentOwner : String;
     pageSize : integer;
     pageToken : String;
     includeSystemManaged : boolean;
   end;
-  
+
   TReportTypesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -251,15 +257,15 @@ type
     Function List(AQuery : string  = '') : TListReportTypesResponse;
     Function List(AQuery : TReportTypeslistOptions) : TListReportTypesResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TJobsReportsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TJobsReportsResource, method List
-  
+
   TJobsReportsListOptions = Record
     onBehalfOfContentOwner : String;
     pageSize : integer;
@@ -268,14 +274,14 @@ type
     startTimeAtOrAfter : String;
     startTimeBefore : String;
   end;
-  
-  
+
+
   //Optional query Options for TJobsReportsResource, method Get
-  
+
   TJobsReportsGetOptions = Record
     onBehalfOfContentOwner : String;
   end;
-  
+
   TJobsReportsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -285,43 +291,43 @@ type
     Function Get(jobId: string; reportId: string; AQuery : string  = '') : TReport;
     Function Get(jobId: string; reportId: string; AQuery : TJobsReportsgetOptions) : TReport;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TJobsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TJobsResource, method Create
-  
+
   TJobsCreateOptions = Record
     onBehalfOfContentOwner : String;
   end;
-  
-  
+
+
   //Optional query Options for TJobsResource, method List
-  
+
   TJobsListOptions = Record
     onBehalfOfContentOwner : String;
     pageSize : integer;
     pageToken : String;
     includeSystemManaged : boolean;
   end;
-  
-  
+
+
   //Optional query Options for TJobsResource, method Get
-  
+
   TJobsGetOptions = Record
     onBehalfOfContentOwner : String;
   end;
-  
-  
+
+
   //Optional query Options for TJobsResource, method Delete
-  
+
   TJobsDeleteOptions = Record
     onBehalfOfContentOwner : String;
   end;
-  
+
   TJobsResource = Class(TGoogleResource)
   Private
     FReportsInstance : TJobsReportsResource;
@@ -341,12 +347,12 @@ type
     Function CreateReportsResource : TJobsReportsResource;virtual;overload;
     Property ReportsResource : TJobsReportsResource Read GetReportsInstance;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TYoutubereportingAPI
     --------------------------------------------------------------------}
-  
+
   TYoutubereportingAPI = Class(TGoogleAPI)
   Private
     FMediaInstance : TMediaResource;
@@ -403,7 +409,7 @@ implementation
   --------------------------------------------------------------------}
 
 
-Procedure TMedia.SetresourceName(AIndex : Integer; const AValue : String); 
+Procedure TMedia.SetresourceName(AIndex : Integer; const AValue : String);
 
 begin
   If (FresourceName=AValue) then exit;
@@ -420,7 +426,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TListReportTypesResponse.SetreportTypes(AIndex : Integer; const AValue : TListReportTypesResponseTypereportTypesArray); 
+Procedure TListReportTypesResponse.SetreportTypes(AIndex : Integer; const AValue : TListReportTypesResponseTypereportTypesArray);
 
 begin
   If (FreportTypes=AValue) then exit;
@@ -430,7 +436,7 @@ end;
 
 
 
-Procedure TListReportTypesResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TListReportTypesResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -441,7 +447,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TListReportTypesResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TListReportTypesResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -460,7 +466,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TReportType.Setid(AIndex : Integer; const AValue : String); 
+Procedure TReportType.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -470,7 +476,7 @@ end;
 
 
 
-Procedure TReportType.Setname(AIndex : Integer; const AValue : String); 
+Procedure TReportType.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -480,7 +486,7 @@ end;
 
 
 
-Procedure TReportType.SetdeprecateTime(AIndex : Integer; const AValue : String); 
+Procedure TReportType.SetdeprecateTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FdeprecateTime=AValue) then exit;
@@ -490,7 +496,7 @@ end;
 
 
 
-Procedure TReportType.SetsystemManaged(AIndex : Integer; const AValue : boolean); 
+Procedure TReportType.SetsystemManaged(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FsystemManaged=AValue) then exit;
@@ -507,7 +513,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TJob.Setid(AIndex : Integer; const AValue : String); 
+Procedure TJob.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -517,7 +523,7 @@ end;
 
 
 
-Procedure TJob.SetreportTypeId(AIndex : Integer; const AValue : String); 
+Procedure TJob.SetreportTypeId(AIndex : Integer; const AValue : String);
 
 begin
   If (FreportTypeId=AValue) then exit;
@@ -527,7 +533,7 @@ end;
 
 
 
-Procedure TJob.Setname(AIndex : Integer; const AValue : String); 
+Procedure TJob.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -537,7 +543,7 @@ end;
 
 
 
-Procedure TJob.SetcreateTime(AIndex : Integer; const AValue : String); 
+Procedure TJob.SetcreateTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreateTime=AValue) then exit;
@@ -547,7 +553,7 @@ end;
 
 
 
-Procedure TJob.SetexpireTime(AIndex : Integer; const AValue : String); 
+Procedure TJob.SetexpireTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FexpireTime=AValue) then exit;
@@ -557,7 +563,7 @@ end;
 
 
 
-Procedure TJob.SetsystemManaged(AIndex : Integer; const AValue : boolean); 
+Procedure TJob.SetsystemManaged(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FsystemManaged=AValue) then exit;
@@ -574,7 +580,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TListJobsResponse.Setjobs(AIndex : Integer; const AValue : TListJobsResponseTypejobsArray); 
+Procedure TListJobsResponse.Setjobs(AIndex : Integer; const AValue : TListJobsResponseTypejobsArray);
 
 begin
   If (Fjobs=AValue) then exit;
@@ -584,7 +590,7 @@ end;
 
 
 
-Procedure TListJobsResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TListJobsResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -595,7 +601,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TListJobsResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TListJobsResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -621,7 +627,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TListReportsResponse.Setreports(AIndex : Integer; const AValue : TListReportsResponseTypereportsArray); 
+Procedure TListReportsResponse.Setreports(AIndex : Integer; const AValue : TListReportsResponseTypereportsArray);
 
 begin
   If (Freports=AValue) then exit;
@@ -631,7 +637,7 @@ end;
 
 
 
-Procedure TListReportsResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TListReportsResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -642,7 +648,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TListReportsResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TListReportsResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -661,7 +667,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TReport.Setid(AIndex : Integer; const AValue : String); 
+Procedure TReport.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -671,7 +677,7 @@ end;
 
 
 
-Procedure TReport.SetjobId(AIndex : Integer; const AValue : String); 
+Procedure TReport.SetjobId(AIndex : Integer; const AValue : String);
 
 begin
   If (FjobId=AValue) then exit;
@@ -681,7 +687,7 @@ end;
 
 
 
-Procedure TReport.SetjobExpireTime(AIndex : Integer; const AValue : String); 
+Procedure TReport.SetjobExpireTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FjobExpireTime=AValue) then exit;
@@ -691,7 +697,7 @@ end;
 
 
 
-Procedure TReport.SetstartTime(AIndex : Integer; const AValue : String); 
+Procedure TReport.SetstartTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FstartTime=AValue) then exit;
@@ -701,7 +707,7 @@ end;
 
 
 
-Procedure TReport.SetendTime(AIndex : Integer; const AValue : String); 
+Procedure TReport.SetendTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FendTime=AValue) then exit;
@@ -711,7 +717,7 @@ end;
 
 
 
-Procedure TReport.SetcreateTime(AIndex : Integer; const AValue : String); 
+Procedure TReport.SetcreateTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreateTime=AValue) then exit;
@@ -721,7 +727,7 @@ end;
 
 
 
-Procedure TReport.SetdownloadUrl(AIndex : Integer; const AValue : String); 
+Procedure TReport.SetdownloadUrl(AIndex : Integer; const AValue : String);
 
 begin
   If (FdownloadUrl=AValue) then exit;
@@ -1150,7 +1156,7 @@ begin
   Result[0].Description:='View monetary and non-monetary YouTube Analytics reports for your YouTube content';
   Result[1].Name:='https://www.googleapis.com/auth/yt-analytics.readonly';
   Result[1].Description:='View YouTube Analytics reports for your YouTube content';
-  
+
 end;
 
 Class Function TYoutubereportingAPI.APINeedsAuth : Boolean;

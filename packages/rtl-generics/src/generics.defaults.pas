@@ -24,7 +24,9 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit Generics.Defaults;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$MODE DELPHI}{$H+}
 {$POINTERMATH ON}
@@ -38,8 +40,13 @@ unit Generics.Defaults;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, System.Generics.Hashes, System.TypInfo, System.Variants, System.Math, System.Generics.Strings, System.Generics.Helpers;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, Generics.Hashes, TypInfo, Variants, Math, Generics.Strings, Generics.Helpers;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   IComparer<T> = interface
@@ -48,6 +55,7 @@ type
 
   TOnComparison<T> = function(const Left, Right: T): Integer of object;
   TComparisonFunc<T> = function(const Left, Right: T): Integer;
+  TComparison<T> = reference to function(const Left, Right: T): Integer;
 
   TComparer<T> = class(TInterfacedObject, IComparer<T>)
   public
@@ -56,6 +64,7 @@ type
 
     class function Construct(const AComparison: TOnComparison<T>): IComparer<T>; overload;
     class function Construct(const AComparison: TComparisonFunc<T>): IComparer<T>; overload;
+    class function Construct(const AComparison: TComparison<T>): IComparer<T>; overload;
   end;
 
   TDelegatedComparerEvents<T> = class(TComparer<T>)
@@ -72,6 +81,14 @@ type
   public
     function Compare(const ALeft, ARight: T): Integer; override;
     constructor Create(AComparison: TComparisonFunc<T>);
+  end;
+
+  TDelegatedComparer<T> = class(TComparer<T>)
+  private
+    FCompareFunc: TComparison<T>;
+  public
+    constructor Create(const aCompare: TComparison<T>);
+    function Compare(const aLeft, aRight: T): Integer; override;
   end;
 
   IEqualityComparer<T> = interface
@@ -637,8 +654,10 @@ type
 
 
     FEqualityComparerInstances: array[TTypeKind] of TInstance;
+    TablesInitialized : Boolean;
   private
     class constructor Create;
+    class procedure InitTables;
   public
     class function LookupEqualityComparer(ATypeInfo: PTypeInfo; ASize: SizeInt): Pointer; override;
   end;
@@ -756,8 +775,10 @@ type
 
     // all instances
     FExtendedEqualityComparerInstances: array[TTypeKind] of TInstance;
+    TablesInitialized : Boolean;
   private
     class constructor Create;
+    class procedure InitTables;
   public
     class function LookupExtendedEqualityComparer(ATypeInfo: PTypeInfo; ASize: SizeInt): Pointer; override;
   end;
@@ -873,8 +894,8 @@ type
     FHashFactory: THashFactoryClass;
   public
     constructor Create(AHashFactoryClass: THashFactoryClass);
-    function Equals(const ALeft, ARight: T): Boolean;
-    function GetHashCode(const AValue: T): UInt32;
+    function Equals(const ALeft, ARight: T): Boolean; reintroduce;
+    function GetHashCode(const AValue: T): UInt32; reintroduce;
   end;
 
   TBinaryExtendedEqualityComparer<T> = class(TBinaryEqualityComparer<T>, IExtendedEqualityComparer<T>)
@@ -1068,6 +1089,13 @@ function _LookupVtableInfo(AGInterface: TDefaultGenericInterface; ATypeInfo: PTy
 function _LookupVtableInfoEx(AGInterface: TDefaultGenericInterface; ATypeInfo: PTypeInfo; ASize: SizeInt;
   AFactory: THashFactoryClass): Pointer;
 
+Type
+
+  TCollectionItemComparer = IComparer<TCollectionItem>;
+  TCollectionHelper = Class helper for TCollection
+    Procedure sort(const AComparer: TCollectionItemComparer); overload;
+  end;
+
 implementation
 
 { TComparer<T> }
@@ -1083,6 +1111,11 @@ end;
 class function TComparer<T>.Construct(const AComparison: TOnComparison<T>): IComparer<T>;
 begin
   Result := TDelegatedComparerEvents<T>.Create(AComparison);
+end;
+
+class function TComparer<T>.Construct(const AComparison: TComparison<T>): IComparer<T>;
+begin
+  Result := TDelegatedComparer<T>.Create(AComparison);
 end;
 
 class function TComparer<T>.Construct(const AComparison: TComparisonFunc<T>): IComparer<T>;
@@ -1109,6 +1142,18 @@ constructor TDelegatedComparerFunc<T>.Create(AComparison: TComparisonFunc<T>);
 begin
   FComparison := AComparison;
 end;
+
+constructor TDelegatedComparer<T>.Create(const aCompare: TComparison<T>);
+begin
+  FCompareFunc:=aCompare;
+end;
+
+function TDelegatedComparer<T>.Compare(const aLeft, aRight: T): Integer;
+begin
+  Result:=FCompareFunc(aLeft, aRight);
+end;
+
+
 
 { TInterface }
 
@@ -1169,7 +1214,7 @@ end;
 
 class function TCompare.Integer(const ALeft, ARight: Integer): Integer;
 begin
-  Result := Math.CompareValue(ALeft, ARight);
+  Result := {$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}Math.CompareValue(ALeft, ARight);
 end;
 
 class function TCompare.Int8(const ALeft, ARight: Int8): Integer;
@@ -1390,9 +1435,55 @@ begin
   Result := CompareStr(ALeft, ARight);
 end;
 
+// Used with permission from Arnaud Bouchez, see issue #40034
+function ByteCompareRawByteString(const A, B: RawByteString): integer;
+var
+  p1, p2: PByteArray;
+  l1, l2: PtrInt; // FPC will use very efficiently the CPU registers
+begin
+  // we can't use StrComp() since a RawByteString may contain #0
+  p1 := pointer(A);
+  p2 := pointer(B);
+  if p1 <> p2 then
+    if p1 <> nil then
+      if p2 <> nil then
+      begin
+        result := p1[0] - p2[0]; // compare first char for quicksort
+        if result <> 0 then
+          exit;
+        l1 := Length(A);
+        l2 := Length(B);
+        result := l1;
+        if l1 > l2 then
+          l1 := l2;
+        dec(result, l2);
+        p1 := @p1[l1];
+        p2 := @p2[l1];
+        dec(l1); // we already compared the first char
+        if l1 = 0 then
+          exit;
+        l1 := -l1;
+        repeat
+          if p1[l1] <> p2[l1] then
+            break;
+          inc(l1);
+          if l1 = 0 then
+            exit;
+        until false;
+        result := p1[l1] - p2[l1];
+      end
+      else
+        result := 1  // p2=''
+    else
+      result := -1   // p1=''
+  else
+    result := 0;     // p1=p2
+end;
+
+
 class function TCompare.AnsiString(const ALeft, ARight: AnsiString): Integer;
 begin
-  Result := AnsiCompareStr(ALeft, ARight);
+  Result := ByteCompareRawByteString(ALeft, ARight);
 end;
 
 class function TCompare.WideString(const ALeft, ARight: WideString): Integer;
@@ -1733,7 +1824,7 @@ begin
   if LMantissa = 0 then
     LMantissa := Abs(LMantissa);
 
-  Result := HASH_FACTORY.GetHashCode(@LMantissa, SizeOf(Math.Float), 0);
+  Result := HASH_FACTORY.GetHashCode(@LMantissa, SizeOf({$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}Math.Float), 0);
   Result := HASH_FACTORY.GetHashCode(@LExponent, SizeOf(System.Integer), Result);
 end;
 
@@ -1747,7 +1838,7 @@ begin
   if LMantissa = 0 then
     LMantissa := Abs(LMantissa);
 
-  Result := HASH_FACTORY.GetHashCode(@LMantissa, SizeOf(Math.Float), 0);
+  Result := HASH_FACTORY.GetHashCode(@LMantissa, SizeOf({$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}Math.Float), 0);
   Result := HASH_FACTORY.GetHashCode(@LExponent, SizeOf(System.Integer), Result);
 end;
 
@@ -1761,7 +1852,7 @@ begin
   if LMantissa = 0 then
     LMantissa := Abs(LMantissa);
 
-  Result := HASH_FACTORY.GetHashCode(@LMantissa, SizeOf(Math.Float), 0);
+  Result := HASH_FACTORY.GetHashCode(@LMantissa, SizeOf({$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}Math.Float), 0);
   Result := HASH_FACTORY.GetHashCode(@LExponent, SizeOf(System.Integer), Result);
 end;
 
@@ -1943,7 +2034,7 @@ begin
   if LMantissa = 0 then
     LMantissa := Abs(LMantissa);
 
-  EXTENDED_HASH_FACTORY.GetHashList(@LMantissa, SizeOf(Math.Float), AHashList, []);
+  EXTENDED_HASH_FACTORY.GetHashList(@LMantissa, SizeOf({$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}Math.Float), AHashList, []);
   EXTENDED_HASH_FACTORY.GetHashList(@LExponent, SizeOf(System.Integer), AHashList, [ghloHashListAsInitData]);
 end;
 
@@ -1957,7 +2048,7 @@ begin
   if LMantissa = 0 then
     LMantissa := Abs(LMantissa);
 
-  EXTENDED_HASH_FACTORY.GetHashList(@LMantissa, SizeOf(Math.Float), AHashList, []);
+  EXTENDED_HASH_FACTORY.GetHashList(@LMantissa, SizeOf({$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}Math.Float), AHashList, []);
   EXTENDED_HASH_FACTORY.GetHashList(@LExponent, SizeOf(System.Integer), AHashList, [ghloHashListAsInitData]);
 end;
 
@@ -1971,7 +2062,7 @@ begin
   if LMantissa = 0 then
     LMantissa := Abs(LMantissa);
 
-  EXTENDED_HASH_FACTORY.GetHashList(@LMantissa, SizeOf(Math.Float), AHashList, []);
+  EXTENDED_HASH_FACTORY.GetHashList(@LMantissa, SizeOf({$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}Math.Float), AHashList, []);
   EXTENDED_HASH_FACTORY.GetHashList(@LExponent, SizeOf(System.Integer), AHashList, [ghloHashListAsInitData]);
 end;
 
@@ -2299,6 +2390,8 @@ begin
     Exit(SelectBinaryEqualityComparer(Nil, ASize))
   else
   begin
+    If not TablesInitialized  then
+      InitTables;
     LInstance := @FEqualityComparerInstances[ATypeInfo.Kind];
     Result := LInstance.Instance;
     if LInstance.Selector then
@@ -2312,6 +2405,16 @@ end;
 
 class constructor THashService<T>.Create;
 begin
+  if not TablesInitialized then
+    InitTables
+end;
+
+class Procedure THashService<T>.InitTables;
+
+begin
+  if TablesInitialized then
+    exit;
+  TablesInitialized:=true;
   FEqualityComparer_Int8_VMT          := EqualityComparer_Int8_VMT         ;
   FEqualityComparer_Int16_VMT         := EqualityComparer_Int16_VMT        ;
   FEqualityComparer_Int32_VMT         := EqualityComparer_Int32_VMT        ;
@@ -2503,6 +2606,8 @@ begin
     Exit(SelectBinaryEqualityComparer(Nil, ASize))
   else
   begin
+    if not TablesInitialized then
+      InitTables;
     LInstance := @FExtendedEqualityComparerInstances[ATypeInfo.Kind];
     Result := LInstance.Instance;
     if LInstance.Selector then
@@ -2516,6 +2621,16 @@ end;
 
 class constructor TExtendedHashService<T>.Create;
 begin
+  // The InitTables can have been called before from the class constructors of other classes.
+  if not TablesInitialized then
+    InitTables
+end;
+
+class procedure TExtendedHashService<T>.InitTables;
+
+begin
+  if TablesInitialized then exit;
+  TablesInitialized:=True;
   FExtendedEqualityComparer_Int8_VMT          := ExtendedEqualityComparer_Int8_VMT         ;
   FExtendedEqualityComparer_Int16_VMT         := ExtendedEqualityComparer_Int16_VMT        ;
   FExtendedEqualityComparer_Int32_VMT         := ExtendedEqualityComparer_Int32_VMT        ;
@@ -3288,7 +3403,7 @@ end;
 
 class constructor TOrdinalComparer<T, THashFactory>.Create;
 begin
-  if THashFactory.InheritsFrom(TExtendedHashService) then
+  if THashFactory.InheritsFrom(TExtendedHashFactory) then
   begin
     FExtendedEqualityComparer := TExtendedEqualityComparer<T>.Default(TExtendedHashFactoryClass(THashFactory));
     FEqualityComparer := IEqualityComparer<T>(FExtendedEqualityComparer);
@@ -3402,7 +3517,6 @@ begin
       begin
         if AFactory = nil then
           AFactory := TDefaultHashFactory;
-
         Exit(
           AFactory.GetHashService.LookupEqualityComparer(ATypeInfo, ASize));
       end;
@@ -3417,6 +3531,26 @@ begin
   else
     System.Error(reRangeError);
     Exit(nil);
+  end;
+end;
+
+{ TCollectionHelper }
+
+
+Function GenericCollSort(Item1,Item2 : TCollectionItem; aContext : Pointer) : Integer;
+
+begin
+  Result:=TCollectionItemComparer(aContext).Compare(Item1,Item2);
+end;
+
+Procedure TCollectionHelper.sort(const AComparer: TCollectionItemComparer);
+
+begin
+  aComparer._AddRef;
+  try
+    Sort(GenericCollSort,Pointer(aComparer));
+  finally
+    aComparer._Release;
   end;
 end;
 

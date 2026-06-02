@@ -4,7 +4,7 @@
 
     This file implements all the types/constants which are
     for the QNX RTP platform.
-    
+
     See the file COPYING.FPC, included in this distribution,
     for details about the copyright.
 
@@ -33,29 +33,29 @@ type
     nlink_t  = cardinal;  { used for link counts         }
     off_t  = cardinal;    { used for file sizes          }
     pid_t  = longint;     { used as process identifier   }
-    size_t = cardinal;    { as definied in the C standard }
+    size_t = cardinal;    { as defined in the C standard }
     ssize_t = longint;    { used by function for returning number of bytes }
     uid_t = longint;      { used for user ID type        }
     time_t = cardinal;    { used for returning the time  }
     blksize_t = cardinal;
     blkcnt_t = cardinal;
-    
+
 
 {***********************************************************************}
 {                         POSIX STRUCTURES                              }
 {***********************************************************************}
 CONST
-    _UTSNAME_LENGTH = 256;   { 256 + 1 in pchar format }
+    _UTSNAME_LENGTH = 256;   { 256 + 1 in PAnsiChar format }
     _UTSNAME_NODENAME_LENGTH = 256;
 
 TYPE
    { system information services }
    utsname = packed record   { don't forget to verify the alignment }
-     sysname : array[0.._UTSNAME_LENGTH] of char;
-     nodename : array[0.._UTSNAME_LENGTH] of char;
-     release : array[0.._UTSNAME_LENGTH] of char;
-     version : array[0.._UTSNAME_LENGTH] of char;
-     machine : array[0.._UTSNAME_LENGTH] of char;
+     sysname : array[0.._UTSNAME_LENGTH] of AnsiChar;
+     nodename : array[0.._UTSNAME_LENGTH] of AnsiChar;
+     release : array[0.._UTSNAME_LENGTH] of AnsiChar;
+     version : array[0.._UTSNAME_LENGTH] of AnsiChar;
+     machine : array[0.._UTSNAME_LENGTH] of AnsiChar;
    end;
 
   { file characteristics services }
@@ -70,7 +70,7 @@ TYPE
     st_ino : ino_t;
     st_size_hi : off_t;
     st_size : off_t;
-{$ENDIF}   
+{$ENDIF}
      st_dev : dev_t;            (* ID of device containing file.        *)
      st_rdev : dev_t;           (* Device ID, for inode that is device  *)
      st_uid : uid_t;
@@ -85,31 +85,31 @@ TYPE
      st_blksize : blksize_t;    (* Prefered I/O block size for object   *)
 {$IFDEF ENDIAN_LITTLE}
     st_blocks : blkcnt_t;       (* Number of 512 byte blocks            *)
-    st_blocks_hi : blkcnt_t; 
+    st_blocks_hi : blkcnt_t;
 {$ELSE}
     st_blocks_hi : blkcnt_t;
     st_blocks : blkcnt_t;
-{$ENDIF}    
+{$ENDIF}
    end;
-   
+
 
   { directory services }
    pdirent = ^dirent;
    dirent = packed record    { directory entry record - verify alignment }
-{$ifdef ENDIAN_LITTLE}   
+{$ifdef ENDIAN_LITTLE}
     d_ino : ino_t;           (* File serial number *)
     d_ino_hi : ino_t;
     d_offset : off_t;
     d_offset_hi : off_t;
-{$else}    
+{$else}
     d_ino_hi : ino_t;
     d_ino : ino_t;
     d_offset_hi : off_t;
     d_offset : off_t;
-{$endif} 
+{$endif}
     d_reclen : smallint;
     d_namelen : smallint;
-    d_name : array[0..255] of char;
+    d_name : array[0..255] of AnsiChar;
    end;
 
    pdir = ^dir;
@@ -168,6 +168,6 @@ CONST
     {***********************************************************************}
     {                            signal handling                            }
     {***********************************************************************}
-    
+
     {$i signal.inc}
 

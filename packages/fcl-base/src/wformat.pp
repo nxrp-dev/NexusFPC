@@ -10,7 +10,9 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
-unit wformat;
+{$IFNDEF FPC_DOTTEDUNITS}
+unit WFormat;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$ifdef fpc}
 {$mode objfpc}
@@ -18,7 +20,11 @@ unit wformat;
 
 Interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.Classes,System.SysUtils;
+{$ELSE FPC_DOTTEDUNITS}
 uses Classes,SysUtils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
   TlistType = (ltNumbered,ltOrdered,ltDefinition);
@@ -34,7 +40,7 @@ Type
     Procedure Dump(Const AText : String);
     Procedure DumpLn(Const AText : String);
     // Formatted write. Calls escapetext.
-    Procedure Write(Const AText : String);
+    Procedure Write(Const AText : String); virtual;
     Procedure WriteFmt(Const Fmt : String; Args : Array of const);
     // Document Structure
     Procedure DocumentStart(Const Title : String); Virtual;

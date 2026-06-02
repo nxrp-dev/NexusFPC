@@ -1,17 +1,17 @@
 {
      File:       vecLib/vBLAS.h
- 
+
      Contains:   Header for the Basic Linear Algebra Subprograms, with Apple extensions.
- 
+
      Version:    vecLib-$(vDSP_Version0).$(vDSP_Version1)
- 
+
      Copyright:  © 2000-$(Year) by Apple Computer, Inc., all rights reserved.
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 {  Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2009 }
 {  Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2012 }
@@ -29,7 +29,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit vBLAS;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -214,7 +216,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.ConditionalMacros;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,ConditionalMacros;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -243,7 +249,7 @@ uses MacTypes,ConditionalMacros;
    Matrix shape and storage
    ========================
    Keeping the various matrix shape and storage parameters straight can be difficult.  The BLAS
-   documentation generally makes a distinction between the concpetual "matrix" and the physical
+   documentation generally makes a distinction between the conceptual "matrix" and the physical
    "array".  However there are a number of places where this becomes fuzzy because of the overall
    bias towards FORTRAN's column major storage.  The confusion is made worse by style differences
    between the level 2 and level 3 functions.  It is amplified further by the explicit choice of row
@@ -306,7 +312,7 @@ uses MacTypes,ConditionalMacros;
 }
 {
  *  SDOT()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in vecLib.framework
  *    CarbonLib:        not in Carbon, but vecLib is compatible with CarbonLib
@@ -318,7 +324,7 @@ function SDOT( (*const*) var N: SInt32; {const} X: Float32Ptr; (*const*) var inc
 
 {
  *  SNRM2()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in vecLib.framework
  *    CarbonLib:        not in Carbon, but vecLib is compatible with CarbonLib
@@ -330,7 +336,7 @@ function SNRM2( (*const*) var N: SInt32; {const} X: Float32Ptr; (*const*) var in
 
 {
  *  SASUM()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in vecLib.framework
  *    CarbonLib:        not in Carbon, but vecLib is compatible with CarbonLib
@@ -342,7 +348,7 @@ function SASUM( (*const*) var N: SInt32; {const} X: Float32Ptr; (*const*) var in
 
 {
  *  ISAMAX()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in vecLib.framework
  *    CarbonLib:        not in Carbon, but vecLib is compatible with CarbonLib
@@ -354,7 +360,7 @@ function ISAMAX( (*const*) var N: SInt32; {const} X: Float32Ptr; (*const*) var i
 
 {
  *  SSWAP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in vecLib.framework
  *    CarbonLib:        not in Carbon, but vecLib is compatible with CarbonLib
@@ -366,7 +372,7 @@ procedure SSWAP( (*const*) var N: SInt32; X: Float32Ptr; (*const*) var incX: SIn
 
 {
  *  SCOPY()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in vecLib.framework
  *    CarbonLib:        not in Carbon, but vecLib is compatible with CarbonLib
@@ -378,7 +384,7 @@ procedure SCOPY( (*const*) var N: SInt32; {const} X: Float32Ptr; (*const*) var i
 
 {
  *  SAXPY()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in vecLib.framework
  *    CarbonLib:        not in Carbon, but vecLib is compatible with CarbonLib
@@ -390,7 +396,7 @@ procedure SAXPY( (*const*) var N: SInt32; const (*var*) alpha: Float32; {const} 
 
 {
  *  SROT()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in vecLib.framework
  *    CarbonLib:        not in Carbon, but vecLib is compatible with CarbonLib
@@ -402,7 +408,7 @@ procedure SROT( (*const*) var N: SInt32; X: Float32Ptr; (*const*) var incX: SInt
 
 {
  *  SSCAL()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in vecLib.framework
  *    CarbonLib:        not in Carbon, but vecLib is compatible with CarbonLib
@@ -414,7 +420,7 @@ procedure SSCAL( (*const*) var N: SInt32; const (*var*) alpha: Float32; X: Float
 
 {
  *  SGEMV()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in vecLib.framework
  *    CarbonLib:        not in Carbon, but vecLib is compatible with CarbonLib
@@ -426,7 +432,7 @@ procedure SGEMV( transA: ConstCStringPtr; (*const*) var M: SInt32; (*const*) var
 
 {
  *  SGEMM()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in vecLib.framework
  *    CarbonLib:        not in Carbon, but vecLib is compatible with CarbonLib

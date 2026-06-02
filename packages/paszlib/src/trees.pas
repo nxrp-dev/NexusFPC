@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit Trees;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$T-}
 {$define ORG_DEBUG}
@@ -6,7 +8,7 @@ unit Trees;
   trees.c -- output deflated data using Huffman coding
   Copyright (C) 1995-1998 Jean-loup Gailly
 
-  Pascal tranlastion
+  Pascal translation
   Copyright (C) 1998 by Jacques Nomssi Nzali
   For conditions of distribution and use, see copyright notice in readme.txt
 }
@@ -41,12 +43,21 @@ interface
 
 {$I zconf.inc}
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  {$ifdef ZLIB_DEBUG}
+  System.SysUtils,
+  {$endif}
+  System.ZLib.Zbase
+  ;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   {$ifdef ZLIB_DEBUG}
   sysutils,
   {$endif}
   zbase
   ;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { ===========================================================================
   Internal compression state. }
@@ -638,7 +649,7 @@ const
  }
 
 const
-  Buf_size = (8 * 2*sizeof(char));
+  Buf_size = (8 * 2*sizeof(AnsiChar));
 { Number of bits used within bi_buf. (bi_buf might be implemented on
   more than 16 bits on some systems.) }
 
@@ -877,7 +888,7 @@ begin
     {$ifdef ZLIB_DEBUG}
     if (n>31) and (n<128) then
       Tracecv(tree <> tree_ptr(@static_ltree),
-       (^M'n #'+IntToStr(n)+' '+char(n)+' l '+IntToStr(len)+' c '+
+       (^M'n #'+IntToStr(n)+' '+AnsiChar(n)+' l '+IntToStr(len)+' c '+
          IntToStr(tree[n].fc.Code)+' ('+IntToStr(next_code[len]-1)+')'))
     else
       Tracecv(tree <> tree_ptr(@static_ltree),
@@ -1471,7 +1482,9 @@ begin
     max_count := 138;
     min_count := 3;
   end;
+{$push}{$R-}
   tree[max_code+1].dl.Len := word($ffff); { guard }
+{$pop}
 
   for n := 0 to max_code do
   begin
@@ -1553,7 +1566,9 @@ begin
   for n := 0 to max_code do
   begin
     curlen := nextlen;
+{$push}{$R-}
     nextlen := tree[n+1].dl.Len;
+{$pop}
     inc(count);
     if (count < max_count) and (curlen = nextlen) then
       continue
@@ -1903,7 +1918,7 @@ procedure compress_block(var s : deflate_state;
                          var dtree : array of ct_data);  { distance tree }
 var
   dist : cardinal;      { distance of matched string }
-  lc : integer;             { match length or unmatched char (if dist == 0) }
+  lc : integer;             { match length or unmatched AnsiChar (if dist == 0) }
   lx : cardinal;        { running index in l_buf }
   code : cardinal;      { the code to send }
   extra : integer;          { number of extra bits to send }
@@ -1919,7 +1934,7 @@ begin
       { send a literal byte }
       {$ifdef ZLIB_DEBUG}
       Tracevvv(#13'cd '+IntToStr(lc));
-      Tracecv((lc > 31) and (lc < 128), ' '+char(lc)+' ');
+      Tracecv((lc > 31) and (lc < 128), ' '+AnsiChar(lc)+' ');
       {$ENDIF}
       send_bits(s, ltree[lc].fc.Code, ltree[lc].dl.Len);
     end
@@ -2126,7 +2141,7 @@ end;
 
 function _tr_tally (var s : deflate_state;
    dist : cardinal;          { distance of matched string }
-   lc : cardinal) : boolean; { match length-MIN_MATCH or unmatched char (if dist=0) }
+   lc : cardinal) : boolean; { match length-MIN_MATCH or unmatched AnsiChar (if dist=0) }
 var
   {$IFDEF ZLIB_DEBUG}
   MAX_DIST : word;
@@ -2144,7 +2159,7 @@ begin
   inc(s.last_lit);
   if (dist = 0) then
   begin
-    { lc is the unmatched char }
+    { lc is the unmatched AnsiChar }
     inc(s.dyn_ltree[lc].fc.Freq);
   end
   else

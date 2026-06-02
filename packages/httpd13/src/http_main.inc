@@ -53,7 +53,7 @@
  * in use are known to deal well with EINTR it could cause corruption as well.
  * But things are likely to do much better with a soft_timeout in scope than a
  * hard_timeout.
- * 
+ *
  * A module MAY NOT use a hard_timeout() across * sub_req_lookup_xxx()
  * functions, or across run_sub_request() functions.  A module SHOULD NOT use a
  * soft_timeout() in either of these cases, but sometimes there's just no
@@ -70,13 +70,13 @@ procedure ap_start_shutdown();
 procedure ap_start_restart(param: cint);
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF} external LibHTTPD;
 
-procedure ap_hard_timeout(p: PChar; r: Prequest_rec);
+procedure ap_hard_timeout(p: PAnsiChar; r: Prequest_rec);
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF} external LibHTTPD;
 
-procedure ap_keepalive_timeout(p: PChar; r: Prequest_rec);
+procedure ap_keepalive_timeout(p: PAnsiChar; r: Prequest_rec);
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF} external LibHTTPD;
 
-procedure ap_soft_timeout(p: PChar; r: Prequest_rec);
+procedure ap_soft_timeout(p: PAnsiChar; r: Prequest_rec);
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF} external LibHTTPD;
 
 procedure ap_kill_timeout(r: Prequest_rec);
@@ -106,11 +106,11 @@ function ap_set_callback_and_alarm(fn: fn_t; x: cint): cuint;
 function ap_check_alarm(): cint;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF} external LibHTTPD;
 
-{ void setup_signal_names(char *prefix);}
+{ void setup_signal_names(AnsiChar *prefix);}
 
 { functions for determination and setting of accept() mutexing }
-{char *ap_default_mutex_method(void);
-char *ap_init_mutex_method(char *t);}
+{AnsiChar *ap_default_mutex_method(void);
+AnsiChar *ap_init_mutex_method(AnsiChar *t);}
 
 {$ifndef NO_OTHER_CHILD}
 {
@@ -129,7 +129,7 @@ char *ap_init_mutex_method(char *t);}
  }
 type
   maintenance_t = procedure (reason: cint; data: Pointer; status: ap_wait_t);
-  
+
 procedure ap_register_other_child(pid: cint;
  maintenance: maintenance_t; data: Pointer; write_fd: cint);
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF} external LibHTTPD;
@@ -138,7 +138,7 @@ const
   OC_REASON_DEATH      = 0;	{ child has died, caller must call
 					 * unregister still }
   OC_REASON_UNWRITABLE = 1;	{ write_fd is unwritable }
-  OC_REASON_RESTART    = 2;	{ a restart is occuring, perform
+  OC_REASON_RESTART    = 2;	{ a restart is occurring, perform
 					 * any necessary cleanup (including
 					 * sending a special signal to child)
                                          }

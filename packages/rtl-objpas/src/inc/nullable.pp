@@ -12,23 +12,32 @@
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 }
+{$IFNDEF FPC_DOTTEDUNITS}
 unit nullable;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}
 {$modeswitch advancedrecords}
 
 interface
 
-uses sysutils;
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils, System.Types;
+{$ELSE FPC_DOTTEDUNITS}
+uses sysutils, types;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
 
   { TNullable }
 
   generic TNullable<T> = record
+  public type
+    PT = ^T;
   private
     FValue: T;
     FHasValue: Boolean; // Default False
+    function InitAndGetPtr: PT;
     function GetIsNull: Boolean;
     function GetValue: T;
     function GetValueOrDefault: T;
@@ -38,6 +47,10 @@ Type
     // Make things more readable
     Type
       TMyType = specialize TNullable<T>;
+    // Return if it has value and if so unpack
+    function Unpack(out aDest: T): Boolean;
+    // Return value if present, else return fallback
+    function ValueOr(const Fallback: T): T;
     // Clear value, no value present after this.
     procedure Clear;
     // Is a value present ?
@@ -46,6 +59,8 @@ Type
     property IsNull: Boolean read GetIsNull;
     // return the value.
     property Value: T read GetValue write SetValue;
+    // Initializes the value if not exists and gets the pointer
+    property Ptr: PT read InitAndGetPtr;
     // If a value is present, return it, otherwise return the default.
     property ValueOrDefault: T read GetValueOrDefault;
     // Return an empty value
@@ -56,14 +71,37 @@ Type
     class operator Explicit(aValue: T): TMyType;
     class operator Explicit(aValue: TMyType): T;
     class operator := (aValue: T): TMyType;
+    class operator := (aValue: TNullPtr): TMyType;
     class operator := (aValue: TMyType): T;
+    class operator Not (const aValue: TMyType): Boolean; inline;
+    class operator =(const lhs: TMyType; rhs: TNullPtr): Boolean; inline;
+    class operator =(lhs: TNullPtr; const rhs: TMyType): Boolean; inline;
+    class operator <>(const lhs: TMyType; rhs: TNullPtr): Boolean; inline;
+    class operator <>(lhs: TNullPtr; const rhs: TMyType): Boolean; inline;
    end;
+
+{$Push}
+{$WriteableConst Off}
+const
+  null: TNullPtr = ();
+{$Pop}
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.RtlConsts,System.TypInfo;
+{$ELSE FPC_DOTTEDUNITS}
 uses rtlconsts,typinfo;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { TNullable }
+
+function TNullable.InitAndGetPtr:PT;
+begin
+  if not HasValue then
+    SetValue(Default(T));
+  Result := @FValue;
+end;
 
 function TNullable.GetIsNull: Boolean;
 begin
@@ -100,6 +138,21 @@ begin
   FHasValue:=True;
 end;
 
+function TNullable.Unpack(out aDest: T): Boolean;
+begin
+  Result := HasValue;
+  if Result then
+    aDest := GetValue;
+end;
+
+function TNullable.ValueOr(const Fallback: T): T;
+begin
+  if HasValue then
+    Result := GetValue
+  else
+    Result := Fallback;
+end;
+
 procedure TNullable.Clear;
 begin
   HasValue:=False;
@@ -133,11 +186,42 @@ begin
   Result.Value:=aValue;
 end;
 
+class operator TNullable.:=(aValue: TNullPtr): TMyType;
+begin
+  Result := Default(TMyType);
+  Result.Clear;
+end;
+
 class operator TNullable.:= (aValue: TMyType): T;
 
 begin
   // We could use :=This is in line with TField's behaviour.
   Result:=aValue.Value;
+end;
+
+class operator TNullable.not(const aValue: TMyType): Boolean;
+begin
+  Result := Not aValue.HasValue;
+end;
+
+class operator TNullable.=(const lhs: TMyType; rhs: TNullPtr): Boolean;
+begin
+  Result := not lhs.HasValue;
+end;
+
+class operator TNullable.=(lhs: TNullPtr; const rhs: TMyType): Boolean;
+begin
+  Result := not rhs.HasValue;
+end;
+
+class operator TNullable.<>(const lhs: TMyType; rhs: TNullPtr): Boolean;
+begin
+  Result := lhs.HasValue;
+end;
+
+class operator TNullable.<>(lhs: TNullPtr; const rhs: TMyType): Boolean;
+begin
+  Result := rhs.HasValue;
 end;
 
 end.

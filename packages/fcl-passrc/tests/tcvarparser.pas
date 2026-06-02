@@ -59,11 +59,13 @@ Type
     procedure TestVarExternalLibNoName;
     Procedure TestVarCVar;
     Procedure TestVarCVarExternal;
+    Procedure TestVarCVarWeakExternal;
     Procedure TestVarCVarExport;
     Procedure TestVarPublic;
     Procedure TestVarPublicName;
     Procedure TestVarDeprecatedExternalName;
     Procedure TestVarHintPriorToInit;
+    Procedure TestVarAttribute;
     Procedure TestErrorRecovery;
   end;
 
@@ -145,6 +147,7 @@ begin
   IsThreadVar:=True;
   ParseVar('b','');
   AssertVariableType('b');
+  AssertTrue('Thread variable',(vmThread in Thevar.VarModifiers));
 end;
 
 procedure TTestVarParser.TestSimpleVarAbsoluteName;
@@ -410,6 +413,12 @@ begin
   AssertEquals('Variable modifiers',[vmcvar,vmexternal],TheVar.VarModifiers);
 end;
 
+procedure TTestVarParser.TestVarCVarWeakExternal;
+begin
+  ParseVar('integer; cvar;weakexternal','');
+  AssertEquals('Variable modifiers',[vmcvar,vmexternal],TheVar.VarModifiers);
+end;
+
 procedure TTestVarParser.TestVarCVarExport;
 begin
   ParseVar('integer; cvar; export','');
@@ -450,6 +459,22 @@ begin
   AssertEquals('Correctly initialized',TBoolConstExpr,Thevar.Expr.ClassType);
   E:=Thevar.Expr as TBoolConstExpr;
   AssertEquals('Correct initialization value',False, E.Value);
+end;
+
+procedure TTestVarParser.TestVarAttribute;
+var
+  V : TPasVariable;
+begin
+
+  add('{$mode delphi}');
+  Add('Var');
+  Add('  [xyz] A : integer;');
+  ParseDeclarations;
+  AssertEquals('One variable definition',1,Declarations.Variables.Count);
+  AssertEquals('First declaration is type definition.',TPasVariable,TObject(Declarations.Variables[0]).ClassType);
+  V:=TPasVariable(Declarations.Variables[0]);
+  AssertEquals('First declaration has correct name.','A',V.Name);
+
 end;
 
 procedure TTestVarParser.TestErrorRecovery;

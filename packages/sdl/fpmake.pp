@@ -2,7 +2,7 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses {$ifdef unix}cthreads,{$endif} fpmkunit;
 
 Var
   P : TPackage;
@@ -26,7 +26,7 @@ begin
        P.OSes := P.OSes - [darwin];
     P.OSes := P.OSes - [iphonesim,ios,java,os2,emx,go32v2,watcom,netware,netwlibc,nativent,embedded,
                         android,amiga,aros,msdos,gba,nds,win16,atari,macosclassic,palmos,symbian,wii,
-                        freertos,zxspectrum,msxdos,amstradcpc,sinclairql,wasi];
+                        freertos,zxspectrum,msxdos,amstradcpc,sinclairql,wasip1,wasip1threads,human68k,ps1,wasip2];
 
     T:=P.Targets.AddUnit('logger.pas');
       with T.Dependencies do
@@ -91,6 +91,9 @@ begin
     P.Sources.AddSrc('LGPL.addon');
     P.Sources.AddSrc('MPL-1.1');
     P.Sources.AddSrc('README.txt');
+
+
+    P.NamespaceMap:='namespaces.lst';
 
 {$ifndef ALLPACKAGES}
     Run;

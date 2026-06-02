@@ -43,7 +43,9 @@
 // $Id: JwaWbemCli.pas,v 1.8 2007/09/05 11:58:53 dezipaitor Exp $
 
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaWbemCli;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -57,8 +59,13 @@ unit JwaWbemCli;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Activex, WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaActiveX, JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 {$IFNDEF JWA_IMPLEMENTATIONSECTION}
@@ -878,7 +885,7 @@ const
   {$EXTERNALSYM WBEMMOF_E_ERROR_INVALID_INCLUDE_FILE}
   WBEMMOF_E_INVALID_DELETECLASS_SYNTAX = DWORD($80044031);
   {$EXTERNALSYM WBEMMOF_E_INVALID_DELETECLASS_SYNTAX}
-  
+
 //const
 //EXTERN_C const IID LIBID_WbemClient_v1;
 
@@ -920,7 +927,7 @@ const
 
 type
   // forward declarations
-  
+
   IWbemQualifierSet = interface;
   IWbemContext = interface;
   IWbemCallResult = interface;
@@ -1294,8 +1301,8 @@ const
 // Additional Prototypes for ALL interfaces
 
 //unsigned long             __RPC_USER  WideString_UserSize(     unsigned long *, unsigned long            , WideString * );
-//unsigned char * __RPC_USER  WideString_UserMarshal(  unsigned long *, unsigned char *, WideString * );
-//unsigned char * __RPC_USER  WideString_UserUnmarshal(unsigned long *, unsigned char *, WideString * );
+//unsigned AnsiChar * __RPC_USER  WideString_UserMarshal(  unsigned long *, unsigned AnsiChar *, WideString * );
+//unsigned AnsiChar * __RPC_USER  WideString_UserUnmarshal(unsigned long *, unsigned AnsiChar *, WideString * );
 //void                      __RPC_USER  WideString_UserFree(     unsigned long *, WideString * );
 
 // end of Additional Prototypes

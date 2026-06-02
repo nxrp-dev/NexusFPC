@@ -13,14 +13,19 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit sysutils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
 {$MODE objfpc}
 {$MODESWITCH OUT}
-{ force ansistrings }
+{$IFDEF UNICODERTL}
+{$MODESWITCH UNICODESTRINGS}
+{$ELSE}
 {$H+}
+{$ENDIF}
 {$modeswitch typehelpers}
 {$modeswitch advancedrecords}
 
@@ -44,8 +49,13 @@ interface
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.SysConst;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   sysconst;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$DEFINE FPC_FEXPAND_UNC} (* UNC paths are supported *)
 {$DEFINE FPC_FEXPAND_DRIVES} (* Full paths begin with drive specification *)
@@ -75,7 +85,7 @@ begin
     fmOpenWrite: QLMode :=  Q_OPEN_OVER;
     fmOpenReadWrite: QLMode := Q_OPEN;
   end;
-  FileOpen := io_open(pchar(Filename), QLMode);
+  FileOpen := io_open(PAnsiChar(Filename), QLMode);
   if FileOpen < 0 then
     FileOpen:=-1;
 end;
@@ -109,7 +119,7 @@ end;
 function FileCreate(const FileName: RawByteString) : THandle;
 begin
   DeleteFile(FileName);
-  FileCreate := io_open(pchar(FileName), Q_OPEN_NEW);
+  FileCreate := io_open(PAnsiChar(FileName), Q_OPEN_NEW);
   if FileCreate < 0 then
     FileCreate:=-1;
 end;
@@ -142,7 +152,7 @@ end;
 function FileWrite(Handle: THandle; const Buffer; Count: LongInt): LongInt;
 begin
   FileWrite:=-1;
-  if (Count<=0) then 
+  if (Count<=0) then
     exit;
   FileWrite:= io_sstrg(Handle, -1, @Buffer, Count);
   if FileWrite < 0 then
@@ -160,13 +170,13 @@ begin
   case Origin of
     fsFromBeginning: dosResult := fs_posab(Handle, FOffset);
     fsFromCurrent: dosResult := fs_posre(Handle, FOffset);
-    fsFromEnd: 
+    fsFromEnd:
       begin
         seekEOF := $7FFFFFBF;
         dosResult := fs_posab(Handle, seekEOF);
         fOffset := -FOffset;
         dosResult := fs_posre(Handle, FOffset);
-      end;  
+      end;
   end;
 
   { We might need to handle Errors in dosResult, but
@@ -215,7 +225,7 @@ end;
 function DeleteFile(const FileName: RawByteString) : Boolean;
 begin
   DeleteFile:=false;
-  if io_delet(pchar(Filename)) < 0 then
+  if io_delet(PAnsiChar(Filename)) < 0 then
     exit;
   DeleteFile := True;
 end;
@@ -231,10 +241,10 @@ begin
   if Handle = -1 then
     exit;
 
-  QLerr := fs_rename(Handle, pchar(NewName));
+  QLerr := fs_rename(Handle, PAnsiChar(NewName));
   FileClose(Handle);
   if QLerr >= 0 then
-    RenameFile := true; 
+    RenameFile := true;
 end;
 
 

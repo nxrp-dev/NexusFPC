@@ -14,8 +14,15 @@
 
  **********************************************************************}
 
+{$DEFINE OS_HASCREATEPIPE}
+
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  Amiga.Core.Exec, Amiga.Core.Amigados, Amiga.Core.Utility;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Exec, AmigaDos, Utility;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Resourcestring
   SNoCommandLine        = 'Cannot execute empty command-line';
@@ -32,14 +39,14 @@ begin
   Result := true; (* Dummy version assumes always synchronous execution *)
 end;
 
-function GetNextWordPos (const S: string): integer;
+function GetNextWordPos (const S: ansistring): integer;
 const
   WhiteSpace = [' ', #9, #10, #13];
   Literals = ['"', ''''];
 var
   WStart: integer;
   InLiteral: boolean;
-  LastLiteral: char;
+  LastLiteral: ansiChar;
 begin
   WStart := 1;
 (* Skip whitespaces at the beginning *)
@@ -66,7 +73,8 @@ begin
   Result := WStart;
 end;
 
-function MaybeQuote (const S: string): string;
+
+function MaybeQuote (const S: ansistring): ansistring;
 begin
   if (Pos (' ', S) <> 0) then
    Result := '"' + S + '"'
@@ -84,14 +92,14 @@ const
   BUF_NONE = 2; // no buffering
 {$endif}
 
-Procedure TProcess.Execute;
+Procedure TProcess.SysExecute;
 var
   I: integer;
-  ExecName, FoundName: string;
+  ExecName, FoundName: ansistring;
   E2: EProcess;
-  OrigDir: string;
-  Params: string;
-  TempName: string;
+  OrigDir: ansistring;
+  Cmd,Params: ansistring;
+  TempName,OTempName: ansistring;
   cos: BPTR;
   {$ifdef MorphOS}
   inA, inB, OutA, OutB: BPTR;
@@ -104,7 +112,8 @@ begin
    ExecName := FApplicationName;
   if (FCommandLine <> '') then
    begin
-    Params := FCommandLine;
+    Cmd:=FCommandLine;
+    Params := Cmd;
     if ExecName = '' then
      begin
       I := GetNextWordPos (Params);
@@ -112,7 +121,7 @@ begin
       ExecName := Trim (ExecName);
       Delete (Params, 1, Pred (I));
      end
-    else if Copy (FCommandLine, 1, Length (ExecName)) = ExecName then
+    else if Copy (Cmd, 1, Length (ExecName)) = ExecName then
      Delete (Params, 1, Succ (Length (ExecName)))
     else
      Delete (Params, 1, Pred (GetNextWordPos (Params)));
@@ -138,25 +147,39 @@ begin
    end;
   try
     {$ifdef MorphOS}
-    if (poUsePipes in Options) and (not (poWaitOnExit in Options)) then
+    if poUsePipes in Options then
+    begin
+      FDescriptors[phtInput].PrepareHandles;
+      FDescriptors[phtOutput].PrepareHandles;
+      //FDescriptors[phtError].PrepareHandles;
+    end;
+    if (not (poWaitOnExit in Options)) then
     begin
       FProcessID := 0;
-      // Pipenames, should be unique
-      TempName := 'PIPE:PrO_' + HexStr(Self) + HexStr(GetTickCount, 8);
-      inA := DOSOpen(PChar(TempName), MODE_OLDFILE);
-      inB := DOSOpen(PChar(TempName), MODE_NEWFILE);
-      TempName := TempName + 'o';
-      outA := DOSOpen(PChar(TempName), MODE_OLDFILE);
-      outB := DOSOpen(PChar(TempName), MODE_NEWFILE);
+        // MVC : IMO this should go to CreatePipes.
+     if (FDescriptors[phtInput].IOType=iotPipe) then
+       begin
+       // Read handle
+       InB:=FDescriptors[phtInput].FTheirHandle;
+       // Write handle
+       OutA:=FDescriptors[phtInput].FOurHandle;
+       end;
+     if (FDescriptors[phtOutput].IOType=iotPipe) then
+       begin
+       // Write handle
+       OutB:=FDescriptors[phtOutput].FTheirHandle;
+       // Read handle
+       InA:=FDescriptors[phtOutput].FOurHandle;
+       end;
       // set buffer for all pipes
       SetVBuf(inA, nil, BUF_NONE, -1);
       SetVBuf(inB, nil, BUF_LINE, -1);
       SetVBuf(outA, nil, BUF_NONE, -1);
       SetVBuf(outB, nil, BUF_LINE, -1);
       // the actual Start of the command with given parameter and streams
-      Res := SystemTags(PChar(ExecName + ' ' + Params),
-                        [SYS_Input, AsTag(outA),
-                         SYS_Output, AsTag(inB),
+      Res := SystemTags(PAnsiChar(ExecName + ' ' + Params),
+                        [SYS_Input, AsTag(inB),
+                         SYS_Output, AsTag(outB),
                          SYS_Asynch, AsTag(True),
                          TAG_END]);
       // the two streams will be destroyed by system, we do not need to care about
@@ -164,21 +187,22 @@ begin
       if Res <> -1 then
       begin
         FProcessID := 1;
-        CreateStreams(THandle(outB), THandle(inA),0);
+        // Remove the Used Pipe end because they will be freed by the system
+        FDescriptors[phtInput].FTheirHandle := INVALID_HANDLE_VALUE;
+        FDescriptors[phtOutput].FTheirHandle := INVALID_HANDLE_VALUE;
+        // No longer needed, done in TIOFileDescriptor
+        // CreateStreams(THandle(outB), THandle(inA),0);
       end
       else
       begin
         // if the command did not start, we need to delete all Streams
-        if outB <> BPTR(0) then DosClose(outB);
-        if outA <> BPTR(0) then DosClose(outA);
-        if inB <> BPTR(0) then DosClose(inB);
-        if inA <> BPTR(0) then DosClose(inA);
+        // not needed to remove the pipes anymore the descriptors will care about that
       end;
     end
     else
     {$endif}
     begin
-      // if no streams needed we still use the old sychronous way
+      // if no streams needed we still use the old synchronous way
       FProcessID := 0;
       cos := BPTR(0);
       repeat
@@ -186,10 +210,9 @@ begin
         TempName := 'T:PrO_'+ HexStr(FindTask(nil)) + '_' + IntToHex(UID,8);
       until not FileExists(TempName);
       //sysdebugln('TProcess start: "' + ExecName + ' ' + Params+'"  >' + TempName);
-      cos := AmigaDos.DosOpen(PChar(TempName), MODE_READWRITE);
-      FExitCode := LongInt(amigados.Execute(PChar(ExecName + ' ' + Params), BPTR(0), cos));
+      cos := AmigaDos.DosOpen(PAnsiChar(TempName), MODE_READWRITE);
+      FExitCode := Cardinal(amigados.Execute(PAnsiChar(ExecName + ' ' + Params), BPTR(0), cos));
       DosSeek(cos, 0, OFFSET_BEGINNING);
-      CreateStreams(0, THandle(cos),0);
     end;
     //FExitCode := ExecuteProcess (ExecName, Params);
   except
@@ -234,4 +257,76 @@ Procedure TProcess.SetShowWindow (Value : TShowWindowOptions);
 begin
 end;
 
+function TIODescriptor.SysNullFileName: string;
+begin
+//  result:='/dev/null';
+end;
+
+function TIODescriptor.SysIsTypeSupported(AValue: TIOType): Boolean;
+begin
+  Result:=True;
+end;
+
+
+function TIODescriptor.SysCreateFileNameHandle(const aFileName: string): THandle;
+
+const
+  DefaultRights = 438; // 438 = 666 octal which is rw rw rw
+  ModeNames : Array[Boolean] of String = ('Reading','Writing');
+
+begin
+  if (aFileName='') then
+    Raise EProcess.Create('No filename provided');
+  case ProcessHandleType of
+    phtInput:  Result:=FileOpen(aFileName,fmOpenRead);
+    phtOutput,
+    phtError: if FileExists(aFileName) then
+                Result:=FileOpen(aFileName,fmOpenWrite or fmShareDenyNone)
+              else
+                Result:=FileCreate(aFileName,fmShareDenyNone,DefaultRights)
+  end;
+  if (Result=-1) then
+    Raise EProcess.CreateFmt('Could not open file "%s" for %s',[aFileName,ModeNames[ProcessHandleType<>phtInput]]);
+end;
+
+function TIODescriptor.SysCreatePipeHandle: THandle;
+
+var
+  TempName : AnsiString;
+  HIn,HOut : BPTR;
+
+begin
+  // MVC : This should be moved to CreatePipeHandles.
+  TempName := 'PIPE:PrO_' + HexStr(Self) + HexStr(GetTickCount, 8);
+  if ProcessHandleType=phtInput then
+    TempName:=TempName+'i'
+  else
+    TempName:=TempName+'o';
+  // Read handle
+  HIn := DOSOpen(PAnsiChar(TempName), MODE_OLDFILE);
+  // Write handle
+  HOut := DOSOpen(PAnsiChar(TempName), MODE_NEWFILE);
+  // Check correctness ?
+  //
+  // Set needed handkers
+  case ProcessHandleType of
+    phtInput:
+      begin
+      Result:=THandle(HIn);
+      FOurHandle:=THandle(hOut);
+      end;
+    phtOutput,
+    phtError:
+      begin
+      Result:=THandle(hOut);
+      FOurHandle:=THandle(HIn);
+      end;
+  end;
+
+end;
+
+function TIODescriptor.SysPrepareCreatedHandleForProcess(aHandle: THandle): THandle;
+begin
+  Result:=aHandle;
+end;
 

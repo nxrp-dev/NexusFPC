@@ -288,7 +288,7 @@ const defdynlinker='/lib/ld-linux-aarch64.so.1';
 {$endif xtensa}
 
 {$ifdef loongarch64}
-  const defdynlinker='/usr/lib64/ld-linux-loongarch-lp64d.so.1';
+  const defdynlinker='/lib64/ld-linux-loongarch-lp64d.so.1';
 {$endif loongarch64}
 
 procedure SetupDynlinker(out DynamicLinker:string;out libctype:TLibcType);
@@ -308,7 +308,6 @@ begin
           defdynlinker:=defdynlinker_soft_float;
         abi_riscv_ilp32f:
           defdynlinker:=defdynlinker_single_float;
-        abi_riscv_hf,
         abi_riscv_ilp32d:
           defdynlinker:=defdynlinker_double_float;
       else
@@ -324,7 +323,6 @@ begin
           defdynlinker:=defdynlinker_soft_float;
         abi_riscv_lp64f:
           defdynlinker:=defdynlinker_single_float;
-        abi_riscv_hf,
         abi_riscv_lp64d:
           defdynlinker:=defdynlinker_double_float;
       else
@@ -386,7 +384,7 @@ begin
     The former contains library names qualified with prefix and suffix (coming from
     "external 'c' name 'foo' declarations), the latter contains raw names (from "$linklib c"
     directives). }
-  hp:=tmodule(loaded_units.first);  
+  hp:=tmodule(loaded_units.first);
   while assigned(hp) do
     begin
       result:=Assigned(hp.ImportLibraryList.find(target_info.sharedClibprefix+'c'+target_info.sharedClibext));
@@ -409,45 +407,91 @@ procedure TLinkerLinux.SetDefaultInfo;
 {
   This will also detect which libc version will be used
 }
-
-const
-{$ifdef i386}      platform_select='-b elf32-i386 -m elf_i386';{$endif}
-{$ifdef x86_64}    platform_select='-b elf64-x86-64 -m elf_x86_64';{$endif}
-{$ifdef powerpc}   platform_select='-b elf32-powerpc -m elf32ppclinux';{$endif}
-{$ifdef POWERPC64} platform_select='';{$endif}
-{$ifdef sparc}     platform_select='-b elf32-sparc -m elf32_sparc';{$endif}
-{$ifdef sparc64}   platform_select='-b elf64-sparc -m elf64_sparc';{$endif}
-{$ifdef arm}       platform_select='';{$endif} {unknown :( }
-{$ifdef aarch64}   platform_select='';{$endif} {unknown :( }
-{$ifdef m68k}      platform_select='';{$endif} {unknown :( }
-{$ifdef mips}
+var
+  target_opt: string;
+  emulation_opt: string;
+  platformopt: string;
+  LdProgram: string;
+begin
+  target_opt:='';
+  emulation_opt:='';
+  platformopt:='';
+  LdProgram:='';
+{$ifdef i386}
+  target_opt:=' -b elf32-i386';
+  emulation_opt:=' -m elf_i386';
+{$endif}
+{$ifdef x86_64}
+  target_opt:=' -b elf64-x86-64';
+  emulation_opt:=' -m elf_x86_64';
+{$endif}
+{$ifdef powerpc}
+  target_opt:=' -b elf32-powerpc';
+  emulation_opt:=' -m elf32ppclinux';
+{$endif}
+{$ifdef sparc}
+  target_opt:=' -b elf32-sparc';
+  emulation_opt:=' -m elf32_sparc';
+{$endif}
+{$ifdef sparc64}
+  target_opt:=' -b elf64-sparc';
+  emulation_opt:=' -m elf64_sparc';
+{$endif}
+{$ifdef arm}       target_opt:='';{$endif} {unknown :( }
+{$ifdef aarch64}   target_opt:='';{$endif} {unknown :( }
+{$ifdef m68k}      target_opt:='';{$endif} {unknown :( }
+{$ifdef mips32}
   {$ifdef mipsel}
-                   platform_select='-EL';
+  platformopt:=' -EL';
+  emulation_opt:=' -m elf32ltsmip';
   {$else}
-                   platform_select='-EB';
+  platformopt:=' -EB';
+  emulation_opt:=' -m elf32btsmip';
   {$endif}
 {$endif}
-{$ifdef riscv32}   platform_select='-m elf32lriscv';{$endif}
-{$ifdef riscv64}   platform_select='-m elf64lriscv';{$endif}
-{$ifdef xtensa}    platform_select='';{$endif}
-{$ifdef loongarch64}   platform_select='';{$endif}
+{$ifdef mips64}
+  {$ifdef mips64el}
+  platformopt:=' -EL';
+  emulation_opt:=' -m elf64ltsmip';
+  {$else}
+  platformopt:=' -EB';
+  emulation_opt:=' -m elf64btsmip';
+  {$endif}
+{$endif}
+{$ifdef riscv32}
+  target_opt:=' -m elf32lriscv';
+{$endif}
+{$ifdef riscv64}
+  target_opt:=' -m elf64lriscv';
+{$endif}
+{$ifdef loongarch64}
+  target_opt:='';
+{$endif}
 
-var
-  platformopt: string;
-begin
-  platformopt:='';
 {$ifdef powerpc64}
   if (target_info.abi=abi_powerpc_elfv2) and
      (target_info.endian=endian_little) then
-    platformopt:=' -b elf64-powerpcle -m elf64lppc'
+    begin
+      target_opt:=' -b elf64-powerpcle';
+      emulation_opt:=' -m elf64lppc';
+    end
   else
-    platformopt:=' -b elf64-powerpc -m elf64ppc';
+    begin
+      target_opt:=' -b elf64-powerpc';
+      emulation_opt:=' -m elf64ppc';
+    end;
 {$endif powerpc64}
 {$ifdef xtensa}
   if target_info.endian=endian_little then
-    platformopt:=' -b elf32-xtensa-le -m elf32xtensa'
+    begin
+      target_opt:=' -b elf32-xtensa-le';
+      emulation_opt:=' -m elf32xtensa';
+    end
   else
-    platformopt:=' -b elf32-xtensa-be -m elf32xtensa';
+    begin
+      target_opt:=' -b elf32-xtensa-be';
+      emulation_opt:=' -m elf32xtensa';
+    end;
   if target_info.abi=abi_xtensa_call0 then
     platformopt:=platformopt+' --abi-call0'
   else if target_info.abi=abi_xtensa_windowed then
@@ -456,11 +500,18 @@ begin
 {$ifdef arm}
   platformopt:=' -z noexecstack';
 {$endif arm}
+  if cs_link_lld in current_settings.globalswitches then
+    begin
+      LdProgram:='ld.lld';
+      target_opt:=' -b elf';
+    end
+  else
+    LdProgram:='ld';
 
   with Info do
    begin
-     ExeCmd[1]:='ld '+platform_select+platformopt+' $OPT $DYNLINK $STATIC $GCSECTIONS $STRIP $MAP $LTO $RPATH -L. -o $EXE';
-     DllCmd[1]:='ld '+platform_select+platformopt+' $OPT $INIT $FINI $SONAME $MAP $LTO $RPATH -shared $GCSECTIONS -L. -o $EXE';
+     ExeCmd[1]:=LdProgram+target_opt+emulation_opt+platformopt+' $OPT $DYNLINK $STATIC $GCSECTIONS $STRIP $MAP $LTO $RPATH -L. -o $EXE';
+     DllCmd[1]:=LdProgram+target_opt+emulation_opt+platformopt+' $OPT $INIT $FINI $SONAME $MAP $LTO $RPATH -shared $GCSECTIONS -L. -o $EXE';
      { when we want to cross-link we need to override default library paths;
        when targeting binutils 2.19 or later, we use the "INSERT" command to
        augment the default linkerscript, which also requires -T (normally that
@@ -570,7 +621,7 @@ begin
        end;
 
       { force local symbol resolution (i.e., inside the shared }
-      { library itself) for all non-exorted symbols, otherwise }
+      { library itself) for all non-exported symbols, otherwise}
       { several RTL symbols of FPC-compiled shared libraries   }
       { will be bound to those of a single shared library or   }
       { to the main program                                    }
@@ -756,7 +807,7 @@ begin
           end;
        end;
 
-      { Entry point. Only needed for executables, as for shared lubraries we use
+      { Entry point. Only needed for executables, as for shared libraries we use
         the -init command line option instead
 
        The "ENTRY" linkerscript command does not have any effect when augmenting
@@ -908,7 +959,7 @@ begin
         end;
     end;
 
-  { Remove ReponseFile }
+  { Remove ResponseFile }
   if (success) and not(cs_link_nolink in current_settings.globalswitches) then
    DeleteFile(outputexedir+Info.ResName);
 
@@ -997,7 +1048,7 @@ begin
      success:=DoExec(FindUtil(utilsprefix+binstr),cmdstr,true,false);
    end;
 
-{ Remove ReponseFile }
+{ Remove ResponseFile }
   if (success) and not(cs_link_nolink in current_settings.globalswitches) then
    DeleteFile(outputexedir+Info.ResName);
 
@@ -1360,12 +1411,6 @@ initialization
   RegisterTarget(system_powerpc_linux_info);
 {$endif powerpc}
 {$ifdef powerpc64}
-  { default to little endian either when compiling with -dppc64le, or when
-    compiling on a little endian ppc64 platform }
- {$if defined(ppc64le) or (defined(cpupowerpc64) and defined(FPC_LITTLE_ENDIAN))}
-  system_powerpc64_linux_info.endian:=endian_little;
-  system_powerpc64_linux_info.abi:=abi_powerpc_elfv2;
- {$endif}
   RegisterImport(system_powerpc64_linux,timportliblinux);
   RegisterExport(system_powerpc64_linux,texportliblinux);
   RegisterTarget(system_powerpc64_linux_info);

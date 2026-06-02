@@ -1,12 +1,32 @@
+{
+  This file is part of the Free Component Library.
+  Copyright (c) 2023 by the Free Pascal team.
+
+  ASN routines.
+
+  See the file COPYING.FPC, included in this distribution,
+  for details about the copyright.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fpasn;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode ObjFPC}{$H+}
 {$modeswitch advancedrecords}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  Fcl.BaseNEnc, System.Classes, System.SysUtils, System.Hash.Utils;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Basenenc, Classes, SysUtils, fphashutils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   ASN1_BOOL       = $01;
@@ -35,9 +55,13 @@ const
   // ASN_organizationName = '2.5.4.10';
   // ASN_organizationalUnitName = '2.5.4.11';
   // ASN_countryName = '2.5.4.6';
-  // ASN_stateOrProvinceName = '2.5.4.8';
+  // ASN_stateOrProvince Name = '2.5.4.8';
   // ASN_localityName = '2.5.4.7';
   ASN_ecPublicKey = '1.2.840.10045.2.1';
+  ASN_RSADSI = '1.2.840.113549';
+  ASN_PKCS = '1.2.840.113549.1';
+  ASN_PKCS_1 = '1.2.840.113549.1.1';
+  ASN_RSA_ENCRYPTION = '1.2.840.113549.1.1.1';
   // ASN_prime256v1 = '1.2.840.10045.3.1.7';
   ASN_secp256r1 = '1.2.840.10045.3.1.7';
   ASN_ecdsa_with_SHA256 = '1.2.840.10045.4.3.2';
@@ -50,8 +74,8 @@ const
 //------------------------------------------------------------------------------
 // ASN
 //------------------------------------------------------------------------------
-procedure ASNEncodeOID(const Value: Int64; var Result: String);
-function ASNDecodeOID(var Start: Integer; const S: String): Int64; overload;
+procedure ASNEncodeOID(const Value: Int64; var Result: AnsiString);
+function ASNDecodeOID(var Start: Integer; const S: AnsiString): Int64; overload;
 function ASNDecodeOID(var Buffer: PByte; BufferEnd: PByte): Int64; overload;
 function ASNGetEncodedLen(const Len: Integer): Integer;
 procedure ASNEncodeLen(const Len: Integer; var Buffer: TBytes);
@@ -69,34 +93,68 @@ function ASNWriteBitStrBegin(s: TMemoryStream): int64;
 procedure ASNWriteBitStrEnd(BitStrBegin: int64; s: TMemoryStream);
 
 // Encodes ASN.1 object to binary form
-procedure ASNObject(const Data: String; const ASNType: Integer; var Buffer: TBytes);
+procedure ASNObject(const Data: AnsiString; const ASNType: Integer; var Buffer: TBytes);
 // Encodes an MIB OID String to binary form
-procedure MibToId(Mib: String; var Result: String);
+procedure MibToId(Mib: AnsiString; var Result: AnsiString);
 // Decodes MIB OID from binary form to String form.
-procedure IdToMib(const Id: String; var Result: String); overload;
+procedure IdToMib(const Id: AnsiString; var Result: AnsiString); overload;
 function IdToMib(Buffer, BufferEnd: PByte): string; overload;
 
+procedure ASNDebugItem(var Buffer: PByte; BufferEnd: PByte; Out ASNType, ASNSize: Integer; var Output: TBytes);
+function ASNDebug(const Buffer: TBytes) : String;
 procedure ASNDebug(const Buffer: TBytes; var Output: TBytes);
 procedure ASNDebugList(const Prefix: string; List: TStrings);
 procedure ASNParse(const Buffer: TBytes; List: TStrings);
 procedure ASNParse_GetItem(List: TStrings; Index: integer; out ASNType, ASNSize: integer);
 function ASNParse_GetIntBytes(List: TStrings; ListIndex: integer; ID: int64): TBytes;
 function ASNFetch(var Buffer: PByte; BufferEnd: PByte; Out ASNType, ASNSize: Int32): Boolean; overload;
-function ASNFetchOID(var Buffer: PByte; BufferEnd: PByte; out OID: String): Boolean; overload;
+function ASNFetchOID(var Buffer: PByte; BufferEnd: PByte; out OID: UnicodeString): Boolean; overload;
+function ASNFetchOID(var Buffer: PByte; BufferEnd: PByte; out OID: AnsiString): Boolean; overload;
+
+Function ASNtypeToString(aType : Byte) : String;
 
 implementation
+
+Function ASNTypeToString(aType : Byte) : String;
+
+begin
+  Case aType of
+    ASN1_BOOL       : Result:='Boolean';
+    ASN1_INT        : Result:='INT';
+    ASN1_BITSTR     : Result:='BITSTR';
+    ASN1_OCTSTR     : Result:='OCTSTR';
+    ASN1_NULL       : Result:='NULL';
+    ASN1_OBJID      : Result:='ObjID';
+    ASN1_ENUM       : Result:='Enum';
+    ASN1_UTF8STRING : Result:='UTF8String';
+    ASN1_PRINTABLESTRING
+                    : Result:='PrintableString';
+    ASN1_IA5STRING  : Result:='IA5String';
+    ASN1_UTCTIME    : Result:='UTCTIME';
+    ASN1_SEQ        : Result:='Sequence';
+    ASN1_SETOF      : Result:='SET';
+    ASN1_IPADDR     : Result:='IPAddress';
+    ASN1_COUNTER    : Result:='Counter';
+    ASN1_GAUGE      : Result:='Gauge';
+    ASN1_TIMETICKS  : Result:='TimeTicks';
+    ASN1_OPAQUE     : Result:='Opaque';
+    ASN1_COUNTER64  : Result:='Counter64';
+  else
+    Result:=Format('Unknown(%d)',[aType]);
+  end;
+end;
 
 //------------------------------------------------------------------------------
 // ASN
 //------------------------------------------------------------------------------
 
-procedure ASNEncodeOID(const Value: Int64; var Result: String);
+procedure ASNEncodeOID(const Value: Int64; var Result: AnsiString);
 var
   B: Boolean;
   I: Integer;
   x: Int64;
   Modulo: Byte;
-  S: String;
+  S: AnsiString;
 
 begin
   S:='';
@@ -109,14 +167,14 @@ begin
       Modulo := Modulo or $80;
     if x > 0 then
       B := True;
-    S:=S+Char(Modulo);
+    S:=S+AnsiChar(Modulo);
   until x = 0;
   for I:=Length(S) downto 1 do
     Result:=Result+S[I];
 end;
 
 // @Start=0
-function ASNDecodeOID(var Start: Integer; const S: String): Int64;
+function ASNDecodeOID(var Start: Integer; const S: AnsiString): Int64;
 var
   x: Integer;
 begin
@@ -160,11 +218,11 @@ begin
   repeat
     y := x mod 256;
     x := x div 256;
-    S:=S+Char(y);
+    S:=S+AnsiChar(y);
   until x = 0;
   y := Length(S);
   y := y or $80;
-  S:=S+Char(y);
+  S:=S+AnsiChar(y);
   for x := Length(S) downto 1 do
     Buffer:=Concat(Buffer,[Ord(S[x])]);
 end;
@@ -189,14 +247,14 @@ var
   Len: Integer;
 begin
   if Buffer>BufferEnd then
-    raise Exception.Create('20220428135218');
+    raise EHashUtil.Create('20220428135218');
   Result := Buffer^;
   Inc(Buffer);
   if Result < $80 then
     Exit;
   Len := Result and $7F;
   if (Len>4) or (BufferEnd-Buffer < Len) then
-    raise Exception.Create('20220428135333');
+    raise EHashUtil.Create('20220428135333');
   Result := 0;
   while Len > 0 do
   begin
@@ -212,7 +270,7 @@ var
   x: Int64;
   y: byte;
   neg: Boolean;
-  S : String;
+  S : AnsiString;
 begin
   S:='';
   neg := Value < 0;
@@ -284,7 +342,7 @@ var
 begin
   EndIndex:=length(Value);
   if EndIndex=0 then
-    raise Exception.Create('20220501115642');
+    raise EHashUtil.Create('20220501115642');
   StartIndex:=0;
   while (StartIndex<EndIndex) and (Value[StartIndex]=0) do
     inc(StartIndex);
@@ -309,7 +367,7 @@ end;
 
 procedure ASNWriteObjID(const ObjID: string; s: TStream);
 var
-  Mib: string;
+  Mib: Ansistring;
   aLen: TBytes;
 begin
   Mib:='';
@@ -363,7 +421,7 @@ begin
   ASNWriteSequenceEnd(BitStrBegin,s);
 end;
 
-Procedure AppendStringToBuffer(var Buffer: TBytes; const aString : String);
+Procedure AppendStringToBuffer(var Buffer: TBytes; const aString : AnsiString);
 Var
   Buflen,sLen : integer;
 begin
@@ -374,7 +432,7 @@ begin
     Move(aString[1],Buffer[Buflen],sLen);
 end;
 
-procedure ASNObject(const Data: String; const ASNType: Integer; var Buffer: TBytes);
+procedure ASNObject(const Data: AnsiString; const ASNType: Integer; var Buffer: TBytes);
 begin
   Buffer:=Concat(Buffer,[ASNType]);
   ASNEncodeLen(Length(Data), Buffer);
@@ -401,14 +459,14 @@ begin
   end;
 end;
 
-procedure OutputHexa(var Output: TBytes; const S: String);
+procedure OutputHexa(var Output: TBytes; const S: AnsiString);
 
 var
   I: Integer;
   P: PByte;
 
 begin
-  P := PByte(PChar(S));
+  P := PByte(PAnsiChar(S));
   for I := 1 to Length(S) do
   begin
     AppendStringToBuffer(Output, HexStr(P^,2));
@@ -416,9 +474,9 @@ begin
   end;
 end;
 
-procedure MibToId(Mib: String; var Result: String);
+procedure MibToId(Mib: AnsiString; var Result: AnsiString);
 
-  function WalkInt(var S: String): Integer;
+  function WalkInt(var S: AnsiString): Integer;
   var
     P : Integer;
   begin
@@ -442,7 +500,7 @@ begin
   end;
 end;
 
-procedure IdToMib(const Id: String; var Result: String);
+procedure IdToMib(const Id: AnsiString; var Result: AnsiString);
 var
   x, y, Index: Integer;
 begin
@@ -472,7 +530,7 @@ begin
   for I := 1 to ASNSize do
   begin
     if Buffer>=BufferEnd then
-      raise Exception.Create('20220428134948');
+      raise EHashUtil.Create('20220428134948');
     X := Buffer^;
     if (I = 1) and (X > $7F) then
       Negative := True;
@@ -480,7 +538,7 @@ begin
       X := not X;
     Result := Result*256 + X;
     if Result>high(longint) then
-      raise Exception.Create('20220428135614');
+      raise EHashUtil.Create('20220428135614');
     Inc(Buffer);
   end;
   if Negative then
@@ -495,10 +553,10 @@ begin
   for I := 1 to ASNSize do
   begin
     if Buffer>=BufferEnd then
-      raise Exception.Create('20220428135002');
+      raise EHashUtil.Create('20220428135002');
     Result := Result*256 + Buffer^;
     if Result>high(dword) then
-      raise Exception.Create('20220428135614');
+      raise EHashUtil.Create('20220428135614');
     Inc(Buffer);
   end;
 end;
@@ -506,21 +564,24 @@ end;
 // Decode the ASN.1 item of the next element in @Buffer. Type of item is stored in @ASNType
 procedure ASNDebugItem(var Buffer: PByte; BufferEnd: PByte; Out ASNType, ASNSize: Integer; var Output: TBytes);
 
-  procedure BufToString(out S : String);
+  procedure BufToString(out S : AnsiString);
+
+  var
+    SA : AnsiString;
 
   begin
-    S:='';
-    SetLength(S,ASNSize);
+    SetLength(SA,ASNSize);
     if ASNSize>0 then
     begin
-      Move(Buffer^,S[1],ASNSize);
+      Move(Buffer^,SA[1],ASNSize);
       inc(Buffer,ASNSize);
     end;
+    S:=SA;
   end;
 
 var
   n: Integer;
-  S, S2: String;
+  S, S2: AnsiString;
   y: Int64;
   OldBuffer: PByte;
 begin
@@ -675,7 +736,7 @@ begin
   begin
     x := ASNDecodeOID(Buffer, BufferEnd);
     if x<0 then
-      raise Exception.Create('20220427114808');
+      raise EHashUtil.Create('20220427114808');
     if Result='' then
     begin
       Result:=IntToStr(x div 40);
@@ -686,10 +747,19 @@ begin
 end;
 
 // Convert ASN.1 DER encoded buffer to human readable form for debugging
+function ASNDebug(const Buffer: TBytes) : String;
+
+var
+  aOUtput : TBytes;
+begin
+  ASNDebug(Buffer,aOutput);
+  Result:=TEncoding.UTF8.GetAnsiString(aOutput);
+end;
+
 procedure ASNDebug(const Buffer: TBytes; var Output: TBytes);
 
 const
-  SSpaces: String = '                                                                     ';
+  SSpaces: AnsiString = '                                                                     ';
 
 var
   ASNSize, ASNType, n: Integer;
@@ -706,7 +776,7 @@ begin
   EndP:=StartP+length(Buffer);
   while p<EndP do
   begin
-    //writeln('ASNDebug p=',p-StartP,' Type=',hexstr(p^,2),' Indent=',length(IndentList));
+    // writeln('ASNDebug p=',p-StartP,' Type=',hexstr(p^,2),' Indent=',length(IndentList));
     // check if any sequence/set has ended and unindent
     for n := Length(IndentList)-1 downto 0 do
     begin
@@ -732,26 +802,27 @@ end;
 procedure ASNParseAdd(List: TStrings; const S: String; const ASNType, ASNSize: Integer);
 begin
   if ASNSize>high(word) then
-    raise Exception.Create('20220428160845');
+    raise EHashUtil.Create('20220428160845');
   if ASNType>high(word) then
-    raise Exception.Create('20220428160853');
+    raise EHashUtil.Create('20220428160853');
   List.AddObject(S, TObject(PtrInt (ASNType shl 16) or (ASNSize)));
 end;
 
 procedure ASNParseAddInt(var Buffer: PByte; BufferEnd: PByte; List: TStrings; const ASNType, ASNSize: Integer; Signed: boolean);
 
-  procedure BufToString(var S : String);
+  procedure BufToString(var S : AnsiString);
 
   begin
     SetLength(S,ASNSize);
-    if ASNSize=0 then exit;
+    if ASNSize=0 then
+      exit;
     Move(Buffer^,S[1],ASNSize);
     inc(Buffer, ASNSize);
   end;
 
 var
-  S, S2: String;
-  y: Int64;
+  S, S2: AnsiString;
+  y:  Int64;
 begin
   S:='';
   S2:='';
@@ -765,7 +836,7 @@ begin
   end else
   begin
     BufToString(S2);
-    if S2[1] = Char(#00) then
+    if S2[1] = AnsiChar(#00) then
       Delete(S2,1,1);
     BytesToHexStr(S,GetRawStringBytes(S2));
   end;
@@ -799,7 +870,17 @@ begin
   Result:=true;
 end;
 
-function ASNFetchOID(var Buffer: PByte; BufferEnd: PByte; out OID: String): Boolean;
+function ASNFetchOID(var Buffer: PByte; BufferEnd: PByte; out OID: AnsiString): Boolean; overload;
+
+Var
+  OIDS : UnicodeString;
+
+begin
+  Result:=ASNFetchOID(Buffer,BufferEnd,OIDS);
+  OID:=OIDS;
+end;
+
+function ASNFetchOID(var Buffer: PByte; BufferEnd: PByte; out OID: UnicodeString): Boolean;
 var
   ASNType, ASNSize: Int32;
   OIDEnd: PByte;
@@ -828,18 +909,18 @@ end;
 
 function ASNParseItem(var Buffer: PByte; BufferEnd: PByte; List: TStrings): boolean;
 
-  function BufToString(Len : Integer): String;
+  function BufToString(Len : Integer): AnsiString;
   begin
     SetLength(Result{%H-},Len);
     if Len=0 then exit;
-    Move(Buffer^,Result[1],Len);
+      Move(Buffer^,Result[1],Len);
     inc(Buffer, Len);
   end;
 
 var
   ASNType, ASNSize: Integer;
   n: Integer;
-  S, S2: String;
+  S,S2: AnsiString;
   y: Int64;
   OldBuffer: PByte;
 
@@ -937,7 +1018,12 @@ end;
 procedure ASNParse(const Buffer: TBytes; List: TStrings);
 var
   P, EndP: PByte;
+  O : Tbytes;
 begin
+  {$IFDEF ASN1_DEBUG}
+  ASNDebug(Buffer,O);
+  Writeln(TEncoding.UTF8.GetAnsiString(O));
+  {$ENDIF}
   if length(Buffer)=0 then exit;
   P:=@Buffer[0];
   EndP:=P+length(Buffer);
@@ -963,7 +1049,7 @@ var
 begin
   ASNParse_GetItem(List,ListIndex,ASNType,ASNSize);
   if ASNType<>ASN1_INT then
-    raise Exception.Create(IntToStr(Id));
+    raise EHashUtil.Create(IntToStr(Id));
   if ASNSize<8 then
   begin
     SetLength(Result{%H-},ASNSize);
@@ -976,7 +1062,7 @@ begin
   end else
     Result:=HexStrToBytes(List[ListIndex]);
   if length(Result)<1 then
-    raise Exception.Create(IntToStr(Id));
+    raise EHashUtil.Create(IntToStr(Id));
 end;
 
 end.

@@ -24,12 +24,19 @@
 {$H+}
 {$ENDIF}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit XMLConf;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.SysUtils, System.Classes, Xml.Dom, Xml.Read, Xml.Writer;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   SysUtils, Classes, DOM, XMLRead, XMLWrite;
+{$ENDIF FPC_DOTTEDUNITS}
 
 resourcestring
   SWrongRootName = 'XML file has wrong root element name: expected "%s" but was "%s"';
@@ -39,7 +46,7 @@ type
   TPathFlags = set of (pfHasValue, pfWriteAccess);
 
   {"APath" is the path and name of a value: A XML configuration file is
-   hierachical. "/" is the path delimiter, the part after the last "/"
+   hierarchical. "/" is the path delimiter, the part after the last "/"
    is the name of the value. The path components will be mapped to XML
    elements, the name will be an element attribute.}
 

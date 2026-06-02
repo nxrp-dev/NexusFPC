@@ -42,7 +42,9 @@
 
 // $Id: JwaWinGDI.pas,v 1.15 2007/09/14 06:48:48 marquardt Exp $
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaWinGDI;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -57,8 +59,13 @@ unit JwaWinGDI;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Winnt, WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaWinNT, JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 
@@ -568,7 +575,7 @@ const
   SETCHARSET             = 772;
   {$EXTERNALSYM SETCHARSET}
 
-  STRETCHBLT_ESCAPE       = 2048; // suffix _ESCAPE by translator because of 
+  STRETCHBLT_ESCAPE       = 2048; // suffix _ESCAPE by translator because of
                                   // name-clash with StretchBlt function
   {$EXTERNALSYM STRETCHBLT}
   METAFILE_DRIVER         = 2049;
@@ -1088,7 +1095,7 @@ type
     lcsGammaRed: DWORD;
     lcsGammaGreen: DWORD;
     lcsGammaBlue: DWORD;
-    lcsFilename: array [0..MAX_PATH - 1] of CHAR;
+    lcsFilename: array [0..MAX_PATH - 1] of AnsiChar;
   end;
   {$EXTERNALSYM tagLOGCOLORSPACEA}
   LOGCOLORSPACEA = tagLOGCOLORSPACEA;
@@ -1882,7 +1889,7 @@ type
     lfClipPrecision: BYTE;
     lfQuality: BYTE;
     lfPitchAndFamily: BYTE;
-    lfFaceName: array [0..LF_FACESIZE - 1] of CHAR;
+    lfFaceName: array [0..LF_FACESIZE - 1] of AnsiChar;
   end;
   {$EXTERNALSYM tagLOGFONTA}
   LOGFONTA = tagLOGFONTA;
@@ -2935,7 +2942,7 @@ const
   {$EXTERNALSYM CC_PIE}
   CC_CHORD      = 4; // Can do chord arcs
   {$EXTERNALSYM CC_CHORD}
-  CC_ELLIPSES   = 8; // Can do ellipese
+  CC_ELLIPSES   = 8; // Can do ellipsis
   {$EXTERNALSYM CC_ELLIPSES}
   CC_WIDE       = 16; // Can do wide lines
   {$EXTERNALSYM CC_WIDE}
@@ -3025,7 +3032,7 @@ const
   {$EXTERNALSYM TC_SA_CONTIN}
   TC_EA_DOUBLE    = $00000200; // Can do EmboldenAbility   DOUBLE
   {$EXTERNALSYM TC_EA_DOUBLE}
-  TC_IA_ABLE      = $00000400; // Can do ItalisizeAbility  ABLE
+  TC_IA_ABLE      = $00000400; // Can do ItalicizeAbility  ABLE
   {$EXTERNALSYM TC_IA_ABLE}
   TC_UA_ABLE      = $00000800; // Can do UnderlineAbility  ABLE
   {$EXTERNALSYM TC_UA_ABLE}
@@ -3723,7 +3730,7 @@ const
 
 //#if(WINVER >= 0x0501)
 
-// DEVMODE dmDisplayOrientation specifiations
+// DEVMODE dmDisplayOrientation specifications
 
   DMDO_DEFAULT   = 0;
   {$EXTERNALSYM DMDO_DEFAULT}
@@ -3734,7 +3741,7 @@ const
   DMDO_270       = 3;
   {$EXTERNALSYM DMDO_270}
 
-// DEVMODE dmDisplayFixedOutput specifiations
+// DEVMODE dmDisplayFixedOutput specifications
 
   DMDFO_DEFAULT  = 0;
   {$EXTERNALSYM DMDFO_DEFAULT}
@@ -3830,11 +3837,11 @@ type
   PDisplayDeviceA = ^TDisplayDeviceA;
   _DISPLAY_DEVICEA = record
     cb: DWORD;
-    DeviceName: array [0..32 - 1] of CHAR;
-    DeviceString: array [0..128 - 1] of CHAR;
+    DeviceName: array [0..32 - 1] of AnsiChar;
+    DeviceString: array [0..128 - 1] of AnsiChar;
     StateFlags: DWORD;
-    DeviceID: array [0..128 - 1] of CHAR;
-    DeviceKey: array [0..128 - 1] of CHAR;
+    DeviceID: array [0..128 - 1] of AnsiChar;
+    DeviceKey: array [0..128 - 1] of AnsiChar;
   end;
   {$EXTERNALSYM _DISPLAY_DEVICEA}
   DISPLAY_DEVICEA = _DISPLAY_DEVICEA;
@@ -3932,7 +3939,7 @@ type
   PRgnData = ^TRgnData;
   _RGNDATA = record
     rdh: RGNDATAHEADER;
-    Buffer: array [0..0] of Char;
+    Buffer: array [0..0] of AnsiChar;
   end;
   {$EXTERNALSYM _RGNDATA}
   RGNDATA = _RGNDATA;
@@ -5111,7 +5118,7 @@ const
 
 // The actual size of the DESIGNVECTOR and ENUMLOGFONTEXDV structures
 // is determined by dvNumAxes,
-// MM_MAX_NUMAXES only detemines the maximal size allowed
+// MM_MAX_NUMAXES only determines the maximal size allowed
 
 const
   MM_MAX_AXES_NAMELEN = 16;
@@ -5208,7 +5215,7 @@ type
 
 // The actual size of the AXESLIST and ENUMTEXTMETRIC structure is
 // determined by axlNumAxes,
-// MM_MAX_NUMAXES only detemines the maximal size allowed
+// MM_MAX_NUMAXES only determines the maximal size allowed
 
   PEnumLogFontExDVA = ^TEnumLogFontExDVA;
   tagENUMLOGFONTEXDVA = record
@@ -5514,7 +5521,7 @@ type
   TBlendFunction = _BLENDFUNCTION;
 
 //
-// currentlly defined blend function
+// currently defined blend function
 //
 
 const
@@ -7831,7 +7838,7 @@ end;
 function MAKEPOINTS(l: DWORD): POINTS;
 begin
   Result.x := LOWORD(l);
-  Result.y := HIWORD(l);  
+  Result.y := HIWORD(l);
 end;
 
 function RGB(r, g, b: BYTE): COLORREF;

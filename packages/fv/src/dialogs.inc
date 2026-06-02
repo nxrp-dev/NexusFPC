@@ -10,7 +10,7 @@
 {                                                          }
 {****************[ THIS CODE IS FREEWARE ]*****************}
 {                                                          }
-{     This sourcecode is released for the purpose to       }
+{     This source code is released for the purpose to      }
 {   promote the pascal language on all platforms. You may  }
 {   redistribute it and/or modify with the following       }
 {   DISCLAIMER.                                            }
@@ -25,19 +25,15 @@
 {                                                          }
 {**********************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 {$ifdef FV_UNICODE}
 UNIT UDialogs;
 {$else FV_UNICODE}
 UNIT Dialogs;
 {$endif FV_UNICODE}
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$CODEPAGE cp437}
-
-{2.0 compatibility}
-{$ifdef VER2_0}
-  {$macro on}
-  {$define resourcestring := const}
-{$endif}
 
 {<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>}
                                   INTERFACE
@@ -58,6 +54,28 @@ UNIT Dialogs;
 {$V-} { Turn off strict VAR strings }
 {====================================================================}
 
+{$IFDEF FPC_DOTTEDUNITS}
+USES
+   {$IFDEF OS_WINDOWS}                                { WIN/NT CODE }
+       WinApi.Windows,                                       { Standard units }
+   {$ENDIF}
+
+   {$IFDEF OS_OS2}                                    { OS2 CODE }
+     OS2Api.os2def, OS2Api.doscalls, OS2Api.pmwin,                         { Standard units }
+   {$ENDIF}
+
+{$ifdef FV_UNICODE}
+   FreeVision.Ufvcommon,
+{$else FV_UNICODE}
+   FreeVision.Fvcommon,
+{$endif FV_UNICODE}
+   FreeVision.Fvconsts, System.Objects,                       { Standard GFV units }
+{$ifdef FV_UNICODE}
+   FreeVision.Udrivers, FreeVision.Uviews, FreeVision.Uvalidate, System.Unicode.Graphemebreakproperty;
+{$else FV_UNICODE}
+   FreeVision.Drivers, FreeVision.Views, FreeVision.Validate;
+{$endif FV_UNICODE}
+{$ELSE FPC_DOTTEDUNITS}
 USES
    {$IFDEF OS_WINDOWS}                                { WIN/NT CODE }
        Windows,                                       { Standard units }
@@ -78,6 +96,7 @@ USES
 {$else FV_UNICODE}
    Drivers, Views, Validate;
 {$endif FV_UNICODE}
+{$ENDIF FPC_DOTTEDUNITS}
 
 {***************************************************************************}
 {                              PUBLIC CONSTANTS                             }
@@ -273,7 +292,7 @@ TYPE
       PROCEDURE MovedTo (Item: Sw_Integer); Virtual;
       PROCEDURE SetState (AState: Word; Enable: Boolean); Virtual;
       PROCEDURE DrawMultiBox (Const Icon, Marker: Sw_String);
-      PROCEDURE DrawBox (Const Icon: String; Marker: Char);
+      PROCEDURE DrawBox (Const Icon: String; Marker: AnsiChar);
       PROCEDURE SetButtonState (AMask: Longint; Enable: Boolean);
       PROCEDURE GetData (Var Rec); Virtual;
       PROCEDURE SetData (Var Rec); Virtual;
@@ -591,7 +610,7 @@ TYPE
   {#Z-}
   TCommandSItem = record
     { A TCommandSItem is the data structure used to initialize command
-      clusters with #NewCommandSItem# rather than the standarad #NewSItem#.
+      clusters with #NewCommandSItem# rather than the standard #NewSItem#.
       It is used to associate a command with an individual cluster item. }
     {#X TCommandCheckBoxes TCommandRadioButtons }
     Value : Sw_String;
@@ -769,6 +788,9 @@ TYPE
       {#X FreeSubView IsSubView }
     function GetPalette: PPalette; virtual;
     procedure HandleEvent(var Event: TEvent); virtual;
+    procedure CalcBounds (Var Bounds: TRect; Delta: TPoint); virtual;
+      { On application resize CalcBounds calculates new window
+        position without resize of window itself as long GrowMode is 0. }
     function IsSubView (AView : PView) : Boolean; virtual;
       { IsSubView returns True if AView is non-nil and is a subview of the
         dialog. }
@@ -1034,7 +1056,12 @@ CONST
     Load    : @TModalInputLine.Load;
     Store   : @TModalInputLine.Store);
 
-resourcestring  slCancel='Cancel';
+{$ifdef USE_RESOURCESTRING}
+  resourcestring
+{$else}
+  const
+{$endif}
+                slCancel='Cancel';
                 slOk='O~k~';
                 slYes='~Y~es';
                 slNo='~N~o';
@@ -1055,11 +1082,19 @@ resourcestring  slCancel='Cancel';
                                 IMPLEMENTATION
 {<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>}
 
+{$IFDEF FPC_DOTTEDUNITS}
 {$ifdef FV_UNICODE}
-USES UApp,UHistList;                             { Standard GFV unit }
+USES FreeVision.Uapp,FreeVision.Uhistlist,FreeVision.Ueditors;  { Standard FV unit }
 {$else FV_UNICODE}
-USES App,HistList;                               { Standard GFV unit }
+USES FreeVision.App,FreeVision.Histlist,FreeVision.Editors;     { Standard FV unit }
 {$endif FV_UNICODE}
+{$ELSE FPC_DOTTEDUNITS}
+{$ifdef FV_UNICODE}
+USES UApp,UHistList,UEditors;                         { Standard FV unit }
+{$else FV_UNICODE}
+USES App,HistList,Editors;                            { Standard FV unit }
+{$endif FV_UNICODE}
+{$ENDIF FPC_DOTTEDUNITS}
 
 {***************************************************************************}
 {                         PRIVATE DEFINED CONSTANTS                         }
@@ -1080,7 +1115,7 @@ CONST
 {---------------------------------------------------------------------------}
 {  IsBlank -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 08Jun98 LdB           }
 {---------------------------------------------------------------------------}
-FUNCTION IsBlank (Ch: Char): Boolean;
+FUNCTION IsBlank (Ch: AnsiChar): Boolean;
 BEGIN
    IsBlank := (Ch = ' ') OR (Ch = #13) OR (Ch = #10); { Check for characters }
 END;
@@ -1088,7 +1123,7 @@ END;
 {---------------------------------------------------------------------------}
 {  HotKey -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 08Jun98 LdB            }
 {---------------------------------------------------------------------------}
-FUNCTION HotKey (Const S: String): Char;
+FUNCTION HotKey (Const S: String): AnsiChar;
 VAR I: Sw_Word;
 BEGIN
    HotKey := #0;                                      { Preset fail }
@@ -1193,6 +1228,47 @@ BEGIN
            End;
        End;
    End;
+END;
+
+{--TDialog------------------------------------------------------------------}
+{  CalcBounds -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 08Dec2025 M        }
+{---------------------------------------------------------------------------}
+PROCEDURE TDialog.CalcBounds (Var Bounds: TRect; Delta: TPoint);
+VAR S, D: Sw_Integer; R: TRect;
+
+   PROCEDURE MoveRel (Var A,B: Sw_Integer; rA,rB: Sw_Integer);
+   VAR I,Z,K,N,M: Sw_Integer;
+   BEGIN
+     I:=S-D-rB;                                      { Far margin width }
+     K:=S-D-rB+rA;                                   { Total previos margin width }
+     M:=S-B+A;                                       { Total new margin width }
+     if (D=1) and (abs(rA-I)<=1) then                { Increase by one }
+     begin
+       N:=A;
+       if rA < I then
+         Inc(N);
+     end else
+     begin
+       If K<>0 Then N:=round((M*rA)/K) else N:=abs(M) shr 1;{ New A margin }
+     end;
+     Z:=N-A;                                         { Delta of A }
+     B:=B+Z;                                         { Move B }
+     A:=N;                                           { Move A }
+   END;
+
+BEGIN
+   If (GrowMode <> 0) Then                            { GrowMode is set }
+   Begin
+     Inherited CalcBounds(Bounds,Delta);              { Do default calculations }
+     Exit;                                            { We have bounds, exits }
+   End;
+   GetBounds(R);                                      { Get bounds }
+   Bounds:=R;                                         { Set to old bounds }
+   S := Owner^.Size.X;                                { Set initial size }
+   D := Delta.X;                                      { Set initial delta }
+   MoveRel(Bounds.A.X,Bounds.B.X,R.A.X,R.B.X);        { Move relative horizontally }
+   S := Owner^.Size.Y; D := Delta.Y;                  { Set initial values }
+   MoveRel(Bounds.A.Y,Bounds.B.Y,R.A.Y,R.B.Y);        { Move relative vertically }
 END;
 
 {****************************************************************************}
@@ -1384,18 +1460,28 @@ END;
 FUNCTION TInputLine.DataSize: Sw_Word;
 VAR DSize: Sw_Word;
 BEGIN
-   DSize := 0;                                        { Preset zero datasize }
 {$ifdef FV_UNICODE}
-   If (Validator <> Nil) AND (Data <> '') Then
+   DSize := 0;                                        { Preset zero datasize }
+   If (Validator <> Nil) Then
      DSize := Validator^.Transfer(Data, Nil,
        vtDataSize);                                   { Add validator size }
+   If (DSize <> 0) Then DataSize := DSize             { Use validator size }
+     Else DataSize := SizeOf(Sw_String);              { DataSize return the
+                                                        actual size of the field
+                                                        in record. Unlike
+                                                        ShortString field which
+                                                        has variable size,
+                                                        UnicodeString field's size
+                                                        is determined by it's
+                                                        data type size }
 {$else FV_UNICODE}
+   DSize := 0;                                        { Preset zero datasize }
    If (Validator <> Nil) AND (Data <> Nil) Then
      DSize := Validator^.Transfer(Data^, Nil,
        vtDataSize);                                   { Add validator size }
-{$endif FV_UNICODE}
-   If (DSize <> 0) Then DataSize := DSize             { Use validtor size }
+   If (DSize <> 0) Then DataSize := DSize             { Use validator size }
      Else DataSize := MaxLen + 1;                     { No validator use size }
+{$endif FV_UNICODE}
 END;
 
 {--TInputLine---------------------------------------------------------------}
@@ -1587,7 +1673,12 @@ END;
 {---------------------------------------------------------------------------}
 PROCEDURE TInputLine.GetData (Var Rec);
 BEGIN
+{$ifdef FV_UNICODE}
+   { In Unicode version we have to go thru validator even }
+   { if Data = nil (empty string)                         }
+{$else}
    If Data <> Sw_PString_Empty Then Begin             { Data ptr valid }
+{$endif FV_UNICODE}
      If (Validator = Nil) OR (Validator^.Transfer(Data Sw_PString_DeRef,
      @Rec, vtGetData) = 0) Then Begin                 { No validator/data }
 {$ifdef FV_UNICODE}
@@ -1597,11 +1688,9 @@ BEGIN
        Move(Data^, Rec, Length(Data^) + 1);           { Transfer our data }
 {$endif FV_UNICODE}
      End;
+{$ifndef FV_UNICODE}
    End Else
-{$ifdef FV_UNICODE}
-     Sw_String(Rec):='';
-{$else FV_UNICODE}
-     FillChar(Rec, DataSize, #0);              { Clear the data area }
+     FillChar(Rec, DataSize, #0);                     { Clear the data area }
 {$endif FV_UNICODE}
 END;
 
@@ -1610,15 +1699,20 @@ END;
 {---------------------------------------------------------------------------}
 PROCEDURE TInputLine.SetData (Var Rec);
 BEGIN
+{$ifdef FV_UNICODE}
+                                                      { We do not check for Data <> Sw_PString_Empty
+                                                        in the Unicode version, or else this function
+                                                        will always fail to set the data }
+   if (Validator = Nil) OR (Validator^.Transfer(
+     Data Sw_PString_DeRef, @Rec, vtSetData) = 0) Then
+     Data := Sw_String(Rec);
+{$else FV_UNICODE}
    If Data <> Sw_PString_Empty Then Begin             { Data ptr valid }
      If (Validator = Nil) OR (Validator^.Transfer(
        Data Sw_PString_DeRef, @Rec, vtSetData) = 0) Then              { No validator/data }
-{$ifdef FV_UNICODE}
-       Data := Sw_String(Rec);
-{$else FV_UNICODE}
        Move(Rec, Data^[0], DataSize);                 { Set our data }
-{$endif FV_UNICODE}
    End;
+{$endif FV_UNICODE}
    SelectAll(True);                                   { Now select all }
 END;
 
@@ -1628,7 +1722,7 @@ END;
 PROCEDURE TInputLine.Store (Var S: TStream);
 VAR w: Word;
 BEGIN
-   TView.Store(S);                                    { Implict TView.Store }
+   TView.Store(S);                                    { Implicit TView.Store }
    w:=MaxLen;S.Write(w, SizeOf(w));                   { Read max length }
    w:=CurPos;S.Write(w, SizeOf(w));                   { Read cursor position }
    w:=FirstPos;S.Write(w, SizeOf(w));                 { Read first position }
@@ -1647,8 +1741,27 @@ END;
 {---------------------------------------------------------------------------}
 PROCEDURE TInputLine.HandleEvent (Var Event: TEvent);
 CONST PadKeys = [$47, $4B, $4D, $4F, $73, $74];
-VAR WasAppending: Boolean; ExtendBlock: Boolean; OldData: String;
+CONST
+  DelimiterChars: SET OF AnsiChar =
+    [' ', '.', ',', ';', ':', '!', '?', '-', '_', '/', '\',
+     '(', ')', '[', ']', '{', '}', '<', '>',
+     '"', '''', '`', '|', '@', '#', '$', '%', '^', '&',
+     '*', '+', '=', '~', #9, #10, #13];
+VAR WasAppending: Boolean; ExtendBlock: Boolean; OldData: Sw_String;
 Delta, Anchor, OldCurPos, OldFirstPos, OldSelStart, OldSelEnd: Sw_Integer;
+SelectedTextAnsi: AnsiString; // For SetGlobalClipboardData
+S: Sw_String;
+Len, I: Integer;
+
+  FUNCTION IsDelimiter(Ch: Sw_Char): Boolean;
+  BEGIN
+    // Check if the character is in the predefined set of delimiters.
+    // This is safe for Unicode chars as punctuation is in the AnsiChar range.
+    IF Ch <= #255 THEN
+      Result := AnsiChar(Ch) IN DelimiterChars
+    ELSE
+      Result := False;
+  END;
 
    FUNCTION MouseDelta: Sw_Integer;
    VAR Mouse : TPOint;
@@ -1725,6 +1838,7 @@ Delta, Anchor, OldCurPos, OldFirstPos, OldSelStart, OldSelEnd: Sw_Integer;
    PROCEDURE SaveState;
    BEGIN
      If (Validator <> Nil) Then Begin                 { Check for validator }
+       OldData := '';                                 { Initialize OldData }
        If Data <> Sw_PString_Empty Then OldData := Data Sw_PString_DeRef;        { Hold data }
        OldCurPos := CurPos;                           { Hold cursor position }
        OldFirstPos := FirstPos;                       { Hold first position }
@@ -1778,11 +1892,75 @@ Delta, Anchor, OldCurPos, OldFirstPos, OldSelStart, OldSelEnd: Sw_Integer;
      End Else CheckValid := True;                     { No validator }
    END;
 
+   Procedure PasteText(P :PAnsiChar;ASize:sw_integer);
+   var s : sw_string;
+    i : sw_integer;
+    st: sw_string;
+    wlen : sw_integer;
+    Event : TEvent;  { For new key event. Has to be local variable, can not reuse parent Event. M. }
+   begin
+     {$ifdef FV_UNICODE}
+     wlen:=ASize*2+2;  { over estimate length }
+     Setlength(S,wlen);
+     wlen:=Utf8ToUnicode(@S[1],wlen,P,ASize);
+     if wlen>0 then
+       dec(wlen);
+     Setlength(S,wlen);
+     {$else}
+     Setlength(S,Min(ASize,255));
+     Move(P^,s[1],Min(ASize,255));
+     {$endif}
+     for i:=1 to length(S) {Min(length(s),255)} do
+     begin
+       st:=Data Sw_PString_DeRef+s[i];
+       If not assigned(validator) or
+          Validator^.IsValidInput(st,False)  then
+         Begin
+           Event.What:=evKeyDown;                     { New key event }
+           Event.KeyShift:=0;                         { Clear shift state }
+           Event.KeyCode:=0;                          { Clear key }
+           {$ifdef FV_UNICODE}
+           Event.UnicodeChar:=s[i];                   { Set unicode char }
+           {$else}
+           Event.CharCode:=s[i];                      { Set char }
+           {$endif}
+           TInputLine.HandleEvent(Event);             { Add pasted chars }
+         End;
+       {$ifndef FV_UNICODE}
+       if length(st)=255 then break;
+       {$endif}
+     end;
+   end;
+
 BEGIN
    Inherited HandleEvent(Event);                      { Call ancestor }
    If (State AND sfSelected <> 0) Then Begin          { View is selected }
+     If Event.What=evKeyDown Then Begin
+       Case Event.KeyCode Of
+         kbCtrlIns:; // COPY command
+         kbShiftDel:; // CUT command
+         kbShiftIns: Begin
+             Event.What:=evCommand;
+             Event.Command:=cmPaste;                  { Translate to Paste command }
+           End;
+       End;
+     End;
      Case Event.What Of
        evNothing: Exit;                               { Speed up exit }
+       evCommand: Begin                               { Command event }
+         Case (Event.Command) Of
+           cmPasteText: Begin                         { Bracketed paste or OSC 52 }
+               PasteText(Event.InfoPtr,Event.Id);
+               ClearEvent(Event);
+             End;
+           cmPaste: Begin                             { Paste from Clipboard }
+               If assigned(Clipboard) Then
+                 If Clipboard^.GetSelectedText(Event.InfoPtr,Event.Id) Then
+                   PasteText(Event.InfoPtr,Event.Id);
+               ClearEvent(Event);
+             End;
+         End;
+       End;
        evMouseDown: Begin                             { Mouse down event }
          Delta := MouseDelta;                         { Calc scroll value }
          If CanScroll(Delta) Then Begin               { Can scroll }
@@ -1815,18 +1993,79 @@ BEGIN
          Event.KeyCode := CtrlToArrow(Event.KeyCode); { Convert keycode }
          If (Event.ScanCode IN PadKeys) AND
          (GetShiftState AND $03 <> 0) Then Begin      { Mark selection active }
-           Event.CharCode := #0;                      { Clear char code }
+           Event.CharCode := #0;                      { Clear AnsiChar code }
            If (CurPos = SelEnd) Then                  { Find if at end }
              Anchor := SelStart Else                  { Anchor from start }
              Anchor := SelEnd;                        { Anchor from end }
              ExtendBlock := True;                     { Extended block true }
          End Else ExtendBlock := False;               { No extended block }
          Case Event.KeyCode Of
+           kbCtrlIns: // COPY command
+             begin
+               if (Data <> Sw_PString_Empty) and (SelStart < SelEnd) then
+               begin
+                 // Copy selected text to clipboard
+                 SelectedTextAnsi := AnsiString(Copy(Data Sw_PString_DeRef, SelStart + 1, SelEnd - SelStart));
+                 if Length(SelectedTextAnsi) > 0 then
+                   if assigned(Clipboard) then
+                     Clipboard^.InsertText(Pointer(SelectedTextAnsi), Length(SelectedTextAnsi), True);
+               end;
+             end;
+           kbShiftDel: // CUT command
+             begin
+               if (Data <> Sw_PString_Empty) and (SelStart < SelEnd) then
+               begin
+                 // Copy selected text to clipboard
+                 SelectedTextAnsi := AnsiString(Copy(Data Sw_PString_DeRef, SelStart + 1, SelEnd - SelStart));
+                 if Length(SelectedTextAnsi) > 0 then
+                   if assigned(Clipboard) then
+                     Clipboard^.InsertText(Pointer(SelectedTextAnsi), Length(SelectedTextAnsi), True);
+                 DeleteSelect; // Then delete the selection
+                 CheckValid(True); // Validate after deletion
+               end;
+             end;
            kbLeft: If (CurPos > 0) Then Dec(CurPos);  { Move cursor left }
            kbRight: If (Data <> Sw_PString_Empty) AND   { Move right cursor }
            (CurPos < Length(Data Sw_PString_DeRef)) Then Begin        { Check not at end }
              Inc(CurPos);                             { Move cursor }
              CheckValid(True);                        { Check if valid }
+           End;
+           kbCtrlLeft: Begin
+             if (Data <> Sw_PString_Empty) and (CurPos > 0) then
+             begin
+               S := Data Sw_PString_DeRef;
+               I := 1;
+               while (I <= Length(S)) and IsDelimiter(S[I]) do Inc(I);
+               if CurPos = I - 1 then
+                 CurPos := 0
+               else
+               begin
+                 I := CurPos;
+                 // Skip any delimiters immediately to the left
+                 while (I > 0) and IsDelimiter(S[I]) do Dec(I);
+                 // Skip any word characters to the left
+                 while (I > 0) and not IsDelimiter(S[I]) do Dec(I);
+                 CurPos := I;
+               end;
+             end;
+           End;
+           kbCtrlRight: Begin
+             if Data <> Sw_PString_Empty then
+             begin
+               S := Data Sw_PString_DeRef;
+               Len := Length(S);
+               I := Len;
+               while (I > 0) and IsDelimiter(S[I]) do Dec(I);
+               if CurPos = I then
+                 CurPos := Len
+               else
+               begin
+                 I := CurPos;
+                 while (I < Len) and IsDelimiter(S[I+1]) do Inc(I);
+                 while (I < Len) and not IsDelimiter(S[I+1]) do Inc(I);
+                 CurPos := I;
+               end;
+             end;
            End;
            kbHome: CurPos := 0;                       { Move to line start }
            kbEnd: Begin                               { Move to line end }
@@ -1834,13 +2073,16 @@ BEGIN
                Else CurPos := Length(Data Sw_PString_DeRef);  { Set cursor position }
              CheckValid(True);                        { Check if valid }
            End;
-           kbBack: If (Data <> Sw_PString_Empty) AND (CurPos > 0)  { Not at line start }
-           Then Begin
-             Delete(Data Sw_PString_DeRef, CurPos, 1);  { Backspace over char }
-             Dec(CurPos);                             { Move cursor back one }
-             If (FirstPos > 0) Then Dec(FirstPos);    { Move first position }
-             CheckValid(True);                        { Check if valid }
-           End;
+           kbBack: If Data <> Sw_PString_Empty Then
+             Begin
+               If (SelStart = SelEnd) AND (CurPos > 0) Then
+               Begin
+                 SelStart := CurPos - 1;
+                 SelEnd := CurPos;
+               End;
+               DeleteSelect;
+               CheckValid(True);
+             End;
            kbDel: If Data <> Sw_PString_Empty Then Begin  { Delete character }
              If (SelStart = SelEnd) Then              { Select all on }
                If (CurPos < Length(Data Sw_PString_DeRef)) Then Begin { Cursor not at end }
@@ -1855,6 +2097,7 @@ BEGIN
 {$ifdef FV_UNICODE}
            Else Case Event.UnicodeChar Of
              ' '..#$FFFF:   { Character key }
+               If (Event.KeyShift AND $04 = 0) Then     { Only insert if Ctrl is not pressed }
                Begin
                  If (State AND sfCursorIns <> 0) Then
                    Delete(Data Sw_PString_DeRef, CurPos + 1, 1) Else    { Overwrite character }
@@ -1879,22 +2122,26 @@ BEGIN
            End
 {$else FV_UNICODE}
            Else Case Event.CharCode Of
-             ' '..#255: If Data <> Sw_PString_Empty Then Begin   { Character key }
-               If (State AND sfCursorIns <> 0) Then
-                 Delete(Data Sw_PString_DeRef, CurPos + 1, 1) Else    { Overwrite character }
-                 DeleteSelect;                        { Deselect selected }
-               If CheckValid(True) Then Begin         { Check data valid }
-                 If (Length(Data Sw_PString_DeRef) < MaxLen) Then     { Must not exceed maxlen }
-                 Begin
-                   If (FirstPos > CurPos) Then
-                     FirstPos := CurPos;              { Advance first position }
-                   Inc(CurPos);                       { Increment cursor }
-                   Insert(Event.CharCode, Data Sw_PString_DeRef,
-                     CurPos);                         { Insert the character }
+             ' '..#255:
+               //If (Event.KeyShift AND $04 = 0) Then       { Only insert if Ctrl is not pressed }
+               Begin
+                 If Data <> Sw_PString_Empty Then Begin   { Character key }
+                   If (State AND sfCursorIns <> 0) Then
+                     Delete(Data Sw_PString_DeRef, CurPos + 1, 1) Else    { Overwrite character }
+                     DeleteSelect;                        { Deselect selected }
+                   If CheckValid(True) Then Begin         { Check data valid }
+                     If (Length(Data Sw_PString_DeRef) < MaxLen) Then     { Must not exceed maxlen }
+                     Begin
+                       If (FirstPos > CurPos) Then
+                         FirstPos := CurPos;              { Advance first position }
+                       Inc(CurPos);                       { Increment cursor }
+                       Insert(Event.CharCode, Data Sw_PString_DeRef,
+                         CurPos);                         { Insert the character }
+                     End;
+                     CheckValid(False);                   { Check data valid }
+                   End;
                  End;
-                 CheckValid(False);                   { Check data valid }
                End;
-             End;
              ^Y: If Data <> Sw_PString_Empty Then Begin          { Clear all data }
                 Data Sw_PString_DeRef := '';          { Set empty string }
                 CurPos := 0;                          { Cursor to start }
@@ -1913,7 +2160,7 @@ BEGIN
          If (Data <> Sw_PString_Empty) Then OldData := Copy(Data Sw_PString_DeRef,
            FirstPos+1, CurPos-FirstPos)               { Text area string }
            Else OldData := '';                        { Empty string }
-         Delta := 1;                          { Safety = 1 char }
+         Delta := 1;                          { Safety = 1 AnsiChar }
          While (TextWidth(OldData) > (Size.X-Delta)
          - TextWidth(LeftArr) - TextWidth(RightArr))  { Check text fits }
          Do Begin
@@ -2167,7 +2414,7 @@ END;
 {---------------------------------------------------------------------------}
 PROCEDURE TButton.Store (Var S: TStream);
 BEGIN
-   TView.Store(S);                                    { Implict TView.Store }
+   TView.Store(S);                                    { Implicit TView.Store }
 {$ifdef FV_UNICODE}
    S.WriteUnicodeString(Title);                       { Store title string }
 {$else FV_UNICODE}
@@ -2182,7 +2429,7 @@ END;
 {  HandleEvent -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 05Sep99 LdB       }
 {---------------------------------------------------------------------------}
 PROCEDURE TButton.HandleEvent (Var Event: TEvent);
-VAR Down: Boolean; C: Char; ButRect: TRect;
+VAR Down: Boolean; C: AnsiChar; ButRect: TRect;
     Mouse : TPoint;
 BEGIN
    ButRect.A.X := 0;                            { Get origin point }
@@ -2221,7 +2468,7 @@ BEGIN
      evKeyDown: Begin
        If Title <> Sw_PString_Empty Then C := HotKey(Title Sw_PString_DeRef)     { Key title hotkey }
          Else C := #0;                                { Invalid title }
-       If (Event.KeyCode = GetAltCode(C)) OR          { Alt char }
+       If (Event.KeyCode = GetAltCode(C)) OR          { Alt AnsiChar }
        (Owner^.Phase = phPostProcess) AND (C <> #0)
        AND (Upcase(Event.CharCode) = C) OR            { Matches hotkey }
        (State AND sfFocused <> 0) AND                 { View focused }
@@ -2469,7 +2716,7 @@ END;
 {--TCluster-----------------------------------------------------------------}
 {  DrawBox -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 03Jun98 LdB           }
 {---------------------------------------------------------------------------}
-PROCEDURE TCluster.DrawBox (Const Icon: String; Marker: Char);
+PROCEDURE TCluster.DrawBox (Const Icon: String; Marker: AnsiChar);
 BEGIN
    DrawMultiBox(Icon, ' '+Marker);                    { Call draw routine }
 END;
@@ -2489,7 +2736,7 @@ BEGIN
          Options := Options OR ofSelectable;          { Set selectable option }
          Exit;                                        { Now exit }
        End;
-       M := M SHL 1;                                  { Create newbit mask }
+       M := M SHL 1;                                  { Create new bit mask }
      End;
      Options := Options AND NOT ofSelectable;         { Make not selectable }
    End;
@@ -2537,7 +2784,7 @@ END;
 {  HandleEvent -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 04Jun98 LdB       }
 {---------------------------------------------------------------------------}
 PROCEDURE TCluster.HandleEvent (Var Event: TEvent);
-VAR C: Char; I, S, Vh: Sw_Integer; Key: Word; Mouse: TPoint; Ts: PString;
+VAR C: AnsiChar; I, S, Vh: Sw_Integer; Key: Word; Mouse: TPoint; Ts: PString;
 
    PROCEDURE MoveSel;
    BEGIN
@@ -3177,7 +3424,8 @@ BEGIN
        else
        begin
          AtStartOfLine := False;
-         if (EGC <> #13) and (EGC <> #10) then
+         { ha, #13#10 is one unicode character }
+         if (EGC <> #13#10) and (EGC <> #13) and (EGC <> #10) then
          begin
            if EGC = ' ' then
            begin
@@ -3192,7 +3440,7 @@ BEGIN
              LastTruncatedBoundaryWidth := CurLineWidth;
            end;
          end;
-         if (CurLineWidth >= Size.X) or (EGC = #13) then
+         if (CurLineWidth >= Size.X) or (EGC = #13#10) or (EGC = #13) or (EGC = #10) then
          begin
            if CurLineWidth >= Size.X then
            begin
@@ -3228,6 +3476,16 @@ BEGIN
        end;
      end;
    FinishLine;
+   if Y < Size.Y then
+   begin
+     {we have to draw blank lines}
+     NextLine:='';
+     for I:=Y to Size.Y-1 do
+     begin
+       BeginNewLine;
+       FinishLine;
+     end;
+   end;
 END;
 {$else FV_UNICODE}
 PROCEDURE TStaticText.Draw;
@@ -3245,11 +3503,11 @@ BEGIN
     if P <= L then
     begin
       Just := 0;                                       { Default left justify }
-      If (S[P] = #2) Then Begin                        { Right justify char }
+      If (S[P] = #2) Then Begin                        { Right justify AnsiChar }
         Just := 2;                                     { Set right justify }
         Inc(P);                                        { Next character }
       End;
-      If (S[P] = #3) Then Begin                        { Centre justify char }
+      If (S[P] = #3) Then Begin                        { Centre justify AnsiChar }
         Just := 1;                                     { Set centre justify }
         Inc(P);                                        { Next character }
       End;
@@ -3258,9 +3516,9 @@ BEGIN
         J := P;
         while (P <= L) and (S[P] = ' ') do
           Inc(P);
-        while (P <= L) and (S[P] <> ' ') and (S[P] <> #13) do
+        while (P <= L) and (S[P] <> ' ') and (S[P] <> #13) and (S[P] <> #10) do
           Inc(P);
-      until (P > L) or (P >= I + Size.X) or (S[P] = #13);
+      until (P > L) or (P >= I + Size.X) or (S[P] = #13) or (S[P] = #10);
       If P > I + Size.X Then                           { Text to long }
         If J > I Then
           P := J
@@ -3272,8 +3530,14 @@ BEGIN
         2: J := Size.X - (P-I);              { Right justify }
       End;
       MoveBuf(B[J], S[I], Color, P - I);
-      While (P <= L) AND (P-I <= Size.X) AND ((S[P] = #13) OR (S[P] = #10))
-        Do Inc(P);                                     { Remove CR/LF }
+      While (P <= L) AND (P-I <= Size.X) AND ((S[P] = #13) or (S[P] = #10))  do
+        begin
+          inc(P);                            { Remove CR or LF }
+          if length(S)>=P then
+            if (Ord (S[P]) + Ord (S[P-1])) = 23 then
+              Inc(P);                        { Remove CRLF }
+          break;
+        end;
     End;
     WriteLine(0, Y, Size.X, 1, B);
     Inc(Y);                                          { Next line }
@@ -3445,7 +3709,7 @@ END;
 {  HandleEvent -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 26Oct99 LdB       }
 {---------------------------------------------------------------------------}
 PROCEDURE TLabel.HandleEvent (Var Event: TEvent);
-VAR C: Char;
+VAR C: AnsiChar;
 
    PROCEDURE FocusLink;
    BEGIN
@@ -3464,7 +3728,7 @@ BEGIN
          if text<>Sw_PString_Empty then
            begin
              C := HotKey(Text Sw_PString_DeRef);            { Check for hotkey }
-             If (GetAltCode(C) = Event.KeyCode) OR          { Alt plus char }
+             If (GetAltCode(C) = Event.KeyCode) OR          { Alt plus AnsiChar }
                ((C <> #0) AND (Owner^.Phase = phPostProcess)  { Post process phase }
                 AND (UpCase(Event.CharCode) = C)) Then         { Upper case match }
                FocusLink;                                   { Focus link view }
@@ -3535,7 +3799,7 @@ END;
 {---------------------------------------------------------------------------}
 PROCEDURE THistoryViewer.HandleEvent (Var Event: TEvent);
 BEGIN
-   If ((Event.What = evMouseDown) AND (Event.Double)) { Double click mouse }
+   If (Event.What = evMouseDown) AND (Event.Double)   { Double click mouse }
    OR ((Event.What = evKeyDown) AND
    (Event.KeyCode = kbEnter)) Then Begin              { Enter key press }
      EndModal(cmOk);                                  { End with cmOk }
@@ -3561,6 +3825,7 @@ BEGIN
    Inherited Init(Bounds, '', wnNoNumber);            { Call ancestor }
    Flags := wfClose;                                  { Close flag only }
    InitViewer(HistoryId);                             { Create list view }
+   SelectNext(False);
 END;
 
 {--THistoryWindow-----------------------------------------------------------}
@@ -3688,8 +3953,8 @@ BEGIN
       End;
      RecordHistory(Link^.Data Sw_PString_DeRef);      { Record current data }
      Link^.GetBounds(R);                              { Get view bounds }
-     Dec(R.A.X);                                      { One char in from us }
-     Inc(R.B.X);                                      { One char short of us }
+     Dec(R.A.X);                                      { One AnsiChar in from us }
+     Inc(R.B.X);                                      { One AnsiChar short of us }
      Inc(R.B.Y, 7);                                   { Seven lines down }
      Dec(R.A.Y,1);                                    { One line below us }
      Owner^.GetExtent(P);                             { Get owner extents }

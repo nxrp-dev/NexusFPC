@@ -11,14 +11,21 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit htmlelements;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, Xml.Dom, Html.Defs, System.StrUtils;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, DOM, HtmlDefs, strutils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
 
@@ -67,12 +74,12 @@ type
   end;
 
   { THTMLIDElement }
-  
+
   THTMLIDElement = class (THTMLCustomElement)
   public
     property ID : DOMString index atID read GetAttribute write SetAttribute;
   end;
-  
+
   { THTMLs18nElement }
 
   THTMLs18nElement = class (THTMLCustomElement)
@@ -83,14 +90,14 @@ type
     property Dir : THTMLDir read GetDir write SetDir;
     property Lang : DOMString index atLang read GetAttribute write SetAttribute;
   end;
-  
+
   THTMLCoreAttrsElement = class (THTMLIDElement)
   public
     property elementclass : DOMString index atclass read GetAttribute write SetAttribute;
     property style : DOMString index atstyle read GetAttribute write SetAttribute;
     property title : DOMString index attitle read GetAttribute write SetAttribute;
   end;
-  
+
   THTMLCores18nElement = class (THTMLCoreAttrsElement)
   private
     function GetDir: THTMLDir;
@@ -99,7 +106,7 @@ type
     property Dir : THTMLDir read GetDir write SetDir;
     property Lang : DOMString index atLang read GetAttribute write SetAttribute;
   end;
-  
+
   THTMLAttrsElement = class (THTMLCores18nElement)
     property onclick : DOMString index atonclick read GetAttribute write SetAttribute;
     property ondblclick : DOMString index atondblclick read GetAttribute write SetAttribute;
@@ -112,7 +119,7 @@ type
     property onkeydown : DOMString index atonkeydown read GetAttribute write SetAttribute;
     property onkeyup : DOMString index atonkeyup read GetAttribute write SetAttribute;
   end;
-  
+
 // Descendants for all the elements, generated
 {$i tagsintf.inc}
 
@@ -180,7 +187,7 @@ begin
         if a in booleanAttributes then
           StringToStream (aStream, ' %s', [HTMLAttributeTag[a]])
         else
-          StringToStream (aStream, ' %s="%s"', [HTMLAttributeTag[a], s]);
+          StringToStream (aStream, ' %s="%s"', [HTMLAttributeTag[a], EscapeString(s)]);
       end;
 end;
 
@@ -335,7 +342,7 @@ end;
 
 procedure THTML_text.WriteToStream(const aStream: TStream);
 begin
-  StringToStream (aStream, NodeValue+#13#10);
+  StringToStream (aStream, EscapeString(NodeValue)+#13#10);
 end;
 
 { THTMLDocument }

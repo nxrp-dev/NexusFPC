@@ -55,7 +55,7 @@ interface
       class procedure InsertResStrInits; override;
       class procedure InsertMemorySizes; override;
      protected
-       class procedure insert_init_final_table(entries:tfplist); override;
+       class procedure insert_init_final_table(main: tmodule; entries:tfplist); override;
      strict protected
        class procedure add_main_procdef_paras(pd: tdef); override;
     end;
@@ -387,42 +387,43 @@ implementation
         inherited;
     end;
 
-  class procedure tjvmnodeutils.insert_init_final_table(entries:tfplist);
+  class procedure tjvmnodeutils.insert_init_final_table(main: tmodule; entries:tfplist);
+
     var
-      hp : tused_unit;
       unitinits : TAsmList;
       unitclassname: string;
       mainpsym: tsym;
       mainpd: tprocdef;
-    begin
-      { JVM does not use the entries list }
+      i : integer;
+      entry : pinitfinalentry;
 
+    begin
       unitinits:=TAsmList.Create;
-      hp:=tused_unit(usedunits.first);
-      while assigned(hp) do
+      for I:=0 to entries.Count-1 do
         begin
+          entry:=pinitfinalentry(entries[i]);
           { class constructors are automatically handled by the JVM }
 
-          { call the unit init code and make it external }
-          if (hp.u.moduleflags*[mf_init,mf_finalize])<>[] then
+          { for non-main module, call the unit init code and make it external }
+          if (entry^.module<>main) and ((entry^.initfunc<>'') or (entry^.finifunc<>'')) then
             begin
               { trigger init code by referencing the class representing the
                 unit; if necessary, it will register the fini code to run on
                 exit}
               unitclassname:='';
-              if assigned(hp.u.namespace) then
+              if assigned(entry^.module.namespace) then
                 begin
-                  unitclassname:=hp.u.namespace^+'/';
+                  unitclassname:=entry^.module.namespace^+'/';
                   replace(unitclassname,'.','/');
                 end;
-              unitclassname:=unitclassname+hp.u.realmodulename^;
+              unitclassname:=unitclassname+entry^.module.realmodulename^;
               unitinits.concat(taicpu.op_sym(a_new,current_asmdata.RefAsmSymbol(unitclassname,AT_METADATA)));
               unitinits.concat(taicpu.op_none(a_pop));
             end;
-          hp:=tused_unit(hp.next);
         end;
+
       { insert in main program routine }
-      mainpsym:=tsym(current_module.localsymtable.find(mainaliasname));
+      mainpsym:=tsym(main.localsymtable.find(mainaliasname));
       if not assigned(mainpsym) or
          (mainpsym.typ<>procsym) then
         internalerror(2011041901);

@@ -30,7 +30,7 @@
   The drive names are OS specific
 }
 Const
-  FixDriveStr : array[0..3] of pchar=(
+  FixDriveStr : array[0..3] of PAnsiChar=(
     '.',            { the current directory    }
     '/floppy/.',    { manually mounted floppy  }
     '/cdrom/.',     { manually mounted cdrom   }
@@ -41,7 +41,7 @@ Const
 
 Function DosVersion:Word;
 Var
-  Buffer : Array[0..255] of Char;
+  Buffer : Array[0..255] of AnsiChar;
   Tmp2,
   TmpStr : String[40];
   TmpPos,
@@ -117,17 +117,17 @@ End;
 
 { QNX stores its timezone information, in POSIX format }
 { in the /etc/TIMEZONE file.                           }
-function GetTimezoneString: string;
+function GetTimezoneString: shortstring;
 var
- s: string;
+ s: shortstring;
  T: text;
 begin
- GetTimeZoneString:=''; 
+ GetTimeZoneString:='';
  { first try 'TZ' }
  s := GetEnv('TZ');
  if s<>'' then
   begin
-   GetTimeZoneString:=s;   
+   GetTimeZoneString:=s;
    exit;
   end;
 { otherwise try to open the TIMEZONE file }
@@ -143,7 +143,7 @@ begin
  GetTimeZoneString:=s;
 end;
 
-{ QNX does not use timezone files }  
+{ QNX does not use timezone files }
 function GetTimezoneFile:string;
 begin
   GetTimezoneFile:='';

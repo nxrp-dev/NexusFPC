@@ -20,7 +20,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CGImageSource;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -205,7 +207,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes, MacOsApi.CFArray, MacOsApi.CFBase, MacOsApi.CFData, MacOsApi.CFDictionary, MacOsApi.CFURL, MacOsApi.CGDataProvider, MacOsApi.CGImage, MacOsApi.CGImageMetadata;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes, CFArray, CFBase, CFData, CFDictionary, CFURL, CGDataProvider, CGImage, CGImageMetadata;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -292,7 +298,7 @@ var kCGImageSourceThumbnailMaxPixelSize: CFStringRef; external name '_kCGImageSo
 
 { Specifies whether the thumbnail should be rotated and scaled according
  * to the orientation and pixel aspect ratio of the full image. The value
- * of this key must be a CFBooleanRef; the default value of this key is 
+ * of this key must be a CFBooleanRef; the default value of this key is
  * kCFBooleanFalse. }
 
 var kCGImageSourceCreateThumbnailWithTransform: CFStringRef; external name '_kCGImageSourceCreateThumbnailWithTransform'; (* attribute const *)

@@ -23,7 +23,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CVOpenGLTexture;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -208,7 +210,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CFBase,MacOsApi.CVBase,MacOsApi.CVReturns,MacOsApi.CVImageBuffer,MacOsApi.CGLTypes,MacOsApi.Macgl;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CFBase,CVBase,CVReturns,CVImageBuffer,CGLTypes,macgl;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -216,12 +222,12 @@ uses MacTypes,CFBase,CVBase,CVReturns,CVImageBuffer,CGLTypes,macgl;
 
 {$ALIGN POWER}
 
- 
+
  {! @header CVOpenGLTexture.h
 	@copyright 2004 Apple Computer, Inc. All rights reserved.
 	@availability Mac OS X 10.4 or later
     @discussion A CoreVideo Texture derives from an ImageBuffer, and is used for supplying source image data to OpenGL.
-    		   
+
 }
 
 
@@ -285,7 +291,7 @@ function CVOpenGLTextureIsFlipped( image: CVOpenGLTextureRef ): Boolean; externa
 (* AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER *)
 
 {!
-    @function   CVOpenGLTextureGetCleanTexCoords 
+    @function   CVOpenGLTextureGetCleanTexCoords
     @abstract   Returns convenient texture coordinates for the part of the image that should be displayed
     @discussion This function automatically takes into account whether or not the texture is flipped.
     @param      image Target CVOpenGLTexture

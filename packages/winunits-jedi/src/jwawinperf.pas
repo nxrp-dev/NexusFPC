@@ -43,7 +43,9 @@
 // $Id: JwaWinPerf.pas,v 1.8 2007/09/05 11:58:54 dezipaitor Exp $
 
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaWinPerf;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -58,8 +60,13 @@ unit JwaWinPerf;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Winbase, WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaWinBase, JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 
@@ -659,7 +666,7 @@ const
 //      1) the count of elapsed time of the event being monitored
 //      2) the "clock" time in the same units
 //
-//  the precition timers are used where the standard system timers are not
+//  the precision timers are used where the standard system timers are not
 //  precise enough for accurate readings. It's assumed that the service
 //  providing the data is also providing a timestamp at the same time which
 //  will eliminate any error that may occur since some small and variable
@@ -766,7 +773,7 @@ type
 //  for each instance.
 //
 //  If (PERF_DATA_BLOCK.NumInstances < 0) then the counter definition
-//  strucutre above will be followed by only a PERF_COUNTER_BLOCK and the
+//  structure above will be followed by only a PERF_COUNTER_BLOCK and the
 //  counter data for that COUNTER.
 //
 
@@ -797,7 +804,7 @@ type
     NameLength: DWORD;                  // Length in bytes of name; 0 = none
                                         // this length includes the characters
                                         // in the string plus the size of the
-                                        // terminating NULL char. It does not
+                                        // terminating NULL AnsiChar. It does not
                                         // include any additional pad bytes to
                                         // correct structure alignment
   end;

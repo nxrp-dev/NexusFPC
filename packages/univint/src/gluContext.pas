@@ -17,7 +17,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit gluContext;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -202,7 +204,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes, MacOsApi.Macgl, MacOsApi.Macglu, MacOsApi.CGLTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes, macgl, macglu, CGLTypes;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -227,7 +233,7 @@ function gluNewTessCTX( ctx: CGLContextObj ): PGLUtesselator; external name '_gl
 procedure gluOrtho2DCTX( ctx: CGLContextObj; left: GLdouble; right: GLdouble; bottom: GLdouble; top: GLdouble ); external name '_gluOrtho2DCTX';
 procedure gluPerspectiveCTX( ctx: CGLContextObj; fovy: GLdouble; aspect: GLdouble; zNear: GLdouble; zFar: GLdouble ); external name '_gluPerspectiveCTX';
 procedure gluPickMatrixCTX( ctx: CGLContextObj; x: GLdouble; y: GLdouble; delX: GLdouble; delY: GLdouble; var viewport: GLint ); external name '_gluPickMatrixCTX';
-function gluScaleImageCTX( ctx: CGLContextObj; format: GLenum; wIn: GLsizei; hIn: GLsizei; typeIn: GLenum; dataIn: {const} UnivPtr; wOut: GLsizei; hOut: GLsizei; typeOut: GLenum; dataOut: UnivPtr ): GLint; external name '_gluScaleImageCTX';      
+function gluScaleImageCTX( ctx: CGLContextObj; format: GLenum; wIn: GLsizei; hIn: GLsizei; typeIn: GLenum; dataIn: {const} UnivPtr; wOut: GLsizei; hOut: GLsizei; typeOut: GLenum; dataOut: UnivPtr ): GLint; external name '_gluScaleImageCTX';
 
 {$endc} {TARGET_OS_MAC}
 {$ifc not defined MACOSALLINCLUDE or not MACOSALLINCLUDE}

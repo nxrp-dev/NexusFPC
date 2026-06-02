@@ -13,15 +13,22 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit FPDDFB;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, Data.Sqldb, Data.Dict.Base, Data.Dict.Sqldb, Data.Db;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, sqldb, fpdatadict, fpddsqldb, db;
-  
+{$ENDIF FPC_DOTTEDUNITS}
+
 Type
 
   { TSQLDBFBDDEngine }
@@ -51,14 +58,18 @@ Type
 
   // Backwards compatibility
   TSQLDBIBDDEngine = TSQLDBFBDDEngine;
-  
+
 
 Procedure RegisterFBDDEngine;
 Procedure UnRegisterFBDDEngine;
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses Data.SqlDb.Ib;
+{$ELSE FPC_DOTTEDUNITS}
 uses ibconnection;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Procedure RegisterFBDDEngine;
 
@@ -180,7 +191,7 @@ const
               'FROM RDB$INDEX_SEGMENTS '+
               'WHERE RDB$INDEX_NAME = :IndexName '+
               'ORDER BY RDB$FIELD_POSITION';
-        
+
 Var
   Q, QF : TSQLQuery;
   PIndexName : TParam;
@@ -204,7 +215,7 @@ Var
   begin
     FCheckSource := Q.Fieldbyname('CheckSource');
   end;
-  
+
   procedure BindForeignFields;
   begin
     FRefUnique := Q.Fieldbyname('RefUnique');
@@ -236,7 +247,7 @@ Var
     end;
     result.Fields := s;
   end;
-  
+
   function ImportIndices : integer;
   begin
     result := 0;
@@ -292,7 +303,7 @@ function TSQLDBFBDDEngine.ImportSequences(Sequences: TDDSequenceDefs;
 
 const
   SQL = 'SELECT RDB$GENERATOR_Name FROM RDB$Generators WHERE RDB$System_Flag = 0';
-  
+
 Var
   Q : TSQLQuery;
   Seq : TDDSequenceDef;
@@ -390,7 +401,7 @@ Var
     else
       result := false;
   end;
-  
+
 begin
   result := 0;
   Q:=CreateSQLQuery(Nil);

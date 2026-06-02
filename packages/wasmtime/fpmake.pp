@@ -2,7 +2,7 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses {$ifdef unix}cthreads,{$endif} fpmkunit;
 
 Var
   P : TPackage;
@@ -28,7 +28,10 @@ begin
     P.Targets.AddExampleProgram('gcd.pp');
     P.Targets.AddExampleProgram('memory.pp');
     P.Targets.AddExampleProgram('wasi.pp');
-    
+
+
+    P.NamespaceMap:='namespaces.lst';
+
 {$ifndef ALLPACKAGES}
     Run;
     end;

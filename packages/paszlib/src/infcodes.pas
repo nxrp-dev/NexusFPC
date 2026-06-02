@@ -1,9 +1,11 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit infcodes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { infcodes.c -- process literals and length/distance pairs
   Copyright (C) 1995-1998 Mark Adler
 
-  Pascal tranlastion
+  Pascal translation
   Copyright (C) 1998 by Jacques Nomssi Nzali
   For conditions of distribution and use, see copyright notice in readme.txt
 }
@@ -12,8 +14,13 @@ interface
 
 {$I zconf.inc}
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.ZLib.Zbase;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   zbase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 function inflate_codes_new (bl : cardinal;
                             bd : cardinal;
@@ -30,8 +37,13 @@ procedure inflate_codes_free(var c : pInflate_codes_state;
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.ZLib.Infutil, System.ZLib.Inffast{$IFDEF ZLIB_DEBUG}, System.SysUtils{$ENDIF};
+{$ELSE FPC_DOTTEDUNITS}
 uses
   infutil, inffast{$IFDEF ZLIB_DEBUG}, SysUtils{$ENDIF};
+{$ENDIF FPC_DOTTEDUNITS}
 
 
 function inflate_codes_new (bl : cardinal;
@@ -183,10 +195,10 @@ begin
         c^.sub.lit := t^.base;
        {$IFDEF ZLIB_DEBUG}
         if (t^.base >= $20) and (t^.base < $7f) then
-          Tracevv('inflate:         literal '+char(t^.base))
+          Tracevv('inflate:         literal '+AnsiChar(t^.base))
         else
           Tracevv('inflate:         literal $'+IntToHex(t^.base, 2));
-        {$ENDIF}          
+        {$ENDIF}
         c^.mode := LIT;
         continue;  { break switch statement }
       end;
@@ -207,7 +219,7 @@ begin
       begin
         {$IFDEF ZLIB_DEBUG}
         Tracevv('inflate:         end of block');
-        {$ENDIF}        
+        {$ENDIF}
         c^.mode := WASH;
         continue;         { break C-switch statement }
       end;
@@ -580,7 +592,7 @@ procedure inflate_codes_free(var c : pInflate_codes_state;
 begin
   dispose(c);
   c := nil;
-  {$IFDEF ZLIB_DEBUG}  
+  {$IFDEF ZLIB_DEBUG}
   Tracev('inflate:       codes free');
   {$ENDIF}
 end;

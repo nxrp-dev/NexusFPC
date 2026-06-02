@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit inftrees;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { inftrees.h -- header to use inftrees.c
   inftrees.c -- generate Huffman trees for efficient decoding
@@ -8,7 +10,7 @@ unit inftrees;
    part of the implementation of the compression library and is
    subject to change.
 
-  Pascal tranlastion
+  Pascal translation
   Copyright (C) 1998 by Jacques Nomssi Nzali
   For conditions of distribution and use, see copyright notice in readme.txt
 }
@@ -17,8 +19,13 @@ interface
 
 {$I zconf.inc}
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.ZLib.Zbase;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   zbase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 
 { Maximum size of dynamic tree.  The maximum found in a long but non-

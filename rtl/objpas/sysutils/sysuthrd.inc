@@ -1,3 +1,4 @@
+{%MainUnit sysutils.pp}
 {
     This file is part of the Free Pascal run time library.
     Copyright (c) 2005,2009 by the Free Pascal development team
@@ -106,7 +107,7 @@ var
   p: PMREWThreadInfo;
 begin
   { Result indicates whether the protected memory was not modified,
-    that is, it is set to false if another writer could have chagned
+    that is, it is set to false if another writer could have changed
     memory}
   Result:=True;
 

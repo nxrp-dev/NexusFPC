@@ -715,8 +715,8 @@ var
   dataset1: TDataSet;
   i,r: integer;
 begin
-  // TBufDataset should notify TDataset (TDataset.CurrentRecord) when changes internaly current record
-  // TBufDataset.GetRecNo was synchronizing its internal position with TDataset.ActiveRecord, but TDataset.CurrentRecord remains unchaged
+  // TBufDataset should notify TDataset (TDataset.CurrentRecord) when changes internally current record
+  // TBufDataset.GetRecNo was synchronizing its internal position with TDataset.ActiveRecord, but TDataset.CurrentRecord remains unchanged
   // Bug #31532
   dataset1 := DBConnector.GetNDataset(16);
   datasource1 := TDataSource.Create(nil);
@@ -731,7 +731,7 @@ begin
   CheckEquals(5, dataset1.RecNo);
   for i:=13 to 15 do begin
     datalink1.BufferCount := datalink1.BufferCount+1;
-    r := dataset1.RecNo; // syncronizes source dataset to ActiveRecord
+    r := dataset1.RecNo; // synchronizes source dataset to ActiveRecord
     AssertTrue(r>=0);
     datalink1.ActiveRecord := datalink1.BufferCount-1;
     CheckEquals(i, dataset1.FieldByName('ID').AsInteger);
@@ -803,7 +803,7 @@ begin
     BM4:=GetBookmark; // id=14
     next;
     BM5:=GetBookmark; // id=14, EOF
-    
+
     GotoBookmark(BM2);
     CheckEquals(3,FieldByName('id').AsInteger);
 
@@ -830,7 +830,7 @@ begin
 
     GotoBookmark(BM2);
     CheckEquals(3,FieldByName('id').AsInteger,'After #2 deleted');
-    
+
     delete;delete;    // id=3,4
 
     GotoBookmark(BM3);
@@ -847,7 +847,7 @@ begin
     insert;
     fieldbyname('id').AsInteger:=23;
     post;
-    
+
     GotoBookmark(BM3);
     CheckEquals(6,FieldByName('id').AsInteger);
 
@@ -1163,7 +1163,7 @@ begin
       post;
       CheckEquals('ValuesTestName',FieldByName('name').AsString);
       CheckEquals(243,FieldByName('id').AsInteger);
-    
+
       PassException:=false;
       try
         edit;
@@ -1185,19 +1185,19 @@ begin
     begin
     open;
     AVar:=FieldValues['id'];
-    CheckEquals(AVar,1);
+    CheckEquals(1,AVar);
 
     AVar:=FieldValues['name'];
-    CheckEquals(AVar,'TestName1');
+    CheckEquals('TestName1',AVar);
 
     AVar:=FieldValues['id;name'];
-    CheckEquals(AVar[0],1);
-    CheckEquals(AVar[1],'TestName1');
+    CheckEquals(1,AVar[0]);
+    CheckEquals('TestName1',AVar[1]);
 
     AVar:=FieldValues['name;id;'];
-    CheckEquals(AVar[1],1);
-    CheckEquals(AVar[0],'TestName1');
-    
+    CheckEquals(1,AVar[1]);
+    CheckEquals('TestName1',AVar[0]);
+
     PassException:=false;
     try
       AVar:=FieldValues['name;id;fake'];
@@ -1205,7 +1205,6 @@ begin
       on E: EDatabaseError do PassException := True;
     end;
     CheckTrue(PassException);
-
     end;
 end;
 
@@ -1950,7 +1949,7 @@ begin
   ds := DBConnector.GetFieldDataset as TCustomBufDataset;
   with ds do
     begin
-    
+
     if not ActiveDS then
       begin
       AddIndex('testindex','F'+FieldTypeNames[AfieldType],[]);
@@ -2088,7 +2087,7 @@ begin
       end;
     finally
       flist.free;
-    end;  
+    end;
     end;
 end;
 
@@ -2136,7 +2135,7 @@ begin
         end;
     finally
       flist.free;
-    end;  
+    end;
     end;
 end;
 
@@ -2183,7 +2182,7 @@ begin
         end;
     finally
       FList.Free;
-    end;  
+    end;
     end;
 end;
 
@@ -2204,7 +2203,7 @@ begin
     open;
     IndexName:=''; // This should set the default index (default_order)
     first;
-    
+
     i := 0;
 
     while not eof do
@@ -2324,7 +2323,7 @@ begin
     CheckEquals('',IndexFieldNames);
     finally
       flist.free;
-    end;  
+    end;
 
     end;
 end;
@@ -2368,7 +2367,7 @@ begin
 
     CheckEquals(OldID,FieldByName('id').AsInteger);
     CheckEquals(OldStringValue,FieldByName('F'+FieldTypeNames[AfieldType]).AsString);
-    
+
     next;
     CheckEquals(OldID+1,FieldByName('ID').AsInteger);
     prior;
@@ -2478,7 +2477,7 @@ begin
     // append data at end
     for i:=20 downto 0 do
       AppendRecord([i, inttostr(i)]);
-    // insert data at begining
+    // insert data at beginning
     IndexName:='';
     First;
     for i:=21 to 22 do
@@ -2603,7 +2602,7 @@ begin
 
   for i := 0 to testValuesCount-1 do
     begin
-    CheckEquals(testValues[AFieldType,i], AField.AsString);
+    CheckEquals(testValues[AFieldType,i], AField.AsAnsiString);
     ADataSet.Next;
     end;
   ADataSet.Close;
@@ -3067,6 +3066,7 @@ begin
 end;
 
 procedure TTestDBBasics.TestCanModifySpecialFields;
+
 var ds    : TDataset;
     lds   : TDataset;
     fld   : TField;
@@ -3078,6 +3078,9 @@ begin
     Fld := TIntegerField.Create(ds);
     Fld.FieldName:='ID';
     Fld.DataSet:=ds;
+    Fld := TStringField.Create(ds);
+    Fld.FieldName:='Name';
+    Fld.DataSet:=ds;
 
     Fld := TStringField.Create(ds);
     Fld.FieldName:='LookupFld';
@@ -3087,8 +3090,8 @@ begin
     Fld.LookupResultField:='NAME';
     Fld.LookupKeyFields:='ID';
     Fld.KeyFields:='ID';
-
     lds.Open;
+
     Open;
     if IsUniDirectional then
       // The CanModify property is always False for UniDirectional datasets
@@ -3098,7 +3101,6 @@ begin
     CheckFalse(FieldByName('LookupFld').CanModify);
     CheckFalse(FieldByName('ID').ReadOnly);
     CheckFalse(FieldByName('LookupFld').ReadOnly);
-
     CheckEquals(1,FieldByName('ID').AsInteger);
     if IsUniDirectional then
       // Lookup fields are not supported by UniDirectional datasets
@@ -3297,7 +3299,7 @@ initialization
   RegisterTestDecorator(TDBBasicsTestSetup, TTestCursorDBBasics);
 
   // The SQL connectors are descendents of bufdataset and therefore benefit from testing:
-  if (uppercase(dbconnectorname)='SQL') or (uppercase(dbconnectorname)='BUFDATASET') then
+  if (uppercase(dbconnectorname)='SQL') {or (uppercase(dbconnectorname)='BUFDATASET') } then
     begin
     RegisterTestDecorator(TDBBasicsTestSetup, TTestBufDatasetDBBasics);
     RegisterTestDecorator(TDBBasicsUniDirectionalTestSetup, TTestUniDirectionalDBBasics);

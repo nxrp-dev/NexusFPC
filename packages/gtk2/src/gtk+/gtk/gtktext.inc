@@ -23,12 +23,12 @@
 { The text, a single segment of text a'la emacs, with a gap
      where insertion occurs.  }
 { The allocated length of the text segment.  }
-{ The gap position, index into address where a char
+{ The gap position, index into address where a AnsiChar
      should be inserted.  }
 { The gap size, s.t.  (text + gap_position + gap_size) is
      the first valid character following the gap.  }
 { The last character position, index into address where a
-     character should be appeneded.  Thus, text_end - gap_size
+     character should be appended.  Thus, text_end - gap_size
      is the length of the actual data.  }
 { LINE START CACHE  }
 { A cache of line-start information.  Data is a LineParam .  }
@@ -162,7 +162,7 @@ function gtk_text_get_length(text:PGtkText):guint; cdecl; external gtklib;
 procedure gtk_text_freeze(text:PGtkText); cdecl; external gtklib;
 procedure gtk_text_thaw(text:PGtkText); cdecl; external gtklib;
 
-procedure gtk_text_insert(text:PGtkText; font:PGdkFont; fore:PGdkColor; back:PGdkColor; chars:Pchar;
+procedure gtk_text_insert(text:PGtkText; font:PGdkFont; fore:PGdkColor; back:PGdkColor; chars:PAnsiChar;
             length:gint); cdecl; external gtklib;
 function gtk_text_backward_delete(text:PGtkText; nchars:guint):gboolean; cdecl; external gtklib;
 function gtk_text_forward_delete(text:PGtkText; nchars:guint):gboolean; cdecl; external gtklib;
@@ -250,7 +250,7 @@ begin
       Result:=t^.text.wc[index+t^.gap_size];
     end;
   end else begin
-    writeln('GTK_TEXT_INDEX_WCHAR ERROR: t does not use wide char');
+    writeln('GTK_TEXT_INDEX_WCHAR ERROR: t does not use wide AnsiChar');
     Result:=0;
   end;
 {$ENDIF}
@@ -260,7 +260,7 @@ function GTK_TEXT_INDEX_UCHAR(t: PGtkText; index: guint): GUChar;
 begin
 {$IFNDEF KYLIX}
   if Use_WChar(t) then begin
-    writeln('GTK_TEXT_INDEX_WCHAR ERROR: t does not use unsigned char');
+    writeln('GTK_TEXT_INDEX_WCHAR ERROR: t does not use unsigned AnsiChar');
     Result:=0;
   end else begin
     if index < t^.gap_position then begin

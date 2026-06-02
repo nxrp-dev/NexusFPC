@@ -16,12 +16,12 @@
 ** modify it under the terms of the GNU Lesser General Public
 ** License as published by the Free Software Foundation; either
 ** version 2.1 of the License, or (at your option) any later version.
-** 
+**
 ** This library is distributed in the hope that it will be useful,
 ** but WITHOUT ANY WARRANTY; without even the implied warranty of
 ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 ** Lesser General Public License for more details.
-** 
+**
 ** You should have received a copy of the GNU Lesser General Public
 ** License along with this library; if not, write to the Free Software
 ** Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -32,15 +32,22 @@
 **
 **********************************************************************)
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit matroska;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}
 {$MINENUMSIZE 4}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.CTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   ctypes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$IFDEF WINDOWS}
   {$DEFINE DYNLINK}
@@ -137,7 +144,7 @@ type
 *)
   matroska_track = pointer;
 (*!
-    \var char* c_string
+    \var AnsiChar* c_string
     \brief C-String, ie a buffer with characters terminated by \0
 *)
   c_string = pcchar;
@@ -148,7 +155,7 @@ type
 *)
   matroska_file_mode = pcchar;
 (*!
-    \var void ( *matroska_error_callback)(matroska_error_t error_code, char* error_message)
+    \var void ( *matroska_error_callback)(matroska_error_t error_code, AnsiChar* error_message)
     \brief a callback that the library use to inform of errors happening
 *)
   matroska_error_callback = procedure(error_code: matroska_error_t; error_message: pcchar); cdecl;
@@ -164,7 +171,7 @@ type
     \author Ingo Ralf Blum   <ingoralfblum @ users.sf.net>
 
     \brief C API to the libmatroska library
-    \note These are the functions that should be exported (visible from outisde the library)
+    \note These are the functions that should be exported (visible from outside the library)
     \todo Put a function here for all the MUST in the Matroska spec
     \todo Put a brief description of each function, and a description of the params and return value
     \todo Change the int values to sized types
@@ -187,7 +194,7 @@ function matroska_unplug_log(callback: matroska_error_callback): cint; cdecl; ex
 (*!
     \fn matroska_id matroska_open_file(c_string,matroska_file_mode)
     \brief Open an instance of an Matroska file
-    \param string The name of the file to open (including OS depedant path) \param mode The mode to open the file (read, write, etc)
+    \param string The name of the file to open (including OS dependent path) \param mode The mode to open the file (read, write, etc)
     \return NULL if the opening failed or an ID that will be used to access this file from the API
 *)
 function matroska_open_stream_file(_string: c_string; mode: open_mode): matroska_stream; cdecl; external {$IFDEF DYNLINK}matroskalib{$ENDIF};

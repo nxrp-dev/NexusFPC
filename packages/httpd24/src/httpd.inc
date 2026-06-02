@@ -32,18 +32,18 @@
 const
 {$ifdef OS2}
   {* Set default for OS/2 file system  }
-    HTTPD_ROOT = '/os2httpd';    
+    HTTPD_ROOT = '/os2httpd';
 {$else}
   {$ifdef WIN32}
   {* Set default for Windows file system  }
-    HTTPD_ROOT = '/apache';    
+    HTTPD_ROOT = '/apache';
   {$else}
     {$ifdef NETWARE}
   {* Set the default for NetWare  }
-    HTTPD_ROOT = '/apache';    
+    HTTPD_ROOT = '/apache';
    {$else}
   {* Set for all other OSs  }
-    HTTPD_ROOT = '/usr/local/apache';    
+    HTTPD_ROOT = '/usr/local/apache';
     {$endif}
   {$endif}
 {$endif}
@@ -67,39 +67,39 @@ const
 {$endif}
 
     {* Maximum number of dynamically loaded modules  }
-    DYNAMIC_MODULE_LIMIT = 256;      
+    DYNAMIC_MODULE_LIMIT = 256;
 
     {* Default administrator's address  }
-    DEFAULT_ADMIN = '[no address given]';      
+    DEFAULT_ADMIN = '[no address given]';
 
     {* The name of the log files  }
-    DEFAULT_ERRORLOG = 'logs/error_log';      
+    DEFAULT_ERRORLOG = 'logs/error_log';
 
     {* Define this to be what your per-directory security files are called  }
 {$ifdef OS2}
     { Set default for OS/2 file system  }
-    DEFAULT_ACCESS_FNAME = 'htaccess';      
+    DEFAULT_ACCESS_FNAME = 'htaccess';
 {$else}
-    DEFAULT_ACCESS_FNAME = '.htaccess';      
+    DEFAULT_ACCESS_FNAME = '.htaccess';
 {$endif}
 
     {* The name of the server config file  }
-    SERVER_CONFIG_FILE = 'conf/httpd.conf';      
+    SERVER_CONFIG_FILE = 'conf/httpd.conf';
 
     {* The default path for CGI scripts if none is currently set  }
-    DEFAULT_PATH = '/bin:/usr/bin:/usr/ucb:/usr/bsd:/usr/local/bin';      
+    DEFAULT_PATH = '/bin:/usr/bin:/usr/ucb:/usr/bsd:/usr/local/bin';
 
     {* The path to the suExec wrapper, can be overridden in Configuration  }
     SUEXEC_BIN = HTTPD_ROOT + '/bin/suexec';
 
     {* The timeout for waiting for messages  }
-    DEFAULT_TIMEOUT = 60;      
+    DEFAULT_TIMEOUT = 60;
 
     {* The timeout for waiting for keepalive timeout until next request  }
-    DEFAULT_KEEPALIVE_TIMEOUT = 5;      
+    DEFAULT_KEEPALIVE_TIMEOUT = 5;
 
     {* The number of requests to entertain per connection  }
-    DEFAULT_KEEPALIVE = 100;      
+    DEFAULT_KEEPALIVE = 100;
 
     {
      * Limits on the size of various request items.  These limits primarily
@@ -119,50 +119,50 @@ const
      * the server config directive LimitRequestFields.
       }
     {* default limit on bytes in Request-Line (Method+URI+HTTP-version)  }
-    DEFAULT_LIMIT_REQUEST_LINE = 8190;      
+    DEFAULT_LIMIT_REQUEST_LINE = 8190;
 
     {* default limit on bytes in any one header field   }
-    DEFAULT_LIMIT_REQUEST_FIELDSIZE = 8190;      
+    DEFAULT_LIMIT_REQUEST_FIELDSIZE = 8190;
 
     {* default limit on number of request header fields  }
-    DEFAULT_LIMIT_REQUEST_FIELDS = 100;      
+    DEFAULT_LIMIT_REQUEST_FIELDS = 100;
 
     {*
      * The default default character set name to add if AddDefaultCharset is
      * enabled.  Overridden with AddDefaultCharsetName.
       }
-    DEFAULT_ADD_DEFAULT_CHARSET_NAME = 'iso-8859-1';      
+    DEFAULT_ADD_DEFAULT_CHARSET_NAME = 'iso-8859-1';
 
     {* default HTTP Server protocol  }
-    AP_SERVER_PROTOCOL = 'HTTP/1.1';      
+    AP_SERVER_PROTOCOL = 'HTTP/1.1';
 
     { ------------------ stuff that modules are allowed to look at -----------  }
     {* Define this to be what your HTML directory content files are called  }
-    AP_DEFAULT_INDEX = 'index.html';      
+    AP_DEFAULT_INDEX = 'index.html';
 
     {* The name of the MIME types file  }
-    AP_TYPES_CONFIG_FILE = 'conf/mime.types';      
+    AP_TYPES_CONFIG_FILE = 'conf/mime.types';
 
     {
      * Define the HTML doctype strings centrally.
       }
     {* HTML 2.0 Doctype  }
-    DOCTYPE_HTML_2_0 = '<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">' + LineEnding;      
+    DOCTYPE_HTML_2_0 = '<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">' + LineEnding;
 
     {* HTML 3.2 Doctype  }
-    DOCTYPE_HTML_3_2 = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">' + LineEnding;      
+    DOCTYPE_HTML_3_2 = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">' + LineEnding;
 
     {* HTML 4.0 Strict Doctype  }
     DOCTYPE_HTML_4_0S = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN"' + LineEnding +
-                        'http://www.w3.org/TR/REC-html40/strict.dtd">' + LineEnding;      
+                        'http://www.w3.org/TR/REC-html40/strict.dtd">' + LineEnding;
 
     {* HTML 4.0 Transitional Doctype  }
     DOCTYPE_HTML_4_0T = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"' + LineEnding +
-                        '"http://www.w3.org/TR/REC-html40/loose.dtd">' + LineEnding;      
+                        '"http://www.w3.org/TR/REC-html40/loose.dtd">' + LineEnding;
 
     {* HTML 4.0 Frameset Doctype  }
     DOCTYPE_HTML_4_0F = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Frameset//EN"' + LineEnding +
-                        '"http://www.w3.org/TR/REC-html40/frameset.dtd">' + LineEnding;      
+                        '"http://www.w3.org/TR/REC-html40/frameset.dtd">' + LineEnding;
 
     {* XHTML 1.0 Strict Doctype  }
     DOCTYPE_XHTML_1_0S = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"' + LineEnding +
@@ -170,7 +170,7 @@ const
 
     {* XHTML 1.0 Transitional Doctype  }
     DOCTYPE_XHTML_1_0T = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"' + LineEnding +
-                         '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">' + LineEnding;      
+                         '"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">' + LineEnding;
 
     {* XHTML 1.0 Frameset Doctype  }
     DOCTYPE_XHTML_1_0F = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN"' + LineEnding +
@@ -179,8 +179,8 @@ const
     {* Internal representation for a HTTP protocol number, e.g., HTTP/1.1  }
     { was #define dname(params) para_def_expr }
     { argument types are unknown }
-    { return type might be wrong }   
-    function HTTP_VERSION(major,minor : Integer) : Integer;    
+    { return type might be wrong }
+    function HTTP_VERSION(major,minor : Integer) : Integer;
 
     {* Major part of HTTP protocol  }
     function HTTP_VERSION_MAJOR(number : Integer) : Integer;
@@ -191,9 +191,9 @@ const
     { -------------- Port number for server running standalone ---------------  }
     const
     {* default HTTP Port  }
-      DEFAULT_HTTP_PORT = 80;      
+      DEFAULT_HTTP_PORT = 80;
     {* default HTTPS Port  }
-      DEFAULT_HTTPS_PORT = 443;      
+      DEFAULT_HTTPS_PORT = 443;
     {*
      * Check whether @a port is the default port for the request @a r.
      * @param port The port number
@@ -202,8 +202,8 @@ const
       }
     { was #define dname(params) para_def_expr }
     { argument types are unknown }
-    { return type might be wrong }   
-//    function ap_is_default_port(port,r : longint) : longint;    
+    { return type might be wrong }
+//    function ap_is_default_port(port,r : longint) : longint;
 
   {*
    * Get the default port for a request (which depends on the scheme).
@@ -211,8 +211,8 @@ const
     }
   { was #define dname(params) para_def_expr }
   { argument types are unknown }
-  { return type might be wrong }   
-//  function ap_default_port(r : longint) : longint;  
+  { return type might be wrong }
+//  function ap_default_port(r : longint) : longint;
 
   {*
    * Get the scheme for a request.
@@ -220,30 +220,30 @@ const
     }
   { was #define dname(params) para_def_expr }
   { argument types are unknown }
-  { return type might be wrong }   
-//  function ap_http_scheme(r : longint) : longint;  
+  { return type might be wrong }
+//  function ap_http_scheme(r : longint) : longint;
 
   const
   {* The length of a Huge string  }
     HUGE_STRING_LEN = 8192;
 
   {* The default string length  }
-    MAX_STRING_LEN = HUGE_STRING_LEN;    
+    MAX_STRING_LEN = HUGE_STRING_LEN;
 
   {* The size of the server's internal read-write buffers  }
-    AP_IOBUFSIZE = 8192;    
+    AP_IOBUFSIZE = 8192;
 
   {* The max number of regex captures that can be expanded by ap_pregsub  }
-    AP_MAX_REG_MATCH = 10;    
+    AP_MAX_REG_MATCH = 10;
 
   {*
-   * APR_HAS_LARGE_FILES introduces the problem of spliting sendfile into
-   * mutiple buckets, no greater than MAX(apr_size_t), and more granular
+   * APR_HAS_LARGE_FILES introduces the problem of splitting sendfile into
+   * multiple buckets, no greater than MAX(apr_size_t), and more granular
    * than that in case the brigade code/filters attempt to read it directly.
    * ### 16mb is an invention, no idea if it is reasonable.
     }
   { 2^24  }
-    AP_MAX_SENDFILE = 16777216;    
+    AP_MAX_SENDFILE = 16777216;
 
   {*
    * MPM child process exit status values
@@ -251,27 +251,27 @@ const
    * error handling is required.
     }
   {* a normal exit  }
-    APEXIT_OK = $0;    
+    APEXIT_OK = $0;
 
   {* A fatal error arising during the server's init sequence  }
-    APEXIT_INIT = $2;    
+    APEXIT_INIT = $2;
 
   {*  The child died during its init sequence  }
-    APEXIT_CHILDINIT = $3;    
+    APEXIT_CHILDINIT = $3;
 
   {*
    *   The child exited due to a resource shortage.
    *   The parent should limit the rate of forking until
    *   the situation is resolved.
     }
-    APEXIT_CHILDSICK = $7;    
+    APEXIT_CHILDSICK = $7;
 
   {*
    *     A fatal error, resulting in the whole server aborting.
    *     If a child exits with this error, the parent process
    *     considers this a server-wide fatal error and aborts.
     }
-    APEXIT_CHILDFATAL = $f;    
+    APEXIT_CHILDFATAL = $f;
 
   {*
    * Stuff marked #AP_DECLARE is part of the API, and intended for use
@@ -280,49 +280,49 @@ const
     }
   { was #define dname(params) para_def_expr }
   { argument types are unknown }
-  { return type might be wrong }   
-//  function AP_DECLARE(_type : longint) : longint;  
+  { return type might be wrong }
+//  function AP_DECLARE(_type : longint) : longint;
 
   {*
    * Stuff marked #AP_DECLARE_NONSTD is part of the API, and intended for
    * use by modules.  The difference between #AP_DECLARE and
    * #AP_DECLARE_NONSTD is that the latter is required for any functions
    * which use varargs or are used via indirect function call.  This
-   * is to accomodate the two calling conventions in windows dlls.
+   * is to accommodate the two calling conventions in windows dlls.
     }
   { was #define dname(params) para_def_expr }
   { argument types are unknown }
-  { return type might be wrong }   
-//  function AP_DECLARE_NONSTD(_type : longint) : longint;  
+  { return type might be wrong }
+//  function AP_DECLARE_NONSTD(_type : longint) : longint;
 
 
-{$define AP_DECLARE_DATA}  
-
-  { was #define dname(params) para_def_expr }
-  { argument types are unknown }
-  { return type might be wrong }   
-//  function AP_MODULE_DECLARE(_type : longint) : longint;  
+{$define AP_DECLARE_DATA}
 
   { was #define dname(params) para_def_expr }
   { argument types are unknown }
-  { return type might be wrong }   
-//  function AP_MODULE_DECLARE_NONSTD(_type : longint) : longint;  
+  { return type might be wrong }
+//  function AP_MODULE_DECLARE(_type : longint) : longint;
 
-{$define AP_MODULE_DECLARE_DATA}  
+  { was #define dname(params) para_def_expr }
+  { argument types are unknown }
+  { return type might be wrong }
+//  function AP_MODULE_DECLARE_NONSTD(_type : longint) : longint;
+
+{$define AP_MODULE_DECLARE_DATA}
 
   {*
    * @internal
    * modules should not use functions marked AP_CORE_DECLARE
     }
 //  const
-//    AP_CORE_DECLARE = AP_DECLARE;    
+//    AP_CORE_DECLARE = AP_DECLARE;
 
   {*
    * @internal
    * modules should not use functions marked AP_CORE_DECLARE_NONSTD
     }
 //  const
-//    AP_CORE_DECLARE_NONSTD = AP_DECLARE_NONSTD;    
+//    AP_CORE_DECLARE_NONSTD = AP_DECLARE_NONSTD;
 
   {*
    * @defgroup APACHE_APR_STATUS_T HTTPD specific values of apr_status_t
@@ -330,10 +330,10 @@ const
     }
 
 //  const
-//    AP_START_USERERR = APR_OS_START_USERERR+2000;    
-//    AP_USERERR_LEN = 1000;    
+//    AP_START_USERERR = APR_OS_START_USERERR+2000;
+//    AP_USERERR_LEN = 1000;
   {* The function declines to handle the request  }
-//    AP_DECLINED = AP_START_USERERR+0;    
+//    AP_DECLINED = AP_START_USERERR+0;
 
   {* @  }
   {*
@@ -352,7 +352,7 @@ const
         major : Integer;
         minor : Integer;
         patch : Integer;
-        add_string : PChar;
+        add_string : PAnsiChar;
       end;
 
   {*
@@ -371,7 +371,7 @@ const
    * ServerTokens directive.
    * @return The server banner
     }
-  function ap_get_server_banner: PChar;
+  function ap_get_server_banner: PAnsiChar;
     {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
     external LibHTTPD name LibNamePrefix + 'ap_get_server_revision' + LibSuff0;
 
@@ -382,7 +382,7 @@ const
    * by the ServerTokens directive.
    * @return The server description
     }
-  function ap_get_server_description: PChar;
+  function ap_get_server_description: PAnsiChar;
     {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
     external LibHTTPD name LibNamePrefix + 'ap_get_server_revision' + LibSuff0;
 
@@ -391,7 +391,7 @@ const
    * @param pconf The pool to allocate the component from
    * @param component The string to add
     }
-  procedure ap_add_version_component(pconf: Papr_pool_t; const component: PChar);
+  procedure ap_add_version_component(pconf: Papr_pool_t; const component: PAnsiChar);
    {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
    external LibHTTPD name LibNamePrefix + 'ap_add_version_component' + LibSuff8;
 
@@ -399,7 +399,7 @@ const
    * Get the date a time that the server was built
    * @return The server build time string
     }
-  function ap_get_server_built: PChar;
+  function ap_get_server_built: PAnsiChar;
     {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
     external LibHTTPD name LibNamePrefix + 'ap_get_server_built' + LibSuff0;
 
@@ -415,13 +415,13 @@ const
 
   {* Returned by the bottom-most filter if no data was written.
    *  @see ap_pass_brigade().  }
-    AP_NOBODY_WROTE = -100;    
+    AP_NOBODY_WROTE = -100;
   {* Returned by the bottom-most filter if no data was read.
    *  @see ap_get_brigade().  }
-    AP_NOBODY_READ = -101;    
+    AP_NOBODY_READ = -101;
   {* Returned by any filter if the filter chain encounters an error
    *  and has already dealt with the error response.    }
-    AP_FILTER_ERROR = -102;    
+    AP_FILTER_ERROR = -102;
 
   {*
    * @defgroup HTTP_Status HTTP Status Codes
@@ -433,65 +433,65 @@ const
    * When adding a new code here add it to status_lines as well.
    * A future version should dynamically generate the apr_table_t at startup.
     }
-    RESPONSE_CODES =				83;    
+    RESPONSE_CODES =				83;
 
-    HTTP_CONTINUE =				100;    
-    HTTP_SWITCHING_PROTOCOLS =			101;    
-    HTTP_PROCESSING =				102;    
-    HTTP_OK =					200;    
-    HTTP_CREATED =				201;    
-    HTTP_ACCEPTED =				202;    
-    HTTP_NON_AUTHORITATIVE =			203;    
-    HTTP_NO_CONTENT =				204;    
-    HTTP_RESET_CONTENT =			205;    
-    HTTP_PARTIAL_CONTENT =			206;    
-    HTTP_MULTI_STATUS =				207;    
-    HTTP_ALREADY_REPORTED =			208;    
-    HTTP_IM_USED =				226;    
-    HTTP_MULTIPLE_CHOICES =			300;    
-    HTTP_MOVED_PERMANENTLY =			301;    
-    HTTP_MOVED_TEMPORARILY =			302;    
-    HTTP_SEE_OTHER =				303;    
-    HTTP_NOT_MODIFIED =				304;    
-    HTTP_USE_PROXY =				305;    
-    HTTP_TEMPORARY_REDIRECT =			307;    
-    HTTP_PERMANENT_REDIRECT =			308;    
-    HTTP_BAD_REQUEST =				400;    
-    HTTP_UNAUTHORIZED =				401;    
-    HTTP_PAYMENT_REQUIRED =			402;    
-    HTTP_FORBIDDEN =				403;    
-    HTTP_NOT_FOUND =				404;    
-    HTTP_METHOD_NOT_ALLOWED =			405;    
-    HTTP_NOT_ACCEPTABLE =			406;    
-    HTTP_PROXY_AUTHENTICATION_REQUIRED =	407;    
-    HTTP_REQUEST_TIME_OUT =			408;    
-    HTTP_CONFLICT =				409;    
-    HTTP_GONE =					410;    
-    HTTP_LENGTH_REQUIRED =			411;    
-    HTTP_PRECONDITION_FAILED =			412;    
-    HTTP_REQUEST_ENTITY_TOO_LARGE =		413;    
-    HTTP_REQUEST_URI_TOO_LARGE =		414;    
-    HTTP_UNSUPPORTED_MEDIA_TYPE =		415;    
-    HTTP_RANGE_NOT_SATISFIABLE =		416;    
-    HTTP_EXPECTATION_FAILED =			417;    
-    HTTP_UNPROCESSABLE_ENTITY =			422;    
-    HTTP_LOCKED =				423;    
-    HTTP_FAILED_DEPENDENCY =			424;    
-    HTTP_UPGRADE_REQUIRED =			426;    
-    HTTP_PRECONDITION_REQUIRED =		428;    
-    HTTP_TOO_MANY_REQUESTS =			429;    
-    HTTP_REQUEST_HEADER_FIELDS_TOO_LARGE =	431;    
-    HTTP_INTERNAL_SERVER_ERROR =		500;    
-    HTTP_NOT_IMPLEMENTED =			501;    
-    HTTP_BAD_GATEWAY =				502;    
-    HTTP_SERVICE_UNAVAILABLE =			503;    
-    HTTP_GATEWAY_TIME_OUT =			504;    
-    HTTP_VERSION_NOT_SUPPORTED =		505;    
-    HTTP_VARIANT_ALSO_VARIES =			506;    
-    HTTP_INSUFFICIENT_STORAGE =			507;    
-    HTTP_LOOP_DETECTED =			508;    
-    HTTP_NOT_EXTENDED =				510;    
-    HTTP_NETWORK_AUTHENTICATION_REQUIRED =	511;    
+    HTTP_CONTINUE =				100;
+    HTTP_SWITCHING_PROTOCOLS =			101;
+    HTTP_PROCESSING =				102;
+    HTTP_OK =					200;
+    HTTP_CREATED =				201;
+    HTTP_ACCEPTED =				202;
+    HTTP_NON_AUTHORITATIVE =			203;
+    HTTP_NO_CONTENT =				204;
+    HTTP_RESET_CONTENT =			205;
+    HTTP_PARTIAL_CONTENT =			206;
+    HTTP_MULTI_STATUS =				207;
+    HTTP_ALREADY_REPORTED =			208;
+    HTTP_IM_USED =				226;
+    HTTP_MULTIPLE_CHOICES =			300;
+    HTTP_MOVED_PERMANENTLY =			301;
+    HTTP_MOVED_TEMPORARILY =			302;
+    HTTP_SEE_OTHER =				303;
+    HTTP_NOT_MODIFIED =				304;
+    HTTP_USE_PROXY =				305;
+    HTTP_TEMPORARY_REDIRECT =			307;
+    HTTP_PERMANENT_REDIRECT =			308;
+    HTTP_BAD_REQUEST =				400;
+    HTTP_UNAUTHORIZED =				401;
+    HTTP_PAYMENT_REQUIRED =			402;
+    HTTP_FORBIDDEN =				403;
+    HTTP_NOT_FOUND =				404;
+    HTTP_METHOD_NOT_ALLOWED =			405;
+    HTTP_NOT_ACCEPTABLE =			406;
+    HTTP_PROXY_AUTHENTICATION_REQUIRED =	407;
+    HTTP_REQUEST_TIME_OUT =			408;
+    HTTP_CONFLICT =				409;
+    HTTP_GONE =					410;
+    HTTP_LENGTH_REQUIRED =			411;
+    HTTP_PRECONDITION_FAILED =			412;
+    HTTP_REQUEST_ENTITY_TOO_LARGE =		413;
+    HTTP_REQUEST_URI_TOO_LARGE =		414;
+    HTTP_UNSUPPORTED_MEDIA_TYPE =		415;
+    HTTP_RANGE_NOT_SATISFIABLE =		416;
+    HTTP_EXPECTATION_FAILED =			417;
+    HTTP_UNPROCESSABLE_ENTITY =			422;
+    HTTP_LOCKED =				423;
+    HTTP_FAILED_DEPENDENCY =			424;
+    HTTP_UPGRADE_REQUIRED =			426;
+    HTTP_PRECONDITION_REQUIRED =		428;
+    HTTP_TOO_MANY_REQUESTS =			429;
+    HTTP_REQUEST_HEADER_FIELDS_TOO_LARGE =	431;
+    HTTP_INTERNAL_SERVER_ERROR =		500;
+    HTTP_NOT_IMPLEMENTED =			501;
+    HTTP_BAD_GATEWAY =				502;
+    HTTP_SERVICE_UNAVAILABLE =			503;
+    HTTP_GATEWAY_TIME_OUT =			504;
+    HTTP_VERSION_NOT_SUPPORTED =		505;
+    HTTP_VARIANT_ALSO_VARIES =			506;
+    HTTP_INSUFFICIENT_STORAGE =			507;
+    HTTP_LOOP_DETECTED =			508;
+    HTTP_NOT_EXTENDED =				510;
+    HTTP_NETWORK_AUTHENTICATION_REQUIRED =	511;
 
   {* is the status code informational  }
   function ap_is_HTTP_INFO(x : Integer): Boolean;
@@ -499,37 +499,37 @@ const
   {* is the status code OK ? }
   { was #define dname(params) para_def_expr }
   { argument types are unknown }
-  { return type might be wrong }   
+  { return type might be wrong }
   function ap_is_HTTP_SUCCESS(x : Integer): Boolean;
 
   {* is the status code a redirect  }
   { was #define dname(params) para_def_expr }
   { argument types are unknown }
-  { return type might be wrong }   
+  { return type might be wrong }
   function ap_is_HTTP_REDIRECT(x : Integer): Boolean;
 
   {* is the status code a error (client or server)  }
   { was #define dname(params) para_def_expr }
   { argument types are unknown }
-  { return type might be wrong }   
+  { return type might be wrong }
   function ap_is_HTTP_ERROR(x : Integer): Boolean;
 
   {* is the status code a client error   }
   { was #define dname(params) para_def_expr }
   { argument types are unknown }
-  { return type might be wrong }   
+  { return type might be wrong }
   function ap_is_HTTP_CLIENT_ERROR(x : Integer): Boolean;
 
   {* is the status code a server error   }
   { was #define dname(params) para_def_expr }
   { argument types are unknown }
-  { return type might be wrong }   
+  { return type might be wrong }
   function ap_is_HTTP_SERVER_ERROR(x : Integer): Boolean;
 
   {* is the status code a (potentially) valid response code?   }
   { was #define dname(params) para_def_expr }
   { argument types are unknown }
-  { return type might be wrong }   
+  { return type might be wrong }
   function ap_is_HTTP_VALID_RESPONSE(x : Integer): Boolean;
 
   {* should the status code drop the connection  }
@@ -552,43 +552,43 @@ const
   const
     M_GET =			0;      {* RFC 2616: HTTP  }
     M_PUT =			1;      {  :              }
-    M_POST =			2;      
-    M_DELETE =			3;      
-    M_CONNECT =			4;      
-    M_OPTIONS =			5;      
+    M_POST =			2;
+    M_DELETE =			3;
+    M_CONNECT =			4;
+    M_OPTIONS =			5;
     M_TRACE =			6;      {* RFC 2616: HTTP  }
     M_PATCH =			7;      {* no rfc(!)  ### remove this one?  }
     M_PROPFIND =		8;      {* RFC 2518: WebDAV  }
     M_PROPPATCH =		9;      {  :                }
-    M_MKCOL =			10;      
-    M_COPY =			11;      
-    M_MOVE =			12;      
-    M_LOCK =			13;      
+    M_MKCOL =			10;
+    M_COPY =			11;
+    M_MOVE =			12;
+    M_LOCK =			13;
     M_UNLOCK =			14;     {* RFC 2518: WebDAV  }
     M_VERSION_CONTROL =		15;     {* RFC 3253: WebDAV Versioning  }
     M_CHECKOUT =		16;     {  :                           }
-    M_UNCHECKOUT =		17;      
-    M_CHECKIN =			18;      
-    M_UPDATE =			19;      
-    M_LABEL =			20;      
-    M_REPORT =			21;      
-    M_MKWORKSPACE =		22;      
-    M_MKACTIVITY =		23;      
-    M_BASELINE_CONTROL =	24;      
-    M_MERGE =			25;      
+    M_UNCHECKOUT =		17;
+    M_CHECKIN =			18;
+    M_UPDATE =			19;
+    M_LABEL =			20;
+    M_REPORT =			21;
+    M_MKWORKSPACE =		22;
+    M_MKACTIVITY =		23;
+    M_BASELINE_CONTROL =	24;
+    M_MERGE =			25;
     M_INVALID =			26;     {* no valid method  }
 
     {*
      * METHODS needs to be equal to the number of bits
      * we are using for limit masks.
       }
-    METHODS = 64;      
+    METHODS = 64;
     {*
      * The method mask bit to shift for anding with a bitmask.
       }
 
     { was #define dname def_expr }
-    AP_METHOD_BIT = apr_int64_t(1);      
+    AP_METHOD_BIT = apr_int64_t(1);
 
   {* @see ap_method_list_t  }
   type
@@ -613,23 +613,23 @@ const
     }
   const
   {* Magic for mod_cgi[d]  }
-    CGI_MAGIC_TYPE = 'application/x-httpd-cgi';    
+    CGI_MAGIC_TYPE = 'application/x-httpd-cgi';
   {* Magic for mod_include  }
-    INCLUDES_MAGIC_TYPE = 'text/x-server-parsed-html';    
+    INCLUDES_MAGIC_TYPE = 'text/x-server-parsed-html';
   {* Magic for mod_include  }
-    INCLUDES_MAGIC_TYPE3 = 'text/x-server-parsed-html3';    
+    INCLUDES_MAGIC_TYPE3 = 'text/x-server-parsed-html3';
   {* Magic for mod_dir  }
-    DIR_MAGIC_TYPE = 'httpd/unix-directory';    
+    DIR_MAGIC_TYPE = 'httpd/unix-directory';
   {* @  }
 
   { Just in case your linefeed isn't the one the other end is expecting.  }
   const
   {* linefeed  }
-    LF = 10;    
-  {* carrige return  }
-    CR = 13;    
-  {* carrige return /Line Feed Combo  }
-    CRLF = #015#012;    
+    LF = 10;
+  {* carriage return  }
+    CR = 13;
+  {* carriage return /Line Feed Combo  }
+    CRLF = #015#012;
 
   {*
    * @defgroup values_request_rec_body Possible values for request_rec.read_body
@@ -637,11 +637,11 @@ const
    * Possible values for request_rec.read_body (set by handling module):
     }
   {* Send 413 error if message has any body  }
-    REQUEST_NO_BODY =		0;    
+    REQUEST_NO_BODY =		0;
   {* Send 411 error if body without Content-Length  }
-    REQUEST_CHUNKED_ERROR =	1;    
+    REQUEST_CHUNKED_ERROR =	1;
   {* If chunked, remove the chunks for me.  }
-    REQUEST_CHUNKED_DECHUNK =	2;    
+    REQUEST_CHUNKED_DECHUNK =	2;
 
   {* @ // values_request_rec_body  }
   {*
@@ -651,11 +651,11 @@ const
    * Possible values for request_rec.used_path_info:
     }
   {* Accept the path_info from the request  }
-    AP_REQ_ACCEPT_PATH_INFO =	0;    
+    AP_REQ_ACCEPT_PATH_INFO =	0;
   {* Return a 404 error if path_info was given  }
-    AP_REQ_REJECT_PATH_INFO =	1;    
+    AP_REQ_REJECT_PATH_INFO =	1;
   {* Module may chose to use the given path_info  }
-    AP_REQ_DEFAULT_PATH_INFO =	2;    
+    AP_REQ_DEFAULT_PATH_INFO =	2;
 
   {* @ // values_request_rec_used_path_info  }
   {
@@ -679,7 +679,7 @@ const
     Phtaccess_result = ^htaccess_result;
     htaccess_result = record
   {* the directory to which this applies  }
-        dir : Pchar;
+        dir : PAnsiChar;
   {* the overrides allowed for the .htaccess file  }
         override : Integer;
   {* the override options allowed for the .htaccess file  }
@@ -712,9 +712,9 @@ const
     {* Configuration pool. Cleared upon restart  }
           pconf : Papr_pool_t;
     {* The program name used to execute the program  }
-          short_name : PChar;
+          short_name : PAnsiChar;
     {* The command line arguments  }
-          argv : PChar;
+          argv : PAnsiChar;
     {* Number of command line arguments passed to the program  }
           argc : Integer;
       end;
@@ -729,7 +729,7 @@ const
 {* The next server in the list  }
       next : Pserver_addr_rec;
 {* The name given in "<VirtualHost>"  }
-      virthost : Pchar;
+      virthost : PAnsiChar;
 {* The bound address, for this server  }
       host_addr : Papr_sockaddr_t;
 {* The bound port, for this server  }
@@ -739,7 +739,7 @@ const
   Pap_logconf = ^ap_logconf;
   ap_logconf = record
 {* The per-module log levels  }
-      module_levels : ^char;
+      module_levels : ^AnsiChar;
 {* The log level for this server  }
       level : longint;
     end;
@@ -758,7 +758,7 @@ const
 { Log files --- note that transfer log is now in the modules...  }
 
 {* The name of the error log  }
-      error_fname : Pchar;
+      error_fname : PAnsiChar;
 {* A file descriptor that references the error log  }
       error_log : Papr_file_t;
 {* The log level configuration  }
@@ -772,25 +772,25 @@ const
 {* MIME type info, etc., before we start checking per-directory info  }
       lookup_defaults : Pap_conf_vector_t;
 {* The name of the server  }
-      defn_name : Pchar;
+      defn_name : PAnsiChar;
 {* The line of the config file that the server was defined on  }
       defn_line_number : dword;
 {* true if this is the virtual server  }
-      is_virtual : char;
+      is_virtual : AnsiChar;
 
 { Information for redirects  }
 
 {* for redirects, etc.  }
       port : apr_port_t;
 {* The server request scheme for redirect responses  }
-      server_scheme : Pchar;
+      server_scheme : PAnsiChar;
 
 { Contact information  }
 
 {* The admin's contact information  }
-      server_admin : Pchar;
+      server_admin : PAnsiChar;
 {* The server hostname  }
-      server_hostname : Pchar;
+      server_hostname : PAnsiChar;
 
 { Transaction handling  }
 
@@ -811,7 +811,7 @@ const
       wild_names : Papr_array_header_t;
 
 {* Pathname for ServerPath  }
-      path : Pchar;
+      path : PAnsiChar;
 {* Length of path  }
       pathlen : Integer;
 
@@ -873,19 +873,19 @@ const
   {* Client's IP address; this is the end-point of the next hop, for the
    *  IP of the request creator, see useragent_ip in request_rec
    }
-        remote_ip {client_ip} : Pchar;               //fpc -> renamed to stay compatible with older apache versions and older fcl-web
+        remote_ip {client_ip} : PAnsiChar;               //fpc -> renamed to stay compatible with older apache versions and older fcl-web
   {* Client's DNS name, if known.  NULL if DNS hasn't been checked,
    *  "" if it has and no address was found.  N.B. Only access this though
    * get_remote_host()  }
-        remote_host : Pchar;
+        remote_host : PAnsiChar;
   {* Only ever set if doing rfc1413 lookups.  N.B. Only access this through
    *  get_remote_logname()  }
-        remote_logname : Pchar;
+        remote_logname : PAnsiChar;
   {* server IP address  }
-        local_ip : Pchar;
+        local_ip : PAnsiChar;
   {* used for ap_get_server_name when UseCanonicalName is set to DNS
    *  (ignores setting of HostnameLookups)  }
-        local_host : Pchar;
+        local_host : PAnsiChar;
   {* ID of this connection; unique at any point in time  }
         id : clong;
   {* Config vector containing pointers to connections per-server
@@ -928,10 +928,10 @@ const
   {* Id to identify this connection in error log. Set when the first
    *  error log entry for this connection is generated.
    }
-        log_id : Pchar;
+        log_id : PAnsiChar;
   {* This points to the current thread being used to process this request,
    * over the lifetime of a request, the value may change. Users of the connection
-   * record should not rely upon it staying the same between calls that invole
+   * record should not rely upon it staying the same between calls that involve
    * the MPM.
    }
 //{$if APR_HAS_THREADS}
@@ -959,7 +959,7 @@ const
 
   { Info about the request itself... we begin with stuff that only protocol.c should ever touch...  }
   {* First line of request  }
-        the_request : Pchar;
+        the_request : PAnsiChar;
   {* HTTP/0.9, "simple" request (e.g. GET /foo\n w/no headers)  }
         assbackwards : Integer;
   {* A proxy request (calculated during post_read_request/translate_name)
@@ -972,13 +972,13 @@ const
   {* Protocol version number of protocol; 1.1 = 1001  }
         proto_num : Integer;
   {* Protocol string, as given to us, or HTTP/0.9  }
-        protocol : Pchar;
+        protocol : PAnsiChar;
   {* Host, as set by full URI or Host:  }
-        hostname : Pchar;
+        hostname : PAnsiChar;
   {* Time when the request started  }
         request_time : apr_time_t;
   {* Status line, if set by script  }
-        status_line : Pchar;
+        status_line : PAnsiChar;
   {* Status line  }
         status : Integer;
   { Request method, two ways; also, protocol, etc..  Outside of protocol.c,
@@ -987,7 +987,7 @@ const
   {* M_GET, M_POST, etc.  }
         method_number : Integer;
   {* Request method (eg. GET, HEAD, POST, etc.)  }
-        method : Pchar;
+        method : PAnsiChar;
 
   {*
    *  'allowed' is a bitvector of the allowed methods.
@@ -1022,7 +1022,7 @@ const
         mtime : apr_time_t;
   { HTTP/1.1 connection-level features  }
   {* The Range: header  }
-        range : Pchar;
+        range : PAnsiChar;
   {* The "real" content length  }
         clength : apr_off_t;
   {* sending chunked transfer-coding  }
@@ -1074,36 +1074,36 @@ const
   * they should not be modified in place.
   }
   {* The content-type for the current request  }
-        content_type : Pchar;	{ Break these out --- we dispatch on 'em  }
+        content_type : PAnsiChar;	{ Break these out --- we dispatch on 'em  }
   {* The handler string that we use to call a handler function  }
-        handler : Pchar;	{ What we *really* dispatch on  }
+        handler : PAnsiChar;	{ What we *really* dispatch on  }
   {* How to encode the data  }
-        content_encoding : Pchar;
+        content_encoding : PAnsiChar;
   {* Array of strings representing the content languages  }
         content_languages : Papr_array_header_t;
   {* variant list validator (if negotiated)  }
-        vlist_validator : Pchar;
+        vlist_validator : PAnsiChar;
   {* If an authentication check was made, this gets set to the user name.  }
-        user : Pchar;
+        user : PAnsiChar;
   {* If an authentication check was made, this gets set to the auth type.  }
-        ap_auth_type : Pchar;
+        ap_auth_type : PAnsiChar;
 
   { What object is being requested (either directly, or via include
        * or content-negotiation mapping).
         }
   {* The URI without any parsing performed  }
-        unparsed_uri : Pchar;
+        unparsed_uri : PAnsiChar;
   {* The path portion of the URI, or "/" if no path provided  }
-        uri : Pchar;
+        uri : PAnsiChar;
   {* The filename on disk corresponding to this response  }
-        filename : Pchar;
+        filename : PAnsiChar;
   { XXX: What does this mean? Please define "canonicalize" -aaron  }
   {* The true filename, we canonicalize r->filename if these don't match  }
-        canonical_filename : Pchar;
+        canonical_filename : PAnsiChar;
   {* The PATH_INFO extracted from this request  }
-        path_info : Pchar;
+        path_info : PAnsiChar;
   {* The QUERY_ARGS extracted from this request  }
-        args : Pchar;
+        args : PAnsiChar;
 
   {*
    * Flag for the handler to accept or reject path_info on
@@ -1132,7 +1132,7 @@ const
   {* Id to identify request in access and error log. Set when the first
    *  error log entry for this request is generated.
    }
-        log_id : Pchar;
+        log_id : PAnsiChar;
   {*
    * A linked list of the .htaccess configuration directives
    * accessed by this request.
@@ -1167,7 +1167,7 @@ const
    * This is the address that originated the request.
    }
         useragent_addr : Papr_sockaddr_t;
-        useragent_ip : Pchar;
+        useragent_ip : PAnsiChar;
       end;
 
   {*
@@ -1179,7 +1179,7 @@ const
    *  tell the difference between the two, such as for authentication.
    * @
     }
-  
+
 
   const
     PROXYREQ_NONE =	0;{*< No proxy  }
@@ -1200,7 +1200,7 @@ const
    * will become the "default" server when the ip doesn't match other vhosts.
     }
   const
-    DEFAULT_VHOST_ADDR = $ffffffff;    
+    DEFAULT_VHOST_ADDR = $ffffffff;
 
   {*
    * Get the context_document_root for a request. This is a generalization of
@@ -1211,7 +1211,7 @@ const
    * @note For resources that do not map to the file system or for very complex
    * mappings, this information may still be wrong.
     }
-function ap_context_document_root(r: Prequest_rec): PChar;
+function ap_context_document_root(r: Prequest_rec): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_context_document_root' + LibSuff4;
 
@@ -1220,7 +1220,7 @@ function ap_context_document_root(r: Prequest_rec): PChar;
    * maps to the context_document_root on disk.
    * @param r The request
     }
-function ap_context_prefix(r: Prequest_rec): PChar;
+function ap_context_prefix(r: Prequest_rec): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_context_prefix' + LibSuff4;
 
@@ -1229,10 +1229,10 @@ function ap_context_prefix(r: Prequest_rec): PChar;
    * @param prefix the URI prefix, without trailing slash
    * @param document_root the corresponding directory on disk, without trailing
    * slash
-   * @note If one of prefix of document_root is NULL, the corrsponding
+   * @note If one of prefix of document_root is NULL, the corresponding
    * property will not be changed.
     }
-procedure ap_set_context_info(r: Prequest_rec; const prefix, document_root: PChar);
+procedure ap_set_context_info(r: Prequest_rec; const prefix, document_root: PAnsiChar);
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_set_context_info' + LibSuff12;
 
@@ -1241,7 +1241,7 @@ procedure ap_set_context_info(r: Prequest_rec; const prefix, document_root: PCha
    * @param r The request
    * @param document_root the document root for the request.
     }
-procedure ap_set_document_root(r: Prequest_rec; const document_root: PChar);
+procedure ap_set_document_root(r: Prequest_rec; const document_root: PAnsiChar);
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_set_document_root' + LibSuff8;
 
@@ -1252,7 +1252,7 @@ procedure ap_set_document_root(r: Prequest_rec; const document_root: PChar);
    * @param intype The field to examine
    * @return A copy of the field minus any parameters
     }
-function ap_field_noparam(p: Papr_pool_t; const intype: PChar): PChar;
+function ap_field_noparam(p: Papr_pool_t; const intype: PAnsiChar): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_field_noparam' + LibSuff8;
 
@@ -1264,14 +1264,14 @@ function ap_field_noparam(p: Papr_pool_t; const intype: PChar): PChar;
    * @param gmt Convert the time for GMT?
    * @return The string that represents the specified time
     }
-function ap_ht_time(p: Papr_pool_t; t: apr_time_t; const fmt: PChar; gmt: Integer): PChar;
+function ap_ht_time(p: Papr_pool_t; t: apr_time_t; const fmt: PAnsiChar; gmt: Integer): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_ht_time' + LibSuff20;
 
 
-  { String handling. The *_nc variants allow you to use non-const char **s as
-     arguments (unfortunately C won't automatically convert a char ** to a const
-     char **)  }
+  { String handling. The *_nc variants allow you to use non-const AnsiChar **s as
+     arguments (unfortunately C won't automatically convert a AnsiChar ** to a const
+     AnsiChar **)  }
   {*
    * Get the characters until the first occurance of a specified character
    * @param p The pool to allocate memory from
@@ -1279,7 +1279,7 @@ function ap_ht_time(p: Papr_pool_t; t: apr_time_t; const fmt: PChar; gmt: Intege
    * @param stop The character to stop at
    * @return A copy of the characters up to the first stop character
     }
-function ap_getword(p: Papr_pool_t; const line: PPChar; stop: Char): PChar;
+function ap_getword(p: Papr_pool_t; const line: PPAnsiChar; stop: AnsiChar): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_getword' + LibSuff12;
 
@@ -1289,9 +1289,9 @@ function ap_getword(p: Papr_pool_t; const line: PPChar; stop: Char): PChar;
    * @param line The string to get the characters from
    * @param stop The character to stop at
    * @return A copy of the characters up to the first stop character
-   * @note This is the same as ap_getword(), except it doesn't use const char **.
+   * @note This is the same as ap_getword(), except it doesn't use const AnsiChar **.
     }
-function ap_getword_nc(p: Papr_pool_t; line: PPChar; stop: Char): PChar;
+function ap_getword_nc(p: Papr_pool_t; line: PPAnsiChar; stop: AnsiChar): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_getword_nc' + LibSuff12;
 
@@ -1302,7 +1302,7 @@ function ap_getword_nc(p: Papr_pool_t; line: PPChar; stop: Char): PChar;
    * @param line The string to traverse
    * @return The first word in the line
     }
-function ap_getword_white(p: Papr_pool_t; const line: PPChar): PChar;
+function ap_getword_white(p: Papr_pool_t; const line: PPAnsiChar): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_getword_white' + LibSuff8;
 
@@ -1312,9 +1312,9 @@ function ap_getword_white(p: Papr_pool_t; const line: PPChar): PChar;
    * @param p The pool to allocate memory from
    * @param line The string to traverse
    * @return The first word in the line
-   * @note The same as ap_getword_white(), except it doesn't use const char**
+   * @note The same as ap_getword_white(), except it doesn't use const AnsiChar**
     }
-function ap_getword_white_nc(p: Papr_pool_t; line: PPChar): PChar;
+function ap_getword_white_nc(p: Papr_pool_t; line: PPAnsiChar): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_getword_white_nc' + LibSuff8;
 
@@ -1323,10 +1323,10 @@ function ap_getword_white_nc(p: Papr_pool_t; line: PPChar): PChar;
    * @param p The pool to allocate memory from
    * @param line The line to traverse
    * @param stop The character to start at
-   * @return A copy of all caracters after the first occurance of the specified
+   * @return A copy of all characters after the first occurance of the specified
    *         character
     }
-function ap_getword_nulls(p: Papr_pool_t; const line: PPChar; stop: Char): PChar;
+function ap_getword_nulls(p: Papr_pool_t; const line: PPAnsiChar; stop: AnsiChar): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_getword_nulls' + LibSuff12;
 
@@ -1335,11 +1335,11 @@ function ap_getword_nulls(p: Papr_pool_t; const line: PPChar; stop: Char): PChar
    * @param p The pool to allocate memory from
    * @param line The line to traverse
    * @param stop The character to start at
-   * @return A copy of all caracters after the first occurance of the specified
+   * @return A copy of all characters after the first occurance of the specified
    *         character
-   * @note The same as ap_getword_nulls(), except it doesn't use const char **.
+   * @note The same as ap_getword_nulls(), except it doesn't use const AnsiChar **.
     }
-function ap_getword_nulls_nc(p: Papr_pool_t; line: PPChar; stop: Char): PChar;
+function ap_getword_nulls_nc(p: Papr_pool_t; line: PPAnsiChar; stop: AnsiChar): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_getword_nulls_nc' + LibSuff12;
 
@@ -1349,7 +1349,7 @@ function ap_getword_nulls_nc(p: Papr_pool_t; line: PPChar; stop: Char): PChar;
    * @param line The line to traverse
    * @return A copy of the string
     }
-function ap_getword_conf(p: Papr_pool_t; const line: PPChar): PChar;
+function ap_getword_conf(p: Papr_pool_t; const line: PPAnsiChar): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_getword_conf' + LibSuff8;
 
@@ -1358,9 +1358,9 @@ function ap_getword_conf(p: Papr_pool_t; const line: PPChar): PChar;
    * @param p The pool to allocate from
    * @param line The line to traverse
    * @return A copy of the string
-   * @note The same as ap_getword_conf(), except it doesn't use const char **.
+   * @note The same as ap_getword_conf(), except it doesn't use const AnsiChar **.
     }
-function ap_getword_conf_nc(p: Papr_pool_t; line: PPChar): PChar;
+function ap_getword_conf_nc(p: Papr_pool_t; line: PPAnsiChar): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_getword_conf_nc' + LibSuff8;
 
@@ -1374,8 +1374,8 @@ function ap_getword_conf_nc(p: Papr_pool_t; line: PPChar): PChar;
    * @param word The string to check
    * @return The string with the replaced environment variables
     }
-//AP_DECLARE(const char *) ap_resolve_env(apr_pool_t *p, const char * word);
-function ap_resolve_env(p: Papr_pool_t; const word_: PChar): PChar;
+//AP_DECLARE(const AnsiChar *) ap_resolve_env(apr_pool_t *p, const AnsiChar * word);
+function ap_resolve_env(p: Papr_pool_t; const word_: PAnsiChar): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_resolve_env' + LibSuff8;
 
@@ -1388,8 +1388,8 @@ function ap_resolve_env(p: Papr_pool_t; const word_: PChar): PChar;
    * address of field is shifted to the next non-comma, non-whitespace
    * character.  len is the length of the item excluding any beginning whitespace.
     }
-//AP_DECLARE(const char *) ap_size_list_item(const char **field, int *len);
-function ap_size_list_item(const field: PPChar; len: PInteger): PChar;
+//AP_DECLARE(const AnsiChar *) ap_size_list_item(const AnsiChar **field, int *len);
+function ap_size_list_item(const field: PPAnsiChar; len: PInteger): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_size_list_item' + LibSuff8;
 
@@ -1403,7 +1403,7 @@ function ap_size_list_item(const field: PPChar; len: PInteger): PChar;
    *         item (or NULL if none) and the address pointed to by field is
    *         shifted to the next non-comma, non-whitespace.
     }
-function ap_get_list_item(p: Papr_pool_t; const field: PPChar): PChar;
+function ap_get_list_item(p: Papr_pool_t; const field: PPAnsiChar): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_get_list_item' + LibSuff8;
 
@@ -1415,7 +1415,7 @@ function ap_get_list_item(p: Papr_pool_t; const field: PPChar): PChar;
    * @param tok The token to search for
    * @return 1 if found, 0 if not found.
     }
-function ap_find_list_item(p: Papr_pool_t; const line, tok: PChar): Integer;
+function ap_find_list_item(p: Papr_pool_t; const line, tok: PAnsiChar): Integer;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_find_list_item' + LibSuff12;
 
@@ -1429,7 +1429,7 @@ function ap_find_list_item(p: Papr_pool_t; const line, tok: PChar): Integer;
    * @param accept_white Is it delimited by whitespace
    * @return the token
     }
-function ap_get_token(p: Papr_pool_t; const accept_line: PPChar; accept_white: Integer): PChar;
+function ap_get_token(p: Papr_pool_t; const accept_line: PPAnsiChar; accept_white: Integer): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_get_token' + LibSuff12;
 
@@ -1440,7 +1440,7 @@ function ap_get_token(p: Papr_pool_t; const accept_line: PPChar; accept_white: I
    * @param tok The token to find
    * @return 1 if the token is found, 0 otherwise
     }
-function ap_find_token(p: Papr_pool_t; const line, tok: PChar): Integer;
+function ap_find_token(p: Papr_pool_t; const line, tok: PAnsiChar): Integer;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_find_token' + LibSuff12;
 
@@ -1451,7 +1451,7 @@ function ap_find_token(p: Papr_pool_t; const line, tok: PChar): Integer;
    * @param tok The token to find
    * @return 1 if the token is found, 0 otherwise
     }
-function ap_find_last_token(p: Papr_pool_t; const line, tok: PChar): Integer;
+function ap_find_last_token(p: Papr_pool_t; const line, tok: PAnsiChar): Integer;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_find_last_token' + LibSuff12;
 
@@ -1460,7 +1460,7 @@ function ap_find_last_token(p: Papr_pool_t; const line, tok: PChar): Integer;
    * @param u The string to check
    * @return 1 if URI, 0 otherwise
     }
-function ap_is_url(const u: PChar): Integer;
+function ap_is_url(const u: PAnsiChar): Integer;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_is_url' + LibSuff4;
 
@@ -1469,7 +1469,7 @@ function ap_is_url(const u: PChar): Integer;
    * @param url The string to unescape
    * @return 0 on success, non-zero otherwise
     }
-function ap_unescape_all(url: PChar): Integer;
+function ap_unescape_all(url: PAnsiChar): Integer;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_unescape_all' + LibSuff4;
 
@@ -1478,7 +1478,7 @@ function ap_unescape_all(url: PChar): Integer;
    * @param url The url to unescape
    * @return 0 on success, non-zero otherwise
     }
-function ap_unescape_url(url: PChar): Integer;
+function ap_unescape_url(url: PAnsiChar): Integer;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_unescape_url' + LibSuff4;
 
@@ -1488,7 +1488,7 @@ function ap_unescape_url(url: PChar): Integer;
    * @param decode_slashes Whether or not slashes should be decoded
    * @return 0 on success, non-zero otherwise
     }
-function ap_unescape_url_keep2f(url: PChar; decode_slashes: Integer): Integer;
+function ap_unescape_url_keep2f(url: PAnsiChar; decode_slashes: Integer): Integer;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_unescape_url_keep2f' + LibSuff8;
 
@@ -1497,7 +1497,7 @@ function ap_unescape_url_keep2f(url: PChar; decode_slashes: Integer): Integer;
    * @param query The query to unescape
    * @return 0 on success, non-zero otherwise
     }
-function ap_unescape_urlencoded(query: PChar): Integer;
+function ap_unescape_urlencoded(query: PAnsiChar): Integer;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_unescape_urlencoded' + LibSuff4;
 
@@ -1505,7 +1505,7 @@ function ap_unescape_urlencoded(query: PChar): Integer;
    * Convert all double slashes to single slashes
    * @param name The string to convert
     }
-procedure ap_no2slash(name: PChar);
+procedure ap_no2slash(name: PAnsiChar);
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_no2slash' + LibSuff4;
 
@@ -1514,7 +1514,7 @@ procedure ap_no2slash(name: PChar);
    * any leading ../ or /../ substrings.
    * @param name the file name to parse
     }
-procedure ap_getparents(name: PChar);
+procedure ap_getparents(name: PAnsiChar);
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_getparents' + LibSuff4;
 
@@ -1524,7 +1524,7 @@ procedure ap_getparents(name: PChar);
    * @param s The path to convert
    * @return The converted URL
     }
-function ap_escape_path_segment(p: Papr_pool_t; const s: PChar): PChar;
+function ap_escape_path_segment(p: Papr_pool_t; const s: PAnsiChar): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_escape_path_segment' + LibSuff8;
 
@@ -1534,7 +1534,7 @@ function ap_escape_path_segment(p: Papr_pool_t; const s: PChar): PChar;
    * @param s The path to convert
    * @return The converted URL (c)
     }
-function ap_escape_path_segment_buffer(c: PChar; const s: PChar): PChar;
+function ap_escape_path_segment_buffer(c: PAnsiChar; const s: PAnsiChar): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_escape_path_segment_buffer' + LibSuff8;
 
@@ -1546,7 +1546,7 @@ function ap_escape_path_segment_buffer(c: PChar; const s: PChar): PChar;
    *        with a '/' in it (and thus does not prefix "./")
    * @return The converted URL
     }
-function ap_os_escape_path(p: Papr_pool_t; const path: PChar; partial: Integer): PChar;
+function ap_os_escape_path(p: Papr_pool_t; const path: PAnsiChar; partial: Integer): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_os_escape_path' + LibSuff12;
 
@@ -1554,9 +1554,9 @@ function ap_os_escape_path(p: Papr_pool_t; const path: PChar; partial: Integer):
   {* @see ap_os_escape_path  }
   { was #define dname(params) para_def_expr }
   { argument types are unknown }
-  { return type might be wrong }   
+  { return type might be wrong }
 //#define ap_escape_uri(ppool,path) ap_os_escape_path(ppool,path,1)
-function ap_escape_uri(ppool: Papr_pool_t; const path: PChar) : PChar;  
+function ap_escape_uri(ppool: Papr_pool_t; const path: PAnsiChar) : PAnsiChar;
 
 {*
  * Escape a string as application/x-www-form-urlencoded
@@ -1564,7 +1564,7 @@ function ap_escape_uri(ppool: Papr_pool_t; const path: PChar) : PChar;
  * @param s The path to convert
  * @return The converted URL
   }
-function ap_escape_urlencoded(p: Papr_pool_t; const s: PChar): PChar;
+function ap_escape_urlencoded(p: Papr_pool_t; const s: PAnsiChar): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_escape_urlencoded' + LibSuff8;
 
@@ -1574,7 +1574,7 @@ function ap_escape_urlencoded(p: Papr_pool_t; const s: PChar): PChar;
  * @param s The path to convert
  * @return The converted URL (c)
   }
-function ap_escape_urlencoded_buffer(c: PChar; const s: PChar): PChar;
+function ap_escape_urlencoded_buffer(c: PAnsiChar; const s: PAnsiChar): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_escape_urlencoded_buffer' + LibSuff8;
 
@@ -1585,7 +1585,7 @@ function ap_escape_urlencoded_buffer(c: PChar; const s: PChar): PChar;
  * @return The escaped string
   }
 //#define ap_escape_html(p,s) ap_escape_html2(p,s,0)
-function ap_escape_html(p: Papr_pool_t; const s: PChar) : PChar;
+function ap_escape_html(p: Papr_pool_t; const s: PAnsiChar) : PAnsiChar;
 
 {*
  * Escape an html string
@@ -1594,7 +1594,7 @@ function ap_escape_html(p: Papr_pool_t; const s: PChar) : PChar;
  * @param toasc Whether to escape all non-ASCII chars to \&\#nnn;
  * @return The escaped string
   }
-function ap_escape_html2(p: Papr_pool_t; const s: PChar; toasc: Integer): PChar;
+function ap_escape_html2(p: Papr_pool_t; const s: PAnsiChar; toasc: Integer): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_escape_html2' + LibSuff12;
 
@@ -1604,7 +1604,7 @@ function ap_escape_html2(p: Papr_pool_t; const s: PChar; toasc: Integer): PChar;
  * @param str The string to escape
  * @return The escaped string
   }
-function ap_escape_logitem(p: Papr_pool_t; const str: PChar): PChar;
+function ap_escape_logitem(p: Papr_pool_t; const str: PAnsiChar): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_escape_logitem' + LibSuff8;
 
@@ -1615,7 +1615,7 @@ function ap_escape_logitem(p: Papr_pool_t; const str: PChar): PChar;
  * @param buflen The buffer size for the escaped string (including "\0")
  * @return The len of the escaped string (always < maxlen)
   }
-function ap_escape_errorlog_item(dest: PChar; const source: PChar;
+function ap_escape_errorlog_item(dest: PAnsiChar; const source: PAnsiChar;
  buflen: apr_size_t): apr_size_t;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_escape_errorlog_item' + LibSuff12;
@@ -1628,8 +1628,8 @@ function ap_escape_errorlog_item(dest: PChar; const source: PChar;
  * @param r The current request
  * @return The server's hostname
   }
-function ap_construct_server(p: Papr_pool_t; const hostname: PChar;
- port: apr_port_t; const r: Prequest_rec): PChar;
+function ap_construct_server(p: Papr_pool_t; const hostname: PAnsiChar;
+ port: apr_port_t; const r: Prequest_rec): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_construct_server' + LibSuff16;
 
@@ -1639,7 +1639,7 @@ function ap_construct_server(p: Papr_pool_t; const hostname: PChar;
  * @param s The command to escape
  * @return The escaped shell command
   }
-function ap_escape_shell_cmd(p: Papr_pool_t; const s: PChar): PChar;
+function ap_escape_shell_cmd(p: Papr_pool_t; const s: PAnsiChar): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_escape_shell_cmd' + LibSuff8;
 
@@ -1648,7 +1648,7 @@ function ap_escape_shell_cmd(p: Papr_pool_t; const s: PChar): PChar;
  * @param path The path to count
  * @return The number of directories
   }
-function ap_count_dirs(const path: PChar): Integer;
+function ap_count_dirs(const path: PAnsiChar): Integer;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_count_dirs' + LibSuff4;
 
@@ -1663,7 +1663,7 @@ function ap_count_dirs(const path: PChar): Integer;
  * @note on platforms with drive letters, n = 0 returns the "/" root,
  * whereas n = 1 returns the "d:/" root.  On all other platforms, n = 0
  * returns the empty string.   }
-function ap_make_dirstr_prefix(d: PChar; const s: PChar; n: Integer): PChar;
+function ap_make_dirstr_prefix(d: PAnsiChar; const s: PAnsiChar; n: Integer): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_make_dirstr_prefix' + LibSuff12;
 
@@ -1674,7 +1674,7 @@ function ap_make_dirstr_prefix(d: PChar; const s: PChar; n: Integer): PChar;
  * @param s The file to get the parent of
  * @return A copy of the file's parent directory
   }
-function ap_make_dirstr_parent(p: Papr_pool_t; const s: PChar): PChar;
+function ap_make_dirstr_parent(p: Papr_pool_t; const s: PAnsiChar): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_make_dirstr_parent' + LibSuff8;
 
@@ -1690,7 +1690,7 @@ function ap_make_dirstr_parent(p: Papr_pool_t; const s: PChar): PChar;
  * names that need to remain canonical, unless you are merging an apr_dir_read
  * path and returned filename.  Otherwise, the result is not canonical.
   }
-function ap_make_full_path(a: Papr_pool_t; const dir, f: PChar): PChar;
+function ap_make_full_path(a: Papr_pool_t; const dir, f: PAnsiChar): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_make_full_path' + LibSuff12;
 
@@ -1702,7 +1702,7 @@ function ap_make_full_path(a: Papr_pool_t; const dir, f: PChar): PChar;
  * multiple forms of absolute paths.  This only reports if the path is absolute
  * in a canonical sense.
   }
-function ap_os_is_path_absolute(p: Papr_pool_t; const dir: PChar): Integer;
+function ap_os_is_path_absolute(p: Papr_pool_t; const dir: PAnsiChar): Integer;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_os_is_path_absolute' + LibSuff8;
 
@@ -1713,28 +1713,28 @@ function ap_os_is_path_absolute(p: Papr_pool_t; const dir: PChar): Integer;
  * @param str The string to check
  * @return 1 if the string has wildcards, 0 otherwise
   }
-function ap_is_matchexp(const str: PChar): Integer;
+function ap_is_matchexp(const str: PAnsiChar): Integer;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_is_matchexp' + LibSuff4;
 
 {*
- * Determine if a string matches a patterm containing the wildcards '?' or '*'
+ * Determine if a string matches a pattern containing the wildcards '?' or '*'
  * @param str The string to check
  * @param expected The pattern to match against
  * @return 0 if the two strings match, 1 otherwise
   }
-function ap_strcmp_match(const str, expected: PChar): Integer;
+function ap_strcmp_match(const str, expected: PAnsiChar): Integer;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_strcmp_match' + LibSuff8;
 
 {*
- * Determine if a string matches a patterm containing the wildcards '?' or '*',
+ * Determine if a string matches a pattern containing the wildcards '?' or '*',
  * ignoring case
  * @param str The string to check
  * @param expected The pattern to match against
  * @return 0 if the two strings match, 1 otherwise
   }
-function ap_strcasecmp_match(const str, expected: PChar): Integer;
+function ap_strcasecmp_match(const str, expected: PAnsiChar): Integer;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_strcasecmp_match' + LibSuff8;
 
@@ -1745,7 +1745,7 @@ function ap_strcasecmp_match(const str, expected: PChar): Integer;
  * @return A pointer to the beginning of the substring
  * @remark See apr_strmatch() for a faster alternative
   }
-function ap_strcasestr(const s1, s2: PChar): PChar;
+function ap_strcasestr(const s1, s2: PAnsiChar): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_strcasestr' + LibSuff8;
 
@@ -1755,7 +1755,7 @@ function ap_strcasestr(const s1, s2: PChar): PChar;
  * @param prefix The prefix to strip away
  * @return A pointer relative to bigstring after prefix
   }
-function ap_stripprefix(const bigstring, prefix: PChar): PChar;
+function ap_stripprefix(const bigstring, prefix: PAnsiChar): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_stripprefix' + LibSuff8;
 
@@ -1765,7 +1765,7 @@ function ap_stripprefix(const bigstring, prefix: PChar): PChar;
  * @param bufcoded The encoded string
  * @return The decoded string
   }
-function ap_pbase64decode(p: Papr_pool_t; const bufcoded: PChar): PChar;
+function ap_pbase64decode(p: Papr_pool_t; const bufcoded: PAnsiChar): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_pbase64decode' + LibSuff8;
 
@@ -1775,8 +1775,8 @@ function ap_pbase64decode(p: Papr_pool_t; const bufcoded: PChar): PChar;
  * @param string The plaintext string
  * @return The encoded string
   }
-//AP_DECLARE(char *) ap_pbase64encode(apr_pool_t *p, char *string);
-function ap_pbase64encode(p: Papr_pool_t; string_: PChar): PChar;
+//AP_DECLARE(AnsiChar *) ap_pbase64encode(apr_pool_t *p, AnsiChar *string);
+function ap_pbase64encode(p: Papr_pool_t; string_: PAnsiChar): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_pbase64encode' + LibSuff8;
 
@@ -1793,7 +1793,7 @@ function ap_pbase64encode(p: Papr_pool_t; string_: PChar): PChar;
  *   @li REG_NEWLINE  - Match-any-character operators don't match new-line
  * @return The compiled regular expression
   }
-function ap_pregcomp(p: Papr_pool_t; const pattern: PChar; cflags: Integer): Pap_regex_t;
+function ap_pregcomp(p: Papr_pool_t; const pattern: PAnsiChar; cflags: Integer): Pap_regex_t;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_pregcomp' + LibSuff12;
 
@@ -1821,11 +1821,11 @@ procedure ap_pregfree(p: Papr_pool_t; reg: Pap_regex_t);
  * @param pmatch the pmatch array returned from ap_pregex
  * @return The substituted string, or NULL on error
   }
-//AP_DECLARE(char *) ap_pregsub(apr_pool_t *p, const char *input,
-//                              const char *source, apr_size_t nmatch,
+//AP_DECLARE(AnsiChar *) ap_pregsub(apr_pool_t *p, const AnsiChar *input,
+//                              const AnsiChar *source, apr_size_t nmatch,
 //                              ap_regmatch_t pmatch[]);
-function ap_pregsub(p: Papr_pool_t; const input, source: PChar;
- nmatch: apr_size_t; pmatch: array of ap_regmatch_t): PChar;
+function ap_pregsub(p: Papr_pool_t; const input, source: PAnsiChar;
+ nmatch: apr_size_t; pmatch: array of ap_regmatch_t): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_pregsub' + LibSuff20;
 
@@ -1843,12 +1843,12 @@ function ap_pregsub(p: Papr_pool_t; const input, source: PChar;
  * @param maxlen the maximum string length to return, 0 for unlimited
  * @return The substituted string, or NULL on error
   }
-//AP_DECLARE(apr_status_t) ap_pregsub_ex(apr_pool_t *p, char **result,
-//                                       const char *input, const char *source,
+//AP_DECLARE(apr_status_t) ap_pregsub_ex(apr_pool_t *p, AnsiChar **result,
+//                                       const AnsiChar *input, const AnsiChar *source,
 //                                       apr_size_t nmatch,
 //                                       ap_regmatch_t pmatch[],
 //                                       apr_size_t maxlen);
-function ap_pregsub_ex(p: Papr_pool_t; result_: PPChar; const input, source: PChar;
+function ap_pregsub_ex(p: Papr_pool_t; result_: PPAnsiChar; const input, source: PAnsiChar;
                                        nmatch: apr_size_t;
                                        pmatch: array of ap_regmatch_t;
                                        maxlen: apr_size_t): apr_status_t;
@@ -1860,7 +1860,7 @@ function ap_pregsub_ex(p: Papr_pool_t; result_: PPChar; const input, source: PCh
  * but nothing else because ;parameter=foo values are case sensitive.
  * @param s The content-type to convert to lowercase
   }
-procedure ap_content_type_tolower(s: PChar);
+procedure ap_content_type_tolower(s: PAnsiChar);
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_content_type_tolower' + LibSuff4;
 
@@ -1868,7 +1868,7 @@ procedure ap_content_type_tolower(s: PChar);
  * convert a string to all lowercase
  * @param s The string to convert to lowercase
   }
-procedure ap_str_tolower(s: PChar);
+procedure ap_str_tolower(s: PAnsiChar);
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_str_tolower' + LibSuff4;
 
@@ -1876,7 +1876,7 @@ procedure ap_str_tolower(s: PChar);
  * convert a string to all uppercase
  * @param s The string to convert to uppercase
   }
-procedure ap_str_toupper(s: PChar);
+procedure ap_str_toupper(s: PAnsiChar);
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_str_toupper' + LibSuff4;
 
@@ -1887,8 +1887,8 @@ procedure ap_str_toupper(s: PChar);
  * @param c The character to search for
  * @return The index of the first occurrence of c in str
   }
-//AP_DECLARE(int) ap_ind(const char *str, char c);        /* Sigh... */
-function ap_ind(const str: PChar; c: Char): Integer;
+//AP_DECLARE(int) ap_ind(const AnsiChar *str, AnsiChar c);        /* Sigh... */
+function ap_ind(const str: PAnsiChar; c: AnsiChar): Integer;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_ind' + LibSuff8;
 
@@ -1899,7 +1899,7 @@ function ap_ind(const str: PChar; c: Char): Integer;
  * @param c The character to search for
  * @return The index of the first occurrence of c in str
   }
-function ap_rind(const str: PChar; c: Char): Integer;
+function ap_rind(const str: PAnsiChar; c: AnsiChar): Integer;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_rind' + LibSuff8;
 
@@ -1909,21 +1909,21 @@ function ap_rind(const str: PChar; c: Char): Integer;
  * @param instring The string to search for &quot;
  * @return A copy of the string with escaped quotes
   }
-function ap_escape_quotes(p: Papr_pool_t; const instring: PChar): PChar;
+function ap_escape_quotes(p: Papr_pool_t; const instring: PAnsiChar): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_escape_quotes' + LibSuff8;
 
 {*
- * Given a string, append the PID deliminated by delim.
+ * Given a string, append the PID delimitated by delim.
  * Usually used to create a pid-appended filepath name
  * (eg: /a/b/foo -> /a/b/foo.6726). A function, and not
  * a macro, to avoid unistd.h dependency
  * @param p The pool to allocate memory from
  * @param string The string to append the PID to
- * @param delim The string to use to deliminate the string from the PID
+ * @param delim The string to use to delimitate the string from the PID
  * @return A copy of the string with the PID appended
   }
-function ap_append_pid(p: Papr_pool_t; const string_, delim: PChar): PChar;
+function ap_append_pid(p: Papr_pool_t; const string_, delim: PAnsiChar): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_append_pid' + LibSuff12;
 
@@ -1945,9 +1945,9 @@ function ap_append_pid(p: Papr_pool_t; const string_, delim: PChar): PChar;
  * in timeout_parameter.
  * @return Status value indicating whether the parsing was successful or not.
   }
-function ap_timeout_parameter_parse(const timeout_parameter: PChar;
+function ap_timeout_parameter_parse(const timeout_parameter: PAnsiChar;
                                     timeout: Papr_interval_time_t;
-                                    const default_time_unit: PChar): apr_status_t;
+                                    const default_time_unit: PAnsiChar): apr_status_t;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_timeout_parameter_parse' + LibSuff12;
 
@@ -1971,8 +1971,8 @@ function ap_request_has_body(r: Prequest_rec): Integer;
  * @param  dest cleaned up, allocated string
  * @return Status value indicating whether the cleaning was successful or not.
   }
-function ap_pstr2_alnum(p: Papr_pool_t; const src: PChar;
-                                        const dest: PPChar): apr_status_t;
+function ap_pstr2_alnum(p: Papr_pool_t; const src: PAnsiChar;
+                                        const dest: PPAnsiChar): apr_status_t;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_pstr2_alnum' + LibSuff12;
 
@@ -1985,7 +1985,7 @@ function ap_pstr2_alnum(p: Papr_pool_t; const src: PChar;
  * @param  dest cleaned up, pre-allocated string
  * @return Status value indicating whether the cleaning was successful or not.
   }
-function ap_str2_alnum(const src: PChar; dest: PChar): apr_status_t;
+function ap_str2_alnum(const src: PAnsiChar; dest: PAnsiChar): apr_status_t;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_str2_alnum' + LibSuff8;
 
@@ -1993,7 +1993,7 @@ function ap_str2_alnum(const src: PChar; dest: PChar): apr_status_t;
  * Structure to store the contents of an HTTP form of the type
  * application/x-www-form-urlencoded.
  *
- * Currently it contains the name as a char* of maximum length
+ * Currently it contains the name as a AnsiChar* of maximum length
  * HUGE_STRING_LEN, and a value in the form of a bucket brigade
  * of arbitrary length.
   }
@@ -2001,7 +2001,7 @@ function ap_str2_alnum(const src: PChar; dest: PChar): apr_status_t;
 
 type
   ap_form_pair_t = record
-      name : PChar;
+      name : PAnsiChar;
       value : Papr_bucket_brigade;
     end;
 {*
@@ -2030,7 +2030,7 @@ function ap_parse_form_data(r: Prequest_rec; f: Pap_filter_t;
  * @param name The name of the object to check
  * @return 1 if it is a directory, 0 otherwise
   }
-function ap_is_rdirectory(p: Papr_pool_t; const name: PChar): Integer;
+function ap_is_rdirectory(p: Papr_pool_t; const name: PAnsiChar): Integer;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_is_rdirectory' + LibSuff8;
 
@@ -2040,15 +2040,15 @@ function ap_is_rdirectory(p: Papr_pool_t; const name: PChar): Integer;
  * @param name The name of the object to check
  * @return 1 if it is a directory, 0 otherwise
   }
-function ap_is_directory(p: Papr_pool_t; const name: PChar): Integer;
+function ap_is_directory(p: Papr_pool_t; const name: PAnsiChar): Integer;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_is_directory' + LibSuff8;
 
 //#ifdef _OSD_POSIX
-//extern int os_init_job_environment(server_rec *s, const char *user_name, int one_process);
+//extern int os_init_job_environment(server_rec *s, const AnsiChar *user_name, int one_process);
 //#endif /* _OSD_POSIX */
 //{$ifdef _OSD_POSIX}
-//function os_init_job_environment(s:Pserver_rec; const user_name:Pchar; one_process:integer):integer;cdecl;
+//function os_init_job_environment(s:Pserver_rec; const user_name:PAnsiChar; one_process:integer):integer;cdecl;
 //{$endif} { _OSD_POSIX  }
 
 {*
@@ -2056,7 +2056,7 @@ function ap_is_directory(p: Papr_pool_t; const name: PChar): Integer;
  * @param p The pool to allocate from
  * @return A copy of the local host name
   }
-//char *ap_get_local_host(apr_pool_t *p);
+//AnsiChar *ap_get_local_host(apr_pool_t *p);
 
 {*
  * Log an assertion to the error log
@@ -2064,7 +2064,7 @@ function ap_is_directory(p: Papr_pool_t; const name: PChar): Integer;
  * @param szFile The file the assertion is in
  * @param nLine The line the assertion is defined on
   }
-procedure ap_log_assert(const szExp, szFile: PChar; nLine: Integer);
+procedure ap_log_assert(const szExp, szFile: PAnsiChar; nLine: Integer);
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_log_assert' + LibSuff12;
 
@@ -2117,7 +2117,7 @@ extern int raise_sigstop_flags;
  * @param r The request_rec
  * @return HTML describing the server, allocated in @a r's pool.
   }
-function ap_psignature(const prefix: PChar; r: Prequest_rec): PChar;
+function ap_psignature(const prefix: PAnsiChar; r: Prequest_rec): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_psignature' + LibSuff8;
 
@@ -2142,12 +2142,12 @@ function ap_psignature(const prefix: PChar; r: Prequest_rec): PChar;
    }
 {#include <string.h>
 
-AP_DECLARE(char *) ap_strchr(char *s, int c);
-AP_DECLARE(const char *) ap_strchr_c(const char *s, int c);
-AP_DECLARE(char *) ap_strrchr(char *s, int c);
-AP_DECLARE(const char *) ap_strrchr_c(const char *s, int c);
-AP_DECLARE(char *) ap_strstr(char *s, const char *c);
-AP_DECLARE(const char *) ap_strstr_c(const char *s, const char *c);
+AP_DECLARE(AnsiChar *) ap_strchr(AnsiChar *s, int c);
+AP_DECLARE(const AnsiChar *) ap_strchr_c(const AnsiChar *s, int c);
+AP_DECLARE(AnsiChar *) ap_strrchr(AnsiChar *s, int c);
+AP_DECLARE(const AnsiChar *) ap_strrchr_c(const AnsiChar *s, int c);
+AP_DECLARE(AnsiChar *) ap_strstr(AnsiChar *s, const AnsiChar *c);
+AP_DECLARE(const AnsiChar *) ap_strstr_c(const AnsiChar *s, const AnsiChar *c);
 
 #ifdef AP_DEBUG
 

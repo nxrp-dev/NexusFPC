@@ -18,7 +18,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CGErrors;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -203,7 +205,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CGBase;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CGBase;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 {$ALIGN POWER}
@@ -233,19 +239,19 @@ const
 	kCGErrorApplicationRequiresNewerSystem = 1015;
 		{	the application being launched says in it's bundle info that it requires a }
 		{	newer version of the system than is currently running. }
-	
+
 	kCGErrorApplicationNotPermittedToExecute = 1016;
 		{	Macintosh Manager is active, and this application is not permitted to run }
-	
+
 	kCGErrorApplicationIncorrectExecutableFormatFound = 1023;
 		{	the application being launched does not have any executable code for the }
 		{	current system. }
-	
+
 	kCGErrorApplicationIsLaunching = 1024;
 		{ The application is in the process of launching, but hasn't checked in yet.
 		   Any launch data provided will be given to the application when it does
 		   check in. }
-	
+
 	kCGErrorApplicationAlreadyRunning = 1025;
 		{	The application being launched was already running ( and had already checked
 		    in ) and so any launch data provided can not be delivered to in by CPS }
@@ -253,7 +259,7 @@ const
 	kCGErrorApplicationCanOnlyBeRunInOneSessionAtATime = 1026;
 		{	The application being launched is incompatible with multiple user sessions,
 			and is already running in another session by another user. }
-			
+
 	kCGErrorClassicApplicationsMustBeLaunchedByClassic = 1027;
 		{	To avoid deadlock, Classic can't launch another Classic application by going
 			thru CPS.  This error gets returned in that case, and it signals TruBlueEnvironment

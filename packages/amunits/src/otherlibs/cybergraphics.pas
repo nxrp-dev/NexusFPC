@@ -28,15 +28,21 @@
   nils.sjoholm@mailbox.swipnet.se Nils Sjoholm
 }
 
+{$IFNDEF FPC_DOTTEDUNITS}
 UNIT CYBERGRAPHICS;
+{$ENDIF FPC_DOTTEDUNITS}
 {$packrecords 2}
 INTERFACE
+{$IFDEF FPC_DOTTEDUNITS}
+USES Amiga.Core.Exec,Amiga.Core.Agraphics,Amiga.Core.Utility;
+{$ELSE FPC_DOTTEDUNITS}
 USES Exec,agraphics,utility;
+{$ENDIF FPC_DOTTEDUNITS}
 
 VAR CyberGfxBase : pLibrary = nil;
 
 const
-    CYBERGRAPHICSNAME : PChar = 'cybergraphics.library';
+    CYBERGRAPHICSNAME : PAnsiChar = 'cybergraphics.library';
 
 {
         $VER: cybergraphics.h 41.18 (21.02.1998)
@@ -58,7 +64,7 @@ const
      PCyberModeNode = ^tCyberModeNode;
      tCyberModeNode = record
           Node : tNode;
-          ModeText : array[0..(DISPLAYNAMELEN)-1] of char; { name for this mode  }
+          ModeText : array[0..(DISPLAYNAMELEN)-1] of AnsiChar; { name for this mode  }
           DisplayID : ULONG;                               { display id associated with the node  }
           Width : UWORD;                                   { visible width  }
           Height : UWORD;                                  { visible height  }
@@ -86,7 +92,7 @@ const
      CYBRMATTR_DEPTH = $80000007;
   { returns -1 if supplied bitmap is a cybergfx one  }
      CYBRMATTR_ISCYBERGFX = $80000008;
-  { returns -1 if supplied bitmap is linear accessable  }
+  { returns -1 if supplied bitmap is linear accessible  }
      CYBRMATTR_ISLINEARMEM = $80000009;
   {
      Parameters for GetCyberIDAttr()
@@ -112,13 +118,13 @@ const
      CYBRMREQ_MinDepth = CYBRMREQ_TB + 0;
   { Maximum depth  "       "        "  }
      CYBRMREQ_MaxDepth = CYBRMREQ_TB + 1;
-  { Minumum width  "       "        "  }
+  { Minimum width  "       "        "  }
      CYBRMREQ_MinWidth = CYBRMREQ_TB + 2;
   { Maximum width  "       "        "  }
      CYBRMREQ_MaxWidth = CYBRMREQ_TB + 3;
-  { Minumum height "       "        "  }
+  { Minimum height "       "        "  }
      CYBRMREQ_MinHeight = CYBRMREQ_TB + 4;
-  { Minumum height "       "        "  }
+  { Minimum height "       "        "  }
      CYBRMREQ_MaxHeight = CYBRMREQ_TB + 5;
      CYBRMREQ_CModelArray = CYBRMREQ_TB + 6;
      CYBRMREQ_WinTitle = CYBRMREQ_TB + 20;

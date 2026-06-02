@@ -1,13 +1,19 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit googlecompute;
+{$ENDIF FPC_DOTTEDUNITS}
 {$MODE objfpc}
 {$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils, System.Classes, GoogleApi.Service, FpWeb.Rest.Base, GoogleApi.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses sysutils, classes, googleservice, restbase, googlebase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
-  
+
   //Top-level schema types
   TAccessConfig = Class;
   TAddress = Class;
@@ -468,11 +474,11 @@ type
   TVpnTunnelsScopedListTypevpnTunnelsArray = Array of TVpnTunnel;
   TVpnTunnelsScopedListTypewarningTypedataArray = Array of TVpnTunnelsScopedListTypewarningTypedataItem;
   TZoneListTypeitemsArray = Array of TZone;
-  
+
   { --------------------------------------------------------------------
     TAccessConfig
     --------------------------------------------------------------------}
-  
+
   TAccessConfig = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -494,11 +500,11 @@ type
     Property _type : String Index 24 Read F_type Write Set_type;
   end;
   TAccessConfigClass = Class of TAccessConfig;
-  
+
   { --------------------------------------------------------------------
     TAddress
     --------------------------------------------------------------------}
-  
+
   TAddress = Class(TGoogleBaseObject)
   Private
     Faddress : String;
@@ -541,11 +547,11 @@ type
     Property users : TStringArray Index 72 Read Fusers Write Setusers;
   end;
   TAddressClass = Class of TAddress;
-  
+
   { --------------------------------------------------------------------
     TAddressAggregatedListTypeitems
     --------------------------------------------------------------------}
-  
+
   TAddressAggregatedListTypeitems = Class(TGoogleBaseObject)
   Private
   Protected
@@ -555,11 +561,11 @@ type
   Published
   end;
   TAddressAggregatedListTypeitemsClass = Class of TAddressAggregatedListTypeitems;
-  
+
   { --------------------------------------------------------------------
     TAddressAggregatedList
     --------------------------------------------------------------------}
-  
+
   TAddressAggregatedList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -583,11 +589,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TAddressAggregatedListClass = Class of TAddressAggregatedList;
-  
+
   { --------------------------------------------------------------------
     TAddressList
     --------------------------------------------------------------------}
-  
+
   TAddressList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -615,11 +621,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TAddressListClass = Class of TAddressList;
-  
+
   { --------------------------------------------------------------------
     TAddressesScopedListTypewarningTypedataItem
     --------------------------------------------------------------------}
-  
+
   TAddressesScopedListTypewarningTypedataItem = Class(TGoogleBaseObject)
   Private
     Fkey : String;
@@ -634,11 +640,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TAddressesScopedListTypewarningTypedataItemClass = Class of TAddressesScopedListTypewarningTypedataItem;
-  
+
   { --------------------------------------------------------------------
     TAddressesScopedListTypewarning
     --------------------------------------------------------------------}
-  
+
   TAddressesScopedListTypewarning = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -660,11 +666,11 @@ type
     Property message : String Index 16 Read Fmessage Write Setmessage;
   end;
   TAddressesScopedListTypewarningClass = Class of TAddressesScopedListTypewarning;
-  
+
   { --------------------------------------------------------------------
     TAddressesScopedList
     --------------------------------------------------------------------}
-  
+
   TAddressesScopedList = Class(TGoogleBaseObject)
   Private
     Faddresses : TAddressesScopedListTypeaddressesArray;
@@ -683,11 +689,11 @@ type
     Property warning : TAddressesScopedListTypewarning Index 8 Read Fwarning Write Setwarning;
   end;
   TAddressesScopedListClass = Class of TAddressesScopedList;
-  
+
   { --------------------------------------------------------------------
     TAttachedDisk
     --------------------------------------------------------------------}
-  
+
   TAttachedDisk = Class(TGoogleBaseObject)
   Private
     FautoDelete : boolean;
@@ -734,11 +740,11 @@ type
     Property _type : String Index 80 Read F_type Write Set_type;
   end;
   TAttachedDiskClass = Class of TAttachedDisk;
-  
+
   { --------------------------------------------------------------------
     TAttachedDiskInitializeParams
     --------------------------------------------------------------------}
-  
+
   TAttachedDiskInitializeParams = Class(TGoogleBaseObject)
   Private
     FdiskName : String;
@@ -759,11 +765,11 @@ type
     Property sourceImage : String Index 24 Read FsourceImage Write SetsourceImage;
   end;
   TAttachedDiskInitializeParamsClass = Class of TAttachedDiskInitializeParams;
-  
+
   { --------------------------------------------------------------------
     TAutoscaler
     --------------------------------------------------------------------}
-  
+
   TAutoscaler = Class(TGoogleBaseObject)
   Private
     FautoscalingPolicy : TAutoscalingPolicy;
@@ -799,11 +805,11 @@ type
     Property zone : String Index 64 Read Fzone Write Setzone;
   end;
   TAutoscalerClass = Class of TAutoscaler;
-  
+
   { --------------------------------------------------------------------
     TAutoscalerAggregatedListTypeitems
     --------------------------------------------------------------------}
-  
+
   TAutoscalerAggregatedListTypeitems = Class(TGoogleBaseObject)
   Private
   Protected
@@ -813,11 +819,11 @@ type
   Published
   end;
   TAutoscalerAggregatedListTypeitemsClass = Class of TAutoscalerAggregatedListTypeitems;
-  
+
   { --------------------------------------------------------------------
     TAutoscalerAggregatedList
     --------------------------------------------------------------------}
-  
+
   TAutoscalerAggregatedList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -841,11 +847,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TAutoscalerAggregatedListClass = Class of TAutoscalerAggregatedList;
-  
+
   { --------------------------------------------------------------------
     TAutoscalerList
     --------------------------------------------------------------------}
-  
+
   TAutoscalerList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -873,11 +879,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TAutoscalerListClass = Class of TAutoscalerList;
-  
+
   { --------------------------------------------------------------------
     TAutoscalersScopedListTypewarningTypedataItem
     --------------------------------------------------------------------}
-  
+
   TAutoscalersScopedListTypewarningTypedataItem = Class(TGoogleBaseObject)
   Private
     Fkey : String;
@@ -892,11 +898,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TAutoscalersScopedListTypewarningTypedataItemClass = Class of TAutoscalersScopedListTypewarningTypedataItem;
-  
+
   { --------------------------------------------------------------------
     TAutoscalersScopedListTypewarning
     --------------------------------------------------------------------}
-  
+
   TAutoscalersScopedListTypewarning = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -918,11 +924,11 @@ type
     Property message : String Index 16 Read Fmessage Write Setmessage;
   end;
   TAutoscalersScopedListTypewarningClass = Class of TAutoscalersScopedListTypewarning;
-  
+
   { --------------------------------------------------------------------
     TAutoscalersScopedList
     --------------------------------------------------------------------}
-  
+
   TAutoscalersScopedList = Class(TGoogleBaseObject)
   Private
     Fautoscalers : TAutoscalersScopedListTypeautoscalersArray;
@@ -941,11 +947,11 @@ type
     Property warning : TAutoscalersScopedListTypewarning Index 8 Read Fwarning Write Setwarning;
   end;
   TAutoscalersScopedListClass = Class of TAutoscalersScopedList;
-  
+
   { --------------------------------------------------------------------
     TAutoscalingPolicy
     --------------------------------------------------------------------}
-  
+
   TAutoscalingPolicy = Class(TGoogleBaseObject)
   Private
     FcoolDownPeriodSec : integer;
@@ -976,11 +982,11 @@ type
     Property minNumReplicas : integer Index 40 Read FminNumReplicas Write SetminNumReplicas;
   end;
   TAutoscalingPolicyClass = Class of TAutoscalingPolicy;
-  
+
   { --------------------------------------------------------------------
     TAutoscalingPolicyCpuUtilization
     --------------------------------------------------------------------}
-  
+
   TAutoscalingPolicyCpuUtilization = Class(TGoogleBaseObject)
   Private
     FutilizationTarget : double;
@@ -992,11 +998,11 @@ type
     Property utilizationTarget : double Index 0 Read FutilizationTarget Write SetutilizationTarget;
   end;
   TAutoscalingPolicyCpuUtilizationClass = Class of TAutoscalingPolicyCpuUtilization;
-  
+
   { --------------------------------------------------------------------
     TAutoscalingPolicyCustomMetricUtilization
     --------------------------------------------------------------------}
-  
+
   TAutoscalingPolicyCustomMetricUtilization = Class(TGoogleBaseObject)
   Private
     Fmetric : String;
@@ -1014,11 +1020,11 @@ type
     Property utilizationTargetType : String Index 16 Read FutilizationTargetType Write SetutilizationTargetType;
   end;
   TAutoscalingPolicyCustomMetricUtilizationClass = Class of TAutoscalingPolicyCustomMetricUtilization;
-  
+
   { --------------------------------------------------------------------
     TAutoscalingPolicyLoadBalancingUtilization
     --------------------------------------------------------------------}
-  
+
   TAutoscalingPolicyLoadBalancingUtilization = Class(TGoogleBaseObject)
   Private
     FutilizationTarget : double;
@@ -1030,11 +1036,11 @@ type
     Property utilizationTarget : double Index 0 Read FutilizationTarget Write SetutilizationTarget;
   end;
   TAutoscalingPolicyLoadBalancingUtilizationClass = Class of TAutoscalingPolicyLoadBalancingUtilization;
-  
+
   { --------------------------------------------------------------------
     TBackend
     --------------------------------------------------------------------}
-  
+
   TBackend = Class(TGoogleBaseObject)
   Private
     FbalancingMode : String;
@@ -1064,11 +1070,11 @@ type
     Property maxUtilization : integer Index 48 Read FmaxUtilization Write SetmaxUtilization;
   end;
   TBackendClass = Class of TBackend;
-  
+
   { --------------------------------------------------------------------
     TBackendService
     --------------------------------------------------------------------}
-  
+
   TBackendService = Class(TGoogleBaseObject)
   Private
     Fbackends : TBackendServiceTypebackendsArray;
@@ -1123,11 +1129,11 @@ type
     Property timeoutSec : integer Index 104 Read FtimeoutSec Write SettimeoutSec;
   end;
   TBackendServiceClass = Class of TBackendService;
-  
+
   { --------------------------------------------------------------------
     TBackendServiceGroupHealth
     --------------------------------------------------------------------}
-  
+
   TBackendServiceGroupHealth = Class(TGoogleBaseObject)
   Private
     FhealthStatus : TBackendServiceGroupHealthTypehealthStatusArray;
@@ -1146,11 +1152,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TBackendServiceGroupHealthClass = Class of TBackendServiceGroupHealth;
-  
+
   { --------------------------------------------------------------------
     TBackendServiceList
     --------------------------------------------------------------------}
-  
+
   TBackendServiceList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -1178,11 +1184,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TBackendServiceListClass = Class of TBackendServiceList;
-  
+
   { --------------------------------------------------------------------
     TDeprecationStatus
     --------------------------------------------------------------------}
-  
+
   TDeprecationStatus = Class(TGoogleBaseObject)
   Private
     Fdeleted : String;
@@ -1206,11 +1212,11 @@ type
     Property state : String Index 32 Read Fstate Write Setstate;
   end;
   TDeprecationStatusClass = Class of TDeprecationStatus;
-  
+
   { --------------------------------------------------------------------
     TDisk
     --------------------------------------------------------------------}
-  
+
   TDisk = Class(TGoogleBaseObject)
   Private
     FcreationTimestamp : String;
@@ -1281,11 +1287,11 @@ type
     Property zone : String Index 144 Read Fzone Write Setzone;
   end;
   TDiskClass = Class of TDisk;
-  
+
   { --------------------------------------------------------------------
     TDiskAggregatedListTypeitems
     --------------------------------------------------------------------}
-  
+
   TDiskAggregatedListTypeitems = Class(TGoogleBaseObject)
   Private
   Protected
@@ -1295,11 +1301,11 @@ type
   Published
   end;
   TDiskAggregatedListTypeitemsClass = Class of TDiskAggregatedListTypeitems;
-  
+
   { --------------------------------------------------------------------
     TDiskAggregatedList
     --------------------------------------------------------------------}
-  
+
   TDiskAggregatedList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -1323,11 +1329,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TDiskAggregatedListClass = Class of TDiskAggregatedList;
-  
+
   { --------------------------------------------------------------------
     TDiskList
     --------------------------------------------------------------------}
-  
+
   TDiskList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -1355,11 +1361,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TDiskListClass = Class of TDiskList;
-  
+
   { --------------------------------------------------------------------
     TDiskMoveRequest
     --------------------------------------------------------------------}
-  
+
   TDiskMoveRequest = Class(TGoogleBaseObject)
   Private
     FdestinationZone : String;
@@ -1374,11 +1380,11 @@ type
     Property targetDisk : String Index 8 Read FtargetDisk Write SettargetDisk;
   end;
   TDiskMoveRequestClass = Class of TDiskMoveRequest;
-  
+
   { --------------------------------------------------------------------
     TDiskType
     --------------------------------------------------------------------}
-  
+
   TDiskType = Class(TGoogleBaseObject)
   Private
     FcreationTimestamp : String;
@@ -1417,11 +1423,11 @@ type
     Property zone : String Index 72 Read Fzone Write Setzone;
   end;
   TDiskTypeClass = Class of TDiskType;
-  
+
   { --------------------------------------------------------------------
     TDiskTypeAggregatedListTypeitems
     --------------------------------------------------------------------}
-  
+
   TDiskTypeAggregatedListTypeitems = Class(TGoogleBaseObject)
   Private
   Protected
@@ -1431,11 +1437,11 @@ type
   Published
   end;
   TDiskTypeAggregatedListTypeitemsClass = Class of TDiskTypeAggregatedListTypeitems;
-  
+
   { --------------------------------------------------------------------
     TDiskTypeAggregatedList
     --------------------------------------------------------------------}
-  
+
   TDiskTypeAggregatedList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -1459,11 +1465,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TDiskTypeAggregatedListClass = Class of TDiskTypeAggregatedList;
-  
+
   { --------------------------------------------------------------------
     TDiskTypeList
     --------------------------------------------------------------------}
-  
+
   TDiskTypeList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -1491,11 +1497,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TDiskTypeListClass = Class of TDiskTypeList;
-  
+
   { --------------------------------------------------------------------
     TDiskTypesScopedListTypewarningTypedataItem
     --------------------------------------------------------------------}
-  
+
   TDiskTypesScopedListTypewarningTypedataItem = Class(TGoogleBaseObject)
   Private
     Fkey : String;
@@ -1510,11 +1516,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TDiskTypesScopedListTypewarningTypedataItemClass = Class of TDiskTypesScopedListTypewarningTypedataItem;
-  
+
   { --------------------------------------------------------------------
     TDiskTypesScopedListTypewarning
     --------------------------------------------------------------------}
-  
+
   TDiskTypesScopedListTypewarning = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -1536,11 +1542,11 @@ type
     Property message : String Index 16 Read Fmessage Write Setmessage;
   end;
   TDiskTypesScopedListTypewarningClass = Class of TDiskTypesScopedListTypewarning;
-  
+
   { --------------------------------------------------------------------
     TDiskTypesScopedList
     --------------------------------------------------------------------}
-  
+
   TDiskTypesScopedList = Class(TGoogleBaseObject)
   Private
     FdiskTypes : TDiskTypesScopedListTypediskTypesArray;
@@ -1559,11 +1565,11 @@ type
     Property warning : TDiskTypesScopedListTypewarning Index 8 Read Fwarning Write Setwarning;
   end;
   TDiskTypesScopedListClass = Class of TDiskTypesScopedList;
-  
+
   { --------------------------------------------------------------------
     TDisksResizeRequest
     --------------------------------------------------------------------}
-  
+
   TDisksResizeRequest = Class(TGoogleBaseObject)
   Private
     FsizeGb : String;
@@ -1575,11 +1581,11 @@ type
     Property sizeGb : String Index 0 Read FsizeGb Write SetsizeGb;
   end;
   TDisksResizeRequestClass = Class of TDisksResizeRequest;
-  
+
   { --------------------------------------------------------------------
     TDisksScopedListTypewarningTypedataItem
     --------------------------------------------------------------------}
-  
+
   TDisksScopedListTypewarningTypedataItem = Class(TGoogleBaseObject)
   Private
     Fkey : String;
@@ -1594,11 +1600,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TDisksScopedListTypewarningTypedataItemClass = Class of TDisksScopedListTypewarningTypedataItem;
-  
+
   { --------------------------------------------------------------------
     TDisksScopedListTypewarning
     --------------------------------------------------------------------}
-  
+
   TDisksScopedListTypewarning = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -1620,11 +1626,11 @@ type
     Property message : String Index 16 Read Fmessage Write Setmessage;
   end;
   TDisksScopedListTypewarningClass = Class of TDisksScopedListTypewarning;
-  
+
   { --------------------------------------------------------------------
     TDisksScopedList
     --------------------------------------------------------------------}
-  
+
   TDisksScopedList = Class(TGoogleBaseObject)
   Private
     Fdisks : TDisksScopedListTypedisksArray;
@@ -1643,11 +1649,11 @@ type
     Property warning : TDisksScopedListTypewarning Index 8 Read Fwarning Write Setwarning;
   end;
   TDisksScopedListClass = Class of TDisksScopedList;
-  
+
   { --------------------------------------------------------------------
     TFirewallTypeallowedItem
     --------------------------------------------------------------------}
-  
+
   TFirewallTypeallowedItem = Class(TGoogleBaseObject)
   Private
     FIPProtocol : String;
@@ -1666,11 +1672,11 @@ type
     Property ports : TStringArray Index 8 Read Fports Write Setports;
   end;
   TFirewallTypeallowedItemClass = Class of TFirewallTypeallowedItem;
-  
+
   { --------------------------------------------------------------------
     TFirewall
     --------------------------------------------------------------------}
-  
+
   TFirewall = Class(TGoogleBaseObject)
   Private
     Fallowed : TFirewallTypeallowedArray;
@@ -1716,11 +1722,11 @@ type
     Property targetTags : TStringArray Index 80 Read FtargetTags Write SettargetTags;
   end;
   TFirewallClass = Class of TFirewall;
-  
+
   { --------------------------------------------------------------------
     TFirewallList
     --------------------------------------------------------------------}
-  
+
   TFirewallList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -1748,11 +1754,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TFirewallListClass = Class of TFirewallList;
-  
+
   { --------------------------------------------------------------------
     TForwardingRule
     --------------------------------------------------------------------}
-  
+
   TForwardingRule = Class(TGoogleBaseObject)
   Private
     FIPAddress : String;
@@ -1794,11 +1800,11 @@ type
     Property target : String Index 80 Read Ftarget Write Settarget;
   end;
   TForwardingRuleClass = Class of TForwardingRule;
-  
+
   { --------------------------------------------------------------------
     TForwardingRuleAggregatedListTypeitems
     --------------------------------------------------------------------}
-  
+
   TForwardingRuleAggregatedListTypeitems = Class(TGoogleBaseObject)
   Private
   Protected
@@ -1808,11 +1814,11 @@ type
   Published
   end;
   TForwardingRuleAggregatedListTypeitemsClass = Class of TForwardingRuleAggregatedListTypeitems;
-  
+
   { --------------------------------------------------------------------
     TForwardingRuleAggregatedList
     --------------------------------------------------------------------}
-  
+
   TForwardingRuleAggregatedList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -1836,11 +1842,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TForwardingRuleAggregatedListClass = Class of TForwardingRuleAggregatedList;
-  
+
   { --------------------------------------------------------------------
     TForwardingRuleList
     --------------------------------------------------------------------}
-  
+
   TForwardingRuleList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -1868,11 +1874,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TForwardingRuleListClass = Class of TForwardingRuleList;
-  
+
   { --------------------------------------------------------------------
     TForwardingRulesScopedListTypewarningTypedataItem
     --------------------------------------------------------------------}
-  
+
   TForwardingRulesScopedListTypewarningTypedataItem = Class(TGoogleBaseObject)
   Private
     Fkey : String;
@@ -1887,11 +1893,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TForwardingRulesScopedListTypewarningTypedataItemClass = Class of TForwardingRulesScopedListTypewarningTypedataItem;
-  
+
   { --------------------------------------------------------------------
     TForwardingRulesScopedListTypewarning
     --------------------------------------------------------------------}
-  
+
   TForwardingRulesScopedListTypewarning = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -1913,11 +1919,11 @@ type
     Property message : String Index 16 Read Fmessage Write Setmessage;
   end;
   TForwardingRulesScopedListTypewarningClass = Class of TForwardingRulesScopedListTypewarning;
-  
+
   { --------------------------------------------------------------------
     TForwardingRulesScopedList
     --------------------------------------------------------------------}
-  
+
   TForwardingRulesScopedList = Class(TGoogleBaseObject)
   Private
     FforwardingRules : TForwardingRulesScopedListTypeforwardingRulesArray;
@@ -1936,11 +1942,11 @@ type
     Property warning : TForwardingRulesScopedListTypewarning Index 8 Read Fwarning Write Setwarning;
   end;
   TForwardingRulesScopedListClass = Class of TForwardingRulesScopedList;
-  
+
   { --------------------------------------------------------------------
     THealthCheckReference
     --------------------------------------------------------------------}
-  
+
   THealthCheckReference = Class(TGoogleBaseObject)
   Private
     FhealthCheck : String;
@@ -1952,11 +1958,11 @@ type
     Property healthCheck : String Index 0 Read FhealthCheck Write SethealthCheck;
   end;
   THealthCheckReferenceClass = Class of THealthCheckReference;
-  
+
   { --------------------------------------------------------------------
     THealthStatus
     --------------------------------------------------------------------}
-  
+
   THealthStatus = Class(TGoogleBaseObject)
   Private
     FhealthState : String;
@@ -1977,11 +1983,11 @@ type
     Property port : integer Index 24 Read Fport Write Setport;
   end;
   THealthStatusClass = Class of THealthStatus;
-  
+
   { --------------------------------------------------------------------
     THostRule
     --------------------------------------------------------------------}
-  
+
   THostRule = Class(TGoogleBaseObject)
   Private
     Fdescription : String;
@@ -2003,11 +2009,11 @@ type
     Property pathMatcher : String Index 16 Read FpathMatcher Write SetpathMatcher;
   end;
   THostRuleClass = Class of THostRule;
-  
+
   { --------------------------------------------------------------------
     THttpHealthCheck
     --------------------------------------------------------------------}
-  
+
   THttpHealthCheck = Class(TGoogleBaseObject)
   Private
     FcheckIntervalSec : integer;
@@ -2055,11 +2061,11 @@ type
     Property unhealthyThreshold : integer Index 96 Read FunhealthyThreshold Write SetunhealthyThreshold;
   end;
   THttpHealthCheckClass = Class of THttpHealthCheck;
-  
+
   { --------------------------------------------------------------------
     THttpHealthCheckList
     --------------------------------------------------------------------}
-  
+
   THttpHealthCheckList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -2087,11 +2093,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   THttpHealthCheckListClass = Class of THttpHealthCheckList;
-  
+
   { --------------------------------------------------------------------
     THttpsHealthCheck
     --------------------------------------------------------------------}
-  
+
   THttpsHealthCheck = Class(TGoogleBaseObject)
   Private
     FcheckIntervalSec : integer;
@@ -2139,11 +2145,11 @@ type
     Property unhealthyThreshold : integer Index 96 Read FunhealthyThreshold Write SetunhealthyThreshold;
   end;
   THttpsHealthCheckClass = Class of THttpsHealthCheck;
-  
+
   { --------------------------------------------------------------------
     THttpsHealthCheckList
     --------------------------------------------------------------------}
-  
+
   THttpsHealthCheckList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -2171,11 +2177,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   THttpsHealthCheckListClass = Class of THttpsHealthCheckList;
-  
+
   { --------------------------------------------------------------------
     TImageTyperawDisk
     --------------------------------------------------------------------}
-  
+
   TImageTyperawDisk = Class(TGoogleBaseObject)
   Private
     FcontainerType : String;
@@ -2193,11 +2199,11 @@ type
     Property source : String Index 16 Read Fsource Write Setsource;
   end;
   TImageTyperawDiskClass = Class of TImageTyperawDisk;
-  
+
   { --------------------------------------------------------------------
     TImage
     --------------------------------------------------------------------}
-  
+
   TImage = Class(TGoogleBaseObject)
   Private
     FarchiveSizeBytes : String;
@@ -2258,11 +2264,11 @@ type
     Property status : String Index 120 Read Fstatus Write Setstatus;
   end;
   TImageClass = Class of TImage;
-  
+
   { --------------------------------------------------------------------
     TImageList
     --------------------------------------------------------------------}
-  
+
   TImageList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -2290,11 +2296,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TImageListClass = Class of TImageList;
-  
+
   { --------------------------------------------------------------------
     TInstance
     --------------------------------------------------------------------}
-  
+
   TInstance = Class(TGoogleBaseObject)
   Private
     FcanIpForward : boolean;
@@ -2361,11 +2367,11 @@ type
     Property zone : String Index 136 Read Fzone Write Setzone;
   end;
   TInstanceClass = Class of TInstance;
-  
+
   { --------------------------------------------------------------------
     TInstanceAggregatedListTypeitems
     --------------------------------------------------------------------}
-  
+
   TInstanceAggregatedListTypeitems = Class(TGoogleBaseObject)
   Private
   Protected
@@ -2375,11 +2381,11 @@ type
   Published
   end;
   TInstanceAggregatedListTypeitemsClass = Class of TInstanceAggregatedListTypeitems;
-  
+
   { --------------------------------------------------------------------
     TInstanceAggregatedList
     --------------------------------------------------------------------}
-  
+
   TInstanceAggregatedList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -2403,11 +2409,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TInstanceAggregatedListClass = Class of TInstanceAggregatedList;
-  
+
   { --------------------------------------------------------------------
     TInstanceGroup
     --------------------------------------------------------------------}
-  
+
   TInstanceGroup = Class(TGoogleBaseObject)
   Private
     FcreationTimestamp : String;
@@ -2456,11 +2462,11 @@ type
     Property zone : String Index 88 Read Fzone Write Setzone;
   end;
   TInstanceGroupClass = Class of TInstanceGroup;
-  
+
   { --------------------------------------------------------------------
     TInstanceGroupAggregatedListTypeitems
     --------------------------------------------------------------------}
-  
+
   TInstanceGroupAggregatedListTypeitems = Class(TGoogleBaseObject)
   Private
   Protected
@@ -2470,11 +2476,11 @@ type
   Published
   end;
   TInstanceGroupAggregatedListTypeitemsClass = Class of TInstanceGroupAggregatedListTypeitems;
-  
+
   { --------------------------------------------------------------------
     TInstanceGroupAggregatedList
     --------------------------------------------------------------------}
-  
+
   TInstanceGroupAggregatedList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -2498,11 +2504,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TInstanceGroupAggregatedListClass = Class of TInstanceGroupAggregatedList;
-  
+
   { --------------------------------------------------------------------
     TInstanceGroupList
     --------------------------------------------------------------------}
-  
+
   TInstanceGroupList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -2530,11 +2536,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TInstanceGroupListClass = Class of TInstanceGroupList;
-  
+
   { --------------------------------------------------------------------
     TInstanceGroupManager
     --------------------------------------------------------------------}
-  
+
   TInstanceGroupManager = Class(TGoogleBaseObject)
   Private
     FbaseInstanceName : String;
@@ -2592,11 +2598,11 @@ type
     Property zone : String Index 112 Read Fzone Write Setzone;
   end;
   TInstanceGroupManagerClass = Class of TInstanceGroupManager;
-  
+
   { --------------------------------------------------------------------
     TInstanceGroupManagerActionsSummary
     --------------------------------------------------------------------}
-  
+
   TInstanceGroupManagerActionsSummary = Class(TGoogleBaseObject)
   Private
     Fabandoning : integer;
@@ -2626,11 +2632,11 @@ type
     Property restarting : integer Index 48 Read Frestarting Write Setrestarting;
   end;
   TInstanceGroupManagerActionsSummaryClass = Class of TInstanceGroupManagerActionsSummary;
-  
+
   { --------------------------------------------------------------------
     TInstanceGroupManagerAggregatedListTypeitems
     --------------------------------------------------------------------}
-  
+
   TInstanceGroupManagerAggregatedListTypeitems = Class(TGoogleBaseObject)
   Private
   Protected
@@ -2640,11 +2646,11 @@ type
   Published
   end;
   TInstanceGroupManagerAggregatedListTypeitemsClass = Class of TInstanceGroupManagerAggregatedListTypeitems;
-  
+
   { --------------------------------------------------------------------
     TInstanceGroupManagerAggregatedList
     --------------------------------------------------------------------}
-  
+
   TInstanceGroupManagerAggregatedList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -2668,11 +2674,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TInstanceGroupManagerAggregatedListClass = Class of TInstanceGroupManagerAggregatedList;
-  
+
   { --------------------------------------------------------------------
     TInstanceGroupManagerList
     --------------------------------------------------------------------}
-  
+
   TInstanceGroupManagerList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -2700,11 +2706,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TInstanceGroupManagerListClass = Class of TInstanceGroupManagerList;
-  
+
   { --------------------------------------------------------------------
     TInstanceGroupManagersAbandonInstancesRequest
     --------------------------------------------------------------------}
-  
+
   TInstanceGroupManagersAbandonInstancesRequest = Class(TGoogleBaseObject)
   Private
     Finstances : TStringArray;
@@ -2720,11 +2726,11 @@ type
     Property instances : TStringArray Index 0 Read Finstances Write Setinstances;
   end;
   TInstanceGroupManagersAbandonInstancesRequestClass = Class of TInstanceGroupManagersAbandonInstancesRequest;
-  
+
   { --------------------------------------------------------------------
     TInstanceGroupManagersDeleteInstancesRequest
     --------------------------------------------------------------------}
-  
+
   TInstanceGroupManagersDeleteInstancesRequest = Class(TGoogleBaseObject)
   Private
     Finstances : TStringArray;
@@ -2740,11 +2746,11 @@ type
     Property instances : TStringArray Index 0 Read Finstances Write Setinstances;
   end;
   TInstanceGroupManagersDeleteInstancesRequestClass = Class of TInstanceGroupManagersDeleteInstancesRequest;
-  
+
   { --------------------------------------------------------------------
     TInstanceGroupManagersListManagedInstancesResponse
     --------------------------------------------------------------------}
-  
+
   TInstanceGroupManagersListManagedInstancesResponse = Class(TGoogleBaseObject)
   Private
     FmanagedInstances : TInstanceGroupManagersListManagedInstancesResponseTypemanagedInstancesArray;
@@ -2760,11 +2766,11 @@ type
     Property managedInstances : TInstanceGroupManagersListManagedInstancesResponseTypemanagedInstancesArray Index 0 Read FmanagedInstances Write SetmanagedInstances;
   end;
   TInstanceGroupManagersListManagedInstancesResponseClass = Class of TInstanceGroupManagersListManagedInstancesResponse;
-  
+
   { --------------------------------------------------------------------
     TInstanceGroupManagersRecreateInstancesRequest
     --------------------------------------------------------------------}
-  
+
   TInstanceGroupManagersRecreateInstancesRequest = Class(TGoogleBaseObject)
   Private
     Finstances : TStringArray;
@@ -2780,11 +2786,11 @@ type
     Property instances : TStringArray Index 0 Read Finstances Write Setinstances;
   end;
   TInstanceGroupManagersRecreateInstancesRequestClass = Class of TInstanceGroupManagersRecreateInstancesRequest;
-  
+
   { --------------------------------------------------------------------
     TInstanceGroupManagersScopedListTypewarningTypedataItem
     --------------------------------------------------------------------}
-  
+
   TInstanceGroupManagersScopedListTypewarningTypedataItem = Class(TGoogleBaseObject)
   Private
     Fkey : String;
@@ -2799,11 +2805,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TInstanceGroupManagersScopedListTypewarningTypedataItemClass = Class of TInstanceGroupManagersScopedListTypewarningTypedataItem;
-  
+
   { --------------------------------------------------------------------
     TInstanceGroupManagersScopedListTypewarning
     --------------------------------------------------------------------}
-  
+
   TInstanceGroupManagersScopedListTypewarning = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -2825,11 +2831,11 @@ type
     Property message : String Index 16 Read Fmessage Write Setmessage;
   end;
   TInstanceGroupManagersScopedListTypewarningClass = Class of TInstanceGroupManagersScopedListTypewarning;
-  
+
   { --------------------------------------------------------------------
     TInstanceGroupManagersScopedList
     --------------------------------------------------------------------}
-  
+
   TInstanceGroupManagersScopedList = Class(TGoogleBaseObject)
   Private
     FinstanceGroupManagers : TInstanceGroupManagersScopedListTypeinstanceGroupManagersArray;
@@ -2848,11 +2854,11 @@ type
     Property warning : TInstanceGroupManagersScopedListTypewarning Index 8 Read Fwarning Write Setwarning;
   end;
   TInstanceGroupManagersScopedListClass = Class of TInstanceGroupManagersScopedList;
-  
+
   { --------------------------------------------------------------------
     TInstanceGroupManagersSetInstanceTemplateRequest
     --------------------------------------------------------------------}
-  
+
   TInstanceGroupManagersSetInstanceTemplateRequest = Class(TGoogleBaseObject)
   Private
     FinstanceTemplate : String;
@@ -2864,11 +2870,11 @@ type
     Property instanceTemplate : String Index 0 Read FinstanceTemplate Write SetinstanceTemplate;
   end;
   TInstanceGroupManagersSetInstanceTemplateRequestClass = Class of TInstanceGroupManagersSetInstanceTemplateRequest;
-  
+
   { --------------------------------------------------------------------
     TInstanceGroupManagersSetTargetPoolsRequest
     --------------------------------------------------------------------}
-  
+
   TInstanceGroupManagersSetTargetPoolsRequest = Class(TGoogleBaseObject)
   Private
     Ffingerprint : String;
@@ -2887,11 +2893,11 @@ type
     Property targetPools : TStringArray Index 8 Read FtargetPools Write SettargetPools;
   end;
   TInstanceGroupManagersSetTargetPoolsRequestClass = Class of TInstanceGroupManagersSetTargetPoolsRequest;
-  
+
   { --------------------------------------------------------------------
     TInstanceGroupsAddInstancesRequest
     --------------------------------------------------------------------}
-  
+
   TInstanceGroupsAddInstancesRequest = Class(TGoogleBaseObject)
   Private
     Finstances : TInstanceGroupsAddInstancesRequestTypeinstancesArray;
@@ -2907,11 +2913,11 @@ type
     Property instances : TInstanceGroupsAddInstancesRequestTypeinstancesArray Index 0 Read Finstances Write Setinstances;
   end;
   TInstanceGroupsAddInstancesRequestClass = Class of TInstanceGroupsAddInstancesRequest;
-  
+
   { --------------------------------------------------------------------
     TInstanceGroupsListInstances
     --------------------------------------------------------------------}
-  
+
   TInstanceGroupsListInstances = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -2939,11 +2945,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TInstanceGroupsListInstancesClass = Class of TInstanceGroupsListInstances;
-  
+
   { --------------------------------------------------------------------
     TInstanceGroupsListInstancesRequest
     --------------------------------------------------------------------}
-  
+
   TInstanceGroupsListInstancesRequest = Class(TGoogleBaseObject)
   Private
     FinstanceState : String;
@@ -2955,11 +2961,11 @@ type
     Property instanceState : String Index 0 Read FinstanceState Write SetinstanceState;
   end;
   TInstanceGroupsListInstancesRequestClass = Class of TInstanceGroupsListInstancesRequest;
-  
+
   { --------------------------------------------------------------------
     TInstanceGroupsRemoveInstancesRequest
     --------------------------------------------------------------------}
-  
+
   TInstanceGroupsRemoveInstancesRequest = Class(TGoogleBaseObject)
   Private
     Finstances : TInstanceGroupsRemoveInstancesRequestTypeinstancesArray;
@@ -2975,11 +2981,11 @@ type
     Property instances : TInstanceGroupsRemoveInstancesRequestTypeinstancesArray Index 0 Read Finstances Write Setinstances;
   end;
   TInstanceGroupsRemoveInstancesRequestClass = Class of TInstanceGroupsRemoveInstancesRequest;
-  
+
   { --------------------------------------------------------------------
     TInstanceGroupsScopedListTypewarningTypedataItem
     --------------------------------------------------------------------}
-  
+
   TInstanceGroupsScopedListTypewarningTypedataItem = Class(TGoogleBaseObject)
   Private
     Fkey : String;
@@ -2994,11 +3000,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TInstanceGroupsScopedListTypewarningTypedataItemClass = Class of TInstanceGroupsScopedListTypewarningTypedataItem;
-  
+
   { --------------------------------------------------------------------
     TInstanceGroupsScopedListTypewarning
     --------------------------------------------------------------------}
-  
+
   TInstanceGroupsScopedListTypewarning = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -3020,11 +3026,11 @@ type
     Property message : String Index 16 Read Fmessage Write Setmessage;
   end;
   TInstanceGroupsScopedListTypewarningClass = Class of TInstanceGroupsScopedListTypewarning;
-  
+
   { --------------------------------------------------------------------
     TInstanceGroupsScopedList
     --------------------------------------------------------------------}
-  
+
   TInstanceGroupsScopedList = Class(TGoogleBaseObject)
   Private
     FinstanceGroups : TInstanceGroupsScopedListTypeinstanceGroupsArray;
@@ -3043,11 +3049,11 @@ type
     Property warning : TInstanceGroupsScopedListTypewarning Index 8 Read Fwarning Write Setwarning;
   end;
   TInstanceGroupsScopedListClass = Class of TInstanceGroupsScopedList;
-  
+
   { --------------------------------------------------------------------
     TInstanceGroupsSetNamedPortsRequest
     --------------------------------------------------------------------}
-  
+
   TInstanceGroupsSetNamedPortsRequest = Class(TGoogleBaseObject)
   Private
     Ffingerprint : String;
@@ -3066,11 +3072,11 @@ type
     Property namedPorts : TInstanceGroupsSetNamedPortsRequestTypenamedPortsArray Index 8 Read FnamedPorts Write SetnamedPorts;
   end;
   TInstanceGroupsSetNamedPortsRequestClass = Class of TInstanceGroupsSetNamedPortsRequest;
-  
+
   { --------------------------------------------------------------------
     TInstanceList
     --------------------------------------------------------------------}
-  
+
   TInstanceList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -3098,11 +3104,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TInstanceListClass = Class of TInstanceList;
-  
+
   { --------------------------------------------------------------------
     TInstanceMoveRequest
     --------------------------------------------------------------------}
-  
+
   TInstanceMoveRequest = Class(TGoogleBaseObject)
   Private
     FdestinationZone : String;
@@ -3117,11 +3123,11 @@ type
     Property targetInstance : String Index 8 Read FtargetInstance Write SettargetInstance;
   end;
   TInstanceMoveRequestClass = Class of TInstanceMoveRequest;
-  
+
   { --------------------------------------------------------------------
     TInstanceProperties
     --------------------------------------------------------------------}
-  
+
   TInstanceProperties = Class(TGoogleBaseObject)
   Private
     FcanIpForward : boolean;
@@ -3161,11 +3167,11 @@ type
     Property tags : TTags Index 64 Read Ftags Write Settags;
   end;
   TInstancePropertiesClass = Class of TInstanceProperties;
-  
+
   { --------------------------------------------------------------------
     TInstanceReference
     --------------------------------------------------------------------}
-  
+
   TInstanceReference = Class(TGoogleBaseObject)
   Private
     Finstance : String;
@@ -3177,11 +3183,11 @@ type
     Property instance : String Index 0 Read Finstance Write Setinstance;
   end;
   TInstanceReferenceClass = Class of TInstanceReference;
-  
+
   { --------------------------------------------------------------------
     TInstanceTemplate
     --------------------------------------------------------------------}
-  
+
   TInstanceTemplate = Class(TGoogleBaseObject)
   Private
     FcreationTimestamp : String;
@@ -3211,11 +3217,11 @@ type
     Property selfLink : String Index 48 Read FselfLink Write SetselfLink;
   end;
   TInstanceTemplateClass = Class of TInstanceTemplate;
-  
+
   { --------------------------------------------------------------------
     TInstanceTemplateList
     --------------------------------------------------------------------}
-  
+
   TInstanceTemplateList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -3243,11 +3249,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TInstanceTemplateListClass = Class of TInstanceTemplateList;
-  
+
   { --------------------------------------------------------------------
     TInstanceWithNamedPorts
     --------------------------------------------------------------------}
-  
+
   TInstanceWithNamedPorts = Class(TGoogleBaseObject)
   Private
     Finstance : String;
@@ -3269,11 +3275,11 @@ type
     Property status : String Index 16 Read Fstatus Write Setstatus;
   end;
   TInstanceWithNamedPortsClass = Class of TInstanceWithNamedPorts;
-  
+
   { --------------------------------------------------------------------
     TInstancesScopedListTypewarningTypedataItem
     --------------------------------------------------------------------}
-  
+
   TInstancesScopedListTypewarningTypedataItem = Class(TGoogleBaseObject)
   Private
     Fkey : String;
@@ -3288,11 +3294,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TInstancesScopedListTypewarningTypedataItemClass = Class of TInstancesScopedListTypewarningTypedataItem;
-  
+
   { --------------------------------------------------------------------
     TInstancesScopedListTypewarning
     --------------------------------------------------------------------}
-  
+
   TInstancesScopedListTypewarning = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -3314,11 +3320,11 @@ type
     Property message : String Index 16 Read Fmessage Write Setmessage;
   end;
   TInstancesScopedListTypewarningClass = Class of TInstancesScopedListTypewarning;
-  
+
   { --------------------------------------------------------------------
     TInstancesScopedList
     --------------------------------------------------------------------}
-  
+
   TInstancesScopedList = Class(TGoogleBaseObject)
   Private
     Finstances : TInstancesScopedListTypeinstancesArray;
@@ -3337,11 +3343,11 @@ type
     Property warning : TInstancesScopedListTypewarning Index 8 Read Fwarning Write Setwarning;
   end;
   TInstancesScopedListClass = Class of TInstancesScopedList;
-  
+
   { --------------------------------------------------------------------
     TInstancesSetMachineTypeRequest
     --------------------------------------------------------------------}
-  
+
   TInstancesSetMachineTypeRequest = Class(TGoogleBaseObject)
   Private
     FmachineType : String;
@@ -3353,11 +3359,11 @@ type
     Property machineType : String Index 0 Read FmachineType Write SetmachineType;
   end;
   TInstancesSetMachineTypeRequestClass = Class of TInstancesSetMachineTypeRequest;
-  
+
   { --------------------------------------------------------------------
     TLicense
     --------------------------------------------------------------------}
-  
+
   TLicense = Class(TGoogleBaseObject)
   Private
     FchargesUseFee : boolean;
@@ -3378,11 +3384,11 @@ type
     Property selfLink : String Index 24 Read FselfLink Write SetselfLink;
   end;
   TLicenseClass = Class of TLicense;
-  
+
   { --------------------------------------------------------------------
     TMachineTypeTypescratchDisksItem
     --------------------------------------------------------------------}
-  
+
   TMachineTypeTypescratchDisksItem = Class(TGoogleBaseObject)
   Private
     FdiskGb : integer;
@@ -3394,11 +3400,11 @@ type
     Property diskGb : integer Index 0 Read FdiskGb Write SetdiskGb;
   end;
   TMachineTypeTypescratchDisksItemClass = Class of TMachineTypeTypescratchDisksItem;
-  
+
   { --------------------------------------------------------------------
     TMachineType
     --------------------------------------------------------------------}
-  
+
   TMachineType = Class(TGoogleBaseObject)
   Private
     FcreationTimestamp : String;
@@ -3453,11 +3459,11 @@ type
     Property zone : String Index 104 Read Fzone Write Setzone;
   end;
   TMachineTypeClass = Class of TMachineType;
-  
+
   { --------------------------------------------------------------------
     TMachineTypeAggregatedListTypeitems
     --------------------------------------------------------------------}
-  
+
   TMachineTypeAggregatedListTypeitems = Class(TGoogleBaseObject)
   Private
   Protected
@@ -3467,11 +3473,11 @@ type
   Published
   end;
   TMachineTypeAggregatedListTypeitemsClass = Class of TMachineTypeAggregatedListTypeitems;
-  
+
   { --------------------------------------------------------------------
     TMachineTypeAggregatedList
     --------------------------------------------------------------------}
-  
+
   TMachineTypeAggregatedList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -3495,11 +3501,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TMachineTypeAggregatedListClass = Class of TMachineTypeAggregatedList;
-  
+
   { --------------------------------------------------------------------
     TMachineTypeList
     --------------------------------------------------------------------}
-  
+
   TMachineTypeList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -3527,11 +3533,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TMachineTypeListClass = Class of TMachineTypeList;
-  
+
   { --------------------------------------------------------------------
     TMachineTypesScopedListTypewarningTypedataItem
     --------------------------------------------------------------------}
-  
+
   TMachineTypesScopedListTypewarningTypedataItem = Class(TGoogleBaseObject)
   Private
     Fkey : String;
@@ -3546,11 +3552,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TMachineTypesScopedListTypewarningTypedataItemClass = Class of TMachineTypesScopedListTypewarningTypedataItem;
-  
+
   { --------------------------------------------------------------------
     TMachineTypesScopedListTypewarning
     --------------------------------------------------------------------}
-  
+
   TMachineTypesScopedListTypewarning = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -3572,11 +3578,11 @@ type
     Property message : String Index 16 Read Fmessage Write Setmessage;
   end;
   TMachineTypesScopedListTypewarningClass = Class of TMachineTypesScopedListTypewarning;
-  
+
   { --------------------------------------------------------------------
     TMachineTypesScopedList
     --------------------------------------------------------------------}
-  
+
   TMachineTypesScopedList = Class(TGoogleBaseObject)
   Private
     FmachineTypes : TMachineTypesScopedListTypemachineTypesArray;
@@ -3595,11 +3601,11 @@ type
     Property warning : TMachineTypesScopedListTypewarning Index 8 Read Fwarning Write Setwarning;
   end;
   TMachineTypesScopedListClass = Class of TMachineTypesScopedList;
-  
+
   { --------------------------------------------------------------------
     TManagedInstance
     --------------------------------------------------------------------}
-  
+
   TManagedInstance = Class(TGoogleBaseObject)
   Private
     FcurrentAction : String;
@@ -3623,11 +3629,11 @@ type
     Property lastAttempt : TManagedInstanceLastAttempt Index 32 Read FlastAttempt Write SetlastAttempt;
   end;
   TManagedInstanceClass = Class of TManagedInstance;
-  
+
   { --------------------------------------------------------------------
     TManagedInstanceLastAttemptTypeerrorsTypeerrorsItem
     --------------------------------------------------------------------}
-  
+
   TManagedInstanceLastAttemptTypeerrorsTypeerrorsItem = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -3645,11 +3651,11 @@ type
     Property message : String Index 16 Read Fmessage Write Setmessage;
   end;
   TManagedInstanceLastAttemptTypeerrorsTypeerrorsItemClass = Class of TManagedInstanceLastAttemptTypeerrorsTypeerrorsItem;
-  
+
   { --------------------------------------------------------------------
     TManagedInstanceLastAttemptTypeerrors
     --------------------------------------------------------------------}
-  
+
   TManagedInstanceLastAttemptTypeerrors = Class(TGoogleBaseObject)
   Private
     Ferrors : TManagedInstanceLastAttemptTypeerrorsTypeerrorsArray;
@@ -3665,11 +3671,11 @@ type
     Property errors : TManagedInstanceLastAttemptTypeerrorsTypeerrorsArray Index 0 Read Ferrors Write Seterrors;
   end;
   TManagedInstanceLastAttemptTypeerrorsClass = Class of TManagedInstanceLastAttemptTypeerrors;
-  
+
   { --------------------------------------------------------------------
     TManagedInstanceLastAttempt
     --------------------------------------------------------------------}
-  
+
   TManagedInstanceLastAttempt = Class(TGoogleBaseObject)
   Private
     Ferrors : TManagedInstanceLastAttemptTypeerrors;
@@ -3681,11 +3687,11 @@ type
     Property errors : TManagedInstanceLastAttemptTypeerrors Index 0 Read Ferrors Write Seterrors;
   end;
   TManagedInstanceLastAttemptClass = Class of TManagedInstanceLastAttempt;
-  
+
   { --------------------------------------------------------------------
     TMetadataTypeitemsItem
     --------------------------------------------------------------------}
-  
+
   TMetadataTypeitemsItem = Class(TGoogleBaseObject)
   Private
     Fkey : String;
@@ -3700,11 +3706,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TMetadataTypeitemsItemClass = Class of TMetadataTypeitemsItem;
-  
+
   { --------------------------------------------------------------------
     TMetadata
     --------------------------------------------------------------------}
-  
+
   TMetadata = Class(TGoogleBaseObject)
   Private
     Ffingerprint : String;
@@ -3726,11 +3732,11 @@ type
     Property kind : String Index 16 Read Fkind Write Setkind;
   end;
   TMetadataClass = Class of TMetadata;
-  
+
   { --------------------------------------------------------------------
     TNamedPort
     --------------------------------------------------------------------}
-  
+
   TNamedPort = Class(TGoogleBaseObject)
   Private
     Fname : String;
@@ -3745,11 +3751,11 @@ type
     Property port : integer Index 8 Read Fport Write Setport;
   end;
   TNamedPortClass = Class of TNamedPort;
-  
+
   { --------------------------------------------------------------------
     TNetwork
     --------------------------------------------------------------------}
-  
+
   TNetwork = Class(TGoogleBaseObject)
   Private
     FIPv4Range : String;
@@ -3792,11 +3798,11 @@ type
     Property subnetworks : TStringArray Index 72 Read Fsubnetworks Write Setsubnetworks;
   end;
   TNetworkClass = Class of TNetwork;
-  
+
   { --------------------------------------------------------------------
     TNetworkInterface
     --------------------------------------------------------------------}
-  
+
   TNetworkInterface = Class(TGoogleBaseObject)
   Private
     FaccessConfigs : TNetworkInterfaceTypeaccessConfigsArray;
@@ -3824,11 +3830,11 @@ type
     Property subnetwork : String Index 32 Read Fsubnetwork Write Setsubnetwork;
   end;
   TNetworkInterfaceClass = Class of TNetworkInterface;
-  
+
   { --------------------------------------------------------------------
     TNetworkList
     --------------------------------------------------------------------}
-  
+
   TNetworkList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -3856,11 +3862,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TNetworkListClass = Class of TNetworkList;
-  
+
   { --------------------------------------------------------------------
     TOperationTypeerrorTypeerrorsItem
     --------------------------------------------------------------------}
-  
+
   TOperationTypeerrorTypeerrorsItem = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -3878,11 +3884,11 @@ type
     Property message : String Index 16 Read Fmessage Write Setmessage;
   end;
   TOperationTypeerrorTypeerrorsItemClass = Class of TOperationTypeerrorTypeerrorsItem;
-  
+
   { --------------------------------------------------------------------
     TOperationTypeerror
     --------------------------------------------------------------------}
-  
+
   TOperationTypeerror = Class(TGoogleBaseObject)
   Private
     Ferrors : TOperationTypeerrorTypeerrorsArray;
@@ -3898,11 +3904,11 @@ type
     Property errors : TOperationTypeerrorTypeerrorsArray Index 0 Read Ferrors Write Seterrors;
   end;
   TOperationTypeerrorClass = Class of TOperationTypeerror;
-  
+
   { --------------------------------------------------------------------
     TOperationTypewarningsItemTypedataItem
     --------------------------------------------------------------------}
-  
+
   TOperationTypewarningsItemTypedataItem = Class(TGoogleBaseObject)
   Private
     Fkey : String;
@@ -3917,11 +3923,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TOperationTypewarningsItemTypedataItemClass = Class of TOperationTypewarningsItemTypedataItem;
-  
+
   { --------------------------------------------------------------------
     TOperationTypewarningsItem
     --------------------------------------------------------------------}
-  
+
   TOperationTypewarningsItem = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -3943,11 +3949,11 @@ type
     Property message : String Index 16 Read Fmessage Write Setmessage;
   end;
   TOperationTypewarningsItemClass = Class of TOperationTypewarningsItem;
-  
+
   { --------------------------------------------------------------------
     TOperation
     --------------------------------------------------------------------}
-  
+
   TOperation = Class(TGoogleBaseObject)
   Private
     FclientOperationId : String;
@@ -4029,11 +4035,11 @@ type
     Property zone : String Index 176 Read Fzone Write Setzone;
   end;
   TOperationClass = Class of TOperation;
-  
+
   { --------------------------------------------------------------------
     TOperationAggregatedListTypeitems
     --------------------------------------------------------------------}
-  
+
   TOperationAggregatedListTypeitems = Class(TGoogleBaseObject)
   Private
   Protected
@@ -4043,11 +4049,11 @@ type
   Published
   end;
   TOperationAggregatedListTypeitemsClass = Class of TOperationAggregatedListTypeitems;
-  
+
   { --------------------------------------------------------------------
     TOperationAggregatedList
     --------------------------------------------------------------------}
-  
+
   TOperationAggregatedList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -4071,11 +4077,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TOperationAggregatedListClass = Class of TOperationAggregatedList;
-  
+
   { --------------------------------------------------------------------
     TOperationList
     --------------------------------------------------------------------}
-  
+
   TOperationList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -4103,11 +4109,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TOperationListClass = Class of TOperationList;
-  
+
   { --------------------------------------------------------------------
     TOperationsScopedListTypewarningTypedataItem
     --------------------------------------------------------------------}
-  
+
   TOperationsScopedListTypewarningTypedataItem = Class(TGoogleBaseObject)
   Private
     Fkey : String;
@@ -4122,11 +4128,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TOperationsScopedListTypewarningTypedataItemClass = Class of TOperationsScopedListTypewarningTypedataItem;
-  
+
   { --------------------------------------------------------------------
     TOperationsScopedListTypewarning
     --------------------------------------------------------------------}
-  
+
   TOperationsScopedListTypewarning = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -4148,11 +4154,11 @@ type
     Property message : String Index 16 Read Fmessage Write Setmessage;
   end;
   TOperationsScopedListTypewarningClass = Class of TOperationsScopedListTypewarning;
-  
+
   { --------------------------------------------------------------------
     TOperationsScopedList
     --------------------------------------------------------------------}
-  
+
   TOperationsScopedList = Class(TGoogleBaseObject)
   Private
     Foperations : TOperationsScopedListTypeoperationsArray;
@@ -4171,11 +4177,11 @@ type
     Property warning : TOperationsScopedListTypewarning Index 8 Read Fwarning Write Setwarning;
   end;
   TOperationsScopedListClass = Class of TOperationsScopedList;
-  
+
   { --------------------------------------------------------------------
     TPathMatcher
     --------------------------------------------------------------------}
-  
+
   TPathMatcher = Class(TGoogleBaseObject)
   Private
     FdefaultService : String;
@@ -4200,11 +4206,11 @@ type
     Property pathRules : TPathMatcherTypepathRulesArray Index 24 Read FpathRules Write SetpathRules;
   end;
   TPathMatcherClass = Class of TPathMatcher;
-  
+
   { --------------------------------------------------------------------
     TPathRule
     --------------------------------------------------------------------}
-  
+
   TPathRule = Class(TGoogleBaseObject)
   Private
     Fpaths : TStringArray;
@@ -4223,11 +4229,11 @@ type
     Property service : String Index 8 Read Fservice Write Setservice;
   end;
   TPathRuleClass = Class of TPathRule;
-  
+
   { --------------------------------------------------------------------
     TProject
     --------------------------------------------------------------------}
-  
+
   TProject = Class(TGoogleBaseObject)
   Private
     FcommonInstanceMetadata : TMetadata;
@@ -4270,11 +4276,11 @@ type
     Property usageExportLocation : TUsageExportLocation Index 72 Read FusageExportLocation Write SetusageExportLocation;
   end;
   TProjectClass = Class of TProject;
-  
+
   { --------------------------------------------------------------------
     TQuota
     --------------------------------------------------------------------}
-  
+
   TQuota = Class(TGoogleBaseObject)
   Private
     Flimit : double;
@@ -4292,11 +4298,11 @@ type
     Property usage : double Index 16 Read Fusage Write Setusage;
   end;
   TQuotaClass = Class of TQuota;
-  
+
   { --------------------------------------------------------------------
     TRegion
     --------------------------------------------------------------------}
-  
+
   TRegion = Class(TGoogleBaseObject)
   Private
     FcreationTimestamp : String;
@@ -4339,11 +4345,11 @@ type
     Property zones : TStringArray Index 72 Read Fzones Write Setzones;
   end;
   TRegionClass = Class of TRegion;
-  
+
   { --------------------------------------------------------------------
     TRegionList
     --------------------------------------------------------------------}
-  
+
   TRegionList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -4371,11 +4377,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TRegionListClass = Class of TRegionList;
-  
+
   { --------------------------------------------------------------------
     TResourceGroupReference
     --------------------------------------------------------------------}
-  
+
   TResourceGroupReference = Class(TGoogleBaseObject)
   Private
     Fgroup : String;
@@ -4387,11 +4393,11 @@ type
     Property group : String Index 0 Read Fgroup Write Setgroup;
   end;
   TResourceGroupReferenceClass = Class of TResourceGroupReference;
-  
+
   { --------------------------------------------------------------------
     TRouteTypewarningsItemTypedataItem
     --------------------------------------------------------------------}
-  
+
   TRouteTypewarningsItemTypedataItem = Class(TGoogleBaseObject)
   Private
     Fkey : String;
@@ -4406,11 +4412,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TRouteTypewarningsItemTypedataItemClass = Class of TRouteTypewarningsItemTypedataItem;
-  
+
   { --------------------------------------------------------------------
     TRouteTypewarningsItem
     --------------------------------------------------------------------}
-  
+
   TRouteTypewarningsItem = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -4432,11 +4438,11 @@ type
     Property message : String Index 16 Read Fmessage Write Setmessage;
   end;
   TRouteTypewarningsItemClass = Class of TRouteTypewarningsItem;
-  
+
   { --------------------------------------------------------------------
     TRoute
     --------------------------------------------------------------------}
-  
+
   TRoute = Class(TGoogleBaseObject)
   Private
     FcreationTimestamp : String;
@@ -4497,11 +4503,11 @@ type
     Property warnings : TRouteTypewarningsArray Index 120 Read Fwarnings Write Setwarnings;
   end;
   TRouteClass = Class of TRoute;
-  
+
   { --------------------------------------------------------------------
     TRouteList
     --------------------------------------------------------------------}
-  
+
   TRouteList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -4529,11 +4535,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TRouteListClass = Class of TRouteList;
-  
+
   { --------------------------------------------------------------------
     TScheduling
     --------------------------------------------------------------------}
-  
+
   TScheduling = Class(TGoogleBaseObject)
   Private
     FautomaticRestart : boolean;
@@ -4551,11 +4557,11 @@ type
     Property preemptible : boolean Index 16 Read Fpreemptible Write Setpreemptible;
   end;
   TSchedulingClass = Class of TScheduling;
-  
+
   { --------------------------------------------------------------------
     TSerialPortOutput
     --------------------------------------------------------------------}
-  
+
   TSerialPortOutput = Class(TGoogleBaseObject)
   Private
     Fcontents : String;
@@ -4573,11 +4579,11 @@ type
     Property selfLink : String Index 16 Read FselfLink Write SetselfLink;
   end;
   TSerialPortOutputClass = Class of TSerialPortOutput;
-  
+
   { --------------------------------------------------------------------
     TServiceAccount
     --------------------------------------------------------------------}
-  
+
   TServiceAccount = Class(TGoogleBaseObject)
   Private
     Femail : String;
@@ -4596,11 +4602,11 @@ type
     Property scopes : TStringArray Index 8 Read Fscopes Write Setscopes;
   end;
   TServiceAccountClass = Class of TServiceAccount;
-  
+
   { --------------------------------------------------------------------
     TSnapshot
     --------------------------------------------------------------------}
-  
+
   TSnapshot = Class(TGoogleBaseObject)
   Private
     FcreationTimestamp : String;
@@ -4652,11 +4658,11 @@ type
     Property storageBytesStatus : String Index 96 Read FstorageBytesStatus Write SetstorageBytesStatus;
   end;
   TSnapshotClass = Class of TSnapshot;
-  
+
   { --------------------------------------------------------------------
     TSnapshotList
     --------------------------------------------------------------------}
-  
+
   TSnapshotList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -4684,11 +4690,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TSnapshotListClass = Class of TSnapshotList;
-  
+
   { --------------------------------------------------------------------
     TSslCertificate
     --------------------------------------------------------------------}
-  
+
   TSslCertificate = Class(TGoogleBaseObject)
   Private
     Fcertificate : String;
@@ -4721,11 +4727,11 @@ type
     Property selfLink : String Index 56 Read FselfLink Write SetselfLink;
   end;
   TSslCertificateClass = Class of TSslCertificate;
-  
+
   { --------------------------------------------------------------------
     TSslCertificateList
     --------------------------------------------------------------------}
-  
+
   TSslCertificateList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -4753,11 +4759,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TSslCertificateListClass = Class of TSslCertificateList;
-  
+
   { --------------------------------------------------------------------
     TSubnetwork
     --------------------------------------------------------------------}
-  
+
   TSubnetwork = Class(TGoogleBaseObject)
   Private
     FcreationTimestamp : String;
@@ -4796,11 +4802,11 @@ type
     Property selfLink : String Index 72 Read FselfLink Write SetselfLink;
   end;
   TSubnetworkClass = Class of TSubnetwork;
-  
+
   { --------------------------------------------------------------------
     TSubnetworkAggregatedListTypeitems
     --------------------------------------------------------------------}
-  
+
   TSubnetworkAggregatedListTypeitems = Class(TGoogleBaseObject)
   Private
   Protected
@@ -4810,11 +4816,11 @@ type
   Published
   end;
   TSubnetworkAggregatedListTypeitemsClass = Class of TSubnetworkAggregatedListTypeitems;
-  
+
   { --------------------------------------------------------------------
     TSubnetworkAggregatedList
     --------------------------------------------------------------------}
-  
+
   TSubnetworkAggregatedList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -4838,11 +4844,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TSubnetworkAggregatedListClass = Class of TSubnetworkAggregatedList;
-  
+
   { --------------------------------------------------------------------
     TSubnetworkList
     --------------------------------------------------------------------}
-  
+
   TSubnetworkList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -4870,11 +4876,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TSubnetworkListClass = Class of TSubnetworkList;
-  
+
   { --------------------------------------------------------------------
     TSubnetworksScopedListTypewarningTypedataItem
     --------------------------------------------------------------------}
-  
+
   TSubnetworksScopedListTypewarningTypedataItem = Class(TGoogleBaseObject)
   Private
     Fkey : String;
@@ -4889,11 +4895,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TSubnetworksScopedListTypewarningTypedataItemClass = Class of TSubnetworksScopedListTypewarningTypedataItem;
-  
+
   { --------------------------------------------------------------------
     TSubnetworksScopedListTypewarning
     --------------------------------------------------------------------}
-  
+
   TSubnetworksScopedListTypewarning = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -4915,11 +4921,11 @@ type
     Property message : String Index 16 Read Fmessage Write Setmessage;
   end;
   TSubnetworksScopedListTypewarningClass = Class of TSubnetworksScopedListTypewarning;
-  
+
   { --------------------------------------------------------------------
     TSubnetworksScopedList
     --------------------------------------------------------------------}
-  
+
   TSubnetworksScopedList = Class(TGoogleBaseObject)
   Private
     Fsubnetworks : TSubnetworksScopedListTypesubnetworksArray;
@@ -4938,11 +4944,11 @@ type
     Property warning : TSubnetworksScopedListTypewarning Index 8 Read Fwarning Write Setwarning;
   end;
   TSubnetworksScopedListClass = Class of TSubnetworksScopedList;
-  
+
   { --------------------------------------------------------------------
     TTags
     --------------------------------------------------------------------}
-  
+
   TTags = Class(TGoogleBaseObject)
   Private
     Ffingerprint : String;
@@ -4961,11 +4967,11 @@ type
     Property items : TStringArray Index 8 Read Fitems Write Setitems;
   end;
   TTagsClass = Class of TTags;
-  
+
   { --------------------------------------------------------------------
     TTargetHttpProxy
     --------------------------------------------------------------------}
-  
+
   TTargetHttpProxy = Class(TGoogleBaseObject)
   Private
     FcreationTimestamp : String;
@@ -4995,11 +5001,11 @@ type
     Property urlMap : String Index 48 Read FurlMap Write SeturlMap;
   end;
   TTargetHttpProxyClass = Class of TTargetHttpProxy;
-  
+
   { --------------------------------------------------------------------
     TTargetHttpProxyList
     --------------------------------------------------------------------}
-  
+
   TTargetHttpProxyList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -5027,11 +5033,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TTargetHttpProxyListClass = Class of TTargetHttpProxyList;
-  
+
   { --------------------------------------------------------------------
     TTargetHttpsProxiesSetSslCertificatesRequest
     --------------------------------------------------------------------}
-  
+
   TTargetHttpsProxiesSetSslCertificatesRequest = Class(TGoogleBaseObject)
   Private
     FsslCertificates : TStringArray;
@@ -5047,11 +5053,11 @@ type
     Property sslCertificates : TStringArray Index 0 Read FsslCertificates Write SetsslCertificates;
   end;
   TTargetHttpsProxiesSetSslCertificatesRequestClass = Class of TTargetHttpsProxiesSetSslCertificatesRequest;
-  
+
   { --------------------------------------------------------------------
     TTargetHttpsProxy
     --------------------------------------------------------------------}
-  
+
   TTargetHttpsProxy = Class(TGoogleBaseObject)
   Private
     FcreationTimestamp : String;
@@ -5088,11 +5094,11 @@ type
     Property urlMap : String Index 56 Read FurlMap Write SeturlMap;
   end;
   TTargetHttpsProxyClass = Class of TTargetHttpsProxy;
-  
+
   { --------------------------------------------------------------------
     TTargetHttpsProxyList
     --------------------------------------------------------------------}
-  
+
   TTargetHttpsProxyList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -5120,11 +5126,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TTargetHttpsProxyListClass = Class of TTargetHttpsProxyList;
-  
+
   { --------------------------------------------------------------------
     TTargetInstance
     --------------------------------------------------------------------}
-  
+
   TTargetInstance = Class(TGoogleBaseObject)
   Private
     FcreationTimestamp : String;
@@ -5160,11 +5166,11 @@ type
     Property zone : String Index 64 Read Fzone Write Setzone;
   end;
   TTargetInstanceClass = Class of TTargetInstance;
-  
+
   { --------------------------------------------------------------------
     TTargetInstanceAggregatedListTypeitems
     --------------------------------------------------------------------}
-  
+
   TTargetInstanceAggregatedListTypeitems = Class(TGoogleBaseObject)
   Private
   Protected
@@ -5174,11 +5180,11 @@ type
   Published
   end;
   TTargetInstanceAggregatedListTypeitemsClass = Class of TTargetInstanceAggregatedListTypeitems;
-  
+
   { --------------------------------------------------------------------
     TTargetInstanceAggregatedList
     --------------------------------------------------------------------}
-  
+
   TTargetInstanceAggregatedList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -5202,11 +5208,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TTargetInstanceAggregatedListClass = Class of TTargetInstanceAggregatedList;
-  
+
   { --------------------------------------------------------------------
     TTargetInstanceList
     --------------------------------------------------------------------}
-  
+
   TTargetInstanceList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -5234,11 +5240,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TTargetInstanceListClass = Class of TTargetInstanceList;
-  
+
   { --------------------------------------------------------------------
     TTargetInstancesScopedListTypewarningTypedataItem
     --------------------------------------------------------------------}
-  
+
   TTargetInstancesScopedListTypewarningTypedataItem = Class(TGoogleBaseObject)
   Private
     Fkey : String;
@@ -5253,11 +5259,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TTargetInstancesScopedListTypewarningTypedataItemClass = Class of TTargetInstancesScopedListTypewarningTypedataItem;
-  
+
   { --------------------------------------------------------------------
     TTargetInstancesScopedListTypewarning
     --------------------------------------------------------------------}
-  
+
   TTargetInstancesScopedListTypewarning = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -5279,11 +5285,11 @@ type
     Property message : String Index 16 Read Fmessage Write Setmessage;
   end;
   TTargetInstancesScopedListTypewarningClass = Class of TTargetInstancesScopedListTypewarning;
-  
+
   { --------------------------------------------------------------------
     TTargetInstancesScopedList
     --------------------------------------------------------------------}
-  
+
   TTargetInstancesScopedList = Class(TGoogleBaseObject)
   Private
     FtargetInstances : TTargetInstancesScopedListTypetargetInstancesArray;
@@ -5302,11 +5308,11 @@ type
     Property warning : TTargetInstancesScopedListTypewarning Index 8 Read Fwarning Write Setwarning;
   end;
   TTargetInstancesScopedListClass = Class of TTargetInstancesScopedList;
-  
+
   { --------------------------------------------------------------------
     TTargetPool
     --------------------------------------------------------------------}
-  
+
   TTargetPool = Class(TGoogleBaseObject)
   Private
     FbackupPool : String;
@@ -5355,11 +5361,11 @@ type
     Property sessionAffinity : String Index 88 Read FsessionAffinity Write SetsessionAffinity;
   end;
   TTargetPoolClass = Class of TTargetPool;
-  
+
   { --------------------------------------------------------------------
     TTargetPoolAggregatedListTypeitems
     --------------------------------------------------------------------}
-  
+
   TTargetPoolAggregatedListTypeitems = Class(TGoogleBaseObject)
   Private
   Protected
@@ -5369,11 +5375,11 @@ type
   Published
   end;
   TTargetPoolAggregatedListTypeitemsClass = Class of TTargetPoolAggregatedListTypeitems;
-  
+
   { --------------------------------------------------------------------
     TTargetPoolAggregatedList
     --------------------------------------------------------------------}
-  
+
   TTargetPoolAggregatedList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -5397,11 +5403,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TTargetPoolAggregatedListClass = Class of TTargetPoolAggregatedList;
-  
+
   { --------------------------------------------------------------------
     TTargetPoolInstanceHealth
     --------------------------------------------------------------------}
-  
+
   TTargetPoolInstanceHealth = Class(TGoogleBaseObject)
   Private
     FhealthStatus : TTargetPoolInstanceHealthTypehealthStatusArray;
@@ -5420,11 +5426,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TTargetPoolInstanceHealthClass = Class of TTargetPoolInstanceHealth;
-  
+
   { --------------------------------------------------------------------
     TTargetPoolList
     --------------------------------------------------------------------}
-  
+
   TTargetPoolList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -5452,11 +5458,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TTargetPoolListClass = Class of TTargetPoolList;
-  
+
   { --------------------------------------------------------------------
     TTargetPoolsAddHealthCheckRequest
     --------------------------------------------------------------------}
-  
+
   TTargetPoolsAddHealthCheckRequest = Class(TGoogleBaseObject)
   Private
     FhealthChecks : TTargetPoolsAddHealthCheckRequestTypehealthChecksArray;
@@ -5472,11 +5478,11 @@ type
     Property healthChecks : TTargetPoolsAddHealthCheckRequestTypehealthChecksArray Index 0 Read FhealthChecks Write SethealthChecks;
   end;
   TTargetPoolsAddHealthCheckRequestClass = Class of TTargetPoolsAddHealthCheckRequest;
-  
+
   { --------------------------------------------------------------------
     TTargetPoolsAddInstanceRequest
     --------------------------------------------------------------------}
-  
+
   TTargetPoolsAddInstanceRequest = Class(TGoogleBaseObject)
   Private
     Finstances : TTargetPoolsAddInstanceRequestTypeinstancesArray;
@@ -5492,11 +5498,11 @@ type
     Property instances : TTargetPoolsAddInstanceRequestTypeinstancesArray Index 0 Read Finstances Write Setinstances;
   end;
   TTargetPoolsAddInstanceRequestClass = Class of TTargetPoolsAddInstanceRequest;
-  
+
   { --------------------------------------------------------------------
     TTargetPoolsRemoveHealthCheckRequest
     --------------------------------------------------------------------}
-  
+
   TTargetPoolsRemoveHealthCheckRequest = Class(TGoogleBaseObject)
   Private
     FhealthChecks : TTargetPoolsRemoveHealthCheckRequestTypehealthChecksArray;
@@ -5512,11 +5518,11 @@ type
     Property healthChecks : TTargetPoolsRemoveHealthCheckRequestTypehealthChecksArray Index 0 Read FhealthChecks Write SethealthChecks;
   end;
   TTargetPoolsRemoveHealthCheckRequestClass = Class of TTargetPoolsRemoveHealthCheckRequest;
-  
+
   { --------------------------------------------------------------------
     TTargetPoolsRemoveInstanceRequest
     --------------------------------------------------------------------}
-  
+
   TTargetPoolsRemoveInstanceRequest = Class(TGoogleBaseObject)
   Private
     Finstances : TTargetPoolsRemoveInstanceRequestTypeinstancesArray;
@@ -5532,11 +5538,11 @@ type
     Property instances : TTargetPoolsRemoveInstanceRequestTypeinstancesArray Index 0 Read Finstances Write Setinstances;
   end;
   TTargetPoolsRemoveInstanceRequestClass = Class of TTargetPoolsRemoveInstanceRequest;
-  
+
   { --------------------------------------------------------------------
     TTargetPoolsScopedListTypewarningTypedataItem
     --------------------------------------------------------------------}
-  
+
   TTargetPoolsScopedListTypewarningTypedataItem = Class(TGoogleBaseObject)
   Private
     Fkey : String;
@@ -5551,11 +5557,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TTargetPoolsScopedListTypewarningTypedataItemClass = Class of TTargetPoolsScopedListTypewarningTypedataItem;
-  
+
   { --------------------------------------------------------------------
     TTargetPoolsScopedListTypewarning
     --------------------------------------------------------------------}
-  
+
   TTargetPoolsScopedListTypewarning = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -5577,11 +5583,11 @@ type
     Property message : String Index 16 Read Fmessage Write Setmessage;
   end;
   TTargetPoolsScopedListTypewarningClass = Class of TTargetPoolsScopedListTypewarning;
-  
+
   { --------------------------------------------------------------------
     TTargetPoolsScopedList
     --------------------------------------------------------------------}
-  
+
   TTargetPoolsScopedList = Class(TGoogleBaseObject)
   Private
     FtargetPools : TTargetPoolsScopedListTypetargetPoolsArray;
@@ -5600,11 +5606,11 @@ type
     Property warning : TTargetPoolsScopedListTypewarning Index 8 Read Fwarning Write Setwarning;
   end;
   TTargetPoolsScopedListClass = Class of TTargetPoolsScopedList;
-  
+
   { --------------------------------------------------------------------
     TTargetReference
     --------------------------------------------------------------------}
-  
+
   TTargetReference = Class(TGoogleBaseObject)
   Private
     Ftarget : String;
@@ -5616,11 +5622,11 @@ type
     Property target : String Index 0 Read Ftarget Write Settarget;
   end;
   TTargetReferenceClass = Class of TTargetReference;
-  
+
   { --------------------------------------------------------------------
     TTargetVpnGateway
     --------------------------------------------------------------------}
-  
+
   TTargetVpnGateway = Class(TGoogleBaseObject)
   Private
     FcreationTimestamp : String;
@@ -5666,11 +5672,11 @@ type
     Property tunnels : TStringArray Index 80 Read Ftunnels Write Settunnels;
   end;
   TTargetVpnGatewayClass = Class of TTargetVpnGateway;
-  
+
   { --------------------------------------------------------------------
     TTargetVpnGatewayAggregatedListTypeitems
     --------------------------------------------------------------------}
-  
+
   TTargetVpnGatewayAggregatedListTypeitems = Class(TGoogleBaseObject)
   Private
   Protected
@@ -5680,11 +5686,11 @@ type
   Published
   end;
   TTargetVpnGatewayAggregatedListTypeitemsClass = Class of TTargetVpnGatewayAggregatedListTypeitems;
-  
+
   { --------------------------------------------------------------------
     TTargetVpnGatewayAggregatedList
     --------------------------------------------------------------------}
-  
+
   TTargetVpnGatewayAggregatedList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -5708,11 +5714,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TTargetVpnGatewayAggregatedListClass = Class of TTargetVpnGatewayAggregatedList;
-  
+
   { --------------------------------------------------------------------
     TTargetVpnGatewayList
     --------------------------------------------------------------------}
-  
+
   TTargetVpnGatewayList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -5740,11 +5746,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TTargetVpnGatewayListClass = Class of TTargetVpnGatewayList;
-  
+
   { --------------------------------------------------------------------
     TTargetVpnGatewaysScopedListTypewarningTypedataItem
     --------------------------------------------------------------------}
-  
+
   TTargetVpnGatewaysScopedListTypewarningTypedataItem = Class(TGoogleBaseObject)
   Private
     Fkey : String;
@@ -5759,11 +5765,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TTargetVpnGatewaysScopedListTypewarningTypedataItemClass = Class of TTargetVpnGatewaysScopedListTypewarningTypedataItem;
-  
+
   { --------------------------------------------------------------------
     TTargetVpnGatewaysScopedListTypewarning
     --------------------------------------------------------------------}
-  
+
   TTargetVpnGatewaysScopedListTypewarning = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -5785,11 +5791,11 @@ type
     Property message : String Index 16 Read Fmessage Write Setmessage;
   end;
   TTargetVpnGatewaysScopedListTypewarningClass = Class of TTargetVpnGatewaysScopedListTypewarning;
-  
+
   { --------------------------------------------------------------------
     TTargetVpnGatewaysScopedList
     --------------------------------------------------------------------}
-  
+
   TTargetVpnGatewaysScopedList = Class(TGoogleBaseObject)
   Private
     FtargetVpnGateways : TTargetVpnGatewaysScopedListTypetargetVpnGatewaysArray;
@@ -5808,11 +5814,11 @@ type
     Property warning : TTargetVpnGatewaysScopedListTypewarning Index 8 Read Fwarning Write Setwarning;
   end;
   TTargetVpnGatewaysScopedListClass = Class of TTargetVpnGatewaysScopedList;
-  
+
   { --------------------------------------------------------------------
     TTestFailure
     --------------------------------------------------------------------}
-  
+
   TTestFailure = Class(TGoogleBaseObject)
   Private
     FactualService : String;
@@ -5833,11 +5839,11 @@ type
     Property path : String Index 24 Read Fpath Write Setpath;
   end;
   TTestFailureClass = Class of TTestFailure;
-  
+
   { --------------------------------------------------------------------
     TUrlMap
     --------------------------------------------------------------------}
-  
+
   TUrlMap = Class(TGoogleBaseObject)
   Private
     FcreationTimestamp : String;
@@ -5883,11 +5889,11 @@ type
     Property tests : TUrlMapTypetestsArray Index 80 Read Ftests Write Settests;
   end;
   TUrlMapClass = Class of TUrlMap;
-  
+
   { --------------------------------------------------------------------
     TUrlMapList
     --------------------------------------------------------------------}
-  
+
   TUrlMapList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -5915,11 +5921,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TUrlMapListClass = Class of TUrlMapList;
-  
+
   { --------------------------------------------------------------------
     TUrlMapReference
     --------------------------------------------------------------------}
-  
+
   TUrlMapReference = Class(TGoogleBaseObject)
   Private
     FurlMap : String;
@@ -5931,11 +5937,11 @@ type
     Property urlMap : String Index 0 Read FurlMap Write SeturlMap;
   end;
   TUrlMapReferenceClass = Class of TUrlMapReference;
-  
+
   { --------------------------------------------------------------------
     TUrlMapTest
     --------------------------------------------------------------------}
-  
+
   TUrlMapTest = Class(TGoogleBaseObject)
   Private
     Fdescription : String;
@@ -5956,11 +5962,11 @@ type
     Property service : String Index 24 Read Fservice Write Setservice;
   end;
   TUrlMapTestClass = Class of TUrlMapTest;
-  
+
   { --------------------------------------------------------------------
     TUrlMapValidationResult
     --------------------------------------------------------------------}
-  
+
   TUrlMapValidationResult = Class(TGoogleBaseObject)
   Private
     FloadErrors : TStringArray;
@@ -5985,11 +5991,11 @@ type
     Property testPassed : boolean Index 24 Read FtestPassed Write SettestPassed;
   end;
   TUrlMapValidationResultClass = Class of TUrlMapValidationResult;
-  
+
   { --------------------------------------------------------------------
     TUrlMapsValidateRequest
     --------------------------------------------------------------------}
-  
+
   TUrlMapsValidateRequest = Class(TGoogleBaseObject)
   Private
     Fresource : TUrlMap;
@@ -6001,11 +6007,11 @@ type
     Property resource : TUrlMap Index 0 Read Fresource Write Setresource;
   end;
   TUrlMapsValidateRequestClass = Class of TUrlMapsValidateRequest;
-  
+
   { --------------------------------------------------------------------
     TUrlMapsValidateResponse
     --------------------------------------------------------------------}
-  
+
   TUrlMapsValidateResponse = Class(TGoogleBaseObject)
   Private
     Fresult : TUrlMapValidationResult;
@@ -6017,11 +6023,11 @@ type
     Property result : TUrlMapValidationResult Index 0 Read Fresult Write Setresult;
   end;
   TUrlMapsValidateResponseClass = Class of TUrlMapsValidateResponse;
-  
+
   { --------------------------------------------------------------------
     TUsageExportLocation
     --------------------------------------------------------------------}
-  
+
   TUsageExportLocation = Class(TGoogleBaseObject)
   Private
     FbucketName : String;
@@ -6036,11 +6042,11 @@ type
     Property reportNamePrefix : String Index 8 Read FreportNamePrefix Write SetreportNamePrefix;
   end;
   TUsageExportLocationClass = Class of TUsageExportLocation;
-  
+
   { --------------------------------------------------------------------
     TVpnTunnel
     --------------------------------------------------------------------}
-  
+
   TVpnTunnel = Class(TGoogleBaseObject)
   Private
     FcreationTimestamp : String;
@@ -6098,11 +6104,11 @@ type
     Property targetVpnGateway : String Index 112 Read FtargetVpnGateway Write SettargetVpnGateway;
   end;
   TVpnTunnelClass = Class of TVpnTunnel;
-  
+
   { --------------------------------------------------------------------
     TVpnTunnelAggregatedListTypeitems
     --------------------------------------------------------------------}
-  
+
   TVpnTunnelAggregatedListTypeitems = Class(TGoogleBaseObject)
   Private
   Protected
@@ -6112,11 +6118,11 @@ type
   Published
   end;
   TVpnTunnelAggregatedListTypeitemsClass = Class of TVpnTunnelAggregatedListTypeitems;
-  
+
   { --------------------------------------------------------------------
     TVpnTunnelAggregatedList
     --------------------------------------------------------------------}
-  
+
   TVpnTunnelAggregatedList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -6140,11 +6146,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TVpnTunnelAggregatedListClass = Class of TVpnTunnelAggregatedList;
-  
+
   { --------------------------------------------------------------------
     TVpnTunnelList
     --------------------------------------------------------------------}
-  
+
   TVpnTunnelList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -6172,11 +6178,11 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TVpnTunnelListClass = Class of TVpnTunnelList;
-  
+
   { --------------------------------------------------------------------
     TVpnTunnelsScopedListTypewarningTypedataItem
     --------------------------------------------------------------------}
-  
+
   TVpnTunnelsScopedListTypewarningTypedataItem = Class(TGoogleBaseObject)
   Private
     Fkey : String;
@@ -6191,11 +6197,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TVpnTunnelsScopedListTypewarningTypedataItemClass = Class of TVpnTunnelsScopedListTypewarningTypedataItem;
-  
+
   { --------------------------------------------------------------------
     TVpnTunnelsScopedListTypewarning
     --------------------------------------------------------------------}
-  
+
   TVpnTunnelsScopedListTypewarning = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -6217,11 +6223,11 @@ type
     Property message : String Index 16 Read Fmessage Write Setmessage;
   end;
   TVpnTunnelsScopedListTypewarningClass = Class of TVpnTunnelsScopedListTypewarning;
-  
+
   { --------------------------------------------------------------------
     TVpnTunnelsScopedList
     --------------------------------------------------------------------}
-  
+
   TVpnTunnelsScopedList = Class(TGoogleBaseObject)
   Private
     FvpnTunnels : TVpnTunnelsScopedListTypevpnTunnelsArray;
@@ -6240,11 +6246,11 @@ type
     Property warning : TVpnTunnelsScopedListTypewarning Index 8 Read Fwarning Write Setwarning;
   end;
   TVpnTunnelsScopedListClass = Class of TVpnTunnelsScopedList;
-  
+
   { --------------------------------------------------------------------
     TZone
     --------------------------------------------------------------------}
-  
+
   TZone = Class(TGoogleBaseObject)
   Private
     FcreationTimestamp : String;
@@ -6280,11 +6286,11 @@ type
     Property status : String Index 64 Read Fstatus Write Setstatus;
   end;
   TZoneClass = Class of TZone;
-  
+
   { --------------------------------------------------------------------
     TZoneList
     --------------------------------------------------------------------}
-  
+
   TZoneList = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -6312,29 +6318,29 @@ type
     Property selfLink : String Index 32 Read FselfLink Write SetselfLink;
   end;
   TZoneListClass = Class of TZoneList;
-  
+
   { --------------------------------------------------------------------
     TAddressesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TAddressesResource, method AggregatedList
-  
+
   TAddressesAggregatedListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
-  
+
+
   //Optional query Options for TAddressesResource, method List
-  
+
   TAddressesListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TAddressesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -6347,44 +6353,44 @@ type
     Function List(project: string; region: string; AQuery : string  = '') : TAddressList;
     Function List(project: string; region: string; AQuery : TAddresseslistOptions) : TAddressList;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TAutoscalersResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TAutoscalersResource, method AggregatedList
-  
+
   TAutoscalersAggregatedListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
-  
+
+
   //Optional query Options for TAutoscalersResource, method List
-  
+
   TAutoscalersListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
-  
+
+
   //Optional query Options for TAutoscalersResource, method Patch
-  
+
   TAutoscalersPatchOptions = Record
     autoscaler : String;
   end;
-  
-  
+
+
   //Optional query Options for TAutoscalersResource, method Update
-  
+
   TAutoscalersUpdateOptions = Record
     autoscaler : String;
   end;
-  
+
   TAutoscalersResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -6401,21 +6407,21 @@ type
     Function Update(project: string; zone: string; aAutoscaler : TAutoscaler; AQuery : string  = '') : TOperation;
     Function Update(project: string; zone: string; aAutoscaler : TAutoscaler; AQuery : TAutoscalersupdateOptions) : TOperation;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TBackendServicesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TBackendServicesResource, method List
-  
+
   TBackendServicesListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TBackendServicesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -6429,30 +6435,30 @@ type
     Function Patch(backendService: string; project: string; aBackendService : TBackendService) : TOperation;
     Function Update(backendService: string; project: string; aBackendService : TBackendService) : TOperation;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TDiskTypesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TDiskTypesResource, method AggregatedList
-  
+
   TDiskTypesAggregatedListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
-  
+
+
   //Optional query Options for TDiskTypesResource, method List
-  
+
   TDiskTypesListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TDiskTypesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -6463,37 +6469,37 @@ type
     Function List(project: string; zone: string; AQuery : string  = '') : TDiskTypeList;
     Function List(project: string; zone: string; AQuery : TDiskTypeslistOptions) : TDiskTypeList;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TDisksResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TDisksResource, method AggregatedList
-  
+
   TDisksAggregatedListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
-  
+
+
   //Optional query Options for TDisksResource, method Insert
-  
+
   TDisksInsertOptions = Record
     sourceImage : String;
   end;
-  
-  
+
+
   //Optional query Options for TDisksResource, method List
-  
+
   TDisksListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TDisksResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -6509,21 +6515,21 @@ type
     Function List(project: string; zone: string; AQuery : TDiskslistOptions) : TDiskList;
     Function Resize(disk: string; project: string; zone: string; aDisksResizeRequest : TDisksResizeRequest) : TOperation;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TFirewallsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TFirewallsResource, method List
-  
+
   TFirewallsListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TFirewallsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -6536,30 +6542,30 @@ type
     Function Patch(firewall: string; project: string; aFirewall : TFirewall) : TOperation;
     Function Update(firewall: string; project: string; aFirewall : TFirewall) : TOperation;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TForwardingRulesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TForwardingRulesResource, method AggregatedList
-  
+
   TForwardingRulesAggregatedListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
-  
+
+
   //Optional query Options for TForwardingRulesResource, method List
-  
+
   TForwardingRulesListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TForwardingRulesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -6573,21 +6579,21 @@ type
     Function List(project: string; region: string; AQuery : TForwardingRuleslistOptions) : TForwardingRuleList;
     Function SetTarget(forwardingRule: string; project: string; region: string; aTargetReference : TTargetReference) : TOperation;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TGlobalAddressesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TGlobalAddressesResource, method List
-  
+
   TGlobalAddressesListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TGlobalAddressesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -6598,21 +6604,21 @@ type
     Function List(project: string; AQuery : string  = '') : TAddressList;
     Function List(project: string; AQuery : TGlobalAddresseslistOptions) : TAddressList;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TGlobalForwardingRulesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TGlobalForwardingRulesResource, method List
-  
+
   TGlobalForwardingRulesListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TGlobalForwardingRulesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -6624,30 +6630,30 @@ type
     Function List(project: string; AQuery : TGlobalForwardingRuleslistOptions) : TForwardingRuleList;
     Function SetTarget(forwardingRule: string; project: string; aTargetReference : TTargetReference) : TOperation;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TGlobalOperationsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TGlobalOperationsResource, method AggregatedList
-  
+
   TGlobalOperationsAggregatedListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
-  
+
+
   //Optional query Options for TGlobalOperationsResource, method List
-  
+
   TGlobalOperationsListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TGlobalOperationsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -6659,21 +6665,21 @@ type
     Function List(project: string; AQuery : string  = '') : TOperationList;
     Function List(project: string; AQuery : TGlobalOperationslistOptions) : TOperationList;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     THttpHealthChecksResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for THttpHealthChecksResource, method List
-  
+
   THttpHealthChecksListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   THttpHealthChecksResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -6686,21 +6692,21 @@ type
     Function Patch(httpHealthCheck: string; project: string; aHttpHealthCheck : THttpHealthCheck) : TOperation;
     Function Update(httpHealthCheck: string; project: string; aHttpHealthCheck : THttpHealthCheck) : TOperation;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     THttpsHealthChecksResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for THttpsHealthChecksResource, method List
-  
+
   THttpsHealthChecksListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   THttpsHealthChecksResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -6713,21 +6719,21 @@ type
     Function Patch(httpsHealthCheck: string; project: string; aHttpsHealthCheck : THttpsHealthCheck) : TOperation;
     Function Update(httpsHealthCheck: string; project: string; aHttpsHealthCheck : THttpsHealthCheck) : TOperation;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TImagesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TImagesResource, method List
-  
+
   TImagesListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TImagesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -6740,37 +6746,37 @@ type
     Function List(project: string; AQuery : string  = '') : TImageList;
     Function List(project: string; AQuery : TImageslistOptions) : TImageList;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TInstanceGroupManagersResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TInstanceGroupManagersResource, method AggregatedList
-  
+
   TInstanceGroupManagersAggregatedListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
-  
+
+
   //Optional query Options for TInstanceGroupManagersResource, method List
-  
+
   TInstanceGroupManagersListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
-  
+
+
   //Optional query Options for TInstanceGroupManagersResource, method Resize
-  
+
   TInstanceGroupManagersResizeOptions = Record
     size : integer;
   end;
-  
+
   TInstanceGroupManagersResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -6791,39 +6797,39 @@ type
     Function SetInstanceTemplate(instanceGroupManager: string; project: string; zone: string; aInstanceGroupManagersSetInstanceTemplateRequest : TInstanceGroupManagersSetInstanceTemplateRequest) : TOperation;
     Function SetTargetPools(instanceGroupManager: string; project: string; zone: string; aInstanceGroupManagersSetTargetPoolsRequest : TInstanceGroupManagersSetTargetPoolsRequest) : TOperation;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TInstanceGroupsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TInstanceGroupsResource, method AggregatedList
-  
+
   TInstanceGroupsAggregatedListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
-  
+
+
   //Optional query Options for TInstanceGroupsResource, method List
-  
+
   TInstanceGroupsListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
-  
+
+
   //Optional query Options for TInstanceGroupsResource, method ListInstances
-  
+
   TInstanceGroupsListInstancesOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TInstanceGroupsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -6841,21 +6847,21 @@ type
     Function RemoveInstances(instanceGroup: string; project: string; zone: string; aInstanceGroupsRemoveInstancesRequest : TInstanceGroupsRemoveInstancesRequest) : TOperation;
     Function SetNamedPorts(instanceGroup: string; project: string; zone: string; aInstanceGroupsSetNamedPortsRequest : TInstanceGroupsSetNamedPortsRequest) : TOperation;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TInstanceTemplatesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TInstanceTemplatesResource, method List
-  
+
   TInstanceTemplatesListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TInstanceTemplatesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -6866,67 +6872,67 @@ type
     Function List(project: string; AQuery : string  = '') : TInstanceTemplateList;
     Function List(project: string; AQuery : TInstanceTemplateslistOptions) : TInstanceTemplateList;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TInstancesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TInstancesResource, method AddAccessConfig
-  
+
   TInstancesAddAccessConfigOptions = Record
     networkInterface : String;
   end;
-  
-  
+
+
   //Optional query Options for TInstancesResource, method AggregatedList
-  
+
   TInstancesAggregatedListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
-  
+
+
   //Optional query Options for TInstancesResource, method DeleteAccessConfig
-  
+
   TInstancesDeleteAccessConfigOptions = Record
     accessConfig : String;
     networkInterface : String;
   end;
-  
-  
+
+
   //Optional query Options for TInstancesResource, method DetachDisk
-  
+
   TInstancesDetachDiskOptions = Record
     deviceName : String;
   end;
-  
-  
+
+
   //Optional query Options for TInstancesResource, method GetSerialPortOutput
-  
+
   TInstancesGetSerialPortOutputOptions = Record
     port : integer;
   end;
-  
-  
+
+
   //Optional query Options for TInstancesResource, method List
-  
+
   TInstancesListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
-  
+
+
   //Optional query Options for TInstancesResource, method SetDiskAutoDelete
-  
+
   TInstancesSetDiskAutoDeleteOptions = Record
     autoDelete : boolean;
     deviceName : String;
   end;
-  
+
   TInstancesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -6957,42 +6963,42 @@ type
     Function Start(instance: string; project: string; zone: string) : TOperation;
     Function Stop(instance: string; project: string; zone: string) : TOperation;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TLicensesResource
     --------------------------------------------------------------------}
-  
+
   TLicensesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
     Class Function DefaultAPI : TGoogleAPIClass; override;
     Function Get(license: string; project: string) : TLicense;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TMachineTypesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TMachineTypesResource, method AggregatedList
-  
+
   TMachineTypesAggregatedListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
-  
+
+
   //Optional query Options for TMachineTypesResource, method List
-  
+
   TMachineTypesListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TMachineTypesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7003,21 +7009,21 @@ type
     Function List(project: string; zone: string; AQuery : string  = '') : TMachineTypeList;
     Function List(project: string; zone: string; AQuery : TMachineTypeslistOptions) : TMachineTypeList;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TNetworksResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TNetworksResource, method List
-  
+
   TNetworksListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TNetworksResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7028,12 +7034,12 @@ type
     Function List(project: string; AQuery : string  = '') : TNetworkList;
     Function List(project: string; AQuery : TNetworkslistOptions) : TNetworkList;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TProjectsResource
     --------------------------------------------------------------------}
-  
+
   TProjectsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7044,21 +7050,21 @@ type
     Function SetCommonInstanceMetadata(project: string; aMetadata : TMetadata) : TOperation;
     Function SetUsageExportBucket(project: string; aUsageExportLocation : TUsageExportLocation) : TOperation;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TRegionOperationsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TRegionOperationsResource, method List
-  
+
   TRegionOperationsListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TRegionOperationsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7068,21 +7074,21 @@ type
     Function List(project: string; region: string; AQuery : string  = '') : TOperationList;
     Function List(project: string; region: string; AQuery : TRegionOperationslistOptions) : TOperationList;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TRegionsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TRegionsResource, method List
-  
+
   TRegionsListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TRegionsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7091,21 +7097,21 @@ type
     Function List(project: string; AQuery : string  = '') : TRegionList;
     Function List(project: string; AQuery : TRegionslistOptions) : TRegionList;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TRoutesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TRoutesResource, method List
-  
+
   TRoutesListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TRoutesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7116,21 +7122,21 @@ type
     Function List(project: string; AQuery : string  = '') : TRouteList;
     Function List(project: string; AQuery : TRouteslistOptions) : TRouteList;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TSnapshotsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TSnapshotsResource, method List
-  
+
   TSnapshotsListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TSnapshotsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7140,21 +7146,21 @@ type
     Function List(project: string; AQuery : string  = '') : TSnapshotList;
     Function List(project: string; AQuery : TSnapshotslistOptions) : TSnapshotList;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TSslCertificatesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TSslCertificatesResource, method List
-  
+
   TSslCertificatesListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TSslCertificatesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7165,30 +7171,30 @@ type
     Function List(project: string; AQuery : string  = '') : TSslCertificateList;
     Function List(project: string; AQuery : TSslCertificateslistOptions) : TSslCertificateList;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TSubnetworksResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TSubnetworksResource, method AggregatedList
-  
+
   TSubnetworksAggregatedListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
-  
+
+
   //Optional query Options for TSubnetworksResource, method List
-  
+
   TSubnetworksListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TSubnetworksResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7201,21 +7207,21 @@ type
     Function List(project: string; region: string; AQuery : string  = '') : TSubnetworkList;
     Function List(project: string; region: string; AQuery : TSubnetworkslistOptions) : TSubnetworkList;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TTargetHttpProxiesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TTargetHttpProxiesResource, method List
-  
+
   TTargetHttpProxiesListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TTargetHttpProxiesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7227,21 +7233,21 @@ type
     Function List(project: string; AQuery : TTargetHttpProxieslistOptions) : TTargetHttpProxyList;
     Function SetUrlMap(project: string; targetHttpProxy: string; aUrlMapReference : TUrlMapReference) : TOperation;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TTargetHttpsProxiesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TTargetHttpsProxiesResource, method List
-  
+
   TTargetHttpsProxiesListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TTargetHttpsProxiesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7254,30 +7260,30 @@ type
     Function SetSslCertificates(project: string; targetHttpsProxy: string; aTargetHttpsProxiesSetSslCertificatesRequest : TTargetHttpsProxiesSetSslCertificatesRequest) : TOperation;
     Function SetUrlMap(project: string; targetHttpsProxy: string; aUrlMapReference : TUrlMapReference) : TOperation;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TTargetInstancesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TTargetInstancesResource, method AggregatedList
-  
+
   TTargetInstancesAggregatedListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
-  
+
+
   //Optional query Options for TTargetInstancesResource, method List
-  
+
   TTargetInstancesListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TTargetInstancesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7290,37 +7296,37 @@ type
     Function List(project: string; zone: string; AQuery : string  = '') : TTargetInstanceList;
     Function List(project: string; zone: string; AQuery : TTargetInstanceslistOptions) : TTargetInstanceList;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TTargetPoolsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TTargetPoolsResource, method AggregatedList
-  
+
   TTargetPoolsAggregatedListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
-  
+
+
   //Optional query Options for TTargetPoolsResource, method List
-  
+
   TTargetPoolsListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
-  
+
+
   //Optional query Options for TTargetPoolsResource, method SetBackup
-  
+
   TTargetPoolsSetBackupOptions = Record
     failoverRatio : integer;
   end;
-  
+
   TTargetPoolsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7340,30 +7346,30 @@ type
     Function SetBackup(project: string; region: string; targetPool: string; aTargetReference : TTargetReference; AQuery : string  = '') : TOperation;
     Function SetBackup(project: string; region: string; targetPool: string; aTargetReference : TTargetReference; AQuery : TTargetPoolssetBackupOptions) : TOperation;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TTargetVpnGatewaysResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TTargetVpnGatewaysResource, method AggregatedList
-  
+
   TTargetVpnGatewaysAggregatedListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
-  
+
+
   //Optional query Options for TTargetVpnGatewaysResource, method List
-  
+
   TTargetVpnGatewaysListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TTargetVpnGatewaysResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7376,21 +7382,21 @@ type
     Function List(project: string; region: string; AQuery : string  = '') : TTargetVpnGatewayList;
     Function List(project: string; region: string; AQuery : TTargetVpnGatewayslistOptions) : TTargetVpnGatewayList;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TUrlMapsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TUrlMapsResource, method List
-  
+
   TUrlMapsListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TUrlMapsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7404,30 +7410,30 @@ type
     Function Update(project: string; urlMap: string; aUrlMap : TUrlMap) : TOperation;
     Function Validate(project: string; urlMap: string; aUrlMapsValidateRequest : TUrlMapsValidateRequest) : TUrlMapsValidateResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TVpnTunnelsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TVpnTunnelsResource, method AggregatedList
-  
+
   TVpnTunnelsAggregatedListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
-  
+
+
   //Optional query Options for TVpnTunnelsResource, method List
-  
+
   TVpnTunnelsListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TVpnTunnelsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7440,21 +7446,21 @@ type
     Function List(project: string; region: string; AQuery : string  = '') : TVpnTunnelList;
     Function List(project: string; region: string; AQuery : TVpnTunnelslistOptions) : TVpnTunnelList;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TZoneOperationsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TZoneOperationsResource, method List
-  
+
   TZoneOperationsListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TZoneOperationsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7464,21 +7470,21 @@ type
     Function List(project: string; zone: string; AQuery : string  = '') : TOperationList;
     Function List(project: string; zone: string; AQuery : TZoneOperationslistOptions) : TOperationList;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TZonesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TZonesResource, method List
-  
+
   TZonesListOptions = Record
     filter : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TZonesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -7487,12 +7493,12 @@ type
     Function List(project: string; AQuery : string  = '') : TZoneList;
     Function List(project: string; AQuery : TZoneslistOptions) : TZoneList;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TComputeAPI
     --------------------------------------------------------------------}
-  
+
   TComputeAPI = Class(TGoogleAPI)
   Private
     FAddressesInstance : TAddressesResource;
@@ -7709,7 +7715,7 @@ implementation
   --------------------------------------------------------------------}
 
 
-Procedure TAccessConfig.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAccessConfig.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -7719,7 +7725,7 @@ end;
 
 
 
-Procedure TAccessConfig.Setname(AIndex : Integer; const AValue : String); 
+Procedure TAccessConfig.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -7729,7 +7735,7 @@ end;
 
 
 
-Procedure TAccessConfig.SetnatIP(AIndex : Integer; const AValue : String); 
+Procedure TAccessConfig.SetnatIP(AIndex : Integer; const AValue : String);
 
 begin
   If (FnatIP=AValue) then exit;
@@ -7739,7 +7745,7 @@ end;
 
 
 
-Procedure TAccessConfig.Set_type(AIndex : Integer; const AValue : String); 
+Procedure TAccessConfig.Set_type(AIndex : Integer; const AValue : String);
 
 begin
   If (F_type=AValue) then exit;
@@ -7767,7 +7773,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAddress.Setaddress(AIndex : Integer; const AValue : String); 
+Procedure TAddress.Setaddress(AIndex : Integer; const AValue : String);
 
 begin
   If (Faddress=AValue) then exit;
@@ -7777,7 +7783,7 @@ end;
 
 
 
-Procedure TAddress.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TAddress.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -7787,7 +7793,7 @@ end;
 
 
 
-Procedure TAddress.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TAddress.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -7797,7 +7803,7 @@ end;
 
 
 
-Procedure TAddress.Setid(AIndex : Integer; const AValue : String); 
+Procedure TAddress.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -7807,7 +7813,7 @@ end;
 
 
 
-Procedure TAddress.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAddress.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -7817,7 +7823,7 @@ end;
 
 
 
-Procedure TAddress.Setname(AIndex : Integer; const AValue : String); 
+Procedure TAddress.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -7827,7 +7833,7 @@ end;
 
 
 
-Procedure TAddress.Setregion(AIndex : Integer; const AValue : String); 
+Procedure TAddress.Setregion(AIndex : Integer; const AValue : String);
 
 begin
   If (Fregion=AValue) then exit;
@@ -7837,7 +7843,7 @@ end;
 
 
 
-Procedure TAddress.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TAddress.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -7847,7 +7853,7 @@ end;
 
 
 
-Procedure TAddress.Setstatus(AIndex : Integer; const AValue : String); 
+Procedure TAddress.Setstatus(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -7857,7 +7863,7 @@ end;
 
 
 
-Procedure TAddress.Setusers(AIndex : Integer; const AValue : TStringArray); 
+Procedure TAddress.Setusers(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Fusers=AValue) then exit;
@@ -7868,7 +7874,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAddress.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAddress.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -7900,7 +7906,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAddressAggregatedList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TAddressAggregatedList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -7910,7 +7916,7 @@ end;
 
 
 
-Procedure TAddressAggregatedList.Setitems(AIndex : Integer; const AValue : TAddressAggregatedListTypeitems); 
+Procedure TAddressAggregatedList.Setitems(AIndex : Integer; const AValue : TAddressAggregatedListTypeitems);
 
 begin
   If (Fitems=AValue) then exit;
@@ -7920,7 +7926,7 @@ end;
 
 
 
-Procedure TAddressAggregatedList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAddressAggregatedList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -7930,7 +7936,7 @@ end;
 
 
 
-Procedure TAddressAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TAddressAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -7940,7 +7946,7 @@ end;
 
 
 
-Procedure TAddressAggregatedList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TAddressAggregatedList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -7957,7 +7963,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAddressList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TAddressList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -7967,7 +7973,7 @@ end;
 
 
 
-Procedure TAddressList.Setitems(AIndex : Integer; const AValue : TAddressListTypeitemsArray); 
+Procedure TAddressList.Setitems(AIndex : Integer; const AValue : TAddressListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -7977,7 +7983,7 @@ end;
 
 
 
-Procedure TAddressList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAddressList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -7987,7 +7993,7 @@ end;
 
 
 
-Procedure TAddressList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TAddressList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -7997,7 +8003,7 @@ end;
 
 
 
-Procedure TAddressList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TAddressList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -8008,7 +8014,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAddressList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAddressList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -8027,7 +8033,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAddressesScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String); 
+Procedure TAddressesScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkey=AValue) then exit;
@@ -8037,7 +8043,7 @@ end;
 
 
 
-Procedure TAddressesScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TAddressesScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -8054,7 +8060,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAddressesScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TAddressesScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -8064,7 +8070,7 @@ end;
 
 
 
-Procedure TAddressesScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TAddressesScopedListTypewarningTypedataArray); 
+Procedure TAddressesScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TAddressesScopedListTypewarningTypedataArray);
 
 begin
   If (Fdata=AValue) then exit;
@@ -8074,7 +8080,7 @@ end;
 
 
 
-Procedure TAddressesScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TAddressesScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -8085,7 +8091,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAddressesScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAddressesScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -8104,7 +8110,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAddressesScopedList.Setaddresses(AIndex : Integer; const AValue : TAddressesScopedListTypeaddressesArray); 
+Procedure TAddressesScopedList.Setaddresses(AIndex : Integer; const AValue : TAddressesScopedListTypeaddressesArray);
 
 begin
   If (Faddresses=AValue) then exit;
@@ -8114,7 +8120,7 @@ end;
 
 
 
-Procedure TAddressesScopedList.Setwarning(AIndex : Integer; const AValue : TAddressesScopedListTypewarning); 
+Procedure TAddressesScopedList.Setwarning(AIndex : Integer; const AValue : TAddressesScopedListTypewarning);
 
 begin
   If (Fwarning=AValue) then exit;
@@ -8125,7 +8131,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAddressesScopedList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAddressesScopedList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -8144,7 +8150,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAttachedDisk.SetautoDelete(AIndex : Integer; const AValue : boolean); 
+Procedure TAttachedDisk.SetautoDelete(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FautoDelete=AValue) then exit;
@@ -8154,7 +8160,7 @@ end;
 
 
 
-Procedure TAttachedDisk.Setboot(AIndex : Integer; const AValue : boolean); 
+Procedure TAttachedDisk.Setboot(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fboot=AValue) then exit;
@@ -8164,7 +8170,7 @@ end;
 
 
 
-Procedure TAttachedDisk.SetdeviceName(AIndex : Integer; const AValue : String); 
+Procedure TAttachedDisk.SetdeviceName(AIndex : Integer; const AValue : String);
 
 begin
   If (FdeviceName=AValue) then exit;
@@ -8174,7 +8180,7 @@ end;
 
 
 
-Procedure TAttachedDisk.Setindex(AIndex : Integer; const AValue : integer); 
+Procedure TAttachedDisk.Setindex(AIndex : Integer; const AValue : integer);
 
 begin
   If (Findex=AValue) then exit;
@@ -8184,7 +8190,7 @@ end;
 
 
 
-Procedure TAttachedDisk.SetinitializeParams(AIndex : Integer; const AValue : TAttachedDiskInitializeParams); 
+Procedure TAttachedDisk.SetinitializeParams(AIndex : Integer; const AValue : TAttachedDiskInitializeParams);
 
 begin
   If (FinitializeParams=AValue) then exit;
@@ -8194,7 +8200,7 @@ end;
 
 
 
-Procedure TAttachedDisk.Set_interface(AIndex : Integer; const AValue : String); 
+Procedure TAttachedDisk.Set_interface(AIndex : Integer; const AValue : String);
 
 begin
   If (F_interface=AValue) then exit;
@@ -8204,7 +8210,7 @@ end;
 
 
 
-Procedure TAttachedDisk.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAttachedDisk.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -8214,7 +8220,7 @@ end;
 
 
 
-Procedure TAttachedDisk.Setlicenses(AIndex : Integer; const AValue : TStringArray); 
+Procedure TAttachedDisk.Setlicenses(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Flicenses=AValue) then exit;
@@ -8224,7 +8230,7 @@ end;
 
 
 
-Procedure TAttachedDisk.Setmode(AIndex : Integer; const AValue : String); 
+Procedure TAttachedDisk.Setmode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmode=AValue) then exit;
@@ -8234,7 +8240,7 @@ end;
 
 
 
-Procedure TAttachedDisk.Setsource(AIndex : Integer; const AValue : String); 
+Procedure TAttachedDisk.Setsource(AIndex : Integer; const AValue : String);
 
 begin
   If (Fsource=AValue) then exit;
@@ -8244,7 +8250,7 @@ end;
 
 
 
-Procedure TAttachedDisk.Set_type(AIndex : Integer; const AValue : String); 
+Procedure TAttachedDisk.Set_type(AIndex : Integer; const AValue : String);
 
 begin
   If (F_type=AValue) then exit;
@@ -8267,7 +8273,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAttachedDisk.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAttachedDisk.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -8286,7 +8292,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAttachedDiskInitializeParams.SetdiskName(AIndex : Integer; const AValue : String); 
+Procedure TAttachedDiskInitializeParams.SetdiskName(AIndex : Integer; const AValue : String);
 
 begin
   If (FdiskName=AValue) then exit;
@@ -8296,7 +8302,7 @@ end;
 
 
 
-Procedure TAttachedDiskInitializeParams.SetdiskSizeGb(AIndex : Integer; const AValue : String); 
+Procedure TAttachedDiskInitializeParams.SetdiskSizeGb(AIndex : Integer; const AValue : String);
 
 begin
   If (FdiskSizeGb=AValue) then exit;
@@ -8306,7 +8312,7 @@ end;
 
 
 
-Procedure TAttachedDiskInitializeParams.SetdiskType(AIndex : Integer; const AValue : String); 
+Procedure TAttachedDiskInitializeParams.SetdiskType(AIndex : Integer; const AValue : String);
 
 begin
   If (FdiskType=AValue) then exit;
@@ -8316,7 +8322,7 @@ end;
 
 
 
-Procedure TAttachedDiskInitializeParams.SetsourceImage(AIndex : Integer; const AValue : String); 
+Procedure TAttachedDiskInitializeParams.SetsourceImage(AIndex : Integer; const AValue : String);
 
 begin
   If (FsourceImage=AValue) then exit;
@@ -8333,7 +8339,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAutoscaler.SetautoscalingPolicy(AIndex : Integer; const AValue : TAutoscalingPolicy); 
+Procedure TAutoscaler.SetautoscalingPolicy(AIndex : Integer; const AValue : TAutoscalingPolicy);
 
 begin
   If (FautoscalingPolicy=AValue) then exit;
@@ -8343,7 +8349,7 @@ end;
 
 
 
-Procedure TAutoscaler.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TAutoscaler.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -8353,7 +8359,7 @@ end;
 
 
 
-Procedure TAutoscaler.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TAutoscaler.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -8363,7 +8369,7 @@ end;
 
 
 
-Procedure TAutoscaler.Setid(AIndex : Integer; const AValue : String); 
+Procedure TAutoscaler.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -8373,7 +8379,7 @@ end;
 
 
 
-Procedure TAutoscaler.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAutoscaler.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -8383,7 +8389,7 @@ end;
 
 
 
-Procedure TAutoscaler.Setname(AIndex : Integer; const AValue : String); 
+Procedure TAutoscaler.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -8393,7 +8399,7 @@ end;
 
 
 
-Procedure TAutoscaler.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TAutoscaler.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -8403,7 +8409,7 @@ end;
 
 
 
-Procedure TAutoscaler.Settarget(AIndex : Integer; const AValue : String); 
+Procedure TAutoscaler.Settarget(AIndex : Integer; const AValue : String);
 
 begin
   If (Ftarget=AValue) then exit;
@@ -8413,7 +8419,7 @@ end;
 
 
 
-Procedure TAutoscaler.Setzone(AIndex : Integer; const AValue : String); 
+Procedure TAutoscaler.Setzone(AIndex : Integer; const AValue : String);
 
 begin
   If (Fzone=AValue) then exit;
@@ -8443,7 +8449,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAutoscalerAggregatedList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TAutoscalerAggregatedList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -8453,7 +8459,7 @@ end;
 
 
 
-Procedure TAutoscalerAggregatedList.Setitems(AIndex : Integer; const AValue : TAutoscalerAggregatedListTypeitems); 
+Procedure TAutoscalerAggregatedList.Setitems(AIndex : Integer; const AValue : TAutoscalerAggregatedListTypeitems);
 
 begin
   If (Fitems=AValue) then exit;
@@ -8463,7 +8469,7 @@ end;
 
 
 
-Procedure TAutoscalerAggregatedList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAutoscalerAggregatedList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -8473,7 +8479,7 @@ end;
 
 
 
-Procedure TAutoscalerAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TAutoscalerAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -8483,7 +8489,7 @@ end;
 
 
 
-Procedure TAutoscalerAggregatedList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TAutoscalerAggregatedList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -8500,7 +8506,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAutoscalerList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TAutoscalerList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -8510,7 +8516,7 @@ end;
 
 
 
-Procedure TAutoscalerList.Setitems(AIndex : Integer; const AValue : TAutoscalerListTypeitemsArray); 
+Procedure TAutoscalerList.Setitems(AIndex : Integer; const AValue : TAutoscalerListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -8520,7 +8526,7 @@ end;
 
 
 
-Procedure TAutoscalerList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAutoscalerList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -8530,7 +8536,7 @@ end;
 
 
 
-Procedure TAutoscalerList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TAutoscalerList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -8540,7 +8546,7 @@ end;
 
 
 
-Procedure TAutoscalerList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TAutoscalerList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -8551,7 +8557,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAutoscalerList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAutoscalerList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -8570,7 +8576,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAutoscalersScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String); 
+Procedure TAutoscalersScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkey=AValue) then exit;
@@ -8580,7 +8586,7 @@ end;
 
 
 
-Procedure TAutoscalersScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TAutoscalersScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -8597,7 +8603,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAutoscalersScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TAutoscalersScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -8607,7 +8613,7 @@ end;
 
 
 
-Procedure TAutoscalersScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TAutoscalersScopedListTypewarningTypedataArray); 
+Procedure TAutoscalersScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TAutoscalersScopedListTypewarningTypedataArray);
 
 begin
   If (Fdata=AValue) then exit;
@@ -8617,7 +8623,7 @@ end;
 
 
 
-Procedure TAutoscalersScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TAutoscalersScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -8628,7 +8634,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAutoscalersScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAutoscalersScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -8647,7 +8653,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAutoscalersScopedList.Setautoscalers(AIndex : Integer; const AValue : TAutoscalersScopedListTypeautoscalersArray); 
+Procedure TAutoscalersScopedList.Setautoscalers(AIndex : Integer; const AValue : TAutoscalersScopedListTypeautoscalersArray);
 
 begin
   If (Fautoscalers=AValue) then exit;
@@ -8657,7 +8663,7 @@ end;
 
 
 
-Procedure TAutoscalersScopedList.Setwarning(AIndex : Integer; const AValue : TAutoscalersScopedListTypewarning); 
+Procedure TAutoscalersScopedList.Setwarning(AIndex : Integer; const AValue : TAutoscalersScopedListTypewarning);
 
 begin
   If (Fwarning=AValue) then exit;
@@ -8668,7 +8674,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAutoscalersScopedList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAutoscalersScopedList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -8687,7 +8693,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAutoscalingPolicy.SetcoolDownPeriodSec(AIndex : Integer; const AValue : integer); 
+Procedure TAutoscalingPolicy.SetcoolDownPeriodSec(AIndex : Integer; const AValue : integer);
 
 begin
   If (FcoolDownPeriodSec=AValue) then exit;
@@ -8697,7 +8703,7 @@ end;
 
 
 
-Procedure TAutoscalingPolicy.SetcpuUtilization(AIndex : Integer; const AValue : TAutoscalingPolicyCpuUtilization); 
+Procedure TAutoscalingPolicy.SetcpuUtilization(AIndex : Integer; const AValue : TAutoscalingPolicyCpuUtilization);
 
 begin
   If (FcpuUtilization=AValue) then exit;
@@ -8707,7 +8713,7 @@ end;
 
 
 
-Procedure TAutoscalingPolicy.SetcustomMetricUtilizations(AIndex : Integer; const AValue : TAutoscalingPolicyTypecustomMetricUtilizationsArray); 
+Procedure TAutoscalingPolicy.SetcustomMetricUtilizations(AIndex : Integer; const AValue : TAutoscalingPolicyTypecustomMetricUtilizationsArray);
 
 begin
   If (FcustomMetricUtilizations=AValue) then exit;
@@ -8717,7 +8723,7 @@ end;
 
 
 
-Procedure TAutoscalingPolicy.SetloadBalancingUtilization(AIndex : Integer; const AValue : TAutoscalingPolicyLoadBalancingUtilization); 
+Procedure TAutoscalingPolicy.SetloadBalancingUtilization(AIndex : Integer; const AValue : TAutoscalingPolicyLoadBalancingUtilization);
 
 begin
   If (FloadBalancingUtilization=AValue) then exit;
@@ -8727,7 +8733,7 @@ end;
 
 
 
-Procedure TAutoscalingPolicy.SetmaxNumReplicas(AIndex : Integer; const AValue : integer); 
+Procedure TAutoscalingPolicy.SetmaxNumReplicas(AIndex : Integer; const AValue : integer);
 
 begin
   If (FmaxNumReplicas=AValue) then exit;
@@ -8737,7 +8743,7 @@ end;
 
 
 
-Procedure TAutoscalingPolicy.SetminNumReplicas(AIndex : Integer; const AValue : integer); 
+Procedure TAutoscalingPolicy.SetminNumReplicas(AIndex : Integer; const AValue : integer);
 
 begin
   If (FminNumReplicas=AValue) then exit;
@@ -8748,7 +8754,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TAutoscalingPolicy.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TAutoscalingPolicy.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -8767,7 +8773,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAutoscalingPolicyCpuUtilization.SetutilizationTarget(AIndex : Integer; const AValue : double); 
+Procedure TAutoscalingPolicyCpuUtilization.SetutilizationTarget(AIndex : Integer; const AValue : double);
 
 begin
   If (FutilizationTarget=AValue) then exit;
@@ -8784,7 +8790,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAutoscalingPolicyCustomMetricUtilization.Setmetric(AIndex : Integer; const AValue : String); 
+Procedure TAutoscalingPolicyCustomMetricUtilization.Setmetric(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmetric=AValue) then exit;
@@ -8794,7 +8800,7 @@ end;
 
 
 
-Procedure TAutoscalingPolicyCustomMetricUtilization.SetutilizationTarget(AIndex : Integer; const AValue : double); 
+Procedure TAutoscalingPolicyCustomMetricUtilization.SetutilizationTarget(AIndex : Integer; const AValue : double);
 
 begin
   If (FutilizationTarget=AValue) then exit;
@@ -8804,7 +8810,7 @@ end;
 
 
 
-Procedure TAutoscalingPolicyCustomMetricUtilization.SetutilizationTargetType(AIndex : Integer; const AValue : String); 
+Procedure TAutoscalingPolicyCustomMetricUtilization.SetutilizationTargetType(AIndex : Integer; const AValue : String);
 
 begin
   If (FutilizationTargetType=AValue) then exit;
@@ -8821,7 +8827,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAutoscalingPolicyLoadBalancingUtilization.SetutilizationTarget(AIndex : Integer; const AValue : double); 
+Procedure TAutoscalingPolicyLoadBalancingUtilization.SetutilizationTarget(AIndex : Integer; const AValue : double);
 
 begin
   If (FutilizationTarget=AValue) then exit;
@@ -8838,7 +8844,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TBackend.SetbalancingMode(AIndex : Integer; const AValue : String); 
+Procedure TBackend.SetbalancingMode(AIndex : Integer; const AValue : String);
 
 begin
   If (FbalancingMode=AValue) then exit;
@@ -8848,7 +8854,7 @@ end;
 
 
 
-Procedure TBackend.SetcapacityScaler(AIndex : Integer; const AValue : integer); 
+Procedure TBackend.SetcapacityScaler(AIndex : Integer; const AValue : integer);
 
 begin
   If (FcapacityScaler=AValue) then exit;
@@ -8858,7 +8864,7 @@ end;
 
 
 
-Procedure TBackend.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TBackend.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -8868,7 +8874,7 @@ end;
 
 
 
-Procedure TBackend.Setgroup(AIndex : Integer; const AValue : String); 
+Procedure TBackend.Setgroup(AIndex : Integer; const AValue : String);
 
 begin
   If (Fgroup=AValue) then exit;
@@ -8878,7 +8884,7 @@ end;
 
 
 
-Procedure TBackend.SetmaxRate(AIndex : Integer; const AValue : integer); 
+Procedure TBackend.SetmaxRate(AIndex : Integer; const AValue : integer);
 
 begin
   If (FmaxRate=AValue) then exit;
@@ -8888,7 +8894,7 @@ end;
 
 
 
-Procedure TBackend.SetmaxRatePerInstance(AIndex : Integer; const AValue : integer); 
+Procedure TBackend.SetmaxRatePerInstance(AIndex : Integer; const AValue : integer);
 
 begin
   If (FmaxRatePerInstance=AValue) then exit;
@@ -8898,7 +8904,7 @@ end;
 
 
 
-Procedure TBackend.SetmaxUtilization(AIndex : Integer; const AValue : integer); 
+Procedure TBackend.SetmaxUtilization(AIndex : Integer; const AValue : integer);
 
 begin
   If (FmaxUtilization=AValue) then exit;
@@ -8915,7 +8921,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TBackendService.Setbackends(AIndex : Integer; const AValue : TBackendServiceTypebackendsArray); 
+Procedure TBackendService.Setbackends(AIndex : Integer; const AValue : TBackendServiceTypebackendsArray);
 
 begin
   If (Fbackends=AValue) then exit;
@@ -8925,7 +8931,7 @@ end;
 
 
 
-Procedure TBackendService.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TBackendService.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -8935,7 +8941,7 @@ end;
 
 
 
-Procedure TBackendService.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TBackendService.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -8945,7 +8951,7 @@ end;
 
 
 
-Procedure TBackendService.Setfingerprint(AIndex : Integer; const AValue : String); 
+Procedure TBackendService.Setfingerprint(AIndex : Integer; const AValue : String);
 
 begin
   If (Ffingerprint=AValue) then exit;
@@ -8955,7 +8961,7 @@ end;
 
 
 
-Procedure TBackendService.SethealthChecks(AIndex : Integer; const AValue : TStringArray); 
+Procedure TBackendService.SethealthChecks(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FhealthChecks=AValue) then exit;
@@ -8965,7 +8971,7 @@ end;
 
 
 
-Procedure TBackendService.Setid(AIndex : Integer; const AValue : String); 
+Procedure TBackendService.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -8975,7 +8981,7 @@ end;
 
 
 
-Procedure TBackendService.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TBackendService.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -8985,7 +8991,7 @@ end;
 
 
 
-Procedure TBackendService.Setname(AIndex : Integer; const AValue : String); 
+Procedure TBackendService.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -8995,7 +9001,7 @@ end;
 
 
 
-Procedure TBackendService.Setport(AIndex : Integer; const AValue : integer); 
+Procedure TBackendService.Setport(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fport=AValue) then exit;
@@ -9005,7 +9011,7 @@ end;
 
 
 
-Procedure TBackendService.SetportName(AIndex : Integer; const AValue : String); 
+Procedure TBackendService.SetportName(AIndex : Integer; const AValue : String);
 
 begin
   If (FportName=AValue) then exit;
@@ -9015,7 +9021,7 @@ end;
 
 
 
-Procedure TBackendService.Setprotocol(AIndex : Integer; const AValue : String); 
+Procedure TBackendService.Setprotocol(AIndex : Integer; const AValue : String);
 
 begin
   If (Fprotocol=AValue) then exit;
@@ -9025,7 +9031,7 @@ end;
 
 
 
-Procedure TBackendService.Setregion(AIndex : Integer; const AValue : String); 
+Procedure TBackendService.Setregion(AIndex : Integer; const AValue : String);
 
 begin
   If (Fregion=AValue) then exit;
@@ -9035,7 +9041,7 @@ end;
 
 
 
-Procedure TBackendService.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TBackendService.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -9045,7 +9051,7 @@ end;
 
 
 
-Procedure TBackendService.SettimeoutSec(AIndex : Integer; const AValue : integer); 
+Procedure TBackendService.SettimeoutSec(AIndex : Integer; const AValue : integer);
 
 begin
   If (FtimeoutSec=AValue) then exit;
@@ -9056,7 +9062,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TBackendService.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TBackendService.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -9076,7 +9082,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TBackendServiceGroupHealth.SethealthStatus(AIndex : Integer; const AValue : TBackendServiceGroupHealthTypehealthStatusArray); 
+Procedure TBackendServiceGroupHealth.SethealthStatus(AIndex : Integer; const AValue : TBackendServiceGroupHealthTypehealthStatusArray);
 
 begin
   If (FhealthStatus=AValue) then exit;
@@ -9086,7 +9092,7 @@ end;
 
 
 
-Procedure TBackendServiceGroupHealth.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TBackendServiceGroupHealth.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -9097,7 +9103,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TBackendServiceGroupHealth.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TBackendServiceGroupHealth.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -9116,7 +9122,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TBackendServiceList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TBackendServiceList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -9126,7 +9132,7 @@ end;
 
 
 
-Procedure TBackendServiceList.Setitems(AIndex : Integer; const AValue : TBackendServiceListTypeitemsArray); 
+Procedure TBackendServiceList.Setitems(AIndex : Integer; const AValue : TBackendServiceListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -9136,7 +9142,7 @@ end;
 
 
 
-Procedure TBackendServiceList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TBackendServiceList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -9146,7 +9152,7 @@ end;
 
 
 
-Procedure TBackendServiceList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TBackendServiceList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -9156,7 +9162,7 @@ end;
 
 
 
-Procedure TBackendServiceList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TBackendServiceList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -9167,7 +9173,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TBackendServiceList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TBackendServiceList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -9186,7 +9192,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDeprecationStatus.Setdeleted(AIndex : Integer; const AValue : String); 
+Procedure TDeprecationStatus.Setdeleted(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdeleted=AValue) then exit;
@@ -9196,7 +9202,7 @@ end;
 
 
 
-Procedure TDeprecationStatus.Setdeprecated(AIndex : Integer; const AValue : String); 
+Procedure TDeprecationStatus.Setdeprecated(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdeprecated=AValue) then exit;
@@ -9206,7 +9212,7 @@ end;
 
 
 
-Procedure TDeprecationStatus.Setobsolete(AIndex : Integer; const AValue : String); 
+Procedure TDeprecationStatus.Setobsolete(AIndex : Integer; const AValue : String);
 
 begin
   If (Fobsolete=AValue) then exit;
@@ -9216,7 +9222,7 @@ end;
 
 
 
-Procedure TDeprecationStatus.Setreplacement(AIndex : Integer; const AValue : String); 
+Procedure TDeprecationStatus.Setreplacement(AIndex : Integer; const AValue : String);
 
 begin
   If (Freplacement=AValue) then exit;
@@ -9226,7 +9232,7 @@ end;
 
 
 
-Procedure TDeprecationStatus.Setstate(AIndex : Integer; const AValue : String); 
+Procedure TDeprecationStatus.Setstate(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstate=AValue) then exit;
@@ -9243,7 +9249,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDisk.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TDisk.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -9253,7 +9259,7 @@ end;
 
 
 
-Procedure TDisk.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TDisk.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -9263,7 +9269,7 @@ end;
 
 
 
-Procedure TDisk.Setid(AIndex : Integer; const AValue : String); 
+Procedure TDisk.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -9273,7 +9279,7 @@ end;
 
 
 
-Procedure TDisk.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TDisk.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -9283,7 +9289,7 @@ end;
 
 
 
-Procedure TDisk.SetlastAttachTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TDisk.SetlastAttachTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FlastAttachTimestamp=AValue) then exit;
@@ -9293,7 +9299,7 @@ end;
 
 
 
-Procedure TDisk.SetlastDetachTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TDisk.SetlastDetachTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FlastDetachTimestamp=AValue) then exit;
@@ -9303,7 +9309,7 @@ end;
 
 
 
-Procedure TDisk.Setlicenses(AIndex : Integer; const AValue : TStringArray); 
+Procedure TDisk.Setlicenses(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Flicenses=AValue) then exit;
@@ -9313,7 +9319,7 @@ end;
 
 
 
-Procedure TDisk.Setname(AIndex : Integer; const AValue : String); 
+Procedure TDisk.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -9323,7 +9329,7 @@ end;
 
 
 
-Procedure TDisk.Setoptions(AIndex : Integer; const AValue : String); 
+Procedure TDisk.Setoptions(AIndex : Integer; const AValue : String);
 
 begin
   If (Foptions=AValue) then exit;
@@ -9333,7 +9339,7 @@ end;
 
 
 
-Procedure TDisk.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TDisk.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -9343,7 +9349,7 @@ end;
 
 
 
-Procedure TDisk.SetsizeGb(AIndex : Integer; const AValue : String); 
+Procedure TDisk.SetsizeGb(AIndex : Integer; const AValue : String);
 
 begin
   If (FsizeGb=AValue) then exit;
@@ -9353,7 +9359,7 @@ end;
 
 
 
-Procedure TDisk.SetsourceImage(AIndex : Integer; const AValue : String); 
+Procedure TDisk.SetsourceImage(AIndex : Integer; const AValue : String);
 
 begin
   If (FsourceImage=AValue) then exit;
@@ -9363,7 +9369,7 @@ end;
 
 
 
-Procedure TDisk.SetsourceImageId(AIndex : Integer; const AValue : String); 
+Procedure TDisk.SetsourceImageId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsourceImageId=AValue) then exit;
@@ -9373,7 +9379,7 @@ end;
 
 
 
-Procedure TDisk.SetsourceSnapshot(AIndex : Integer; const AValue : String); 
+Procedure TDisk.SetsourceSnapshot(AIndex : Integer; const AValue : String);
 
 begin
   If (FsourceSnapshot=AValue) then exit;
@@ -9383,7 +9389,7 @@ end;
 
 
 
-Procedure TDisk.SetsourceSnapshotId(AIndex : Integer; const AValue : String); 
+Procedure TDisk.SetsourceSnapshotId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsourceSnapshotId=AValue) then exit;
@@ -9393,7 +9399,7 @@ end;
 
 
 
-Procedure TDisk.Setstatus(AIndex : Integer; const AValue : String); 
+Procedure TDisk.Setstatus(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -9403,7 +9409,7 @@ end;
 
 
 
-Procedure TDisk.Set_type(AIndex : Integer; const AValue : String); 
+Procedure TDisk.Set_type(AIndex : Integer; const AValue : String);
 
 begin
   If (F_type=AValue) then exit;
@@ -9413,7 +9419,7 @@ end;
 
 
 
-Procedure TDisk.Setusers(AIndex : Integer; const AValue : TStringArray); 
+Procedure TDisk.Setusers(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Fusers=AValue) then exit;
@@ -9423,7 +9429,7 @@ end;
 
 
 
-Procedure TDisk.Setzone(AIndex : Integer; const AValue : String); 
+Procedure TDisk.Setzone(AIndex : Integer; const AValue : String);
 
 begin
   If (Fzone=AValue) then exit;
@@ -9445,7 +9451,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TDisk.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TDisk.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -9478,7 +9484,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDiskAggregatedList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TDiskAggregatedList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -9488,7 +9494,7 @@ end;
 
 
 
-Procedure TDiskAggregatedList.Setitems(AIndex : Integer; const AValue : TDiskAggregatedListTypeitems); 
+Procedure TDiskAggregatedList.Setitems(AIndex : Integer; const AValue : TDiskAggregatedListTypeitems);
 
 begin
   If (Fitems=AValue) then exit;
@@ -9498,7 +9504,7 @@ end;
 
 
 
-Procedure TDiskAggregatedList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TDiskAggregatedList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -9508,7 +9514,7 @@ end;
 
 
 
-Procedure TDiskAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TDiskAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -9518,7 +9524,7 @@ end;
 
 
 
-Procedure TDiskAggregatedList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TDiskAggregatedList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -9535,7 +9541,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDiskList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TDiskList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -9545,7 +9551,7 @@ end;
 
 
 
-Procedure TDiskList.Setitems(AIndex : Integer; const AValue : TDiskListTypeitemsArray); 
+Procedure TDiskList.Setitems(AIndex : Integer; const AValue : TDiskListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -9555,7 +9561,7 @@ end;
 
 
 
-Procedure TDiskList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TDiskList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -9565,7 +9571,7 @@ end;
 
 
 
-Procedure TDiskList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TDiskList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -9575,7 +9581,7 @@ end;
 
 
 
-Procedure TDiskList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TDiskList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -9586,7 +9592,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TDiskList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TDiskList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -9605,7 +9611,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDiskMoveRequest.SetdestinationZone(AIndex : Integer; const AValue : String); 
+Procedure TDiskMoveRequest.SetdestinationZone(AIndex : Integer; const AValue : String);
 
 begin
   If (FdestinationZone=AValue) then exit;
@@ -9615,7 +9621,7 @@ end;
 
 
 
-Procedure TDiskMoveRequest.SettargetDisk(AIndex : Integer; const AValue : String); 
+Procedure TDiskMoveRequest.SettargetDisk(AIndex : Integer; const AValue : String);
 
 begin
   If (FtargetDisk=AValue) then exit;
@@ -9632,7 +9638,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDiskType.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TDiskType.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -9642,7 +9648,7 @@ end;
 
 
 
-Procedure TDiskType.SetdefaultDiskSizeGb(AIndex : Integer; const AValue : String); 
+Procedure TDiskType.SetdefaultDiskSizeGb(AIndex : Integer; const AValue : String);
 
 begin
   If (FdefaultDiskSizeGb=AValue) then exit;
@@ -9652,7 +9658,7 @@ end;
 
 
 
-Procedure TDiskType.Setdeprecated(AIndex : Integer; const AValue : TDeprecationStatus); 
+Procedure TDiskType.Setdeprecated(AIndex : Integer; const AValue : TDeprecationStatus);
 
 begin
   If (Fdeprecated=AValue) then exit;
@@ -9662,7 +9668,7 @@ end;
 
 
 
-Procedure TDiskType.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TDiskType.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -9672,7 +9678,7 @@ end;
 
 
 
-Procedure TDiskType.Setid(AIndex : Integer; const AValue : String); 
+Procedure TDiskType.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -9682,7 +9688,7 @@ end;
 
 
 
-Procedure TDiskType.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TDiskType.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -9692,7 +9698,7 @@ end;
 
 
 
-Procedure TDiskType.Setname(AIndex : Integer; const AValue : String); 
+Procedure TDiskType.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -9702,7 +9708,7 @@ end;
 
 
 
-Procedure TDiskType.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TDiskType.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -9712,7 +9718,7 @@ end;
 
 
 
-Procedure TDiskType.SetvalidDiskSize(AIndex : Integer; const AValue : String); 
+Procedure TDiskType.SetvalidDiskSize(AIndex : Integer; const AValue : String);
 
 begin
   If (FvalidDiskSize=AValue) then exit;
@@ -9722,7 +9728,7 @@ end;
 
 
 
-Procedure TDiskType.Setzone(AIndex : Integer; const AValue : String); 
+Procedure TDiskType.Setzone(AIndex : Integer; const AValue : String);
 
 begin
   If (Fzone=AValue) then exit;
@@ -9752,7 +9758,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDiskTypeAggregatedList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TDiskTypeAggregatedList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -9762,7 +9768,7 @@ end;
 
 
 
-Procedure TDiskTypeAggregatedList.Setitems(AIndex : Integer; const AValue : TDiskTypeAggregatedListTypeitems); 
+Procedure TDiskTypeAggregatedList.Setitems(AIndex : Integer; const AValue : TDiskTypeAggregatedListTypeitems);
 
 begin
   If (Fitems=AValue) then exit;
@@ -9772,7 +9778,7 @@ end;
 
 
 
-Procedure TDiskTypeAggregatedList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TDiskTypeAggregatedList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -9782,7 +9788,7 @@ end;
 
 
 
-Procedure TDiskTypeAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TDiskTypeAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -9792,7 +9798,7 @@ end;
 
 
 
-Procedure TDiskTypeAggregatedList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TDiskTypeAggregatedList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -9809,7 +9815,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDiskTypeList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TDiskTypeList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -9819,7 +9825,7 @@ end;
 
 
 
-Procedure TDiskTypeList.Setitems(AIndex : Integer; const AValue : TDiskTypeListTypeitemsArray); 
+Procedure TDiskTypeList.Setitems(AIndex : Integer; const AValue : TDiskTypeListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -9829,7 +9835,7 @@ end;
 
 
 
-Procedure TDiskTypeList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TDiskTypeList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -9839,7 +9845,7 @@ end;
 
 
 
-Procedure TDiskTypeList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TDiskTypeList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -9849,7 +9855,7 @@ end;
 
 
 
-Procedure TDiskTypeList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TDiskTypeList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -9860,7 +9866,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TDiskTypeList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TDiskTypeList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -9879,7 +9885,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDiskTypesScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String); 
+Procedure TDiskTypesScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkey=AValue) then exit;
@@ -9889,7 +9895,7 @@ end;
 
 
 
-Procedure TDiskTypesScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TDiskTypesScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -9906,7 +9912,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDiskTypesScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TDiskTypesScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -9916,7 +9922,7 @@ end;
 
 
 
-Procedure TDiskTypesScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TDiskTypesScopedListTypewarningTypedataArray); 
+Procedure TDiskTypesScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TDiskTypesScopedListTypewarningTypedataArray);
 
 begin
   If (Fdata=AValue) then exit;
@@ -9926,7 +9932,7 @@ end;
 
 
 
-Procedure TDiskTypesScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TDiskTypesScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -9937,7 +9943,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TDiskTypesScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TDiskTypesScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -9956,7 +9962,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDiskTypesScopedList.SetdiskTypes(AIndex : Integer; const AValue : TDiskTypesScopedListTypediskTypesArray); 
+Procedure TDiskTypesScopedList.SetdiskTypes(AIndex : Integer; const AValue : TDiskTypesScopedListTypediskTypesArray);
 
 begin
   If (FdiskTypes=AValue) then exit;
@@ -9966,7 +9972,7 @@ end;
 
 
 
-Procedure TDiskTypesScopedList.Setwarning(AIndex : Integer; const AValue : TDiskTypesScopedListTypewarning); 
+Procedure TDiskTypesScopedList.Setwarning(AIndex : Integer; const AValue : TDiskTypesScopedListTypewarning);
 
 begin
   If (Fwarning=AValue) then exit;
@@ -9977,7 +9983,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TDiskTypesScopedList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TDiskTypesScopedList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -9996,7 +10002,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDisksResizeRequest.SetsizeGb(AIndex : Integer; const AValue : String); 
+Procedure TDisksResizeRequest.SetsizeGb(AIndex : Integer; const AValue : String);
 
 begin
   If (FsizeGb=AValue) then exit;
@@ -10013,7 +10019,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDisksScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String); 
+Procedure TDisksScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkey=AValue) then exit;
@@ -10023,7 +10029,7 @@ end;
 
 
 
-Procedure TDisksScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TDisksScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -10040,7 +10046,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDisksScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TDisksScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -10050,7 +10056,7 @@ end;
 
 
 
-Procedure TDisksScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TDisksScopedListTypewarningTypedataArray); 
+Procedure TDisksScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TDisksScopedListTypewarningTypedataArray);
 
 begin
   If (Fdata=AValue) then exit;
@@ -10060,7 +10066,7 @@ end;
 
 
 
-Procedure TDisksScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TDisksScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -10071,7 +10077,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TDisksScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TDisksScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -10090,7 +10096,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDisksScopedList.Setdisks(AIndex : Integer; const AValue : TDisksScopedListTypedisksArray); 
+Procedure TDisksScopedList.Setdisks(AIndex : Integer; const AValue : TDisksScopedListTypedisksArray);
 
 begin
   If (Fdisks=AValue) then exit;
@@ -10100,7 +10106,7 @@ end;
 
 
 
-Procedure TDisksScopedList.Setwarning(AIndex : Integer; const AValue : TDisksScopedListTypewarning); 
+Procedure TDisksScopedList.Setwarning(AIndex : Integer; const AValue : TDisksScopedListTypewarning);
 
 begin
   If (Fwarning=AValue) then exit;
@@ -10111,7 +10117,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TDisksScopedList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TDisksScopedList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -10130,7 +10136,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFirewallTypeallowedItem.SetIPProtocol(AIndex : Integer; const AValue : String); 
+Procedure TFirewallTypeallowedItem.SetIPProtocol(AIndex : Integer; const AValue : String);
 
 begin
   If (FIPProtocol=AValue) then exit;
@@ -10140,7 +10146,7 @@ end;
 
 
 
-Procedure TFirewallTypeallowedItem.Setports(AIndex : Integer; const AValue : TStringArray); 
+Procedure TFirewallTypeallowedItem.Setports(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Fports=AValue) then exit;
@@ -10151,7 +10157,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TFirewallTypeallowedItem.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TFirewallTypeallowedItem.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -10170,7 +10176,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFirewall.Setallowed(AIndex : Integer; const AValue : TFirewallTypeallowedArray); 
+Procedure TFirewall.Setallowed(AIndex : Integer; const AValue : TFirewallTypeallowedArray);
 
 begin
   If (Fallowed=AValue) then exit;
@@ -10180,7 +10186,7 @@ end;
 
 
 
-Procedure TFirewall.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TFirewall.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -10190,7 +10196,7 @@ end;
 
 
 
-Procedure TFirewall.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TFirewall.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -10200,7 +10206,7 @@ end;
 
 
 
-Procedure TFirewall.Setid(AIndex : Integer; const AValue : String); 
+Procedure TFirewall.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -10210,7 +10216,7 @@ end;
 
 
 
-Procedure TFirewall.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TFirewall.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -10220,7 +10226,7 @@ end;
 
 
 
-Procedure TFirewall.Setname(AIndex : Integer; const AValue : String); 
+Procedure TFirewall.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -10230,7 +10236,7 @@ end;
 
 
 
-Procedure TFirewall.Setnetwork(AIndex : Integer; const AValue : String); 
+Procedure TFirewall.Setnetwork(AIndex : Integer; const AValue : String);
 
 begin
   If (Fnetwork=AValue) then exit;
@@ -10240,7 +10246,7 @@ end;
 
 
 
-Procedure TFirewall.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TFirewall.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -10250,7 +10256,7 @@ end;
 
 
 
-Procedure TFirewall.SetsourceRanges(AIndex : Integer; const AValue : TStringArray); 
+Procedure TFirewall.SetsourceRanges(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FsourceRanges=AValue) then exit;
@@ -10260,7 +10266,7 @@ end;
 
 
 
-Procedure TFirewall.SetsourceTags(AIndex : Integer; const AValue : TStringArray); 
+Procedure TFirewall.SetsourceTags(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FsourceTags=AValue) then exit;
@@ -10270,7 +10276,7 @@ end;
 
 
 
-Procedure TFirewall.SettargetTags(AIndex : Integer; const AValue : TStringArray); 
+Procedure TFirewall.SettargetTags(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FtargetTags=AValue) then exit;
@@ -10281,7 +10287,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TFirewall.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TFirewall.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -10303,7 +10309,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFirewallList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TFirewallList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -10313,7 +10319,7 @@ end;
 
 
 
-Procedure TFirewallList.Setitems(AIndex : Integer; const AValue : TFirewallListTypeitemsArray); 
+Procedure TFirewallList.Setitems(AIndex : Integer; const AValue : TFirewallListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -10323,7 +10329,7 @@ end;
 
 
 
-Procedure TFirewallList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TFirewallList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -10333,7 +10339,7 @@ end;
 
 
 
-Procedure TFirewallList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TFirewallList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -10343,7 +10349,7 @@ end;
 
 
 
-Procedure TFirewallList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TFirewallList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -10354,7 +10360,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TFirewallList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TFirewallList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -10373,7 +10379,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TForwardingRule.SetIPAddress(AIndex : Integer; const AValue : String); 
+Procedure TForwardingRule.SetIPAddress(AIndex : Integer; const AValue : String);
 
 begin
   If (FIPAddress=AValue) then exit;
@@ -10383,7 +10389,7 @@ end;
 
 
 
-Procedure TForwardingRule.SetIPProtocol(AIndex : Integer; const AValue : String); 
+Procedure TForwardingRule.SetIPProtocol(AIndex : Integer; const AValue : String);
 
 begin
   If (FIPProtocol=AValue) then exit;
@@ -10393,7 +10399,7 @@ end;
 
 
 
-Procedure TForwardingRule.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TForwardingRule.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -10403,7 +10409,7 @@ end;
 
 
 
-Procedure TForwardingRule.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TForwardingRule.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -10413,7 +10419,7 @@ end;
 
 
 
-Procedure TForwardingRule.Setid(AIndex : Integer; const AValue : String); 
+Procedure TForwardingRule.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -10423,7 +10429,7 @@ end;
 
 
 
-Procedure TForwardingRule.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TForwardingRule.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -10433,7 +10439,7 @@ end;
 
 
 
-Procedure TForwardingRule.Setname(AIndex : Integer; const AValue : String); 
+Procedure TForwardingRule.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -10443,7 +10449,7 @@ end;
 
 
 
-Procedure TForwardingRule.SetportRange(AIndex : Integer; const AValue : String); 
+Procedure TForwardingRule.SetportRange(AIndex : Integer; const AValue : String);
 
 begin
   If (FportRange=AValue) then exit;
@@ -10453,7 +10459,7 @@ end;
 
 
 
-Procedure TForwardingRule.Setregion(AIndex : Integer; const AValue : String); 
+Procedure TForwardingRule.Setregion(AIndex : Integer; const AValue : String);
 
 begin
   If (Fregion=AValue) then exit;
@@ -10463,7 +10469,7 @@ end;
 
 
 
-Procedure TForwardingRule.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TForwardingRule.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -10473,7 +10479,7 @@ end;
 
 
 
-Procedure TForwardingRule.Settarget(AIndex : Integer; const AValue : String); 
+Procedure TForwardingRule.Settarget(AIndex : Integer; const AValue : String);
 
 begin
   If (Ftarget=AValue) then exit;
@@ -10503,7 +10509,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TForwardingRuleAggregatedList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TForwardingRuleAggregatedList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -10513,7 +10519,7 @@ end;
 
 
 
-Procedure TForwardingRuleAggregatedList.Setitems(AIndex : Integer; const AValue : TForwardingRuleAggregatedListTypeitems); 
+Procedure TForwardingRuleAggregatedList.Setitems(AIndex : Integer; const AValue : TForwardingRuleAggregatedListTypeitems);
 
 begin
   If (Fitems=AValue) then exit;
@@ -10523,7 +10529,7 @@ end;
 
 
 
-Procedure TForwardingRuleAggregatedList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TForwardingRuleAggregatedList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -10533,7 +10539,7 @@ end;
 
 
 
-Procedure TForwardingRuleAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TForwardingRuleAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -10543,7 +10549,7 @@ end;
 
 
 
-Procedure TForwardingRuleAggregatedList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TForwardingRuleAggregatedList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -10560,7 +10566,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TForwardingRuleList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TForwardingRuleList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -10570,7 +10576,7 @@ end;
 
 
 
-Procedure TForwardingRuleList.Setitems(AIndex : Integer; const AValue : TForwardingRuleListTypeitemsArray); 
+Procedure TForwardingRuleList.Setitems(AIndex : Integer; const AValue : TForwardingRuleListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -10580,7 +10586,7 @@ end;
 
 
 
-Procedure TForwardingRuleList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TForwardingRuleList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -10590,7 +10596,7 @@ end;
 
 
 
-Procedure TForwardingRuleList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TForwardingRuleList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -10600,7 +10606,7 @@ end;
 
 
 
-Procedure TForwardingRuleList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TForwardingRuleList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -10611,7 +10617,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TForwardingRuleList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TForwardingRuleList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -10630,7 +10636,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TForwardingRulesScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String); 
+Procedure TForwardingRulesScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkey=AValue) then exit;
@@ -10640,7 +10646,7 @@ end;
 
 
 
-Procedure TForwardingRulesScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TForwardingRulesScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -10657,7 +10663,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TForwardingRulesScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TForwardingRulesScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -10667,7 +10673,7 @@ end;
 
 
 
-Procedure TForwardingRulesScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TForwardingRulesScopedListTypewarningTypedataArray); 
+Procedure TForwardingRulesScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TForwardingRulesScopedListTypewarningTypedataArray);
 
 begin
   If (Fdata=AValue) then exit;
@@ -10677,7 +10683,7 @@ end;
 
 
 
-Procedure TForwardingRulesScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TForwardingRulesScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -10688,7 +10694,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TForwardingRulesScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TForwardingRulesScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -10707,7 +10713,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TForwardingRulesScopedList.SetforwardingRules(AIndex : Integer; const AValue : TForwardingRulesScopedListTypeforwardingRulesArray); 
+Procedure TForwardingRulesScopedList.SetforwardingRules(AIndex : Integer; const AValue : TForwardingRulesScopedListTypeforwardingRulesArray);
 
 begin
   If (FforwardingRules=AValue) then exit;
@@ -10717,7 +10723,7 @@ end;
 
 
 
-Procedure TForwardingRulesScopedList.Setwarning(AIndex : Integer; const AValue : TForwardingRulesScopedListTypewarning); 
+Procedure TForwardingRulesScopedList.Setwarning(AIndex : Integer; const AValue : TForwardingRulesScopedListTypewarning);
 
 begin
   If (Fwarning=AValue) then exit;
@@ -10728,7 +10734,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TForwardingRulesScopedList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TForwardingRulesScopedList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -10747,7 +10753,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure THealthCheckReference.SethealthCheck(AIndex : Integer; const AValue : String); 
+Procedure THealthCheckReference.SethealthCheck(AIndex : Integer; const AValue : String);
 
 begin
   If (FhealthCheck=AValue) then exit;
@@ -10764,7 +10770,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure THealthStatus.SethealthState(AIndex : Integer; const AValue : String); 
+Procedure THealthStatus.SethealthState(AIndex : Integer; const AValue : String);
 
 begin
   If (FhealthState=AValue) then exit;
@@ -10774,7 +10780,7 @@ end;
 
 
 
-Procedure THealthStatus.Setinstance(AIndex : Integer; const AValue : String); 
+Procedure THealthStatus.Setinstance(AIndex : Integer; const AValue : String);
 
 begin
   If (Finstance=AValue) then exit;
@@ -10784,7 +10790,7 @@ end;
 
 
 
-Procedure THealthStatus.SetipAddress(AIndex : Integer; const AValue : String); 
+Procedure THealthStatus.SetipAddress(AIndex : Integer; const AValue : String);
 
 begin
   If (FipAddress=AValue) then exit;
@@ -10794,7 +10800,7 @@ end;
 
 
 
-Procedure THealthStatus.Setport(AIndex : Integer; const AValue : integer); 
+Procedure THealthStatus.Setport(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fport=AValue) then exit;
@@ -10811,7 +10817,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure THostRule.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure THostRule.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -10821,7 +10827,7 @@ end;
 
 
 
-Procedure THostRule.Sethosts(AIndex : Integer; const AValue : TStringArray); 
+Procedure THostRule.Sethosts(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Fhosts=AValue) then exit;
@@ -10831,7 +10837,7 @@ end;
 
 
 
-Procedure THostRule.SetpathMatcher(AIndex : Integer; const AValue : String); 
+Procedure THostRule.SetpathMatcher(AIndex : Integer; const AValue : String);
 
 begin
   If (FpathMatcher=AValue) then exit;
@@ -10842,7 +10848,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure THostRule.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure THostRule.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -10861,7 +10867,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure THttpHealthCheck.SetcheckIntervalSec(AIndex : Integer; const AValue : integer); 
+Procedure THttpHealthCheck.SetcheckIntervalSec(AIndex : Integer; const AValue : integer);
 
 begin
   If (FcheckIntervalSec=AValue) then exit;
@@ -10871,7 +10877,7 @@ end;
 
 
 
-Procedure THttpHealthCheck.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure THttpHealthCheck.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -10881,7 +10887,7 @@ end;
 
 
 
-Procedure THttpHealthCheck.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure THttpHealthCheck.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -10891,7 +10897,7 @@ end;
 
 
 
-Procedure THttpHealthCheck.SethealthyThreshold(AIndex : Integer; const AValue : integer); 
+Procedure THttpHealthCheck.SethealthyThreshold(AIndex : Integer; const AValue : integer);
 
 begin
   If (FhealthyThreshold=AValue) then exit;
@@ -10901,7 +10907,7 @@ end;
 
 
 
-Procedure THttpHealthCheck.Sethost(AIndex : Integer; const AValue : String); 
+Procedure THttpHealthCheck.Sethost(AIndex : Integer; const AValue : String);
 
 begin
   If (Fhost=AValue) then exit;
@@ -10911,7 +10917,7 @@ end;
 
 
 
-Procedure THttpHealthCheck.Setid(AIndex : Integer; const AValue : String); 
+Procedure THttpHealthCheck.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -10921,7 +10927,7 @@ end;
 
 
 
-Procedure THttpHealthCheck.Setkind(AIndex : Integer; const AValue : String); 
+Procedure THttpHealthCheck.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -10931,7 +10937,7 @@ end;
 
 
 
-Procedure THttpHealthCheck.Setname(AIndex : Integer; const AValue : String); 
+Procedure THttpHealthCheck.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -10941,7 +10947,7 @@ end;
 
 
 
-Procedure THttpHealthCheck.Setport(AIndex : Integer; const AValue : integer); 
+Procedure THttpHealthCheck.Setport(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fport=AValue) then exit;
@@ -10951,7 +10957,7 @@ end;
 
 
 
-Procedure THttpHealthCheck.SetrequestPath(AIndex : Integer; const AValue : String); 
+Procedure THttpHealthCheck.SetrequestPath(AIndex : Integer; const AValue : String);
 
 begin
   If (FrequestPath=AValue) then exit;
@@ -10961,7 +10967,7 @@ end;
 
 
 
-Procedure THttpHealthCheck.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure THttpHealthCheck.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -10971,7 +10977,7 @@ end;
 
 
 
-Procedure THttpHealthCheck.SettimeoutSec(AIndex : Integer; const AValue : integer); 
+Procedure THttpHealthCheck.SettimeoutSec(AIndex : Integer; const AValue : integer);
 
 begin
   If (FtimeoutSec=AValue) then exit;
@@ -10981,7 +10987,7 @@ end;
 
 
 
-Procedure THttpHealthCheck.SetunhealthyThreshold(AIndex : Integer; const AValue : integer); 
+Procedure THttpHealthCheck.SetunhealthyThreshold(AIndex : Integer; const AValue : integer);
 
 begin
   If (FunhealthyThreshold=AValue) then exit;
@@ -10998,7 +11004,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure THttpHealthCheckList.Setid(AIndex : Integer; const AValue : String); 
+Procedure THttpHealthCheckList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -11008,7 +11014,7 @@ end;
 
 
 
-Procedure THttpHealthCheckList.Setitems(AIndex : Integer; const AValue : THttpHealthCheckListTypeitemsArray); 
+Procedure THttpHealthCheckList.Setitems(AIndex : Integer; const AValue : THttpHealthCheckListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -11018,7 +11024,7 @@ end;
 
 
 
-Procedure THttpHealthCheckList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure THttpHealthCheckList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -11028,7 +11034,7 @@ end;
 
 
 
-Procedure THttpHealthCheckList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure THttpHealthCheckList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -11038,7 +11044,7 @@ end;
 
 
 
-Procedure THttpHealthCheckList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure THttpHealthCheckList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -11049,7 +11055,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure THttpHealthCheckList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure THttpHealthCheckList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -11068,7 +11074,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure THttpsHealthCheck.SetcheckIntervalSec(AIndex : Integer; const AValue : integer); 
+Procedure THttpsHealthCheck.SetcheckIntervalSec(AIndex : Integer; const AValue : integer);
 
 begin
   If (FcheckIntervalSec=AValue) then exit;
@@ -11078,7 +11084,7 @@ end;
 
 
 
-Procedure THttpsHealthCheck.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure THttpsHealthCheck.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -11088,7 +11094,7 @@ end;
 
 
 
-Procedure THttpsHealthCheck.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure THttpsHealthCheck.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -11098,7 +11104,7 @@ end;
 
 
 
-Procedure THttpsHealthCheck.SethealthyThreshold(AIndex : Integer; const AValue : integer); 
+Procedure THttpsHealthCheck.SethealthyThreshold(AIndex : Integer; const AValue : integer);
 
 begin
   If (FhealthyThreshold=AValue) then exit;
@@ -11108,7 +11114,7 @@ end;
 
 
 
-Procedure THttpsHealthCheck.Sethost(AIndex : Integer; const AValue : String); 
+Procedure THttpsHealthCheck.Sethost(AIndex : Integer; const AValue : String);
 
 begin
   If (Fhost=AValue) then exit;
@@ -11118,7 +11124,7 @@ end;
 
 
 
-Procedure THttpsHealthCheck.Setid(AIndex : Integer; const AValue : String); 
+Procedure THttpsHealthCheck.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -11128,7 +11134,7 @@ end;
 
 
 
-Procedure THttpsHealthCheck.Setkind(AIndex : Integer; const AValue : String); 
+Procedure THttpsHealthCheck.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -11138,7 +11144,7 @@ end;
 
 
 
-Procedure THttpsHealthCheck.Setname(AIndex : Integer; const AValue : String); 
+Procedure THttpsHealthCheck.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -11148,7 +11154,7 @@ end;
 
 
 
-Procedure THttpsHealthCheck.Setport(AIndex : Integer; const AValue : integer); 
+Procedure THttpsHealthCheck.Setport(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fport=AValue) then exit;
@@ -11158,7 +11164,7 @@ end;
 
 
 
-Procedure THttpsHealthCheck.SetrequestPath(AIndex : Integer; const AValue : String); 
+Procedure THttpsHealthCheck.SetrequestPath(AIndex : Integer; const AValue : String);
 
 begin
   If (FrequestPath=AValue) then exit;
@@ -11168,7 +11174,7 @@ end;
 
 
 
-Procedure THttpsHealthCheck.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure THttpsHealthCheck.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -11178,7 +11184,7 @@ end;
 
 
 
-Procedure THttpsHealthCheck.SettimeoutSec(AIndex : Integer; const AValue : integer); 
+Procedure THttpsHealthCheck.SettimeoutSec(AIndex : Integer; const AValue : integer);
 
 begin
   If (FtimeoutSec=AValue) then exit;
@@ -11188,7 +11194,7 @@ end;
 
 
 
-Procedure THttpsHealthCheck.SetunhealthyThreshold(AIndex : Integer; const AValue : integer); 
+Procedure THttpsHealthCheck.SetunhealthyThreshold(AIndex : Integer; const AValue : integer);
 
 begin
   If (FunhealthyThreshold=AValue) then exit;
@@ -11205,7 +11211,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure THttpsHealthCheckList.Setid(AIndex : Integer; const AValue : String); 
+Procedure THttpsHealthCheckList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -11215,7 +11221,7 @@ end;
 
 
 
-Procedure THttpsHealthCheckList.Setitems(AIndex : Integer; const AValue : THttpsHealthCheckListTypeitemsArray); 
+Procedure THttpsHealthCheckList.Setitems(AIndex : Integer; const AValue : THttpsHealthCheckListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -11225,7 +11231,7 @@ end;
 
 
 
-Procedure THttpsHealthCheckList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure THttpsHealthCheckList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -11235,7 +11241,7 @@ end;
 
 
 
-Procedure THttpsHealthCheckList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure THttpsHealthCheckList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -11245,7 +11251,7 @@ end;
 
 
 
-Procedure THttpsHealthCheckList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure THttpsHealthCheckList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -11256,7 +11262,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure THttpsHealthCheckList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure THttpsHealthCheckList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -11275,7 +11281,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TImageTyperawDisk.SetcontainerType(AIndex : Integer; const AValue : String); 
+Procedure TImageTyperawDisk.SetcontainerType(AIndex : Integer; const AValue : String);
 
 begin
   If (FcontainerType=AValue) then exit;
@@ -11285,7 +11291,7 @@ end;
 
 
 
-Procedure TImageTyperawDisk.Setsha1Checksum(AIndex : Integer; const AValue : String); 
+Procedure TImageTyperawDisk.Setsha1Checksum(AIndex : Integer; const AValue : String);
 
 begin
   If (Fsha1Checksum=AValue) then exit;
@@ -11295,7 +11301,7 @@ end;
 
 
 
-Procedure TImageTyperawDisk.Setsource(AIndex : Integer; const AValue : String); 
+Procedure TImageTyperawDisk.Setsource(AIndex : Integer; const AValue : String);
 
 begin
   If (Fsource=AValue) then exit;
@@ -11312,7 +11318,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TImage.SetarchiveSizeBytes(AIndex : Integer; const AValue : String); 
+Procedure TImage.SetarchiveSizeBytes(AIndex : Integer; const AValue : String);
 
 begin
   If (FarchiveSizeBytes=AValue) then exit;
@@ -11322,7 +11328,7 @@ end;
 
 
 
-Procedure TImage.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TImage.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -11332,7 +11338,7 @@ end;
 
 
 
-Procedure TImage.Setdeprecated(AIndex : Integer; const AValue : TDeprecationStatus); 
+Procedure TImage.Setdeprecated(AIndex : Integer; const AValue : TDeprecationStatus);
 
 begin
   If (Fdeprecated=AValue) then exit;
@@ -11342,7 +11348,7 @@ end;
 
 
 
-Procedure TImage.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TImage.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -11352,7 +11358,7 @@ end;
 
 
 
-Procedure TImage.SetdiskSizeGb(AIndex : Integer; const AValue : String); 
+Procedure TImage.SetdiskSizeGb(AIndex : Integer; const AValue : String);
 
 begin
   If (FdiskSizeGb=AValue) then exit;
@@ -11362,7 +11368,7 @@ end;
 
 
 
-Procedure TImage.Setfamily(AIndex : Integer; const AValue : String); 
+Procedure TImage.Setfamily(AIndex : Integer; const AValue : String);
 
 begin
   If (Ffamily=AValue) then exit;
@@ -11372,7 +11378,7 @@ end;
 
 
 
-Procedure TImage.Setid(AIndex : Integer; const AValue : String); 
+Procedure TImage.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -11382,7 +11388,7 @@ end;
 
 
 
-Procedure TImage.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TImage.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -11392,7 +11398,7 @@ end;
 
 
 
-Procedure TImage.Setlicenses(AIndex : Integer; const AValue : TStringArray); 
+Procedure TImage.Setlicenses(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Flicenses=AValue) then exit;
@@ -11402,7 +11408,7 @@ end;
 
 
 
-Procedure TImage.Setname(AIndex : Integer; const AValue : String); 
+Procedure TImage.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -11412,7 +11418,7 @@ end;
 
 
 
-Procedure TImage.SetrawDisk(AIndex : Integer; const AValue : TImageTyperawDisk); 
+Procedure TImage.SetrawDisk(AIndex : Integer; const AValue : TImageTyperawDisk);
 
 begin
   If (FrawDisk=AValue) then exit;
@@ -11422,7 +11428,7 @@ end;
 
 
 
-Procedure TImage.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TImage.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -11432,7 +11438,7 @@ end;
 
 
 
-Procedure TImage.SetsourceDisk(AIndex : Integer; const AValue : String); 
+Procedure TImage.SetsourceDisk(AIndex : Integer; const AValue : String);
 
 begin
   If (FsourceDisk=AValue) then exit;
@@ -11442,7 +11448,7 @@ end;
 
 
 
-Procedure TImage.SetsourceDiskId(AIndex : Integer; const AValue : String); 
+Procedure TImage.SetsourceDiskId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsourceDiskId=AValue) then exit;
@@ -11452,7 +11458,7 @@ end;
 
 
 
-Procedure TImage.SetsourceType(AIndex : Integer; const AValue : String); 
+Procedure TImage.SetsourceType(AIndex : Integer; const AValue : String);
 
 begin
   If (FsourceType=AValue) then exit;
@@ -11462,7 +11468,7 @@ end;
 
 
 
-Procedure TImage.Setstatus(AIndex : Integer; const AValue : String); 
+Procedure TImage.Setstatus(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -11473,7 +11479,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TImage.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TImage.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -11492,7 +11498,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TImageList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TImageList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -11502,7 +11508,7 @@ end;
 
 
 
-Procedure TImageList.Setitems(AIndex : Integer; const AValue : TImageListTypeitemsArray); 
+Procedure TImageList.Setitems(AIndex : Integer; const AValue : TImageListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -11512,7 +11518,7 @@ end;
 
 
 
-Procedure TImageList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TImageList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -11522,7 +11528,7 @@ end;
 
 
 
-Procedure TImageList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TImageList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -11532,7 +11538,7 @@ end;
 
 
 
-Procedure TImageList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TImageList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -11543,7 +11549,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TImageList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TImageList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -11562,7 +11568,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstance.SetcanIpForward(AIndex : Integer; const AValue : boolean); 
+Procedure TInstance.SetcanIpForward(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FcanIpForward=AValue) then exit;
@@ -11572,7 +11578,7 @@ end;
 
 
 
-Procedure TInstance.SetcpuPlatform(AIndex : Integer; const AValue : String); 
+Procedure TInstance.SetcpuPlatform(AIndex : Integer; const AValue : String);
 
 begin
   If (FcpuPlatform=AValue) then exit;
@@ -11582,7 +11588,7 @@ end;
 
 
 
-Procedure TInstance.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TInstance.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -11592,7 +11598,7 @@ end;
 
 
 
-Procedure TInstance.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TInstance.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -11602,7 +11608,7 @@ end;
 
 
 
-Procedure TInstance.Setdisks(AIndex : Integer; const AValue : TInstanceTypedisksArray); 
+Procedure TInstance.Setdisks(AIndex : Integer; const AValue : TInstanceTypedisksArray);
 
 begin
   If (Fdisks=AValue) then exit;
@@ -11612,7 +11618,7 @@ end;
 
 
 
-Procedure TInstance.Setid(AIndex : Integer; const AValue : String); 
+Procedure TInstance.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -11622,7 +11628,7 @@ end;
 
 
 
-Procedure TInstance.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TInstance.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -11632,7 +11638,7 @@ end;
 
 
 
-Procedure TInstance.SetmachineType(AIndex : Integer; const AValue : String); 
+Procedure TInstance.SetmachineType(AIndex : Integer; const AValue : String);
 
 begin
   If (FmachineType=AValue) then exit;
@@ -11642,7 +11648,7 @@ end;
 
 
 
-Procedure TInstance.Setmetadata(AIndex : Integer; const AValue : TMetadata); 
+Procedure TInstance.Setmetadata(AIndex : Integer; const AValue : TMetadata);
 
 begin
   If (Fmetadata=AValue) then exit;
@@ -11652,7 +11658,7 @@ end;
 
 
 
-Procedure TInstance.Setname(AIndex : Integer; const AValue : String); 
+Procedure TInstance.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -11662,7 +11668,7 @@ end;
 
 
 
-Procedure TInstance.SetnetworkInterfaces(AIndex : Integer; const AValue : TInstanceTypenetworkInterfacesArray); 
+Procedure TInstance.SetnetworkInterfaces(AIndex : Integer; const AValue : TInstanceTypenetworkInterfacesArray);
 
 begin
   If (FnetworkInterfaces=AValue) then exit;
@@ -11672,7 +11678,7 @@ end;
 
 
 
-Procedure TInstance.Setscheduling(AIndex : Integer; const AValue : TScheduling); 
+Procedure TInstance.Setscheduling(AIndex : Integer; const AValue : TScheduling);
 
 begin
   If (Fscheduling=AValue) then exit;
@@ -11682,7 +11688,7 @@ end;
 
 
 
-Procedure TInstance.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TInstance.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -11692,7 +11698,7 @@ end;
 
 
 
-Procedure TInstance.SetserviceAccounts(AIndex : Integer; const AValue : TInstanceTypeserviceAccountsArray); 
+Procedure TInstance.SetserviceAccounts(AIndex : Integer; const AValue : TInstanceTypeserviceAccountsArray);
 
 begin
   If (FserviceAccounts=AValue) then exit;
@@ -11702,7 +11708,7 @@ end;
 
 
 
-Procedure TInstance.Setstatus(AIndex : Integer; const AValue : String); 
+Procedure TInstance.Setstatus(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -11712,7 +11718,7 @@ end;
 
 
 
-Procedure TInstance.SetstatusMessage(AIndex : Integer; const AValue : String); 
+Procedure TInstance.SetstatusMessage(AIndex : Integer; const AValue : String);
 
 begin
   If (FstatusMessage=AValue) then exit;
@@ -11722,7 +11728,7 @@ end;
 
 
 
-Procedure TInstance.Settags(AIndex : Integer; const AValue : TTags); 
+Procedure TInstance.Settags(AIndex : Integer; const AValue : TTags);
 
 begin
   If (Ftags=AValue) then exit;
@@ -11732,7 +11738,7 @@ end;
 
 
 
-Procedure TInstance.Setzone(AIndex : Integer; const AValue : String); 
+Procedure TInstance.Setzone(AIndex : Integer; const AValue : String);
 
 begin
   If (Fzone=AValue) then exit;
@@ -11743,7 +11749,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInstance.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInstance.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -11777,7 +11783,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceAggregatedList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TInstanceAggregatedList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -11787,7 +11793,7 @@ end;
 
 
 
-Procedure TInstanceAggregatedList.Setitems(AIndex : Integer; const AValue : TInstanceAggregatedListTypeitems); 
+Procedure TInstanceAggregatedList.Setitems(AIndex : Integer; const AValue : TInstanceAggregatedListTypeitems);
 
 begin
   If (Fitems=AValue) then exit;
@@ -11797,7 +11803,7 @@ end;
 
 
 
-Procedure TInstanceAggregatedList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TInstanceAggregatedList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -11807,7 +11813,7 @@ end;
 
 
 
-Procedure TInstanceAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TInstanceAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -11817,7 +11823,7 @@ end;
 
 
 
-Procedure TInstanceAggregatedList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TInstanceAggregatedList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -11834,7 +11840,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceGroup.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroup.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -11844,7 +11850,7 @@ end;
 
 
 
-Procedure TInstanceGroup.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroup.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -11854,7 +11860,7 @@ end;
 
 
 
-Procedure TInstanceGroup.Setfingerprint(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroup.Setfingerprint(AIndex : Integer; const AValue : String);
 
 begin
   If (Ffingerprint=AValue) then exit;
@@ -11864,7 +11870,7 @@ end;
 
 
 
-Procedure TInstanceGroup.Setid(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroup.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -11874,7 +11880,7 @@ end;
 
 
 
-Procedure TInstanceGroup.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroup.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -11884,7 +11890,7 @@ end;
 
 
 
-Procedure TInstanceGroup.Setname(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroup.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -11894,7 +11900,7 @@ end;
 
 
 
-Procedure TInstanceGroup.SetnamedPorts(AIndex : Integer; const AValue : TInstanceGroupTypenamedPortsArray); 
+Procedure TInstanceGroup.SetnamedPorts(AIndex : Integer; const AValue : TInstanceGroupTypenamedPortsArray);
 
 begin
   If (FnamedPorts=AValue) then exit;
@@ -11904,7 +11910,7 @@ end;
 
 
 
-Procedure TInstanceGroup.Setnetwork(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroup.Setnetwork(AIndex : Integer; const AValue : String);
 
 begin
   If (Fnetwork=AValue) then exit;
@@ -11914,7 +11920,7 @@ end;
 
 
 
-Procedure TInstanceGroup.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroup.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -11924,7 +11930,7 @@ end;
 
 
 
-Procedure TInstanceGroup.Setsize(AIndex : Integer; const AValue : integer); 
+Procedure TInstanceGroup.Setsize(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fsize=AValue) then exit;
@@ -11934,7 +11940,7 @@ end;
 
 
 
-Procedure TInstanceGroup.Setsubnetwork(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroup.Setsubnetwork(AIndex : Integer; const AValue : String);
 
 begin
   If (Fsubnetwork=AValue) then exit;
@@ -11944,7 +11950,7 @@ end;
 
 
 
-Procedure TInstanceGroup.Setzone(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroup.Setzone(AIndex : Integer; const AValue : String);
 
 begin
   If (Fzone=AValue) then exit;
@@ -11955,7 +11961,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInstanceGroup.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInstanceGroup.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -11987,7 +11993,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceGroupAggregatedList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupAggregatedList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -11997,7 +12003,7 @@ end;
 
 
 
-Procedure TInstanceGroupAggregatedList.Setitems(AIndex : Integer; const AValue : TInstanceGroupAggregatedListTypeitems); 
+Procedure TInstanceGroupAggregatedList.Setitems(AIndex : Integer; const AValue : TInstanceGroupAggregatedListTypeitems);
 
 begin
   If (Fitems=AValue) then exit;
@@ -12007,7 +12013,7 @@ end;
 
 
 
-Procedure TInstanceGroupAggregatedList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupAggregatedList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -12017,7 +12023,7 @@ end;
 
 
 
-Procedure TInstanceGroupAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -12027,7 +12033,7 @@ end;
 
 
 
-Procedure TInstanceGroupAggregatedList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupAggregatedList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -12044,7 +12050,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceGroupList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -12054,7 +12060,7 @@ end;
 
 
 
-Procedure TInstanceGroupList.Setitems(AIndex : Integer; const AValue : TInstanceGroupListTypeitemsArray); 
+Procedure TInstanceGroupList.Setitems(AIndex : Integer; const AValue : TInstanceGroupListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -12064,7 +12070,7 @@ end;
 
 
 
-Procedure TInstanceGroupList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -12074,7 +12080,7 @@ end;
 
 
 
-Procedure TInstanceGroupList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -12084,7 +12090,7 @@ end;
 
 
 
-Procedure TInstanceGroupList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -12095,7 +12101,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInstanceGroupList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInstanceGroupList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -12114,7 +12120,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceGroupManager.SetbaseInstanceName(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupManager.SetbaseInstanceName(AIndex : Integer; const AValue : String);
 
 begin
   If (FbaseInstanceName=AValue) then exit;
@@ -12124,7 +12130,7 @@ end;
 
 
 
-Procedure TInstanceGroupManager.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupManager.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -12134,7 +12140,7 @@ end;
 
 
 
-Procedure TInstanceGroupManager.SetcurrentActions(AIndex : Integer; const AValue : TInstanceGroupManagerActionsSummary); 
+Procedure TInstanceGroupManager.SetcurrentActions(AIndex : Integer; const AValue : TInstanceGroupManagerActionsSummary);
 
 begin
   If (FcurrentActions=AValue) then exit;
@@ -12144,7 +12150,7 @@ end;
 
 
 
-Procedure TInstanceGroupManager.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupManager.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -12154,7 +12160,7 @@ end;
 
 
 
-Procedure TInstanceGroupManager.Setfingerprint(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupManager.Setfingerprint(AIndex : Integer; const AValue : String);
 
 begin
   If (Ffingerprint=AValue) then exit;
@@ -12164,7 +12170,7 @@ end;
 
 
 
-Procedure TInstanceGroupManager.Setid(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupManager.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -12174,7 +12180,7 @@ end;
 
 
 
-Procedure TInstanceGroupManager.SetinstanceGroup(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupManager.SetinstanceGroup(AIndex : Integer; const AValue : String);
 
 begin
   If (FinstanceGroup=AValue) then exit;
@@ -12184,7 +12190,7 @@ end;
 
 
 
-Procedure TInstanceGroupManager.SetinstanceTemplate(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupManager.SetinstanceTemplate(AIndex : Integer; const AValue : String);
 
 begin
   If (FinstanceTemplate=AValue) then exit;
@@ -12194,7 +12200,7 @@ end;
 
 
 
-Procedure TInstanceGroupManager.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupManager.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -12204,7 +12210,7 @@ end;
 
 
 
-Procedure TInstanceGroupManager.Setname(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupManager.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -12214,7 +12220,7 @@ end;
 
 
 
-Procedure TInstanceGroupManager.SetnamedPorts(AIndex : Integer; const AValue : TInstanceGroupManagerTypenamedPortsArray); 
+Procedure TInstanceGroupManager.SetnamedPorts(AIndex : Integer; const AValue : TInstanceGroupManagerTypenamedPortsArray);
 
 begin
   If (FnamedPorts=AValue) then exit;
@@ -12224,7 +12230,7 @@ end;
 
 
 
-Procedure TInstanceGroupManager.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupManager.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -12234,7 +12240,7 @@ end;
 
 
 
-Procedure TInstanceGroupManager.SettargetPools(AIndex : Integer; const AValue : TStringArray); 
+Procedure TInstanceGroupManager.SettargetPools(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FtargetPools=AValue) then exit;
@@ -12244,7 +12250,7 @@ end;
 
 
 
-Procedure TInstanceGroupManager.SettargetSize(AIndex : Integer; const AValue : integer); 
+Procedure TInstanceGroupManager.SettargetSize(AIndex : Integer; const AValue : integer);
 
 begin
   If (FtargetSize=AValue) then exit;
@@ -12254,7 +12260,7 @@ end;
 
 
 
-Procedure TInstanceGroupManager.Setzone(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupManager.Setzone(AIndex : Integer; const AValue : String);
 
 begin
   If (Fzone=AValue) then exit;
@@ -12265,7 +12271,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInstanceGroupManager.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInstanceGroupManager.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -12285,7 +12291,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceGroupManagerActionsSummary.Setabandoning(AIndex : Integer; const AValue : integer); 
+Procedure TInstanceGroupManagerActionsSummary.Setabandoning(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fabandoning=AValue) then exit;
@@ -12295,7 +12301,7 @@ end;
 
 
 
-Procedure TInstanceGroupManagerActionsSummary.Setcreating(AIndex : Integer; const AValue : integer); 
+Procedure TInstanceGroupManagerActionsSummary.Setcreating(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fcreating=AValue) then exit;
@@ -12305,7 +12311,7 @@ end;
 
 
 
-Procedure TInstanceGroupManagerActionsSummary.Setdeleting(AIndex : Integer; const AValue : integer); 
+Procedure TInstanceGroupManagerActionsSummary.Setdeleting(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fdeleting=AValue) then exit;
@@ -12315,7 +12321,7 @@ end;
 
 
 
-Procedure TInstanceGroupManagerActionsSummary.Setnone(AIndex : Integer; const AValue : integer); 
+Procedure TInstanceGroupManagerActionsSummary.Setnone(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fnone=AValue) then exit;
@@ -12325,7 +12331,7 @@ end;
 
 
 
-Procedure TInstanceGroupManagerActionsSummary.Setrecreating(AIndex : Integer; const AValue : integer); 
+Procedure TInstanceGroupManagerActionsSummary.Setrecreating(AIndex : Integer; const AValue : integer);
 
 begin
   If (Frecreating=AValue) then exit;
@@ -12335,7 +12341,7 @@ end;
 
 
 
-Procedure TInstanceGroupManagerActionsSummary.Setrefreshing(AIndex : Integer; const AValue : integer); 
+Procedure TInstanceGroupManagerActionsSummary.Setrefreshing(AIndex : Integer; const AValue : integer);
 
 begin
   If (Frefreshing=AValue) then exit;
@@ -12345,7 +12351,7 @@ end;
 
 
 
-Procedure TInstanceGroupManagerActionsSummary.Setrestarting(AIndex : Integer; const AValue : integer); 
+Procedure TInstanceGroupManagerActionsSummary.Setrestarting(AIndex : Integer; const AValue : integer);
 
 begin
   If (Frestarting=AValue) then exit;
@@ -12375,7 +12381,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceGroupManagerAggregatedList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupManagerAggregatedList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -12385,7 +12391,7 @@ end;
 
 
 
-Procedure TInstanceGroupManagerAggregatedList.Setitems(AIndex : Integer; const AValue : TInstanceGroupManagerAggregatedListTypeitems); 
+Procedure TInstanceGroupManagerAggregatedList.Setitems(AIndex : Integer; const AValue : TInstanceGroupManagerAggregatedListTypeitems);
 
 begin
   If (Fitems=AValue) then exit;
@@ -12395,7 +12401,7 @@ end;
 
 
 
-Procedure TInstanceGroupManagerAggregatedList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupManagerAggregatedList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -12405,7 +12411,7 @@ end;
 
 
 
-Procedure TInstanceGroupManagerAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupManagerAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -12415,7 +12421,7 @@ end;
 
 
 
-Procedure TInstanceGroupManagerAggregatedList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupManagerAggregatedList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -12432,7 +12438,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceGroupManagerList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupManagerList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -12442,7 +12448,7 @@ end;
 
 
 
-Procedure TInstanceGroupManagerList.Setitems(AIndex : Integer; const AValue : TInstanceGroupManagerListTypeitemsArray); 
+Procedure TInstanceGroupManagerList.Setitems(AIndex : Integer; const AValue : TInstanceGroupManagerListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -12452,7 +12458,7 @@ end;
 
 
 
-Procedure TInstanceGroupManagerList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupManagerList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -12462,7 +12468,7 @@ end;
 
 
 
-Procedure TInstanceGroupManagerList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupManagerList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -12472,7 +12478,7 @@ end;
 
 
 
-Procedure TInstanceGroupManagerList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupManagerList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -12483,7 +12489,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInstanceGroupManagerList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInstanceGroupManagerList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -12502,7 +12508,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceGroupManagersAbandonInstancesRequest.Setinstances(AIndex : Integer; const AValue : TStringArray); 
+Procedure TInstanceGroupManagersAbandonInstancesRequest.Setinstances(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Finstances=AValue) then exit;
@@ -12513,7 +12519,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInstanceGroupManagersAbandonInstancesRequest.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInstanceGroupManagersAbandonInstancesRequest.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -12532,7 +12538,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceGroupManagersDeleteInstancesRequest.Setinstances(AIndex : Integer; const AValue : TStringArray); 
+Procedure TInstanceGroupManagersDeleteInstancesRequest.Setinstances(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Finstances=AValue) then exit;
@@ -12543,7 +12549,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInstanceGroupManagersDeleteInstancesRequest.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInstanceGroupManagersDeleteInstancesRequest.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -12562,7 +12568,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceGroupManagersListManagedInstancesResponse.SetmanagedInstances(AIndex : Integer; const AValue : TInstanceGroupManagersListManagedInstancesResponseTypemanagedInstancesArray); 
+Procedure TInstanceGroupManagersListManagedInstancesResponse.SetmanagedInstances(AIndex : Integer; const AValue : TInstanceGroupManagersListManagedInstancesResponseTypemanagedInstancesArray);
 
 begin
   If (FmanagedInstances=AValue) then exit;
@@ -12573,7 +12579,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInstanceGroupManagersListManagedInstancesResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInstanceGroupManagersListManagedInstancesResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -12592,7 +12598,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceGroupManagersRecreateInstancesRequest.Setinstances(AIndex : Integer; const AValue : TStringArray); 
+Procedure TInstanceGroupManagersRecreateInstancesRequest.Setinstances(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Finstances=AValue) then exit;
@@ -12603,7 +12609,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInstanceGroupManagersRecreateInstancesRequest.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInstanceGroupManagersRecreateInstancesRequest.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -12622,7 +12628,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceGroupManagersScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupManagersScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkey=AValue) then exit;
@@ -12632,7 +12638,7 @@ end;
 
 
 
-Procedure TInstanceGroupManagersScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupManagersScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -12649,7 +12655,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceGroupManagersScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupManagersScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -12659,7 +12665,7 @@ end;
 
 
 
-Procedure TInstanceGroupManagersScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TInstanceGroupManagersScopedListTypewarningTypedataArray); 
+Procedure TInstanceGroupManagersScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TInstanceGroupManagersScopedListTypewarningTypedataArray);
 
 begin
   If (Fdata=AValue) then exit;
@@ -12669,7 +12675,7 @@ end;
 
 
 
-Procedure TInstanceGroupManagersScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupManagersScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -12680,7 +12686,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInstanceGroupManagersScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInstanceGroupManagersScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -12699,7 +12705,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceGroupManagersScopedList.SetinstanceGroupManagers(AIndex : Integer; const AValue : TInstanceGroupManagersScopedListTypeinstanceGroupManagersArray); 
+Procedure TInstanceGroupManagersScopedList.SetinstanceGroupManagers(AIndex : Integer; const AValue : TInstanceGroupManagersScopedListTypeinstanceGroupManagersArray);
 
 begin
   If (FinstanceGroupManagers=AValue) then exit;
@@ -12709,7 +12715,7 @@ end;
 
 
 
-Procedure TInstanceGroupManagersScopedList.Setwarning(AIndex : Integer; const AValue : TInstanceGroupManagersScopedListTypewarning); 
+Procedure TInstanceGroupManagersScopedList.Setwarning(AIndex : Integer; const AValue : TInstanceGroupManagersScopedListTypewarning);
 
 begin
   If (Fwarning=AValue) then exit;
@@ -12720,7 +12726,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInstanceGroupManagersScopedList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInstanceGroupManagersScopedList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -12739,7 +12745,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceGroupManagersSetInstanceTemplateRequest.SetinstanceTemplate(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupManagersSetInstanceTemplateRequest.SetinstanceTemplate(AIndex : Integer; const AValue : String);
 
 begin
   If (FinstanceTemplate=AValue) then exit;
@@ -12756,7 +12762,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceGroupManagersSetTargetPoolsRequest.Setfingerprint(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupManagersSetTargetPoolsRequest.Setfingerprint(AIndex : Integer; const AValue : String);
 
 begin
   If (Ffingerprint=AValue) then exit;
@@ -12766,7 +12772,7 @@ end;
 
 
 
-Procedure TInstanceGroupManagersSetTargetPoolsRequest.SettargetPools(AIndex : Integer; const AValue : TStringArray); 
+Procedure TInstanceGroupManagersSetTargetPoolsRequest.SettargetPools(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FtargetPools=AValue) then exit;
@@ -12777,7 +12783,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInstanceGroupManagersSetTargetPoolsRequest.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInstanceGroupManagersSetTargetPoolsRequest.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -12796,7 +12802,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceGroupsAddInstancesRequest.Setinstances(AIndex : Integer; const AValue : TInstanceGroupsAddInstancesRequestTypeinstancesArray); 
+Procedure TInstanceGroupsAddInstancesRequest.Setinstances(AIndex : Integer; const AValue : TInstanceGroupsAddInstancesRequestTypeinstancesArray);
 
 begin
   If (Finstances=AValue) then exit;
@@ -12807,7 +12813,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInstanceGroupsAddInstancesRequest.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInstanceGroupsAddInstancesRequest.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -12826,7 +12832,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceGroupsListInstances.Setid(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupsListInstances.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -12836,7 +12842,7 @@ end;
 
 
 
-Procedure TInstanceGroupsListInstances.Setitems(AIndex : Integer; const AValue : TInstanceGroupsListInstancesTypeitemsArray); 
+Procedure TInstanceGroupsListInstances.Setitems(AIndex : Integer; const AValue : TInstanceGroupsListInstancesTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -12846,7 +12852,7 @@ end;
 
 
 
-Procedure TInstanceGroupsListInstances.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupsListInstances.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -12856,7 +12862,7 @@ end;
 
 
 
-Procedure TInstanceGroupsListInstances.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupsListInstances.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -12866,7 +12872,7 @@ end;
 
 
 
-Procedure TInstanceGroupsListInstances.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupsListInstances.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -12877,7 +12883,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInstanceGroupsListInstances.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInstanceGroupsListInstances.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -12896,7 +12902,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceGroupsListInstancesRequest.SetinstanceState(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupsListInstancesRequest.SetinstanceState(AIndex : Integer; const AValue : String);
 
 begin
   If (FinstanceState=AValue) then exit;
@@ -12913,7 +12919,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceGroupsRemoveInstancesRequest.Setinstances(AIndex : Integer; const AValue : TInstanceGroupsRemoveInstancesRequestTypeinstancesArray); 
+Procedure TInstanceGroupsRemoveInstancesRequest.Setinstances(AIndex : Integer; const AValue : TInstanceGroupsRemoveInstancesRequestTypeinstancesArray);
 
 begin
   If (Finstances=AValue) then exit;
@@ -12924,7 +12930,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInstanceGroupsRemoveInstancesRequest.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInstanceGroupsRemoveInstancesRequest.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -12943,7 +12949,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceGroupsScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupsScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkey=AValue) then exit;
@@ -12953,7 +12959,7 @@ end;
 
 
 
-Procedure TInstanceGroupsScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupsScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -12970,7 +12976,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceGroupsScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupsScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -12980,7 +12986,7 @@ end;
 
 
 
-Procedure TInstanceGroupsScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TInstanceGroupsScopedListTypewarningTypedataArray); 
+Procedure TInstanceGroupsScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TInstanceGroupsScopedListTypewarningTypedataArray);
 
 begin
   If (Fdata=AValue) then exit;
@@ -12990,7 +12996,7 @@ end;
 
 
 
-Procedure TInstanceGroupsScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupsScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -13001,7 +13007,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInstanceGroupsScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInstanceGroupsScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -13020,7 +13026,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceGroupsScopedList.SetinstanceGroups(AIndex : Integer; const AValue : TInstanceGroupsScopedListTypeinstanceGroupsArray); 
+Procedure TInstanceGroupsScopedList.SetinstanceGroups(AIndex : Integer; const AValue : TInstanceGroupsScopedListTypeinstanceGroupsArray);
 
 begin
   If (FinstanceGroups=AValue) then exit;
@@ -13030,7 +13036,7 @@ end;
 
 
 
-Procedure TInstanceGroupsScopedList.Setwarning(AIndex : Integer; const AValue : TInstanceGroupsScopedListTypewarning); 
+Procedure TInstanceGroupsScopedList.Setwarning(AIndex : Integer; const AValue : TInstanceGroupsScopedListTypewarning);
 
 begin
   If (Fwarning=AValue) then exit;
@@ -13041,7 +13047,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInstanceGroupsScopedList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInstanceGroupsScopedList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -13060,7 +13066,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceGroupsSetNamedPortsRequest.Setfingerprint(AIndex : Integer; const AValue : String); 
+Procedure TInstanceGroupsSetNamedPortsRequest.Setfingerprint(AIndex : Integer; const AValue : String);
 
 begin
   If (Ffingerprint=AValue) then exit;
@@ -13070,7 +13076,7 @@ end;
 
 
 
-Procedure TInstanceGroupsSetNamedPortsRequest.SetnamedPorts(AIndex : Integer; const AValue : TInstanceGroupsSetNamedPortsRequestTypenamedPortsArray); 
+Procedure TInstanceGroupsSetNamedPortsRequest.SetnamedPorts(AIndex : Integer; const AValue : TInstanceGroupsSetNamedPortsRequestTypenamedPortsArray);
 
 begin
   If (FnamedPorts=AValue) then exit;
@@ -13081,7 +13087,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInstanceGroupsSetNamedPortsRequest.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInstanceGroupsSetNamedPortsRequest.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -13100,7 +13106,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TInstanceList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -13110,7 +13116,7 @@ end;
 
 
 
-Procedure TInstanceList.Setitems(AIndex : Integer; const AValue : TInstanceListTypeitemsArray); 
+Procedure TInstanceList.Setitems(AIndex : Integer; const AValue : TInstanceListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -13120,7 +13126,7 @@ end;
 
 
 
-Procedure TInstanceList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TInstanceList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -13130,7 +13136,7 @@ end;
 
 
 
-Procedure TInstanceList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TInstanceList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -13140,7 +13146,7 @@ end;
 
 
 
-Procedure TInstanceList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TInstanceList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -13151,7 +13157,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInstanceList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInstanceList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -13170,7 +13176,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceMoveRequest.SetdestinationZone(AIndex : Integer; const AValue : String); 
+Procedure TInstanceMoveRequest.SetdestinationZone(AIndex : Integer; const AValue : String);
 
 begin
   If (FdestinationZone=AValue) then exit;
@@ -13180,7 +13186,7 @@ end;
 
 
 
-Procedure TInstanceMoveRequest.SettargetInstance(AIndex : Integer; const AValue : String); 
+Procedure TInstanceMoveRequest.SettargetInstance(AIndex : Integer; const AValue : String);
 
 begin
   If (FtargetInstance=AValue) then exit;
@@ -13197,7 +13203,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceProperties.SetcanIpForward(AIndex : Integer; const AValue : boolean); 
+Procedure TInstanceProperties.SetcanIpForward(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FcanIpForward=AValue) then exit;
@@ -13207,7 +13213,7 @@ end;
 
 
 
-Procedure TInstanceProperties.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TInstanceProperties.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -13217,7 +13223,7 @@ end;
 
 
 
-Procedure TInstanceProperties.Setdisks(AIndex : Integer; const AValue : TInstancePropertiesTypedisksArray); 
+Procedure TInstanceProperties.Setdisks(AIndex : Integer; const AValue : TInstancePropertiesTypedisksArray);
 
 begin
   If (Fdisks=AValue) then exit;
@@ -13227,7 +13233,7 @@ end;
 
 
 
-Procedure TInstanceProperties.SetmachineType(AIndex : Integer; const AValue : String); 
+Procedure TInstanceProperties.SetmachineType(AIndex : Integer; const AValue : String);
 
 begin
   If (FmachineType=AValue) then exit;
@@ -13237,7 +13243,7 @@ end;
 
 
 
-Procedure TInstanceProperties.Setmetadata(AIndex : Integer; const AValue : TMetadata); 
+Procedure TInstanceProperties.Setmetadata(AIndex : Integer; const AValue : TMetadata);
 
 begin
   If (Fmetadata=AValue) then exit;
@@ -13247,7 +13253,7 @@ end;
 
 
 
-Procedure TInstanceProperties.SetnetworkInterfaces(AIndex : Integer; const AValue : TInstancePropertiesTypenetworkInterfacesArray); 
+Procedure TInstanceProperties.SetnetworkInterfaces(AIndex : Integer; const AValue : TInstancePropertiesTypenetworkInterfacesArray);
 
 begin
   If (FnetworkInterfaces=AValue) then exit;
@@ -13257,7 +13263,7 @@ end;
 
 
 
-Procedure TInstanceProperties.Setscheduling(AIndex : Integer; const AValue : TScheduling); 
+Procedure TInstanceProperties.Setscheduling(AIndex : Integer; const AValue : TScheduling);
 
 begin
   If (Fscheduling=AValue) then exit;
@@ -13267,7 +13273,7 @@ end;
 
 
 
-Procedure TInstanceProperties.SetserviceAccounts(AIndex : Integer; const AValue : TInstancePropertiesTypeserviceAccountsArray); 
+Procedure TInstanceProperties.SetserviceAccounts(AIndex : Integer; const AValue : TInstancePropertiesTypeserviceAccountsArray);
 
 begin
   If (FserviceAccounts=AValue) then exit;
@@ -13277,7 +13283,7 @@ end;
 
 
 
-Procedure TInstanceProperties.Settags(AIndex : Integer; const AValue : TTags); 
+Procedure TInstanceProperties.Settags(AIndex : Integer; const AValue : TTags);
 
 begin
   If (Ftags=AValue) then exit;
@@ -13288,7 +13294,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInstanceProperties.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInstanceProperties.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -13309,7 +13315,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceReference.Setinstance(AIndex : Integer; const AValue : String); 
+Procedure TInstanceReference.Setinstance(AIndex : Integer; const AValue : String);
 
 begin
   If (Finstance=AValue) then exit;
@@ -13326,7 +13332,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceTemplate.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TInstanceTemplate.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -13336,7 +13342,7 @@ end;
 
 
 
-Procedure TInstanceTemplate.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TInstanceTemplate.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -13346,7 +13352,7 @@ end;
 
 
 
-Procedure TInstanceTemplate.Setid(AIndex : Integer; const AValue : String); 
+Procedure TInstanceTemplate.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -13356,7 +13362,7 @@ end;
 
 
 
-Procedure TInstanceTemplate.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TInstanceTemplate.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -13366,7 +13372,7 @@ end;
 
 
 
-Procedure TInstanceTemplate.Setname(AIndex : Integer; const AValue : String); 
+Procedure TInstanceTemplate.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -13376,7 +13382,7 @@ end;
 
 
 
-Procedure TInstanceTemplate.Setproperties(AIndex : Integer; const AValue : TInstanceProperties); 
+Procedure TInstanceTemplate.Setproperties(AIndex : Integer; const AValue : TInstanceProperties);
 
 begin
   If (Fproperties=AValue) then exit;
@@ -13386,7 +13392,7 @@ end;
 
 
 
-Procedure TInstanceTemplate.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TInstanceTemplate.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -13403,7 +13409,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceTemplateList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TInstanceTemplateList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -13413,7 +13419,7 @@ end;
 
 
 
-Procedure TInstanceTemplateList.Setitems(AIndex : Integer; const AValue : TInstanceTemplateListTypeitemsArray); 
+Procedure TInstanceTemplateList.Setitems(AIndex : Integer; const AValue : TInstanceTemplateListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -13423,7 +13429,7 @@ end;
 
 
 
-Procedure TInstanceTemplateList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TInstanceTemplateList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -13433,7 +13439,7 @@ end;
 
 
 
-Procedure TInstanceTemplateList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TInstanceTemplateList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -13443,7 +13449,7 @@ end;
 
 
 
-Procedure TInstanceTemplateList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TInstanceTemplateList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -13454,7 +13460,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInstanceTemplateList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInstanceTemplateList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -13473,7 +13479,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstanceWithNamedPorts.Setinstance(AIndex : Integer; const AValue : String); 
+Procedure TInstanceWithNamedPorts.Setinstance(AIndex : Integer; const AValue : String);
 
 begin
   If (Finstance=AValue) then exit;
@@ -13483,7 +13489,7 @@ end;
 
 
 
-Procedure TInstanceWithNamedPorts.SetnamedPorts(AIndex : Integer; const AValue : TInstanceWithNamedPortsTypenamedPortsArray); 
+Procedure TInstanceWithNamedPorts.SetnamedPorts(AIndex : Integer; const AValue : TInstanceWithNamedPortsTypenamedPortsArray);
 
 begin
   If (FnamedPorts=AValue) then exit;
@@ -13493,7 +13499,7 @@ end;
 
 
 
-Procedure TInstanceWithNamedPorts.Setstatus(AIndex : Integer; const AValue : String); 
+Procedure TInstanceWithNamedPorts.Setstatus(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -13504,7 +13510,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInstanceWithNamedPorts.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInstanceWithNamedPorts.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -13523,7 +13529,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstancesScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String); 
+Procedure TInstancesScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkey=AValue) then exit;
@@ -13533,7 +13539,7 @@ end;
 
 
 
-Procedure TInstancesScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TInstancesScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -13550,7 +13556,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstancesScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TInstancesScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -13560,7 +13566,7 @@ end;
 
 
 
-Procedure TInstancesScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TInstancesScopedListTypewarningTypedataArray); 
+Procedure TInstancesScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TInstancesScopedListTypewarningTypedataArray);
 
 begin
   If (Fdata=AValue) then exit;
@@ -13570,7 +13576,7 @@ end;
 
 
 
-Procedure TInstancesScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TInstancesScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -13581,7 +13587,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInstancesScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInstancesScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -13600,7 +13606,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstancesScopedList.Setinstances(AIndex : Integer; const AValue : TInstancesScopedListTypeinstancesArray); 
+Procedure TInstancesScopedList.Setinstances(AIndex : Integer; const AValue : TInstancesScopedListTypeinstancesArray);
 
 begin
   If (Finstances=AValue) then exit;
@@ -13610,7 +13616,7 @@ end;
 
 
 
-Procedure TInstancesScopedList.Setwarning(AIndex : Integer; const AValue : TInstancesScopedListTypewarning); 
+Procedure TInstancesScopedList.Setwarning(AIndex : Integer; const AValue : TInstancesScopedListTypewarning);
 
 begin
   If (Fwarning=AValue) then exit;
@@ -13621,7 +13627,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInstancesScopedList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInstancesScopedList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -13640,7 +13646,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstancesSetMachineTypeRequest.SetmachineType(AIndex : Integer; const AValue : String); 
+Procedure TInstancesSetMachineTypeRequest.SetmachineType(AIndex : Integer; const AValue : String);
 
 begin
   If (FmachineType=AValue) then exit;
@@ -13657,7 +13663,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TLicense.SetchargesUseFee(AIndex : Integer; const AValue : boolean); 
+Procedure TLicense.SetchargesUseFee(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FchargesUseFee=AValue) then exit;
@@ -13667,7 +13673,7 @@ end;
 
 
 
-Procedure TLicense.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TLicense.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -13677,7 +13683,7 @@ end;
 
 
 
-Procedure TLicense.Setname(AIndex : Integer; const AValue : String); 
+Procedure TLicense.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -13687,7 +13693,7 @@ end;
 
 
 
-Procedure TLicense.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TLicense.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -13704,7 +13710,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TMachineTypeTypescratchDisksItem.SetdiskGb(AIndex : Integer; const AValue : integer); 
+Procedure TMachineTypeTypescratchDisksItem.SetdiskGb(AIndex : Integer; const AValue : integer);
 
 begin
   If (FdiskGb=AValue) then exit;
@@ -13721,7 +13727,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TMachineType.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TMachineType.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -13731,7 +13737,7 @@ end;
 
 
 
-Procedure TMachineType.Setdeprecated(AIndex : Integer; const AValue : TDeprecationStatus); 
+Procedure TMachineType.Setdeprecated(AIndex : Integer; const AValue : TDeprecationStatus);
 
 begin
   If (Fdeprecated=AValue) then exit;
@@ -13741,7 +13747,7 @@ end;
 
 
 
-Procedure TMachineType.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TMachineType.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -13751,7 +13757,7 @@ end;
 
 
 
-Procedure TMachineType.SetguestCpus(AIndex : Integer; const AValue : integer); 
+Procedure TMachineType.SetguestCpus(AIndex : Integer; const AValue : integer);
 
 begin
   If (FguestCpus=AValue) then exit;
@@ -13761,7 +13767,7 @@ end;
 
 
 
-Procedure TMachineType.Setid(AIndex : Integer; const AValue : String); 
+Procedure TMachineType.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -13771,7 +13777,7 @@ end;
 
 
 
-Procedure TMachineType.SetimageSpaceGb(AIndex : Integer; const AValue : integer); 
+Procedure TMachineType.SetimageSpaceGb(AIndex : Integer; const AValue : integer);
 
 begin
   If (FimageSpaceGb=AValue) then exit;
@@ -13781,7 +13787,7 @@ end;
 
 
 
-Procedure TMachineType.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TMachineType.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -13791,7 +13797,7 @@ end;
 
 
 
-Procedure TMachineType.SetmaximumPersistentDisks(AIndex : Integer; const AValue : integer); 
+Procedure TMachineType.SetmaximumPersistentDisks(AIndex : Integer; const AValue : integer);
 
 begin
   If (FmaximumPersistentDisks=AValue) then exit;
@@ -13801,7 +13807,7 @@ end;
 
 
 
-Procedure TMachineType.SetmaximumPersistentDisksSizeGb(AIndex : Integer; const AValue : String); 
+Procedure TMachineType.SetmaximumPersistentDisksSizeGb(AIndex : Integer; const AValue : String);
 
 begin
   If (FmaximumPersistentDisksSizeGb=AValue) then exit;
@@ -13811,7 +13817,7 @@ end;
 
 
 
-Procedure TMachineType.SetmemoryMb(AIndex : Integer; const AValue : integer); 
+Procedure TMachineType.SetmemoryMb(AIndex : Integer; const AValue : integer);
 
 begin
   If (FmemoryMb=AValue) then exit;
@@ -13821,7 +13827,7 @@ end;
 
 
 
-Procedure TMachineType.Setname(AIndex : Integer; const AValue : String); 
+Procedure TMachineType.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -13831,7 +13837,7 @@ end;
 
 
 
-Procedure TMachineType.SetscratchDisks(AIndex : Integer; const AValue : TMachineTypeTypescratchDisksArray); 
+Procedure TMachineType.SetscratchDisks(AIndex : Integer; const AValue : TMachineTypeTypescratchDisksArray);
 
 begin
   If (FscratchDisks=AValue) then exit;
@@ -13841,7 +13847,7 @@ end;
 
 
 
-Procedure TMachineType.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TMachineType.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -13851,7 +13857,7 @@ end;
 
 
 
-Procedure TMachineType.Setzone(AIndex : Integer; const AValue : String); 
+Procedure TMachineType.Setzone(AIndex : Integer; const AValue : String);
 
 begin
   If (Fzone=AValue) then exit;
@@ -13862,7 +13868,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TMachineType.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TMachineType.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -13894,7 +13900,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TMachineTypeAggregatedList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TMachineTypeAggregatedList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -13904,7 +13910,7 @@ end;
 
 
 
-Procedure TMachineTypeAggregatedList.Setitems(AIndex : Integer; const AValue : TMachineTypeAggregatedListTypeitems); 
+Procedure TMachineTypeAggregatedList.Setitems(AIndex : Integer; const AValue : TMachineTypeAggregatedListTypeitems);
 
 begin
   If (Fitems=AValue) then exit;
@@ -13914,7 +13920,7 @@ end;
 
 
 
-Procedure TMachineTypeAggregatedList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TMachineTypeAggregatedList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -13924,7 +13930,7 @@ end;
 
 
 
-Procedure TMachineTypeAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TMachineTypeAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -13934,7 +13940,7 @@ end;
 
 
 
-Procedure TMachineTypeAggregatedList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TMachineTypeAggregatedList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -13951,7 +13957,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TMachineTypeList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TMachineTypeList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -13961,7 +13967,7 @@ end;
 
 
 
-Procedure TMachineTypeList.Setitems(AIndex : Integer; const AValue : TMachineTypeListTypeitemsArray); 
+Procedure TMachineTypeList.Setitems(AIndex : Integer; const AValue : TMachineTypeListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -13971,7 +13977,7 @@ end;
 
 
 
-Procedure TMachineTypeList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TMachineTypeList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -13981,7 +13987,7 @@ end;
 
 
 
-Procedure TMachineTypeList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TMachineTypeList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -13991,7 +13997,7 @@ end;
 
 
 
-Procedure TMachineTypeList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TMachineTypeList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -14002,7 +14008,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TMachineTypeList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TMachineTypeList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -14021,7 +14027,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TMachineTypesScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String); 
+Procedure TMachineTypesScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkey=AValue) then exit;
@@ -14031,7 +14037,7 @@ end;
 
 
 
-Procedure TMachineTypesScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TMachineTypesScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -14048,7 +14054,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TMachineTypesScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TMachineTypesScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -14058,7 +14064,7 @@ end;
 
 
 
-Procedure TMachineTypesScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TMachineTypesScopedListTypewarningTypedataArray); 
+Procedure TMachineTypesScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TMachineTypesScopedListTypewarningTypedataArray);
 
 begin
   If (Fdata=AValue) then exit;
@@ -14068,7 +14074,7 @@ end;
 
 
 
-Procedure TMachineTypesScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TMachineTypesScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -14079,7 +14085,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TMachineTypesScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TMachineTypesScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -14098,7 +14104,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TMachineTypesScopedList.SetmachineTypes(AIndex : Integer; const AValue : TMachineTypesScopedListTypemachineTypesArray); 
+Procedure TMachineTypesScopedList.SetmachineTypes(AIndex : Integer; const AValue : TMachineTypesScopedListTypemachineTypesArray);
 
 begin
   If (FmachineTypes=AValue) then exit;
@@ -14108,7 +14114,7 @@ end;
 
 
 
-Procedure TMachineTypesScopedList.Setwarning(AIndex : Integer; const AValue : TMachineTypesScopedListTypewarning); 
+Procedure TMachineTypesScopedList.Setwarning(AIndex : Integer; const AValue : TMachineTypesScopedListTypewarning);
 
 begin
   If (Fwarning=AValue) then exit;
@@ -14119,7 +14125,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TMachineTypesScopedList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TMachineTypesScopedList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -14138,7 +14144,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TManagedInstance.SetcurrentAction(AIndex : Integer; const AValue : String); 
+Procedure TManagedInstance.SetcurrentAction(AIndex : Integer; const AValue : String);
 
 begin
   If (FcurrentAction=AValue) then exit;
@@ -14148,7 +14154,7 @@ end;
 
 
 
-Procedure TManagedInstance.Setid(AIndex : Integer; const AValue : String); 
+Procedure TManagedInstance.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -14158,7 +14164,7 @@ end;
 
 
 
-Procedure TManagedInstance.Setinstance(AIndex : Integer; const AValue : String); 
+Procedure TManagedInstance.Setinstance(AIndex : Integer; const AValue : String);
 
 begin
   If (Finstance=AValue) then exit;
@@ -14168,7 +14174,7 @@ end;
 
 
 
-Procedure TManagedInstance.SetinstanceStatus(AIndex : Integer; const AValue : String); 
+Procedure TManagedInstance.SetinstanceStatus(AIndex : Integer; const AValue : String);
 
 begin
   If (FinstanceStatus=AValue) then exit;
@@ -14178,7 +14184,7 @@ end;
 
 
 
-Procedure TManagedInstance.SetlastAttempt(AIndex : Integer; const AValue : TManagedInstanceLastAttempt); 
+Procedure TManagedInstance.SetlastAttempt(AIndex : Integer; const AValue : TManagedInstanceLastAttempt);
 
 begin
   If (FlastAttempt=AValue) then exit;
@@ -14195,7 +14201,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TManagedInstanceLastAttemptTypeerrorsTypeerrorsItem.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TManagedInstanceLastAttemptTypeerrorsTypeerrorsItem.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -14205,7 +14211,7 @@ end;
 
 
 
-Procedure TManagedInstanceLastAttemptTypeerrorsTypeerrorsItem.Setlocation(AIndex : Integer; const AValue : String); 
+Procedure TManagedInstanceLastAttemptTypeerrorsTypeerrorsItem.Setlocation(AIndex : Integer; const AValue : String);
 
 begin
   If (Flocation=AValue) then exit;
@@ -14215,7 +14221,7 @@ end;
 
 
 
-Procedure TManagedInstanceLastAttemptTypeerrorsTypeerrorsItem.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TManagedInstanceLastAttemptTypeerrorsTypeerrorsItem.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -14232,7 +14238,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TManagedInstanceLastAttemptTypeerrors.Seterrors(AIndex : Integer; const AValue : TManagedInstanceLastAttemptTypeerrorsTypeerrorsArray); 
+Procedure TManagedInstanceLastAttemptTypeerrors.Seterrors(AIndex : Integer; const AValue : TManagedInstanceLastAttemptTypeerrorsTypeerrorsArray);
 
 begin
   If (Ferrors=AValue) then exit;
@@ -14243,7 +14249,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TManagedInstanceLastAttemptTypeerrors.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TManagedInstanceLastAttemptTypeerrors.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -14262,7 +14268,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TManagedInstanceLastAttempt.Seterrors(AIndex : Integer; const AValue : TManagedInstanceLastAttemptTypeerrors); 
+Procedure TManagedInstanceLastAttempt.Seterrors(AIndex : Integer; const AValue : TManagedInstanceLastAttemptTypeerrors);
 
 begin
   If (Ferrors=AValue) then exit;
@@ -14279,7 +14285,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TMetadataTypeitemsItem.Setkey(AIndex : Integer; const AValue : String); 
+Procedure TMetadataTypeitemsItem.Setkey(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkey=AValue) then exit;
@@ -14289,7 +14295,7 @@ end;
 
 
 
-Procedure TMetadataTypeitemsItem.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TMetadataTypeitemsItem.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -14306,7 +14312,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TMetadata.Setfingerprint(AIndex : Integer; const AValue : String); 
+Procedure TMetadata.Setfingerprint(AIndex : Integer; const AValue : String);
 
 begin
   If (Ffingerprint=AValue) then exit;
@@ -14316,7 +14322,7 @@ end;
 
 
 
-Procedure TMetadata.Setitems(AIndex : Integer; const AValue : TMetadataTypeitemsArray); 
+Procedure TMetadata.Setitems(AIndex : Integer; const AValue : TMetadataTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -14326,7 +14332,7 @@ end;
 
 
 
-Procedure TMetadata.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TMetadata.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -14337,7 +14343,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TMetadata.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TMetadata.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -14356,7 +14362,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TNamedPort.Setname(AIndex : Integer; const AValue : String); 
+Procedure TNamedPort.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -14366,7 +14372,7 @@ end;
 
 
 
-Procedure TNamedPort.Setport(AIndex : Integer; const AValue : integer); 
+Procedure TNamedPort.Setport(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fport=AValue) then exit;
@@ -14383,7 +14389,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TNetwork.SetIPv4Range(AIndex : Integer; const AValue : String); 
+Procedure TNetwork.SetIPv4Range(AIndex : Integer; const AValue : String);
 
 begin
   If (FIPv4Range=AValue) then exit;
@@ -14393,7 +14399,7 @@ end;
 
 
 
-Procedure TNetwork.SetautoCreateSubnetworks(AIndex : Integer; const AValue : boolean); 
+Procedure TNetwork.SetautoCreateSubnetworks(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FautoCreateSubnetworks=AValue) then exit;
@@ -14403,7 +14409,7 @@ end;
 
 
 
-Procedure TNetwork.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TNetwork.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -14413,7 +14419,7 @@ end;
 
 
 
-Procedure TNetwork.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TNetwork.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -14423,7 +14429,7 @@ end;
 
 
 
-Procedure TNetwork.SetgatewayIPv4(AIndex : Integer; const AValue : String); 
+Procedure TNetwork.SetgatewayIPv4(AIndex : Integer; const AValue : String);
 
 begin
   If (FgatewayIPv4=AValue) then exit;
@@ -14433,7 +14439,7 @@ end;
 
 
 
-Procedure TNetwork.Setid(AIndex : Integer; const AValue : String); 
+Procedure TNetwork.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -14443,7 +14449,7 @@ end;
 
 
 
-Procedure TNetwork.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TNetwork.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -14453,7 +14459,7 @@ end;
 
 
 
-Procedure TNetwork.Setname(AIndex : Integer; const AValue : String); 
+Procedure TNetwork.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -14463,7 +14469,7 @@ end;
 
 
 
-Procedure TNetwork.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TNetwork.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -14473,7 +14479,7 @@ end;
 
 
 
-Procedure TNetwork.Setsubnetworks(AIndex : Integer; const AValue : TStringArray); 
+Procedure TNetwork.Setsubnetworks(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Fsubnetworks=AValue) then exit;
@@ -14484,7 +14490,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TNetwork.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TNetwork.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -14503,7 +14509,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TNetworkInterface.SetaccessConfigs(AIndex : Integer; const AValue : TNetworkInterfaceTypeaccessConfigsArray); 
+Procedure TNetworkInterface.SetaccessConfigs(AIndex : Integer; const AValue : TNetworkInterfaceTypeaccessConfigsArray);
 
 begin
   If (FaccessConfigs=AValue) then exit;
@@ -14513,7 +14519,7 @@ end;
 
 
 
-Procedure TNetworkInterface.Setname(AIndex : Integer; const AValue : String); 
+Procedure TNetworkInterface.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -14523,7 +14529,7 @@ end;
 
 
 
-Procedure TNetworkInterface.Setnetwork(AIndex : Integer; const AValue : String); 
+Procedure TNetworkInterface.Setnetwork(AIndex : Integer; const AValue : String);
 
 begin
   If (Fnetwork=AValue) then exit;
@@ -14533,7 +14539,7 @@ end;
 
 
 
-Procedure TNetworkInterface.SetnetworkIP(AIndex : Integer; const AValue : String); 
+Procedure TNetworkInterface.SetnetworkIP(AIndex : Integer; const AValue : String);
 
 begin
   If (FnetworkIP=AValue) then exit;
@@ -14543,7 +14549,7 @@ end;
 
 
 
-Procedure TNetworkInterface.Setsubnetwork(AIndex : Integer; const AValue : String); 
+Procedure TNetworkInterface.Setsubnetwork(AIndex : Integer; const AValue : String);
 
 begin
   If (Fsubnetwork=AValue) then exit;
@@ -14554,7 +14560,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TNetworkInterface.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TNetworkInterface.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -14573,7 +14579,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TNetworkList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TNetworkList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -14583,7 +14589,7 @@ end;
 
 
 
-Procedure TNetworkList.Setitems(AIndex : Integer; const AValue : TNetworkListTypeitemsArray); 
+Procedure TNetworkList.Setitems(AIndex : Integer; const AValue : TNetworkListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -14593,7 +14599,7 @@ end;
 
 
 
-Procedure TNetworkList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TNetworkList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -14603,7 +14609,7 @@ end;
 
 
 
-Procedure TNetworkList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TNetworkList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -14613,7 +14619,7 @@ end;
 
 
 
-Procedure TNetworkList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TNetworkList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -14624,7 +14630,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TNetworkList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TNetworkList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -14643,7 +14649,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperationTypeerrorTypeerrorsItem.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TOperationTypeerrorTypeerrorsItem.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -14653,7 +14659,7 @@ end;
 
 
 
-Procedure TOperationTypeerrorTypeerrorsItem.Setlocation(AIndex : Integer; const AValue : String); 
+Procedure TOperationTypeerrorTypeerrorsItem.Setlocation(AIndex : Integer; const AValue : String);
 
 begin
   If (Flocation=AValue) then exit;
@@ -14663,7 +14669,7 @@ end;
 
 
 
-Procedure TOperationTypeerrorTypeerrorsItem.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TOperationTypeerrorTypeerrorsItem.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -14680,7 +14686,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperationTypeerror.Seterrors(AIndex : Integer; const AValue : TOperationTypeerrorTypeerrorsArray); 
+Procedure TOperationTypeerror.Seterrors(AIndex : Integer; const AValue : TOperationTypeerrorTypeerrorsArray);
 
 begin
   If (Ferrors=AValue) then exit;
@@ -14691,7 +14697,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOperationTypeerror.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOperationTypeerror.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -14710,7 +14716,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperationTypewarningsItemTypedataItem.Setkey(AIndex : Integer; const AValue : String); 
+Procedure TOperationTypewarningsItemTypedataItem.Setkey(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkey=AValue) then exit;
@@ -14720,7 +14726,7 @@ end;
 
 
 
-Procedure TOperationTypewarningsItemTypedataItem.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TOperationTypewarningsItemTypedataItem.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -14737,7 +14743,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperationTypewarningsItem.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TOperationTypewarningsItem.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -14747,7 +14753,7 @@ end;
 
 
 
-Procedure TOperationTypewarningsItem.Setdata(AIndex : Integer; const AValue : TOperationTypewarningsItemTypedataArray); 
+Procedure TOperationTypewarningsItem.Setdata(AIndex : Integer; const AValue : TOperationTypewarningsItemTypedataArray);
 
 begin
   If (Fdata=AValue) then exit;
@@ -14757,7 +14763,7 @@ end;
 
 
 
-Procedure TOperationTypewarningsItem.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TOperationTypewarningsItem.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -14768,7 +14774,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOperationTypewarningsItem.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOperationTypewarningsItem.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -14787,7 +14793,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperation.SetclientOperationId(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SetclientOperationId(AIndex : Integer; const AValue : String);
 
 begin
   If (FclientOperationId=AValue) then exit;
@@ -14797,7 +14803,7 @@ end;
 
 
 
-Procedure TOperation.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -14807,7 +14813,7 @@ end;
 
 
 
-Procedure TOperation.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TOperation.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -14817,7 +14823,7 @@ end;
 
 
 
-Procedure TOperation.SetendTime(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SetendTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FendTime=AValue) then exit;
@@ -14827,7 +14833,7 @@ end;
 
 
 
-Procedure TOperation.Seterror(AIndex : Integer; const AValue : TOperationTypeerror); 
+Procedure TOperation.Seterror(AIndex : Integer; const AValue : TOperationTypeerror);
 
 begin
   If (Ferror=AValue) then exit;
@@ -14837,7 +14843,7 @@ end;
 
 
 
-Procedure TOperation.SethttpErrorMessage(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SethttpErrorMessage(AIndex : Integer; const AValue : String);
 
 begin
   If (FhttpErrorMessage=AValue) then exit;
@@ -14847,7 +14853,7 @@ end;
 
 
 
-Procedure TOperation.SethttpErrorStatusCode(AIndex : Integer; const AValue : integer); 
+Procedure TOperation.SethttpErrorStatusCode(AIndex : Integer; const AValue : integer);
 
 begin
   If (FhttpErrorStatusCode=AValue) then exit;
@@ -14857,7 +14863,7 @@ end;
 
 
 
-Procedure TOperation.Setid(AIndex : Integer; const AValue : String); 
+Procedure TOperation.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -14867,7 +14873,7 @@ end;
 
 
 
-Procedure TOperation.SetinsertTime(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SetinsertTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FinsertTime=AValue) then exit;
@@ -14877,7 +14883,7 @@ end;
 
 
 
-Procedure TOperation.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOperation.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -14887,7 +14893,7 @@ end;
 
 
 
-Procedure TOperation.Setname(AIndex : Integer; const AValue : String); 
+Procedure TOperation.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -14897,7 +14903,7 @@ end;
 
 
 
-Procedure TOperation.SetoperationType(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SetoperationType(AIndex : Integer; const AValue : String);
 
 begin
   If (FoperationType=AValue) then exit;
@@ -14907,7 +14913,7 @@ end;
 
 
 
-Procedure TOperation.Setprogress(AIndex : Integer; const AValue : integer); 
+Procedure TOperation.Setprogress(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fprogress=AValue) then exit;
@@ -14917,7 +14923,7 @@ end;
 
 
 
-Procedure TOperation.Setregion(AIndex : Integer; const AValue : String); 
+Procedure TOperation.Setregion(AIndex : Integer; const AValue : String);
 
 begin
   If (Fregion=AValue) then exit;
@@ -14927,7 +14933,7 @@ end;
 
 
 
-Procedure TOperation.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -14937,7 +14943,7 @@ end;
 
 
 
-Procedure TOperation.SetstartTime(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SetstartTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FstartTime=AValue) then exit;
@@ -14947,7 +14953,7 @@ end;
 
 
 
-Procedure TOperation.Setstatus(AIndex : Integer; const AValue : String); 
+Procedure TOperation.Setstatus(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -14957,7 +14963,7 @@ end;
 
 
 
-Procedure TOperation.SetstatusMessage(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SetstatusMessage(AIndex : Integer; const AValue : String);
 
 begin
   If (FstatusMessage=AValue) then exit;
@@ -14967,7 +14973,7 @@ end;
 
 
 
-Procedure TOperation.SettargetId(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SettargetId(AIndex : Integer; const AValue : String);
 
 begin
   If (FtargetId=AValue) then exit;
@@ -14977,7 +14983,7 @@ end;
 
 
 
-Procedure TOperation.SettargetLink(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SettargetLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FtargetLink=AValue) then exit;
@@ -14987,7 +14993,7 @@ end;
 
 
 
-Procedure TOperation.Setuser(AIndex : Integer; const AValue : String); 
+Procedure TOperation.Setuser(AIndex : Integer; const AValue : String);
 
 begin
   If (Fuser=AValue) then exit;
@@ -14997,7 +15003,7 @@ end;
 
 
 
-Procedure TOperation.Setwarnings(AIndex : Integer; const AValue : TOperationTypewarningsArray); 
+Procedure TOperation.Setwarnings(AIndex : Integer; const AValue : TOperationTypewarningsArray);
 
 begin
   If (Fwarnings=AValue) then exit;
@@ -15007,7 +15013,7 @@ end;
 
 
 
-Procedure TOperation.Setzone(AIndex : Integer; const AValue : String); 
+Procedure TOperation.Setzone(AIndex : Integer; const AValue : String);
 
 begin
   If (Fzone=AValue) then exit;
@@ -15018,7 +15024,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOperation.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOperation.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -15050,7 +15056,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperationAggregatedList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TOperationAggregatedList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -15060,7 +15066,7 @@ end;
 
 
 
-Procedure TOperationAggregatedList.Setitems(AIndex : Integer; const AValue : TOperationAggregatedListTypeitems); 
+Procedure TOperationAggregatedList.Setitems(AIndex : Integer; const AValue : TOperationAggregatedListTypeitems);
 
 begin
   If (Fitems=AValue) then exit;
@@ -15070,7 +15076,7 @@ end;
 
 
 
-Procedure TOperationAggregatedList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOperationAggregatedList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -15080,7 +15086,7 @@ end;
 
 
 
-Procedure TOperationAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TOperationAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -15090,7 +15096,7 @@ end;
 
 
 
-Procedure TOperationAggregatedList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TOperationAggregatedList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -15107,7 +15113,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperationList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TOperationList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -15117,7 +15123,7 @@ end;
 
 
 
-Procedure TOperationList.Setitems(AIndex : Integer; const AValue : TOperationListTypeitemsArray); 
+Procedure TOperationList.Setitems(AIndex : Integer; const AValue : TOperationListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -15127,7 +15133,7 @@ end;
 
 
 
-Procedure TOperationList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOperationList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -15137,7 +15143,7 @@ end;
 
 
 
-Procedure TOperationList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TOperationList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -15147,7 +15153,7 @@ end;
 
 
 
-Procedure TOperationList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TOperationList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -15158,7 +15164,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOperationList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOperationList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -15177,7 +15183,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperationsScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String); 
+Procedure TOperationsScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkey=AValue) then exit;
@@ -15187,7 +15193,7 @@ end;
 
 
 
-Procedure TOperationsScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TOperationsScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -15204,7 +15210,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperationsScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TOperationsScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -15214,7 +15220,7 @@ end;
 
 
 
-Procedure TOperationsScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TOperationsScopedListTypewarningTypedataArray); 
+Procedure TOperationsScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TOperationsScopedListTypewarningTypedataArray);
 
 begin
   If (Fdata=AValue) then exit;
@@ -15224,7 +15230,7 @@ end;
 
 
 
-Procedure TOperationsScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TOperationsScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -15235,7 +15241,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOperationsScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOperationsScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -15254,7 +15260,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperationsScopedList.Setoperations(AIndex : Integer; const AValue : TOperationsScopedListTypeoperationsArray); 
+Procedure TOperationsScopedList.Setoperations(AIndex : Integer; const AValue : TOperationsScopedListTypeoperationsArray);
 
 begin
   If (Foperations=AValue) then exit;
@@ -15264,7 +15270,7 @@ end;
 
 
 
-Procedure TOperationsScopedList.Setwarning(AIndex : Integer; const AValue : TOperationsScopedListTypewarning); 
+Procedure TOperationsScopedList.Setwarning(AIndex : Integer; const AValue : TOperationsScopedListTypewarning);
 
 begin
   If (Fwarning=AValue) then exit;
@@ -15275,7 +15281,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOperationsScopedList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOperationsScopedList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -15294,7 +15300,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPathMatcher.SetdefaultService(AIndex : Integer; const AValue : String); 
+Procedure TPathMatcher.SetdefaultService(AIndex : Integer; const AValue : String);
 
 begin
   If (FdefaultService=AValue) then exit;
@@ -15304,7 +15310,7 @@ end;
 
 
 
-Procedure TPathMatcher.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TPathMatcher.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -15314,7 +15320,7 @@ end;
 
 
 
-Procedure TPathMatcher.Setname(AIndex : Integer; const AValue : String); 
+Procedure TPathMatcher.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -15324,7 +15330,7 @@ end;
 
 
 
-Procedure TPathMatcher.SetpathRules(AIndex : Integer; const AValue : TPathMatcherTypepathRulesArray); 
+Procedure TPathMatcher.SetpathRules(AIndex : Integer; const AValue : TPathMatcherTypepathRulesArray);
 
 begin
   If (FpathRules=AValue) then exit;
@@ -15335,7 +15341,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TPathMatcher.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TPathMatcher.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -15354,7 +15360,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPathRule.Setpaths(AIndex : Integer; const AValue : TStringArray); 
+Procedure TPathRule.Setpaths(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Fpaths=AValue) then exit;
@@ -15364,7 +15370,7 @@ end;
 
 
 
-Procedure TPathRule.Setservice(AIndex : Integer; const AValue : String); 
+Procedure TPathRule.Setservice(AIndex : Integer; const AValue : String);
 
 begin
   If (Fservice=AValue) then exit;
@@ -15375,7 +15381,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TPathRule.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TPathRule.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -15394,7 +15400,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TProject.SetcommonInstanceMetadata(AIndex : Integer; const AValue : TMetadata); 
+Procedure TProject.SetcommonInstanceMetadata(AIndex : Integer; const AValue : TMetadata);
 
 begin
   If (FcommonInstanceMetadata=AValue) then exit;
@@ -15404,7 +15410,7 @@ end;
 
 
 
-Procedure TProject.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TProject.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -15414,7 +15420,7 @@ end;
 
 
 
-Procedure TProject.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TProject.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -15424,7 +15430,7 @@ end;
 
 
 
-Procedure TProject.SetenabledFeatures(AIndex : Integer; const AValue : TStringArray); 
+Procedure TProject.SetenabledFeatures(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FenabledFeatures=AValue) then exit;
@@ -15434,7 +15440,7 @@ end;
 
 
 
-Procedure TProject.Setid(AIndex : Integer; const AValue : String); 
+Procedure TProject.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -15444,7 +15450,7 @@ end;
 
 
 
-Procedure TProject.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TProject.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -15454,7 +15460,7 @@ end;
 
 
 
-Procedure TProject.Setname(AIndex : Integer; const AValue : String); 
+Procedure TProject.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -15464,7 +15470,7 @@ end;
 
 
 
-Procedure TProject.Setquotas(AIndex : Integer; const AValue : TProjectTypequotasArray); 
+Procedure TProject.Setquotas(AIndex : Integer; const AValue : TProjectTypequotasArray);
 
 begin
   If (Fquotas=AValue) then exit;
@@ -15474,7 +15480,7 @@ end;
 
 
 
-Procedure TProject.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TProject.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -15484,7 +15490,7 @@ end;
 
 
 
-Procedure TProject.SetusageExportLocation(AIndex : Integer; const AValue : TUsageExportLocation); 
+Procedure TProject.SetusageExportLocation(AIndex : Integer; const AValue : TUsageExportLocation);
 
 begin
   If (FusageExportLocation=AValue) then exit;
@@ -15495,7 +15501,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TProject.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TProject.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -15515,7 +15521,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TQuota.Setlimit(AIndex : Integer; const AValue : double); 
+Procedure TQuota.Setlimit(AIndex : Integer; const AValue : double);
 
 begin
   If (Flimit=AValue) then exit;
@@ -15525,7 +15531,7 @@ end;
 
 
 
-Procedure TQuota.Setmetric(AIndex : Integer; const AValue : String); 
+Procedure TQuota.Setmetric(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmetric=AValue) then exit;
@@ -15535,7 +15541,7 @@ end;
 
 
 
-Procedure TQuota.Setusage(AIndex : Integer; const AValue : double); 
+Procedure TQuota.Setusage(AIndex : Integer; const AValue : double);
 
 begin
   If (Fusage=AValue) then exit;
@@ -15552,7 +15558,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TRegion.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TRegion.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -15562,7 +15568,7 @@ end;
 
 
 
-Procedure TRegion.Setdeprecated(AIndex : Integer; const AValue : TDeprecationStatus); 
+Procedure TRegion.Setdeprecated(AIndex : Integer; const AValue : TDeprecationStatus);
 
 begin
   If (Fdeprecated=AValue) then exit;
@@ -15572,7 +15578,7 @@ end;
 
 
 
-Procedure TRegion.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TRegion.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -15582,7 +15588,7 @@ end;
 
 
 
-Procedure TRegion.Setid(AIndex : Integer; const AValue : String); 
+Procedure TRegion.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -15592,7 +15598,7 @@ end;
 
 
 
-Procedure TRegion.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TRegion.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -15602,7 +15608,7 @@ end;
 
 
 
-Procedure TRegion.Setname(AIndex : Integer; const AValue : String); 
+Procedure TRegion.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -15612,7 +15618,7 @@ end;
 
 
 
-Procedure TRegion.Setquotas(AIndex : Integer; const AValue : TRegionTypequotasArray); 
+Procedure TRegion.Setquotas(AIndex : Integer; const AValue : TRegionTypequotasArray);
 
 begin
   If (Fquotas=AValue) then exit;
@@ -15622,7 +15628,7 @@ end;
 
 
 
-Procedure TRegion.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TRegion.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -15632,7 +15638,7 @@ end;
 
 
 
-Procedure TRegion.Setstatus(AIndex : Integer; const AValue : String); 
+Procedure TRegion.Setstatus(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -15642,7 +15648,7 @@ end;
 
 
 
-Procedure TRegion.Setzones(AIndex : Integer; const AValue : TStringArray); 
+Procedure TRegion.Setzones(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Fzones=AValue) then exit;
@@ -15653,7 +15659,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TRegion.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TRegion.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -15673,7 +15679,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TRegionList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TRegionList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -15683,7 +15689,7 @@ end;
 
 
 
-Procedure TRegionList.Setitems(AIndex : Integer; const AValue : TRegionListTypeitemsArray); 
+Procedure TRegionList.Setitems(AIndex : Integer; const AValue : TRegionListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -15693,7 +15699,7 @@ end;
 
 
 
-Procedure TRegionList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TRegionList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -15703,7 +15709,7 @@ end;
 
 
 
-Procedure TRegionList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TRegionList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -15713,7 +15719,7 @@ end;
 
 
 
-Procedure TRegionList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TRegionList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -15724,7 +15730,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TRegionList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TRegionList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -15743,7 +15749,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TResourceGroupReference.Setgroup(AIndex : Integer; const AValue : String); 
+Procedure TResourceGroupReference.Setgroup(AIndex : Integer; const AValue : String);
 
 begin
   If (Fgroup=AValue) then exit;
@@ -15760,7 +15766,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TRouteTypewarningsItemTypedataItem.Setkey(AIndex : Integer; const AValue : String); 
+Procedure TRouteTypewarningsItemTypedataItem.Setkey(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkey=AValue) then exit;
@@ -15770,7 +15776,7 @@ end;
 
 
 
-Procedure TRouteTypewarningsItemTypedataItem.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TRouteTypewarningsItemTypedataItem.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -15787,7 +15793,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TRouteTypewarningsItem.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TRouteTypewarningsItem.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -15797,7 +15803,7 @@ end;
 
 
 
-Procedure TRouteTypewarningsItem.Setdata(AIndex : Integer; const AValue : TRouteTypewarningsItemTypedataArray); 
+Procedure TRouteTypewarningsItem.Setdata(AIndex : Integer; const AValue : TRouteTypewarningsItemTypedataArray);
 
 begin
   If (Fdata=AValue) then exit;
@@ -15807,7 +15813,7 @@ end;
 
 
 
-Procedure TRouteTypewarningsItem.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TRouteTypewarningsItem.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -15818,7 +15824,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TRouteTypewarningsItem.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TRouteTypewarningsItem.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -15837,7 +15843,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TRoute.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TRoute.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -15847,7 +15853,7 @@ end;
 
 
 
-Procedure TRoute.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TRoute.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -15857,7 +15863,7 @@ end;
 
 
 
-Procedure TRoute.SetdestRange(AIndex : Integer; const AValue : String); 
+Procedure TRoute.SetdestRange(AIndex : Integer; const AValue : String);
 
 begin
   If (FdestRange=AValue) then exit;
@@ -15867,7 +15873,7 @@ end;
 
 
 
-Procedure TRoute.Setid(AIndex : Integer; const AValue : String); 
+Procedure TRoute.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -15877,7 +15883,7 @@ end;
 
 
 
-Procedure TRoute.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TRoute.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -15887,7 +15893,7 @@ end;
 
 
 
-Procedure TRoute.Setname(AIndex : Integer; const AValue : String); 
+Procedure TRoute.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -15897,7 +15903,7 @@ end;
 
 
 
-Procedure TRoute.Setnetwork(AIndex : Integer; const AValue : String); 
+Procedure TRoute.Setnetwork(AIndex : Integer; const AValue : String);
 
 begin
   If (Fnetwork=AValue) then exit;
@@ -15907,7 +15913,7 @@ end;
 
 
 
-Procedure TRoute.SetnextHopGateway(AIndex : Integer; const AValue : String); 
+Procedure TRoute.SetnextHopGateway(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextHopGateway=AValue) then exit;
@@ -15917,7 +15923,7 @@ end;
 
 
 
-Procedure TRoute.SetnextHopInstance(AIndex : Integer; const AValue : String); 
+Procedure TRoute.SetnextHopInstance(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextHopInstance=AValue) then exit;
@@ -15927,7 +15933,7 @@ end;
 
 
 
-Procedure TRoute.SetnextHopIp(AIndex : Integer; const AValue : String); 
+Procedure TRoute.SetnextHopIp(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextHopIp=AValue) then exit;
@@ -15937,7 +15943,7 @@ end;
 
 
 
-Procedure TRoute.SetnextHopNetwork(AIndex : Integer; const AValue : String); 
+Procedure TRoute.SetnextHopNetwork(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextHopNetwork=AValue) then exit;
@@ -15947,7 +15953,7 @@ end;
 
 
 
-Procedure TRoute.SetnextHopVpnTunnel(AIndex : Integer; const AValue : String); 
+Procedure TRoute.SetnextHopVpnTunnel(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextHopVpnTunnel=AValue) then exit;
@@ -15957,7 +15963,7 @@ end;
 
 
 
-Procedure TRoute.Setpriority(AIndex : Integer; const AValue : integer); 
+Procedure TRoute.Setpriority(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fpriority=AValue) then exit;
@@ -15967,7 +15973,7 @@ end;
 
 
 
-Procedure TRoute.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TRoute.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -15977,7 +15983,7 @@ end;
 
 
 
-Procedure TRoute.Settags(AIndex : Integer; const AValue : TStringArray); 
+Procedure TRoute.Settags(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Ftags=AValue) then exit;
@@ -15987,7 +15993,7 @@ end;
 
 
 
-Procedure TRoute.Setwarnings(AIndex : Integer; const AValue : TRouteTypewarningsArray); 
+Procedure TRoute.Setwarnings(AIndex : Integer; const AValue : TRouteTypewarningsArray);
 
 begin
   If (Fwarnings=AValue) then exit;
@@ -15998,7 +16004,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TRoute.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TRoute.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -16018,7 +16024,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TRouteList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TRouteList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -16028,7 +16034,7 @@ end;
 
 
 
-Procedure TRouteList.Setitems(AIndex : Integer; const AValue : TRouteListTypeitemsArray); 
+Procedure TRouteList.Setitems(AIndex : Integer; const AValue : TRouteListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -16038,7 +16044,7 @@ end;
 
 
 
-Procedure TRouteList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TRouteList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -16048,7 +16054,7 @@ end;
 
 
 
-Procedure TRouteList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TRouteList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -16058,7 +16064,7 @@ end;
 
 
 
-Procedure TRouteList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TRouteList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -16069,7 +16075,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TRouteList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TRouteList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -16088,7 +16094,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TScheduling.SetautomaticRestart(AIndex : Integer; const AValue : boolean); 
+Procedure TScheduling.SetautomaticRestart(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FautomaticRestart=AValue) then exit;
@@ -16098,7 +16104,7 @@ end;
 
 
 
-Procedure TScheduling.SetonHostMaintenance(AIndex : Integer; const AValue : String); 
+Procedure TScheduling.SetonHostMaintenance(AIndex : Integer; const AValue : String);
 
 begin
   If (FonHostMaintenance=AValue) then exit;
@@ -16108,7 +16114,7 @@ end;
 
 
 
-Procedure TScheduling.Setpreemptible(AIndex : Integer; const AValue : boolean); 
+Procedure TScheduling.Setpreemptible(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fpreemptible=AValue) then exit;
@@ -16125,7 +16131,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSerialPortOutput.Setcontents(AIndex : Integer; const AValue : String); 
+Procedure TSerialPortOutput.Setcontents(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcontents=AValue) then exit;
@@ -16135,7 +16141,7 @@ end;
 
 
 
-Procedure TSerialPortOutput.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TSerialPortOutput.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -16145,7 +16151,7 @@ end;
 
 
 
-Procedure TSerialPortOutput.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TSerialPortOutput.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -16162,7 +16168,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TServiceAccount.Setemail(AIndex : Integer; const AValue : String); 
+Procedure TServiceAccount.Setemail(AIndex : Integer; const AValue : String);
 
 begin
   If (Femail=AValue) then exit;
@@ -16172,7 +16178,7 @@ end;
 
 
 
-Procedure TServiceAccount.Setscopes(AIndex : Integer; const AValue : TStringArray); 
+Procedure TServiceAccount.Setscopes(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Fscopes=AValue) then exit;
@@ -16183,7 +16189,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TServiceAccount.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TServiceAccount.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -16202,7 +16208,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSnapshot.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TSnapshot.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -16212,7 +16218,7 @@ end;
 
 
 
-Procedure TSnapshot.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TSnapshot.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -16222,7 +16228,7 @@ end;
 
 
 
-Procedure TSnapshot.SetdiskSizeGb(AIndex : Integer; const AValue : String); 
+Procedure TSnapshot.SetdiskSizeGb(AIndex : Integer; const AValue : String);
 
 begin
   If (FdiskSizeGb=AValue) then exit;
@@ -16232,7 +16238,7 @@ end;
 
 
 
-Procedure TSnapshot.Setid(AIndex : Integer; const AValue : String); 
+Procedure TSnapshot.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -16242,7 +16248,7 @@ end;
 
 
 
-Procedure TSnapshot.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TSnapshot.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -16252,7 +16258,7 @@ end;
 
 
 
-Procedure TSnapshot.Setlicenses(AIndex : Integer; const AValue : TStringArray); 
+Procedure TSnapshot.Setlicenses(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Flicenses=AValue) then exit;
@@ -16262,7 +16268,7 @@ end;
 
 
 
-Procedure TSnapshot.Setname(AIndex : Integer; const AValue : String); 
+Procedure TSnapshot.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -16272,7 +16278,7 @@ end;
 
 
 
-Procedure TSnapshot.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TSnapshot.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -16282,7 +16288,7 @@ end;
 
 
 
-Procedure TSnapshot.SetsourceDisk(AIndex : Integer; const AValue : String); 
+Procedure TSnapshot.SetsourceDisk(AIndex : Integer; const AValue : String);
 
 begin
   If (FsourceDisk=AValue) then exit;
@@ -16292,7 +16298,7 @@ end;
 
 
 
-Procedure TSnapshot.SetsourceDiskId(AIndex : Integer; const AValue : String); 
+Procedure TSnapshot.SetsourceDiskId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsourceDiskId=AValue) then exit;
@@ -16302,7 +16308,7 @@ end;
 
 
 
-Procedure TSnapshot.Setstatus(AIndex : Integer; const AValue : String); 
+Procedure TSnapshot.Setstatus(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -16312,7 +16318,7 @@ end;
 
 
 
-Procedure TSnapshot.SetstorageBytes(AIndex : Integer; const AValue : String); 
+Procedure TSnapshot.SetstorageBytes(AIndex : Integer; const AValue : String);
 
 begin
   If (FstorageBytes=AValue) then exit;
@@ -16322,7 +16328,7 @@ end;
 
 
 
-Procedure TSnapshot.SetstorageBytesStatus(AIndex : Integer; const AValue : String); 
+Procedure TSnapshot.SetstorageBytesStatus(AIndex : Integer; const AValue : String);
 
 begin
   If (FstorageBytesStatus=AValue) then exit;
@@ -16333,7 +16339,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TSnapshot.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TSnapshot.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -16352,7 +16358,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSnapshotList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TSnapshotList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -16362,7 +16368,7 @@ end;
 
 
 
-Procedure TSnapshotList.Setitems(AIndex : Integer; const AValue : TSnapshotListTypeitemsArray); 
+Procedure TSnapshotList.Setitems(AIndex : Integer; const AValue : TSnapshotListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -16372,7 +16378,7 @@ end;
 
 
 
-Procedure TSnapshotList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TSnapshotList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -16382,7 +16388,7 @@ end;
 
 
 
-Procedure TSnapshotList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TSnapshotList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -16392,7 +16398,7 @@ end;
 
 
 
-Procedure TSnapshotList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TSnapshotList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -16403,7 +16409,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TSnapshotList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TSnapshotList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -16422,7 +16428,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSslCertificate.Setcertificate(AIndex : Integer; const AValue : String); 
+Procedure TSslCertificate.Setcertificate(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcertificate=AValue) then exit;
@@ -16432,7 +16438,7 @@ end;
 
 
 
-Procedure TSslCertificate.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TSslCertificate.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -16442,7 +16448,7 @@ end;
 
 
 
-Procedure TSslCertificate.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TSslCertificate.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -16452,7 +16458,7 @@ end;
 
 
 
-Procedure TSslCertificate.Setid(AIndex : Integer; const AValue : String); 
+Procedure TSslCertificate.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -16462,7 +16468,7 @@ end;
 
 
 
-Procedure TSslCertificate.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TSslCertificate.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -16472,7 +16478,7 @@ end;
 
 
 
-Procedure TSslCertificate.Setname(AIndex : Integer; const AValue : String); 
+Procedure TSslCertificate.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -16482,7 +16488,7 @@ end;
 
 
 
-Procedure TSslCertificate.SetprivateKey(AIndex : Integer; const AValue : String); 
+Procedure TSslCertificate.SetprivateKey(AIndex : Integer; const AValue : String);
 
 begin
   If (FprivateKey=AValue) then exit;
@@ -16492,7 +16498,7 @@ end;
 
 
 
-Procedure TSslCertificate.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TSslCertificate.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -16509,7 +16515,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSslCertificateList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TSslCertificateList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -16519,7 +16525,7 @@ end;
 
 
 
-Procedure TSslCertificateList.Setitems(AIndex : Integer; const AValue : TSslCertificateListTypeitemsArray); 
+Procedure TSslCertificateList.Setitems(AIndex : Integer; const AValue : TSslCertificateListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -16529,7 +16535,7 @@ end;
 
 
 
-Procedure TSslCertificateList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TSslCertificateList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -16539,7 +16545,7 @@ end;
 
 
 
-Procedure TSslCertificateList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TSslCertificateList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -16549,7 +16555,7 @@ end;
 
 
 
-Procedure TSslCertificateList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TSslCertificateList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -16560,7 +16566,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TSslCertificateList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TSslCertificateList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -16579,7 +16585,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSubnetwork.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TSubnetwork.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -16589,7 +16595,7 @@ end;
 
 
 
-Procedure TSubnetwork.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TSubnetwork.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -16599,7 +16605,7 @@ end;
 
 
 
-Procedure TSubnetwork.SetgatewayAddress(AIndex : Integer; const AValue : String); 
+Procedure TSubnetwork.SetgatewayAddress(AIndex : Integer; const AValue : String);
 
 begin
   If (FgatewayAddress=AValue) then exit;
@@ -16609,7 +16615,7 @@ end;
 
 
 
-Procedure TSubnetwork.Setid(AIndex : Integer; const AValue : String); 
+Procedure TSubnetwork.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -16619,7 +16625,7 @@ end;
 
 
 
-Procedure TSubnetwork.SetipCidrRange(AIndex : Integer; const AValue : String); 
+Procedure TSubnetwork.SetipCidrRange(AIndex : Integer; const AValue : String);
 
 begin
   If (FipCidrRange=AValue) then exit;
@@ -16629,7 +16635,7 @@ end;
 
 
 
-Procedure TSubnetwork.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TSubnetwork.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -16639,7 +16645,7 @@ end;
 
 
 
-Procedure TSubnetwork.Setname(AIndex : Integer; const AValue : String); 
+Procedure TSubnetwork.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -16649,7 +16655,7 @@ end;
 
 
 
-Procedure TSubnetwork.Setnetwork(AIndex : Integer; const AValue : String); 
+Procedure TSubnetwork.Setnetwork(AIndex : Integer; const AValue : String);
 
 begin
   If (Fnetwork=AValue) then exit;
@@ -16659,7 +16665,7 @@ end;
 
 
 
-Procedure TSubnetwork.Setregion(AIndex : Integer; const AValue : String); 
+Procedure TSubnetwork.Setregion(AIndex : Integer; const AValue : String);
 
 begin
   If (Fregion=AValue) then exit;
@@ -16669,7 +16675,7 @@ end;
 
 
 
-Procedure TSubnetwork.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TSubnetwork.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -16699,7 +16705,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSubnetworkAggregatedList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TSubnetworkAggregatedList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -16709,7 +16715,7 @@ end;
 
 
 
-Procedure TSubnetworkAggregatedList.Setitems(AIndex : Integer; const AValue : TSubnetworkAggregatedListTypeitems); 
+Procedure TSubnetworkAggregatedList.Setitems(AIndex : Integer; const AValue : TSubnetworkAggregatedListTypeitems);
 
 begin
   If (Fitems=AValue) then exit;
@@ -16719,7 +16725,7 @@ end;
 
 
 
-Procedure TSubnetworkAggregatedList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TSubnetworkAggregatedList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -16729,7 +16735,7 @@ end;
 
 
 
-Procedure TSubnetworkAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TSubnetworkAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -16739,7 +16745,7 @@ end;
 
 
 
-Procedure TSubnetworkAggregatedList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TSubnetworkAggregatedList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -16756,7 +16762,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSubnetworkList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TSubnetworkList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -16766,7 +16772,7 @@ end;
 
 
 
-Procedure TSubnetworkList.Setitems(AIndex : Integer; const AValue : TSubnetworkListTypeitemsArray); 
+Procedure TSubnetworkList.Setitems(AIndex : Integer; const AValue : TSubnetworkListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -16776,7 +16782,7 @@ end;
 
 
 
-Procedure TSubnetworkList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TSubnetworkList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -16786,7 +16792,7 @@ end;
 
 
 
-Procedure TSubnetworkList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TSubnetworkList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -16796,7 +16802,7 @@ end;
 
 
 
-Procedure TSubnetworkList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TSubnetworkList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -16807,7 +16813,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TSubnetworkList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TSubnetworkList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -16826,7 +16832,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSubnetworksScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String); 
+Procedure TSubnetworksScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkey=AValue) then exit;
@@ -16836,7 +16842,7 @@ end;
 
 
 
-Procedure TSubnetworksScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TSubnetworksScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -16853,7 +16859,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSubnetworksScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TSubnetworksScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -16863,7 +16869,7 @@ end;
 
 
 
-Procedure TSubnetworksScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TSubnetworksScopedListTypewarningTypedataArray); 
+Procedure TSubnetworksScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TSubnetworksScopedListTypewarningTypedataArray);
 
 begin
   If (Fdata=AValue) then exit;
@@ -16873,7 +16879,7 @@ end;
 
 
 
-Procedure TSubnetworksScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TSubnetworksScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -16884,7 +16890,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TSubnetworksScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TSubnetworksScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -16903,7 +16909,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSubnetworksScopedList.Setsubnetworks(AIndex : Integer; const AValue : TSubnetworksScopedListTypesubnetworksArray); 
+Procedure TSubnetworksScopedList.Setsubnetworks(AIndex : Integer; const AValue : TSubnetworksScopedListTypesubnetworksArray);
 
 begin
   If (Fsubnetworks=AValue) then exit;
@@ -16913,7 +16919,7 @@ end;
 
 
 
-Procedure TSubnetworksScopedList.Setwarning(AIndex : Integer; const AValue : TSubnetworksScopedListTypewarning); 
+Procedure TSubnetworksScopedList.Setwarning(AIndex : Integer; const AValue : TSubnetworksScopedListTypewarning);
 
 begin
   If (Fwarning=AValue) then exit;
@@ -16924,7 +16930,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TSubnetworksScopedList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TSubnetworksScopedList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -16943,7 +16949,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTags.Setfingerprint(AIndex : Integer; const AValue : String); 
+Procedure TTags.Setfingerprint(AIndex : Integer; const AValue : String);
 
 begin
   If (Ffingerprint=AValue) then exit;
@@ -16953,7 +16959,7 @@ end;
 
 
 
-Procedure TTags.Setitems(AIndex : Integer; const AValue : TStringArray); 
+Procedure TTags.Setitems(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -16964,7 +16970,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTags.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTags.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -16983,7 +16989,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetHttpProxy.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TTargetHttpProxy.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -16993,7 +16999,7 @@ end;
 
 
 
-Procedure TTargetHttpProxy.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TTargetHttpProxy.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -17003,7 +17009,7 @@ end;
 
 
 
-Procedure TTargetHttpProxy.Setid(AIndex : Integer; const AValue : String); 
+Procedure TTargetHttpProxy.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -17013,7 +17019,7 @@ end;
 
 
 
-Procedure TTargetHttpProxy.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TTargetHttpProxy.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -17023,7 +17029,7 @@ end;
 
 
 
-Procedure TTargetHttpProxy.Setname(AIndex : Integer; const AValue : String); 
+Procedure TTargetHttpProxy.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -17033,7 +17039,7 @@ end;
 
 
 
-Procedure TTargetHttpProxy.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TTargetHttpProxy.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -17043,7 +17049,7 @@ end;
 
 
 
-Procedure TTargetHttpProxy.SeturlMap(AIndex : Integer; const AValue : String); 
+Procedure TTargetHttpProxy.SeturlMap(AIndex : Integer; const AValue : String);
 
 begin
   If (FurlMap=AValue) then exit;
@@ -17060,7 +17066,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetHttpProxyList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TTargetHttpProxyList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -17070,7 +17076,7 @@ end;
 
 
 
-Procedure TTargetHttpProxyList.Setitems(AIndex : Integer; const AValue : TTargetHttpProxyListTypeitemsArray); 
+Procedure TTargetHttpProxyList.Setitems(AIndex : Integer; const AValue : TTargetHttpProxyListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -17080,7 +17086,7 @@ end;
 
 
 
-Procedure TTargetHttpProxyList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TTargetHttpProxyList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -17090,7 +17096,7 @@ end;
 
 
 
-Procedure TTargetHttpProxyList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TTargetHttpProxyList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -17100,7 +17106,7 @@ end;
 
 
 
-Procedure TTargetHttpProxyList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TTargetHttpProxyList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -17111,7 +17117,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTargetHttpProxyList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTargetHttpProxyList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -17130,7 +17136,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetHttpsProxiesSetSslCertificatesRequest.SetsslCertificates(AIndex : Integer; const AValue : TStringArray); 
+Procedure TTargetHttpsProxiesSetSslCertificatesRequest.SetsslCertificates(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FsslCertificates=AValue) then exit;
@@ -17141,7 +17147,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTargetHttpsProxiesSetSslCertificatesRequest.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTargetHttpsProxiesSetSslCertificatesRequest.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -17160,7 +17166,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetHttpsProxy.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TTargetHttpsProxy.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -17170,7 +17176,7 @@ end;
 
 
 
-Procedure TTargetHttpsProxy.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TTargetHttpsProxy.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -17180,7 +17186,7 @@ end;
 
 
 
-Procedure TTargetHttpsProxy.Setid(AIndex : Integer; const AValue : String); 
+Procedure TTargetHttpsProxy.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -17190,7 +17196,7 @@ end;
 
 
 
-Procedure TTargetHttpsProxy.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TTargetHttpsProxy.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -17200,7 +17206,7 @@ end;
 
 
 
-Procedure TTargetHttpsProxy.Setname(AIndex : Integer; const AValue : String); 
+Procedure TTargetHttpsProxy.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -17210,7 +17216,7 @@ end;
 
 
 
-Procedure TTargetHttpsProxy.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TTargetHttpsProxy.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -17220,7 +17226,7 @@ end;
 
 
 
-Procedure TTargetHttpsProxy.SetsslCertificates(AIndex : Integer; const AValue : TStringArray); 
+Procedure TTargetHttpsProxy.SetsslCertificates(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FsslCertificates=AValue) then exit;
@@ -17230,7 +17236,7 @@ end;
 
 
 
-Procedure TTargetHttpsProxy.SeturlMap(AIndex : Integer; const AValue : String); 
+Procedure TTargetHttpsProxy.SeturlMap(AIndex : Integer; const AValue : String);
 
 begin
   If (FurlMap=AValue) then exit;
@@ -17241,7 +17247,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTargetHttpsProxy.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTargetHttpsProxy.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -17260,7 +17266,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetHttpsProxyList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TTargetHttpsProxyList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -17270,7 +17276,7 @@ end;
 
 
 
-Procedure TTargetHttpsProxyList.Setitems(AIndex : Integer; const AValue : TTargetHttpsProxyListTypeitemsArray); 
+Procedure TTargetHttpsProxyList.Setitems(AIndex : Integer; const AValue : TTargetHttpsProxyListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -17280,7 +17286,7 @@ end;
 
 
 
-Procedure TTargetHttpsProxyList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TTargetHttpsProxyList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -17290,7 +17296,7 @@ end;
 
 
 
-Procedure TTargetHttpsProxyList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TTargetHttpsProxyList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -17300,7 +17306,7 @@ end;
 
 
 
-Procedure TTargetHttpsProxyList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TTargetHttpsProxyList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -17311,7 +17317,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTargetHttpsProxyList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTargetHttpsProxyList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -17330,7 +17336,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetInstance.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TTargetInstance.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -17340,7 +17346,7 @@ end;
 
 
 
-Procedure TTargetInstance.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TTargetInstance.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -17350,7 +17356,7 @@ end;
 
 
 
-Procedure TTargetInstance.Setid(AIndex : Integer; const AValue : String); 
+Procedure TTargetInstance.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -17360,7 +17366,7 @@ end;
 
 
 
-Procedure TTargetInstance.Setinstance(AIndex : Integer; const AValue : String); 
+Procedure TTargetInstance.Setinstance(AIndex : Integer; const AValue : String);
 
 begin
   If (Finstance=AValue) then exit;
@@ -17370,7 +17376,7 @@ end;
 
 
 
-Procedure TTargetInstance.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TTargetInstance.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -17380,7 +17386,7 @@ end;
 
 
 
-Procedure TTargetInstance.Setname(AIndex : Integer; const AValue : String); 
+Procedure TTargetInstance.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -17390,7 +17396,7 @@ end;
 
 
 
-Procedure TTargetInstance.SetnatPolicy(AIndex : Integer; const AValue : String); 
+Procedure TTargetInstance.SetnatPolicy(AIndex : Integer; const AValue : String);
 
 begin
   If (FnatPolicy=AValue) then exit;
@@ -17400,7 +17406,7 @@ end;
 
 
 
-Procedure TTargetInstance.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TTargetInstance.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -17410,7 +17416,7 @@ end;
 
 
 
-Procedure TTargetInstance.Setzone(AIndex : Integer; const AValue : String); 
+Procedure TTargetInstance.Setzone(AIndex : Integer; const AValue : String);
 
 begin
   If (Fzone=AValue) then exit;
@@ -17440,7 +17446,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetInstanceAggregatedList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TTargetInstanceAggregatedList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -17450,7 +17456,7 @@ end;
 
 
 
-Procedure TTargetInstanceAggregatedList.Setitems(AIndex : Integer; const AValue : TTargetInstanceAggregatedListTypeitems); 
+Procedure TTargetInstanceAggregatedList.Setitems(AIndex : Integer; const AValue : TTargetInstanceAggregatedListTypeitems);
 
 begin
   If (Fitems=AValue) then exit;
@@ -17460,7 +17466,7 @@ end;
 
 
 
-Procedure TTargetInstanceAggregatedList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TTargetInstanceAggregatedList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -17470,7 +17476,7 @@ end;
 
 
 
-Procedure TTargetInstanceAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TTargetInstanceAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -17480,7 +17486,7 @@ end;
 
 
 
-Procedure TTargetInstanceAggregatedList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TTargetInstanceAggregatedList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -17497,7 +17503,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetInstanceList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TTargetInstanceList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -17507,7 +17513,7 @@ end;
 
 
 
-Procedure TTargetInstanceList.Setitems(AIndex : Integer; const AValue : TTargetInstanceListTypeitemsArray); 
+Procedure TTargetInstanceList.Setitems(AIndex : Integer; const AValue : TTargetInstanceListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -17517,7 +17523,7 @@ end;
 
 
 
-Procedure TTargetInstanceList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TTargetInstanceList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -17527,7 +17533,7 @@ end;
 
 
 
-Procedure TTargetInstanceList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TTargetInstanceList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -17537,7 +17543,7 @@ end;
 
 
 
-Procedure TTargetInstanceList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TTargetInstanceList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -17548,7 +17554,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTargetInstanceList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTargetInstanceList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -17567,7 +17573,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetInstancesScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String); 
+Procedure TTargetInstancesScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkey=AValue) then exit;
@@ -17577,7 +17583,7 @@ end;
 
 
 
-Procedure TTargetInstancesScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TTargetInstancesScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -17594,7 +17600,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetInstancesScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TTargetInstancesScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -17604,7 +17610,7 @@ end;
 
 
 
-Procedure TTargetInstancesScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TTargetInstancesScopedListTypewarningTypedataArray); 
+Procedure TTargetInstancesScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TTargetInstancesScopedListTypewarningTypedataArray);
 
 begin
   If (Fdata=AValue) then exit;
@@ -17614,7 +17620,7 @@ end;
 
 
 
-Procedure TTargetInstancesScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TTargetInstancesScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -17625,7 +17631,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTargetInstancesScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTargetInstancesScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -17644,7 +17650,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetInstancesScopedList.SettargetInstances(AIndex : Integer; const AValue : TTargetInstancesScopedListTypetargetInstancesArray); 
+Procedure TTargetInstancesScopedList.SettargetInstances(AIndex : Integer; const AValue : TTargetInstancesScopedListTypetargetInstancesArray);
 
 begin
   If (FtargetInstances=AValue) then exit;
@@ -17654,7 +17660,7 @@ end;
 
 
 
-Procedure TTargetInstancesScopedList.Setwarning(AIndex : Integer; const AValue : TTargetInstancesScopedListTypewarning); 
+Procedure TTargetInstancesScopedList.Setwarning(AIndex : Integer; const AValue : TTargetInstancesScopedListTypewarning);
 
 begin
   If (Fwarning=AValue) then exit;
@@ -17665,7 +17671,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTargetInstancesScopedList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTargetInstancesScopedList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -17684,7 +17690,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetPool.SetbackupPool(AIndex : Integer; const AValue : String); 
+Procedure TTargetPool.SetbackupPool(AIndex : Integer; const AValue : String);
 
 begin
   If (FbackupPool=AValue) then exit;
@@ -17694,7 +17700,7 @@ end;
 
 
 
-Procedure TTargetPool.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TTargetPool.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -17704,7 +17710,7 @@ end;
 
 
 
-Procedure TTargetPool.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TTargetPool.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -17714,7 +17720,7 @@ end;
 
 
 
-Procedure TTargetPool.SetfailoverRatio(AIndex : Integer; const AValue : integer); 
+Procedure TTargetPool.SetfailoverRatio(AIndex : Integer; const AValue : integer);
 
 begin
   If (FfailoverRatio=AValue) then exit;
@@ -17724,7 +17730,7 @@ end;
 
 
 
-Procedure TTargetPool.SethealthChecks(AIndex : Integer; const AValue : TStringArray); 
+Procedure TTargetPool.SethealthChecks(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FhealthChecks=AValue) then exit;
@@ -17734,7 +17740,7 @@ end;
 
 
 
-Procedure TTargetPool.Setid(AIndex : Integer; const AValue : String); 
+Procedure TTargetPool.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -17744,7 +17750,7 @@ end;
 
 
 
-Procedure TTargetPool.Setinstances(AIndex : Integer; const AValue : TStringArray); 
+Procedure TTargetPool.Setinstances(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Finstances=AValue) then exit;
@@ -17754,7 +17760,7 @@ end;
 
 
 
-Procedure TTargetPool.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TTargetPool.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -17764,7 +17770,7 @@ end;
 
 
 
-Procedure TTargetPool.Setname(AIndex : Integer; const AValue : String); 
+Procedure TTargetPool.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -17774,7 +17780,7 @@ end;
 
 
 
-Procedure TTargetPool.Setregion(AIndex : Integer; const AValue : String); 
+Procedure TTargetPool.Setregion(AIndex : Integer; const AValue : String);
 
 begin
   If (Fregion=AValue) then exit;
@@ -17784,7 +17790,7 @@ end;
 
 
 
-Procedure TTargetPool.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TTargetPool.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -17794,7 +17800,7 @@ end;
 
 
 
-Procedure TTargetPool.SetsessionAffinity(AIndex : Integer; const AValue : String); 
+Procedure TTargetPool.SetsessionAffinity(AIndex : Integer; const AValue : String);
 
 begin
   If (FsessionAffinity=AValue) then exit;
@@ -17805,7 +17811,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTargetPool.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTargetPool.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -17838,7 +17844,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetPoolAggregatedList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TTargetPoolAggregatedList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -17848,7 +17854,7 @@ end;
 
 
 
-Procedure TTargetPoolAggregatedList.Setitems(AIndex : Integer; const AValue : TTargetPoolAggregatedListTypeitems); 
+Procedure TTargetPoolAggregatedList.Setitems(AIndex : Integer; const AValue : TTargetPoolAggregatedListTypeitems);
 
 begin
   If (Fitems=AValue) then exit;
@@ -17858,7 +17864,7 @@ end;
 
 
 
-Procedure TTargetPoolAggregatedList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TTargetPoolAggregatedList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -17868,7 +17874,7 @@ end;
 
 
 
-Procedure TTargetPoolAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TTargetPoolAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -17878,7 +17884,7 @@ end;
 
 
 
-Procedure TTargetPoolAggregatedList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TTargetPoolAggregatedList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -17895,7 +17901,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetPoolInstanceHealth.SethealthStatus(AIndex : Integer; const AValue : TTargetPoolInstanceHealthTypehealthStatusArray); 
+Procedure TTargetPoolInstanceHealth.SethealthStatus(AIndex : Integer; const AValue : TTargetPoolInstanceHealthTypehealthStatusArray);
 
 begin
   If (FhealthStatus=AValue) then exit;
@@ -17905,7 +17911,7 @@ end;
 
 
 
-Procedure TTargetPoolInstanceHealth.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TTargetPoolInstanceHealth.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -17916,7 +17922,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTargetPoolInstanceHealth.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTargetPoolInstanceHealth.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -17935,7 +17941,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetPoolList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TTargetPoolList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -17945,7 +17951,7 @@ end;
 
 
 
-Procedure TTargetPoolList.Setitems(AIndex : Integer; const AValue : TTargetPoolListTypeitemsArray); 
+Procedure TTargetPoolList.Setitems(AIndex : Integer; const AValue : TTargetPoolListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -17955,7 +17961,7 @@ end;
 
 
 
-Procedure TTargetPoolList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TTargetPoolList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -17965,7 +17971,7 @@ end;
 
 
 
-Procedure TTargetPoolList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TTargetPoolList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -17975,7 +17981,7 @@ end;
 
 
 
-Procedure TTargetPoolList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TTargetPoolList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -17986,7 +17992,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTargetPoolList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTargetPoolList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -18005,7 +18011,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetPoolsAddHealthCheckRequest.SethealthChecks(AIndex : Integer; const AValue : TTargetPoolsAddHealthCheckRequestTypehealthChecksArray); 
+Procedure TTargetPoolsAddHealthCheckRequest.SethealthChecks(AIndex : Integer; const AValue : TTargetPoolsAddHealthCheckRequestTypehealthChecksArray);
 
 begin
   If (FhealthChecks=AValue) then exit;
@@ -18016,7 +18022,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTargetPoolsAddHealthCheckRequest.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTargetPoolsAddHealthCheckRequest.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -18035,7 +18041,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetPoolsAddInstanceRequest.Setinstances(AIndex : Integer; const AValue : TTargetPoolsAddInstanceRequestTypeinstancesArray); 
+Procedure TTargetPoolsAddInstanceRequest.Setinstances(AIndex : Integer; const AValue : TTargetPoolsAddInstanceRequestTypeinstancesArray);
 
 begin
   If (Finstances=AValue) then exit;
@@ -18046,7 +18052,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTargetPoolsAddInstanceRequest.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTargetPoolsAddInstanceRequest.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -18065,7 +18071,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetPoolsRemoveHealthCheckRequest.SethealthChecks(AIndex : Integer; const AValue : TTargetPoolsRemoveHealthCheckRequestTypehealthChecksArray); 
+Procedure TTargetPoolsRemoveHealthCheckRequest.SethealthChecks(AIndex : Integer; const AValue : TTargetPoolsRemoveHealthCheckRequestTypehealthChecksArray);
 
 begin
   If (FhealthChecks=AValue) then exit;
@@ -18076,7 +18082,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTargetPoolsRemoveHealthCheckRequest.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTargetPoolsRemoveHealthCheckRequest.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -18095,7 +18101,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetPoolsRemoveInstanceRequest.Setinstances(AIndex : Integer; const AValue : TTargetPoolsRemoveInstanceRequestTypeinstancesArray); 
+Procedure TTargetPoolsRemoveInstanceRequest.Setinstances(AIndex : Integer; const AValue : TTargetPoolsRemoveInstanceRequestTypeinstancesArray);
 
 begin
   If (Finstances=AValue) then exit;
@@ -18106,7 +18112,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTargetPoolsRemoveInstanceRequest.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTargetPoolsRemoveInstanceRequest.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -18125,7 +18131,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetPoolsScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String); 
+Procedure TTargetPoolsScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkey=AValue) then exit;
@@ -18135,7 +18141,7 @@ end;
 
 
 
-Procedure TTargetPoolsScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TTargetPoolsScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -18152,7 +18158,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetPoolsScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TTargetPoolsScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -18162,7 +18168,7 @@ end;
 
 
 
-Procedure TTargetPoolsScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TTargetPoolsScopedListTypewarningTypedataArray); 
+Procedure TTargetPoolsScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TTargetPoolsScopedListTypewarningTypedataArray);
 
 begin
   If (Fdata=AValue) then exit;
@@ -18172,7 +18178,7 @@ end;
 
 
 
-Procedure TTargetPoolsScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TTargetPoolsScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -18183,7 +18189,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTargetPoolsScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTargetPoolsScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -18202,7 +18208,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetPoolsScopedList.SettargetPools(AIndex : Integer; const AValue : TTargetPoolsScopedListTypetargetPoolsArray); 
+Procedure TTargetPoolsScopedList.SettargetPools(AIndex : Integer; const AValue : TTargetPoolsScopedListTypetargetPoolsArray);
 
 begin
   If (FtargetPools=AValue) then exit;
@@ -18212,7 +18218,7 @@ end;
 
 
 
-Procedure TTargetPoolsScopedList.Setwarning(AIndex : Integer; const AValue : TTargetPoolsScopedListTypewarning); 
+Procedure TTargetPoolsScopedList.Setwarning(AIndex : Integer; const AValue : TTargetPoolsScopedListTypewarning);
 
 begin
   If (Fwarning=AValue) then exit;
@@ -18223,7 +18229,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTargetPoolsScopedList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTargetPoolsScopedList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -18242,7 +18248,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetReference.Settarget(AIndex : Integer; const AValue : String); 
+Procedure TTargetReference.Settarget(AIndex : Integer; const AValue : String);
 
 begin
   If (Ftarget=AValue) then exit;
@@ -18259,7 +18265,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetVpnGateway.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TTargetVpnGateway.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -18269,7 +18275,7 @@ end;
 
 
 
-Procedure TTargetVpnGateway.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TTargetVpnGateway.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -18279,7 +18285,7 @@ end;
 
 
 
-Procedure TTargetVpnGateway.SetforwardingRules(AIndex : Integer; const AValue : TStringArray); 
+Procedure TTargetVpnGateway.SetforwardingRules(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FforwardingRules=AValue) then exit;
@@ -18289,7 +18295,7 @@ end;
 
 
 
-Procedure TTargetVpnGateway.Setid(AIndex : Integer; const AValue : String); 
+Procedure TTargetVpnGateway.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -18299,7 +18305,7 @@ end;
 
 
 
-Procedure TTargetVpnGateway.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TTargetVpnGateway.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -18309,7 +18315,7 @@ end;
 
 
 
-Procedure TTargetVpnGateway.Setname(AIndex : Integer; const AValue : String); 
+Procedure TTargetVpnGateway.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -18319,7 +18325,7 @@ end;
 
 
 
-Procedure TTargetVpnGateway.Setnetwork(AIndex : Integer; const AValue : String); 
+Procedure TTargetVpnGateway.Setnetwork(AIndex : Integer; const AValue : String);
 
 begin
   If (Fnetwork=AValue) then exit;
@@ -18329,7 +18335,7 @@ end;
 
 
 
-Procedure TTargetVpnGateway.Setregion(AIndex : Integer; const AValue : String); 
+Procedure TTargetVpnGateway.Setregion(AIndex : Integer; const AValue : String);
 
 begin
   If (Fregion=AValue) then exit;
@@ -18339,7 +18345,7 @@ end;
 
 
 
-Procedure TTargetVpnGateway.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TTargetVpnGateway.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -18349,7 +18355,7 @@ end;
 
 
 
-Procedure TTargetVpnGateway.Setstatus(AIndex : Integer; const AValue : String); 
+Procedure TTargetVpnGateway.Setstatus(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -18359,7 +18365,7 @@ end;
 
 
 
-Procedure TTargetVpnGateway.Settunnels(AIndex : Integer; const AValue : TStringArray); 
+Procedure TTargetVpnGateway.Settunnels(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Ftunnels=AValue) then exit;
@@ -18370,7 +18376,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTargetVpnGateway.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTargetVpnGateway.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -18403,7 +18409,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetVpnGatewayAggregatedList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TTargetVpnGatewayAggregatedList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -18413,7 +18419,7 @@ end;
 
 
 
-Procedure TTargetVpnGatewayAggregatedList.Setitems(AIndex : Integer; const AValue : TTargetVpnGatewayAggregatedListTypeitems); 
+Procedure TTargetVpnGatewayAggregatedList.Setitems(AIndex : Integer; const AValue : TTargetVpnGatewayAggregatedListTypeitems);
 
 begin
   If (Fitems=AValue) then exit;
@@ -18423,7 +18429,7 @@ end;
 
 
 
-Procedure TTargetVpnGatewayAggregatedList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TTargetVpnGatewayAggregatedList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -18433,7 +18439,7 @@ end;
 
 
 
-Procedure TTargetVpnGatewayAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TTargetVpnGatewayAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -18443,7 +18449,7 @@ end;
 
 
 
-Procedure TTargetVpnGatewayAggregatedList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TTargetVpnGatewayAggregatedList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -18460,7 +18466,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetVpnGatewayList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TTargetVpnGatewayList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -18470,7 +18476,7 @@ end;
 
 
 
-Procedure TTargetVpnGatewayList.Setitems(AIndex : Integer; const AValue : TTargetVpnGatewayListTypeitemsArray); 
+Procedure TTargetVpnGatewayList.Setitems(AIndex : Integer; const AValue : TTargetVpnGatewayListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -18480,7 +18486,7 @@ end;
 
 
 
-Procedure TTargetVpnGatewayList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TTargetVpnGatewayList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -18490,7 +18496,7 @@ end;
 
 
 
-Procedure TTargetVpnGatewayList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TTargetVpnGatewayList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -18500,7 +18506,7 @@ end;
 
 
 
-Procedure TTargetVpnGatewayList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TTargetVpnGatewayList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -18511,7 +18517,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTargetVpnGatewayList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTargetVpnGatewayList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -18530,7 +18536,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetVpnGatewaysScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String); 
+Procedure TTargetVpnGatewaysScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkey=AValue) then exit;
@@ -18540,7 +18546,7 @@ end;
 
 
 
-Procedure TTargetVpnGatewaysScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TTargetVpnGatewaysScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -18557,7 +18563,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetVpnGatewaysScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TTargetVpnGatewaysScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -18567,7 +18573,7 @@ end;
 
 
 
-Procedure TTargetVpnGatewaysScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TTargetVpnGatewaysScopedListTypewarningTypedataArray); 
+Procedure TTargetVpnGatewaysScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TTargetVpnGatewaysScopedListTypewarningTypedataArray);
 
 begin
   If (Fdata=AValue) then exit;
@@ -18577,7 +18583,7 @@ end;
 
 
 
-Procedure TTargetVpnGatewaysScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TTargetVpnGatewaysScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -18588,7 +18594,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTargetVpnGatewaysScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTargetVpnGatewaysScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -18607,7 +18613,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTargetVpnGatewaysScopedList.SettargetVpnGateways(AIndex : Integer; const AValue : TTargetVpnGatewaysScopedListTypetargetVpnGatewaysArray); 
+Procedure TTargetVpnGatewaysScopedList.SettargetVpnGateways(AIndex : Integer; const AValue : TTargetVpnGatewaysScopedListTypetargetVpnGatewaysArray);
 
 begin
   If (FtargetVpnGateways=AValue) then exit;
@@ -18617,7 +18623,7 @@ end;
 
 
 
-Procedure TTargetVpnGatewaysScopedList.Setwarning(AIndex : Integer; const AValue : TTargetVpnGatewaysScopedListTypewarning); 
+Procedure TTargetVpnGatewaysScopedList.Setwarning(AIndex : Integer; const AValue : TTargetVpnGatewaysScopedListTypewarning);
 
 begin
   If (Fwarning=AValue) then exit;
@@ -18628,7 +18634,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTargetVpnGatewaysScopedList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTargetVpnGatewaysScopedList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -18647,7 +18653,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTestFailure.SetactualService(AIndex : Integer; const AValue : String); 
+Procedure TTestFailure.SetactualService(AIndex : Integer; const AValue : String);
 
 begin
   If (FactualService=AValue) then exit;
@@ -18657,7 +18663,7 @@ end;
 
 
 
-Procedure TTestFailure.SetexpectedService(AIndex : Integer; const AValue : String); 
+Procedure TTestFailure.SetexpectedService(AIndex : Integer; const AValue : String);
 
 begin
   If (FexpectedService=AValue) then exit;
@@ -18667,7 +18673,7 @@ end;
 
 
 
-Procedure TTestFailure.Sethost(AIndex : Integer; const AValue : String); 
+Procedure TTestFailure.Sethost(AIndex : Integer; const AValue : String);
 
 begin
   If (Fhost=AValue) then exit;
@@ -18677,7 +18683,7 @@ end;
 
 
 
-Procedure TTestFailure.Setpath(AIndex : Integer; const AValue : String); 
+Procedure TTestFailure.Setpath(AIndex : Integer; const AValue : String);
 
 begin
   If (Fpath=AValue) then exit;
@@ -18694,7 +18700,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TUrlMap.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TUrlMap.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -18704,7 +18710,7 @@ end;
 
 
 
-Procedure TUrlMap.SetdefaultService(AIndex : Integer; const AValue : String); 
+Procedure TUrlMap.SetdefaultService(AIndex : Integer; const AValue : String);
 
 begin
   If (FdefaultService=AValue) then exit;
@@ -18714,7 +18720,7 @@ end;
 
 
 
-Procedure TUrlMap.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TUrlMap.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -18724,7 +18730,7 @@ end;
 
 
 
-Procedure TUrlMap.Setfingerprint(AIndex : Integer; const AValue : String); 
+Procedure TUrlMap.Setfingerprint(AIndex : Integer; const AValue : String);
 
 begin
   If (Ffingerprint=AValue) then exit;
@@ -18734,7 +18740,7 @@ end;
 
 
 
-Procedure TUrlMap.SethostRules(AIndex : Integer; const AValue : TUrlMapTypehostRulesArray); 
+Procedure TUrlMap.SethostRules(AIndex : Integer; const AValue : TUrlMapTypehostRulesArray);
 
 begin
   If (FhostRules=AValue) then exit;
@@ -18744,7 +18750,7 @@ end;
 
 
 
-Procedure TUrlMap.Setid(AIndex : Integer; const AValue : String); 
+Procedure TUrlMap.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -18754,7 +18760,7 @@ end;
 
 
 
-Procedure TUrlMap.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TUrlMap.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -18764,7 +18770,7 @@ end;
 
 
 
-Procedure TUrlMap.Setname(AIndex : Integer; const AValue : String); 
+Procedure TUrlMap.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -18774,7 +18780,7 @@ end;
 
 
 
-Procedure TUrlMap.SetpathMatchers(AIndex : Integer; const AValue : TUrlMapTypepathMatchersArray); 
+Procedure TUrlMap.SetpathMatchers(AIndex : Integer; const AValue : TUrlMapTypepathMatchersArray);
 
 begin
   If (FpathMatchers=AValue) then exit;
@@ -18784,7 +18790,7 @@ end;
 
 
 
-Procedure TUrlMap.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TUrlMap.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -18794,7 +18800,7 @@ end;
 
 
 
-Procedure TUrlMap.Settests(AIndex : Integer; const AValue : TUrlMapTypetestsArray); 
+Procedure TUrlMap.Settests(AIndex : Integer; const AValue : TUrlMapTypetestsArray);
 
 begin
   If (Ftests=AValue) then exit;
@@ -18805,7 +18811,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TUrlMap.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TUrlMap.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -18826,7 +18832,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TUrlMapList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TUrlMapList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -18836,7 +18842,7 @@ end;
 
 
 
-Procedure TUrlMapList.Setitems(AIndex : Integer; const AValue : TUrlMapListTypeitemsArray); 
+Procedure TUrlMapList.Setitems(AIndex : Integer; const AValue : TUrlMapListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -18846,7 +18852,7 @@ end;
 
 
 
-Procedure TUrlMapList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TUrlMapList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -18856,7 +18862,7 @@ end;
 
 
 
-Procedure TUrlMapList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TUrlMapList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -18866,7 +18872,7 @@ end;
 
 
 
-Procedure TUrlMapList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TUrlMapList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -18877,7 +18883,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TUrlMapList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TUrlMapList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -18896,7 +18902,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TUrlMapReference.SeturlMap(AIndex : Integer; const AValue : String); 
+Procedure TUrlMapReference.SeturlMap(AIndex : Integer; const AValue : String);
 
 begin
   If (FurlMap=AValue) then exit;
@@ -18913,7 +18919,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TUrlMapTest.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TUrlMapTest.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -18923,7 +18929,7 @@ end;
 
 
 
-Procedure TUrlMapTest.Sethost(AIndex : Integer; const AValue : String); 
+Procedure TUrlMapTest.Sethost(AIndex : Integer; const AValue : String);
 
 begin
   If (Fhost=AValue) then exit;
@@ -18933,7 +18939,7 @@ end;
 
 
 
-Procedure TUrlMapTest.Setpath(AIndex : Integer; const AValue : String); 
+Procedure TUrlMapTest.Setpath(AIndex : Integer; const AValue : String);
 
 begin
   If (Fpath=AValue) then exit;
@@ -18943,7 +18949,7 @@ end;
 
 
 
-Procedure TUrlMapTest.Setservice(AIndex : Integer; const AValue : String); 
+Procedure TUrlMapTest.Setservice(AIndex : Integer; const AValue : String);
 
 begin
   If (Fservice=AValue) then exit;
@@ -18960,7 +18966,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TUrlMapValidationResult.SetloadErrors(AIndex : Integer; const AValue : TStringArray); 
+Procedure TUrlMapValidationResult.SetloadErrors(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FloadErrors=AValue) then exit;
@@ -18970,7 +18976,7 @@ end;
 
 
 
-Procedure TUrlMapValidationResult.SetloadSucceeded(AIndex : Integer; const AValue : boolean); 
+Procedure TUrlMapValidationResult.SetloadSucceeded(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FloadSucceeded=AValue) then exit;
@@ -18980,7 +18986,7 @@ end;
 
 
 
-Procedure TUrlMapValidationResult.SettestFailures(AIndex : Integer; const AValue : TUrlMapValidationResultTypetestFailuresArray); 
+Procedure TUrlMapValidationResult.SettestFailures(AIndex : Integer; const AValue : TUrlMapValidationResultTypetestFailuresArray);
 
 begin
   If (FtestFailures=AValue) then exit;
@@ -18990,7 +18996,7 @@ end;
 
 
 
-Procedure TUrlMapValidationResult.SettestPassed(AIndex : Integer; const AValue : boolean); 
+Procedure TUrlMapValidationResult.SettestPassed(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FtestPassed=AValue) then exit;
@@ -19001,7 +19007,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TUrlMapValidationResult.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TUrlMapValidationResult.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -19021,7 +19027,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TUrlMapsValidateRequest.Setresource(AIndex : Integer; const AValue : TUrlMap); 
+Procedure TUrlMapsValidateRequest.Setresource(AIndex : Integer; const AValue : TUrlMap);
 
 begin
   If (Fresource=AValue) then exit;
@@ -19038,7 +19044,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TUrlMapsValidateResponse.Setresult(AIndex : Integer; const AValue : TUrlMapValidationResult); 
+Procedure TUrlMapsValidateResponse.Setresult(AIndex : Integer; const AValue : TUrlMapValidationResult);
 
 begin
   If (Fresult=AValue) then exit;
@@ -19055,7 +19061,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TUsageExportLocation.SetbucketName(AIndex : Integer; const AValue : String); 
+Procedure TUsageExportLocation.SetbucketName(AIndex : Integer; const AValue : String);
 
 begin
   If (FbucketName=AValue) then exit;
@@ -19065,7 +19071,7 @@ end;
 
 
 
-Procedure TUsageExportLocation.SetreportNamePrefix(AIndex : Integer; const AValue : String); 
+Procedure TUsageExportLocation.SetreportNamePrefix(AIndex : Integer; const AValue : String);
 
 begin
   If (FreportNamePrefix=AValue) then exit;
@@ -19082,7 +19088,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TVpnTunnel.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TVpnTunnel.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -19092,7 +19098,7 @@ end;
 
 
 
-Procedure TVpnTunnel.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TVpnTunnel.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -19102,7 +19108,7 @@ end;
 
 
 
-Procedure TVpnTunnel.SetdetailedStatus(AIndex : Integer; const AValue : String); 
+Procedure TVpnTunnel.SetdetailedStatus(AIndex : Integer; const AValue : String);
 
 begin
   If (FdetailedStatus=AValue) then exit;
@@ -19112,7 +19118,7 @@ end;
 
 
 
-Procedure TVpnTunnel.Setid(AIndex : Integer; const AValue : String); 
+Procedure TVpnTunnel.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -19122,7 +19128,7 @@ end;
 
 
 
-Procedure TVpnTunnel.SetikeVersion(AIndex : Integer; const AValue : integer); 
+Procedure TVpnTunnel.SetikeVersion(AIndex : Integer; const AValue : integer);
 
 begin
   If (FikeVersion=AValue) then exit;
@@ -19132,7 +19138,7 @@ end;
 
 
 
-Procedure TVpnTunnel.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TVpnTunnel.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -19142,7 +19148,7 @@ end;
 
 
 
-Procedure TVpnTunnel.SetlocalTrafficSelector(AIndex : Integer; const AValue : TStringArray); 
+Procedure TVpnTunnel.SetlocalTrafficSelector(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FlocalTrafficSelector=AValue) then exit;
@@ -19152,7 +19158,7 @@ end;
 
 
 
-Procedure TVpnTunnel.Setname(AIndex : Integer; const AValue : String); 
+Procedure TVpnTunnel.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -19162,7 +19168,7 @@ end;
 
 
 
-Procedure TVpnTunnel.SetpeerIp(AIndex : Integer; const AValue : String); 
+Procedure TVpnTunnel.SetpeerIp(AIndex : Integer; const AValue : String);
 
 begin
   If (FpeerIp=AValue) then exit;
@@ -19172,7 +19178,7 @@ end;
 
 
 
-Procedure TVpnTunnel.Setregion(AIndex : Integer; const AValue : String); 
+Procedure TVpnTunnel.Setregion(AIndex : Integer; const AValue : String);
 
 begin
   If (Fregion=AValue) then exit;
@@ -19182,7 +19188,7 @@ end;
 
 
 
-Procedure TVpnTunnel.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TVpnTunnel.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -19192,7 +19198,7 @@ end;
 
 
 
-Procedure TVpnTunnel.SetsharedSecret(AIndex : Integer; const AValue : String); 
+Procedure TVpnTunnel.SetsharedSecret(AIndex : Integer; const AValue : String);
 
 begin
   If (FsharedSecret=AValue) then exit;
@@ -19202,7 +19208,7 @@ end;
 
 
 
-Procedure TVpnTunnel.SetsharedSecretHash(AIndex : Integer; const AValue : String); 
+Procedure TVpnTunnel.SetsharedSecretHash(AIndex : Integer; const AValue : String);
 
 begin
   If (FsharedSecretHash=AValue) then exit;
@@ -19212,7 +19218,7 @@ end;
 
 
 
-Procedure TVpnTunnel.Setstatus(AIndex : Integer; const AValue : String); 
+Procedure TVpnTunnel.Setstatus(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -19222,7 +19228,7 @@ end;
 
 
 
-Procedure TVpnTunnel.SettargetVpnGateway(AIndex : Integer; const AValue : String); 
+Procedure TVpnTunnel.SettargetVpnGateway(AIndex : Integer; const AValue : String);
 
 begin
   If (FtargetVpnGateway=AValue) then exit;
@@ -19233,7 +19239,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TVpnTunnel.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TVpnTunnel.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -19265,7 +19271,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TVpnTunnelAggregatedList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TVpnTunnelAggregatedList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -19275,7 +19281,7 @@ end;
 
 
 
-Procedure TVpnTunnelAggregatedList.Setitems(AIndex : Integer; const AValue : TVpnTunnelAggregatedListTypeitems); 
+Procedure TVpnTunnelAggregatedList.Setitems(AIndex : Integer; const AValue : TVpnTunnelAggregatedListTypeitems);
 
 begin
   If (Fitems=AValue) then exit;
@@ -19285,7 +19291,7 @@ end;
 
 
 
-Procedure TVpnTunnelAggregatedList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TVpnTunnelAggregatedList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -19295,7 +19301,7 @@ end;
 
 
 
-Procedure TVpnTunnelAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TVpnTunnelAggregatedList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -19305,7 +19311,7 @@ end;
 
 
 
-Procedure TVpnTunnelAggregatedList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TVpnTunnelAggregatedList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -19322,7 +19328,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TVpnTunnelList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TVpnTunnelList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -19332,7 +19338,7 @@ end;
 
 
 
-Procedure TVpnTunnelList.Setitems(AIndex : Integer; const AValue : TVpnTunnelListTypeitemsArray); 
+Procedure TVpnTunnelList.Setitems(AIndex : Integer; const AValue : TVpnTunnelListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -19342,7 +19348,7 @@ end;
 
 
 
-Procedure TVpnTunnelList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TVpnTunnelList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -19352,7 +19358,7 @@ end;
 
 
 
-Procedure TVpnTunnelList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TVpnTunnelList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -19362,7 +19368,7 @@ end;
 
 
 
-Procedure TVpnTunnelList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TVpnTunnelList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -19373,7 +19379,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TVpnTunnelList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TVpnTunnelList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -19392,7 +19398,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TVpnTunnelsScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String); 
+Procedure TVpnTunnelsScopedListTypewarningTypedataItem.Setkey(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkey=AValue) then exit;
@@ -19402,7 +19408,7 @@ end;
 
 
 
-Procedure TVpnTunnelsScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TVpnTunnelsScopedListTypewarningTypedataItem.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -19419,7 +19425,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TVpnTunnelsScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TVpnTunnelsScopedListTypewarning.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -19429,7 +19435,7 @@ end;
 
 
 
-Procedure TVpnTunnelsScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TVpnTunnelsScopedListTypewarningTypedataArray); 
+Procedure TVpnTunnelsScopedListTypewarning.Setdata(AIndex : Integer; const AValue : TVpnTunnelsScopedListTypewarningTypedataArray);
 
 begin
   If (Fdata=AValue) then exit;
@@ -19439,7 +19445,7 @@ end;
 
 
 
-Procedure TVpnTunnelsScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TVpnTunnelsScopedListTypewarning.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -19450,7 +19456,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TVpnTunnelsScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TVpnTunnelsScopedListTypewarning.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -19469,7 +19475,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TVpnTunnelsScopedList.SetvpnTunnels(AIndex : Integer; const AValue : TVpnTunnelsScopedListTypevpnTunnelsArray); 
+Procedure TVpnTunnelsScopedList.SetvpnTunnels(AIndex : Integer; const AValue : TVpnTunnelsScopedListTypevpnTunnelsArray);
 
 begin
   If (FvpnTunnels=AValue) then exit;
@@ -19479,7 +19485,7 @@ end;
 
 
 
-Procedure TVpnTunnelsScopedList.Setwarning(AIndex : Integer; const AValue : TVpnTunnelsScopedListTypewarning); 
+Procedure TVpnTunnelsScopedList.Setwarning(AIndex : Integer; const AValue : TVpnTunnelsScopedListTypewarning);
 
 begin
   If (Fwarning=AValue) then exit;
@@ -19490,7 +19496,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TVpnTunnelsScopedList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TVpnTunnelsScopedList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -19509,7 +19515,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TZone.SetcreationTimestamp(AIndex : Integer; const AValue : String); 
+Procedure TZone.SetcreationTimestamp(AIndex : Integer; const AValue : String);
 
 begin
   If (FcreationTimestamp=AValue) then exit;
@@ -19519,7 +19525,7 @@ end;
 
 
 
-Procedure TZone.Setdeprecated(AIndex : Integer; const AValue : TDeprecationStatus); 
+Procedure TZone.Setdeprecated(AIndex : Integer; const AValue : TDeprecationStatus);
 
 begin
   If (Fdeprecated=AValue) then exit;
@@ -19529,7 +19535,7 @@ end;
 
 
 
-Procedure TZone.Setdescription(AIndex : Integer; const AValue : String); 
+Procedure TZone.Setdescription(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -19539,7 +19545,7 @@ end;
 
 
 
-Procedure TZone.Setid(AIndex : Integer; const AValue : String); 
+Procedure TZone.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -19549,7 +19555,7 @@ end;
 
 
 
-Procedure TZone.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TZone.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -19559,7 +19565,7 @@ end;
 
 
 
-Procedure TZone.Setname(AIndex : Integer; const AValue : String); 
+Procedure TZone.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -19569,7 +19575,7 @@ end;
 
 
 
-Procedure TZone.Setregion(AIndex : Integer; const AValue : String); 
+Procedure TZone.Setregion(AIndex : Integer; const AValue : String);
 
 begin
   If (Fregion=AValue) then exit;
@@ -19579,7 +19585,7 @@ end;
 
 
 
-Procedure TZone.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TZone.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -19589,7 +19595,7 @@ end;
 
 
 
-Procedure TZone.Setstatus(AIndex : Integer; const AValue : String); 
+Procedure TZone.Setstatus(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -19606,7 +19612,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TZoneList.Setid(AIndex : Integer; const AValue : String); 
+Procedure TZoneList.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -19616,7 +19622,7 @@ end;
 
 
 
-Procedure TZoneList.Setitems(AIndex : Integer; const AValue : TZoneListTypeitemsArray); 
+Procedure TZoneList.Setitems(AIndex : Integer; const AValue : TZoneListTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -19626,7 +19632,7 @@ end;
 
 
 
-Procedure TZoneList.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TZoneList.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -19636,7 +19642,7 @@ end;
 
 
 
-Procedure TZoneList.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TZoneList.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -19646,7 +19652,7 @@ end;
 
 
 
-Procedure TZoneList.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TZoneList.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -19657,7 +19663,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TZoneList.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TZoneList.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -24269,7 +24275,7 @@ begin
   Result[4].Description:='View your data in Google Cloud Storage';
   Result[5].Name:='https://www.googleapis.com/auth/devstorage.read_write';
   Result[5].Description:='Manage your data in Google Cloud Storage';
-  
+
 end;
 
 Class Function TComputeAPI.APINeedsAuth : Boolean;

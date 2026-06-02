@@ -13,11 +13,17 @@
 
  **********************************************************************}
 {$mode objfpc}{$h+}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit FPCanvas;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
-uses Math, sysutils, classes, FPImage, Types;
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.Math, System.SysUtils, System.Classes, FpImage, System.Types;
+{$ELSE FPC_DOTTEDUNITS}
+uses Math, sysutils, classes, FpImage, Types;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   PatternBitCount = sizeof(longword) * 8;
@@ -29,6 +35,22 @@ type
   TFPPenException = class (TFPCanvasException);
   TFPBrushException = class (TFPCanvasException);
   TFPFontException = class (TFPCanvasException);
+
+  TFPCanvasPointArray = array of TPoint;
+
+  { TFPCanvasMatrix }
+
+  TFPCanvasMatrix = object
+    _00, _01, _10, _11: Double;  // 2x2 linear part (rotation, scale, skew)
+    _20, _21: Double;            // translation
+    function Transform(const APoint: TPoint): TPoint; overload;
+    function Transform(X, Y: Integer): TPoint; overload;
+    class function Identity: TFPCanvasMatrix; static;
+    class function CreateTranslation(DX, DY: Double): TFPCanvasMatrix; static;
+    class function CreateScale(SX, SY: Double): TFPCanvasMatrix; static;
+    class function CreateRotation(ARadians: Double): TFPCanvasMatrix; static;
+    function Multiply(const Other: TFPCanvasMatrix): TFPCanvasMatrix;
+  end;
 
   TFPCustomCanvas = class;
 
@@ -94,9 +116,9 @@ type
   public
     function CopyFont : TFPCustomFont;
     // Creates a copy of the font with all properties the same, but not allocated
-    procedure GetTextSize (text:string; var w,h:integer);
-    function GetTextHeight (text:string) : integer;
-    function GetTextWidth (text:string) : integer;
+    procedure GetTextSize (text:ansistring; var w,h:integer);
+    function GetTextHeight (text:ansistring) : integer;
+    function GetTextWidth (text:ansistring) : integer;
     property Name : string read FName write SetName;
     property Size : integer read FSize write SetSize;
     property Bold : boolean index 5 read GetFlags write SetFlags;
@@ -104,7 +126,7 @@ type
     property Underline : boolean index 7 read GetFlags write SetFlags;
     property StrikeThrough : boolean index 8 read GetFlags write SetFlags;
     property Orientation: Integer read GetOrientation write SetOrientation default 0;
-        
+
   end;
   TFPCustomFontClass = class of TFPCustomFont;
 
@@ -154,7 +176,7 @@ type
     property JoinStyle : TFPPenJoinStyle read FJoinStyle write SetJoinStyle;
   end;
   TFPCustomPenClass = class of TFPCustomPen;
-  
+
   TFPBrushStyle = (bsSolid, bsClear, bsHorizontal, bsVertical, bsFDiagonal,
                    bsBDiagonal, bsCross, bsDiagCross, bsImage, bsPattern);
   TBrushPattern = array[0..PatternBitCount-1] of TPenPattern;
@@ -210,13 +232,14 @@ type
     function MaxSupport : double; virtual;
   end;
 
-  { TMitchelInterpolation }
+  { TMitchellInterpolation }
 
-  TMitchelInterpolation = class (TFPBaseInterpolation)
+  TMitchellInterpolation = class (TFPBaseInterpolation)
   protected
     function Filter (x : double) : double; override;
     function MaxSupport : double; override;
   end;
+  TMitchelInterpolation = TFPBaseInterpolation deprecated 'Use TMitchellInterpolation';
 
   TFPCustomRegion = class
   public
@@ -235,11 +258,13 @@ type
 
   TFPDrawingMode = (dmOpaque, dmAlphaBlend, dmCustom);
   TFPCanvasCombineColors = function(const color1, color2: TFPColor): TFPColor of object;
+  TFPGradientDirection = (gdVertical, gdHorizontal);
 
   { TFPCustomCanvas }
 
   TFPCustomCanvas = class(TPersistent)
   private
+    FMatrix: TFPCanvasMatrix;
     FClipping,
     FManageResources: boolean;
     FRemovingHelpers : boolean;
@@ -287,14 +312,14 @@ type
     procedure SetClipRegion(const AValue: TFPCustomRegion);
     procedure DoLockCanvas; virtual;
     procedure DoUnlockCanvas; virtual;
-    procedure DoTextOut (x,y:integer;text:string); virtual; abstract;
-    procedure DoGetTextSize (text:string; var w,h:integer); virtual; abstract;
-    function  DoGetTextHeight (text:string) : integer; virtual; abstract;
-    function  DoGetTextWidth (text:string) : integer; virtual; abstract;
-    procedure DoTextOut (x,y:integer;text:unicodestring); virtual; 
-    procedure DoGetTextSize (text:unicodestring; var w,h:integer); virtual; 
-    function  DoGetTextHeight (text:unicodestring) : integer; virtual; 
-    function  DoGetTextWidth (text:unicodestring) : integer; virtual; 
+    procedure DoTextOut (x,y:integer;text:ansistring); virtual; abstract;
+    procedure DoGetTextSize (text:ansistring; var w,h:integer); virtual; abstract;
+    function  DoGetTextHeight (text:ansistring) : integer; virtual; abstract;
+    function  DoGetTextWidth (text:ansistring) : integer; virtual; abstract;
+    procedure DoTextOut (x,y:integer;text:unicodestring); virtual;
+    procedure DoGetTextSize (text:unicodestring; var w,h:integer); virtual;
+    function  DoGetTextHeight (text:unicodestring) : integer; virtual;
+    function  DoGetTextWidth (text:unicodestring) : integer; virtual;
     procedure DoRectangle (Const Bounds:TRect); virtual; abstract;
     procedure DoRectangleFill (Const Bounds:TRect); virtual; abstract;
     procedure DoRectangleAndFill (Const Bounds:TRect); virtual;
@@ -317,6 +342,10 @@ type
                            Continuous: boolean = False); virtual;
     procedure CheckHelper (AHelper:TFPCanvasHelper); virtual;
     procedure AddHelper (AHelper:TFPCanvasHelper);
+    function TransformPoint(X, Y: Integer): TPoint;
+    function TransformRect(const R: TRect): TRect;
+    function TransformPoints(const Points: array of TPoint): TFPCanvasPointArray;
+    function HasRotation: Boolean;
   public
     constructor create;
     destructor destroy; override;
@@ -327,13 +356,13 @@ type
     function CreatePen : TFPCustomPen;
     function CreateBrush : TFPCustomBrush;
     // using font
-    procedure TextOut (x,y:integer;text:string); virtual;
-    procedure GetTextSize (text:string; var w,h:integer);
-    function GetTextHeight (text:string) : integer;
-    function GetTextWidth (text:string) : integer;
-    function TextExtent(const Text: string): TSize; virtual;
-    function TextHeight(const Text: string): Integer; virtual;
-    function TextWidth(const Text: string): Integer; virtual;
+    procedure TextOut (x,y:integer;text:Ansistring); virtual;
+    procedure GetTextSize (text:Ansistring; var w,h:integer);
+    function GetTextHeight (text:Ansistring) : integer;
+    function GetTextWidth (text:Ansistring) : integer;
+    function TextExtent(const Text: Ansistring): TSize; virtual;
+    function TextHeight(const Text: Ansistring): Integer; virtual;
+    function TextWidth(const Text: Ansistring): Integer; virtual;
     procedure TextOut (x,y:integer;text:unicodestring); virtual;
     procedure GetTextSize (text:unicodestring; var w,h:integer);
     function GetTextHeight (text:unicodestring) : integer;
@@ -353,7 +382,7 @@ type
     procedure PolyBezier(Points: PPoint; NumPts: Integer;
                          Filled: boolean = False;
                          Continuous: boolean = False);  virtual;
-    procedure PolyBezier(const Points: array of TPoint;  
+    procedure PolyBezier(const Points: array of TPoint;
                          Filled: boolean = False;
                          Continuous: boolean = False); virtual;
     procedure Rectangle (Const Bounds : TRect); virtual;
@@ -377,6 +406,14 @@ type
     procedure StretchDraw (x,y,w,h:integer; source:TFPCustomImage); virtual;
     procedure Erase;virtual;
     procedure DrawPixel(const x, y: integer; const newcolor: TFPColor);
+    procedure GradientFill(const ARect: TRect; AStartColor, AEndColor: TFPColor; ADirection: TFPGradientDirection); virtual;
+    // coordinate transformation
+    property TransformMatrix: TFPCanvasMatrix read FMatrix write FMatrix;
+    procedure Translate(DX, DY: Double);
+    procedure Scale(SX, SY: Double);
+    procedure Rotate(ARadians: Double);
+    procedure ResetTransform;
+    function HasTransform: Boolean;
     // properties
     property LockCount: Integer read FLocks;
     property Font : TFPCustomFont read GetFont write SetFont;
@@ -397,23 +434,23 @@ type
 
   TFPCustomDrawFont = class (TFPCustomFont)
   private
-    procedure DrawText (x,y:integer; text:string);
-    procedure GetTextSize (text:string; var w,h:integer);
-    function GetTextHeight (text:string) : integer;
-    function GetTextWidth (text:string) : integer;
+    procedure DrawText (x,y:integer; text:Ansistring);
+    procedure GetTextSize (text:ansistring; var w,h:integer);
+    function GetTextHeight (text:ansistring) : integer;
+    function GetTextWidth (text:ansistring) : integer;
     procedure DrawText (x,y:integer; text:unicodestring);
     procedure GetTextSize (text: unicodestring; var w,h:integer);
     function GetTextHeight (text: unicodestring) : integer;
     function GetTextWidth (text: unicodestring) : integer;
   protected
-    procedure DoDrawText (x,y:integer; text:string); virtual; abstract;
-    procedure DoGetTextSize (text:string; var w,h:integer); virtual; abstract;
-    function DoGetTextHeight (text:string) : integer; virtual; abstract;
-    function DoGetTextWidth (text:string) : integer; virtual; abstract;
+    procedure DoDrawText (x,y:integer; text:ansistring); virtual; abstract;
+    procedure DoGetTextSize (text:ansistring; var w,h:integer); virtual; abstract;
+    function DoGetTextHeight (text:ansistring) : integer; virtual; abstract;
+    function DoGetTextWidth (text:ansistring) : integer; virtual; abstract;
     procedure DoDrawText (x,y:integer; text:unicodestring); virtual;
-    procedure DoGetTextSize (text: unicodestring; var w,h:integer); virtual; 
-    function DoGetTextHeight (text: unicodestring) : integer; virtual; 
-    function DoGetTextWidth (text: unicodestring) : integer; virtual; 
+    procedure DoGetTextSize (text: unicodestring; var w,h:integer); virtual;
+    function DoGetTextHeight (text: unicodestring) : integer; virtual;
+    function DoGetTextWidth (text: unicodestring) : integer; virtual;
   end;
 
   TFPEmptyFont = class (TFPCustomFont)
@@ -458,7 +495,11 @@ procedure IncRect (var rect : TRect);
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses FpImage.Clipping;
+{$ELSE FPC_DOTTEDUNITS}
 uses clipping;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   EFont = 'Font';
@@ -514,6 +555,7 @@ begin
     (AY >= Rect.Top) and (AY <= Rect.Bottom);
 end;
 
+{$i fpmatrix.inc}
 {$i FPHelper.inc}
 {$i FPFont.inc}
 {$i FPPen.inc}

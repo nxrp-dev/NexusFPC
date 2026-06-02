@@ -1,13 +1,19 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit googleanalyticsreporting;
+{$ENDIF FPC_DOTTEDUNITS}
 {$MODE objfpc}
 {$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils, System.Classes, GoogleApi.Service, FpWeb.Rest.Base, GoogleApi.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses sysutils, classes, googleservice, restbase, googlebase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
-  
+
   //Top-level schema types
   TPivotHeader = Class;
   TMetric = Class;
@@ -110,11 +116,11 @@ type
   TReportRowTypemetricsArray = Array of TDateRangeValues;
   TCohortGroupTypecohortsArray = Array of TCohort;
   TGetReportsResponseTypereportsArray = Array of TReport;
-  
+
   { --------------------------------------------------------------------
     TPivotHeader
     --------------------------------------------------------------------}
-  
+
   TPivotHeader = Class(TGoogleBaseObject)
   Private
     FtotalPivotGroupsCount : integer;
@@ -133,11 +139,11 @@ type
     Property pivotHeaderEntries : TPivotHeaderTypepivotHeaderEntriesArray Index 8 Read FpivotHeaderEntries Write SetpivotHeaderEntries;
   end;
   TPivotHeaderClass = Class of TPivotHeader;
-  
+
   { --------------------------------------------------------------------
     TMetric
     --------------------------------------------------------------------}
-  
+
   TMetric = Class(TGoogleBaseObject)
   Private
     Falias : String;
@@ -155,11 +161,11 @@ type
     Property expression : String Index 16 Read Fexpression Write Setexpression;
   end;
   TMetricClass = Class of TMetric;
-  
+
   { --------------------------------------------------------------------
     TColumnHeader
     --------------------------------------------------------------------}
-  
+
   TColumnHeader = Class(TGoogleBaseObject)
   Private
     Fdimensions : TStringArray;
@@ -178,11 +184,11 @@ type
     Property metricHeader : TMetricHeader Index 8 Read FmetricHeader Write SetmetricHeader;
   end;
   TColumnHeaderClass = Class of TColumnHeader;
-  
+
   { --------------------------------------------------------------------
     TDynamicSegment
     --------------------------------------------------------------------}
-  
+
   TDynamicSegment = Class(TGoogleBaseObject)
   Private
     FsessionSegment : TSegmentDefinition;
@@ -200,11 +206,11 @@ type
     Property userSegment : TSegmentDefinition Index 16 Read FuserSegment Write SetuserSegment;
   end;
   TDynamicSegmentClass = Class of TDynamicSegment;
-  
+
   { --------------------------------------------------------------------
     TMetricHeader
     --------------------------------------------------------------------}
-  
+
   TMetricHeader = Class(TGoogleBaseObject)
   Private
     FmetricHeaderEntries : TMetricHeaderTypemetricHeaderEntriesArray;
@@ -223,11 +229,11 @@ type
     Property pivotHeaders : TMetricHeaderTypepivotHeadersArray Index 8 Read FpivotHeaders Write SetpivotHeaders;
   end;
   TMetricHeaderClass = Class of TMetricHeader;
-  
+
   { --------------------------------------------------------------------
     TReport
     --------------------------------------------------------------------}
-  
+
   TReport = Class(TGoogleBaseObject)
   Private
     FcolumnHeader : TColumnHeader;
@@ -245,11 +251,11 @@ type
     Property nextPageToken : String Index 16 Read FnextPageToken Write SetnextPageToken;
   end;
   TReportClass = Class of TReport;
-  
+
   { --------------------------------------------------------------------
     TSegmentFilterClause
     --------------------------------------------------------------------}
-  
+
   TSegmentFilterClause = Class(TGoogleBaseObject)
   Private
     FdimensionFilter : TSegmentDimensionFilter;
@@ -268,11 +274,11 @@ type
     Property _not : boolean Index 16 Read F_not Write Set_not;
   end;
   TSegmentFilterClauseClass = Class of TSegmentFilterClause;
-  
+
   { --------------------------------------------------------------------
     TDimensionFilter
     --------------------------------------------------------------------}
-  
+
   TDimensionFilter = Class(TGoogleBaseObject)
   Private
     FdimensionName : String;
@@ -301,11 +307,11 @@ type
     Property _not : boolean Index 32 Read F_not Write Set_not;
   end;
   TDimensionFilterClass = Class of TDimensionFilter;
-  
+
   { --------------------------------------------------------------------
     TSegmentDimensionFilter
     --------------------------------------------------------------------}
-  
+
   TSegmentDimensionFilter = Class(TGoogleBaseObject)
   Private
     FmaxComparisonValue : String;
@@ -337,11 +343,11 @@ type
     Property minComparisonValue : String Index 40 Read FminComparisonValue Write SetminComparisonValue;
   end;
   TSegmentDimensionFilterClass = Class of TSegmentDimensionFilter;
-  
+
   { --------------------------------------------------------------------
     TReportRequest
     --------------------------------------------------------------------}
-  
+
   TReportRequest = Class(TGoogleBaseObject)
   Private
     FcohortGroup : TCohortGroup;
@@ -405,11 +411,11 @@ type
     Property pageToken : String Index 128 Read FpageToken Write SetpageToken;
   end;
   TReportRequestClass = Class of TReportRequest;
-  
+
   { --------------------------------------------------------------------
     TSimpleSegment
     --------------------------------------------------------------------}
-  
+
   TSimpleSegment = Class(TGoogleBaseObject)
   Private
     ForFiltersForSegment : TSimpleSegmentTypeorFiltersForSegmentArray;
@@ -425,11 +431,11 @@ type
     Property orFiltersForSegment : TSimpleSegmentTypeorFiltersForSegmentArray Index 0 Read ForFiltersForSegment Write SetorFiltersForSegment;
   end;
   TSimpleSegmentClass = Class of TSimpleSegment;
-  
+
   { --------------------------------------------------------------------
     TSegmentDefinition
     --------------------------------------------------------------------}
-  
+
   TSegmentDefinition = Class(TGoogleBaseObject)
   Private
     FsegmentFilters : TSegmentDefinitionTypesegmentFiltersArray;
@@ -445,11 +451,11 @@ type
     Property segmentFilters : TSegmentDefinitionTypesegmentFiltersArray Index 0 Read FsegmentFilters Write SetsegmentFilters;
   end;
   TSegmentDefinitionClass = Class of TSegmentDefinition;
-  
+
   { --------------------------------------------------------------------
     TSegmentMetricFilter
     --------------------------------------------------------------------}
-  
+
   TSegmentMetricFilter = Class(TGoogleBaseObject)
   Private
     FmetricName : String;
@@ -474,11 +480,11 @@ type
     Property maxComparisonValue : String Index 32 Read FmaxComparisonValue Write SetmaxComparisonValue;
   end;
   TSegmentMetricFilterClass = Class of TSegmentMetricFilter;
-  
+
   { --------------------------------------------------------------------
     TReportData
     --------------------------------------------------------------------}
-  
+
   TReportData = Class(TGoogleBaseObject)
   Private
     FrowCount : integer;
@@ -515,11 +521,11 @@ type
     Property isDataGolden : boolean Index 56 Read FisDataGolden Write SetisDataGolden;
   end;
   TReportDataClass = Class of TReportData;
-  
+
   { --------------------------------------------------------------------
     TGetReportsRequest
     --------------------------------------------------------------------}
-  
+
   TGetReportsRequest = Class(TGoogleBaseObject)
   Private
     FreportRequests : TGetReportsRequestTypereportRequestsArray;
@@ -535,11 +541,11 @@ type
     Property reportRequests : TGetReportsRequestTypereportRequestsArray Index 0 Read FreportRequests Write SetreportRequests;
   end;
   TGetReportsRequestClass = Class of TGetReportsRequest;
-  
+
   { --------------------------------------------------------------------
     TOrderBy
     --------------------------------------------------------------------}
-  
+
   TOrderBy = Class(TGoogleBaseObject)
   Private
     FsortOrder : String;
@@ -557,11 +563,11 @@ type
     Property fieldName : String Index 16 Read FfieldName Write SetfieldName;
   end;
   TOrderByClass = Class of TOrderBy;
-  
+
   { --------------------------------------------------------------------
     TCohort
     --------------------------------------------------------------------}
-  
+
   TCohort = Class(TGoogleBaseObject)
   Private
     F_type : String;
@@ -580,11 +586,11 @@ type
     Property name : String Index 16 Read Fname Write Setname;
   end;
   TCohortClass = Class of TCohort;
-  
+
   { --------------------------------------------------------------------
     TOrFiltersForSegment
     --------------------------------------------------------------------}
-  
+
   TOrFiltersForSegment = Class(TGoogleBaseObject)
   Private
     FsegmentFilterClauses : TOrFiltersForSegmentTypesegmentFilterClausesArray;
@@ -600,11 +606,11 @@ type
     Property segmentFilterClauses : TOrFiltersForSegmentTypesegmentFilterClausesArray Index 0 Read FsegmentFilterClauses Write SetsegmentFilterClauses;
   end;
   TOrFiltersForSegmentClass = Class of TOrFiltersForSegment;
-  
+
   { --------------------------------------------------------------------
     TSequenceSegment
     --------------------------------------------------------------------}
-  
+
   TSequenceSegment = Class(TGoogleBaseObject)
   Private
     FfirstStepShouldMatchFirstHit : boolean;
@@ -623,11 +629,11 @@ type
     Property segmentSequenceSteps : TSequenceSegmentTypesegmentSequenceStepsArray Index 8 Read FsegmentSequenceSteps Write SetsegmentSequenceSteps;
   end;
   TSequenceSegmentClass = Class of TSequenceSegment;
-  
+
   { --------------------------------------------------------------------
     TSegmentFilter
     --------------------------------------------------------------------}
-  
+
   TSegmentFilter = Class(TGoogleBaseObject)
   Private
     FsequenceSegment : TSequenceSegment;
@@ -646,11 +652,11 @@ type
     Property simpleSegment : TSimpleSegment Index 16 Read FsimpleSegment Write SetsimpleSegment;
   end;
   TSegmentFilterClass = Class of TSegmentFilter;
-  
+
   { --------------------------------------------------------------------
     TPivotHeaderEntry
     --------------------------------------------------------------------}
-  
+
   TPivotHeaderEntry = Class(TGoogleBaseObject)
   Private
     FdimensionNames : TStringArray;
@@ -672,11 +678,11 @@ type
     Property metric : TMetricHeaderEntry Index 16 Read Fmetric Write Setmetric;
   end;
   TPivotHeaderEntryClass = Class of TPivotHeaderEntry;
-  
+
   { --------------------------------------------------------------------
     TDimensionFilterClause
     --------------------------------------------------------------------}
-  
+
   TDimensionFilterClause = Class(TGoogleBaseObject)
   Private
     F_operator : String;
@@ -696,11 +702,11 @@ type
     Property filters : TDimensionFilterClauseTypefiltersArray Index 8 Read Ffilters Write Setfilters;
   end;
   TDimensionFilterClauseClass = Class of TDimensionFilterClause;
-  
+
   { --------------------------------------------------------------------
     TSegmentSequenceStep
     --------------------------------------------------------------------}
-  
+
   TSegmentSequenceStep = Class(TGoogleBaseObject)
   Private
     FmatchType : String;
@@ -719,11 +725,11 @@ type
     Property orFiltersForSegment : TSegmentSequenceStepTypeorFiltersForSegmentArray Index 8 Read ForFiltersForSegment Write SetorFiltersForSegment;
   end;
   TSegmentSequenceStepClass = Class of TSegmentSequenceStep;
-  
+
   { --------------------------------------------------------------------
     TPivot
     --------------------------------------------------------------------}
-  
+
   TPivot = Class(TGoogleBaseObject)
   Private
     Fdimensions : TPivotTypedimensionsArray;
@@ -751,11 +757,11 @@ type
     Property startGroup : integer Index 32 Read FstartGroup Write SetstartGroup;
   end;
   TPivotClass = Class of TPivot;
-  
+
   { --------------------------------------------------------------------
     TDateRangeValues
     --------------------------------------------------------------------}
-  
+
   TDateRangeValues = Class(TGoogleBaseObject)
   Private
     Fvalues : TStringArray;
@@ -774,11 +780,11 @@ type
     Property pivotValueRegions : TDateRangeValuesTypepivotValueRegionsArray Index 8 Read FpivotValueRegions Write SetpivotValueRegions;
   end;
   TDateRangeValuesClass = Class of TDateRangeValues;
-  
+
   { --------------------------------------------------------------------
     TMetricFilterClause
     --------------------------------------------------------------------}
-  
+
   TMetricFilterClause = Class(TGoogleBaseObject)
   Private
     F_operator : String;
@@ -798,11 +804,11 @@ type
     Property filters : TMetricFilterClauseTypefiltersArray Index 8 Read Ffilters Write Setfilters;
   end;
   TMetricFilterClauseClass = Class of TMetricFilterClause;
-  
+
   { --------------------------------------------------------------------
     TSegment
     --------------------------------------------------------------------}
-  
+
   TSegment = Class(TGoogleBaseObject)
   Private
     FdynamicSegment : TDynamicSegment;
@@ -817,11 +823,11 @@ type
     Property segmentId : String Index 8 Read FsegmentId Write SetsegmentId;
   end;
   TSegmentClass = Class of TSegment;
-  
+
   { --------------------------------------------------------------------
     TDateRange
     --------------------------------------------------------------------}
-  
+
   TDateRange = Class(TGoogleBaseObject)
   Private
     FstartDate : String;
@@ -836,11 +842,11 @@ type
     Property endDate : String Index 8 Read FendDate Write SetendDate;
   end;
   TDateRangeClass = Class of TDateRange;
-  
+
   { --------------------------------------------------------------------
     TReportRow
     --------------------------------------------------------------------}
-  
+
   TReportRow = Class(TGoogleBaseObject)
   Private
     Fdimensions : TStringArray;
@@ -859,11 +865,11 @@ type
     Property metrics : TReportRowTypemetricsArray Index 8 Read Fmetrics Write Setmetrics;
   end;
   TReportRowClass = Class of TReportRow;
-  
+
   { --------------------------------------------------------------------
     TCohortGroup
     --------------------------------------------------------------------}
-  
+
   TCohortGroup = Class(TGoogleBaseObject)
   Private
     FlifetimeValue : boolean;
@@ -882,11 +888,11 @@ type
     Property cohorts : TCohortGroupTypecohortsArray Index 8 Read Fcohorts Write Setcohorts;
   end;
   TCohortGroupClass = Class of TCohortGroup;
-  
+
   { --------------------------------------------------------------------
     TGetReportsResponse
     --------------------------------------------------------------------}
-  
+
   TGetReportsResponse = Class(TGoogleBaseObject)
   Private
     Freports : TGetReportsResponseTypereportsArray;
@@ -902,11 +908,11 @@ type
     Property reports : TGetReportsResponseTypereportsArray Index 0 Read Freports Write Setreports;
   end;
   TGetReportsResponseClass = Class of TGetReportsResponse;
-  
+
   { --------------------------------------------------------------------
     TMetricHeaderEntry
     --------------------------------------------------------------------}
-  
+
   TMetricHeaderEntry = Class(TGoogleBaseObject)
   Private
     F_type : String;
@@ -922,11 +928,11 @@ type
     Property name : String Index 8 Read Fname Write Setname;
   end;
   TMetricHeaderEntryClass = Class of TMetricHeaderEntry;
-  
+
   { --------------------------------------------------------------------
     TMetricFilter
     --------------------------------------------------------------------}
-  
+
   TMetricFilter = Class(TGoogleBaseObject)
   Private
     FmetricName : String;
@@ -948,11 +954,11 @@ type
     Property _not : boolean Index 24 Read F_not Write Set_not;
   end;
   TMetricFilterClass = Class of TMetricFilter;
-  
+
   { --------------------------------------------------------------------
     TDimension
     --------------------------------------------------------------------}
-  
+
   TDimension = Class(TGoogleBaseObject)
   Private
     FhistogramBuckets : TStringArray;
@@ -971,11 +977,11 @@ type
     Property name : String Index 8 Read Fname Write Setname;
   end;
   TDimensionClass = Class of TDimension;
-  
+
   { --------------------------------------------------------------------
     TPivotValueRegion
     --------------------------------------------------------------------}
-  
+
   TPivotValueRegion = Class(TGoogleBaseObject)
   Private
     Fvalues : TStringArray;
@@ -991,23 +997,23 @@ type
     Property values : TStringArray Index 0 Read Fvalues Write Setvalues;
   end;
   TPivotValueRegionClass = Class of TPivotValueRegion;
-  
+
   { --------------------------------------------------------------------
     TReportsResource
     --------------------------------------------------------------------}
-  
+
   TReportsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
     Class Function DefaultAPI : TGoogleAPIClass; override;
     Function BatchGet(aGetReportsRequest : TGetReportsRequest) : TGetReportsResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TAnalyticsreportingAPI
     --------------------------------------------------------------------}
-  
+
   TAnalyticsreportingAPI = Class(TGoogleAPI)
   Private
     FReportsInstance : TReportsResource;
@@ -1049,7 +1055,7 @@ implementation
   --------------------------------------------------------------------}
 
 
-Procedure TPivotHeader.SettotalPivotGroupsCount(AIndex : Integer; const AValue : integer); 
+Procedure TPivotHeader.SettotalPivotGroupsCount(AIndex : Integer; const AValue : integer);
 
 begin
   If (FtotalPivotGroupsCount=AValue) then exit;
@@ -1059,7 +1065,7 @@ end;
 
 
 
-Procedure TPivotHeader.SetpivotHeaderEntries(AIndex : Integer; const AValue : TPivotHeaderTypepivotHeaderEntriesArray); 
+Procedure TPivotHeader.SetpivotHeaderEntries(AIndex : Integer; const AValue : TPivotHeaderTypepivotHeaderEntriesArray);
 
 begin
   If (FpivotHeaderEntries=AValue) then exit;
@@ -1070,7 +1076,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TPivotHeader.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TPivotHeader.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1089,7 +1095,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TMetric.Setalias(AIndex : Integer; const AValue : String); 
+Procedure TMetric.Setalias(AIndex : Integer; const AValue : String);
 
 begin
   If (Falias=AValue) then exit;
@@ -1099,7 +1105,7 @@ end;
 
 
 
-Procedure TMetric.SetformattingType(AIndex : Integer; const AValue : String); 
+Procedure TMetric.SetformattingType(AIndex : Integer; const AValue : String);
 
 begin
   If (FformattingType=AValue) then exit;
@@ -1109,7 +1115,7 @@ end;
 
 
 
-Procedure TMetric.Setexpression(AIndex : Integer; const AValue : String); 
+Procedure TMetric.Setexpression(AIndex : Integer; const AValue : String);
 
 begin
   If (Fexpression=AValue) then exit;
@@ -1126,7 +1132,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TColumnHeader.Setdimensions(AIndex : Integer; const AValue : TStringArray); 
+Procedure TColumnHeader.Setdimensions(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Fdimensions=AValue) then exit;
@@ -1136,7 +1142,7 @@ end;
 
 
 
-Procedure TColumnHeader.SetmetricHeader(AIndex : Integer; const AValue : TMetricHeader); 
+Procedure TColumnHeader.SetmetricHeader(AIndex : Integer; const AValue : TMetricHeader);
 
 begin
   If (FmetricHeader=AValue) then exit;
@@ -1147,7 +1153,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TColumnHeader.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TColumnHeader.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1166,7 +1172,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDynamicSegment.SetsessionSegment(AIndex : Integer; const AValue : TSegmentDefinition); 
+Procedure TDynamicSegment.SetsessionSegment(AIndex : Integer; const AValue : TSegmentDefinition);
 
 begin
   If (FsessionSegment=AValue) then exit;
@@ -1176,7 +1182,7 @@ end;
 
 
 
-Procedure TDynamicSegment.Setname(AIndex : Integer; const AValue : String); 
+Procedure TDynamicSegment.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -1186,7 +1192,7 @@ end;
 
 
 
-Procedure TDynamicSegment.SetuserSegment(AIndex : Integer; const AValue : TSegmentDefinition); 
+Procedure TDynamicSegment.SetuserSegment(AIndex : Integer; const AValue : TSegmentDefinition);
 
 begin
   If (FuserSegment=AValue) then exit;
@@ -1203,7 +1209,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TMetricHeader.SetmetricHeaderEntries(AIndex : Integer; const AValue : TMetricHeaderTypemetricHeaderEntriesArray); 
+Procedure TMetricHeader.SetmetricHeaderEntries(AIndex : Integer; const AValue : TMetricHeaderTypemetricHeaderEntriesArray);
 
 begin
   If (FmetricHeaderEntries=AValue) then exit;
@@ -1213,7 +1219,7 @@ end;
 
 
 
-Procedure TMetricHeader.SetpivotHeaders(AIndex : Integer; const AValue : TMetricHeaderTypepivotHeadersArray); 
+Procedure TMetricHeader.SetpivotHeaders(AIndex : Integer; const AValue : TMetricHeaderTypepivotHeadersArray);
 
 begin
   If (FpivotHeaders=AValue) then exit;
@@ -1224,7 +1230,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TMetricHeader.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TMetricHeader.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1244,7 +1250,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TReport.SetcolumnHeader(AIndex : Integer; const AValue : TColumnHeader); 
+Procedure TReport.SetcolumnHeader(AIndex : Integer; const AValue : TColumnHeader);
 
 begin
   If (FcolumnHeader=AValue) then exit;
@@ -1254,7 +1260,7 @@ end;
 
 
 
-Procedure TReport.Setdata(AIndex : Integer; const AValue : TReportData); 
+Procedure TReport.Setdata(AIndex : Integer; const AValue : TReportData);
 
 begin
   If (Fdata=AValue) then exit;
@@ -1264,7 +1270,7 @@ end;
 
 
 
-Procedure TReport.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TReport.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -1281,7 +1287,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSegmentFilterClause.SetdimensionFilter(AIndex : Integer; const AValue : TSegmentDimensionFilter); 
+Procedure TSegmentFilterClause.SetdimensionFilter(AIndex : Integer; const AValue : TSegmentDimensionFilter);
 
 begin
   If (FdimensionFilter=AValue) then exit;
@@ -1291,7 +1297,7 @@ end;
 
 
 
-Procedure TSegmentFilterClause.SetmetricFilter(AIndex : Integer; const AValue : TSegmentMetricFilter); 
+Procedure TSegmentFilterClause.SetmetricFilter(AIndex : Integer; const AValue : TSegmentMetricFilter);
 
 begin
   If (FmetricFilter=AValue) then exit;
@@ -1301,7 +1307,7 @@ end;
 
 
 
-Procedure TSegmentFilterClause.Set_not(AIndex : Integer; const AValue : boolean); 
+Procedure TSegmentFilterClause.Set_not(AIndex : Integer; const AValue : boolean);
 
 begin
   If (F_not=AValue) then exit;
@@ -1329,7 +1335,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDimensionFilter.SetdimensionName(AIndex : Integer; const AValue : String); 
+Procedure TDimensionFilter.SetdimensionName(AIndex : Integer; const AValue : String);
 
 begin
   If (FdimensionName=AValue) then exit;
@@ -1339,7 +1345,7 @@ end;
 
 
 
-Procedure TDimensionFilter.Set_operator(AIndex : Integer; const AValue : String); 
+Procedure TDimensionFilter.Set_operator(AIndex : Integer; const AValue : String);
 
 begin
   If (F_operator=AValue) then exit;
@@ -1349,7 +1355,7 @@ end;
 
 
 
-Procedure TDimensionFilter.SetcaseSensitive(AIndex : Integer; const AValue : boolean); 
+Procedure TDimensionFilter.SetcaseSensitive(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FcaseSensitive=AValue) then exit;
@@ -1359,7 +1365,7 @@ end;
 
 
 
-Procedure TDimensionFilter.Setexpressions(AIndex : Integer; const AValue : TStringArray); 
+Procedure TDimensionFilter.Setexpressions(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Fexpressions=AValue) then exit;
@@ -1369,7 +1375,7 @@ end;
 
 
 
-Procedure TDimensionFilter.Set_not(AIndex : Integer; const AValue : boolean); 
+Procedure TDimensionFilter.Set_not(AIndex : Integer; const AValue : boolean);
 
 begin
   If (F_not=AValue) then exit;
@@ -1392,7 +1398,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TDimensionFilter.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TDimensionFilter.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1411,7 +1417,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSegmentDimensionFilter.SetmaxComparisonValue(AIndex : Integer; const AValue : String); 
+Procedure TSegmentDimensionFilter.SetmaxComparisonValue(AIndex : Integer; const AValue : String);
 
 begin
   If (FmaxComparisonValue=AValue) then exit;
@@ -1421,7 +1427,7 @@ end;
 
 
 
-Procedure TSegmentDimensionFilter.SetdimensionName(AIndex : Integer; const AValue : String); 
+Procedure TSegmentDimensionFilter.SetdimensionName(AIndex : Integer; const AValue : String);
 
 begin
   If (FdimensionName=AValue) then exit;
@@ -1431,7 +1437,7 @@ end;
 
 
 
-Procedure TSegmentDimensionFilter.SetcaseSensitive(AIndex : Integer; const AValue : boolean); 
+Procedure TSegmentDimensionFilter.SetcaseSensitive(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FcaseSensitive=AValue) then exit;
@@ -1441,7 +1447,7 @@ end;
 
 
 
-Procedure TSegmentDimensionFilter.Set_operator(AIndex : Integer; const AValue : String); 
+Procedure TSegmentDimensionFilter.Set_operator(AIndex : Integer; const AValue : String);
 
 begin
   If (F_operator=AValue) then exit;
@@ -1451,7 +1457,7 @@ end;
 
 
 
-Procedure TSegmentDimensionFilter.Setexpressions(AIndex : Integer; const AValue : TStringArray); 
+Procedure TSegmentDimensionFilter.Setexpressions(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Fexpressions=AValue) then exit;
@@ -1461,7 +1467,7 @@ end;
 
 
 
-Procedure TSegmentDimensionFilter.SetminComparisonValue(AIndex : Integer; const AValue : String); 
+Procedure TSegmentDimensionFilter.SetminComparisonValue(AIndex : Integer; const AValue : String);
 
 begin
   If (FminComparisonValue=AValue) then exit;
@@ -1483,7 +1489,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TSegmentDimensionFilter.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TSegmentDimensionFilter.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1502,7 +1508,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TReportRequest.SetcohortGroup(AIndex : Integer; const AValue : TCohortGroup); 
+Procedure TReportRequest.SetcohortGroup(AIndex : Integer; const AValue : TCohortGroup);
 
 begin
   If (FcohortGroup=AValue) then exit;
@@ -1512,7 +1518,7 @@ end;
 
 
 
-Procedure TReportRequest.Setdimensions(AIndex : Integer; const AValue : TReportRequestTypedimensionsArray); 
+Procedure TReportRequest.Setdimensions(AIndex : Integer; const AValue : TReportRequestTypedimensionsArray);
 
 begin
   If (Fdimensions=AValue) then exit;
@@ -1522,7 +1528,7 @@ end;
 
 
 
-Procedure TReportRequest.SetmetricFilterClauses(AIndex : Integer; const AValue : TReportRequestTypemetricFilterClausesArray); 
+Procedure TReportRequest.SetmetricFilterClauses(AIndex : Integer; const AValue : TReportRequestTypemetricFilterClausesArray);
 
 begin
   If (FmetricFilterClauses=AValue) then exit;
@@ -1532,7 +1538,7 @@ end;
 
 
 
-Procedure TReportRequest.SethideTotals(AIndex : Integer; const AValue : boolean); 
+Procedure TReportRequest.SethideTotals(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FhideTotals=AValue) then exit;
@@ -1542,7 +1548,7 @@ end;
 
 
 
-Procedure TReportRequest.SetincludeEmptyRows(AIndex : Integer; const AValue : boolean); 
+Procedure TReportRequest.SetincludeEmptyRows(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FincludeEmptyRows=AValue) then exit;
@@ -1552,7 +1558,7 @@ end;
 
 
 
-Procedure TReportRequest.SetdimensionFilterClauses(AIndex : Integer; const AValue : TReportRequestTypedimensionFilterClausesArray); 
+Procedure TReportRequest.SetdimensionFilterClauses(AIndex : Integer; const AValue : TReportRequestTypedimensionFilterClausesArray);
 
 begin
   If (FdimensionFilterClauses=AValue) then exit;
@@ -1562,7 +1568,7 @@ end;
 
 
 
-Procedure TReportRequest.Setpivots(AIndex : Integer; const AValue : TReportRequestTypepivotsArray); 
+Procedure TReportRequest.Setpivots(AIndex : Integer; const AValue : TReportRequestTypepivotsArray);
 
 begin
   If (Fpivots=AValue) then exit;
@@ -1572,7 +1578,7 @@ end;
 
 
 
-Procedure TReportRequest.SetdateRanges(AIndex : Integer; const AValue : TReportRequestTypedateRangesArray); 
+Procedure TReportRequest.SetdateRanges(AIndex : Integer; const AValue : TReportRequestTypedateRangesArray);
 
 begin
   If (FdateRanges=AValue) then exit;
@@ -1582,7 +1588,7 @@ end;
 
 
 
-Procedure TReportRequest.Setsegments(AIndex : Integer; const AValue : TReportRequestTypesegmentsArray); 
+Procedure TReportRequest.Setsegments(AIndex : Integer; const AValue : TReportRequestTypesegmentsArray);
 
 begin
   If (Fsegments=AValue) then exit;
@@ -1592,7 +1598,7 @@ end;
 
 
 
-Procedure TReportRequest.SetsamplingLevel(AIndex : Integer; const AValue : String); 
+Procedure TReportRequest.SetsamplingLevel(AIndex : Integer; const AValue : String);
 
 begin
   If (FsamplingLevel=AValue) then exit;
@@ -1602,7 +1608,7 @@ end;
 
 
 
-Procedure TReportRequest.Setmetrics(AIndex : Integer; const AValue : TReportRequestTypemetricsArray); 
+Procedure TReportRequest.Setmetrics(AIndex : Integer; const AValue : TReportRequestTypemetricsArray);
 
 begin
   If (Fmetrics=AValue) then exit;
@@ -1612,7 +1618,7 @@ end;
 
 
 
-Procedure TReportRequest.SetpageSize(AIndex : Integer; const AValue : integer); 
+Procedure TReportRequest.SetpageSize(AIndex : Integer; const AValue : integer);
 
 begin
   If (FpageSize=AValue) then exit;
@@ -1622,7 +1628,7 @@ end;
 
 
 
-Procedure TReportRequest.SetorderBys(AIndex : Integer; const AValue : TReportRequestTypeorderBysArray); 
+Procedure TReportRequest.SetorderBys(AIndex : Integer; const AValue : TReportRequestTypeorderBysArray);
 
 begin
   If (ForderBys=AValue) then exit;
@@ -1632,7 +1638,7 @@ end;
 
 
 
-Procedure TReportRequest.SetfiltersExpression(AIndex : Integer; const AValue : String); 
+Procedure TReportRequest.SetfiltersExpression(AIndex : Integer; const AValue : String);
 
 begin
   If (FfiltersExpression=AValue) then exit;
@@ -1642,7 +1648,7 @@ end;
 
 
 
-Procedure TReportRequest.SethideValueRanges(AIndex : Integer; const AValue : boolean); 
+Procedure TReportRequest.SethideValueRanges(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FhideValueRanges=AValue) then exit;
@@ -1652,7 +1658,7 @@ end;
 
 
 
-Procedure TReportRequest.SetviewId(AIndex : Integer; const AValue : String); 
+Procedure TReportRequest.SetviewId(AIndex : Integer; const AValue : String);
 
 begin
   If (FviewId=AValue) then exit;
@@ -1662,7 +1668,7 @@ end;
 
 
 
-Procedure TReportRequest.SetpageToken(AIndex : Integer; const AValue : String); 
+Procedure TReportRequest.SetpageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FpageToken=AValue) then exit;
@@ -1673,7 +1679,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TReportRequest.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TReportRequest.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1699,7 +1705,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSimpleSegment.SetorFiltersForSegment(AIndex : Integer; const AValue : TSimpleSegmentTypeorFiltersForSegmentArray); 
+Procedure TSimpleSegment.SetorFiltersForSegment(AIndex : Integer; const AValue : TSimpleSegmentTypeorFiltersForSegmentArray);
 
 begin
   If (ForFiltersForSegment=AValue) then exit;
@@ -1710,7 +1716,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TSimpleSegment.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TSimpleSegment.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1729,7 +1735,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSegmentDefinition.SetsegmentFilters(AIndex : Integer; const AValue : TSegmentDefinitionTypesegmentFiltersArray); 
+Procedure TSegmentDefinition.SetsegmentFilters(AIndex : Integer; const AValue : TSegmentDefinitionTypesegmentFiltersArray);
 
 begin
   If (FsegmentFilters=AValue) then exit;
@@ -1740,7 +1746,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TSegmentDefinition.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TSegmentDefinition.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1759,7 +1765,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSegmentMetricFilter.SetmetricName(AIndex : Integer; const AValue : String); 
+Procedure TSegmentMetricFilter.SetmetricName(AIndex : Integer; const AValue : String);
 
 begin
   If (FmetricName=AValue) then exit;
@@ -1769,7 +1775,7 @@ end;
 
 
 
-Procedure TSegmentMetricFilter.Set_operator(AIndex : Integer; const AValue : String); 
+Procedure TSegmentMetricFilter.Set_operator(AIndex : Integer; const AValue : String);
 
 begin
   If (F_operator=AValue) then exit;
@@ -1779,7 +1785,7 @@ end;
 
 
 
-Procedure TSegmentMetricFilter.SetcomparisonValue(AIndex : Integer; const AValue : String); 
+Procedure TSegmentMetricFilter.SetcomparisonValue(AIndex : Integer; const AValue : String);
 
 begin
   If (FcomparisonValue=AValue) then exit;
@@ -1789,7 +1795,7 @@ end;
 
 
 
-Procedure TSegmentMetricFilter.Setscope(AIndex : Integer; const AValue : String); 
+Procedure TSegmentMetricFilter.Setscope(AIndex : Integer; const AValue : String);
 
 begin
   If (Fscope=AValue) then exit;
@@ -1799,7 +1805,7 @@ end;
 
 
 
-Procedure TSegmentMetricFilter.SetmaxComparisonValue(AIndex : Integer; const AValue : String); 
+Procedure TSegmentMetricFilter.SetmaxComparisonValue(AIndex : Integer; const AValue : String);
 
 begin
   If (FmaxComparisonValue=AValue) then exit;
@@ -1827,7 +1833,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TReportData.SetrowCount(AIndex : Integer; const AValue : integer); 
+Procedure TReportData.SetrowCount(AIndex : Integer; const AValue : integer);
 
 begin
   If (FrowCount=AValue) then exit;
@@ -1837,7 +1843,7 @@ end;
 
 
 
-Procedure TReportData.SetsamplingSpaceSizes(AIndex : Integer; const AValue : TStringArray); 
+Procedure TReportData.SetsamplingSpaceSizes(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FsamplingSpaceSizes=AValue) then exit;
@@ -1847,7 +1853,7 @@ end;
 
 
 
-Procedure TReportData.Setmaximums(AIndex : Integer; const AValue : TReportDataTypemaximumsArray); 
+Procedure TReportData.Setmaximums(AIndex : Integer; const AValue : TReportDataTypemaximumsArray);
 
 begin
   If (Fmaximums=AValue) then exit;
@@ -1857,7 +1863,7 @@ end;
 
 
 
-Procedure TReportData.SetsamplesReadCounts(AIndex : Integer; const AValue : TStringArray); 
+Procedure TReportData.SetsamplesReadCounts(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FsamplesReadCounts=AValue) then exit;
@@ -1867,7 +1873,7 @@ end;
 
 
 
-Procedure TReportData.Setminimums(AIndex : Integer; const AValue : TReportDataTypeminimumsArray); 
+Procedure TReportData.Setminimums(AIndex : Integer; const AValue : TReportDataTypeminimumsArray);
 
 begin
   If (Fminimums=AValue) then exit;
@@ -1877,7 +1883,7 @@ end;
 
 
 
-Procedure TReportData.Setrows(AIndex : Integer; const AValue : TReportDataTyperowsArray); 
+Procedure TReportData.Setrows(AIndex : Integer; const AValue : TReportDataTyperowsArray);
 
 begin
   If (Frows=AValue) then exit;
@@ -1887,7 +1893,7 @@ end;
 
 
 
-Procedure TReportData.Settotals(AIndex : Integer; const AValue : TReportDataTypetotalsArray); 
+Procedure TReportData.Settotals(AIndex : Integer; const AValue : TReportDataTypetotalsArray);
 
 begin
   If (Ftotals=AValue) then exit;
@@ -1897,7 +1903,7 @@ end;
 
 
 
-Procedure TReportData.SetisDataGolden(AIndex : Integer; const AValue : boolean); 
+Procedure TReportData.SetisDataGolden(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FisDataGolden=AValue) then exit;
@@ -1908,7 +1914,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TReportData.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TReportData.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1932,7 +1938,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TGetReportsRequest.SetreportRequests(AIndex : Integer; const AValue : TGetReportsRequestTypereportRequestsArray); 
+Procedure TGetReportsRequest.SetreportRequests(AIndex : Integer; const AValue : TGetReportsRequestTypereportRequestsArray);
 
 begin
   If (FreportRequests=AValue) then exit;
@@ -1943,7 +1949,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TGetReportsRequest.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TGetReportsRequest.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1962,7 +1968,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrderBy.SetsortOrder(AIndex : Integer; const AValue : String); 
+Procedure TOrderBy.SetsortOrder(AIndex : Integer; const AValue : String);
 
 begin
   If (FsortOrder=AValue) then exit;
@@ -1972,7 +1978,7 @@ end;
 
 
 
-Procedure TOrderBy.SetorderType(AIndex : Integer; const AValue : String); 
+Procedure TOrderBy.SetorderType(AIndex : Integer; const AValue : String);
 
 begin
   If (ForderType=AValue) then exit;
@@ -1982,7 +1988,7 @@ end;
 
 
 
-Procedure TOrderBy.SetfieldName(AIndex : Integer; const AValue : String); 
+Procedure TOrderBy.SetfieldName(AIndex : Integer; const AValue : String);
 
 begin
   If (FfieldName=AValue) then exit;
@@ -1999,7 +2005,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCohort.Set_type(AIndex : Integer; const AValue : String); 
+Procedure TCohort.Set_type(AIndex : Integer; const AValue : String);
 
 begin
   If (F_type=AValue) then exit;
@@ -2009,7 +2015,7 @@ end;
 
 
 
-Procedure TCohort.SetdateRange(AIndex : Integer; const AValue : TDateRange); 
+Procedure TCohort.SetdateRange(AIndex : Integer; const AValue : TDateRange);
 
 begin
   If (FdateRange=AValue) then exit;
@@ -2019,7 +2025,7 @@ end;
 
 
 
-Procedure TCohort.Setname(AIndex : Integer; const AValue : String); 
+Procedure TCohort.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -2047,7 +2053,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOrFiltersForSegment.SetsegmentFilterClauses(AIndex : Integer; const AValue : TOrFiltersForSegmentTypesegmentFilterClausesArray); 
+Procedure TOrFiltersForSegment.SetsegmentFilterClauses(AIndex : Integer; const AValue : TOrFiltersForSegmentTypesegmentFilterClausesArray);
 
 begin
   If (FsegmentFilterClauses=AValue) then exit;
@@ -2058,7 +2064,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOrFiltersForSegment.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOrFiltersForSegment.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2077,7 +2083,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSequenceSegment.SetfirstStepShouldMatchFirstHit(AIndex : Integer; const AValue : boolean); 
+Procedure TSequenceSegment.SetfirstStepShouldMatchFirstHit(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FfirstStepShouldMatchFirstHit=AValue) then exit;
@@ -2087,7 +2093,7 @@ end;
 
 
 
-Procedure TSequenceSegment.SetsegmentSequenceSteps(AIndex : Integer; const AValue : TSequenceSegmentTypesegmentSequenceStepsArray); 
+Procedure TSequenceSegment.SetsegmentSequenceSteps(AIndex : Integer; const AValue : TSequenceSegmentTypesegmentSequenceStepsArray);
 
 begin
   If (FsegmentSequenceSteps=AValue) then exit;
@@ -2098,7 +2104,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TSequenceSegment.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TSequenceSegment.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2117,7 +2123,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSegmentFilter.SetsequenceSegment(AIndex : Integer; const AValue : TSequenceSegment); 
+Procedure TSegmentFilter.SetsequenceSegment(AIndex : Integer; const AValue : TSequenceSegment);
 
 begin
   If (FsequenceSegment=AValue) then exit;
@@ -2127,7 +2133,7 @@ end;
 
 
 
-Procedure TSegmentFilter.Set_not(AIndex : Integer; const AValue : boolean); 
+Procedure TSegmentFilter.Set_not(AIndex : Integer; const AValue : boolean);
 
 begin
   If (F_not=AValue) then exit;
@@ -2137,7 +2143,7 @@ end;
 
 
 
-Procedure TSegmentFilter.SetsimpleSegment(AIndex : Integer; const AValue : TSimpleSegment); 
+Procedure TSegmentFilter.SetsimpleSegment(AIndex : Integer; const AValue : TSimpleSegment);
 
 begin
   If (FsimpleSegment=AValue) then exit;
@@ -2165,7 +2171,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPivotHeaderEntry.SetdimensionNames(AIndex : Integer; const AValue : TStringArray); 
+Procedure TPivotHeaderEntry.SetdimensionNames(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FdimensionNames=AValue) then exit;
@@ -2175,7 +2181,7 @@ end;
 
 
 
-Procedure TPivotHeaderEntry.SetdimensionValues(AIndex : Integer; const AValue : TStringArray); 
+Procedure TPivotHeaderEntry.SetdimensionValues(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FdimensionValues=AValue) then exit;
@@ -2185,7 +2191,7 @@ end;
 
 
 
-Procedure TPivotHeaderEntry.Setmetric(AIndex : Integer; const AValue : TMetricHeaderEntry); 
+Procedure TPivotHeaderEntry.Setmetric(AIndex : Integer; const AValue : TMetricHeaderEntry);
 
 begin
   If (Fmetric=AValue) then exit;
@@ -2196,7 +2202,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TPivotHeaderEntry.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TPivotHeaderEntry.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2216,7 +2222,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDimensionFilterClause.Set_operator(AIndex : Integer; const AValue : String); 
+Procedure TDimensionFilterClause.Set_operator(AIndex : Integer; const AValue : String);
 
 begin
   If (F_operator=AValue) then exit;
@@ -2226,7 +2232,7 @@ end;
 
 
 
-Procedure TDimensionFilterClause.Setfilters(AIndex : Integer; const AValue : TDimensionFilterClauseTypefiltersArray); 
+Procedure TDimensionFilterClause.Setfilters(AIndex : Integer; const AValue : TDimensionFilterClauseTypefiltersArray);
 
 begin
   If (Ffilters=AValue) then exit;
@@ -2248,7 +2254,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TDimensionFilterClause.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TDimensionFilterClause.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2267,7 +2273,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSegmentSequenceStep.SetmatchType(AIndex : Integer; const AValue : String); 
+Procedure TSegmentSequenceStep.SetmatchType(AIndex : Integer; const AValue : String);
 
 begin
   If (FmatchType=AValue) then exit;
@@ -2277,7 +2283,7 @@ end;
 
 
 
-Procedure TSegmentSequenceStep.SetorFiltersForSegment(AIndex : Integer; const AValue : TSegmentSequenceStepTypeorFiltersForSegmentArray); 
+Procedure TSegmentSequenceStep.SetorFiltersForSegment(AIndex : Integer; const AValue : TSegmentSequenceStepTypeorFiltersForSegmentArray);
 
 begin
   If (ForFiltersForSegment=AValue) then exit;
@@ -2288,7 +2294,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TSegmentSequenceStep.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TSegmentSequenceStep.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2307,7 +2313,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPivot.Setdimensions(AIndex : Integer; const AValue : TPivotTypedimensionsArray); 
+Procedure TPivot.Setdimensions(AIndex : Integer; const AValue : TPivotTypedimensionsArray);
 
 begin
   If (Fdimensions=AValue) then exit;
@@ -2317,7 +2323,7 @@ end;
 
 
 
-Procedure TPivot.Setmetrics(AIndex : Integer; const AValue : TPivotTypemetricsArray); 
+Procedure TPivot.Setmetrics(AIndex : Integer; const AValue : TPivotTypemetricsArray);
 
 begin
   If (Fmetrics=AValue) then exit;
@@ -2327,7 +2333,7 @@ end;
 
 
 
-Procedure TPivot.SetmaxGroupCount(AIndex : Integer; const AValue : integer); 
+Procedure TPivot.SetmaxGroupCount(AIndex : Integer; const AValue : integer);
 
 begin
   If (FmaxGroupCount=AValue) then exit;
@@ -2337,7 +2343,7 @@ end;
 
 
 
-Procedure TPivot.SetdimensionFilterClauses(AIndex : Integer; const AValue : TPivotTypedimensionFilterClausesArray); 
+Procedure TPivot.SetdimensionFilterClauses(AIndex : Integer; const AValue : TPivotTypedimensionFilterClausesArray);
 
 begin
   If (FdimensionFilterClauses=AValue) then exit;
@@ -2347,7 +2353,7 @@ end;
 
 
 
-Procedure TPivot.SetstartGroup(AIndex : Integer; const AValue : integer); 
+Procedure TPivot.SetstartGroup(AIndex : Integer; const AValue : integer);
 
 begin
   If (FstartGroup=AValue) then exit;
@@ -2358,7 +2364,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TPivot.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TPivot.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2379,7 +2385,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDateRangeValues.Setvalues(AIndex : Integer; const AValue : TStringArray); 
+Procedure TDateRangeValues.Setvalues(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Fvalues=AValue) then exit;
@@ -2389,7 +2395,7 @@ end;
 
 
 
-Procedure TDateRangeValues.SetpivotValueRegions(AIndex : Integer; const AValue : TDateRangeValuesTypepivotValueRegionsArray); 
+Procedure TDateRangeValues.SetpivotValueRegions(AIndex : Integer; const AValue : TDateRangeValuesTypepivotValueRegionsArray);
 
 begin
   If (FpivotValueRegions=AValue) then exit;
@@ -2400,7 +2406,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TDateRangeValues.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TDateRangeValues.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2420,7 +2426,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TMetricFilterClause.Set_operator(AIndex : Integer; const AValue : String); 
+Procedure TMetricFilterClause.Set_operator(AIndex : Integer; const AValue : String);
 
 begin
   If (F_operator=AValue) then exit;
@@ -2430,7 +2436,7 @@ end;
 
 
 
-Procedure TMetricFilterClause.Setfilters(AIndex : Integer; const AValue : TMetricFilterClauseTypefiltersArray); 
+Procedure TMetricFilterClause.Setfilters(AIndex : Integer; const AValue : TMetricFilterClauseTypefiltersArray);
 
 begin
   If (Ffilters=AValue) then exit;
@@ -2452,7 +2458,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TMetricFilterClause.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TMetricFilterClause.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2471,7 +2477,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSegment.SetdynamicSegment(AIndex : Integer; const AValue : TDynamicSegment); 
+Procedure TSegment.SetdynamicSegment(AIndex : Integer; const AValue : TDynamicSegment);
 
 begin
   If (FdynamicSegment=AValue) then exit;
@@ -2481,7 +2487,7 @@ end;
 
 
 
-Procedure TSegment.SetsegmentId(AIndex : Integer; const AValue : String); 
+Procedure TSegment.SetsegmentId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsegmentId=AValue) then exit;
@@ -2498,7 +2504,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDateRange.SetstartDate(AIndex : Integer; const AValue : String); 
+Procedure TDateRange.SetstartDate(AIndex : Integer; const AValue : String);
 
 begin
   If (FstartDate=AValue) then exit;
@@ -2508,7 +2514,7 @@ end;
 
 
 
-Procedure TDateRange.SetendDate(AIndex : Integer; const AValue : String); 
+Procedure TDateRange.SetendDate(AIndex : Integer; const AValue : String);
 
 begin
   If (FendDate=AValue) then exit;
@@ -2525,7 +2531,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TReportRow.Setdimensions(AIndex : Integer; const AValue : TStringArray); 
+Procedure TReportRow.Setdimensions(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Fdimensions=AValue) then exit;
@@ -2535,7 +2541,7 @@ end;
 
 
 
-Procedure TReportRow.Setmetrics(AIndex : Integer; const AValue : TReportRowTypemetricsArray); 
+Procedure TReportRow.Setmetrics(AIndex : Integer; const AValue : TReportRowTypemetricsArray);
 
 begin
   If (Fmetrics=AValue) then exit;
@@ -2546,7 +2552,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TReportRow.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TReportRow.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2566,7 +2572,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCohortGroup.SetlifetimeValue(AIndex : Integer; const AValue : boolean); 
+Procedure TCohortGroup.SetlifetimeValue(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FlifetimeValue=AValue) then exit;
@@ -2576,7 +2582,7 @@ end;
 
 
 
-Procedure TCohortGroup.Setcohorts(AIndex : Integer; const AValue : TCohortGroupTypecohortsArray); 
+Procedure TCohortGroup.Setcohorts(AIndex : Integer; const AValue : TCohortGroupTypecohortsArray);
 
 begin
   If (Fcohorts=AValue) then exit;
@@ -2587,7 +2593,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TCohortGroup.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TCohortGroup.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2606,7 +2612,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TGetReportsResponse.Setreports(AIndex : Integer; const AValue : TGetReportsResponseTypereportsArray); 
+Procedure TGetReportsResponse.Setreports(AIndex : Integer; const AValue : TGetReportsResponseTypereportsArray);
 
 begin
   If (Freports=AValue) then exit;
@@ -2617,7 +2623,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TGetReportsResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TGetReportsResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2636,7 +2642,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TMetricHeaderEntry.Set_type(AIndex : Integer; const AValue : String); 
+Procedure TMetricHeaderEntry.Set_type(AIndex : Integer; const AValue : String);
 
 begin
   If (F_type=AValue) then exit;
@@ -2646,7 +2652,7 @@ end;
 
 
 
-Procedure TMetricHeaderEntry.Setname(AIndex : Integer; const AValue : String); 
+Procedure TMetricHeaderEntry.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -2674,7 +2680,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TMetricFilter.SetmetricName(AIndex : Integer; const AValue : String); 
+Procedure TMetricFilter.SetmetricName(AIndex : Integer; const AValue : String);
 
 begin
   If (FmetricName=AValue) then exit;
@@ -2684,7 +2690,7 @@ end;
 
 
 
-Procedure TMetricFilter.Set_operator(AIndex : Integer; const AValue : String); 
+Procedure TMetricFilter.Set_operator(AIndex : Integer; const AValue : String);
 
 begin
   If (F_operator=AValue) then exit;
@@ -2694,7 +2700,7 @@ end;
 
 
 
-Procedure TMetricFilter.SetcomparisonValue(AIndex : Integer; const AValue : String); 
+Procedure TMetricFilter.SetcomparisonValue(AIndex : Integer; const AValue : String);
 
 begin
   If (FcomparisonValue=AValue) then exit;
@@ -2704,7 +2710,7 @@ end;
 
 
 
-Procedure TMetricFilter.Set_not(AIndex : Integer; const AValue : boolean); 
+Procedure TMetricFilter.Set_not(AIndex : Integer; const AValue : boolean);
 
 begin
   If (F_not=AValue) then exit;
@@ -2733,7 +2739,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDimension.SethistogramBuckets(AIndex : Integer; const AValue : TStringArray); 
+Procedure TDimension.SethistogramBuckets(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FhistogramBuckets=AValue) then exit;
@@ -2743,7 +2749,7 @@ end;
 
 
 
-Procedure TDimension.Setname(AIndex : Integer; const AValue : String); 
+Procedure TDimension.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -2754,7 +2760,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TDimension.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TDimension.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2773,7 +2779,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPivotValueRegion.Setvalues(AIndex : Integer; const AValue : TStringArray); 
+Procedure TPivotValueRegion.Setvalues(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Fvalues=AValue) then exit;
@@ -2784,7 +2790,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TPivotValueRegion.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TPivotValueRegion.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2942,7 +2948,7 @@ begin
   Result[0].Description:='View your Google Analytics data';
   Result[1].Name:='https://www.googleapis.com/auth/analytics';
   Result[1].Description:='View and manage your Google Analytics data';
-  
+
 end;
 
 Class Function TAnalyticsreportingAPI.APINeedsAuth : Boolean;

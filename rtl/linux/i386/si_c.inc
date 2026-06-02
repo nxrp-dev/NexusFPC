@@ -34,7 +34,7 @@
 }
 
 var
-  libc_environ: pchar; external name '__environ';
+  libc_environ: PAnsiChar; external name '__environ';
   libc_fpu_control: word; external name '__fpu_control';
   libc_init_proc: procedure; external name '_init';
   libc_fini_proc: procedure; external name '_fini';
@@ -59,7 +59,7 @@ asm
 
   {$ifdef FPC_PIC}
         movl    %esp,%ebp               { Points to the arguments }
-        movl    %ecx,%esi               
+        movl    %ecx,%esi
   {$else FPC_PIC}
         movl    %esp,%ebx               { Points to the arguments }
   {$endif FPC_PIC}

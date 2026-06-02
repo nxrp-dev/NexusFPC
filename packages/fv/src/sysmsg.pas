@@ -19,9 +19,12 @@
    MA 02110-1301, USA.
 
  ****************************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 Unit SysMsg;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
+
 {$i platform.inc}
 
 type
@@ -30,12 +33,15 @@ type
     SysSetFocus,
     SysReleaseFocus,
     SysClose,
-    SysResize );
+    SysResize,
+    SysPaste  { OSC 52 or Bracketed paste }
+    );
 
   TSystemEvent = Record
     case typ : TSystemMessage of
       SysClose : ( CloseTyp : Longint);
       SysResize : (X,Y : Longint);
+      SysPaste : (P :PAnsiChar; Len : Longint);
     end;
 
   PSystemEvent = ^TSystemEvent;

@@ -15,11 +15,17 @@
 {*****************************************************************************}
 
 {$mode objfpc}{$h+}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit FPDitherer;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils, System.Classes, FpImage, FpImage.ColorHash;
+{$ELSE FPC_DOTTEDUNITS}
 uses sysutils, classes, fpimage, fpcolhash;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   FPDithererException = class (exception);
@@ -256,7 +262,7 @@ begin
   end;
 
   { with a sorted palette, proceed by binary search. this is more efficient with large images or large palettes }
-  if FSorted then 
+  if FSorted then
   begin
     top:=0;
     bottom:=FPalette.Count-1;

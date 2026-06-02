@@ -1,26 +1,28 @@
 {
     Pango
     pangocairo.h:
-    
+
     Copyright (C) 1999, 2004 Red Hat, Inc.
-    
+
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
     version 2 of the License, or (at your option) any later version.
-    
+
     This library is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
     Library General Public License for more details.
-    
+
     You should have received a copy of the GNU Library General Public
     License along with this library; if not, write to the
     Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
     Boston, MA 02111-1301, USA.
 }
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit pangocairo;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$IFDEF FPC}
   {$mode objfpc}
@@ -30,7 +32,11 @@ unit pangocairo;
 {$ENDIF}
 
 interface
+{$IFDEF FPC_DOTTEDUNITS}
+uses Api.Glib2, Api.Pango, Api.Cairo.Lib;
+{$ELSE FPC_DOTTEDUNITS}
 uses glib2, pango, cairo;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
 {$ifdef windows}
@@ -60,21 +66,21 @@ const
 { $define HasPango1_22}
 
 Type
-  PPangoCairoFont = pointer;   
+  PPangoCairoFont = pointer;
   PPangoCairoFontMap = pointer;
   PangoCairoShapeRendererFunc = procedure (cr:Pcairo_t; attr:PPangoAttrShape; do_path:gboolean; data:gpointer);cdecl;
-    
+
 {$IFDEF FPC}
 {$PACKRECORDS C}
 {$ENDIF}
 
 function PANGO_TYPE_CAIRO_FONT : GType;
-function PANGO_CAIRO_FONT(objekt : pointer) : PPangoCairoFont;    
-function PANGO_IS_CAIRO_FONT(objekt : pointer) : boolean;    
+function PANGO_CAIRO_FONT(objekt : pointer) : PPangoCairoFont;
+function PANGO_IS_CAIRO_FONT(objekt : pointer) : boolean;
 
 function PANGO_TYPE_CAIRO_FONT_MAP : GType;
-function PANGO_CAIRO_FONT_MAP(objekt : pointer) : PPangoCairoFontMap;    
-function PANGO_IS_CAIRO_FONT_MAP(objekt : pointer) : boolean;    
+function PANGO_CAIRO_FONT_MAP(objekt : pointer) : PPangoCairoFontMap;
+function PANGO_IS_CAIRO_FONT_MAP(objekt : pointer) : boolean;
 
 function pango_cairo_font_map_get_type():GType;cdecl;external pangocairolib;
 function pango_cairo_font_map_new:PPangoFontMap;cdecl;external pangocairolib;
@@ -87,7 +93,7 @@ function pango_cairo_font_map_get_resolution(fontmap:PPangoCairoFontMap):double;
 {$ifndef PANGO_DISABLE_DEPRECATED}
 function pango_cairo_font_map_create_context(fontmap:PPangoCairoFontMap):PPangoContext;cdecl;external pangocairolib;
 {$endif}
-    
+
 function pango_cairo_font_get_type():GType;cdecl;external pangocairolib;
 function pango_cairo_font_get_scaled_font(font:PPangoCairoFont):Pcairo_scaled_font_t;cdecl;external pangocairolib;
 procedure pango_cairo_update_context(cr:Pcairo_t; context:PPangoContext);cdecl;external pangocairolib;
@@ -111,7 +117,7 @@ procedure pango_cairo_error_underline_path(cr:Pcairo_t; x:double; y:double; widt
 {$ifdef HasPango1_22}
 procedure pango_cairo_font_map_set_default(fontmap:PPangoCairoFontMap);cdecl;external pangocairolib;
 function pango_cairo_create_context(cr:Pcairo_t):PPangoContext;cdecl;external pangocairolib;
-procedure pango_cairo_show_glyph_item(cr:Pcairo_t; text:Pchar; glyph_item:PPangoGlyphItem);cdecl;external pangocairolib;
+procedure pango_cairo_show_glyph_item(cr:Pcairo_t; text:PAnsiChar; glyph_item:PPangoGlyphItem);cdecl;external pangocairolib;
 {$endif}
 
 implementation

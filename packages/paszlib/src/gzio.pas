@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit gzio;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {
   Pascal unit based on gzio.c -- IO on .gz files
@@ -6,7 +8,7 @@ unit gzio;
 
   Define NO_DEFLATE to compile this file without the compression code
 
-  Pascal tranlastion based on code contributed by Francisco Javier Crespo
+  Pascal translation based on code contributed by Francisco Javier Crespo
   Copyright (C) 1998 by Jacques Nomssi Nzali
   For conditions of distribution and use, see copyright notice in readme.txt
 }
@@ -15,6 +17,15 @@ interface
 {$mode objfpc}
 {$I zconf.inc}
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  {$ifdef Unix}
+  UnixApi.Base,
+  {$else}
+  TP.DOS,
+  {$endif}
+  System.ZLib.Zbase, System.Hash.Crc, System.ZLib.Zdeflate, System.ZLib.Zinflate;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   {$ifdef UNIX}
   baseunix,
@@ -22,6 +33,7 @@ uses
   dos,
   {$endif}
   zbase, crc, zdeflate, zinflate;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type gzFile = pointer;
 type z_off_t = int64;
@@ -29,12 +41,12 @@ type z_off_t = int64;
 function gzopen  (path:string; mode:string) : gzFile;
 function gzread  (f:gzFile; buf:pointer; len:cardinal) : integer;
 function gzgetc  (f:gzfile) : integer;
-function gzgets  (f:gzfile; buf:Pchar; len:integer) : Pchar;
+function gzgets  (f:gzfile; buf:PAnsiChar; len:integer) : PAnsiChar;
 
 {$ifndef NO_DEFLATE}
 function gzwrite (f:gzFile; buf:pointer; len:cardinal) : integer;
-function gzputc  (f:gzfile; c:char) : integer;
-function gzputs  (f:gzfile; s:Pchar) : integer;
+function gzputc  (f:gzfile; c:AnsiChar) : integer;
+function gzputs  (f:gzfile; s:PAnsiChar) : integer;
 function gzflush (f:gzFile; flush:integer)           : integer;
   {$ifdef GZ_FORMAT_STRING}
   function gzprintf (zfile : gzFile;
@@ -86,7 +98,7 @@ type gz_stream = record
   msg,                    { error message - limit 79 chars }
   path        : string[79];   { path name for debugging only - limit 79 chars }
   transparent : boolean;  { true if input file is not a .gz file }
-  mode        : char;     { 'w' or 'r' }
+  mode        : AnsiChar;     { 'w' or 'r' }
   startpos    : longint;     { start of compressed data in file (header skipped) }
   total_out : cardinal;  { Total read, over blocks }
 end;
@@ -321,7 +333,7 @@ end;
 
   Read a byte from a gz_stream. Updates next_in and avail_in.
   Returns EOF for end of file.
-  IN assertion: the stream s has been sucessfully opened for reading.
+  IN assertion: the stream s has been successfully opened for reading.
 
 ============================================================================}
 
@@ -409,7 +421,7 @@ end;
   Set s^.err  to Z_DATA_ERROR if the magic header is present but the rest of
   the header is incorrect.
 
-  IN assertion: the stream s has already been created sucessfully;
+  IN assertion: the stream s has already been created successfully;
   s^.stream.avail_in is zero for the first time, but may be non-zero
   for concatenated .gz files
 
@@ -635,7 +647,7 @@ begin
       next_out := s^.stream.next_out;
       while (next_out <> start ) do begin
         dec (next_out);
-        inc (crclen);   { Hack because Pascal cannot substract pointers }
+        inc (crclen);   { Hack because Pascal cannot subtract pointers }
       end;
     {$endif}
       { Check CRC and original size }
@@ -674,7 +686,7 @@ begin
   next_out := s^.stream.next_out;
   while (next_out <> start ) do begin
     dec (next_out);
-    inc (crclen);   { Hack because Pascal cannot substract pointers }
+    inc (crclen);   { Hack because Pascal cannot subtract pointers }
   end;
 {$endif}
   s^.crc := crc32 (s^.crc, start, crclen);
@@ -712,13 +724,13 @@ end;
 
 ============================================================================}
 
-function gzgets (f:gzfile; buf:Pchar; len:integer) : Pchar;
+function gzgets (f:gzfile; buf:PAnsiChar; len:integer) : PAnsiChar;
 
 var
 
-  b      : Pchar; { start of buffer }
+  b      : PAnsiChar; { start of buffer }
   bytes  : integer;   { number of bytes read by gzread }
-  gzchar : char;  { char read by gzread }
+  gzchar : AnsiChar;  { AnsiChar read by gzread }
 
 begin
 
@@ -804,7 +816,7 @@ function gzprintf (zfile : gzFile;
                    const format : string;
                    a : array of integer) : integer;
 var
-  buf : array[0..Z_PRINTF_BUFSIZE-1] of char;
+  buf : array[0..Z_PRINTF_BUFSIZE-1] of AnsiChar;
   len : integer;
 begin
 {$ifdef HAS_snprintf}
@@ -824,12 +836,12 @@ end;
 
 { GZPUTC ====================================================================
 
-  Writes c, converted to an unsigned char, into the compressed file.
+  Writes c, converted to an unsigned AnsiChar, into the compressed file.
   gzputc returns the value that was written, or -1 in case of error.
 
 ============================================================================}
 
-function gzputc (f:gzfile; c:char) : integer;
+function gzputc (f:gzfile; c:AnsiChar) : integer;
 begin
   if (gzwrite (f,@c,1) = 1) then
   {$IFDEF FPC}
@@ -850,7 +862,7 @@ end;
 
 ============================================================================}
 
-function gzputs (f:gzfile; s:Pchar) : integer;
+function gzputs (f:gzfile; s:PAnsiChar) : integer;
 begin
   gzputs := gzwrite (f, pointer(s), strlen(s));
 end;

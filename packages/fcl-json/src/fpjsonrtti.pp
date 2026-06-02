@@ -1,4 +1,6 @@
-unit fpjsonrtti;
+{$IFNDEF FPC_DOTTEDUNITS}
+unit fpJsonRtti;
+{$ENDIF FPC_DOTTEDUNITS}
 {
     This file is part of the Free Pascal run time library.
     Copyright (c) 1999-2022 by Michael van Canney and other members of the
@@ -19,13 +21,18 @@ unit fpjsonrtti;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, System.Contnrs, System.TypInfo, FpJson.Data, Fcl.RttiUtils, FpJson.Parser;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, contnrs, typinfo, fpjson, rttiutils, jsonparser;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Const
   RFC3339DateTimeFormat = 'yyyy"-"mm"-"dd"T"hh":"nn":"ss';
   RFC3339DateTimeFormatMsec = RFC3339DateTimeFormat+'.zzz';
-  
+
 
 Type
 
@@ -46,7 +53,7 @@ Type
                        jsoLegacyDateTime,         // Set this to enable old date/time formatting. Current behaviour is to save date/time as a ISO 9601 value.
                        jsoLowerPropertyNames,     // Set this to force lowercase names when streaming to JSON.
                        jsoStreamTList             // Set this to assume that TList contains a list of TObjects. Use with care!
-                       );  
+                       );
   TJSONStreamOptions = Set of TJSONStreamOption;
 
   TJSONFiler = Class(TComponent)
@@ -145,7 +152,7 @@ Type
     procedure SetCaseInsensitive(AValue: Boolean);
   protected
     // Try to parse a date.
-    Function ExtractDateTime(S : String): TDateTime;
+    Function ExtractDateTime(const S : String): TDateTime;
     function GetObject(AInstance : TObject; const APropName: TJSONStringType; D: TJSONObject; PropInfo: PPropInfo): TObject;
     procedure DoClearProperty(AObject: TObject; PropInfo: PPropInfo); virtual;
     procedure DoRestoreProperty(AObject: TObject; PropInfo: PPropInfo;  PropData: TJSONData); virtual;
@@ -180,12 +187,12 @@ Type
     // Called when a object-typed property must be restored, and the property is Nil. Must return an instance for the property.
     // Published Properties of the instance will be further restored with available data.
     Property OngetObject : TJSONGetObjectEvent Read FOnGetObject Write FOnGetObject;
-    // JSON is by definition case sensitive. Should properties be looked up case-insentive ?
+    // JSON is by definition case sensitive. Should properties be looked up case-insensitive ?
     Property CaseInsensitive : Boolean Read GetCaseInsensitive Write SetCaseInsensitive ; deprecated;
     // DateTime format. If not set, RFC3339DateTimeFormat is assumed.
     // If set, it will be used as an argument to ScanDateTime. If that fails, StrToDateTime is used.
     Property DateTimeFormat : String Read FDateTimeFormat Write FDateTimeFormat;
-    // Options overning the behaviour
+    // Options covering the behaviour
     Property Options : TJSONDestreamOptions Read FOptions Write FOptions;
   end;
 
@@ -194,7 +201,11 @@ Type
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.DateUtils, System.Variants, System.RtlConsts;
+{$ELSE FPC_DOTTEDUNITS}
 uses dateutils, variants, rtlconsts;
+{$ENDIF FPC_DOTTEDUNITS}
 
 ResourceString
   SErrUnknownPropertyKind     = 'Unknown property kind for property : "%s"';
@@ -369,7 +380,7 @@ begin
     Exclude(Foptions,jdoCaseInsensitive);
 end;
 
-function TJSONDeStreamer.ExtractDateTime(S: String): TDateTime;
+function TJSONDeStreamer.ExtractDateTime(const S: String): TDateTime;
 
 Var
   Fmt : String;
@@ -561,7 +572,7 @@ begin
     tkBool :
       SetOrdProp(AObject,PI,Ord(PropData.AsBoolean));
     tkQWord :
-      SetOrdProp(AObject,PI,Trunc(PropData.AsFloat));
+      SetOrdProp(AObject,PI,Int64(PropData.AsQWord));
     tkObject,
     tkArray,
     tkRecord,
@@ -913,8 +924,9 @@ begin
     varlongword,
     varint64 :
       Result:=TJSONInt64Number.Create(Data);
+    varqword :
+      Result:=TJSONQWordNumber.Create(Data);
     vardecimal,
-    varqword,
     varsingle,
     vardouble,
     varCurrency :
@@ -1177,7 +1189,7 @@ begin
         end;
         end;
     tkChar:
-      Result:=TJSONString.Create(Char(GetOrdProp(AObject,PI)));
+      Result:=TJSONString.Create(AnsiChar(GetOrdProp(AObject,PI)));
     tkSString,
     tkLString,
     tkAString:
@@ -1195,7 +1207,7 @@ begin
     tkInt64 :
       Result:=TJSONInt64Number.Create(GetOrdProp(AObject,PropertyInfo));
     tkQWord :
-      Result:=TJSONFloatNumber.Create(GetOrdProp(AObject,PropertyInfo));
+      Result:=TJSONQWordNumber.Create(QWord(GetOrdProp(AObject,PropertyInfo)));
     tkObject :
       Result:=ObjectToJSON(GetObjectProp(AObject,PropertyInfo));
     tkArray,
@@ -1225,7 +1237,7 @@ begin
     S:=''
   else if (DateTimeFormat<>'') then
     S:=FormatDateTime(DateTimeFormat,DateTime)
-  else if (jsoLegacyDateTime in options) then  
+  else if (jsoLegacyDateTime in options) then
     begin
     if Frac(DateTime)=0 then
       S:=DateToStr(DateTime)
@@ -1236,7 +1248,7 @@ begin
     end
   else
     S:=FormatDateTime(RFC3339DateTimeFormat,DateTime);
-     
+
   Result:=TJSONString.Create(S);
 end;
 

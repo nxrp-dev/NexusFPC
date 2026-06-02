@@ -14,19 +14,30 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit sysutils;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 
 {$MODE objfpc}
 {$MODESWITCH OUT}
-{ force ansistrings }
+{$IFDEF UNICODERTL}
+{$MODESWITCH UNICODESTRINGS}
+{$ELSE}
 {$H+}
+{$ENDIF}
 {$modeswitch typehelpers}
 {$modeswitch advancedrecords}
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  TP.DOS,
+  WinApi.Windows;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   dos,
   windows;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$DEFINE HAS_SLEEP}
 {$DEFINE HAS_OSERROR}
@@ -45,7 +56,7 @@ uses
 {$i sysutilh.inc}
 
 type
-  TSystemTime = Windows.TSystemTime;
+  TSystemTime = {$ifdef FPC_DOTTEDUNITS}WinApi.{$endif}Windows.TSystemTime;
 
   EWinCEError = class(Exception)
   public
@@ -63,8 +74,13 @@ Var
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+  uses
+    System.SysConst;
+{$ELSE FPC_DOTTEDUNITS}
   uses
     sysconst;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$DEFINE FPC_NOGENERICANSIROUTINES}
 {$define HASEXPANDUNCFILENAME}
@@ -241,13 +257,13 @@ end;
 
 Function DosToWinTime (DTime:longint; out Wtime : TFileTime):longbool;
 begin
-  DosToWinTime:=dos.DosToWinTime(DTime, Wtime);
+  DosToWinTime:={$ifdef FPC_DOTTEDUNITS}TP.{$endif}dos.DosToWinTime(DTime, Wtime);
 end;
 
 
 Function WinToDosTime (Const Wtime : TFileTime; out DTime:longint):longbool;
 begin
-  WinToDosTime:=dos.WinToDosTime(Wtime, DTime);
+  WinToDosTime:={$ifdef FPC_DOTTEDUNITS}TP.{$endif}dos.WinToDosTime(Wtime, DTime);
 end;
 
 
@@ -260,7 +276,7 @@ begin
   Handle := FindFirstFile(PWideChar(FileName), FindData);
   if Handle <> INVALID_HANDLE_VALUE then
     begin
-      Windows.FindClose(Handle);
+      {$ifdef FPC_DOTTEDUNITS}WinApi.{$endif}Windows.FindClose(Handle);
       if (FindData.dwFileAttributes and FILE_ATTRIBUTE_DIRECTORY) = 0 then
         If WinToDosTime(FindData.ftLastWriteTime,tmpdtime) then
           begin
@@ -374,7 +390,7 @@ end;
 Procedure InternalFindClose (var Handle: THandle; var FindData: TFindData);
 begin
    if Handle <> INVALID_HANDLE_VALUE then
-     Windows.FindClose(Handle);
+     {$ifdef FPC_DOTTEDUNITS}WinApi.{$endif}Windows.FindClose(Handle);
 end;
 
 
@@ -386,7 +402,7 @@ begin
   If GetFileTime(Handle,nil,nil,@ft) and
      WinToDosTime(FT, tmpdtime) then
      begin
-       Result:=tmpdtime;       
+       Result:=tmpdtime;
        exit;
      end;
   Result:=-1;
@@ -425,7 +441,7 @@ end;
 
 Function DeleteFile (Const FileName : UnicodeString) : Boolean;
 begin
-  DeleteFile:=Windows.DeleteFile(PWideChar(FileName));
+  DeleteFile:={$ifdef FPC_DOTTEDUNITS}WinApi.{$endif}Windows.DeleteFile(PWideChar(FileName));
 end;
 
 
@@ -441,13 +457,13 @@ end;
 
 function diskfree(drive : byte) : int64;
 begin
-  Result := Dos.diskfree(drive);
+  Result := {$ifdef FPC_DOTTEDUNITS}TP.{$endif}Dos.diskfree(drive);
 end;
 
 
 function disksize(drive : byte) : int64;
 begin
-  Result := Dos.disksize(drive);
+  Result := {$ifdef FPC_DOTTEDUNITS}TP.{$endif}Dos.disksize(drive);
 end;
 
 
@@ -458,12 +474,12 @@ end;
 
 Procedure GetLocalTime(var SystemTime: TSystemTime);
 begin
-  windows.Getlocaltime(SystemTime);
+  {$ifdef FPC_DOTTEDUNITS}WinApi.{$endif}windows.Getlocaltime(SystemTime);
 end;
 
 function GetUniversalTime(var SystemTime: TSystemTime): Boolean;
 begin
-  windows.GetSystemTime(SystemTime);
+  {$ifdef FPC_DOTTEDUNITS}WinApi.{$endif}windows.GetSystemTime(SystemTime);
   Result:=True;
 end;
 
@@ -483,7 +499,7 @@ begin
    end;
 end;
 
-function GetLocalTimeOffset(const DateTime: TDateTime; const InputIsUTC: Boolean; out Offset: Integer): Boolean;
+function GetLocalTimeOffset(const DateTime: TDateTime; const InputIsUTC: Boolean; out Offset: Integer; out isDst : boolean): Boolean;
 
 begin
   Result := False; // not supported
@@ -520,10 +536,10 @@ begin
 end;
 
 
-function GetLocaleChar(LID, LT: Longint; Def: Char): Char;
+function GetLocaleChar(LID, LT: Longint; Def: AnsiChar): AnsiChar;
 var
   Buf: array[0..1] of WideChar;
-  Buf2: array[0..1] of Char;
+  Buf2: array[0..1] of AnsiChar;
 begin
   if GetLocaleInfo(LID, LT, Buf, 2) > 0 then
   begin
@@ -631,7 +647,7 @@ begin
          @MsgBuffer,    { This function allocs the memory (in this case you pass a PPwidechar)}
          0,
          nil);
-         
+
   if MsgBuffer <> nil then begin
     while (len > 0) and (MsgBuffer[len - 1] <= #32) do
       Dec(len);
@@ -704,7 +720,7 @@ begin
 end;
 
 function ExecuteProcess(Const Path: UnicodeString; Const ComLine: Array of UnicodeString;Flags:TExecuteFlags=[]):integer;
- 
+
 var
   CommandLine: UnicodeString;
   I: integer;
@@ -738,7 +754,7 @@ end;
 Procedure Sleep(Milliseconds : Cardinal);
 
 begin
-  Windows.Sleep(MilliSeconds)
+  {$ifdef FPC_DOTTEDUNITS}WinApi.{$endif}Windows.Sleep(MilliSeconds)
 end;
 
 Function GetLastOSError : Integer;
@@ -833,7 +849,7 @@ function WinCECompareWideString(const s1, s2 : WideString; Options : TCompareOpt
 begin
   if coIgnoreCase in Options then
     Result:=DoCompareString(PWideChar(s1), PWideChar(s2), Length(s1), Length(s2), NORM_IGNORECASE)
-  else  
+  else
     Result:=DoCompareString(PWideChar(s1), PWideChar(s2), Length(s1), Length(s2), 0);
 end;
 
@@ -848,7 +864,7 @@ function WinCECompareUnicodeString(const s1, s2 : UnicodeString; Options : TComp
 begin
    if coIgnoreCase in Options then
      Result:=DoCompareString(PWideChar(s1), PWideChar(s2), Length(s1), Length(s2), NORM_IGNORECASE)
-   else  
+   else
      Result:=DoCompareString(PWideChar(s1), PWideChar(s2), Length(s1), Length(s2), 0);
 end;
 
@@ -916,7 +932,7 @@ begin
   FreeMem(ws1);
 end;
 
-function WinCEAnsiStrComp(S1, S2: PChar): PtrInt;
+function WinCEAnsiStrComp(S1, S2: PAnsiChar): PtrInt;
 var
   ws1, ws2: PWideChar;
 begin
@@ -928,7 +944,7 @@ begin
 end;
 
 
-function WinCEAnsiStrIComp(S1, S2: PChar): PtrInt;
+function WinCEAnsiStrIComp(S1, S2: PAnsiChar): PtrInt;
 var
   ws1, ws2: PWideChar;
 begin
@@ -940,7 +956,7 @@ begin
 end;
 
 
-function WinCEAnsiStrLComp(S1, S2: PChar; MaxLen: PtrUInt): PtrInt;
+function WinCEAnsiStrLComp(S1, S2: PAnsiChar; MaxLen: PtrUInt): PtrInt;
 var
   ws1, ws2: PWideChar;
   len1, len2: longint;
@@ -953,7 +969,7 @@ begin
 end;
 
 
-function WinCEAnsiStrLIComp(S1, S2: PChar; MaxLen: PtrUInt): PtrInt;
+function WinCEAnsiStrLIComp(S1, S2: PAnsiChar; MaxLen: PtrUInt): PtrInt;
 var
   ws1, ws2: PWideChar;
   len1, len2: longint;
@@ -966,7 +982,7 @@ begin
 end;
 
 
-function WinCEAnsiStrLower(Str: PChar): PChar;
+function WinCEAnsiStrLower(Str: PAnsiChar): PAnsiChar;
 var
   buf: PWideChar;
   len: longint;
@@ -979,7 +995,7 @@ begin
 end;
 
 
-function WinCEAnsiStrUpper(Str: PChar): PChar;
+function WinCEAnsiStrUpper(Str: PAnsiChar): PAnsiChar;
 var
   buf: PWideChar;
   len: longint;
@@ -992,7 +1008,7 @@ begin
 end;
 
 
-{ there is a similiar procedure in the system unit which inits the fields which
+{ there is a similar procedure in the system unit which inits the fields which
   are relevant already for the system unit }
 procedure InitWinCEWidestrings;
   begin

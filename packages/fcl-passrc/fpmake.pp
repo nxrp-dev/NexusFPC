@@ -2,7 +2,7 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses {$ifdef unix}cthreads,{$endif} fpmkunit;
 
 Var
   T : TTarget;
@@ -19,13 +19,14 @@ begin
 {$endif ALLPACKAGES}
     P.Version:='3.3.1';
     P.Dependencies.Add('fcl-base');
+    P.Dependencies.Add('fcl-xml');
     P.Author := 'Sebastian Guenther';
     P.License := 'LGPL with modification, ';
     P.HomepageURL := 'www.freepascal.org';
     P.Email := '';
     P.Description := 'Pascal parsing parts of Free Component Libraries (FCL), FPC''s OOP library.';
     P.NeedLibC:= false;
-    P.OSes:=AllOSes-[embedded,msdos,win16,macosclassic,palmos,zxspectrum,msxdos,amstradcpc,sinclairql];
+    P.OSes:=AllOSes-[embedded,msdos,win16,macosclassic,palmos,zxspectrum,msxdos,amstradcpc,sinclairql,human68k,ps1,wasip2];
     if Defaults.CPU=jvm then
       P.OSes := P.OSes - [java,android];
 
@@ -84,6 +85,16 @@ begin
           AddUnit('pastree');
           AddUnit('pasresolver');
         end;
+    T:=P.Targets.AddUnit('dpktolpk.pp');
+      with T.Dependencies do
+        begin
+          AddUnit('pastree');
+          AddUnit('pscanner');
+          AddUnit('pparser');
+        end;
+
+
+    P.NamespaceMap:='namespaces.lst';
 
 {$ifndef ALLPACKAGES}
     Run;

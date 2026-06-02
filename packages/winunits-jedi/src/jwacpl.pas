@@ -43,7 +43,9 @@
 // $Id: JwaCpl.pas,v 1.10 2007/09/06 14:57:11 marquardt Exp $
 
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaCpl;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -57,8 +59,13 @@ unit JwaCpl;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Winuser, WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaWinUser, JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS}
 
 {$IFNDEF JWA_IMPLEMENTATIONSECTION}
@@ -70,7 +77,7 @@ uses
 //        the messages discussed below.
 //     2) If the applet needs to save information in CONTROL.INI minimize
 //        clutter by using the application name [MMCPL.appletname].
-//     2) If the applet is refrenced in CONTROL.INI under [MMCPL] use
+//     2) If the applet is referenced in CONTROL.INI under [MMCPL] use
 //        the following form:
 //             ...
 //             [MMCPL]
@@ -121,7 +128,7 @@ type
 
   LPCPLINFO = ^CPLINFO;
   {$EXTERNALSYM LPCPLINFO}
-  tagCPLINFO = packed record
+  tagCPLINFO = record
     idIcon: Integer; // icon resource id, provided by CPlApplet()
     idName: Integer; // name string res. id, provided by CPlApplet()
     idInfo: Integer; // info string res. id, provided by CPlApplet()
@@ -136,15 +143,15 @@ type
 
   LPNEWCPLINFOA = ^NEWCPLINFOA;
   {$EXTERNALSYM LPNEWCPLINFOA}
-  tagNEWCPLINFOA = packed record
+  tagNEWCPLINFOA = record
     dwSize: DWORD;                       // similar to the commdlg
     dwFlags: DWORD;
     dwHelpContext: DWORD;                // help context to use
     lData: LONG_PTR;                     // user defined data
     hIcon: HICON; // icon to use, this is owned by CONTROL.EXE (may be deleted)
-    szName: array [0..31] of CHAR;       // short name
-    szInfo: array [0..63] of CHAR;       // long name (status line)
-    szHelpFile: array [0..127] of CHAR;  // path to help file to use
+    szName: array [0..31] of AnsiChar;       // short name
+    szInfo: array [0..63] of AnsiChar;       // long name (status line)
+    szHelpFile: array [0..127] of AnsiChar;  // path to help file to use
   end;
   {$EXTERNALSYM tagNEWCPLINFOA}
   NEWCPLINFOA = tagNEWCPLINFOA;
@@ -154,7 +161,7 @@ type
 
   LPNEWCPLINFOW = ^NEWCPLINFOW;
   {$EXTERNALSYM LPNEWCPLINFOW}
-  tagNEWCPLINFOW = packed record
+  tagNEWCPLINFOW = record
     dwSize: DWORD;                       // similar to the commdlg
     dwFlags: DWORD;
     dwHelpContext: DWORD;                // help context to use
@@ -226,7 +233,7 @@ const
 //  This message is sent for information about each applet.
 
 //  A CPL SHOULD HANDLE BOTH THE CPL_INQUIRE AND CPL_NEWINQUIRE MESSAGES.
-//  The developer must not make any assumptions about the order or dependance
+//  The developer must not make any assumptions about the order or dependence
 //  of CPL inquiries.
 
 //  lParam1 is the applet number to register, a value from 0 to
@@ -270,7 +277,7 @@ const
 // Same as CPL_INQUIRE execpt lParam2 is a pointer to a NEWCPLINFO struct.
 
 //  A CPL SHOULD HANDLE BOTH THE CPL_INQUIRE AND CPL_NEWINQUIRE MESSAGES.
-//  The developer must not make any assumptions about the order or dependance
+//  The developer must not make any assumptions about the order or dependence
 //  of CPL inquiries.
 
   CPL_STARTWPARMSA = 9;

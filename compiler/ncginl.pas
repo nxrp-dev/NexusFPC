@@ -81,7 +81,7 @@ implementation
       aasmbase,aasmdata,
       cgbase,pass_2,
       cpubase,procinfo,
-      ncon,ncal,
+      nadd,ncon,ncal,nutils,
       tgobj,ncgutil,
       cgutils,cgobj,hlcgobj,
       defcmp
@@ -221,6 +221,10 @@ implementation
             in_max_dword,
             in_min_longint,
             in_min_dword,
+            in_min_int64,
+            in_min_qword,
+            in_max_int64,
+            in_max_qword,
             in_min_single,
             in_min_double,
             in_max_single,
@@ -628,7 +632,7 @@ implementation
 
           location_reset(location,LOC_VOID,OS_NO);
 
-{$ifndef cpu64bitalu}
+{$if not defined(cpu64bitalu) } // and not defined(cpuhighleveltarget)}
           if (def_cgsize(left.resultdef) in [OS_64,OS_S64]) and (left.location.loc in [LOC_REGISTER,LOC_CREGISTER,LOC_REFERENCE,LOC_CREFERENCE]) then
             cg64.a_op64_loc(current_asmdata.CurrAsmList,negnotop[inlinenumber],def_cgsize(left.resultdef),left.location)
           else
@@ -753,18 +757,52 @@ implementation
     procedure tcginlinenode.second_abs_long;
       var
         tempreg1, tempreg2: tregister;
+{$if not(defined(cpu64bitalu)) and not defined(cpuhighleveltarget)}
+        tempreg64: tregister64;
+{$endif not(defined(cpu64bitalu)) and not defined(cpuhighleveltarget)}
+        ovloc: tlocation;
       begin
         secondpass(left);
-        hlcg.location_force_reg(current_asmdata.CurrAsmList,left.location,left.resultdef,left.resultdef,true);
+        hlcg.location_force_reg(current_asmdata.CurrAsmList,left.location,left.resultdef,left.resultdef,false);
         location:=left.location;
-        location.register:=hlcg.getintregister(current_asmdata.CurrAsmList,left.resultdef);
+{$if not(defined(cpu64bitalu)) and not defined(cpuhighleveltarget)}
+        if is_64bitint(left.resultdef) then
+          begin
+            location:=left.location;
+            location.register64.reglo:=cg.getintregister(current_asmdata.CurrAsmList,OS_32);
+            location.register64.reghi:=cg.getintregister(current_asmdata.CurrAsmList,OS_32);
+            cg64.a_load64_reg_reg(current_asmdata.CurrAsmList,left.location.register64,location.register64);
+            cg.a_op_const_reg(current_asmdata.CurrAsmList,OP_SAR,OS_32,31,left.location.register64.reghi);
+            tempreg64.reghi:=left.location.register64.reghi;
+            tempreg64.reglo:=left.location.register64.reghi;
+            cg64.a_op64_reg_reg(current_asmdata.CurrAsmList,OP_XOR,def_cgsize(resultdef),tempreg64,location.register64);
+            if cs_check_overflow in current_settings.localswitches then
+              begin
+                cg64.a_op64_reg_reg_reg_checkoverflow(current_asmdata.CurrAsmList,OP_SUB,def_cgsize(resultdef),tempreg64,location.register64,location.register64,true,ovloc);
+                hlcg.g_overflowcheck_loc(current_asmdata.CurrAsmList,Location,resultdef,ovloc);
+              end
+            else
+              cg64.a_op64_reg_reg_reg(current_asmdata.CurrAsmList,OP_SUB,def_cgsize(resultdef),tempreg64,location.register64,location.register64);
+          end
+        else
+{$endif not(defined(cpu64bitalu)) and not defined(cpuhighleveltarget)}
+          begin
+            location.register:=hlcg.getintregister(current_asmdata.CurrAsmList,left.resultdef);
 
-        tempreg1:=hlcg.getintregister(current_asmdata.CurrAsmList,left.resultdef);
-        tempreg2:=hlcg.getintregister(current_asmdata.CurrAsmList,left.resultdef);
+            tempreg1:=hlcg.getintregister(current_asmdata.CurrAsmList,left.resultdef);
+            tempreg2:=hlcg.getintregister(current_asmdata.CurrAsmList,left.resultdef);
 
-        hlcg.a_op_const_reg_reg(current_asmdata.CurrAsmList,OP_SAR,left.resultdef,left.resultdef.size*8-1,left.location.register,tempreg1);
-        hlcg.a_op_reg_reg_reg(current_asmdata.CurrAsmList,OP_XOR,left.resultdef,left.location.register,tempreg1,tempreg2);
-        hlcg.a_op_reg_reg_reg(current_asmdata.CurrAsmlist,OP_SUB,left.resultdef,tempreg1,tempreg2,location.register);
+            hlcg.a_op_const_reg_reg(current_asmdata.CurrAsmList,OP_SAR,left.resultdef,left.resultdef.size*8-1,left.location.register,tempreg1);
+            hlcg.a_op_reg_reg_reg(current_asmdata.CurrAsmList,OP_XOR,left.resultdef,left.location.register,tempreg1,tempreg2);
+
+            if cs_check_overflow in current_settings.localswitches then
+              begin
+                hlcg.a_op_reg_reg_reg_checkoverflow(current_asmdata.CurrAsmlist,OP_SUB,resultdef,tempreg1,tempreg2,location.register,true,ovloc);
+                hlcg.g_overflowcheck_loc(current_asmdata.CurrAsmList,Location,resultdef,ovloc);
+              end
+            else
+              hlcg.a_op_reg_reg_reg(current_asmdata.CurrAsmlist,OP_SUB,resultdef,tempreg1,tempreg2,location.register);
+          end;
       end;
 
 
@@ -959,7 +997,6 @@ implementation
       reverse: boolean;
       opsize: tcgsize;
     begin
-      reverse:=(inlinenumber = in_bsr_x);
       secondpass(left);
 
       opsize:=tcgsize2unsigned[left.location.size];
@@ -968,7 +1005,7 @@ implementation
 
       location_reset(location,LOC_REGISTER,def_cgsize(resultdef));
       location.register:=cg.getintregister(current_asmdata.CurrAsmList,location.size);
-      cg.a_bit_scan_reg_reg(current_asmdata.CurrAsmList,reverse,opsize,location.size,left.location.register,location.register);
+      cg.a_bit_scan_reg_reg(current_asmdata.CurrAsmList,inlinenumber=in_bsr_x,node_not_zero(left),opsize,location.size,left.location.register,location.register);
     end;
 
 

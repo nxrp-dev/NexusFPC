@@ -15,11 +15,17 @@
  *
  *****************************************************************************)
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit scrollbar;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses PalmApi.Palmos, PalmApi.Coretraps, PalmApi.Control;
+{$ELSE FPC_DOTTEDUNITS}
 uses palmos, coretraps, control;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   ScrollBarRegionType = Enum;
@@ -38,7 +44,7 @@ type
 {
     UInt16 usable       :1; // Set if part of ui
     UInt16 visible      :1; // Set if drawn, used internally
-    UInt16 hilighted    :1; // Set if region is hilighted
+    UInt16 highlighted  :1; // Set if region is highlighted
     UInt16 shown        :1; // Set if drawn and maxValue > minValue
     UInt16 activeRegion :4; // ScrollBarRegionType
     UInt16 reserved     :8; // Reserved for future use

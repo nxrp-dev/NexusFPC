@@ -15,7 +15,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CFArray;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -200,7 +202,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CFBase;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CFBase;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 {$ALIGN POWER}
@@ -482,7 +488,7 @@ function CFArrayCreateMutable( allocator: CFAllocatorRef; capacity: CFIndex; {co
   @param capacity A hint about the number of values that will be held
     by the CFArray. Pass 0 for no hint. The implementation may
     ignore this hint, or may use it to optimize various
-    operations. An array's actual capacity is only limited by 
+    operations. An array's actual capacity is only limited by
     address space and available memory constraints).
 		This parameter must be greater than or equal
 		to the count of the array which is to be copied, or the
@@ -604,7 +610,7 @@ procedure CFArrayGetValues( theArray: CFArrayRef; range: CFRange; {const} values
 		pointer to a function of the correct prototype, the behavior
 		is undefined. If there are values in the range which the
 		applier function does not expect or cannot properly apply
-		to, the behavior is undefined. 
+		to, the behavior is undefined.
 	@param context A pointer-sized user-defined value, which is passed
 		as the second parameter to the applier function, but is
 		otherwise unused by this function. If the context is not

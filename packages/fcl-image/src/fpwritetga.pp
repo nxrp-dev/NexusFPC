@@ -14,11 +14,17 @@
 }
 {*****************************************************************************}
 {$mode objfpc}{$h+}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit FPWriteTGA;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
-uses FPImage, classes, sysutils;
+{$IFDEF FPC_DOTTEDUNITS}
+uses FpImage, System.Classes, System.SysUtils;
+{$ELSE FPC_DOTTEDUNITS}
+uses FpImage, classes, sysutils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
 
@@ -31,7 +37,11 @@ type
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses FpImage.Common.Targa;
+{$ELSE FPC_DOTTEDUNITS}
 uses targacmn;
+{$ENDIF FPC_DOTTEDUNITS}
 
 function TFPWriterTarga.SaveHeader(Stream:TStream; Img : TFPCustomImage):boolean;
 
@@ -41,6 +51,9 @@ var
 
 begin
   Result:=False;
+  if (Img.Width <= 0) or (Img.Width > 65535) or
+     (Img.Height <= 0) or (Img.Height > 65535) then
+    raise FPImageException.Create('TGA dimensions must be between 1 and 65535');
   ID:=Img.Extra[KeyIdentification];
   FillChar(Header,SizeOf(Header),0);
   With Header do

@@ -18,20 +18,26 @@
 //  Microsoft Windows Mobile 6.0 for PocketPC SDK.
 //
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit MsgQueue;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$CALLING cdecl}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses WinApi.Windows;
+{$ELSE FPC_DOTTEDUNITS}
 uses Windows;
+{$ENDIF FPC_DOTTEDUNITS}
 
 // Declarations of constants and structures transferred from winbase.h.
 
 const
       MSGQUEUE_NOPRECOMMIT            = $00000001;
       MSGQUEUE_ALLOW_BROKEN           = $00000002;
-      
+
       MSGQUEUE_MSGALERT               = $00000001;
 
 
@@ -61,7 +67,7 @@ type
      PMSGQUEUEINFO = ^MSGQUEUEINFO;
      LPMSGQUEUEINFO = ^MSGQUEUEINFO;
 
-     
+
 function CreateMsgQueue(lpName:LPCWSTR; lpOptions:LPMSGQUEUEOPTIONS):HANDLE; external KernelDLL name 'CreateMsgQueue'; // index 111
 function OpenMsgQueue(hSrcProc:HANDLE; hMsgQ:HANDLE; lpOptions:LPMSGQUEUEOPTIONS):HANDLE; external KernelDLL name 'OpenMsgQueue'; // index 116
 function ReadMsgQueue(hMsgQ:HANDLE;

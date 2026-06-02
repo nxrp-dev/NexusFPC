@@ -1,3 +1,4 @@
+{%MainUnit sysutils.pp}
 {
     *********************************************************************
     Copyright (C) 2002 by Florian Klaempfl
@@ -14,9 +15,9 @@
 type
   TUnicodeCharArray = array of UnicodeChar;
 
-function Trim(const S: unicodestring): unicodestring;
-function TrimLeft(const S: unicodestring): unicodestring;
-function TrimRight(const S: unicodestring): unicodestring;
+function Trim(const S: unicodestring): unicodestring; {$ifdef SYSUTILSINLINE}inline;{$endif}
+function TrimLeft(const S: unicodestring): unicodestring; {$ifdef SYSUTILSINLINE}inline;{$endif}
+function TrimRight(const S: unicodestring): unicodestring; {$ifdef SYSUTILSINLINE}inline;{$endif}
 
 function UpperCase(const s: UnicodeString): UnicodeString; overload;
 function LowerCase(const s: UnicodeString): UnicodeString; overload;
@@ -69,4 +70,8 @@ function WideStringOf(const Value: TBytes): UnicodeString;
 function ByteLength(const S: UnicodeString): Integer;
 function UnicodeStringReplace(const S, OldPattern, NewPattern: UnicodeString;  Flags: TReplaceFlags): UnicodeString;
 function UnicodeStringReplace(const S, OldPattern, NewPattern: UnicodeString;  Flags: TReplaceFlags; Out aCount : Integer): UnicodeString;
+function StringReplace(const S, OldPattern, NewPattern: UnicodeString;  Flags: TReplaceFlags): UnicodeString;
+function StringReplace(const S, OldPattern, NewPattern: UnicodeString;  Flags: TReplaceFlags; Out aCount : Integer): UnicodeString;
+// Needed to avoid "cannot determine overload"
+function StringReplace(const S : UnicodeString; OldPattern, NewPattern: WideChar;  Flags: TReplaceFlags): UnicodeString;
 

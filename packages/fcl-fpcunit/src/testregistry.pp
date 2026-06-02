@@ -12,16 +12,23 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit testregistry;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}
 {$h+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  FpcUnit.Test, FpcUnit.Decorator;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   fpcunit, testdecorator;
-  
+{$ENDIF FPC_DOTTEDUNITS}
+
 type
 
   TTestDecoratorClass = class of TTestDecorator;
@@ -31,11 +38,11 @@ procedure RegisterTest(ATestClass: TTestCaseClass); overload;
 procedure RegisterTest(const ASuitePath: String; ATestClass: TTestCaseClass); overload;
 procedure RegisterTest(const ASuitePath: String; ATest: TTest); overload;
 
-procedure RegisterTests(ATests: Array of TTestCaseClass);
-procedure RegisterTests(const ASuitePath: String; ATests: Array of TTestCaseClass);
+procedure RegisterTests(ATests: Array of TTestCaseClass); overload;
+procedure RegisterTests(const ASuitePath: String; ATests: Array of TTestCaseClass); overload;
 
-procedure RegisterTest(aSuite: TTestSuite);
-procedure RegisterTest(const aSuitePath : String; aSuite: TTestSuite);
+procedure RegisterTest(aSuite: TTestSuite); overload;
+procedure RegisterTest(const aSuitePath : String; aSuite: TTestSuite); overload;
 
 
 procedure RegisterTestDecorator(ADecoratorClass: TTestDecoratorClass; ATestClass: TTestCaseClass);
@@ -45,9 +52,15 @@ function NumberOfRegisteredTests: longint;
 function GetTestRegistry: TTestSuite;
 
 implementation
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes
+  ;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes
   ;
+{$ENDIF FPC_DOTTEDUNITS}
 
 var
   FTestRegistry: TTestSuite;

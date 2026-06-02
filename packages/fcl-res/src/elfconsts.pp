@@ -13,7 +13,9 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit elfconsts;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$MODE OBJFPC}
 
@@ -23,7 +25,7 @@ type
   TElfMachineType = (emtnone, emtsparc, emti386, emtm68k, emtppc, emtppc64,
                      emtarm, emtarmeb, emtia64, emtx86_64, emtalpha,
                      emtmips, emtmipsel, emtppc64le, emtaarch64,
-                     emtriscv32, emtriscv64, emtloongarch64);
+                     emtriscv32, emtriscv64, emtloongarch64, emtsparc64);
 const
   ELFMAGIC     = chr($7f)+'ELF';
 
@@ -69,6 +71,7 @@ const
   EM_PPC64       = 21;
   EM_ARM         = 40;
 //  EM_OLD_ALPHA       = 41;
+  EM_SPARCV9     = 43; // Sparc 64-bit
   EM_IA_64       = 50;
   EM_MIPS_X      = 51; // GNU readelf returns machine name "Stanford MIPS-X"
   EM_X86_64      = 62;
@@ -76,7 +79,7 @@ const
   EM_ALPHA       = $9026; //unofficial, but used by gnu toolchain
   EM_RISCV       = 243;
   EM_LOONGARCH   = 258;
-  
+
   //machine-specific flags
   EF_IA_64_ABI64 = $10;  //wow, this is really a 64-bit object file!
 
@@ -121,7 +124,7 @@ const
   SHF_EXECINSTR =         4;
   SHF_MASKOS    = $0f000000;
   SHF_MASKPROC  = $f0000000;
-  
+
   //symbol bindings
   STB_LOCAL  =  0;
   STB_GLOBAL =  1;
@@ -130,7 +133,7 @@ const
   STB_HIOS   = 12;
   STB_LOPROC = 13;
   STB_HIPROC = 15;
-  
+
   //symbol types
   STT_NOTYPE         =  0;
   STT_OBJECT         =  1;
@@ -154,6 +157,7 @@ const
   R_AARCH64_ABS64 = 257;
   R_68K_32        =   1;
   R_SPARC_32      =   3;
+  R_SPARC_64      =   32;
   R_ALPHA_REFQUAD =   2;
   R_IA64_DIR64LSB = $27;
   R_MIPS_32       =   2;
@@ -165,7 +169,7 @@ const
   //fpc resource constants
   RsrcSectName    = 'fpc.resources';
   HandlesSectName = 'fpc.reshandles';
-  
+
   RSRCSECT_IDX = 1;
   HANDLESECT_IDX = 2;
 

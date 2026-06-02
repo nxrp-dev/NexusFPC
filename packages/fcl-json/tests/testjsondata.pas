@@ -14,7 +14,8 @@
  **********************************************************************}
 {$mode objfpc}
 {$h+}
-unit testjsondata; 
+{$codepage utf8}
+unit testjsondata;
 
 interface
 
@@ -42,9 +43,9 @@ type
     Procedure TestJSONStringToString;
     Procedure TestStringToJSONString;
   end;
-  
+
   { TTestJSON }
-  
+
   TTestJSON = Class(TTestCase)
   private
   Protected
@@ -62,7 +63,7 @@ type
     Procedure TestAsString(J : TJSONData; Expected : String; ExpectError : boolean = False);
     Procedure TestAsFloat(J : TJSONData; Expected : TJSONFloat; ExpectError : boolean = False);
   end;
-  
+
   { TTestNull }
 
   TTestNull = class(TTestJSON)
@@ -72,7 +73,7 @@ type
     Procedure TestMyClone;
     Procedure TestFormat;
   end;
-  
+
   { TTestBoolean }
 
   TTestBoolean = class(TTestJSON)
@@ -83,7 +84,7 @@ type
     Procedure TestMyClone;
     Procedure TestFormat;
   end;
-  
+
   { TTestInteger }
 
   TTestInteger = class(TTestJSON)
@@ -158,7 +159,7 @@ type
     Procedure TestMyClone;
     Procedure TestFormat;
   end;
-  
+
   { TTestArray }
 
   TTestArray = class(TTestJSON)
@@ -208,7 +209,7 @@ type
     Procedure TestFormat;
     Procedure TestFormatNil;
   end;
-  
+
   { TTestObject }
 
   TTestObject = class(TTestJSON)
@@ -266,6 +267,7 @@ type
     Procedure TestNonExistingAccessError;
     Procedure TestFormat;
     Procedure TestFormatNil;
+    Procedure TestFormatForceLF;
     Procedure TestFind;
     Procedure TestIfFind;
     Procedure TestDuplicate;
@@ -1100,7 +1102,7 @@ Var
   B : Boolean;
   AssignOK : Boolean;
   Msg : String;
-  
+
 begin
   AssignOK:=False;
   Try
@@ -1230,7 +1232,7 @@ end;
 
 Procedure TTestJSON.TestAsString(J: TJSONData; Expected: String;
   ExpectError: boolean);
-  
+
 Var
   S : String;
   AssignOK : Boolean;
@@ -1264,7 +1266,7 @@ end;
 
 Procedure TTestJSON.TestAsFloat(J: TJSONData; Expected: TJSONFloat;
   ExpectError: boolean);
-  
+
 Var
   F : TJSONFloat;
   AssignOK : Boolean;
@@ -1519,7 +1521,7 @@ begin
   try
     For I:=0 to 31 do
       begin
-      J.AsString:='-->'+Char(I)+'<--';
+      J.AsString:='-->'+AnsiChar(I)+'<--';
       Case I of
        8  : T:='\b';
        9  : T:='\t';
@@ -1529,7 +1531,7 @@ begin
       else
         T:='\u'+HexStr(I,4);
       end;
-      AssertEquals('Control char','"-->'+T+'<--"',J.AsJSON);
+      AssertEquals('Control AnsiChar','"-->'+T+'<--"',J.AsJSON);
       end;
   finally
     FreeAndNil(J);
@@ -2058,7 +2060,7 @@ procedure TTestFloat.DoTest(F: TJSONFloat);
 Var
   J : TJSONFloatNumber;
   S : String;
-  
+
 begin
   Str(F,S);
   If S[1]=' ' then
@@ -2162,6 +2164,7 @@ begin
   F:=TJSONFloatNumber.Create(1.23);
   try
     AssertEquals('FormatJSON equals asJSON',F.AsJSON,F.FormatJSON);
+    AssertEquals('Formatjson with float formatting','1.23',F.FormatJSON([foFormatFloat]));
   finally
     FreeAndNil(F);
   end;
@@ -2222,7 +2225,7 @@ Var
   J : TJSONArray;
 
 begin
-  J:=TJSonArray.Create([Pchar(S)]);
+  J:=TJSonArray.Create([PAnsiChar(S)]);
   try
     TestJSONType(J,jtArray);
     TestItemCount(J,1);
@@ -2239,7 +2242,7 @@ procedure TTestArray.TestCreateStrings;
 Const
   S = 'A string';
   T = 'B string';
-  
+
 Var
   J : TJSONArray;
 
@@ -2308,7 +2311,7 @@ Const
 Var
   J : TJSONArray;
   r : String;
-  
+
 begin
   J:=TJSonArray.Create([S]);
   try
@@ -2433,7 +2436,7 @@ procedure TTestArray.TestCreateObject;
 Var
   J : TJSONArray;
   O : TObject;
-  
+
 begin
   J:=Nil;
   try
@@ -2455,7 +2458,7 @@ procedure TTestArray.TestCreateNilPointer;
 Var
   J : TJSONArray;
   P : Pointer;
-  
+
 begin
   J:=Nil;
   P:=Nil;
@@ -2472,7 +2475,7 @@ procedure TTestArray.TestCreatePointer;
 Var
   J : TJSONArray;
   P : Pointer;
-  
+
 begin
   J:=Nil;
   P:=@Self;
@@ -2625,7 +2628,7 @@ procedure TTestArray.TestAddString;
 Var
   J : TJSONArray;
   S : String;
-  
+
 begin
   S:='A string';
   J:=TJSonArray.Create;
@@ -2925,7 +2928,7 @@ procedure TTestArray.TestAddObject;
 Const
   A = 'a';
   B = 'b';
-  
+
 Var
   J : TJSONArray;
   J2 : TJSONObject;
@@ -3189,7 +3192,7 @@ procedure TTestObject.TestAddBoolean(B : Boolean);
 
 Const
   A = 'a';
-  
+
 begin
   B:=True;
   J.Add(A,B);
@@ -3315,7 +3318,7 @@ procedure TTestObject.TestDelete;
 Const
   A = 'a';
   B = 'b';
-  
+
 begin
   J.Add(A,0);
   J.Add(B,1);
@@ -3335,7 +3338,7 @@ Const
   A = 'a';
   B = 'b';
   C = 'c';
-  
+
 Var
   I : TJSONData;
 
@@ -3469,6 +3472,21 @@ begin
   AssertEquals('FormatJSON, single line',J.AsJSON,J.FormatJSON([foSingleLineObject],1));
 end;
 
+procedure TTestObject.TestFormatForceLF;
+Var
+  O : TJSONObject;
+begin
+  if sLineBreak=#10 then
+    Ignore('Not relevant when linebreak is LF');
+  O:=TJSONObject.Create(['x',1,'y',2]);
+  try
+    TestJSON(O,'{ "x" : 1, "y" : 2 }');
+    AssertEquals('FormatJSON, forced LF','{'+#10+'  "x" : 1,'+#10+'  "y" : 2'+#10+'}',O.FormatJSON([foForceLF]));
+  finally
+    O.Free;
+  end;
+end;
+
 procedure TTestObject.TestFind;
 
 Const
@@ -3573,7 +3591,7 @@ Var
   O : TJSONObject;
 
 begin
-  O:=TJSONObject.Create([A,Pchar(S)]);
+  O:=TJSONObject.Create([A,PAnsiChar(S)]);
   try
     TestJSONType(O,jtObject);
     TestItemCount(O,1);
@@ -3596,7 +3614,7 @@ Var
 
 begin
   TJSONObject.UnQuotedMemberNames:=True;
-  O:=TJSONObject.Create([A,Pchar(S)]);
+  O:=TJSONObject.Create([A,PAnsiChar(S)]);
   try
     TestJSONType(O,jtObject);
     TestItemCount(O,1);
@@ -3903,7 +3921,7 @@ procedure TTestObject.TestCreateJSONObject;
 
 Const
   A = 'A';
-  
+
 Var
   O : TJSONObject;
 
@@ -4104,6 +4122,7 @@ Var
 
 begin
   S:='JSONStringToString('''+Src+''')='''+Dest+'''';
+  Flush(output);
   AssertEquals(S,Dest,JSONStringToString(Src));
 end;
 

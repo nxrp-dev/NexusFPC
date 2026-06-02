@@ -2,7 +2,7 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses {$ifdef unix}cthreads,{$endif} fpmkunit;
 
 Var
   P : TPackage;
@@ -24,7 +24,7 @@ begin
     P.Description := 'a project that aims to develop a reliable, stable and fast graphics system that works everywhere.';
     P.NeedLibC:= true;  // true for headers that indirectly link to libc?
     P.OSes := [beos,haiku,freebsd,solaris,netbsd,openbsd,linux,dragonfly];
-   
+
     // note that this package may be severely outdated. Header copyright
     // lists 1999, and ggi itself is still developed, and major releases
     // have happened since?
@@ -45,6 +45,9 @@ begin
 
     P.ExamplePath.Add('examples');
     P.Targets.AddExampleProgram('ggi1.pp');
+
+
+    P.NamespaceMap:='namespaces.lst';
 
 {$ifndef ALLPACKAGES}
     Run;

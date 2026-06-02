@@ -1,17 +1,17 @@
 {
      File:       AE/AEPackObject.h
- 
+
      Contains:   AppleEvents object packing Interfaces.
- 
-    
- 
+
+
+
      Copyright:  © 1991-2008 by Apple Computer, Inc., all rights reserved
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 {
     Modified for use with Free Pascal
@@ -27,7 +27,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit AEPackObject;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -212,7 +214,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.AEDataModel,MacOsApi.AppleEvents;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,AEDataModel,AppleEvents;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -224,10 +230,10 @@ uses MacTypes,AEDataModel,AppleEvents;
 { These are the object packing routines.  }
 {
  *  CreateOffsetDescriptor()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.2
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -239,10 +245,10 @@ function CreateOffsetDescriptor( theOffset: SIGNEDLONG; var theDescriptor: AEDes
 
 {
  *  CreateCompDescriptor()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.2
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -254,10 +260,10 @@ function CreateCompDescriptor( comparisonOperator: DescType; var operand1: AEDes
 
 {
  *  CreateLogicalDescriptor()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.2
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -269,10 +275,10 @@ function CreateLogicalDescriptor( var theLogicalTerms: AEDescList; theLogicOpera
 
 {
  *  CreateObjSpecifier()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.2
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -284,10 +290,10 @@ function CreateObjSpecifier( desiredClass: DescType; var theContainer: AEDesc; k
 
 {
  *  CreateRangeDescriptor()
- *  
+ *
  *  Mac OS X threading:
  *    Thread safe since version 10.2
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in ApplicationServices.framework
  *    CarbonLib:        in CarbonLib 1.0 and later

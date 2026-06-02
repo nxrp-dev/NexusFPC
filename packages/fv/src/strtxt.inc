@@ -16,7 +16,7 @@
 
 type standard_string=record
        nr:word;
-       text:Pchar;
+       text:PAnsiChar;
      end;
 
 const standard_string_count=107;
@@ -91,7 +91,7 @@ const standard_string_count=107;
           (nr:sReplace;text:'Replace'),
           (nr:sReplaceFile;text:'Replace file?'#13#10#13#3'%s'),
           (nr:sReplaceNotPossible;text:'Wordwrap on:  Replace not possible in current margins when at end of line.'),
-          (nr:sReplaceThisOccurence;text:'Replace this occurrence?'),
+          (nr:sReplaceThisOccurrence;text:'Replace this occurrence?'),
           (nr:sRightMargin;text:'Right Margin'),
           (nr:sSaveAs;text:'Save As'),
           (nr:sScrollbarIcons;text:'Scroll bar icons'),

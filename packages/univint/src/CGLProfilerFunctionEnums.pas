@@ -18,7 +18,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CGLProfilerFunctionEnums;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -203,7 +205,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -937,11 +943,11 @@ const
 	{ APPLE_flush_buffer_range }
 	kCGLFEglBufferParameteriAPPLE = 717;
 	kCGLFEglFlushMappedBufferRangeAPPLE = 718;
-	
+
 	{ GL_EXT_gpu_program_parameters }
 	kCGLFEglProgramEnvParameters4fvEXT = 719;
 	kCGLFEglProgramLocalParameters4fvEXT = 720;
-	
+
 	{ GL_APPLE_object_purgeable }
 	kCGLFEglObjectPurgeableAPPLE = 721;
 	kCGLFEglObjectUnpurgeableAPPLE = 722;

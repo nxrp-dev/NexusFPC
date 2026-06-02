@@ -2,7 +2,7 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses {$ifdef unix}cthreads,{$endif} fpmkunit;
 
 Var
   P : TPackage;
@@ -49,11 +49,14 @@ begin
     T:=P.Targets.AddUnit('sqlite.pp');
     T:=P.Targets.AddUnit('sqlite3ext.pp');
       T.Dependencies.AddUnit('sqlite');
- 
+
     P.ExamplePath.Add('tests/');
     P.Targets.AddExampleProgram('testapiv3x.pp');
     P.Targets.AddExampleProgram('test.pas');
     // 'testapiv3x.README
+
+
+    P.NamespaceMap:='namespaces.lst';
 
 {$ifndef ALLPACKAGES}
     Run;

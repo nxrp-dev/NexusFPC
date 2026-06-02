@@ -43,7 +43,9 @@
 // $Id: JwaAuthif.pas,v 1.8 2007/09/05 11:58:48 dezipaitor Exp $
 
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaAuthif;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -57,8 +59,13 @@ unit JwaAuthif;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Wintype;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaWinType;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$ENDIF JWA_OMIT_SECTIONS}
 
@@ -424,7 +431,7 @@ type
     pOutAttrs: PRADIUS_ATTRIBUTE; pfAction: PRADIUS_ACTION): DWORD; stdcall;
   {$EXTERNALSYM PRADIUS_EXTENSION_PROCESS_EX}
   PRadiusExtensionProcessEx = PRADIUS_EXTENSION_PROCESS_EX;
-  
+
 //
 // RadiusExtensionFreeAttributes must be defined if RadiusExtensionProcessEx
 // is defined. It is used to free the attributes returned by
@@ -558,7 +565,7 @@ type
   RADIUS_ATTRIBUTE_ARRAY = _RADIUS_ATTRIBUTE_ARRAY;
   {$EXTERNALSYM RADIUS_ATTRIBUTE_ARRAY}
   TRadiusAttributeArray = RADIUS_ATTRIBUTE_ARRAY;
-  PRadiusAttributeArray = PRADIUS_ATTRIBUTE_ARRAY;  
+  PRadiusAttributeArray = PRADIUS_ATTRIBUTE_ARRAY;
 
 //
 // Struct used to exchange information with the extension during request
@@ -597,7 +604,7 @@ type
 
     //
     // Returns the attributes received in the RADIUS request and any internal
-    // attributes describing the request state. The extenstion can modify the
+    // attributes describing the request state. The extension can modify the
     // request attributes. For example, when IAS is acting as a RADIUS proxy, an
     // extension could filter which attributes are forwarded to a remote RADIUS
     // server.

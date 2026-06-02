@@ -1,13 +1,19 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit googlepagespeedonline;
+{$ENDIF FPC_DOTTEDUNITS}
 {$MODE objfpc}
 {$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils, System.Classes, GoogleApi.Service, FpWeb.Rest.Base, GoogleApi.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses sysutils, classes, googleservice, restbase, googlebase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
-  
+
   //Top-level schema types
   TPagespeedApiFormatStringV2 = Class;
   TPagespeedApiImageV2 = Class;
@@ -28,11 +34,11 @@ type
   TPagespeedApiFormatStringV2TypeargsItemTyperectsArray = Array of TPagespeedApiFormatStringV2TypeargsItemTyperectsItem;
   TPagespeedApiFormatStringV2TypeargsItemTypesecondary_rectsArray = Array of TPagespeedApiFormatStringV2TypeargsItemTypesecondary_rectsItem;
   TPagespeedApiFormatStringV2TypeargsArray = Array of TPagespeedApiFormatStringV2TypeargsItem;
-  
+
   { --------------------------------------------------------------------
     TPagespeedApiFormatStringV2TypeargsItemTyperectsItem
     --------------------------------------------------------------------}
-  
+
   TPagespeedApiFormatStringV2TypeargsItemTyperectsItem = Class(TGoogleBaseObject)
   Private
     Fheight : integer;
@@ -53,11 +59,11 @@ type
     Property width : integer Index 24 Read Fwidth Write Setwidth;
   end;
   TPagespeedApiFormatStringV2TypeargsItemTyperectsItemClass = Class of TPagespeedApiFormatStringV2TypeargsItemTyperectsItem;
-  
+
   { --------------------------------------------------------------------
     TPagespeedApiFormatStringV2TypeargsItemTypesecondary_rectsItem
     --------------------------------------------------------------------}
-  
+
   TPagespeedApiFormatStringV2TypeargsItemTypesecondary_rectsItem = Class(TGoogleBaseObject)
   Private
     Fheight : integer;
@@ -78,11 +84,11 @@ type
     Property width : integer Index 24 Read Fwidth Write Setwidth;
   end;
   TPagespeedApiFormatStringV2TypeargsItemTypesecondary_rectsItemClass = Class of TPagespeedApiFormatStringV2TypeargsItemTypesecondary_rectsItem;
-  
+
   { --------------------------------------------------------------------
     TPagespeedApiFormatStringV2TypeargsItem
     --------------------------------------------------------------------}
-  
+
   TPagespeedApiFormatStringV2TypeargsItem = Class(TGoogleBaseObject)
   Private
     Fkey : String;
@@ -111,11 +117,11 @@ type
     Property value : String Index 32 Read Fvalue Write Setvalue;
   end;
   TPagespeedApiFormatStringV2TypeargsItemClass = Class of TPagespeedApiFormatStringV2TypeargsItem;
-  
+
   { --------------------------------------------------------------------
     TPagespeedApiFormatStringV2
     --------------------------------------------------------------------}
-  
+
   TPagespeedApiFormatStringV2 = Class(TGoogleBaseObject)
   Private
     Fargs : TPagespeedApiFormatStringV2TypeargsArray;
@@ -134,11 +140,11 @@ type
     Property format : String Index 8 Read Fformat Write Setformat;
   end;
   TPagespeedApiFormatStringV2Class = Class of TPagespeedApiFormatStringV2;
-  
+
   { --------------------------------------------------------------------
     TPagespeedApiImageV2Typepage_rect
     --------------------------------------------------------------------}
-  
+
   TPagespeedApiImageV2Typepage_rect = Class(TGoogleBaseObject)
   Private
     Fheight : integer;
@@ -159,11 +165,11 @@ type
     Property width : integer Index 24 Read Fwidth Write Setwidth;
   end;
   TPagespeedApiImageV2Typepage_rectClass = Class of TPagespeedApiImageV2Typepage_rect;
-  
+
   { --------------------------------------------------------------------
     TPagespeedApiImageV2
     --------------------------------------------------------------------}
-  
+
   TPagespeedApiImageV2 = Class(TGoogleBaseObject)
   Private
     Fdata : String;
@@ -190,11 +196,11 @@ type
     Property width : integer Index 40 Read Fwidth Write Setwidth;
   end;
   TPagespeedApiImageV2Class = Class of TPagespeedApiImageV2;
-  
+
   { --------------------------------------------------------------------
     TResultTypeformattedResultsTyperuleResults
     --------------------------------------------------------------------}
-  
+
   TResultTypeformattedResultsTyperuleResults = Class(TGoogleBaseObject)
   Private
   Protected
@@ -204,11 +210,11 @@ type
   Published
   end;
   TResultTypeformattedResultsTyperuleResultsClass = Class of TResultTypeformattedResultsTyperuleResults;
-  
+
   { --------------------------------------------------------------------
     TResultTypeformattedResults
     --------------------------------------------------------------------}
-  
+
   TResultTypeformattedResults = Class(TGoogleBaseObject)
   Private
     Flocale : String;
@@ -223,11 +229,11 @@ type
     Property ruleResults : TResultTypeformattedResultsTyperuleResults Index 8 Read FruleResults Write SetruleResults;
   end;
   TResultTypeformattedResultsClass = Class of TResultTypeformattedResults;
-  
+
   { --------------------------------------------------------------------
     TResultTypepageStats
     --------------------------------------------------------------------}
-  
+
   TResultTypepageStats = Class(TGoogleBaseObject)
   Private
     FcssResponseBytes : String;
@@ -275,11 +281,11 @@ type
     Property totalRequestBytes : String Index 96 Read FtotalRequestBytes Write SettotalRequestBytes;
   end;
   TResultTypepageStatsClass = Class of TResultTypepageStats;
-  
+
   { --------------------------------------------------------------------
     TResultTyperuleGroups
     --------------------------------------------------------------------}
-  
+
   TResultTyperuleGroups = Class(TGoogleBaseObject)
   Private
   Protected
@@ -289,11 +295,11 @@ type
   Published
   end;
   TResultTyperuleGroupsClass = Class of TResultTyperuleGroups;
-  
+
   { --------------------------------------------------------------------
     TResultTypeversion
     --------------------------------------------------------------------}
-  
+
   TResultTypeversion = Class(TGoogleBaseObject)
   Private
     Fmajor : integer;
@@ -308,11 +314,11 @@ type
     Property minor : integer Index 8 Read Fminor Write Setminor;
   end;
   TResultTypeversionClass = Class of TResultTypeversion;
-  
+
   { --------------------------------------------------------------------
     TResult
     --------------------------------------------------------------------}
-  
+
   TResult = Class(TGoogleBaseObject)
   Private
     FformattedResults : TResultTypeformattedResults;
@@ -355,14 +361,14 @@ type
     Property version : TResultTypeversion Index 72 Read Fversion Write Setversion;
   end;
   TResultClass = Class of TResult;
-  
+
   { --------------------------------------------------------------------
     TPagespeedapiResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TPagespeedapiResource, method Runpagespeed
-  
+
   TPagespeedapiRunpagespeedOptions = Record
     filter_third_party_resources : boolean;
     locale : String;
@@ -371,7 +377,7 @@ type
     strategy : String;
     url : String;
   end;
-  
+
   TPagespeedapiResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -379,12 +385,12 @@ type
     Function Runpagespeed(AQuery : string  = '') : TResult;
     Function Runpagespeed(AQuery : TPagespeedapirunpagespeedOptions) : TResult;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TPagespeedonlineAPI
     --------------------------------------------------------------------}
-  
+
   TPagespeedonlineAPI = Class(TGoogleAPI)
   Private
     FPagespeedapiInstance : TPagespeedapiResource;
@@ -426,7 +432,7 @@ implementation
   --------------------------------------------------------------------}
 
 
-Procedure TPagespeedApiFormatStringV2TypeargsItemTyperectsItem.Setheight(AIndex : Integer; const AValue : integer); 
+Procedure TPagespeedApiFormatStringV2TypeargsItemTyperectsItem.Setheight(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fheight=AValue) then exit;
@@ -436,7 +442,7 @@ end;
 
 
 
-Procedure TPagespeedApiFormatStringV2TypeargsItemTyperectsItem.Setleft(AIndex : Integer; const AValue : integer); 
+Procedure TPagespeedApiFormatStringV2TypeargsItemTyperectsItem.Setleft(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fleft=AValue) then exit;
@@ -446,7 +452,7 @@ end;
 
 
 
-Procedure TPagespeedApiFormatStringV2TypeargsItemTyperectsItem.Settop(AIndex : Integer; const AValue : integer); 
+Procedure TPagespeedApiFormatStringV2TypeargsItemTyperectsItem.Settop(AIndex : Integer; const AValue : integer);
 
 begin
   If (Ftop=AValue) then exit;
@@ -456,7 +462,7 @@ end;
 
 
 
-Procedure TPagespeedApiFormatStringV2TypeargsItemTyperectsItem.Setwidth(AIndex : Integer; const AValue : integer); 
+Procedure TPagespeedApiFormatStringV2TypeargsItemTyperectsItem.Setwidth(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fwidth=AValue) then exit;
@@ -473,7 +479,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPagespeedApiFormatStringV2TypeargsItemTypesecondary_rectsItem.Setheight(AIndex : Integer; const AValue : integer); 
+Procedure TPagespeedApiFormatStringV2TypeargsItemTypesecondary_rectsItem.Setheight(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fheight=AValue) then exit;
@@ -483,7 +489,7 @@ end;
 
 
 
-Procedure TPagespeedApiFormatStringV2TypeargsItemTypesecondary_rectsItem.Setleft(AIndex : Integer; const AValue : integer); 
+Procedure TPagespeedApiFormatStringV2TypeargsItemTypesecondary_rectsItem.Setleft(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fleft=AValue) then exit;
@@ -493,7 +499,7 @@ end;
 
 
 
-Procedure TPagespeedApiFormatStringV2TypeargsItemTypesecondary_rectsItem.Settop(AIndex : Integer; const AValue : integer); 
+Procedure TPagespeedApiFormatStringV2TypeargsItemTypesecondary_rectsItem.Settop(AIndex : Integer; const AValue : integer);
 
 begin
   If (Ftop=AValue) then exit;
@@ -503,7 +509,7 @@ end;
 
 
 
-Procedure TPagespeedApiFormatStringV2TypeargsItemTypesecondary_rectsItem.Setwidth(AIndex : Integer; const AValue : integer); 
+Procedure TPagespeedApiFormatStringV2TypeargsItemTypesecondary_rectsItem.Setwidth(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fwidth=AValue) then exit;
@@ -520,7 +526,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPagespeedApiFormatStringV2TypeargsItem.Setkey(AIndex : Integer; const AValue : String); 
+Procedure TPagespeedApiFormatStringV2TypeargsItem.Setkey(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkey=AValue) then exit;
@@ -530,7 +536,7 @@ end;
 
 
 
-Procedure TPagespeedApiFormatStringV2TypeargsItem.Setrects(AIndex : Integer; const AValue : TPagespeedApiFormatStringV2TypeargsItemTyperectsArray); 
+Procedure TPagespeedApiFormatStringV2TypeargsItem.Setrects(AIndex : Integer; const AValue : TPagespeedApiFormatStringV2TypeargsItemTyperectsArray);
 
 begin
   If (Frects=AValue) then exit;
@@ -540,7 +546,7 @@ end;
 
 
 
-Procedure TPagespeedApiFormatStringV2TypeargsItem.Setsecondary_rects(AIndex : Integer; const AValue : TPagespeedApiFormatStringV2TypeargsItemTypesecondary_rectsArray); 
+Procedure TPagespeedApiFormatStringV2TypeargsItem.Setsecondary_rects(AIndex : Integer; const AValue : TPagespeedApiFormatStringV2TypeargsItemTypesecondary_rectsArray);
 
 begin
   If (Fsecondary_rects=AValue) then exit;
@@ -550,7 +556,7 @@ end;
 
 
 
-Procedure TPagespeedApiFormatStringV2TypeargsItem.Set_type(AIndex : Integer; const AValue : String); 
+Procedure TPagespeedApiFormatStringV2TypeargsItem.Set_type(AIndex : Integer; const AValue : String);
 
 begin
   If (F_type=AValue) then exit;
@@ -560,7 +566,7 @@ end;
 
 
 
-Procedure TPagespeedApiFormatStringV2TypeargsItem.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TPagespeedApiFormatStringV2TypeargsItem.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -582,7 +588,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TPagespeedApiFormatStringV2TypeargsItem.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TPagespeedApiFormatStringV2TypeargsItem.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -602,7 +608,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPagespeedApiFormatStringV2.Setargs(AIndex : Integer; const AValue : TPagespeedApiFormatStringV2TypeargsArray); 
+Procedure TPagespeedApiFormatStringV2.Setargs(AIndex : Integer; const AValue : TPagespeedApiFormatStringV2TypeargsArray);
 
 begin
   If (Fargs=AValue) then exit;
@@ -612,7 +618,7 @@ end;
 
 
 
-Procedure TPagespeedApiFormatStringV2.Setformat(AIndex : Integer; const AValue : String); 
+Procedure TPagespeedApiFormatStringV2.Setformat(AIndex : Integer; const AValue : String);
 
 begin
   If (Fformat=AValue) then exit;
@@ -623,7 +629,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TPagespeedApiFormatStringV2.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TPagespeedApiFormatStringV2.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -642,7 +648,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPagespeedApiImageV2Typepage_rect.Setheight(AIndex : Integer; const AValue : integer); 
+Procedure TPagespeedApiImageV2Typepage_rect.Setheight(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fheight=AValue) then exit;
@@ -652,7 +658,7 @@ end;
 
 
 
-Procedure TPagespeedApiImageV2Typepage_rect.Setleft(AIndex : Integer; const AValue : integer); 
+Procedure TPagespeedApiImageV2Typepage_rect.Setleft(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fleft=AValue) then exit;
@@ -662,7 +668,7 @@ end;
 
 
 
-Procedure TPagespeedApiImageV2Typepage_rect.Settop(AIndex : Integer; const AValue : integer); 
+Procedure TPagespeedApiImageV2Typepage_rect.Settop(AIndex : Integer; const AValue : integer);
 
 begin
   If (Ftop=AValue) then exit;
@@ -672,7 +678,7 @@ end;
 
 
 
-Procedure TPagespeedApiImageV2Typepage_rect.Setwidth(AIndex : Integer; const AValue : integer); 
+Procedure TPagespeedApiImageV2Typepage_rect.Setwidth(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fwidth=AValue) then exit;
@@ -689,7 +695,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPagespeedApiImageV2.Setdata(AIndex : Integer; const AValue : String); 
+Procedure TPagespeedApiImageV2.Setdata(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdata=AValue) then exit;
@@ -699,7 +705,7 @@ end;
 
 
 
-Procedure TPagespeedApiImageV2.Setheight(AIndex : Integer; const AValue : integer); 
+Procedure TPagespeedApiImageV2.Setheight(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fheight=AValue) then exit;
@@ -709,7 +715,7 @@ end;
 
 
 
-Procedure TPagespeedApiImageV2.Setkey(AIndex : Integer; const AValue : String); 
+Procedure TPagespeedApiImageV2.Setkey(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkey=AValue) then exit;
@@ -719,7 +725,7 @@ end;
 
 
 
-Procedure TPagespeedApiImageV2.Setmime_type(AIndex : Integer; const AValue : String); 
+Procedure TPagespeedApiImageV2.Setmime_type(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmime_type=AValue) then exit;
@@ -729,7 +735,7 @@ end;
 
 
 
-Procedure TPagespeedApiImageV2.Setpage_rect(AIndex : Integer; const AValue : TPagespeedApiImageV2Typepage_rect); 
+Procedure TPagespeedApiImageV2.Setpage_rect(AIndex : Integer; const AValue : TPagespeedApiImageV2Typepage_rect);
 
 begin
   If (Fpage_rect=AValue) then exit;
@@ -739,7 +745,7 @@ end;
 
 
 
-Procedure TPagespeedApiImageV2.Setwidth(AIndex : Integer; const AValue : integer); 
+Procedure TPagespeedApiImageV2.Setwidth(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fwidth=AValue) then exit;
@@ -769,7 +775,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TResultTypeformattedResults.Setlocale(AIndex : Integer; const AValue : String); 
+Procedure TResultTypeformattedResults.Setlocale(AIndex : Integer; const AValue : String);
 
 begin
   If (Flocale=AValue) then exit;
@@ -779,7 +785,7 @@ end;
 
 
 
-Procedure TResultTypeformattedResults.SetruleResults(AIndex : Integer; const AValue : TResultTypeformattedResultsTyperuleResults); 
+Procedure TResultTypeformattedResults.SetruleResults(AIndex : Integer; const AValue : TResultTypeformattedResultsTyperuleResults);
 
 begin
   If (FruleResults=AValue) then exit;
@@ -796,7 +802,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TResultTypepageStats.SetcssResponseBytes(AIndex : Integer; const AValue : String); 
+Procedure TResultTypepageStats.SetcssResponseBytes(AIndex : Integer; const AValue : String);
 
 begin
   If (FcssResponseBytes=AValue) then exit;
@@ -806,7 +812,7 @@ end;
 
 
 
-Procedure TResultTypepageStats.SetflashResponseBytes(AIndex : Integer; const AValue : String); 
+Procedure TResultTypepageStats.SetflashResponseBytes(AIndex : Integer; const AValue : String);
 
 begin
   If (FflashResponseBytes=AValue) then exit;
@@ -816,7 +822,7 @@ end;
 
 
 
-Procedure TResultTypepageStats.SethtmlResponseBytes(AIndex : Integer; const AValue : String); 
+Procedure TResultTypepageStats.SethtmlResponseBytes(AIndex : Integer; const AValue : String);
 
 begin
   If (FhtmlResponseBytes=AValue) then exit;
@@ -826,7 +832,7 @@ end;
 
 
 
-Procedure TResultTypepageStats.SetimageResponseBytes(AIndex : Integer; const AValue : String); 
+Procedure TResultTypepageStats.SetimageResponseBytes(AIndex : Integer; const AValue : String);
 
 begin
   If (FimageResponseBytes=AValue) then exit;
@@ -836,7 +842,7 @@ end;
 
 
 
-Procedure TResultTypepageStats.SetjavascriptResponseBytes(AIndex : Integer; const AValue : String); 
+Procedure TResultTypepageStats.SetjavascriptResponseBytes(AIndex : Integer; const AValue : String);
 
 begin
   If (FjavascriptResponseBytes=AValue) then exit;
@@ -846,7 +852,7 @@ end;
 
 
 
-Procedure TResultTypepageStats.SetnumberCssResources(AIndex : Integer; const AValue : integer); 
+Procedure TResultTypepageStats.SetnumberCssResources(AIndex : Integer; const AValue : integer);
 
 begin
   If (FnumberCssResources=AValue) then exit;
@@ -856,7 +862,7 @@ end;
 
 
 
-Procedure TResultTypepageStats.SetnumberHosts(AIndex : Integer; const AValue : integer); 
+Procedure TResultTypepageStats.SetnumberHosts(AIndex : Integer; const AValue : integer);
 
 begin
   If (FnumberHosts=AValue) then exit;
@@ -866,7 +872,7 @@ end;
 
 
 
-Procedure TResultTypepageStats.SetnumberJsResources(AIndex : Integer; const AValue : integer); 
+Procedure TResultTypepageStats.SetnumberJsResources(AIndex : Integer; const AValue : integer);
 
 begin
   If (FnumberJsResources=AValue) then exit;
@@ -876,7 +882,7 @@ end;
 
 
 
-Procedure TResultTypepageStats.SetnumberResources(AIndex : Integer; const AValue : integer); 
+Procedure TResultTypepageStats.SetnumberResources(AIndex : Integer; const AValue : integer);
 
 begin
   If (FnumberResources=AValue) then exit;
@@ -886,7 +892,7 @@ end;
 
 
 
-Procedure TResultTypepageStats.SetnumberStaticResources(AIndex : Integer; const AValue : integer); 
+Procedure TResultTypepageStats.SetnumberStaticResources(AIndex : Integer; const AValue : integer);
 
 begin
   If (FnumberStaticResources=AValue) then exit;
@@ -896,7 +902,7 @@ end;
 
 
 
-Procedure TResultTypepageStats.SetotherResponseBytes(AIndex : Integer; const AValue : String); 
+Procedure TResultTypepageStats.SetotherResponseBytes(AIndex : Integer; const AValue : String);
 
 begin
   If (FotherResponseBytes=AValue) then exit;
@@ -906,7 +912,7 @@ end;
 
 
 
-Procedure TResultTypepageStats.SettextResponseBytes(AIndex : Integer; const AValue : String); 
+Procedure TResultTypepageStats.SettextResponseBytes(AIndex : Integer; const AValue : String);
 
 begin
   If (FtextResponseBytes=AValue) then exit;
@@ -916,7 +922,7 @@ end;
 
 
 
-Procedure TResultTypepageStats.SettotalRequestBytes(AIndex : Integer; const AValue : String); 
+Procedure TResultTypepageStats.SettotalRequestBytes(AIndex : Integer; const AValue : String);
 
 begin
   If (FtotalRequestBytes=AValue) then exit;
@@ -946,7 +952,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TResultTypeversion.Setmajor(AIndex : Integer; const AValue : integer); 
+Procedure TResultTypeversion.Setmajor(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fmajor=AValue) then exit;
@@ -956,7 +962,7 @@ end;
 
 
 
-Procedure TResultTypeversion.Setminor(AIndex : Integer; const AValue : integer); 
+Procedure TResultTypeversion.Setminor(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fminor=AValue) then exit;
@@ -973,7 +979,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TResult.SetformattedResults(AIndex : Integer; const AValue : TResultTypeformattedResults); 
+Procedure TResult.SetformattedResults(AIndex : Integer; const AValue : TResultTypeformattedResults);
 
 begin
   If (FformattedResults=AValue) then exit;
@@ -983,7 +989,7 @@ end;
 
 
 
-Procedure TResult.Setid(AIndex : Integer; const AValue : String); 
+Procedure TResult.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -993,7 +999,7 @@ end;
 
 
 
-Procedure TResult.SetinvalidRules(AIndex : Integer; const AValue : TStringArray); 
+Procedure TResult.SetinvalidRules(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FinvalidRules=AValue) then exit;
@@ -1003,7 +1009,7 @@ end;
 
 
 
-Procedure TResult.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TResult.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1013,7 +1019,7 @@ end;
 
 
 
-Procedure TResult.SetpageStats(AIndex : Integer; const AValue : TResultTypepageStats); 
+Procedure TResult.SetpageStats(AIndex : Integer; const AValue : TResultTypepageStats);
 
 begin
   If (FpageStats=AValue) then exit;
@@ -1023,7 +1029,7 @@ end;
 
 
 
-Procedure TResult.SetresponseCode(AIndex : Integer; const AValue : integer); 
+Procedure TResult.SetresponseCode(AIndex : Integer; const AValue : integer);
 
 begin
   If (FresponseCode=AValue) then exit;
@@ -1033,7 +1039,7 @@ end;
 
 
 
-Procedure TResult.SetruleGroups(AIndex : Integer; const AValue : TResultTyperuleGroups); 
+Procedure TResult.SetruleGroups(AIndex : Integer; const AValue : TResultTyperuleGroups);
 
 begin
   If (FruleGroups=AValue) then exit;
@@ -1043,7 +1049,7 @@ end;
 
 
 
-Procedure TResult.Setscreenshot(AIndex : Integer; const AValue : TPagespeedApiImageV2); 
+Procedure TResult.Setscreenshot(AIndex : Integer; const AValue : TPagespeedApiImageV2);
 
 begin
   If (Fscreenshot=AValue) then exit;
@@ -1053,7 +1059,7 @@ end;
 
 
 
-Procedure TResult.Settitle(AIndex : Integer; const AValue : String); 
+Procedure TResult.Settitle(AIndex : Integer; const AValue : String);
 
 begin
   If (Ftitle=AValue) then exit;
@@ -1063,7 +1069,7 @@ end;
 
 
 
-Procedure TResult.Setversion(AIndex : Integer; const AValue : TResultTypeversion); 
+Procedure TResult.Setversion(AIndex : Integer; const AValue : TResultTypeversion);
 
 begin
   If (Fversion=AValue) then exit;
@@ -1074,7 +1080,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TResult.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TResult.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1245,7 +1251,7 @@ Class Function TPagespeedonlineAPI.APIAuthScopes : TScopeInfoArray;
 
 begin
   SetLength(Result,0);
-  
+
 end;
 
 Class Function TPagespeedonlineAPI.APINeedsAuth : Boolean;

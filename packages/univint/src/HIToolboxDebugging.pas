@@ -14,7 +14,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit HIToolboxDebugging;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -199,7 +201,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CarbonEvents,MacOsApi.CarbonEventsCore,MacOsApi.Dialogs,MacOsApi.Events,MacOsApi.Files,MacOsApi.MacWindows,MacOsApi.Menus,MacOsApi.QuickdrawTypes,MacOsApi.HIObject;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CarbonEvents,CarbonEventsCore,Dialogs,Events,Files,MacWindows,Menus,QuickdrawTypes,HIObject;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -212,7 +218,7 @@ uses MacTypes,CarbonEvents,CarbonEventsCore,Dialogs,Events,Files,MacWindows,Menu
 {$ifc not TARGET_CPU_64}
 {
  *  DebugSetEventTraceEnabled()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.5 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        not available
@@ -224,7 +230,7 @@ procedure DebugSetEventTraceEnabled( inEnabled: Boolean ); external name '_Debug
 
 {
  *  DebugTraceEvent()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.5 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        not available
@@ -236,7 +242,7 @@ procedure DebugTraceEvent( inEventClass: OSType; inEventKind: UInt32; inTrace: B
 
 {
  *  DebugTraceEventByName()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.5 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        not available
@@ -248,7 +254,7 @@ procedure DebugTraceEventByName( eventName: ConstCStringPtr; inTrace: Boolean );
 
 {
  *  DebugPrintTracedEvents()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.5 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        not available
@@ -260,7 +266,7 @@ procedure DebugPrintTracedEvents; external name '_DebugPrintTracedEvents';
 
 {
  *  DebugPrintEventQueue()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.5 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        not available
@@ -274,7 +280,7 @@ procedure DebugPrintEventQueue( inQueue: EventQueueRef ); external name '_DebugP
 
 {
  *  DebugPrintMainEventQueue()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.5 and later in Carbon.framework
  *    CarbonLib:        not available
@@ -286,7 +292,7 @@ procedure DebugPrintMainEventQueue; external name '_DebugPrintMainEventQueue';
 
 {
  *  DebugPrintEvent()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.5 and later in Carbon.framework
  *    CarbonLib:        not available
@@ -300,7 +306,7 @@ procedure DebugPrintEvent( inEvent: EventRef ); external name '_DebugPrintEvent'
 {$ifc not TARGET_CPU_64}
 {
  *  DebugPrintControl()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.5 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        not available
@@ -312,7 +318,7 @@ procedure DebugPrintControl( inControl: ControlRef ); external name '_DebugPrint
 
 {
  *  DebugPrintControlHierarchy()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.5 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        not available
@@ -324,7 +330,7 @@ procedure DebugPrintControlHierarchy( inWindow: WindowRef ); external name '_Deb
 
 {
  *  DumpControlHierarchy()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -337,7 +343,7 @@ function DumpControlHierarchy( inWindow: WindowRef; const (*var*) inDumpFile: FS
 { Dialogs }
 {
  *  DebugPrintDialogInfo()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.5 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        not available
@@ -350,19 +356,19 @@ procedure DebugPrintDialogInfo( inDialog: DialogRef ); external name '_DebugPrin
 { HIView }
 {
  *  HIViewFlashDirtyArea()
- *  
+ *
  *  Discussion:
  *    Debugging aid. Flashes the region which would be redrawn at the
  *    next draw time for an entire window.
- *  
+ *
  *  Parameters:
- *    
+ *
  *    inWindow:
  *      The window to flash the dirty region for.
- *  
+ *
  *  Result:
  *    An operating system result code.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.2 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        not available in CarbonLib 1.x, is available on Mac OS X version 10.2 and later
@@ -375,7 +381,7 @@ function HIViewFlashDirtyArea( inWindow: WindowRef ): OSStatus; external name '_
 { Menus }
 {
  *  DebugPrintMenuList()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.5 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        not available
@@ -387,7 +393,7 @@ procedure DebugPrintMenuList; external name '_DebugPrintMenuList';
 
 {
  *  DebugPrintMenu()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.5 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        not available
@@ -399,7 +405,7 @@ procedure DebugPrintMenu( inMenu: MenuRef ); external name '_DebugPrintMenu';
 
 {
  *  DebugPrintMenuItem()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.5 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        not available
@@ -412,7 +418,7 @@ procedure DebugPrintMenuItem( inMenu: MenuRef; inItem: MenuItemIndex ); external
 { Windows }
 {
  *  DebugPrintWindow()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.5 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        not available
@@ -424,15 +430,15 @@ procedure DebugPrintWindow( windowRef_: WindowRef ); external name '_DebugPrintW
 
 {
  *  DebugPrintWindowGroup()
- *  
+ *
  *  Summary:
  *    Prints the contents of a window group to stdout.
- *  
+ *
  *  Parameters:
- *    
+ *
  *    inGroup:
  *      The group whose contents to print.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        not available in CarbonLib 1.x, is available on Mac OS X version 10.0 and later
@@ -444,11 +450,11 @@ procedure DebugPrintWindowGroup( inGroup: WindowGroupRef ); external name '_Debu
 
 {
  *  DebugPrintAllWindowGroups()
- *  
+ *
  *  Summary:
  *    Prints the full window group hierarchy, starting at the root
  *    group.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        not available in CarbonLib 1.x, is available on Mac OS X version 10.0 and later
@@ -460,10 +466,10 @@ procedure DebugPrintAllWindowGroups; external name '_DebugPrintAllWindowGroups';
 
 {
  *  DebugPrintWindowList()
- *  
+ *
  *  Summary:
  *    Prints the window list to stdout.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.5 and later in Carbon.framework [32-bit only]
  *    CarbonLib:        not available
@@ -475,7 +481,7 @@ procedure DebugPrintWindowList; external name '_DebugPrintWindowList';
 
 {
  *  DebugFlashWindowVisRgn()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.5 and later in Carbon.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        not available
@@ -487,7 +493,7 @@ procedure DebugFlashWindowVisRgn( windowRef_: WindowRef ); external name '_Debug
 
 {
  *  DebugFlashWindowUpdateRgn()   *** DEPRECATED ***
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.5 and later in Carbon.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        not available

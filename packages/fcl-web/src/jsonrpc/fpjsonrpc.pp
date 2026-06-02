@@ -12,15 +12,22 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fpjsonrpc;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 {$inline on}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, FpJson.Data;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, fpjson;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
 
@@ -51,7 +58,7 @@ Type
 
   { TJSONParamDefs }
 
-  TJSONParamDefs = Class(TCollection)
+  TJSONParamDefs = Class(TOwnedCollection)
   private
     function GetP(AIndex : Integer): TJSONParamDef;
     procedure SetP(AIndex : Integer; const AValue: TJSONParamDef);
@@ -193,7 +200,7 @@ Type
     function CreateAPI : TJSONObject; overload;
     Property Dispatcher : TCustomJSONRPCDispatcher Read FDispatcher;
   Published
-    // Namespace for API description. Must be set. Default 'FPWeb'
+    // Namespace for API description. Must be set. Default 'FpWeb'
     Property NameSpace : String Read GetNameSpace Write FNameSpace Stored isNameSpaceStored;
     // URL property for API router. Must be set.
     Property URL : String Read FURL Write FURL;
@@ -461,7 +468,11 @@ Const
 implementation
 
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses {$IFDEF WMDEBUG}System.Dbugintf, {$ENDIF} FpWeb.JsonRpc.Codegen, FpWeb.JsonRpc.Strings;
+{$ELSE FPC_DOTTEDUNITS}
 uses {$IFDEF WMDEBUG}dbugintf, {$ENDIF} fprpccodegen, fprpcstrings;
+{$ENDIF FPC_DOTTEDUNITS}
 
 function CreateJSONErrorObject(const AMessage: String; const ACode: Integer
   ): TJSONObject;
@@ -815,7 +826,7 @@ begin
         Continue;
     end;
 
-    // jtUnkown accepts all data types
+    // jtUnknown accepts all data types
     if (def.DataType<>jtUnknown) and not (Param.JSONType=def.DataType) then
       JSONRPCParamError(SErrParamsDataTypeMismatch,[def.Name,JSONTypeName(def.DataType),JSONTypeName(Param.JSONType)]);
   end;
@@ -844,12 +855,17 @@ begin
     begin
     Def:=ParamDefs[i];
     if I>=ParamArray.Count then
+      begin
       if ParamDefs[i].Required then
         JSONRPCParamError(SErrParamsRequiredParamNotFound,[def.Name]);
-    Param:=ParamArray[i];
-    // jtUnkown accepts all data types
-    if (def.DataType<>jtUnknown) and not (Param.JSONType=def.DataType) then
-      JSONRPCParamError(SErrParamsDataTypeMismatch,[def.Name,JSONTypeName(def.DataType),JSONTypeName(Param.JSONType)]);
+      end
+    else
+      begin
+      Param:=ParamArray[i];
+      // jtUnknown accepts all data types
+      if (def.DataType<>jtUnknown) and not (Param.JSONType=def.DataType) then
+        JSONRPCParamError(SErrParamsDataTypeMismatch,[def.Name,JSONTypeName(def.DataType),JSONTypeName(Param.JSONType)]);
+      end;
     end;
 end;
 
@@ -873,7 +889,7 @@ end;
 function TCustomJSONRPCHandler.CreateParamDefs : TJSONParamDefs;
 
 begin
-  Result:=TJSONParamDefs.Create(TJSONParamDef);
+  Result:=TJSONParamDefs.Create(Self,TJSONParamDef);
 end;
 
 function TCustomJSONRPCHandler.Execute(Const Params: TJSONData;AContext : TJSONRPCCallContext = Nil): TJSONData;
@@ -1322,16 +1338,16 @@ begin
     else if (jdoRequireClass in options) then
       Exit(CreateJSON2Error(SErrNoClassName,[ClassNameProperty],EJSONRPCInvalidRequest,ID,transactionproperty))
     else
-      D:=Nil;  
+      D:=Nil;
     if Assigned(D) then
-     begin  
+     begin
       // Check if it is a string
       if Not (D is TJSONString) then
         Exit(CreateJSON2Error(SErrInvalidClassNameType,[ClassNameProperty],EJSONRPCInvalidRequest,ID,transactionproperty));
       AClassName:=D.AsString;
       If (AClassName='') and (jdoRequireClass in options)  then
         Exit(CreateJSON2Error(SErrNoClassName,[ClassNameProperty],EJSONRPCInvalidRequest,ID,transactionproperty));
-      end;  
+      end;
     end;
   // Get params, if they exist
   I:=O.IndexOfName(ParamsProperty);
@@ -1543,7 +1559,7 @@ end;
 function TJSONRPCHandlerDef.GetParamDefs: TJSONParamDefs;
 begin
   IF (FParamDefs=Nil) then
-    FParamDefs:=TJSONParamDefs.Create(TJSONParamDef);
+    FParamDefs:=TJSONParamDefs.Create(Self,TJSONParamDef);
   Result:=FParamDefs;
 end;
 
@@ -1566,7 +1582,7 @@ procedure TJSONRPCHandlerDef.SetParamDefs(AValue: TJSONParamDefs);
 begin
   if FParamDefs=AValue then Exit;
   IF (FParamDefs=Nil) then
-    FParamDefs:=TJSONParamDefs.Create(TJSONParamDef);
+    FParamDefs:=TJSONParamDefs.Create(Self,TJSONParamDef);
   if (AValue<>Nil) then
     FParamDefs.Assign(AValue)
   else

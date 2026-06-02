@@ -19,7 +19,7 @@
  }
 
 {
- * @defgroup APR_Util_XML XML 
+ * @defgroup APR_Util_XML XML
  * @ingroup APR_Util
  }
 {#include "apr_pools.h"
@@ -44,7 +44,7 @@ type
 
   apr_text = record
     { The current piece of text }
-    text: PChar;
+    text: PAnsiChar;
     { a pointer to the next piece of text }
     next: Papr_text;
   end;
@@ -67,7 +67,7 @@ type
  * @param text The new text to append
  }
 procedure apr_text_append(p: Papr_pool_t; hdr: Papr_text_header;
- const text: PChar);
+ const text: PAnsiChar);
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibAPRUtil name LibNamePrefix + 'apr_text_append' + LibSuff12;
 
@@ -143,12 +143,12 @@ type
 { apr_xml_attr: holds a parsed XML attribute }
   apr_xml_attr = record
     { attribute name }
-    name: PChar;
+    name: PAnsiChar;
     { index into namespace array }
     ns: Integer;
 
     { attribute value }
-    value: PChar;
+    value: PAnsiChar;
 
     { next attribute }
     next: Papr_xml_attr;
@@ -157,11 +157,11 @@ type
 { apr_xml_elem: holds a parsed XML element }
   apr_xml_elem = record
     { element name }
-    name: PChar;
+    name: PAnsiChar;
     { index into namespace array }
     ns: Integer;
     { xml:lang for attrs/contents }
-    lang: PChar;
+    lang: PAnsiChar;
 
     { cdata right after start tag }
     first_cdata: apr_text_header;
@@ -221,7 +221,7 @@ function apr_xml_parser_create(pool: Papr_pool_t): Papr_xml_parser;
  *               errors), will be set to NULL on successfull completion.
  * @param ppdoc  A pointer to *apr_xml_doc (which has the parsed results in it)
  * @param xmlfd  A file to read from.
- * @param buffer_length Buffer length which would be suitable 
+ * @param buffer_length Buffer length which would be suitable
  * @return Any errors found during parsing.
  }
 function apr_xml_parse_file(p: Papr_pool_t;
@@ -239,7 +239,7 @@ function apr_xml_parse_file(p: Papr_pool_t;
  * @remark Use apr_xml_parser_geterror() to get more error information.
  }
 function apr_xml_parser_feed(parser: Papr_xml_parser;
- const data: PChar; len: apr_size_t): apr_status_t;
+ const data: PAnsiChar; len: apr_size_t): apr_status_t;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibAPRUtil name LibNamePrefix + 'apr_xml_parser_feed' + LibSuff12;
 
@@ -264,20 +264,20 @@ function apr_xml_parser_done(parser: Papr_xml_parser;
  * @return The error buffer
  }
 function apr_xml_parser_geterror(parser: Papr_xml_parser;
- errbuf: PChar; errbufsize: apr_size_t): PChar;
+ errbuf: PAnsiChar; errbufsize: apr_size_t): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibAPRUtil name LibNamePrefix + 'apr_xml_parser_geterror' + LibSuff12;
 
 {
- * Converts an XML element tree to flat text 
+ * Converts an XML element tree to flat text
  * @param p The pool to allocate out of
  * @param elem The XML element to convert
  * @param style How to covert the XML.  One of:
  * <PRE>
- *     APR_XML_X2T_FULL                start tag, contents, end tag 
- *     APR_XML_X2T_INNER               contents only 
- *     APR_XML_X2T_LANG_INNER          xml:lang + inner contents 
- *     APR_XML_X2T_FULL_NS_LANG        FULL + ns defns + xml:lang 
+ *     APR_XML_X2T_FULL                start tag, contents, end tag
+ *     APR_XML_X2T_INNER               contents only
+ *     APR_XML_X2T_LANG_INNER          xml:lang + inner contents
+ *     APR_XML_X2T_FULL_NS_LANG        FULL + ns defns + xml:lang
  * </PRE>
  * @param namespaces The namespace of the current XML element
  * @param ns_map Namespace mapping
@@ -286,7 +286,7 @@ function apr_xml_parser_geterror(parser: Papr_xml_parser;
  }
 procedure apr_xml_to_text(p: Papr_pool_t; const elem: Papr_xml_elem;
  style: Integer; namespaces: Papr_array_header_t;
- ns_map: PInteger; const pbuf: PPChar; psize: Papr_size_t);
+ ns_map: PInteger; const pbuf: PPAnsiChar; psize: Papr_size_t);
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibAPRUtil name LibNamePrefix + 'apr_xml_to_text' + LibSuff28;
 
@@ -303,7 +303,7 @@ const
  * @param elem The XML element to empty
  * @return the string that was stored in the XML element
  }
-function apr_xml_empty_elem(p: Papr_pool_t; const elem: Papr_xml_elem): PChar;
+function apr_xml_empty_elem(p: Papr_pool_t; const elem: Papr_xml_elem): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibAPRUtil name LibNamePrefix + 'apr_xml_empty_elem' + LibSuff8;
 
@@ -317,8 +317,8 @@ function apr_xml_empty_elem(p: Papr_pool_t; const elem: Papr_xml_elem): PChar;
  * @note If the string does not contain special characters, it is not
  * duplicated into the pool and the original string is returned.
  }
-function apr_xml_quote_string(p: Papr_pool_t; const s: PChar;
- quotes: Integer): PChar;
+function apr_xml_quote_string(p: Papr_pool_t; const s: PAnsiChar;
+ quotes: Integer): PAnsiChar;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibAPRUtil name LibNamePrefix + 'apr_xml_quote_string' + LibSuff12;
 
@@ -334,16 +334,16 @@ procedure apr_xml_quote_elem(p: Papr_pool_t; elem: Papr_xml_elem);
 { manage an array of unique URIs: apr_xml_insert_uri() and APR_XML_URI_ITEM() }
 
 {
- * return the URI's (existing) index, or insert it and return a new index 
+ * return the URI's (existing) index, or insert it and return a new index
  * @param uri_array array to insert into
  * @param uri The uri to insert
  * @return int The uri's index
  }
 function apr_xml_insert_uri(uri_array: Papr_array_header_t;
- const uri: PChar): Integer;
+ const uri: PAnsiChar): Integer;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibAPRUtil name LibNamePrefix + 'apr_xml_insert_uri' + LibSuff8;
 
 { Get the URI item for this XML element }
-//#define APR_XML_GET_URI_ITEM(ary, i) (((const char * const *)(ary)->elts)[i])
+//#define APR_XML_GET_URI_ITEM(ary, i) (((const AnsiChar * const *)(ary)->elts)[i])
 

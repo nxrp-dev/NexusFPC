@@ -26,13 +26,13 @@ program RPNThing;
 
 Uses Symbolic,Crt;
 
-function GetKey:char;
+function GetKey:AnsiChar;
 
 begin
  repeat
   while keypressed DO ;
   result:=ReadKey;
-  if result=#0 then      {Make sure control codes are skipped apropiately}
+  if result=#0 then      {Make sure control codes are skipped appropriately}
    begin
     result:=readKey;
     result:=#0;
@@ -43,7 +43,7 @@ end;
 
 VAR Stack    : array[0..100] of TExpression;
     I,StackPtr : Integer;
-    InputC   : Char;
+    InputC   : AnsiChar;
     S        : String;
     Flag     : Boolean;
 
@@ -112,7 +112,7 @@ begin
                 Redraw;
               end;
    'T','t' :  If StackPtr>1 then        {Stackptr-1=function.  Stackptr-2=degree
-                                           x is assumed, and x0 is substed}
+                                           x is assumed, and x0 is substituted}
                begin
                 Flag:=True;
                 Try

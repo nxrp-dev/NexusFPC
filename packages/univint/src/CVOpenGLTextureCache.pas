@@ -23,7 +23,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CVOpenGLTextureCache;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -208,7 +210,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CFBase,MacOsApi.CFString,MacOsApi.CFDictionary,MacOsApi.CVBase,MacOsApi.CVReturns,MacOsApi.CVBuffer,MacOsApi.CVImageBuffer,MacOsApi.CVOpenGLTexture,MacOsApi.CGLTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CFBase,CFString,CFDictionary,CVBase,CVReturns,CVBuffer,CVImageBuffer,CVOpenGLTexture,CGLTypes;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -235,7 +241,7 @@ type
 var kCVOpenGLTextureCacheChromaSamplingModeKey: CFStringRef; external name '_kCVOpenGLTextureCacheChromaSamplingModeKey'; (* attribute const *)
 (* AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER *)
 var kCVOpenGLTextureCacheChromaSamplingModeAutomatic: CFStringRef; external name '_kCVOpenGLTextureCacheChromaSamplingModeAutomatic'; (* attribute const *)
-(* AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER *)	    // Defaut if the key is not present
+(* AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER *)	    // Default if the key is not present
 var kCVOpenGLTextureCacheChromaSamplingModeHighestQuality: CFStringRef; external name '_kCVOpenGLTextureCacheChromaSamplingModeHighestQuality'; (* attribute const *)
 (* AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER *)    // Force highest quality regardless of performance impact
 var kCVOpenGLTextureCacheChromaSamplingModeBestPerformance: CFStringRef; external name '_kCVOpenGLTextureCacheChromaSamplingModeBestPerformance'; (* attribute const *)

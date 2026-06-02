@@ -15,7 +15,9 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit Linux;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$i osdefs.inc}
 
@@ -26,8 +28,13 @@ unit Linux;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  UnixApi.Base, UnixApi.Types;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   BaseUnix, unixtype;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   O_CLOEXEC = $80000;
@@ -403,7 +410,7 @@ Type
     mask   : cuint32;
     cookie : cuint32;
     len    : cuint32;
-    name   : char;
+    name   : record end;
   end;
   Pinotify_event = ^inotify_event;
 
@@ -453,7 +460,7 @@ function inotify_init1(flags:cint):cint;  {$ifdef FPC_USE_LIBC} cdecl; external 
 
 { Add watch of object NAME to inotify instance FD.
   Notify about events specified by MASK.   }
-function inotify_add_watch(fd:cint; name:Pchar; mask:cuint32):cint;  {$ifdef FPC_USE_LIBC} cdecl; external name 'inotify_add_watch'; {$ENDIF}
+function inotify_add_watch(fd:cint; name:PAnsiChar; mask:cuint32):cint;  {$ifdef FPC_USE_LIBC} cdecl; external name 'inotify_add_watch'; {$ENDIF}
 
 { Remove the watch specified by WD from the inotify instance FD.   }
 function inotify_rm_watch(fd:cint; wd: cint):cint;  {$ifdef FPC_USE_LIBC} cdecl; external name 'inotify_rm_watch'; {$ENDIF}
@@ -542,30 +549,125 @@ Type
   end;
   pstatx = ^tstatx;
 
-  function statx(dfd: cint; filename: pchar; flags,mask: cuint; var buf: tstatx):cint; {$ifdef FPC_USE_LIBC} cdecl; weakexternal name 'statx'; {$ENDIF}
+  function statx(dfd: cint; filename: PAnsiChar; flags,mask: cuint; var buf: tstatx):cint; {$ifdef FPC_USE_LIBC} cdecl; weakexternal name 'statx'; {$ENDIF}
 
-Type
-   kernel_time64_t = clonglong;
+Function utimensat(dfd: cint; path:PAnsiChar;const times:TTimespecArr;flags:cint):cint; {$ifdef FPC_USE_LIBC} cdecl; external name 'utimensat'; {$ENDIF}
+Function futimens(fd: cint; const times:TTimespecArr):cint; {$ifdef FPC_USE_LIBC} cdecl; external name 'futimens'; {$ENDIF}
 
-   kernel_timespec = record
-     tv_sec  : kernel_time64_t;
-     tv_nsec : clonglong;
-   end;
-   pkernel_timespec = ^kernel_timespec;
+{$if defined(cpuriscv)}
+  type
+    priscv_hwprobe = ^triscv_hwprobe;
+    triscv_hwprobe = record
+      key : __s64;
+      value : __u64;
+    end;
 
-   tkernel_timespecs = array[0..1] of kernel_timespec;
+  const
+    RISCV_HWPROBE_KEY_MVENDORID = 0;
+    RISCV_HWPROBE_KEY_MARCHID = 1;
+    RISCV_HWPROBE_KEY_MIMPID = 2;
+    RISCV_HWPROBE_KEY_BASE_BEHAVIOR = 3;
+    RISCV_HWPROBE_BASE_BEHAVIOR_IMA = 1 shl 0;
+    RISCV_HWPROBE_KEY_IMA_EXT_0 = 4;
+    RISCV_HWPROBE_IMA_FD = 1 shl 0;
+    RISCV_HWPROBE_IMA_C = 1 shl 1;
+    RISCV_HWPROBE_IMA_V = 1 shl 2;
+    RISCV_HWPROBE_EXT_ZBA = 1 shl 3;
+    RISCV_HWPROBE_EXT_ZBB = 1 shl 4;
+    RISCV_HWPROBE_EXT_ZBS = 1 shl 5;
+    RISCV_HWPROBE_EXT_ZICBOZ = 1 shl 6;
+    RISCV_HWPROBE_EXT_ZBC = 1 shl 7;
+    RISCV_HWPROBE_EXT_ZBKB = 1 shl 8;
+    RISCV_HWPROBE_EXT_ZBKC = 1 shl 9;
+    RISCV_HWPROBE_EXT_ZBKX = 1 shl 10;
+    RISCV_HWPROBE_EXT_ZKND = 1 shl 11;
+    RISCV_HWPROBE_EXT_ZKNE = 1 shl 12;
+    RISCV_HWPROBE_EXT_ZKNH = 1 shl 13;
+    RISCV_HWPROBE_EXT_ZKSED = 1 shl 14;
+    RISCV_HWPROBE_EXT_ZKSH = 1 shl 15;
+    RISCV_HWPROBE_EXT_ZKT = 1 shl 16;
+    RISCV_HWPROBE_EXT_ZVBB = 1 shl 17;
+    RISCV_HWPROBE_EXT_ZVBC = 1 shl 18;
+    RISCV_HWPROBE_EXT_ZVKB = 1 shl 19;
+    RISCV_HWPROBE_EXT_ZVKG = 1 shl 20;
+    RISCV_HWPROBE_EXT_ZVKNED = 1 shl 21;
+    RISCV_HWPROBE_EXT_ZVKNHA = 1 shl 22;
+    RISCV_HWPROBE_EXT_ZVKNHB = 1 shl 23;
+    RISCV_HWPROBE_EXT_ZVKSED = 1 shl 24;
+    RISCV_HWPROBE_EXT_ZVKSH = 1 shl 25;
+    RISCV_HWPROBE_EXT_ZVKT = 1 shl 26;
+    RISCV_HWPROBE_EXT_ZFH = 1 shl 27;
+    RISCV_HWPROBE_EXT_ZFHMIN = 1 shl 28;
+    RISCV_HWPROBE_EXT_ZIHINTNTL = 1 shl 29;
+    RISCV_HWPROBE_EXT_ZVFH = 1 shl 30;
+    RISCV_HWPROBE_EXT_ZVFHMIN = 1 shl 31;
+    RISCV_HWPROBE_EXT_ZFA = 1 shl 32;
+    RISCV_HWPROBE_EXT_ZTSO = 1 shl 33;
+    RISCV_HWPROBE_EXT_ZACAS = 1 shl 34;
+    RISCV_HWPROBE_EXT_ZICOND = 1 shl 35;
+    RISCV_HWPROBE_EXT_ZIHINTPAUSE = 1 shl 36;
+    RISCV_HWPROBE_EXT_ZVE32X = 1 shl 37;
+    RISCV_HWPROBE_EXT_ZVE32F = 1 shl 38;
+    RISCV_HWPROBE_EXT_ZVE64X = 1 shl 39;
+    RISCV_HWPROBE_EXT_ZVE64F = 1 shl 40;
+    RISCV_HWPROBE_EXT_ZVE64D = 1 shl 41;
+    RISCV_HWPROBE_EXT_ZIMOP = 1 shl 42;
+    RISCV_HWPROBE_EXT_ZCA = 1 shl 43;
+    RISCV_HWPROBE_EXT_ZCB = 1 shl 44;
+    RISCV_HWPROBE_EXT_ZCD = 1 shl 45;
+    RISCV_HWPROBE_EXT_ZCF = 1 shl 46;
+    RISCV_HWPROBE_EXT_ZCMOP = 1 shl 47;
+    RISCV_HWPROBE_EXT_ZAWRS = 1 shl 48;
+    RISCV_HWPROBE_EXT_SUPM = 1 shl 49;
+    RISCV_HWPROBE_EXT_ZFBFMIN = 1 shl 50;
+    RISCV_HWPROBE_EXT_ZIHPM = 1 shl 51;
+    RISCV_HWPROBE_EXT_ZFBMIN = 1 shl 52;
+    RISCV_HWPROBE_EXT_ZVFBFMIN =  1 shl 53;
+    RISCV_HWPROBE_EXT_ZVFBFWMA =  1 shl 54;
+    RISCV_HWPROBE_EXT_ZICBOM = 1 shl 55;
+    RISCV_HWPROBE_EXT_ZAAMO = 1 shl 56;
+    RISCV_HWPROBE_EXT_ZALRSC = 1 shl 57;
+    RISCV_HWPROBE_EXT_ZABHA = 1 shl 58;
 
-{$ifndef android}
-Function utimensat(dfd: cint; path:pchar;const times:tkernel_timespecs;flags:cint):cint; {$ifdef FPC_USE_LIBC} cdecl; external name 'utimensat'; {$ENDIF}
-Function futimens(fd: cint; const times:tkernel_timespecs):cint; {$ifdef FPC_USE_LIBC} cdecl; external name 'futimens'; {$ENDIF}
-{$endif android}
+    RISCV_HWPROBE_KEY_CPUPERF_0 = 5;
+    RISCV_HWPROBE_MISALIGNED_UNKNOWN = 0 shl 0;
+    RISCV_HWPROBE_MISALIGNED_EMULATED = 1 shl 0;
+    RISCV_HWPROBE_MISALIGNED_SLOW = 2 shl 0;
+    RISCV_HWPROBE_MISALIGNED_FAST = 3 shl 0;
+    RISCV_HWPROBE_MISALIGNED_UNSUPPORTED = 4 shl 0;
+    RISCV_HWPROBE_MISALIGNED_MASK = 7 shl 0;
+    RISCV_HWPROBE_KEY_ZICBOZ_BLOCK_SIZE = 6;
+    RISCV_HWPROBE_KEY_HIGHEST_VIRT_ADDRESS = 7;
+    RISCV_HWPROBE_KEY_TIME_CSR_FREQ = 8;
+    RISCV_HWPROBE_KEY_MISALIGNED_SCALAR_PERF = 9;
+    RISCV_HWPROBE_MISALIGNED_SCALAR_UNKNOWN = 0;
+    RISCV_HWPROBE_MISALIGNED_SCALAR_EMULATED = 1;
+    RISCV_HWPROBE_MISALIGNED_SCALAR_SLOW = 2;
+    RISCV_HWPROBE_MISALIGNED_SCALAR_FAST = 3;
+    RISCV_HWPROBE_MISALIGNED_SCALAR_UNSUPPORTED = 4;
+    RISCV_HWPROBE_KEY_MISALIGNED_VECTOR_PERF = 10;
+    RISCV_HWPROBE_MISALIGNED_VECTOR_UNKNOWN = 0;
+    RISCV_HWPROBE_MISALIGNED_VECTOR_SLOW = 2;
+    RISCV_HWPROBE_MISALIGNED_VECTOR_FAST = 3;
+    RISCV_HWPROBE_MISALIGNED_VECTOR_UNSUPPORTED = 4;
+    RISCV_HWPROBE_WHICH_CPUS = 1 shl 0;
+
+function riscv_hwprobe(pairs:priscv_hwprobe; pair_count:size_t; cpusetsize:size_t; cpus:pdword; flags:dword):longint;
+{$ifdef FPC_USE_LIBC}
+ cdecl; external name '__riscv_hwprobe';
+{$endif}
+{$endif defined(cpuriscv)}
 
 implementation
 
 
 {$if not defined(FPC_USE_LIBC) or defined(cpui386) or defined(cpux86_64)}
 { needed for modify_ldt on x86 }
+{$IFDEF FPC_DOTTEDUNITS}
+Uses UnixApi.SysCall;
+{$ELSE FPC_DOTTEDUNITS}
 Uses Syscall;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endif not defined(FPC_USE_LIBC) or defined(cpui386) or defined(cpux86_64)}
 
 {$ifndef FPC_USE_LIBC}
@@ -828,7 +930,7 @@ begin
 {$endif}
 end;
 
-function inotify_add_watch(fd:cint; name:Pchar; mask:cuint32):cint;
+function inotify_add_watch(fd:cint; name:PAnsiChar; mask:cuint32):cint;
 
 begin
   inotify_add_watch:=do_SysCall(syscall_nr_inotify_add_watch,tsysparam(fd),tsysparam(name),tsysparam(mask));
@@ -870,18 +972,24 @@ begin
 end;
 
 
-function statx(dfd: cint; filename: pchar; flags,mask: cuint; var buf: tstatx):cint;
+function statx(dfd: cint; filename: PAnsiChar; flags,mask: cuint; var buf: tstatx):cint;
 begin
   statx:=do_syscall(syscall_nr_statx,TSysParam(dfd),TSysParam(filename),TSysParam(flags),TSysParam(mask),TSysParam(@buf));
 end;
 
+{ on 32 bit systems, we should use the 64 bit time calls }
+{$if (sizeof(time_t)<=4)}
+  { mipsel-android doesn't have them as it is not part of newer android versions anymode }
+  {$if not(defined(ANDROID) and defined(CPUMIPSEL))}
+    {$define USE_TIME64}
+  {$endif  not(defined(ANDROID) and defined(CPUMIPSEL))}
+{$endif (sizeof(clong)<=4)}
 
-{$ifndef android}
-Function utimensat(dfd: cint; path:pchar;const times:tkernel_timespecs;flags:cint):cint;
+Function utimensat(dfd: cint; path:PAnsiChar;const times:TTimespecArr;flags:cint):cint;
 var
   tsa: Array[0..1] of timespec;
 begin
-{$if sizeof(clong)<=4}
+{$ifdef USE_TIME64}
   utimensat:=do_syscall(syscall_nr_utimensat_time64,dfd,TSysParam(path),TSysParam(@times),0);
   if (utimensat>=0) or (fpgeterrno<>ESysENOSYS) then
     exit;
@@ -891,17 +999,17 @@ begin
   tsa[1].tv_sec := times[1].tv_sec;
   tsa[1].tv_nsec := times[1].tv_nsec;
   utimensat:=do_syscall(syscall_nr_utimensat,dfd,TSysParam(path),TSysParam(@tsa),0);
-{$else sizeof(clong)<=4}
+{$else USE_TIME64}
   utimensat:=do_syscall(syscall_nr_utimensat,dfd,TSysParam(path),TSysParam(@times),0);
-{$endif sizeof(clong)<=4}
+{$endif USE_TIME64}
 end;
 
 
-Function futimens(fd: cint; const times:tkernel_timespecs):cint;
+Function futimens(fd: cint; const times:TTimespecArr):cint;
 var
   tsa: Array[0..1] of timespec;
 begin
-{$if sizeof(clong)<=4}
+{$ifdef USE_TIME64}
   futimens:=do_syscall(syscall_nr_utimensat_time64,fd,TSysParam(nil),TSysParam(@times),0);
   if (futimens>=0) or (fpgeterrno<>ESysENOSYS) then
     exit;
@@ -911,12 +1019,20 @@ begin
   tsa[1].tv_sec := times[1].tv_sec;
   tsa[1].tv_nsec := times[1].tv_nsec;
   futimens:=do_syscall(syscall_nr_utimensat,fd,TSysParam(nil),TSysParam(@tsa),0);
-{$else sizeof(clong)<=4}
+{$else USE_TIME64}
   futimens:=do_syscall(syscall_nr_utimensat,fd,TSysParam(nil),TSysParam(@times),0);
-{$endif sizeof(clong)<=4}
+{$endif USE_TIME64}
 end;
-{$endif android}
+
+{$if defined(cpuriscv)}
+function riscv_hwprobe(pairs:priscv_hwprobe; pair_count:size_t; cpusetsize:size_t; cpus:pdword; flags:dword):longint;
+begin
+  riscv_hwprobe:=do_syscall(syscall_nr_riscv_hwprobe,TSysParam(pairs),TSysParam(pair_count),TSysParam(cpusetsize),TSysParam(cpus),TSysParam(flags));
+end;
+{$endif defined(cpuriscv)}
+
 {$endif not FPC_USE_LIBC}
+
 
 end.
 

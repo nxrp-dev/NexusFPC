@@ -1,13 +1,19 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit googlesqladmin;
+{$ENDIF FPC_DOTTEDUNITS}
 {$MODE objfpc}
 {$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils, System.Classes, GoogleApi.Service, FpWeb.Rest.Base, GoogleApi.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses sysutils, classes, googleservice, restbase, googlebase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
-  
+
   //Top-level schema types
   TAclEntry = Class;
   TBackupConfiguration = Class;
@@ -114,11 +120,11 @@ type
   TSslCertsListResponseTypeitemsArray = Array of TSslCert;
   TTiersListResponseTypeitemsArray = Array of TTier;
   TUsersListResponseTypeitemsArray = Array of TUser;
-  
+
   { --------------------------------------------------------------------
     TAclEntry
     --------------------------------------------------------------------}
-  
+
   TAclEntry = Class(TGoogleBaseObject)
   Private
     FexpirationTime : TDatetime;
@@ -139,11 +145,11 @@ type
     Property value : String Index 24 Read Fvalue Write Setvalue;
   end;
   TAclEntryClass = Class of TAclEntry;
-  
+
   { --------------------------------------------------------------------
     TBackupConfiguration
     --------------------------------------------------------------------}
-  
+
   TBackupConfiguration = Class(TGoogleBaseObject)
   Private
     FbinaryLogEnabled : boolean;
@@ -164,11 +170,11 @@ type
     Property startTime : String Index 24 Read FstartTime Write SetstartTime;
   end;
   TBackupConfigurationClass = Class of TBackupConfiguration;
-  
+
   { --------------------------------------------------------------------
     TBackupRun
     --------------------------------------------------------------------}
-  
+
   TBackupRun = Class(TGoogleBaseObject)
   Private
     FendTime : TDatetime;
@@ -207,11 +213,11 @@ type
     Property windowStartTime : TDatetime Index 72 Read FwindowStartTime Write SetwindowStartTime;
   end;
   TBackupRunClass = Class of TBackupRun;
-  
+
   { --------------------------------------------------------------------
     TBackupRunsListResponse
     --------------------------------------------------------------------}
-  
+
   TBackupRunsListResponse = Class(TGoogleBaseObject)
   Private
     Fitems : TBackupRunsListResponseTypeitemsArray;
@@ -233,11 +239,11 @@ type
     Property nextPageToken : String Index 16 Read FnextPageToken Write SetnextPageToken;
   end;
   TBackupRunsListResponseClass = Class of TBackupRunsListResponse;
-  
+
   { --------------------------------------------------------------------
     TBinLogCoordinates
     --------------------------------------------------------------------}
-  
+
   TBinLogCoordinates = Class(TGoogleBaseObject)
   Private
     FbinLogFileName : String;
@@ -255,11 +261,11 @@ type
     Property kind : String Index 16 Read Fkind Write Setkind;
   end;
   TBinLogCoordinatesClass = Class of TBinLogCoordinates;
-  
+
   { --------------------------------------------------------------------
     TCloneContext
     --------------------------------------------------------------------}
-  
+
   TCloneContext = Class(TGoogleBaseObject)
   Private
     FbinLogCoordinates : TBinLogCoordinates;
@@ -277,11 +283,11 @@ type
     Property kind : String Index 16 Read Fkind Write Setkind;
   end;
   TCloneContextClass = Class of TCloneContext;
-  
+
   { --------------------------------------------------------------------
     TDatabase
     --------------------------------------------------------------------}
-  
+
   TDatabase = Class(TGoogleBaseObject)
   Private
     Fcharset : String;
@@ -314,11 +320,11 @@ type
     Property selfLink : String Index 56 Read FselfLink Write SetselfLink;
   end;
   TDatabaseClass = Class of TDatabase;
-  
+
   { --------------------------------------------------------------------
     TDatabaseFlags
     --------------------------------------------------------------------}
-  
+
   TDatabaseFlags = Class(TGoogleBaseObject)
   Private
     Fname : String;
@@ -333,11 +339,11 @@ type
     Property value : String Index 8 Read Fvalue Write Setvalue;
   end;
   TDatabaseFlagsClass = Class of TDatabaseFlags;
-  
+
   { --------------------------------------------------------------------
     TDatabaseInstanceTypefailoverReplica
     --------------------------------------------------------------------}
-  
+
   TDatabaseInstanceTypefailoverReplica = Class(TGoogleBaseObject)
   Private
     Favailable : boolean;
@@ -352,11 +358,11 @@ type
     Property name : String Index 8 Read Fname Write Setname;
   end;
   TDatabaseInstanceTypefailoverReplicaClass = Class of TDatabaseInstanceTypefailoverReplica;
-  
+
   { --------------------------------------------------------------------
     TDatabaseInstance
     --------------------------------------------------------------------}
-  
+
   TDatabaseInstance = Class(TGoogleBaseObject)
   Private
     FbackendType : String;
@@ -438,11 +444,11 @@ type
     Property suspensionReason : TStringArray Index 176 Read FsuspensionReason Write SetsuspensionReason;
   end;
   TDatabaseInstanceClass = Class of TDatabaseInstance;
-  
+
   { --------------------------------------------------------------------
     TDatabasesListResponse
     --------------------------------------------------------------------}
-  
+
   TDatabasesListResponse = Class(TGoogleBaseObject)
   Private
     Fitems : TDatabasesListResponseTypeitemsArray;
@@ -461,11 +467,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TDatabasesListResponseClass = Class of TDatabasesListResponse;
-  
+
   { --------------------------------------------------------------------
     TExportContextTypecsvExportOptions
     --------------------------------------------------------------------}
-  
+
   TExportContextTypecsvExportOptions = Class(TGoogleBaseObject)
   Private
     FselectQuery : String;
@@ -477,11 +483,11 @@ type
     Property selectQuery : String Index 0 Read FselectQuery Write SetselectQuery;
   end;
   TExportContextTypecsvExportOptionsClass = Class of TExportContextTypecsvExportOptions;
-  
+
   { --------------------------------------------------------------------
     TExportContextTypesqlExportOptions
     --------------------------------------------------------------------}
-  
+
   TExportContextTypesqlExportOptions = Class(TGoogleBaseObject)
   Private
     FschemaOnly : boolean;
@@ -500,11 +506,11 @@ type
     Property tables : TStringArray Index 8 Read Ftables Write Settables;
   end;
   TExportContextTypesqlExportOptionsClass = Class of TExportContextTypesqlExportOptions;
-  
+
   { --------------------------------------------------------------------
     TExportContext
     --------------------------------------------------------------------}
-  
+
   TExportContext = Class(TGoogleBaseObject)
   Private
     FcsvExportOptions : TExportContextTypecsvExportOptions;
@@ -535,11 +541,11 @@ type
     Property uri : String Index 40 Read Furi Write Seturi;
   end;
   TExportContextClass = Class of TExportContext;
-  
+
   { --------------------------------------------------------------------
     TFailoverContext
     --------------------------------------------------------------------}
-  
+
   TFailoverContext = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -554,11 +560,11 @@ type
     Property settingsVersion : String Index 8 Read FsettingsVersion Write SetsettingsVersion;
   end;
   TFailoverContextClass = Class of TFailoverContext;
-  
+
   { --------------------------------------------------------------------
     TFlag
     --------------------------------------------------------------------}
-  
+
   TFlag = Class(TGoogleBaseObject)
   Private
     FallowedStringValues : TStringArray;
@@ -596,11 +602,11 @@ type
     Property _type : String Index 56 Read F_type Write Set_type;
   end;
   TFlagClass = Class of TFlag;
-  
+
   { --------------------------------------------------------------------
     TFlagsListResponse
     --------------------------------------------------------------------}
-  
+
   TFlagsListResponse = Class(TGoogleBaseObject)
   Private
     Fitems : TFlagsListResponseTypeitemsArray;
@@ -619,11 +625,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TFlagsListResponseClass = Class of TFlagsListResponse;
-  
+
   { --------------------------------------------------------------------
     TImportContextTypecsvImportOptions
     --------------------------------------------------------------------}
-  
+
   TImportContextTypecsvImportOptions = Class(TGoogleBaseObject)
   Private
     Fcolumns : TStringArray;
@@ -642,11 +648,11 @@ type
     Property table : String Index 8 Read Ftable Write Settable;
   end;
   TImportContextTypecsvImportOptionsClass = Class of TImportContextTypecsvImportOptions;
-  
+
   { --------------------------------------------------------------------
     TImportContext
     --------------------------------------------------------------------}
-  
+
   TImportContext = Class(TGoogleBaseObject)
   Private
     FcsvImportOptions : TImportContextTypecsvImportOptions;
@@ -670,11 +676,11 @@ type
     Property uri : String Index 32 Read Furi Write Seturi;
   end;
   TImportContextClass = Class of TImportContext;
-  
+
   { --------------------------------------------------------------------
     TInstancesCloneRequest
     --------------------------------------------------------------------}
-  
+
   TInstancesCloneRequest = Class(TGoogleBaseObject)
   Private
     FcloneContext : TCloneContext;
@@ -686,11 +692,11 @@ type
     Property cloneContext : TCloneContext Index 0 Read FcloneContext Write SetcloneContext;
   end;
   TInstancesCloneRequestClass = Class of TInstancesCloneRequest;
-  
+
   { --------------------------------------------------------------------
     TInstancesExportRequest
     --------------------------------------------------------------------}
-  
+
   TInstancesExportRequest = Class(TGoogleBaseObject)
   Private
     FexportContext : TExportContext;
@@ -702,11 +708,11 @@ type
     Property exportContext : TExportContext Index 0 Read FexportContext Write SetexportContext;
   end;
   TInstancesExportRequestClass = Class of TInstancesExportRequest;
-  
+
   { --------------------------------------------------------------------
     TInstancesFailoverRequest
     --------------------------------------------------------------------}
-  
+
   TInstancesFailoverRequest = Class(TGoogleBaseObject)
   Private
     FfailoverContext : TFailoverContext;
@@ -718,11 +724,11 @@ type
     Property failoverContext : TFailoverContext Index 0 Read FfailoverContext Write SetfailoverContext;
   end;
   TInstancesFailoverRequestClass = Class of TInstancesFailoverRequest;
-  
+
   { --------------------------------------------------------------------
     TInstancesImportRequest
     --------------------------------------------------------------------}
-  
+
   TInstancesImportRequest = Class(TGoogleBaseObject)
   Private
     FimportContext : TImportContext;
@@ -734,11 +740,11 @@ type
     Property importContext : TImportContext Index 0 Read FimportContext Write SetimportContext;
   end;
   TInstancesImportRequestClass = Class of TInstancesImportRequest;
-  
+
   { --------------------------------------------------------------------
     TInstancesListResponse
     --------------------------------------------------------------------}
-  
+
   TInstancesListResponse = Class(TGoogleBaseObject)
   Private
     Fitems : TInstancesListResponseTypeitemsArray;
@@ -760,11 +766,11 @@ type
     Property nextPageToken : String Index 16 Read FnextPageToken Write SetnextPageToken;
   end;
   TInstancesListResponseClass = Class of TInstancesListResponse;
-  
+
   { --------------------------------------------------------------------
     TInstancesRestoreBackupRequest
     --------------------------------------------------------------------}
-  
+
   TInstancesRestoreBackupRequest = Class(TGoogleBaseObject)
   Private
     FrestoreBackupContext : TRestoreBackupContext;
@@ -776,11 +782,11 @@ type
     Property restoreBackupContext : TRestoreBackupContext Index 0 Read FrestoreBackupContext Write SetrestoreBackupContext;
   end;
   TInstancesRestoreBackupRequestClass = Class of TInstancesRestoreBackupRequest;
-  
+
   { --------------------------------------------------------------------
     TIpConfiguration
     --------------------------------------------------------------------}
-  
+
   TIpConfiguration = Class(TGoogleBaseObject)
   Private
     FauthorizedNetworks : TIpConfigurationTypeauthorizedNetworksArray;
@@ -802,11 +808,11 @@ type
     Property requireSsl : boolean Index 16 Read FrequireSsl Write SetrequireSsl;
   end;
   TIpConfigurationClass = Class of TIpConfiguration;
-  
+
   { --------------------------------------------------------------------
     TIpMapping
     --------------------------------------------------------------------}
-  
+
   TIpMapping = Class(TGoogleBaseObject)
   Private
     FipAddress : String;
@@ -821,11 +827,11 @@ type
     Property timeToRetire : TDatetime Index 8 Read FtimeToRetire Write SettimeToRetire;
   end;
   TIpMappingClass = Class of TIpMapping;
-  
+
   { --------------------------------------------------------------------
     TLocationPreference
     --------------------------------------------------------------------}
-  
+
   TLocationPreference = Class(TGoogleBaseObject)
   Private
     FfollowGaeApplication : String;
@@ -843,11 +849,11 @@ type
     Property zone : String Index 16 Read Fzone Write Setzone;
   end;
   TLocationPreferenceClass = Class of TLocationPreference;
-  
+
   { --------------------------------------------------------------------
     TMaintenanceWindow
     --------------------------------------------------------------------}
-  
+
   TMaintenanceWindow = Class(TGoogleBaseObject)
   Private
     Fday : integer;
@@ -868,11 +874,11 @@ type
     Property updateTrack : String Index 24 Read FupdateTrack Write SetupdateTrack;
   end;
   TMaintenanceWindowClass = Class of TMaintenanceWindow;
-  
+
   { --------------------------------------------------------------------
     TMySqlReplicaConfiguration
     --------------------------------------------------------------------}
-  
+
   TMySqlReplicaConfiguration = Class(TGoogleBaseObject)
   Private
     FcaCertificate : String;
@@ -914,11 +920,11 @@ type
     Property verifyServerCertificate : boolean Index 80 Read FverifyServerCertificate Write SetverifyServerCertificate;
   end;
   TMySqlReplicaConfigurationClass = Class of TMySqlReplicaConfiguration;
-  
+
   { --------------------------------------------------------------------
     TOnPremisesConfiguration
     --------------------------------------------------------------------}
-  
+
   TOnPremisesConfiguration = Class(TGoogleBaseObject)
   Private
     FhostPort : String;
@@ -933,11 +939,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TOnPremisesConfigurationClass = Class of TOnPremisesConfiguration;
-  
+
   { --------------------------------------------------------------------
     TOperation
     --------------------------------------------------------------------}
-  
+
   TOperation = Class(TGoogleBaseObject)
   Private
     FendTime : TDatetime;
@@ -991,11 +997,11 @@ type
     Property user : String Index 112 Read Fuser Write Setuser;
   end;
   TOperationClass = Class of TOperation;
-  
+
   { --------------------------------------------------------------------
     TOperationError
     --------------------------------------------------------------------}
-  
+
   TOperationError = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -1013,11 +1019,11 @@ type
     Property message : String Index 16 Read Fmessage Write Setmessage;
   end;
   TOperationErrorClass = Class of TOperationError;
-  
+
   { --------------------------------------------------------------------
     TOperationErrors
     --------------------------------------------------------------------}
-  
+
   TOperationErrors = Class(TGoogleBaseObject)
   Private
     Ferrors : TOperationErrorsTypeerrorsArray;
@@ -1036,11 +1042,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TOperationErrorsClass = Class of TOperationErrors;
-  
+
   { --------------------------------------------------------------------
     TOperationsListResponse
     --------------------------------------------------------------------}
-  
+
   TOperationsListResponse = Class(TGoogleBaseObject)
   Private
     Fitems : TOperationsListResponseTypeitemsArray;
@@ -1062,11 +1068,11 @@ type
     Property nextPageToken : String Index 16 Read FnextPageToken Write SetnextPageToken;
   end;
   TOperationsListResponseClass = Class of TOperationsListResponse;
-  
+
   { --------------------------------------------------------------------
     TReplicaConfiguration
     --------------------------------------------------------------------}
-  
+
   TReplicaConfiguration = Class(TGoogleBaseObject)
   Private
     FfailoverTarget : boolean;
@@ -1084,11 +1090,11 @@ type
     Property mysqlReplicaConfiguration : TMySqlReplicaConfiguration Index 16 Read FmysqlReplicaConfiguration Write SetmysqlReplicaConfiguration;
   end;
   TReplicaConfigurationClass = Class of TReplicaConfiguration;
-  
+
   { --------------------------------------------------------------------
     TRestoreBackupContext
     --------------------------------------------------------------------}
-  
+
   TRestoreBackupContext = Class(TGoogleBaseObject)
   Private
     FbackupRunId : String;
@@ -1106,11 +1112,11 @@ type
     Property kind : String Index 16 Read Fkind Write Setkind;
   end;
   TRestoreBackupContextClass = Class of TRestoreBackupContext;
-  
+
   { --------------------------------------------------------------------
     TSettings
     --------------------------------------------------------------------}
-  
+
   TSettings = Class(TGoogleBaseObject)
   Private
     FactivationPolicy : String;
@@ -1174,11 +1180,11 @@ type
     Property tier : String Index 128 Read Ftier Write Settier;
   end;
   TSettingsClass = Class of TSettings;
-  
+
   { --------------------------------------------------------------------
     TSslCert
     --------------------------------------------------------------------}
-  
+
   TSslCert = Class(TGoogleBaseObject)
   Private
     Fcert : String;
@@ -1214,11 +1220,11 @@ type
     Property sha1Fingerprint : String Index 64 Read Fsha1Fingerprint Write Setsha1Fingerprint;
   end;
   TSslCertClass = Class of TSslCert;
-  
+
   { --------------------------------------------------------------------
     TSslCertDetail
     --------------------------------------------------------------------}
-  
+
   TSslCertDetail = Class(TGoogleBaseObject)
   Private
     FcertInfo : TSslCert;
@@ -1233,11 +1239,11 @@ type
     Property certPrivateKey : String Index 8 Read FcertPrivateKey Write SetcertPrivateKey;
   end;
   TSslCertDetailClass = Class of TSslCertDetail;
-  
+
   { --------------------------------------------------------------------
     TSslCertsCreateEphemeralRequest
     --------------------------------------------------------------------}
-  
+
   TSslCertsCreateEphemeralRequest = Class(TGoogleBaseObject)
   Private
     Fpublic_key : String;
@@ -1249,11 +1255,11 @@ type
     Property public_key : String Index 0 Read Fpublic_key Write Setpublic_key;
   end;
   TSslCertsCreateEphemeralRequestClass = Class of TSslCertsCreateEphemeralRequest;
-  
+
   { --------------------------------------------------------------------
     TSslCertsInsertRequest
     --------------------------------------------------------------------}
-  
+
   TSslCertsInsertRequest = Class(TGoogleBaseObject)
   Private
     FcommonName : String;
@@ -1265,11 +1271,11 @@ type
     Property commonName : String Index 0 Read FcommonName Write SetcommonName;
   end;
   TSslCertsInsertRequestClass = Class of TSslCertsInsertRequest;
-  
+
   { --------------------------------------------------------------------
     TSslCertsInsertResponse
     --------------------------------------------------------------------}
-  
+
   TSslCertsInsertResponse = Class(TGoogleBaseObject)
   Private
     FclientCert : TSslCertDetail;
@@ -1290,11 +1296,11 @@ type
     Property serverCaCert : TSslCert Index 24 Read FserverCaCert Write SetserverCaCert;
   end;
   TSslCertsInsertResponseClass = Class of TSslCertsInsertResponse;
-  
+
   { --------------------------------------------------------------------
     TSslCertsListResponse
     --------------------------------------------------------------------}
-  
+
   TSslCertsListResponse = Class(TGoogleBaseObject)
   Private
     Fitems : TSslCertsListResponseTypeitemsArray;
@@ -1313,11 +1319,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TSslCertsListResponseClass = Class of TSslCertsListResponse;
-  
+
   { --------------------------------------------------------------------
     TTier
     --------------------------------------------------------------------}
-  
+
   TTier = Class(TGoogleBaseObject)
   Private
     FDiskQuota : String;
@@ -1345,11 +1351,11 @@ type
     Property tier : String Index 32 Read Ftier Write Settier;
   end;
   TTierClass = Class of TTier;
-  
+
   { --------------------------------------------------------------------
     TTiersListResponse
     --------------------------------------------------------------------}
-  
+
   TTiersListResponse = Class(TGoogleBaseObject)
   Private
     Fitems : TTiersListResponseTypeitemsArray;
@@ -1368,11 +1374,11 @@ type
     Property kind : String Index 8 Read Fkind Write Setkind;
   end;
   TTiersListResponseClass = Class of TTiersListResponse;
-  
+
   { --------------------------------------------------------------------
     TUser
     --------------------------------------------------------------------}
-  
+
   TUser = Class(TGoogleBaseObject)
   Private
     Fetag : String;
@@ -1402,11 +1408,11 @@ type
     Property project : String Index 48 Read Fproject Write Setproject;
   end;
   TUserClass = Class of TUser;
-  
+
   { --------------------------------------------------------------------
     TUsersListResponse
     --------------------------------------------------------------------}
-  
+
   TUsersListResponse = Class(TGoogleBaseObject)
   Private
     Fitems : TUsersListResponseTypeitemsArray;
@@ -1428,19 +1434,19 @@ type
     Property nextPageToken : String Index 16 Read FnextPageToken Write SetnextPageToken;
   end;
   TUsersListResponseClass = Class of TUsersListResponse;
-  
+
   { --------------------------------------------------------------------
     TBackupRunsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TBackupRunsResource, method List
-  
+
   TBackupRunsListOptions = Record
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TBackupRunsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -1450,12 +1456,12 @@ type
     Function List(instance: string; project: string; AQuery : string  = '') : TBackupRunsListResponse;
     Function List(instance: string; project: string; AQuery : TBackupRunslistOptions) : TBackupRunsListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TDatabasesResource
     --------------------------------------------------------------------}
-  
+
   TDatabasesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -1467,32 +1473,32 @@ type
     Function Patch(database: string; instance: string; project: string; aDatabase : TDatabase) : TOperation;
     Function Update(database: string; instance: string; project: string; aDatabase : TDatabase) : TOperation;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TFlagsResource
     --------------------------------------------------------------------}
-  
+
   TFlagsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
     Class Function DefaultAPI : TGoogleAPIClass; override;
     Function List : TFlagsListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TInstancesResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TInstancesResource, method List
-  
+
   TInstancesListOptions = Record
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TInstancesResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -1515,21 +1521,21 @@ type
     Function StopReplica(instance: string; project: string) : TOperation;
     Function Update(instance: string; project: string; aDatabaseInstance : TDatabaseInstance) : TOperation;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TOperationsResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TOperationsResource, method List
-  
+
   TOperationsListOptions = Record
     instance : String;
     maxResults : integer;
     pageToken : String;
   end;
-  
+
   TOperationsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -1538,12 +1544,12 @@ type
     Function List(project: string; AQuery : string  = '') : TOperationsListResponse;
     Function List(project: string; AQuery : TOperationslistOptions) : TOperationsListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TSslCertsResource
     --------------------------------------------------------------------}
-  
+
   TSslCertsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -1554,40 +1560,40 @@ type
     Function Insert(instance: string; project: string; aSslCertsInsertRequest : TSslCertsInsertRequest) : TSslCertsInsertResponse;
     Function List(instance: string; project: string) : TSslCertsListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TTiersResource
     --------------------------------------------------------------------}
-  
+
   TTiersResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
     Class Function DefaultAPI : TGoogleAPIClass; override;
     Function List(project: string) : TTiersListResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TUsersResource
     --------------------------------------------------------------------}
-  
-  
+
+
   //Optional query Options for TUsersResource, method Delete
-  
+
   TUsersDeleteOptions = Record
     host : String;
     _name : String;
   end;
-  
-  
+
+
   //Optional query Options for TUsersResource, method Update
-  
+
   TUsersUpdateOptions = Record
     host : String;
     _name : String;
   end;
-  
+
   TUsersResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
@@ -1599,12 +1605,12 @@ type
     Function Update(instance: string; project: string; aUser : TUser; AQuery : string  = '') : TOperation;
     Function Update(instance: string; project: string; aUser : TUser; AQuery : TUsersupdateOptions) : TOperation;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TSqladminAPI
     --------------------------------------------------------------------}
-  
+
   TSqladminAPI = Class(TGoogleAPI)
   Private
     FBackupRunsInstance : TBackupRunsResource;
@@ -1681,7 +1687,7 @@ implementation
   --------------------------------------------------------------------}
 
 
-Procedure TAclEntry.SetexpirationTime(AIndex : Integer; const AValue : TDatetime); 
+Procedure TAclEntry.SetexpirationTime(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (FexpirationTime=AValue) then exit;
@@ -1691,7 +1697,7 @@ end;
 
 
 
-Procedure TAclEntry.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAclEntry.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1701,7 +1707,7 @@ end;
 
 
 
-Procedure TAclEntry.Setname(AIndex : Integer; const AValue : String); 
+Procedure TAclEntry.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -1711,7 +1717,7 @@ end;
 
 
 
-Procedure TAclEntry.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TAclEntry.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -1728,7 +1734,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TBackupConfiguration.SetbinaryLogEnabled(AIndex : Integer; const AValue : boolean); 
+Procedure TBackupConfiguration.SetbinaryLogEnabled(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FbinaryLogEnabled=AValue) then exit;
@@ -1738,7 +1744,7 @@ end;
 
 
 
-Procedure TBackupConfiguration.Setenabled(AIndex : Integer; const AValue : boolean); 
+Procedure TBackupConfiguration.Setenabled(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fenabled=AValue) then exit;
@@ -1748,7 +1754,7 @@ end;
 
 
 
-Procedure TBackupConfiguration.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TBackupConfiguration.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1758,7 +1764,7 @@ end;
 
 
 
-Procedure TBackupConfiguration.SetstartTime(AIndex : Integer; const AValue : String); 
+Procedure TBackupConfiguration.SetstartTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FstartTime=AValue) then exit;
@@ -1775,7 +1781,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TBackupRun.SetendTime(AIndex : Integer; const AValue : TDatetime); 
+Procedure TBackupRun.SetendTime(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (FendTime=AValue) then exit;
@@ -1785,7 +1791,7 @@ end;
 
 
 
-Procedure TBackupRun.SetenqueuedTime(AIndex : Integer; const AValue : TDatetime); 
+Procedure TBackupRun.SetenqueuedTime(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (FenqueuedTime=AValue) then exit;
@@ -1795,7 +1801,7 @@ end;
 
 
 
-Procedure TBackupRun.Seterror(AIndex : Integer; const AValue : TOperationError); 
+Procedure TBackupRun.Seterror(AIndex : Integer; const AValue : TOperationError);
 
 begin
   If (Ferror=AValue) then exit;
@@ -1805,7 +1811,7 @@ end;
 
 
 
-Procedure TBackupRun.Setid(AIndex : Integer; const AValue : String); 
+Procedure TBackupRun.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -1815,7 +1821,7 @@ end;
 
 
 
-Procedure TBackupRun.Setinstance(AIndex : Integer; const AValue : String); 
+Procedure TBackupRun.Setinstance(AIndex : Integer; const AValue : String);
 
 begin
   If (Finstance=AValue) then exit;
@@ -1825,7 +1831,7 @@ end;
 
 
 
-Procedure TBackupRun.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TBackupRun.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1835,7 +1841,7 @@ end;
 
 
 
-Procedure TBackupRun.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TBackupRun.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -1845,7 +1851,7 @@ end;
 
 
 
-Procedure TBackupRun.SetstartTime(AIndex : Integer; const AValue : TDatetime); 
+Procedure TBackupRun.SetstartTime(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (FstartTime=AValue) then exit;
@@ -1855,7 +1861,7 @@ end;
 
 
 
-Procedure TBackupRun.Setstatus(AIndex : Integer; const AValue : String); 
+Procedure TBackupRun.Setstatus(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -1865,7 +1871,7 @@ end;
 
 
 
-Procedure TBackupRun.SetwindowStartTime(AIndex : Integer; const AValue : TDatetime); 
+Procedure TBackupRun.SetwindowStartTime(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (FwindowStartTime=AValue) then exit;
@@ -1882,7 +1888,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TBackupRunsListResponse.Setitems(AIndex : Integer; const AValue : TBackupRunsListResponseTypeitemsArray); 
+Procedure TBackupRunsListResponse.Setitems(AIndex : Integer; const AValue : TBackupRunsListResponseTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -1892,7 +1898,7 @@ end;
 
 
 
-Procedure TBackupRunsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TBackupRunsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1902,7 +1908,7 @@ end;
 
 
 
-Procedure TBackupRunsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TBackupRunsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -1913,7 +1919,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TBackupRunsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TBackupRunsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1932,7 +1938,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TBinLogCoordinates.SetbinLogFileName(AIndex : Integer; const AValue : String); 
+Procedure TBinLogCoordinates.SetbinLogFileName(AIndex : Integer; const AValue : String);
 
 begin
   If (FbinLogFileName=AValue) then exit;
@@ -1942,7 +1948,7 @@ end;
 
 
 
-Procedure TBinLogCoordinates.SetbinLogPosition(AIndex : Integer; const AValue : String); 
+Procedure TBinLogCoordinates.SetbinLogPosition(AIndex : Integer; const AValue : String);
 
 begin
   If (FbinLogPosition=AValue) then exit;
@@ -1952,7 +1958,7 @@ end;
 
 
 
-Procedure TBinLogCoordinates.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TBinLogCoordinates.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1969,7 +1975,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCloneContext.SetbinLogCoordinates(AIndex : Integer; const AValue : TBinLogCoordinates); 
+Procedure TCloneContext.SetbinLogCoordinates(AIndex : Integer; const AValue : TBinLogCoordinates);
 
 begin
   If (FbinLogCoordinates=AValue) then exit;
@@ -1979,7 +1985,7 @@ end;
 
 
 
-Procedure TCloneContext.SetdestinationInstanceName(AIndex : Integer; const AValue : String); 
+Procedure TCloneContext.SetdestinationInstanceName(AIndex : Integer; const AValue : String);
 
 begin
   If (FdestinationInstanceName=AValue) then exit;
@@ -1989,7 +1995,7 @@ end;
 
 
 
-Procedure TCloneContext.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TCloneContext.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -2006,7 +2012,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDatabase.Setcharset(AIndex : Integer; const AValue : String); 
+Procedure TDatabase.Setcharset(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcharset=AValue) then exit;
@@ -2016,7 +2022,7 @@ end;
 
 
 
-Procedure TDatabase.Setcollation(AIndex : Integer; const AValue : String); 
+Procedure TDatabase.Setcollation(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcollation=AValue) then exit;
@@ -2026,7 +2032,7 @@ end;
 
 
 
-Procedure TDatabase.Setetag(AIndex : Integer; const AValue : String); 
+Procedure TDatabase.Setetag(AIndex : Integer; const AValue : String);
 
 begin
   If (Fetag=AValue) then exit;
@@ -2036,7 +2042,7 @@ end;
 
 
 
-Procedure TDatabase.Setinstance(AIndex : Integer; const AValue : String); 
+Procedure TDatabase.Setinstance(AIndex : Integer; const AValue : String);
 
 begin
   If (Finstance=AValue) then exit;
@@ -2046,7 +2052,7 @@ end;
 
 
 
-Procedure TDatabase.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TDatabase.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -2056,7 +2062,7 @@ end;
 
 
 
-Procedure TDatabase.Setname(AIndex : Integer; const AValue : String); 
+Procedure TDatabase.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -2066,7 +2072,7 @@ end;
 
 
 
-Procedure TDatabase.Setproject(AIndex : Integer; const AValue : String); 
+Procedure TDatabase.Setproject(AIndex : Integer; const AValue : String);
 
 begin
   If (Fproject=AValue) then exit;
@@ -2076,7 +2082,7 @@ end;
 
 
 
-Procedure TDatabase.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TDatabase.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -2093,7 +2099,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDatabaseFlags.Setname(AIndex : Integer; const AValue : String); 
+Procedure TDatabaseFlags.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -2103,7 +2109,7 @@ end;
 
 
 
-Procedure TDatabaseFlags.Setvalue(AIndex : Integer; const AValue : String); 
+Procedure TDatabaseFlags.Setvalue(AIndex : Integer; const AValue : String);
 
 begin
   If (Fvalue=AValue) then exit;
@@ -2120,7 +2126,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDatabaseInstanceTypefailoverReplica.Setavailable(AIndex : Integer; const AValue : boolean); 
+Procedure TDatabaseInstanceTypefailoverReplica.Setavailable(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Favailable=AValue) then exit;
@@ -2130,7 +2136,7 @@ end;
 
 
 
-Procedure TDatabaseInstanceTypefailoverReplica.Setname(AIndex : Integer; const AValue : String); 
+Procedure TDatabaseInstanceTypefailoverReplica.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -2147,7 +2153,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDatabaseInstance.SetbackendType(AIndex : Integer; const AValue : String); 
+Procedure TDatabaseInstance.SetbackendType(AIndex : Integer; const AValue : String);
 
 begin
   If (FbackendType=AValue) then exit;
@@ -2157,7 +2163,7 @@ end;
 
 
 
-Procedure TDatabaseInstance.SetcurrentDiskSize(AIndex : Integer; const AValue : String); 
+Procedure TDatabaseInstance.SetcurrentDiskSize(AIndex : Integer; const AValue : String);
 
 begin
   If (FcurrentDiskSize=AValue) then exit;
@@ -2167,7 +2173,7 @@ end;
 
 
 
-Procedure TDatabaseInstance.SetdatabaseVersion(AIndex : Integer; const AValue : String); 
+Procedure TDatabaseInstance.SetdatabaseVersion(AIndex : Integer; const AValue : String);
 
 begin
   If (FdatabaseVersion=AValue) then exit;
@@ -2177,7 +2183,7 @@ end;
 
 
 
-Procedure TDatabaseInstance.Setetag(AIndex : Integer; const AValue : String); 
+Procedure TDatabaseInstance.Setetag(AIndex : Integer; const AValue : String);
 
 begin
   If (Fetag=AValue) then exit;
@@ -2187,7 +2193,7 @@ end;
 
 
 
-Procedure TDatabaseInstance.SetfailoverReplica(AIndex : Integer; const AValue : TDatabaseInstanceTypefailoverReplica); 
+Procedure TDatabaseInstance.SetfailoverReplica(AIndex : Integer; const AValue : TDatabaseInstanceTypefailoverReplica);
 
 begin
   If (FfailoverReplica=AValue) then exit;
@@ -2197,7 +2203,7 @@ end;
 
 
 
-Procedure TDatabaseInstance.SetinstanceType(AIndex : Integer; const AValue : String); 
+Procedure TDatabaseInstance.SetinstanceType(AIndex : Integer; const AValue : String);
 
 begin
   If (FinstanceType=AValue) then exit;
@@ -2207,7 +2213,7 @@ end;
 
 
 
-Procedure TDatabaseInstance.SetipAddresses(AIndex : Integer; const AValue : TDatabaseInstanceTypeipAddressesArray); 
+Procedure TDatabaseInstance.SetipAddresses(AIndex : Integer; const AValue : TDatabaseInstanceTypeipAddressesArray);
 
 begin
   If (FipAddresses=AValue) then exit;
@@ -2217,7 +2223,7 @@ end;
 
 
 
-Procedure TDatabaseInstance.Setipv6Address(AIndex : Integer; const AValue : String); 
+Procedure TDatabaseInstance.Setipv6Address(AIndex : Integer; const AValue : String);
 
 begin
   If (Fipv6Address=AValue) then exit;
@@ -2227,7 +2233,7 @@ end;
 
 
 
-Procedure TDatabaseInstance.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TDatabaseInstance.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -2237,7 +2243,7 @@ end;
 
 
 
-Procedure TDatabaseInstance.SetmasterInstanceName(AIndex : Integer; const AValue : String); 
+Procedure TDatabaseInstance.SetmasterInstanceName(AIndex : Integer; const AValue : String);
 
 begin
   If (FmasterInstanceName=AValue) then exit;
@@ -2247,7 +2253,7 @@ end;
 
 
 
-Procedure TDatabaseInstance.SetmaxDiskSize(AIndex : Integer; const AValue : String); 
+Procedure TDatabaseInstance.SetmaxDiskSize(AIndex : Integer; const AValue : String);
 
 begin
   If (FmaxDiskSize=AValue) then exit;
@@ -2257,7 +2263,7 @@ end;
 
 
 
-Procedure TDatabaseInstance.Setname(AIndex : Integer; const AValue : String); 
+Procedure TDatabaseInstance.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -2267,7 +2273,7 @@ end;
 
 
 
-Procedure TDatabaseInstance.SetonPremisesConfiguration(AIndex : Integer; const AValue : TOnPremisesConfiguration); 
+Procedure TDatabaseInstance.SetonPremisesConfiguration(AIndex : Integer; const AValue : TOnPremisesConfiguration);
 
 begin
   If (FonPremisesConfiguration=AValue) then exit;
@@ -2277,7 +2283,7 @@ end;
 
 
 
-Procedure TDatabaseInstance.Setproject(AIndex : Integer; const AValue : String); 
+Procedure TDatabaseInstance.Setproject(AIndex : Integer; const AValue : String);
 
 begin
   If (Fproject=AValue) then exit;
@@ -2287,7 +2293,7 @@ end;
 
 
 
-Procedure TDatabaseInstance.Setregion(AIndex : Integer; const AValue : String); 
+Procedure TDatabaseInstance.Setregion(AIndex : Integer; const AValue : String);
 
 begin
   If (Fregion=AValue) then exit;
@@ -2297,7 +2303,7 @@ end;
 
 
 
-Procedure TDatabaseInstance.SetreplicaConfiguration(AIndex : Integer; const AValue : TReplicaConfiguration); 
+Procedure TDatabaseInstance.SetreplicaConfiguration(AIndex : Integer; const AValue : TReplicaConfiguration);
 
 begin
   If (FreplicaConfiguration=AValue) then exit;
@@ -2307,7 +2313,7 @@ end;
 
 
 
-Procedure TDatabaseInstance.SetreplicaNames(AIndex : Integer; const AValue : TStringArray); 
+Procedure TDatabaseInstance.SetreplicaNames(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FreplicaNames=AValue) then exit;
@@ -2317,7 +2323,7 @@ end;
 
 
 
-Procedure TDatabaseInstance.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TDatabaseInstance.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -2327,7 +2333,7 @@ end;
 
 
 
-Procedure TDatabaseInstance.SetserverCaCert(AIndex : Integer; const AValue : TSslCert); 
+Procedure TDatabaseInstance.SetserverCaCert(AIndex : Integer; const AValue : TSslCert);
 
 begin
   If (FserverCaCert=AValue) then exit;
@@ -2337,7 +2343,7 @@ end;
 
 
 
-Procedure TDatabaseInstance.SetserviceAccountEmailAddress(AIndex : Integer; const AValue : String); 
+Procedure TDatabaseInstance.SetserviceAccountEmailAddress(AIndex : Integer; const AValue : String);
 
 begin
   If (FserviceAccountEmailAddress=AValue) then exit;
@@ -2347,7 +2353,7 @@ end;
 
 
 
-Procedure TDatabaseInstance.Setsettings(AIndex : Integer; const AValue : TSettings); 
+Procedure TDatabaseInstance.Setsettings(AIndex : Integer; const AValue : TSettings);
 
 begin
   If (Fsettings=AValue) then exit;
@@ -2357,7 +2363,7 @@ end;
 
 
 
-Procedure TDatabaseInstance.Setstate(AIndex : Integer; const AValue : String); 
+Procedure TDatabaseInstance.Setstate(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstate=AValue) then exit;
@@ -2367,7 +2373,7 @@ end;
 
 
 
-Procedure TDatabaseInstance.SetsuspensionReason(AIndex : Integer; const AValue : TStringArray); 
+Procedure TDatabaseInstance.SetsuspensionReason(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FsuspensionReason=AValue) then exit;
@@ -2378,7 +2384,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TDatabaseInstance.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TDatabaseInstance.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2399,7 +2405,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TDatabasesListResponse.Setitems(AIndex : Integer; const AValue : TDatabasesListResponseTypeitemsArray); 
+Procedure TDatabasesListResponse.Setitems(AIndex : Integer; const AValue : TDatabasesListResponseTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -2409,7 +2415,7 @@ end;
 
 
 
-Procedure TDatabasesListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TDatabasesListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -2420,7 +2426,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TDatabasesListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TDatabasesListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2439,7 +2445,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TExportContextTypecsvExportOptions.SetselectQuery(AIndex : Integer; const AValue : String); 
+Procedure TExportContextTypecsvExportOptions.SetselectQuery(AIndex : Integer; const AValue : String);
 
 begin
   If (FselectQuery=AValue) then exit;
@@ -2456,7 +2462,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TExportContextTypesqlExportOptions.SetschemaOnly(AIndex : Integer; const AValue : boolean); 
+Procedure TExportContextTypesqlExportOptions.SetschemaOnly(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FschemaOnly=AValue) then exit;
@@ -2466,7 +2472,7 @@ end;
 
 
 
-Procedure TExportContextTypesqlExportOptions.Settables(AIndex : Integer; const AValue : TStringArray); 
+Procedure TExportContextTypesqlExportOptions.Settables(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Ftables=AValue) then exit;
@@ -2477,7 +2483,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TExportContextTypesqlExportOptions.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TExportContextTypesqlExportOptions.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2496,7 +2502,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TExportContext.SetcsvExportOptions(AIndex : Integer; const AValue : TExportContextTypecsvExportOptions); 
+Procedure TExportContext.SetcsvExportOptions(AIndex : Integer; const AValue : TExportContextTypecsvExportOptions);
 
 begin
   If (FcsvExportOptions=AValue) then exit;
@@ -2506,7 +2512,7 @@ end;
 
 
 
-Procedure TExportContext.Setdatabases(AIndex : Integer; const AValue : TStringArray); 
+Procedure TExportContext.Setdatabases(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Fdatabases=AValue) then exit;
@@ -2516,7 +2522,7 @@ end;
 
 
 
-Procedure TExportContext.SetfileType(AIndex : Integer; const AValue : String); 
+Procedure TExportContext.SetfileType(AIndex : Integer; const AValue : String);
 
 begin
   If (FfileType=AValue) then exit;
@@ -2526,7 +2532,7 @@ end;
 
 
 
-Procedure TExportContext.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TExportContext.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -2536,7 +2542,7 @@ end;
 
 
 
-Procedure TExportContext.SetsqlExportOptions(AIndex : Integer; const AValue : TExportContextTypesqlExportOptions); 
+Procedure TExportContext.SetsqlExportOptions(AIndex : Integer; const AValue : TExportContextTypesqlExportOptions);
 
 begin
   If (FsqlExportOptions=AValue) then exit;
@@ -2546,7 +2552,7 @@ end;
 
 
 
-Procedure TExportContext.Seturi(AIndex : Integer; const AValue : String); 
+Procedure TExportContext.Seturi(AIndex : Integer; const AValue : String);
 
 begin
   If (Furi=AValue) then exit;
@@ -2557,7 +2563,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TExportContext.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TExportContext.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2576,7 +2582,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFailoverContext.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TFailoverContext.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -2586,7 +2592,7 @@ end;
 
 
 
-Procedure TFailoverContext.SetsettingsVersion(AIndex : Integer; const AValue : String); 
+Procedure TFailoverContext.SetsettingsVersion(AIndex : Integer; const AValue : String);
 
 begin
   If (FsettingsVersion=AValue) then exit;
@@ -2603,7 +2609,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFlag.SetallowedStringValues(AIndex : Integer; const AValue : TStringArray); 
+Procedure TFlag.SetallowedStringValues(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FallowedStringValues=AValue) then exit;
@@ -2613,7 +2619,7 @@ end;
 
 
 
-Procedure TFlag.SetappliesTo(AIndex : Integer; const AValue : TStringArray); 
+Procedure TFlag.SetappliesTo(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FappliesTo=AValue) then exit;
@@ -2623,7 +2629,7 @@ end;
 
 
 
-Procedure TFlag.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TFlag.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -2633,7 +2639,7 @@ end;
 
 
 
-Procedure TFlag.SetmaxValue(AIndex : Integer; const AValue : String); 
+Procedure TFlag.SetmaxValue(AIndex : Integer; const AValue : String);
 
 begin
   If (FmaxValue=AValue) then exit;
@@ -2643,7 +2649,7 @@ end;
 
 
 
-Procedure TFlag.SetminValue(AIndex : Integer; const AValue : String); 
+Procedure TFlag.SetminValue(AIndex : Integer; const AValue : String);
 
 begin
   If (FminValue=AValue) then exit;
@@ -2653,7 +2659,7 @@ end;
 
 
 
-Procedure TFlag.Setname(AIndex : Integer; const AValue : String); 
+Procedure TFlag.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -2663,7 +2669,7 @@ end;
 
 
 
-Procedure TFlag.SetrequiresRestart(AIndex : Integer; const AValue : boolean); 
+Procedure TFlag.SetrequiresRestart(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FrequiresRestart=AValue) then exit;
@@ -2673,7 +2679,7 @@ end;
 
 
 
-Procedure TFlag.Set_type(AIndex : Integer; const AValue : String); 
+Procedure TFlag.Set_type(AIndex : Integer; const AValue : String);
 
 begin
   If (F_type=AValue) then exit;
@@ -2695,7 +2701,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TFlag.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TFlag.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2715,7 +2721,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFlagsListResponse.Setitems(AIndex : Integer; const AValue : TFlagsListResponseTypeitemsArray); 
+Procedure TFlagsListResponse.Setitems(AIndex : Integer; const AValue : TFlagsListResponseTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -2725,7 +2731,7 @@ end;
 
 
 
-Procedure TFlagsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TFlagsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -2736,7 +2742,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TFlagsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TFlagsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2755,7 +2761,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TImportContextTypecsvImportOptions.Setcolumns(AIndex : Integer; const AValue : TStringArray); 
+Procedure TImportContextTypecsvImportOptions.Setcolumns(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Fcolumns=AValue) then exit;
@@ -2765,7 +2771,7 @@ end;
 
 
 
-Procedure TImportContextTypecsvImportOptions.Settable(AIndex : Integer; const AValue : String); 
+Procedure TImportContextTypecsvImportOptions.Settable(AIndex : Integer; const AValue : String);
 
 begin
   If (Ftable=AValue) then exit;
@@ -2776,7 +2782,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TImportContextTypecsvImportOptions.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TImportContextTypecsvImportOptions.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2795,7 +2801,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TImportContext.SetcsvImportOptions(AIndex : Integer; const AValue : TImportContextTypecsvImportOptions); 
+Procedure TImportContext.SetcsvImportOptions(AIndex : Integer; const AValue : TImportContextTypecsvImportOptions);
 
 begin
   If (FcsvImportOptions=AValue) then exit;
@@ -2805,7 +2811,7 @@ end;
 
 
 
-Procedure TImportContext.Setdatabase(AIndex : Integer; const AValue : String); 
+Procedure TImportContext.Setdatabase(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdatabase=AValue) then exit;
@@ -2815,7 +2821,7 @@ end;
 
 
 
-Procedure TImportContext.SetfileType(AIndex : Integer; const AValue : String); 
+Procedure TImportContext.SetfileType(AIndex : Integer; const AValue : String);
 
 begin
   If (FfileType=AValue) then exit;
@@ -2825,7 +2831,7 @@ end;
 
 
 
-Procedure TImportContext.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TImportContext.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -2835,7 +2841,7 @@ end;
 
 
 
-Procedure TImportContext.Seturi(AIndex : Integer; const AValue : String); 
+Procedure TImportContext.Seturi(AIndex : Integer; const AValue : String);
 
 begin
   If (Furi=AValue) then exit;
@@ -2852,7 +2858,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstancesCloneRequest.SetcloneContext(AIndex : Integer; const AValue : TCloneContext); 
+Procedure TInstancesCloneRequest.SetcloneContext(AIndex : Integer; const AValue : TCloneContext);
 
 begin
   If (FcloneContext=AValue) then exit;
@@ -2869,7 +2875,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstancesExportRequest.SetexportContext(AIndex : Integer; const AValue : TExportContext); 
+Procedure TInstancesExportRequest.SetexportContext(AIndex : Integer; const AValue : TExportContext);
 
 begin
   If (FexportContext=AValue) then exit;
@@ -2886,7 +2892,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstancesFailoverRequest.SetfailoverContext(AIndex : Integer; const AValue : TFailoverContext); 
+Procedure TInstancesFailoverRequest.SetfailoverContext(AIndex : Integer; const AValue : TFailoverContext);
 
 begin
   If (FfailoverContext=AValue) then exit;
@@ -2903,7 +2909,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstancesImportRequest.SetimportContext(AIndex : Integer; const AValue : TImportContext); 
+Procedure TInstancesImportRequest.SetimportContext(AIndex : Integer; const AValue : TImportContext);
 
 begin
   If (FimportContext=AValue) then exit;
@@ -2920,7 +2926,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstancesListResponse.Setitems(AIndex : Integer; const AValue : TInstancesListResponseTypeitemsArray); 
+Procedure TInstancesListResponse.Setitems(AIndex : Integer; const AValue : TInstancesListResponseTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -2930,7 +2936,7 @@ end;
 
 
 
-Procedure TInstancesListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TInstancesListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -2940,7 +2946,7 @@ end;
 
 
 
-Procedure TInstancesListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TInstancesListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -2951,7 +2957,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TInstancesListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TInstancesListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2970,7 +2976,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TInstancesRestoreBackupRequest.SetrestoreBackupContext(AIndex : Integer; const AValue : TRestoreBackupContext); 
+Procedure TInstancesRestoreBackupRequest.SetrestoreBackupContext(AIndex : Integer; const AValue : TRestoreBackupContext);
 
 begin
   If (FrestoreBackupContext=AValue) then exit;
@@ -2987,7 +2993,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TIpConfiguration.SetauthorizedNetworks(AIndex : Integer; const AValue : TIpConfigurationTypeauthorizedNetworksArray); 
+Procedure TIpConfiguration.SetauthorizedNetworks(AIndex : Integer; const AValue : TIpConfigurationTypeauthorizedNetworksArray);
 
 begin
   If (FauthorizedNetworks=AValue) then exit;
@@ -2997,7 +3003,7 @@ end;
 
 
 
-Procedure TIpConfiguration.Setipv4Enabled(AIndex : Integer; const AValue : boolean); 
+Procedure TIpConfiguration.Setipv4Enabled(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fipv4Enabled=AValue) then exit;
@@ -3007,7 +3013,7 @@ end;
 
 
 
-Procedure TIpConfiguration.SetrequireSsl(AIndex : Integer; const AValue : boolean); 
+Procedure TIpConfiguration.SetrequireSsl(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FrequireSsl=AValue) then exit;
@@ -3018,7 +3024,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TIpConfiguration.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TIpConfiguration.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -3037,7 +3043,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TIpMapping.SetipAddress(AIndex : Integer; const AValue : String); 
+Procedure TIpMapping.SetipAddress(AIndex : Integer; const AValue : String);
 
 begin
   If (FipAddress=AValue) then exit;
@@ -3047,7 +3053,7 @@ end;
 
 
 
-Procedure TIpMapping.SettimeToRetire(AIndex : Integer; const AValue : TDatetime); 
+Procedure TIpMapping.SettimeToRetire(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (FtimeToRetire=AValue) then exit;
@@ -3064,7 +3070,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TLocationPreference.SetfollowGaeApplication(AIndex : Integer; const AValue : String); 
+Procedure TLocationPreference.SetfollowGaeApplication(AIndex : Integer; const AValue : String);
 
 begin
   If (FfollowGaeApplication=AValue) then exit;
@@ -3074,7 +3080,7 @@ end;
 
 
 
-Procedure TLocationPreference.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TLocationPreference.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -3084,7 +3090,7 @@ end;
 
 
 
-Procedure TLocationPreference.Setzone(AIndex : Integer; const AValue : String); 
+Procedure TLocationPreference.Setzone(AIndex : Integer; const AValue : String);
 
 begin
   If (Fzone=AValue) then exit;
@@ -3101,7 +3107,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TMaintenanceWindow.Setday(AIndex : Integer; const AValue : integer); 
+Procedure TMaintenanceWindow.Setday(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fday=AValue) then exit;
@@ -3111,7 +3117,7 @@ end;
 
 
 
-Procedure TMaintenanceWindow.Sethour(AIndex : Integer; const AValue : integer); 
+Procedure TMaintenanceWindow.Sethour(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fhour=AValue) then exit;
@@ -3121,7 +3127,7 @@ end;
 
 
 
-Procedure TMaintenanceWindow.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TMaintenanceWindow.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -3131,7 +3137,7 @@ end;
 
 
 
-Procedure TMaintenanceWindow.SetupdateTrack(AIndex : Integer; const AValue : String); 
+Procedure TMaintenanceWindow.SetupdateTrack(AIndex : Integer; const AValue : String);
 
 begin
   If (FupdateTrack=AValue) then exit;
@@ -3148,7 +3154,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TMySqlReplicaConfiguration.SetcaCertificate(AIndex : Integer; const AValue : String); 
+Procedure TMySqlReplicaConfiguration.SetcaCertificate(AIndex : Integer; const AValue : String);
 
 begin
   If (FcaCertificate=AValue) then exit;
@@ -3158,7 +3164,7 @@ end;
 
 
 
-Procedure TMySqlReplicaConfiguration.SetclientCertificate(AIndex : Integer; const AValue : String); 
+Procedure TMySqlReplicaConfiguration.SetclientCertificate(AIndex : Integer; const AValue : String);
 
 begin
   If (FclientCertificate=AValue) then exit;
@@ -3168,7 +3174,7 @@ end;
 
 
 
-Procedure TMySqlReplicaConfiguration.SetclientKey(AIndex : Integer; const AValue : String); 
+Procedure TMySqlReplicaConfiguration.SetclientKey(AIndex : Integer; const AValue : String);
 
 begin
   If (FclientKey=AValue) then exit;
@@ -3178,7 +3184,7 @@ end;
 
 
 
-Procedure TMySqlReplicaConfiguration.SetconnectRetryInterval(AIndex : Integer; const AValue : integer); 
+Procedure TMySqlReplicaConfiguration.SetconnectRetryInterval(AIndex : Integer; const AValue : integer);
 
 begin
   If (FconnectRetryInterval=AValue) then exit;
@@ -3188,7 +3194,7 @@ end;
 
 
 
-Procedure TMySqlReplicaConfiguration.SetdumpFilePath(AIndex : Integer; const AValue : String); 
+Procedure TMySqlReplicaConfiguration.SetdumpFilePath(AIndex : Integer; const AValue : String);
 
 begin
   If (FdumpFilePath=AValue) then exit;
@@ -3198,7 +3204,7 @@ end;
 
 
 
-Procedure TMySqlReplicaConfiguration.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TMySqlReplicaConfiguration.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -3208,7 +3214,7 @@ end;
 
 
 
-Procedure TMySqlReplicaConfiguration.SetmasterHeartbeatPeriod(AIndex : Integer; const AValue : String); 
+Procedure TMySqlReplicaConfiguration.SetmasterHeartbeatPeriod(AIndex : Integer; const AValue : String);
 
 begin
   If (FmasterHeartbeatPeriod=AValue) then exit;
@@ -3218,7 +3224,7 @@ end;
 
 
 
-Procedure TMySqlReplicaConfiguration.Setpassword(AIndex : Integer; const AValue : String); 
+Procedure TMySqlReplicaConfiguration.Setpassword(AIndex : Integer; const AValue : String);
 
 begin
   If (Fpassword=AValue) then exit;
@@ -3228,7 +3234,7 @@ end;
 
 
 
-Procedure TMySqlReplicaConfiguration.SetsslCipher(AIndex : Integer; const AValue : String); 
+Procedure TMySqlReplicaConfiguration.SetsslCipher(AIndex : Integer; const AValue : String);
 
 begin
   If (FsslCipher=AValue) then exit;
@@ -3238,7 +3244,7 @@ end;
 
 
 
-Procedure TMySqlReplicaConfiguration.Setusername(AIndex : Integer; const AValue : String); 
+Procedure TMySqlReplicaConfiguration.Setusername(AIndex : Integer; const AValue : String);
 
 begin
   If (Fusername=AValue) then exit;
@@ -3248,7 +3254,7 @@ end;
 
 
 
-Procedure TMySqlReplicaConfiguration.SetverifyServerCertificate(AIndex : Integer; const AValue : boolean); 
+Procedure TMySqlReplicaConfiguration.SetverifyServerCertificate(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FverifyServerCertificate=AValue) then exit;
@@ -3265,7 +3271,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOnPremisesConfiguration.SethostPort(AIndex : Integer; const AValue : String); 
+Procedure TOnPremisesConfiguration.SethostPort(AIndex : Integer; const AValue : String);
 
 begin
   If (FhostPort=AValue) then exit;
@@ -3275,7 +3281,7 @@ end;
 
 
 
-Procedure TOnPremisesConfiguration.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOnPremisesConfiguration.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -3292,7 +3298,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperation.SetendTime(AIndex : Integer; const AValue : TDatetime); 
+Procedure TOperation.SetendTime(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (FendTime=AValue) then exit;
@@ -3302,7 +3308,7 @@ end;
 
 
 
-Procedure TOperation.Seterror(AIndex : Integer; const AValue : TOperationErrors); 
+Procedure TOperation.Seterror(AIndex : Integer; const AValue : TOperationErrors);
 
 begin
   If (Ferror=AValue) then exit;
@@ -3312,7 +3318,7 @@ end;
 
 
 
-Procedure TOperation.SetexportContext(AIndex : Integer; const AValue : TExportContext); 
+Procedure TOperation.SetexportContext(AIndex : Integer; const AValue : TExportContext);
 
 begin
   If (FexportContext=AValue) then exit;
@@ -3322,7 +3328,7 @@ end;
 
 
 
-Procedure TOperation.SetimportContext(AIndex : Integer; const AValue : TImportContext); 
+Procedure TOperation.SetimportContext(AIndex : Integer; const AValue : TImportContext);
 
 begin
   If (FimportContext=AValue) then exit;
@@ -3332,7 +3338,7 @@ end;
 
 
 
-Procedure TOperation.SetinsertTime(AIndex : Integer; const AValue : TDatetime); 
+Procedure TOperation.SetinsertTime(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (FinsertTime=AValue) then exit;
@@ -3342,7 +3348,7 @@ end;
 
 
 
-Procedure TOperation.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOperation.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -3352,7 +3358,7 @@ end;
 
 
 
-Procedure TOperation.Setname(AIndex : Integer; const AValue : String); 
+Procedure TOperation.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -3362,7 +3368,7 @@ end;
 
 
 
-Procedure TOperation.SetoperationType(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SetoperationType(AIndex : Integer; const AValue : String);
 
 begin
   If (FoperationType=AValue) then exit;
@@ -3372,7 +3378,7 @@ end;
 
 
 
-Procedure TOperation.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -3382,7 +3388,7 @@ end;
 
 
 
-Procedure TOperation.SetstartTime(AIndex : Integer; const AValue : TDatetime); 
+Procedure TOperation.SetstartTime(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (FstartTime=AValue) then exit;
@@ -3392,7 +3398,7 @@ end;
 
 
 
-Procedure TOperation.Setstatus(AIndex : Integer; const AValue : String); 
+Procedure TOperation.Setstatus(AIndex : Integer; const AValue : String);
 
 begin
   If (Fstatus=AValue) then exit;
@@ -3402,7 +3408,7 @@ end;
 
 
 
-Procedure TOperation.SettargetId(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SettargetId(AIndex : Integer; const AValue : String);
 
 begin
   If (FtargetId=AValue) then exit;
@@ -3412,7 +3418,7 @@ end;
 
 
 
-Procedure TOperation.SettargetLink(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SettargetLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FtargetLink=AValue) then exit;
@@ -3422,7 +3428,7 @@ end;
 
 
 
-Procedure TOperation.SettargetProject(AIndex : Integer; const AValue : String); 
+Procedure TOperation.SettargetProject(AIndex : Integer; const AValue : String);
 
 begin
   If (FtargetProject=AValue) then exit;
@@ -3432,7 +3438,7 @@ end;
 
 
 
-Procedure TOperation.Setuser(AIndex : Integer; const AValue : String); 
+Procedure TOperation.Setuser(AIndex : Integer; const AValue : String);
 
 begin
   If (Fuser=AValue) then exit;
@@ -3449,7 +3455,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperationError.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TOperationError.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -3459,7 +3465,7 @@ end;
 
 
 
-Procedure TOperationError.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOperationError.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -3469,7 +3475,7 @@ end;
 
 
 
-Procedure TOperationError.Setmessage(AIndex : Integer; const AValue : String); 
+Procedure TOperationError.Setmessage(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmessage=AValue) then exit;
@@ -3486,7 +3492,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperationErrors.Seterrors(AIndex : Integer; const AValue : TOperationErrorsTypeerrorsArray); 
+Procedure TOperationErrors.Seterrors(AIndex : Integer; const AValue : TOperationErrorsTypeerrorsArray);
 
 begin
   If (Ferrors=AValue) then exit;
@@ -3496,7 +3502,7 @@ end;
 
 
 
-Procedure TOperationErrors.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOperationErrors.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -3507,7 +3513,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOperationErrors.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOperationErrors.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -3526,7 +3532,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TOperationsListResponse.Setitems(AIndex : Integer; const AValue : TOperationsListResponseTypeitemsArray); 
+Procedure TOperationsListResponse.Setitems(AIndex : Integer; const AValue : TOperationsListResponseTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -3536,7 +3542,7 @@ end;
 
 
 
-Procedure TOperationsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TOperationsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -3546,7 +3552,7 @@ end;
 
 
 
-Procedure TOperationsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TOperationsListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -3557,7 +3563,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TOperationsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TOperationsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -3576,7 +3582,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TReplicaConfiguration.SetfailoverTarget(AIndex : Integer; const AValue : boolean); 
+Procedure TReplicaConfiguration.SetfailoverTarget(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FfailoverTarget=AValue) then exit;
@@ -3586,7 +3592,7 @@ end;
 
 
 
-Procedure TReplicaConfiguration.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TReplicaConfiguration.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -3596,7 +3602,7 @@ end;
 
 
 
-Procedure TReplicaConfiguration.SetmysqlReplicaConfiguration(AIndex : Integer; const AValue : TMySqlReplicaConfiguration); 
+Procedure TReplicaConfiguration.SetmysqlReplicaConfiguration(AIndex : Integer; const AValue : TMySqlReplicaConfiguration);
 
 begin
   If (FmysqlReplicaConfiguration=AValue) then exit;
@@ -3613,7 +3619,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TRestoreBackupContext.SetbackupRunId(AIndex : Integer; const AValue : String); 
+Procedure TRestoreBackupContext.SetbackupRunId(AIndex : Integer; const AValue : String);
 
 begin
   If (FbackupRunId=AValue) then exit;
@@ -3623,7 +3629,7 @@ end;
 
 
 
-Procedure TRestoreBackupContext.SetinstanceId(AIndex : Integer; const AValue : String); 
+Procedure TRestoreBackupContext.SetinstanceId(AIndex : Integer; const AValue : String);
 
 begin
   If (FinstanceId=AValue) then exit;
@@ -3633,7 +3639,7 @@ end;
 
 
 
-Procedure TRestoreBackupContext.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TRestoreBackupContext.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -3650,7 +3656,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSettings.SetactivationPolicy(AIndex : Integer; const AValue : String); 
+Procedure TSettings.SetactivationPolicy(AIndex : Integer; const AValue : String);
 
 begin
   If (FactivationPolicy=AValue) then exit;
@@ -3660,7 +3666,7 @@ end;
 
 
 
-Procedure TSettings.SetauthorizedGaeApplications(AIndex : Integer; const AValue : TStringArray); 
+Procedure TSettings.SetauthorizedGaeApplications(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FauthorizedGaeApplications=AValue) then exit;
@@ -3670,7 +3676,7 @@ end;
 
 
 
-Procedure TSettings.SetbackupConfiguration(AIndex : Integer; const AValue : TBackupConfiguration); 
+Procedure TSettings.SetbackupConfiguration(AIndex : Integer; const AValue : TBackupConfiguration);
 
 begin
   If (FbackupConfiguration=AValue) then exit;
@@ -3680,7 +3686,7 @@ end;
 
 
 
-Procedure TSettings.SetcrashSafeReplicationEnabled(AIndex : Integer; const AValue : boolean); 
+Procedure TSettings.SetcrashSafeReplicationEnabled(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FcrashSafeReplicationEnabled=AValue) then exit;
@@ -3690,7 +3696,7 @@ end;
 
 
 
-Procedure TSettings.SetdataDiskSizeGb(AIndex : Integer; const AValue : String); 
+Procedure TSettings.SetdataDiskSizeGb(AIndex : Integer; const AValue : String);
 
 begin
   If (FdataDiskSizeGb=AValue) then exit;
@@ -3700,7 +3706,7 @@ end;
 
 
 
-Procedure TSettings.SetdataDiskType(AIndex : Integer; const AValue : String); 
+Procedure TSettings.SetdataDiskType(AIndex : Integer; const AValue : String);
 
 begin
   If (FdataDiskType=AValue) then exit;
@@ -3710,7 +3716,7 @@ end;
 
 
 
-Procedure TSettings.SetdatabaseFlags(AIndex : Integer; const AValue : TSettingsTypedatabaseFlagsArray); 
+Procedure TSettings.SetdatabaseFlags(AIndex : Integer; const AValue : TSettingsTypedatabaseFlagsArray);
 
 begin
   If (FdatabaseFlags=AValue) then exit;
@@ -3720,7 +3726,7 @@ end;
 
 
 
-Procedure TSettings.SetdatabaseReplicationEnabled(AIndex : Integer; const AValue : boolean); 
+Procedure TSettings.SetdatabaseReplicationEnabled(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FdatabaseReplicationEnabled=AValue) then exit;
@@ -3730,7 +3736,7 @@ end;
 
 
 
-Procedure TSettings.SetipConfiguration(AIndex : Integer; const AValue : TIpConfiguration); 
+Procedure TSettings.SetipConfiguration(AIndex : Integer; const AValue : TIpConfiguration);
 
 begin
   If (FipConfiguration=AValue) then exit;
@@ -3740,7 +3746,7 @@ end;
 
 
 
-Procedure TSettings.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TSettings.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -3750,7 +3756,7 @@ end;
 
 
 
-Procedure TSettings.SetlocationPreference(AIndex : Integer; const AValue : TLocationPreference); 
+Procedure TSettings.SetlocationPreference(AIndex : Integer; const AValue : TLocationPreference);
 
 begin
   If (FlocationPreference=AValue) then exit;
@@ -3760,7 +3766,7 @@ end;
 
 
 
-Procedure TSettings.SetmaintenanceWindow(AIndex : Integer; const AValue : TMaintenanceWindow); 
+Procedure TSettings.SetmaintenanceWindow(AIndex : Integer; const AValue : TMaintenanceWindow);
 
 begin
   If (FmaintenanceWindow=AValue) then exit;
@@ -3770,7 +3776,7 @@ end;
 
 
 
-Procedure TSettings.SetpricingPlan(AIndex : Integer; const AValue : String); 
+Procedure TSettings.SetpricingPlan(AIndex : Integer; const AValue : String);
 
 begin
   If (FpricingPlan=AValue) then exit;
@@ -3780,7 +3786,7 @@ end;
 
 
 
-Procedure TSettings.SetreplicationType(AIndex : Integer; const AValue : String); 
+Procedure TSettings.SetreplicationType(AIndex : Integer; const AValue : String);
 
 begin
   If (FreplicationType=AValue) then exit;
@@ -3790,7 +3796,7 @@ end;
 
 
 
-Procedure TSettings.SetsettingsVersion(AIndex : Integer; const AValue : String); 
+Procedure TSettings.SetsettingsVersion(AIndex : Integer; const AValue : String);
 
 begin
   If (FsettingsVersion=AValue) then exit;
@@ -3800,7 +3806,7 @@ end;
 
 
 
-Procedure TSettings.SetstorageAutoResize(AIndex : Integer; const AValue : boolean); 
+Procedure TSettings.SetstorageAutoResize(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FstorageAutoResize=AValue) then exit;
@@ -3810,7 +3816,7 @@ end;
 
 
 
-Procedure TSettings.Settier(AIndex : Integer; const AValue : String); 
+Procedure TSettings.Settier(AIndex : Integer; const AValue : String);
 
 begin
   If (Ftier=AValue) then exit;
@@ -3821,7 +3827,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TSettings.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TSettings.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -3841,7 +3847,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSslCert.Setcert(AIndex : Integer; const AValue : String); 
+Procedure TSslCert.Setcert(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcert=AValue) then exit;
@@ -3851,7 +3857,7 @@ end;
 
 
 
-Procedure TSslCert.SetcertSerialNumber(AIndex : Integer; const AValue : String); 
+Procedure TSslCert.SetcertSerialNumber(AIndex : Integer; const AValue : String);
 
 begin
   If (FcertSerialNumber=AValue) then exit;
@@ -3861,7 +3867,7 @@ end;
 
 
 
-Procedure TSslCert.SetcommonName(AIndex : Integer; const AValue : String); 
+Procedure TSslCert.SetcommonName(AIndex : Integer; const AValue : String);
 
 begin
   If (FcommonName=AValue) then exit;
@@ -3871,7 +3877,7 @@ end;
 
 
 
-Procedure TSslCert.SetcreateTime(AIndex : Integer; const AValue : TDatetime); 
+Procedure TSslCert.SetcreateTime(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (FcreateTime=AValue) then exit;
@@ -3881,7 +3887,7 @@ end;
 
 
 
-Procedure TSslCert.SetexpirationTime(AIndex : Integer; const AValue : TDatetime); 
+Procedure TSslCert.SetexpirationTime(AIndex : Integer; const AValue : TDatetime);
 
 begin
   If (FexpirationTime=AValue) then exit;
@@ -3891,7 +3897,7 @@ end;
 
 
 
-Procedure TSslCert.Setinstance(AIndex : Integer; const AValue : String); 
+Procedure TSslCert.Setinstance(AIndex : Integer; const AValue : String);
 
 begin
   If (Finstance=AValue) then exit;
@@ -3901,7 +3907,7 @@ end;
 
 
 
-Procedure TSslCert.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TSslCert.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -3911,7 +3917,7 @@ end;
 
 
 
-Procedure TSslCert.SetselfLink(AIndex : Integer; const AValue : String); 
+Procedure TSslCert.SetselfLink(AIndex : Integer; const AValue : String);
 
 begin
   If (FselfLink=AValue) then exit;
@@ -3921,7 +3927,7 @@ end;
 
 
 
-Procedure TSslCert.Setsha1Fingerprint(AIndex : Integer; const AValue : String); 
+Procedure TSslCert.Setsha1Fingerprint(AIndex : Integer; const AValue : String);
 
 begin
   If (Fsha1Fingerprint=AValue) then exit;
@@ -3938,7 +3944,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSslCertDetail.SetcertInfo(AIndex : Integer; const AValue : TSslCert); 
+Procedure TSslCertDetail.SetcertInfo(AIndex : Integer; const AValue : TSslCert);
 
 begin
   If (FcertInfo=AValue) then exit;
@@ -3948,7 +3954,7 @@ end;
 
 
 
-Procedure TSslCertDetail.SetcertPrivateKey(AIndex : Integer; const AValue : String); 
+Procedure TSslCertDetail.SetcertPrivateKey(AIndex : Integer; const AValue : String);
 
 begin
   If (FcertPrivateKey=AValue) then exit;
@@ -3965,7 +3971,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSslCertsCreateEphemeralRequest.Setpublic_key(AIndex : Integer; const AValue : String); 
+Procedure TSslCertsCreateEphemeralRequest.Setpublic_key(AIndex : Integer; const AValue : String);
 
 begin
   If (Fpublic_key=AValue) then exit;
@@ -3982,7 +3988,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSslCertsInsertRequest.SetcommonName(AIndex : Integer; const AValue : String); 
+Procedure TSslCertsInsertRequest.SetcommonName(AIndex : Integer; const AValue : String);
 
 begin
   If (FcommonName=AValue) then exit;
@@ -3999,7 +4005,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSslCertsInsertResponse.SetclientCert(AIndex : Integer; const AValue : TSslCertDetail); 
+Procedure TSslCertsInsertResponse.SetclientCert(AIndex : Integer; const AValue : TSslCertDetail);
 
 begin
   If (FclientCert=AValue) then exit;
@@ -4009,7 +4015,7 @@ end;
 
 
 
-Procedure TSslCertsInsertResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TSslCertsInsertResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -4019,7 +4025,7 @@ end;
 
 
 
-Procedure TSslCertsInsertResponse.Setoperation(AIndex : Integer; const AValue : TOperation); 
+Procedure TSslCertsInsertResponse.Setoperation(AIndex : Integer; const AValue : TOperation);
 
 begin
   If (Foperation=AValue) then exit;
@@ -4029,7 +4035,7 @@ end;
 
 
 
-Procedure TSslCertsInsertResponse.SetserverCaCert(AIndex : Integer; const AValue : TSslCert); 
+Procedure TSslCertsInsertResponse.SetserverCaCert(AIndex : Integer; const AValue : TSslCert);
 
 begin
   If (FserverCaCert=AValue) then exit;
@@ -4046,7 +4052,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSslCertsListResponse.Setitems(AIndex : Integer; const AValue : TSslCertsListResponseTypeitemsArray); 
+Procedure TSslCertsListResponse.Setitems(AIndex : Integer; const AValue : TSslCertsListResponseTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -4056,7 +4062,7 @@ end;
 
 
 
-Procedure TSslCertsListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TSslCertsListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -4067,7 +4073,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TSslCertsListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TSslCertsListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -4086,7 +4092,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTier.SetDiskQuota(AIndex : Integer; const AValue : String); 
+Procedure TTier.SetDiskQuota(AIndex : Integer; const AValue : String);
 
 begin
   If (FDiskQuota=AValue) then exit;
@@ -4096,7 +4102,7 @@ end;
 
 
 
-Procedure TTier.SetRAM(AIndex : Integer; const AValue : String); 
+Procedure TTier.SetRAM(AIndex : Integer; const AValue : String);
 
 begin
   If (FRAM=AValue) then exit;
@@ -4106,7 +4112,7 @@ end;
 
 
 
-Procedure TTier.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TTier.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -4116,7 +4122,7 @@ end;
 
 
 
-Procedure TTier.Setregion(AIndex : Integer; const AValue : TStringArray); 
+Procedure TTier.Setregion(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Fregion=AValue) then exit;
@@ -4126,7 +4132,7 @@ end;
 
 
 
-Procedure TTier.Settier(AIndex : Integer; const AValue : String); 
+Procedure TTier.Settier(AIndex : Integer; const AValue : String);
 
 begin
   If (Ftier=AValue) then exit;
@@ -4137,7 +4143,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTier.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTier.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -4156,7 +4162,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTiersListResponse.Setitems(AIndex : Integer; const AValue : TTiersListResponseTypeitemsArray); 
+Procedure TTiersListResponse.Setitems(AIndex : Integer; const AValue : TTiersListResponseTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -4166,7 +4172,7 @@ end;
 
 
 
-Procedure TTiersListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TTiersListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -4177,7 +4183,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTiersListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTiersListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -4196,7 +4202,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TUser.Setetag(AIndex : Integer; const AValue : String); 
+Procedure TUser.Setetag(AIndex : Integer; const AValue : String);
 
 begin
   If (Fetag=AValue) then exit;
@@ -4206,7 +4212,7 @@ end;
 
 
 
-Procedure TUser.Sethost(AIndex : Integer; const AValue : String); 
+Procedure TUser.Sethost(AIndex : Integer; const AValue : String);
 
 begin
   If (Fhost=AValue) then exit;
@@ -4216,7 +4222,7 @@ end;
 
 
 
-Procedure TUser.Setinstance(AIndex : Integer; const AValue : String); 
+Procedure TUser.Setinstance(AIndex : Integer; const AValue : String);
 
 begin
   If (Finstance=AValue) then exit;
@@ -4226,7 +4232,7 @@ end;
 
 
 
-Procedure TUser.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TUser.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -4236,7 +4242,7 @@ end;
 
 
 
-Procedure TUser.Setname(AIndex : Integer; const AValue : String); 
+Procedure TUser.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -4246,7 +4252,7 @@ end;
 
 
 
-Procedure TUser.Setpassword(AIndex : Integer; const AValue : String); 
+Procedure TUser.Setpassword(AIndex : Integer; const AValue : String);
 
 begin
   If (Fpassword=AValue) then exit;
@@ -4256,7 +4262,7 @@ end;
 
 
 
-Procedure TUser.Setproject(AIndex : Integer; const AValue : String); 
+Procedure TUser.Setproject(AIndex : Integer; const AValue : String);
 
 begin
   If (Fproject=AValue) then exit;
@@ -4273,7 +4279,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TUsersListResponse.Setitems(AIndex : Integer; const AValue : TUsersListResponseTypeitemsArray); 
+Procedure TUsersListResponse.Setitems(AIndex : Integer; const AValue : TUsersListResponseTypeitemsArray);
 
 begin
   If (Fitems=AValue) then exit;
@@ -4283,7 +4289,7 @@ end;
 
 
 
-Procedure TUsersListResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TUsersListResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -4293,7 +4299,7 @@ end;
 
 
 
-Procedure TUsersListResponse.SetnextPageToken(AIndex : Integer; const AValue : String); 
+Procedure TUsersListResponse.SetnextPageToken(AIndex : Integer; const AValue : String);
 
 begin
   If (FnextPageToken=AValue) then exit;
@@ -4304,7 +4310,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TUsersListResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TUsersListResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -5216,7 +5222,7 @@ begin
   Result[0].Description:='View and manage your data across Google Cloud Platform services';
   Result[1].Name:='https://www.googleapis.com/auth/sqlservice.admin';
   Result[1].Description:='Manage your Google SQL Service instances';
-  
+
 end;
 
 Class Function TSqladminAPI.APINeedsAuth : Boolean;

@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit dbf_avl;
+{$ENDIF FPC_DOTTEDUNITS}
 {
     This file is part of the Free Pascal run time library.
     Copyright (c) 1999-2022 by Pascal Ganaye,Micha Nelissen and other members of the
@@ -19,8 +21,13 @@ interface
 
 {$I dbf_common.inc}
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  Data.Dbf.Common;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Dbf_Common;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   TBal = -1..1;
@@ -76,8 +83,13 @@ type
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+    System.Math;
+{$ELSE FPC_DOTTEDUNITS}
 uses
     Math;
+{$ENDIF FPC_DOTTEDUNITS}
 
 procedure RotL(var P: PNode);
 var
@@ -316,10 +328,10 @@ end;
 
 function TAvlTree.InternalInsert(X: PNode; var P: PNode): boolean;
 begin
-  if P = nil then 
-  begin 
-    P := X; 
-    Inc(FCount); 
+  if P = nil then
+  begin
+    P := X;
+    Inc(FCount);
     FHeightChange := true;
     Result := true;
   end else begin

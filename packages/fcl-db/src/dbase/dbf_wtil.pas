@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit dbf_wtil;
+{$ENDIF FPC_DOTTEDUNITS}
 {
     This file is part of the Free Pascal run time library.
     Copyright (c) 1999-2022 by Pascal Ganaye,Micha Nelissen and other members of the
@@ -19,7 +21,22 @@ unit dbf_wtil;
 
 interface
 
+
 {$ifndef WINDOWS}
+
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+ {$IFDEF OS2}
+  OS2Api.os2def,
+ {$ELSE OS2}
+  {$ifdef FPC}
+  UnixApi.Base,
+  {$else}
+  Api.Libc,
+  {$endif}
+ {$ENDIF OS2}
+  System.Types, System.SysUtils, System.Classes;
+{$ELSE FPC_DOTTEDUNITS}
 uses
  {$IFDEF OS2}
   OS2Def,
@@ -27,10 +44,11 @@ uses
   {$ifdef FPC}
   BaseUnix,
   {$else}
-  Libc, 
+  Libc,
   {$endif}
  {$ENDIF OS2}
   Types, SysUtils, Classes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   LCID_INSTALLED = $00000001;  { installed locale ids }
@@ -224,7 +242,7 @@ const
 {$ELSE OS2}
  {$ifdef FPC}
   ERROR_LOCK_VIOLATION = ESysEACCES;
- {$else}  
+ {$else}
   ERROR_LOCK_VIOLATION = EACCES;
  {$endif}
 {$ENDIF OS2}
@@ -274,13 +292,13 @@ function UnlockFile(hFile: THandle; dwFileOffsetLow, dwFileOffsetHigh: DWORD; nN
 procedure GetLocalTime(var lpSystemTime: TSystemTime);
 function GetOEMCP: Cardinal;
 function GetACP: Cardinal;
-function OemToChar(lpszSrc: PChar; lpszDst: PChar): BOOL;
-function CharToOem(lpszSrc: PChar; lpszDst: PChar): BOOL;
-function OemToCharBuffA(lpszSrc: PChar; lpszDst: PChar; cchDstLength: DWORD): BOOL;
-function CharToOemBuffA(lpszSrc: PChar; lpszDst: PChar; cchDstLength: DWORD): BOOL;
+function OemToChar(lpszSrc: PAnsiChar; lpszDst: PAnsiChar): BOOL;
+function CharToOem(lpszSrc: PAnsiChar; lpszDst: PAnsiChar): BOOL;
+function OemToCharBuffA(lpszSrc: PAnsiChar; lpszDst: PAnsiChar; cchDstLength: DWORD): BOOL;
+function CharToOemBuffA(lpszSrc: PAnsiChar; lpszDst: PAnsiChar; cchDstLength: DWORD): BOOL;
 function MultiByteToWideChar(CodePage: DWORD; dwFlags: DWORD; const lpMultiByteStr: LPCSTR; cchMultiByte: Integer; lpWideCharStr: LPWSTR; cchWideChar: Integer): Integer;
 function WideCharToMultiByte(CodePage: DWORD; dwFlags: DWORD; lpWideCharStr: LPWSTR; cchWideChar: Integer; lpMultiByteStr: LPSTR; cchMultiByte: Integer; lpDefaultChar: LPCSTR; lpUsedDefaultChar: PBOOL): Integer;
-function CompareString(Locale: LCID; dwCmpFlags: DWORD; lpString1: PChar; cchCount1: Integer; lpString2: PChar; cchCount2: Integer): Integer;
+function CompareString(Locale: LCID; dwCmpFlags: DWORD; lpString1: PAnsiChar; cchCount1: Integer; lpString2: PAnsiChar; cchCount2: Integer): Integer;
 function EnumSystemCodePages(lpCodePageEnumProc: TFNCodepageEnumProc; dwFlags: DWORD): BOOL;
 function EnumSystemLocales(lpLocaleEnumProc: TFNLocaleEnumProc; dwFlags: DWORD): BOOL;
 function GetUserDefaultLCID: LCID;

@@ -2,7 +2,7 @@
 {$mode objfpc}{$H+}
 program fpmake;
 
-uses fpmkunit;
+uses {$ifdef unix}cthreads,{$endif} fpmkunit;
 
 Var
   P : TPackage;
@@ -33,6 +33,7 @@ begin
     T:=P.Targets.AddUnit('qlfloat.pas');
     T:=P.Targets.AddUnit('qlutil.pas');
     T:=P.Targets.AddUnit('sms.pas');
+    T:=P.Targets.AddUnit('qsound.pas');
 
     P.ExamplePath.Add('examples');
     T:=P.Targets.AddExampleProgram('qlcube.pas');
@@ -42,6 +43,9 @@ begin
     P.ExamplePath.Add('tests');
     T:=P.Targets.AddExampleProgram('tsysvars.pas');
     T:=P.Targets.AddExampleProgram('trecsize.pas');
+
+
+    P.NamespaceMap:='namespaces.lst';
 
 {$ifndef ALLPACKAGES}
     Run;

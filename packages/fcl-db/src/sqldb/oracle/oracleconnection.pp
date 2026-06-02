@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit oracleconnection;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {
     Copyright (c) 2006-2019 by Joost van der Sluis, FPC contributors
@@ -16,6 +18,16 @@ unit oracleconnection;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, Data.Db, Data.Consts, Data.Sqldb, Data.BufDataset,
+{$IfDef LinkDynamically}
+  Api.Oracle.OciDyn,
+{$ELSE}
+  Api.Oracle.Oci,
+{$ENDIF}
+  Api.Oracle.Types;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, db, dbconst, sqldb, bufdataset,
 {$IfDef LinkDynamically}
@@ -24,6 +36,7 @@ uses
   oci,
 {$ENDIF}
   oratypes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   DefaultTimeOut = 60;
@@ -42,7 +55,7 @@ type
   public
     destructor Destroy(); override;
   end;
-  
+
   TOraFieldBuf = record
     DescType : ub4;      // descriptor type
     Buffer   : pointer;
@@ -119,8 +132,13 @@ type
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Math, System.StrUtils, Data.FMTBcd;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   math, StrUtils, FmtBCD;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   ObjectQuote='"'; //beginning and ending quote for objects such as table names. Note: can be different from quotes around field names
@@ -334,12 +352,12 @@ procedure TOracleConnection.HandleError;
 
 var
     errcode : sb4;
-    buf     : array[0..1023] of char;
+    buf     : array[0..1023] of AnsiChar;
 
 begin
   OCIErrorGet(FOciError,1,nil,errcode,@buf[0],1024,OCI_HTYPE_ERROR);
 
-  raise EOraDatabaseError.CreateFmt(pchar(buf), [], Self, errcode, '')
+  raise EOraDatabaseError.CreateFmt(PAnsiChar(buf), [], Self, errcode, '')
 end;
 
 procedure TOracleConnection.GetParameters(cursor: TSQLCursor; ATransaction : TSQLTransaction; AParams: TParams);
@@ -591,10 +609,10 @@ end;
 
 procedure TOracleConnection.PrepareStatement(cursor: TSQLCursor;
   ATransaction: TSQLTransaction; buf: string; AParams: TParams);
-  
+
 var i        : integer;
     FOcibind : POCIDefine;
-    
+
     OFieldType   : ub2;
     OFieldSize   : sb4;
     ODescType    : ub4;
@@ -673,12 +691,12 @@ begin
 
         if AParams[i].ParamType=ptInput then
           begin
-          if OCIBindByName(FOciStmt,FOcibind,FOciError,pchar(AParams[i].Name),length(AParams[i].Name),OBuffer,OFieldSize,OFieldType,@ParamBuffers[i].ind,nil,nil,0,nil,OCI_DEFAULT )= OCI_ERROR then
+          if OCIBindByName(FOciStmt,FOcibind,FOciError,PAnsiChar(AParams[i].Name),length(AParams[i].Name),OBuffer,OFieldSize,OFieldType,@ParamBuffers[i].ind,nil,nil,0,nil,OCI_DEFAULT )= OCI_ERROR then
             HandleError;
           end
         else if AParams[i].ParamType=ptOutput then
           begin
-          if OCIBindByName(FOciStmt,FOcibind,FOciError,pchar(AParams[i].Name),length(AParams[i].Name),nil,OFieldSize,OFieldType,nil,nil,nil,0,nil,OCI_DATA_AT_EXEC )= OCI_ERROR then
+          if OCIBindByName(FOciStmt,FOcibind,FOciError,PAnsiChar(AParams[i].Name),length(AParams[i].Name),nil,OFieldSize,OFieldType,nil,nil,nil,0,nil,OCI_DATA_AT_EXEC )= OCI_ERROR then
             HandleError;
           if OCIBindDynamic(FOcibind, FOciError, nil, @cbf_no_data, @parambuffers[i], @cbf_get_data) <> OCI_SUCCESS then
             HandleError;
@@ -873,7 +891,7 @@ var Param      : POCIParam;
     FieldSize  : cardinal;
 
     OFieldType   : ub2;
-    OFieldName   : Pchar;
+    OFieldName   : PAnsiChar;
     OFieldSize   : ub4;
     OFNameLength : ub4;
     NumCols      : ub4;
@@ -912,7 +930,7 @@ begin
         HandleError;
 
       FieldSize := 0;
-      
+
       case OFieldType of
         OCI_TYPECODE_NUMBER   : begin
                                 if OCIAttrGet(Param,OCI_DTYPE_PARAM,@Oprecision,nil,OCI_ATTR_PRECISION,FOciError) = OCI_ERROR then
@@ -1250,7 +1268,7 @@ begin
                         'FROM ALL_TAB_COLUMNS '+
                         'WHERE Upper(TABLE_NAME) = '''+UpperCase(SchemaObjectName)+''' '+
                         'ORDER BY COLUMN_NAME';
-    // Columns of tables, views and clusters accessible to user; hidden columns are filtered out.												
+    // Columns of tables, views and clusters accessible to user; hidden columns are filtered out.
     stProcedures : s := 'SELECT '+
                           'case when PROCEDURE_NAME is null then OBJECT_NAME ELSE OBJECT_NAME || ''.'' || PROCEDURE_NAME end AS procedure_name '+
                         'FROM USER_PROCEDURES ';

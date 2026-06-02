@@ -75,7 +75,7 @@ const
 { The structure representing a compiled regular expression. }
 type
   Pap_regex_t = ^ap_regex_t;
-  
+
   ap_regex_t = record
     re_pcre: Pointer;
     re_nsub: apr_size_t;
@@ -99,7 +99,7 @@ type
  * @param cflags Must be zero (currently).
  * @return Zero on success or non-zero on error
  }
-function ap_regcomp(preg: Pap_regex_t; const regex: PChar; cflags: Integer): Integer;
+function ap_regcomp(preg: Pap_regex_t; const regex: PAnsiChar; cflags: Integer): Integer;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_regcomp' + LibSuff12;
 
@@ -109,10 +109,10 @@ function ap_regcomp(preg: Pap_regex_t; const regex: PChar; cflags: Integer): Int
  * @param string The string to match
  * @param nmatch Provide information regarding the location of any matches
  * @param pmatch Provide information regarding the location of any matches
- * @param eflags Bitwise OR of any of AP_REG_* flags 
+ * @param eflags Bitwise OR of any of AP_REG_* flags
  * @return 0 for successful match, #REG_NOMATCH otherwise
  }
-function ap_regexec(const preg: Pap_regex_t; const string_: PChar;
+function ap_regexec(const preg: Pap_regex_t; const string_: PAnsiChar;
  nmatch: apr_size_t; pmatch: Pap_regmatch_t; eflags: Integer): Integer;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_regexec' + LibSuff20;
@@ -125,7 +125,7 @@ function ap_regexec(const preg: Pap_regex_t; const string_: PChar;
  * @param errbuf_size The size of the buffer
  }
 function ap_regerror(errcord: Integer; const preg: Pap_regex_t;
- errbuf: PChar; errbuf_size: apr_size_t): apr_size_t;
+ errbuf: PAnsiChar; errbuf_size: apr_size_t): apr_size_t;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_regerror' + LibSuff16;
 

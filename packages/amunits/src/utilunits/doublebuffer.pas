@@ -14,7 +14,9 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit doublebuffer;
+{$ENDIF FPC_DOTTEDUNITS}
 
 
 {
@@ -38,7 +40,7 @@ unit doublebuffer;
         so it's transparent to RastPorts.
 
         When you have finished, call CloseDoubleBuffer.  If you
-        close the window and screen seperately it might crash
+        close the window and screen separately it might crash
         (I'm not sure), but you'll definitely lose memory.
 
         One last point: GfxBase must be open before you call
@@ -62,7 +64,11 @@ unit doublebuffer;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses Amiga.Core.Exec, Amiga.Core.Intuition, Amiga.Core.Agraphics;
+{$ELSE FPC_DOTTEDUNITS}
 uses exec, intuition, agraphics;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {
     OpenDoubleBuffer opens the Screen described in "ns" without

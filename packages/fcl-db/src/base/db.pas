@@ -14,7 +14,9 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit DB;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}
 
@@ -22,7 +24,11 @@ unit DB;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.Classes,System.SysUtils,System.Variants,Data.FMTBcd,System.Maskutils;
+{$ELSE FPC_DOTTEDUNITS}
 uses Classes,SysUtils,Variants,FmtBCD,MaskUtils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
 
@@ -31,7 +37,7 @@ const
 
   // Used in AsBoolean for string fields to determine
   // whether it's true or false.
-  YesNoChars : Array[Boolean] of char = ('N', 'Y');
+  YesNoChars : Array[Boolean] of AnsiChar = ('N', 'Y');
 
   SQLDelimiterCharacters = [';',',',' ','(',')',#13,#10,#9];
 
@@ -96,7 +102,7 @@ type
     property OriginalException : Exception read FOriginalException;
     property PreviousError : Integer read FPreviousError;
   end;
-  
+
 
 { TFieldDef }
 
@@ -140,7 +146,7 @@ type
   protected
     function GetDisplayName: string; override;
     procedure SetDisplayName(const AValue: string); override;
-  Public  
+  Public
     property DisplayName : string read GetDisplayName write SetDisplayName;
   published
     property Name : string read FName write SetDisplayName;
@@ -254,7 +260,7 @@ type
     DisplayText: Boolean) of object;
   TFieldSetTextEvent = procedure(Sender: TField; const aText: string) of object;
   TFieldRef = ^TField;
-  TFieldChars = set of Char;
+  TFieldChars = set of AnsiChar;
 
   PLookupListRec = ^TLookupListRec;
   TLookupListRec = record
@@ -416,7 +422,7 @@ type
     function GetData(Buffer: Pointer): Boolean; overload;
     function GetData(Buffer: Pointer; NativeFormat : Boolean): Boolean; overload;
     class function IsBlob: Boolean; virtual;
-    function IsValidChar(InputChar: Char): Boolean; virtual;
+    function IsValidChar(InputChar: AnsiChar): Boolean; virtual;
     procedure RefreshLookupList;
     procedure SetData(Buffer: Pointer); overload;
     procedure SetData(Buffer: Pointer; NativeFormat : Boolean); overload;
@@ -476,7 +482,7 @@ type
     property Index: Longint read GetIndex write SetIndex;
     property ImportedConstraint: string read FImportedConstraint write FImportedConstraint;
     property KeyFields: string read FKeyFields write FKeyFields;
-    property LookupCache: Boolean read FLookupCache write FLookupCache;
+    property LookupCache: Boolean read FLookupCache write FLookupCache default False;
     property LookupDataSet: TDataSet read FLookupDataSet write FLookupDataSet;
     property LookupKeyFields: string read FLookupKeyFields write FLookupKeyFields;
     property LookupResultField: string read FLookupResultField write FLookupResultField;
@@ -484,8 +490,8 @@ type
     property Origin: string read FOrigin write FOrigin;
     property ParentField: TObjectField read FParentField write SetParentField;
     property ProviderFlags : TProviderFlags read FProviderFlags write FProviderFlags;
-    property ReadOnly: Boolean read FReadOnly write SetReadOnly;
-    property Required: Boolean read FRequired write FRequired;
+    property ReadOnly: Boolean read FReadOnly write SetReadOnly default False;
+    property Required: Boolean read FRequired write FRequired default False;
     property Visible: Boolean read FVisible write SetVisible default True;
     property OnChange: TFieldNotifyEvent read FOnChange write FOnChange;
     property OnGetText: TFieldGetTextEvent read FOnGetText write FOnGetText;
@@ -938,11 +944,15 @@ type
   protected
     class procedure CheckTypeSize(AValue: Longint); override;
     function GetAsBytes: TBytes; override;
-    function GetAsString: string; override;
+    function GetAsUnicodeString: Unicodestring; override;
+    function GetAsAnsiString: Ansistring; override;
     function GetAsVariant: Variant; override;
     function GetValue(var AValue: TBytes): Boolean;
+    function GetAsString : String; override;
+    Procedure SetAsString(const S : String); override;
     procedure SetAsBytes(const AValue: TBytes); override;
-    procedure SetAsString(const AValue: string); override;
+    procedure SetAsAnsiString(const AValue: ansistring); override;
+    procedure SetAsUnicodeString(const AValue: unicodestring); override;
     procedure SetVarValue(const AValue: Variant); override;
   public
     constructor Create(AOwner: TComponent); override;
@@ -1249,7 +1259,7 @@ type
   public
     constructor Create(Owner: TIndexDefs; const AName, TheFields: string;
       TheOptions: TIndexOptions); overload;
-  published    
+  published
     property Expression: string read GetExpression write SetExpression;
     property Fields: string read FFields write FFields;
     property CaseInsFields: string read FCaseinsFields write SetCaseInsFields;
@@ -1547,7 +1557,7 @@ type
   end;
 
 { TDataSet }
-  
+
   {$ifdef noautomatedbookmark}
   TBookmark = Pointer;
   {$else}
@@ -1558,19 +1568,19 @@ type
   PBookmarkFlag = ^TBookmarkFlag;
   TBookmarkFlag = (bfCurrent, bfBOF, bfEOF, bfInserted);
 
-{ These types are used by Delphi/Unicode to replace the ambiguous "pchar" buffer types.
+{ These types are used by Delphi/Unicode to replace the ambiguous "PAnsiChar" buffer types.
   For now, they are just aliases to PAnsiChar, but in Delphi/Unicode it is pbyte. This will
   be changed later (2.8?), to allow a grace period for descendents to catch up.
-  
+
   Testing with TRecordBuffer=PByte will turn up typing problems. TRecordBuffer=pansichar is backwards
-  compatible, even if overriden with "pchar" variants.
+  compatible, even if overridden with "PAnsiChar" variants.
 }
-  TRecordBufferBaseType = AnsiChar; // must match TRecordBuffer. 
+  TRecordBufferBaseType = AnsiChar; // must match TRecordBuffer.
   TRecordBuffer = PAnsiChar;
   PBufferList = ^TBufferList;
   TBufferList = array[0..dsMaxBufferCount - 1] of TRecordBuffer;  // Dynamic array in Delphi.
   TBufferArray = ^TRecordBuffer;
-  
+
   TGetMode = (gmCurrent, gmNext, gmPrior);
 
   TGetResult = (grOK, grBOF, grEOF, grError);
@@ -1926,7 +1936,7 @@ type
     procedure Refresh;
     procedure Resync(Mode: TResyncMode); virtual;
     procedure SetFields(const Values: array of const);
-    function  Translate(Src, Dest: PChar; ToOem: Boolean): Integer; virtual;
+    function  Translate(Src, Dest: PAnsiChar; ToOem: Boolean): Integer; virtual;
     procedure UpdateCursorPos;
     procedure UpdateRecord;
     function UpdateStatus: TUpdateStatus; virtual;
@@ -1986,7 +1996,7 @@ type
     FDataSet: TDataSet;
     FBOF: Boolean;
     function GetCurrent: TFields;
-  public  
+  public
     constructor Create(ADataSet: TDataSet);
     function MoveNext: Boolean;
     property Current: TFields read GetCurrent;
@@ -2168,21 +2178,23 @@ type
 
   { TDBTransaction }
 
-  TDBTransactionClass = Class of TDBTransaction;
+
   TDBTransaction = Class(TComponent)
   Private
     FActive        : boolean;
     FDatabase      : TDatabase;
     FDataSets      : TThreadList;
+    FClients      : TThreadList;
     FOpenAfterRead : boolean;
-    Function GetDataSetCount : Longint;
-    Function GetDataset(Index : longint) : TDBDataset;
-    procedure RegisterDataset (DS : TDBDataset);
-    procedure UnRegisterDataset (DS : TDBDataset);
+    function GetDataSet(Index: Longint): TDBDataset;
+    function GetDatasetCount: Integer;
     procedure RemoveDataSets;
     procedure SetActive(Value : boolean);
   Protected
+    procedure RegisterDataset (DS : TDBDataset); virtual;
+    procedure UnRegisterDataset (DS : TDBDataset); virtual;
     Function AllowClose(DS: TDBDataset): Boolean; virtual;
+    procedure CloseDataset(DS: TDBDataset; InCommit : Boolean); virtual;
     Procedure SetDatabase (Value : TDatabase); virtual;
     procedure CloseTrans;
     procedure OpenTrans;
@@ -2197,10 +2209,13 @@ type
     procedure StartTransaction; virtual; abstract;
     procedure InternalHandleException; virtual;
     procedure Loaded; override;
+    Property DatasetCount : Integer Read GetDatasetCount;
+    property Datasets[Index: Longint]: TDBDataset read GetDataSet;
   Public
     constructor Create(AOwner: TComponent); override;
     Destructor Destroy; override;
     procedure CloseDataSets;
+    procedure CloseDataSets(InCommit : Boolean);
     Property DataBase : TDatabase Read FDatabase Write SetDatabase;
   published
     property Active : boolean read FActive write setactive;
@@ -2209,6 +2224,7 @@ type
   { TCustomConnection }
 
   TLoginEvent = procedure(Sender: TObject; Username, Password: string) of object;
+  TCloseErrorEvent = procedure(Sender : TObject; aError : Exception) of object;
 
   TCustomConnection = class(TComponent)
   private
@@ -2218,6 +2234,7 @@ type
     FBeforeDisconnect: TNotifyEvent;
     FForcedClose: Boolean;
     FLoginPrompt: Boolean;
+    FOnCloseError: TCloseErrorEvent;
     FOnLogin: TLoginEvent;
     FStreamedConnected: Boolean;
     procedure SetAfterConnect(const AValue: TNotifyEvent);
@@ -2225,6 +2242,9 @@ type
     procedure SetBeforeConnect(const AValue: TNotifyEvent);
     procedure SetBeforeDisconnect(const AValue: TNotifyEvent);
   protected
+    Procedure DoCloseError(aError : Exception); virtual;
+    procedure SetForcedClose(AValue: Boolean); virtual;
+    procedure CloseForDestroy;
     procedure DoLoginPrompt; virtual;
     procedure DoConnect; virtual;
     procedure DoDisconnect; virtual;
@@ -2236,7 +2256,7 @@ type
     procedure Loaded; override;
     procedure SetConnected (Value : boolean); virtual;
     procedure SetLoginParams(const ADatabaseName, AUserName, APassword: string); virtual;
-    property ForcedClose : Boolean read FForcedClose write FForcedClose;
+    property ForcedClose : Boolean read FForcedClose write SetForcedClose;
     property StreamedConnected: Boolean read FStreamedConnected write FStreamedConnected;
   public
     procedure Close(ForceClose: Boolean=False);
@@ -2253,6 +2273,7 @@ type
     property BeforeConnect : TNotifyEvent read FBeforeConnect write SetBeforeConnect;
     property BeforeDisconnect : TNotifyEvent read FBeforeDisconnect write SetBeforeDisconnect;
     property OnLogin: TLoginEvent read FOnLogin write FOnLogin;
+    Property OnCloseError : TCloseErrorEvent Read FOnCloseError Write FOnCloseError;
   end;
 
 
@@ -2499,10 +2520,14 @@ function BuffersEqual(Buf1, Buf2: Pointer; Size: Integer): Boolean;
 function SkipComments(var p: PChar; EscapeSlash, EscapeRepeat : Boolean) : boolean;
 
 operator Enumerator(ADataSet: TDataSet): TDataSetEnumerator;
- 
+
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses Data.Consts,System.TypInfo;
+{$ELSE FPC_DOTTEDUNITS}
 uses dbconst,typinfo;
+{$ENDIF FPC_DOTTEDUNITS}
 
 { ---------------------------------------------------------------------
     Auxiliary functions
@@ -2556,7 +2581,7 @@ end;
 
 constructor EUpdateError.Create(NativeError, Context : String;
                                 ErrCode, PrevError : integer; E: Exception);
-                                
+
 begin
   Inherited CreateFmt(NativeError,[Context]);
   FContext := Context;
@@ -2894,7 +2919,7 @@ function TLookupList.ValueOfKey(const AKey: Variant): Variant;
 
   Function VarArraySameValues(VarArray1,VarArray2 : Variant) : Boolean;
   // This only works for one-dimensional vararrays with a lower bound of 0
-  // and equal higher bounds wich only contains variants.
+  // and equal higher bounds which only contains variants.
   // The vararrays returned by GetFieldValues do apply.
   var i : integer;
   begin
@@ -2944,7 +2969,7 @@ begin
     end;
 end;
 
-function BuffersEqual(Buf1, Buf2: Pointer; Size: Integer): Boolean; 
+function BuffersEqual(Buf1, Buf2: Pointer; Size: Integer): Boolean;
 
 begin
   Result:=CompareByte(Buf1,Buf2,Size)=0

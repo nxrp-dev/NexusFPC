@@ -1,3 +1,4 @@
+{%MainUnit sysutils.pp}
 {
     This file is part of the Free Pascal run time library.
     Copyright (c) 2020 by Tomas Hajny,
@@ -743,10 +744,10 @@ begin
           DSTEndSec := ADSTEndSec;
           DSTStartSpecType := ADSTStartSpecType;
           DSTEndSpecType := ADSTEndSpecType;
-         end;
-       end
-      else
-       DSTOffset := -3600 + TZOffset;
+         end
+       else
+         DSTOffset := -3600 + TZOffset;
+       end;
      end;
    end;
 end;
@@ -913,12 +914,13 @@ end;
 {$ENDIF HAS_DUAL_TZHANDLING}
 
 
-function GetLocalTimeOffset(const DateTime: TDateTime; const InputIsUTC: boolean; out Offset: integer): boolean;
+function GetLocalTimeOffset(const DateTime: TDateTime; const InputIsUTC: boolean; out Offset: integer; out isDST : Boolean): boolean;
 var
   SystemTime: TSystemTime;
 begin
   DateTimeToSystemTime (DateTime, SystemTime);
-  if InDST (SystemTime, InputIsUTC) then
+  isDST:=InDST (SystemTime, InputIsUTC);
+  if isDST then
    Offset := DSTOffsetMin
   else
    Offset := TZOffsetMin;

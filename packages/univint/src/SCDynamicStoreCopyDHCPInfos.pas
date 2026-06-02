@@ -2,14 +2,14 @@
  * Copyright (c) 2001, 2002, 2004, 2005, 2008 Apple Inc. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
  * compliance with the License. Please obtain a copy of the License at
  * http://www.opensource.apple.com/apsl/ and read it before using this
  * file.
- * 
+ *
  * The Original Code and all software distributed under the License are
  * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
  * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
@@ -17,11 +17,11 @@
  * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
  * Please see the License for the specific language governing rights and
  * limitations under the License.
- * 
+ *
  * @APPLE_LICENSE_HEADER_END@
  }
 {  Pascal Translation:  Peter N Lewis, <peter@stairways.com.au>, 2004 }
-{  Unit name changed to SCDynamicStoreCopyDHCPInfos to avoid conflict with 
+{  Unit name changed to SCDynamicStoreCopyDHCPInfos to avoid conflict with
       SCDynamicStoreCopyDHCPInfo function }
 {  Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2009 }
 {  Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2012 }
@@ -39,7 +39,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit SCDynamicStoreCopyDHCPInfos;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -224,7 +226,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CFBase,MacOsApi.SCDynamicStore,MacOsApi.CFDictionary,MacOsApi.CFData,MacOsApi.CFDate;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CFBase,SCDynamicStore,CFDictionary,CFData,CFDate;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 {$ALIGN POWER}
@@ -302,7 +308,7 @@ function DHCPInfoGetLeaseStartTime( info: CFDictionaryRef ): CFDateRef; external
 		NULL if the lease is infinite i.e. has no expiration, or the
 		configuration method is not DHCP. An infinite lease can be determined
 		by a non-NULL lease start time (see DHCPInfoGetLeaseStartTime above).
-	 
+
 		The return value must NOT be released.
 }
 function DHCPInfoGetLeaseExpirationTime( info: CFDictionaryRef ): CFDateRef; external name '_DHCPInfoGetLeaseExpirationTime';

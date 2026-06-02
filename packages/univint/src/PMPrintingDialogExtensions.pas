@@ -1,16 +1,16 @@
 {
      File:       PMPrintingDialogExtensions.h
- 
+
      Contains:   Mac OS X Printing Manager Print Dialog Extensions' Interfaces.
- 
+
      Version:    Technology: Mac OS X
                  Release:    1.0
- 
+
      Copyright  (c) 1998-2008 by Apple Inc. All Rights Reserved.
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
 }
 {  Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2009 }
@@ -29,7 +29,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit PMPrintingDialogExtensions;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -214,7 +216,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -324,7 +330,7 @@ Define the Kind IDs for Universal and Standard Printing Dialog Extensions.
 {$definec SUMMARY_DISPLAY_ORDER CFSTRP('Summary Display Order')}
 {$endc}
 
-{  Boolean key in the Bundle's Info.plist file that sepecifies whether the PDEPanels created by the Bundle are Sandbox compatible }
+{  Boolean key in the Bundle's Info.plist file that specifies whether the PDEPanels created by the Bundle are Sandbox compatible }
 {$ifc USE_CFSTR_CONSTANT_MACROS}
 {$definec kPMSandboxCompatiblePDEs CFSTRP('PMSandboxCompatiblePDEs')}
 {$endc}
@@ -359,7 +365,7 @@ Basic types...
 {$definec kPrinterModuleTypeIDStr CFSTRP('BDB091F4-E57F-11D3-B5CC-0050E4603277')}
 {$endc}
 
-	
+
 {$endc} {TARGET_OS_MAC}
 {$ifc not defined MACOSALLINCLUDE or not MACOSALLINCLUDE}
 

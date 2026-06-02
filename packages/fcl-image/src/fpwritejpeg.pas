@@ -16,22 +16,30 @@
 
   2023-07  - Massimo Magnano
            - procedure inside InternalWrite moved to protected methods (virtual)
+           - added Resolution support
 
 }
+{$IFNDEF FPC_DOTTEDUNITS}
 unit FPWriteJPEG;
+{$ENDIF FPC_DOTTEDUNITS}
 
-{$mode objfpc}{$H+}
+{$mode objfpc}
+{$H+}
+{$openstrings on}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
 uses
-  Classes, SysUtils, FPImage, JPEGLib, FPReadJPEG, JcAPIstd, JcAPImin, JDataDst,
-  JcParam, JError;
+  System.Classes, System.SysUtils, FpImage, System.Jpeg.Jpeglib, FpImage.Common.Jpeg, System.Jpeg.Jcapistd, System.Jpeg.Jcapimin, System.Jpeg.Jdatadst,
+  System.Jpeg.Jcparam, System.Jpeg.Jerror;
+{$ELSE FPC_DOTTEDUNITS}
+uses
+  Classes, SysUtils, FpImage, JPEGLib, JPEGComn, JcAPIstd, JcAPImin, JDataDst, JcParam, JError;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   { TFPWriterJPEG }
-
-  TFPJPEGCompressionQuality = 1..100;   // 100 = best quality, 25 = pretty awful
 
   TFPWriterJPEG = class(TFPCustomImageWriter)
   private
@@ -77,7 +85,7 @@ begin
   if CurInfo=nil then exit;
 end;
 
-procedure FormatMessage(CurInfo: j_common_ptr; var buffer: string);
+procedure FormatMessage(CurInfo: j_common_ptr; var buffer: shortstring);
 begin
   if CurInfo=nil then exit;
   {$ifdef FPC_Debug_Image}
@@ -109,7 +117,7 @@ begin
   FError := jpeg_std_error;
   FInfo := Default(jpeg_compress_struct);
   jpeg_create_compress(@FInfo);
-  FInfo.err := jerror.jpeg_std_error(FError);
+  FInfo.err := {$IFDEF FPC_DOTTEDUNITS}System.Jpeg.{$ENDIF}jerror.jpeg_std_error(FError);
   FInfo.progress := @FProgressMgr.pub;
   FProgressMgr.pub.progress_monitor := @ProgressCallback;
   FProgressMgr.instance := Self;
@@ -132,6 +140,10 @@ begin
 
   jpeg_set_defaults(@FInfo);
   jpeg_set_quality(@FInfo, FQuality, True);
+
+  FInfo.density_unit :=ResolutionUnitTodensity_unit(Img.ResolutionUnit);
+  FInfo.X_density :=Round(Img.ResolutionX);
+  FInfo.Y_density :=Round(Img.ResolutionY);
 
   if ProgressiveEncoding then
     jpeg_simple_progression(@FInfo);

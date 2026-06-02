@@ -3,7 +3,7 @@
     Copyright (c) 2012 by the Free Pascal development team
 
     SQLDB Firebird based indexer
-    
+
     See the file COPYING.FPC, included in this distribution,
     for details about the copyright.
 
@@ -12,14 +12,21 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit pgindexdb;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, FpIndexer.Indexer, FpIndexer.Db.SqlDb ,Data.Sqldb, Data.SqlDb.Pq;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, fpIndexer, sqldbIndexDB ,sqldb, pqconnection;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   { TPGIndexDB }

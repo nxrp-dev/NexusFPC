@@ -12,23 +12,26 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fpopenssl;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
-{$DEFINE DUMPCERT}
+{.$DEFINE DUMPCERT}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, System.Net.Sslbase, Api.Openssl, System.CTypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, sslbase, openssl, ctypes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$IFDEF DUMPCERT}
 Const
-{$IFDEF UNIX}
-  DumpCertFile = '/tmp/x509.txt';
-{$ELSE}
-  DumpCertFile = 'C:\temp\x509.txt';
-{$ENDIF}
+  DumpCertFile = 'x509.txt';
 {$ENDIF}
 
 Type
@@ -53,7 +56,7 @@ Type
     Constructor Create(AContext : PSSL_CTX = Nil); overload;
     Constructor Create(AType : TSSLType); overload;
     Destructor Destroy; override;
-    Function SetCipherList(Var ACipherList : String) : Integer;
+    Function SetCipherList(Var ACipherList : AnsiString) : Integer;
     procedure SetVerify(mode: Integer; arg2: TSSLCTXVerifyCallback);
     procedure SetDefaultPasswdCb(cb: PPasswdCb);
     procedure SetDefaultPasswdCbUserdata(u: SslPtr);
@@ -63,7 +66,7 @@ Type
     function UseCertificateASN1(len: cLong; d: String):cInt; overload; deprecated 'use TBytes overload';
     function UseCertificateASN1(len: cLong; buf: TBytes):cInt; overload;
     function UseCertificateFile(const Afile: String; Atype: cInt):cInt;
-    function UseCertificateChainFile(const Afile: PChar):cInt;
+    function UseCertificateChainFile(const Afile: PAnsiChar):cInt;
     function UseCertificate(x: SslPtr):cInt;
     function LoadVerifyLocations(const CAfile: String; const CApath: String):cInt;
     function LoadPFX(Const S,APassword : AnsiString) : cint; deprecated 'use TBytes overload';
@@ -108,6 +111,7 @@ Type
     function CipherBits: integer;
     function CipherAlgBits: integer;
     Function VerifyResult : Integer;
+    function Set1Host(const hostname: string): Integer;
     Property SSL: PSSL Read FSSL;
   end;
 
@@ -127,7 +131,11 @@ Function BioToString(B : PBIO; FreeBIO : Boolean = False) : AnsiString;
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.DateUtils;
+{$ELSE FPC_DOTTEDUNITS}
 uses dateutils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Resourcestring
   SErrCountNotGetContext = 'Failed to create SSL Context';
@@ -232,9 +240,9 @@ var
 begin
   Utc:=Asn1UtctimeNew;
   try
-    ASN1UtcTimeSetString(Utc,PAnsiChar(FormatDateTime('YYMMDDHHNNSS',ValidFrom)));
+    ASN1UtcTimeSetString(Utc,PAnsiChar(FormatDateTime('YYMMDDHHNNSS"Z"',ValidFrom)));
     X509SetNotBefore(x, Utc);
-    ASN1UtcTimeSetString(Utc,PAnsiChar(FormatDateTime('YYMMDDHHNNSS',ValidTo)));
+    ASN1UtcTimeSetString(Utc,PAnsiChar(FormatDateTime('YYMMDDHHNNSS"Z"',ValidTo)));
     X509SetNotAfter(x,Utc);
   finally
     Asn1UtctimeFree(Utc);
@@ -291,7 +299,7 @@ begin
     With TStringList.Create do
       try
         Add(S);
-        SaveToFile(DumpCertFile);
+        SaveToFile(IncludeTrailingPathDelimiter(GetTempDir)+DumpCertFile);
       finally
         Free;
       end;
@@ -341,7 +349,8 @@ begin
   inherited Destroy;
 end;
 
-Function TSSLContext.SetCipherList(Var ACipherList: String): Integer;
+Function TSSLContext.SetCipherList(Var ACipherList: AnsiString): Integer;
+
 begin
   Result:=SSLCTxSetCipherList(FCTX,ACipherList);
 end;
@@ -416,7 +425,7 @@ begin
   else if (Data.FileName<>'') then
     begin
     FN:=Data.FileName;
-    Result:=UseCertificateChainFile(PChar(FN));
+    Result:=UseCertificateChainFile(PAnsiChar(FN));
     if Result<>1 then
        begin
        Result:=UseCertificateFile(FN,SSL_FILETYPE_PEM);
@@ -441,7 +450,7 @@ begin
   Result:=sslctxUseCertificateFile(FCTX,Afile,Atype);
 end;
 
-function TSSLContext.UseCertificateChainFile(const Afile: PChar): cInt;
+function TSSLContext.UseCertificateChainFile(const Afile: PAnsiChar): cInt;
 begin
   Result:=sslctxUseCertificateChainFile(FCTX,Afile);
 end;
@@ -808,6 +817,11 @@ Function TSSL.VerifyResult: Integer;
 
 begin
   Result:=SslGetVerifyResult(FSsl);
+end;
+
+function TSSL.Set1Host(const hostname: string): Integer;
+begin
+  Result := SslSet1Host(FSsl, hostname);
 end;
 
 end.

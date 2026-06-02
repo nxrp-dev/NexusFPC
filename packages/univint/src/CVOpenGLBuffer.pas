@@ -6,7 +6,7 @@
  *
  }
 {  Pascal Translation:  Gorazd Krosl, <gorazd_1957@yahoo.ca>, 2009 }
-{  Pascal Translation Update: Jonas Maebe <jonas@freepascal.org>, October 2012 } 
+{  Pascal Translation Update: Jonas Maebe <jonas@freepascal.org>, October 2012 }
 {  Pascal Translation Update: Jonas Maebe <jonas@freepascal.org>, August 2015 }
 {
     Modified for use with Free Pascal
@@ -22,7 +22,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CVOpenGLBuffer;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -207,19 +209,23 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CFBase,MacOsApi.CFString,MacOsApi.CFDictionary,MacOsApi.CVReturns,MacOsApi.CVImageBuffer,MacOsApi.CGLTypes,MacOsApi.Macgl;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CFBase,CFString,CFDictionary,CVReturns,CVImageBuffer,CGLTypes,macgl;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
 {$ifc TARGET_OS_MAC}
- 
+
 {$ALIGN POWER}
 
  {! @header CVOpenGLBuffer.h
 	@copyright 2004 Apple Computer, Inc. All rights reserved.
 	@availability Mac OS X 10.4 or later
-    @discussion A CoreVideo buffer derives from a generic buffer and can be an ImageBuffer or PixelBuffer. 
-		   
+    @discussion A CoreVideo buffer derives from a generic buffer and can be an ImageBuffer or PixelBuffer.
+
 }
 
 

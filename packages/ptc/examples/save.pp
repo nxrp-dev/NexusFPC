@@ -15,7 +15,7 @@ program SaveExample;
 uses
   ptc, Math;
 
-procedure save(surface: IPTCSurface; filename: string);
+procedure save(surface: IPTCSurface; filename: AnsiString);
 var
   F: File;
   width, height: Integer;
@@ -191,7 +191,7 @@ begin
       { iterate across surface x }
       for x := 0 to width - 1 do
       begin
-        { calculate the mandelbrot interation count }
+        { calculate the mandelbrot iteration count }
         count := calculate(real, imaginary, maximum);
 
         { calculate color table index }

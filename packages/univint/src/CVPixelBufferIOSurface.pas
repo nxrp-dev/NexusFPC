@@ -21,7 +21,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CVPixelBufferIOSurface;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -206,17 +208,21 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.CFBase,MacOsApi.CFDictionary,MacOsApi.IOSurfaceAPI,MacOsApi.CVPixelBuffer,MacOsApi.CVReturns;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,CFBase,CFDictionary,IOSurfaceAPI,CVPixelBuffer,CVReturns;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 {$ALIGN POWER}
 
- 
+
   {! @header CVPixelBufferIOSurface.h
 	@copyright 2010 Apple Computer, Inc. All rights reserved.
 	@availability Mac OS X 10.4 or later
     @discussion routines for accessing and manipulating IOSurface backings for CVPixelBuffers
-		   
+
 }
 
 {$ifc (TARGET_OS_IPHONE and TARGET_OS_EMBEDDED) or TARGET_OS_MAC}
@@ -262,8 +268,8 @@ function CVPixelBufferGetIOSurface( pixelBuffer: CVPixelBufferRef ): IOSurfaceRe
     	IMPORTANT NOTE: If you are using IOSurface to share CVPixelBuffers between processes
     	and those CVPixelBuffers are allocated via a CVPixelBufferPool, it is important
     	that the CVPixelBufferPool does not reuse CVPixelBuffers whose IOSurfaces are still
-    	in use in other processes.  
-    	CoreVideo and IOSurface will take care of this for if you use IOSurfaceCreateMachPort 
+    	in use in other processes.
+    	CoreVideo and IOSurface will take care of this for if you use IOSurfaceCreateMachPort
     	and IOSurfaceLookupFromMachPort, but NOT if you pass IOSurfaceIDs.
     @param      surface		            The IOSurface to wrap.
     @param      pixelBufferAttributes   A dictionary with additional attributes for a a pixel buffer. This parameter is optional. See PixelBufferAttributes for more details.

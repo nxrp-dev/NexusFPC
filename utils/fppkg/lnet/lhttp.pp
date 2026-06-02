@@ -15,7 +15,7 @@
   You should have received a Copy of the GNU Library General Public License
   along with This library; if not, Write to the Free Software Foundation,
   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-  
+
   This license has been modified. See file LICENSE.ADDON for more information.
   Should you find these sources without a LICENSE File, please contact
   me at ales@chello.sk
@@ -38,7 +38,7 @@ type
     hpAccept, hpAcceptCharset, hpAcceptEncoding, hpAcceptLanguage, hpHost,
     hpFrom, hpReferer, hpUserAgent, hpRange, hpTransferEncoding,
     hpIfModifiedSince, hpIfUnmodifiedSince, hpCookie);
-  TLHTTPStatus = (hsUnknown, hsOK, hsNoContent, hsMovedPermanently, hsFound, hsNotModified, 
+  TLHTTPStatus = (hsUnknown, hsOK, hsNoContent, hsMovedPermanently, hsFound, hsNotModified,
     hsBadRequest, hsForbidden, hsNotFound, hsPreconditionFailed, hsRequestTooLong,
     hsInternalError, hsNotImplemented, hsNotAllowed);
   TLHTTPTransferEncoding = (teIdentity, teChunked);
@@ -46,19 +46,19 @@ type
     ceUnsupportedEncoding);
 
 const
-  HTTPDisconnectStatuses = [hsBadRequest, hsRequestTooLong, hsForbidden, 
+  HTTPDisconnectStatuses = [hsBadRequest, hsRequestTooLong, hsForbidden,
     hsInternalError, hsNotAllowed];
   HTTPMethodStrings: array[TLHTTPMethod] of string =
     ('HEAD', 'GET', 'POST', '');
   HTTPParameterStrings: array[TLHTTPParameter] of string =
-    ('CONNECTION', 'CONTENT-LENGTH', 'CONTENT-TYPE', 'ACCEPT', 
+    ('CONNECTION', 'CONTENT-LENGTH', 'CONTENT-TYPE', 'ACCEPT',
      'ACCEPT-CHARSET', 'ACCEPT-ENCODING', 'ACCEPT-LANGUAGE', 'HOST',
      'FROM', 'REFERER', 'USER-AGENT', 'RANGE', 'TRANSFER-ENCODING',
      'IF-MODIFIED-SINCE', 'IF-UNMODIFIED-SINCE', 'COOKIE');
   HTTPStatusCodes: array[TLHTTPStatus] of dword =
     (0, 200, 204, 301, 302, 304, 400, 403, 404, 412, 414, 500, 501, 504);
-  HTTPTexts: array[TLHTTPStatus] of string = 
-    ('', 'OK', 'No Content', 'Moved Permanently', 'Found', 'Not Modified', 'Bad Request', 'Forbidden', 
+  HTTPTexts: array[TLHTTPStatus] of string =
+    ('', 'OK', 'No Content', 'Moved Permanently', 'Found', 'Not Modified', 'Bad Request', 'Forbidden',
      'Not Found', 'Precondition Failed', 'Request Too Long', 'Internal Error',
      'Method Not Implemented', 'Method Not Allowed');
   HTTPDescriptions: array[TLHTTPStatus] of string = (
@@ -120,15 +120,15 @@ type
   TLHTTPSocket = class;
   TLHTTPConnection = class;
   TLHTTPClientSocket = class;
-  
+
   PRequestInfo = ^TRequestInfo;
   TRequestInfo = record
     RequestType: TLHTTPMethod;
     DateTime: TDateTime;
-    Method: pchar;
-    Argument: pchar;
-    QueryParams: pchar;
-    VersionStr: pchar;
+    Method: pansichar;
+    Argument: pansichar;
+    QueryParams: pansichar;
+    VersionStr: pansichar;
     Version: dword;
   end;
 
@@ -159,8 +159,8 @@ type
   PResponseInfo = ^TResponseInfo;
   TResponseInfo = record
     Status: TLHTTPStatus;
-    ContentType: string;
-    ContentCharset: string;
+    ContentType: Ansistring;
+    ContentCharset: Ansistring;
     LastModified: TDateTime;
   end;
 
@@ -169,7 +169,7 @@ type
 
   TOutputItem = class(TObject)
   protected
-    FBuffer: pchar;
+    FBuffer: PAnsiChar;
     FBufferPos: integer;
     FBufferSize: integer;
     FBufferOffset: integer;
@@ -183,7 +183,7 @@ type
     FWriteBlock: TWriteBlockMethod;
 
     procedure DoneInput; virtual;
-    function  HandleInput(ABuffer: pchar; ASize: integer): integer; virtual;
+    function  HandleInput(ABuffer: PAnsiChar; ASize: integer): integer; virtual;
     function  WriteBlock: TWriteBlockStatus; virtual;
   public
     constructor Create(ASocket: TLHTTPSocket);
@@ -229,7 +229,7 @@ type
   protected
     FFreeBuffer: boolean;
   public
-    constructor Create(ASocket: TLHTTPSocket; ABuffer: pointer; 
+    constructor Create(ASocket: TLHTTPSocket; ABuffer: pointer;
       ABufferOffset, ABufferSize: integer; AFreeBuffer: boolean);
     destructor Destroy; override;
   end;
@@ -245,7 +245,7 @@ type
     constructor Create(ASocket: TLHTTPSocket; AStream: TStream; AFreeStream: boolean);
     destructor Destroy; override;
   end;
-  
+
   TMemoryStreamOutput = class(TOutputItem)
   protected
     FFreeStream: boolean;
@@ -258,10 +258,10 @@ type
   end;
 
   TChunkState = (csInitial, csData, csDataEnd, csTrailer, csFinished);
-  TLHTTPParameterArray = array[TLHTTPParameter] of pchar;
-  
+  TLHTTPParameterArray = array[TLHTTPParameter] of PAnsiChar;
+
   TParseBufferMethod = function: boolean of object;
-  TLInputEvent = function(ASocket: TLHTTPClientSocket; ABuffer: pchar; ASize: integer): integer of object;
+  TLInputEvent = function(ASocket: TLHTTPClientSocket; ABuffer: PAnsiChar; ASize: integer): integer of object;
   TLCanWriteEvent = procedure(ASocket: TLHTTPClientSocket; var OutputEof: TWriteBlockStatus) of object;
   TLHTTPClientEvent = procedure(ASocket: TLHTTPClientSocket) of object;
 
@@ -276,12 +276,12 @@ type
 
   TLHTTPSocket = class(TLSocket)
   protected
-    FBuffer: pchar;
-    FBufferPos: pchar;
-    FBufferEnd: pchar;
+    FBuffer: PAnsiChar;
+    FBufferPos: PAnsiChar;
+    FBufferEnd: PAnsiChar;
     FBufferSize: integer;
-    FRequestBuffer: pchar;
-    FRequestPos: pchar;
+    FRequestBuffer: PAnsiChar;
+    FRequestPos: PAnsiChar;
     FRequestInputDone: boolean;
     FRequestHeaderDone: boolean;
     FOutputDone: boolean;
@@ -308,11 +308,11 @@ type
     function  ParseRequest: boolean;
     function  ParseEntityPlain: boolean;
     function  ParseEntityChunked: boolean;
-    procedure ParseLine(pLineEnd: pchar); virtual;
-    procedure ParseParameterLine(pLineEnd: pchar);
+    procedure ParseLine(pLineEnd: PAnsiChar); virtual;
+    procedure ParseParameterLine(pLineEnd: PAnsiChar);
     function  ProcessEncoding: boolean;
     procedure ProcessHeaders; virtual; abstract;
-    procedure RelocateVariable(var AVar: pchar);
+    procedure RelocateVariable(var AVar: PAnsiChar);
     procedure RelocateVariables; virtual;
     procedure ResetDefaults; virtual;
     function  SetupEncoding(AOutputItem: TBufferOutput; AHeaderOut: PHeaderOutInfo): boolean;
@@ -328,14 +328,14 @@ type
     procedure HandleReceive;
     function  ParseBuffer: boolean;
     procedure WriteBlock;
-    
+
     property Parameters: TLHTTPParameterArray read FParameters;
   end;
 
   { http server }
 
   TSetupEncodingState = (seNone, seWaitHeaders, seStartHeaders);
-  
+
   TLHTTPServerSocket = class(TLHTTPSocket)
   protected
     FLogMessage: TStringBuffer;
@@ -349,8 +349,8 @@ type
     procedure LogMessage; override;
     procedure RelocateVariables; override;
     procedure ResetDefaults; override;
-    procedure ParseLine(pLineEnd: pchar); override;
-    procedure ParseRequestLine(pLineEnd: pchar);
+    procedure ParseLine(pLineEnd: PAnsiChar); override;
+    procedure ParseRequestLine(pLineEnd: PAnsiChar);
     function  PrepareResponse(AOutputItem: TOutputItem; ACustomErrorMessage: boolean): boolean;
     procedure ProcessHeaders; override;
     procedure WriteError(AStatus: TLHTTPStatus); override;
@@ -367,7 +367,7 @@ type
     procedure StartMemoryResponse(AOutputItem: TMemoryOutput; ACustomErrorMessage: boolean = false);
     procedure StartResponse(AOutputItem: TBufferOutput; ACustomErrorMessage: boolean = false);
   end;
-  
+
   TURIHandler = class(TObject)
   private
     FNext: TURIHandler;
@@ -411,13 +411,13 @@ type
     FResponse: PClientResponse;
     FHeaderOut: PHeaderOutInfo;
     FError: TLHTTPClientError;
-    
+
     procedure AddContentLength(ALength: integer); override;
     function  GetResponseReason: string;
     function  GetResponseStatus: TLHTTPStatus;
     procedure Cancel(AError: TLHTTPClientError);
-    procedure ParseLine(pLineEnd: pchar); override;
-    procedure ParseStatusLine(pLineEnd: pchar);
+    procedure ParseLine(pLineEnd: PAnsiChar); override;
+    procedure ParseStatusLine(pLineEnd: PAnsiChar);
     procedure ProcessHeaders; override;
     procedure ResetDefaults; override;
   public
@@ -446,10 +446,10 @@ type
     FOnDoneInput: TLHTTPClientEvent;
     FOnInput: TLInputEvent;
     FOnProcessHeaders: TLHTTPClientEvent;
-    
+
     procedure ConnectEvent(aSocket: TLHandle); override;
     procedure DoDoneInput(ASocket: TLHTTPClientSocket);
-    function  DoHandleInput(ASocket: TLHTTPClientSocket; ABuffer: pchar; ASize: integer): integer;
+    function  DoHandleInput(ASocket: TLHTTPClientSocket; ABuffer: PAnsiChar; ASize: integer): integer;
     procedure DoProcessHeaders(ASocket: TLHTTPClientSocket);
     function  DoWriteBlock(ASocket: TLHTTPClientSocket): TWriteBlockStatus;
     function  InitSocket(aSocket: TLSocket): TLSocket; override;
@@ -502,13 +502,13 @@ begin
   OutDigit := ord(ADigit) - ord('0');
 end;
 
-function HTTPVersionCheck(AStr, AStrEnd: pchar; out AVersion: dword): boolean;
+function HTTPVersionCheck(AStr, AStrEnd: PAnsiChar; out AVersion: dword): boolean;
 var
   lMajorVersion, lMinorVersion: byte;
 begin
-  Result := ((AStrEnd-AStr) = 8) 
-    and CompareMem(AStr, pchar('HTTP/'), 5)
-    and TrySingleDigit(AStr[5], lMajorVersion) 
+  Result := ((AStrEnd-AStr) = 8)
+    and CompareMem(AStr, PAnsiChar('HTTP/'), 5)
+    and TrySingleDigit(AStr[5], lMajorVersion)
     and (AStr[6] = '.')
     and TrySingleDigit(AStr[7], lMinorVersion);
   AVersion := lMajorVersion * 10 + lMinorVersion;
@@ -524,7 +524,7 @@ end;
 const
    HexDigits: array[0..15] of char = '0123456789ABCDEF';
 
-function HexReverse(AValue: dword; ABuffer: pchar): integer;
+function HexReverse(AValue: dword; ABuffer: PAnsiChar): integer;
 begin
   Result := 0;
   repeat
@@ -535,10 +535,10 @@ begin
   until AValue = 0;
 end;
 
-procedure HexToInt(ABuffer: pchar; out AValue: dword; out ACode: integer);
+procedure HexToInt(ABuffer: PAnsiChar; out AValue: dword; out ACode: integer);
 var
   Val, Incr: dword;
-  Start: pchar;
+  Start: PAnsiChar;
 begin
   Val := 0;
   ACode := 0;
@@ -589,7 +589,7 @@ destructor TOutputItem.Destroy;
 begin
   if FSocket.FCurrentInput = Self then
     FSocket.FCurrentInput := nil;
-    
+
   if FPrevDelayFree = nil then
     FSocket.FDelayFreeItems := FNextDelayFree
   else
@@ -604,7 +604,7 @@ procedure TOutputItem.DoneInput;
 begin
 end;
 
-function TOutputItem.HandleInput(ABuffer: pchar; ASize: integer): integer;
+function TOutputItem.HandleInput(ABuffer: PAnsiChar; ASize: integer): integer;
 begin
   { discard input }
   Result := ASize;
@@ -670,7 +670,7 @@ end;
 
 procedure TBufferOutput.Add(const AStr: string);
 begin
-  Add(PChar(AStr), Length(AStr));
+  Add(PAnsiChar(AStr), Length(AStr));
 end;
 
 procedure TBufferOutput.PrependStreamOutput(AStream: TStream; AFree: boolean);
@@ -681,7 +681,7 @@ begin
     FSocket.PrependOutput(TStreamOutput.Create(FSocket, AStream, AFree), Self);
 end;
 
-procedure TBufferOutput.Add(AStream: TStream; AQueue: boolean = false; 
+procedure TBufferOutput.Add(AStream: TStream; AQueue: boolean = false;
   AFree: boolean = true);
 var
   size, copySize: integer;
@@ -778,7 +778,7 @@ begin
       FBuffer[FBufferSize+4] := #10;
       inc(FBufferSize, 5);
     end;
-  end else   
+  end else
     Result := EofToWriteStatus[FEof];
   if FOutputPending then
   begin
@@ -790,7 +790,7 @@ begin
     end;
   end;
 end;
-  
+
 function TBufferOutput.WriteBuffer: TWriteBlockStatus;
 begin
   if not FOutputPending then
@@ -859,7 +859,7 @@ begin
   FFinishBuffer := @FinishChunk;
   PrepareChunk;
 end;
-  
+
 procedure TBufferOutput.SelectBuffered;
 begin
   FPrepareBuffer := @PrepareBuffer;
@@ -867,7 +867,7 @@ begin
   FFinishBuffer := @FinishBuffer;
   PrepareBuffer;
 end;
-  
+
 procedure TBufferOutput.SelectPlain;
 begin
   FPrepareBuffer := @PrepareBuffer;
@@ -878,7 +878,7 @@ end;
 
 { TMemoryOutput }
 
-constructor TMemoryOutput.Create(ASocket: TLHTTPSocket; ABuffer: pointer; 
+constructor TMemoryOutput.Create(ASocket: TLHTTPSocket; ABuffer: pointer;
   ABufferOffset, ABufferSize: integer; AFreeBuffer: boolean);
 begin
   inherited Create(ASocket);
@@ -925,7 +925,7 @@ end;
 
 { TMemoryStreamOutput }
 
-constructor TMemoryStreamOutput.Create(ASocket: TLHTTPSocket; AStream: TMemoryStream; 
+constructor TMemoryStreamOutput.Create(ASocket: TLHTTPSocket; AStream: TMemoryStream;
   AFreeStream: boolean);
 begin
   inherited Create(ASocket);
@@ -1087,7 +1087,7 @@ procedure TLHTTPSocket.HandleReceive;
 var
   lRead: integer;
 begin
-  if FRequestInputDone then 
+  if FRequestInputDone then
   begin
     IgnoreRead := true;
     exit;
@@ -1109,7 +1109,7 @@ begin
     WriteBlock;
 end;
 
-procedure TLHTTPSocket.RelocateVariable(var AVar: pchar);
+procedure TLHTTPSocket.RelocateVariable(var AVar: PAnsiChar);
 begin
   if AVar = nil then exit;
   AVar := FBuffer + (AVar - FRequestPos);
@@ -1126,7 +1126,7 @@ end;
 procedure TLHTTPSocket.PackRequestBuffer;
 var
   lBytesLeft: integer;
-  lFreeBuffer: pchar;
+  lFreeBuffer: PAnsiChar;
 begin
   if (FRequestBuffer <> nil) and (FBufferEnd-FBufferPos <= RequestBufferSize) then
   begin
@@ -1189,26 +1189,26 @@ end;
 
 function TLHTTPSocket.ParseEntityChunked: boolean;
 var
-  lLineEnd, lNextLine: pchar;
+  lLineEnd, lNextLine: PAnsiChar;
   lCode: integer;
 begin
   repeat
     if FChunkState = csFinished then
       exit(false);
     if FChunkState = csData then
-      if ParseEntityPlain then 
+      if ParseEntityPlain then
         exit(true)
       else
         FChunkState := csDataEnd;
-    
+
     lLineEnd := StrScan(FBufferPos, #10);
     if lLineEnd = nil then
       exit(true);
-    
+
     lNextLine := lLineEnd+1;
     if (lLineEnd > FBufferPos) and ((lLineEnd-1)^ = #13) then
       dec(lLineEnd);
-    case FChunkState of 
+    case FChunkState of
       csInitial:
       begin
         lLineEnd^ := #0;
@@ -1244,7 +1244,7 @@ end;
 
 function TLHTTPSocket.ParseRequest: boolean;
 var
-  pNextLine, pLineEnd: pchar;
+  pNextLine, pLineEnd: PAnsiChar;
 begin
   if FRequestHeaderDone then exit(not FRequestInputDone);
   repeat
@@ -1257,7 +1257,7 @@ begin
         WriteError(hsRequestTooLong);
       exit(true);
     end;
-  
+
     pNextLine := pLineEnd+1;
     if (pLineEnd > FBufferPos) and ((pLineEnd-1)^ = #13) then
       dec(pLineEnd);
@@ -1269,9 +1269,9 @@ begin
   until false;
 end;
 
-procedure TLHTTPSocket.ParseParameterLine(pLineEnd: pchar);
+procedure TLHTTPSocket.ParseParameterLine(pLineEnd: PAnsiChar);
 var
-  lPos: pchar;
+  lPos: PAnsiChar;
   I: TLHTTPParameter;
   lLen: integer;
 begin
@@ -1288,7 +1288,7 @@ begin
   lLen := lPos-FBufferPos-1;
   for I := Low(TLHTTPParameter) to High(TLHTTPParameter) do
     if (Length(HTTPParameterStrings[I]) = lLen)
-    and CompareMem(FBufferPos, PChar(HTTPParameterStrings[I]), lLen) then
+    and CompareMem(FBufferPos, PAnsiChar(HTTPParameterStrings[I]), lLen) then
     begin
       repeat
         inc(lPos);
@@ -1298,7 +1298,7 @@ begin
     end;
 end;
 
-procedure TLHTTPSocket.ParseLine(pLineEnd: pchar);
+procedure TLHTTPSocket.ParseLine(pLineEnd: PAnsiChar);
 begin
   if FBufferPos[0] = #0 then
   begin
@@ -1307,7 +1307,7 @@ begin
   end else
     ParseParameterLine(pLineEnd);
 end;
-        
+
 function TLHTTPSocket.ParseBuffer: boolean;
 var
   lParseFunc: TParseBufferMethod;
@@ -1321,7 +1321,7 @@ begin
       if FCurrentInput <> nil then
         FCurrentInput.DoneInput;
     end;
-    { if parse func changed mid-run, then we should continue calling the new 
+    { if parse func changed mid-run, then we should continue calling the new
       one: header + data }
   until (lParseFunc = FParseBuffer) or not Result;
 end;
@@ -1329,7 +1329,7 @@ end;
 function TLHTTPSocket.ProcessEncoding: boolean;
 var
   lCode: integer;
-  lParam: pchar;
+  lParam: PAnsiChar;
 begin
   Result := true;
   lParam := FParameters[hpContentLength];
@@ -1354,7 +1354,7 @@ begin
     exit;
   end;
 
-  { only if keep-alive, then user must specify either of above headers to 
+  { only if keep-alive, then user must specify either of above headers to
     indicate next header's start }
   lParam := FParameters[hpConnection];
   FRequestInputDone := (lParam <> nil) and (StrIComp(lParam, 'keep-alive') = 0);
@@ -1414,13 +1414,13 @@ begin
       if FBufferPos = FBufferEnd then
         PackRequestBuffer;
 
-      if ParseBuffer and IgnoreRead then 
+      if ParseBuffer and IgnoreRead then
       begin
         { end of input buffer reached, try reading more }
         HandleReceive;
       end;
 
-      if FCurrentOutput = nil then 
+      if FCurrentOutput = nil then
         break;
     end;
 
@@ -1492,15 +1492,17 @@ begin
 end;
 
 procedure TLHTTPServerSocket.LogMessage;
+
+
 begin
-  { log a message about this request, 
+  { log a message about this request,
     '<StatusCode> <Length> "<Referer>" "<User-Agent>"' }
   AppendString(FLogMessage, IntToStr(HTTPStatusCodes[FResponseInfo.Status]));
   AppendChar(FLogMessage, ' ');
   AppendString(FLogMessage, IntToStr(FHeaderOut.ContentLength));
   AppendString(FLogMessage, ' "');
   AppendString(FLogMessage, FParameters[hpReferer]);
-  AppendString(FLogMessage, '" "');
+  AppendString(FLogMessage, AnsiString('" "'));
   AppendString(FLogMessage, FParameters[hpUserAgent]);
   AppendChar(FLogMessage, '"');
   AppendChar(FLogMessage, #0);
@@ -1540,7 +1542,7 @@ begin
   end;
   inherited;
 end;
-  
+
 procedure TLHTTPServerSocket.RelocateVariables;
 begin
   RelocateVariable(FRequestInfo.Method);
@@ -1550,7 +1552,7 @@ begin
   inherited;
 end;
 
-procedure TLHTTPServerSocket.ParseLine(pLineEnd: pchar);
+procedure TLHTTPServerSocket.ParseLine(pLineEnd: PAnsiChar);
 begin
   if FRequestInfo.RequestType = hmUnknown then
   begin
@@ -1561,9 +1563,9 @@ begin
   inherited;
 end;
 
-procedure TLHTTPServerSocket.ParseRequestLine(pLineEnd: pchar);
+procedure TLHTTPServerSocket.ParseRequestLine(pLineEnd: PAnsiChar);
 var
-  lPos: pchar;
+  lPos: PAnsiChar;
   I: TLHTTPMethod;
   NowLocal: TDateTime;
 begin
@@ -1601,7 +1603,7 @@ begin
   end;
   FRequestInfo.VersionStr := lPos;
   FHeaderOut.Version := FRequestInfo.Version;
-  
+
   { trim spaces at end of URI }
   dec(lPos);
   repeat
@@ -1624,7 +1626,7 @@ begin
   for I := Low(TLHTTPMethod) to High(TLHTTPMethod) do
   begin
     if (I = hmUnknown) or (((lPos-FBufferPos) = Length(HTTPMethodStrings[I]))
-      and CompareMem(FBufferPos, PChar(HTTPMethodStrings[I]), lPos-FBufferPos)) then
+      and CompareMem(FBufferPos, PAnsiChar(HTTPMethodStrings[I]), lPos-FBufferPos)) then
     begin
       repeat
         inc(lPos);
@@ -1639,7 +1641,7 @@ begin
   begin
     { absolute URI }
     lPos := FRequestInfo.Argument+7;
-    while (lPos^ = '/') do 
+    while (lPos^ = '/') do
       Inc(lPos);
     FParameters[hpHost] := lPos;
     lPos := StrScan(lPos, '/');
@@ -1659,7 +1661,7 @@ end;
 procedure TLHTTPServerSocket.ProcessHeaders;
   { process request }
 var
-  lPos, lConnParam: pchar;
+  lPos, lConnParam: PAnsiChar;
 begin
   { do HTTP/1.1 Host-field present check }
   if (FRequestInfo.Version > 10) and (FParameters[hpHost] = nil) then
@@ -1667,7 +1669,7 @@ begin
     WriteError(hsBadRequest);
     exit;
   end;
-      
+
   lPos := StrScan(FRequestInfo.Argument, '?');
   if lPos <> nil then
   begin
@@ -1685,7 +1687,7 @@ begin
     if StrIComp(lConnParam, 'close') = 0 then
       FKeepAlive := false;
   end;
-  
+
   HTTPDecode(FRequestInfo.Argument);
   if not CheckPermission(FRequestInfo.Argument) then
   begin
@@ -1696,9 +1698,9 @@ begin
       WriteError(hsNotImplemented);
       exit;
     end;
-      
+
     FCurrentInput := HandleURI;
-    { if we have a valid outputitem, wait until it is ready 
+    { if we have a valid outputitem, wait until it is ready
       to produce its response }
     if FCurrentInput = nil then
     begin
@@ -1718,7 +1720,7 @@ begin
   { check modification date }
   if FResponseInfo.Status < hsBadRequest then
   begin
-    if (FParameters[hpIfModifiedSince] <> nil) 
+    if (FParameters[hpIfModifiedSince] <> nil)
       and (FResponseInfo.LastModified <> 0.0) then
     begin
       if TryHTTPDateStrToDateTime(FParameters[hpIfModifiedSince], lDateTime) then
@@ -1734,7 +1736,7 @@ begin
     begin
       if TryHTTPDateStrToDateTime(FParameters[hpIfUnmodifiedSince], lDateTime) then
       begin
-        if (FResponseInfo.LastModified = 0.0) 
+        if (FResponseInfo.LastModified = 0.0)
           or (lDateTime < FResponseInfo.LastModified) then
           FResponseInfo.Status := hsPreconditionFailed;
       end;
@@ -1747,7 +1749,7 @@ begin
     ACustomErrorMessage := false;
     FHeaderOut.ContentLength := 0;
   end;
-  
+
   Result := (FResponseInfo.Status = hsOK) or ACustomErrorMessage;
   if not Result then
   begin
@@ -1805,7 +1807,7 @@ begin
   if Length(lMessage) > 0 then
   begin
     FResponseInfo.ContentType := 'text/html';
-    lMsgOutput := TMemoryOutput.Create(Self, PChar(lMessage), 0, Length(lMessage), false)
+    lMsgOutput := TMemoryOutput.Create(Self, PAnsiChar(lMessage), 0, Length(lMessage), false)
   end else begin
     FResponseInfo.ContentType := '';
     lMsgOutput := nil;
@@ -1820,7 +1822,7 @@ var
   tempStr: string;
 begin
   lMessage := InitStringBuffer(504);
-  
+
   AppendString(lMessage, 'HTTP/1.1 ');
   Str(HTTPStatusCodes[FResponseInfo.Status], lTemp);
   AppendString(lMessage, lTemp);
@@ -1925,7 +1927,7 @@ begin
   else
     TZSign := '-';
   TZSecsAbs := Abs(TZSeconds);
-  FLogMessageTZString := Format(' %s%.2d%.2d] "', 
+  FLogMessageTZString := Format(' %s%.2d%.2d] "',
     [TZSign, TZSecsAbs div 3600, (TZSecsAbs div 60) mod 60]);
 end;
 
@@ -1981,14 +1983,14 @@ type
   TClientOutput = class(TOutputItem)
   protected
     FPersistent: boolean;
-    
+
     procedure DoneInput; override;
   public
     constructor Create(ASocket: TLHTTPClientSocket);
     destructor Destroy; override;
     procedure FreeInstance; override;
 
-    function  HandleInput(ABuffer: pchar; ASize: integer): integer; override;
+    function  HandleInput(ABuffer: PAnsiChar; ASize: integer): integer; override;
     function  WriteBlock: TWriteBlockStatus; override;
   end;
 
@@ -2000,13 +2002,13 @@ end;
 
 destructor TClientOutput.Destroy;
 begin
-  if FPersistent then exit; 
+  if FPersistent then exit;
   inherited;
 end;
 
 procedure TClientOutput.FreeInstance;
 begin
-  if FPersistent then exit; 
+  if FPersistent then exit;
   inherited;
 end;
 
@@ -2016,7 +2018,7 @@ begin
     DoDoneInput(TLHTTPClientSocket(FSocket));
 end;
 
-function  TClientOutput.HandleInput(ABuffer: pchar; ASize: integer): integer;
+function  TClientOutput.HandleInput(ABuffer: PAnsiChar; ASize: integer): integer;
 begin
   Result := TLHTTPClient(TLHTTPClientSocket(FSocket).FCreator).
     DoHandleInput(TLHTTPClientSocket(FSocket), ABuffer, ASize);
@@ -2119,11 +2121,11 @@ begin
   AddToOutput(TMemoryOutput.Create(Self, lMessage.Memory, 0,
     lMessage.Pos-lMessage.Memory, true));
   AddToOutput(FCurrentInput);
-  
+
   WriteBlock;
 end;
 
-procedure TLHTTPClientSocket.ParseLine(pLineEnd: pchar);
+procedure TLHTTPClientSocket.ParseLine(pLineEnd: PAnsiChar);
 begin
   if FError <> ceNone then
     exit;
@@ -2137,9 +2139,9 @@ begin
   inherited;
 end;
 
-procedure TLHTTPClientSocket.ParseStatusLine(pLineEnd: pchar);
+procedure TLHTTPClientSocket.ParseStatusLine(pLineEnd: PAnsiChar);
 var
-  lPos: pchar;
+  lPos: PAnsiChar;
 begin
   lPos := FBufferPos;
   repeat
@@ -2254,7 +2256,7 @@ begin
     FOnDoneInput(ASocket);
 end;
 
-function  TLHTTPClient.DoHandleInput(ASocket: TLHTTPClientSocket; ABuffer: pchar; ASize: integer): integer;
+function  TLHTTPClient.DoHandleInput(ASocket: TLHTTPClientSocket; ABuffer: PAnsiChar; ASize: integer): integer;
 begin
   FState := hcsReceiving;
   if Assigned(FOnInput) then

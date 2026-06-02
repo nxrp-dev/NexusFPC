@@ -95,8 +95,11 @@ const
 {$endif }
 {$ifdef sparc}
 const
-  { no emulation specification needed, as long as only 32-bit is supported }
-  gnu_emul = '';
+  gnu_emul = '-m elf32_sparc_sol2';
+{$endif}
+{$ifdef sparc64}
+const
+  gnu_emul = '-m elf64_sparc_sol2';
 {$endif}
 
 Constructor TLinkersolaris.Create;
@@ -136,8 +139,13 @@ const
 {$endif }
 {$ifdef sparc}
 const
-  gld = 'gld ';
-  solaris_ld = 'ld ';
+  gld = 'gld $EMUL';
+  solaris_ld = 'ld -m32';
+{$endif}
+{$ifdef sparc64}
+const
+  gld = 'gld $EMUL';
+  solaris_ld = 'ld -m64';
 {$endif}
 begin
   Glibc2:=false;
@@ -195,7 +203,7 @@ begin
 {       prtobj:=cprtobj;}
       end
       else
-       AddSharedLibrary('c'); { quick hack: this solaris implementation needs alwys libc }
+       AddSharedLibrary('c'); { quick hack: this solaris implementation needs always libc }
    end;
 
   if use_gnu_ld then
@@ -218,7 +226,7 @@ begin
    end;
 
   { force local symbol resolution (i.e., inside the shared }
-  { library itself) for all non-exorted symbols, otherwise }
+  { library itself) for all non-exported symbols, otherwise}
   { several RTL symbols of FPC-compiled shared libraries   }
   { will be bound to those of a single shared library or   }
   { to the main program                                    }
@@ -344,7 +352,7 @@ begin
      HPath:=TCmdStrListItem(HPath.Next);
    end;
   { force local symbol resolution (i.e., inside the shared }
-  { library itself) for all non-exorted symbols, otherwise }
+  { library itself) for all non-exported symbols, otherwise}
   { several RTL symbols of FPC-compiled shared libraries   }
   { will be bound to those of a single shared library or   }
   { to the main program                                    }
@@ -530,7 +538,7 @@ begin
 
   { We need shell if output is redirected }
   success:=DoExec(BinStr,Trim(CmdStr),true,RedirectStr<>'');
-{ Remove ReponseFile }
+{ Remove ResponseFile }
 {$IFNDEF LinkTest}
   if (success) and use_gnu_ld and
      not(cs_link_nolink in current_settings.globalswitches) then
@@ -645,7 +653,7 @@ begin
      success:=DoExec(FindUtil(utilsprefix+binstr),cmdstr,true,false);
    end;
 
-{ Remove ReponseFile }
+{ Remove ResponseFile }
 {$IFNDEF LinkTest}
   if (success) and not(cs_link_nolink in current_settings.globalswitches) then
    DeleteFile(outputexedir+Info.ResName);

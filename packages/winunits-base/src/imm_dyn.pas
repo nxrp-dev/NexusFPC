@@ -5,22 +5,29 @@
 (*                                                                     *)
 (* Converted to pascal by Dmitry Boyarintsev, using Chelper.           *)
 (*                                                                     *)
-(*   The dynamic interface is used to load function dynamicly.         *)
+(*   The dynamic interface is used to load function dynamically.       *)
 (* It's users responsibility to check functions have been loaded       *)
 (* successfully.                                                       *)
-(*   imm_dyn and imm function names match. In oreder to be sure that   *)
-(* dynamicly loaded functions are used, always add imm_dyn to the uses *)
+(*   imm_dyn and imm function names match. In order to be sure that    *)
+(* dynamically loaded functions are used, always add imm_dyn to the uses *)
 (* section after imm unit.                                             *)
 (*                                                                     *)
 (********************************************************************* *)
+{$IFNDEF FPC_DOTTEDUNITS}
 unit imm_dyn;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode delphi}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Windows, WinApi.Imm;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Windows, imm;
+{$ENDIF FPC_DOTTEDUNITS}
 
 var
   ImmInstallIMEA : function (lpszIMEFileName, lpszLayoutText: LPCSTR): HKL; stdcall = nil;

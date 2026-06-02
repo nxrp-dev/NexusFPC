@@ -14,12 +14,19 @@
  **********************************************************************}
 {$PACKRECORDS 2}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit locale;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  Amiga.Core.Exec, Amiga.Core.Amigados, Amiga.Core.Utility;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   exec, amigados, utility;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   // Internal String-Numbers GetLocaleStr()
@@ -134,7 +141,7 @@ type
     // Currency symbol
     loc_MonCS: STRPTR;             // Currency symbol (e.g. $)
     loc_MonSmallCS: STRPTR;        // Symbol for small amounts (eg. cent)
-    loc_MonIntCS: STRPTR;          // Internationl (ISO 4217) code (e.g. EUR/USD/GBP)
+    loc_MonIntCS: STRPTR;          // International (ISO 4217) code (e.g. EUR/USD/GBP)
 
     loc_MonPositiveSign: STRPTR;   // for positive money value
     loc_MonPositiveSpaceSep: Byte; // Separated by space (SS_*)
@@ -234,7 +241,7 @@ var
   LocaleBase: PLocaleBase = nil;
 
 const
-  LOCALENAME: PChar = 'locale.library';
+  LOCALENAME: PAnsiChar = 'locale.library';
 
 procedure CloseCatalog(Catalog: PCatalog location 'a0'); syscall LocaleBase 36;
 procedure CloseLocale(Locale: PLocale location 'a0'); syscall LocaleBase 42;

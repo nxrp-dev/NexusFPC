@@ -18,14 +18,23 @@
    - Rewritten a large part of the file, so we can handle all bmp color depths
    - Support for RLE4 and RLE8 encoding
   03/2015 MvdV finally removed bytesperpixel. 10 years should be enough.
+
+  2023-07  - Massimo Magnano
+           - added Resolution support
 }
 
 {$mode objfpc}{$h+}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit FPWriteBMP;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
-uses FPImage, classes, sysutils, BMPComn;
+{$IFDEF FPC_DOTTEDUNITS}
+uses FpImage, System.Classes, System.SysUtils, FpImage.Common.Bitmap;
+{$ELSE FPC_DOTTEDUNITS}
+uses FpImage, classes, sysutils, BMPComn;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
 
@@ -124,7 +133,7 @@ begin
   BadPalette:=false;
   if not Img.UsePalette then BadPalette:=true
   else if Img.Palette.Count>(1 shl FBpp) then BadPalette:=true;
-  if BadPalette then 
+  if BadPalette then
     raise FPImageException.Create('Image palette is too big or absent');
   setlength(ColInfo,Img.Palette.Count);
   BFI.ClrUsed:=Img.Palette.Count;
@@ -253,6 +262,11 @@ begin
     Planes:=1;
     if FBpp=15 then BitCount:=16
     else BitCount:=FBpp;
+
+    Img.ResolutionUnit :=ruPixelsPerCentimeter;
+    fXPelsPerMeter :=Trunc(Img.ResolutionX*100);
+    fYPelsPerMeter :=Trunc(Img.ResolutionY*100);
+
     XPelsPerMeter:=fXPelsPerMeter;
     YPelsPerMeter:=fYPelsPerMeter;
     ClrImportant:=0;
@@ -280,7 +294,7 @@ end;
 
 { This code is rather ugly and difficult to read, but compresses better than gimp.
   Brief explanation:
-  A repetition is good if it's made of 3 elements at least: we have 2 bytes instead of 1. Let's call this a 
+  A repetition is good if it's made of 3 elements at least: we have 2 bytes instead of 1. Let's call this a
   "repetition" or "true repetition".
   So we start finding the first repetition from current position.
   Once found, we must decide how to handle elements between current position (i) and the repetition position (j)
@@ -716,7 +730,7 @@ begin
         end;
       end;
       { If image is compressed we must fix the headers since we now know the size of the image }
-      if BFI.Compression in [BI_RLE4,BI_RLE8] then 
+      if BFI.Compression in [BI_RLE4,BI_RLE8] then
       begin
         tmppos:=Stream.Position-StartPosition-BFH.bfOffset;
         BFI.SizeImage:=tmppos;          { set size of the image }

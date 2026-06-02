@@ -1,15 +1,15 @@
 {
      File:       Print/PMApplicationDeprecated.h
- 
+
      Contains:   Deprecated Carbon Printing Manager Interfaces.
- 
+
 	 Copyright  (c) 1998-2006, 2008, 2011 Apple Inc. All Rights Reserved.
- 
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://bugs.freepascal.org
- 
+
 }
 {  Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2009 }
 {  Pascal Translation Updated:  Jonas Maebe, <jonas@freepascal.org>, October 2012 }
@@ -27,7 +27,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit PMApplicationDeprecated;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -212,7 +214,11 @@ interface
 {$setc TYPE_BOOL := FALSE}
 {$setc TYPE_EXTENDED := FALSE}
 {$setc TYPE_LONGLONG := TRUE}
+{$IFDEF FPC_DOTTEDUNITS}
+uses MacOsApi.MacTypes,MacOsApi.Dialogs,MacOsApi.PMDefinitions,MacOsApi.PMDefinitionsDeprecated;
+{$ELSE FPC_DOTTEDUNITS}
 uses MacTypes,Dialogs,PMDefinitions,PMDefinitionsDeprecated;
+{$ENDIF FPC_DOTTEDUNITS}
 {$endc} {not MACOSALLINCLUDE}
 
 
@@ -235,7 +241,7 @@ type
 
 {
  *  NewPMItemUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -246,7 +252,7 @@ function NewPMItemUPP( userRoutine: PMItemProcPtr ): PMItemUPP; external name '_
 
 {
  *  NewPMPrintDialogInitUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -257,7 +263,7 @@ function NewPMPrintDialogInitUPP( userRoutine: PMPrintDialogInitProcPtr ): PMPri
 
 {
  *  NewPMPageSetupDialogInitUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -268,7 +274,7 @@ function NewPMPageSetupDialogInitUPP( userRoutine: PMPageSetupDialogInitProcPtr 
 
 {
  *  DisposePMItemUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -279,7 +285,7 @@ procedure DisposePMItemUPP( userUPP: PMItemUPP ); external name '_DisposePMItemU
 
 {
  *  DisposePMPrintDialogInitUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -290,7 +296,7 @@ procedure DisposePMPrintDialogInitUPP( userUPP: PMPrintDialogInitUPP ); external
 
 {
  *  DisposePMPageSetupDialogInitUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -301,7 +307,7 @@ procedure DisposePMPageSetupDialogInitUPP( userUPP: PMPageSetupDialogInitUPP ); 
 
 {
  *  InvokePMItemUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -312,7 +318,7 @@ procedure InvokePMItemUPP( theDialog: DialogRef; item: SInt16; userUPP: PMItemUP
 
 {
  *  InvokePMPrintDialogInitUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -323,7 +329,7 @@ procedure InvokePMPrintDialogInitUPP( printSettings: PMPrintSettings; var theDia
 
 {
  *  InvokePMPageSetupDialogInitUPP()
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -336,10 +342,10 @@ procedure InvokePMPageSetupDialogInitUPP( pageFormat: PMPageFormat; var theDialo
 
 {
  *  PMSessionBeginDocument()   *** DEPRECATED ***
- *  
+ *
  *  Discussion:
  *    Instead use PMSessionBeginCGDocument.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.5
  *    CarbonLib:        in CarbonLib 1.1 and later
@@ -350,11 +356,11 @@ function PMSessionBeginDocument( printSession: PMPrintSession; printSettings: PM
 
 {
  *  PMSessionPageSetupDialogInit()   *** DEPRECATED ***
- *  
+ *
  *  Discussion:
  *    You should create a PDE for your application instead of relying
  *    on this function.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.1 and later
@@ -366,11 +372,11 @@ function PMSessionPageSetupDialogInit( printSession: PMPrintSession; pageFormat:
 
 {
  *  PMSessionPrintDialogInit()   *** DEPRECATED ***
- *  
+ *
  *  Discussion:
  *    You should create a PDE for your application instead of relying
  *    on this function.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.1 and later
@@ -382,11 +388,11 @@ function PMSessionPrintDialogInit( printSession: PMPrintSession; printSettings: 
 
 {
  *  PMSessionPrintDialogMain()   *** DEPRECATED ***
- *  
+ *
  *  Discussion:
  *    You should create a PDE for your application instead of relying
  *    on this function.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.1 and later
@@ -398,11 +404,11 @@ function PMSessionPrintDialogMain( printSession: PMPrintSession; printSettings: 
 
 {
  *  PMSessionPageSetupDialogMain()   *** DEPRECATED ***
- *  
+ *
  *  Discussion:
  *    You should create a PDE for your application instead of relying
  *    on this function.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.1 and later
@@ -415,10 +421,10 @@ function PMSessionPageSetupDialogMain( printSession: PMPrintSession; pageFormat:
 
 {
  *  PMBeginDocument()   *** DEPRECATED ***
- *  
+ *
  *  Discussion:
  *    Use PMSessionBeginDocument instead.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -430,10 +436,10 @@ function PMBeginDocument( printSettings: PMPrintSettings; pageFormat: PMPageForm
 
 {
  *  PMEndDocument()   *** DEPRECATED ***
- *  
+ *
  *  Discussion:
  *    Use PMSessionEndDocument instead.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -445,10 +451,10 @@ function PMEndDocument( printContext: PMPrintContext ): OSStatus; external name 
 
 {
  *  PMBeginPage()   *** DEPRECATED ***
- *  
+ *
  *  Discussion:
  *    Use PMSessionBeginPage instead.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -460,10 +466,10 @@ function PMBeginPage( printContext: PMPrintContext; const (*var*) pageFrame: PMR
 
 {
  *  PMEndPage()   *** DEPRECATED ***
- *  
+ *
  *  Discussion:
  *    Use PMSessionEndPage instead.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -475,10 +481,10 @@ function PMEndPage( printContext: PMPrintContext ): OSStatus; external name '_PM
 
 {
  *  PMPageSetupDialog()   *** DEPRECATED ***
- *  
+ *
  *  Discussion:
  *    Use PMSessionPageSetupDialog instead.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -490,10 +496,10 @@ function PMPageSetupDialog( pageFormat: PMPageFormat; var accepted: Boolean ): O
 
 {
  *  PMPrintDialog()   *** DEPRECATED ***
- *  
+ *
  *  Discussion:
  *    Use PMSessionPrintDialog instead.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -505,11 +511,11 @@ function PMPrintDialog( printSettings: PMPrintSettings; constPageFormat: PMPageF
 
 {
  *  PMPageSetupDialogInit()   *** DEPRECATED ***
- *  
+ *
  *  Discussion:
  *    You should create a PDE for your application instead of relying
  *    on this function.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -521,11 +527,11 @@ function PMPageSetupDialogInit( pageFormat: PMPageFormat; var newDialog: PMDialo
 
 {
  *  PMPrintDialogInit()   *** DEPRECATED ***
- *  
+ *
  *  Discussion:
  *    You should create a PDE for your application instead of relying
  *    on this function.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -537,11 +543,11 @@ function PMPrintDialogInit( printSettings: PMPrintSettings; var newDialog: PMDia
 
 {
  *  PMPrintDialogInitWithPageFormat()   *** DEPRECATED ***
- *  
+ *
  *  Discussion:
  *    You should create a PDE for your application instead of relying
  *    on this function.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.1 and later
@@ -553,11 +559,11 @@ function PMPrintDialogInitWithPageFormat( printSettings: PMPrintSettings; constP
 
 {
  *  PMPrintDialogMain()   *** DEPRECATED ***
- *  
+ *
  *  Discussion:
  *    You should create a PDE for your application instead of relying
  *    on this function.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -569,11 +575,11 @@ function PMPrintDialogMain( printSettings: PMPrintSettings; constPageFormat: PMP
 
 {
  *  PMPageSetupDialogMain()   *** DEPRECATED ***
- *  
+ *
  *  Discussion:
  *    You should create a PDE for your application instead of relying
  *    on this function.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -587,11 +593,11 @@ function PMPageSetupDialogMain( pageFormat: PMPageFormat; var accepted: Boolean;
 
 {
  *  PMGetDialogPtr()   *** DEPRECATED ***
- *  
+ *
  *  Discussion:
  *    You should create a PDE for your application instead of relying
  *    on this function.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -604,11 +610,11 @@ function PMGetDialogRef( pmDialog_: PMDialog; var theDialog: DialogRef ): OSStat
 (* AVAILABLE_MAC_OS_X_VERSION_10_0_AND_LATER_BUT_DEPRECATED_IN_MAC_OS_X_VERSION_10_4 *)
 {
  *  PMGetModalFilterProc()   *** DEPRECATED ***
- *  
+ *
  *  Discussion:
  *    You should create a PDE for your application instead of relying
  *    on this function.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -620,11 +626,11 @@ function PMGetModalFilterProc( pmDialog_: PMDialog; var filterProc: ModalFilterU
 
 {
  *  PMSetModalFilterProc()   *** DEPRECATED ***
- *  
+ *
  *  Discussion:
  *    You should create a PDE for your application instead of relying
  *    on this function.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -636,11 +642,11 @@ function PMSetModalFilterProc( pmDialog_: PMDialog; filterProc: ModalFilterUPP )
 
 {
  *  PMGetItemProc()   *** DEPRECATED ***
- *  
+ *
  *  Discussion:
  *    You should create a PDE for your application instead of relying
  *    on this function.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -652,11 +658,11 @@ function PMGetItemProc( pmDialog_: PMDialog; var itemProc: PMItemUPP ): OSStatus
 
 {
  *  PMSetItemProc()   *** DEPRECATED ***
- *  
+ *
  *  Discussion:
  *    You should create a PDE for your application instead of relying
  *    on this function.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -668,11 +674,11 @@ function PMSetItemProc( pmDialog_: PMDialog; itemProc: PMItemUPP ): OSStatus; ex
 
 {
  *  PMGetDialogAccepted()   *** DEPRECATED ***
- *  
+ *
  *  Discussion:
  *    You should create a PDE for your application instead of relying
  *    on this function.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -684,11 +690,11 @@ function PMGetDialogAccepted( pmDialog_: PMDialog; var process: Boolean ): OSSta
 
 {
  *  PMSetDialogAccepted()   *** DEPRECATED ***
- *  
+ *
  *  Discussion:
  *    You should create a PDE for your application instead of relying
  *    on this function.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -700,11 +706,11 @@ function PMSetDialogAccepted( pmDialog_: PMDialog; process: Boolean ): OSStatus;
 
 {
  *  PMGetDialogDone()   *** DEPRECATED ***
- *  
+ *
  *  Discussion:
  *    You should create a PDE for your application instead of relying
  *    on this function.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later
@@ -716,11 +722,11 @@ function PMGetDialogDone( pmDialog_: PMDialog; var done: Boolean ): OSStatus; ex
 
 {
  *  PMSetDialogDone()   *** DEPRECATED ***
- *  
+ *
  *  Discussion:
  *    You should create a PDE for your application instead of relying
  *    on this function.
- *  
+ *
  *  Availability:
  *    Mac OS X:         in version 10.0 and later in Carbon.framework [32-bit only] but deprecated in 10.4
  *    CarbonLib:        in CarbonLib 1.0 and later

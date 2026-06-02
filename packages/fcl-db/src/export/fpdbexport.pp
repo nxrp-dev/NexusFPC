@@ -1,4 +1,6 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit fpDBExport;
+{$ENDIF FPC_DOTTEDUNITS}
 {
     This file is part of the Free Pascal run time library.
     Copyright (c) 1999-2022 by Michael van Canney and other members of the
@@ -18,13 +20,18 @@ unit fpDBExport;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, Data.Db;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, DB;
-  
+{$ENDIF FPC_DOTTEDUNITS}
+
 Type
   TCustomDatasetExporter = Class;
 
-  // Quote string fields if value contains a space or delimiter char.
+  // Quote string fields if value contains a space or delimiter AnsiChar.
   TQuoteString = (qsAlways,qsSpace,qsDelimiter);
   TQuoteStrings = Set of TQuoteString;
 
@@ -54,7 +61,7 @@ Type
     Property FieldName : String Read FFieldName Write SetFieldName;
     Property ExportedName : UTF8String Read GetExportedName Write SetExportedName;
   end;
-  
+
   { TExportFields }
 
   TExportFields = Class(TCollection)
@@ -86,14 +93,14 @@ Type
     FHandleNullField: Boolean;
     FTimeFormat : String;
     FDateTimeFormat : String;
-    FDecimalSeparator: Char;
+    FDecimalSeparator: AnsiChar;
     FUseDisplayText : Boolean;
   Protected
     Procedure InitSettings; virtual;
     Property HandleNullField : Boolean Read FHandleNullField Write FHandleNullField;
     Property UseDisplayText : Boolean Read FUseDisplayText Write FUseDisplayText;
     Property IntegerFormat : String Read FIntegerFormat Write FIntegerFormat;
-    Property DecimalSeparator : Char Read FDecimalSeparator Write FDecimalSeparator;
+    Property DecimalSeparator : AnsiChar Read FDecimalSeparator Write FDecimalSeparator;
     Property CurrencySymbol : String Read FCurrencySymbol Write FCurrencySymbol;
     Property CurrencyDigits : Integer Read FCurrencyDigits Write FCurrencyDigits;
     Property BooleanTrue : String Read FBooleanTrue Write FBooleanTrue;
@@ -106,7 +113,7 @@ Type
     Procedure Assign(Source : TPersistent); override;
   end;
   TCustomExportFormatSettingsClass = Class of TCustomExportFormatSettings;
-  
+
   { TExportFormatSettings }
   TExportFormatSettings = Class(TCustomExportFormatSettings)
   Published
@@ -206,7 +213,7 @@ Type
     Property OnExportRow : TOnExportRowEvent Read FOnExportRow Write FOnExportRow;
     Property OnProgress : TExportProgressEvent Read FonProgress Write FOnProgress;
   end;
-  
+
   TCustomDatasetExporterClass = Class of TCustomDatasetExporter;
 
   { TStreamExporter }
@@ -221,7 +228,7 @@ Type
   Public
     Procedure ExportToStream(AStream : TStream);
   end;
-  
+
   { TCustomFileExporter }
 
   TCustomFileExporter = Class(TStreamExporter)
@@ -249,13 +256,13 @@ Type
     // Publish in descendents.
     Property FileName : String Read FFileName Write SetFileName;
   end;
-  
+
 
 
 
 
   EDataExporter = Class(Exception);
-  
+
   { TExportFormatItem }
 
   TExportConfigureEvent = Function (Exporter : TCustomDatasetExporter) : Boolean of object;
@@ -276,7 +283,7 @@ Type
     Property Extensions : String Read FExtensions Write FExtensions;
     Property OnConfigureDialog : TExportConfigureEvent Read FOnConfigure Write FOnConfigure;
   end;
-  
+
   TExportFormats = Class(TCollection)
   private
     function GetFormat(Index : Integer): TExportFormatItem;
@@ -298,7 +305,7 @@ Type
     Function ConstructFilter(AnExport : TCustomDatasetExporter) : String;
     Property Formats[Index : Integer] : TExportFormatItem Read GetFormat Write SetFormat; default;
   end;
-  
+
 Function ExportFormats : TExportFormats;
 
 // Easy access functions
@@ -316,11 +323,15 @@ Const
   DateFieldTypes   = [ftDate,ftTime,ftDateTime,ftTimeStamp];
   MemoFieldTypes   = [ftMemo,ftFmtMemo,ftWideMemo];
   BlobFieldTypes   =  [ftBlob,ftDBaseOLE,ftGraphic,ftOraBlob,ftOraClob,ftParadoxOLE];
-  
+
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.Streamio;
+{$ELSE FPC_DOTTEDUNITS}
 uses streamio;
+{$ENDIF FPC_DOTTEDUNITS}
 
 ResourceString
   SErrNoDataset           = 'Dataset not assigned';
@@ -366,7 +377,7 @@ procedure TExportFieldItem.SetExportedName(const AValue: UTF8String);
 
 Var
   I : TExportFieldItem;
-  
+
 begin
   If (FExportedName<>AValue) then
     begin
@@ -432,10 +443,10 @@ end;
 
 function TExportFields.FindExportField(const AFieldName: String
   ): TExportFieldItem;
-  
+
 Var
   I : Integer;
-  
+
 begin
   I:=IndexOfField(AFieldName);
   If (I<>-1) then
@@ -613,7 +624,7 @@ begin
     else if FormatSettings.UseDisplayText then
       Result:=F.DisplayText
     else
-      Result:=F.AsUTF8String;  
+      Result:=F.AsUTF8String;
     end
   else if (F.DataType=ftBoolean) then
     begin
@@ -654,7 +665,7 @@ begin
       Result:=F.DisplayText
     else
       Result:=F.AsUTF8String;
-    end 
+    end
   else if (F.DataType=ftCurrency) then
     begin
     If (FormatSettings.CurrencySymbol<>'') and (not F.IsNull) then
@@ -665,7 +676,7 @@ begin
       end
     else if FormatSettings.UseDisplayText then
       Result:=F.DisplayText
-    else 
+    else
       Result:=F.AsUTF8String;
     end
   else if FormatSettings.UseDisplayText then
@@ -706,7 +717,7 @@ procedure TCustomDatasetExporter.BuildDefaultFieldMap(AMap : TExportFields);
 Var
   I : Integer;
   F : TField;
-  
+
 begin
   CheckDataset(False);
   AMap.Clear;
@@ -865,8 +876,8 @@ begin
   FDateTimeFormat:=ShortDateFormat+' '+ShortTimeFormat;
   FBooleanTrue:='True';
   FBooleanFalse:='False';
-  FDecimalSeparator:=sysutils.decimalseparator;
-  FCurrencySymbol:=sysutils.CurrencyString;
+  FDecimalSeparator:={$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SysUtils.decimalseparator;
+  FCurrencySymbol:={$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SysUtils.CurrencyString;
 end;
 
 constructor TCustomExportFormatSettings.Create(DoInitSettings: Boolean);
@@ -946,7 +957,7 @@ function TExportFormats.FindFormat(const AName: String): TExportFormatItem;
 
 Var
   I : Integer;
-  
+
 begin
   I:=IndexOfFormat(AName);
   If (I=-1) then
@@ -956,7 +967,7 @@ begin
 end;
 
 function TExportFormats.FindFormatByClass(AClass: TCustomDataSetExporterClass): TExportFormatItem;
-  
+
 Var
   I : Integer;
 
@@ -970,10 +981,10 @@ end;
 
 function TExportFormats.ConfigureExport(AnExport: TCustomDatasetExporter
   ): Boolean;
-  
+
 Var
   F : TExportFormatItem;
-  
+
 begin
   Result:=True;
   F:=FindFormatByClass(TCustomDatasetExporterClass(AnExport.ClassType));
@@ -990,20 +1001,20 @@ end;
 
 function TExportFormats.ConstructFilter(AnExport: TCustomDatasetExporter
   ): String;
-  
+
   Procedure AddToResult(const S : String);
-  
+
   begin
     If (Result<>'') and (S<>'') then
       Result:=Result+'|';
     Result:=Result+S;
   end;
-  
+
 Var
   F : TExportFormatItem;
   P : Integer;
   S,E : String;
-  
+
 begin
   Result:='';
   F:=FindFormatByClass(TCustomDatasetExporterClass(AnExport.ClassType));

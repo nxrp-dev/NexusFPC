@@ -22,18 +22,24 @@
  *    03/30/2000  PPL      Constant change from cncXXXX to kCncXXXX
  *                         and # defining old names (cncXXXX) for compatibility.
  *    10/19/00    PPL      Update the header with GuideLines
- *    10/20/00    PPL      Remove CncProfileBroacast - The notification it sent
+ *    10/20/00    PPL      Remove CncProfileBroadcast - The notification it sent
  *                         is always in usage.
  *    10/23/00    PPL      Update Connection Manager API
  *    11/06/2000  PPL      Use the CncProfileId abstract type for profileIDs
  *
  ***********************************************************************)
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit connectionmgr;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses  PalmApi.Palmos, PalmApi.Coretraps, PalmApi.Errorbase, PalmApi.Datamgr, PalmApi.Modemmgr;
+{$ELSE FPC_DOTTEDUNITS}
 uses  palmos, coretraps, errorbase, datamgr, modemmgr;
+{$ENDIF FPC_DOTTEDUNITS}
 
 (***********************************************************************
  * Definition
@@ -56,13 +62,13 @@ type
    //       any additional fields of CncProfileNotifyDetailsType
    version: UInt16;
 
-   // In: Broacasted Profile ID
+   // In: Broadcasted Profile ID
    profileID: CncProfileID;
 
    // In:  Device Kind of the profile
    deviceKind: UInt16;
 
-   // In: Resquested Action
+   // In: Requested Action
    request: UInt16;
   end;
   CncProfileNotifyDetailsType = CncProfileNotifyDetailsTag;
@@ -100,8 +106,8 @@ const
   kCncParamTypeMask          = $7800; // bit #11 to #14 set to 1 (4 bits)
 
 // parameter type definition macros
-  kCncParamFixedLen          = $00; // higth bit of 4 set to 0
-  kCncParamVariableLen       = $08; // higth bit of 4 set to 1
+  kCncParamFixedLen          = $00; // high bit of 4 set to 0
+  kCncParamVariableLen       = $08; // high bit of 4 set to 1
 
 //#define CncDefineParameterType( variableBit , typeOrder) ( ( (variableBit) | (typeOrder) ) << 11)
 
@@ -245,7 +251,7 @@ const
   kCncParamResetString                = kCncParamOSRange or kCncParamString or 8;
   kCncParamResetStringMaxSize         = mdmCmdBufSize;
 
-// New piece of info -  extented device kind cf kCncDeviveXXX  after
+// New piece of info -  extended device kind cf kCncDeviveXXX  after
   kCncParamDeviceKind                 = kCncParamOSRange or kCncParamUInt16 or 9;
   kCncParamDeviceKindSize             = kCncParamUInt16Size;
 
@@ -411,7 +417,7 @@ function CncProfileSetCurrent(profileId: CncProfileID): Err; syscall sysTrapCncM
 
 function CncProfileGetCurrent(var profileIdP: CncProfileID): Err; syscall sysTrapCncMgrDispatch, sysTrapCncMgrProfileGetCurrent;
 
-function CncProfileGetIDFromName(const profileNameP: PChar; var profileIdP: CncProfileID): Err; syscall sysTrapCncMgrDispatch, sysTrapCncMgrProfileGetIDFromName;
+function CncProfileGetIDFromName(const profileNameP: PAnsiChar; var profileIdP: CncProfileID): Err; syscall sysTrapCncMgrDispatch, sysTrapCncMgrProfileGetIDFromName;
 
 function CncProfileCreate(var profileIdP: CncProfileID): Err; syscall sysTrapCncMgrDispatch, sysTrapCncMgrProfileCreate;
 
@@ -450,13 +456,13 @@ const
 
 function CncGetProfileList(var nameListPPP: PCharPtr; var countP: UInt16): Err; syscall sysTrapCncGetProfileList;
 
-function CncGetProfileInfo(name: PChar; var port, baud: UInt32; var volume, handShake: UInt16;
-                           initString: PChar; var resetString: Char; var isModem, isPulse: Boolean): Err; syscall sysTrapCncGetProfileInfo;
+function CncGetProfileInfo(name: PAnsiChar; var port, baud: UInt32; var volume, handShake: UInt16;
+                           initString: PAnsiChar; var resetString: AnsiChar; var isModem, isPulse: Boolean): Err; syscall sysTrapCncGetProfileInfo;
 
-function CncAddProfile(name: PChar; port, baud: UInt32; volum, handShake: UInt16;
-                       const initString, resetString: PChar; isMode, isPulse: Boolean): Err; syscall sysTrapCncAddProfile;
+function CncAddProfile(name: PAnsiChar; port, baud: UInt32; volum, handShake: UInt16;
+                       const initString, resetString: PAnsiChar; isMode, isPulse: Boolean): Err; syscall sysTrapCncAddProfile;
 
-function CncDeleteProfile(const name: PChar): Err; syscall sysTrapCncDeleteProfile;
+function CncDeleteProfile(const name: PAnsiChar): Err; syscall sysTrapCncDeleteProfile;
 
 
 implementation

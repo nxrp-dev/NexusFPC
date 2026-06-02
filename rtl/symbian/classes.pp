@@ -3,7 +3,7 @@
     Copyright (c) 1999-2002 by the Free Pascal development team
 
     Classes unit for Embedded target
-    
+
     See the file COPYING.FPC, included in this distribution,
     for details about the copyright.
 
@@ -14,15 +14,30 @@
  **********************************************************************}
 
 {$mode objfpc}
+{$H+}
+{$modeswitch advancedrecords}
 {$IF FPC_FULLVERSION>=30301}
 {$modeswitch FUNCTIONREFERENCES}
 {$define FPC_HAS_REFERENCE_PROCEDURE}
 {$endif}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit Classes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.SysUtils,
+  System.RtlConsts,
+  System.Types,
+  System.SortBase,
+{$ifdef FPC_TESTGENERICS}
+  System.FGL,
+{$endif}
+  System.TypInfo;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   sysutils,
   rtlconsts,
@@ -32,6 +47,7 @@ uses
   fgl,
 {$endif}
   typinfo;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$i classesh.inc}
 

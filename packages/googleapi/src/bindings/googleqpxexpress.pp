@@ -1,13 +1,19 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit googleqpxExpress;
+{$ENDIF FPC_DOTTEDUNITS}
 {$MODE objfpc}
 {$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils, System.Classes, GoogleApi.Service, FpWeb.Rest.Base, GoogleApi.Base;
+{$ELSE FPC_DOTTEDUNITS}
 uses sysutils, classes, googleservice, restbase, googlebase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
-  
+
   //Top-level schema types
   TAircraftData = Class;
   TAirportData = Class;
@@ -74,11 +80,11 @@ type
   TTripOptionTypesliceArray = Array of TSliceInfo;
   TTripOptionsRequestTypesliceArray = Array of TSliceInput;
   TTripOptionsResponseTypetripOptionArray = Array of TTripOption;
-  
+
   { --------------------------------------------------------------------
     TAircraftData
     --------------------------------------------------------------------}
-  
+
   TAircraftData = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -96,11 +102,11 @@ type
     Property name : String Index 16 Read Fname Write Setname;
   end;
   TAircraftDataClass = Class of TAircraftData;
-  
+
   { --------------------------------------------------------------------
     TAirportData
     --------------------------------------------------------------------}
-  
+
   TAirportData = Class(TGoogleBaseObject)
   Private
     Fcity : String;
@@ -121,11 +127,11 @@ type
     Property name : String Index 24 Read Fname Write Setname;
   end;
   TAirportDataClass = Class of TAirportData;
-  
+
   { --------------------------------------------------------------------
     TBagDescriptor
     --------------------------------------------------------------------}
-  
+
   TBagDescriptor = Class(TGoogleBaseObject)
   Private
     FcommercialName : String;
@@ -153,11 +159,11 @@ type
     Property subcode : String Index 32 Read Fsubcode Write Setsubcode;
   end;
   TBagDescriptorClass = Class of TBagDescriptor;
-  
+
   { --------------------------------------------------------------------
     TCarrierData
     --------------------------------------------------------------------}
-  
+
   TCarrierData = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -175,11 +181,11 @@ type
     Property name : String Index 16 Read Fname Write Setname;
   end;
   TCarrierDataClass = Class of TCarrierData;
-  
+
   { --------------------------------------------------------------------
     TCityData
     --------------------------------------------------------------------}
-  
+
   TCityData = Class(TGoogleBaseObject)
   Private
     Fcode : String;
@@ -200,11 +206,11 @@ type
     Property name : String Index 24 Read Fname Write Setname;
   end;
   TCityDataClass = Class of TCityData;
-  
+
   { --------------------------------------------------------------------
     TData
     --------------------------------------------------------------------}
-  
+
   TData = Class(TGoogleBaseObject)
   Private
     Faircraft : TDataTypeaircraftArray;
@@ -235,11 +241,11 @@ type
     Property tax : TDataTypetaxArray Index 40 Read Ftax Write Settax;
   end;
   TDataClass = Class of TData;
-  
+
   { --------------------------------------------------------------------
     TFareInfo
     --------------------------------------------------------------------}
-  
+
   TFareInfo = Class(TGoogleBaseObject)
   Private
     FbasisCode : String;
@@ -270,11 +276,11 @@ type
     Property _private : boolean Index 48 Read F_private Write Set_private;
   end;
   TFareInfoClass = Class of TFareInfo;
-  
+
   { --------------------------------------------------------------------
     TFlightInfo
     --------------------------------------------------------------------}
-  
+
   TFlightInfo = Class(TGoogleBaseObject)
   Private
     Fcarrier : String;
@@ -289,11 +295,11 @@ type
     Property number : String Index 8 Read Fnumber Write Setnumber;
   end;
   TFlightInfoClass = Class of TFlightInfo;
-  
+
   { --------------------------------------------------------------------
     TFreeBaggageAllowance
     --------------------------------------------------------------------}
-  
+
   TFreeBaggageAllowance = Class(TGoogleBaseObject)
   Private
     FbagDescriptor : TFreeBaggageAllowanceTypebagDescriptorArray;
@@ -324,11 +330,11 @@ type
     Property pounds : integer Index 40 Read Fpounds Write Setpounds;
   end;
   TFreeBaggageAllowanceClass = Class of TFreeBaggageAllowance;
-  
+
   { --------------------------------------------------------------------
     TLegInfo
     --------------------------------------------------------------------}
-  
+
   TLegInfo = Class(TGoogleBaseObject)
   Private
     Faircraft : String;
@@ -388,11 +394,11 @@ type
     Property secure : boolean Index 128 Read Fsecure Write Setsecure;
   end;
   TLegInfoClass = Class of TLegInfo;
-  
+
   { --------------------------------------------------------------------
     TPassengerCounts
     --------------------------------------------------------------------}
-  
+
   TPassengerCounts = Class(TGoogleBaseObject)
   Private
     FadultCount : integer;
@@ -419,11 +425,11 @@ type
     Property seniorCount : integer Index 40 Read FseniorCount Write SetseniorCount;
   end;
   TPassengerCountsClass = Class of TPassengerCounts;
-  
+
   { --------------------------------------------------------------------
     TPricingInfo
     --------------------------------------------------------------------}
-  
+
   TPricingInfo = Class(TGoogleBaseObject)
   Private
     FbaseFareTotal : String;
@@ -475,11 +481,11 @@ type
     Property tax : TPricingInfoTypetaxArray Index 96 Read Ftax Write Settax;
   end;
   TPricingInfoClass = Class of TPricingInfo;
-  
+
   { --------------------------------------------------------------------
     TSegmentInfo
     --------------------------------------------------------------------}
-  
+
   TSegmentInfo = Class(TGoogleBaseObject)
   Private
     FbookingCode : String;
@@ -525,11 +531,11 @@ type
     Property subjectToGovernmentApproval : boolean Index 80 Read FsubjectToGovernmentApproval Write SetsubjectToGovernmentApproval;
   end;
   TSegmentInfoClass = Class of TSegmentInfo;
-  
+
   { --------------------------------------------------------------------
     TSegmentPricing
     --------------------------------------------------------------------}
-  
+
   TSegmentPricing = Class(TGoogleBaseObject)
   Private
     FfareId : String;
@@ -554,11 +560,11 @@ type
     Property segmentId : String Index 24 Read FsegmentId Write SetsegmentId;
   end;
   TSegmentPricingClass = Class of TSegmentPricing;
-  
+
   { --------------------------------------------------------------------
     TSliceInfo
     --------------------------------------------------------------------}
-  
+
   TSliceInfo = Class(TGoogleBaseObject)
   Private
     Fduration : integer;
@@ -580,11 +586,11 @@ type
     Property segment : TSliceInfoTypesegmentArray Index 16 Read Fsegment Write Setsegment;
   end;
   TSliceInfoClass = Class of TSliceInfo;
-  
+
   { --------------------------------------------------------------------
     TSliceInput
     --------------------------------------------------------------------}
-  
+
   TSliceInput = Class(TGoogleBaseObject)
   Private
     Falliance : String;
@@ -630,11 +636,11 @@ type
     Property prohibitedCarrier : TStringArray Index 80 Read FprohibitedCarrier Write SetprohibitedCarrier;
   end;
   TSliceInputClass = Class of TSliceInput;
-  
+
   { --------------------------------------------------------------------
     TTaxData
     --------------------------------------------------------------------}
-  
+
   TTaxData = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -652,11 +658,11 @@ type
     Property name : String Index 16 Read Fname Write Setname;
   end;
   TTaxDataClass = Class of TTaxData;
-  
+
   { --------------------------------------------------------------------
     TTaxInfo
     --------------------------------------------------------------------}
-  
+
   TTaxInfo = Class(TGoogleBaseObject)
   Private
     FchargeType : String;
@@ -683,11 +689,11 @@ type
     Property salePrice : String Index 40 Read FsalePrice Write SetsalePrice;
   end;
   TTaxInfoClass = Class of TTaxInfo;
-  
+
   { --------------------------------------------------------------------
     TTimeOfDayRange
     --------------------------------------------------------------------}
-  
+
   TTimeOfDayRange = Class(TGoogleBaseObject)
   Private
     FearliestTime : String;
@@ -705,11 +711,11 @@ type
     Property latestTime : String Index 16 Read FlatestTime Write SetlatestTime;
   end;
   TTimeOfDayRangeClass = Class of TTimeOfDayRange;
-  
+
   { --------------------------------------------------------------------
     TTripOption
     --------------------------------------------------------------------}
-  
+
   TTripOption = Class(TGoogleBaseObject)
   Private
     Fid : String;
@@ -737,11 +743,11 @@ type
     Property slice : TTripOptionTypesliceArray Index 32 Read Fslice Write Setslice;
   end;
   TTripOptionClass = Class of TTripOption;
-  
+
   { --------------------------------------------------------------------
     TTripOptionsRequest
     --------------------------------------------------------------------}
-  
+
   TTripOptionsRequest = Class(TGoogleBaseObject)
   Private
     FmaxPrice : String;
@@ -772,11 +778,11 @@ type
     Property solutions : integer Index 40 Read Fsolutions Write Setsolutions;
   end;
   TTripOptionsRequestClass = Class of TTripOptionsRequest;
-  
+
   { --------------------------------------------------------------------
     TTripOptionsResponse
     --------------------------------------------------------------------}
-  
+
   TTripOptionsResponse = Class(TGoogleBaseObject)
   Private
     Fdata : TData;
@@ -801,11 +807,11 @@ type
     Property tripOption : TTripOptionsResponseTypetripOptionArray Index 24 Read FtripOption Write SettripOption;
   end;
   TTripOptionsResponseClass = Class of TTripOptionsResponse;
-  
+
   { --------------------------------------------------------------------
     TTripsSearchRequest
     --------------------------------------------------------------------}
-  
+
   TTripsSearchRequest = Class(TGoogleBaseObject)
   Private
     Frequest : TTripOptionsRequest;
@@ -817,11 +823,11 @@ type
     Property request : TTripOptionsRequest Index 0 Read Frequest Write Setrequest;
   end;
   TTripsSearchRequestClass = Class of TTripsSearchRequest;
-  
+
   { --------------------------------------------------------------------
     TTripsSearchResponse
     --------------------------------------------------------------------}
-  
+
   TTripsSearchResponse = Class(TGoogleBaseObject)
   Private
     Fkind : String;
@@ -836,23 +842,23 @@ type
     Property trips : TTripOptionsResponse Index 8 Read Ftrips Write Settrips;
   end;
   TTripsSearchResponseClass = Class of TTripsSearchResponse;
-  
+
   { --------------------------------------------------------------------
     TTripsResource
     --------------------------------------------------------------------}
-  
+
   TTripsResource = Class(TGoogleResource)
   Public
     Class Function ResourceName : String; override;
     Class Function DefaultAPI : TGoogleAPIClass; override;
     Function Search(aTripsSearchRequest : TTripsSearchRequest) : TTripsSearchResponse;
   end;
-  
-  
+
+
   { --------------------------------------------------------------------
     TQpxExpressAPI
     --------------------------------------------------------------------}
-  
+
   TQpxExpressAPI = Class(TGoogleAPI)
   Private
     FTripsInstance : TTripsResource;
@@ -894,7 +900,7 @@ implementation
   --------------------------------------------------------------------}
 
 
-Procedure TAircraftData.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TAircraftData.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -904,7 +910,7 @@ end;
 
 
 
-Procedure TAircraftData.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAircraftData.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -914,7 +920,7 @@ end;
 
 
 
-Procedure TAircraftData.Setname(AIndex : Integer; const AValue : String); 
+Procedure TAircraftData.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -931,7 +937,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TAirportData.Setcity(AIndex : Integer; const AValue : String); 
+Procedure TAirportData.Setcity(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcity=AValue) then exit;
@@ -941,7 +947,7 @@ end;
 
 
 
-Procedure TAirportData.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TAirportData.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -951,7 +957,7 @@ end;
 
 
 
-Procedure TAirportData.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TAirportData.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -961,7 +967,7 @@ end;
 
 
 
-Procedure TAirportData.Setname(AIndex : Integer; const AValue : String); 
+Procedure TAirportData.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -978,7 +984,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TBagDescriptor.SetcommercialName(AIndex : Integer; const AValue : String); 
+Procedure TBagDescriptor.SetcommercialName(AIndex : Integer; const AValue : String);
 
 begin
   If (FcommercialName=AValue) then exit;
@@ -988,7 +994,7 @@ end;
 
 
 
-Procedure TBagDescriptor.Setcount(AIndex : Integer; const AValue : integer); 
+Procedure TBagDescriptor.Setcount(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fcount=AValue) then exit;
@@ -998,7 +1004,7 @@ end;
 
 
 
-Procedure TBagDescriptor.Setdescription(AIndex : Integer; const AValue : TStringArray); 
+Procedure TBagDescriptor.Setdescription(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (Fdescription=AValue) then exit;
@@ -1008,7 +1014,7 @@ end;
 
 
 
-Procedure TBagDescriptor.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TBagDescriptor.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1018,7 +1024,7 @@ end;
 
 
 
-Procedure TBagDescriptor.Setsubcode(AIndex : Integer; const AValue : String); 
+Procedure TBagDescriptor.Setsubcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fsubcode=AValue) then exit;
@@ -1029,7 +1035,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TBagDescriptor.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TBagDescriptor.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1048,7 +1054,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCarrierData.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TCarrierData.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -1058,7 +1064,7 @@ end;
 
 
 
-Procedure TCarrierData.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TCarrierData.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1068,7 +1074,7 @@ end;
 
 
 
-Procedure TCarrierData.Setname(AIndex : Integer; const AValue : String); 
+Procedure TCarrierData.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -1085,7 +1091,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TCityData.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TCityData.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -1095,7 +1101,7 @@ end;
 
 
 
-Procedure TCityData.Setcountry(AIndex : Integer; const AValue : String); 
+Procedure TCityData.Setcountry(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcountry=AValue) then exit;
@@ -1105,7 +1111,7 @@ end;
 
 
 
-Procedure TCityData.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TCityData.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1115,7 +1121,7 @@ end;
 
 
 
-Procedure TCityData.Setname(AIndex : Integer; const AValue : String); 
+Procedure TCityData.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -1132,7 +1138,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TData.Setaircraft(AIndex : Integer; const AValue : TDataTypeaircraftArray); 
+Procedure TData.Setaircraft(AIndex : Integer; const AValue : TDataTypeaircraftArray);
 
 begin
   If (Faircraft=AValue) then exit;
@@ -1142,7 +1148,7 @@ end;
 
 
 
-Procedure TData.Setairport(AIndex : Integer; const AValue : TDataTypeairportArray); 
+Procedure TData.Setairport(AIndex : Integer; const AValue : TDataTypeairportArray);
 
 begin
   If (Fairport=AValue) then exit;
@@ -1152,7 +1158,7 @@ end;
 
 
 
-Procedure TData.Setcarrier(AIndex : Integer; const AValue : TDataTypecarrierArray); 
+Procedure TData.Setcarrier(AIndex : Integer; const AValue : TDataTypecarrierArray);
 
 begin
   If (Fcarrier=AValue) then exit;
@@ -1162,7 +1168,7 @@ end;
 
 
 
-Procedure TData.Setcity(AIndex : Integer; const AValue : TDataTypecityArray); 
+Procedure TData.Setcity(AIndex : Integer; const AValue : TDataTypecityArray);
 
 begin
   If (Fcity=AValue) then exit;
@@ -1172,7 +1178,7 @@ end;
 
 
 
-Procedure TData.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TData.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1182,7 +1188,7 @@ end;
 
 
 
-Procedure TData.Settax(AIndex : Integer; const AValue : TDataTypetaxArray); 
+Procedure TData.Settax(AIndex : Integer; const AValue : TDataTypetaxArray);
 
 begin
   If (Ftax=AValue) then exit;
@@ -1193,7 +1199,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TData.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TData.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1216,7 +1222,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFareInfo.SetbasisCode(AIndex : Integer; const AValue : String); 
+Procedure TFareInfo.SetbasisCode(AIndex : Integer; const AValue : String);
 
 begin
   If (FbasisCode=AValue) then exit;
@@ -1226,7 +1232,7 @@ end;
 
 
 
-Procedure TFareInfo.Setcarrier(AIndex : Integer; const AValue : String); 
+Procedure TFareInfo.Setcarrier(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcarrier=AValue) then exit;
@@ -1236,7 +1242,7 @@ end;
 
 
 
-Procedure TFareInfo.Setdestination(AIndex : Integer; const AValue : String); 
+Procedure TFareInfo.Setdestination(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdestination=AValue) then exit;
@@ -1246,7 +1252,7 @@ end;
 
 
 
-Procedure TFareInfo.Setid(AIndex : Integer; const AValue : String); 
+Procedure TFareInfo.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -1256,7 +1262,7 @@ end;
 
 
 
-Procedure TFareInfo.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TFareInfo.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1266,7 +1272,7 @@ end;
 
 
 
-Procedure TFareInfo.Setorigin(AIndex : Integer; const AValue : String); 
+Procedure TFareInfo.Setorigin(AIndex : Integer; const AValue : String);
 
 begin
   If (Forigin=AValue) then exit;
@@ -1276,7 +1282,7 @@ end;
 
 
 
-Procedure TFareInfo.Set_private(AIndex : Integer; const AValue : boolean); 
+Procedure TFareInfo.Set_private(AIndex : Integer; const AValue : boolean);
 
 begin
   If (F_private=AValue) then exit;
@@ -1304,7 +1310,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFlightInfo.Setcarrier(AIndex : Integer; const AValue : String); 
+Procedure TFlightInfo.Setcarrier(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcarrier=AValue) then exit;
@@ -1314,7 +1320,7 @@ end;
 
 
 
-Procedure TFlightInfo.Setnumber(AIndex : Integer; const AValue : String); 
+Procedure TFlightInfo.Setnumber(AIndex : Integer; const AValue : String);
 
 begin
   If (Fnumber=AValue) then exit;
@@ -1331,7 +1337,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TFreeBaggageAllowance.SetbagDescriptor(AIndex : Integer; const AValue : TFreeBaggageAllowanceTypebagDescriptorArray); 
+Procedure TFreeBaggageAllowance.SetbagDescriptor(AIndex : Integer; const AValue : TFreeBaggageAllowanceTypebagDescriptorArray);
 
 begin
   If (FbagDescriptor=AValue) then exit;
@@ -1341,7 +1347,7 @@ end;
 
 
 
-Procedure TFreeBaggageAllowance.Setkilos(AIndex : Integer; const AValue : integer); 
+Procedure TFreeBaggageAllowance.Setkilos(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fkilos=AValue) then exit;
@@ -1351,7 +1357,7 @@ end;
 
 
 
-Procedure TFreeBaggageAllowance.SetkilosPerPiece(AIndex : Integer; const AValue : integer); 
+Procedure TFreeBaggageAllowance.SetkilosPerPiece(AIndex : Integer; const AValue : integer);
 
 begin
   If (FkilosPerPiece=AValue) then exit;
@@ -1361,7 +1367,7 @@ end;
 
 
 
-Procedure TFreeBaggageAllowance.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TFreeBaggageAllowance.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1371,7 +1377,7 @@ end;
 
 
 
-Procedure TFreeBaggageAllowance.Setpieces(AIndex : Integer; const AValue : integer); 
+Procedure TFreeBaggageAllowance.Setpieces(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fpieces=AValue) then exit;
@@ -1381,7 +1387,7 @@ end;
 
 
 
-Procedure TFreeBaggageAllowance.Setpounds(AIndex : Integer; const AValue : integer); 
+Procedure TFreeBaggageAllowance.Setpounds(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fpounds=AValue) then exit;
@@ -1392,7 +1398,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TFreeBaggageAllowance.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TFreeBaggageAllowance.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1411,7 +1417,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TLegInfo.Setaircraft(AIndex : Integer; const AValue : String); 
+Procedure TLegInfo.Setaircraft(AIndex : Integer; const AValue : String);
 
 begin
   If (Faircraft=AValue) then exit;
@@ -1421,7 +1427,7 @@ end;
 
 
 
-Procedure TLegInfo.SetarrivalTime(AIndex : Integer; const AValue : String); 
+Procedure TLegInfo.SetarrivalTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FarrivalTime=AValue) then exit;
@@ -1431,7 +1437,7 @@ end;
 
 
 
-Procedure TLegInfo.SetchangePlane(AIndex : Integer; const AValue : boolean); 
+Procedure TLegInfo.SetchangePlane(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FchangePlane=AValue) then exit;
@@ -1441,7 +1447,7 @@ end;
 
 
 
-Procedure TLegInfo.SetconnectionDuration(AIndex : Integer; const AValue : integer); 
+Procedure TLegInfo.SetconnectionDuration(AIndex : Integer; const AValue : integer);
 
 begin
   If (FconnectionDuration=AValue) then exit;
@@ -1451,7 +1457,7 @@ end;
 
 
 
-Procedure TLegInfo.SetdepartureTime(AIndex : Integer; const AValue : String); 
+Procedure TLegInfo.SetdepartureTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FdepartureTime=AValue) then exit;
@@ -1461,7 +1467,7 @@ end;
 
 
 
-Procedure TLegInfo.Setdestination(AIndex : Integer; const AValue : String); 
+Procedure TLegInfo.Setdestination(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdestination=AValue) then exit;
@@ -1471,7 +1477,7 @@ end;
 
 
 
-Procedure TLegInfo.SetdestinationTerminal(AIndex : Integer; const AValue : String); 
+Procedure TLegInfo.SetdestinationTerminal(AIndex : Integer; const AValue : String);
 
 begin
   If (FdestinationTerminal=AValue) then exit;
@@ -1481,7 +1487,7 @@ end;
 
 
 
-Procedure TLegInfo.Setduration(AIndex : Integer; const AValue : integer); 
+Procedure TLegInfo.Setduration(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fduration=AValue) then exit;
@@ -1491,7 +1497,7 @@ end;
 
 
 
-Procedure TLegInfo.Setid(AIndex : Integer; const AValue : String); 
+Procedure TLegInfo.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -1501,7 +1507,7 @@ end;
 
 
 
-Procedure TLegInfo.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TLegInfo.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1511,7 +1517,7 @@ end;
 
 
 
-Procedure TLegInfo.Setmeal(AIndex : Integer; const AValue : String); 
+Procedure TLegInfo.Setmeal(AIndex : Integer; const AValue : String);
 
 begin
   If (Fmeal=AValue) then exit;
@@ -1521,7 +1527,7 @@ end;
 
 
 
-Procedure TLegInfo.Setmileage(AIndex : Integer; const AValue : integer); 
+Procedure TLegInfo.Setmileage(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fmileage=AValue) then exit;
@@ -1531,7 +1537,7 @@ end;
 
 
 
-Procedure TLegInfo.SetonTimePerformance(AIndex : Integer; const AValue : integer); 
+Procedure TLegInfo.SetonTimePerformance(AIndex : Integer; const AValue : integer);
 
 begin
   If (FonTimePerformance=AValue) then exit;
@@ -1541,7 +1547,7 @@ end;
 
 
 
-Procedure TLegInfo.SetoperatingDisclosure(AIndex : Integer; const AValue : String); 
+Procedure TLegInfo.SetoperatingDisclosure(AIndex : Integer; const AValue : String);
 
 begin
   If (FoperatingDisclosure=AValue) then exit;
@@ -1551,7 +1557,7 @@ end;
 
 
 
-Procedure TLegInfo.Setorigin(AIndex : Integer; const AValue : String); 
+Procedure TLegInfo.Setorigin(AIndex : Integer; const AValue : String);
 
 begin
   If (Forigin=AValue) then exit;
@@ -1561,7 +1567,7 @@ end;
 
 
 
-Procedure TLegInfo.SetoriginTerminal(AIndex : Integer; const AValue : String); 
+Procedure TLegInfo.SetoriginTerminal(AIndex : Integer; const AValue : String);
 
 begin
   If (ForiginTerminal=AValue) then exit;
@@ -1571,7 +1577,7 @@ end;
 
 
 
-Procedure TLegInfo.Setsecure(AIndex : Integer; const AValue : boolean); 
+Procedure TLegInfo.Setsecure(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Fsecure=AValue) then exit;
@@ -1588,7 +1594,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPassengerCounts.SetadultCount(AIndex : Integer; const AValue : integer); 
+Procedure TPassengerCounts.SetadultCount(AIndex : Integer; const AValue : integer);
 
 begin
   If (FadultCount=AValue) then exit;
@@ -1598,7 +1604,7 @@ end;
 
 
 
-Procedure TPassengerCounts.SetchildCount(AIndex : Integer; const AValue : integer); 
+Procedure TPassengerCounts.SetchildCount(AIndex : Integer; const AValue : integer);
 
 begin
   If (FchildCount=AValue) then exit;
@@ -1608,7 +1614,7 @@ end;
 
 
 
-Procedure TPassengerCounts.SetinfantInLapCount(AIndex : Integer; const AValue : integer); 
+Procedure TPassengerCounts.SetinfantInLapCount(AIndex : Integer; const AValue : integer);
 
 begin
   If (FinfantInLapCount=AValue) then exit;
@@ -1618,7 +1624,7 @@ end;
 
 
 
-Procedure TPassengerCounts.SetinfantInSeatCount(AIndex : Integer; const AValue : integer); 
+Procedure TPassengerCounts.SetinfantInSeatCount(AIndex : Integer; const AValue : integer);
 
 begin
   If (FinfantInSeatCount=AValue) then exit;
@@ -1628,7 +1634,7 @@ end;
 
 
 
-Procedure TPassengerCounts.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TPassengerCounts.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1638,7 +1644,7 @@ end;
 
 
 
-Procedure TPassengerCounts.SetseniorCount(AIndex : Integer; const AValue : integer); 
+Procedure TPassengerCounts.SetseniorCount(AIndex : Integer; const AValue : integer);
 
 begin
   If (FseniorCount=AValue) then exit;
@@ -1655,7 +1661,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TPricingInfo.SetbaseFareTotal(AIndex : Integer; const AValue : String); 
+Procedure TPricingInfo.SetbaseFareTotal(AIndex : Integer; const AValue : String);
 
 begin
   If (FbaseFareTotal=AValue) then exit;
@@ -1665,7 +1671,7 @@ end;
 
 
 
-Procedure TPricingInfo.Setfare(AIndex : Integer; const AValue : TPricingInfoTypefareArray); 
+Procedure TPricingInfo.Setfare(AIndex : Integer; const AValue : TPricingInfoTypefareArray);
 
 begin
   If (Ffare=AValue) then exit;
@@ -1675,7 +1681,7 @@ end;
 
 
 
-Procedure TPricingInfo.SetfareCalculation(AIndex : Integer; const AValue : String); 
+Procedure TPricingInfo.SetfareCalculation(AIndex : Integer; const AValue : String);
 
 begin
   If (FfareCalculation=AValue) then exit;
@@ -1685,7 +1691,7 @@ end;
 
 
 
-Procedure TPricingInfo.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TPricingInfo.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1695,7 +1701,7 @@ end;
 
 
 
-Procedure TPricingInfo.SetlatestTicketingTime(AIndex : Integer; const AValue : String); 
+Procedure TPricingInfo.SetlatestTicketingTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FlatestTicketingTime=AValue) then exit;
@@ -1705,7 +1711,7 @@ end;
 
 
 
-Procedure TPricingInfo.Setpassengers(AIndex : Integer; const AValue : TPassengerCounts); 
+Procedure TPricingInfo.Setpassengers(AIndex : Integer; const AValue : TPassengerCounts);
 
 begin
   If (Fpassengers=AValue) then exit;
@@ -1715,7 +1721,7 @@ end;
 
 
 
-Procedure TPricingInfo.Setptc(AIndex : Integer; const AValue : String); 
+Procedure TPricingInfo.Setptc(AIndex : Integer; const AValue : String);
 
 begin
   If (Fptc=AValue) then exit;
@@ -1725,7 +1731,7 @@ end;
 
 
 
-Procedure TPricingInfo.Setrefundable(AIndex : Integer; const AValue : boolean); 
+Procedure TPricingInfo.Setrefundable(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Frefundable=AValue) then exit;
@@ -1735,7 +1741,7 @@ end;
 
 
 
-Procedure TPricingInfo.SetsaleFareTotal(AIndex : Integer; const AValue : String); 
+Procedure TPricingInfo.SetsaleFareTotal(AIndex : Integer; const AValue : String);
 
 begin
   If (FsaleFareTotal=AValue) then exit;
@@ -1745,7 +1751,7 @@ end;
 
 
 
-Procedure TPricingInfo.SetsaleTaxTotal(AIndex : Integer; const AValue : String); 
+Procedure TPricingInfo.SetsaleTaxTotal(AIndex : Integer; const AValue : String);
 
 begin
   If (FsaleTaxTotal=AValue) then exit;
@@ -1755,7 +1761,7 @@ end;
 
 
 
-Procedure TPricingInfo.SetsaleTotal(AIndex : Integer; const AValue : String); 
+Procedure TPricingInfo.SetsaleTotal(AIndex : Integer; const AValue : String);
 
 begin
   If (FsaleTotal=AValue) then exit;
@@ -1765,7 +1771,7 @@ end;
 
 
 
-Procedure TPricingInfo.SetsegmentPricing(AIndex : Integer; const AValue : TPricingInfoTypesegmentPricingArray); 
+Procedure TPricingInfo.SetsegmentPricing(AIndex : Integer; const AValue : TPricingInfoTypesegmentPricingArray);
 
 begin
   If (FsegmentPricing=AValue) then exit;
@@ -1775,7 +1781,7 @@ end;
 
 
 
-Procedure TPricingInfo.Settax(AIndex : Integer; const AValue : TPricingInfoTypetaxArray); 
+Procedure TPricingInfo.Settax(AIndex : Integer; const AValue : TPricingInfoTypetaxArray);
 
 begin
   If (Ftax=AValue) then exit;
@@ -1786,7 +1792,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TPricingInfo.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TPricingInfo.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1807,7 +1813,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSegmentInfo.SetbookingCode(AIndex : Integer; const AValue : String); 
+Procedure TSegmentInfo.SetbookingCode(AIndex : Integer; const AValue : String);
 
 begin
   If (FbookingCode=AValue) then exit;
@@ -1817,7 +1823,7 @@ end;
 
 
 
-Procedure TSegmentInfo.SetbookingCodeCount(AIndex : Integer; const AValue : integer); 
+Procedure TSegmentInfo.SetbookingCodeCount(AIndex : Integer; const AValue : integer);
 
 begin
   If (FbookingCodeCount=AValue) then exit;
@@ -1827,7 +1833,7 @@ end;
 
 
 
-Procedure TSegmentInfo.Setcabin(AIndex : Integer; const AValue : String); 
+Procedure TSegmentInfo.Setcabin(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcabin=AValue) then exit;
@@ -1837,7 +1843,7 @@ end;
 
 
 
-Procedure TSegmentInfo.SetconnectionDuration(AIndex : Integer; const AValue : integer); 
+Procedure TSegmentInfo.SetconnectionDuration(AIndex : Integer; const AValue : integer);
 
 begin
   If (FconnectionDuration=AValue) then exit;
@@ -1847,7 +1853,7 @@ end;
 
 
 
-Procedure TSegmentInfo.Setduration(AIndex : Integer; const AValue : integer); 
+Procedure TSegmentInfo.Setduration(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fduration=AValue) then exit;
@@ -1857,7 +1863,7 @@ end;
 
 
 
-Procedure TSegmentInfo.Setflight(AIndex : Integer; const AValue : TFlightInfo); 
+Procedure TSegmentInfo.Setflight(AIndex : Integer; const AValue : TFlightInfo);
 
 begin
   If (Fflight=AValue) then exit;
@@ -1867,7 +1873,7 @@ end;
 
 
 
-Procedure TSegmentInfo.Setid(AIndex : Integer; const AValue : String); 
+Procedure TSegmentInfo.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -1877,7 +1883,7 @@ end;
 
 
 
-Procedure TSegmentInfo.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TSegmentInfo.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1887,7 +1893,7 @@ end;
 
 
 
-Procedure TSegmentInfo.Setleg(AIndex : Integer; const AValue : TSegmentInfoTypelegArray); 
+Procedure TSegmentInfo.Setleg(AIndex : Integer; const AValue : TSegmentInfoTypelegArray);
 
 begin
   If (Fleg=AValue) then exit;
@@ -1897,7 +1903,7 @@ end;
 
 
 
-Procedure TSegmentInfo.SetmarriedSegmentGroup(AIndex : Integer; const AValue : String); 
+Procedure TSegmentInfo.SetmarriedSegmentGroup(AIndex : Integer; const AValue : String);
 
 begin
   If (FmarriedSegmentGroup=AValue) then exit;
@@ -1907,7 +1913,7 @@ end;
 
 
 
-Procedure TSegmentInfo.SetsubjectToGovernmentApproval(AIndex : Integer; const AValue : boolean); 
+Procedure TSegmentInfo.SetsubjectToGovernmentApproval(AIndex : Integer; const AValue : boolean);
 
 begin
   If (FsubjectToGovernmentApproval=AValue) then exit;
@@ -1918,7 +1924,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TSegmentInfo.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TSegmentInfo.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1937,7 +1943,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSegmentPricing.SetfareId(AIndex : Integer; const AValue : String); 
+Procedure TSegmentPricing.SetfareId(AIndex : Integer; const AValue : String);
 
 begin
   If (FfareId=AValue) then exit;
@@ -1947,7 +1953,7 @@ end;
 
 
 
-Procedure TSegmentPricing.SetfreeBaggageOption(AIndex : Integer; const AValue : TSegmentPricingTypefreeBaggageOptionArray); 
+Procedure TSegmentPricing.SetfreeBaggageOption(AIndex : Integer; const AValue : TSegmentPricingTypefreeBaggageOptionArray);
 
 begin
   If (FfreeBaggageOption=AValue) then exit;
@@ -1957,7 +1963,7 @@ end;
 
 
 
-Procedure TSegmentPricing.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TSegmentPricing.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -1967,7 +1973,7 @@ end;
 
 
 
-Procedure TSegmentPricing.SetsegmentId(AIndex : Integer; const AValue : String); 
+Procedure TSegmentPricing.SetsegmentId(AIndex : Integer; const AValue : String);
 
 begin
   If (FsegmentId=AValue) then exit;
@@ -1978,7 +1984,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TSegmentPricing.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TSegmentPricing.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -1997,7 +2003,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSliceInfo.Setduration(AIndex : Integer; const AValue : integer); 
+Procedure TSliceInfo.Setduration(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fduration=AValue) then exit;
@@ -2007,7 +2013,7 @@ end;
 
 
 
-Procedure TSliceInfo.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TSliceInfo.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -2017,7 +2023,7 @@ end;
 
 
 
-Procedure TSliceInfo.Setsegment(AIndex : Integer; const AValue : TSliceInfoTypesegmentArray); 
+Procedure TSliceInfo.Setsegment(AIndex : Integer; const AValue : TSliceInfoTypesegmentArray);
 
 begin
   If (Fsegment=AValue) then exit;
@@ -2028,7 +2034,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TSliceInfo.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TSliceInfo.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2047,7 +2053,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TSliceInput.Setalliance(AIndex : Integer; const AValue : String); 
+Procedure TSliceInput.Setalliance(AIndex : Integer; const AValue : String);
 
 begin
   If (Falliance=AValue) then exit;
@@ -2057,7 +2063,7 @@ end;
 
 
 
-Procedure TSliceInput.Setdate(AIndex : Integer; const AValue : String); 
+Procedure TSliceInput.Setdate(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdate=AValue) then exit;
@@ -2067,7 +2073,7 @@ end;
 
 
 
-Procedure TSliceInput.Setdestination(AIndex : Integer; const AValue : String); 
+Procedure TSliceInput.Setdestination(AIndex : Integer; const AValue : String);
 
 begin
   If (Fdestination=AValue) then exit;
@@ -2077,7 +2083,7 @@ end;
 
 
 
-Procedure TSliceInput.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TSliceInput.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -2087,7 +2093,7 @@ end;
 
 
 
-Procedure TSliceInput.SetmaxConnectionDuration(AIndex : Integer; const AValue : integer); 
+Procedure TSliceInput.SetmaxConnectionDuration(AIndex : Integer; const AValue : integer);
 
 begin
   If (FmaxConnectionDuration=AValue) then exit;
@@ -2097,7 +2103,7 @@ end;
 
 
 
-Procedure TSliceInput.SetmaxStops(AIndex : Integer; const AValue : integer); 
+Procedure TSliceInput.SetmaxStops(AIndex : Integer; const AValue : integer);
 
 begin
   If (FmaxStops=AValue) then exit;
@@ -2107,7 +2113,7 @@ end;
 
 
 
-Procedure TSliceInput.Setorigin(AIndex : Integer; const AValue : String); 
+Procedure TSliceInput.Setorigin(AIndex : Integer; const AValue : String);
 
 begin
   If (Forigin=AValue) then exit;
@@ -2117,7 +2123,7 @@ end;
 
 
 
-Procedure TSliceInput.SetpermittedCarrier(AIndex : Integer; const AValue : TStringArray); 
+Procedure TSliceInput.SetpermittedCarrier(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FpermittedCarrier=AValue) then exit;
@@ -2127,7 +2133,7 @@ end;
 
 
 
-Procedure TSliceInput.SetpermittedDepartureTime(AIndex : Integer; const AValue : TTimeOfDayRange); 
+Procedure TSliceInput.SetpermittedDepartureTime(AIndex : Integer; const AValue : TTimeOfDayRange);
 
 begin
   If (FpermittedDepartureTime=AValue) then exit;
@@ -2137,7 +2143,7 @@ end;
 
 
 
-Procedure TSliceInput.SetpreferredCabin(AIndex : Integer; const AValue : String); 
+Procedure TSliceInput.SetpreferredCabin(AIndex : Integer; const AValue : String);
 
 begin
   If (FpreferredCabin=AValue) then exit;
@@ -2147,7 +2153,7 @@ end;
 
 
 
-Procedure TSliceInput.SetprohibitedCarrier(AIndex : Integer; const AValue : TStringArray); 
+Procedure TSliceInput.SetprohibitedCarrier(AIndex : Integer; const AValue : TStringArray);
 
 begin
   If (FprohibitedCarrier=AValue) then exit;
@@ -2158,7 +2164,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TSliceInput.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TSliceInput.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2178,7 +2184,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTaxData.Setid(AIndex : Integer; const AValue : String); 
+Procedure TTaxData.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -2188,7 +2194,7 @@ end;
 
 
 
-Procedure TTaxData.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TTaxData.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -2198,7 +2204,7 @@ end;
 
 
 
-Procedure TTaxData.Setname(AIndex : Integer; const AValue : String); 
+Procedure TTaxData.Setname(AIndex : Integer; const AValue : String);
 
 begin
   If (Fname=AValue) then exit;
@@ -2215,7 +2221,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTaxInfo.SetchargeType(AIndex : Integer; const AValue : String); 
+Procedure TTaxInfo.SetchargeType(AIndex : Integer; const AValue : String);
 
 begin
   If (FchargeType=AValue) then exit;
@@ -2225,7 +2231,7 @@ end;
 
 
 
-Procedure TTaxInfo.Setcode(AIndex : Integer; const AValue : String); 
+Procedure TTaxInfo.Setcode(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcode=AValue) then exit;
@@ -2235,7 +2241,7 @@ end;
 
 
 
-Procedure TTaxInfo.Setcountry(AIndex : Integer; const AValue : String); 
+Procedure TTaxInfo.Setcountry(AIndex : Integer; const AValue : String);
 
 begin
   If (Fcountry=AValue) then exit;
@@ -2245,7 +2251,7 @@ end;
 
 
 
-Procedure TTaxInfo.Setid(AIndex : Integer; const AValue : String); 
+Procedure TTaxInfo.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -2255,7 +2261,7 @@ end;
 
 
 
-Procedure TTaxInfo.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TTaxInfo.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -2265,7 +2271,7 @@ end;
 
 
 
-Procedure TTaxInfo.SetsalePrice(AIndex : Integer; const AValue : String); 
+Procedure TTaxInfo.SetsalePrice(AIndex : Integer; const AValue : String);
 
 begin
   If (FsalePrice=AValue) then exit;
@@ -2282,7 +2288,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTimeOfDayRange.SetearliestTime(AIndex : Integer; const AValue : String); 
+Procedure TTimeOfDayRange.SetearliestTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FearliestTime=AValue) then exit;
@@ -2292,7 +2298,7 @@ end;
 
 
 
-Procedure TTimeOfDayRange.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TTimeOfDayRange.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -2302,7 +2308,7 @@ end;
 
 
 
-Procedure TTimeOfDayRange.SetlatestTime(AIndex : Integer; const AValue : String); 
+Procedure TTimeOfDayRange.SetlatestTime(AIndex : Integer; const AValue : String);
 
 begin
   If (FlatestTime=AValue) then exit;
@@ -2319,7 +2325,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTripOption.Setid(AIndex : Integer; const AValue : String); 
+Procedure TTripOption.Setid(AIndex : Integer; const AValue : String);
 
 begin
   If (Fid=AValue) then exit;
@@ -2329,7 +2335,7 @@ end;
 
 
 
-Procedure TTripOption.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TTripOption.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -2339,7 +2345,7 @@ end;
 
 
 
-Procedure TTripOption.Setpricing(AIndex : Integer; const AValue : TTripOptionTypepricingArray); 
+Procedure TTripOption.Setpricing(AIndex : Integer; const AValue : TTripOptionTypepricingArray);
 
 begin
   If (Fpricing=AValue) then exit;
@@ -2349,7 +2355,7 @@ end;
 
 
 
-Procedure TTripOption.SetsaleTotal(AIndex : Integer; const AValue : String); 
+Procedure TTripOption.SetsaleTotal(AIndex : Integer; const AValue : String);
 
 begin
   If (FsaleTotal=AValue) then exit;
@@ -2359,7 +2365,7 @@ end;
 
 
 
-Procedure TTripOption.Setslice(AIndex : Integer; const AValue : TTripOptionTypesliceArray); 
+Procedure TTripOption.Setslice(AIndex : Integer; const AValue : TTripOptionTypesliceArray);
 
 begin
   If (Fslice=AValue) then exit;
@@ -2370,7 +2376,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTripOption.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTripOption.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2390,7 +2396,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTripOptionsRequest.SetmaxPrice(AIndex : Integer; const AValue : String); 
+Procedure TTripOptionsRequest.SetmaxPrice(AIndex : Integer; const AValue : String);
 
 begin
   If (FmaxPrice=AValue) then exit;
@@ -2400,7 +2406,7 @@ end;
 
 
 
-Procedure TTripOptionsRequest.Setpassengers(AIndex : Integer; const AValue : TPassengerCounts); 
+Procedure TTripOptionsRequest.Setpassengers(AIndex : Integer; const AValue : TPassengerCounts);
 
 begin
   If (Fpassengers=AValue) then exit;
@@ -2410,7 +2416,7 @@ end;
 
 
 
-Procedure TTripOptionsRequest.Setrefundable(AIndex : Integer; const AValue : boolean); 
+Procedure TTripOptionsRequest.Setrefundable(AIndex : Integer; const AValue : boolean);
 
 begin
   If (Frefundable=AValue) then exit;
@@ -2420,7 +2426,7 @@ end;
 
 
 
-Procedure TTripOptionsRequest.SetsaleCountry(AIndex : Integer; const AValue : String); 
+Procedure TTripOptionsRequest.SetsaleCountry(AIndex : Integer; const AValue : String);
 
 begin
   If (FsaleCountry=AValue) then exit;
@@ -2430,7 +2436,7 @@ end;
 
 
 
-Procedure TTripOptionsRequest.Setslice(AIndex : Integer; const AValue : TTripOptionsRequestTypesliceArray); 
+Procedure TTripOptionsRequest.Setslice(AIndex : Integer; const AValue : TTripOptionsRequestTypesliceArray);
 
 begin
   If (Fslice=AValue) then exit;
@@ -2440,7 +2446,7 @@ end;
 
 
 
-Procedure TTripOptionsRequest.Setsolutions(AIndex : Integer; const AValue : integer); 
+Procedure TTripOptionsRequest.Setsolutions(AIndex : Integer; const AValue : integer);
 
 begin
   If (Fsolutions=AValue) then exit;
@@ -2451,7 +2457,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTripOptionsRequest.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTripOptionsRequest.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2470,7 +2476,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTripOptionsResponse.Setdata(AIndex : Integer; const AValue : TData); 
+Procedure TTripOptionsResponse.Setdata(AIndex : Integer; const AValue : TData);
 
 begin
   If (Fdata=AValue) then exit;
@@ -2480,7 +2486,7 @@ end;
 
 
 
-Procedure TTripOptionsResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TTripOptionsResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -2490,7 +2496,7 @@ end;
 
 
 
-Procedure TTripOptionsResponse.SetrequestId(AIndex : Integer; const AValue : String); 
+Procedure TTripOptionsResponse.SetrequestId(AIndex : Integer; const AValue : String);
 
 begin
   If (FrequestId=AValue) then exit;
@@ -2500,7 +2506,7 @@ end;
 
 
 
-Procedure TTripOptionsResponse.SettripOption(AIndex : Integer; const AValue : TTripOptionsResponseTypetripOptionArray); 
+Procedure TTripOptionsResponse.SettripOption(AIndex : Integer; const AValue : TTripOptionsResponseTypetripOptionArray);
 
 begin
   If (FtripOption=AValue) then exit;
@@ -2511,7 +2517,7 @@ end;
 
 //2.6.4. bug workaround
 {$IFDEF VER2_6}
-Procedure TTripOptionsResponse.SetArrayLength(Const AName : String; ALength : Longint); 
+Procedure TTripOptionsResponse.SetArrayLength(Const AName : String; ALength : Longint);
 
 begin
   Case AName of
@@ -2530,7 +2536,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTripsSearchRequest.Setrequest(AIndex : Integer; const AValue : TTripOptionsRequest); 
+Procedure TTripsSearchRequest.Setrequest(AIndex : Integer; const AValue : TTripOptionsRequest);
 
 begin
   If (Frequest=AValue) then exit;
@@ -2547,7 +2553,7 @@ end;
   --------------------------------------------------------------------}
 
 
-Procedure TTripsSearchResponse.Setkind(AIndex : Integer; const AValue : String); 
+Procedure TTripsSearchResponse.Setkind(AIndex : Integer; const AValue : String);
 
 begin
   If (Fkind=AValue) then exit;
@@ -2557,7 +2563,7 @@ end;
 
 
 
-Procedure TTripsSearchResponse.Settrips(AIndex : Integer; const AValue : TTripOptionsResponse); 
+Procedure TTripsSearchResponse.Settrips(AIndex : Integer; const AValue : TTripOptionsResponse);
 
 begin
   If (Ftrips=AValue) then exit;
@@ -2709,7 +2715,7 @@ Class Function TQpxExpressAPI.APIAuthScopes : TScopeInfoArray;
 
 begin
   SetLength(Result,0);
-  
+
 end;
 
 Class Function TQpxExpressAPI.APINeedsAuth : Boolean;

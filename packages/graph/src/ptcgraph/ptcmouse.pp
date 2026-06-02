@@ -15,7 +15,9 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit ptcmouse;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$MODE objfpc}
 
@@ -65,11 +67,11 @@ function GetLastButtonPress(button: LongInt; var x, y: LongInt): LongInt;
 }
 function GetLastButtonRelease(button: LongInt; var x, y: LongInt): LongInt;
 
-{ sets mouse's x range, with Min and Max resp. the higest and the lowest
+{ sets mouse's x range, with Min and Max resp. the highest and the lowest
   column (in pixels) in between which the mouse cursor can move }
 procedure SetMouseXRange(Min, Max: LongInt);
 
-{ sets mouse's y range, with Min and Max resp. the higest and the lowest
+{ sets mouse's y range, with Min and Max resp. the highest and the lowest
   row (in pixels) in between which the mouse cursor can move}
 procedure SetMouseYRange(Min, Max: LongInt);
 
@@ -104,8 +106,13 @@ var
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+   System.PTC.Ptcgraph, Ptc, PTC.Wrapper;
+{$ELSE FPC_DOTTEDUNITS}
 uses
    ptcgraph, ptc, ptcwrapper;
+{$ENDIF FPC_DOTTEDUNITS}
 
 function InGraphMode: Boolean;
 begin

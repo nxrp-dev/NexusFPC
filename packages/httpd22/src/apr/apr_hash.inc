@@ -23,7 +23,7 @@
 
 {
  * @defgroup apr_hash Hash Tables
- * @ingroup APR 
+ * @ingroup APR
  * @
  }
 
@@ -59,12 +59,12 @@ type
  * @param klen The length of the key, or APR_HASH_KEY_STRING to use the string
  *             length. If APR_HASH_KEY_STRING then returns the actual key length.
  }
-  apr_hashfunc_t = function (const key: PChar; klen: Papr_size_t): cuint;
+  apr_hashfunc_t = function (const key: PAnsiChar; klen: Papr_size_t): cuint;
 
 {
  * The default hash function.
  }
-function apr_hashfunc_default(const key: PChar; klen: Papr_size_t): cuint;
+function apr_hashfunc_default(const key: PAnsiChar; klen: Papr_size_t): cuint;
  cdecl; external LibAPR name 'apr_hashfunc_default';
 
 {
@@ -136,7 +136,7 @@ function apr_hash_get(ht: Papr_hash_t; const key: Pointer;
  }
 {
  * <PRE>
- * 
+ *
  * int sum_values(apr_pool_t *p, apr_hash_t *ht)
  * (
  *     apr_hash_index_t *hi;
@@ -157,7 +157,7 @@ function apr_hash_first(p: Papr_pool_t; ht: Papr_hash_t): Papr_hash_index_t;
 {
  * Continue iterating over the entries in a hash table.
  * @param hi The iteration state
- * @return a pointer to the updated iteration state.  NULL if there are no more  
+ * @return a pointer to the updated iteration state.  NULL if there are no more
  *         entries.
  }
 function apr_hash_next(hi: Papr_hash_index_t): Papr_hash_index_t;

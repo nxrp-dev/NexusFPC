@@ -19,10 +19,16 @@
 }
 
 {$PACKRECORDS 2}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit hardware;
+{$ENDIF FPC_DOTTEDUNITS}
 
 INTERFACE
+{$IFDEF FPC_DOTTEDUNITS}
+uses Amiga.Core.Exec;
+{$ELSE FPC_DOTTEDUNITS}
 uses exec;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {
  * ciaa is on an ODD Pointer (e.g. the low Byte) -- $bfe001
@@ -468,7 +474,7 @@ Const
     ASHIFTSHIFT = 12;           { bits to right align ashift value }
     BSHIFTSHIFT = 12;           { bits to right align bshift value }
 
-{ definations for blitter control register 1 }
+{ definitions for blitter control register 1 }
 
     LINEMODE    = $01;
     FILL_OR     = $08;
@@ -523,7 +529,7 @@ Const
     DMAF_ALL        = $01FF;    { all dma channels }
 
 { read definitions for dmaconr }
-{ bits 0-8 correspnd to dmaconw definitions }
+{ bits 0-8 correspond to dmaconw definitions }
 
     DMAF_BLTDONE    = $4000;
     DMAF_BLTNZERO   = $2000;
@@ -548,7 +554,7 @@ Const
 
     INTB_SETCLR     = 15;   { Set/Clear control bit. Determines if bits }
                 { written with a 1 get set or cleared. Bits }
-                { written with a zero are allways unchanged }
+                { written with a zero are always unchanged  }
     INTB_INTEN      = 14;   { Master interrupt (enable only ) }
     INTB_EXTER      = 13;   { External interrupt }
     INTB_DSKSYNC    = 12;   { Disk re-SYNChronized }

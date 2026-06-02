@@ -70,7 +70,7 @@ unit iso7185;
 
 
 {$i isotmp.inc}
- 
+
 {$i-}
     procedure DoAssign(var t : Text);
 {$ifndef FPC_HAS_FEATURE_RANDOM}
@@ -190,7 +190,7 @@ unit iso7185;
 
     procedure Get(var t : Text);[IOCheck];
       var
-        c : char;
+        c : AnsiChar;
       Begin
         Read(t,c);
       End;
@@ -208,7 +208,7 @@ unit iso7185;
 
     procedure Get;[IOCheck];
       var
-        c : char;
+        c : AnsiChar;
       Begin
         Read(input,c);
       End;

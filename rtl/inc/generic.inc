@@ -14,6 +14,7 @@
 
  **********************************************************************}
 
+
 function align(addr : PtrUInt;alignment : PtrUInt) : PtrUInt;{$ifdef SYSTEMINLINE}inline;{$endif}
   var
     tmp,am1 : PtrUInt;
@@ -58,9 +59,9 @@ end;
 
 {$ifndef FPC_HAS_SHORTSTR_CHARARRAY_INTERN_CHARMOVE}
 {$define FPC_HAS_SHORTSTR_CHARARRAY_INTERN_CHARMOVE}
-procedure fpc_shortstr_chararray_intern_charmove(const src: shortstring; out dst: array of char; const len: sizeint);
+procedure fpc_shortstr_chararray_intern_charmove(const src: shortstring; out dst: array of ansichar; const len: sizeint);
 begin
-  move(src[1],pchar(@dst)^,len);
+  move(src[1],PAnsiChar(@dst)^,len);
 end;
 {$endif FPC_HAS_SHORTSTR_CHARARRAY_INTERN_CHARMOVE}
 
@@ -619,7 +620,7 @@ end;
 
 
 {$ifndef FPC_SYSTEM_HAS_INDEXCHAR0}
-function IndexChar0(Const buf;len:SizeInt;b:Char):SizeInt;
+function IndexChar0(Const buf;len:SizeInt;b:AnsiChar):SizeInt;
 var
   psrc,pend : pbyte;
 begin
@@ -671,6 +672,31 @@ end;
 {$endif not FPC_SYSTEM_HAS_COMPARECHAR0}
 
 
+{$if not defined(FPC_SYSTEM_HAS_MEMPOS_PBYTE) and not defined(CPUJVM)}
+function MemPos(needle:PByte;nNeedle:SizeUint;haystack:PByte;nHaystack:SizeUint):SizeInt;
+var
+  p,d,pmaxplus1,iNeedle : SizeUint;
+begin
+  p:=0;
+  if SizeUint(nNeedle-1)<nHaystack then { (nNeedle > 0) and (nNeedle <= nHaystack) }
+    begin
+      pmaxplus1:=nHaystack-nNeedle+1;
+      iNeedle:=0;
+      repeat
+        if iNeedle=0 then
+          iNeedle:=nNeedle;
+        dec(iNeedle);
+        d:=IndexByte(haystack[p+iNeedle],pmaxplus1-p,needle[iNeedle])+1;
+        inc(p,d);
+      until (d=0) or (CompareByte(haystack[p-1],needle^,nNeedle)=0);
+      if d=0 then
+        p:=0;
+    end;
+  result:=SizeInt(p)-1;
+end;
+{$endif not FPC_SYSTEM_HAS_MEMPOS_PBYTE}
+
+
 {****************************************************************************
                               Object Helpers
 ****************************************************************************}
@@ -680,7 +706,7 @@ type
   pobjectvmt=^tobjectvmt;
   tobjectvmt=record
     size,msize:sizeuint;
-    parent:{$ifdef VER3_0}pointer{$else}ppointer{$endif};
+    parent:ppointer;
   end;
 
 {$ifndef FPC_SYSTEM_HAS_FPC_HELP_CONSTRUCTOR}
@@ -785,14 +811,10 @@ begin
      if vmt=expvmt then
        exit
      else
-       {$ifdef VER3_0}
-       vmt:=pobjectvmt(vmt)^.parent;
-       {$else VER3_0}
        if assigned(pobjectvmt(vmt)^.parent) then
          vmt:=pobjectvmt(vmt)^.parent^
        else
          vmt:=nil;
-       {$endif}
    HandleErrorAddrFrameInd(219,get_pc_addr,get_frame);
 end;
 {$endif not FPC_SYSTEM_HAS_FPC_CHECK_OBJECT_EXT}
@@ -826,7 +848,7 @@ begin
     len:=slen;
   move(sstr^,dstr^,len+1);
   if slen>len then
-    pchar(dstr)^:=chr(len);
+    PAnsiChar(dstr)^:=chr(len);
 end;
 
 {$endif ndef FPC_SYSTEM_HAS_FPC_SHORTSTR_ASSIGN}
@@ -849,19 +871,10 @@ begin
         s1l:=high(dests);
       s2l:=high(dests)-s1l;
     end;
-  if @dests=@s1 then
-    fpc_shortstr_shortstr_intern_charmove(s2,1,dests,s1l+1,s2l)
-  else
-    if @dests=@s2 then
-      begin
-        fpc_shortstr_shortstr_intern_charmove(dests,1,dests,s1l+1,s2l);
-        fpc_shortstr_shortstr_intern_charmove(s1,1,dests,1,s1l);
-      end
-  else
-    begin
-      fpc_shortstr_shortstr_intern_charmove(s1,1,dests,1,s1l);
-      fpc_shortstr_shortstr_intern_charmove(s2,1,dests,s1l+1,s2l);
-    end;
+  { Copy s2 first, as in the case of @dests = @s2 it must be copied first and in other cases the order does not matter. }
+  fpc_shortstr_shortstr_intern_charmove(s2,1,dests,s1l+1,s2l);
+  if @dests<>@s1 then
+    fpc_shortstr_shortstr_intern_charmove(s1,1,dests,1,s1l);
   dests[0]:=chr(s1l+s2l);
 end;
 {$endif ndef FPC_SYSTEM_HAS_FPC_SHORTSTR_CONCAT}
@@ -869,64 +882,42 @@ end;
 {$ifndef FPC_SYSTEM_HAS_FPC_SHORTSTR_CONCAT_MULTI}
 procedure fpc_shortstr_concat_multi(var dests:shortstring;const sarr:array of pshortstring);compilerproc;
 var
-  s2l : byte;
-  LowStart,i,
-  Len : ObjpasInt;
-  needtemp : boolean;
-  tmpstr  : shortstring;
-  p,pdest  : pshortstring;
+  i,s2l,Len,destpos0 : ObjpasInt;
+  p : pshortstring;
 begin
-  if high(sarr)=0 then
-    begin
-      DestS:='';
-      exit;
-    end;
-  lowstart:=low(sarr);
-  if Pointer(@DestS)=Pointer(sarr[lowstart]) then
-    inc(lowstart);
-  { Check for another reuse, then we can't use
-    the append optimization and need to use a temp }
-  needtemp:=false;
-  for i:=lowstart to high(sarr) do
-    begin
-      if Pointer(@DestS)=Pointer(sarr[i]) then
-        begin
-          needtemp:=true;
-          break;
-        end;
-    end;
-  if needtemp then
-    begin
-      lowstart:=low(sarr);
-      tmpstr:='';
-      pdest:=@tmpstr
-    end
-  else
-    begin
-      { Start with empty DestS if we start with concatting
-        the first array element }
-      if lowstart=low(sarr) then
-        DestS:='';
-      pdest:=@DestS;
-    end;
-  { Concat all strings, except the string we already
-    copied in DestS }
-  Len:=length(pdest^);
-  for i:=lowstart to high(sarr) do
+  Len:=0;
+  i:=0;
+  while (i<=high(sarr)) do
     begin
       p:=sarr[i];
       if assigned(p) then
-        begin
-          s2l:=length(p^);
-          if Len+s2l>high(dests) then
-            s2l:=high(dests)-Len;
-          fpc_shortstr_shortstr_intern_charmove(p^,1,pdest^,Len+1,s2l);
-          inc(Len,s2l);
-        end;
+        inc(Len,length(p^));
+      inc(i);
     end;
-  pdest^[0]:=Chr(Len);
-  if needtemp then
-    DestS:=TmpStr;
+  destpos0:=Len;
+  { Copy strings from the last to the first, so that possible occurences of DestS read correct DestS.
+    DestS[0] = length(DestS) must have its original value for a while! }
+  while (destpos0>0) do
+    begin
+      dec(i);
+      p:=sarr[i];
+      if not assigned(p) then
+        continue;
+      s2l:=length(p^);
+      dec(destpos0,s2l);
+      if (destpos0=0) and (p=@dests) then { Skip moving DestS to itself when appending. This destpos0-based form also catches DestS := '' + '' + DestS. }
+        break;
+      if destpos0+s2l>high(dests) then
+        begin
+          if destpos0>=high(dests) then
+            continue;
+          s2l:=high(dests)-destpos0;
+        end;
+      fpc_shortstr_shortstr_intern_charmove(p^,1,dests,destpos0+1,s2l);
+    end;
+  if Len>high(dests) then
+    Len:=high(dests);
+  dests[0]:=Chr(Len); { Careful, loop above relies on DestS[0] having the original value. }
 end;
 {$endif ndef FPC_SYSTEM_HAS_FPC_SHORTSTR_CONCAT_MULTI}
 
@@ -951,8 +942,7 @@ end;
 {$ifndef FPC_SYSTEM_HAS_FPC_SHORTSTR_COMPARE}
 function fpc_shortstr_compare(const left,right:shortstring) : longint;[public,alias:'FPC_SHORTSTR_COMPARE']; compilerproc;
 var
-   s1,s2,max,i : byte;
-   d : ObjpasInt;
+   s1,s2,max : byte;
 begin
   s1:=length(left);
   s2:=length(right);
@@ -960,20 +950,10 @@ begin
     max:=s1
   else
     max:=s2;
-  for i:=1 to max do
-    begin
-     d:=byte(left[i])-byte(right[i]);
-     if d>0 then
-       exit(1)
-     else if d<0 then
-       exit(-1);
-    end;
-  if s1>s2 then
-    exit(1)
-  else if s1<s2 then
-    exit(-1)
-  else
-    exit(0);
+  result:=CompareByte(left[1],right[1],max);
+  if result=0 then
+    result:=s1-s2;
+  result:=ord(result>0)-ord(result<0);
 end;
 {$endif ndef FPC_SYSTEM_HAS_FPC_SHORTSTR_COMPARE}
 
@@ -991,21 +971,27 @@ end;
 {$ifndef FPC_SYSTEM_HAS_FPC_PCHAR_TO_SHORTSTR}
 
 
-procedure fpc_pchar_to_shortstr(out res : shortstring;p:pchar);[public,alias:'FPC_PCHAR_TO_SHORTSTR']; compilerproc;
+procedure fpc_pchar_to_shortstr(out res : shortstring;p:PAnsiChar);[public,alias:'FPC_PCHAR_TO_SHORTSTR']; compilerproc;
 var
   l : ObjpasInt;
-  s: shortstring;
 begin
   if p=nil then
-    l:=0
-  else
-    l:=strlen(p);
+    begin
+      res[0]:=#0;
+      exit;
+    end;
+{ On platforms where IndexByte with len > 0 will not read the invalid memory past the null terminator, high(res) can be used as a limit. }
+{$if defined(cpui386) or defined(cpux86_64)}
+  l:=IndexByte(p^,high(res),0);
+  if l<0 then
+    l:=high(res);
+{$else IndexByte(p^,high(res),0) can crash}
+  l:=strlen(p);
   if l>high(res) then
     l:=high(res);
-  if l>0 then
-    move(p^,s[1],l);
-  s[0]:=chr(l);
-  res:=s;
+{$endif IndexByte(p^,high(res),0) can crash}
+  move(p^,res[1],l);
+  res[0]:=chr(l);
 end;
 
 
@@ -1014,10 +1000,10 @@ end;
 {$ifndef cpujvm}
 
 { also define alias which can be used inside the system unit }
-procedure fpc_pchar_to_shortstr(out res : shortstring;p:pchar);[external name 'FPC_PCHAR_TO_SHORTSTR'];
+procedure fpc_pchar_to_shortstr(out res : shortstring;p:PAnsiChar);[external name 'FPC_PCHAR_TO_SHORTSTR'];
 
 
-function strpas(p:pchar):shortstring;{$ifdef SYSTEMINLINE}inline;{$endif}
+function strpas(p:PAnsiChar):shortstring;{$ifdef SYSTEMINLINE}inline;{$endif}
   begin
     fpc_pchar_to_shortstr(result,p);
   end;
@@ -1264,7 +1250,7 @@ function Utf8CodePointLen(P: PAnsiChar; MaxLookAhead: SizeInt; IncludeCombiningD
 
 {$ifndef FPC_SYSTEM_HAS_FPC_CHARARRAY_TO_SHORTSTR}
 
-procedure fpc_chararray_to_shortstr(out res : shortstring;const arr: array of char; zerobased: boolean = true);[public,alias:'FPC_CHARARRAY_TO_SHORTSTR']; compilerproc;
+procedure fpc_chararray_to_shortstr(out res : shortstring;const arr: array of AnsiChar; zerobased: boolean = true);[public,alias:'FPC_CHARARRAY_TO_SHORTSTR']; compilerproc;
 var
  l: ObjpasInt;
  index: ObjpasInt;
@@ -1294,7 +1280,7 @@ end;
 
 {$ifndef FPC_SYSTEM_HAS_FPC_SHORTSTR_TO_CHARARRAY}
 
-procedure fpc_shortstr_to_chararray(out res: array of char; const src: ShortString); compilerproc;
+procedure fpc_shortstr_to_chararray(out res: array of AnsiChar; const src: ShortString); compilerproc;
 var
   len: ObjpasInt;
 begin
@@ -1302,7 +1288,7 @@ begin
   if len > length(res) then
     len := length(res);
 {$push}{$r-}
-  { make sure we don't access char 1 if length is 0 (JM) }
+  { make sure we don't access AnsiChar 1 if length is 0 (JM) }
   if len > 0 then
     move(src[1],res[0],len);
   fillchar(res[len],length(res)-len,0);
@@ -1313,10 +1299,10 @@ end;
 
 {$ifndef FPC_SYSTEM_HAS_FPC_PCHAR_LENGTH}
 
-function fpc_pchar_length(p:pchar):sizeint;[public,alias:'FPC_PCHAR_LENGTH']; compilerproc;
+function fpc_pchar_length(p:PAnsiChar):sizeint;[public,alias:'FPC_PCHAR_LENGTH']; compilerproc;
 begin
   if assigned(p) then
-    Result:=IndexByte(p^,high(Result),0)
+    Result:=IndexByte(p^,-1,0)
   else
     Result:=0;
 end;
@@ -1326,13 +1312,11 @@ end;
 {$ifndef FPC_SYSTEM_HAS_FPC_PWIDECHAR_LENGTH}
 
 function fpc_pwidechar_length(p:pwidechar):sizeint;[public,alias:'FPC_PWIDECHAR_LENGTH']; compilerproc;
-var i : sizeint;
 begin
-  i:=0;
   if assigned(p) then
-    while p[i]<>#0 do
-      inc(i);
-  exit(i);
+    Result:=IndexWord(p^,-1,0)
+  else
+    result:=0;
 end;
 
 {$endif ndef FPC_SYSTEM_HAS_FPC_PWIDECHAR_LENGTH}
@@ -1361,176 +1345,6 @@ end;
                           Software multiplication
 ****************************************************************************}
 {$ifdef FPC_INCLUDE_SOFTWARE_MUL}
-
-{$ifdef VER3_0}
-
-{$ifndef FPC_SYSTEM_HAS_MUL_INTEGER}
-    function fpc_mul_integer(f1,f2 : integer;checkoverflow : boolean) : integer;[public,alias: 'FPC_MUL_INTEGER']; compilerproc;
-      var
-        sign : boolean;
-        q1,q2,q3 : word;
-      begin
-        { there's no difference between signed and unsigned multiplication,
-          when the destination size is equal to the source size and overflow
-          checking is off }
-        if not checkoverflow then
-          { word(f1)*word(f2) is coded as a call to mulword }
-          fpc_mul_integer:=integer(word(f1)*word(f2))
-        else
-          begin
-            sign:=false;
-            if f1<0 then
-              begin
-                sign:=not(sign);
-                q1:=word(-f1);
-              end
-            else
-              q1:=f1;
-            if f2<0 then
-              begin
-                sign:=not(sign);
-                q2:=word(-f2);
-              end
-            else
-              q2:=f2;
-            { the q1*q2 is coded as call to mulword }
-            q3:=q1*q2;
-
-            if (q1 <> 0) and (q2 <>0) and
-              ((q1>q3) or (q2>q3) or
-              { the bit 63 can be only set if we have $8000 }
-              { and sign is true                            }
-              (q3 shr 15<>0) and
-               ((q3<>word(word(1) shl 15)) or not(sign))
-              ) then
-              HandleErrorAddrFrameInd(215,get_pc_addr,get_frame);
-
-            if sign then
-              fpc_mul_integer:=-q3
-            else
-              fpc_mul_integer:=q3;
-          end;
-      end;
-{$endif FPC_SYSTEM_HAS_MUL_INTEGER}
-
-
-{$ifndef FPC_SYSTEM_HAS_MUL_WORD}
-    function fpc_mul_word(f1,f2 : word;checkoverflow : boolean) : word;[public,alias: 'FPC_MUL_WORD']; compilerproc;
-      var
-        _f1,bitpos : word;
-        f1overflowed : boolean;
-      begin
-        fpc_mul_word:=0;
-        bitpos:=1;
-        f1overflowed:=false;
-
-        while f1<>0 do
-          begin
-            if (f2 and bitpos)<>0 then
-              begin
-                _f1:=fpc_mul_word;
-                fpc_mul_word:=fpc_mul_word+f1;
-
-                { if one of the operands is greater than the result an
-                  overflow occurs                                      }
-                if checkoverflow and (f1overflowed or ((_f1<>0) and (f1<>0) and
-                  ((_f1>fpc_mul_word) or (f1>fpc_mul_word)))) then
-                  HandleErrorAddrFrameInd(215,get_pc_addr,get_frame);
-              end;
-            { when bootstrapping, we forget about overflow checking for qword :) }
-            f1overflowed:=f1overflowed or ((f1 and (1 shl 15))<>0);
-            f1:=f1 shl 1;
-            bitpos:=bitpos shl 1;
-          end;
-      end;
-{$endif FPC_SYSTEM_HAS_MUL_WORD}
-
-
-{$ifndef FPC_SYSTEM_HAS_MUL_LONGINT}
-    function fpc_mul_longint(f1,f2 : longint;checkoverflow : boolean) : longint;[public,alias: 'FPC_MUL_LONGINT']; compilerproc;
-      var
-        sign : boolean;
-        q1,q2,q3 : dword;
-      begin
-        { there's no difference between signed and unsigned multiplication,
-          when the destination size is equal to the source size and overflow
-          checking is off }
-        if not checkoverflow then
-          { dword(f1)*dword(f2) is coded as a call to muldword }
-          fpc_mul_longint:=longint(dword(f1)*dword(f2))
-        else
-          begin
-            sign:=false;
-            if f1<0 then
-              begin
-                sign:=not(sign);
-                q1:=dword(-f1);
-              end
-            else
-              q1:=f1;
-            if f2<0 then
-              begin
-                sign:=not(sign);
-                q2:=dword(-f2);
-              end
-            else
-              q2:=f2;
-            { the q1*q2 is coded as call to muldword }
-            q3:=q1*q2;
-
-            if (q1 <> 0) and (q2 <>0) and
-              ((q1>q3) or (q2>q3) or
-              { the bit 31 can be only set if we have $8000 0000 }
-              { and sign is true                                 }
-              (q3 shr 15<>0) and
-               ((q3<>dword(dword(1) shl 31)) or not(sign))
-              ) then
-              HandleErrorAddrFrameInd(215,get_pc_addr,get_frame);
-
-            if sign then
-              fpc_mul_longint:=-q3
-            else
-              fpc_mul_longint:=q3;
-          end;
-      end;
-{$endif FPC_SYSTEM_HAS_MUL_INTEGER}
-
-
-{$ifndef FPC_SYSTEM_HAS_MUL_DWORD}
-    { multiplies two dwords
-      the longbool for checkoverflow avoids a misaligned stack
-    }
-    function fpc_mul_dword(f1,f2 : dword;checkoverflow : boolean) : dword;[public,alias: 'FPC_MUL_DWORD']; compilerproc;
-      var
-        _f1,bitpos : dword;
-        f1overflowed : boolean;
-      begin
-        fpc_mul_dword:=0;
-        bitpos:=1;
-        f1overflowed:=false;
-
-        while f1<>0 do
-          begin
-            if (f2 and bitpos)<>0 then
-              begin
-                _f1:=fpc_mul_dword;
-                fpc_mul_dword:=fpc_mul_dword+f1;
-
-                { if one of the operands is greater than the result an
-                  overflow occurs                                      }
-                if checkoverflow and (f1overflowed or ((_f1<>0) and (f1<>0) and
-                  ((_f1>fpc_mul_dword) or (f1>fpc_mul_dword)))) then
-                  HandleErrorAddrFrameInd(215,get_pc_addr,get_frame);
-              end;
-            { when bootstrapping, we forget about overflow checking for qword :) }
-            f1overflowed:=f1overflowed or ((f1 and (dword(1) shl 31))<>0);
-            f1:=f1 shl 1;
-            bitpos:=bitpos shl 1;
-          end;
-      end;
-{$endif FPC_SYSTEM_HAS_MUL_DWORD}
-
-{$else VER3_0}
 
 {$ifndef FPC_SYSTEM_HAS_MUL_SHORTINT}
     function fpc_mul_shortint(f1,f2 : shortint) : shortint;[public,alias: 'FPC_MUL_SHORTINT']; compilerproc;
@@ -1858,8 +1672,6 @@ end;
           end;
       end;
 {$endif FPC_SYSTEM_HAS_MUL_DWORD}
-
-{$endif VER3_0}
 
 {$endif FPC_INCLUDE_SOFTWARE_MUL}
 
@@ -2253,6 +2065,21 @@ function fpc_mod_shortint(n,z : shortint) : shortint; [public,alias: 'FPC_MOD_SH
 
 {$endif FPC_INCLUDE_SOFTWARE_MOD_DIV}
 
+{$ifndef FPC_SYSTEM_HAS_UMUL64X64_128}
+{$push} {$q-,r-}
+function UMul64x64_128(a,b: uint64; out rHi: uint64): uint64;
+var
+  albl, albh, ahbl: uint64;
+begin
+  albl := uint64(uint32(a)) * uint32(b);
+  albh := uint64(uint32(a)) * (b shr 32);
+  ahbl := a shr 32 * uint32(b);
+  result := albl + albh shl 32 + ahbl shl 32;
+  rHi    := a shr 32 * (b shr 32) + albh shr 32 + ahbl shr 32 + (albl shr 32 + uint32(albh) + uint32(ahbl)) shr 32;
+end;
+{$pop}
+{$endif FPC_SYSTEM_HAS_UMUL64X64_128}
+
 {****************************************************************************}
 
 {$if defined(CPUINT8)}
@@ -2487,7 +2314,7 @@ var
   m,m1 : longword;
   pcstart,
   pc2start,
-  pc,pc2 : pchar;
+  pc,pc2 : PAnsiChar;
   hs : string[32];
   overflow : longint;
 begin
@@ -2501,12 +2328,12 @@ begin
     end
   else
     m:=longword(l);
-  pcstart:=pchar(@hs[0]);
+  pcstart:=PAnsiChar(@hs[0]);
   pc:=pcstart;
   repeat
     m1:=m div 10;
     inc(pc);
-    pc^:=char(m-(m1*10)+byte('0'));
+    pc^:=AnsiChar(m-(m1*10)+byte('0'));
     m:=m1;
   until m=0;
   overflow:=(pc-pcstart)+(pc2-pc2start)-high(s);
@@ -2518,7 +2345,7 @@ begin
       inc(pc2);
       dec(pc);
     end;
-  s[0]:=char(pc2-pc2start);
+  s[0]:=AnsiChar(pc2-pc2start);
 end;
 
 {$endif ndef FPC_SYSTEM_HAS_INT_STR_LONGINT}
@@ -2530,18 +2357,18 @@ var
   m1 : longword;
   pcstart,
   pc2start,
-  pc,pc2 : pchar;
+  pc,pc2 : PAnsiChar;
   hs : string[32];
   overflow : longint;
 begin
   pc2start:=@s[1];
   pc2:=pc2start;
-  pcstart:=pchar(@hs[0]);
+  pcstart:=PAnsiChar(@hs[0]);
   pc:=pcstart;
   repeat
     inc(pc);
     m1:=l div 10;
-    pc^:=char(l-(m1*10)+byte('0'));
+    pc^:=AnsiChar(l-(m1*10)+byte('0'));
     l:=m1;
   until l=0;
   overflow:=(pc-pcstart)-high(s);
@@ -2553,7 +2380,7 @@ begin
       inc(pc2);
       dec(pc);
     end;
-  s[0]:=char(pc2-pc2start);
+  s[0]:=AnsiChar(pc2-pc2start);
 end;
 
 {$endif ndef FPC_SYSTEM_HAS_INT_STR_LONGWORD}
@@ -2570,7 +2397,7 @@ var
   m,m1 : qword;
   pcstart,
   pc2start,
-  pc,pc2 : pchar;
+  pc,pc2 : PAnsiChar;
   hs : string[32];
   overflow : longint;
 begin
@@ -2584,12 +2411,12 @@ begin
     end
   else
     m:=qword(l);
-  pcstart:=pchar(@hs[0]);
+  pcstart:=PAnsiChar(@hs[0]);
   pc:=pcstart;
   repeat
     m1:=m div 10;
     inc(pc);
-    pc^:=char(m-(m1*10)+byte('0'));
+    pc^:=AnsiChar(m-(m1*10)+byte('0'));
     m:=m1;
   until m=0;
   overflow:=(pc-pcstart)+(pc2-pc2start)-high(s);
@@ -2601,7 +2428,7 @@ begin
       inc(pc2);
       dec(pc);
     end;
-  s[0]:=char(pc2-pc2start);
+  s[0]:=AnsiChar(pc2-pc2start);
 end;
 {$endif EXCLUDE_COMPLEX_PROCS}
 
@@ -2619,18 +2446,18 @@ var
   m1 : qword;
   pcstart,
   pc2start,
-  pc,pc2 : pchar;
+  pc,pc2 : PAnsiChar;
   hs : string[64];
   overflow : longint;
 begin
   pc2start:=@s[1];
   pc2:=pc2start;
-  pcstart:=pchar(@hs[0]);
+  pcstart:=PAnsiChar(@hs[0]);
   pc:=pcstart;
   repeat
     inc(pc);
     m1:=l div 10;
-    pc^:=char(l-(m1*10)+byte('0'));
+    pc^:=AnsiChar(l-(m1*10)+byte('0'));
     l:=m1;
   until l=0;
   overflow:=(pc-pcstart)-high(s);
@@ -2642,7 +2469,7 @@ begin
       inc(pc2);
       dec(pc);
     end;
-  s[0]:=char(pc2-pc2start);
+  s[0]:=AnsiChar(pc2-pc2start);
 end;
 {$endif EXCLUDE_COMPLEX_PROCS}
 
@@ -3007,19 +2834,19 @@ function NtoLE(const AValue: QWord): QWord;{$ifdef SYSTEMINLINE}inline;{$endif}
 
 {$ifndef FPC_SYSTEM_HAS_MEM_BARRIER}
 
-procedure ReadBarrier;{$ifdef SYSTEMINLINE}inline;{$endif}
+procedure ReadBarrier;
 begin
 end;
 
-procedure ReadDependencyBarrier;{$ifdef SYSTEMINLINE}inline;{$endif}
+procedure ReadDependencyBarrier;
 begin
 end;
 
-procedure ReadWriteBarrier;{$ifdef SYSTEMINLINE}inline;{$endif}
+procedure ReadWriteBarrier;
 begin
 end;
 
-procedure WriteBarrier;{$ifdef SYSTEMINLINE}inline;{$endif}
+procedure WriteBarrier;
 begin
 end;
 
@@ -3375,7 +3202,6 @@ function fpc_PopCnt_dword(AValue : DWord): DWord;[Public,Alias:'FPC_POPCNT_DWORD
       end;
   end;
 
-
 {$ifndef FPC_SYSTEM_HAS_POPCNT_QWORD}
 function fpc_PopCnt_qword(AValue : QWord): QWord;[Public,Alias:'FPC_POPCNT_QWORD'];compilerproc;
   begin
@@ -3383,3 +3209,490 @@ function fpc_PopCnt_qword(AValue : QWord): QWord;[Public,Alias:'FPC_POPCNT_QWORD
   end;
 {$endif}
 
+{$if not defined(VER3_2) and not defined(CPUJVM)}
+{$push}
+{$R-,Q-}
+
+{$ifndef FPC_SYSTEM_HAS_ATOMIC_INC_8}
+function fpc_atomic_inc_8(var Target: shortint): shortint;compilerproc;
+begin
+{$if defined(FPC_SYSTEM_HAS_ATOMIC_ADD_8)}
+  Result := AtomicIncrement(Target, 1);
+{$elseif defined(FPC_SYSTEM_HAS_ATOMIC_SUB_8)}
+  Result := AtomicDecrement(Target, -1);
+{$else}
+  repeat
+    Result := Target + 1;
+  until shortint(Result - 1) = AtomicCmpExchange(Target, Result, Result - 1);
+{$endif}
+end;
+{$endif FPC_SYSTEM_HAS_ATOMIC_INC_8}
+
+{$ifndef FPC_SYSTEM_HAS_ATOMIC_INC_16}
+function fpc_atomic_inc_16(var Target: smallint): smallint;compilerproc;
+begin
+{$if defined(FPC_SYSTEM_HAS_ATOMIC_ADD_16)}
+  Result := AtomicIncrement(Target, 1);
+{$elseif defined(FPC_SYSTEM_HAS_ATOMIC_SUB_16)}
+  Result := AtomicDecrement(Target, -1);
+{$else}
+  repeat
+    Result := Target + 1;
+  until smallint(Result - 1) = AtomicCmpExchange(Target, Result, Result - 1);
+{$endif}
+end;
+{$endif FPC_SYSTEM_HAS_ATOMIC_INC_16}
+
+{$ifndef FPC_SYSTEM_HAS_ATOMIC_INC_32}
+function fpc_atomic_inc_32(var Target: longint): longint;compilerproc;
+begin
+{$if defined(FPC_SYSTEM_HAS_ATOMIC_ADD_32)}
+  Result := AtomicIncrement(Target, 1);
+{$elseif defined(FPC_SYSTEM_HAS_ATOMIC_SUB_32)}
+  Result := AtomicDecrement(Target, -1);
+{$else}
+  repeat
+    Result := Target + 1;
+  until longint(Result - 1) = AtomicCmpExchange(Target, Result, Result - 1);
+{$endif}
+end;
+{$endif FPC_SYSTEM_HAS_ATOMIC_INC_32}
+
+{$ifndef FPC_SYSTEM_HAS_ATOMIC_INC_64}
+function fpc_atomic_inc_64(var Target: int64): int64;compilerproc;
+begin
+{$if defined(FPC_SYSTEM_HAS_ATOMIC_ADD_64)}
+  Result := AtomicIncrement(Target, 1);
+{$elseif defined(FPC_SYSTEM_HAS_ATOMIC_SUB_64)}
+  Result := AtomicDecrement(Target, -1);
+{$else}
+  repeat
+    Result := Target + 1;
+  until int64(Result - 1) = AtomicCmpExchange(Target, Result, Result - 1);
+{$endif}
+end;
+{$endif FPC_SYSTEM_HAS_ATOMIC_INC_64}
+
+{$ifndef FPC_SYSTEM_HAS_ATOMIC_DEC_8}
+function fpc_atomic_dec_8(var Target: shortint): shortint;compilerproc;
+begin
+{$if defined(FPC_SYSTEM_HAS_ATOMIC_SUB_8)}
+  Result := AtomicDecrement(Target, 1);
+{$elseif defined(FPC_SYSTEM_HAS_ATOMIC_ADD_8)}
+  Result := AtomicIncrement(Target, -1);
+{$else}
+  repeat
+    Result := Target - 1;
+  until shortint(Result + 1) = AtomicCmpExchange(Target, Result, Result + 1);
+{$endif}
+end;
+{$endif FPC_SYSTEM_HAS_ATOMIC_DEC_8}
+
+{$ifndef FPC_SYSTEM_HAS_ATOMIC_DEC_16}
+function fpc_atomic_dec_16(var Target: smallint): smallint;compilerproc;
+begin
+{$if defined(FPC_SYSTEM_HAS_ATOMIC_SUB_16)}
+  Result := AtomicDecrement(Target, 1);
+{$elseif defined(FPC_SYSTEM_HAS_ATOMIC_ADD_16)}
+  Result := AtomicIncrement(Target, -1);
+{$else}
+  repeat
+    Result := Target - 1;
+  until smallint(Result + 1) = AtomicCmpExchange(Target, Result, Result + 1);
+{$endif}
+end;
+{$endif FPC_SYSTEM_HAS_ATOMIC_DEC_16}
+
+{$ifndef FPC_SYSTEM_HAS_ATOMIC_DEC_32}
+function fpc_atomic_dec_32(var Target: longint): longint;compilerproc;
+begin
+{$if defined(FPC_SYSTEM_HAS_ATOMIC_SUB_32)}
+  Result := AtomicDecrement(Target, 1);
+{$elseif defined(FPC_SYSTEM_HAS_ATOMIC_ADD_32)}
+  Result := AtomicIncrement(Target, -1);
+{$else}
+  repeat
+    Result := Target - 1;
+  until longint(Result + 1) = AtomicCmpExchange(Target, Result, Result + 1);
+{$endif}
+end;
+{$endif FPC_SYSTEM_HAS_ATOMIC_DEC_32}
+
+{$ifndef FPC_SYSTEM_HAS_ATOMIC_DEC_64}
+function fpc_atomic_dec_64(var Target: int64): int64;compilerproc;
+begin
+{$if defined(FPC_SYSTEM_HAS_ATOMIC_SUB_64)}
+  Result := AtomicDecrement(Target, 1);
+{$elseif defined(FPC_SYSTEM_HAS_ATOMIC_ADD_64)}
+  Result := AtomicIncrement(Target, -1);
+{$else}
+  repeat
+    Result := Target - 1;
+  until int64(Result + 1) = AtomicCmpExchange(Target, Result, Result + 1);
+{$endif}
+end;
+{$endif FPC_SYSTEM_HAS_ATOMIC_DEC_64}
+
+{$ifndef FPC_SYSTEM_HAS_ATOMIC_ADD_8}
+function fpc_atomic_add_8(var Target: shortint; Value: shortint): shortint;compilerproc;
+begin
+{$ifdef FPC_SYSTEM_HAS_ATOMIC_SUB_8}
+  { the intrinsic returns the new value, but the helper needs to return the old }
+  Result := AtomicDecrement(Target, - Value) - Value;
+{$else FPC_SYSTEM_HAS_ATOMIC_SUB_8}
+  repeat
+    Result := Target;
+  until Result = AtomicCmpExchange(Target, Result + Value, Result);
+{$endif}
+end;
+{$endif FPC_SYSTEM_HAS_ATOMIC_ADD_8}
+
+{$ifndef FPC_SYSTEM_HAS_ATOMIC_ADD_16}
+function fpc_atomic_add_16(var Target: smallint; Value: smallint): smallint;compilerproc;
+begin
+{$ifdef FPC_SYSTEM_HAS_ATOMIC_SUB_16}
+  { the intrinsic returns the new value, but the helper needs to return the old }
+  Result := AtomicDecrement(Target, - Value) - Value;
+{$else FPC_SYSTEM_HAS_ATOMIC_SUB_16}
+  repeat
+    Result := Target;
+  until Result = AtomicCmpExchange(Target, Result + Value, Result);
+{$endif FPC_SYSTEM_HAS_ATOMIC_SUB_16}
+end;
+{$endif FPC_SYSTEM_HAS_ATOMIC_ADD_16}
+
+{$ifndef FPC_SYSTEM_HAS_ATOMIC_ADD_32}
+function fpc_atomic_add_32(var Target: longint; Value: longint): longint;compilerproc;
+begin
+{$ifdef FPC_SYSTEM_HAS_ATOMIC_SUB_32}
+  { the intrinsic returns the new value, but the helper needs to return the old }
+  Result := AtomicDecrement(Target, - Value) - Value;
+{$else FPC_SYSTEM_HAS_ATOMIC_SUB_32}
+  repeat
+    Result := Target;
+  until Result = AtomicCmpExchange(Target, Result + Value, Result);
+{$endif FPC_SYSTEM_HAS_ATOMIC_SUB_32}
+end;
+{$endif FPC_SYSTEM_HAS_ATOMIC_ADD_32}
+
+{$ifndef FPC_SYSTEM_HAS_ATOMIC_ADD_64}
+function fpc_atomic_add_64(var Target: int64; Value: int64): int64;compilerproc;
+begin
+{$ifdef FPC_SYSTEM_HAS_ATOMIC_SUB_64}
+  { the intrinsic returns the new value, but the helper needs to return the old }
+  Result := AtomicDecrement(Target, - Value) - Value;
+{$else FPC_SYSTEM_HAS_ATOMIC_SUB_64}
+  repeat
+    Result := Target;
+  until Result = AtomicCmpExchange(Target, Result + Value, Result);
+{$endif FPC_SYSTEM_HAS_ATOMIC_SUB_64}
+end;
+{$endif FPC_SYSTEM_HAS_ATOMIC_ADD_64}
+
+{$ifndef FPC_SYSTEM_HAS_ATOMIC_SUB_8}
+function fpc_atomic_sub_8(var Target: shortint; Value: shortint): shortint;compilerproc;
+begin
+{$ifdef FPC_SYSTEM_HAS_ATOMIC_ADD_8}
+  { the intrinsic returns the new value, but the helper needs to return the old }
+  Result := AtomicIncrement(Target, - Value) + Value;
+{$else FPC_SYSTEM_HAS_ATOMIC_ADD_8}
+  repeat
+    Result := Target;
+  until Result = AtomicCmpExchange(Target, Result - Value, Result);
+{$endif FPC_SYSTEM_HAS_ATOMIC_ADD_8}
+end;
+{$endif FPC_SYSTEM_HAS_ATOMIC_SUB_8}
+
+{$ifndef FPC_SYSTEM_HAS_ATOMIC_SUB_16}
+function fpc_atomic_sub_16(var Target: smallint; Value: smallint): smallint;compilerproc;
+begin
+{$ifdef FPC_SYSTEM_HAS_ATOMIC_ADD_16}
+  { the intrinsic returns the new value, but the helper needs to return the old }
+  Result := AtomicIncrement(Target, - Value) + Value;
+{$else FPC_SYSTEM_HAS_ATOMIC_ADD_16}
+  repeat
+    Result := Target;
+  until Result = AtomicCmpExchange(Target, Result - Value, Result);
+{$endif FPC_SYSTEM_HAS_ATOMIC_ADD_16}
+end;
+{$endif FPC_SYSTEM_HAS_ATOMIC_SUB_16}
+
+{$ifndef FPC_SYSTEM_HAS_ATOMIC_SUB_32}
+function fpc_atomic_sub_32(var Target: longint; Value: longint): longint;compilerproc;
+begin
+{$ifdef FPC_SYSTEM_HAS_ATOMIC_ADD_32}
+  { the intrinsic returns the new value, but the helper needs to return the old }
+  Result := AtomicIncrement(Target, - Value) + Value;
+{$else FPC_SYSTEM_HAS_ATOMIC_ADD_32}
+  repeat
+    Result := Target;
+  until Result = AtomicCmpExchange(Target, Result - Value, Result);
+{$endif FPC_SYSTEM_HAS_ATOMIC_ADD_32}
+end;
+{$endif FPC_SYSTEM_HAS_ATOMIC_SUB_32}
+
+{$ifndef FPC_SYSTEM_HAS_ATOMIC_SUB_64}
+function fpc_atomic_sub_64(var Target: int64; Value: int64): int64;compilerproc;
+begin
+{$ifdef FPC_SYSTEM_HAS_ATOMIC_ADD_64}
+  { the intrinsic returns the new value, but the helper needs to return the old }
+  Result := AtomicIncrement(Target, - Value) + Value;
+{$else FPC_SYSTEM_HAS_ATOMIC_ADD_64}
+  repeat
+    Result := Target;
+  until Result = AtomicCmpExchange(Target, Result - Value, Result);
+{$endif FPC_SYSTEM_HAS_ATOMIC_ADD_8}
+end;
+{$endif FPC_SYSTEM_HAS_ATOMIC_SUB_64}
+
+{$ifndef FPC_SYSTEM_HAS_ATOMIC_XCHG_8}
+function fpc_atomic_xchg_8(var Target: shortint; Source: shortint): shortint;compilerproc;
+begin
+  repeat
+    Result := Target;
+  until Result = AtomicCmpExchange(Target, Source, Result);
+end;
+{$endif FPC_SYSTEM_HAS_ATOMIC_XCHG_8}
+
+{$ifndef FPC_SYSTEM_HAS_ATOMIC_XCHG_16}
+function fpc_atomic_xchg_16(var Target: smallint; Source: smallint): smallint;compilerproc;
+begin
+  repeat
+    Result := Target;
+  until Result = AtomicCmpExchange(Target, Source, Result);
+end;
+{$endif FPC_SYSTEM_HAS_ATOMIC_XCHG_16}
+
+{$ifndef FPC_SYSTEM_HAS_ATOMIC_XCHG_32}
+function fpc_atomic_xchg_32(var Target: longint; Source: longint): longint;compilerproc;
+begin
+  repeat
+    Result := Target;
+  until Result = AtomicCmpExchange(Target, Source, Result);
+end;
+{$endif FPC_SYSTEM_HAS_ATOMIC_XCHG_32}
+
+{$ifndef FPC_SYSTEM_HAS_ATOMIC_XCHG_64}
+function fpc_atomic_xchg_64(var Target: int64; Source: int64): int64;compilerproc;
+begin
+  repeat
+    Result := Target;
+  until Result = AtomicCmpExchange(Target, Source, Result);
+end;
+{$endif FPC_SYSTEM_HAS_ATOMIC_XCHG_64}
+
+{ the variant of fpc_atomic_cmp_xchg_<alusize>() needs to be implemented by
+  the corresponding platforms include file, then the default functions can do
+  the job (poorly) until the other functions are implemented for the platform }
+
+procedure AtomicEnterLock; forward;
+procedure AtomicLeaveLock; forward;
+
+{$ifndef FPC_SYSTEM_HAS_ATOMIC_CMP_XCHG_8}
+{$if SizeOf(ALUSInt) = SizeOf(ShortInt)}
+{$message warning 'At least fpc_atomic_cmp_xchg_8 must be implemented for the current platform'}
+{$define FPC_SYSTEM_ATOMIC_8_NO_LOCK}
+{$else}
+{$define FPC_SYSTEM_NEEDS_ATOMIC_FALLBACK}
+{$endif}
+function fpc_atomic_cmp_xchg_8(var Target: shortint; NewValue: shortint; Comparand: shortint): shortint;compilerproc;
+begin
+  {$ifndef FPC_SYSTEM_ATOMIC_8_NO_LOCK}
+  AtomicEnterLock;
+  {$endif FPC_SYSTEM_ATOMIC_8_NO_LOCK}
+  Result:=Target;
+  if Target=Comparand then
+    Target:=NewValue;
+  {$ifndef FPC_SYSTEM_ATOMIC_8_NO_LOCK}
+  AtomicLeaveLock;
+  {$endif FPC_SYSTEM_ATOMIC_8_NO_LOCK}
+end;
+{$endif FPC_SYSTEM_HAS_ATOMIC_CMP_XCHG_8}
+
+{$ifndef FPC_SYSTEM_HAS_ATOMIC_CMP_XCHG_16}
+{$if SizeOf(ALUSInt) = SizeOf(SmallInt)}
+{$message warning 'At least fpc_atomic_cmp_xchg_16 must be implemented for the current platform'}
+{$define FPC_SYSTEM_ATOMIC_16_NO_LOCK}
+{$else}
+{$define FPC_SYSTEM_NEEDS_ATOMIC_FALLBACK}
+{$endif}
+function fpc_atomic_cmp_xchg_16(var Target: smallint; NewValue: smallint; Comparand: smallint): smallint;compilerproc;
+begin
+  {$ifndef FPC_SYSTEM_ATOMIC_16_NO_LOCK}
+  AtomicEnterLock;
+  {$endif FPC_SYSTEM_ATOMIC_16_NO_LOCK}
+  Result:=Target;
+  if Target=Comparand then
+    Target:=NewValue;
+  {$ifndef FPC_SYSTEM_ATOMIC_16_NO_LOCK}
+  AtomicLeaveLock;
+  {$endif FPC_SYSTEM_ATOMIC_16_NO_LOCK}
+end;
+{$endif FPC_SYSTEM_HAS_ATOMIC_CMP_XCHG_16}
+
+{$ifndef FPC_SYSTEM_HAS_ATOMIC_CMP_XCHG_32}
+{$if SizeOf(ALUSInt) = SizeOf(LongInt)}
+{$message warning 'At least fpc_atomic_cmp_xchg_32 must be implemented for the current platform'}
+{$define FPC_SYSTEM_ATOMIC_32_NO_LOCK}
+{$else}
+{$define FPC_SYSTEM_NEEDS_ATOMIC_FALLBACK}
+{$endif}
+function fpc_atomic_cmp_xchg_32(var Target: longint; NewValue: longint; Comparand: longint): longint;compilerproc;
+begin
+  {$ifndef FPC_SYSTEM_ATOMIC_32_NO_LOCK}
+  AtomicEnterLock;
+  {$endif FPC_SYSTEM_ATOMIC_32_NO_LOCK}
+  Result:=Target;
+  if Target=Comparand then
+    Target:=NewValue;
+  {$ifndef FPC_SYSTEM_ATOMIC_32_NO_LOCK}
+  AtomicLeaveLock;
+  {$endif FPC_SYSTEM_ATOMIC_32_NO_LOCK}
+end;
+{$endif FPC_SYSTEM_HAS_ATOMIC_CMP_XCHG_32}
+
+{$ifndef FPC_SYSTEM_HAS_ATOMIC_CMP_XCHG_64}
+{$if SizeOf(ALUSInt) = SizeOf(Int64)}
+{$message warning 'At least fpc_atomic_cmp_xchg_64 must be implemented for the current platform'}
+{$define FPC_SYSTEM_ATOMIC_64_NO_LOCK}
+{$else}
+{$define FPC_SYSTEM_NEEDS_ATOMIC_FALLBACK}
+{$endif}
+function fpc_atomic_cmp_xchg_64(var Target: int64; NewValue: int64; Comparand: int64): int64;compilerproc;
+begin
+  {$ifndef FPC_SYSTEM_ATOMIC_64_NO_LOCK}
+  AtomicEnterLock;
+  {$endif FPC_SYSTEM_ATOMIC_64_NO_LOCK}
+  Result:=Target;
+  if Target=Comparand then
+    Target:=NewValue;
+  {$ifndef FPC_SYSTEM_ATOMIC_64_NO_LOCK}
+  AtomicLeaveLock;
+  {$endif FPC_SYSTEM_ATOMIC_64_NO_LOCK}
+end;
+{$endif FPC_SYSTEM_HAS_ATOMIC_CMP_XCHG_64}
+
+{$if defined(FPC_SYSTEM_NEEDS_ATOMIC_FALLBACK)}
+var
+
+  gAtomicLock: ALUSInt = 0;
+
+function fpc_atomic_cmp_xchg_alu(var Target: ALUSInt; NewValue: ALUSInt; Comparand: ALUSInt): ALUSInt; external name
+{$if defined(CPUINT8)}
+  'FPC_ATOMIC_CMP_XCHG_8'
+{$elseif defined(CPUINT16)}
+  'FPC_ATOMIC_CMP_XCHG_16'
+{$elseif defined(CPUINT32)}
+  'FPC_ATOMIC_CMP_XCHG_32'
+{$elseif defined(CPUINT64)}
+  'FPC_ATOMIC_CMP_XCHG_64'
+{$else}
+  'FPC_ATOMIC_CMP_XCHG_UNKNOWN'
+{$endif}
+  ;
+
+procedure AtomicEnterLock;
+var
+  r: ALUSInt;
+begin
+  { spin until we get the lock }
+  repeat
+    r := fpc_atomic_cmp_xchg_alu(gAtomicLock, 1, 0);
+  until r = 0;
+end;
+
+procedure AtomicLeaveLock;
+begin
+  fpc_atomic_cmp_xchg_alu(gAtomicLock, 0, 1);
+end;
+{$else}
+procedure AtomicEnterLock;
+begin
+end;
+
+procedure AtomicLeaveLock;
+begin
+end;
+{$endif}
+
+{$ifdef cpu16}
+function InterlockedIncrement (var Target: smallint) : smallint;
+begin
+  Result := AtomicIncrement(Target);
+end;
+
+function InterlockedDecrement (var Target: smallint) : smallint;
+begin
+  Result := AtomicDecrement(Target);
+end;
+
+function InterlockedExchange (var Target: smallint;Source : smallint) : smallint;
+begin
+  Result := AtomicExchange(Target, Source);
+end;
+
+function InterlockedExchangeAdd (var Target: smallint;Source : smallint) : smallint;
+begin
+  Result := AtomicIncrement(Target, Source) - Source;
+end;
+
+function InterlockedCompareExchange(var Target: smallint; NewValue: smallint; Comperand: smallint): smallint;
+begin
+  Result := AtomicCmpExchange(Target, NewValue, Comperand);
+end;
+{$endif cpu16}
+
+function InterlockedIncrement (var Target: longint) : longint;
+begin
+  Result := AtomicIncrement(Target);
+end;
+
+function InterlockedDecrement (var Target: longint) : longint;
+begin
+  Result := AtomicDecrement(Target);
+end;
+
+function InterlockedExchange (var Target: longint;Source : longint) : longint;
+begin
+  Result := AtomicExchange(Target, Source);
+end;
+
+function InterlockedExchangeAdd (var Target: longint;Source : longint) : longint;
+begin
+  Result := AtomicIncrement(Target, Source) - Source;
+end;
+
+function InterlockedCompareExchange(var Target: longint; NewValue: longint; Comperand: longint): longint;
+begin
+  Result := AtomicCmpExchange(Target, NewValue, Comperand);
+end;
+
+{$ifdef cpu64}
+function InterlockedIncrement64 (var Target: int64) : int64;
+begin
+  Result := AtomicIncrement(Target);
+end;
+
+function InterlockedDecrement64 (var Target: int64) : int64;
+begin
+  Result := AtomicDecrement(Target);
+end;
+
+function InterlockedExchange64 (var Target: int64;Source : int64) : int64;
+begin
+  Result := AtomicExchange(Target, Source);
+end;
+
+function InterlockedExchangeAdd64 (var Target: int64;Source : int64) : int64;
+begin
+  Result := AtomicIncrement(Target, Source) - Source;
+end;
+
+function InterlockedCompareExchange64(var Target: int64; NewValue: int64; Comperand: int64): int64;
+begin
+  Result := AtomicCmpExchange(Target, NewValue, Comperand);
+end;
+{$endif cpu64}
+
+{$pop}
+{$endif VER3_2}

@@ -1,5 +1,7 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit asndlib;
-{$mode objfpc} 
+{$ENDIF FPC_DOTTEDUNITS}
+{$mode objfpc}
 {$J+}
 {$INLINE ON}
 {$MACRO ON}
@@ -8,8 +10,13 @@ unit asndlib;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.CTypes, WiiApi.Gctypes;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   ctypes, gctypes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   ASND_LIB = $100;

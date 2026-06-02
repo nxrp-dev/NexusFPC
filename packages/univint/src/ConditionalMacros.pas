@@ -2,14 +2,14 @@
  * Copyright (c) 1993-2011 by Apple Inc.. All rights reserved.
  *
  * @APPLE_LICENSE_HEADER_START@
- * 
+ *
  * This file contains Original Code and/or Modifications of Original Code
  * as defined in and that are subject to the Apple Public Source License
  * Version 2.0 (the 'License'). You may not use this file except in
  * compliance with the License. Please obtain a copy of the License at
  * http://www.opensource.apple.com/apsl/ and read it before using this
  * file.
- * 
+ *
  * The Original Code and all software distributed under the License are
  * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER
  * EXPRESS OR IMPLIED, AND APPLE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
@@ -17,7 +17,7 @@
  * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT.
  * Please see the License for the specific language governing rights and
  * limitations under the License.
- * 
+ *
  * @APPLE_LICENSE_HEADER_END@
  }
 {
@@ -34,7 +34,9 @@
 {$inline on}
 {$calling mwpascal}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit ConditionalMacros;
+{$ENDIF FPC_DOTTEDUNITS}
 interface
 {$setc UNIVERSAL_INTERFACES_VERSION := $0400}
 {$setc GAP_INTERFACES_VERSION := $0308}
@@ -225,23 +227,23 @@ interface
 
 {
      File:       ConditionalMacros.h
- 
+
      Contains:   Set up for compiler independent conditionals
- 
+
      Version:    CarbonCore-769~1
-  
+
      Bugs?:      For bug reports, consult the following page on
                  the World Wide Web:
- 
+
                      http://developer.apple.com/bugreporter/
- 
+
 }
 
 {***************************************************************************************************
     UNIVERSAL_INTERFACES_VERSION
-    
+
         0x0400 --> version 4.0 (Mac OS X only)
-        0x0335 --> version 3.4 
+        0x0335 --> version 3.4
         0x0331 --> version 3.3.1
         0x0330 --> version 3.3
         0x0320 --> version 3.2
@@ -256,7 +258,7 @@ interface
 //   UNIVERSAL_INTERFACES_VERSION = $0400;
 {***************************************************************************************************
 
-    All TARGET_* condtionals are set up by TargetConditionals.h
+    All TARGET_* conditionals are set up by TargetConditionals.h
 
 ***************************************************************************************************}
 
@@ -265,7 +267,7 @@ interface
 
     PRAGMA_*
     These conditionals specify whether the compiler supports particular #pragma's
-    
+
         PRAGMA_IMPORT           - Compiler supports: #pragma import on/off/reset
         PRAGMA_ONCE             - Compiler supports: #pragma once
         PRAGMA_STRUCT_ALIGN     - Compiler supports: #pragma options align=mac68k/power/reset
@@ -280,7 +282,7 @@ interface
     This conditional is deprecated.  It was used to work around a bug in one obscure compiler that did not pack multiple characters in single quotes rationally.
     It was never intended for endian swapping.
 
-        FourCharCode('abcd')  - Convert a four-char-code to the correct 32-bit value
+        FourCharCode('abcd')  - Convert a four-AnsiChar-code to the correct 32-bit value
 
 
     TYPE_*
@@ -338,7 +340,7 @@ interface
 ***************************************************************************************************}
 
 {***************************************************************************************************
-    
+
     Set up TARGET_API_*_* values
 
 ***************************************************************************************************}
@@ -362,15 +364,15 @@ interface
 
     OLDROUTINENAMES         - "Old" names for Macintosh system calls are allowed in source code.
                               (e.g. DisposPtr instead of DisposePtr). The names of system routine
-                              are now more sensitive to change because CFM binds by name.  In the 
-                              past, system routine names were compiled out to just an A-Trap.  
-                              Macros have been added that each map an old name to its new name.  
+                              are now more sensitive to change because CFM binds by name.  In the
+                              past, system routine names were compiled out to just an A-Trap.
+                              Macros have been added that each map an old name to its new name.
                               This allows old routine names to be used in existing source files,
                               but the macros only work if OLDROUTINENAMES is true.  This support
-                              will be removed in the near future.  Thus, all source code should 
+                              will be removed in the near future.  Thus, all source code should
                               be changed to use the new names! You can set OLDROUTINENAMES to false
                               to see if your code has any old names left in it.
-    
+
 ***************************************************************************************************}
 
 
@@ -381,10 +383,10 @@ interface
  of a JSR.  Under Classic 68K on the Mac OS, this macro will put the opcodes
     in the right syntax.  For all other OS's and runtimes the macro suppress the opcodes.
   Example:
-   
+
        EXTERN_P void DrawPicture(PicHandle myPicture, const Rect *dstRect)
             ONEWORDINLINE(0xA8F6);
- 
+
 ***************************************************************************************************}
 
 {***************************************************************************************************
@@ -399,12 +401,12 @@ interface
     OPAQUE_UPP_TYPES                - default: false. True for Carbon builds, UPP types are unique and opaque.
     ACCESSOR_CALLS_ARE_FUNCTIONS    - default: false. True for Carbon builds, enables accessor functions.
     CALL_NOT_IN_CARBON              - default: true.  False for Carbon builds, hides calls not supported in Carbon.
-    
+
     Specifically, if you are building a non-Carbon application (one that links against InterfaceLib)
     but you wish to use some of the accessor functions, you can set ACCESSOR_CALLS_ARE_FUNCTIONS to 1
     and link with CarbonAccessors.o, which implements just the accessor functions. This will help you
     preserve source compatibility between your Carbon and non-Carbon application targets.
-    
+
     MIXEDMODE_CALLS_ARE_FUNCTIONS   - deprecated.
 
 ***************************************************************************************************}

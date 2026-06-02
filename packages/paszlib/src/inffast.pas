@@ -1,11 +1,13 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 Unit InfFast;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {
   inffast.h and
   inffast.c -- process literals and length/distance pairs fast
   Copyright (C) 1995-1998 Mark Adler
 
-  Pascal tranlastion
+  Pascal translation
   Copyright (C) 1998 by Jacques Nomssi Nzali
   For conditions of distribution and use, see copyright notice in readme.txt
 }
@@ -15,8 +17,13 @@ interface
 
 {$I zconf.inc}
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.ZLib.Zbase;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   zbase;
+{$ENDIF FPC_DOTTEDUNITS}
 
 function inflate_fast( bl : cardinal;
                        bd : cardinal;
@@ -28,8 +35,13 @@ function inflate_fast( bl : cardinal;
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.ZLib.Infutil{$IFDEF ZLIB_DEBUG}, System.SysUtils{$ENDIF};
+{$ELSE FPC_DOTTEDUNITS}
 uses
   infutil{$IFDEF ZLIB_DEBUG}, SysUtils{$ENDIF};
+{$ENDIF FPC_DOTTEDUNITS}
 
 
 { Called with number of bytes left to write in window at least 258
@@ -96,7 +108,7 @@ begin
       dec(k, t^.bits);
      {$IFDEF ZLIB_DEBUG}
       if (t^.base >= $20) and (t^.base < $7f) then
-        Tracevv('inflate:         * literal '+char(t^.base))
+        Tracevv('inflate:         * literal '+AnsiChar(t^.base))
       else
         Tracevv('inflate:         * literal '+ IntToStr(t^.base));
       {$ENDIF}
@@ -238,10 +250,10 @@ begin
 
          {$IFDEF ZLIB_DEBUG}
           if (t^.base >= $20) and (t^.base < $7f) then
-            Tracevv('inflate:         * literal '+char(t^.base))
+            Tracevv('inflate:         * literal '+AnsiChar(t^.base))
           else
             Tracevv('inflate:         * literal '+IntToStr(t^.base));
-          {$ENDIF}            
+          {$ENDIF}
           q^ := Byte(t^.base);
           inc(q);
           dec(m);

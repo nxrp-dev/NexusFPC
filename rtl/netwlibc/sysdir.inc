@@ -20,7 +20,7 @@
 Procedure do_MkDir(const s: rawbytestring);
 var Res: LONGINT;
 BEGIN
-  Res := FpMkdir (pchar(s),S_IRWXU);
+  Res := FpMkdir (PAnsiChar(s),S_IRWXU);
   if Res = 0 then
     InOutRes:=0
   else
@@ -30,7 +30,7 @@ end;
 procedure do_RmDir(const s: rawbytestring);
 var Res: longint;
 begin
-  Res := FpRmdir (pchar(s));
+  Res := FpRmdir (PAnsiChar(s));
   if Res = 0 then
     InOutRes:=0
   else
@@ -50,7 +50,7 @@ end;
 
 
 procedure do_getdir(drivenr : byte;var dir : rawbytestring);
-var P : array [0..255] of CHAR;
+var P : array [0..255] of AnsiChar;
     i : LONGINT;
 begin
   P[0] := #0;
@@ -62,7 +62,7 @@ begin
     Move (P, dir[1], i);
     DoDirSeparators(dir);
     // fix / after volume, the compiler needs that
-    // normaly root of a volumes is SERVERNAME/SYS:, change that
+    // normally root of a volumes is SERVERNAME/SYS:, change that
     // to SERVERNAME/SYS:/
     i := pos (':',dir);
     if (i > 0) then

@@ -27,7 +27,7 @@ procedure ap_init_vhost_config(p: Papr_pool_t);
  external LibHTTPD name LibNamePrefix + 'ap_init_vhost_config' + LibSuff4;
 
 {
- * called after the config has been read to compile the tables needed to do 
+ * called after the config has been read to compile the tables needed to do
  * the run-time vhost lookups
  * @param p The pool to allocate out of
  * @param main_server The start of the virtual host list
@@ -43,7 +43,7 @@ procedure ap_fini_vhost_config(p: Papr_pool_t; main_server: Pserver_rec);
  * @param hostname The hostname in the VirtualHost statement
  * @param s The list of Virtual Hosts.
  }
-//const char *ap_parse_vhost_addrs(apr_pool_t *p, const char *hostname, server_rec *s);
+//const AnsiChar *ap_parse_vhost_addrs(apr_pool_t *p, const AnsiChar *hostname, server_rec *s);
 
 {
  * handle NameVirtualHost directive
@@ -51,8 +51,8 @@ procedure ap_fini_vhost_config(p: Papr_pool_t; main_server: Pserver_rec);
  * @param dummy NOT USED
  * @param arg a host of the form "<address>[:port]"
  }
-//const char *ap_set_name_virtual_host (cmd_parms *cmd, void *dummy,
-//				      const char *arg);
+//const AnsiChar *ap_set_name_virtual_host (cmd_parms *cmd, void *dummy,
+//				      const AnsiChar *arg);
 
 {
  * Callback function for every Name Based Virtual Host.
@@ -81,7 +81,7 @@ function ap_vhost_iterate_given_conn(conn: Pconn_rec;
  external LibHTTPD name LibNamePrefix + 'ap_vhost_iterate_given_conn' + LibSuff12;
 
 {
- * given an ip address only, give our best guess as to what vhost it is 
+ * given an ip address only, give our best guess as to what vhost it is
  * @param conn The current connection
  }
 procedure ap_update_vhost_given_ip(conn: Pconn_rec);
@@ -89,7 +89,7 @@ procedure ap_update_vhost_given_ip(conn: Pconn_rec);
  external LibHTTPD name LibNamePrefix + 'ap_update_vhost_given_ip' + LibSuff4;
 
 {
- * ap_update_vhost_given_ip is never enough, and this is always called after 
+ * ap_update_vhost_given_ip is never enough, and this is always called after
  * the headers have been read.  It may change r->server.
  * @param r The current request
  }
@@ -105,9 +105,9 @@ procedure ap_update_vhost_from_headers(r: Prequest_rec);
  * @param port The port from the headers
  * @return return 1 if the host:port matches any of the aliases of r->server,
  * return 0 otherwise
- * @deffunc int ap_matches_request_vhost(request_rec *r, const char *host, apr_port_t port)
+ * @deffunc int ap_matches_request_vhost(request_rec *r, const AnsiChar *host, apr_port_t port)
  }
-function ap_matches_request_vhost(r: Prequest_rec; const host: PChar;
+function ap_matches_request_vhost(r: Prequest_rec; const host: PAnsiChar;
  port: apr_port_t): Integer;
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF}
  external LibHTTPD name LibNamePrefix + 'ap_matches_request_vhost' + LibSuff12;

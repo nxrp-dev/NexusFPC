@@ -18,11 +18,18 @@
   See the file COPYING.FPC, included in this distribution,
   for details about the copyright.
 }
+{$IFNDEF FPC_DOTTEDUNITS}
 unit chmwriter;
+{$ENDIF FPC_DOTTEDUNITS}
 {$MODE OBJFPC}{$H+}
 
 interface
+
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.Generics.Collections,System.Classes, Chm.Base, Chm.Types, Chm.SpecialFiles, Chm.HtmlIndexer, Chm.Sitemap, System.Contnrs, Fcl.Streams.Extra, Fcl.AVLTree, Chm.Lzx.Compressthread;
+{$ELSE FPC_DOTTEDUNITS}
 uses Generics.Collections,Classes, ChmBase, chmtypes, chmspecialfiles, HtmlIndexer, chmsitemap, contnrs, StreamEx, Avl_Tree, lzxcompressthread;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Const
    DefaultHHC = 'Default.hhc';
@@ -226,7 +233,11 @@ Type
 Function CompareStrings(Node1, Node2: Pointer): integer; // also used in filewriter
 
 implementation
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.DateUtils, System.SysUtils, Chm.Lzx.Compress, Chm.FiftiMain;
+{$ELSE FPC_DOTTEDUNITS}
 uses dateutils, sysutils, paslzxcomp, chmFiftiMain;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   LZX_WINDOW_SIZE = 16; // 16 = 2 frames = 1 shl 16
@@ -548,7 +559,7 @@ begin
   for i := 0 to AWord.DocumentCount-1 do
     Inc(cnt, AWord.GetLogicalDocument(i).NumberOfIndexEntries);
           // was commented in original procedure, seems to list index entries per doc.
-            //WriteLn(AWord.TheWord,'             documents = ', AWord.DocumentCount, ' h
+            //WriteLn(AWord.TheWord,'             documents = ', AWord.DocumentCount);
   pinteger(state)^:=cnt;
 end;
 
@@ -1127,7 +1138,7 @@ end;
 
 procedure TChmWriter.WriteSTRINGS;
 begin
-  if FStringsStream.Size = 0 then;
+  if FStringsStream.Size = 0 then
     FStringsStream.WriteByte(0);
   FStringsStream.Position := 0;
   PostAddStreamToArchive('#STRINGS', '/', FStringsStream);
@@ -1202,13 +1213,13 @@ begin
 
    // 20 The value of the Background param of the "text/site properties" object of the sitemap contents
    if assigned(ftocsm) then
-     FIDXHdrStream.writedwordLE(ftocsm.Backgroundcolor)
+     FIDXHdrStream.writedwordLE(dword(ftocsm.Backgroundcolor))
    else
      FIDXHdrStream.writedwordLE($FFFFFFFF);
 
    // 24 The value of the Foreground param of the "text/site properties" object of the sitemap contents
    if assigned(ftocsm) then
-     FIDXHdrStream.writedwordLE(ftocsm.Foregroundcolor)
+     FIDXHdrStream.writedwordLE(dword(ftocsm.Foregroundcolor))
    else
      FIDXHdrStream.writedwordLE($FFFFFFFF);
 
@@ -1226,7 +1237,7 @@ begin
 
    // 30 The value of the EXWindow Styles param of the "text/site properties" object of the sitemap contents
    if assigned(ftocsm) then
-     FIDXHdrStream.writedwordLE(FTocSm.ExWindowStyles)
+     FIDXHdrStream.writedwordLE(dword(FTocSm.ExWindowStyles))
    else
      FIDXHdrStream.writedwordLE(0);
 
@@ -1571,7 +1582,7 @@ var
   n  : TAVLTreeNode;
   StrRec : TStringIndex;
 begin
-  // #STRINGS starts with a null char
+  // #STRINGS starts with a null AnsiChar
   if FStringsStream.Size = 0 then FStringsStream.WriteByte(0);
 
   SpareString.TheString:=AString;
@@ -1719,7 +1730,7 @@ function TChmWriter.AddTopicindex(ATitle, AnUrl: AnsiString; code: integer
 begin
    ATitle :=StringReplace(Atitle, '&x27;', '', [rfReplaceAll]);
 
-  // adhoc subsitutions. Replace with real code if exact behaviour is known.
+  // adhoc substitutions. Replace with real code if exact behaviour is known.
 {  Atitle:=StringReplace(atitle, '&x27;', '''', [rfReplaceAll]);
   if length(atitle)>0 then
     atitle[1]:=uppercase(atitle[1])[1];}
@@ -1949,8 +1960,8 @@ begin
 end;
 
 Const
-      BinIndexIdent : array[0..1] of char = (CHR($3B),CHR($29));
-      AlwaysX44     : Array[0..15] of char = ('X','4','4',#0,#0,#0,#0,#0,
+      BinIndexIdent : array[0..1] of AnsiChar = (CHR($3B),CHR($29));
+      AlwaysX44     : Array[0..15] of AnsiChar = ('X','4','4',#0,#0,#0,#0,#0,
                                               #0,#0,#0,#0,#0,#0,#0,#0);
       DataEntry     : Array[0..12] of Byte = ($00,$00,$00,$00,$05,$00,$00,$00,$80,$00,$00,$00,$00);
 {
@@ -2049,7 +2060,7 @@ begin
   BlockInd:=0;
   if Indexblocknr>=length(blockn) then
     begin
-      setlength(blockn,length(blockn)+1);  // larger increments also possible. #blocks is kept independantly.
+      setlength(blockn,length(blockn)+1);  // larger increments also possible. #blocks is kept independently.
       fillchar(blockn[0][0],sizeof(blockn[0]),#0);
     end;
   p:=@Blockn[IndexBlockNr];
@@ -2444,7 +2455,7 @@ begin
 
   if totalentries<>0 then
      begin
-       // If there are no links of this type in the CHM then this will be a zero DWORD. Othewise it contains the following DWORDs: 0, 0, 0, 0xC, 1, 1, 0, 0. AFAICS this file is pretty much useless.
+       // If there are no links of this type in the CHM then this will be a zero DWORD. Otherwise it contains the following DWORDs: 0, 0, 0, 0xC, 1, 1, 0, 0. AFAICS this file is pretty much useless.
        // we already have written the first 0 dword
        propertystream.write(NToLE(0),sizeof(longint));
        propertystream.write(NToLE(0),sizeof(longint));

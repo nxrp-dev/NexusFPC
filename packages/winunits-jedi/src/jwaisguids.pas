@@ -42,7 +42,9 @@
 
 // $Id: JwaIsGuids.pas,v 1.6 2007/09/05 11:58:50 dezipaitor Exp $
 {$IFNDEF JWA_OMIT_SECTIONS}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaIsGuids;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 {$ENDIF JWA_OMIT_SECTIONS}
@@ -66,7 +68,7 @@ interface
 // isguids.h - Internet Shortcut GUID definitions.
 //
 // Copyright (c) Microsoft Corporation. All rights reserved.
-// 
+//
 
 const
   CLSID_InternetShortcut: TGUID = (D1:$FBF23B40; D2:$E3F0; D3:$101B; D4:($84, $88, $00, $AA, $00, $3E, $56, $F8));

@@ -27,8 +27,8 @@
 {$endif}
 
 { Using inlining for small system functions/wrappers }
-{$inline on}
 {$ifndef DISABLE_SYSTEMINLINE}
+  {$inline on}
   {$define SYSTEMINLINE}
 {$endif}
 
@@ -365,6 +365,20 @@ Type
   ValUInt = Word;
 {$endif CPU16}
 
+{$if defined(CPUINT8)}
+  ALUSInt = ShortInt;
+  ALUUInt = Byte;
+{$elseif defined(CPUINT16)}
+  ALUSInt = SmallInt;
+  ALUUInt = Word;
+{$elseif defined(CPUINT32)}
+  ALUSInt = Longint;
+  ALUUInt = DWord;
+{$elseif defined(CPUINT64)}
+  ALUSInt = Int64;
+  ALUUInt = QWord;
+{$endif defined(CPUINT64)}
+
   { NativeInt and NativeUInt are Delphi compatibility types. Even though Delphi
     has IntPtr and UIntPtr, the Delphi documentation for NativeInt states that
     'The size of NativeInt is equivalent to the size of the pointer on the
@@ -384,19 +398,32 @@ Type
   UInt32  = Cardinal;
   UIntPtr = PtrUInt;
 
+{$IF DECLARED(AnsiChar)}
+// Compiler defines AnsiChar and WideChar, not AnsiChar
+{$IFDEF UNICODERTL}
+  Char = WideChar;
+{$ElSE}
+  Char = AnsiChar;
+{$ENDIF}
+
+{$ELSE}
+  // Compiler defines Char, we make AnsiChar an alias
+  AnsiChar = char;
+{$ENDIF}
+
 { Zero - terminated strings }
+  // Ansichar is the basic type
+  TAnsiChar           = AnsiChar;
+  PAnsiChar           = ^AnsiChar;
+  PPAnsiChar          = ^PAnsiChar;
+  PPPAnsiChar         = ^PPAnsiChar;
+
+  // Char is an alias
   PChar               = ^Char;
   PPChar              = ^PChar;
   PPPChar             = ^PPChar;
 
-  { AnsiChar is equivalent of Char, so we need
-    to use type renamings }
-  TAnsiChar           = Char;
-  AnsiChar            = Char;
-  PAnsiChar           = PChar;
-  PPAnsiChar          = PPChar;
-
-  UCS4Char            = type 0..$10ffff;
+  UCS4Char            = 0..$10ffff;
   PUCS4Char           = ^UCS4Char;
 {$ifdef CPU16}
   TUCS4CharArray      = array[0..32767 div sizeof(UCS4Char)-1] of UCS4Char;
@@ -406,18 +433,9 @@ Type
   PUCS4CharArray      = ^TUCS4CharArray;
   UCS4String          = array of UCS4Char;
 
-{$ifdef FPC_HAS_CPSTRING}
   UTF8String          = type AnsiString(CP_UTF8);
-{$else FPC_HAS_CPSTRING}
-  UTF8String          = type ansistring;
-{$endif FPC_HAS_CPSTRING}
   PUTF8String         = ^UTF8String;
-
-{$ifdef FPC_HAS_CPSTRING}
   RawByteString       = type AnsiString(CP_NONE);
-{$else FPC_HAS_CPSTRING}
-  RawByteString       = ansistring;
-{$endif FPC_HAS_CPSTRING}
 
   HRESULT             = type Longint;
 {$ifndef FPUNONE}
@@ -583,9 +601,9 @@ type
   TBoundArray = array of SizeInt;
 (*
 {$ifdef CPU16}
-  TPCharArray = packed array[0..(MaxSmallint div SizeOf(PChar))-1] of PChar;
+  TPCharArray = packed array[0..(MaxSmallint div SizeOf(PAnsiChar))-1] of PAnsiChar;
 {$else CPU16}
-  TPCharArray = packed array[0..(MaxLongint div SizeOf(PChar))-1] of PChar;
+  TPCharArray = packed array[0..(MaxLongint div SizeOf(PAnsiChar))-1] of PAnsiChar;
 {$endif CPU16}
   PPCharArray = ^TPCharArray;
 *)
@@ -672,9 +690,9 @@ const
 var
 {$endif FPC_HAS_FEATURE_DYNLIBS}
   IsConsole : boolean = false; public name 'operatingsystem_isconsole';
-  NoErrMsg: Boolean platform = False; // For Delphi compatibility, not used in FPC.
+  NoErrMsg: Boolean platform = False;
   FirstDotAtFileNameStartIsExtension : Boolean = False;
-  
+
   DefaultSystemCodePage,
   DefaultUnicodeCodePage,
   { the code page to use when sending paths/file names to OS file system API
@@ -690,7 +708,7 @@ var
 (*
 {$ifndef HAS_CMDLINE}
 {Value should be changed during system initialization as appropriate.}
-var cmdline:Pchar=nil;
+var cmdline:PAnsiChar=nil;
 {$endif}
 *)
 

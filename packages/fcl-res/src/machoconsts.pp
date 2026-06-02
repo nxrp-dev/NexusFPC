@@ -13,20 +13,27 @@
 
  **********************************************************************}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit machoconsts;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$MODE OBJFPC}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Resources.Macho.Types;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   machotypes;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   DataSegName     : TSegSectName = '__DATA'+#0+#0+#0+#0+#0+#0+#0+#0+#0+#0;
   RsrcSectName    : TSegSectName = 'fpc.resources'+#0+#0+#0;
   HandlesSectName : TSegSectName = 'fpc.reshandles'+#0+#0;
-  
+
   //private constants used by reader and writer only, not apple-defined
   MACH_BIG_ENDIAN = 1;
   MACH_LITTLE_ENDIAN = 2;
@@ -132,7 +139,7 @@ const
   LC_SEGMENT_64     = $19;   // 64-bit segment of this file to be mapped
   LC_ROUTINES_64    = $1a;   // 64-bit image routines
   LC_UUID           = $1b;   // the uuid
-  
+
   //Segment: virtual memory protection
   VM_PROT_NONE       = $00;
   VM_PROT_READ       = $01;                // read permission
@@ -143,12 +150,12 @@ const
   VM_PROT_NO_CHANGE  = $08;
   VM_PROT_COPY       = $10;
   VM_PROT_WANTS_COPY = $10;
-  
+
   //Segment flags
   SG_HIGHVM  = $01;
   SG_FVMLIB  = $02;
   SG_NORELOC = $04;
-  
+
   //Section type and attributes masks
   SECTION_TYPE       = $000000ff;    // 256 section types
   SECTION_ATTRIBUTES = $ffffff00;    //  24 section attributes
@@ -195,7 +202,7 @@ const
   N_INDR = $a;             // indirect
 
   NO_SECT = $0;            // symbol is not in any section
-  
+
   //Relocations: masks for flag
   R_SYMBOLNUM_BE = $FFFFFF00;
   R_PCREL_BE     = $00000080;

@@ -59,7 +59,9 @@
     XML_FROM_WRITER,	(* The xmlwriter module *)
     XML_FROM_MODULE,	(* The dynamically loaded module module*)
     XML_FROM_I18N, 	(* The module handling character conversion *)
-    XML_FROM_SCHEMATRONV	(* The Schematron validator module *)
+    XML_FROM_SCHEMATRONV,	(* The Schematron validator module *)
+    XML_FROM_BUFFER,    (* The buffers module *)
+    XML_FROM_URI        (* The URI module *)
   );
 
 (**
@@ -70,13 +72,13 @@
   xmlError = record
     domain    : cint;	(* What part of the library raised this error *)
     code      : cint;	(* The error code, e.g. an xmlParserError *)
-    message   : pchar;(* human-readable informative error message *)
+    message   : PAnsiChar;(* human-readable informative error message *)
     level     : xmlErrorLevel;(* how consequent is the error *)
-    _file     : pchar;	(* the filename *)
+    _file     : PAnsiChar;	(* the filename *)
     line      : cint;	(* the line number if available *)
-    str1      : pchar;	(* extra string information *)
-    str2      : pchar;	(* extra string information *)
-    str3      : pchar;	(* extra string information *)
+    str1      : PAnsiChar;	(* extra string information *)
+    str2      : PAnsiChar;	(* extra string information *)
+    str3      : PAnsiChar;	(* extra string information *)
     int1      : cint;	(* extra number information *)
     int2      : cint;	(* column number of the error or 0 if N/A (todo: rename this field when we would break ABI) *)
     ctxt      : pointer;   (* the parser context if available *)
@@ -197,11 +199,16 @@
     XML_ERR_NOTATION_PROCESSING, (* 105 *)
     XML_WAR_NS_COLUMN, (* 106 *)
     XML_WAR_ENTITY_REDEFINED, (* 107 *)
+    XML_ERR_UNKNOWN_VERSION, (* 108 *)
+    XML_ERR_VERSION_MISMATCH, (* 109 *)
+    XML_ERR_NAME_TOO_LONG, (* 110 *)
+    XML_ERR_USER_STOP, (* 111 *)
     XML_NS_ERR_XML_NAMESPACE = 200,
     XML_NS_ERR_UNDEFINED_NAMESPACE, (* 201 *)
     XML_NS_ERR_QNAME, (* 202 *)
     XML_NS_ERR_ATTRIBUTE_REDEFINED, (* 203 *)
     XML_NS_ERR_EMPTY, (* 204 *)
+    XML_NS_ERR_COLON, (* 205 *)
     XML_DTD_ATTRIBUTE_DEFAULT = 500,
     XML_DTD_ATTRIBUTE_REDEFINED, (* 501 *)
     XML_DTD_ATTRIBUTE_VALUE, (* 502 *)
@@ -243,6 +250,7 @@
     XML_DTD_STANDALONE_DEFAULTED, (* 538 *)
     XML_DTD_XMLID_VALUE, (* 539 *)
     XML_DTD_XMLID_TYPE, (* 540 *)
+    XML_DTD_DUP_TOKEN, (* 541 *)
     XML_HTML_STRUCURE_ERROR = 800,
     XML_HTML_UNKNOWN_TAG, (* 801 *)
     XML_RNGP_ANYNAME_ATTR_ANCESTOR = 1000,
@@ -815,10 +823,8 @@
     XML_I18N_NO_HANDLER, (* 6001 *)
     XML_I18N_EXCESS_HANDLER, (* 6002 *)
     XML_I18N_CONV_FAILED, (* 6003 *)
-    XML_I18N_NO_OUTPUT (* 6004 *)
-//    XML_CHECK_, (* 5033 *)
-//    XML_CHECK_X (* 503 *)
-  );
+    XML_I18N_NO_OUTPUT, (* 6004 *)
+    XML_BUF_OVERFLOW = 7000  );
 
 (**
  * xmlGenericErrorFunc:
@@ -829,7 +835,7 @@
  * Signature of the function to use when there is an error and
  * no parsing or validity context available .
  *)
-  xmlGenericErrorFunc = procedure(ctx: pointer; msg: pchar); cdecl; varargs;
+  xmlGenericErrorFunc = procedure(ctx: pointer; msg: PAnsiChar); cdecl; varargs;
 
 (**
  * xmlStructuredErrorFunc:
@@ -856,10 +862,10 @@ procedure xmlSetStructuredErrorFunc(ctx: pointer; handler: xmlStructuredErrorFun
  * Default message routines used by SAX and Valid context for error
  * and warning reporting.
  *)
-procedure xmlParserError(ctx: pointer; msg: pchar; args: array of const); EXTDECL; external xml2lib;
-procedure xmlParserWarning(ctx: pointer; msg: pchar; args: array of const); EXTDECL; external xml2lib;
-procedure xmlParserValidityError(ctx: pointer; msg: pchar; args: array of const); EXTDECL; external xml2lib;
-procedure xmlParserValidityWarning(ctx: pointer; msg: pchar; args: array of const); EXTDECL; external xml2lib;
+procedure xmlParserError(ctx: pointer; msg: PAnsiChar; args: array of const); EXTDECL; external xml2lib;
+procedure xmlParserWarning(ctx: pointer; msg: PAnsiChar; args: array of const); EXTDECL; external xml2lib;
+procedure xmlParserValidityError(ctx: pointer; msg: PAnsiChar; args: array of const); EXTDECL; external xml2lib;
+procedure xmlParserValidityWarning(ctx: pointer; msg: PAnsiChar; args: array of const); EXTDECL; external xml2lib;
 procedure xmlParserPrintFileInfo(input: xmlParserInputPtr); EXTDECL; external xml2lib;
 procedure xmlParserPrintFileContext(input: xmlParserInputPtr); EXTDECL; external xml2lib;
 
@@ -871,7 +877,7 @@ procedure xmlResetLastError; EXTDECL; external xml2lib;
 function xmlCtxtGetLastError(ctx: pointer): xmlErrorPtr; EXTDECL; external xml2lib;
 procedure xmlCtxtResetLastError(ctx: pointer); EXTDECL; external xml2lib;
 procedure xmlResetError(err: xmlErrorPtr); EXTDECL; external xml2lib;
-function xmlResetError(from, _to: xmlErrorPtr): cint; EXTDECL; external xml2lib;
+function xmlCopyError(from, _to: xmlErrorPtr): cint; EXTDECL; external xml2lib;
 
 (*
  * Internal callback reporting routine
@@ -885,14 +891,14 @@ procedure __xmlRaiseError(
   domain: cint;
   code: cint;
   level: xmlErrorLevel;
-  _file: pchar;
+  _file: PAnsiChar;
   line: cint;
-  str1: pchar;
-  str2: pchar;
-  str3: pchar;
+  str1: PAnsiChar;
+  str2: PAnsiChar;
+  str3: PAnsiChar;
   int1: cint;
   col: cint;
-  msg: pchar;
+  msg: PAnsiChar;
   args: array of const
 ); EXTDECL; external xml2lib;
 
@@ -900,7 +906,65 @@ procedure __xmlSimpleError(
   domain: cint;
   code: cint;
   node: xmlNodePtr;
-  msg: pchar;
-  extra: pchar
+  msg: PAnsiChar;
+  extra: PAnsiChar
 ); EXTDECL; external xml2lib;
+{$ENDIF}
+
+{$IFDEF FUNCTIONVAR}
+  xmlSetGenericErrorFunc: procedure(ctx: pointer; handler: xmlGenericErrorFunc); EXTDECL;
+  initGenericErrorDefaultFunc: procedure(var handler: xmlGenericErrorFunc); EXTDECL;
+  xmlSetStructuredErrorFunc: procedure(ctx: pointer; handler: xmlStructuredErrorFunc); EXTDECL;
+
+(*
+ * Default message routines used by SAX and Valid context for error
+ * and warning reporting.
+ *)
+  xmlParserError: procedure(ctx: pointer; msg: PAnsiChar; args: array of const); EXTDECL;
+  xmlParserWarning: procedure(ctx: pointer; msg: PAnsiChar; args: array of const); EXTDECL;
+  xmlParserValidityError: procedure(ctx: pointer; msg: PAnsiChar; args: array of const); EXTDECL;
+  xmlParserValidityWarning: procedure(ctx: pointer; msg: PAnsiChar; args: array of const); EXTDECL;
+  xmlParserPrintFileInfo: procedure(input: xmlParserInputPtr); EXTDECL;
+  xmlParserPrintFileContext: procedure(input: xmlParserInputPtr); EXTDECL;
+
+(*
+ * Extended error information routines
+ *)
+  xmlGetLastError: function: xmlErrorPtr; EXTDECL;
+  xmlResetLastError: procedure; EXTDECL;
+  xmlCtxtGetLastError: function(ctx: pointer): xmlErrorPtr; EXTDECL;
+  xmlCtxtResetLastError: procedure(ctx: pointer); EXTDECL;
+  xmlResetError: procedure(err: xmlErrorPtr); EXTDECL;
+  xmlCopyError: function(from, _to: xmlErrorPtr): cint; EXTDECL;
+
+(*
+ * Internal callback reporting routine
+ *)
+  __xmlRaiseError: procedure(
+    schannel: xmlStructuredErrorFunc;
+    channel: xmlGenericErrorFunc;
+    data: pointer;
+    ctx: pointer;
+    node: pointer;
+    domain: cint;
+    code: cint;
+    level: xmlErrorLevel;
+    _file: PAnsiChar;
+    line: cint;
+    str1: PAnsiChar;
+    str2: PAnsiChar;
+    str3: PAnsiChar;
+    int1: cint;
+    col: cint;
+    msg: PAnsiChar;
+    args: array of const
+  ); EXTDECL;
+
+  __xmlSimpleError: procedure(
+    domain: cint;
+    code: cint;
+    node: xmlNodePtr;
+    msg: PAnsiChar;
+    extra: PAnsiChar
+  ); EXTDECL;
 {$ENDIF}

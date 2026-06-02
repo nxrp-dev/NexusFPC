@@ -1,3 +1,4 @@
+{%MainUnit classes.pp}
 {
     This file is part of the Free Component Library (FCL)
     Copyright (c) 1999-2000 by the Free Pascal development team
@@ -44,6 +45,8 @@ end;
 
 function TBasicActionLink.Execute(AComponent: TComponent): Boolean;
 begin
+  if not Assigned(FAction) then
+    exit;
   FAction.ActionComponent := AComponent;
   try
     Result := FAction.Execute;
@@ -78,7 +81,10 @@ end;
 
 function TBasicActionLink.Update: Boolean;
 begin
-  Result := FAction.Update;
+  if Assigned(Faction) then
+    Result := FAction.Update
+  else
+    Result:=False;
 end;
 
 {****************************************************************************}
@@ -140,6 +146,11 @@ begin
    Result := False;
 end;
 
+function TBasicAction.Suspended: Boolean;
+begin
+  Result:=False;
+end;
+
 
 procedure TBasicAction.SetOnExecute(Value: TNotifyEvent);
 var
@@ -155,11 +166,40 @@ begin
   end;
 end;
 
+function TBasicAction.ClientCount: Integer;
+begin
+  Result:=FClients.Count;
+end;
+
+function TBasicAction.GetClient(Idx: Integer): TObject;
+begin
+  Result:=TObject(FClients[Idx]);
+end;
+
+procedure TBasicAction.SetActionComponent(AValue: TComponent);
+begin
+  if FActionComponent=AValue then Exit;
+  if Assigned(FActionComponent) then
+     FActionComponent.RemoveFreeNotification(Self);
+  FActionComponent:=AValue;
+  if Assigned(FActionComponent) then
+     FActionComponent.FreeNotification(Self);
+end;
 
 procedure TBasicAction.Change;
 begin
   if Assigned(FOnChange) then
     FOnChange(Self);
+end;
+
+procedure TBasicAction.Notification(AComponent: TComponent;
+  Operation: TOperation);
+begin
+  inherited Notification(AComponent, Operation);
+  if (Operation<>OpRemove) then
+    exit;
+  if (AComponent=FActionComponent) then
+    FActionComponent:=nil;
 end;
 
 

@@ -16,7 +16,9 @@
   Abstract:
     Low level file path handling.
 }
+{$IFNDEF FPC_DOTTEDUNITS}
 unit Pas2jsFileUtils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
@@ -24,6 +26,16 @@ unit Pas2jsFileUtils;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  {$IFDEF Unix}
+  UnixApi.Base,
+  {$ENDIF}
+  {$IFDEF Pas2JS}
+  JS, NodeJS, Node.FS,
+  {$ENDIF}
+  System.SysUtils, System.Classes, Pas2Js.Utils;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   {$IFDEF Unix}
   BaseUnix,
@@ -32,6 +44,7 @@ uses
   JS, NodeJS, Node.FS,
   {$ENDIF}
   SysUtils, Classes, Pas2JSUtils;
+{$ENDIF FPC_DOTTEDUNITS}
 
 function FilenameIsAbsolute(const aFilename: string):boolean;
 function FilenameIsWinAbsolute(const aFilename: string):boolean;
@@ -71,54 +84,24 @@ function GetEnvironmentVariableCountPJ: Integer;
 function GetEnvironmentStringPJ(Index: Integer): string;
 function GetEnvironmentVariablePJ(const EnvVar: string): String;
 
-function GetNextDelimitedItem(const List: string; Delimiter: char;
+function GetNextDelimitedItem(const List: string; Delimiter: Char;
                               var Position: integer): string;
 
 type TChangeStamp = SizeInt;
 const InvalidChangeStamp = low(TChangeStamp);
 procedure IncreaseChangeStamp(var Stamp: TChangeStamp);
 
-const
-  EncodingUTF8 = 'UTF-8';
-  EncodingSystem = 'System';
-function NormalizeEncoding(const Encoding: string): string;
-function IsNonUTF8System: boolean;// true if system encoding is not UTF-8
-function GetDefaultTextEncoding: string;
-function GetConsoleTextEncoding: string;
-{$IFDEF Windows}
-// AConsole - If false, it is the general system encoding,
-//            if true, it is the console encoding
-function GetWindowsEncoding(AConsole: Boolean = False): string;
-{$ENDIF}
-{$IF defined(Unix) and not defined(Darwin)}
-function GetUnixEncoding: string;
-{$ENDIF}
-function IsASCII(const s: string): boolean; inline;
-
-{$IFDEF FPC_HAS_CPSTRING}
-function UTF8ToSystemCP(const s: string): string;
-function SystemCPToUTF8(const s: string): string;
-
-function ConsoleToUTF8(const s: string): string;
-// converts UTF8 string to console encoding (used by Write, WriteLn)
-function UTF8ToConsole(const s: string): string;
-{$ENDIF FPC_HAS_CPSTRING}
 
 implementation
 
 {$IFDEF Windows}
+{$IFDEF FPC_DOTTEDUNITS}
+uses WinApi.Windows;
+{$ELSE FPC_DOTTEDUNITS}
 uses Windows;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF}
 
-var
-  EncodingValid: boolean = false;
-  DefaultTextEncoding: string = EncodingSystem;
-  {$IFDEF Unix}
-  {$IFNDEF Darwin}
-  Lang: string = '';
-  {$ENDIF}
-  {$ENDIF}
-  NonUTF8System: boolean = {$IFDEF FPC_HAS_CPSTRING}false{$ELSE}true{$ENDIF};
 
 function FilenameIsWinAbsolute(const aFilename: string): boolean;
 begin
@@ -451,7 +434,7 @@ end;
   end;
 
 var SrcPos, DestPos, Len, DirStart: integer;
-  c: char;
+  c: Char;
   MacroPos: LongInt;
 begin
   Len:=length(AFilename);
@@ -757,12 +740,12 @@ begin
 end;
 {$ELSE}
 
-  function IsNameEnd(NameP: PChar): boolean; inline;
+  function IsNameEnd(NameP: PAnsiChar): boolean; inline;
   begin
-    Result:=(NameP^=#0) and (NameP-PChar(Name)=length(Name));
+    Result:=(NameP^=#0) and (NameP-PAnsiChar(Name)=length(Name));
   end;
 
-  function Check(MaskP, NameP: PChar): boolean;
+  function Check(MaskP, NameP: PAnsiChar): boolean;
   var
     c: Integer;
   begin
@@ -804,24 +787,24 @@ end;
   end;
 
 var
-  MaskP: PChar;
+  MaskP: PAnsiChar;
 begin
   if Mask='' then exit(Name='');
   {$IFDEF CaseInsensitiveFilenames}
   Mask:=AnsiLowerCase(Mask);
   Name:=AnsiLowerCase(Name);
   {$ENDIF}
-  MaskP:=PChar(Mask);
+  MaskP:=PAnsiChar(Mask);
   while (MaskP^='*') and (MaskP[1]='*') do inc(MaskP);
   if (MaskP^='*') and (MaskP[1]=#0) then
     exit(true); // the * mask fits all, even the empty string
   if Name='' then
     exit(false);
-  Result:=Check(MaskP,PChar(Name));
+  Result:=Check(MaskP,PAnsiChar(Name));
 end;
 {$ENDIF}
 
-function GetNextDelimitedItem(const List: string; Delimiter: char;
+function GetNextDelimitedItem(const List: string; Delimiter: Char;
   var Position: integer): string;
 var
   StartPos: Integer;
@@ -833,7 +816,6 @@ begin
   if Position<=length(List) then inc(Position); // skip Delimiter
 end;
 
-
 procedure IncreaseChangeStamp(var Stamp: TChangeStamp);
 begin
   if Stamp<High(TChangeStamp) then
@@ -842,79 +824,6 @@ begin
     Stamp:=InvalidChangeStamp+1;
 end;
 
-function IsNonUTF8System: boolean;
-begin
-  Result:=NonUTF8System;
-end;
-
-function GetDefaultTextEncoding: string;
-begin
-  if EncodingValid then
-  begin
-    Result:=DefaultTextEncoding;
-    exit;
-  end;
-
-  {$IFDEF Pas2js}
-  Result:=EncodingUTF8;
-  {$ELSE}
-    {$IFDEF Windows}
-    Result:=GetWindowsEncoding;
-    {$ELSE}
-      {$IFDEF Darwin}
-      Result:=EncodingUTF8;
-      {$ELSE}
-      // unix
-      Lang := GetEnvironmentVariable('LC_ALL');
-      if Lang='' then
-      begin
-        Lang := GetEnvironmentVariable('LC_MESSAGES');
-        if Lang='' then
-          Lang := GetEnvironmentVariable('LANG');
-      end;
-      Result:=GetUnixEncoding;
-      {$ENDIF}
-    {$ENDIF}
-  {$ENDIF}
-  Result:=NormalizeEncoding(Result);
-
-  DefaultTextEncoding:=Result;
-  EncodingValid:=true;
-end;
-
-function NormalizeEncoding(const Encoding: string): string;
-var
-  i: Integer;
-begin
-  Result:=LowerCase(Encoding);
-  for i:=length(Result) downto 1 do
-    if Result[i]='-' then Delete(Result,i,1);
-end;
-
-function IsASCII(const s: string): boolean; inline;
-{$IFDEF Pas2js}
-var
-  i: Integer;
-begin
-  for i:=1 to length(s) do
-    if s[i]>#127 then exit(false);
-  Result:=true;
-end;
-{$ELSE}
-var
-  p: PChar;
-begin
-  if s='' then exit(true);
-  p:=PChar(s);
-  repeat
-    case p^ of
-    #0: if p-PChar(s)=length(s) then exit(true);
-    #128..#255: exit(false);
-    end;
-    inc(p);
-  until false;
-end;
-{$ENDIF}
 
 {$IFDEF Unix}
   {$I pas2jsfileutilsunix.inc}
@@ -926,29 +835,19 @@ end;
   {$I pas2jsfileutilsnodejs.inc}
 {$ENDIF}
 
-procedure InternalInit;
-begin
-  {$IFDEF FPC_HAS_CPSTRING}
-  SetMultiByteConversionCodePage(CP_UTF8);
-  // SetMultiByteFileSystemCodePage(CP_UTF8); not needed, this is the default under Windows
-  SetMultiByteRTLFileSystemCodePage(CP_UTF8);
+{$IFDEF CPUWASM}
+  {$I pas2jsfileutilswasm.inc}
+{$ENDIF}
 
-  GetDefaultTextEncoding;
-  {$IFDEF Windows}
-  NonUTF8System:=true;
-  {$ELSE}
-  NonUTF8System:=SysUtils.CompareText(DefaultTextEncoding,'UTF8')<>0;
-  {$ENDIF}
-  {$ENDIF}
-
-  InitPlatform;
-end;
-
+{$IFDEF HAVE_INITPLATFORM}
 initialization
-  InternalInit;
-{$IFDEF FPC}
+  InitPlatform;
+{$ENDIF}
+
+{$IFDEF HAVE_FINALIZEPLATFORM}
 finalization
   FinalizePlatform;
 {$ENDIF}
+
 end.
 

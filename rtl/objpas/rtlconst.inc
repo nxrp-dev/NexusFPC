@@ -12,9 +12,15 @@
 
  **********************************************************************}
 {$mode objfpc}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit RtlConsts;
+{$ENDIF}
 
 interface
+
+Const
+  SEmpty : string = 'Empty';
+  SMenuSeparator: string = '-';
 
 ResourceString
 
@@ -31,6 +37,8 @@ ResourceString
   SAllButton                    = '&All';
   SAllFilter                    = 'All files';
   SAncestorNotFound             = 'Ancestor class for "%s" not found';
+  SArgumentInvalid              = 'Invalid argument';
+  SArgumentNil                  = 'Argument must not be nil';
   SAssignError                  = 'Cannot assign a %s to a %s';
   SAsyncSocketError             = 'Asynchronous socket error: %d';
   SBG                           = 'BG';
@@ -165,6 +173,7 @@ ResourceString
   SInvalidImage                 = 'Invalid stream format';
   SInvalidImageList             = 'Invalid ImageList';
   SInvalidImageSize             = 'Invalid image size';
+  SInvalidKnownFilename         = 'Invalid filename - %s';
   SInvalidMask                  = '"%s" is not a valid mask at (%d)';
   SInvalidMemoSize              = 'Text larger than memo capacity';
   SInvalidMetafile              = 'Invalid Metafile';
@@ -269,10 +278,11 @@ ResourceString
   SSocketRead                   = 'Read';
   SSocketWrite                  = 'Write';
   SSortedListError              = 'Operation not allowed on sorted list';
-  SStreamInvalidSeek            = 'Invalid stream operation %s.Seek';   
+  SStreamInvalidSeek            = 'Invalid stream operation %s.Seek';
   SStreamNoReading              = 'Reading from %s is not supported';
   SStreamNoWriting              = 'Writing to %s is not supported';
   SStreamSetSize                = 'Error setting stream size';
+  SCantWriteAggregateStreamError= 'Can''t write to a read-only aggregate stream';
   SStringExpected               = 'String expected';
   SSymbolExpected               = '%s expected';
   SThreadCreateError            = 'Thread creation error: %s';
@@ -315,7 +325,7 @@ ResourceString
   SErrCannotReadProperty        = 'Cannot read property "%s"';
   SErrNoNameValuePairAt         = 'No name=value pair at position %d';
   SErrCannotConvertNullToType   = 'Cannot convert Null to type %s';
-  
+
 { ---------------------------------------------------------------------
     Keysim Names
   ---------------------------------------------------------------------}
@@ -565,6 +575,22 @@ ResourceString
   SMsgDlgYes = '&Yes';
   SMsgDlgYesToAll = 'Yes to a&ll';
 
+  // Constants for Delphi compatibility
+  sAttributeExists = 'Attribute ''%s'' already exists';
+  sDeviceExists = 'Device ''%s'' already exists';
+  sCannotManuallyConstructDevice = 'Manual construction of TDeviceInfo is not supported';
+  SArgumentOutOfRange = 'Argument out of range';
+  StrNoClientClass = 'The client cannot be an instance of the class %s';
+  SListIndexErrorExt = 'List index out of bounds (%0:d).  %2:s object range is 0..%1:d';
+  StrEActionNoSuported = 'Class %s does not support the action';
+
+  { Classes observer support }
+  SErrNotIObserverInterface = 'Interface is not an IObserver interface';
+  SErrUnsupportedObserver = 'Observer type not supported';
+  SErrOnlyOneEditingObserverAllowed = 'Only one editing link observer is allowed';
+  SErrObserverNoSinglecast = 'No singlecast observer interface found';
+  SerrObserverNoMulticastFound = 'No multicast observer interface (%d) found';
+  SErrObserverNotAvailable = 'Observer type (%d) not available';
 
 implementation
 

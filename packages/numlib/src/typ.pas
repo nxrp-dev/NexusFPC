@@ -28,7 +28,7 @@ In the FPC revision, instead of picking a certain floating point type,
  the type you want.
  However for IEEE Double (64bit) and Extended(80bit) these constants are
  already defined, and autoselected by the library. (the library tests the
- size of the float type in bytes for 8 and 10 and picks the appropiate
+ size of the float type in bytes for 8 and 10 and picks the appropriate
  constants
 
 Also some stuff had to be added to get ipf running (vector object and
@@ -38,7 +38,9 @@ complex.inp and scale methods)
 {$mode objfpc}{$H+}
 {$modeswitch nestedprocvars}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit typ;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$I DIRECT.INC}                 {Contains "global" compilerswitches which
                                   are imported into every unit of the library }
@@ -46,8 +48,13 @@ unit typ;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Math;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Math;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$if sizeof(extended)=10}
 {$DEFINE ArbExtended}
@@ -209,7 +216,7 @@ const
 
 type
      {Definition of matrix types in NumLib. First some vectors.
-      The high boundery is a maximal number only. Vectors can be smaller, but
+      The high boundary is a maximal number only. Vectors can be smaller, but
       not bigger. The difference is the starting number}
      arfloat0   = array[0..highestfloatelement-1] of ArbFloat;
      arfloat1   = array[1..highestfloatelement] of ArbFloat;
@@ -257,7 +264,7 @@ Function Re(z: complex): ArbFloat;
 Function Im(z: complex): ArbFloat;
 
 { Creates a string from a floatingpoint value}
-Function R2S(x: ArbFloat; p, q: integer): string;
+Function R2S(x: ArbFloat; p, q: integer): ShortString;
 
 {Calculate inproduct of V1 and V2, which are vectors with N elements;
 I1 and I2 are the SIZEOF the datatypes of V1 and V2
@@ -297,8 +304,8 @@ begin
   Im := z.imag
 end;
 
-{Kind of Sysutils.TrimRight and TrimLeft called after eachother}
-procedure Compress(var s: string);
+{Kind of Sysutils.TrimRight and TrimLeft called after each other}
+procedure Compress(var s: ShortString);
 var i, j: LONGINT;
 begin
      j := length(s);
@@ -308,8 +315,8 @@ begin
      s := copy(s, i, j+1-i)
 end;
 
-Function R2S(x: ArbFloat; p, q: integer): string;
-var s: string;
+Function R2S(x: ArbFloat; p, q: integer): ShortString;
+var s: ShortString;
     i, j, k: integer;
 begin
    if q=-1 then

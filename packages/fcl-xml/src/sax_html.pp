@@ -27,11 +27,17 @@
 {$mode objfpc}
 {$H+}
 
+{$IFNDEF FPC_DOTTEDUNITS}
 unit SAX_HTML;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
-uses SysUtils, Classes, SAX, DOM, DOM_HTML,htmldefs,xmlutils;
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.SysUtils, System.Classes, Xml.Sax, Xml.Dom, Html.Dom, Html.Defs,Xml.Utils, Xml.Reader;
+{$ELSE FPC_DOTTEDUNITS}
+uses SysUtils, Classes, SAX, DOM, DOM_HTML,htmldefs,xmlutils, XmlReader;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
 
@@ -56,7 +62,7 @@ type
     FRawTokenText: string;
     FScriptEndTag: string;
     FScriptEndMatchPos: Integer;
-    FCurStringValueDelimiter: Char;
+    FCurStringValueDelimiter: AnsiChar;
     FAttrNameRead: Boolean;
     FStack: array of THTMLElementTag;
     FNesting: Integer;
@@ -69,7 +75,7 @@ type
     constructor Create;
     destructor Destroy; override;
 
-    procedure Parse(AInput: TSAXInputSource); override; overload;
+    procedure Parse(AInput: TXmlInputSource); override; overload;
 
     property EndOfStream: Boolean read FEndOfStream;
     property ScannerContext: THTMLScannerContext read FScannerContext;
@@ -108,6 +114,7 @@ type
     constructor Create(AReader: THTMLReader; ADocument: TDOMDocument);
     constructor CreateFragment(AReader: THTMLReader; AFragmentRoot: TDOMNode);
     destructor Destroy; override;
+    Property Document : TDOMDocument Read FDocument;
   end;
 
 
@@ -154,14 +161,14 @@ begin
   end;
 end;
 
-procedure THTMLReader.Parse(AInput: TSAXInputSource);
+procedure THTMLReader.Parse(AInput: TXmlInputSource);
 const
   MaxBufferSize = 1024;
 var
-  Buffer: array[0..MaxBufferSize - 1] of Char;
+  Buffer: array[0..MaxBufferSize - 1] of AnsiChar;
   BufferSize, BufferPos: Integer;
   len: Integer;
-  ch: Char;
+  ch: AnsiChar;
 begin
   if not FStarted then
   begin
@@ -283,6 +290,13 @@ begin
                   EnterNewScannerContext(scUnknown);
               end;
             '<':    // either an unclosed tag or unescaped '<' in text; attempt recovery
+              if FCurStringValueDelimiter <> #0 then
+              begin
+                // Inside quoted attribute value - treat '<' as literal character
+                FRawTokenText := FRawTokenText + Buffer[BufferPos];
+                Inc(BufferPos);
+              end
+              else
               begin
                 // TODO: this check is hardly complete, probably must also check if
                 // tag name is followed by legal attributes.
@@ -775,6 +789,7 @@ begin
     Converter := THTMLToDOMConverter.Create(Reader, ADoc);
     try
       Reader.ParseStream(f);
+      Converter.Document.RebuildIDList;
     finally
       Converter.Free;
     end;
@@ -805,6 +820,10 @@ begin
     Converter := THTMLToDOMConverter.CreateFragment(Reader, AParentNode);
     try
       Reader.ParseStream(f);
+      if aParentNode is TDOMElement then
+        Converter.Document.RebuildIDsOfElement(aParentNode as TDOMElement)
+      else
+        Converter.Document.RebuildIDList;
     finally
       Converter.Free;
     end;

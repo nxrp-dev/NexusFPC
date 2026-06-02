@@ -14,7 +14,9 @@
 
  **********************************************************************}
 {$mode objfpc}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit cpu;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$ifdef symbian}
   {$define NO_ELF_SUPPORT}
@@ -57,11 +59,11 @@ unit cpu;
 
     procedure InitHWCaps;
       var
-        ep: PPChar;
+        ep: PPAnsiChar;
         auxv: PElf32AuxiliaryVector;
       begin
         psysinfo := 0;
-{$ifndef NO_ELF_SUPPORT} 
+{$ifndef NO_ELF_SUPPORT}
         ep := envp;
         while ep^ <> nil do
           Inc(ep);
@@ -80,7 +82,7 @@ unit cpu;
             end;
             Inc(auxv);
           end;
-{$endif ndef NO_ELF_SUPPORT} 
+{$endif ndef NO_ELF_SUPPORT}
       end;
 
 

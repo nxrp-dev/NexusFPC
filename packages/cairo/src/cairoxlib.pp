@@ -1,9 +1,11 @@
+{$IFNDEF FPC_DOTTEDUNITS}
 unit CairoXlib;
+{$ENDIF FPC_DOTTEDUNITS}
 {
     This file is part of the Free Pascal libraries.
     Copyright (c) 2003-2008 by the Free Pascal development team
 
-    Translation of cairo-ft.h 
+    Translation of cairo-ft.h
 
     See the file COPYING.FPC, included in this distribution,
     for details about the copyright.
@@ -15,9 +17,9 @@ unit CairoXlib;
  **********************************************************************
 
  Translation of cairo-xlib.h version 1.4
- by Jeffrey Pohlmeyer 
+ by Jeffrey Pohlmeyer
  updated to version 1.4 by Luiz Américo Pereira Câmara 2007
- 
+
  - Translation and addition of cairo-xlib-xrender.h
  - updated to version 1.12
  by Valdinilson Lourenço da Cunha 2012
@@ -30,9 +32,14 @@ unit CairoXlib;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  Api.Cairo.Lib, Api.X11.X, Api.X11.Xlib, Api.X11.Xrender;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Cairo, x, xlib, xrender;
-  
+{$ENDIF FPC_DOTTEDUNITS}
+
 function  cairo_xlib_surface_create(dpy: PDisplay; drawable: TDrawable; visual: PVisual; width, height: LongInt): Pcairo_surface_t; cdecl; external LIB_CAIRO;
 function  cairo_xlib_surface_create_for_bitmap(dpy: PDisplay; bitmap: TPixmap; screen: PScreen; width, height: LongInt): Pcairo_surface_t; cdecl; external LIB_CAIRO;
 procedure cairo_xlib_surface_set_size(surface: Pcairo_surface_t; width, height: LongInt); cdecl; external LIB_CAIRO;

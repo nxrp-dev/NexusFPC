@@ -11,14 +11,21 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
-unit daemonapp;
+{$IFNDEF FPC_DOTTEDUNITS}
+unit DaemonApp;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  Fcl.CustApp, System.Classes, System.SysUtils, Fcl.EventLog, System.RtlConsts;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Custapp, Classes, SysUtils, eventlog, rtlconsts;
+{$ENDIF FPC_DOTTEDUNITS}
 
 Type
   TCustomDaemon = Class;
@@ -31,7 +38,7 @@ Type
   TDaemonOptions = Set of TDaemonOption;
 
   TDaemonRunMode = (drmUnknown,drmInstall,drmUninstall,drmRun);
-  
+
   { TCustomDaemonDescription }
   TDaemonDef = Class;
   TCurrentStatus =
@@ -62,7 +69,7 @@ Type
     Procedure CheckControlMessages(Wait : Boolean);
     Procedure LogMessage(const Msg : String);
     Procedure ReportStatus;
-    
+
     // Filled in at runtime by controller
     Property Definition : TDaemonDef Read FDaemonDef;
     Property DaemonThread : TThread Read FThread;
@@ -141,15 +148,15 @@ Type
     Property LastStatus : TCurrentStatus Read FLastStatus;
     Property CheckPoint : DWord read FCheckPoint;
   end;
-  
+
   TDaemonClass = Class of TDaemon;
-  
+
   { Windows specific service registration types }
-  
+
   TServiceType   = (stWin32, stDevice, stFileSystem);
   TErrorSeverity = (esIgnore, esNormal, esSevere, esCritical);
   TStartType     = (stBoot, stSystem, stAuto, stManual, stDisabled);
-  
+
   { TDependency }
 
   TDependency = class(TCollectionItem)
@@ -164,7 +171,7 @@ Type
     property Name: String read FName write FName;
     property IsGroup: Boolean read FIsGroup write FIsGroup;
   end;
-  
+
   { TDependencies }
 
   TDependencies = class(TCollection)
@@ -233,7 +240,7 @@ Type
   end;
 
   { TDaemonDef }
-  
+
   TDaemonDef = Class(TCollectionItem)
   private
     FDaemonClass: TCustomDaemonClass;
@@ -288,7 +295,7 @@ Type
     Function DaemonDefByName(Const DaemonName : String) : TDaemonDef;
     Property Daemons[Index : Integer] : TDaemonDef Read GetDaemonDef Write SetDaemonDef; default;
   end;
-  
+
   { TCustomDaemonMapper }
   TCustomDaemonMapper = Class(TComponent)
   private
@@ -317,16 +324,16 @@ Type
     Property OnInstall : TNotifyEvent Read FOnInstall Write FOnInstall;
     Property OnUnInstall : TNotifyEvent Read FOnUnInStall Write FOnUninStall;
   end;
-  
+
   { TDaemonMapper }
 
   TDaemonMapper = Class(TCustomDaemonMapper)
     Constructor Create(AOwner : TComponent); override;
     Constructor CreateNew(AOwner : TComponent; Dummy : Integer = 0);
   end;
-  
+
   TCustomDaemonMapperClass = Class of TCustomDaemonMapper;
-  
+
   { TDaemonThread }
 
   TDaemonThread = Class(TThread)
@@ -349,7 +356,7 @@ Type
 
   { TCustomDaemonApplication }
   TGuiLoopEvent = Procedure Of Object;
-  
+
   TCustomDaemonApplication = Class(TCustomApplication)
   private
     FGUIHandle: THandle;
@@ -367,7 +374,7 @@ Type
     procedure SysUnInstallDaemon(Daemon: TCustomDaemon);
     function  UnInstallRun: Boolean;
     function  RunDaemonsRun: Boolean;
-    Procedure Main(Argc : DWord; Args : PPchar);
+    Procedure Main(Argc : DWord; Args : PPChar);
     Function  RunGUIloop(P : Pointer) : integer;
   Protected
     // OS (System) dependent calls
@@ -406,7 +413,7 @@ Type
     Property AutoRegisterMessageFile : Boolean Read FAutoRegisterMessageFile Write FAutoRegisterMessageFile default true;
   end;
   TCustomDaemonApplicationClass = Class of TCustomDaemonApplication;
-  
+
   TDaemonApplication = Class(TCustomDaemonApplication);
 
   EDaemon = Class(Exception);
@@ -454,7 +461,7 @@ Var
     ('Stop','Pause','Continue','Interrogate','Shutdown');
   DefaultDaemonOptions : TDaemonOptions =  [doAllowStop,doAllowPause];
   AppClass      : TCustomDaemonApplicationClass;
-  
+
 implementation
 
 // This must come first, so a uses clause can be added.
@@ -465,20 +472,16 @@ Var
   MapperClass   : TCustomDaemonMapperClass;
   DesignMapper  : TCustomDaemonMapper;
   DaemonClasses : TStringList;
-  
+
 {$ifdef svcdebug}
 Var
   FL : Text;
   LCS : TRTLCriticalSection;
-  
+
 Procedure StartLog;
 
 begin
-{$if defined(win32) or defined(win64)}
-  Assign(FL,'c:\service.log');
-{$else}
-  Assign(FL,'/tmp/service.log');
-{$endif}
+  Assign(FL,GetTempDir+'service.log');
   Rewrite(FL);
   InitCriticalSection(LCS);
   DebugLog('Start logging');
@@ -509,7 +512,7 @@ Procedure RegisterDaemonApplicationClass(AClass : TCustomDaemonApplicationClass)
 begin
   If (AppInstance<>Nil) then
     DaemonError(SErrApplicationAlreadyCreated,[AppInstance.ClassName]);
-  AppClass:=AClass;  
+  AppClass:=AClass;
 end;
 
 Procedure RegisterDaemonClass(AClass : TCustomDaemonClass);
@@ -517,7 +520,7 @@ Procedure RegisterDaemonClass(AClass : TCustomDaemonClass);
 Var
   DN : String;
   I  : Integer;
-  
+
 begin
   If Not Assigned(DaemonClasses) then
     begin
@@ -743,7 +746,7 @@ begin
   If Assigned(FThread) then
     TDaemonThread(FThread).CheckControlMessage(Wait);
 end;
-    
+
 { TCustomServiceApplication }
 
 procedure TCustomDaemonApplication.CreateServiceMapper(Var AMapper : TCustomDaemonMapper);
@@ -772,12 +775,12 @@ begin
   // No Borland compatibility needed, as the install will take care of the -r
 end;
 
-procedure TCustomDaemonApplication.Main(Argc: DWord; Args: PPchar);
+procedure TCustomDaemonApplication.Main(Argc: DWord; Args: PPChar);
 
 Var
   SN : String;
   DD : TDaemonDef;
-  
+
 begin
  {$ifdef svcdebug}DebugLog('Application.Main');{$endif svcdebug}
   If (Argc=0) then
@@ -892,7 +895,7 @@ begin
         D:=CreateDaemon(FMapper.DaemonDefs[i]);
         Try
           // Need to call this because of the before/after events.
-          D.UnInstall 
+          D.UnInstall
         Finally
           D.Free;
         end;
@@ -917,10 +920,10 @@ end;
 
 procedure TCustomDaemonApplication.CreateForm(InstanceClass: TComponentClass;
   var Reference);
-  
+
 Var
   Instance: TComponent;
-  
+
 begin
   // Allocate the instance, without calling the constructor
   Instance := TComponent(InstanceClass.NewInstance);
@@ -1035,7 +1038,7 @@ begin
   inherited ShowException(E)
 end;
 
-Procedure TCustomDaemonApplication.CreateDaemonInstance(Var ADaemon : TCustomDaemon; DaemonDef : TDaemonDef); 
+Procedure TCustomDaemonApplication.CreateDaemonInstance(Var ADaemon : TCustomDaemon; DaemonDef : TDaemonDef);
 
 begin
   ADaemon:=DaemonDef.DaemonClass.CreateNew(Self,0);
@@ -1079,12 +1082,12 @@ begin
       Sleep(50); // Give the daemons some chance to actually stop
       L.Clear;
       For I:=0 to ComponentCount-1 do
-        If (Components[i] is TDaemonController) and 
+        If (Components[i] is TDaemonController) and
            (TDaemonController(Components[i]).LastStatus<>csStopped)  then
           L.Add(Components[i]);
       For I:=L.Count-1 downto 0 do
         TDaemonController(L[i]).Controller(SERVICE_CONTROL_SHUTDOWN,0,Nil);
-      end;  
+      end;
   finally
     L.Free;
   end;
@@ -1110,7 +1113,7 @@ procedure TDaemonDefs.BindClasses;
 Var
   D : TDaemonDef;
   I,J : Integer;
-  
+
 begin
   For I:=0 to Count-1 do
     begin
@@ -1133,7 +1136,7 @@ constructor TDaemonDefs.Create(AOwner: TPersistent; AClass : TCollectionItemClas
 begin
   Inherited Create(AClass);
   FOwner:=AOwner;
-  
+
 end;
 
 function TDaemonDefs.IndexOfDaemonDef(Const DaemonName: String): Integer;
@@ -1293,15 +1296,13 @@ procedure TDaemonThread.HandleControlCode(ACode, AEventType : DWord; AEventData 
 
 Var
   CS : TCurrentStatus;
-  CC,OK : Boolean;
-  S : String;
+  OK : Boolean;
 
 begin
  {$ifdef svcdebug}DebugLog('Handling control code '+IntToStr(ACode));{$endif svcdebug}
   CS:=FDaemon.Status;
   Try
     OK:=True;
-    CC:=False;
     Case ACode of
       SERVICE_CONTROL_STOP        : OK:=StopDaemon;
       SERVICE_CONTROL_PAUSE       : OK:=PauseDaemon;
@@ -1309,7 +1310,6 @@ begin
       SERVICE_CONTROL_SHUTDOWN    : OK:=ShutDownDaemon;
       SERVICE_CONTROL_INTERROGATE : OK:=InterrogateDaemon;
     else
-      CC:=True;
       FDaemon.HandleCustomCode(ACode, AEventType, AEventData);
     end;
     If not OK then
@@ -1320,10 +1320,6 @@ begin
       // Shutdown MUST be done, in all other cases roll back status.
       If (ACode<>SERVICE_CONTROL_SHUTDOWN) then
         FDaemon.Status:=CS;
-      If (ACode in [1..5]) then
-        S:=SStatus[ACode]
-      else
-        S:=Format(SCustomCode,[ACode]);
       end;
   end;
 end;

@@ -23,7 +23,7 @@ interface
 type
   TMachineType = (mtnone, mti386,mtx86_64,mtppc,mtppc64,mtarm,mtarmeb,mtm68k,
                   mtsparc,mtalpha,mtia64,mtmips,mtmipsel,mtaarch64,mtppc64le,
-                  mtriscv32,mtriscv64,mtloongarch64,
+                  mtriscv32,mtriscv64,mtloongarch64,mtsparc64,mtwasm32,
                   mtBigEndian,mtLittleEndian);
   TMachineTypes = set of TMachineType;
 
@@ -36,21 +36,21 @@ type
         (subarm: TSubMachineTypeArm);
       mtnone, mti386,mtx86_64,mtppc,mtppc64,mtm68k,
       mtsparc,mtalpha,mtia64,mtmips,mtmipsel,mtaarch64,mtppc64le,
-      mtriscv32,mtriscv64,mtloongarch64,
+      mtriscv32,mtriscv64,mtloongarch64,mtsparc64,mtwasm32,
       mtBigEndian,mtLittleEndian:
         (subgen: TSubMachineTypeGeneric);
   end;
 
-  TObjFormat = (ofNone, ofRes, ofElf, ofCoff, ofXCoff, ofMachO, ofExt);
+  TObjFormat = (ofNone, ofRes, ofElf, ofCoff, ofXCoff, ofMachO, ofWasm, ofExt);
   TObjFormats = set of TObjFormat;
-  
+
 
   TMachineInfo = record
     name : string;
     formats : TObjFormats;
     alias : string;
   end;
-  
+
   TFormatInfo = record
     name : string;
     ext : string;
@@ -90,6 +90,8 @@ var
     (name : 'riscv32';      formats : [ofElf]),                   //mtriscv32
     (name : 'riscv64';      formats : [ofElf]),                   //mtriscv64
     (name : 'loongarch64';  formats : [ofElf]),                   //mtloongarch64
+    (name : 'sparc64';      formats : [ofElf]),                   //mtsparc64
+    (name : 'wasm32';       formats : [ofWasm]),                  //mtwasm32
     (name : 'bigendian';    formats : [ofExt]),                   //mtBigEndian
     (name : 'littleendian'; formats : [ofExt])                    //mtLittleEndian
   );
@@ -98,7 +100,7 @@ var
     ('all','armv4','armv6','armv5tej','xscale','armv7');
   SubMachinesGen: array[TSubMachineTypeGeneric] of string[3] =
     ('all');
-  
+
   ObjFormats : array[TObjFormat] of TFormatInfo =
   (
     (name : '';         ext : '';        machines : []),
@@ -109,12 +111,13 @@ var
                                                      mtia64,mtmips,mtmipsel,
                                                      mtppc64le,mtaarch64,
                                                      mtriscv32,mtriscv64,
-                                                     mtloongarch64]),
+                                                     mtloongarch64,mtsparc64]),
     (name : 'coff';     ext : '.o';      machines : [mti386,mtx86_64,mtarm,
                                                      mtaarch64,mtppc,mtppc64]),
     (name : 'xcoff';    ext : '.o';      machines : [mtppc{,mtppc64}]),
     (name : 'mach-o';   ext : '.or';     machines : [mti386,mtx86_64,mtppc,
                                                      mtppc64,mtarm,mtaarch64]),
+    (name : 'wasm';     ext : '.or';     machines : [mtwasm32]),
     (name : 'external'; ext : '.fpcres'; machines : [mtBigEndian,mtLittleEndian])
   );
 
@@ -151,6 +154,9 @@ var
   {$elseif defined(CPUSPARC)}
     machine : mtsparc;
     submachine : (subgen: smtgen_all);
+  {$elseif defined(CPUSPARC64)}
+    machine : mtsparc64;
+    submachine : (subgen: smtgen_all);
   {$elseif defined(CPUALPHA)}
     machine : mtalpha;
     submachine : (subgen: smtgen_all);
@@ -175,6 +181,9 @@ var
   {$elseif defined(CPULOONGARCH64)}
     machine : mtloongarch64;
     submachine : (subgen: smtgen_all);
+  {$elseif defined(CPUWASM32)}
+    machine : mtwasm32;
+    submachine : (subgen: smtgen_all);
   {$else}
     machine : mti386;  //default i386
     submachine : (subgen: smtgen_all);
@@ -187,6 +196,8 @@ var
       objformat : ofMachO;
     {$ELSEIF defined(AIX)}
       objformat : ofXCoff;
+    {$ELSEIF defined(WASI)}
+      objformat : ofWasm;
     {$ELSE}
       objformat : ofElf;
     {$ENDIF}
@@ -205,6 +216,7 @@ begin
     ofCoff : Result:=mti386;
     ofXCoff: Result:=mtppc;
     ofMachO: Result:=mti386;
+    ofWasm : Result:=mtwasm32;
     {$IFDEF ENDIAN_BIG}
     ofExt  : Result:=mtBigEndian;
     {$ELSE}

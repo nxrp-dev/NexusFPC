@@ -15,14 +15,21 @@
 
   ToDo: read further images
 }
+{$IFNDEF FPC_DOTTEDUNITS}
 unit FPReadGif;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$mode objfpc}{$H+}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.Classes, System.SysUtils, FpImage;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   Classes, SysUtils, FPimage;
+{$ENDIF FPC_DOTTEDUNITS}
 
 type
   TGifRGB = packed record
@@ -30,8 +37,8 @@ type
   end;
 
   TGIFHeader = packed record
-    Signature:array[0..2] of Char;    //* Header Signature (always "GIF") */
-    Version:array[0..2] of Char;      //* GIF format version("87a" or "89a") */
+    Signature:array[0..2] of AnsiChar;    //* Header Signature (always "GIF") */
+    Version:array[0..2] of AnsiChar;      //* GIF format version("87a" or "89a") */
     // Logical Screen Descriptor
     ScreenWidth:word;                 //* Width of Display Screen in Pixels */
     ScreenHeight:word;                //* Height of Display Screen in Pixels */
@@ -87,6 +94,7 @@ type
     function WriteScanLine(Img: TFPCustomImage): Boolean; virtual;
     function InternalCheck (Stream: TStream) : boolean; override;
     function SkipBlock(Stream: TStream): byte;
+    class function InternalSize(Stream: TStream): TPoint; override;
   public
     constructor Create; override;
     destructor Destroy; override;
@@ -160,8 +168,13 @@ begin
       If FTransparent then
         FBackground:=FGraphicsCtrlExt.ColorIndex;
     end;
+    if (FWidth <= 0) or (FWidth > 65535) or (FHeight <= 0) or (FHeight > 65535) then
+      raise Exception.Create('Invalid GIF dimensions');
+    if Int64(FWidth) * (Int64(FHeight) + 1) > 256*1024*1024 then
+      raise Exception.Create('GIF image data too large');
     FLineSize:=FWidth*(FHeight+1);
     GetMem(FScanLine,FLineSize);
+    FillChar(FScanLine^, FLineSize, 0);
     If FTransparent then
     begin
       C:=FPalette.Color[FBackground];
@@ -192,14 +205,14 @@ begin
     Stream.Read(FHeader,SizeOf(FHeader));
     Progress(psRunning, trunc(100.0 * (Stream.position / Stream.size)), False, Rect(0,0,0,0), '', ContProgress);
     if not ContProgress then exit;
-     
+
     // Endian Fix Mantis 8541. Gif is always little endian
-    {$IFDEF ENDIAN_BIG}    
-      with FHeader do 
+    {$IFDEF ENDIAN_BIG}
+      with FHeader do
         begin
           ScreenWidth := LEtoN(ScreenWidth);
           ScreenHeight := LEtoN(ScreenHeight);
-        end; 
+        end;
     {$ENDIF}
     // global palette
     if (FHeader.Packedbit and $80) <> 0 then
@@ -212,14 +225,14 @@ begin
     Repeat
       Introducer:=SkipBlock(Stream);
     until (Introducer = $2C) or (Introducer = $3B) or (Stream.Position>=Stream.Size);
-    
-    if Stream.Position>=Stream.Size then 
+
+    if Stream.Position>=Stream.Size then
       Exit;
 
     // descriptor
     Stream.Read(FDescriptor, SizeOf(FDescriptor));
     {$IFDEF ENDIAN_BIG}
-      with FDescriptor do 
+      with FDescriptor do
         begin
           Left := LEtoN(Left);
           Top := LEtoN(Top);
@@ -252,6 +265,86 @@ begin
     ReAllocMem(FScanLine,0);
   end;
   Progress(FPimage.psEnding, 100, false, Rect(0,0,FWidth,FHeight), '', ContProgress);
+end;
+
+class function TFPReaderGif.InternalSize(Stream:TStream): TPoint;
+
+  function LocalSkipBlock(Stream: TStream): byte;
+  var
+    Introducer,
+    Labels,
+    SkipByte : byte;
+  begin
+    Stream.read(Introducer,1);
+    if Introducer = $21 then
+    begin
+       Stream.read(Labels,1);
+       Case Labels of
+         $FE, $FF :     // Comment Extension block or Application Extension block
+              while Stream.Position < Stream.Size do
+              begin
+                if Stream.Read(SkipByte, 1) <> 1 then Break;
+                if SkipByte = 0 then Break;
+                Stream.Seek(SkipByte, soFromCurrent);
+              end;
+         $F9 :         // Graphics Control Extension block
+              begin
+                Stream.Seek(SizeOf(TGifGraphicsControlExtension), soFromCurrent);
+              end;
+         $01 :        // Plain Text Extension block
+              begin
+                Stream.Read(SkipByte, 1);
+                Stream.Seek(SkipByte, soFromCurrent);
+                while Stream.Position < Stream.Size do
+                begin
+                  if Stream.Read(SkipByte, 1) <> 1 then Break;
+                  if SkipByte = 0 then Break;
+                  Stream.Seek(SkipByte, soFromCurrent);
+                end;
+              end;
+        end;
+    end;
+    Result:=Introducer;
+  end;
+
+var
+  hdr: TGIFHeader;
+  introducer: Byte;
+  b: Byte = 0;
+  skipByte: Byte = 0;
+  descr: TGifImageDescriptor;
+  n: Integer;
+begin
+  Result := Point(-1, 1);
+
+  Stream.Read(hdr, SizeOf(hdr));
+
+  // Skip global palette if there is one
+  if (hdr.Packedbit and $80) <> 0 then
+  begin
+    n := hdr.Packedbit and 7 + 1;
+    Stream.Seek(1 shl n, soFromCurrent);
+  end;
+  if Stream.Position >= Stream.Size then
+    exit;
+
+  // Skip extensions until image descriptor is found ($2C)
+  repeat
+    introducer := LocalSkipBlock(Stream);
+  until (introducer = $2C) or (Stream.Position>=Stream.Size);
+  if Stream.Position>=Stream.Size then
+    Exit;
+
+  Stream.Read(descr, SizeOf(descr));
+  with descr do
+  begin
+   {$IFDEF ENDIAN_BIG}
+    Width := LEtoN(Width);
+    Height := LEtoN(Height);
+   {$ENDIF}
+    Result.X := Width;
+    Result.Y := Height;
+  end;
 end;
 
 function TFPReaderGif.ReadScanLine(Stream: TStream): Boolean;
@@ -302,8 +395,8 @@ begin
         CodeMask := (1 shl CodeSize) - 1;
       end;
     until (B = 0)  or (Stream.Position>=Stream.Size);
-    
-   { if Stream.Position>=Stream.Size then 
+
+   { if Stream.Position>=Stream.Size then
       Exit(False); }
 
     Progress(psRunning, trunc(100.0 * (Stream.position / Stream.size)),
@@ -322,10 +415,10 @@ begin
          Inc(SourcePtr,B);
       end;
     until (B = 0) or (Stream.Position>=Stream.Size);
-    
+
    { if Stream.Position>=Stream.Size then
        Exit(False); }
-              
+
 
     Progress(psRunning, trunc(100.0 * (Stream.position / Stream.size)),
              False, Rect(0,0,0,0), '', ContProgress);
@@ -487,7 +580,7 @@ function TFPReaderGif.InternalCheck(Stream: TStream): boolean;
 var
   OldPos: Int64;
   n: Int64;
-  
+
 begin
   Result:=False;
   if Stream = nil then
@@ -496,7 +589,7 @@ begin
   try
     n := SizeOf(FHeader);
     Result:=(Stream.Read(FHeader,n)=n)
-            and (FHeader.Signature = 'GIF') 
+            and (FHeader.Signature = 'GIF')
             and ((FHeader.Version = '87a') or (FHeader.Version = '89a'));
   finally
     Stream.Position := OldPos;
@@ -515,9 +608,9 @@ begin
      Stream.read(Labels,1);
      Case Labels of
        $FE, $FF :     // Comment Extension block or Application Extension block
-            while true do
+            while Stream.Position < Stream.Size do
             begin
-              Stream.Read(SkipByte, 1);
+              if Stream.Read(SkipByte, 1) <> 1 then Break;
               if SkipByte = 0 then Break;
               Stream.Seek(SkipByte, soFromCurrent);
             end;
@@ -530,9 +623,9 @@ begin
             begin
               Stream.Read(SkipByte, 1);
               Stream.Seek(SkipByte, soFromCurrent);
-              while true do
+              while Stream.Position < Stream.Size do
               begin
-                Stream.Read(SkipByte, 1);
+                if Stream.Read(SkipByte, 1) <> 1 then Break;
                 if SkipByte = 0 then Break;
                 Stream.Seek(SkipByte, soFromCurrent);
               end;

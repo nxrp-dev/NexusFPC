@@ -3,10 +3,10 @@
 #   Latest updates contributed by Karl-Michael Schindler aka mischi
 #   <karl-michael.schindler at web.de>
 #
-#   Based on errore.msg of git commit 403292a1, 06 Jul, 2022
+#   Based on errore.msg of git commit 548a07c0, 27 July, 2025
 #
 #   This file is part of the Free Pascal Compiler
-#   Copyright (c) 1998-2023 by the Free Pascal Development team
+#   Copyright (c) 1998-2026 by the Free Pascal Development team
 #
 #   See the file COPYING.v2, included in this distribution,
 #   for details about the copyright.
@@ -34,6 +34,7 @@
 #   exec_     calls to assembler, external linker, binder
 #   link_     internal linker
 #   package_  package handling
+#   sym_      symbol handling
 #
 # <type> the type of the message it should normally used for
 #   f_   fatal error
@@ -57,7 +58,7 @@
 #
 # General
 #
-# 01027 is the last used one
+# 01033 is the last used one
 #
 # BeginOfTeX
 %
@@ -147,6 +148,27 @@ general_t_unitscope=01027_T_Benutzter Unit-Bereich: $1
 % When the \var{-vt} switch is used, this line tells you what unit scopes (namespaces)
 % the compiler is using when looking up units. You can add a unit scope with the
 % \var{-FN} option.
+general_i_reduced_filesearch=01028_I_EingeschrÑnkte Dateisuche: Keine Suche nach Unit-Dateien mit gro· geschriebenen oder 8.3 formatierten Dateinamen
+% When the \var{-Ft} switch is used, this line informs you that the compiler
+% will not look for uppercased filenames or 8.3 conforming filenames.
+general_f_compiler_aborted=01029_F_Compiler beendet
+% Compilation was aborted.
+general_t_unitpath_local=01030_T_$1: Nutze den lokalen Unit-Pfad: $2
+% When the \var{-vt} switch is used, this line tells you where the compiler
+% looks for compiled units. You can set this path with the \var{\{\$UNITPATH xxx\}}
+% directive.
+general_t_includepath_local=01031_T_$1: Nutze den lokalen Include-Pfad: $2
+% When the \var{-vt} switch is used, this line tells you where the compiler
+% looks for its include files (files used in \var{\{\$I xxx\}} statements).
+% You can set this path with the \var{\{\$INCLUDEPATH xxx\}} directive.
+general_t_librarypath_local=01032_T_$1: Nutze den lokalen Bibliothekspfad: $2
+% When the \var{-vt} switch is used, this line tells you where the compiler
+% looks for the libraries. You can set this path with the \var{\{\$LIBRARYPATH xxx\}}
+% directive.
+general_t_objectpath_local=01033_T_$1: Nutze den lokalen Objekt-Pfad: $2
+% When the \var{-vt} switch is used, this line tells you where the compiler
+% looks for object files you link in (files used in \var{\{\$L xxx\}} statements).
+% You can set this path with the \var{\{\$OBJECTPATH xxx\}} directive.
 %
 % \end{description}
 # EndOfTeX
@@ -154,7 +176,7 @@ general_t_unitscope=01027_T_Benutzter Unit-Bereich: $1
 #
 # Scanner
 #
-# 02108 is the last used one
+# 02120 is the last used one
 #
 # BeginOfTeX
 %
@@ -417,9 +439,9 @@ scan_e_illegal_peoptflag=02094_E_UngÅltiges Argument fÅr SETPEOPTFLAGS
 scan_e_unsupported_switch=02095_E_Direktive $1 wird auf diesem Zielbetriebssystem nicht unterstÅtzt
 % Not all compiler directives are supported on all targets.
 scan_w_invalid_stacksize=02096_W_Die spezifizierte Grî·e des Stack ist au·erhalb des gÅltigen Bereichs der Plattform. Setzen der Grî·e des Stack ignoriert.
-% The valid range for the stack size is 1024 - 67107839 on 32-bit and 64-bit
-% platforms and 1024 - 65520 on 16-bit platforms. Additionally, for Turbo Pascal 7
-% compatibility reasons, specifying a stack size of 65521 on 16-bit platforms
+% The valid range for the stack size is 1024 - 67107839 on 32 bit and 64 bit
+% platforms and 1024 - 65520 on 16 bit platforms. Additionally, for Turbo Pascal 7
+% compatibility reasons, specifying a stack size of 65521 on 16 bit platforms
 % actually sets the stack size to 65520.
 scan_w_heapmax_lessthan_heapmin=02097_W_Die spezifizierte Grî·e des HeapMax ist kleiner als der des HeapMin. Setzen der Grî·e des HeapMax ignoriert.
 % The HeapMax value (if specified) must be greater than or equal to the HeapMin
@@ -451,6 +473,35 @@ scan_e_unexpected_endif=02108_E_$ENDIF Direktive ohne entsprechende $IF(N)DEF Di
 % When legacy ifend is turned on by the directive \var{\$LEGACYIFEND}, then the
 % \var{\$IF} directive must be closed by the \var{\$IFEND} directive and the
 % \var{\$IFDEF} directive must be closed by the \var{\$ENDIF} directive.
+scan_e_invalid_rtti_clause=02109_E_UngÅltiger RTTI-Abschnitt (Explicit oder Inherit erwartet)
+% The \var{\$RTTI} directive needs to be followed either by \var{EXPLICIT} or \var{INHERIT}
+% and entries for \var{FIELDS}, \var{PROPERTIES} or \var{METHODS}.
+scan_e_incomplete_rtti_clause=02110_E_Explicit-Abschnitt erfordert mindestens eine Option (Methode, Eingeschaft oder Feld)
+% An \var{\$RTTI EXPLICIT} directive requires at least one of the \var{FIELDS}, \var{PROPERTIES}
+% or \var{METHODS} entries.
+scan_e_invalid_rtti_option=02111_E_UngÅltige RTTI-Option "$1" (Methoden, Eingeschaften oder Felder erwartet)
+% The \var{\$RTTI EXPLICIT} can only contain \var{FIELDS}, \var{PROPERTIES} and \var{METHODS}
+% entries.
+scan_e_duplicate_rtti_option=02112_E_RTTI-Option "$1" ist ein Duplikat
+% An option in a \var{\$RTTI EXPLICIT} directive can only appear once.
+scan_e_misplaced_rtti_directive=02113_E_RTTI-Direktive kann hier nicht benutzt werden
+% The \var{\$RTTI} directive can not be used in this location (e.g. before the \var{PROGRAM}
+% or \var{UNIT} headers).
+scanner_w_alignment_large_than_max=02114_N_Variable "$1" hat eine Align-Direktive, die grî·er als das maximale Systemalignment fÅr Variablen ist
+% The type of the variable has an 'align' directive which is larger than  current maximum
+scanner_w_local_alignment_large_than_max=02115_N_Die lokale Variable "$1" hat eine Align-Direktive, die grî·er als das maximale Systemalignment fÅr lokale Variablen ist
+% The type of the variable has an 'align' directive which is larger than current  maximum.
+scan_e_unknown_lineending_type=02116_E_Unbekannter Typ fÅr Zeilenenden angegeben. GÅltige Optionen sind CR, CRLF, LF, PLATFORM, oder SOURCE
+% The line ending type that was specified is not one of CR, CRLF, LF, PLATFORM, or SOURCE.
+scan_e_trimcount_out_of_range=02117_E_Der Wert von MULTILINESTRINGTRIMLEFT kann nicht kleiner als 0 oder grî·er als 65535 sein
+% MULTILINESTRINGTRIMLEFT is stored in a "word" field, and thus is restricted to the range 0..65535.
+scan_e_illegal_directive=02118_E_UngÅltige Compiler Direktive "$1"
+% You have specified a compiler directive that cannot (for one of several possible reasons) currently be used.
+scan_f_unterminated_multiline_string=02119_F_Unbestimmte Mehrfachzeilen-Zeichenkette beginnend in Zeile $1, Spalte $2
+% The file contains an "unbalanced" number of multi-line string denoting backtick characters.
+scan_e_improperly_indented_multiline_string=02120_E_Falsch eingerÅckte Mehrfachzeilen-Zeichenkette ($1 Leerzeichen sind verlangt) beginnend in Zeile $2, Spalte $3.
+% The multi-line string does not have the proper indentation, every line
+% must have at least the number of spaces as in the last line.
 %
 % \end{description}
 # EndOfTeX
@@ -458,7 +509,7 @@ scan_e_unexpected_endif=02108_E_$ENDIF Direktive ohne entsprechende $IF(N)DEF Di
 #
 # Parser
 #
-# 03364 is the last used one
+# 03374 is the last used one
 #
 # BeginOfTeX
 %
@@ -768,7 +819,7 @@ parser_e_directive_only_one_var=03095_E_$1 kann nur auf eine alleinstehende Vari
 % Var Z : Longint;
 %     X,Y : Longint absolute Z;
 % \end{verbatim}
-parser_e_absolute_only_to_var_or_const=03096_E_ABSOLUTE kann nur auf Variablen und Konstanten angewendet werden
+parser_e_absolute_only_to_var_or_const=03096_E_ABSOLUTE kann nur auf Variablen und Konstanten angewendet werden, die eine Adresse reprÑsentieren
 % The address of an \var{absolute} directive can only point to a variable or
 % constant. Therefore, the following code will produce this error:
 % \begin{verbatim}
@@ -778,7 +829,7 @@ parser_e_absolute_only_to_var_or_const=03096_E_ABSOLUTE kann nur auf Variablen u
 % \end{verbatim}
 %
 parser_e_initialized_only_one_var=03097_E_Es kann nur EINE Variable initialisiert werden
-% You cannot specify more than one variable with a initial value in Delphi mode.
+% You cannot specify more than one variable with an initial value.
 parser_e_abstract_no_definition=03098_E_Abstrakte Methoden dÅrfen keine Definition (mit Rumpf) haben
 % Abstract methods can only be declared, you cannot implement them. They
 % should be overridden by a descendant class.
@@ -1043,7 +1094,7 @@ parser_e_illegal_field_or_method=03181_E_Klassenfeld oder Methoden-Bezeichner "$
 parser_w_proc_overriding_calling=03182_W_öberschreibe die Aufrufkonvention "$1" mit "$2"
 % There are two directives in the procedure declaration that specify a calling
 % convention. Only the last directive will be used.
-parser_e_no_procvarobj_const=03183_E_Typisierte Konstanten des Typs "procedure of object" benîtigen einen Self-Pointer, der zur Kompile-Zeit bekannt ist
+parser_e_no_procvarobj_const=03183_E_Typisierte Konstanten des Typs "procedure of object" benîtigen einen Self-Pointer, der zur Zeit der öbersetzung bekannt ist
 % In order to initialize a method pointer with a method, the value of the \var{Self}
 % pointer for calling that method at run time must be known at compile time.
 % Thus, a method pointer can be initialized either with \var{Nil}, or with a class
@@ -1103,7 +1154,7 @@ parser_e_paraloc_all_paras=03198_E_Jedes Argument muss seine explizite "location
 parser_e_illegal_explicit_paraloc=03199_E_UngÅltiger expliziter Parameter "location" spezifiziert
 % Syscalls specific: the specified explicit location string for this parameter cannot be parsed, invalid,
 % or the location specified for an argument isn't recognized by the compiler.
-parser_e_32bitint_or_pointer_variable_expected=03200_E_32 Bit-Integer oder Zeiger-Variable erwartet
+parser_e_32bitint_or_pointer_variable_expected=03200_E_32-Bit-Integer oder Zeiger-Variable erwartet
 % The libbase for MorphOS/AmigaOS can be given only as \var{longint}, \var{dword} or any pointer variable.
 parser_e_goto_outside_proc=03201_E_Goto Statements zwischen verschiedenen Prozeduren sind nicht erlaubt
 % It isn't allowed to use \var{goto} statements referencing labels outside the
@@ -1201,7 +1252,7 @@ parser_e_packed_element_no_loop=03223_E_Bit packed Array-Elemente und Record-Fel
 % (or as \var{packed} in any mode with \var{\{\$bitpacking on\}}), it will
 % be packed at the bit level. For performance reasons, they cannot be
 % used as loop variables.
-parser_e_type_var_const_only_in_records_and_classes=03224_E_VAR, TYPE und CONST sind nur innerhalb Records, Objekten und Klassen erlaubt
+parser_e_type_var_const_only_in_records_and_classes=03224_E_VAR, TYPE und CONST sind nur innerhalb von Records, Objekten und Klassen erlaubt
 % The usage of VAR, TYPE and CONST to declare new types inside an object is allowed only inside
 % records, objects and classes.
 parser_e_cant_create_generics_of_this_type=03225_E_Dieser Typ kann nicht "generic" sein
@@ -1449,7 +1500,7 @@ parser_e_forward_intf_declaration_must_be_resolved=03298_E_Die VorwÑrtsdeklarati
 %       end;
 % \end{verbatim}
 % where \var{MyProtocol} is declared but not defined.
-parser_e_no_record_published=03299_E_Record -Typen kînnen keine îffentlichen Abschnitte (published sections) haben
+parser_e_no_record_published=03299_E_Record-Typen kînnen keine îffentlichen Abschnitte (published sections) haben
 % Published sections can be used only inside classes.
 parser_e_no_destructor_in_records=03300_E_Destruktoren sind in Records und Helfern nicht erlaubt
 % Destructor declarations are not allowed in records or helpers.
@@ -1621,7 +1672,7 @@ parser_e_only_static_members_via_object_type=03349_E_Nur statische Methoden und 
 %   TObj.test;
 % \end{verbatim}
 % \var{test} is not a static method and hence cannot be called through a type, but only using an instance.
-parser_e_callthrough_varargs=03350_E_Kann die variadische Funktion "$1" im C-Stil auf dieser Platform nicht als external redeklarieren; schon die erste Deklaration muss external sein
+parser_e_callthrough_varargs=03350_E_Kann die variadische Funktion "$1" im C-Stil auf dieser Plattform nicht als external redeklarieren; schon die erste Deklaration muss external sein
 % If a function is declared normally in the interface or as a forward declaration, and then later as external, the compiler
 % must generate a stub that calls the external function. Due to code generation limitations, this cannot be done on some
 % platforms. Even on platforms where it is supported, this is quite inefficient.
@@ -1629,10 +1680,10 @@ parser_e_unbound_attribute=03351_E_Nicht verknÅpftes Kundenattribut: "$1".
 % A custom attribute is defined, but there is no identifier to bind it to.
 parser_e_enumeration_out_of_range=03352_E_AufzÑhlungssymbole kînnen nur Werte im Bereich von -2^31 bis 2^31-1 annehmen
 % The size of enumeration values is limited to 4 bytes. As the value can be signed, the range
-% of valid values is limited to a signed 32 Bit value (i.e. \var{longint}).
+% of valid values is limited to a signed 32 bit value (i.e. \var{longint}).
 parser_w_enumeration_out_of_range=03353_W_AufzÑhlungssymbole kînnen nur Werte im Bereich von -2^31 bis 2^31-1 annehmen
 % The size of enumeration values is limited to 4 bytes. As the value can be signed, the range
-% of valid values is limited to a signed 32 Bit value (i.e. \var{longint}).
+% of valid values is limited to a signed 32 bit value (i.e. \var{longint}).
 parser_e_method_for_type_in_other_unit=03354_E_Implementierung einer Methods fÅr den Typ "$1", der in einer anderen Unit deklariert ist
 % This error occurs if one tries to define a method for a type that is originally declared
 % in a different unit.
@@ -1642,12 +1693,12 @@ parser_e_generic_constraints_not_allowed_here=03355_E_Eine generische EinschrÑnk
 parser_e_location_size_too_small=03356_E_Die explizite "location" ist zu klein fÅr den Parameter
 % AmigaOS/MorphOS syscall specific: for int64/qword parameter only a single register location is specified
 parser_e_location_size_too_large=03357_E_Die Grî·e der expliziten "location" ist grî·er als vom Parameter verlangt
-% AmigaOS/MorphOS syscall specific: for a parameter which is smaller than 64bit, a register pair is specified
+% AmigaOS/MorphOS syscall specific: for a parameter which is smaller than 64 bits, a register pair is specified
 parser_e_location_regpair_only_data=03358_E_Nur Daten-Register werden fÅr explizite "location" Registerpaare unterstÅtzt
-% AmigaOS/MorphOS syscall specific: for 64bit register pairs, only data registers are supported
+% AmigaOS/MorphOS syscall specific: for 64 bit register pairs, only data registers are supported
 parser_e_location_regpair_only_consecutive=03359_E_Nur aufeinander folgende Register werden fÅr explizite "location" Registerpaare unterstÅtzt
-% MorphOS syscall specific: only consecutive (f.e.: d1-d2) registers are supported for 64bit register pairs
-parser_e_constructurs_cannot_take_type_parameters=03360_E_Konstruktoren kînnen keine Type-Parameter Åbernehmen
+% MorphOS syscall specific: only consecutive (f.e.: d1-d2) registers are supported for 64 bit register pairs
+parser_e_constructors_cannot_take_type_parameters=03360_E_Konstruktoren kînnen keine Type-Parameter Åbernehmen
 % The use of type parameters in constructors is not allowed.
 parser_e_raise_with_noreturn_not_allowed=03361_E_Deklaration von Raise in einer Subroutine als noreturn ist nicht erlaubt
 % \var{noreturn} tells the compiler that the activation scope of the subroutine is never left. This includes exceptions
@@ -1659,6 +1710,32 @@ parser_e_syscall_format_not_support=03364_E_Syntax der syscall-Direktive wird au
 % On a certain target, not all syntax variants of the syscall directive make sense and thus those making
 % no sense are not supported
 % Declarations like \var{var i: Integer absolute i;} are not allowed
+parser_w_ignoring_published_property=03365_W_Diese Eigenschaft wird nicht verîffentlicht
+% Published property is ignored
+parser_e_wasm_ref_types_can_only_be_passed_by_value=03366_E_WebAssembly-Referenz-Typen kînnen nur "by value" Åbergeben werden
+% WebAssembly reference types don't have an in-memory representation and can only be passed by value.
+parser_e_promising_exports_not_supported_on_current_platform=03367_E_Exporte als 'promising' zu deklarieren ist WebAssembly-spezifisch und nicht auf der aktuellen Plattform unterstÅtzt
+% Promising exports are WebAssembly-specific. They are not allowed on other platforms.
+parser_e_suspending_externals_not_supported_on_current_platform=03368_E_Externals als 'suspending' zu deklarieren ist WebAssembly-spezifisch und nicht auf der aktuellen Plattform unterstÅtzt
+% Suspending externals are WebAssembly-specific. They are not allowed on other platforms.
+parser_w_widechar_set_reduced=03369_W_Reduziere Widechar-Set zu Single-Byte-AnsiChar-Set.
+% The base type of a set can only have 255 elements. Sets of wide characters
+% are reduced to sets of 1-byte characters.
+parser_e_nostringaliasinsystem=03370_E_Das Alias 'string' ist in der Unit "system" nicht erlaubt. Benutze Short-, Ansi- oder Unicodestring.
+% As a safeguard, the system unit may only use basic string types, not the
+% string alias which is dependent on the mode in which a unit is compiled.
+parser_e_coperators_off=03371_E_Zuweisungsoperatoren im C-Stil sind ausgeschaltet
+% By default, c style assignment operators (+=, -=, *=, /=) are turn off. Either turn them on by the command line
+% parameter -Sc or in the source code by {\$COPERATORS ON}
+parser_e_cannot_evaluate_expression_at_compile_time=03372_E_Ausdruck kann zur Zeit der öbersetzung nicht berechnet werden
+% Certain operations like the size of an object cannot be determined at compile time,
+% so it cannot be e.g. part of a constant expression.
+parser_e_type_alread_forward=03373_E_Doppelte VorwÑrtsdeklaration: $1
+% Types might be defined only once as forward:
+% \var{type myclass = class; myclass = class;} is not allowed
+parser_e_no_suitable_newinstance_method_found=03374_E_Keine geeignete NewInstance - Methode fÅr die Erzeugung der Klasseninstanz gefunden
+% To create a new instance of a class, a suitable NewInstance (like \var{TObject.NewInstance}) method must be found. The symbol name NewInstance
+% might not be used for other purposes than to create a new instance of a class.
 %
 % \end{description}
 # EndOfTeX
@@ -1666,7 +1743,7 @@ parser_e_syscall_format_not_support=03364_E_Syntax der syscall-Direktive wird au
 #
 # Type Checking
 #
-# 04131 is the last used one
+# 04134 is the last used one
 #
 # BeginOfTeX
 %
@@ -1736,7 +1813,7 @@ type_e_set_operation_unknown=04013_E_Operation fÅr Sets nicht implementiert
 % several binary operations are not defined for sets.
 % These include: \var{div}, \var{mod}, \var{**}, \var{>=} and \var{<=}.
 % The last two may be  defined for sets in the future.
-type_w_convert_real_2_comp=04014_W_Automatische Typumwandlung von Fliesskommatyp nach COMP (=integer mit 64 bit)
+type_w_convert_real_2_comp=04014_W_Automatische Typumwandlung von Fliesskommatyp nach COMP (=integer mit 64 Bit)
 % An implicit type conversion from a real type to a \var{comp} is
 % encountered. Since \var{Comp} is a 64 bit integer type, this may indicate
 % an error.
@@ -1817,12 +1894,12 @@ type_e_interface_type_expected=04034_E_Interface Typ erwartet, aber "$1" erhalte
 % Type
 %   TMyStream = Class(TStream,Integer)
 % \end{verbatim}
-type_h_mixed_signed_unsigned=04035_H_Mischen von signed AusdrÅcken und Longwords ergibt ein 64bit Ergebnis
+type_h_mixed_signed_unsigned=04035_H_Mischen von signed AusdrÅcken und Longwords ergibt ein 64-Bit-Ergebnis
 % If you divide (or calculate the modulus of) a signed expression by a longword (or vice versa),
 % or if you have overflow and/or range checking turned on and use an arithmetic
 % expression (+, -, *, div, mod) in which both signed numbers and longwords appear,
-% then everything has to be evaluated in 64-bit arithmetic which is slower than normal
-% 32-bit arithmetic. You can avoid this by typecasting one operand so it
+% then everything has to be evaluated in 64 bit arithmetic which is slower than normal
+% 32 bit arithmetic. You can avoid this by typecasting one operand so it
 % matches the result type of the other one.
 type_w_mixed_signed_unsigned2=04036_W_Mischen von signed AusdrÅcken und kardinalen Typen hier kann eine BereichsÅberschreitung verursachen
 % If you use a binary operator (and, or, xor) and one of
@@ -1898,7 +1975,7 @@ type_h_pointer_to_longint_conv_not_portable=04055_H_Konversion zwischen ordinale
 % on a machine using 64 bits addressing.
 type_w_pointer_to_longint_conv_not_portable=04056_W_Konversion zwischen ordinalen Typen und Zeigern ist nicht portierbar
 % If you typecast a pointer to an ordinal type of a different size (or vice-versa), this can
-% cause problems. This is a warning to help in finding the 32-bit specific code where cardinal/longint is used
+% cause problems. This is a warning to help in finding the 32 bit specific code where cardinal/longint is used
 % to typecast pointers to ordinals. A solution is to use the ptrint/ptruint types instead.
 type_e_cant_choose_overload_function=04057_E_Kann nicht bestimmen, welche der Åberladenen Funktionen aufgerufen werden soll
 % You're calling overloaded functions with a parameter that doesn't correspond
@@ -1946,7 +2023,7 @@ type_h_convert_mul_operands_to_prevent_overflow=04081_H_Konvertierung des Operan
 % Multiplying two types can cause overflow errors. Since you are converting the result to a larger type, you
 % could prevent such errors by converting the operands to this type before doing the multiplication.
 type_w_pointer_to_signed=04082_W_Die Konvertierung von Zeigern in einen Integertyp mit Vorzeichen kann zu falschen Ergebnissen bei Vergleichen und zu BereichsÅberschreitungen fÅhren; verwenden sie statt dessen besser einen Typ ohne Vorzeichen
-% The virtual address space on 32-bit machines runs from \$00000000 to \$ffffffff.
+% The virtual address space on 32 bit machines runs from \$00000000 to \$ffffffff.
 % Many operating systems allow you to allocate memory above \$80000000.
 % For example both \windows and \linux allow pointers in the range \$0000000 to \$bfffffff.
 % If you convert pointers to signed types, this can cause overflow and range check errors,
@@ -2124,6 +2201,12 @@ type_e_nested_procvar_to_funcref=04131_E_Eine verschachtelte Funktionsvariable k
 % Function references can live beyond the scope of the function they're contained in while
 % nested functions assigned to nested function variables can't. Due to this discrepancy
 % in design assigning a nested function variable to a function reference is forbidden.
+type_e_cannot_take_address_of_wasm_externref=04132_E_Kann die Adresse einer externen WebAssembly-Referenz nicht verwenden
+% WebAssembly externref types don't have an in-memory representation and therefore, their address cannot be taken.
+type_e_cannot_determine_size_of_wasm_reference_type=04133_E_WebAssembly-Referenz-Typen haben keine beobachtbare Grî·e
+% WebAssembly reference types are opaque, meaning neither their size, nor their bit pattern can be observed.
+type_e_ordinal_or_pointer_expr_expected=04134_E_Ordinaler oder Pointer-Ausdruck erwartet
+% The expression must be of an ordinal or pointer type.
 %
 % \end{description}
 # EndOfTeX
@@ -2131,7 +2214,7 @@ type_e_nested_procvar_to_funcref=04131_E_Eine verschachtelte Funktionsvariable k
 #
 # Symtable
 #
-# 05099 is the last used one
+# 05101 is the last used one
 #
 # BeginOfTeX
 %
@@ -2454,6 +2537,12 @@ sym_e_type_must_be_rec_or_object=05098_E_Record- oder Objecttyp erwartet
 sym_e_symbol_no_capture=05099_E_Symbol "$1" kann nicht erfasst werden
 % The specified symbol can not be captured to be used in a function reference.
 % For example \var{var} or \var{out} parameters can not be captured in that way.
+sym_f_systemunitnotloaded=05100_F_Unit "system" nicht geladen
+% The compiler used a function that requires the system unit to be loaded,
+% but it was not yet loaded. This is an internal compiler error and must be reported.
+sym_e_wasm_ref_types_cannot_be_used_in_records=05101_E_WebAssembly-Referenz-Typen kînnen nicht innerhalb von Records, Objekten oder Klassen verwendet werden
+% WebAssembly reference types don't have an in-memory representation and therefore
+% cannot be used inside records, objects or classes.
 %
 % \end{description}
 # EndOfTeX
@@ -2900,7 +2989,7 @@ asmr_e_bad_seh_directive_offset=07112_E_UngÅltiger Offsetwert fÅr $1
 % Win64 SEH directives have certain restrictions on possible offset values, e.g. they should
 % be positive and have 3 or 4 low bits clear.
 asmr_e_bad_seh_directive_register=07113_E_UngÅltiges Register fÅr $1
-% Win64 SEH directives accept only 64-bit integer registers or XMM registers.
+% Win64 SEH directives accept only 64 bit integer registers or XMM registers.
 asmr_e_seh_in_pure_asm_only=07114_E_SEH-Direktiven sind nur in reinen Assemblerroutinen erlaubt
 % Win64 SEH directives are allowed only in pure assembler procedures, not in assembler
 % blocks of regular procedures.
@@ -2924,10 +3013,10 @@ asmr_w_global_access_without_got=07119_W_Auf exportierte/globale Symbole sollte 
 asmr_w_check_mem_operand_size=07120_W_öberprÅfe die Grî·e des Speicheroperanden "$1"
 % The size of memory operand is possible invalid. This is
 % probably an error in the assembler statement
-asmr_w_check_mem_operand_size3=07121_W_öberprÅfe die Grî·e des Speicheroperanden "$1: Sie ist $2 bits, aber [$3 bits] werden erwartet"
+asmr_w_check_mem_operand_size3=07121_W_öberprÅfe die Grî·e des Speicheroperanden "$1: Sie ist $2 Bits, aber [$3 Bits] werden erwartet"
 % The size of memory operand is possible invalid. This is
 % probably an error in the assembler statement
-asmr_w_check_mem_operand_size_offset=07122_W_öberprÅfe die Grî·e des Speicheroperanden "$1: Sie ist $2 bits, aber[$3 bits + $4 byte offset] werden erwartet"
+asmr_w_check_mem_operand_size_offset=07122_W_öberprÅfe die Grî·e des Speicheroperanden "$1: Sie ist $2 Bits, aber[$3 Bits + $4 Byte Offset] werden erwartet"
 % The size of memory operand is possible invalid. This is
 % probably an error in the assembler statement
 asmr_w_check_mem_operand_negative_offset=07123_W_öberprÅfe "$1: Der Offset des Speicheroperanden ist negativ "$2 byte
@@ -2991,7 +3080,7 @@ asmr_e_a64_regset_too_large=07147_E_Zu viele Register im Registerset.
 #
 # Assembler/binary writers
 #
-# 08037 is the last used one
+# 08039 is the last used one
 #
 asmw_f_too_many_asm_files=08000_F_Zu viele Assembler-Dateien
 % With smartlinking enabled, there are too many assembler
@@ -3016,8 +3105,8 @@ asmw_e_duplicate_label=08016_E_Asm: Doppeltes Label $1
 asmw_e_redefined_label=08017_E_Asm: Neu definiertes Label $1
 asmw_e_first_defined_label=08018_E_Asm: First beginnt hier
 asmw_e_invalid_register=08019_E_Asm: UngÅltiges Register $1
-asmw_e_16bit_32bit_not_supported=08020_E_Asm: 16 oder 32 Bit Referenzen werden nicht unterstÅtzt
-asmw_e_64bit_not_supported=08021_E_Asm: 64 Bit Operanden werden nicht unterstÅtzt
+asmw_e_16bit_32bit_not_supported=08020_E_Asm: 16- oder 32-Bit-Verweise werden nicht unterstÅtzt
+asmw_e_64bit_not_supported=08021_E_Asm: 64-Bit-Operanden werden nicht unterstÅtzt
 asmw_e_bad_reg_with_rex=08022_E_Asm: AH, BH, CH oder DH kînnen nicht in einer Instruktion verwendt werden, die den Prefix REX benîtigt
 % x86_64 only: instruction encoding of this platform does not allow using
 % 8086 high byte registers (AH, BH, CH or DH) together with REX prefix in a single instruction.
@@ -3041,15 +3130,17 @@ asmw_h_changing_bind_type=08028_H_énderung des Bind-Typs des Symbols $1 von $2 n
 % First version is reserved for changig to local label, which is the most probable cause
 % of wrong code generation, but currently set to Note level as it appears inside
 % the compiler compilation.
-asmw_e_32bit_not_supported=08029_E_Asm: 32 Bit Referenzen werden nicht unterstÅtzt
+asmw_e_32bit_not_supported=08029_E_Asm: 32-Bit-Referenzen werden nicht unterstÅtzt
 asmw_f_code_segment_too_large=08030_F_Code-Segment zu gro·
 asmw_f_data_segment_too_large=08031_F_Data-Segment zu gro·
 asmw_e_instruction_not_supported_by_cpu=08032_E_Befehl wird vom ausgewÑhlten Befehlssatz nicht unterstÅtzt
-asmw_e_brxx_out_of_range=08033_E_Asm: Das Ziel des bedingten Zweigs ist au·erhalb des Bereichs
+asmw_e_destination_out_of_range=08033_E_Asm: Das Ziel $1 ist au·erhalb des Bereichs
 asmw_e_illegal_use_of_rip=08034_E_Asm: RIP kann nicht als Indexregister oder mit einem anderen Register in einer Referenz verwendet werden
 asmw_e_seh_invalid_data_size=08035_F_UngÅltige Funktionsgrî·e einer SEH-Funktion
 asmw_e_illegal_use_of_sp=08036_E_Asm: ESP/RSP kann nicht als Indexregister verwendet werden
 asmw_e_illegal_unset_index=08037_E_Wasm32 Symbol $1 ohne Indexwert Fehler
+asmw_e_destination_and_source_registers_must_be_distinct=08038_E_Asm: $1 Ziel- und Quellregister mÅssen unterschiedlich sein
+asmw_e_registers_should_be_distinct=08039_E_Asm: $1 Register sollten unterschiedlich sein
 %
 % \end{description}
 # EndOfTeX
@@ -3102,7 +3193,7 @@ exec_w_libfile_not_found=09012_W_Bibliothek $1 nicht gefunden, Linken kann fehls
 % Check your paths.
 exec_e_error_while_linking=09013_E_Fehler beim Linken
 % Generic error while linking.
-exec_e_cant_call_linker=09014_E_Linker kann nicht aufgerufen werden, schalte um zu externem Linken
+exec_e_cant_call_linker=09014_E_Linker kann nicht aufgerufen werden, schalte um zu externem Linken (Fehler war "$1")
 % An error occurred when calling an external linker. The compiler will produce a script that
 % can be used to assemble and link the program.
 exec_i_linking=09015_I_Linke $1
@@ -3197,7 +3288,7 @@ execinfo_x_stackcommit=09134_X_Stack Bereich "committed": $1 Byte
 #
 # Internal linker messages
 #
-# 09222 is the last used one
+# 09224 is the last used one
 #
 # BeginOfTeX
 %
@@ -3206,20 +3297,20 @@ execinfo_x_stackcommit=09134_X_Stack Bereich "committed": $1 Byte
 % \begin{description}
 link_f_executable_too_big=09200_F_Das Programm - Image ist fÅr das Target $1 zu gro·
 % Fatal error when resulting executable is too big.
-link_w_32bit_absolute_reloc=09201_W_Objektdatei "$1" enthÑlt eine 32-bit absolute Relocation auf Symbol "$2".
-% Warning when 64-bit object file contains 32-bit absolute relocations.
+link_w_32bit_absolute_reloc=09201_W_Objektdatei "$1" enthÑlt eine 32-Bit absolute Relocation auf Symbol "$2".
+% Warning when 64 bit object file contains 32 bit absolute relocations.
 % In such case an executable image can be loaded into lower 4Gb of
 % address space only.
 link_e_program_segment_too_large=09202_E_Program-Segment zu gro· (Åbersteigt 64k um $1 Byte)
-% Error when a 16-bit program is compiled in the tiny memory model, but its size exceeds 64k
+% Error when a 16 bit program is compiled in the tiny memory model, but its size exceeds 64k
 link_e_code_segment_too_large=09203_E_Code-Segment "$1" zu gro· (Åbersteigt 64k um $2 Byte)
-% Error when a 16-bit program's code segment exceeds 64k bytes
+% Error when a 16 bit program's code segment exceeds 64k bytes
 link_e_data_segment_too_large=09204_E_Data-Segment "$1" zu gro· (Åbersteigt 64k um $2 Byte)
-% Error when a 16-bit program's data segment exceeds 64k bytes
+% Error when a 16 bit program's data segment exceeds 64k bytes
 link_e_segment_too_large=09205_E_Segment "$1" zu gro· (Åbersteigt 64k um $2 Byte)
-% Error when a 16-bit program contains a segment that exceeds 64k bytes
+% Error when a 16 bit program contains a segment that exceeds 64k bytes
 link_e_group_too_large=09206_E_Gruppe "$1" zu gro· (Åbersteigt 64k um $2 Byte)
-% Error when a 16-bit program's object modules define a segment group that
+% Error when a 16 bit program's object modules define a segment group that
 % exceeds 64k bytes
 link_e_com_program_uses_segment_relocations=09207_E_Eine .COM-Datei kann nicht erzeugt werden, weil das Programm Segment-Relocations enthÑlt
 % Error occurs, when creating a tiny model DOS .COM file, but at least one of
@@ -3263,6 +3354,10 @@ link_e_undefined_symbol_in_obj=09221_E_Nicht definiertes Symbol: $1 (Zuerst gese
 % The specified symbol is used, but not defined and was first seen in the specified object file.
 link_e_undefined_symbol=09222_E_Nicht definiertes Symbol: $1
 % The specified symbol is used, but not defined.
+link_w_unsupported_cross_endian_internal_linker=09223_W_Der interne Linker in cross-endian Konfiguration ist noch eine unfertige Baustelle
+% The internal linker does not correctly handle endianess conversion.
+link_f_executable_too_big_exceeds_X_by_Y_bytes=09224_F_Die Grî·e des ausfÅhrbaren Image ist fÅr das Zielsystem $1 zu gro· (Åberschreitet $2 um $3 Byte)
+% The result File is too big
 %
 % \end{description}
 # EndOfTeX
@@ -3270,7 +3365,7 @@ link_e_undefined_symbol=09222_E_Nicht definiertes Symbol: $1
 #
 # Unit loading
 #
-# 10070 is the last used one
+# 10071 is the last used one
 #
 # BeginOfTeX
 %
@@ -3300,10 +3395,10 @@ unit_u_ppu_invalid_header=10007_U_PPU UngÅltiger Header (kein PPU am Anfang)
 unit_u_ppu_invalid_version=10008_U_PPU UngÅltige Version $1
 % This unit file was compiled with a different version of the compiler, and
 % cannot be read.
-unit_u_ppu_invalid_processor=10009_U_PPU ist fÅr einen anderen Prozessor Åbersetzt
+unit_u_ppu_invalid_processor=10009_U_PPU ist fÅr den anderen Prozessor $1 Åbersetzt
 % This unit file was compiled for a different processor type, and
 % cannot be read.
-unit_u_ppu_invalid_target=10010_U_PPU ist fÅr ein anderes Zielsystem Åbersetzt
+unit_u_ppu_invalid_target=10010_U_PPU ist fÅr das andere Zielsystem $1 Åbersetzt
 % This unit file was compiled for a different processor type, and
 % cannot be read.
 unit_u_ppu_source=10011_U_PPU Quelle: $1
@@ -3504,6 +3599,9 @@ unit_u_ppu_symansistr_mismatch=10069_U_öberspringe Unit, PPU und Compiler mÅssen
 unit_u_ppu_wasm_threads_mismatch=10070_U_PPU und Programm mÅssen beide mit oder ohne WebAssembly-Multithreading-UnterstÅtzung kompiliert werden
 % The user is compiling a program with multithreading turned on, but the unit was compiled with multithreading off,
 % or vice versa.
+unit_w_unsupported_esp_idf_version=10071_W_esp-idf Version nicht unterstÅtzt
+% FPC supports only certain ESP-IDF versions. It is very unlikely that the resulting program works if this
+% warning is thrown.
 %
 % \end{description}
 # EndOfTeX
@@ -3511,7 +3609,7 @@ unit_u_ppu_wasm_threads_mismatch=10070_U_PPU und Programm mÅssen beide mit oder 
 #
 # Options
 #
-# 11064 is the last used one
+# 11070 is the last used one
 #
 # BeginOfTeX
 %
@@ -3672,6 +3770,19 @@ option_unsupported_fpu=11063_F_Der ausgewÑhlte FPU-Typ "$1" wird vom ausgewÑhlte
 % Not all instruction sets support all FPU types. For example on ARM, Thumb(-1) supports no FPU/VFP instruction set
 option_too_many_exception_modes=11064_E_Nur ein unterstÅtzter Modus von WebAssembly Exceptions darf angegeben werden.
 % Only one WebAssembly exception support mode (NOEXCEPTIONS, JSEXCEPTIONS, BFEXCEPTIONS or NATIVEEXCEPTIONS) can be specified.
+option_subtarget_is_already_set=11065_W_Subzielsystem is bereits auf $1 gesetzt
+% Displayed if more than one \var{-t} option is specified.
+option_subtarget_config_not_found=11066_E_Subzielsystem $1 angegeben, aber keine entsprechende Konfigurationsdatei $2 gefunden.
+% Displayed if more than one \var{-t} option is specified.
+option_x_ignored=11067_N_Ignoriere den Compiler-Programm-Suffix $1.
+% Displayed if more than one \var{-t} option is specified.
+option_switch_bin_to_src_assembler_cross_endian=11068_N_Schalte in der cross-endian Konfiguration um auf den voreingestellten, Quellcode-schreibenden Assembler
+% This notifies you that the assembler has been changed because
+% the binary assembler writer is not yet ready for cross-endian configuration.
+option_e_win16_unsupported_memory_model=11069_W_Nicht unterstÅtztes Speichermodell $1 fÅr das System Win16
+% i8086-win16 system only supports large and huge memory models.
+option_n_win16_set_default_large_memory_model=11070_N_Setze das Speichermodell fÅr das System Win16 auf "large"
+% i8086-win16 requires at least large memory model.
 %
 % \end{description}
 # EndOfTeX
@@ -3749,8 +3860,8 @@ wpo_symbol_live_info_needs_smart_linking=12018_E_Die Sammlung der "symbol livene
 % actually used or not. So in that case all symbols will be seen as live, which makes this optimization ineffective.
 wpo_cant_create_feedback_file=12019_E_Die angegebene Feedback-Eingabe-Datei "$1" fÅr die Gesamtprogramm-Optimierung kann nicht erzeugt werden
 % The compiler is unable to create the file specified using the -FW parameter to store the whole program optimisation information.
-%\end{description}
 %
+% \end{description}
 # EndOfTeX
 
 #
@@ -3851,7 +3962,7 @@ package_u_ppl_filename=13029_U_PPL Dateiname $1
 #
 option_logo=11023_[
 Free Pascal Compiler Version $FPCFULLVERSION [$FPCDATE] fÅr $FPCTARGET
-Copyright (c) 1993-2023 Florian KlÑmpfl und andere
+Copyright (c) 1993-2026 Florian KlÑmpfl und andere
 ]
 
 #
@@ -3921,7 +4032,7 @@ diskutiert werden kînnen, usw.):
 #    3 = 80x86 targets
 #    4 = x86_64
 #    6 = 680x0 targets
-#    8 = 8086 (16-bit) targets
+#    8 = 8086 (16 bit) targets
 #    a = AArch64
 #    A = ARM
 #    e = in extended debug mode only
@@ -3929,6 +4040,7 @@ diskutiert werden kînnen, usw.):
 #    I = VIS
 #    J = JVM
 #    L = LLVM variant
+#    l = loongarch64 targets
 #    M = MIPS (MIPSEB) targets
 #    m = MIPSEL targets
 #    P = PowerPC targets
@@ -3961,6 +4073,7 @@ F*0*_Es werden nur Optionen aufgelistet, die fÅr die voreingestellte oder ausgew
 **2ao_FÅge eine zusÑtzliche Option zum Aufruf des externen Assemblers hinzu (ignoriert fÅr den internen Assembler)
 *L2ap_Benutze Pipes anstelle temporÑrer Assembler-Dateien
 **2ar_Liste Registerbelegungsinformation in Assembler-Datei
+**2aR_Liste RTTI-Informationen in Assembler-Datei
 **2at_Liste Temp. Variablenbelegungsinfo in Assembler-Datei
 # Choice of assembler used
 **1A<x>_Ausgabe Format:
@@ -3969,7 +4082,7 @@ F*0*_Es werden nur Optionen aufgelistet, die fÅr die voreingestellte oder ausgew
 3*2Aas-darwin_Assembliere Darwin Mach-O mit Hilfe von GNU GAS
 3*2Acoff_COFF (Go32v2) mit Hilfe des internen Schreibers
 3*2Aelf_ELF (Linux) mit Hilfe des internen Schreibers
-3*2Amacho_Mach-O (Darwin, Intel 32 bit) mit Hilfe des internen Schreibers
+3*2Amacho_Mach-O (Darwin, Intel-32-Bit) mit Hilfe des internen Schreibers
 3*2Amasm_Objektdatei mit Hilfe von Masm (Microsoft)
 3*2Anasm_Assembliere mit Hilfe von Nasm
 3*2Anasmcoff_COFF (Go32v2) Datei mit Hilfe von Nasm
@@ -3984,12 +4097,12 @@ F*0*_Es werden nur Optionen aufgelistet, die fÅr die voreingestellte oder ausgew
 3*2Ayasm_Assembliere mit Hilfe von Yasm (experimentell)
 4*2Aas_Assembliere mit Hilfe von GNU AS
 4*2Aas-darwin_Assembliere Darwin Mach-O64 mit Hilfe von GNU GAS
-4*2Aelf_ELF (Linux-64bit) mit Hilfe des internen Schreibers
+4*2Aelf_ELF (Linux-64-Bit) mit Hilfe des internen Schreibers
 4*2Agas_Assembliere mit Hilfe von GNU AS
 4*2Amasm_Win64 Objektdatei mit Hilfe von ml64 (Microsoft)
 4*2Anasm_Assembliere mit Hilfe von Nasm (experimentell)
 4*2Anasmdarwin_Assembliere darwin Macho64 Objektdatei mit Hilfe von Nasm (experimentell)
-4*2Anasmelf_Assembliere Linux-64bit Objektdatei mit Hilfe von Nasm (experimentell)
+4*2Anasmelf_Assembliere Linux-64-Bit Objektdatei mit Hilfe von Nasm (experimentell)
 4*2Anasmwin64_Assembliere Win64 Objektdatei mit Hilfe von Nasm (experimentell)
 4*2Apecoff_PE-COFF (Win64) mit Hilfe des internen Schreibers
 4*2Ayasm_Assembliere mit Hilfe von Yasm (experimentell)
@@ -4005,20 +4118,23 @@ A*2Aas-darwin_Assembliere mit Hilfe von GNU AS fÅr Darwin Zielsysteme
 A*2Aclang_Assembliere mit Hilfe von clang
 A*2Aelf_Assembliere mit Hilfe des internen ELF-Schreibers
 a*2Aas_Assembliere mit Hilfe von GNU AS
-a*2Aas-clang_AAssembliere mit Hilfe von clang fÅr andere Zielsysteme 
+a*2Aas-clang_AAssembliere mit Hilfe von clang fÅr andere Zielsysteme
 a*2Aclang_Assembliere mit Hilfe von clang fÅr Darwin/iOS Zielsysteme
 P*2Aas_Assembliere mit Hilfe von GNU AS
 S*2Aas_Assembliere mit Hilfe von GNU AS
 s*2Aas_Assembliere mit Hilfe von GNU AS
 v*2Aas_Assembliere mit Hilfe von GNU AS
-W*2Awasm_Assembliere mit Hilfe des internen Objektschreibers fÅr wasm32 (experimentell)
+W*2Awasm_Assembliere mit Hilfe des internen Objektschreibers fÅr wasm32
 W*2Abinaryen_Assembliere mit Hilfe von GNU AS fÅr wasm32 (wasm-as) (experimentell)
-W*2Allvm-mc-10_Assembliere mit Hilfe von llvm-mc-10
 W*2Allvm-mc-11_Assembliere mit Hilfe von llvm-mc-11
 W*2Allvm-mc-12_Assembliere mit Hilfe von llvm-mc-12
-W*2Allvm-mc-13_Assembliere mit Hilfe von llvm-mc-13
-W*2Allvm-mc_Assembliere mit Hilfe von llvm-mc (Version 14 oder spÑter)
-W*2Awabt_Assembliere mit Hilfe von wasa (experimentell)
+W*2Allvm-mc-13_Assembliere mit Hilfe von llvm-mc-13 (funktioniert nicht wegen Bugs in llvm)
+W*2Allvm-mc-14_Assembliere mit Hilfe von llvm-mc-14 (funktioniert nicht wegen Bugs in llvm)
+W*2Allvm-mc-15_Assembliere mit Hilfe von llvm-mc-15
+W*2Allvm-mc-16_Assembliere mit Hilfe von llvm-mc-16
+W*2Allvm-mc-17_Assembliere mit Hilfe von llvm-mc-17
+W*2Allvm-mc_Assembliere mit Hilfe von llvm-mc (Version 18 oder spÑter)
+W*2Awasa_Assembliere mit Hilfe von wasa (experimentell)
 x*2Aas_Assembliere mit Hilfe von GNU AS
 Z*2Asdcc-sdasz80_Assembliere mit Hilfe von SDCC-SDASZ80
 Z*2Avasm_Assembliere mit Hilfe von Vasm
@@ -4028,10 +4144,15 @@ Z*2Az80asm_Assembliere mit Hilfe von z80asm
 **2bl_Erzeuge Info zu lokalen Symbolen
 **1B_Erzeuge alle Module (Build)
 **1C<x>_Optionen fÅr Code-Erzeugung:
-**2C3<x>_Schalte ieee-PrÅfung von Konstanten ein
+**2C3<x>_Schalte IEEE-PrÅfung von Konstanten ein
 **2Ca<x>_WÑhle ABI aus; fpc -i oder fpc -ia geben die mîglichen Werte aus
 **2Cb_Erzeuge Code fÅr die "big-endian"-Variante der Zielarchitektur
 **2Cc<x>_Setze "default calling convention" zu <x>
+V*2Cd<x>_Verwerfe ausgewÑhlte RTL Start-Sektionen (Mit Vorsicht nutzen)
+V*3Cdc_Verwerfe Intialisierungsdaten. FÅr die Daten wird die Voreinstellung der Noinit-Sektion verwendet
+V*3Cdj_Verwerfe den Sprung nach PASCALMAIN. Nur verwenden, wenn PASCALMAIN direkt dem Start-Code folgt
+V*3Cds_Verwerfe den _START Code. Nur verwenden, wenn alle Interrupts ausgeschaltet sind
+V*3Cdz_Verwerfe Code, der das Zero-Register und den Stack-Pointer initialisiert
 **2CD_Erzeuge auch eine dynamische Bibliothek (nicht unterstÅtzt)
 **2Ce_öbersetze mit emulierten Fliesskomma opcodes
 **2CE_Erzeuge FPU Code, der Ausnahmen (exceptions) auslîsen kann
@@ -4047,7 +4168,7 @@ L*3Clfltonosystem_Schalte LTO fÅr die Systemunit aus (benîtigt fÅr Xcode 10.2 un
 L*3Clflsanitize=address_Schalte Adressenbereiniger (address sanitizer) ein
 L*3Clv<x>_LLVM Zielversion: Xcode-10.1, 7.0, 8.0, .., 10.0
 **2Cn_Lasse die Linkstufe aus
-P*2CN_Erzeuge öberprÅfungen auf Nil-Zeiger (nur AIX)
+W*2CN_Erzeuge öberprÅfungen auf Nil-Zeiger
 **2Co_PrÅfe auf öberlauf von Integer-Operationen
 **2CO_PrÅfe auf mîglichen öberlauf von Integer-Operationen
 **2Cp<x>_WÑhle Befehlssatz aus; fpc -i oder fpc -ic geben die mîglichen Werte aus
@@ -4085,6 +4206,7 @@ W*3CTbfexceptions_        Schalte die UnterstÅtzung von verzweigten WebAssembly 
 W*3CTjsexceptions_        Schalte die UnterstÅtzung von JavaScript-basierten Exceptions fÅr WebAssembly ein (experimentell)
 W*3CTwasmexceptions_      Schalte die UnterstÅtzung von nativen WebAssembly-Exceptions ein
 W*3CTwasmthreads_         Schalte die UnterstÅtzung von WebAssembly-Threads ein (experimentell)
+W*3CTsaturatingfloattoint_ Verwende sÑttigende (ohne Trapauslîsung) Flie·komma-nach-Integer Konversions-Instruktionen
 J*2Cv_Var/out Parameter copy-out öberprÅfung
 A*2CV<x>_Setze das Section-Threadvar-Modell auf <x>
 **2CX_Benutze Smartlinking
@@ -4117,6 +4239,7 @@ A*2CV<x>_Setze das Section-Threadvar-Modell auf <x>
 **2Fo<x>_ErgÑnze <x> zum Objektdatei-Pfad
 **2Fr<x>_Lade die Fehlermeldungs-Datei <x>
 **2FR<x>_Setze den Resource (.res) Linker auf <x>
+**2Ft_Suche nicht nach Unit-Dateien mit gro· geschriebenen oder 8.3 formatierten Dateinamen auf Dateisystemen mit Gro·/Kleinschreibung.
 **2Fu<x>_ErgÑnze <x> zum Unit-Pfad
 **2FU<x>_Units werden nach <x> ausgegeben, hat Vorrang vor -FE
 **2Fw<x>_Lade das bereits gespeicherte Feedback fÅr die Gesamtprogramm-Optimierung aus <x>
@@ -4193,7 +4316,7 @@ L*2il_Zeige Liste der unterstÅtzten LLVM/Xcode Versionen des LLVM-Backend
 F*1P<x>_Zielprozessor / Compiler bezogene Optionen:
 F*2PB_Zeige die voreingestellte CompilerbinÑrdatei
 F*2PP_Zeige den voreingestellten Zielprozessor
-F*2P<x>_Setze den Zielprozessor (aarch64,arm,avr,i386,i8086,jvm,m68k,mips,mipsel,powerpc,powerpc64,sparc,x86_64)
+F*2P<x>_Setze den Zielprozessor (aarch64, arm, avr, i386, i8086, jvm, loongarch64, m68k, mips, mipsel, powerpc, powerpc64, riscv32, riscv64, sparc, sparc64, wasm32, x86_64, xtensa, z80)
 **1R<x>_Assembler Code-Format:
 **2Rdefault_Benutze den voreingestellten Assembler
 3*2Ratt_Lese Assembler Code im AT&T-Format
@@ -4211,7 +4334,7 @@ F*2P<x>_Setze den Zielprozessor (aarch64,arm,avr,i386,i8086,jvm,m68k,mips,mipsel
 **1S<x>_Syntax-Optionen:
 **2S2_Schalte einige der Delphi 2 Erweiterungen ein (wie -Mobjfpc)
 **2Sa_Erlaube assertion code.
-**2Sc_UnterstÅtze spezielle C-Operatoren (*=,+=,/= and -=)
+**2Sc_UnterstÅtze Zuweisungsoperatoren wie in der Sprache C (*=, +=, /= und -=)
 **2Sd_Sei Delphi-kompatibel (wie -Mdelphi)
 **2Se<x>_Fehler Optionen. <x> ist eine der folgenden Kombinationen:
 **3*_<n> : Compiler hÑlt nach <n> Fehlern (Voreinstellung ist 1)
@@ -4227,7 +4350,7 @@ F*2P<x>_Setze den Zielprozessor (aarch64,arm,avr,i386,i8086,jvm,m68k,mips,mipsel
 **3SIcorba_CORBA kompatibles Interface
 **2Sj_Erlaube das Schreiben von typisierten Konstanten (Voreinstellung in allen Modi)
 **2Sk_Lade fpcylix Unit
-**2Sm_UnterstÅtze Makros wie in C (global)
+**2Sm_UnterstÅtze Makros wie in der Sprache C (global)
 **2So_Sei TP/BP 7.0 kompatibel (wie -Mtp)
 **2Sr_Transparente Dateinamen im ISO-Modus
 **2Ss_Konstruktor- und Destruktorname mÅssen "Init" und "Done" sein
@@ -4256,7 +4379,7 @@ F*2P<x>_Setze den Zielprozessor (aarch64,arm,avr,i386,i8086,jvm,m68k,mips,mipsel
 3*2Tsymbian_Symbian OS
 3*2Twatcom_Watcom compatible DOS extender
 3*2Twdosx_WDOSX DOS extender
-3*2Twin32_Windows 32 Bit
+3*2Twin32_Windows 32-Bit
 3*2Twince_Windows CE
 # x86_64 targets
 4*2Tandroid_Android
@@ -4271,21 +4394,21 @@ F*2P<x>_Setze den Zielprozessor (aarch64,arm,avr,i386,i8086,jvm,m68k,mips,mipsel
 4*2Tnetbsd_NetBSD
 4*2Topenbsd_OpenBSD
 4*2Tsolaris_Solaris
-4*2Twin64_Win64 (64 bit Windows Systeme)
+4*2Twin64_Win64 (64-Bit Windows Systeme)
 # m68k targets
 6*2Tamiga_Commodore Amiga
 6*2Tatari_Atari ST/STe/TT
 6*2Tembedded_Embedded
+6*2Thuman68k_Human 68k
 6*2Tlinux_Linux
 6*2Tnetbsd_NetBSD
-6*2Tmacos_Mac OS
 6*2Tmacosclassic_Classic Mac OS
 6*2Tpalmos_PalmOS
 6*2Tsinclairql_Sinclair QL
 # i8086 targets
 8*2Tembedded_Embedded
 8*2Tmsdos_MS-DOS (und kompatible)
-8*2Twin16_Windows 16 Bit
+8*2Twin16_Windows 16-Bit
 # arm targets
 A*2Tandroid_Android
 A*2Taros_AROS
@@ -4302,17 +4425,22 @@ A*2Twince_Windows CE
 # aarch64 targets
 a*2Tandroid_Android
 a*2Tdarwin_Darwin/Mac OS X
+a*2Tembedded_Embedded
 a*2Tfreebsd_FreeBSD
+a*2Tiphonesim_iPhoneSimulator
 a*2Tios_iOS
 a*2Tlinux_Linux
 a*2Twin64_Windows 64
 # jvm targets
 J*2Tandroid_Android
 J*2Tjava_Java
+# loongarch64 targets
+l*2Tlinux_Linux
 # mipsel targets
 m*2Tandroid_Android
 m*2Tembedded_Embedded
 m*2Tlinux_Linux
+m*2Tps1_PlayStation 1
 # mipseb targets
 M*2Tembedded_Embedded
 M*2Tlinux_Linux
@@ -4358,26 +4486,47 @@ Z*2Tzxspectrum_ZX Spectrum
 # wasm32 targets
 W*2Tembedded_Embedded
 W*2Twasi_Das WebAssembly System Interface (WASI)
+W*2Twasip1_Das WebAssembly System Interface Vorschau 1 (WASI 0.1)
+W*2Twasip1threads_Das WebAssembly System Interface Vorschau 1 mit Multithreading (WASI 0.1 + wasi-threads)
+W*2Twasip2_Das WebAssembly System Interface Vorschau 2 (WASI 0.2) (experimentell)
 # end of targets section
+**1t<x>_Zielsystem-Architektur
+**2*_ * Definiert FPC_SUBTARGET_<x>
+**2*_ * Definiert FPC_SUBTARGET als <arg>
+**2*_ * Liest zusÑtzlich die Konfigurationsdatei fpc-<subtarget>.cfg
 **1u<x>_Entferne die Definition fÅr das Symbol <x>
 **1U<x>_Unit-Optionen:
 **2Un_PrÅfe den Unitnamen nicht
 **2Ur_Erzeuge "release unit"-Dateien
 **2Us_Erzeuge eine Systemunit
 **1v<x>_Meldungen, <x> ist eine Kombination der folgenden Zeichen:
-**2*_0 : Nichts (au·er Fehlern)        p : Schreibe tree.log mit Analysenbaum (parse tree)
-**2*_a : Alles                         q : Nummer der Meldung
-**2*_b : Schreibe bei Meldungen mit    r : Rhide/GCC kompatibler Modus
-**2*_    Dateinamen den vollstÑndigen  s : Zeitstempel
-**2*_    Pfad                          t : Angesprochene/benutzte Dateien
-**2*_c : Preprozessordirektiven        u : Unit Informationen
-**2*_d : Debug-Informationen           v : Schreibe fpcdebug.txt mit
-**2*_e : Fehler (Standard)                 ganz viel Information
-**2*_h : Hinweise                      w : Warnungen 
-**2*_i : Allgemeine Informationen      x : Zeige Infos Åber aufgerufene Tools
-**2*_l : Zeilennummern                 z : Schreibe output nach stderr
-**2*_m<x>,<y> : Zeige die Meldungen mit den Nummern <x> und <y> nicht
-**2*_n : Anmerkungen                   
+**2*_0 : Nichts (au·er Fehlern)
+**2*_a : Alles
+**2*_b : Schreibe bei Meldungen mit Dateinamen den vollstÑndigen Pfad
+**2*_c : Preprozessordirektiven
+**2*_d : Debug-Informationen
+**2*_e : Fehler (Standard)
+**2*_f : (ungenutzt)
+**2*_g : (ungenutzt)
+**2*_h : Hinweise
+**2*_i : Allgemeine Informationen
+**2*_j : (ungenutzt)
+**2*_k : (ungenutzt)
+**2*_l : Zeilennummern
+**2*_m<x>,<y> : Keine Meldungen mit den Nummern <x> und <y>
+**2*_n : Anmerkungen
+**2*_o : (ungenutzt)
+**2*_p : Schreibe tree.log mit Analysenbaum (parse tree)
+**2*_q : Nummer der Meldung
+**2*_r : Rhide/GCC kompatibler Modus
+**2*_s : Zeitstempel
+**2*_t : Angesprochene/benutzte Dateien
+**2*_u : Unit-Informationen
+**2*_v : Schreibe fpcdebug.txt mit ganz viel Informationen
+**2*_w : Warnungen
+**2*_x : Informationen Åber aufgerufene Werkzeuge
+**2*_y : (ungenutzt)
+**2*_z : Schreibe die Ausgabe nach stderr
 F*1V<x>_HÑnge '-<x>' an den Namen der Compilerbinary an (z.B. fÅr die Version)
 **1W<x>_Spezifiziere ein natives Programm (Windows)
 3*2WA_Spezifiziere ein natives Programm (Windows)
@@ -4448,6 +4597,7 @@ x*2Wp<x>_Spezifiziere den Kontrollertyp; fpc -i oder fpc -iu geben mîgliche Wert
 4*2WP<x>_Minimale iOS Deployment Version: 8.0, 8.0.2, ... (iphonesim)
 a*2WP<x>_Minimale iOS Deployment Version: 7.0, 7.1.2, ... (Darwin)
 A*2WP<x>_Minimale iOS Deployment Version: 3.0, 5.0.1, ... (Darwin)
+R*2WP<x>_esp-idf Versionsnummer: 4.4, 5.0.6, ... (esp32c3)
 x*2WP<x>_Esp8266-rtos-sdk oder esp-idf Versionsnummer: 3.3, 3.4 (esp8266) oder 4.2, 4.3 (esp32)
 3*2WR_Erzeuge "relocation code" (Windows)
 4*2WR_Erzeuge "relocation code" (Windows)
@@ -4463,9 +4613,10 @@ P*2WT_Spezifiziere "MPW tool type application" (Classic Mac OS)
 6*3WQqhdr_Setze Metadata auf QDOS Datei-Header Stil (Voreinstellung)
 6*3WQxtcc_Setze Metadata auf XTcc Stil
 **2WX_Ermîgliche den executable stack (Linux)
+**1x<suff>_Setze den Suffix fÅr das Compiler-Programm (nur fÅr das fpc Kommando)
 **1X_Programm-Optionen:
 **2X9_Erzeuge Linkerscript fÅr GNU Binutils ld Ñlter als Version 2.19.1 (Linux)
-**2Xa_Erzeuge Code, der auf 64-Bit Zielsystemen mehr als 2 GB statische Daten erlaubt (Linux)
+**2Xa_Erzeuge Code, der auf 64-Bit-Zielsystemen mehr als 2 GB statische Daten erlaubt (Linux)
 **2Xc_öbergebe --shared an den Linker (BeOS, Darwin, FreeBSD, Linux)
 **2Xd_Den Standard Bibliotheks-Suchpfad NICHT nutzen (benîtigt fÅr cross compile, wenn nicht -XR verwendet wird)
 **2XD_Versuche Units dynamisch zu linken             (definiert FPC_LINK_DYNAMIC)

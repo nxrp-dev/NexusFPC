@@ -1,3 +1,4 @@
+{%MainUnit sysutils.pp}
 {
     This file is part of the Free Pascal run time library.
     Copyright (c) 1999-2000 by Florian Klaempfl
@@ -11,6 +12,15 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$MACRO ON}
+{$IFNDEF FPC_DOTTEDUNITS}
+{$DEFINE SUT:=sysutils}
+{$DEFINE BU:=baseunix}
+{$ELSE}
+{$DEFINE SUT:=System.SysUtils}
+{$DEFINE BU:=UnixApi.Base}
+{$ENDIF}
+
 { Using inlining for small system functions/wrappers }
 {$inline on}
 {$define SYSUTILSINLINE}
@@ -71,17 +81,7 @@ type
         2 : (Bytes : Array[0..7] of Byte);
    end;
 
-   Int128Rec = packed record
-      case integer of
-{$ifdef FPC_LITTLE_ENDIAN}
-        0 : (Lo,Hi : QWord);
-{$else FPC_LITTLE_ENDIAN}
-        0 : (Hi,Lo : QWord);
-{$endif FPC_LITTLE_ENDIAN}
-        1 : (DWords : Array[0..3] of DWord);
-        2 : (Words : Array[0..7] of Word);
-        3 : (Bytes : Array[0..15] of Byte);
-   end;
+   Int128Rec = System.Int128Rec;
 
    OWordRec = packed record
       case integer of
@@ -111,15 +111,15 @@ type
     public
       constructor Create(const msg : string);
       constructor CreateFmt(const msg : string; const args : array of const);
-      constructor CreateRes(ResString: PString);
-      constructor CreateResFmt(ResString: PString; const Args: array of const);
+      constructor CreateRes(ResString: PResStringRec);
+      constructor CreateResFmt(ResString: PResStringRec; const Args: array of const);
       constructor CreateHelp(const Msg: string; AHelpContext: Longint);
       constructor CreateFmtHelp(const Msg: string; const Args: array of const;
         AHelpContext: Longint);
-      constructor CreateResHelp(ResString: PString; AHelpContext: Longint);
-      constructor CreateResFmtHelp(ResString: PString; const Args: array of const;
+      constructor CreateResHelp(ResString: PResStringRec; AHelpContext: Longint);
+      constructor CreateResFmtHelp(ResString: PResStringRec; const Args: array of const;
         AHelpContext: Longint);
-      Function ToString : String; override;
+      Function ToString : RTLString; override;
 
       function GetBaseException : Exception;virtual;
 
@@ -161,10 +161,7 @@ type
    end;
 
    EHeapMemoryError = class(Exception)
-     protected
-       AllowFree : boolean;
-     public
-       procedure FreeInstance;override;
+     procedure FreeInstance;override;
    end;
 
    EHeapException = EHeapMemoryError;
@@ -204,6 +201,7 @@ type
    EInvalidInsert = class(Exception);
 
    EPackageError = class(Exception);
+   ECFError = class(Exception);
 
    EOSError = class(Exception)
    public
@@ -217,6 +215,12 @@ type
 
    EProgrammerNotFound = class(Exception);
 
+   EMonitor = class(Exception);
+   EMonitorLockException = class(EMonitor);
+   ENoMonitorSupportException = class(EMonitor);
+
+   EObjectDisposed = class(Exception);
+
    ENotImplemented = class(Exception);
 
    EArgumentException = class(Exception);
@@ -229,9 +233,20 @@ type
    EFileNotFoundException = class(Exception);
    EPathNotFoundException = class(Exception);
 
+   EInOutArgumentException = class(EArgumentException)
+   public
+     Path: string;
+     constructor Create(const aMsg, aPath: string); overload;
+     constructor CreateRes(ResStringRec: PResStringRec; const aPath: string); overload;
+     constructor CreateFmt(const fmt : string;  const args : array of const; const aPath : String); overload;
+   end;
+
    EInvalidOpException = class(Exception);
 
    ENoConstructException = class(Exception);
+   EListError = Class(Exception);
+
+   EOperationCancelled = class(Exception);
 
    { Exception handling routines }
    function ExceptObject: TObject;
@@ -239,11 +254,14 @@ type
    function ExceptFrameCount: Longint;
    function ExceptFrames: PCodePointer;
    function ExceptionErrorMessage(ExceptObject: TObject; ExceptAddr: Pointer;
-                                  Buffer: PChar; Size: Integer): Integer;
+                                  Buffer: PAnsiChar; Size: Integer): Integer;
    procedure ShowException(ExceptObject: TObject; ExceptAddr: Pointer);
    procedure Abort;
    procedure OutOfMemoryError;
-
+   procedure ListIndexError(aIndex,aMax: Integer; aObj: TObject);
+   function ListIndexErrorMsg(aIndex, aMaxIndex: SizeInt; const aListObjName: string): string; overload;
+   function ListIndexErrorMsg(aIndex, aMaxIndex: SizeInt; aListObj: TObject): string; overload;
+   procedure RangeIndexError(aIndex, aMaxIndex: SizeInt; aListObj: TObject);
 
 Type
    TBeepHandler = Procedure;
@@ -267,9 +285,10 @@ type
   procedure AddTerminateProc(TermProc: TTerminateProc);
   function CallTerminateProcs: Boolean;
 
-{$IFNDEF VER3_0}
 generic function IfThen<T>(val:boolean;const iftrue:T; const iffalse:T) :T; inline; overload;
-{$ENDIF}
+generic function Exchange<T>(var target:T; const newvalue:T) :T; inline;
+generic function Extract<T>(var from: T) :T;inline;overload;
+generic procedure Swap<T>(var lhs,rhs: T);inline;overload;
 
 Var
    OnShowException : Procedure (Msg : ShortString);
@@ -289,7 +308,7 @@ Type
    TTextRec=TextRec;
 
 
-  { Read pchar handling functions declaration }
+  { Read PAnsiChar handling functions declaration }
   {$i syspchh.inc}
 
   { MCBS functions }
@@ -329,11 +348,21 @@ Type
   { Type Helpers}
   {$i syshelph.inc}
 
+  {$IFDEF CPULLVM}
+  // LLVM does not allow the constref use.
   procedure FreeAndNil(var obj);
+  {$else}
+  procedure FreeAndNil(constref obj : TObject);
+  {$ENDIF}
   procedure FreeMemAndNil(var p);
 
   { interface handling }
   {$i intfh.inc}
+
+{$IFDEF FPC_HAS_FEATURE_UNICODESTRINGS}
+  { strange Delphi thing }
+  {$i sysmarshalh.inc}
+{$ENDIF}
 
   function SafeLoadLibrary(const FileName: AnsiString;
     ErrorMode: DWord = {$ifdef windows}SEM_NOOPENFILEERRORBOX{$else windows}0{$endif windows}): HMODULE;
@@ -369,5 +398,78 @@ const
 Type
   TUTF8StringDynArray = Array of UTF8String;
 
-Function ArrayOfConstToStr(Args: array of const ; aSeparator : Char = ','; aQuoteBegin : Char = '"'; aQuoteEnd : Char = '"') : UTF8String;
-Function ArrayOfConstToStrArray(Args: array of const) : TUTF8StringDynArray;
+Function ArrayOfConstToStr(const Args: array of const ; aSeparator : Char = ','; aQuoteBegin : Char = '"'; aQuoteEnd : Char = '"') : UTF8String;
+Function ArrayOfConstToStrArray(const Args: array of const) : TUTF8StringDynArray;
+
+{ Delphi compatibility }
+
+Type
+
+  { TOSVersion }
+
+  TOSVersion = record
+  public type
+    TArchitecture = (arIntelX86, arIntelX64, arARM32, arARM64, arIntelX16, arXTensa, arAVR, arM68k, arPowerPC, arPower64,
+                     arMips, arMipsel, arMips64, arMips64el, arJVM, arWasm32, arSparc, arSparc64, arRiscV32, arRiscV64, arZ80,
+                     arLoongArch64, arOther);
+
+    TPlatform = (pfWindows, pfMacOS, pfiOS, pfAndroid, pfWinRT, pfLinux,
+                 pfGo32v2, pfOS2, pfFreeBSD, pfBeos, pfNetBSD, pfAmiga,
+                 pfAtari, pfSolaris, pfQNX, pfNetware, pfOpenBSD, pfWDosX,
+                 pfPalmos, pfMacOSClassic, pfDarwin, pfEMX, pfWatcom,
+                 pfMorphos, pfNetwLibC, pfWinCE, pfGBA, pfNDS, pfEmbedded,
+                 pfSymbian, pfHaiku, pfIPhoneSim, pfAIX, pfJava,
+                 pfNativeNT, pfMSDos, pfWII, pfAROS, pfDragonFly, pfWin16,
+                 pfFreeRTOS, pfZXSpectrum, pfMSXDOS, pfAmstradCPC,
+                 pfSinclairQL, pfWasi, pfOther);
+    TDelphiPlatform = TPlatform.pfWindows..TPlatform.pfLinux;
+  public const
+    AllArchitectures = [Low(TArchitecture) .. High(TArchitecture)];
+    AllPlatforms = [Low(TPlatform) .. High(TPlatform)];
+  private
+    class var FFull : string;
+    class var FArchitecture: TArchitecture;
+    class var FBuild: Integer;
+    class var FMajor: Integer;
+    class var FMinor: Integer;
+    class var FName: string;
+    class var FPlatform: TPlatform;
+    class var FServicePackMajor: Integer;
+    class var FServicePackMinor: Integer;
+  {$IFDEF LINUX}
+    class var FPrettyName: string;
+    class var FLibCVersionMajor: Integer;
+    class var FLibCVersionMinor: Integer;
+  {$ENDIF LINUX}
+    class constructor Create;
+  public
+    class function Check(AMajor: Integer): Boolean; overload; static; inline;
+    class function Check(AMajor, AMinor: Integer): Boolean; overload; static; inline;
+    class function Check(AMajor, AMinor, AServicePackMajor: Integer): Boolean; overload; static; inline;
+    class function ToString: string; static;
+    class property Architecture: TArchitecture read FArchitecture;
+    class property Build: Integer read FBuild;
+    class property Major: Integer read FMajor;
+    class property Minor: Integer read FMinor;
+    class property Name: string read FName;
+    class property Platform: TPlatform read FPlatform;
+    class property ServicePackMajor: Integer read FServicePackMajor;
+    class property ServicePackMinor: Integer read FServicePackMinor;
+  {$IFDEF LINUX}
+    class property PrettyName: string read FPrettyName;
+    class property LibCVersionMajor: Integer read FLibCVersionMajor;
+    class property LibCVersionMinor: Integer read FLibCVersionMinor;
+  {$ENDIF LINUX}
+  end;
+
+  TArchitectures = set of TOSVersion.TArchitecture;
+  TPlatforms = set of TOSVersion.TPlatform;
+  TDelphiPlatforms = set of TOSVersion.TDelphiPlatform;
+
+  Function GetCompiledArchitecture : TOSVersion.TArchitecture;
+  Function GetCompiledPlatform : TOSVersion.TPlatform;
+
+{$IFNDEF HAS_INVALIDHANDLE}
+const
+  INVALID_HANDLE_VALUE = DWORD(-1);
+{$ENDIF}

@@ -10,7 +10,7 @@
 {                                                          }
 {****************[ THIS CODE IS FREEWARE ]*****************}
 {                                                          }
-{     This sourcecode is released for the purpose to       }
+{     This source code is released for the purpose to      }
 {   promote the pascal language on all platforms. You may  }
 {   redistribute it and/or modify with the following       }
 {   DISCLAIMER.                                            }
@@ -44,17 +44,14 @@
 {  1.60     30 Sep 99   Complete recheck preformed         }
 {**********************************************************}
 
+
+{$IFNDEF FPC_DOTTEDUNITS}
 {$ifdef FV_UNICODE}
 UNIT UMsgBox;
 {$else FV_UNICODE}
 UNIT MsgBox;
 {$endif FV_UNICODE}
-
-{2.0 compatibility}
-{$ifdef VER2_0}
-  {$macro on}
-  {$define resourcestring := const}
-{$endif}
+{$ENDIF FPC_DOTTEDUNITS}
 
 {<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>}
                                   INTERFACE
@@ -85,12 +82,21 @@ UNIT MsgBox;
 {$V-} { Turn off strict VAR strings }
 {====================================================================}
 
+{$IFDEF FPC_DOTTEDUNITS}
+USES System.Objects,                                 { Standard GFV units }
+{$ifdef FV_UNICODE}
+     FreeVision.Ufvcommon,FreeVision.Udialogs;
+{$else FV_UNICODE}
+     FreeVision.Fvcommon,FreeVision.Dialogs;
+{$endif FV_UNICODE}
+{$ELSE FPC_DOTTEDUNITS}
 USES objects,                                 { Standard GFV units }
 {$ifdef FV_UNICODE}
      ufvcommon,udialogs;
 {$else FV_UNICODE}
      fvcommon,dialogs;
 {$endif FV_UNICODE}
+{$ENDIF FPC_DOTTEDUNITS}
 
 {***************************************************************************}
 {                              PUBLIC CONSTANTS                             }
@@ -101,7 +107,7 @@ USES objects,                                 { Standard GFV units }
 {---------------------------------------------------------------------------}
 CONST
    mfWarning      = $0000;                            { Display a Warning box }
-   mfError        = $0001;                            { Dispaly a Error box }
+   mfError        = $0001;                            { Display a Error box }
    mfInformation  = $0002;                            { Display an Information Box }
    mfConfirmation = $0003;                            { Display a Confirmation Box }
 
@@ -181,11 +187,19 @@ FUNCTION InputBoxRect (Var Bounds: TRect; Const Title, ALabel: Sw_String;
                                 IMPLEMENTATION
 {<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>}
 
+{$IFDEF FPC_DOTTEDUNITS}
+{$ifdef FV_UNICODE}
+USES FreeVision.Udrivers, FreeVision.Uviews, FreeVision.Uapp{, System.Resources.Resource};                 { Standard GFV units }
+{$else FV_UNICODE}
+USES FreeVision.Drivers, FreeVision.Views, FreeVision.App{, System.Resources.Resource};                    { Standard GFV units }
+{$endif FV_UNICODE}
+{$ELSE FPC_DOTTEDUNITS}
 {$ifdef FV_UNICODE}
 USES UDrivers, UViews, UApp{, Resource};                 { Standard GFV units }
 {$else FV_UNICODE}
 USES Drivers, Views, App{, Resource};                    { Standard GFV units }
 {$endif FV_UNICODE}
+{$ENDIF FPC_DOTTEDUNITS}
 
 {***************************************************************************}
 {                            INTERFACE ROUTINES                             }
@@ -201,7 +215,12 @@ var
   ButtonName: array[0..3] of string[40];
 {$endif FV_UNICODE}
 
-resourcestring  sConfirm='Confirm';
+{$ifdef USE_RESOURCESTRING}
+  resourcestring
+{$else}
+  const
+{$endif}
+                sConfirm='Confirm';
                 sError='Error';
                 sInformation='Information';
                 sWarning='Warning';

@@ -14,11 +14,18 @@
 
  **********************************************************************}
 {$I sdo_global.inc}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit data_acces_intf;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  System.SysUtils, System.Classes, Data.Db;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   SysUtils, Classes, DB;
+{$ENDIF FPC_DOTTEDUNITS}
 
 const
   s_DatabaseName = 'DatabaseName';
@@ -31,7 +38,7 @@ const
   sDB_ALIAS       = 'DBALIAS';
   sSERVER_ADDRESS = 'SERVER_ADDRESS';
   sSERVER_INFO    = 'SERVER_INFO';
-    
+
 type
 
   EDataAccessException = class(Exception);
@@ -59,7 +66,7 @@ type
     procedure SetTransactionHanlde(const ANewX : TDACTransactionHandle);virtual;abstract;
     procedure RestoreTransactionHanlde();virtual;abstract;
     function IsIntransaction() : Boolean;virtual;abstract;
-    //returns FALSE if there is a already transaction, TRUE otherwhise
+    //returns FALSE if there is a already transaction, TRUE otherwise
     function StartTransaction() : Boolean;virtual;abstract;
     procedure RollbackTransaction(); virtual;abstract;
     procedure CommitTransaction();virtual;abstract;
@@ -133,5 +140,5 @@ initialization
 
 finalization
   FreeAndNil(FFactoryList);
-  
+
 end.

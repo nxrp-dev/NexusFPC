@@ -13,11 +13,17 @@
 
  **********************************************************************}
 {$mode objfpc}{$h+}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit PixTools;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses System.Classes, FpImage.Canvas, FpImage;
+{$ELSE FPC_DOTTEDUNITS}
 uses classes, FPCanvas, FPimage;
+{$ENDIF FPC_DOTTEDUNITS}
 
 procedure DrawSolidLine (Canv : TFPCustomCanvas; x1,y1, x2,y2:integer; const color:TFPColor);
 procedure DrawPatternLine (Canv:TFPCustomCanvas; x1,y1, x2,y2:integer; Pattern:TPenPattern; const color:TFPColor);
@@ -60,7 +66,11 @@ procedure FillFloodImageRel (Canv:TFPCustomCanvas; x,y :integer; const Image:TFP
 
 implementation
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses FpImage.Clipping;
+{$ELSE FPC_DOTTEDUNITS}
 uses clipping;
+{$ENDIF FPC_DOTTEDUNITS}
 
 procedure FillRectangleColor (Canv:TFPCustomCanvas; x1,y1, x2,y2:integer);
 begin
@@ -251,7 +261,7 @@ begin
 end;
 
 procedure DrawPatternLine (Canv:TFPCustomCanvas; x1,y1, x2,y2:integer; Pattern:TPenPattern; const color:TFPColor);
-// Is copy of DrawSolidLine with paterns added. Not the same procedure for faster solid lines
+// Is copy of DrawSolidLine with patterns added. Not the same procedure for faster solid lines
 var LinePoints : TLinePoints;
     PutPixelProc : TPutPixelProc;
   procedure HorizontalLine (x1,x2,y:integer);

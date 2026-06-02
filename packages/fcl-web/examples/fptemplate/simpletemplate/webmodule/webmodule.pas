@@ -1,4 +1,4 @@
-unit webmodule; 
+unit webmodule;
 
 {$mode objfpc}{$H+}
 
@@ -16,14 +16,14 @@ type
       AResponse: TResponse; var Handled: Boolean);
   private
     { private declarations }
-    procedure func1callReplaceTag(Sender: TObject; const TagString:String; 
+    procedure func1callReplaceTag(Sender: TObject; const TagString:String;
       TagParams: TStringList; Out ReplaceText: String);
   public
     { public declarations }
-  end; 
+  end;
 
 var
-  FPWebModule1: TFPWebModule1; 
+  FPWebModule1: TFPWebModule1;
 
 implementation
 
@@ -33,16 +33,22 @@ implementation
 
 procedure TFPWebModule1.func1callRequest(Sender: TObject; ARequest: TRequest;
   AResponse: TResponse; var Handled: Boolean);
+var
+  S : String;
 begin
   //ModuleTemplate is a web module global property
-  //To use the Template propery of the current web action (which is visible in
+  //To use the Template property of the current web action (which is visible in
   //the object inspector for every Action), use
   //(Sender as TFPWebAction).Template.FileName := 'mytemplate1.html'; and so on.
-  ModuleTemplate.FileName := 'mytemplate1.html';//best to use full path here
+  ModuleTemplate.FileName := ExtractFilePath(paramstr(0))+'../templates/mytemplate1.html';//best to use full path here
   ModuleTemplate.AllowTagParams := true;
   ModuleTemplate.OnReplaceTag := @func1callReplaceTag;
-
-  AResponse.Content := ModuleTemplate.GetContent;
+  S:=ModuleTemplate.GetContent;
+  {$IF SIZEOF(CHAR)=2}
+  AResponse.Content := UTF8Encode(S);
+  {$ELSE}
+  AResponse.Content := S;
+  {$ENDIF}
 
   Handled := true;
 end;
@@ -61,5 +67,5 @@ begin
 end;
 
 initialization
-  RegisterHTTPModule('TFPWebModule1', TFPWebModule1);
+  RegisterHTTPModule('template', TFPWebModule1);
 end.

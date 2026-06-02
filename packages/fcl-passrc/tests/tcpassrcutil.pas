@@ -1,6 +1,7 @@
 unit tcpassrcutil;
 
 {$mode objfpc}{$H+}
+{$DEFINE NOCONSOLE}
 
 interface
 
@@ -397,10 +398,14 @@ procedure TPasSrcUtilTest.EndSource;
 begin
   AddLine('');
   AddLine('end.');
+  {$IFNDEF PAS2JS}
   FSrc.SaveToStream(FStream);
+  {$ENDIF}
   FStream.Position:=0;
+{$IFNDEF NOCONSOLE}
   Writeln('// Test name : ',Self.TestName);
   Writeln(FSrc.Text);
+{$ENDIF}
 end;
 
 procedure TPasSrcUtilTest.AssertList(Msg: String; Els: array of string);

@@ -334,7 +334,7 @@ function  IndexWord(const buf: array of jchar;len:SizeInt;b:jshort):SizeInt;
 
 {$define FPC_SYSTEM_HAS_FPC_PCHAR_LENGTH}
 
-function fpc_pchar_length(p:pchar):sizeint;[public,alias:'FPC_PCHAR_LENGTH']; compilerproc;
+function fpc_pchar_length(p:PAnsiChar):sizeint;[public,alias:'FPC_PCHAR_LENGTH']; compilerproc;
 begin
   if assigned(p) then
     Result:=IndexByte(TAnsiCharArray(p),high(Result),0)
@@ -344,7 +344,7 @@ end;
 
 
 {$define FPC_SYSTEM_HAS_FPC_PCHAR_TO_SHORTSTR}
-procedure fpc_pchar_to_shortstr(out res : shortstring;p:pchar); compilerproc;
+procedure fpc_pchar_to_shortstr(out res : shortstring;p:PAnsiChar); compilerproc;
 var
   i, len: longint;
   arr: TAnsiCharArray;
@@ -424,7 +424,7 @@ function fpc_shortstr_compare_intern(const left,right:shortstring) : longint; ex
 
 function fpc_shortstr_compare_equal(const left,right:shortstring) : longint; compilerproc;
 begin
-  { perform normal comparsion, because JUArrays.equals() only returns true if
+  { perform normal comparison, because JUArrays.equals() only returns true if
     the arrays have equal length, while we only want to compare curlen bytes }
   result:=fpc_shortstr_compare_intern(left,right);
 end;

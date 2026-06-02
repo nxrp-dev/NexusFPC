@@ -1,3 +1,4 @@
+{%MainUnit classes.pp}
 {
     This file is part of the Free Component Library (FCL)
     Copyright (c) 1999-2000 by the Free Pascal development team
@@ -254,7 +255,7 @@ function TCollection.GetNamePath: string;
 var o : TPersistent;
 begin
   o:=getowner;
-  if assigned(o) and (propname<>'') then 
+  if assigned(o) and (propname<>'') then
      result:=o.getnamepath+'.'+propname
    else
      result:=classname;
@@ -355,7 +356,7 @@ begin
     DoClear;
   finally
     EndUpdate;
-  end;    
+  end;
 end;
 
 
@@ -413,6 +414,17 @@ begin
       cnExtracting : FPONotifyObservers(Self,ooDeleteItem,Pointer(Item));
       cnDeleting   : FPONotifyObservers(Self,ooDeleteItem,Pointer(Item));
     end;
+end;
+
+procedure TCollection.Sort(Const Compare : TCollectionSortCompare_Context; Context : Pointer);
+
+begin
+  BeginUpdate;
+  try
+    FItems.Sort(TListSortComparer_Context(Compare),Context);
+  Finally
+    EndUpdate;
+  end;
 end;
 
 procedure TCollection.Sort(Const Compare : TCollectionSortCompare);

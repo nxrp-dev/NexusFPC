@@ -42,7 +42,9 @@
 
 // $Id: JwaLmAccess.pas,v 1.13 2007/09/05 11:58:50 dezipaitor Exp $
 {$IFNDEF JWA_OMIT_SECTIONS_LM}
+{$IFNDEF FPC_DOTTEDUNITS}
 unit JwaLmAccess;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {$WEAKPACKAGEUNIT}
 
@@ -57,8 +59,13 @@ unit JwaLmAccess;
 
 interface
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses
+  WinApi.Jedi.Winnt, WinApi.Jedi.Wintype, WinApi.Jedi.Lmcons;
+{$ELSE FPC_DOTTEDUNITS}
 uses
   JwaWinNT, JwaWinType, JwaLmCons;
+{$ENDIF FPC_DOTTEDUNITS}
 {$ENDIF JWA_OMIT_SECTIONS_LM}
 
 {$IFNDEF JWA_IMPLEMENTATIONSECTION}
@@ -1744,7 +1751,7 @@ const
   {$EXTERNALSYM ACCESS_NONE}
   ACCESS_ALL  = ACCESS_READ or ACCESS_WRITE or ACCESS_CREATE or ACCESS_EXEC or ACCESS_DELETE or ACCESS_ATRIB or ACCESS_PERM;
   {$EXTERNALSYM ACCESS_ALL}
-  
+
 //
 // Bit values for the acc1_attr field of the ACCESS_INFO_1 structure.
 //
@@ -1919,14 +1926,14 @@ type
   PNET_VALIDATE_OUTPUT_ARG = ^NET_VALIDATE_OUTPUT_ARG;
   {$EXTERNALSYM PNET_VALIDATE_OUTPUT_ARG}
   TNetValidateOutputArg = NET_VALIDATE_OUTPUT_ARG;
-  PNetValidateOutputArg = PNET_VALIDATE_OUTPUT_ARG;  
+  PNetValidateOutputArg = PNET_VALIDATE_OUTPUT_ARG;
 
 //
 //    If authentication type of password check is to be made,
 //        this kind of input must be used
-//        
+//
 //    InputPersistedFields: Information about the account to be logged into
-//    PasswordMatched: Indicates the result of the application's authentication of the supplied password 
+//    PasswordMatched: Indicates the result of the application's authentication of the supplied password
 //
 
   _NET_VALIDATE_AUTHENTICATION_INPUT_ARG = record
@@ -1993,7 +2000,7 @@ type
   PNET_VALIDATE_PASSWORD_RESET_INPUT_ARG = ^NET_VALIDATE_PASSWORD_RESET_INPUT_ARG;
   {$EXTERNALSYM PNET_VALIDATE_PASSWORD_RESET_INPUT_ARG}
   TNetValidatePasswordResetInputArg = NET_VALIDATE_PASSWORD_RESET_INPUT_ARG;
-  PNetValidatePasswordResetInputArg = PNET_VALIDATE_PASSWORD_RESET_INPUT_ARG;  
+  PNetValidatePasswordResetInputArg = PNET_VALIDATE_PASSWORD_RESET_INPUT_ARG;
 
 //
 //    Password Checking API structures end here

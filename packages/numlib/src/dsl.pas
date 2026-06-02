@@ -8,7 +8,7 @@
              documentation by Michael van Canneyt (Michael@freepascal.org)
 
     Unknown unit. There doesn't exist any documentation for it, it isn't
-    commented, and I don't recognize the algortism directly.
+    commented, and I don't recognize the algorithm directly.
     I added some comments, since suffixes of the procedures seem to indicate
     some features of the matrixtype (from unit SLE)
     So probably Some pivot matrix?
@@ -24,13 +24,19 @@
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
  **********************************************************************}
+{$IFNDEF FPC_DOTTEDUNITS}
 Unit dsl;
+{$ENDIF FPC_DOTTEDUNITS}
 
 interface
 {$I DIRECT.INC}
 
 
+{$IFDEF FPC_DOTTEDUNITS}
+uses NumLib.Typ;
+{$ELSE FPC_DOTTEDUNITS}
 uses typ;
+{$ENDIF FPC_DOTTEDUNITS}
 
 {Gen=generic, matrix without special or unknown ordering}
 Procedure dslgen(n, rwidth: ArbInt; Var alu: ArbFloat; Var p: ArbInt;
