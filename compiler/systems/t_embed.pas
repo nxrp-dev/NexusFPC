@@ -554,16 +554,13 @@ begin
       ct_stm32f401cc,
       ct_stm32f401rc,
       ct_stm32f401vc,
-      ct_discoveryf401vc,
       ct_stm32f401cd,
       ct_stm32f401rd,
       ct_stm32f401vd,
       ct_stm32f401ce,
       ct_stm32f401re,
-      ct_nucleof401re,
       ct_stm32f401ve,
       ct_stm32f407vg,
-      ct_discoveryf407vg,
       ct_stm32f407ig,
       ct_stm32f407zg,
       ct_stm32f407ve,
@@ -574,15 +571,12 @@ begin
       ct_stm32f411vc,
       ct_stm32f411ce,
       ct_stm32f411re,
-      ct_nucleof411re,
       ct_stm32f411ve,
-      ct_discoveryf411ve,
       ct_stm32f429vg,
       ct_stm32f429zg,
       ct_stm32f429ig,
       ct_stm32f429vi,
       ct_stm32f429zi,
-      ct_discoveryf429zi,
       ct_stm32f429ii,
       ct_stm32f429ve,
       ct_stm32f429ze,
@@ -599,7 +593,6 @@ begin
       ct_stm32f446zc,
       ct_stm32f446me,
       ct_stm32f446re,
-      ct_nucleof446re,
       ct_stm32f446ve,
       ct_stm32f446ze,
 
@@ -611,7 +604,6 @@ begin
       ct_stm32f756xg,
 
       ct_stm32g071rb,
-      ct_nucleog071rb,
 
       { TI - 64 K Flash, 16 K SRAM Devices }
       ct_lm3s1110,
@@ -705,7 +697,6 @@ begin
       ct_mk20dx128vft5,
       ct_mk20dx128vlf5,
       ct_mk20dx128vlh5,
-      ct_teensy30,
       ct_mk20dx128vmp5,
 
       ct_mk20dx32vfm5,
@@ -729,8 +720,6 @@ begin
       ct_mk20dx256vlk7,
       ct_mk20dx256vll7,
       ct_mk20dx256vmc7,
-      ct_teensy31,
-      ct_teensy32,
 
       ct_mk20dx64vlh7,
       ct_mk20dx64vlk7,
@@ -742,14 +731,10 @@ begin
       ct_mk22fn512vlh12,
       ct_mk22fn512vll12,
       ct_mk22fn512vmp12,
-      ct_freedom_k22f,
 
       { Atmel }
       ct_sam3x8e,
       ct_samd51p19a,
-      ct_arduino_due,
-      ct_flip_n_click,
-      ct_wio_terminal,
 
       { Nordic Semiconductor }
       ct_nrf51422_xxaa,
@@ -768,11 +753,6 @@ begin
 
       { Raspberry rp2040 }
       ct_rp2040,
-      ct_rppico,
-      ct_feather_rp2040,
-      ct_itzybitzy_rp2040,
-      ct_tiny_2040,
-      ct_qtpy_rp2040,
 
       ct_thumb2bare:
         begin

@@ -85,12 +85,20 @@ Type
       ct_CH32VxxxxC
      );
 
+   tboardalias =
+     (ba_none
+     );
+
    tcontrollerdatatype = record
       controllertypestr, controllerunitstr: string[20];
       cputype: tcputype; fputype: tfputype;
       flashbase, flashsize, srambase, sramsize, eeprombase, eepromsize, bootbase, bootsize: dword;
    end;
 
+   tboardaliastype = record
+      boardname: string[20];
+      controller: tcontrollertype;
+   end;
 
 Const
    { Is there support for dealing with multiple microcontrollers available }
@@ -144,6 +152,10 @@ Const
       (controllertypestr:'CH32VXXXXC' ; controllerunitstr:'CH32VxBootstrap';   cputype:cpu_rv32imac; fputype:fpu_none; flashbase:$00000000; flashsize:$00040000; srambase:$20000000; sramsize:$00020000)
    );
    {$POP}
+
+   boardaliases : array [tboardalias] of tboardaliastype =
+    ((boardname:'';controller:ct_none)
+    );
 
 var
    { calling conventions supported by the code generator }

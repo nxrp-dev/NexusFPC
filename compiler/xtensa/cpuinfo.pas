@@ -42,7 +42,6 @@ Type
        cpu_lx7hf
       );
 
-
 Type
    tfputype =
      (fpu_none,
@@ -63,10 +62,19 @@ Type
       ct_esp32s3
      );
 
+   tboardalias =
+     (ba_none
+     );
+
    tcontrollerdatatype = record
       controllertypestr, controllerunitstr: string[20];
       cputype: tcputype; fputype: tfputype; abi: tabi;
       flashbase, flashsize, srambase, sramsize, eeprombase, eepromsize, bootbase, bootsize: dword;
+   end;
+
+   tboardaliastype = record
+      boardname: string[20];
+      controller: tcontrollertype;
    end;
 
 Const
@@ -126,6 +134,10 @@ const
       (controllertypestr:'ESP32S2';	controllerunitstr:'ESP32S2';	cputype:cpu_lx7; fputype:fpu_soft; abi: abi_xtensa_windowed; flashbase:$40000000; flashsize:4*1024*1024),
       (controllertypestr:'ESP32S3';	controllerunitstr:'ESP32S3';	cputype:cpu_lx7hf; fputype:fpu_hard; abi: abi_xtensa_windowed; flashbase:$40000000; flashsize:4*1024*1024)
    );
+
+   boardaliases : array [tboardalias] of tboardaliastype =
+    ((boardname:'';controller:ct_none)
+    );
 
    { Supported optimizations, only used for information }
    supported_optimizerswitches = genericlevel1optimizerswitches+

@@ -39,6 +39,10 @@ Type
        cpu_wasm32
       );
 
+   tboardalias =
+     (ba_none
+     );
+
    tfputype =
      (fpu_none,
       fpu_standard
@@ -54,6 +58,10 @@ Type
       flashbase, flashsize, srambase, sramsize, eeprombase, eepromsize, bootbase, bootsize: dword;
    end;
 
+   tboardaliastype = record
+      boardname: string[20];
+      controller: tcontrollertype;
+   end;
 
 Const
    { Is there support for dealing with multiple microcontrollers available }
@@ -68,6 +76,10 @@ Const
    (
       (controllertypestr:''; controllerunitstr:''; cputype:cpu_none; fputype:fpu_none; flashbase:0; flashsize:0; srambase:0; sramsize:0));
    {$POP}
+
+   boardaliases : array [tboardalias] of tboardaliastype =
+    ((boardname:'';controller:ct_none)
+    );
 
 var
    { calling conventions supported by the code generator }

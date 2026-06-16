@@ -186,6 +186,7 @@ Const
          cputype,
          optimizecputype,
          asmcputype      : tcputype;
+         boardalias      : tboardalias;
          fputype         : tfputype;
          asmmode         : tasmmode;
          interfacetype   : tinterfacetypes;
@@ -552,60 +553,70 @@ Const
         cputype : cpu_none;
         optimizecputype : cpu_none;
         asmcputype : cpu_none;
+        boardalias : ba_none;
         fputype : fpu_none;
 {$else not GENERIC_CPU}
   {$ifdef i386}
         cputype : cpu_Pentium2;
         optimizecputype : cpu_Pentium3;
         asmcputype : cpu_none;
+        boardalias : ba_none;
         fputype : fpu_x87;
   {$endif i386}
   {$ifdef m68k}
         cputype : cpu_MC68020;
         optimizecputype : cpu_MC68020;
         asmcputype : cpu_none;
+        boardalias : ba_none;
         fputype : fpu_soft;
   {$endif m68k}
   {$ifdef powerpc}
         cputype : cpu_PPC604;
         optimizecputype : cpu_ppc7400;
         asmcputype : cpu_none;
+        boardalias : ba_none;
         fputype : fpu_standard;
   {$endif powerpc}
   {$ifdef POWERPC64}
         cputype : cpu_PPC970;
         optimizecputype : cpu_ppc970;
         asmcputype : cpu_none;
+        boardalias : ba_none;
         fputype : fpu_standard;
   {$endif POWERPC64}
   {$ifdef sparc}
         cputype : cpu_SPARC_V9;
         optimizecputype : cpu_SPARC_V9;
         asmcputype : cpu_none;
+        boardalias : ba_none;
         fputype : fpu_hard;
   {$endif sparc}
   {$ifdef sparc64}
         cputype : cpu_SPARC_V9;
         optimizecputype : cpu_SPARC_V9;
         asmcputype : cpu_none;
+        boardalias : ba_none;
         fputype : fpu_hard;
   {$endif sparc64}
   {$ifdef arm}
         cputype : cpu_armv4;
         optimizecputype : cpu_armv4;
         asmcputype : cpu_none;
+        boardalias : ba_none;
         fputype : fpu_fpa;
   {$endif arm}
   {$ifdef x86_64}
         cputype : cpu_athlon64;
         optimizecputype : cpu_athlon64;
         asmcputype : cpu_none;
+        boardalias : ba_none;
         fputype : fpu_sse64;
   {$endif x86_64}
   {$ifdef avr}
         cputype : cpuinfo.cpu_avr5;
         optimizecputype : cpuinfo.cpu_avr5;
         asmcputype : cpu_none;
+        boardalias : ba_none;
         fputype : fpu_none;
   {$endif avr}
   {$ifdef mips}
@@ -613,11 +624,13 @@ Const
         cputype : cpu_mips3;
         optimizecputype : cpu_mips3;
         asmcputype : cpu_none;
+        boardalias : ba_none;
         fputype : fpu_mips3;
   {$else mips64}
         cputype : cpu_mips2;
         optimizecputype : cpu_mips2;
         asmcputype : cpu_none;
+        boardalias : ba_none;
         fputype : fpu_mips2;
   {$endif mips64}
   {$endif mips}
@@ -625,12 +638,14 @@ Const
         cputype : cpu_none;
         optimizecputype : cpu_none;
         asmcputype : cpu_none;
+        boardalias : ba_none;
         fputype : fpu_standard;
   {$endif jvm}
   {$ifdef aarch64}
         cputype : cpu_armv8;
         optimizecputype : cpu_armv8;
         asmcputype : cpu_none;
+        boardalias : ba_none;
         fputype : fpu_vfp;
   {$endif aarch64}
   {$ifdef i8086}
@@ -641,24 +656,28 @@ Const
         that we reject any instruction above bare 8086 instruction set
         for all assembler code PM }
         asmcputype : cpu_none;
+        boardalias : ba_none;
         fputype : fpu_x87;
   {$endif i8086}
   {$ifdef riscv32}
         cputype : cpu_rv32ima;
         optimizecputype : cpu_rv32ima;
         asmcputype : cpu_none;
+        boardalias : ba_none;
         fputype : fpu_soft;
   {$endif riscv32}
   {$ifdef riscv64}
         cputype : cpu_rv64imafdc;
         optimizecputype : cpu_rv64imafdc;
         asmcputype : cpu_none;
+        boardalias : ba_none;
         fputype : fpu_fd;
   {$endif riscv64}
   {$ifdef xtensa}
         cputype : cpu_none;
         optimizecputype : cpu_none;
         asmcputype : cpu_none;
+        boardalias : ba_none;
         fputype : fpu_none;
   {$endif xtensa}
   {$ifdef z80}
@@ -669,18 +688,21 @@ Const
         that we reject any instruction above bare 8086 instruction set
         for all assembler code PM }
         asmcputype : cpu_none;
+        boardalias : ba_none;
         fputype : fpu_soft;
   {$endif z80}
   {$ifdef wasm}
         cputype : cpu_none;
         optimizecputype : cpu_none;
         asmcputype : cpu_none;
+        boardalias : ba_none;
         fputype : fpu_standard;
   {$endif wasm}
   {$ifdef loongarch64}
         cputype : cpu_3a;
         optimizecputype : cpu_3a;
         asmcputype : cpu_none;
+        boardalias : ba_none;
         fputype : fpu_fd;
   {$endif loongarch64}
 {$endif not GENERIC_CPU}
@@ -743,7 +765,7 @@ Const
     function Setoptimizecputype(const s:string;var a:tcputype):boolean;
     function Setcputype(const s:string;var a:tsettings):boolean;
     function SetFpuType(const s:string;var a:tfputype):boolean;
-    function SetControllerType(const s:string;var a:tcontrollertype):boolean;
+    function SetControllerType(const s:string;var a:tcontrollertype;var b:tboardalias):boolean;
     function HandleFeature(const s : string) : boolean;
     function SetMinFPConstPrec(const s: string; var a: tfloattype) : boolean;
 
@@ -1465,9 +1487,10 @@ implementation
       end;
 
 
-    function SetControllerType(const s:string;var a:tcontrollertype):boolean;
+    function SetControllerType(const s: string; var a: tcontrollertype;var b: tboardalias): boolean;
       var
         t  : tcontrollertype;
+        ba : tboardalias;
         hs : string;
       begin
 { The following check allows to reduce amount of code for platforms  }
@@ -1477,6 +1500,7 @@ implementation
         if ControllerSupport then
          begin
           result:=false;
+          ba := ba_none;
           hs:=Upper(s);
           for t:=low(tcontrollertype) to high(tcontrollertype) do
             if embedded_controllers[t].controllertypestr=hs then
@@ -1485,10 +1509,22 @@ implementation
                 result:=true;
                 break;
               end;
+          if not(result) then
+            begin
+             for ba:=low(tboardalias) to high(tboardalias) do
+               if boardaliases[ba].boardname=hs then
+                 begin
+                   b:=ba;
+                   result:=true;
+                   a:=boardaliases[ba].controller;
+                   break;
+                 end;
+            end
          end
         else
          begin
           a := ct_none;
+          b := ba_none;
           Result := true;
          end;
 {$POP}

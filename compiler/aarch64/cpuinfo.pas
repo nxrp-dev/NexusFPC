@@ -62,12 +62,20 @@ Type
       ct_raspi4
      );
 
+   tboardalias =
+     (ba_none
+     );
+
    tcontrollerdatatype = record
       controllertypestr, controllerunitstr: string[20];
       cputype: tcputype; fputype: tfputype;
       flashbase, flashsize, srambase, sramsize, eeprombase, eepromsize, bootbase, bootsize: dword;
    end;
 
+   tboardaliastype = record
+      boardname: string[20];
+      controller: tcontrollertype;
+   end;
 
 Const
    fputypestrllvm : array[tfputype] of string[6] = ('',
@@ -96,6 +104,10 @@ Const
 
       );
    {$POP}
+
+   boardaliases : array [tboardalias] of tboardaliastype =
+    ((boardname:'';controller:ct_none)
+    );
 
 var
    { calling conventions supported by the code generator }
