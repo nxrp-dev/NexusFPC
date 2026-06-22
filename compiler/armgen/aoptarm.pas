@@ -1293,36 +1293,55 @@ Implementation
   function TARMAsmOptimizer.OptPreSBFXUBFX(var p: tai): Boolean;
     begin
       Result := False;
-      { Convert:
-          s/ubfx reg1,reg2,#0,#64 (or #32 for 32-bit registers)
-        To:
-          mov    reg1,reg2
-      }
-      if (taicpu(p).oper[2]^.val = 0) and
-{$ifdef AARCH64}
-        (
-          (
-            (getsubreg(taicpu(p).oper[0]^.reg) = R_SUBQ) and
-            (taicpu(p).oper[3]^.val = 64)
-          ) or
-          (
-            (getsubreg(taicpu(p).oper[0]^.reg) = R_SUBD) and
-            (taicpu(p).oper[3]^.val = 32)
-          )
-        )
-{$else AARCH64}
-        (taicpu(p).oper[3]^.val = 32)
-{$endif AARCH64}
-        then
+      if (taicpu(p).oper[2]^.val = 0) then
         begin
-          DebugMsg(SPeepholeOptimization + 'SBFX or UBFX -> MOV (full bitfield extract)', p);
-          taicpu(p).opcode := A_MOV;
-          taicpu(p).ops := 2;
-          taicpu(p).clearop(2);
-          taicpu(p).clearop(3);
+          { Convert:
+              ubfx   reg1,reg2,#0,#1
+            To:
+              and    reg1,reg2,#1
+          }
+          if (taicpu(p).opcode = A_UBFX) and (taicpu(p).oper[3]^.val = 1) then
+            begin
+              DebugMsg(SPeepholeOptimization + 'UBFX -> AND (lsb extract)', p);
+              taicpu(p).opcode := A_AND;
+              taicpu(p).ops := 3;
+              taicpu(p).oper[2]^.val := 1;
+              taicpu(p).clearop(3);
 
-          Result := True;
-          Exit;
+              Result := True;
+              Exit;
+            end
+          { Convert:
+              s/ubfx reg1,reg2,#0,#64 (or #32 for 32-bit registers)
+            To:
+              mov    reg1,reg2
+          }
+          else if
+{$ifdef AARCH64}
+            (
+              (
+                (getsubreg(taicpu(p).oper[0]^.reg) = R_SUBQ) and
+                (taicpu(p).oper[3]^.val = 64)
+              ) or
+              (
+                (getsubreg(taicpu(p).oper[0]^.reg) = R_SUBD) and
+                (taicpu(p).oper[3]^.val = 32)
+              )
+            )
+{$else AARCH64}
+            (taicpu(p).oper[3]^.val = 32)
+{$endif AARCH64}
+            then
+            begin
+              DebugMsg(SPeepholeOptimization + 'SBFX or UBFX -> MOV (full bitfield extract)', p);
+              taicpu(p).opcode := A_MOV;
+              taicpu(p).ops := 2;
+              taicpu(p).clearop(2);
+              taicpu(p).clearop(3);
+
+              Result := True;
+              Exit;
+            end;
         end;
     end;
 
