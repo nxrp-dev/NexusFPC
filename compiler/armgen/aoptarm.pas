@@ -51,6 +51,8 @@ Type
 {$endif AARCH64}
     function OptPreSBFXUBFX(var p: tai): Boolean;
 
+    function OptPass1UBFX(var p: tai): Boolean;
+
     function OptPass1UXTB(var p: tai): Boolean;
     function OptPass1UXTH(var p: tai): Boolean;
     function OptPass1SXTB(var p: tai): Boolean;
@@ -1338,6 +1340,86 @@ Implementation
               taicpu(p).ops := 2;
               taicpu(p).clearop(2);
               taicpu(p).clearop(3);
+
+              Result := True;
+              Exit;
+            end;
+        end;
+    end;
+
+
+  function TARMAsmOptimizer.OptPass1UBFX(var p: tai): Boolean;
+    var
+      hp1, hp2: tai;
+      ThisReg: TRegister;
+      i: Integer;
+      changed: Boolean;
+    begin
+      Result:=False;
+      ThisReg:=taicpu(p).oper[0]^.reg;
+      { Convert:
+          ubfx   reg1,reg2,x,#1
+          cmp    reg1,#1
+          (reg1 deallocated)
+        To:
+          tst    reg2,#(1 shl x)
+      }
+      if (taicpu(p).oper[3]^.val=1) and
+        GetNextInstructionUsingReg(p,hp1,ThisReg) and
+        MatchInstruction(hp1,A_CMP,[]) and
+{$ifndef AARCH64}
+        (taicpu(hp1).condition = taicpu(p).condition) and
+{$endif not AARCH64}
+        SuperRegistersEqual(taicpu(hp1).oper[0]^.reg,ThisReg) and
+        (taicpu(hp1).oper[1]^.typ=top_const) then
+        begin
+          TransferUsedRegs(TmpUsedRegs);
+          UpdateUsedRegsBetween(TmpUsedRegs, p, hp1);
+          if not RegUsedAfterInstruction(ThisReg,hp1,TmpUsedRegs) then
+            begin
+              case taicpu(hp1).oper[1]^.val of
+                0,1:
+                  begin
+                    { Make sure we invert the conditions for CMP #1}
+                    if taicpu(hp1).oper[1]^.val=1 then
+                      begin
+                        hp2:=hp1;
+                        while GetNextInstruction(hp2,hp2) do
+                          begin
+                            changed:=false;
+                            if (hp2.typ=ait_instruction) then
+                              begin
+                                if (taicpu(hp2).condition<>C_None) then
+                                  begin
+                                    changed:=true;
+                                    taicpu(hp2).condition:=inverse_cond(taicpu(hp2).condition);
+                                  end;
+
+                                for i := 0 to taicpu(hp2).ops-1 do
+                                  if taicpu(hp2).oper[i]^.typ=top_conditioncode then
+                                    begin
+                                      changed:=true;
+                                      taicpu(hp2).oper[i]^.cc:=inverse_cond(taicpu(hp2).oper[i]^.cc);
+                                    end;
+                              end;
+
+                            if not changed then
+                              Break;
+                          end;
+                      end;
+
+                    DebugMsg(SPeepholeOptimization + 'UBFX/CMP #' + tostr(taicpu(hp1).oper[1]^.val) + ' -> TST (single bit extract)', p);
+                    taicpu(hp1).opcode := A_TST;
+                    taicpu(hp1).oper[0]^.reg := taicpu(p).oper[1]^.reg;
+                    taicpu(hp1).oper[1]^.val := 1 shl taicpu(p).oper[2]^.val;
+                    RemoveCurrentP(p);
+                  end;
+                else
+                  begin
+                    { That's weird! }
+                    Exit;
+                  end;
+              end;
 
               Result := True;
               Exit;
