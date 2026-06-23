@@ -2926,6 +2926,8 @@ procedure TOption.Interpret_D_l(opt, more: TCmdStr);
 Var
   l : Integer;
   hs : string;
+  vcval : longint;
+  vccode : integer;
 
 begin
     l:=Pos(':=',more);
@@ -2951,6 +2953,14 @@ begin
       end
     else
       def_system_macro(hs);
+    { allow the embedded interrupt vector-table size to be set with
+      -dFPC_VECTOR_COUNT:=n ; consumed by the embedded linker script generator }
+    if (l>0) and (upper(hs)='FPC_VECTOR_COUNT') then
+      begin
+        val(Copy(more,l+2),vcval,vccode);
+        if vccode=0 then
+          vectorcount:=vcval;
+      end;
 end;
 
 

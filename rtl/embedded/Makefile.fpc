@@ -258,6 +258,13 @@ endif
 
 ifeq ($(ARCH),riscv32)
 CPU_SPECIFIC_COMMON_UNITS=$(SYSUTILSUNIT) $(MATHUNIT) $(CLASSESUNIT) $(FGLUNIT) $(MACPASUNIT) $(TYPINFOUNIT) $(TYPESUNIT) $(RTLCONSTSUNIT) $(GETOPTSUNIT) $(LINEINFOUNIT) $(INTRINSICSUNIT)
+# Install RTL units into a per-subarch subdirectory so rv32e / rv32imac / ...
+# can coexist; selected at firmware-build time via $fpcsubarch (fpc.cfg).
+# The in-tree build dir stays flat so dependent package builds (rtl-extra, ...)
+# that search rtl/units/$(TARGETSUFFIX) can still find the system unit.
+ifneq ($(SUBARCH),)
+INSTALL_UNITDIR=$(INSTALL_BASEDIR)/units/$(TARGETSUFFIX)/$(SUBARCH)/$(PACKAGE_NAME)
+endif
 ifeq ($(SUBARCH),rv32ec)
 override FPCOPT+=-Cprv32ec
 CPU_UNITS=CH32VxBootstrap
