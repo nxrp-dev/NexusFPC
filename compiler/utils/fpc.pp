@@ -23,6 +23,12 @@ program fpc;
 {$mode objfpc}{$H+}
 
   uses
+{$ifdef WINDOWS}
+     Windows,
+{$endif WINDOWS}
+{$ifdef UNIX}
+     Unix,
+{$endif UNIX}
      Sysutils;
 
   const
@@ -259,6 +265,55 @@ Const
         end;
     end;
 
+    procedure SetCrossEnv(const aName,aValue : string);
+
+    begin
+    {$ifdef WINDOWS}
+      SetEnvironmentVariable(PChar(aName),PChar(aValue));
+    {$else}
+    {$ifdef UNIX}
+      { NOTE: confirm fpSetEnv's signature on first *nix build - overwrite arg
+        is cint here }
+      fpSetEnv(aName,aValue,1);
+    {$else}
+      { no portable environment setter on this platform - the crosscputargets
+        list simply stays empty }
+    {$endif UNIX}
+    {$endif WINDOWS}
+    end;
+
+    { Build a comma-separated list of the CPUs for which a cross-compiler binary
+      is installed, by probing for each ppcross<suffix> the same way a real
+      -P<cpu> invocation would. Only meaningful for the native (frontline)
+      compiler; a cross-compiler has none, so its caller passes '' instead. }
+    function GetCrossCPUTargets(const aSourceCPU : string) : string;
+
+    const
+      CPUNames : array[0..22] of string = (
+        'aarch64','arm','avr','i386','i8086','jvm','loongarch64','m68k',
+        'mips','mipsel','mipseb','mips64','mips64el','powerpc','powerpc64',
+        'riscv32','riscv64','sparc','sparc64','x86_64','xtensa','z80','wasm32');
+
+    var
+      i : longint;
+      crossbin : string;
+
+    begin
+      Result:='';
+      for i:=low(CPUNames) to high(CPUNames) do
+        begin
+          if CPUNames[i]=aSourceCPU then
+            continue;
+          crossbin:='ppc'+CrossSuffix+processortosuffix(CPUNames[i]);
+          if findexe(crossbin) then
+            begin
+              if Result<>'' then
+                Result:=Result+',';
+              Result:=Result+CPUNames[i];
+            end;
+        end;
+    end;
+
     procedure CheckSpecialProcessors(processorstr,processorname,ppcbin,cpusuffix,exesuffix : string);
 
     begin
@@ -438,6 +493,7 @@ end;
      PPCCommandLineLen: longint;
      i : longint;
      errorvalue     : Longint;
+     infoRequested  : Boolean;
 
      Procedure AddToCommandLine(S : String);
 
@@ -453,6 +509,7 @@ begin
   cpusuffix := '';        // if not empty, signals attempt at cross
   // compiler.
   extrapath := '';
+  infoRequested := false;
   initplatform(ppcbin, SourceCPU);
   exesuffix := '';                      { Default is just the name }
   if ParamCount = 0 then
@@ -464,6 +521,10 @@ begin
     for i := 1 to paramcount do
     begin
       s := ParamStr(i);
+      { any -i... query means the compiler may emit the -ix xml, which needs
+        the installed-cross list handed to it below }
+      if pos('-i', s) = 1 then
+        infoRequested := true;
       if pos('-t', s) = 1 then
       begin
         targetname := copy(s, 3, length(s)-2);
@@ -510,6 +571,17 @@ begin
        ProcessConfigFile(CfgFile,ExeSuffix);
        end;
      SetLength(ppccommandline, ppccommandlinelen);
+
+     { Hand the installed cross-compiler list to the compiler for its -ix xml
+       output. Only the native/frontline compiler (cpusuffix='') gets the list;
+       a cross-compiler is given an empty value so its <crosscputargets> is
+       empty. Set explicitly (even when empty) so a stray inherited value can't
+       leak into the output. }
+     if infoRequested then
+       if cpusuffix='' then
+         SetCrossEnv('FPC_CROSSCPUTARGETS',GetCrossCPUTargets(SourceCPU))
+       else
+         SetCrossEnv('FPC_CROSSCPUTARGETS','');
 
      { call ppcXXX }
      try

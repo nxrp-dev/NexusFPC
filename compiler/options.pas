@@ -373,10 +373,41 @@ const
       begin
         Write(xmloutput,'      <ostarget shortname="',targetinfos[target]^.shortname,'" name="',targetinfos[target]^.name,'"');
         if tf_under_development in targetinfos[target]^.flags then
-          Write(' experimental="1"');
-        WriteLn('/>');
+          Write(xmloutput,' experimental="1"');
+{$PUSH}
+ {$WARN 6018 OFF} (* ControllerSupport is a compile-time constant *)
+        if ControllerSupport and (target in (systems_embedded+systems_freertos)) then
+          Write(xmloutput,' hascontrollers="1"')
+        else
+          Write(xmloutput,' hascontrollers="0"');
+{$POP}
+        WriteLn(xmloutput,'/>');
       end;
     WriteLn(xmloutput,'    </ostargets>');
+  end;
+
+  procedure ListCrossCPUTargetsXML;
+  var
+    crosscpus,hs2 : TCmdStr;
+    commapos : longint;
+  begin
+    { The list of installed cross-compiler CPUs is discovered by the fpc driver
+      (only it can see sibling ppcross* binaries) and passed in via the
+      environment. A cross-compiler is invoked with an empty value, so its
+      <crosscputargets> comes out empty. }
+    crosscpus:=GetEnvironmentVariable('FPC_CROSSCPUTARGETS');
+    WriteLn(xmloutput,'    <crosscputargets>');
+    while crosscpus<>'' do
+      begin
+        commapos:=Pos(',',crosscpus);
+        if commapos=0 then
+          commapos:=Length(crosscpus)+1;
+        hs2:=Copy(crosscpus,1,commapos-1);
+        Delete(crosscpus,1,commapos);
+        if hs2<>'' then
+          WriteLn(xmloutput,'      <crosscputarget name="',hs2,'"/>');
+      end;
+    WriteLn(xmloutput,'    </crosscputargets>');
   end;
 
   procedure ListCPUInstructionSets (OrigString: TCmdStr);
@@ -894,6 +925,7 @@ begin
       WriteLn(xmloutput,'<fpcoutput>');
       WriteLn(xmloutput,'  <info>');
       ListOSTargetsXML;
+      ListCrossCPUTargetsXML;
       ListCPUInstructionSetsXML;
       ListFPUInstructionSetsXML;
       ListABITargetsXML;
