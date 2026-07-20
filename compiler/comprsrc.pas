@@ -480,6 +480,7 @@ var
   res: TCmdStrListItem;
   p,s : TCmdStr;
   outfmt : tresoutput;
+  separatorpos: SizeInt;
 begin
   { Don't do anything for systems supporting resources without using resource
     file classes (e.g. Mac OS). They process resources elsewhere. }
@@ -498,6 +499,15 @@ begin
         if target_info.res=res_none then
           Message(scan_e_resourcefiles_not_supported);
         s:=res.FPStr;
+
+        // support the {$R file.res file.rc} syntax
+        separatorpos:=Pos(#32,s);
+        if separatorpos>0 then
+          begin
+            res.FPStr:=Copy(s,1,separatorpos-1);
+            s:=Copy(s,separatorpos+1);
+          end;
+
         if not path_absolute(s) then
           s:=p+s;
         if not FileExists(s, True) then
