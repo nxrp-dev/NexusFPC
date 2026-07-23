@@ -276,12 +276,12 @@ Const
         end;
     end;
 
-    { Dump the compilers actually installed alongside this fpc driver, by probing
-      for each processor's native (ppc<suffix>) or cross (ppcross<suffix>) binary
-      the same way a -P<cpu> invocation resolves it. This is driver-only: the
-      compiler binaries never see -iC/-ixC. asXML selects the machine-readable
-      (-ixC) form; otherwise the human-readable (-iC) form is written. }
-    procedure DumpInstalledCompilers(const aSourceCPU : string; asXML : boolean);
+    { List the CPU targets this fpc driver can build for, by probing for each
+      processor's native (ppc<suffix>) or cross (ppcross<suffix>) compiler binary
+      the same way a -P<cpu> invocation resolves it. Driver-only: the compiler
+      binaries never see -iC/-ixC. asXML selects the machine-readable (-ixC)
+      form; otherwise the human-readable (-iC) form is written. }
+    procedure DumpCPUTargets(const aSourceCPU : string; asXML : boolean);
 
     var
       i        : longint;
@@ -293,7 +293,7 @@ Const
         begin
           writeln('<?xml version="1.0" encoding="utf-8"?>');
           writeln('<fpcoutput>');
-          writeln('  <installedcompilers>');
+          writeln('  <cputargets>');
         end;
       for i:=low(ProcessorInfos) to high(ProcessorInfos) do
         begin
@@ -305,8 +305,8 @@ Const
           if findexe(resolved) then
             begin
               if asXML then
-                writeln('    <compiler cpu="',ProcessorInfos[i].name,
-                        '" native="',ord(isnative),'" path="',resolved,'"/>')
+                writeln('    <cputarget name="',ProcessorInfos[i].name,
+                        '" native="',ord(isnative),'"/>')
               else if isnative then
                 writeln(ProcessorInfos[i].name,' (native)')
               else
@@ -315,7 +315,7 @@ Const
         end;
       if asXML then
         begin
-          writeln('  </installedcompilers>');
+          writeln('  </cputargets>');
           writeln('</fpcoutput>');
         end;
     end;
@@ -590,7 +590,7 @@ begin
        compiler. Done here (after the arg loop) so -Xp has set extrapath. }
      if dumpmode<>0 then
        begin
-         DumpInstalledCompilers(SourceCPU,dumpmode=2);
+         DumpCPUTargets(SourceCPU,dumpmode=2);
          halt(0);
        end;
 
