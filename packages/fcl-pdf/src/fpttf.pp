@@ -649,8 +649,13 @@ begin
   else if assigned(FcConfigFilename) then
     FN:=FcConfigFilename(Nil)
   else
-    FN:=cFontsConf;
-  ReadXMLFile(doc, FN);
+    FN:=Nil;
+  if Assigned(FN) then begin
+    ReadXMLFile(doc, FN);
+    FcStrFree(FN);
+  end else
+    ReadXMLFile(doc, cFontsConf);
+  FcConfigDestroy(config);
   try
     lChild := doc.DocumentElement.FirstChild;
     while Assigned(lChild) do
@@ -1196,6 +1201,13 @@ initialization
 
 finalization
   uFontCacheList.Free;
+{$if (defined(LINUX) or defined(BSD)) and not defined(DARWIN)}
+  if FontConfigLibLoaded then begin
+    FcFini;
+    UnLoadFontConfigLib;
+  end;
+{$ifend}
+
 end.
 
 
