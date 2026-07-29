@@ -445,6 +445,7 @@ Const
        heapsize,
        maxheapsize : int64;
        stacksize   : longint;
+       vectorcount : longint;     { embedded: total # of interrupt vector slots to link (CH32V) }
 
 {$Ifdef EXTDEBUG}
      { parameter switches }
@@ -1806,6 +1807,7 @@ implementation
         { memory sizes, will be overridden by parameter or default for target
           in options or init_parser }
         stacksize:=0;
+        vectorcount:=256;
         { not initialized yet }
         apptype:=app_cui;
 

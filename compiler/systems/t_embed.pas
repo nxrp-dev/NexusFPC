@@ -121,6 +121,9 @@ Function TlinkerEmbedded.WriteResponseFile: Boolean;
 Var
   linkres  : TLinkRes;
   i        : longint;
+{$ifdef RISCV32}
+  vc       : longint;
+{$endif}
   HPath    : TCmdStrListItem;
   s,s1,s2  : TCmdStr;
   prtobj,
@@ -1478,6 +1481,18 @@ begin
       Add('  .text :');
       Add('  {');
       Add('    _text_start = .;');
+      { CH32V: one input section per vector slot (.vectors.NNN).  The RTL emits
+        all 256; keep the first vectorcount slots and let --gc-sections drop the
+        rest.  vectorcount defaults to 256 (full table) unless -dFPC_VECTOR_COUNT
+        was supplied on the firmware command line. }
+      if embedded_controllers[current_settings.controllertype].controllerunitstr='CH32VxBootstrap' then
+        begin
+          vc:=vectorcount;
+          if vc<0 then vc:=0;
+          if vc>256 then vc:=256;
+          for i:=0 to vc-1 do
+            Add('    KEEP(*(.vectors.'+Format('%3.3d',[i])+'))');
+        end;
       Add('    KEEP(*(.init .init.*))');
       Add('    *(.text .text.*)');
       Add('    *(.strings)');

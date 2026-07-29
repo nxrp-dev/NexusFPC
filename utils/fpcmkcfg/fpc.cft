@@ -146,6 +146,13 @@
 -FM%sharepath%/unicode/
 #endif
 
+# TODO/FIXME: this i8086 block is positioned ABOVE the generic search paths
+# below, but -Fu paths are prepended (the last matching line wins), so the
+# generic lines override it and these dedicated paths never win on their own.
+# It only still works because the generic $fpctarget/* wildcard happens to
+# also catch the subarch subdirs.  To be correct it should be moved BELOW the
+# generic block (like the RISC-V block).  Left as-is to avoid changing i8086
+# behaviour untested.
 # Search for $fpctarget/$fpcsubarch-$fpcmemorymodel/ subdirectory first
 # for i8086 CPU
 #ifdef cpui8086
@@ -158,6 +165,16 @@
 -Fu%basepath%/units/$fpctarget
 -Fu%basepath%/units/$fpctarget/*
 -Fu%basepath%/units/$fpctarget/rtl
+
+# Prefer a per-subarch RTL for embedded RISC-V when one exists.  -Fu paths are
+# prepended (the last matching line wins), so this block must come AFTER the
+# generic lines above to be searched first; when the $fpcsubarch folder is
+# absent the search simply falls back to the generic paths.
+#ifdef cpuriscv32
+-Fu%basepath%/units/$fpctarget/$fpcsubarch
+-Fu%basepath%/units/$fpctarget/$fpcsubarch/*
+-Fu%basepath%/units/$fpctarget/$fpcsubarch/rtl
+#endif
 
 #IFDEF FPCAPACHE_1_3
 -Fu%basepath%/units/$fpctarget/httpd13/
