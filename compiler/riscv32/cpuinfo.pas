@@ -78,11 +78,15 @@ Type
       ct_esp32c2,
       ct_esp32c3,
       ct_esp32c6,
-      ct_CH32V0x,
-      ct_CH32Vxxxx6,
-      ct_CH32Vxxxx8,
-      ct_CH32VxxxxB,
-      ct_CH32VxxxxC
+      ct_CH32V_EC_16K_2K_2K,
+      ct_CH32V_IMAC_32K_10K,
+      ct_CH32V_IMAC_64K_20K,
+      ct_CH32V_IMAC_128K_64K,
+      ct_CH32V_IMAC_48K_20K,
+      ct_CH32V_IMAC_62K_20K,
+      ct_CH32V_IMAFC_224K_32K,
+      ct_CH32V_IMAFC_480K_32K,
+      ct_CH32V_IMAFC_480K_64K
      );
 
    tcontrollerdatatype = record
@@ -137,11 +141,15 @@ Const
       (controllertypestr:'ESP32C2'; controllerunitstr:'ESP32C2';    cputype:cpu_rv32imc_csr_fence;  fputype:fpu_none; flashbase:$00000000; flashsize:4*1024*1024; srambase:$20000000; sramsize:272*1024),
       (controllertypestr:'ESP32C3'; controllerunitstr:'ESP32C3';    cputype:cpu_rv32imc_csr_fence;  fputype:fpu_none; flashbase:$00000000; flashsize:4*1024*1024; srambase:$20000000; sramsize:400*1024),
       (controllertypestr:'ESP32C6'; controllerunitstr:'ESP32C6';    cputype:cpu_rv32imac_csr_fence; fputype:fpu_none; flashbase:$00000000; flashsize:4*1024*1024; srambase:$20000000; sramsize:512*1024),
-      (controllertypestr:'CH32V0X' ; controllerunitstr:'CH32VxBootstrap';   cputype:cpu_rv32e; fputype:fpu_none; flashbase:$00000000; flashsize:$00004000; srambase:$20000000; sramsize:$00000800; eeprombase:0; eepromsize:0;BootBase:$1FFFF000; BootSize:1920),
-      (controllertypestr:'CH32VXXXX6' ; controllerunitstr:'CH32VxBootstrap';   cputype:cpu_rv32imac; fputype:fpu_none; flashbase:$00000000; flashsize:$00008000; srambase:$20000000; sramsize:$00002800),
-      (controllertypestr:'CH32VXXXX8' ; controllerunitstr:'CH32VxBootstrap';   cputype:cpu_rv32imac; fputype:fpu_none; flashbase:$00000000; flashsize:$00010000; srambase:$20000000; sramsize:$00008000),
-      (controllertypestr:'CH32VXXXXB' ; controllerunitstr:'CH32VxBootstrap';   cputype:cpu_rv32imac; fputype:fpu_none; flashbase:$00000000; flashsize:$00020000; srambase:$20000000; sramsize:$00010000),
-      (controllertypestr:'CH32VXXXXC' ; controllerunitstr:'CH32VxBootstrap';   cputype:cpu_rv32imac; fputype:fpu_none; flashbase:$00000000; flashsize:$00040000; srambase:$20000000; sramsize:$00020000)
+      (controllertypestr:'CH32V_EC_16K_2K_2K'  ; controllerunitstr:'CH32VxBootstrap'; cputype:cpu_rv32ec;    fputype:fpu_none; flashbase:$00000000; flashsize:$00004000; srambase:$20000000; sramsize:$00000800; eeprombase:0; eepromsize:0; bootbase:$1FFFF000; bootsize:1920),
+      (controllertypestr:'CH32V_IMAC_32K_10K'  ; controllerunitstr:'CH32VxBootstrap'; cputype:cpu_rv32imac;  fputype:fpu_none; flashbase:$00000000; flashsize:$00008000; srambase:$20000000; sramsize:$00002800),
+      (controllertypestr:'CH32V_IMAC_64K_20K'  ; controllerunitstr:'CH32VxBootstrap'; cputype:cpu_rv32imac;  fputype:fpu_none; flashbase:$00000000; flashsize:$00010000; srambase:$20000000; sramsize:$00005000),
+      (controllertypestr:'CH32V_IMAC_128K_64K' ; controllerunitstr:'CH32VxBootstrap'; cputype:cpu_rv32imac;  fputype:fpu_none; flashbase:$00000000; flashsize:$00020000; srambase:$20000000; sramsize:$00010000),
+      (controllertypestr:'CH32V_IMAC_48K_20K'  ; controllerunitstr:'CH32VxBootstrap'; cputype:cpu_rv32imac;  fputype:fpu_none; flashbase:$00000000; flashsize:$0000C000; srambase:$20000000; sramsize:$00005000),
+      (controllertypestr:'CH32V_IMAC_62K_20K'  ; controllerunitstr:'CH32VxBootstrap'; cputype:cpu_rv32imac;  fputype:fpu_none; flashbase:$00000000; flashsize:$0000F800; srambase:$20000000; sramsize:$00005000),
+      (controllertypestr:'CH32V_IMAFC_224K_32K'; controllerunitstr:'CH32VxBootstrap'; cputype:cpu_rv32imafc; fputype:fpu_fs;   flashbase:$00000000; flashsize:$00038000; srambase:$20000000; sramsize:$00008000),
+      (controllertypestr:'CH32V_IMAFC_480K_32K'; controllerunitstr:'CH32VxBootstrap'; cputype:cpu_rv32imafc; fputype:fpu_fs;   flashbase:$00000000; flashsize:$00078000; srambase:$20000000; sramsize:$00008000),
+      (controllertypestr:'CH32V_IMAFC_480K_64K'; controllerunitstr:'CH32VxBootstrap'; cputype:cpu_rv32imafc; fputype:fpu_fs;   flashbase:$00000000; flashsize:$00078000; srambase:$20000000; sramsize:$00010000)
    );
    {$POP}
 
