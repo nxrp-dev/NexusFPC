@@ -17,6 +17,30 @@ interface
 
 {$PACKRECORDS 2}
 
+{ ---------------------------------------------------------------------
+  Interrupt-vector table.
+
+  Each slot is emitted into its own input section, ".vectors.NNN"
+  (NNN = 000..255; slot 000 is the reset vector).  Every slot is a
+  4-byte entry: a 'jal' jump, except slot 013 which is the ebreak the
+  hardware debugger requires.  The table is wrapped in .option norelax
+  so linker relaxation can never collapse an entry below 4 bytes.
+
+  The full 256-entry table is always assembled here.  How many slots
+  are actually linked is decided at firmware-link time by the embedded
+  linker script (compiler/systems/t_embed.pas): it keeps the first
+  FPC_VECTOR_COUNT slots and lets --gc-sections discard the rest.  Set it on
+  the *application* command line, with no RTL rebuild required:
+
+      -dFPC_VECTOR_COUNT:=16      // 16 slots total: reset + ISR1..15
+
+  With no option the full table is linked, byte-for-byte as before.
+
+  This scheme is specific to the CH32V / QingKe cores, whose vector
+  table is built from jump *instructions*.  Parts using an address /
+  word table (GD32VF103, FE310) are unaffected.
+  --------------------------------------------------------------------- }
+
 
 //override ISR vectors by declaring a procedure with a public alias of 'ISRx'
 const
@@ -407,267 +431,527 @@ procedure ISR255; external Name 'ISR255';
 
 procedure Vectors; assembler; nostackframe;
 asm
-  .section ".init.interrupt_vectors"
 
     .set DefaultISRHandler, _haltproc
 
+    .option push
+    .option norelax
+
+    .section ".vectors.000","ax"
     jal x0, LowLevelStartup
-    jal x0,  ISR1
-    jal x0,  ISR2
-    jal x0,  ISR3
-    jal x0,  ISR4
-    jal x0,  ISR5
-    jal x0,  ISR6
-    jal x0,  ISR7
-    jal x0,  ISR8
-    jal x0,  ISR9
-    jal x0,  ISR10
-    jal x0,  ISR11
-    jal x0,  ISR12
+    .section ".vectors.001","ax"
+    jal x0, ISR1
+    .section ".vectors.002","ax"
+    jal x0, ISR2
+    .section ".vectors.003","ax"
+    jal x0, ISR3
+    .section ".vectors.004","ax"
+    jal x0, ISR4
+    .section ".vectors.005","ax"
+    jal x0, ISR5
+    .section ".vectors.006","ax"
+    jal x0, ISR6
+    .section ".vectors.007","ax"
+    jal x0, ISR7
+    .section ".vectors.008","ax"
+    jal x0, ISR8
+    .section ".vectors.009","ax"
+    jal x0, ISR9
+    .section ".vectors.010","ax"
+    jal x0, ISR10
+    .section ".vectors.011","ax"
+    jal x0, ISR11
+    .section ".vectors.012","ax"
+    jal x0, ISR12
+    .section ".vectors.013","ax"
     .long 0x00100073  // ebreak<--needed for hardware debugger to work
-    jal x0,  ISR14
-    jal x0,  ISR15
+    .section ".vectors.014","ax"
+    jal x0, ISR14
+    .section ".vectors.015","ax"
+    jal x0, ISR15
+    .section ".vectors.016","ax"
     jal x0, ISR16
+    .section ".vectors.017","ax"
     jal x0, ISR17
+    .section ".vectors.018","ax"
     jal x0, ISR18
+    .section ".vectors.019","ax"
     jal x0, ISR19
+    .section ".vectors.020","ax"
     jal x0, ISR20
+    .section ".vectors.021","ax"
     jal x0, ISR21
+    .section ".vectors.022","ax"
     jal x0, ISR22
+    .section ".vectors.023","ax"
     jal x0, ISR23
+    .section ".vectors.024","ax"
     jal x0, ISR24
+    .section ".vectors.025","ax"
     jal x0, ISR25
+    .section ".vectors.026","ax"
     jal x0, ISR26
+    .section ".vectors.027","ax"
     jal x0, ISR27
+    .section ".vectors.028","ax"
     jal x0, ISR28
+    .section ".vectors.029","ax"
     jal x0, ISR29
+    .section ".vectors.030","ax"
     jal x0, ISR30
+    .section ".vectors.031","ax"
     jal x0, ISR31
+    .section ".vectors.032","ax"
     jal x0, ISR32
+    .section ".vectors.033","ax"
     jal x0, ISR33
+    .section ".vectors.034","ax"
     jal x0, ISR34
+    .section ".vectors.035","ax"
     jal x0, ISR35
+    .section ".vectors.036","ax"
     jal x0, ISR36
+    .section ".vectors.037","ax"
     jal x0, ISR37
+    .section ".vectors.038","ax"
     jal x0, ISR38
+    .section ".vectors.039","ax"
     jal x0, ISR39
+    .section ".vectors.040","ax"
     jal x0, ISR40
+    .section ".vectors.041","ax"
     jal x0, ISR41
+    .section ".vectors.042","ax"
     jal x0, ISR42
+    .section ".vectors.043","ax"
     jal x0, ISR43
+    .section ".vectors.044","ax"
     jal x0, ISR44
+    .section ".vectors.045","ax"
     jal x0, ISR45
+    .section ".vectors.046","ax"
     jal x0, ISR46
+    .section ".vectors.047","ax"
     jal x0, ISR47
+    .section ".vectors.048","ax"
     jal x0, ISR48
+    .section ".vectors.049","ax"
     jal x0, ISR49
+    .section ".vectors.050","ax"
     jal x0, ISR50
+    .section ".vectors.051","ax"
     jal x0, ISR51
+    .section ".vectors.052","ax"
     jal x0, ISR52
+    .section ".vectors.053","ax"
     jal x0, ISR53
+    .section ".vectors.054","ax"
     jal x0, ISR54
+    .section ".vectors.055","ax"
     jal x0, ISR55
+    .section ".vectors.056","ax"
     jal x0, ISR56
+    .section ".vectors.057","ax"
     jal x0, ISR57
+    .section ".vectors.058","ax"
     jal x0, ISR58
+    .section ".vectors.059","ax"
     jal x0, ISR59
+    .section ".vectors.060","ax"
     jal x0, ISR60
+    .section ".vectors.061","ax"
     jal x0, ISR61
+    .section ".vectors.062","ax"
     jal x0, ISR62
+    .section ".vectors.063","ax"
     jal x0, ISR63
+    .section ".vectors.064","ax"
     jal x0, ISR64
+    .section ".vectors.065","ax"
     jal x0, ISR65
+    .section ".vectors.066","ax"
     jal x0, ISR66
+    .section ".vectors.067","ax"
     jal x0, ISR67
+    .section ".vectors.068","ax"
     jal x0, ISR68
+    .section ".vectors.069","ax"
     jal x0, ISR69
+    .section ".vectors.070","ax"
     jal x0, ISR70
+    .section ".vectors.071","ax"
     jal x0, ISR71
+    .section ".vectors.072","ax"
     jal x0, ISR72
+    .section ".vectors.073","ax"
     jal x0, ISR73
+    .section ".vectors.074","ax"
     jal x0, ISR74
+    .section ".vectors.075","ax"
     jal x0, ISR75
+    .section ".vectors.076","ax"
     jal x0, ISR76
+    .section ".vectors.077","ax"
     jal x0, ISR77
+    .section ".vectors.078","ax"
     jal x0, ISR78
+    .section ".vectors.079","ax"
     jal x0, ISR79
+    .section ".vectors.080","ax"
     jal x0, ISR80
+    .section ".vectors.081","ax"
     jal x0, ISR81
+    .section ".vectors.082","ax"
     jal x0, ISR82
+    .section ".vectors.083","ax"
     jal x0, ISR83
+    .section ".vectors.084","ax"
     jal x0, ISR84
+    .section ".vectors.085","ax"
     jal x0, ISR85
+    .section ".vectors.086","ax"
     jal x0, ISR86
+    .section ".vectors.087","ax"
     jal x0, ISR87
+    .section ".vectors.088","ax"
     jal x0, ISR88
+    .section ".vectors.089","ax"
     jal x0, ISR89
+    .section ".vectors.090","ax"
     jal x0, ISR90
+    .section ".vectors.091","ax"
     jal x0, ISR91
+    .section ".vectors.092","ax"
     jal x0, ISR92
+    .section ".vectors.093","ax"
     jal x0, ISR93
+    .section ".vectors.094","ax"
     jal x0, ISR94
+    .section ".vectors.095","ax"
     jal x0, ISR95
+    .section ".vectors.096","ax"
     jal x0, ISR96
+    .section ".vectors.097","ax"
     jal x0, ISR97
+    .section ".vectors.098","ax"
     jal x0, ISR98
+    .section ".vectors.099","ax"
     jal x0, ISR99
+    .section ".vectors.100","ax"
     jal x0, ISR100
+    .section ".vectors.101","ax"
     jal x0, ISR101
+    .section ".vectors.102","ax"
     jal x0, ISR102
+    .section ".vectors.103","ax"
     jal x0, ISR103
+    .section ".vectors.104","ax"
     jal x0, ISR104
+    .section ".vectors.105","ax"
     jal x0, ISR105
+    .section ".vectors.106","ax"
     jal x0, ISR106
+    .section ".vectors.107","ax"
     jal x0, ISR107
+    .section ".vectors.108","ax"
     jal x0, ISR108
+    .section ".vectors.109","ax"
     jal x0, ISR109
+    .section ".vectors.110","ax"
     jal x0, ISR110
+    .section ".vectors.111","ax"
     jal x0, ISR111
+    .section ".vectors.112","ax"
     jal x0, ISR112
+    .section ".vectors.113","ax"
     jal x0, ISR113
+    .section ".vectors.114","ax"
     jal x0, ISR114
+    .section ".vectors.115","ax"
     jal x0, ISR115
+    .section ".vectors.116","ax"
     jal x0, ISR116
+    .section ".vectors.117","ax"
     jal x0, ISR117
+    .section ".vectors.118","ax"
     jal x0, ISR118
+    .section ".vectors.119","ax"
     jal x0, ISR119
+    .section ".vectors.120","ax"
     jal x0, ISR120
+    .section ".vectors.121","ax"
     jal x0, ISR121
+    .section ".vectors.122","ax"
     jal x0, ISR122
+    .section ".vectors.123","ax"
     jal x0, ISR123
+    .section ".vectors.124","ax"
     jal x0, ISR124
+    .section ".vectors.125","ax"
     jal x0, ISR125
+    .section ".vectors.126","ax"
     jal x0, ISR126
+    .section ".vectors.127","ax"
     jal x0, ISR127
+    .section ".vectors.128","ax"
     jal x0, ISR128
+    .section ".vectors.129","ax"
     jal x0, ISR129
+    .section ".vectors.130","ax"
     jal x0, ISR130
+    .section ".vectors.131","ax"
     jal x0, ISR131
+    .section ".vectors.132","ax"
     jal x0, ISR132
+    .section ".vectors.133","ax"
     jal x0, ISR133
+    .section ".vectors.134","ax"
     jal x0, ISR134
+    .section ".vectors.135","ax"
     jal x0, ISR135
+    .section ".vectors.136","ax"
     jal x0, ISR136
+    .section ".vectors.137","ax"
     jal x0, ISR137
+    .section ".vectors.138","ax"
     jal x0, ISR138
+    .section ".vectors.139","ax"
     jal x0, ISR139
+    .section ".vectors.140","ax"
     jal x0, ISR140
+    .section ".vectors.141","ax"
     jal x0, ISR141
+    .section ".vectors.142","ax"
     jal x0, ISR142
+    .section ".vectors.143","ax"
     jal x0, ISR143
+    .section ".vectors.144","ax"
     jal x0, ISR144
+    .section ".vectors.145","ax"
     jal x0, ISR145
+    .section ".vectors.146","ax"
     jal x0, ISR146
+    .section ".vectors.147","ax"
     jal x0, ISR147
+    .section ".vectors.148","ax"
     jal x0, ISR148
+    .section ".vectors.149","ax"
     jal x0, ISR149
+    .section ".vectors.150","ax"
     jal x0, ISR150
+    .section ".vectors.151","ax"
     jal x0, ISR151
+    .section ".vectors.152","ax"
     jal x0, ISR152
+    .section ".vectors.153","ax"
     jal x0, ISR153
+    .section ".vectors.154","ax"
     jal x0, ISR154
+    .section ".vectors.155","ax"
     jal x0, ISR155
+    .section ".vectors.156","ax"
     jal x0, ISR156
+    .section ".vectors.157","ax"
     jal x0, ISR157
+    .section ".vectors.158","ax"
     jal x0, ISR158
+    .section ".vectors.159","ax"
     jal x0, ISR159
+    .section ".vectors.160","ax"
     jal x0, ISR160
+    .section ".vectors.161","ax"
     jal x0, ISR161
+    .section ".vectors.162","ax"
     jal x0, ISR162
+    .section ".vectors.163","ax"
     jal x0, ISR163
+    .section ".vectors.164","ax"
     jal x0, ISR164
+    .section ".vectors.165","ax"
     jal x0, ISR165
+    .section ".vectors.166","ax"
     jal x0, ISR166
+    .section ".vectors.167","ax"
     jal x0, ISR167
+    .section ".vectors.168","ax"
     jal x0, ISR168
+    .section ".vectors.169","ax"
     jal x0, ISR169
+    .section ".vectors.170","ax"
     jal x0, ISR170
+    .section ".vectors.171","ax"
     jal x0, ISR171
+    .section ".vectors.172","ax"
     jal x0, ISR172
+    .section ".vectors.173","ax"
     jal x0, ISR173
+    .section ".vectors.174","ax"
     jal x0, ISR174
+    .section ".vectors.175","ax"
     jal x0, ISR175
+    .section ".vectors.176","ax"
     jal x0, ISR176
+    .section ".vectors.177","ax"
     jal x0, ISR177
+    .section ".vectors.178","ax"
     jal x0, ISR178
+    .section ".vectors.179","ax"
     jal x0, ISR179
+    .section ".vectors.180","ax"
     jal x0, ISR180
+    .section ".vectors.181","ax"
     jal x0, ISR181
+    .section ".vectors.182","ax"
     jal x0, ISR182
+    .section ".vectors.183","ax"
     jal x0, ISR183
+    .section ".vectors.184","ax"
     jal x0, ISR184
+    .section ".vectors.185","ax"
     jal x0, ISR185
+    .section ".vectors.186","ax"
     jal x0, ISR186
+    .section ".vectors.187","ax"
     jal x0, ISR187
+    .section ".vectors.188","ax"
     jal x0, ISR188
+    .section ".vectors.189","ax"
     jal x0, ISR189
+    .section ".vectors.190","ax"
     jal x0, ISR190
+    .section ".vectors.191","ax"
     jal x0, ISR191
+    .section ".vectors.192","ax"
     jal x0, ISR192
+    .section ".vectors.193","ax"
     jal x0, ISR193
+    .section ".vectors.194","ax"
     jal x0, ISR194
+    .section ".vectors.195","ax"
     jal x0, ISR195
+    .section ".vectors.196","ax"
     jal x0, ISR196
+    .section ".vectors.197","ax"
     jal x0, ISR197
+    .section ".vectors.198","ax"
     jal x0, ISR198
+    .section ".vectors.199","ax"
     jal x0, ISR199
+    .section ".vectors.200","ax"
     jal x0, ISR200
+    .section ".vectors.201","ax"
     jal x0, ISR201
+    .section ".vectors.202","ax"
     jal x0, ISR202
+    .section ".vectors.203","ax"
     jal x0, ISR203
+    .section ".vectors.204","ax"
     jal x0, ISR204
+    .section ".vectors.205","ax"
     jal x0, ISR205
+    .section ".vectors.206","ax"
     jal x0, ISR206
+    .section ".vectors.207","ax"
     jal x0, ISR207
+    .section ".vectors.208","ax"
     jal x0, ISR208
+    .section ".vectors.209","ax"
     jal x0, ISR209
+    .section ".vectors.210","ax"
     jal x0, ISR210
+    .section ".vectors.211","ax"
     jal x0, ISR211
+    .section ".vectors.212","ax"
     jal x0, ISR212
+    .section ".vectors.213","ax"
     jal x0, ISR213
+    .section ".vectors.214","ax"
     jal x0, ISR214
+    .section ".vectors.215","ax"
     jal x0, ISR215
+    .section ".vectors.216","ax"
     jal x0, ISR216
+    .section ".vectors.217","ax"
     jal x0, ISR217
+    .section ".vectors.218","ax"
     jal x0, ISR218
+    .section ".vectors.219","ax"
     jal x0, ISR219
+    .section ".vectors.220","ax"
     jal x0, ISR220
+    .section ".vectors.221","ax"
     jal x0, ISR221
+    .section ".vectors.222","ax"
     jal x0, ISR222
+    .section ".vectors.223","ax"
     jal x0, ISR223
+    .section ".vectors.224","ax"
     jal x0, ISR224
+    .section ".vectors.225","ax"
     jal x0, ISR225
+    .section ".vectors.226","ax"
     jal x0, ISR226
+    .section ".vectors.227","ax"
     jal x0, ISR227
+    .section ".vectors.228","ax"
     jal x0, ISR228
+    .section ".vectors.229","ax"
     jal x0, ISR229
+    .section ".vectors.230","ax"
     jal x0, ISR230
+    .section ".vectors.231","ax"
     jal x0, ISR231
+    .section ".vectors.232","ax"
     jal x0, ISR232
+    .section ".vectors.233","ax"
     jal x0, ISR233
+    .section ".vectors.234","ax"
     jal x0, ISR234
+    .section ".vectors.235","ax"
     jal x0, ISR235
+    .section ".vectors.236","ax"
     jal x0, ISR236
+    .section ".vectors.237","ax"
     jal x0, ISR237
+    .section ".vectors.238","ax"
     jal x0, ISR238
+    .section ".vectors.239","ax"
     jal x0, ISR239
+    .section ".vectors.240","ax"
     jal x0, ISR240
+    .section ".vectors.241","ax"
     jal x0, ISR241
+    .section ".vectors.242","ax"
     jal x0, ISR242
+    .section ".vectors.243","ax"
     jal x0, ISR243
+    .section ".vectors.244","ax"
     jal x0, ISR244
+    .section ".vectors.245","ax"
     jal x0, ISR245
+    .section ".vectors.246","ax"
     jal x0, ISR246
+    .section ".vectors.247","ax"
     jal x0, ISR247
+    .section ".vectors.248","ax"
     jal x0, ISR248
+    .section ".vectors.249","ax"
     jal x0, ISR249
+    .section ".vectors.250","ax"
     jal x0, ISR250
+    .section ".vectors.251","ax"
     jal x0, ISR251
+    .section ".vectors.252","ax"
     jal x0, ISR252
+    .section ".vectors.253","ax"
     jal x0, ISR253
+    .section ".vectors.254","ax"
     jal x0, ISR254
+    .section ".vectors.255","ax"
     jal x0, ISR255
 
+
+    .option pop
     .weak DefaultISRHandler
     .weak LowLevelStartup
 
