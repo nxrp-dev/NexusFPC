@@ -159,6 +159,16 @@
 -Fu%basepath%/units/$fpctarget/*
 -Fu%basepath%/units/$fpctarget/rtl
 
+# Prefer a per-subarch RTL for embedded RISC-V when one exists.  -Fu paths are
+# prepended (the last matching line wins), so this block must come AFTER the
+# generic lines above to be searched first; when the $fpcsubarch folder is
+# absent the search simply falls back to the generic paths.
+#ifdef cpuriscv32
+-Fu%basepath%/units/$fpctarget/$fpcsubarch
+-Fu%basepath%/units/$fpctarget/$fpcsubarch/*
+-Fu%basepath%/units/$fpctarget/$fpcsubarch/rtl
+#endif
+
 #IFDEF FPCAPACHE_1_3
 -Fu%basepath%/units/$fpctarget/httpd13/
 #ELSE
