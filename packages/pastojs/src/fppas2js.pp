@@ -15438,6 +15438,11 @@ begin
     Result:=TJSObjectLiteral(CreateElement(TJSObjectLiteral,El));
     exit;
     end;
+  btPointer:
+    begin
+      Result:=CreateLiteralNull(El);
+      exit;
+    end;
   end;
   {$IFDEF VerbosePas2JS}
   writeln('TPasToJSConverter.ConvertBuiltIn_Default ',GetResolverResultDbg(ResolvedEl));

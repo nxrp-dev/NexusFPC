@@ -714,6 +714,11 @@ type
     function TypeAsString: string; override;
   end;
 
+  TResEvalPointer = class(TResEvalValue)
+  public
+    constructor Create; override;
+  end;
+
   TResEvalFlag = (
     refConst, // computing a const, error if a value is not const
     refConstExt, // as refConst, except allow external const
@@ -6496,6 +6501,15 @@ begin
     if RangeEnd<Ranges[i].RangeEnd then
       E('wrong RangeEnd='+IntToStr(RangeEnd));
     end;
+end;
+
+{ TResEvalPointer }
+
+constructor TResEvalPointer.Create;
+begin
+  inherited;
+
+  Kind := revkNil;
 end;
 
 end.
