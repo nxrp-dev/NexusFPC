@@ -9730,7 +9730,7 @@ implementation
 {$endif arm}
 {$ifdef aarch64}
 {$define use_vectorfpuimplemented}
-        use_vectorfpu:=true;
+        use_vectorfpu:=(def.typ=floatdef);
 {$endif aarch64}
 
 {$ifndef use_vectorfpuimplemented}
