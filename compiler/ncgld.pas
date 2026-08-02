@@ -735,7 +735,6 @@ implementation
          r64 : tregister64;
          {$endif}
          oldflowcontrol : tflowcontrol;
-         n, n2 : tnode;
       begin
         { previously, managed types were handled in firstpass
           newer FPCs however can identify situations when
@@ -1267,51 +1266,6 @@ implementation
 
         if releaseright then
           location_freetemp(current_asmdata.CurrAsmList,right.location);
-
-        { If we wrote to a record field and the record is a vector type stored
-          in an MM register, we have to forcibly write it back to the register
-          otherwise the written result remains in a temporary location that
-          gets lost }
-        n := actualtargetnode(@left)^;
-        if (n.nodetype = subscriptn) and (n.location.loc = LOC_REFERENCE) then
-          begin
-            n2 := actualtargetnode(@TUnaryNode(n).left)^;
-            if (n2.nodetype = loadn) and (n2.location.loc in [LOC_MMREGISTER, LOC_CMMREGISTER]) then
-              begin
-                { Will be a vector type otherwise there wouldn't be a
-                  subscript node... at least it should be! }
-                if not is_vector(n2.resultdef) then
-                  InternalError(2024080201);
-
-                { Reverse adjusted reference offset }
-                if not is_packed_record_or_object(n2.resultdef) then
-                  begin
-                    Dec(n.location.reference.offset,TSubscriptNode(n).vs.fieldoffset);
-                  end
-                else if (TSubscriptNode(n).vs.fieldoffset mod 8 = 0) and
-                        (n2.resultdef.packedbitsize mod 8 = 0) and
-                        { is different in case of e.g. packenum 2 and an enum }
-                        { which fits in 8 bits                                }
-                        (n2.resultdef.size*8 = n2.resultdef.packedbitsize) then
-                  begin
-                    Dec(n.location.reference.offset,TSubscriptNode(n).vs.fieldoffset div 8);
-                  end;
-
-                { Prevents an internal error }
-                n.location.size := def_cgsize(n2.resultdef);
-
-                hlcg.a_loadmm_loc_reg(
-                  current_asmdata.CurrAsmList,
-                  TUnaryNode(n).left.resultdef,
-                  n2.resultdef,
-                  n.location,
-                  n2.location.register,
-                  nil
-                );
-
-                location_freetemp(current_asmdata.CurrAsmList,n.location);
-              end;
-          end;
       end;
 
 
