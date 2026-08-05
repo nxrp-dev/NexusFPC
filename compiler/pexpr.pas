@@ -4359,6 +4359,10 @@ implementation
                  if (block_type=bt_body) and
                      (m_anonymous_functions in current_settings.modeswitches) then
                    begin
+                     if (current_scanner.token = _FUNCTION) and
+                       not (m_result in current_settings.modeswitches) then
+                      Comment(V_WARNING, '{$modeswitch result} or -Mresult flag may be required for functions.');
+
                      filepos:=current_filepos;
                      oldprocvardef:=getprocvardef;
                      oldfuncrefdef:=getfuncrefdef;
