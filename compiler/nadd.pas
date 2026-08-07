@@ -1172,7 +1172,7 @@ const
                         exit;
                       end
                     else if (trealconstnode(left).value_real=2) and (nodetype=muln) and not(might_have_sideeffects(right,[mhs_exceptions])) and
-                      (node_complexity(right)<=1) then
+                      (node_complexity(right,2)<=1) then
                       begin
                         result:=caddnode.create_internal(addn,right.getcopy,right.getcopy);
                         exit;
@@ -1205,7 +1205,7 @@ const
                         exit;
                       end
                     else if (trealconstnode(right).value_real=2) and (nodetype=muln) and not(might_have_sideeffects(left,[mhs_exceptions])) and
-                      (node_complexity(left)<=1) then
+                      (node_complexity(left,2)<=1) then
                       begin
                         result:=caddnode.create_internal(addn,left.getcopy,left.getcopy);
                         exit;
@@ -1796,7 +1796,7 @@ const
                         begin
                           { full boolean evaluation is only useful if the nodes are not too complex and if no jumps must be converted,
                             further, we need to know the expectloc }
-                          if (node_complexity(right)<=2) and
+                          if (node_complexity(right,3)<=2) and
                             not(left.expectloc in [LOC_JUMP,LOC_INVALID]) and not(right.expectloc in [LOC_JUMP,LOC_INVALID]) then
                             begin
                               { we need to copy the whole tree to force another pass_1 }
@@ -4143,14 +4143,14 @@ const
             The second sequence requires clock_cycles(fmul)+clock_cycles(fma) because the fma has to wait for the
             result of the fmul. Since typically clock_cycles(fma)>clock_cycles(fadd) applies, the first sequence is better.
           }
-          (((left.nodetype=muln) and (node_complexity(right)<3)) or
-           ((right.nodetype=muln) and (node_complexity(left)<3)) or
+          (((left.nodetype=muln) and (node_complexity(right,3)<3)) or
+           ((right.nodetype=muln) and (node_complexity(left,3)<3)) or
            ((left.nodetype=inlinen) and
             (tinlinenode(left).inlinenumber=in_sqr_real) and
-             (node_complexity(right)<3)) or
+             (node_complexity(right,3)<3)) or
            ((right.nodetype=inlinen) and
             (tinlinenode(right).inlinenumber=in_sqr_real) and
-            (node_complexity(left)<3))
+            (node_complexity(left,3)<3))
           ) then
           begin
             case tfloatdef(ld).floattype of
@@ -4199,7 +4199,7 @@ const
               end
             else if (left.nodetype=inlinen) and (tinlinenode(left).inlinenumber=in_sqr_real) then
               begin
-                if node_complexity(tinlinenode(left).left)=0 then
+                if node_complexity(tinlinenode(left).left,1)=0 then
                   begin
                     if nodetype=subn then
                       result:=cinlinenode.create(inlinennr,false,ccallparanode.create(cunaryminusnode.create(right),
@@ -4217,7 +4217,7 @@ const
             { we get here only if right is a sqr node }
             else if (right.nodetype=inlinen) and (tinlinenode(right).inlinenumber=in_sqr_real) then
               begin
-                if node_complexity(tinlinenode(right).left)=0 then
+                if node_complexity(tinlinenode(right).left,1)=0 then
                   begin
                     if nodetype=subn then
                       result:=cinlinenode.create(inlinennr,false,ccallparanode.create(left,

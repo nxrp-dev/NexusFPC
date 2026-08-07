@@ -5065,7 +5065,7 @@ implementation
               equal_defs(left.resultdef,tclassrefdef(right.resultdef).pointeddef) then
               begin
                 if might_have_sideeffects(left) or
-                  (node_complexity(left)>2) then
+                  (node_complexity(left,3)>2) then
                   begin
                     result:=internalstatements(statement);
                     tempnode:=ctempcreatenode.create(left.resultdef,left.resultdef.size,tt_persistent,true);

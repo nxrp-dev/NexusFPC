@@ -971,7 +971,7 @@ implementation
                    caddnode.create_internal(equaln,left.getcopy,cordconstnode.create(flabels^._low,left.resultdef,false)),
                    pcaseblock(blocks[flabels^.blockid])^.statement,elseblock);
                end
-             else if not(might_have_sideeffects(left,[mhs_exceptions])) and (node_complexity(left)<=1) then
+             else if not(might_have_sideeffects(left,[mhs_exceptions])) and (node_complexity(left,2)<=1) then
                begin
                  result:=cifnode.create_internal(
                    caddnode.create_internal(andn,

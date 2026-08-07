@@ -196,13 +196,13 @@ implementation
         if (realpara.nodetype=vecn) and
            (tvecnode(realpara).left.resultdef.typ=stringdef) then
           begin
-            if node_complexity(tvecnode(realpara).left)>1 then
+            if node_complexity(tvecnode(realpara).left,2)>1 then
               begin
                 realparatemp:=replacewithtemp(tvecnode(realpara).left);
                 addstatement(initstat,realparatemp);
                 addstatement(finistat,ctempdeletenode.create(realparatemp));
               end;
-            if node_complexity(tvecnode(realpara).right)>1 then
+            if node_complexity(tvecnode(realpara).right,2)>1 then
               begin
                 realparatemp:=replacewithtemp(tvecnode(realpara).right);
                 addstatement(initstat,realparatemp);

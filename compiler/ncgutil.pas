@@ -187,7 +187,6 @@ implementation
     procedure firstcomplex(p : tbinarynode);
       var
         fcl, fcr: longint;
-        ncl, ncr: longint;
       begin
          { calculate boolean AND and OR from left to right if it's short boolean evaluated }
          if (p.nodetype in [orn,andn]) and is_boolean(p.left.resultdef) and is_boolean(p.right.resultdef) and doshortbooleval(p) then
@@ -199,8 +198,6 @@ implementation
            begin
              fcl:=node_resources_fpu(p.left);
              fcr:=node_resources_fpu(p.right);
-             ncl:=node_complexity(p.left);
-             ncr:=node_complexity(p.right);
              { We swap left and right if
                 a) right needs more floating point registers than left, and
                    left needs more than 0 floating point registers (if it
@@ -211,11 +208,11 @@ implementation
                    and in addition right has a higher complexity than left
                    (+- needs more integer registers, but not necessarily)
              }
-             if ((fcr>fcl) and
-                 (fcl>0)) or
-                (((fcr=fcl) or
-                  (fcr=0)) and
-                 (ncr>ncl)) and
+             if (((fcr>fcl) and
+                  (fcl>0)) or
+                 (((fcr=fcl) or
+                   (fcr=0)) and
+                  (compare_node_complexity(p.left,p.right)<0))) and
                 { if one tree contains nodes being conditionally executed, we cannot swap the trees
                   as the other tree might depend on all nodes being executed, this applies for example
                   for temp. create nodes with init part, they must be executed else things break, see

@@ -5078,9 +5078,9 @@ implementation
            at this point, so we must assume the worst and use an unaligned pointer.
            This results in larger and slower code on alignment-sensitive targets.
            Therefore the complexity condition below is questionable, maybe just filtering
-           out calls with "= NODE_COMPLEXITY_INF" is sufficient.
+           out calls with "= DEFAULT_NODE_COMPLEXITY_LIMIT" is sufficient.
            Value of 3 corresponds to subscript nodes, i.e. record field. }
-         if node_complexity(tcallparanode(left).left) > 3 then
+         if node_complexity(tcallparanode(left).left,4) > 3 then
            begin
              tempnode := ctempcreatenode.create(voidpointertype,voidpointertype.size,tt_persistent,true);
              addstatement(newstatement,tempnode);
