@@ -2204,13 +2204,13 @@ S*2Aas_asemblacja przy u¾yciu GNU AS
 **2Cc<x>_ustawia domy˜lny spos¢b wywoˆania funkcji/procedur na <x>
 **2CD_tworzenie tak¾e bibliotek dynamicznych (niedost©pne)
 **2Ce_kompilacja z emulowanymi opkodami zmiennoprzecinkowymi
-**2Cf<x>_ustawia u¾ywany zbi¢r instrukcji FPU na <x> (u¾yj "fpc -i", aby zobaczy† mo¾liwe warto˜ci)
+**2Cf<x>_ustawia u¾ywany zbi¢r instrukcji FPU na <x> (u¾yj `fpc -i`, aby zobaczy† mo¾liwe warto˜ci)
 **2Cg_generowanie kodu PIC
 **2Ch<n>_rozmiar sterty w bajtach (pomi©dzy 1023 i 67107840)
 **2Ci_sprawdzanie operacji wej˜cia/wyj˜cia
 **2Cn_pomini©cie etapu linkowania
 **2Co_sprawdzanie przepeˆnienia liczb caˆkowitych
-**2Cp<x>_ustawia u¾ywany zbi¢r instrukcji na <x> (u¾yj "fpc -i", aby zobaczy† mo¾liwe warto˜ci)
+**2Cp<x>_ustawia u¾ywany zbi¢r instrukcji na <x> (u¾yj `fpc -i`, aby zobaczy† mo¾liwe warto˜ci)
 **2Cr_sprawdzanie zakresu
 **2CR_sprawdzanie poprawno˜ci wywoˆywania metod obiekt¢w
 **2Cs<n>_ustawienie rozmiar stosu na <n>
@@ -2224,7 +2224,7 @@ S*2Aas_asemblacja przy u¾yciu GNU AS
 **1e<x>_ustawienie ˜cie¾ki do asemblera i linkera
 **1E_to samo co -Cn
 **1F<x>_ustawianie nazw i ˜cie¾ek:
-**2Fa<x>[,y]_wczytuje <x> (i [y]) zanim zostani¥ wczytane moduˆy z sekcji USES
+**2Fa<x>[,<y>]_wczytuje <x> (i <y>) zanim zostani¥ wczytane moduˆy z sekcji USES
 **2Fc<x>_ustawienie strony kodowej «r¢deˆ na <x>
 **2FD<x>_ustawienie katalogu z narz©dziami kompilatora
 **2Fe<x>_przekierowanie komunikat¢w o bˆ©dach do pliku <x>

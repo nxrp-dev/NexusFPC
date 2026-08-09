@@ -2788,12 +2788,12 @@ S*2Aas_Assembla con GNU AS
 **2bl_Genera info sui simboli locali
 **1B_Costruisce tutti i moduli
 **1C<x>_Opzioni di generazione del codice:
-**2Ca<x>_Seleziona l'ABI, vedi fpc -i per i valori possibili
+**2Ca<x>_Seleziona l'ABI, vedi `fpc -i` per i valori possibili
 **2Cb_Genera codice big-endian
 **2Cc<x>_Imposta la convenzione di chiamata di default a <x>
 **2CD_Crea anche la libreria dinamica (non supportato)
 **2Ce_Compilazione con opcode in virgola mobile emulati
-**2Cf<x>_Sceglie il set di istruzioni FPU, (vedi fpc -i)
+**2Cf<x>_Sceglie il set di istruzioni FPU, (vedi `fpc -i`)
 **2CF<x>_Precisione minima per costanti virgola mobile (default/32/64)
 **2Cg_Genera codice position-independent (PIC)
 **2Ch<n>_<n> dimensione in byte dello heap 
@@ -2804,7 +2804,7 @@ S*2Aas_Assembla con GNU AS
 **2CO_Controlla il possibile overflow di operazioni su interi
 **2Cp<x>_Scegli il set di istruzioni, 
 **3*_        (vedi fpc -i per i valori possibili)
-**2CP<x>=<y>_ impostazioni per il packing
+**2CP<x>=<y>_ Impostazioni per il packing
 **3CPPACKSET=<y>_ <y> imposta l'allocazione: 
 **3*_        (0, 1 o DEFAULT o NORMAL, 2, 4 e 8)
 **2Cr_Controllo degli intervalli (range)
@@ -2821,7 +2821,7 @@ S*2Aas_Assembla con GNU AS
 **1E_Identico a -Cn
 **1fPIC_Identico a -Cg
 **1F<x>_Imposta nomi di file e path:
-**2Fa<x>[,y]_(programma) carica unit <x> e [y] 
+**2Fa<x>[,<y>]_(programma) carica unit <x> e <y> 
 **3*_        (prima di parsare la sezione uses)
 **2Fc<x>_Imposta codepage di input a <x>
 **2FC<x>_Imposta il nome dell'exe del compilatore RC a <x>
@@ -2891,8 +2891,8 @@ S*2Aas_Assembla con GNU AS
 **3*_        (vedi fpc -i per possibili valori)
 **2Op<x>_Imposta ottimizzazione per una CPU specifica, 
 **3*_        (vedi fpc -i per possibili valori)
-**2OW<x>_Genera feedback per l'ottimizz. globale <x> (vedi fpc -i)
-**2Ow<x>_Esegue ottimizzazione globale <x> (vedi fpc -i)
+**2OW<x>_Genera feedback per l'ottimizz. globale <x> (vedi `fpc -i`)
+**2Ow<x>_Esegue ottimizzazione globale <x> (vedi `fpc -i`)
 **2Os_Ottimizza per la dimensione e non per la velocità
 **1pg_Genera codici di profiling per gprof (FPC_PROFILE: on)
 **1R<x>_Stile di lettura assembler:

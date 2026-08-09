@@ -2201,7 +2201,7 @@ S*2Aas_assemblar utilitzant GNU AS
 **1e<x>_Posa el camí a l'executable
 **1E_Igual que -Cn
 **1F<x>_Posa els noms dels fitxers i els camins:
-**2Fa<x>[,y]_Carrega primer les unitats <x> i [y], abans d'analitzar USES
+**2Fa<x>[,<y>]_Carrega primer les unitats <x> i <y>, abans d'analitzar USES
 **2Fc<x>_Posa la pàgina del codi d'entrada a <x>
 **2FD<x>_Posa el directori on buscar les utilitats del compilador
 **2Fe<x>_Redirigeix la sortida dels errors a <x>

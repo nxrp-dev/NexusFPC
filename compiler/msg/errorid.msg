@@ -3592,15 +3592,15 @@ S*2Aas_Rangkai menggunakan GNU AS
 **2Cc<x>_Setel konvensi pemanggilan standar ke <x>
 **2CD_Buat juga librari dinamis (tidak didukung)
 **2Ce_Kompilasi dengan opcode pecahan diemulasikan
-**2Cf<x>_Pilih set instruksi fpu yang dipakai, lihat fpc -i untuk nilai yang mungkin
+**2Cf<x>_Pilih set instruksi fpu yang dipakai, lihat `fpc -i` untuk nilai yang mungkin
 **2CF<x>_Minimal presisi konstan pecahan (standar, 32, 64)
 **2Cg_Hasilkan kode PIC
 **2Ch<n>_<n> byte heap (antara 1023 dan 67107840)
 **2Ci_Pemeriksaan-IO
 **2Cn_Abaikan tahap linking
 **2Co_Periksa kelebihan untuk operasi integer
-**2Cp<x>_Pilih set instruksi, lihat fpc -i untuk nilai yang mungkin
-**2CP<x>=<y>_ setelan pemadatan
+**2Cp<x>_Pilih set instruksi, lihat `fpc -i` untuk nilai yang mungkin
+**2CP<x>=<y>_ Setelan pemadatan
 **3CPPACKSET=<y>_ <y> setel alokasi: 0, 1 atau DEFAULT atau NORMAL, 2, 4 dan 8
 **2Cr_Pemeriksaan jangkauan
 **2CR_Verifikasi kebenaran pemanggilan metode obyek
@@ -3616,7 +3616,7 @@ S*2Aas_Rangkai menggunakan GNU AS
 **1E_Sama seperti -Cn
 **1fPIC_Sama seperti -Cg
 **1F<x>_Setel nama file dan path:
-**2Fa<x>[,y]_(untuk sebuah program) ambil unit <x> dan [y] sebelum uses diuraikan
+**2Fa<x>[,<y>]_(untuk sebuah program) ambil unit <x> dan <y> sebelum uses diuraikan
 **2Fc<x>_Setel input codepage menjadi <x>
 **2FC<x>_Setel nama biner kompilator RC menjadi <x>
 **2FD<x>_Setel direktori ke mana untuk menjcari utilitas kompilator
@@ -3670,8 +3670,8 @@ S*2Aas_Rangkai menggunakan GNU AS
 **2O2_Optimasi tingkat 2 (-O1 + optimasi cepat)
 **2O3_Optimasi tingkat 3 (-O2 + optimasi lambat)
 **2Oa<x>=<y>_Setel penjajaran
-**2Oo[NO]<x>_Hidupkan atau matikan optimasi, lihat fpc -i untuk nilai yang mungkin
-**2Op<x>_Setel cpu target untuk optimasi, lihat fpc -i untuk nilai yang mungkin
+**2Oo[NO]<x>_Hidupkan atau matikan optimasi, lihat `fpc -i` untuk nilai yang mungkin
+**2Op<x>_Setel cpu target untuk optimasi, lihat `fpc -i` untuk nilai yang mungkin
 **2Os_Optimasi untuk ukuran daripada kecepatan
 **1pg_Hasilkan kode profil untuk gprof (definisikan FPC_PROFILE)
 **1R<x>_Gaya pembacaan assembler:

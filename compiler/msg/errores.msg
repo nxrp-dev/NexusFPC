@@ -3562,13 +3562,13 @@ S*2Aas_ensamblar usando GNU AS
 **2Cc<x>_cambiar la convencion de llamada por defecto a <x>
 **2CD_crear adicionalmente una librería dinámica (no soportado)
 **2Ce_Compilar con opcodes de punto flotante emulados
-**2Cf<x>_Cambiar el set de instrucciones de la FPU usado, fpc -i para posibles valores<x>
+**2Cf<x>_Cambiar el set de instrucciones de la FPU usado, `fpc -i` para posibles valores<x>
 **2Cg_Generar código PIC
 **2Ch<n>_<n> bytes heap (entre 1023 y 67107840)
 **2Ci_Comprobación de E/S
 **2Cn_omitir etapa de enlazado
 **2Co_comprobar desbordamiento en operaciones de enteros
-**2Cp<x>_Cambiar el set de instrucciones usado, fpc -i para posibles valores
+**2Cp<x>_Cambiar el set de instrucciones usado, `fpc -i` para posibles valores
 **2Cr_comprobación de rango
 **2CR_verificar validez de objetos de llamada
 **2Cs<n>_definir el tamaño de la pila a <n>
@@ -3582,7 +3582,7 @@ S*2Aas_ensamblar usando GNU AS
 **1e<x>_establecer ruta al ejecutable
 **1E_igual que -Cn
 **1F<x>_establecer ficheros y rutas:
-**2Fa<x>[,y]_para hacer que el programa cargue las unidades <x> e [y] antes de procesar su uses
+**2Fa<x>[,<y>]_para hacer que el programa cargue las unidades <x> e <y> antes de procesar su uses
 **2Fc<x>_establece el código de pagina de la entrada a <x>
 **2FD<x>_establece la ruta donde buscar las utilidades del compilador
 **2Fe<x>_redirige la salida de errores a <x>
