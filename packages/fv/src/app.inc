@@ -1062,11 +1062,6 @@ BEGIN
 {$endif FV_UNICODE}
            If (Event.What = evNothing) Then
              begin
-{$IFNDEF HASAMIGA}
-               { due to issues with the event handling in FV itself,
-                 we skip this here, and let the IDE to handle it
-                 directly on Amiga-like systems. The FV itself cannot
-                 handle the System Events anyway. (KB) }
 {$ifdef FV_UNICODE}
                {$IFDEF FPC_DOTTEDUNITS}FreeVision.{$ENDIF}Udrivers.GetSystemEvent(Event);         { Load system event }
 {$else FV_UNICODE}
@@ -1079,7 +1074,6 @@ BEGIN
                    HandleEvent (Event);
 
                If (Event.What = evNothing) Then
-{$ENDIF}
                  Idle;     { Idle if no event }
              end;
          End;
