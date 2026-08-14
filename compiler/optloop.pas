@@ -81,9 +81,6 @@ unit optloop;
             nodeCount:=node_count_weighted(node,21);
             number_unrolls:=round((30+(60*ord(nodeCount<15)))/max(nodeCount,1));
           end;
-
-        if number_unrolls=0 then
-          number_unrolls:=1;
       end;
 
     type
@@ -92,15 +89,6 @@ unit optloop;
         value : Tconstexprint;
       end;
       preplaceinfo = ^treplaceinfo;
-
-    function checkcontrollflowstatements(var n:tnode; arg: pointer): foreachnoderesult;
-      begin
-        if n.nodetype in [breakn,continuen,goton,labeln,exitn,raisen] then
-          result:=fen_norecurse_true
-        else
-          result:=fen_false;
-      end;
-
 
     function replaceloadnodes(var n: tnode; arg: pointer): foreachnoderesult;
       begin
@@ -118,149 +106,65 @@ unit optloop;
 
     function unroll_loop(node : tnode) : tnode;
       var
-        unrolls,i : cardinal;
+        i : cardinal;
         counts : qword;
-        unrollstatement,newforstatement : tstatementnode;
-        unrollblock : tblocknode;
-        getridoffor : boolean;
+        newforstatement : tstatementnode;
         replaceinfo : treplaceinfo;
-        hascontrollflowstatements : boolean;
       begin
         result:=nil;
-        if (cs_opt_size in current_settings.optimizerswitches) then
+        if (ErrorCount<>0) or not(node.nodetype in [forn]) then
           exit;
-        if ErrorCount<>0 then
+
+        { number of executions known? }
+        if (tfornode(node).right.nodetype<>ordconstn) or (tfornode(node).t1.nodetype<>ordconstn) then
           exit;
-        if not(node.nodetype in [forn]) then
-          exit;
-        unrolls:=number_unrolls(tfornode(node).t2);
-        if (unrolls>1) and
-          ((tfornode(node).left.nodetype<>loadn) or
+        if lnf_backward in tfornode(node).loopflags then
+          counts:=tordconstnode(tfornode(node).right).value-tordconstnode(tfornode(node).t1).value+1
+        else
+          counts:=tordconstnode(tfornode(node).t1).value-tordconstnode(tfornode(node).right).value+1;
+
+        if counts>1 then { Skip these checks if just 1 iteration. }
+          begin
+            if (cs_opt_size in current_settings.optimizerswitches) then
+              exit;
+            { multiply unroll by two here because we get rid of the counter variable completely and replace it by a constant.
+              Careful to not make counts = 2 always pass (this is why <= is used instead of <). }
+            if number_unrolls(tfornode(node).t2)*2<=counts then
+              exit;
+          end;
+
+        if (tfornode(node).left.nodetype=loadn) and
            { the address of the counter variable might be taken if it is passed by constref to a
              subroutine, so really check if it is not taken }
-           ((tfornode(node).left.nodetype=loadn) and (tloadnode(tfornode(node).left).symtableentry is tabstractvarsym) and
-            not(tabstractvarsym(tloadnode(tfornode(node).left).symtableentry).addr_taken) and
-            not(tabstractvarsym(tloadnode(tfornode(node).left).symtableentry).different_scope))
-           ) then
+           (not(tloadnode(tfornode(node).left).symtableentry is tabstractvarsym) or
+            (tabstractvarsym(tloadnode(tfornode(node).left).symtableentry).addr_taken) or
+            (tabstractvarsym(tloadnode(tfornode(node).left).symtableentry).different_scope)) then
+          exit;
+
+        { can we get rid completly of the for ?
+          we consider currently unrolling not beneficial, if we cannot get rid of the for completely, this
+          might change if a more sophisticated heuristics is used (FK) }
+        { TP/Macpas allows assignments to the for-variables, so we cannot get rid of the for }
+        if ([m_tp7,m_mac]*current_settings.modeswitches<>[]) or
+           (has_node_of_type(tfornode(node).t2,[breakn,continuen,goton,labeln,exitn,raisen])) then
+          exit;
+
+        replaceinfo.node:=tfornode(node).left;
+        replaceinfo.value:=tordconstnode(tfornode(node).right).value;
+
+        result:=internalstatements(newforstatement);
+        { let's unroll (and rock of course) }
+        for i:=1 to counts do
           begin
-            { number of executions known? }
-            if (tfornode(node).right.nodetype=ordconstn) and (tfornode(node).t1.nodetype=ordconstn) then
-              begin
-                if lnf_backward in tfornode(node).loopflags then
-                  counts:=tordconstnode(tfornode(node).right).value-tordconstnode(tfornode(node).t1).value+1
-                else
-                  counts:=tordconstnode(tfornode(node).t1).value-tordconstnode(tfornode(node).right).value+1;
-
-                hascontrollflowstatements:=foreachnodestatic(tfornode(node).t2,@checkcontrollflowstatements,nil);
-
-                { don't unroll more than we need,
-
-                  multiply unroll by two here because we can get rid
-                  of the counter variable completely and replace it by a constant
-                  if unrolls=counts }
-                if unrolls*2>=counts then
-                  unrolls:=counts;
-
-                { create block statement }
-                unrollblock:=internalstatements(unrollstatement);
-
-                { can we get rid completly of the for ? }
-                getridoffor:=(unrolls=counts) and not(hascontrollflowstatements) and
-                  { TP/Macpas allows assignments to the for-variables, so we cannot get rid of the for }
-                  ([m_tp7,m_mac]*current_settings.modeswitches=[]);
-
-                if getridoffor then
-                  begin
-                    replaceinfo.node:=tfornode(node).left;
-                    replaceinfo.value:=tordconstnode(tfornode(node).right).value;
-                  end
-                else
-                  { we consider currently unrolling not beneficial, if we cannot get rid of the for completely, this
-                    might change if a more sophisticated heuristics is used (FK) }
-                  exit;
-
-                { let's unroll (and rock of course) }
-                for i:=1 to unrolls do
-                  begin
-                    { create and insert copy of the statement block }
-                    addstatement(unrollstatement,tfornode(node).t2.getcopy);
-
-                    { set and insert entry label? }
-                    if (counts mod unrolls<>0) and
-                      ((counts mod unrolls)=unrolls-i) then
-                      begin
-                        tfornode(node).entrylabel:=clabelnode.create(cnothingnode.create,clabelsym.create('$optunrol'));
-                        addstatement(unrollstatement,tfornode(node).entrylabel);
-                      end;
-
-                    if getridoffor then
-                      begin
-                        foreachnodestatic(tnode(unrollstatement),@replaceloadnodes,@replaceinfo);
-                        if lnf_backward in tfornode(node).loopflags then
-                          replaceinfo.value:=replaceinfo.value-1
-                        else
-                          replaceinfo.value:=replaceinfo.value+1;
-                      end
-                    else
-                      begin
-                        { for itself increases at the last iteration }
-                        if i<unrolls then
-                          begin
-                            { insert incr/decrementation of counter var }
-                            if lnf_backward in tfornode(node).loopflags then
-                              addstatement(unrollstatement,
-                                geninlinenode(in_dec_x,false,ccallparanode.create(tfornode(node).left.getcopy,nil)))
-                            else
-                              addstatement(unrollstatement,
-                                geninlinenode(in_inc_x,false,ccallparanode.create(tfornode(node).left.getcopy,nil)));
-                          end;
-                       end;
-                  end;
-                { can we get rid of the for statement? }
-                if getridoffor then
-                  begin
-                    { create block statement }
-                    result:=internalstatements(newforstatement);
-                    addstatement(newforstatement,unrollblock);
-                    doinlinesimplify(result);
-                  end;
-              end
+            { create and insert copy of the statement block }
+            addstatement(newforstatement,tfornode(node).t2.getcopy);
+            foreachnodestatic(tnode(newforstatement),@replaceloadnodes,@replaceinfo);
+            if lnf_backward in tfornode(node).loopflags then
+              replaceinfo.value:=replaceinfo.value-1
             else
-              begin
-                { unrolling is a little bit more tricky if we don't know the
-                  loop count at compile time, but the solution is to use a jump table
-                  which is indexed by "loop count mod unrolls" at run time and which
-                  jumps then at the appropriate place inside the loop. Because
-                  a module division is expensive, we can use only unroll counts dividable
-                  by 2 }
-                case unrolls of
-                  1..2:
-                    ;
-                  3:
-                    unrolls:=2;
-                  4..7:
-                    unrolls:=4;
-                  { unrolls>4 already make no sense imo, but who knows (FK) }
-                  8..15:
-                    unrolls:=8;
-                  16..31:
-                    unrolls:=16;
-                  32..63:
-                    unrolls:=32;
-                  64..$7fff:
-                    unrolls:=64;
-                  else
-                    exit;
-                end;
-                { we don't handle this yet }
-                exit;
-              end;
-            if not(assigned(result)) then
-              begin
-                tfornode(node).t2.free;
-                tfornode(node).t2:=unrollblock;
-              end;
+              replaceinfo.value:=replaceinfo.value+1;
           end;
+        doinlinesimplify(result);
       end;
 
 
@@ -361,8 +265,7 @@ unit optloop;
             initcode:=internalstatements(initcodestatements);
             calccode:=internalstatements(calccodestatements);
             deletecode:=internalstatements(deletecodestatements);
-            docalcatend:=not(assigned(currforloop.entrylabel)) and
-              not(foreachnodestatic(currforloop.t2,@checkcontinue,nil));
+            docalcatend:=not(foreachnodestatic(currforloop.t2,@checkcontinue,nil));
           end;
         if ninductions>=length(inductions) then
           SetLength(inductions,4+ninductions+ninductions shr 1);

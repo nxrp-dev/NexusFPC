@@ -106,10 +106,6 @@ interface
        tifnodeclass = class of tifnode;
 
        tfornode = class(tloopnode)
-          { if count isn't divisible by unrolls then
-            the for loop must jump to this label to get the correct
-            number of executions }
-          entrylabel,
           { this is a dummy node used by the dfa to store life information for the loop iteration }
           loopiteration : tnode;
           loopvar_notid:cardinal;
@@ -2094,12 +2090,7 @@ implementation
           not((lnf_backward in loopflags) and (get_ordinal_value(t1)=countermin)) and
           { neither might the for loop contain a continue statement as continue in a while loop would skip the increment at the end
             of the loop, this could be overcome by replacing the continue statement with an pred/succ; continue sequence }
-          not(has_node_of_type(t2,[continuen])) and
-          { if the loop is unrolled and there is a jump into the loop,
-            then we can't do the trick with incrementing the loop var only at the
-            end
-          }
-          not(assigned(entrylabel));
+          not(has_node_of_type(t2,[continuen]));
 
         needsifblock:=not(is_constnode(right)) or not(is_constnode(t1));
 
@@ -2159,9 +2150,6 @@ implementation
             else
               addstatement(ifstatements,cassignmentnode.create_internal(left.getcopy,right.getcopy));
           end;
-
-        if assigned(entrylabel) then
-          addstatement(ifstatements,cgotonode.create(tlabelnode(entrylabel).labsym));
 
         if not(do_loopvar_at_end) then
           iterate_counter(loopstatements,not(lnf_backward in loopflags));
