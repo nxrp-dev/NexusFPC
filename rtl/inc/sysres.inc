@@ -77,6 +77,7 @@ end;
 { These functions are the default ones on systems where resources aren't
   supported }
 
+{$ifndef DISABLE_NO_RESOURCE_MANAGER}
 Function DefaultHINSTANCE : TFPResourceHMODULE;
 begin
   Result:=0;
@@ -131,13 +132,15 @@ Function DefaultFreeResource(ResData: TFPResourceHGLOBAL): LongBool;
 begin
   Result:=False;
 end;
+{$endif ndef DISABLE_NO_RESOURCE_MANAGER}
 
 (*****************************************************************************
             Resource manager and accessor functions
 *****************************************************************************)
 
 var
-  resourcemanager : TResourceManager =
+  resourcemanager : TResourceManager
+{$ifndef DISABLE_NO_RESOURCE_MANAGER} =
   (
     HINSTANCEFunc : @DefaultHINSTANCE;
     EnumResourceTypesFunc : @DefaultEnumResourceTypes;
@@ -150,7 +153,8 @@ var
     LockResourceFunc : @DefaultLockResource;
     UnlockResourceFunc : @DefaultUnlockResource;
     FreeResourceFunc : @DefaultFreeResource;
-  );
+  )
+{$endif ndef DISABLE_NO_RESOURCE_MANAGER};
 
 procedure GetResourceManager (Var Manager : TResourceManager);
 begin
