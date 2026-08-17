@@ -1256,7 +1256,7 @@ implementation
              for i:=0 to dfabuilder.nodemap.count-1 do
                begin
                  UserCode:=GetUserCode();
-                 if DynSetIn(UserCode.optinfo^.life,i) then
+                 if i in UserCode.optinfo^.life then
                    begin
                      { do not warn for certain parameters: }
                      if not((tnode(dfabuilder.nodemap[i]).nodetype=loadn) and (tloadnode(dfabuilder.nodemap[i]).symtableentry.typ=paravarsym) and

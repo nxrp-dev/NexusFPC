@@ -22,189 +22,335 @@
 unit cdynset;
 
 {$i fpcdefs.inc}
+{$modeswitch advancedrecords}
 
   interface
 
 
     type
-      TDynSet = array of byte;
       PDynSet = ^TDynSet;
+      TDynSet = record
+        procedure SetEmpty; inline;
+        function IsEmpty: boolean; inline;
+        class function Empty: TDynSet; static; inline; { .SetEmpty is preferred, but := Empty avoids warnings when initializing local variables. }
 
-    { add e to s }
-    procedure DynSetInclude(var s : TDynSet;e : integer);
+        procedure Include(e: integer);
+        procedure IncludeSet(const s: TDynSet);
+        procedure Exclude(e: integer);
+        procedure ExcludeSet(const s: TDynSet);
+        class operator in(e: integer; const s: TDynSet): boolean;
+        procedure Union(const s2: TDynSet; out r: TDynSet);
+        procedure Intersect(const s2: TDynSet; out r: TDynSet);
+        procedure Diff(const s2: TDynSet; out r: TDynSet);
+        class operator =(const a, b: TDynSet): boolean;
+        function GetCount: SizeInt; { Get the last index set + 1, or 0 for empty set. }
+        procedure Print(var f: text);
 
-    { add s to d }
-    procedure DynSetIncludeSet(var d : TDynSet;const s : TDynSet);
+        class operator Initialize(var self: TDynSet);
+        class operator Finalize(var self: TDynSet);
+        class operator Copy(constref b: TDynSet; var self: TDynSet);
+        class operator AddRef(var self: TDynSet);
 
-    { remove s to d }
-    procedure DynSetExcludeSet(var d : TDynSet;const s : TDynSet);
+      private type
+        PDynamic = ^TDynamic;
+        TDynamic = record
+          n: SizeUint; { In bits; divisible by BaseBits. }
+          data: array[0 .. 0] of PtrUint;
+          function ZeroedStartingFromCell(c: SizeUint): boolean;
+        end;
 
-    { remove e from s }
-    procedure DynSetExclude(var s : TDynSet;e : integer);
+      const
+        BaseBits = bitsizeof(PtrUint);
+        StaticTag = 1 shl 0;
+        StaticShift = 1;
 
-    { test if s contains e }
-    function DynSetIn(const s : TDynSet;e : integer) : boolean;
+        procedure Resize(n: SizeUint); { Careful: occasionally assumed to work like “ResizeAndForceToBeDynamic”, so it can’t leave the set static. }
+        procedure SetCopyFromDyn(d: PDynamic);
 
-    { d:=s1+s2; }
-    procedure DynSetUnion(var d : TDynSet;const s1,s2 : TDynSet);
-
-    { d:=s1*s2; }
-    procedure DynSetIntersect(var d : TDynSet;const s1,s2 : TDynSet);
-
-    { d:=s1-s2; }
-    procedure DynSetDiff(var d : TDynSet;const s1,s2 : TDynSet);
-
-    { s1<>s2; }
-    function DynSetNotEqual(const s1,s2 : TDynSet) : boolean;
-
-    { output DynSet }
-    procedure PrintDynSet(var f : text;s : TDynSet);
+      var
+        { If tagged and StaticTag <> 0, tagged shr StaticShift is the static set with bitsizeof(PtrUint) - 1 bits.
+          If tagged and StaticTag = 0, set data is dyn. }
+      case uint32 of
+        0: (tagged: PtrUint);
+        1: (dyn: PDynamic);
+      end;
 
   implementation
 
     uses
       cutils;
 
-    procedure DynSetInclude(var s : tDynset;e : integer);
-      var
-        e8 : Integer;
+    procedure TDynSet.SetEmpty;
       begin
-        e8:=e div 8;
-        if e8>high(s) then
-          SetLength(s,e8+1);
-        s[e8]:=s[e8] or (1 shl (e mod 8));
+        if tagged and StaticTag=0 then
+          FreeMem(dyn);
+        tagged:=StaticTag;
       end;
 
 
-    procedure DynSetIncludeSet(var d : tDynset;const s : tDynset);
-      var
-        i : integer;
+    function TDynSet.IsEmpty: boolean;
       begin
-        if length(s)>length(d) then
-          SetLength(d,length(s));
-        for i:=0 to high(s) do
-          d[i]:=d[i] or s[i];
+        result:=(tagged=StaticTag) or (tagged and StaticTag=0) and dyn^.ZeroedStartingFromCell(0);
       end;
 
 
-    procedure DynSetExcludeSet(var d : tDynset;const s : tDynset);
-      var
-        i : integer;
+    class function TDynSet.Empty: TDynSet;
       begin
-        if length(s)>length(d) then
-          SetLength(d,length(s));
-        for i:=0 to high(s) do
-          d[i]:=d[i] and not(s[i]);
+        PDynSet(@result)^.SetEmpty;
       end;
 
 
-    procedure DynSetExclude(var s : tDynset;e : integer);
-      var
-        e8 : Integer;
+    procedure TDynSet.Include(e: integer);
       begin
-        e8:=e div 8;
-        if e8<=high(s) then
-          s[e8]:=s[e8] and not(1 shl (e mod 8));
-      end;
-
-
-    function DynSetIn(const s : tDynset;e : integer) : boolean;
-      var
-        e8 : Integer;
-      begin
-        e8:=e div 8;
-        if e8<=high(s) then
-          result:=(s[e8] and (1 shl (e mod 8)))<>0
-        else
-          result:=false;
-      end;
-
-
-    procedure DynSetUnion(var d : tDynset;const s1,s2 : tDynset);
-      var
-        i : integer;
-      begin
-        SetLength(d,max(Length(s1),Length(s2)));
-        for i:=0 to min(high(s1),high(s2)) do
-          d[i]:=s1[i] or s2[i];
-        if high(s1)<high(s2) then
-          for i:=high(s1)+1 to high(s2) do
-            d[i]:=s2[i]
-        else
-          for i:=high(s2)+1 to high(s1) do
-            d[i]:=s1[i];
-      end;
-
-
-    procedure DynSetIntersect(var d : tDynset;const s1,s2 : tDynset);
-      var
-        i : integer;
-      begin
-        SetLength(d,min(Length(s1),Length(s2)));
-        for i:=0 to high(d) do
-          d[i]:=s1[i] and s2[i];
-      end;
-
-
-    procedure DynSetDiff(var d : tDynset;const s1,s2 : tDynset);
-      var
-        i : integer;
-      begin
-        SetLength(d,length(s1));
-        for i:=0 to high(d) do
-          if i>high(s2) then
-            d[i]:=s1[i]
-          else
-            d[i]:=s1[i] and not(s2[i]);
-      end;
-
-
-    function DynSetNotEqual(const s1,s2 : tDynset) : boolean;
-      var
-        i : integer;
-      begin
-        result:=true;
-        { one set could be larger than the other }
-        if length(s1)>length(s2) then
+        if (tagged and StaticTag<>0) and (e<BaseBits-StaticShift) then
           begin
-            for i:=0 to high(s2) do
-              if s1[i]<>s2[i] then
-                exit;
-            { check remaining part being zero }
-            for i:=length(s2) to high(s1) do
-              if s1[i]<>0 then
-                exit;
-          end
-        else
-          begin
-            for i:=0 to high(s1) do
-              if s1[i]<>s2[i] then
-                exit;
-            { check remaining part being zero }
-            for i:=length(s1) to high(s2) do
-              if s2[i]<>0 then
-                exit;
+            { self is static and e fits. }
+            tagged:=tagged or PtrUint(1 shl StaticShift) shl e;
+            exit;
           end;
-        result:=false;
+        { self is static and the previous check was not met, which means e does not fit and self must be made dynamic; or self is dynamic and e does not fit. }
+        if (tagged and StaticTag<>0) or (e>=SizeInt(dyn^.n)) then
+          Resize(1+e);
+        PPtrUint(dyn^.data)[cardinal(e) div BaseBits]:=
+          PPtrUint(dyn^.data)[cardinal(e) div BaseBits] or PtrUint(1) shl (cardinal(e) mod BaseBits);
       end;
 
 
-    procedure PrintDynSet(var f : text;s : TDynSet);
+    procedure TDynSet.IncludeSet(const s: TDynSet);
+      var
+        i : SizeInt;
+      begin
+        if tagged and StaticTag<>0 then
+          begin
+            if s.tagged and StaticTag<>0 then
+              begin
+                { Both are static. }
+                tagged:=tagged or s.tagged;
+                exit;
+              end;
+            { self is static, s is dynamic: resize to s. }
+            Resize(s.dyn^.n);
+          end;
+        { self is dynamic. }
+        if s.tagged and StaticTag<>0 then
+          begin
+            { s is static: combine with the first cell. }
+            dyn^.data[0]:=dyn^.data[0] or s.tagged shr StaticShift;
+            exit;
+          end;
+        if dyn^.n<s.dyn^.n then
+          Resize(s.dyn^.n);
+        for i:=0 to SizeInt(s.dyn^.n div BaseBits)-1 do
+          PPtrUint(dyn^.data)[i]:=PPtrUint(dyn^.data)[i] or PPtrUint(s.dyn^.data)[i];
+      end;
+
+
+    procedure TDynSet.Exclude(e: integer);
+      begin
+        if (tagged and StaticTag<>0) then
+          begin
+            if e<BaseBits-StaticShift then
+              { self is static and e fits. }
+              tagged:=tagged and PtrUint(not (PtrUint(1 shl StaticShift) shl e));
+            exit; { if self is static and e doesn’t fit, simply nothing to do. }
+          end;
+        if cardinal(e)<dyn^.n then
+          PPtrUint(dyn^.data)[cardinal(e) div BaseBits]:=
+            PPtrUint(dyn^.data)[cardinal(e) div BaseBits] and PtrUint(not (PtrUint(1) shl (cardinal(e) mod BaseBits)));
+      end;
+
+
+    procedure TDynSet.ExcludeSet(const s: TDynSet);
+      var
+        i : SizeInt;
+      begin
+        if tagged and StaticTag<>0 then
+          begin
+            if s.tagged and StaticTag<>0 then
+              { Both are static. }
+              tagged:=tagged and not s.tagged+StaticTag { Careful with StaticTag :D }
+            else
+              { self is static, s is dynamic: exclude the first cell. }
+              tagged:=tagged and not (s.dyn^.data[0] shl StaticShift);
+            exit;
+          end;
+        { self is dynamic. }
+        if s.tagged and StaticTag<>0 then
+          begin
+            { s is static: combine with the first cell. }
+            dyn^.data[0]:=dyn^.data[0] and not (s.tagged shr StaticShift);
+            exit;
+          end;
+        { s is dynamic. }
+        for i:=0 to SizeInt(SizeUint(min(SizeInt(dyn^.n),SizeInt(s.dyn^.n))) div BaseBits)-1 do
+          PPtrUint(dyn^.data)[i]:=PPtrUint(dyn^.data)[i] and not PPtrUint(s.dyn^.data)[i];
+      end;
+
+
+    class operator TDynSet.in(e: integer; const s: TDynSet): boolean;
+      begin
+        if s.tagged and StaticTag<>0 then
+          result:=(cardinal(e)<BaseBits-StaticShift) and boolean(s.tagged shr (e+StaticShift) and 1)
+        else
+          result:=(cardinal(e)<s.dyn^.n) and boolean(PPtrUint(s.dyn^.data)[cardinal(e) div BaseBits] shr (cardinal(e) mod BaseBits) and 1);
+      end;
+
+
+    procedure TDynSet.Union(const s2: TDynSet; out r: TDynSet);
+      begin
+        r:=self;
+        r.IncludeSet(s2);
+      end;
+
+
+    procedure TDynSet.Intersect(const s2: TDynSet; out r: TDynSet);
+      var
+        selfminuss2, s2minusself: TDynSet;
+      begin
+        { Function is not used anyway so don’t bother with optimality for now... }
+        self.Diff(s2,selfminuss2);
+        s2.Diff(self,s2minusself);
+        self.Diff(selfminuss2,r);
+        r.ExcludeSet(s2minusself);
+      end;
+
+
+    procedure TDynSet.Diff(const s2: TDynSet; out r: TDynSet);
+      begin
+        { Fast path for all static, can be removed completely. Note in case of “var r” r must be tested for StaticFlag too, or cleared (“out r” automatically clears r). }
+        if tagged and s2.tagged and StaticTag<>0 then
+          begin
+            r.tagged:=tagged and not s2.tagged+StaticTag; { Careful with StaticTag :D }
+            exit;
+          end;
+        r:=self;
+        r.ExcludeSet(s2);
+      end;
+
+
+    class operator TDynSet.=(const a, b: TDynSet): boolean;
+      begin
+        if a.tagged and StaticTag<>0 then
+          if b.tagged and StaticTag<>0 then
+            result:=a.tagged=b.tagged
+          else
+            result:=(a.tagged shr StaticShift=b.dyn^.data[0]) and b.dyn^.ZeroedStartingFromCell(1)
+        else
+          if b.tagged and StaticTag<>0 then
+            result:=(a.dyn^.data[0]=b.tagged shr StaticShift) and a.dyn^.ZeroedStartingFromCell(1)
+          else
+            if a.dyn^.n<=b.dyn^.n then
+              result:=(CompareByte(a.dyn^.data[0],b.dyn^.data[0],a.dyn^.n div bitsizeof(byte))=0) and b.dyn^.ZeroedStartingFromCell(a.dyn^.n div BaseBits)
+            else
+              result:=(CompareByte(a.dyn^.data[0],b.dyn^.data[0],b.dyn^.n div bitsizeof(byte))=0) and a.dyn^.ZeroedStartingFromCell(b.dyn^.n div BaseBits);
+      end;
+
+
+    function TDynSet.GetCount : SizeInt;
+      begin
+        if tagged and StaticTag<>0 then
+          result:={$if sizeof(PtrUint)>4}BsrQWord{$else}BsrDWord{$endif}(tagged) { Assuming StaticTag = 1 and no other tags, automatically gives the correct count. }
+        else
+          begin
+            result:=dyn^.n;
+            repeat
+              dec(result,BaseBits);
+            until (result=0) or (PPtrUint(dyn^.data)[SizeUint(result) div BaseBits]<>0);
+            if PPtrUint(dyn^.data)[SizeUint(result) div BaseBits]<>0 then
+              inc(result,1+{$if sizeof(PtrUint)>4}BsrQWord{$else}BsrDWord{$endif}(PPtrUint(dyn^.data)[SizeUint(result) div BaseBits]));
+          end;
+      end;
+
+
+    procedure TDynSet.Print(var f: text);
       var
         i : integer;
         first : boolean;
       begin
         first:=true;
-        for i:=0 to Length(s)*8 do
+        for i:=0 to GetCount-1 do
+          if i in self then
+            begin
+              if not(first) then
+                write(f,',');
+              write(f,i);
+              first:=false;
+            end;
+      end;
+
+
+    class operator TDynSet.Initialize(var self: TDynSet);
+      begin
+        self.tagged:=StaticTag;
+      end;
+
+
+    class operator TDynSet.Finalize(var self: TDynSet);
+      begin
+        self.SetEmpty;
+      end;
+
+
+    class operator TDynSet.Copy(constref b: TDynSet; var self: TDynSet);
+      begin
+        if @self=@b then
+          exit;
+        self.SetEmpty;
+        if b.tagged and StaticTag<>0 then
+          self.tagged:=b.tagged
+        else
+          self.SetCopyFromDyn(b.dyn);
+      end;
+
+
+    class operator TDynSet.AddRef(var self: TDynSet);
+      begin
+        if self.tagged and StaticTag=0 then
+          self.SetCopyFromDyn(self.dyn);
+      end;
+
+
+    function TDynSet.TDynamic.ZeroedStartingFromCell(c: SizeUint): boolean;
+      var
+        e : SizeUint;
+      begin
+        e:=n div BaseBits;
+        while (c<e) and (PPtrUint(data)[c]=0) do
+          inc(c);
+        result:=c>=e;
+      end;
+
+
+    procedure TDynSet.Resize(n: SizeUint);
+      var
+        oldn,sz,tmp : PtrUint;
+      begin
+        n:=(n+(BaseBits-1)) and PtrUint(-BaseBits);
+        sz:=PtrUint(@TDynamic(nil^).data)+n div bitsizeof(byte);
+        if tagged and StaticTag<>0 then
           begin
-            if DynSetIn(s,i) then
-              begin
-                if not(first) then
-                  write(f,',');
-                write(f,i);
-                first:=false;
-              end;
+            tmp:=tagged;
+            dyn:=AllocMem(sz);
+            dyn^.data[0]:=tmp shr StaticShift;
+          end
+        else
+          begin
+            oldn:=dyn^.n;
+            ReallocMem(dyn,sz);
+            if n>oldn then
+              FillChar(PPtrUint(dyn^.data)[oldn div BaseBits],SizeUint(n-oldn) div bitsizeof(byte),0);
           end;
+        dyn^.n:=n;
+      end;
+
+
+    procedure TDynSet.SetCopyFromDyn(d: PDynamic);
+      var
+        sz : SizeUint;
+      begin
+        sz:=PtrUint(@TDynamic(nil^).data)+d^.n div bitsizeof(byte);
+        dyn:=GetMem(sz);
+        Move(d^,dyn^,sz);
       end;
 
 

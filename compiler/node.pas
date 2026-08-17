@@ -1070,8 +1070,9 @@ implementation
       begin
         if not(assigned(optinfo)) then
           begin
-            new(optinfo);
-            fillchar(optinfo^,sizeof(optinfo^),0);
+            new(optinfo); { Careful NOT to FillChar; TDFASets are managed and have nontrivial initialization. }
+            optinfo^.index:=0;
+            optinfo^.executionweight:=0;
           end;
         result:=optinfo;
       end;

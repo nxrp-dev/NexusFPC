@@ -122,7 +122,7 @@ unit optdfa;
               if assigned(ttempcreatenode(n).tempinfo^.tempinitcode) then
                 begin
                   pdfainfo(arg)^.map.Add(n);
-                  DynSetInclude(pdfainfo(arg)^.def^,n.optinfo^.index);
+                  pdfainfo(arg)^.def^.Include(n.optinfo^.index);
                 end;
             end;
           temprefn,
@@ -131,13 +131,13 @@ unit optdfa;
               pdfainfo(arg)^.map.Add(n);
               if nf_modify in n.flags then
                 begin
-                  DynSetInclude(pdfainfo(arg)^.use^,n.optinfo^.index);
-                  DynSetInclude(pdfainfo(arg)^.def^,n.optinfo^.index)
+                  pdfainfo(arg)^.use^.Include(n.optinfo^.index);
+                  pdfainfo(arg)^.def^.Include(n.optinfo^.index);
                 end
               else if nf_write in n.flags then
-                DynSetInclude(pdfainfo(arg)^.def^,n.optinfo^.index)
+                pdfainfo(arg)^.def^.Include(n.optinfo^.index)
               else
-                DynSetInclude(pdfainfo(arg)^.use^,n.optinfo^.index);
+                pdfainfo(arg)^.use^.Include(n.optinfo^.index);
             end;
           else
             ;
@@ -167,10 +167,10 @@ unit optdfa;
           begin
             with n.optinfo^ do
               begin
-                life:=nil;
-                def:=nil;
-                use:=nil;
-                defsum:=nil;
+                life.SetEmpty;
+                def.SetEmpty;
+                use.SetEmpty;
+                defsum.SetEmpty;
               end;
           end;
         result:=fen_false;
@@ -189,14 +189,14 @@ unit optdfa;
         }
         procedure updatelifeinfo(n : tnode;const l : TDFASet);
           begin
-            if not DynSetNotEqual(l,n.optinfo^.life) then
+            if l=n.optinfo^.life then
               exit;
 {$ifdef DEBUG_DFA}
             if not(changed) then
               begin
                 writeln('Another DFA pass caused by: ',nodetype2str[n.nodetype],'(',n.fileinfo.line,',',n.fileinfo.column,')');
-                write('  Life info set was:     ');PrintDynSet(Output,n.optinfo^.life);writeln;
-                write('  Life info set will be: ');PrintDynSet(Output,l);writeln;
+                write('  Life info set was:     ');n.optinfo^.life.Print(Output);writeln;
+                write('  Life info set will be: ');l.Print(Output);writeln;
               end;
 {$endif DEBUG_DFA}
 
@@ -211,14 +211,14 @@ unit optdfa;
             if assigned(n.successor) then
               begin
                 { ensure we can access optinfo }
-                DynSetDiff(l,n.successor.optinfo^.life,n.optinfo^.def);
-                DynSetIncludeSet(l,n.optinfo^.use);
-                DynSetIncludeSet(l,n.optinfo^.life);
+                n.successor.optinfo^.life.Diff(n.optinfo^.def,l);
+                l.IncludeSet(n.optinfo^.use);
+                l.IncludeSet(n.optinfo^.life);
               end
             else
               begin
                 l:=n.optinfo^.use;
-                DynSetIncludeSet(l,n.optinfo^.life);
+                l.IncludeSet(n.optinfo^.life);
               end;
             updatelifeinfo(n,l);
           end;
@@ -253,8 +253,8 @@ unit optdfa;
             whilerepeatn:
               begin
                 { analyze the loop condition }
-                if not(assigned(node.optinfo^.def)) and
-                   not(assigned(node.optinfo^.use)) then
+                if node.optinfo^.def.IsEmpty and
+                  node.optinfo^.use.IsEmpty then
                   begin
                     dfainfo.use:=@node.optinfo^.use;
                     dfainfo.def:=@node.optinfo^.def;
@@ -264,17 +264,17 @@ unit optdfa;
 
                 { NB: this node should typically have empty def set }
                 if assigned(node.successor) then
-                  DynSetDiff(l,node.successor.optinfo^.life,node.optinfo^.def)
+                  node.successor.optinfo^.life.Diff(node.optinfo^.def,l)
                 else if assigned(resultnode) then
-                  DynSetDiff(l,resultnode.optinfo^.life,node.optinfo^.def)
+                  resultnode.optinfo^.life.Diff(node.optinfo^.def,l)
                 else
-                  l:=nil;
+                  l:=TDFASet.Empty;
 
                 { for repeat..until, node use set in included at the end of loop }
                 if not (lnf_testatbegin in twhilerepeatnode(node).loopflags) then
-                  DynSetIncludeSet(l,node.optinfo^.use);
+                  l.IncludeSet(node.optinfo^.use);
 
-                DynSetIncludeSet(l,node.optinfo^.life);
+                l.IncludeSet(node.optinfo^.life);
 
                 save:=node.optinfo^.life;
                 { to process body correctly, we need life info in place (because
@@ -291,10 +291,10 @@ unit optdfa;
                 l:=twhilerepeatnode(node).right.optinfo^.life;
                 if lnf_testatbegin in twhilerepeatnode(node).loopflags then
                   begin
-                    DynSetIncludeSet(l,node.optinfo^.use);
+                    l.IncludeSet(node.optinfo^.use);
                     { ... loop body could be skipped, so include life info of the successor node }
                     if assigned(node.successor) then
-                      DynSetIncludeSet(l,node.successor.optinfo^.life);
+                      l.IncludeSet(node.successor.optinfo^.life);
                   end;
 
                 UpdateLifeInfo(node,l);
@@ -313,8 +313,8 @@ unit optdfa;
                 }
                 node.allocoptinfo;
                 tfornode(node).loopiteration.allocoptinfo;
-                if not(assigned(node.optinfo^.def)) and
-                   not(assigned(node.optinfo^.use)) then
+                if node.optinfo^.def.IsEmpty and
+                   node.optinfo^.use.IsEmpty then
                   begin
                     dfainfo.use:=@node.optinfo^.use;
                     dfainfo.def:=@node.optinfo^.def;
@@ -333,7 +333,7 @@ unit optdfa;
                   optinfo might not be assigned
                 }
                 counteruse_after_loop:=assigned(tfornode(node).left.optinfo) and assigned(node.successor) and
-                  DynSetIn(node.successor.optinfo^.life,tfornode(node).left.optinfo^.index);
+                  (tfornode(node).left.optinfo^.index in node.successor.optinfo^.life);
 
                 if counteruse_after_loop then
                   begin
@@ -346,11 +346,11 @@ unit optdfa;
                 { first update the dummy node }
 
                 { get the life of the loop block }
-                l:=copy(tfornode(node).t2.optinfo^.life);
+                l:=tfornode(node).t2.optinfo^.life;
 
                 { take care of the successor }
                 if assigned(node.successor) then
-                  DynSetIncludeSet(l,node.successor.optinfo^.life);
+                  l.IncludeSet(node.successor.optinfo^.life);
 
                 { the counter variable is living as well inside the for loop
 
@@ -358,7 +358,7 @@ unit optdfa;
                   optinfo might not be assigned
                 }
                 if assigned(tfornode(node).left.optinfo) then
-                  DynSetInclude(l,tfornode(node).left.optinfo^.index);
+                  l.Include(tfornode(node).left.optinfo^.index);
 
                 { force block node life info }
                 UpdateLifeInfo(tfornode(node).loopiteration,l);
@@ -366,12 +366,12 @@ unit optdfa;
                 { now update the for node itself }
 
                 { get the life of the loop block }
-                l:=copy(tfornode(node).t2.optinfo^.life);
+                l:=tfornode(node).t2.optinfo^.life;
 
                 { take care of the successor as it's possible that we don't have one execution of the body }
                 if (not(tfornode(node).right.nodetype=ordconstn) or not(tfornode(node).t1.nodetype=ordconstn)) and
                   assigned(node.successor) then
-                  DynSetIncludeSet(l,node.successor.optinfo^.life);
+                  l.IncludeSet(node.successor.optinfo^.life);
 
                 {
                   the counter variable is not living at the entry of the for node
@@ -380,11 +380,11 @@ unit optdfa;
                     optinfo might not be assigned
                 }
                 if assigned(tfornode(node).left.optinfo) then
-                  DynSetExclude(l,tfornode(node).left.optinfo^.index);
+                  l.Exclude(tfornode(node).left.optinfo^.index);
 
                 { ... but it could be that left/right use it, so do this after
                   removing the def of the counter variable }
-                DynSetIncludeSet(l,node.optinfo^.use);
+                l.IncludeSet(node.optinfo^.use);
 
                 UpdateLifeInfo(node,l);
 
@@ -398,8 +398,8 @@ unit optdfa;
             derefn,
             assignn:
               begin
-                if not(assigned(node.optinfo^.def)) and
-                  not(assigned(node.optinfo^.use)) then
+                if node.optinfo^.def.IsEmpty and
+                  node.optinfo^.use.IsEmpty then
                   begin
                     dfainfo.use:=@node.optinfo^.use;
                     dfainfo.def:=@node.optinfo^.def;
@@ -423,15 +423,15 @@ unit optdfa;
                 { ensure that we don't remove life info }
                 l:=node.optinfo^.life;
                 if assigned(node.successor) then
-                  DynSetIncludeSet(l,node.successor.optinfo^.life);
+                  l.IncludeSet(node.successor.optinfo^.life);
                 UpdateLifeInfo(node,l);
               end;
 
             ifn:
               begin
                 { get information from cond. expression }
-                if not(assigned(node.optinfo^.def)) and
-                   not(assigned(node.optinfo^.use)) then
+                if node.optinfo^.def.IsEmpty and
+                   node.optinfo^.use.IsEmpty then
                   begin
                     dfainfo.use:=@node.optinfo^.use;
                     dfainfo.def:=@node.optinfo^.def;
@@ -448,21 +448,21 @@ unit optdfa;
 
                 { get life info from then branch }
                 if assigned(tifnode(node).right) then
-                  DynSetIncludeSet(l,tifnode(node).right.optinfo^.life)
+                  l.IncludeSet(tifnode(node).right.optinfo^.life)
                 else if assigned(node.successor) then
-                  DynSetIncludeSet(l,node.successor.optinfo^.life);
+                  l.IncludeSet(node.successor.optinfo^.life);
 
                 { get life info from else branch }
                 if assigned(tifnode(node).t1) then
-                  DynSetIncludeSet(l,tifnode(node).t1.optinfo^.life)
+                  l.IncludeSet(tifnode(node).t1.optinfo^.life)
                 else if assigned(node.successor) then
-                  DynSetIncludeSet(l,node.successor.optinfo^.life);
+                  l.IncludeSet(node.successor.optinfo^.life);
 
                 { remove def info from the cond. expression }
-                DynSetExcludeSet(l,tifnode(node).optinfo^.def);
+                l.ExcludeSet(tifnode(node).optinfo^.def);
 
                 { add use info from the cond. expression }
-                DynSetIncludeSet(l,tifnode(node).optinfo^.use);
+                l.IncludeSet(tifnode(node).optinfo^.use);
 
                 { finally, update the life info of the node }
                 UpdateLifeInfo(node,l);
@@ -471,8 +471,8 @@ unit optdfa;
             casen:
               begin
                 { get information from "case" expression }
-                if not(assigned(node.optinfo^.def)) and
-                   not(assigned(node.optinfo^.use)) then
+                if node.optinfo^.def.IsEmpty and
+                   node.optinfo^.use.IsEmpty then
                   begin
                     dfainfo.use:=@node.optinfo^.use;
                     dfainfo.def:=@node.optinfo^.def;
@@ -491,25 +491,25 @@ unit optdfa;
 
                 { get life info from case branches }
                 for i:=0 to tcasenode(node).blocks.count-1 do
-                  DynSetIncludeSet(l,pcaseblock(tcasenode(node).blocks[i])^.statement.optinfo^.life);
+                  l.IncludeSet(pcaseblock(tcasenode(node).blocks[i])^.statement.optinfo^.life);
 
                 { get life info from else branch or the successor }
                 if assigned(tcasenode(node).elseblock) then
-                  DynSetIncludeSet(l,tcasenode(node).elseblock.optinfo^.life)
+                  l.IncludeSet(tcasenode(node).elseblock.optinfo^.life)
                 else if assigned(node.successor) then
                   begin
                     if is_ordinal(tcasenode(node).left.resultdef) then
                       begin
                         getrange(tcasenode(node).left.resultdef,lv,hv);
                         if tcasenode(node).labelcoverage<(hv-lv) then
-                          DynSetIncludeSet(l,node.successor.optinfo^.life);
+                          l.IncludeSet(node.successor.optinfo^.life);
                       end
                     else
-                      DynSetIncludeSet(l,node.successor.optinfo^.life);
+                      l.IncludeSet(node.successor.optinfo^.life);
                   end;
 
                 { add use info from the "case" expression }
-                DynSetIncludeSet(l,tcasenode(node).optinfo^.use);
+                l.IncludeSet(tcasenode(node).optinfo^.use);
 
                 { finally, update the life info of the node }
                 UpdateLifeInfo(node,l);
@@ -522,13 +522,13 @@ unit optdfa;
                 if assigned(node.successor) then
                   begin
                     l:=node.optinfo^.life;
-                    DynSetIncludeSet(l,node.successor.optinfo^.life);
+                    l.IncludeSet(node.successor.optinfo^.life);
                     UpdateLifeInfo(node,l);
                   end
                 else if assigned(resultnode) and (resultnode.nodetype<>nothingn) then
                   begin
-                    if not(assigned(node.optinfo^.def)) and
-                       not(assigned(node.optinfo^.use)) then
+                    if node.optinfo^.def.IsEmpty and
+                       node.optinfo^.use.IsEmpty then
                       begin
                         if assigned(texitnode(node).left) then
                           begin
@@ -564,8 +564,8 @@ unit optdfa;
             inlinen,
             calln:
               begin
-                if not(assigned(node.optinfo^.def)) and
-                  not(assigned(node.optinfo^.use)) then
+                if node.optinfo^.def.IsEmpty and
+                  node.optinfo^.use.IsEmpty then
                   begin
                     dfainfo.use:=@node.optinfo^.use;
                     dfainfo.def:=@node.optinfo^.def;
@@ -891,14 +891,14 @@ unit optdfa;
             exit;
           include(node.transientflags,tnf_processing);
 
-          if not(assigned(node.optinfo)) or not(DynSetIn(node.optinfo^.life,nodetosearch.optinfo^.index)) then
+          if not(assigned(node.optinfo)) or not(nodetosearch.optinfo^.index in node.optinfo^.life) then
             exit;
 
           { we do not need this info always, so try to safe some time here, CheckAndWarn
             takes a lot of time anyways }
           if not(node.nodetype in [statementn,blockn]) then
-            touchesnode:=DynSetIn(node.optinfo^.use,nodetosearch.optinfo^.index) or
-              DynSetIn(node.optinfo^.def,nodetosearch.optinfo^.index)
+            touchesnode:=(nodetosearch.optinfo^.index in node.optinfo^.use) or
+              (nodetosearch.optinfo^.index in node.optinfo^.def)
           else
             touchesnode:=false;
 

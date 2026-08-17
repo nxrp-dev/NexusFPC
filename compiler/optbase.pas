@@ -29,8 +29,7 @@ unit optbase;
       globtype,cdynset;
 
     type
-      { this should maybe replaced by a spare set,
-        using a dyn. array makes assignments cheap }
+      { this should maybe replaced by a spare set }
       tdfaset = TDynSet;
       PDFASet = ^TDynSet;
 

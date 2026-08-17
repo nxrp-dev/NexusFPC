@@ -133,20 +133,20 @@ unit optutils;
 
     function PrintNodeDFA(var n: tnode; arg: pointer): foreachnoderesult;
       begin
-        if assigned(n.optinfo) and ((n.optinfo^.life<>nil) or (n.optinfo^.use<>nil) or (n.optinfo^.def<>nil)) then
+        if assigned(n.optinfo) and (not n.optinfo^.life.IsEmpty or not n.optinfo^.use.IsEmpty or not n.optinfo^.def.IsEmpty) then
           begin
             write(text(arg^),nodetype2str[n.nodetype],'(',n.fileinfo.line,',',n.fileinfo.column,') Life: ');
-            PrintDynSet(text(arg^),n.optinfo^.life);
+            n.optinfo^.life.Print(text(arg^));
             write(text(arg^),' Def: ');
-            PrintDynSet(text(arg^),n.optinfo^.def);
+            n.optinfo^.def.Print(text(arg^));
             write(text(arg^),' Use: ');
-            PrintDynSet(text(arg^),n.optinfo^.use);
+            n.optinfo^.use.Print(text(arg^));
             if assigned(n.successor) then
               write(text(arg^),' Successor: ',nodetype2str[n.successor.nodetype],'(',n.successor.fileinfo.line,',',n.successor.fileinfo.column,')')
             else
               write(text(arg^),' Successor: nil');
             write(text(arg^),' DefSum: ');
-            PrintDynSet(text(arg^),n.optinfo^.defsum);
+            n.optinfo^.defsum.Print(text(arg^));
             writeln(text(arg^));
           end;
         result:=fen_false;
@@ -403,12 +403,12 @@ unit optutils;
       begin
         if assigned(n.optinfo) then
           begin
-            DynSetIncludeSet(defsum^,n.optinfo^.def);
+            defsum^.IncludeSet(n.optinfo^.def);
             { for nodes itself do not necessarily expose the definition of the counter as
               the counter might be undefined after the for loop, so include here the counter
               explicitly }
             if (n.nodetype=forn) and assigned(tfornode(n).left.optinfo) then
-              DynSetInclude(defsum^,tfornode(n).left.optinfo^.index);
+              defsum^.Include(tfornode(n).left.optinfo^.index);
           end;
         Result:=fen_false;
       end;
@@ -420,7 +420,7 @@ unit optutils;
       begin
         p.allocoptinfo;
         defsum:=@p.optinfo^.defsum;
-        if not assigned(defsum^) then
+        if defsum^.IsEmpty then
             foreachnodestatic(pm_postprocess,p,@adddef,defsum);
       end;
 
@@ -476,7 +476,7 @@ unit optutils;
         usesum : PDFASet absolute arg;
       begin
         if assigned(n.optinfo) then
-          DynSetIncludeSet(usesum^,n.optinfo^.use);
+          usesum^.IncludeSet(n.optinfo^.use);
         Result:=fen_false;
       end;
 
@@ -487,7 +487,7 @@ unit optutils;
       begin
         p.allocoptinfo;
         usesum:=@p.optinfo^.usesum;
-        if not assigned(usesum^) then
+        if usesum^.IsEmpty then
             foreachnodestatic(pm_postprocess,p,@adduse,usesum);
       end;
 
@@ -495,7 +495,7 @@ unit optutils;
     function has_life_info(n : tnode) : boolean;
       begin
         result:=assigned(n) and assigned(n.optinfo) and
-          assigned(n.optinfo^.life);
+          not n.optinfo^.life.IsEmpty;
       end;
 
 end.
