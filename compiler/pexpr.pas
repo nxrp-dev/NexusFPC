@@ -4366,12 +4366,12 @@ implementation
              _PROCEDURE,
              _FUNCTION:
                begin
-                 if (block_type=bt_body) and
+                 if (block_type=bt_body) and (current_scanner.token = _FUNCTION) and
                      (m_anonymous_functions in current_settings.modeswitches) then
                    begin
                      if (current_scanner.token = _FUNCTION) and
                        not (m_result in current_settings.modeswitches) then
-                      Comment(V_WARNING, '{$modeswitch result} or -Mresult flag may be required for functions.');
+                      Message(parser_w_may_need_result);
 
                      filepos:=current_filepos;
                      oldprocvardef:=getprocvardef;

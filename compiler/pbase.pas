@@ -133,7 +133,7 @@ implementation
             (m_class in tokeninfo^[current_scanner.idtoken].keyword) then
            Message(parser_f_need_objfpc_or_delphi_mode);
          if (not (m_result in current_settings.modeswitches)) and (Upper(s) = 'RESULT') then
-           Comment(V_Note, 'Did you mean to use {$modeswitch result} or -Mresult flag?');
+           Message(parser_h_try_result);
        end;
 
 
@@ -147,7 +147,7 @@ implementation
             (m_class in tokeninfo^[current_scanner.idtoken].keyword) then
            MessagePos(filepos,parser_f_need_objfpc_or_delphi_mode);
          if (not (m_result in current_settings.modeswitches)) and (Upper(s) = 'RESULT') then
-           Comment(V_Note, 'Did you mean to use {$modeswitch result} or -Mresult flag?');
+           Message(parser_h_try_result);
        end;
 
 
