@@ -12079,6 +12079,16 @@ begin
         RaiseMsg(20170216152117,nIncompatibleTypesGotExpected,sIncompatibleTypesGotExpected,
           ['set of '+BaseTypeNames[RightResolved.SubType],'set of '+BaseTypeNames[LeftResolved.SubType]],El.Right);
       end
+    else if (LeftResolved.BaseType=btPointer)
+        and (El.Kind in [akAdd,akMinus])
+        and (rrfReadable in RightResolved.Flags)
+        and (RightResolved.BaseType in btAllInteger)
+        and (PointerMathBoolSwitchEnabled(El)
+          or IsPointerMathType(LeftResolved.LoTypeEl)) then
+      begin
+      // Ptr+=n / Ptr-=n, the same rule as the binary Ptr+n form above:
+      // generics.hashes walks its key with `AKey += 3`.
+      end
     else if LeftResolved.BaseType=btContext then
       begin
       if (LeftResolved.LoTypeEl.ClassType=TPasArrayType) and (El.Kind=akAdd)
@@ -12088,6 +12098,15 @@ begin
         // DynArr+=...
         CheckAssignCompatibilityArrayType(LeftResolved,RightResolved,El,true);
         exit;
+        end
+      else if (LeftResolved.LoTypeEl.ClassType=TPasPointerType)
+          and (El.Kind in [akAdd,akMinus])
+          and (rrfReadable in RightResolved.Flags)
+          and (RightResolved.BaseType in btAllInteger)
+          and (PointerMathBoolSwitchEnabled(El)
+            or IsPointerMathType(LeftResolved.LoTypeEl)) then
+        begin
+        // TypedPtr+=n / TypedPtr-=n, in element steps
         end
       else
         RaiseIncompatibleTypeRes(20180615235749,nOperatorIsNotOverloadedAOpB,[AssignKindNames[El.Kind]],LeftResolved,RightResolved,El);
@@ -16039,6 +16058,18 @@ begin
           end;
         {$ENDIF}
         end
+      else if (RightResolved.BaseType=btContext)
+          and (RightResolved.LoTypeEl is TPasPointerType)
+          and (Bin.OpCode in [eopLessThan,eopGreaterThan,
+                              eopLessthanEqual,eopGreaterThanEqual]) then
+        begin
+        (* An untyped Pointer ORDERED against a typed one, as the mirror case
+           already allows the other way round: generics.hashes walks a buffer
+           with `until not (P <= PLimit)` where P is Pointer and PLimit a
+           PAnsiChar. Both are addresses; comparing them needs no $POINTERMATH. *)
+        SetBaseType(btBoolean);
+        exit;
+        end
       {$IFNDEF PAS2JS}
       else if (Bin.OpCode=eopSubtract)
           and (RightResolved.BaseType=btContext)
@@ -18876,8 +18907,12 @@ begin
   Result:=ModScope.SystemTVarRec;
   if Result<>nil then exit;
 
-  // find unit in uses clauses
-  UtilsMod:=FindUsedUnitname('system',aMod);
+  // find unit in uses clauses; the system unit itself has no uses clause, so
+  // its own `array of const` parameters must look the record up locally
+  if SameText(aMod.Name,'system') then
+    UtilsMod:=aMod
+  else
+    UtilsMod:=FindUsedUnitname('system',aMod);
   if UtilsMod=nil then
     RaiseIdentifierNotFound(20190215101210,'System.TVarRec',ErrorEl);
 
@@ -23843,6 +23878,10 @@ begin
       Result:=cExact
     else if (ParamResolved.BaseType=btContext) and (ParamResolved.LoTypeEl is TPasEnumType) then
       Result:=cExact
+    // Inside an unspecialized generic body the argument type is not known yet;
+    // rtl-objpas' TRttiEnumerationType.GetName<T> does Ord(aValue) on one.
+    else if IsGenericTemplType(ParamResolved) then
+      Result:=cGenericExact
     else if ParamResolved.BaseType=btRange then
       begin
       if ParamResolved.SubType in btArrayRangeTypes then
@@ -25824,6 +25863,8 @@ begin
   else if AClass=TFinalizationSection then
     AddInitialFinalizationSection(TFinalizationSection(El))
   else if AClass=TPasImplCommand then
+  else if AClass=TPasLabels then
+    // a `label` section declares names only; nothing to put in a scope
   else if AClass.InheritsFrom(TPasImplBlock) then
     // resolved when finished
   else if AClass=TPasAttributes then
@@ -29687,8 +29728,10 @@ begin
       // so `Test(array of LongInt)` and `Test(TLongIntArray)` may coexist (tarrconstr6).
       if IsOpenArray(Arr1)<>IsOpenArray(Arr2) then
         exit(cIncompatible);
-      if length(Arr1.Ranges)>0 then
-        RaiseNotYetImplemented(20170328093733,Arr1.Ranges[0],'anonymous static array');
+      // Two STATIC arrays are one signature only when their index bounds agree;
+      // differing bounds make them distinct types, so distinct overloads.
+      if (length(Arr1.Ranges)>0) and not SameArrayRanges(Arr1,Arr2) then
+        exit(cIncompatible);
       Result:=CheckElTypeCompatibility(GetArrayElType(Arr1),GetArrayElType(Arr2),ResolveAlias);
       exit;
       end
@@ -36212,6 +36255,10 @@ begin
   if (Proc.ClassType=TPasClassConstructor)
       or (Proc.ClassType=TPasClassDestructor) then
     // actually class constructor/destructor are static
+    exit;
+  if Proc is TPasOperator then
+    // operators are static too: they take every operand explicitly, and
+    // rtl-objpas' TRttiContext even names one of them `self`
     exit;
 
   ProcScope:=TPasProcedureScope(Proc.CustomData);
