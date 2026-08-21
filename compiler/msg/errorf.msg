@@ -1530,7 +1530,7 @@ execinfo_x_stackcommit=09134_X_Stack space commited: $1 bytes
 % loading a unit from disk into memory. Many of these mesages are
 % informational messages.
 % \begin{description}
-unit_t_unitsearch=10000_T_Unitsearch: $1
+unit_t_usingfile=10000_T_Unitsearch: $1
 % When you use the \var{-vt}, the compiler tells you where it tries to find
 % unit files.
 unit_t_ppu_loading=10001_T_PPU Loading $1
