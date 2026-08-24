@@ -148,7 +148,10 @@ Function CompareProcObj(Node1, Node2: Pointer): integer;
 var n1,n2 : TIndexedWord;
 begin
   n1:=TIndexedWord(Node1); n2:=TIndexedWord(Node2);
-  Result := CompareText(n1.theword, n2.theword);
+  // The words are lowercased as they are added and a reader looks them up
+  // by comparing the stored bytes, so they have to be ordered the same way:
+  // CompareText uppercases first, which sorts '_' after the letters.
+  Result := CompareStr(n1.theword, n2.theword);
   if Result = 0 then
   begin
     Result := ord(n2.IsTitle)-ord(n1.IsTitle);
@@ -211,9 +214,13 @@ begin
   if FInBody then begin
     if NoCaseTag = '</BODY>' then FInBody := False
     else if copy(NoCaseTag,1,7) = '<SCRIPT' then FInScript:= True
-    else if copy(NoCaseTag,1,8) = '</SCRIPT' then FInScript:= False
+    // The parser only looks for the next '>' to end a tag, so a '<' inside
+    // the script, as in "for (i = 0; i < n; i++)", makes it run past
+    // the real </script> and hand it to us in the middle of a bogus tag.
+    // Accept it there too, or everything below the script is left out.
+    else if Pos('</SCRIPT', NoCaseTag) > 0 then FInScript:= False
     else if copy(NoCaseTag,1,6) = '<STYLE' then FInStyle:= True          // style in body is not WhatWG but is HTML5.2 ?
-    else if copy(NoCaseTag,1,7) = '</STYLE' then FInStyle:= False
+    else if Pos('</STYLE', NoCaseTag) > 0 then FInStyle:= False
 
   end
   else begin
@@ -246,7 +253,7 @@ var
   IsNumberWord: Boolean;
   function IsEndOfWord: Boolean;
   begin
-    Result := not (WordPtr^ in ['a'..'z', '0'..'9', #01, #$DE, #$FE]);
+    Result := not (WordPtr^ in ['a'..'z', '0'..'9', '_', #01, #$DE, #$FE]);
     if  Result and IsNumberWord then
       Result :=  Result and (WordPtr[0] <> '.');
     if Result and InWord then
@@ -349,6 +356,8 @@ var
 begin
   FInBody := False;
   FInTitle:= False;
+  FInScript := False;
+  FInStyle := False;
   FIndexTitlesOnly := AIndexOnlyTitles;
   FWordCount := 0;
   FTopicIndex := ATOPICIndex;
@@ -369,6 +378,8 @@ begin
   FDocTitle := '';
   FInBody := False;
   FInTitle:= False;
+  FInScript := False;
+  FInStyle := False;
   FWordCount := 0;
   FTopicIndex := -1;
 
