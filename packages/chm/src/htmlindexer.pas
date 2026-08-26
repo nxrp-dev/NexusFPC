@@ -255,7 +255,16 @@ var
   begin
     Result := not (WordPtr^ in ['a'..'z', '0'..'9', '_', #01, #$DE, #$FE]);
     if  Result and IsNumberWord then
-      Result :=  Result and (WordPtr[0] <> '.');
+      begin
+        // A word starting with a digit goes on over a thousands separator,
+        // which is then dropped from it, and over a decimal point, but only
+        // when a digit follows it: this is what the Microsoft compiler does,
+        // so "1,000" is one word and "7." is just "7".
+        if WordPtr[0] = ',' then
+          Result := False
+        else if (WordPtr[0] = '.') and (WordPtr[1] in ['0'..'9']) then
+          Result := False;
+      end;
     if Result and InWord then
       Result := Result and (WordPtr[0] <> '''');
   ;
@@ -264,10 +273,37 @@ var
     WordIndex: TIndexedWord;
     WordName: AnsiString;
     FPos: Integer;
+    i, j: Integer;
 begin
   if IsTitle then
     FDocTitle := Words;
   Words := LowerCase(Words);
+
+  // A character entity separates words but is not one itself: otherwise the
+  // digits of a numeric one are indexed as a word of their own, which shifts
+  // the position of every word following it in the document.
+  i := 1;
+  while i <= Length(Words) do
+    begin
+      if Words[i] = '&' then
+        begin
+          j := i + 1;
+          while (j <= Length(Words)) and (j - i <= 10)
+                and not (Words[j] in [';', ' ', '&']) do
+            Inc(j);
+          if (j <= Length(Words)) and (Words[j] = ';') then
+            begin
+              while i <= j do
+                begin
+                  Words[i] := ' ';
+                  Inc(i);
+                end;
+              Continue;
+            end;
+        end;
+      Inc(i);
+    end;
+
   WordStart := PAnsiChar(Words);
   WordPtr := WordStart;
   IsNumberWord := False;
@@ -282,12 +318,17 @@ begin
         Delete(WordName, FPos, 1);
         FPos := Pos('''', WordName);
       end;
+      FPos := Pos(',', WordName);
+      while FPos > 0 do
+      begin
+        Delete(WordName, FPos, 1);
+        FPos := Pos(',', WordName);
+      end;
       WordIndex := addgetword(wordname,istitle);
       InWord := False;
       IsNumberWord := False;
       WordIndex.DocumentTopic[FTopicIndex].AddWordIndex(FWordCount);
-      //if not IsTitle then
-        Inc(FWordCount);
+      Inc(FWordCount);
 
     end
     else if not InWord and not IsEndOfWord then
@@ -310,8 +351,7 @@ begin
     //if IsNumberWord then WriteLn('Following is NUMBER WORD: "', (WordStart[0]),'"'); ;
     IsNumberWord := False;
     //WriteLn(FWordCount, ' "', WordName,'"');
-    if not IsTitle then
-      Inc(FWordCount);
+    Inc(FWordCount);
   end;
 end;
 
