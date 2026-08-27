@@ -505,7 +505,7 @@ FPC_INT75_HANDLER:
         pop bp
         pop ds
         pop cx
-        retf  ; jumps to the previous handler with all registers and stack intact
+        iret  ; jumps to the previous handler with all registers and stack intact
 
 
 
