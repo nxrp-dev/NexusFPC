@@ -1608,6 +1608,8 @@ Implementation
             A_ORR,
             A_MUL:
               Result:=OptPass1Data(p);
+            A_UBFX:
+              Result := OptPass1UBFX(p);
             A_UXTB:
               Result:=OptPass1UXTB(p);
             A_UXTH:

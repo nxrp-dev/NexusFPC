@@ -2457,6 +2457,8 @@ Implementation
             A_MVN:
               Result := OPtPass1MVN(p);
 {$endif dummy}
+            A_UBFX:
+              Result := OptPass1UBFX(p);
             A_UXTB:
               Result := OptPass1UXTB(p);
             A_UXTH:
