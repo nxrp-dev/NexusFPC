@@ -91,13 +91,14 @@ type
   end;
 
 const
-  RCTABLE_MAXIDX = 25;
+  RCTABLE_MAXIDX = 27;
   RawCodeTable : array[0..RCTABLE_MAXIDX] of RawCodeEntry =
     (
+     (rc: 65; n: $0E08; s: $0E08; c: $0E7F; a: $0800; ), // BackSpace
      (rc: 66; n: $0F09; s: $0F00; c: $9400; a: $A500; ), // TAB
      (rc: 68; n: $1C0D; s: $1C0D; c: $1C0A; a: $1C0D; ), // Enter  // shift, alt?
      (rc: 69; n: $011B; s: $011B; c: $011B; a: $0100; ), // ESC    // shift?
-     (rc: 70; n: $5300; s: $0700; c: $A300; a: $A200; ), // Delete
+     (rc: 70; n: $5300; s: $0700; c: $0600; a: $A300; ), // Delete
      (rc: 71; n: $5200; s: $0500; c: $0400; a: $A200; ), // Insert
      (rc: 72; n: $4900; s: $4900; c: $8400; a: $9900; ), // PgUP   // shift?
      (rc: 73; n: $5100; s: $5100; c: $7600; a: $A100; ), // PgDOWN // shift?
@@ -117,10 +118,13 @@ const
      (rc: 87; n: $4200; s: $5B00; c: $6500; a: $6F00; ), // F8
      (rc: 88; n: $4300; s: $5C00; c: $6600; a: $7000; ), // F9
      (rc: 89; n: $4400; s: $5D00; c: $6700; a: $7100; ), // F10
-     (rc: 75; n: $8500; s: $8700; c: $8900; a: $8B00; ), // F11
-     (rc: 76; n: $8600; s: $8800; c: $8A00; a: $8C00; ), // F12
+     //(rc: 75; n: $8500; s: $8700; c: $8900; a: $8B00; ), // F11  // wrong rc ?
 
-     (rc: 95;  n: $FF14; s: $FF14; c: $FF14; a: $FF14; ), // Help -> F20
+     (rc: 92;  n: $372A; s: $372A; c: $9600; a: $3700; ), // GrayAsterisk *
+     (rc: 94;  n: $4E2B; s: $4E2B; c: $9000; a: $4E00; ), // GrayPlus
+     //(rc: 95;  n: $FF14; s: $FF14; c: $FF14; a: $FF14; ), // Help -> F20
+     (rc: 95;  n: $8500; s: $8700; c: $8900; a: $8B00; ), // F11
+     (rc: 103; n: $8600; s: $8800; c: $8A00; a: $8C00; ), // F12 = LWin = Menu  (we need F12 more than anything)
      (rc: 112; n: $4700; s: $4700; c: $7700; a: $9700; ), // Home    // shift?
      (rc: 113; n: $4F00; s: $4F00; c: $7500; a: $9F00; )  // End     // shift?
     );
@@ -162,14 +166,14 @@ begin
     Exit;
   end;
 
-  if HasShift(IQual) then
-    rcTableCode:=RawCodeTable[Idx].s
+  if HasAlt(IQual) then
+    rcTableCode:=RawCodeTable[Idx].a
   else
     if HasCtrl(IQual) then
       rcTableCode:=RawCodeTable[Idx].c
     else
-      if HasAlt(IQual) then
-        rcTableCode:=RawCodeTable[Idx].a
+      if HasShift(IQual) then
+        rcTableCode:=RawCodeTable[Idx].s
       else
         rcTableCode:=RawCodeTable[Idx].n;
 end;
@@ -456,11 +460,19 @@ begin
             end;
           end;
         IDCMP_RAWKEY: begin
-          // mouse wheel up or down -> pgup and pgdown
-          if ICode = 122 then
-            ICode := 72;
-          if ICode = 123 then
-            ICode := 73;
+          // mouse wheel up or down
+          if (ICode = 122) or (ICode = 123) then
+          begin
+              me.Action := MouseActionDown;
+              if ICode = 122 then
+                me.Buttons := OldButtons or MouseButton4  { mouse wheel up }
+              else
+                me.Buttons := OldButtons or MouseButton5; { mouse wheel down }
+              me.X := OldMouseX;
+              me.Y := OldMouseY;
+              PutMouseEvent(me);
+          end else
+          begin
           // get AnsiChar from rawkey
           KeyUp := (ICode and IECODE_UP_PREFIX) <> 0;   // is key up
           ICode := ICode and not IECODE_UP_PREFIX;      // remove key up from ICode
@@ -511,6 +523,28 @@ begin
                 if ((IQual and IEQUALIFIER_LALT) <> 0) then   // check left alt keycodes
                 begin
                   case Buff[0] of        // Alt - keys already defined
+                    ';': KeyCode := kbAltSemiCol shl 8;
+                    '''': KeyCode := kbAltQuote shl 8;
+                    '`': KeyCode := kbAltOpQuote shl 8;
+                    '\': KeyCode := kbAltBkSlash shl 8;
+                    ',': KeyCode := kbAltComma shl 8;
+                    '.': KeyCode := kbAltPeriod shl 8;
+                    '/': KeyCode := kbAltSlash shl 8;
+                    ' ': KeyCode := kbAltSpace shl 8;
+                    '0': KeyCode := kbAlt0 shl 8;
+                    '1': KeyCode := kbAlt1 shl 8;
+                    '2': KeyCode := kbAlt2 shl 8;
+                    '3': KeyCode := kbAlt3 shl 8;
+                    '4': KeyCode := kbAlt4 shl 8;
+                    '5': KeyCode := kbAlt5 shl 8;
+                    '6': KeyCode := kbAlt6 shl 8;
+                    '7': KeyCode := kbAlt7 shl 8;
+                    '8': KeyCode := kbAlt8 shl 8;
+                    '9': KeyCode := kbAlt9 shl 8;
+                    '-': KeyCode := kbAltMinus shl 8;
+                    '=': KeyCode := kbAltEqual shl 8;
+                    '[': KeyCode := kbAltLftBrack shl 8;
+                    ']': KeyCode := kbAltRgtBrack shl 8;
                     'a': KeyCode := kbAltA shl 8;
                     'b': KeyCode := kbAltB shl 8;
                     'c': KeyCode := kbAltC shl 8;
@@ -541,6 +575,26 @@ begin
                 end else
                 begin
                   case Buff[0] of      // ctrl - keys defined in FreeVision/drivers.pas -> so here direct numbers
+                    {    DOS does not provide some Ctrl+ scan codes, leave them unspecified for now
+                    '0': KeyCode := ;
+                    '1': KeyCode :=
+                    }
+                    '2': KeyCode := $0300;
+                    {
+                    '3': KeyCode :=
+                    '4': KeyCode :=
+                    '5': KeyCode :=
+                    }
+                    '6': KeyCode := $071E;
+                    {
+                    '7': KeyCode :=
+                    '8': KeyCode :=
+                    '9': KeyCode :=
+                    }
+                    '-': KeyCode := $0C1F;
+                    {'=': KeyCode := ; }
+                    '[': KeyCode := $1A1B;
+                    ']': KeyCode := $1B1D;
                     'a': KeyCode := $1E01;
                     'b': KeyCode := $3002;
                     'c': KeyCode := $2E03;
@@ -580,6 +634,7 @@ begin
           begin
             KeySet^.KeyCode := 0;
             KeyCode := 0;
+          end;
           end;
           //writeln('raw keycode: ',iMsg^.code, ' -> $', IntToHex(keycode,4), ' ret: ', ret);
         end;

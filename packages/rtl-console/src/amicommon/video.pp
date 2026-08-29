@@ -77,7 +77,6 @@ uses
 
 procedure SysUpdateScreen(Force: Boolean); forward;
 
-{$i video.inc}
 
 {$i videodata.inc}
 
@@ -88,11 +87,14 @@ var
   OS_Screen             : PScreen   = nil;    // Holds optional screen pointer
   FPC_VIDEO_FULLSCREEN  : Boolean   = False;  // Global that defines when we need to attempt opening on own screen
 
+{$i video.inc}
+
 var
   VideoColorMap         : PColorMap;
   VideoPens             : array[0..15] of LongInt;
   VideoFont             : PByte;
   VideoFontHeight       : DWord;
+  VideoFontWidth        : DWord;
 
   OldSH, OldSW          : longint;
 
@@ -116,12 +118,18 @@ var
   GotInactiveWindowMsg  : Boolean;
   LastL, LastT: Integer;
   LastW, LastH: Integer;
+  SavedLastW, SavedLastH: Integer;
   WindowForReqSave: PWindow;
   Process: PProcess;
 
   FontBitmap: PBitmap;
   CharPointers: array[0..255] of Pointer;
   SrcMod: Integer = 1;
+
+{ SetWindowTitles seems not to copy the buffer, at least on AROS.
+  So we better keep a reference of the strings to ourselves... }
+  globWinT: AnsiString;
+  globScreenT: AnsiString;
 
 (*
   GetScreen: pScreen;
@@ -211,8 +219,8 @@ begin
       WA_CustomScreen, PtrUint(OS_Screen),
       WA_Left       , 0,
       WA_Top        , 0,
-      WA_InnerWidth , (OS_Screen^.Width div 8) * 8,
-      WA_InnerHeight, (OS_Screen^.Height div 16) * 16,
+      WA_InnerWidth , (OS_Screen^.Width div VideoFontWidth) * VideoFontWidth,
+      WA_InnerHeight, (OS_Screen^.Height div VideoFontHeight) * VideoFontHeight,
       WA_AutoAdjust , 1,
       WA_Activate   , 1,
       WA_Borderless , 1,
@@ -226,9 +234,9 @@ begin
     GetWindow:=_OpenWindowTags(nil, [
       WA_Left       , LastL,
       WA_Top        , LastT,
-      WA_MinWidth   , 70*8,
+      WA_MinWidth   , 70*VideoFontWidth,
       WA_MinHeight  , 16*VideoFontHeight-10,
-      WA_InnerWidth , LastW*8,
+      WA_InnerWidth , LastW*VideoFontWidth,
       WA_InnerHeight, LastH*VideoFontHeight,
       WA_MaxWidth   , 32768,
       WA_MaxHeight  , 32768,
@@ -290,10 +298,18 @@ begin
   {$if defined(AMIGA_V1_2_ONLY)}
   VideoFont:=@vgafont8;
   VideoFontHeight:=8;
+  VideoFontWidth:=8;
   FPC_VIDEO_FULLSCREEN := True;
   {$else}
   VideoFont:=@vgafont;
   VideoFontHeight:=16;
+  VideoFontWidth:=8;
+
+{$ifdef AROS}
+  VideoFont:=@vgafont24DejaVuSansMono;
+  VideoFontHeight:=24;
+  VideoFontWidth:=14;
+{$endif}
   {$endif}
   if GetVar('FPC_VIDEO_BUILTINFONT',@envBuf,sizeof(envBuf),0) > -1 then
     begin
@@ -302,16 +318,25 @@ begin
           begin
             VideoFont:=@vgafont8;
             VideoFontHeight:=8;
+            VideoFontWidth:=8;
           end;
         'vga14':
           begin
             VideoFont:=@vgafont14;
             VideoFontHeight:=14;
+            VideoFontWidth:=8;
           end;
         'vga16':
           begin
             VideoFont:=@vgafont;
             VideoFontHeight:=16;
+            VideoFontWidth:=8;
+          end;
+        'vga24':
+          begin
+            VideoFont:=@vgafont24DejaVuSansMono;
+            VideoFontHeight:=24;
+            VideoFontWidth:=14;
           end;
       end;
     end;
@@ -321,6 +346,8 @@ begin
   FillDword(OldVideoBuf^, VideoBufSize div 4, $4321BEEF);
 
   VideoWindow := GetWindow;
+  if (globWinT<>'') or (globScreenT<>'') then
+    SetWindowTitle(globWinT,globScreenT);
 
   // nice hardcode values are probably going to mess things up
   // so we need a way to determine how many characters would fit
@@ -335,9 +362,8 @@ begin
     //
     // Can happen for instance when the window does not hide its
     // borders or titlebar as intended.
-    ScreenWidth := VideoWindow^.GZZWidth div 8;
+    ScreenWidth := VideoWindow^.GZZWidth div VideoFontWidth;
     ScreenHeight := VideoWindow^.GZZHeight div VideoFontHeight;
-    ScreenColor := False;
 
     {$ifdef VIDEODEBUG}
     Writeln('DEBUG: Fullscreen - windowed - Width * Height = ',ScreenWidth,' * ',ScreenHeight);
@@ -346,7 +372,6 @@ begin
   begin
     ScreenWidth := LastW;
     ScreenHeight := LastH;
-    ScreenColor := True;
   end;
   {$ifdef WITHBUFFERING}
   BufRp^.Bitmap := AllocBitmap(VideoWindow^.Width, VideoWindow^.Height, VideoWindow^.RPort^.Bitmap^.Depth, BMF_CLEAR, VideoWindow^.RPort^.Bitmap);
@@ -374,7 +399,10 @@ begin
   end;
 
   { Obtain Friend bitmap for font blitting }
-  FontBitmap:=AllocBitMap(16,VideoFontHeight*256,1,0, VideoWindow^.RPort^.Bitmap);
+  if VideoFontWidth = 8 then
+    FontBitmap:=AllocBitMap(16,VideoFontHeight*256,1,0, VideoWindow^.RPort^.Bitmap)
+  else
+    FontBitmap:=AllocBitMap(16,VideoFontHeight*256*2,1,0, VideoWindow^.RPort^.Bitmap);
 
   if (FontBitmap <> nil) then
   begin
@@ -389,12 +417,25 @@ begin
       { We need to make the data word wide, otherwise the blit will fail
         miserably on classics (tested on 3.1 + AGA) }
       p:=PWord(FontBitmap^.Planes[0]);
-      for counter:=0 to 255 do
-        for counter2:=0 to VideoFontHeight-1 do
-        begin
-          p^:=VideoFont[counter * VideoFontHeight + counter2] shl 8;
-          inc(p);
-        end;
+      if VideoFontWidth = 8 then
+      begin
+        for counter:=0 to 255 do
+          for counter2:=0 to VideoFontHeight-1 do
+          begin
+            p^:=VideoFont[counter * VideoFontHeight + counter2] shl 8;
+            inc(p);
+          end;
+      end else
+      begin
+        for counter:=0 to 255 do
+          for counter2:=0 to VideoFontHeight-1 do
+          begin
+            p^:=VideoFont[counter * VideoFontHeight * 2 + counter2] shl 8;
+            inc(p);
+            p^:=VideoFont[counter * VideoFontHeight * 2 + counter2+1] shl 8;
+            inc(p);
+          end;
+      end;
       Permit();
     end
     else
@@ -412,7 +453,10 @@ begin
     SrcMod := 2;
     for i := 0 to 255 do
     begin
-      CharPointers[i] := @(PWord(FontBitmap^.Planes[0])[i * VideoFontHeight]);
+      if VideoFontWidth <= 8 then
+        CharPointers[i] := @(PWord(FontBitmap^.Planes[0])[i * VideoFontHeight])
+      else
+        CharPointers[i] := @(PWord(FontBitmap^.Planes[0])[i * VideoFontHeight*2]);
     end;
   end
   else
@@ -420,7 +464,10 @@ begin
     SrcMod := 1;
     for i := 0 to 255 do
     begin
-      CharPointers[i] := @VideoFont[i * VideoFontHeight];
+      if VideoFontWidth <= 8 then
+        CharPointers[i] := @VideoFont[i * VideoFontHeight]    { one byte per line }
+      else
+        CharPointers[i] := @VideoFont[i * VideoFontHeight*2]; { two bytes per line }
     end;
   end;
 
@@ -490,23 +537,26 @@ var
   dx: integer;
   dy: integer;
 begin
-  if ScreenColor <> Mode.Color then
+  if (SavedLastW<>LastW) and (SavedLastH<>LastH) then
+  begin
+    SavedLastW:=LastW;
+    SavedLastH:=LastH;
+  end;
+  if FPC_VIDEO_FULLSCREEN <> Mode.FullScreen then
   begin
     SysDoneVideo;
-    FPC_VIDEO_FULLSCREEN := not Mode.color;
+    FPC_VIDEO_FULLSCREEN := Mode.FullScreen;
     if not FPC_VIDEO_FULLSCREEN then
     begin
-      LastT := 50;
-      LastL := 50;
-
-      LastW := 80;
-      LastH := 25;
+      LastW := Mode.col;
+      LastH := Mode.row;
+      ScreenColor := Mode.Color;
     end;
     SysInitVideo;
   end else
     if not FPC_VIDEO_FULLSCREEN then
     begin
-      dx := (Mode.col * 8) - VideoWindow^.GZZWidth;
+      dx := (Mode.col * VideoFontWidth) - VideoWindow^.GZZWidth;
       dy := (Mode.row * VideoFontHeight) - VideoWindow^.GZZHeight;
       SizeWindow(videoWindow, dx, dy);
     end;
@@ -545,13 +595,14 @@ var
   TmpFGColor: Byte;
   TmpBGColor: Byte;
   sX, sY: LongInt;
+  TmpFontHeightShift:Ptruint;
 begin
   TmpCharData := VideoBuf^[y * ScreenWidth + x];
   TmpChar    := byte(TmpCharData);
   TmpFGColor := (TmpCharData shr 8) and %00001111;
   TmpBGColor := (TmpCharData shr 12) and %00000111;
 
-  sX := x * 8 + videoWindow^.borderLeft;
+  sX := x * VideoFontWidth + videoWindow^.borderLeft;
   sY := y * VideoFontHeight + videoWindow^.borderTop;
 
   if crType <> crBlock then
@@ -564,7 +615,16 @@ begin
     SetABPenDrMd(rp, VideoPens[tmpBGColor], VideoPens[tmpFGColor], JAM2);
   end;
 
-  BltTemplate(CharPointers[tmpChar], 0, SrcMod, rp, sX, sY, 8, VideoFontHeight);
+  if VideoFontWidth <= 8 then
+    BltTemplate(CharPointers[tmpChar], 0, SrcMod, rp, sX, sY, VideoFontWidth, VideoFontHeight)
+  else
+    begin
+      BltTemplate(CharPointers[tmpChar], 0, SrcMod, rp, sX, sY, 8, VideoFontHeight);
+      TmpFontHeightShift:=VideoFontHeight;
+      if SrcMod = 2 then
+        TmpFontHeightShift:=VideoFontHeight*2;
+      BltTemplate(pointer(ptruint(CharPointers[tmpChar])+TmpFontHeightShift), 0, SrcMod, rp, sX+8, sY, VideoFontWidth-8, VideoFontHeight);
+    end;
 
   if crType = crUnderLine then
   begin
@@ -575,8 +635,8 @@ begin
       end
     else
       begin
-        GfxMove(rp, sX, sY + videoFontHeight - 2); Draw(rp, sX + 7, sY + videoFontHeight - 2);
-        GfxMove(rp, sX, sY + videoFontHeight - 1); Draw(rp, sX + 7, sY + videoFontHeight - 1);
+        GfxMove(rp, sX, sY + videoFontHeight - 2); Draw(rp, sX + VideoFontWidth-1, sY + videoFontHeight - 2);
+        GfxMove(rp, sX, sY + videoFontHeight - 1); Draw(rp, sX + VideoFontWidth-1, sY + videoFontHeight - 1);
       end;
   end;
 end;
@@ -643,13 +703,23 @@ begin
     sY := videoWindow^.borderTop + Y1 * VideoFontHeight;
     for CounterY := Y1 to Y2 do
     begin
-      sX := videoWindow^.borderLeft + X1 * 8;
+      sX := videoWindow^.borderLeft + X1 * VideoFontWidth;
       for CounterX := X1 to X2 do
       begin
         if (VBuf^ <> OldVBuf^) or Force then
         begin
           SetABPenDrMd(LocalRP, VideoPens[(VBuf^ shr 8) and %00001111], VideoPens[(VBuf^ shr 12) and %00000111], JAM2);
-          BltTemplate(CharPointers[VBuf^ and $FF], 0, SrcMod, LocalRP, sX, sY, 8, VideoFontHeight);
+
+          if VideoFontWidth <= 8 then
+            BltTemplate(CharPointers[VBuf^ and $FF], 0, SrcMod, LocalRP, sX, sY, VideoFontWidth, VideoFontHeight)
+          else
+            begin
+              {draw first part of the character}
+              BltTemplate(CharPointers[VBuf^ and $FF], 0, SrcMod, LocalRP, sX, sY, 8, VideoFontHeight);
+              {draw rest of the character}
+              BltTemplate(pointer(ptruint(CharPointers[VBuf^ and $FF])+VideoFontHeight), 0, SrcMod, LocalRP, sX+8, sY, VideoFontWidth-8, VideoFontHeight);
+            end;
+
           OldVBuf^:=VBuf^;
           {$ifdef VideoSpeedTest}
           Inc(NumChanged);
@@ -657,7 +727,7 @@ begin
         end;
         Inc(VBuf);
         Inc(OldVBuf);
-        sX := sX + 8;
+        sX := sX + VideoFontWidth;
       end;
       Inc(VBuf,BufLineDiff);
       Inc(OldVBuf,BufLineDiff);
@@ -680,7 +750,7 @@ begin
     OldcursorType := CursorType;
   end;
   {$ifdef WITHBUFFERING}
-  BltBitMapRastPort(BufRp^.Bitmap, VideoWindow^.borderLeft, VideoWindow^.borderTop, VideoWindow^.RPort, VideoWindow^.borderLeft, VideoWindow^.borderTop, ScreenWidth * 8, ScreenHeight * 16, $00C0);
+  BltBitMapRastPort(BufRp^.Bitmap, VideoWindow^.borderLeft, VideoWindow^.borderTop, VideoWindow^.RPort, VideoWindow^.borderLeft, VideoWindow^.borderTop, ScreenWidth * VideoFontWidth, ScreenHeight * VideoFontHeight, $00C0);
   {$endif}
   {$ifdef VideoSpeedTest}
   if NumChanged > 100 then
@@ -750,7 +820,7 @@ begin
     //writeln('Has resize ', GotResizeWindowMsg);
     if Assigned(VideoWindow) then
     begin
-      WinW := VideoWindow^.GZZWidth div 8;
+      WinW := VideoWindow^.GZZWidth div VideoFontWidth;
       WinH := VideoWindow^.GZZHeight div VideoFontHeight;
 //      writeln('resize', winw, ' ',winh);
       LastW := WinW;
@@ -825,12 +895,6 @@ begin
   GotInactiveWindowMsg:=false;
 end;
 
-{ SetWindowTitles seems not to copy the buffer, at least on AROS.
-  So we better keep a reference of the strings to ourselves... }
-var
-  globWinT: AnsiString;
-  globScreenT: AnsiString;
-
 procedure SetWindowTitle(const winTitle: AnsiString; const screenTitle: AnsiString);
 var
   winT: PAnsiChar;
@@ -854,40 +918,119 @@ end;
 
 procedure TranslateToCharXY(const X,Y: LongInt; var CX,CY: LongInt);
 begin
-  CX:=X div 8;
+  CX:=X div VideoFontWidth;
   CY:=Y div VideoFontHeight;
 end;
 
 function SysGetVideoModeCount: Word;
+var WinW,WinH : Integer;
+    ScreenW,ScreenH : Integer;
+    Screen: PScreen;
+    Count : Word;
 begin
   {$if defined(AMIGA_V1_2_ONLY)}
   SysGetVideoModeCount := 1;
   {$else}
-  SysGetVideoModeCount := 2;
+  { current dimensions }
+  WinW:=LastW;
+  WinH:=LastH;
+  { screen dimensions }
+  Screen := LockPubScreen('Workbench');
+  ScreenW := Screen^.Width div VideoFontWidth;
+  ScreenH := Screen^.Height div VideoFontHeight;
+  UnlockPubScreen('Workbench', Screen);
+
+  { There should came out 2 or 3 modes in total:
+     1. 80x25
+     2. current if different from 80x25
+     3. full screen }
+
+  Count:=1;  { assume 80x25 is available}
+
+  if (WinW<>80) and (WinH<>25) then
+    inc(Count);
+
+  if (SavedLastW>0) and (SavedLastH>0) then
+    if (SavedLastW<>80) and (SavedLastH<>25) then
+      if (SavedLastW<>WinW) and (SavedLastH<>WinH) then
+       if (SavedLastW<>ScreenW) and (SavedLastH<>ScreenH) then
+         inc(Count);
+
+  if (ScreenW<>80) and (ScreenH<>25) then
+    if (WinW<>ScreenW) and (WinH<>ScreenH) then
+      inc(Count);
+
+  SysGetVideoModeCount := Count;
   {$endif}
 end;
 
 function SysGetVideoModeData(Index: Word; var Mode: TVideoMode): Boolean;
 var
    Screen: PScreen;
+   WinW,WinH : Integer;
+   ScreenW,ScreenH : Integer;
 begin
+{$ifdef AMIGA_V1_2_ONLY}
+  Mode.Col := 80;
+  Mode.Row := 25;
+  Mode.Color := True;
+  Mode.FullScreen := True;
+{$else}
+  { current dimensions }
+  WinW:=LastW;
+  WinH:=LastH;
+
+  { screen dimensions }
+  Screen := LockPubScreen('Workbench');
+  ScreenW := Screen^.Width div VideoFontWidth;
+  ScreenH := Screen^.Height div VideoFontHeight;
+  UnlockPubScreen('Workbench', Screen);
+
   case Index of
     0: begin
          Mode.Col := 80;
          Mode.Row := 25;
-         Mode.Color := True;
+         Mode.FullScreen := (ScreenW=80) and (ScreenH=25);
        end;
-    {$if not defined(AMIGA_V1_2_ONLY)}
-    1: begin
-        Screen := LockPubScreen('Workbench');
-        Mode.Col := Screen^.Width div 8;
-        Mode.Row := Screen^.Height div VideoFontHeight;
-        UnlockPubScreen('Workbench', Screen);
-        Mode.Color := False;
-      end;
-    {$endif}
+    else
+       begin
+         { current mode ? }
+         if (WinW<>80) and (WinH<>25) then
+           begin
+             dec(Index);
+             Mode.Col := WinW;
+             Mode.Row := WinH;
+             Mode.FullScreen := (ScreenW=WinW) and (ScreenH=WinH);
+           end;
+
+         { mode before entering full screen ? }
+         if Index>0 then
+           if (SavedLastW>0) and (SavedLastH>0) then
+             if (SavedLastW<>80) and (SavedLastH<>25) then
+               if (SavedLastW<>WinW) and (SavedLastH<>WinH) then
+                 if (SavedLastW<>ScreenW) and (SavedLastH<>ScreenH) then
+                   begin
+                     dec(Index);
+                     Mode.Col := SavedLastW;
+                     Mode.Row := SavedLastH;
+                     Mode.FullScreen := false;
+                   end;
+
+         { full screen ? }
+         if Index>0 then
+           if (ScreenW<>80) and (ScreenH<>25) then
+             if (WinW<>ScreenW) and (WinH<>ScreenH) then
+               begin
+                 dec(Index);
+                 Mode.Col := ScreenW;
+                 Mode.Row := ScreenH;
+                 Mode.FullScreen := true;
+               end;
+       end;
   end;
-  SysGetVideoModeData := True;
+  Mode.Color:=true; { we set colors to true, but it can be false and it works too }
+  SysGetVideoModeData := (Index=0);
+{$endif}
 end;
 
 
@@ -957,6 +1100,7 @@ initialization
   LastL := 50;
   LastW := 80;
   LastH := 25;
+  ScreenColor := True; { By default assume we have colors, if false then no colors shown. }
   {$ifdef WITHBUFFERING}
   BufRp := CreateRastPort;
   BufRp^.Layer := nil;

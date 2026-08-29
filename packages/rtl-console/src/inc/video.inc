@@ -843,6 +843,7 @@ begin
   Mode.Col := ScreenWidth;
   Mode.Row := ScreenHeight;
   Mode.Color := ScreenColor;
+  {$IFDEF HASAMIGA}Mode.FullScreen := FPC_VIDEO_FULLSCREEN;{$ENDIF}
 end;
 
 Function SetVideoMode(Const Mode: TVideoMode) : Boolean;

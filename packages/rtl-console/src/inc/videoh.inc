@@ -19,6 +19,9 @@ type
   TVideoMode = record
     Col,Row : Word;
     Color   : Boolean;
+    case byte of
+      0: (DummyFiller: Array[1..3] of Byte); {dummy field to make record 8 bytes in total }
+      2: (FullScreen: Boolean); {used by AROS, MorphOS, Amiga to indicate if mode is full screen or not}
   end;
   TVideoModeSelector = function (const VideoMode: TVideoMode; Params: Longint): Boolean;
 
