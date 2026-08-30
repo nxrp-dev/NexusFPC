@@ -177,11 +177,14 @@ Type
     FHostInfo: String;
     FServerInfo: String;
     FMySQL : PMySQL;
+    FMySQLClientConnectionFlags: Integer;
 {$IFDEF MYSQL50_UP}
     FConnectionCharsetInfo: MY_CHARSET_INFO;
 {$ENDIF}
     function GetClientInfo: string;
     function GetServerStatus: String;
+    function GetMySQLClientConnectionFlags: Integer;
+    procedure SetMySQLClientConnectionFlags(const AValue: Integer);
     procedure ConnectMySQL(var HMySQL: PMySQL);
     procedure ExecuteDirectMySQL(const query : string);
     function InternalStrToBCD(C: PAnsiChar; Len: integer): tBCD;
@@ -250,6 +253,7 @@ Type
     Property HostInfo : String Read FHostInfo;
     property ClientInfo: string read GetClientInfo;
     property ServerStatus : String read GetServerStatus;
+    property MySQLClientConnectionFlags: Integer read GetMySQLClientConnectionFlags write SetMySQLClientConnectionFlags;
   published
     Property SkipLibraryVersionCheck : Boolean Read FSkipLibraryVersionCheck Write FSkipLibraryVersionCheck;
     property DatabaseName;
@@ -501,6 +505,19 @@ begin
   Result := mysql_stat(FMYSQL);
 end;
 
+function TConnectionName.GetMySQLClientConnectionFlags: Integer;
+begin
+  Result := FMySQLClientConnectionFlags;
+end;
+
+procedure TConnectionName.SetMySQLClientConnectionFlags(const AValue: Integer);
+begin 
+  // MySQL client connection flags can only be used during connection establishment
+  // Therefore changing flags after connecting is pointless
+  CheckDisConnected;
+  FMySQLClientConnectionFlags := AValue;
+end;
+
 Function TConnectionName.GetInsertID: int64;
 begin
   CheckConnected;
@@ -539,7 +556,7 @@ begin
   H:=HostName;
   U:=UserName;
   P:=Password;
-  if mysql_real_connect(HMySQL,PAnsiChar(H),PAnsiChar(U),PAnsiChar(P),Nil,APort,Nil,CLIENT_MULTI_RESULTS) = nil then //CLIENT_MULTI_RESULTS is required by CALL SQL statement(executes stored procedure), that produces result sets
+  if mysql_real_connect(HMySQL,PAnsiChar(H),PAnsiChar(U),PAnsiChar(P),Nil,APort,Nil, FMySQLClientConnectionFlags or CLIENT_MULTI_RESULTS) = nil then //CLIENT_MULTI_RESULTS is required by CALL SQL statement(executes stored procedure), that produces result sets
     MySQLError(HMySQL,SErrServerConnectFailed,Self);
 
   if (trim(CharSet) <> '') then
