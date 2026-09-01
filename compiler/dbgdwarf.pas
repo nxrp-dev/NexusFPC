@@ -2366,7 +2366,7 @@ implementation
         blocksize,size_of_int : longint;
         tag : tdwarf_tag;
         has_high_reg : boolean;
-        dreg,dreghigh : shortint;
+        dreg,dreghigh : longint;
 {$ifdef i8086}
         has_segment_sym_name : boolean=false;
         segment_sym_name : TSymStr='';
