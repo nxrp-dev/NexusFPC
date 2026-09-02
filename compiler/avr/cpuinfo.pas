@@ -397,27 +397,34 @@ Type
       ct_avr128db28,
       ct_avr128db32,
       ct_avr128db48,
-      ct_avr128db64,
+      ct_avr128db64
+     );
 
-      // Controller board aliases
-      ct_arduinoleonardo,
-      ct_arduinomega,
-      ct_arduinomicro,
-      ct_arduinonano,
-      ct_arduinonanoevery,
-      ct_arduinouno,
-      ct_atmega256rfr2xpro,
-      ct_atmega324pbxpro,
-      ct_atmega1284pxplained,
-      ct_atmega4809xpro,
-      ct_attiny817xpro,
-      ct_attiny3217xpro
+   tboardalias =
+     (ba_none,
+      ba_arduinoleonardo,
+      ba_arduinomega,
+      ba_arduinomicro,
+      ba_arduinonano,
+      ba_arduinonanoevery,
+      ba_arduinouno,
+      ba_atmega256rfr2xpro,
+      ba_atmega324pbxpro,
+      ba_atmega1284pxplained,
+      ba_atmega4809xpro,
+      ba_attiny817xpro,
+      ba_attiny3217xpro
      );
 
    tcontrollerdatatype = record
       controllertypestr, controllerunitstr: string[20];
       cputype: tcputype; fputype: tfputype;
       flashbase, flashsize, srambase, sramsize, eeprombase, eepromsize, bootbase, bootsize: dword;
+   end;
+
+   tboardaliastype = record
+      boardname: string[20];
+      controller: tcontrollertype;
    end;
 
 Const
@@ -845,20 +852,23 @@ const
         ,(controllertypestr:'AVR128DB32';controllerunitstr:'AVR128DB32';cputype:cpu_avrxmega4;fputype:fpu_soft;flashbase:0;flashsize:131072;srambase:16384;sramsize:16384;eeprombase:5120;eepromsize:512)
         ,(controllertypestr:'AVR128DB48';controllerunitstr:'AVR128DB48';cputype:cpu_avrxmega4;fputype:fpu_soft;flashbase:0;flashsize:131072;srambase:16384;sramsize:16384;eeprombase:5120;eepromsize:512)
         ,(controllertypestr:'AVR128DB64';controllerunitstr:'AVR128DB64';cputype:cpu_avrxmega4;fputype:fpu_soft;flashbase:0;flashsize:131072;srambase:16384;sramsize:16384;eeprombase:5120;eepromsize:512)
-        // Controller board aliases
-        ,(controllertypestr:'ARDUINOLEONARDO'; controllerunitstr:'ATMEGA32U4'; cputype: cpu_avr5; fputype:fpu_soft; flashbase:0; flashsize:32768; srambase:256; sramsize:2560; eeprombase:0; eepromsize:1024;bootbase:28672;bootsize:4096)
-        ,(controllertypestr:'ARDUINOMEGA'; controllerunitstr:'ATMEGA2560'; cputype: cpu_avr6; fputype:fpu_soft; flashbase:0; flashsize:262144; srambase:512; sramsize:8192; eeprombase:0; eepromsize:4096;bootbase:253952;bootsize:8192)
-        ,(controllertypestr:'ARDUINOMICRO'; controllerunitstr:'ATMEGA32U4'; cputype: cpu_avr5; fputype:fpu_soft; flashbase:0; flashsize:32768; srambase:256; sramsize:2560; eeprombase:0; eepromsize:1024;bootbase:28672;bootsize:4096)
-        ,(controllertypestr:'ARDUINONANO'; controllerunitstr:'ATMEGA328P'; cputype: cpu_avr5; fputype:fpu_soft; flashbase:0; flashsize:32768; srambase:256; sramsize:2048; eeprombase:0; eepromsize:1024;bootbase:28672;bootsize:4096)
-        ,(controllertypestr:'ARDUINONANOEVERY'; controllerunitstr:'ATMEGA4809'; cputype: cpu_avrxmega3; fputype:fpu_soft; flashbase:0; flashsize:49152; srambase:10240; sramsize:6144; eeprombase:5120; eepromsize:256)
-        ,(controllertypestr:'ARDUINOUNO'; controllerunitstr:'ATMEGA328P'; cputype: cpu_avr5; fputype:fpu_soft; flashbase:0; flashsize:32768; srambase:256; sramsize:2048; eeprombase:0; eepromsize:1024;bootbase:28672;bootsize:4096)
-        ,(controllertypestr:'ATMEGA256RFR2XPRO';controllerunitstr:'ATMEGA256RFR2';cputype:cpu_avr6;fputype:fpu_soft;flashbase:0;flashsize:262144;srambase:512;sramsize:32768;eeprombase:0;eepromsize:8192;bootbase:253952;bootsize:8192)
-        ,(controllertypestr:'ATMEGA324PBXPRO'; controllerunitstr:'ATMEGA324PB'; cputype: cpu_avr5; fputype:fpu_soft; flashbase:0; flashsize:32768; srambase:256; sramsize:2048; eeprombase:0; eepromsize:1024;bootbase:28672;bootsize:4096)
-        ,(controllertypestr:'ATMEGA1284PXPLAINED'; controllerunitstr:'ATMEGA1284P'; cputype: cpu_avr51; fputype:fpu_soft; flashbase:0; flashsize:131072; srambase:256; sramsize:16384; eeprombase:0; eepromsize:4096;bootbase:122880;bootsize:8192)
-        ,(controllertypestr:'ATMEGA4809XPRO'; controllerunitstr:'ATMEGA4809'; cputype: cpu_avrxmega3; fputype:fpu_soft; flashbase:0; flashsize:49152; srambase:10240; sramsize:6144; eeprombase:5120; eepromsize:256)
-        ,(controllertypestr:'ATTINY817XPRO'; controllerunitstr:'ATTINY817'; cputype: cpu_avrxmega3; fputype:fpu_soft; flashbase:0; flashsize:8192; srambase:15872; sramsize:512; eeprombase:5120; eepromsize:128)
-        ,(controllertypestr:'ATTINY3217XPRO'; controllerunitstr:'ATTINY3217'; cputype: cpu_avrxmega3; fputype:fpu_soft; flashbase:0; flashsize:32768; srambase:14336; sramsize:2048; eeprombase:5120; eepromsize:256)
    );
+
+   boardaliases : array [tboardalias] of tboardaliastype =
+    ((boardname:'';controller:ct_none),
+     (boardname:'ARDUINOLEONARDO';controller:ct_atmega32u4),
+     (boardname:'ARDUINOMEGA';controller:ct_atmega2560),
+     (boardname:'ARDUINOMICRO';controller:ct_atmega32U4),
+     (boardname:'ARDUINONANO';controller:ct_atmega328P),
+     (boardname:'ARDUINONANOEVERY';controller:ct_atmega4809),
+     (boardname:'ARDUINOUNO';controller:ct_atmega328P),
+     (boardname:'ATMEGA256RFR2XPRO';controller:ct_atmega256RFR2),
+     (boardname:'ATMEGA324PBXPRO';controller:ct_atmega324PB),
+     (boardname:'ATMEGA1284PXPLAINED';controller:ct_atmega1284P),
+     (boardname:'ATMEGA4809XPRO';controller:ct_atmega4809),
+     (boardname:'ATTINY817XPRO';controller:ct_attiny817),
+     (boardname:'ATTINY3217XPRO';controller:ct_attiny3217)
+    );
 
    { Supported optimizations, only used for information }
    supported_optimizerswitches = genericlevel1optimizerswitches+

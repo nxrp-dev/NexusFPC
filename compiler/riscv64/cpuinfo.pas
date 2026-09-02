@@ -40,10 +40,19 @@ type
     (ct_none
     );
 
+  tboardalias =
+    (ba_none
+    );
+
   tcontrollerdatatype = record
      controllertypestr, controllerunitstr: string[20];
      cputype: tcputype; fputype: tfputype;
      flashbase, flashsize, srambase, sramsize, eeprombase, eepromsize, bootbase, bootsize: dword;
+  end;
+
+  tboardaliastype = record
+     boardname: string[20];
+     controller: tcontrollertype;
   end;
 
 Const
@@ -59,6 +68,10 @@ Const
   (
       (controllertypestr:''; controllerunitstr:''; cputype:cpu_none; fputype:fpu_none; flashbase:0; flashsize:0; srambase:0; sramsize:0));
   {$POP}
+
+   boardaliases : array [tboardalias] of tboardaliastype =
+    ((boardname:'';controller:ct_none)
+    );
 
 var
   { calling conventions supported by the code generator }

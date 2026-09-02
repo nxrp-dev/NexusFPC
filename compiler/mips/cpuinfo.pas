@@ -117,7 +117,6 @@ type
      (ct_none
      );
 
-
 Const
    { Is there support for dealing with multiple microcontrollers available }
    { for this platform? }
@@ -218,6 +217,21 @@ const
   );
 
 {$endif MIPSEL}
+
+type
+  tboardaliastype = record
+     boardname: string[20];
+     controller: tcontrollertype;
+  end;
+
+  tboardalias =
+    (ba_none
+    );
+
+const
+  boardaliases : array [tboardalias] of tboardaliastype =
+    ((boardname:'';controller:ct_none)
+    );
 
    { Supported optimizations, only used for information }
    supported_optimizerswitches = [{$ifndef llvm}cs_opt_regvar,{$endif}cs_opt_loopunroll,cs_opt_nodecse,

@@ -4106,7 +4106,7 @@ begin
              ControllerSupport then
              begin
                s:=upper(copy(more,j+1));
-               if not(SetControllerType(s,init_settings.controllertype)) then
+               if not(SetControllerType(s,init_settings.controllertype,init_settings.boardalias)) then
                  IllegalPara(opt)
                else
                  begin
@@ -4553,6 +4553,7 @@ procedure read_arguments(cmd:TCmdStr);
       fputype : tfputype;
       cputype : tcputype;
       controller: tcontrollertype;
+      board: tboardalias;
       s: string;
     begin
 {$ifdef llvm}
@@ -4579,6 +4580,16 @@ procedure read_arguments(cmd:TCmdStr);
           s:=embedded_controllers[init_settings.controllertype].controllertypestr;
           if s<>'' then
             def_system_macro('FPC_MCU_'+s);
+
+          for board:=low(tboardalias) to high(tboardalias) do
+            begin
+              s:=boardaliases[board].boardname;
+              if s<>'' then
+                undef_system_macro('FPC_BOARD_'+s);
+            end;
+          s:=boardaliases[init_settings.boardalias].boardname;
+          if s<>'' then
+            def_system_macro('FPC_BOARD_'+s);
         end;
 {$POP}
 
