@@ -18,7 +18,7 @@ begin
   writeln(textfile);
   close(textfile);
 
-  assign(textfile,'TEXTFILE.txt');
+  assign(textfile,'TEXTFILE');
   reset(textfile);
   readln(textfile,s);
   if s[1]<>'O' then

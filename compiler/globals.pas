@@ -333,6 +333,8 @@ Const
 {$endif defined(XTENSA) or defined(RISCV32) or defined(ARM)}
        { external assembler extra option }
        asmextraopt       : string;
+{ extension for transparent file names (-Sr<extension>, ISO mode) }
+       transparent_file_extension : string;
 
        { things specified with parameters }
        paralinkoptions   : TCmdStr;

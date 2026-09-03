@@ -1,5 +1,6 @@
-{ %OPT=-Sr }
+{ %OPT=-Srdat }
 {$mode iso}
+{ test .dat as file extension option in transparent file mode }
 program test(input, output, testfile);
 
   var
@@ -10,7 +11,7 @@ program test(input, output, testfile);
     writeln(testfile,'Hello world');
     close(testfile);
 
-    assign(testfile,'TESTFILE');
+    assign(testfile,'TESTFILE.dat');
     reset(testfile);
     readln(testfile,s);
     if (s[1]<>'H') or (s[2]<>'e') then

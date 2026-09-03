@@ -4328,7 +4328,7 @@ F*2P<x>_Set target CPU (aarch64,arm,avr,i386,i8086,jvm,loongarch64,m68k,mips,mip
 **2Sk_Load fpcylix unit
 **2Sm_Support macros as in the C language (global)
 **2So_Same as -Mtp
-**2Sr_Transparent file names in ISO mode
+**2Sr[x]_Transparent file names in ISO mode with optional file extension [x]
 **2Ss_Constructor name must be "Init" (destructor name must be "Done")
 **2Sv_Support vector processing (use CPU vector extensions if available)
 **2Sx_Enable exception keywords (default in Delphi/ObjFPC modes)

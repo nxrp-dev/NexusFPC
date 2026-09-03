@@ -3729,9 +3729,16 @@ begin
             SetCompileMode('TP',true);
           'r' :
             If UnsetBool(More, j, opt, false) then
-              exclude(init_settings.globalswitches,cs_transparent_file_names)
+              begin
+                exclude(init_settings.globalswitches,cs_transparent_file_names);
+                transparent_file_extension:='';
+              end
             else
-              include(init_settings.globalswitches,cs_transparent_file_names);
+              begin
+                include(init_settings.globalswitches,cs_transparent_file_names);
+                transparent_file_extension:=copy(More,j+1,length(More));
+                j:=length(More);
+              end;
           {$ifdef gpc_mode}
           'p' : //an alternative to -Mgpc
             SetCompileMode('GPC',true);
