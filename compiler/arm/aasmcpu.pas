@@ -5623,6 +5623,7 @@ implementation
                   case oper[1]^.reg of
                     NR_MSP: bytes:=bytes or $08;
                     NR_PSP: bytes:=bytes or $09;
+                    NR_PSPLIM: bytes:=bytes or $0B;
 
                     NR_IPSR: bytes:=bytes or $05;
                     NR_EPSR: bytes:=bytes or $06;
@@ -5649,6 +5650,7 @@ implementation
 
                     NR_MSP: bytes:=bytes or $08;
                     NR_PSP: bytes:=bytes or $09;
+                    NR_PSPLIM: bytes:=bytes or $0B;
 
                     NR_PRIMASK: bytes:=bytes or $10;
                     NR_BASEPRI: bytes:=bytes or $11;

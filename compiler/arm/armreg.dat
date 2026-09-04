@@ -140,6 +140,7 @@ EAPSR,$05,$00,$1A,eapsr,0,0
 PSR,$05,$00,$1B,psr,0,0
 MSP,$05,$00,$1C,msp,0,0
 PSP,$05,$00,$1D,psp,0,0
+PSPLIM,$05,$00,$2A,psplim,0,0
 PRIMASK,$05,$00,$1E,primask,0,0
 BASEPRI,$05,$00,$1F,basepri,0,0
 BASEPRI_MAX,$05,$00,$20,basepri_max,0,0
