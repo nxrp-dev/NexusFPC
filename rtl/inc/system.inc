@@ -57,7 +57,7 @@ const
 {$endif}
   StackMargin: ptruint = STACK_MARGIN_MAX;
 { Random / Randomize constants }
-  OldRandSeed : Cardinal = Cardinal(not Cardinal(0)); // see ReseedGlobalRNG and GlobalXsr128_32 initialization.
+  OldRandSeed : Cardinal = Cardinal(not Cardinal(0)); // see GetGlobalRNG and GlobalXsr128_32 initialization.
 
 { For Error Handling.}
   ErrorBase : Pointer = nil;public name 'FPC_ERRORBASE';
@@ -635,20 +635,7 @@ type
 //
 // This is a generator with 64-bit state, 64-bit output, and 2^64 period.
 
-type
-  SplitMix64 = object
-    procedure Setup(const seed: uint64); inline;
-    function Next: uint64;
-  private
-    state: uint64;
-  end;
-
-procedure SplitMix64.Setup(const seed: uint64);
-begin
-  state := seed;
-end;
-
-function SplitMix64.Next: uint64;
+function SplitMix64(var state: uint64): uint64;
 var
   z: uint64;
 begin
@@ -659,33 +646,164 @@ begin
   result := z xor (z shr 31);
 end;
 
-// Xoshiro128** is an all-purpose RNG.
-// http://prng.di.unimi.it/xoshiro128starstar.c
-//
-// State must not be everywhere zero. With SplitMix64 initialization, it won't. :)
-// 128-bit state, 32-bit output, 2^128-1 period.
-
 type
-  Xoshiro128ss_32 = object
-    procedure Setup(const seed: uint64);
-    function Next: uint32; inline; // inlined as it is actually internal and called only through xsr128_32_u32rand
-  private
-    state: array[0 .. 3] of longword;
+  // Implements the algorithm from https://www.pcg-random.org/posts/developing-a-seed_seq-alternative.html
+  // that fills the RNG state by hashing a sequence of uint32 seeds.
+  //
+  // Tests (note you can’t use the Generate(srcBuf) version for these as it adds some extra logic):
+  // Generate(src = (11, 22, 33), nDst = 7) ⇒ ($B83F46BD, $57644B24, $0B577338, $28469F5D, $AE3454AA, $1B70AD45, $FD97B87D).
+  // Generate(src = (11, 22, 33, 44, 55, 66), nDst = 3) ⇒ ($327E4826, $F37C431C, $72686F71).
+  SeedSeq = object
+  type
+    GetIthIntProc = function(id: SizeUint; param: pointer): uint32;
+    class procedure Generate(src: GetIthIntProc; param: pointer; nSrc: SizeUint; dst: pUint32; nDst: SizeUint); static;
+    class procedure Generate(srcBuf: pointer; nSrcBuf: SizeUint; dst: pUint32; nDst: SizeUint); static;
+
+  private const
+    InitA    = $43b0d7e5; MultA    = $931e8875;
+    InitB    = $8b51f9dd; MultB    = $58f38ded;
+    MixMultL = $ca01f9dd; MixMultR = $4973f715;
+    XShift   = bitsizeof(uint32) div 2;
+    class function Hash(var hashConst: uint32; value: uint32): uint32; static;
+    class function Mix(x, y: uint32): uint32; static;
+  type
+    GenerateFromBufferContext = record
+      srcBuf: pointer;
+      nSrcBuf: SizeUint;
+    end;
+    class function IthIntFromBuffer(id: SizeUint; param: pointer): uint32; static;
   end;
 
-  procedure Xoshiro128ss_32.Setup(const seed: uint64);
+  // See:
+  // https://www.pcg-random.org/posts/developing-a-seed_seq-alternative.html for explanations,
+  // https://gist.github.com/imneme/540829265469e673d045 for original C++ implementation.
+  // Main difference from the original is that dst is reused for the “entropy pool” (“mixer”).
+  // There is no point in not doing that if we don’t expose the pre-generated SeedSeq,
+  // and there is no point in exposing the pre-generated SeedSeq:
+  // it only allows to quickly Generate more than once from the given src, which is almost completely pointless.
+  // The original approach is still a bit overengineered in these regards :D.
+  class procedure SeedSeq.Generate(src: GetIthIntProc; param: pointer; nSrc: SizeUint; dst: pUint32; nDst: SizeUint);
   var
-    sm: SplitMix64;
-    x: uint64;
+    hashConst, v: uint32;
+    dstEd, mixA, mixB: pUint32;
+    iSrc: SizeUint;
   begin
-    sm.Setup(seed);
-    x := sm.Next;
-    state[0] := Lo(x); state[1] := Hi(x);
-    x := sm.Next;
-    state[2] := Lo(x); state[3] := Hi(x);
+    hashConst := InitA;
+    mixA := dst;
+    dstEd := dst + nDst;
+    iSrc := 0;
+
+    repeat
+      v := 0;
+      if iSrc < nSrc then
+      begin
+        v := src(iSrc, param);
+        inc(iSrc);
+      end;
+      mixA^ := Hash(hashConst, v);
+      inc(mixA);
+    until mixA = dstEd;
+
+    mixB := dst;
+    repeat
+      mixA := dst;
+      repeat
+        if mixB <> mixA then mixA^ := Mix(mixA^, Hash(hashConst, mixB^));
+        inc(mixA);
+      until mixA = dstEd;
+      inc(mixB);
+    until mixB = dstEd;
+
+    while iSrc < nSrc do
+    begin
+      v := src(iSrc, param);
+      mixA := dst;
+      repeat
+        mixA^ := Mix(mixA^, Hash(hashConst, v));
+        inc(mixA);
+      until mixA = dstEd;
+      inc(iSrc);
+    end;
+
+    hashConst := InitB;
+    repeat
+      v := dst^ xor hashConst;
+      hashConst := hashConst * MultB;
+      v := v * hashConst;
+      dst^ := v xor v shr XShift;
+      inc(dst);
+    until dst = dstEd;
   end;
 
-  function Xoshiro128ss_32.Next: uint32;
+  class procedure SeedSeq.Generate(srcBuf: pointer; nSrcBuf: SizeUint; dst: pUint32; nDst: SizeUint);
+  var
+    ctx: GenerateFromBufferContext;
+  begin
+    // srcBuf is reinterpreted as an array of uint32 and nSrcBuf is prepended. See IthIntFromBuffer.
+    // (That’s why main Generate uses a callback.)
+    ctx.srcBuf := srcBuf;
+    ctx.nSrcBuf := nSrcBuf;
+    Generate(@IthIntFromBuffer, @ctx, 1 + SizeUint(nSrcBuf + (sizeof(uint32) - 1)) div sizeof(uint32), dst, nDst);
+  end;
+
+  class function SeedSeq.Hash(var hashConst: uint32; value: uint32): uint32;
+  var
+    hc: uint32;
+  begin
+    hc := hashConst;
+    result := value xor hc;
+    hc := hc * MultA;
+    hashConst := hc;
+    result := result * hc;
+    result := result xor result shr XShift;
+  end;
+
+  class function SeedSeq.Mix(x, y: uint32): uint32;
+  begin
+    result := MixMultL * x - MixMultR * y;
+    result := result xor result shr XShift;
+  end;
+
+  class function SeedSeq.IthIntFromBuffer(id: SizeUint; param: pointer): uint32;
+  var
+    ctx: ^GenerateFromBufferContext absolute param;
+  begin
+    // src[0] = nSrcBuf.
+    if id = 0 then exit(uint32(ctx^.nSrcBuf));
+
+    // src[1 .. ] = srcBuf reinterpreted as uint32-le.
+    id := id * sizeof(uint32); // Can be seen as off by +4, or as pointing just past the uint32 to read.
+    if id <= ctx^.nSrcBuf then
+      exit(LEtoN(unaligned(pUint32(ctx^.srcBuf + id - sizeof(uint32))^)));
+
+    // Read the last value bytewise if nSrcBuf isn’t divisible by sizeof(uint32).
+    id := ctx^.nSrcBuf;
+    result := 0;
+    repeat
+      dec(id);
+      result := result shl 8 + pByte(ctx^.srcBuf + id)^;
+    until id mod sizeof(uint32) = 0;
+  end;
+
+  procedure TXoshiro128ss_32.Init(seed: uint64);
+  begin
+    unaligned(pUint64(@state[0])^) := {$ifdef endian_big} Swap {$endif} (SplitMix64(seed));
+    unaligned(pUint64(@state[2])^) := {$ifdef endian_big} Swap {$endif} (SplitMix64(seed));
+  end; // SplitMix64 can’t return a 64-bit zero twice.
+
+  procedure TXoshiro128ss_32.Init(seedBuf: pointer; nSeedBuf: SizeUint);
+  begin
+    SeedSeq.Generate(seedBuf, nSeedBuf, state, length(state));
+    if (state[0] = 0) and (state[1] or state[2] or state[3] = 0) then // Unlike SplitMix, SeedSeq CAN result in four zeros.
+      state[0] := 1;
+  end;
+
+  procedure TXoshiro128ss_32.Init(const s: ansistring);
+  begin
+    Init(pointer(s), length(s) * sizeof(ansichar));
+  end;
+
+  function TXoshiro128ss_32.Next: uint32;
   var
     s0, s1, s2, s3: uint32;
   begin
@@ -701,29 +819,89 @@ type
     state[3] := RolDWord(s3, 11);
   end;
 
+  procedure TXoshiro128ss_32.Jump(const distance: TStateVec);
+  const
+    Two: TStateVec = (2, 0, 0, 0);
+  var
+    poly, ns: TStateVec;
+    ip, iSt: SizeUint;
+  begin
+    // Calculate the jump polynomial.
+    poly := GF2Pow(Two, distance, CharPoly);
+    // Jump using the polynomial.
+    FillChar(ns, sizeof(ns), 0);
+    for ip := 0 to bitsizeof(poly) - 1 do
+    begin
+      if poly[ip div bitsizeof(poly[0])] shr (ip mod bitsizeof(poly[0])) and 1 <> 0 then
+        for iSt := 0 to High(ns) do
+          ns[iSt] := ns[iSt] xor state[iSt];
+      Next;
+    end;
+    state := ns;
+  end;
+
+  class function TXoshiro128ss_32.GF2Mul(a, b, poly: TStateVec): TStateVec;
+  var
+    hi, iSt: SizeUint;
+  begin
+    FillChar(result, sizeof(result), 0);
+    while (a[0] <> 0) or (a[1] <> 0) or (a[2] <> 0) or (a[3] <> 0) do
+    begin
+      if a[0] and 1 <> 0 then
+        for iSt := 0 to High(result) do result[iSt] := result[iSt] xor b[iSt];
+      Shr1(a);
+      hi := b[High(b)] shr (bitsizeof(b[0]) - 1);
+
+      // b := b shl 1;
+      for iSt := High(b) downto 1 do
+        b[iSt] := b[iSt] shl 1 or b[iSt - 1] shr (bitsizeof(b[0]) - 1);
+      b[0] := b[0] shl 1;
+
+      if hi <> 0 then
+        for iSt := 0 to High(b) do b[iSt] := b[iSt] xor poly[iSt];
+    end;
+  end;
+
+  class function TXoshiro128ss_32.GF2Pow(x, p, poly: TStateVec): TStateVec;
+  begin
+    result[0] := 1;
+    FillChar(result[1], sizeof(result) - sizeof(result[0]), 0);
+    while (p[0] <> 0) or (p[1] <> 0) or (p[2] <> 0) or (p[3] <> 0) do
+    begin
+      if p[0] and 1 <> 0 then result := GF2Mul(result, x, poly);
+      Shr1(p);
+      x := GF2Mul(x, x, poly);
+    end;
+  end;
+
+  class procedure TXoshiro128ss_32.Shr1(var a: TStateVec);
+  var
+    iSt: SizeUint;
+  begin
+    for iSt := 0 to High(a) - 1 do
+      a[iSt] := a[iSt] shr 1 or a[iSt + 1] shl (bitsizeof(a[0]) - 1);
+    a[High(a)] := a[High(a)] shr 1;
+  end;
+
 var
   // Just in case user sets RandSeed := not Cardinal(0) (RandSeed := $FFFFFFFF) from the start,
   // thus bypassing first-time RandSeed <> OldRandSeed check,
   // there will still be a precomputed initialization for RandSeed = $FFFFFFFF.
-  GlobalXsr128_32: Xoshiro128ss_32 = (state: ($AFF181C0, $73B13BA2, $1340D3B4, $61204305));
+  GlobalXsr128_32: TXoshiro128ss_32 = (state: ($AFF181C0, $73B13BA2, $1340D3B4, $61204305));
 
-  procedure ReseedGlobalRNG;
+  function GetGlobalRNG: PXoshiro128ss_32;
   begin
+    result := @GlobalXsr128_32;
     { Detect resets of randseed
 
       This will break if someone coincidentally uses not(randseed) as the
       next randseed, but it's much more common that you will reset randseed
       to the same value as before to regenerate the same sequence of numbers
     }
-    GlobalXsr128_32.Setup(RandSeed);
+    if RandSeed = OldRandSeed then exit;
+    result^.Init(RandSeed);
     RandSeed := not RandSeed;
     OldRandSeed := RandSeed;
-  end;
-
-  function xsr128_32_u32rand: uint32;
-  begin
-    if RandSeed <> OldRandSeed then ReseedGlobalRNG;
-    result := GlobalXsr128_32.Next;
   end;
 
   // There's still a flaw: repeated assignments of RandSeed := $FFFFFFFF from the start, i.e.
@@ -736,7 +914,7 @@ var
   // But this is already the case with carefully crafted RandSeeds,
   // so I doubt an additional check like "if (RandSeed <> OldRandSeed) or not RngInitialized" is justified.
 
-function random(l:longint): longint;
+function random(l:longint;var rng:TRandomEngine): longint;
 var
   t: uint32;
   m: uint64;
@@ -746,12 +924,12 @@ begin
     result:=-result-1; { from now on, uint32(result) is a bound. }
 
   { https://lemire.me/blog/2019/06/06/nearly-divisionless-random-integer-generation-on-various-systems/ }
-  m:=uint64(xsr128_32_u32rand)*uint32(result);
+  m:=uint64(rng.Next)*uint32(result);
   if Lo(m)<uint32(result) then
     begin
       t:=uint32(-result) mod uint32(result);
       while Lo(m)<t do
-        m:=uint64(xsr128_32_u32rand)*uint32(result);
+        m:=uint64(rng.Next)*uint32(result);
     end;
   result:=Hi(m);
 
@@ -759,7 +937,12 @@ begin
     result:=-result-1;
 end;
 
-function random(l:int64): int64;
+function random(l:longint): longint;
+begin
+  result:=random(l,GetGlobalRNG^);
+end;
+
+function random(l:int64;var rng:TRandomEngine): int64;
 var
   t, ul, mLo: uint64;
   a: uint32;
@@ -772,15 +955,15 @@ begin
   if l<0 then
     ul:=-ul-1;
 
-  a:=xsr128_32_u32rand;
-  mLo:=UMul64x64_128(uint64(a) shl 32 or xsr128_32_u32rand,ul,uint64(result));
+  a:=rng.Next;
+  mLo:=UMul64x64_128(uint64(a) shl 32 or rng.Next,ul,uint64(result));
   if mLo<ul then
     begin
       t:=uint64(-ul) mod ul;
       while mLo<t do
         begin
-          a:=xsr128_32_u32rand;
-          mLo:=UMul64x64_128(uint64(a) shl 32 or xsr128_32_u32rand,ul,uint64(result));
+          a:=rng.Next;
+          mLo:=UMul64x64_128(uint64(a) shl 32 or rng.Next,ul,uint64(result));
         end;
     end;
 
@@ -788,8 +971,13 @@ begin
     result:=-result-1;
 end;
 
+function random(l:int64): int64;
+begin
+  result:=random(l,GetGlobalRNG^);
+end;
+
 {$ifndef FPUNONE}
-function random: extended;
+function random(var rng:TRandomEngine): extended;
 var
   res: double;
   r0, exponent: uint32;
@@ -808,8 +996,8 @@ begin
     minimum of 2^N random values has around N trailing zeros in its mantissa. }
 
   { 52 bits (double precision) go to mantissa: r0[0:19] + one_more_u32rand[0:31]. }
-  r0:=xsr128_32_u32rand;
-  PUint64(@res)^:=uint64(r0 and (1 shl 20-1)) shl 32 or xsr128_32_u32rand;
+  r0:=rng.Next;
+  PUint64(@res)^:=uint64(r0 and (1 shl 20-1)) shl 32 or rng.Next;
 
   { Exponent = −1 − (count of zeros in the stream of random bits). There are 12 bits left in r0. }
   exponent:=1023-1-31; { Biased exponent, - 31 for Bsr(r0). }
@@ -818,11 +1006,16 @@ begin
       inc(exponent,20); { Subtract 12 bits the first time and 32 on subsequent iterations. }
       repeat
         dec(exponent,32);
-        r0:=xsr128_32_u32rand;
+        r0:=rng.Next;
       until r0<>0;
     end;
   PUint64(@res)^:=PUint64(@res)^ or uint64(exponent+BsrDWord(r0)) shl 52;
   result:=res;
+end;
+
+function random: extended;
+begin
+  result:=random(GetGlobalRNG^);
 end;
 {$endif}
 
