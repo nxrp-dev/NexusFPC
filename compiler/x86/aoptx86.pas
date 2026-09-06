@@ -157,6 +157,12 @@ unit aoptx86;
         function DeepMOVOpt(const p_mov: taicpu; const hp: taicpu): Boolean;
 
         function FuncMov2Func(var p: tai; const hp1: tai): Boolean;
+
+        { If p is to be deleted and a reference from it has been loaded into hp1, make
+          sure register tracking and symbol reference counts have been corrected.
+          Only set "correct_symrefs" to True if you used loadref() or loadoper() to
+          transfer a reference, as these increase the symbol reference counts. }
+        procedure TrackAndCorrectRefMove(const ref: TReference; var p: tai; const hp1: tai; const correct_symrefs: Boolean);
 {$ifdef x86_64}
         { If a "mov %reg1d,%reg2d; and %reg1d,%reg1d" is found, we can possibly
           replace %reg2q with %reg1q in later instructions }
@@ -3238,6 +3244,35 @@ unit aoptx86;
       end;
 
 
+    procedure TX86AsmOptimizer.TrackAndCorrectRefMove(const ref: TReference; var p: tai; const hp1: tai; const correct_symrefs: Boolean);
+      begin
+        { Update the register tracking for the registers inside the reference }
+        if (ref.index<>NR_NO) then
+          AllocRegBetween(ref.index,p,hp1,UsedRegs);
+
+        if (ref.refaddr=addr_no) then
+          begin
+            if
+              (ref.base<>NR_NO) and
+{$ifdef x86_64}
+              (ref.base<>NR_RIP) and
+{$endif x86_64}
+              (ref.base<>NR_STACK_POINTER_REG) and
+              (ref.base<>current_procinfo.framepointer) and
+              (ref.base<>ref.index) then
+              AllocRegBetween(ref.base,p,hp1,UsedRegs);
+          end
+        else if correct_symrefs then
+          begin
+            { loadref increases the reference count, so decrement it again }
+            if Assigned(ref.symbol) then
+              ref.symbol.decrefs;
+            if Assigned(ref.relsymbol) then
+              ref.relsymbol.decrefs;
+          end;
+      end;
+
+
     function TX86AsmOptimizer.CheckMovMov2MovMov2(const p, hp1: tai) : boolean;
       begin
         Result := False;
@@ -4077,8 +4112,12 @@ unit aoptx86;
                                 not(RegUsedAfterInstruction(taicpu(p).oper[1]^.reg, hp1, TmpUsedRegs)) then
                                 begin
                                   Taicpu(hp1).opcode:=A_ADD;
-                                  Taicpu(hp1).oper[0]^.ref^:=Taicpu(p).oper[0]^.ref^;
+                                  { Just transfer the ref pointer for speed }
+                                  taicpu(hp1).oper[0]^.ref:=Taicpu(p).oper[0]^.ref;
+                                  TrackAndCorrectRefMove(taicpu(p).oper[0]^.ref^,p,hp1,False);
                                   DebugMsg(SPeepholeOptimization + 'MovLea2Add done',hp1);
+                                  { Set the original ref pointer to nil so it doesn't get freed }
+                                  taicpu(p).oper[0]^.ref:=nil;
                                   RemoveCurrentp(p);
                                   result:=true;
                                   exit;
@@ -6926,16 +6965,9 @@ unit aoptx86;
                           begin
                             DebugMsg(SPeepholeOptimization + 'LeaOp2Op done',p);
                             if taicpu(p).oper[0]^.ref^.base<>NR_NO then
-                              begin
-                                taicpu(hp1).oper[ref]^.ref^.base:=taicpu(p).oper[0]^.ref^.base;
-                                AllocRegBetween(taicpu(p).oper[0]^.ref^.base,p,hp1,UsedRegs);
-                              end;
+                              taicpu(hp1).oper[ref]^.ref^.base:=taicpu(p).oper[0]^.ref^.base;
                             if taicpu(p).oper[0]^.ref^.index<>NR_NO then
-                              begin
-                                taicpu(hp1).oper[ref]^.ref^.index:=taicpu(p).oper[0]^.ref^.index;
-                                if taicpu(p).oper[0]^.ref^.index<>taicpu(p).oper[0]^.ref^.base then
-                                  AllocRegBetween(taicpu(p).oper[0]^.ref^.index,p,hp1,UsedRegs);
-                              end;
+                              taicpu(hp1).oper[ref]^.ref^.index:=taicpu(p).oper[0]^.ref^.index;
                             if taicpu(p).oper[0]^.ref^.symbol<>nil then
                               taicpu(hp1).oper[ref]^.ref^.symbol:=taicpu(p).oper[0]^.ref^.symbol;
                             if taicpu(p).oper[0]^.ref^.relsymbol<>nil then
@@ -6943,10 +6975,15 @@ unit aoptx86;
                             if taicpu(p).oper[0]^.ref^.scalefactor > 1 then
                               taicpu(hp1).oper[ref]^.ref^.scalefactor:=taicpu(p).oper[0]^.ref^.scalefactor;
                             inc(taicpu(hp1).oper[ref]^.ref^.offset,taicpu(p).oper[0]^.ref^.offset);
+
+                            { Make sure the registers in the reference are
+                              tracked and symbols aren't double-counted }
+                            TrackAndCorrectRefMove(taicpu(p).oper[0]^.ref^, p, hp1, False);
+
                             RemoveCurrentP(p, hp1);
                             result:=true;
                             exit;
-                          end
+                          end;
                       end;
                   end;
                 { recover }
@@ -7479,6 +7516,7 @@ unit aoptx86;
                     taicpu(hp1).loadconst(0, 0);
                   end;
                 taicpu(hp1).loadref(1, taicpu(p).oper[0]^.ref^);
+                TrackAndCorrectRefMove(taicpu(p).oper[0]^.ref^,p,hp1,True);
                 DebugMsg(SPeepholeOptimization + 'MOV/CMP -> CMP (memory check)', p);
 
                 RemoveCurrentP(p);
@@ -15141,6 +15179,7 @@ unit aoptx86;
                 else
 {$endif x86_64}
                   taicpu(p).loadreg(1,taicpu(hp1).oper[1]^.reg);
+                AllocRegBetween(taicpu(hp1).oper[1]^.reg,p,hp1,UsedRegs);
                 RemoveInstruction(hp1);
                 Result := True;
                 Exit;
@@ -15192,7 +15231,7 @@ unit aoptx86;
 
               test    $x,(oper)
 
-              if the second op accesses only the bits stored in reg1
+              if the second op accesses only the bits stored in (oper)
             }
             if ((taicpu(p).oper[0]^.typ=top_reg) or
               ((taicpu(p).oper[0]^.typ=top_ref) and (taicpu(p).oper[0]^.ref^.refaddr<>addr_full))) and
@@ -15239,6 +15278,10 @@ unit aoptx86;
                       begin
                         DebugMsg(SPeepholeOptimization + 'MovxAndTest2Test done',p);
                         taicpu(hp1).loadoper(1, taicpu(p).oper[0]^);
+                        if taicpu(p).oper[0]^.typ=top_reg then
+                          AllocRegBetween(taicpu(p).oper[0]^.reg,p,hp1,UsedRegs)
+                        else
+                          TrackAndCorrectRefMove(taicpu(p).oper[0]^.ref^,p,hp1,True);
                         taicpu(hp1).opcode := A_TEST;
                         taicpu(hp1).opsize := NewSize;
                         RemoveInstruction(hp2);
@@ -15323,7 +15366,10 @@ unit aoptx86;
                             AllocRegBetween(taicpu(hp1).oper[0]^.reg,p,hp1,UsedRegs);
                           end
                         else
-                          taicpu(hp1).loadref(0,taicpu(p).oper[0]^.ref^);
+                          begin
+                            taicpu(hp1).loadref(0,taicpu(p).oper[0]^.ref^);
+                            TrackAndCorrectRefMove(taicpu(p).oper[0]^.ref^,p,hp1,True);
+                          end;
                         RemoveCurrentP(p);
                         if AndTest then
                           RemoveInstruction(hp2);
