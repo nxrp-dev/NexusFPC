@@ -1,9 +1,10 @@
-{ %OPT=-MDelphi }
+{ %FAIL }
+{ %OPT=-Mfpc }
 
 { Source provided for Free Pascal Bug Report 2536 }
 { Submitted by "Michael Van Canneyt" on  2003-06-14 }
 { e-mail: Michael.VanCanneyt@wisa.be }
-unit tw2536b;
+unit tw2536d;
 
 interface
 
