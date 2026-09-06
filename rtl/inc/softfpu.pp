@@ -1445,12 +1445,12 @@ procedure mul128To256(a0,a1,b0,b1 : bits64;var z0Ptr,z1Ptr,z2Ptr,z3Ptr : bits64)
 var
     z0,z1,z2,z3,more1,more2 : bits64;
 begin
-    z3 := UMul64x64_128( a1, b1, z2 );
-    more2 := UMul64x64_128( a1, b0, z1 );
+    z3 := u64_mul_u64_to_u128( a1, b1, z2 );
+    more2 := u64_mul_u64_to_u128( a1, b0, z1 );
     add128( z1, more2, 0, z2, z1, z2 );
-    more1 := UMul64x64_128( a0, b0, z0 );
+    more1 := u64_mul_u64_to_u128( a0, b0, z0 );
     add128( z0, more1, 0, z1, z0, z1 );
-    more2 := UMul64x64_128( a0, b1, more1 );
+    more2 := u64_mul_u64_to_u128( a0, b1, more1 );
     add128( more1, more2, 0, z2, more1, z2 );
     add128( z0, z1, 0, more1, z0, z1 );
     z3Ptr := z3;
@@ -1470,8 +1470,8 @@ procedure mul128By64To192(a0,a1,b : bits64;var z0Ptr,z1Ptr,z2Ptr : bits64);
 var
     z0, z1, z2, more1 : bits64;
 begin
-    z2 := UMul64x64_128( a1, b, z1 );
-    more1 := UMul64x64_128( a0, b, z0 );
+    z2 := u64_mul_u64_to_u128( a1, b, z1 );
+    more1 := u64_mul_u64_to_u128( a0, b, z0 );
     add128( z0, more1, 0, z1, z0, z1 );
     z2Ptr := z2;
     z1Ptr := z1;
@@ -1501,7 +1501,7 @@ begin
       z:=qword( $FFFFFFFF00000000 )
     else
       z:=( a0 div b0 ) shl 32;
-    term1 := UMul64x64_128( b, z, term0 );
+    term1 := u64_mul_u64_to_u128( b, z, term0 );
     sub128( a0, a1, term0, term1, rem0, rem1 );
     while ( ( sbits64(rem0) ) < 0 ) do begin
         dec(z,qword( $100000000 ));
@@ -7221,7 +7221,7 @@ begin
         normalizeFloatx80Subnormal( bSig, bExp, bSig );
     end;
     zExp := aExp + bExp - $3FFE;
-    zSig1 := UMul64x64_128( aSig, bSig, zSig0 );
+    zSig1 := u64_mul_u64_to_u128( aSig, bSig, zSig0 );
     if 0 < sbits64( zSig0 ) then begin
         shortShift128Left( zSig0, zSig1, 1, zSig0, zSig1 );
         dec(zExp);
@@ -7308,7 +7308,7 @@ begin
         inc(zExp);
     end;
     zSig0 := estimateDiv128To64( aSig, rem1, bSig );
-    term1 := UMul64x64_128( bSig, zSig0, term0 );
+    term1 := u64_mul_u64_to_u128( bSig, zSig0, term0 );
     sub128( aSig, rem1, term0, term1, rem0, rem1 );
     while ( sbits64( rem0 ) < 0 ) do begin
         dec(zSig0);
@@ -7316,7 +7316,7 @@ begin
     end;
     zSig1 := estimateDiv128To64( rem1, 0, bSig );
     if ( bits64( zSig1 shl 1 ) <= 8 ) then begin
-        term2 := UMul64x64_128( bSig, zSig1, term1 );
+        term2 := u64_mul_u64_to_u128( bSig, zSig1, term1 );
         sub128( rem1, 0, term1, term2, rem1, rem2 );
         while ( sbits64( rem1 ) < 0 ) do begin
             dec(zSig1);
@@ -7403,7 +7403,7 @@ begin
     while ( 0 < expDiff ) do begin
         q := estimateDiv128To64( aSig0, aSig1, bSig );
         if ( 2 < q ) then q := q - 2 else q := 0;
-        term1 := UMul64x64_128( bSig, q, term0 );
+        term1 := u64_mul_u64_to_u128( bSig, q, term0 );
         sub128( aSig0, aSig1, term0, term1, aSig0, aSig1 );
         shortShift128Left( aSig0, aSig1, 62, aSig0, aSig1 );
         dec( expDiff, 62 );
@@ -7413,7 +7413,7 @@ begin
         q := estimateDiv128To64( aSig0, aSig1, bSig );
         if ( 2 < q ) then q:= q - 2 else q := 0;
         q := q shr ( 64 - expDiff );
-        term1 := UMul64x64_128( bSig, q shl ( 64 - expDiff ), term0 );
+        term1 := u64_mul_u64_to_u128( bSig, q shl ( 64 - expDiff ), term0 );
         sub128( aSig0, aSig1, term0, term1, aSig0, aSig1 );
         shortShift128Left( 0, bSig, 64 - expDiff, term0, term1 );
         while ( le128( term0, term1, aSig0, aSig1 ) <> 0 ) do begin
@@ -7494,7 +7494,7 @@ begin
     shift128Right( aSig0, 0, 2 + ( aExp and 1 ), aSig0, aSig1 );
     zSig0 := estimateDiv128To64( aSig0, aSig1, zSig0 shl 32 ) + ( zSig0 shl 30 );
     doubleZSig0 := zSig0 shl 1;
-    term1 := UMul64x64_128( zSig0, zSig0, term0 );
+    term1 := u64_mul_u64_to_u128( zSig0, zSig0, term0 );
     sub128( aSig0, aSig1, term0, term1, rem0, rem1 );
     while ( sbits64( rem0 ) < 0 ) do begin
         dec(zSig0);
@@ -7504,9 +7504,9 @@ begin
     zSig1 := estimateDiv128To64( rem1, 0, doubleZSig0 );
     if ( ( zSig1 and $3FFFFFFFFFFFFFFF ) <= 5 ) then begin
         if ( zSig1 = 0 ) then zSig1 := 1;
-        term2 := UMul64x64_128( doubleZSig0, zSig1, term1 );
+        term2 := u64_mul_u64_to_u128( doubleZSig0, zSig1, term1 );
         sub128( rem1, 0, term1, term2, rem1, rem2 );
-        term3 := UMul64x64_128( zSig1, zSig1, term2 );
+        term3 := u64_mul_u64_to_u128( zSig1, zSig1, term2 );
         sub192( rem1, rem2, 0, 0, term2, term3, rem1, rem2, rem3 );
         while ( sbits64( rem1 ) < 0 ) do begin
             dec(zSig1);
@@ -9076,7 +9076,7 @@ begin
     shortShift128Left( aSig0, aSig1, 13 - ( aExp and 1 ), aSig0, aSig1 );
     zSig0 := estimateDiv128To64( aSig0, aSig1, zSig0 shl 32 ) + ( zSig0 shl 30 );
     doubleZSig0 := zSig0 shl 1;
-    term1 := UMul64x64_128( zSig0, zSig0, term0);
+    term1 := u64_mul_u64_to_u128( zSig0, zSig0, term0);
     sub128( aSig0, aSig1, term0, term1, rem0, rem1 );
     while ( sbits64(rem0) < 0 ) do begin
         dec(zSig0);
@@ -9086,9 +9086,9 @@ begin
     zSig1 := estimateDiv128To64( rem1, 0, doubleZSig0 );
     if ( ( zSig1 and $1FFF ) <= 5 ) then begin
         if ( zSig1 = 0 ) then zSig1 := 1;
-        term2 := UMul64x64_128( doubleZSig0, zSig1, term1 );
+        term2 := u64_mul_u64_to_u128( doubleZSig0, zSig1, term1 );
         sub128( rem1, 0, term1, term2, rem1, rem2 );
-        term3 := UMul64x64_128( zSig1, zSig1, term2 );
+        term3 := u64_mul_u64_to_u128( zSig1, zSig1, term2 );
         sub192( rem1, rem2, 0, 0, term2, term3, rem1, rem2, rem3 );
         while ( sbits64(rem1) < 0 ) do begin
             dec(zSig1);

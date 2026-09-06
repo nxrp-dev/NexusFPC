@@ -2065,9 +2065,9 @@ function fpc_mod_shortint(n,z : shortint) : shortint; [public,alias: 'FPC_MOD_SH
 
 {$endif FPC_INCLUDE_SOFTWARE_MOD_DIV}
 
-{$ifndef FPC_SYSTEM_HAS_UMUL64X64_128}
+{$ifndef FPC_SYSTEM_HAS_U64_MUL_U64_TO_U128}
 {$push} {$q-,r-}
-function UMul64x64_128(a,b: uint64; out rHi: uint64): uint64;
+function u64_mul_u64_to_u128(a,b: uint64; out rHi: uint64): uint64;
 var
   albl, albh, ahbl: uint64;
 begin
@@ -2078,7 +2078,57 @@ begin
   rHi    := a shr 32 * (b shr 32) + albh shr 32 + ahbl shr 32 + (albl shr 32 + uint32(albh) + uint32(ahbl)) shr 32;
 end;
 {$pop}
-{$endif FPC_SYSTEM_HAS_UMUL64X64_128}
+{$endif FPC_SYSTEM_HAS_U64_MUL_U64_TO_U128}
+
+{$ifndef FPC_SYSTEM_HAS_U128_DIV_U64_TO_U64}
+{$push} {$q-,r-}
+function u128_div_u64_to_u64(xh, xl, y: qword; out quotient, remainder: qword): boolean;
+type
+  NonZero = 1 .. High(uint64);
+var
+  q1, q0, rhat: qword;
+  s: integer;
+begin
+  result := xh < y;
+  if not result then { Overflow. }
+    exit;
+  if xh = 0 then { Shortcut simple case. }
+  begin
+    quotient := xl div y;
+    remainder := xl - quotient * y;
+  end else
+  begin
+    s := 0;
+    if int64(y) >= 0 then { Normalize divisor. }
+    begin
+      s := BsrQWord(NonZero(y)) xor 63;
+      y := y shl s;
+      xh := xh shl s or xl shr (64 - s);
+      xl := xl shl s;
+    end;
+    q1 := xh div hi(y); { Compute the first quotient digit, q1. }
+    rhat := xh - q1 * hi(y);
+    repeat
+      if (hi(q1) = 0) and (q1 * lo(y) <= rhat shl 32 + hi(xl)) then
+        break;
+      dec(q1);
+      inc(rhat, hi(y));
+    until hi(rhat) <> 0;
+    xh := xh shl 32 + hi(xl) - q1 * y;
+    q0 := xh div hi(y); { Compute the second quotient digit, q0. }
+    rhat := xh - q0 * hi(y);
+    repeat
+      if (hi(q0) = 0) and (q0 * lo(y) <= rhat shl 32 + lo(xl)) then
+        break;
+      dec(q0);
+      inc(rhat, hi(y));
+    until hi(rhat) <> 0;
+    remainder := (xh shl 32 + lo(xl) - q0 * y) shr s;
+    quotient := q1 shl 32 + q0;
+  end;
+end;
+{$pop}
+{$endif FPC_SYSTEM_HAS_U128_DIV_U64_TO_U64}
 
 {****************************************************************************}
 

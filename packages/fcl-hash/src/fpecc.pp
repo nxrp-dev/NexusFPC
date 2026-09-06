@@ -312,7 +312,7 @@ begin
     begin
       if i >= NUM_ECC_DIGITS then
         Break;
-      Product.m_low := UMul64x64_128(Left[I], Right[K-I], Product.m_high);
+      Product.m_low := u64_mul_u64_to_u128(Left[I], Right[K-I], Product.m_high);
       r01 := add_128_128(r01, Product);
       if r01.m_high < Product.m_high then
         Inc(r2);
@@ -344,7 +344,7 @@ begin
     begin
       if I > K-I then
         Break;
-      Product.m_low := UMul64x64_128(Left[I], Left[K-I], Product.m_high);
+      Product.m_low := u64_mul_u64_to_u128(Left[I], Left[K-I], Product.m_high);
       if I < K-I then
       begin
         Inc(r2, Product.m_high shr 63);
