@@ -2058,7 +2058,11 @@ implementation
         { happens for init procdef of units without init section }
         if in_currentunit and
            not assigned(def.procstarttai) then
-          exit;
+          begin
+            if not (def.owner.symtabletype in [objectsymtable,recordsymtable]) then
+              exit;
+            in_currentunit := False; // don't try to refer to code location
+          end;
 
         if df_generic in def.defoptions then
           exit;
@@ -4459,6 +4463,8 @@ implementation
               else
                 dostruct(DW_TAG_interface_type);
               doparent(true);
+              if not(oo_is_external in def.objectoptions) then
+                write_symtable_procdefs(current_asmdata.asmlists[al_dwarf_info],def.symtable);
             end;
           odt_helper,
           odt_class:
