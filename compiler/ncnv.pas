@@ -3659,9 +3659,13 @@ implementation
               if (result.nodetype = realconstn) then
                 begin
                   hp:=result;
-                  result:=crealconstnode.create(trealconstnode(hp).value_real,resultdef);
                   if nf_is_currency in hp.flags then
-                    include(result.flags,nf_is_currency);
+                    begin
+                      result:=crealconstnode.create(trealconstnode(hp).value_real*BestReal(10000.0),resultdef);
+                      include(result.flags,nf_is_currency);
+                    end
+                  else
+                    result:=crealconstnode.create(trealconstnode(hp).value_real,resultdef);
                   if ([nf_explicit,nf_internal] * flags <> []) then
                     include(result.flags, nf_explicit);
                   hp.free;
