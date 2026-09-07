@@ -912,14 +912,14 @@ procedure FillDWord(var x;count:SizeInt;value:DWord); {$if defined(cpui386)}inli
 procedure FillQWord(var x;count:SizeInt;value:QWord); {$if defined(cpui386) and not defined(CPUX86_HAS_SSE2)}inline;{$endif}
 function  IndexChar(const buf;len:SizeInt;b:ansichar):SizeInt;
 function  IndexChar(const buf;len:SizeInt;b:widechar):SizeInt;
-function  IndexByte(const buf;len:SizeInt;b:byte):SizeInt; {$if defined(cpui386) and not defined(CPUX86_HAS_SSE2)} inline; {$endif}
-function  IndexWord(const buf;len:SizeInt;b:word):SizeInt; {$if defined(cpui386) and not defined(CPUX86_HAS_SSE2)} inline; {$endif}
-function  IndexDWord(const buf;len:SizeInt;b:DWord):SizeInt; {$if defined(cpui386) and not defined(CPUX86_HAS_SSE2)} inline; {$endif}
-function  IndexQWord(const buf;len:SizeInt;b:QWord):SizeInt; {$if (defined(cpui386) or defined(cpux86_64)) and not defined(CPUX86_HAS_SSE4_1)} inline; {$endif}
+function  IndexByte(const buf;len:SizeInt;b:byte):SizeInt; {$if defined(cpui386) and not defined(CPUX86_HAS_SSE2) or defined(cpux86_64) and not defined(CPUX86_HAS_BMI2)} inline; {$endif}
+function  IndexWord(const buf;len:SizeInt;b:word):SizeInt; {$if defined(cpui386) and not defined(CPUX86_HAS_SSE2) or defined(cpux86_64) and not defined(CPUX86_HAS_BMI2)} inline; {$endif}
+function  IndexDWord(const buf;len:SizeInt;b:DWord):SizeInt; {$if defined(cpui386) and not defined(CPUX86_HAS_SSE2) or defined(cpux86_64) and not defined(CPUX86_HAS_BMI2)} inline; {$endif}
+function  IndexQWord(const buf;len:SizeInt;b:QWord):SizeInt; {$if defined(cpui386) and not defined(CPUX86_HAS_SSE4_1) or defined(cpux86_64) and not defined(CPUX86_HAS_BMI2)} inline; {$endif}
 function  CompareChar(const buf1,buf2;len:SizeInt):SizeInt;
-function  CompareByte(const buf1,buf2;len:SizeInt):SizeInt; {$if defined(cpui386) and not defined(CPUX86_HAS_BMI2)} inline; {$endif}
-function  CompareWord(const buf1,buf2;len:SizeInt):SizeInt; {$if defined(cpui386) and not defined(CPUX86_HAS_SSE2)} inline; {$endif}
-function  CompareDWord(const buf1,buf2;len:SizeInt):SizeInt; {$if defined(cpui386) and not defined(CPUX86_HAS_SSE2)} inline; {$endif}
+function  CompareByte(const buf1,buf2;len:SizeInt):SizeInt; {$if defined(cpui386) and not defined(CPUX86_HAS_BMI2) or defined(cpux86_64) and not defined(CPUX86_HAS_BMI2)} inline; {$endif}
+function  CompareWord(const buf1,buf2;len:SizeInt):SizeInt; {$if defined(cpui386) and not defined(CPUX86_HAS_SSE2) or defined(cpux86_64) and not defined(CPUX86_HAS_BMI2)} inline; {$endif}
+function  CompareDWord(const buf1,buf2;len:SizeInt):SizeInt; {$if defined(cpui386) and not defined(CPUX86_HAS_SSE2) or defined(cpux86_64) and not defined(CPUX86_HAS_BMI2)} inline; {$endif}
 procedure MoveChar0(const buf1;var buf2;len:SizeInt);
 function  IndexChar0(const buf;len:SizeInt;b:Ansichar):SizeInt;
 function  CompareChar0(const buf1,buf2;len:SizeInt):SizeInt;
