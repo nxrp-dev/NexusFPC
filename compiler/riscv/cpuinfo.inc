@@ -56,6 +56,7 @@ type
     (fpu_none,
     fpu_libgcc,
     fpu_soft,
+    fpu_fs,
     fpu_fd
     );
 
@@ -64,6 +65,7 @@ const
     'NONE',
     'LIBGCC',
     'SOFT',
+    'FS',
     'FD'
     );
 
