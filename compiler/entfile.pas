@@ -310,8 +310,10 @@ type
     function  getword:word;
     function  getdword:dword;
     function  getlongint:longint;
-    function getint64:int64;
+    function  getint64:int64;
     function  getqword:qword;
+    function  getsleb128:int64;
+    function  getuleb128:qword;
     function getaint:{$ifdef generic_cpu}int64{$else}aint{$ifdef USEINLINE}; inline{$endif}{$endif};
     function getasizeint:{$ifdef generic_cpu}int64{$else}asizeint{$ifdef USEINLINE}; inline{$endif}{$endif};
     function getpuint:{$ifdef generic_cpu}qword{$else}puint{$ifdef USEINLINE}; inline{$endif}{$endif};
@@ -340,6 +342,8 @@ type
     procedure putlongint(l:longint); {$ifdef USEINLINE}inline;{$endif}
     procedure putint64(i:int64); {$ifdef USEINLINE}inline;{$endif}
     procedure putqword(q:qword); {$ifdef USEINLINE}inline;{$endif}
+    procedure putsleb128(i:int64);
+    procedure putuleb128(q:qword);
     procedure putaint(i:aint); {$ifdef USEINLINE}inline;{$endif}
     procedure putasizeint(i:asizeint); {$ifdef USEINLINE}inline;{$endif}
     procedure putpuint(i:puint); {$ifdef USEINLINE}inline;{$endif}
@@ -1051,6 +1055,41 @@ begin
   dec_log_level;
 {$endif}
   inc(entryidx,8);
+end;
+
+
+function tentryfile.getsleb128:int64;
+var
+  b: Byte;
+  s: Integer;
+begin
+  Result:=0;
+  s:=0;
+  repeat
+    b:=getbyte();
+    Result:=Result or ((b and $7F) shl s);
+    Inc(s);
+  until (b and $80)=0;
+
+  if (s<size) and ((b and $40)<>0) then
+    { Sign extend }
+    Result:=Result or (-1 shl s);
+end;
+
+
+function tentryfile.getuleb128:qword;
+var
+  b: Byte;
+  s: Integer;
+begin
+  Result:=0;
+  s:=0;
+  repeat
+    b:=getbyte();
+    Result:=Result or ((b and $7F) shl s);
+    Inc(s);
+  until (b and $80)=0;
+
 end;
 
 
@@ -1873,6 +1912,53 @@ begin
 {$ifdef DEBUG_PPU}
   dec_log_level;
 {$endif}
+end;
+
+
+procedure tentryfile.putsleb128(i:int64);
+var
+  b: Byte;
+  more: Boolean;
+begin
+  if i=0 then
+    begin
+      putbyte(0);
+      Exit;
+    end;
+
+  more:=True;
+
+  repeat
+    b:=i and $7F;
+    i:=SarInt64(i,7);
+
+    if ((i=0) and ((b and $40)=0)) or ((i=-1) and ((b and $40)<>0)) then
+      more:=False
+    else
+      b:=b or $80;
+    putbyte(b);
+  until not more
+end;
+
+
+procedure tentryfile.putuleb128(q:qword);
+var
+  b: Byte;
+begin
+  if q=0 then
+    begin
+      putbyte(0);
+      Exit;
+    end;
+
+  repeat
+    b:=q and $7F;
+    q:=q shr 7;
+    if (q<>0) then
+      b:=b or $80;
+    putbyte(b);
+  until q=0;
+
 end;
 
 

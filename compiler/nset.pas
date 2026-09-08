@@ -36,7 +36,7 @@ interface
        pcaselabel = ^tcaselabel;
        tcaselabel = record
           { unique blockid }
-          blockid : longint;
+          blockid : longword;
           { left and right tree node }
           less,
           greater : pcaselabel;
@@ -565,26 +565,203 @@ implementation
          copycaselabel:=n;
       end;
 
+    const
+      ppu_labeltype_ordinal_shortint             = 0;
+      ppu_labeltype_ordinal_shortint_range       = 1;
+      ppu_labeltype_ordinal_byte                 = 2;
+      ppu_labeltype_ordinal_byte_range           = 3;
+      ppu_labeltype_ordinal_smallint             = 4;
+      ppu_labeltype_ordinal_smallint_range       = 5;
+      ppu_labeltype_ordinal_word                 = 6;
+      ppu_labeltype_ordinal_word_range           = 7;
+      ppu_labeltype_ordinal_longint              = 8;
+      ppu_labeltype_ordinal_longint_range        = 9;
+      ppu_labeltype_ordinal_longword             = 10;
+      ppu_labeltype_ordinal_longword_range       = 11;
+      ppu_labeltype_ordinal_int64                = 12;
+      ppu_labeltype_ordinal_int64_range          = 13;
+      ppu_labeltype_ordinal_qword                = 14;
+      ppu_labeltype_ordinal_qword_range          = 15;
+
+      ppu_labeltype_string                       = 16;
+      ppu_labeltype_string_range                 = 17;
+
+      ppu_labeltype_mask                         = $1F;
+
+      ppu_has_greater_branch                     = $40;
+      ppu_has_lesser_branch                      = $80;
+
 
     procedure ppuwritecaselabel(ppufile:tcompilerppufile;p : pcaselabel);
       var
         b : byte;
+        IsSigned: Boolean;
       begin
-        ppufile.putboolean(p^.label_type = ltConstString);
+        { Store high-order flags relating to the presence of a greater and
+          lesser node.  The label type will be OR'd to this }
+        b:=(ord(assigned(p^.greater)) shl 6) or (ord(assigned(p^.less)) shl 7);
+
         if (p^.label_type = ltConstString) then
           begin
-            p^._low_str.ppuwrite(ppufile);
-            p^._high_str.ppuwrite(ppufile);
+            if p^._high_str.isequal(p^._low_str) then
+              begin
+                ppufile.putbyte(b or ppu_labeltype_string);
+                p^._low_str.ppuwrite(ppufile);
+              end
+            else
+              begin
+                ppufile.putbyte(b or ppu_labeltype_string_range);
+                p^._low_str.ppuwrite(ppufile);
+                p^._high_str.ppuwrite(ppufile);
+              end;
           end
         else
           begin
-            ppufile.putexprint(p^._low);
-            ppufile.putexprint(p^._high);
+            if p^._high = p^._low then
+              begin
+                if p^._low.signed then
+                  begin
+                    case p^._low.svalue of
+                      -128..127:
+                        begin
+                          ppufile.putbyte(b or ppu_labeltype_ordinal_shortint);
+                          ppufile.putbyte(Byte(p^._low.svalue));
+                        end;
+                     -32768..-129, 128..32767:
+                        begin
+                          ppufile.putbyte(b or ppu_labeltype_ordinal_smallint);
+                          ppufile.putword(Word(p^._low.svalue));
+                        end;
+                      -2147483648..-32769, 32768..2147483647:
+                        begin
+                          ppufile.putbyte(b or ppu_labeltype_ordinal_longint);
+                          ppufile.putlongint(p^._low.svalue);
+                        end;
+                      else
+                        begin
+                          ppufile.putbyte(b or ppu_labeltype_ordinal_int64);
+                          ppufile.putint64(p^._low.svalue);
+                        end;
+                    end;
+                  end
+                else
+                  begin
+                    case p^._low.uvalue of
+                      $00..$FF:
+                        begin
+                          ppufile.putbyte(b or ppu_labeltype_ordinal_byte);
+                          ppufile.putbyte(p^._low.uvalue);
+                        end;
+                      $100..$FFFF:
+                        begin
+                          ppufile.putbyte(b or ppu_labeltype_ordinal_word);
+                          ppufile.putword(p^._low.uvalue);
+                        end;
+                      $10000..$FFFFFFFF:
+                        begin
+                          ppufile.putbyte(b or ppu_labeltype_ordinal_longword);
+                          ppufile.putlongint(LongInt(p^._low.uvalue));
+                        end;
+                      else
+                        begin
+                          ppufile.putbyte(b or ppu_labeltype_ordinal_qword);
+                          ppufile.putqword(p^._low.uvalue);
+                        end;
+                    end;
+                  end;
+              end
+            else
+              begin
+                { If for some reason, one is signed and one isn't, try to
+                  determine the best type to use based on the values present}
+                if p^._low.signed xor p^._high.signed then
+                  begin
+                    if (p^._low.signed and (p^._low.svalue<0)) or
+                      (p^._high.signed and (p^._high.svalue<0)) then
+                      begin
+                        if (not p^._low.signed and (p^._low.uvalue>$7FFFFFFFFFFFFFFF)) or
+                          (not p^._high.signed and (p^._high.uvalue>$7FFFFFFFFFFFFFFF)) then
+                          { This is a problem because at least one of the
+                            values is out of range and should have been trapped
+                            by the compiler or at least clamped. }
+                          InternalError(2024121110);
+
+                        IsSigned:=True;
+                      end
+                    else if (not p^._low.signed and (p^._low.uvalue>$7FFFFFFFFFFFFFFF)) or
+                      (not p^._high.signed and (p^._high.uvalue>$7FFFFFFFFFFFFFFF)) then
+                      IsSigned:=False
+                    else
+                      { Signed by default }
+                      IsSigned:=True;
+                  end
+                else
+                  IsSigned:=p^._low.signed;
+
+                if IsSigned then
+                  begin
+                    if (p^._low.svalue>=-128) and (p^._low.svalue<=127) and
+                      (p^._high.svalue>=-128) and (p^._high.svalue<=127) then
+                      begin
+                        ppufile.putbyte(b or ppu_labeltype_ordinal_shortint_range);
+                        ppufile.putbyte(Byte(p^._low.svalue));
+                        ppufile.putbyte(Byte(p^._high.svalue));
+                      end
+                    else if (p^._low.svalue>=-32768) and (p^._low.svalue<=32767) and
+                      (p^._high.svalue>=-32768) and (p^._high.svalue<=32767) then
+                      begin
+                        ppufile.putbyte(b or ppu_labeltype_ordinal_smallint_range);
+                        ppufile.putword(Word(p^._low.svalue));
+                        ppufile.putword(Word(p^._high.svalue));
+                      end
+                    else if (p^._low.svalue>=-2147483648) and (p^._low.svalue<=2147483647) and
+                      (p^._high.svalue>=-2147483648) and (p^._high.svalue<=2147483647) then
+                      begin
+                        ppufile.putbyte(b or ppu_labeltype_ordinal_longint_range);
+                        ppufile.putlongint(p^._low.svalue);
+                        ppufile.putlongint(p^._high.svalue);
+                      end
+                    else
+                      begin
+                        ppufile.putbyte(b or ppu_labeltype_ordinal_int64_range);
+                        ppufile.putint64(p^._low.svalue);
+                        ppufile.putint64(p^._high.svalue);
+                      end;
+                  end
+                else
+                  begin
+                    if (p^._low.svalue<=$FF) and
+                      (p^._high.svalue<=$FF) then
+                      begin
+                        ppufile.putbyte(b or ppu_labeltype_ordinal_byte_range);
+                        ppufile.putbyte(p^._low.uvalue);
+                        ppufile.putbyte(p^._high.uvalue);
+                      end
+                    else if (p^._low.svalue<=$FFFF) and
+                      (p^._high.svalue<=$FFFF) then
+                      begin
+                        ppufile.putbyte(b or ppu_labeltype_ordinal_word_range);
+                        ppufile.putword(p^._low.uvalue);
+                        ppufile.putword(p^._high.uvalue);
+                      end
+                    else if (p^._low.svalue<=$FFFFFFFF) and
+                      (p^._high.svalue<=$FFFFFFFF) then
+                      begin
+                        ppufile.putbyte(b or ppu_labeltype_ordinal_longword_range);
+                        ppufile.putlongint(LongInt(p^._low.uvalue));
+                        ppufile.putlongint(LongInt(p^._high.uvalue));
+                      end
+                    else
+                      begin
+                        ppufile.putbyte(b or ppu_labeltype_ordinal_qword_range);
+                        ppufile.putqword(p^._low.uvalue);
+                        ppufile.putqword(p^._high.uvalue);
+                      end;
+                  end;
+              end;
           end;
 
-        ppufile.putlongint(p^.blockid);
-        b:=ord(assigned(p^.greater)) or (ord(assigned(p^.less)) shl 1);
-        ppufile.putbyte(b);
+        ppufile.putuleb128(p^.blockid);
         if assigned(p^.greater) then
           ppuwritecaselabel(ppufile,p^.greater);
         if assigned(p^.less) then
@@ -598,27 +775,144 @@ implementation
         p : pcaselabel;
       begin
         new(p);
-        if ppufile.getboolean then
-          begin
-            p^.label_type := ltConstString;
-            p^._low_str := cstringconstnode.ppuload(stringconstn,ppufile);
-            p^._high_str := cstringconstnode.ppuload(stringconstn,ppufile);
-          end
-        else
-          begin
-            p^.label_type := ltOrdinal;
-
-            p^._low:=ppufile.getexprint;
-            p^._high:=ppufile.getexprint;
-          end;
-
-        p^.blockid:=ppufile.getlongint;
         b:=ppufile.getbyte;
-        if (b and 1)=1 then
+        case b and ppu_labeltype_mask of
+          ppu_labeltype_ordinal_shortint:
+            begin
+              p^.label_type:=ltOrdinal;
+              p^._low:=ShortInt(ppufile.getbyte);
+              p^._high:=p^._low;
+            end;
+
+          ppu_labeltype_ordinal_shortint_range:
+            begin
+              p^.label_type:=ltOrdinal;
+              p^._low:=ShortInt(ppufile.getbyte);
+              p^._high:=ShortInt(ppufile.getbyte);
+            end;
+
+          ppu_labeltype_ordinal_byte:
+            begin
+              p^.label_type:=ltOrdinal;
+              p^._low:=ppufile.getbyte;
+              p^._high:=p^._low;
+            end;
+
+          ppu_labeltype_ordinal_byte_range:
+            begin
+              p^.label_type:=ltOrdinal;
+              p^._low:=ppufile.getbyte;
+              p^._high:=ppufile.getbyte;
+            end;
+
+          ppu_labeltype_ordinal_smallint:
+            begin
+              p^.label_type:=ltOrdinal;
+              p^._low:=SmallInt(ppufile.getword);
+              p^._high:=p^._low;
+            end;
+
+          ppu_labeltype_ordinal_smallint_range:
+            begin
+              p^.label_type:=ltOrdinal;
+              p^._low:=SmallInt(ppufile.getword);
+              p^._high:=SmallInt(ppufile.getword);
+            end;
+
+          ppu_labeltype_ordinal_word:
+            begin
+              p^.label_type:=ltOrdinal;
+              p^._low:=ppufile.getword;
+              p^._high:=p^._low;
+            end;
+
+          ppu_labeltype_ordinal_word_range:
+            begin
+              p^.label_type:=ltOrdinal;
+              p^._low:=ppufile.getword;
+              p^._high:=ppufile.getword;
+            end;
+
+          ppu_labeltype_ordinal_longint:
+            begin
+              p^.label_type:=ltOrdinal;
+              p^._low:=ppufile.getlongint;
+              p^._high:=p^._low;
+            end;
+
+          ppu_labeltype_ordinal_longint_range:
+            begin
+              p^.label_type:=ltOrdinal;
+              p^._low:=ppufile.getlongint;
+              p^._high:=ppufile.getlongint;
+            end;
+
+          ppu_labeltype_ordinal_longword:
+            begin
+              p^.label_type:=ltOrdinal;
+              p^._low:=LongWord(ppufile.getlongint);
+              p^._high:=p^._low;
+            end;
+
+          ppu_labeltype_ordinal_longword_range:
+            begin
+              p^.label_type:=ltOrdinal;
+              p^._low:=LongWord(ppufile.getlongint);
+              p^._high:=LongWord(ppufile.getlongint);
+            end;
+
+          ppu_labeltype_ordinal_int64:
+            begin
+              p^.label_type:=ltOrdinal;
+              p^._low:=ppufile.getint64;
+              p^._high:=p^._low;
+            end;
+
+          ppu_labeltype_ordinal_int64_range:
+            begin
+              p^.label_type:=ltOrdinal;
+              p^._low:=ppufile.getint64;
+              p^._high:=ppufile.getint64;
+            end;
+
+          ppu_labeltype_ordinal_qword:
+            begin
+              p^.label_type:=ltOrdinal;
+              p^._low:=ppufile.getqword;
+              p^._high:=p^._low;
+            end;
+
+          ppu_labeltype_ordinal_qword_range:
+            begin
+              p^.label_type:=ltOrdinal;
+              p^._low:=ppufile.getqword;
+              p^._high:=ppufile.getqword;
+            end;
+
+          ppu_labeltype_string:
+            begin
+              p^.label_type:=ltConstString;
+              p^._low_str:=cstringconstnode.ppuload(stringconstn,ppufile);
+              p^._high_str:=TStringConstNode(p^._low_str.getcopy());
+            end;
+
+          ppu_labeltype_string_range:
+            begin
+              p^.label_type:=ltConstString;
+              p^._low_str:=cstringconstnode.ppuload(stringconstn,ppufile);
+              p^._high_str:=cstringconstnode.ppuload(stringconstn,ppufile);
+            end;
+
+          else
+            InternalError(2024121101);
+        end;
+
+        p^.blockid:=LongWord(ppufile.getuleb128);
+        if (b and ppu_has_greater_branch)<>0 then
          p^.greater:=ppuloadcaselabel(ppufile)
         else
          p^.greater:=nil;
-        if (b and 2)=2 then
+        if (b and ppu_has_lesser_branch)<>0 then
          p^.less:=ppuloadcaselabel(ppufile)
         else
          p^.less:=nil;
