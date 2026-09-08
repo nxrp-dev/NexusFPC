@@ -46,9 +46,9 @@ unit optloop;
 {$endif i386}
       verbose,
       symbase,symconst,symdef,symsym,symtype,
-      defutil,
+      defutil,defcmp,
       nutils,
-      nadd,nbas,nflw,ncon,ninl,ncal,nld,nmem,ncnv,
+      nadd,nbas,nflw,ncon,ninl,ncal,nld,nmem,ncnv,nmat,
       ncgmem,
       pass_1,
       optbase,optutils,
@@ -1075,11 +1075,117 @@ unit optloop;
         changedforloop : boolean;
       end;
 
+    type
+      PConvertUnsigned = ^TConvertUnsigned;
+      TConvertUnsigned = record
+        ReferenceNode: TLoadNode;
+        UnsignedDef: TDef;
+        TempInfo: TTempCreateNode;
+      end;
+
+
+    function ConvertUnsigned(var n: tnode; arg: pointer): foreachnoderesult;
+      var
+        ConvertData: PConvertUnsigned absolute arg;
+        NewNode, temp: TNode;
+        NewDef: TDef;
+      begin
+        result:=fen_false;
+        case n.nodetype of
+          divn,
+          modn:
+            if is_constnode(tmoddivnode(n).right) then
+              begin
+                temp:=tmoddivnode(n).left;
+
+                if (
+                    (temp.nodetype=typeconvn) and
+                    (ttypeconvnode(temp).convtype in [tc_equal, tc_int_2_int])
+                    and ttypeconvnode(temp).left.isequal(convertdata^.referencenode)
+                  )
+                  or temp.isequal(Convertdata^.ReferenceNode) then
+                  begin
+                    { unsigned division generally produces more efficient code }
+                    NewNode:=ctemprefnode.create(convertdata^.TempInfo);
+                    NewNode.fileinfo:=n.fileinfo;
+
+                    if temp.nodetype=typeconvn then
+                      begin
+                        NewDef:=get_unsigned_inttype(temp.resultdef);
+                        NewNode:=ctypeconvnode.create_internal(
+                            cmoddivnode.create(
+                              n.nodetype,
+                              ctypeconvnode.create_internal(
+                                NewNode,
+                                NewDef
+                              ),
+                              ctypeconvnode.create_internal(
+                                tmoddivnode(n).PruneKeepRight,
+                                NewDef
+                              )
+                            ),
+                            n.resultdef
+                          );
+                        NewNode.fileinfo:=n.fileinfo;
+                      end
+                    else
+                      begin
+                        NewNode:=ctypeconvnode.create_internal(
+                            cmoddivnode.create(
+                              n.nodetype,
+                              NewNode,
+                              ctypeconvnode.create_internal(
+                                tmoddivnode(n).PruneKeepRight,
+                                ConvertData^.UnsignedDef
+                              )
+                            ),
+                            n.resultdef
+                          );
+                        NewNode.fileinfo:=n.fileinfo;
+                      end;
+
+                    Dec(tabstractvarsym(Convertdata^.ReferenceNode.symtableentry).refs);
+                    n.Free;
+                    n:=newnode;
+                    do_typecheckpass(n);
+                    do_firstpass(n);
+                  end;
+              end;
+          loadn:
+            if n.isequal(ConvertData^.ReferenceNode) then
+              begin
+                NewNode:=ctemprefnode.create(convertdata^.TempInfo);
+                NewNode.fileinfo:=n.fileinfo;
+                NewNode:=ctypeconvnode.create_internal(
+                    NewNode,
+                    n.resultdef
+                  );
+                NewNode.fileinfo:=n.fileinfo;
+                Dec(tabstractvarsym(Convertdata^.ReferenceNode.symtableentry).refs);
+                n.Free;
+                n:=NewNode;
+                do_typecheckpass(n);
+                do_firstpass(n);
+              end;
+          else
+            ;
+        end;
+      end;
+
     function OptimizeForLoop_iterforloops(var n: tnode; arg: pointer): foreachnoderesult;
+      var
+        UnsignedConvert: TConvertUnsigned;
+        UnsignedDef: TDef;
+        OldFileInfo: TFilePosInfo;
+        OldForLoop, OldSuccessor: TNode;
+        TempCreateNode: TTempCreateNode;
+        TempDeleteNode: TTempDeleteNode;
+        UnsignedBlock: TBlockNode;
+        UnsignedStatement: TStatementNode;
+        Direction: TNodeType;
       begin
         Result:=fen_false;
         if (n.nodetype=forn) and
-          not(lnf_backward in tfornode(n).loopflags) and
           (lnf_dont_mind_loopvar_on_exit in tfornode(n).loopflags) and
           is_constintnode(tfornode(n).right) and
           (([cs_check_overflow,cs_check_range]*n.localswitches)=[]) and
@@ -1088,43 +1194,159 @@ unit optloop;
             not(tabstractvarsym(tloadnode(tfornode(n).left).symtableentry).addr_taken) and
             not(tabstractvarsym(tloadnode(tfornode(n).left).symtableentry).different_scope)) then
           begin
-            { do we have DFA available? }
-            if pi_dfaavailable in current_procinfo.flags then
+            if not(lnf_backward in tfornode(n).loopflags) then
               begin
-                CalcUseSum(tfornode(n).t2);
-                CalcDefSum(tfornode(n).t2);
-              end
-            else
-              Internalerror(2017122801);
-            if not(assigned(tfornode(n).left.optinfo)) then
-              exit;
-            if not(DynSetIn(tfornode(n).t2.optinfo^.usesum,tfornode(n).left.optinfo^.index)) and
-              not(DynSetIn(tfornode(n).t2.optinfo^.defsum,tfornode(n).left.optinfo^.index))  then
+                { do we have DFA available? }
+                if pi_dfaavailable in current_procinfo.flags then
+                  begin
+                    CalcUseSum(tfornode(n).t2);
+                    CalcDefSum(tfornode(n).t2);
+                  end
+                else
+                  Internalerror(2017122801);
+                if not(assigned(tfornode(n).left.optinfo)) then
+                  exit;
+                if not(DynSetIn(tfornode(n).t2.optinfo^.usesum,tfornode(n).left.optinfo^.index)) and
+                  not(DynSetIn(tfornode(n).t2.optinfo^.defsum,tfornode(n).left.optinfo^.index)) then
+                  begin
+                    { convert the loop from i:=a to b into i:=b-a+1 to 1 as this simplifies the
+                      abort condition }
+{$ifdef DEBUG_OPTFORLOOP}
+                    writeln('**********************************************************************************');
+                    writeln('Found loop for reverting: ');
+                    printnode(n);
+                    writeln('**********************************************************************************');
+{$endif DEBUG_OPTFORLOOP}
+                    include(tfornode(n).loopflags,lnf_backward);
+                    tfornode(n).right:=ctypeconvnode.create_internal(
+                      caddnode.create_internal(addn,caddnode.create_internal(subn,
+                        tfornode(n).t1,tfornode(n).right),
+                        cordconstnode.create(1,tfornode(n).left.resultdef,false)),
+                      tfornode(n).left.resultdef);
+                    tfornode(n).t1:=cordconstnode.create(1,tfornode(n).left.resultdef,false);
+                    include(tfornode(n).loopflags,lnf_counter_not_used);
+                    exclude(n.transientflags,tnf_pass1_done);
+                    do_firstpass(n);
+{$ifdef DEBUG_OPTFORLOOP}
+                    writeln('Loop reverted: ');
+                    printnode(n);
+                    writeln('**********************************************************************************');
+{$endif DEBUG_OPTFORLOOP}
+                    toptimizeforloopcontext(arg^).changedforloop:=true;
+                  end;
+              end;
+
+            { If possible, convert signed index variable into an unsigned variable }
+            if is_signed(tfornode(n).left.resultdef) and
+              (
+                is_constintnode(tfornode(n).right) or
+                is_constenumnode(tfornode(n).right)
+              ) and
+              (
+                is_constintnode(tfornode(n).t1) or
+                is_constenumnode(tfornode(n).t1)
+              ) and
+              (tordconstnode(tfornode(n).right).value>=0) and
+              Assigned(n.successor) and { If the successor is not set, we have to play safe }
+              Assigned(n.successor.optinfo) and
+              not DynSetIn(n.successor.optinfo^.life,tfornode(n).left.optinfo^.index) then
               begin
-                { convert the loop from i:=a to b into i:=b-a+1 to 1 as this simplifies the
-                  abort condition }
-{$ifdef DEBUG_OPTFORLOOP}
-                writeln('**********************************************************************************');
-                writeln('Found loop for reverting: ');
-                printnode(output,n);
-                writeln('**********************************************************************************');
-{$endif DEBUG_OPTFORLOOP}
-                include(tfornode(n).loopflags,lnf_backward);
-                tfornode(n).right:=ctypeconvnode.create_internal(
-                  caddnode.create_internal(addn,caddnode.create_internal(subn,
-                    tfornode(n).t1,tfornode(n).right),
-                    cordconstnode.create(1,tfornode(n).left.resultdef,false)),
-                  tfornode(n).left.resultdef);
-                tfornode(n).t1:=cordconstnode.create(1,tfornode(n).left.resultdef,false);
-                include(tfornode(n).loopflags,lnf_counter_not_used);
-                exclude(n.transientflags,tnf_pass1_done);
-                do_firstpass(n);
-{$ifdef DEBUG_OPTFORLOOP}
-                writeln('Loop reverted: ');
-                printnode(output,n);
-                writeln('**********************************************************************************');
-{$endif DEBUG_OPTFORLOOP}
+                if not (pi_dfaavailable in current_procinfo.flags) then
+                  Internalerror(2017122802);
+
+                UnsignedDef:=get_unsigned_inttype(tfornode(n).left.resultdef);
+                OldFileInfo:=n.fileinfo;
+                OldSuccessor:=n.Successor;
+
+                TempCreateNode:=ctempcreatenode.create(UnsignedDef,UnsignedDef.size,tt_persistent,true);
+                OldForLoop:=n;
+
+                UnsignedBlock:=internalstatements(UnsignedStatement);
+
+                { To be safe, we have to explicitly check to see if b < a, and
+                  not enter the for-loop at all if that's the case.  In the
+                  case of a backwards loop, the condition is b > a. }
+
+                if (lnf_backward in tfornode(n).loopflags) then
+                  Direction:=gten
+                else
+                  Direction:=lten;
+
+                n:=cifnode.create_internal(
+                  caddnode.create_internal(
+                    Direction,
+                    tfornode(OldForLoop).right.getcopy,
+                    tfornode(OldForLoop).t1.getcopy
+                  ),
+                  UnsignedBlock,
+                  nil
+                );
+                n.successor:=OldSuccessor;
+
+                TempDeleteNode:=ctempdeletenode.create(TempCreateNode);
+
+                n.fileinfo:=OldFileInfo;
+                UnsignedBlock.fileinfo:=OldFileInfo;
+                TempCreateNode.fileinfo:=OldFileInfo;
+                TempDeleteNode.fileinfo:=OldFileInfo;
+
+                OldForLoop.successor:=UnsignedStatement;
+                UnsignedStatement.successor:=OldSuccessor;
+
+                UnsignedConvert.ReferenceNode:=tloadnode(tfornode(OldForLoop).left);
+                UnsignedConvert.UnsignedDef:=UnsignedDef;
+                UnsignedConvert.TempInfo:=TempCreateNode;
+
+                { Convert the for-loop to use the unsigned temp and type }
+                tfornode(OldForLoop).left:=ctemprefnode.create(TempCreateNode);
+                tfornode(OldForLoop).right:=ctypeconvnode.create_explicit(
+                  tfornode(OldForLoop).right,
+                  UnsignedDef
+                );
+                tfornode(OldForLoop).t1:=ctypeconvnode.create_explicit(
+                  tfornode(OldForLoop).t1,
+                  UnsignedDef
+                );
+
+                tfornode(OldForLoop).resultdef:=nil;
+                do_typecheckpass(OldForLoop);
+
+                { The typecheck pass runs simplify and may transmute the for
+                  loop into something else }
+                if OldForLoop.nodetype=forn then
+                  begin
+                    { Convert the for-loop to use the unsigned temporary }
+                    if Assigned(tfornode(OldForLoop).t2) then
+                      foreachnodestatic(tfornode(OldForLoop).t2, @ConvertUnsigned, @UnsignedConvert);
+
+                    { Now we can free the old 'load' from the for-loop }
+                    Dec(tabstractvarsym(UnsignedConvert.ReferenceNode.symtableentry).refs);
+                    UnsignedConvert.ReferenceNode.Free;
+
+                    addstatement(UnsignedStatement,TempCreateNode);
+                    UnsignedStatement.fileinfo:=OldFileInfo;
+                    addstatement(UnsignedStatement,OldForLoop);
+                    UnsignedStatement.fileinfo:=OldFileInfo;
+                    addstatement(UnsignedStatement,TempDeleteNode);
+                    UnsignedStatement.fileinfo:=OldFileInfo;
+                  end
+                else
+                  begin
+                    { Just add the for-loop without the temps }
+                    TempCreateNode.Free;
+                    TempDeleteNode.Free;
+
+                    addstatement(UnsignedStatement,OldForLoop); UnsignedStatement.fileinfo:=OldFileInfo;
+                  end;
+
                 toptimizeforloopcontext(arg^).changedforloop:=true;
+
+                exclude(OldForLoop.transientflags,tnf_pass1_done);
+
+                do_typecheckpass(n);
+                do_firstpass(n);
+
+                Exit;
               end;
           end;
       end;
