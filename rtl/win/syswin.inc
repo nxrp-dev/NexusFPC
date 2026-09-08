@@ -131,29 +131,38 @@ type
 
 
 function RunErrorCode(const rec: TExceptionRecord): longint;
-begin
+type
+  MapEntry = packed record status: uint32; code: int16; end;
+const
   { negative result means 'FPU reset required' }
-  case rec.ExceptionCode of
-    STATUS_INTEGER_DIVIDE_BY_ZERO:      result := 200;    { reDivByZero }
-    STATUS_FLOAT_DIVIDE_BY_ZERO:        result := -208;   { !!reZeroDivide }
-    STATUS_ARRAY_BOUNDS_EXCEEDED:       result := 201;    { reRangeError }
-    STATUS_STACK_OVERFLOW:              result := 202;    { reStackOverflow }
-    STATUS_FLOAT_OVERFLOW:              result := -205;   { reOverflow }
-    STATUS_FLOAT_DENORMAL_OPERAND,
-    STATUS_FLOAT_UNDERFLOW:             result := -206;   { reUnderflow }
-    STATUS_FLOAT_INEXACT_RESULT,
-    STATUS_FLOAT_INVALID_OPERATION,
-    STATUS_FLOAT_STACK_CHECK:           result := -207;   { reInvalidOp }
-    STATUS_INTEGER_OVERFLOW:            result := 215;    { reIntOverflow }
-    STATUS_ILLEGAL_INSTRUCTION:         result := -216;
-    STATUS_ACCESS_VIOLATION:            result := 216;    { reAccessViolation }
-    STATUS_CONTROL_C_EXIT:              result := 217;    { reControlBreak }
-    STATUS_PRIVILEGED_INSTRUCTION:      result := 218;    { rePrivilegedInstruction }
-    STATUS_FLOAT_MULTIPLE_TRAPS,
-    STATUS_FLOAT_MULTIPLE_FAULTS:       result := -255;   { indicate FPU reset }
-  else
-    result := 255;                                        { reExternalException }
-  end;
+  Map: array[0 .. 17] of MapEntry =
+  (
+    (status: STATUS_INTEGER_DIVIDE_BY_ZERO;  code:  200), { reDivByZero }
+    (status: STATUS_FLOAT_DIVIDE_BY_ZERO;    code: -208), { !!reZeroDivide }
+    (status: STATUS_ARRAY_BOUNDS_EXCEEDED;   code:  201), { reRangeError }
+    (status: STATUS_STACK_OVERFLOW;          code:  202), { reStackOverflow }
+    (status: STATUS_FLOAT_OVERFLOW;          code: -205), { reOverflow }
+    (status: STATUS_FLOAT_DENORMAL_OPERAND;  code: -206),
+    (status: STATUS_FLOAT_UNDERFLOW;         code: -206), { reUnderflow }
+    (status: STATUS_FLOAT_INEXACT_RESULT;    code: -207),
+    (status: STATUS_FLOAT_INVALID_OPERATION; code: -207),
+    (status: STATUS_FLOAT_STACK_CHECK;       code: -207), { reInvalidOp }
+    (status: STATUS_INTEGER_OVERFLOW;        code:  215), { reIntOverflow }
+    (status: STATUS_ILLEGAL_INSTRUCTION;     code: -216),
+    (status: STATUS_ACCESS_VIOLATION;        code:  216), { reAccessViolation }
+    (status: STATUS_CONTROL_C_EXIT;          code:  217), { reControlBreak }
+    (status: STATUS_PRIVILEGED_INSTRUCTION;  code:  218), { rePrivilegedInstruction }
+    (status: STATUS_FLOAT_MULTIPLE_TRAPS;    code: -255),
+    (status: STATUS_FLOAT_MULTIPLE_FAULTS;   code: -255), { indicate FPU reset }
+    (status: 0;                              code:  255)  { pseudo status for termination, reExternalException }
+  );
+var
+  mapp: ^MapEntry;
+begin
+  mapp := @Map[0];
+  while (mapp^.status <> rec.ExceptionCode) and (mapp^.status <> 0) do
+    inc(mapp);
+  result := mapp^.code;
 end;
 
 procedure TranslateMxcsr(mxcsr: longword; var code: longint);
