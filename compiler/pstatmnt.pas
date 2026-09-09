@@ -586,6 +586,7 @@ implementation
          newstatement : tstatementnode;
          calltempnode,
          tempnode : ttempcreatenode;
+         withvar : tabstractvarsym;
          valuenode,
          hp,
          refnode  : tnode;
@@ -692,11 +693,23 @@ implementation
                   hdef:=p.resultdef
                 else
                   hdef:=cpointerdef.create(p.resultdef);
-                { load address of the value in a temp }
-                tempnode:=ctempcreatenode.create_withnode(hdef,sizeof(pint),tt_persistent,true,p);
-                typecheckpass(tnode(tempnode));
+                { use a variable for the with reference so that
+                  anonymous functions can capture it }
+                if current_procinfo.procdef.localst.symtabletype=staticsymtable then
+                  begin
+                    withvar:=cstaticvarsym.create('$with_'+tostr(current_filepos.line)+'_'+tostr(current_filepos.column),vs_value,hdef,[vo_is_internal]);
+                    withvar.varstate:=vs_initialised;
+                    current_procinfo.procdef.localst.insertsym(withvar);
+                    cnodeutils.insertbssdata(tstaticvarsym(withvar));
+                  end
+                else
+                  begin
+                    withvar:=clocalvarsym.create('$with_'+tostr(current_filepos.line)+'_'+tostr(current_filepos.column),vs_value,hdef,[vo_is_internal]);
+                    withvar.varstate:=vs_initialised;
+                    current_procinfo.procdef.localst.insertsym(withvar);
+                  end;
                 valuenode:=p;
-                refnode:=ctemprefnode.create(tempnode);
+                refnode:=cloadnode.create(withvar,current_procinfo.procdef.localst);
                 fillchar(refnode.fileinfo,sizeof(tfileposinfo),0);
                 { add address call for valuenode and deref for refnode if this
                   is not done implicitly }
@@ -707,9 +720,8 @@ implementation
                     refnode:=cderefnode.create(refnode);
                     fillchar(refnode.fileinfo,sizeof(tfileposinfo),0);
                   end;
-                addstatement(newstatement,tempnode);
                 addstatement(newstatement,cassignmentnode.create(
-                    ctemprefnode.create(tempnode),
+                    cloadnode.create(withvar,current_procinfo.procdef.localst),
                     valuenode));
                 typecheckpass(refnode);
               end;
