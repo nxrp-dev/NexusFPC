@@ -726,6 +726,19 @@ begin
     DoAdd(AKey, AValue, LHash, i);
 end;
 
+function TOpenAddressing<OPEN_ADDRESSING_CONSTRAINTS>.TryGetEqualKey(const AKey: TKey; out AFoundKey: TKey): Boolean;
+var
+  LIndex: SizeInt;
+begin
+  LIndex := FindBucketIndex(AKey);
+  Result := LIndex >= 0;
+
+  if Result then
+    AFoundKey := FItems[LIndex].Pair.Key
+  else
+    AFoundKey := Default(TKey);
+end;
+
 procedure TOpenAddressing<OPEN_ADDRESSING_CONSTRAINTS>.AddOrSetValue(const AKey: TKey; const AValue: TValue);
 var
   LIndex: SizeInt;

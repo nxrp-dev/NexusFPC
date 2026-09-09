@@ -274,6 +274,7 @@ type
     function TryGetMutableValue(const AKey: TKey; out APValue: PValue): Boolean;
     function TryGetValue(const AKey: TKey; out AValue: TValue): Boolean;
     function TryAdd(const AKey: TKey; const AValue: TValue): Boolean;
+    function TryGetEqualKey(const AKey: TKey; out AFoundKey: TKey): Boolean;
     procedure AddOrSetValue(const AKey: TKey; const AValue: TValue);
     function ContainsKey(const AKey: TKey): Boolean; inline;
     function ContainsValue(const AValue: TValue): Boolean; overload;
