@@ -264,6 +264,12 @@ interface
         secondpass(left);
         if not handle_locjump then
          begin
+           { Ordered floating-point flags exclude unordered results. Their
+             inverse relation therefore is not the Boolean complement. }
+           if (left.location.loc=LOC_FLAGS) and
+              (left.location.resflags in [F_FA,F_FAE,F_FB,F_FBE]) then
+             hlcg.location_force_reg(current_asmdata.CurrAsmList,left.location,
+               left.resultdef,left.resultdef,true);
            case left.location.loc of
              LOC_FLAGS :
                begin
