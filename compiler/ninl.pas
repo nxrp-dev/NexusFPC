@@ -4097,8 +4097,9 @@ implementation
               in_volatile_x:
                 begin
                   resultdef:=left.resultdef;
-                  { volatile only makes sense if the value is in memory }
-                  make_not_regable(left,[ra_addr_regable]);
+                  { volatile only makes sense if the value is in memory;
+                    pass the actual expression, not the callparanode wrapper }
+                  make_not_regable(tcallparanode(left).left,[ra_addr_regable]);
                 end;
               in_assert_x_y :
                 begin
