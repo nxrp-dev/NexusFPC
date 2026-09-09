@@ -325,7 +325,11 @@ implementation
            not compatible with tconst node
            as in bug report 21566 PM }
 
-         result:=simplify(false);
+         { Currency operands must share their scale before applying the
+           integer identities x mod 1 = 0 and x mod -1 = 0. }
+         if (nodetype<>modn) or (nf_internal in flags) or
+            not(is_currency(left.resultdef) or is_currency(right.resultdef)) then
+           result:=simplify(false);
          if assigned(result) then
            exit;
 
@@ -454,14 +458,20 @@ implementation
          if (nodetype=divn) and
             not(nf_internal in flags) and
             not(nf_is_currency in flags) and
-            is_currency(resultdef) and
-            (nf_is_currency in left.flags) and
-            not (nf_is_currency in right.flags) then
+            is_currency(resultdef) then
           begin
-            hp:=caddnode.create(muln,getcopy,cordconstnode.create(10000,s64currencytype,false));
-            include(hp.flags,nf_is_currency);
-            result:=hp;
+            { Both operands use Currency's raw representation. Their integer
+              quotient is unscaled, so restore the scale exactly once. }
+            hp:=getcopy;
+            include(hp.flags,nf_internal);
+            result:=caddnode.create_internal(muln,hp,cordconstnode.create_currency_scalar(s64currencytype));
+            include(result.flags,nf_is_currency);
           end;
+
+         { A remainder retains the numerator's scale. }
+         if (nodetype=modn) and is_currency(resultdef) and
+            (nf_is_currency in left.flags) then
+           include(flags,nf_is_currency);
 
          if (nodetype=modn) and (mdnf_isomod in moddivnodeflags) then
            begin
