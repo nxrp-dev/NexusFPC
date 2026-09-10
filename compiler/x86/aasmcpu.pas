@@ -2693,6 +2693,8 @@ implementation
         else if (br=NR_RIP) and (ir=NR_NO) then
           begin
             { rip based }
+            if forceSibByte then
+              Message(asmw_e_rip_cannot_be_encoded); {can not have RIP with sib byte}
             output.sib_present:=false;
             output.bytes:=4;
             output.modrm:=5 or (rfield shl 3);
