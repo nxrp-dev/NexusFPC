@@ -4954,7 +4954,11 @@ implementation
       rr: preplaceregrec absolute para;
     begin
       result := fen_false;
-      if (nf_is_funcret in n.flags) and (fc_exit in flowcontrol) then
+      { never relocate the function result sym: an inlined block with
+        nf_block_with_exit hides the outer fc_exit flag, so a prior exit in
+        the enclosing routine can bypass the move and leave the new register
+        uninitialized at the epilogue (see issue found in i386 regvar case) }
+      if nf_is_funcret in n.flags then
         exit;
       case n.nodetype of
         loadn:
@@ -4962,9 +4966,8 @@ implementation
             if (tloadnode(n).symtableentry.typ in [localvarsym,paravarsym,staticvarsym]) and
                (tabstractvarsym(tloadnode(n).symtableentry).varoptions * [vo_is_dll_var, vo_is_thread_var] = []) and
                not assigned(tloadnode(n).left) and
-               ((tloadnode(n).symtableentry <> rr^.ressym) or
-                not(fc_exit in flowcontrol)
-               ) and
+               (tloadnode(n).symtableentry <> rr^.ressym) and
+               not(vo_is_funcret in tabstractvarsym(tloadnode(n).symtableentry).varoptions) and
                (tabstractnormalvarsym(tloadnode(n).symtableentry).localloc.loc in [LOC_CREGISTER,LOC_CFPUREGISTER,LOC_CMMXREGISTER,LOC_CMMREGISTER]) and
                (tabstractnormalvarsym(tloadnode(n).symtableentry).localloc.register = rr^.old) then
               begin
