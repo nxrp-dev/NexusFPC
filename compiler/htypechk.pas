@@ -2681,8 +2681,13 @@ implementation
 
             { we need to remove all specializations that were not used from their
               procsyms as no code must be generated for them (if they are used
-              later on they'll be added like the ones that were used now) }
-            if not added and assigned(spezcontext) and not pd.is_registered then
+              later on they'll be added like the ones that were used now);
+              phase2 may return the original generic procdef unchanged when the
+              genericdef is currently being parsed (#40661); such a procdef is
+              still the original generic (not a specialization) and must not be
+              removed from its procsym or freed }
+            if not added and assigned(spezcontext) and not pd.is_registered and
+                (df_specialization in pd.defoptions) then
               begin
                 if tprocsym(pd.procsym).procdeflist.extract(pd)<>pd then
                   internalerror(20150828);
