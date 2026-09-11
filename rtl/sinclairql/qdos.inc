@@ -53,15 +53,15 @@ asm
   move.l  d1,d0     { jobid }
 end;
 
-procedure mt_dmode(s_mode: pword; d_type: pword); assembler; nostackframe; public name '_mt_dmode';
+procedure mt_dmode(s_mode: pbyte; d_type: pbyte); assembler; nostackframe; public name '_mt_dmode';
 asm
   movem.l d2/a3-a4,-(sp)
-  move.w (a0),d1
-  move.w (a1),d2
+  move.b (a0),d1
+  move.b (a1),d2
   moveq.l #_MT_DMODE,d0
   trap #1
-  move.w d1,(a0)
-  move.w d2,(a1)
+  move.b d1,(a0)
+  move.b d2,(a1)
   movem.l (sp)+,d2/a3-a4
 end;
 
@@ -71,12 +71,14 @@ asm
   move.l sizegot,-(sp)
   move.l jobid,d2
   move.l size,d1
+  moveq.l #0,d3           // For SMSQ.
   moveq.l #_MT_ALCHP,d0
   trap #1
-  move.l (sp)+,d2 // sizegot ptr
+  move.l (sp)+,d2         // sizegot ptr
   tst d0
   bne @quit
-  move.l d2,a1
+  move.l d2,a1            // Flags not affected!
+  tst.l d2
   beq @nosizegot
   move.l d1,(a1)
 @nosizegot:

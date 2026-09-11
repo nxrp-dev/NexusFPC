@@ -90,12 +90,21 @@ begin
     FileOpen:=-1;
 end;
 
-
+{ Sinclair QL: returns the file's most recent update date.}
 function FileGetDate(Handle: THandle) : Int64;
+var
+    chan: Tchanid;
+    buf: TFileHeader;
+    error: longint;
+    
 begin
-  result:=-1;
+  FileGetDate:=0;
+  error := fs_headr(Handle, @buf, 64);
+  if error < 0 then
+    exit(-1);
+  
+  FileGetDate := buf.file_update; 
 end;
-
 
 function FileSetDate(Handle: THandle; Age: Int64) : LongInt;
 begin
@@ -264,7 +273,6 @@ begin
   FileClose(f);
 end;
 
-
 function FileGetSymLinkTarget(const FileName: RawByteString; out SymLinkRec: TRawbyteSymLinkRec): Boolean;
 begin
   Result := False;
@@ -278,9 +286,9 @@ begin
   FileExists:=false;
   Attr:=FileGetAttr(FileName);
   if Attr < 0 then
-    exit;
+    exit(false);
 
-  result:=(Attr and (faVolumeID or faDirectory)) = 0;
+  result:=(Attr and (faVolumeID or faDirectory)) <> 0;
 end;
 
 
@@ -365,20 +373,41 @@ end;
 
 (****** end of non portable routines ******)
 
+{ On the Sinclair QL, a file is a file or a directory. No other
+  attributes are possible. A file is unable to be marked as read
+  only unless it is opened for write access and written to.}
 Function FileGetAttr (Const FileName : RawByteString) : Longint;
+var
+    chan: Tchanid;
+    buf: array[0..63] of Byte;
+    error: longint;
+    
 begin
   FileGetAttr:=0;
+  chan := FileOpen(Filename, fmOpenReadWrite);
+  if chan < 0 then
+    exit(-1);
+  
+  error := fs_headr(chan, @buf, 64);
+  FileClose(chan);
+
+  if error < 0 then
+    exit(-1);
+    
+  { Use faVolumeId to indicate that the file exists!}
+  error := faVolumeId;
+
+  { buf[5] is the file type.}
+  if buf[5] = 255 then
+    error := error + faDirectory;
+
+  FileGetAttr := error; 
 end;
 
-
+{ The system, on the QL, sets the attributes, so FileSetAttr() is not implemented.}
 Function FileSetAttr (Const Filename : RawByteString; Attr: longint) : Longint;
 begin
   FileSetAttr:=-1;
-
-  if FileSetAttr < -1 then
-    FileSetAttr:=-1
-  else
-    FileSetAttr:=0;
 end;
 
 
