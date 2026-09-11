@@ -519,17 +519,16 @@ uses
 
     procedure calc_mul_inverse(N: byte; d: aWord; out reciprocal: aWord; out shift: Byte);
       var
-        mask, oldr, newd, swap_r, swap_d, q: aWord;
+        mask, xn, t : aWord;
       begin
         { WARNING: d must not be a power of 2 (including 2^0 = 1) }
 {$push}
 {$warnings off }
         if N=(SizeOf(aWord) * 8) then
-          newd:=0
+          mask:=0
         else
-          newd:=aWord(1) shl N; { Used later }
-        mask:=newd-1;
-        oldr:=mask;
+          mask:=aWord(1) shl N;
+        mask:=mask-1;
 {$pop}
 
         { Trim off powers of 2 so d is an odd number }
@@ -549,32 +548,20 @@ uses
           InternalError(2021091001);
 
         d := d shr shift;
+        mask:=mask shr shift;
 
-        { Calculate reciprocal using the Extended Euclidean Algorithm as
-          described on page 244 of Hacker's Delight, Second Edition.
+        { Computing the multiplicative inverse by Newton's method.
+          Reference implementation taken from: Hacker's Delight, Second Edition, 2013 }
 
-          x1 = oldr
-          x2 = reciprocal
-          x3 = swap_r
-
-          v1 = newd
-          v2 = d
-          v3 = swap_d
-        }
-        newd:=newd-d; { -d }
-        reciprocal:=1;
-
-        repeat
-          q := newd div d;
-
-          swap_d:=(newd-(q*d)) and mask;
-          newd:=d;
-          d:=swap_d;
-
-          swap_r:=(oldr-(q*reciprocal)) and mask;
-          oldr:=reciprocal;
-          reciprocal:=swap_r;
-        until d<=1;
+        xn:=d;
+        while true do
+        begin
+          t:=(d*xn) and mask;
+          if t = 1 then
+            break;
+          xn:=(xn*(2-t)) and mask;
+        end;
+        reciprocal:=xn;
       end;
 
 
