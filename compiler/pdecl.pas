@@ -912,6 +912,17 @@ implementation
                       istyperenaming:=true;
                       include(newtype.symoptions,sp_explicitrename);
                     end;
+                  { generic type aliases need a fresh def to hold
+                    genericparas without corrupting the original }
+                  if isgeneric and istyperenaming then
+                    begin
+                      hdef:=crecorddef.create(genorgtypename,
+                        trecordsymtable.create(genorgtypename,
+                          current_settings.packrecords,
+                          current_settings.alignment.recordalignmin));
+                      insert_generic_parameter_types(tstoreddef(hdef),nil,generictypelist,false);
+                      istyperenaming:=false;
+                    end;
                   if isunique then
                     begin
                       if is_objc_class_or_protocol(hdef) or
