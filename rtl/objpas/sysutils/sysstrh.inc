@@ -116,11 +116,11 @@ function AnsiExtractQuotedStr(var Src: PWideChar; Quote: AnsiChar): Widestring;
 function AdjustLineBreaks(const S: string): string;
 function AdjustLineBreaks(const S: string; Style: TTextLineBreakStyle): string;
 function IsValidIdent(const Ident: string; AllowDots: Boolean = False; StrictDots: Boolean = False): Boolean;
-function IntToStr(Value: Longint): string; {$ifdef SYSUTILSINLINE}inline;{$ENDIF}
-function IntToStr(Value: Int64): string; {$ifdef SYSUTILSINLINE}inline;{$ENDIF}
-function IntToStr(Value: QWord): string; {$ifdef SYSUTILSINLINE}inline;{$ENDIF}
-function UIntToStr(Value: QWord): string; {$ifdef SYSUTILSINLINE}inline;{$ENDIF}
-function UIntToStr(Value: Cardinal): string; {$ifdef SYSUTILSINLINE}inline;{$ENDIF}
+function IntToStr(Value: Longint): string; {$ifdef FPC_HAS_PURE}pure;{$ENDIF}{$ifdef SYSUTILSINLINE}inline;{$ENDIF}
+function IntToStr(Value: Int64): string; {$ifdef FPC_HAS_PURE}pure;{$ENDIF}{$ifdef SYSUTILSINLINE}inline;{$ENDIF}
+function IntToStr(Value: QWord): string; {$ifdef FPC_HAS_PURE}pure;{$ENDIF}{$ifdef SYSUTILSINLINE}inline;{$ENDIF}
+function UIntToStr(Value: QWord): string; {$ifdef FPC_HAS_PURE}pure;{$ENDIF}{$ifdef SYSUTILSINLINE}inline;{$ENDIF}
+function UIntToStr(Value: Cardinal): string; {$ifdef FPC_HAS_PURE}pure;{$ENDIF}{$ifdef SYSUTILSINLINE}inline;{$ENDIF}
 function IntToHex(Value: Longint; Digits: integer): string;
 function IntToHex(Value: Int64; Digits: integer): string;
 function IntToHex(Value: QWord; Digits: integer): string; {$ifdef SYSUTILSINLINE}inline;{$ENDIF}
@@ -138,18 +138,18 @@ function StrToUInt(const s: string): Cardinal;
 function StrToInt64(const s: string): int64;
 function StrToQWord(const s: string): QWord;
 function StrToUInt64(const s: string): UInt64; inline;
-function TryStrToInt(const s: string; Out i : Longint) : boolean;
-function TryStrToDWord(const s: string; Out D : DWord) : boolean;
-function TryStrToUInt(const s: string; out C: Cardinal): Boolean;
-function TryStrToInt64(const s: string; Out i : int64) : boolean;
-function TryStrToQWord(const s: string; Out Q : QWord) : boolean;
-function TryStrToUInt64(const s: string; Out u : UInt64) : boolean; inline;
-function StrToIntDef(const S: string; Default: Longint): Longint;
-function StrToDWordDef(const S: string; Default: DWord): DWord;
-function StrToUIntDef(const S: string; Default: Cardinal): Cardinal;
-function StrToInt64Def(const S: string; Default: int64): int64;
-function StrToQWordDef(const S: string; Default: QWord): QWord;
-function StrToUInt64Def(const S: string; Default: UInt64): UInt64; inline;
+function TryStrToInt(const s: string; Out i : Longint) : boolean; {$ifdef FPC_HAS_PURE}pure;{$ENDIF}
+function TryStrToDWord(const s: string; Out D : DWord) : boolean; {$ifdef FPC_HAS_PURE}pure;{$ENDIF}
+function TryStrToUInt(const s: string; out C: Cardinal): Boolean; {$ifdef FPC_HAS_PURE}pure;{$ENDIF}
+function TryStrToInt64(const s: string; Out i : int64) : boolean; {$ifdef FPC_HAS_PURE}pure;{$ENDIF}
+function TryStrToQWord(const s: string; Out Q : QWord) : boolean; {$ifdef FPC_HAS_PURE}pure;{$ENDIF}
+function TryStrToUInt64(const s: string; Out u : UInt64) : boolean; {$ifdef FPC_HAS_PURE}pure;{$ENDIF}{$ifdef SYSUTILSINLINE}inline;{$ENDIF}
+function StrToIntDef(const S: string; Default: Longint): Longint; {$ifdef FPC_HAS_PURE}pure;{$ENDIF}
+function StrToDWordDef(const S: string; Default: DWord): DWord; {$ifdef FPC_HAS_PURE}pure;{$ENDIF}
+function StrToUIntDef(const S: string; Default: Cardinal): Cardinal; {$ifdef FPC_HAS_PURE}pure;{$ENDIF}
+function StrToInt64Def(const S: string; Default: int64): int64; {$ifdef FPC_HAS_PURE}pure;{$ENDIF}
+function StrToQWordDef(const S: string; Default: QWord): QWord; {$ifdef FPC_HAS_PURE}pure;{$ENDIF}
+function StrToUInt64Def(const S: string; Default: UInt64): UInt64; {$ifdef FPC_HAS_PURE}pure;{$ENDIF}{$ifdef SYSUTILSINLINE}inline;{$ENDIF}
 function LoadStr(Ident: integer): string;{$ifdef SYSUTILSINLINE}inline;{$ENDIF}
 // function FmtLoadStr(Ident: integer; const Args: array of const): string;
 Function Format (Const Fmt : AnsiString; const Args : Array of const) : AnsiString;

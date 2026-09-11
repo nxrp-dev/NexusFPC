@@ -498,7 +498,7 @@ scan_e_improperly_indented_multiline_string=02120_E_Incorrectly indented multi-l
 #
 # Parser
 #
-# 03376 is the last used one
+# 03379 is the last used one
 #
 % \section{Parser messages}
 % This section lists all parser messages. The parser takes care of the
@@ -1724,6 +1724,13 @@ parser_e_no_suitable_newinstance_method_found=03374_E_No suitable NewInstance me
 parser_w_unaligned_useless=03375_W_Unaligned is useless here.
 parser_w_aligned_useless=03376_W_Aligned is useless here.
 % Use of aligned(EXPR) or unaligned(EXPR) only has an effect if EXPR is a dereference.
+parser_n_pure_analysis_too_complex=03377_N_Analysis of pure function was too complex; this call won't be evaluated further.
+% While processing a pure function, the compiler determined that it is either too complex for timely analysis or it detected that it contained an infinite loop.
+% The subroutine in question is no longer considered pure from this point.
+parser_e_pure_ineligible=03378_E_Subroutine "$1" is not eligible to be a pure function due to the following reason: $2
+% While checking to see if the subroutine could be made a pure, a construct was found that made it ineligible and otherwise impossible for the compiler to analyse.
+parser_e_pure_analysis_error=03379_E_At least $1 error(s) occurred during the purity analysis of subroutine "$2".
+% While checking to see if the subroutine could be made a pure, a compiler error occurred.
 %
 % \end{description}
 %

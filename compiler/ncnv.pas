@@ -69,6 +69,7 @@ interface
 {$endif DEBUG_NODE_XML}
           function pass_1 : tnode;override;
           function pass_typecheck:tnode;override;
+          function pure_simplify : tnode; override;
           function simplify(forinline : boolean):tnode; override;
           procedure mark_write;override;
           function docompare(p: tnode) : boolean; override;
@@ -1079,6 +1080,9 @@ implementation
         i: TTypeConvNodeFlag;
       begin
         inherited XMLPrintNodeInfo(T);
+        if resultdef <> totypedef then
+          { Print only if it's different }
+          Write(T,' totypedef="', totypedef.typename, '"');
         Write(T,' convtype="', convtype);
         First := True;
         for i := Low(TTypeConvNodeFlag) to High(TTypeConvNodeFlag) do
@@ -2952,9 +2956,21 @@ implementation
               te_exact,
               te_equal :
                 begin
-                  result := simplify(false);
-                  if assigned(result) then
-                    exit;
+                  { JVM in particular gets itself in a twist if string consts
+                    aren't prematurely simplified }
+                  if not target_specific_need_equal_typeconv(left.resultdef, resultdef) then
+                    begin
+                      result:=simplify(false);
+                      if assigned(result) then
+                        begin
+                          { Make sure the compiler knows that this address is typed
+                            (prevents the warning from tbs/tb0504.pp from triggering) }
+                          if (nf_explicit in flags) and (result.nodetype = addrn) then
+                            include(taddrnode(result).addrnodeflags,anf_typedaddr);
+
+                          exit;
+                        end;
+                    end;
 
                   { in case of bitpacked accesses, the original type must
                     remain so that not too many/few bits are laoded }
@@ -3592,6 +3608,40 @@ implementation
 	  else
             internalerror(2014111201);
         end;
+      end;
+
+    function ttypeconvnode.pure_simplify : tnode;
+      begin
+        result:=inherited pure_simplify;
+        if not assigned(result) and
+          (convtype=tc_equal) and
+          (
+            (
+              { Exact def matches are fine regardless }
+              (totypedef=resultdef) and
+              (left.resultdef=resultdef)
+            ) or (
+              { If left.resultdef = resultdef, that's implicitly checked in the condition above }
+              not target_specific_need_equal_typeconv(left.resultdef,resultdef) and
+              { Objects need an explicit conversion }
+              (resultdef.typ<>objectdef) and
+              equal_defs(totypedef,resultdef) and
+              equal_defs(left.resultdef,resultdef) and
+              { Undefined definitions are usually generics that haven't been specialized yet }
+              not is_undefined(resultdef) and
+              not is_undefined(totypedef) and
+              not is_undefined(left.resultdef)
+            )
+          ) and not is_managed_type(resultdef) and not is_managed_type(totypedef) and not is_managed_type(left.resultdef) then
+          begin
+            { Exact conversion - we can remove this typeconv node }
+            if nf_absolute in flags then
+              { Make sure the absolute flag gets transferred }
+              Include(left.flags,nf_absolute);
+
+            result:=left;
+            left:=nil;
+          end;
       end;
 
     function ttypeconvnode.simplify(forinline : boolean): tnode;
@@ -4679,13 +4729,27 @@ implementation
 
 
     function ttypeconvnode.pass_1 : tnode;
+      var
+        olddef: tdef;
       begin
         if warn_pointer_to_signed then
           cgmessage(type_w_pointer_to_signed);
         result:=nil;
+        olddef:=left.resultdef;
         firstpass(left);
         if codegenerror then
          exit;
+        { If the left node transformed and the resultdef changed, which can
+          happen if a Str call gets inlined and is converted into a Char, for
+          example, then we must regenerate the typeconv node }
+        if Assigned(olddef) and (left.resultdef<>olddef) then
+          begin
+            result:=ctypeconvnode.create(left,olddef);
+            result.flags:=flags*[nf_explicit,nf_internal];
+            left:=nil;
+            Exit;
+          end;
+
         expectloc:=left.expectloc;
 
         if nf_explicit in flags then

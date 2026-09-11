@@ -627,7 +627,7 @@ unit optcse;
         writeln('====================================================================================');
         writeln;
 {$endif csedebug}
-        result:=nil;
+        result:=rootnode;
       end;
 
     type
@@ -885,7 +885,7 @@ unit optcse;
         writeln('====================================================================================');
         writeln;
   {$endif csedebug}
-        result:=nil;
+        result:=rootnode;
       end;
 
 end.
