@@ -672,6 +672,7 @@ const
   procedure ListControllerTypesXML;
   var
     controllertype : tcontrollertype;
+    target : tsystem;
   begin
 {$PUSH}
  {$WARN 6018 OFF} (* Unreachable code due to compile time evaluation *)
@@ -680,8 +681,18 @@ const
       WriteLn(xmloutput,'    <controllertypes>');
       for controllertype:=low(tcontrollertype) to high(tcontrollertype) do
         if embedded_controllers[controllertype].ControllerTypeStr<>'' then
+         begin
           WriteLn(xmloutput,'      <controllertype name="',embedded_controllers[controllertype].ControllerTypeStr,
-            '" controllerunit="',embedded_controllers[controllertype].controllerunitstr, '"/>');
+            '" controllerunit="',embedded_controllers[controllertype].controllerunitstr, '">');
+          { The controller tables do not model per-controller OS validity, so a
+            controller is valid under every embedded/freertos OS this compiler
+            supports. Listed per controller so the mapping can differ later. }
+          for target:=low(tsystem) to high(tsystem) do
+            if assigned(targetinfos[target]) and
+               (target in (systems_embedded+systems_freertos)) then
+              WriteLn(xmloutput,'        <ostarget shortname="',targetinfos[target]^.shortname,'"/>');
+          WriteLn(xmloutput,'      </controllertype>');
+         end;
       WriteLn(xmloutput,'    </controllertypes>');
      end;
 {$POP}

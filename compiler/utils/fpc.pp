@@ -64,36 +64,53 @@ Const
      halt(1);
   end;
 
+  type
+    TProcessorInfo = record
+      name   : string[20];
+      suffix : string[20];
+    end;
+
+  const
+    { The authoritative list of processors the driver knows about, with the
+      binary-name suffix each uses. Both processortosuffix and the installed-
+      compiler probe (-iC/-ixC) iterate this single table, so adding a CPU here
+      updates both and nothing drifts. }
+    ProcessorInfos : array[0..22] of TProcessorInfo = (
+      (name:'aarch64';     suffix:'a64'),
+      (name:'arm';         suffix:'arm'),
+      (name:'avr';         suffix:'avr'),
+      (name:'i386';        suffix:'386'),
+      (name:'i8086';       suffix:'8086'),
+      (name:'jvm';         suffix:'jvm'),
+      (name:'loongarch64'; suffix:'loongarch64'),
+      (name:'m68k';        suffix:'68k'),
+      (name:'mips';        suffix:'mips'),
+      (name:'mipsel';      suffix:'mipsel'),
+      (name:'mipseb';      suffix:'mipseb'),
+      (name:'mips64';      suffix:'mips64'),
+      (name:'mips64el';    suffix:'mips64el'),
+      (name:'powerpc';     suffix:'ppc'),
+      (name:'powerpc64';   suffix:'ppc64'),
+      (name:'riscv32';     suffix:'rv32'),
+      (name:'riscv64';     suffix:'rv64'),
+      (name:'sparc';       suffix:'sparc'),
+      (name:'sparc64';     suffix:'sparc64'),
+      (name:'x86_64';      suffix:'x64'),
+      (name:'xtensa';      suffix:'xtensa'),
+      (name:'z80';         suffix:'z80'),
+      (name:'wasm32';      suffix:'wasm32')
+    );
+
   function processortosuffix(const processorstr : string ) : String;
 
+  var
+    i : longint;
+
   begin
-    case processorstr of
-      'aarch64': Result := 'a64';
-      'arm': Result := 'arm';
-      'avr': Result := 'avr';
-      'i386': Result := '386';
-      'i8086': Result := '8086';
-      'jvm': Result := 'jvm';
-      'loongarch64': Result:='loongarch64';
-      'm68k': Result := '68k';
-      'mips': Result := 'mips';
-      'mipsel': Result := 'mipsel';
-      'mipseb': Result := 'mipseb';
-      'mips64': Result := 'mips64';
-      'mips64el': Result := 'mips64el';
-      'powerpc': Result := 'ppc';
-      'powerpc64': Result := 'ppc64';
-      'riscv32': Result := 'rv32';
-      'riscv64': Result := 'rv64';
-      'sparc': Result := 'sparc';
-      'sparc64': Result := 'sparc64';
-      'x86_64': Result := 'x64';
-      'xtensa': Result := 'xtensa';
-      'z80': Result := 'z80';
-      'wasm32': Result := 'wasm32'
-      else
-        error('Illegal processor type "'+processorstr+'"');
-    end;
+    for i:=low(ProcessorInfos) to high(ProcessorInfos) do
+      if ProcessorInfos[i].name=processorstr then
+        exit(ProcessorInfos[i].suffix);
+    error('Illegal processor type "'+processorstr+'"');
   end;
 
   procedure InitPlatform(out ppcbin,processorname : string);
@@ -256,6 +273,50 @@ Const
               if not findexe(result) then
                 result:='';
             end;
+        end;
+    end;
+
+    { List the CPU targets this fpc driver can build for, by probing for each
+      processor's native (ppc<suffix>) or cross (ppcross<suffix>) compiler binary
+      the same way a -P<cpu> invocation resolves it. Driver-only: the compiler
+      binaries never see -iC/-ixC. asXML selects the machine-readable (-ixC)
+      form; otherwise the human-readable (-iC) form is written. }
+    procedure DumpCPUTargets(const aSourceCPU : string; asXML : boolean);
+
+    var
+      i        : longint;
+      resolved : string;
+      isnative : boolean;
+
+    begin
+      if asXML then
+        begin
+          writeln('<?xml version="1.0" encoding="utf-8"?>');
+          writeln('<fpcoutput>');
+          writeln('  <cputargets>');
+        end;
+      for i:=low(ProcessorInfos) to high(ProcessorInfos) do
+        begin
+          isnative:=ProcessorInfos[i].name=aSourceCPU;
+          if isnative then
+            resolved:='ppc'+ProcessorInfos[i].suffix
+          else
+            resolved:='ppc'+CrossSuffix+ProcessorInfos[i].suffix;
+          if findexe(resolved) then
+            begin
+              if asXML then
+                writeln('    <cputarget name="',ProcessorInfos[i].name,
+                        '" native="',ord(isnative),'"/>')
+              else if isnative then
+                writeln(ProcessorInfos[i].name,' (native)')
+              else
+                writeln(ProcessorInfos[i].name);
+            end;
+        end;
+      if asXML then
+        begin
+          writeln('  </cputargets>');
+          writeln('</fpcoutput>');
         end;
     end;
 
@@ -438,6 +499,7 @@ end;
      PPCCommandLineLen: longint;
      i : longint;
      errorvalue     : Longint;
+     dumpmode       : longint;   { 0=none, 1=-iC human, 2=-ixC xml }
 
      Procedure AddToCommandLine(S : String);
 
@@ -453,6 +515,7 @@ begin
   cpusuffix := '';        // if not empty, signals attempt at cross
   // compiler.
   extrapath := '';
+  dumpmode := 0;
   initplatform(ppcbin, SourceCPU);
   exesuffix := '';                      { Default is just the name }
   if ParamCount = 0 then
@@ -464,6 +527,18 @@ begin
     for i := 1 to paramcount do
     begin
       s := ParamStr(i);
+      { -iC / -ixC are driver-only: list the installed compilers and exit,
+        never forwarding them to a ppcXXX (the compiler must not answer them). }
+      if s = '-ixC' then
+      begin
+        dumpmode := 2;
+        continue;
+      end
+      else if s = '-iC' then
+      begin
+        dumpmode := 1;
+        continue;
+      end;
       if pos('-t', s) = 1 then
       begin
         targetname := copy(s, 3, length(s)-2);
@@ -510,6 +585,14 @@ begin
        ProcessConfigFile(CfgFile,ExeSuffix);
        end;
      SetLength(ppccommandline, ppccommandlinelen);
+
+     { -iC/-ixC: emit the installed-compiler list and exit without running any
+       compiler. Done here (after the arg loop) so -Xp has set extrapath. }
+     if dumpmode<>0 then
+       begin
+         DumpCPUTargets(SourceCPU,dumpmode=2);
+         halt(0);
+       end;
 
      { call ppcXXX }
      try
