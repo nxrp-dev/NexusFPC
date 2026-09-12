@@ -1367,8 +1367,9 @@ implementation
          begin
            { Not of boolean expression. Turn around the operator and remove
              the not. This is not allowed for sets with the gten/lten,
-             because there is no ltn/gtn support }
-           if (taddnode(left).left.resultdef.typ<>setdef) or
+             because there is no ltn/gtn support. Ordered floating-point
+             relations are not complements when either operand is NaN. }
+           if not(taddnode(left).left.resultdef.typ in [setdef,floatdef]) or
               (left.nodetype in [equaln,unequaln]) then
             begin
               result:=left;
