@@ -275,7 +275,7 @@ const
     begin
       case (status.verbosity and Level) of
         V_Warning:
-          WriteColoredOutput(t,oc_yellow,s);
+          WriteColoredOutput(t,oc_magenta,s);
         V_Error,
         V_Fatal:
           WriteColoredOutput(t,oc_red,s);
