@@ -502,7 +502,7 @@ var
              s:=prefix+'.'+s;
            UnitExists:=FindFile(s,Singlepathstring,true,foundfile);
            if UnitExists and CheckVerbosity(V_Tried) then
-             Message1(unit_t_usingfile,Singlepathstring+filename+ext);
+             Message1(unit_t_unitsearch,Singlepathstring+filename+ext);
          end;
 
          Function PPUSearchPath(const s,prefix:TCmdStr):boolean;
@@ -690,7 +690,7 @@ var
             begin
               include(fnd,auSrc);
               if CheckVerbosity(V_Tried) then
-                Message1(unit_t_usingfile,ChangeFileExt(sourcefn,sourceext));
+                Message1(unit_t_unitsearch,ChangeFileExt(sourcefn,sourceext));
             end;
             if (fnd=[]) then
              begin
@@ -698,7 +698,7 @@ var
                 begin
                  include(fnd,auSrc);
                  if CheckVerbosity(V_Tried) then
-                   Message1(unit_t_usingfile,ChangeFileExt(sourcefn,pasext));
+                   Message1(unit_t_unitsearch,ChangeFileExt(sourcefn,pasext));
                 end;
              end;
             if (fnd=[]) and
@@ -709,7 +709,7 @@ var
                begin
                 include(fnd,auSrc);
                 if CheckVerbosity(V_Tried) then
-                  Message1(unit_t_usingfile,ChangeFileExt(sourcefn,pext));
+                  Message1(unit_t_unitsearch,ChangeFileExt(sourcefn,pext));
                end;
              end;
             if [auSrc]=fnd then
@@ -744,7 +744,7 @@ var
         Function UnitExists(const ext:string;var foundfile:TCmdStr):boolean;
           begin
             if CheckVerbosity(V_Tried) then
-              Message1(unit_t_usingfile,Singlepathstring+filename);
+              Message1(unit_t_unitsearch,Singlepathstring+filename);
             UnitExists:=FindFile(FileName,Singlepathstring,true,foundfile);
           end;
 
