@@ -86,6 +86,7 @@ interface
 
         procedure a_bit_scan_reg_reg(list: TAsmList; reverse,not_zero: boolean; srcsize, dstsize: tcgsize; src, dst: TRegister); override;
         { comparison operations }
+        procedure a_cmp_const_reg(list: TAsmList; size: tcgsize; a: tcgint; reg: tregister);
         procedure a_cmp_const_reg_label(list: TAsmList; size: tcgsize; cmp_op: topcmp; a: tcgint; reg: tregister; l: tasmlabel);override;
         procedure a_cmp_reg_reg_label(list: TAsmList; size: tcgsize; cmp_op: topcmp; reg1, reg2: tregister; l: tasmlabel);override;
         procedure a_jmp_always(list: TAsmList; l: TAsmLabel);override;
@@ -1649,18 +1650,22 @@ implementation
 
   {*************** compare instructions ****************}
 
-    procedure tcgaarch64.a_cmp_const_reg_label(list: TAsmList; size: tcgsize; cmp_op: topcmp; a: tcgint; reg: tregister; l: tasmlabel);
-      var
-        op: tasmop;
+    procedure tcgaarch64.a_cmp_const_reg(list: TAsmList; size: tcgsize; a: tcgint; reg: tregister);
       begin
-        if a>=0 then
-          op:=A_CMP
+        { Negating the signed minimum in the register width preserves its
+          bit pattern, but CMN then sets different overflow flags from CMP. }
+        if (a>=0) or
+           ((size in [OS_64,OS_S64]) and (a=low(tcgint))) or
+           (not(size in [OS_64,OS_S64]) and (a=low(longint))) then
+          handle_reg_imm12_reg(list,A_CMP,size,reg,a,NR_XZR,NR_NO,false,false)
         else
-          op:=A_CMN;
-        { avoid range/overflow error in case a=low(tcgint) }
-{$push}{$r-}{$q-}
-        handle_reg_imm12_reg(list,op,size,reg,abs(a),NR_XZR,NR_NO,false,false);
-{$pop}
+          handle_reg_imm12_reg(list,A_CMN,size,reg,-a,NR_XZR,NR_NO,false,false);
+      end;
+
+
+    procedure tcgaarch64.a_cmp_const_reg_label(list: TAsmList; size: tcgsize; cmp_op: topcmp; a: tcgint; reg: tregister; l: tasmlabel);
+      begin
+        a_cmp_const_reg(list,size,a,reg);
         a_jmp_cond(list,cmp_op,l);
       end;
 

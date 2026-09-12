@@ -428,14 +428,8 @@ interface
                   not(is_signed(right.resultdef));
 
         if right.location.loc = LOC_CONSTANT then
-          begin
-            if right.location.value>=0 then
-              Tcgaarch64(cg).handle_reg_imm12_reg(current_asmdata.CurrAsmList,A_CMP,left.location.size,left.location.register,right.location.value,NR_XZR,NR_NO,false,false)
-            else
-{$push}{$r-}{$q-}
-              Tcgaarch64(cg).handle_reg_imm12_reg(current_asmdata.CurrAsmList,A_CMN,left.location.size,left.location.register,-right.location.value,NR_XZR,NR_NO,false,false)
-{$pop}
-          end
+          Tcgaarch64(cg).a_cmp_const_reg(current_asmdata.CurrAsmList,left.location.size,
+            right.location.value,left.location.register)
         else
           current_asmdata.CurrAsmList.concat(taicpu.op_reg_reg(A_CMP,left.location.register,right.location.register));
 
