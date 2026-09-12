@@ -10939,6 +10939,7 @@ unit aoptx86;
         NewInstr : Taicpu;
         DestLabel: TAsmLabel;
         TempTracking: TAllUsedRegs;
+        remove_hp1: Boolean;
 
         function TryMovArith2Lea(InputInstr: tai): Boolean;
           var
@@ -11842,6 +11843,46 @@ unit aoptx86;
               end;
           end;
 {$endif x86_64}
+
+        if NotFirstIteration and { Tends to makes life difficult for other Pass 2 optimisations }
+          MatchOpType(taicpu(p), top_reg, top_reg) and
+          GetNextInstructionUsingReg(p, hp1, taicpu(p).oper[1]^.reg) and
+          (hp1.typ=ait_instruction) and
+          not RegModifiedBetween(taicpu(p).oper[0]^.reg, p, hp1) and
+          DeepMOVOpt(taicpu(p), taicpu(hp1)) then
+          begin
+            { remove mov reg1,reg1 }
+            remove_hp1:=False;
+            if (taicpu(hp1).opcode=A_MOV) and MatchOperand(taicpu(hp1).oper[0]^,taicpu(hp1).oper[1]^) then
+              begin
+{$ifdef x86_64}
+                if taicpu(hp1).opsize=S_L then
+                  { Don't remove in case it's required to zero the upper 32 bits }
+                  taicpu(hp1).opcode:=A_AND
+                else
+{$endif x86_64}
+                  begin
+                    DebugMsg(SPeepholeOptimization + 'Mov2Nop 1b done',hp1);
+                    remove_hp1:=True; { Defer removing hp1 as we need it for register tracking }
+                  end;
+              end;
+
+            TransferUsedRegs(TmpUsedRegs);
+            AllocRegBetween(taicpu(p).oper[0]^.reg, p, hp1, TmpUsedRegs);
+            UpdateUsedRegsBetween(TmpUsedRegs, p, hp1);
+            if not RegUsedAfterInstruction(taicpu(p).oper[1]^.reg, hp1, TmpUsedRegs) then
+              begin
+                DebugMsg(SPeepholeOptimization + 'Mov2Nop 7 done',p);
+                if remove_hp1 then
+                  RemoveInstruction(hp1);
+                RemoveCurrentP(p);
+              end
+            else if remove_hp1 then
+              RemoveInstruction(hp1);
+
+            Result := True;
+            Exit;
+          end;
 
         if FuncMov2Func(p, hp1) then
           begin
