@@ -110,6 +110,8 @@ const
 
   // attribute functions
   CSSAttrFuncVar = 1;
+  CSSAttrFuncRGB = 2;
+  CSSAttrFuncRGBA = 3;
 
   CSSMinSafeIntDouble = -$1fffffffffffff; // -9007199254740991 54 bits (52 plus signed bit plus implicit highest bit)
   CSSMaxSafeIntDouble =  $1fffffffffffff; //  9007199254740991
@@ -304,7 +306,6 @@ const
     (Name: 'yellowgreen'; Color: TCSSAlphaColor($ff9acd32))
   );
 
-
 type
 
   { TCSSRegistryNamedItem }
@@ -316,7 +317,6 @@ type
   end;
 
 type
-  TCSSRegistry = class;
 
   { TCSSAttributeKeyData }
 
@@ -489,14 +489,17 @@ type
     // keywords
     Keywords: TCSSStringArray; // Note: Keywords[0] is nil to spot bugs easily
     KeywordTokens: TBytesArray; // tokenized form of each keyword, see TCSSBaseResolver.Tokenize
-    kwFirstColor, kwLastColor, kwTransparent, kwCurrentColor: TCSSNumericalID;
+    kwFirstColor, kwLastColor: TCSSNumericalID; // named colors, excluding transparent, currentcolor and system colors
+    kwTransparent: TCSSNumericalID;
+    kwCurrentColor: TCSSNumericalID;
+    kwFirstSystemColor, kwLastSystemColor: TCSSNumericalID;
     function AddKeyword(const aName: TCSSString): TCSSNumericalID; overload;
     procedure AddKeywords(const Names: TCSSStringArray; out First, Last: TCSSNumericalID); overload;
     function IndexOfKeyword(const aName: TCSSString): TCSSNumericalID; overload;
     function IndexOfValueKeyword(const aName: TCSSString;
       AllowUnknownIdentifiers: boolean): TCSSNumericalID; virtual; // resolve a word of an attribute value
     procedure AddColorKeywords; virtual;
-    function IsColorKeyword(KeywordID: TCSSNumericalID): boolean;
+    function IsColorKeyword(KeywordID: TCSSNumericalID; OnlyConst: boolean): boolean;
     function GetNamedColor(const aName: TCSSString): TCSSAlphaColor; virtual; overload;
     function GetKeywordColor(KeywordID: TCSSNumericalID): TCSSAlphaColor; virtual; overload;
     property KeywordCount: TCSSNumericalID read FKeywordCount;
@@ -504,8 +507,11 @@ type
     // attribute functions, e.g. var()
     AttrFunctions: TCSSStringArray; // Note: AttrFunctions[0] is nil to spot bugs easily
     const afVar = CSSAttrFuncVar;
+    const afRgb = CSSAttrFuncRGB;
+    const afRgba = CSSAttrFuncRGBA;
     function AddAttrFunction(const aName: TCSSString): TCSSNumericalID; overload;
     function IndexOfAttrFunction(const aName: TCSSString): TCSSNumericalID; overload;
+    function IsColorFunction(FuncID: TCSSNumericalID): boolean; virtual;
     property AttrFunctionCount: TCSSNumericalID read FAttrFunctionCount;
   end;
 
@@ -573,7 +579,8 @@ type
   TCSSResTokenKind = (
     rtkNone,
     rtkWhitespace, // any amount of whitespace characters
-    rtkSymbol,  // followed by a byte comma, colon, semicolon, dot . , star *, or div /
+    rtkSymbol,  // followed by a byte colon, semicolon, dot . , star *, or div /
+    rtkComma, // ,
     rtkLParenthesis, // (
     rtkRParenthesis, // )
     rtkLBracket, // [
@@ -589,6 +596,28 @@ type
     rtkHexColor // followed by a byte as count, followed by count hex characters
     );
   TCSSResTokenKinds = set of TCSSResTokenKind;
+
+const
+  CSSResTokenToCSS: array[TCSSResTokenKind] of TCSSToken = (
+    ctkUNKNOWN,
+    ctkWhitespace,
+    ctkUNKNOWN,
+    ctkComma,
+    ctkLParenthesis,
+    ctkRParenthesis,
+    ctkLBracket,
+    ctkRBracket,
+    ctkPlus,
+    ctkMinus,
+    ctkUNKNOWN, // rtkFloat
+    ctkUNKNOWN, // rtkKeyword
+    ctkUNKNOWN, // rtkFunction
+    ctkUNKNOWN, // rtkIdentifier
+    ctkUNKNOWN, // rtkStringApos
+    ctkUNKNOWN, // rtkStringQuote
+    ctkUNKNOWN  // rtkHexColor
+    );
+type
 
   TCSSResValueKind = (
     rvkNone, // end of value
@@ -694,7 +723,7 @@ type
     function CheckAttribute_Keyword(const AllowedKeywordIDs: TCSSNumericalIDArray): boolean;
     function CheckAttribute_Keyword_List(const AllowedKeywordIDs: TCSSNumericalIDArray): boolean;
     function CheckAttribute_Dimension(const Params: TCSSCheckAttrParams_Dimension): boolean;
-    function CheckAttribute_Color(const AllowedKeywordIDs: TCSSNumericalIDArray = nil): boolean;
+    function CheckAttribute_Color(const AllowedKeywordIDs: TCSSNumericalIDArray = nil): boolean; // check whole value is exactly one color
     // check current component:
     function IsKeywordIn(aKeywordID: TCSSNumericalID; const KeywordIDs: TCSSNumericalIDArray): boolean; overload;
     function IsKeywordIn(const KeywordIDs: TCSSNumericalIDArray): boolean; overload;
@@ -703,6 +732,9 @@ type
     function IsFloat(const Params: TCSSCheckAttrParams_Dimension): boolean; // true if the current float component fits
     function IsDimension(const Params: TCSSCheckAttrParams_Dimension): boolean; // true if the current float or keyword fits
     function IsColor: boolean; // true if the current component is a color
+    function ReadColorFunction(out aColor: TCSSAlphaColor): boolean;
+    function ReadColor(out StartPos, EndPos: integer): boolean; overload;
+    function ReadColor: boolean; overload;
     function GetCompString: TCSSString; overload;
     function GetCompTokens: TBytes; // the current CurTokenStart til CurTokenPos
     function FloatAsString: TCSSString; // the current component as float+unit
@@ -904,7 +936,7 @@ begin
   rtkHexColor: Result:=1+1+Tokens[Ofs+1]; // kind + length byte + hex chars
   rtkSymbol: Result:=1+1; // kind + char byte
   else
-    Result:=1; // rtkWhitespace, brackets, plus, minus
+    Result:=1; // rtkWhitespace, comma, brackets, plus, minus
   end;
 end;
 
@@ -1090,9 +1122,16 @@ begin
   if AddKeyword('not')<>CSSKeywordNot then
     raise ECSSParser.Create('20260327000003');
 
+  kwFirstSystemColor:=0;
+  kwLastSystemColor:=-1;
+
   // init attribute functions
   if AddAttrFunction('var')<>CSSAttrFuncVar then
     raise ECSSParser.Create('20240716124054');
+  if AddAttrFunction('rgb')<>CSSAttrFuncRGB then
+    raise ECSSParser.Create('20260906120100');
+  if AddAttrFunction('rgba')<>CSSAttrFuncRGBA then
+    raise ECSSParser.Create('20260906120101');
 end;
 
 destructor TCSSRegistry.Destroy;
@@ -1793,7 +1832,7 @@ begin
   SetLength(KeywordTokens[Result],3);
   KeywordTokens[Result][0]:=ord(rtkKeyword);
   PWord(@KeywordTokens[Result][1])^:=Result;
-  FHashLists[nikKeyword].Add(aName,{%H-}Pointer(Result));
+  FHashLists[nikKeyword].Add(lowercase(aName),{%H-}Pointer(Result));
   inc(FKeywordCount);
   ChangeStamp;
 end;
@@ -1833,7 +1872,7 @@ function TCSSRegistry.IndexOfKeyword(const aName: TCSSString): TCSSNumericalID;
 var
   p: Pointer;
 begin
-  p:=FHashLists[nikKeyword].Find(aName);
+  p:=FHashLists[nikKeyword].Find(lowercase(aName));
   if p=nil then
     exit(CSSIDNone)
   else
@@ -1845,27 +1884,14 @@ function TCSSRegistry.IndexOfValueKeyword(const aName: TCSSString;
 // Resolve a word of an attribute value to a keyword, CSSIDNone if there is none.
 // Attributes allowing unknown identifiers use case sensitive names, e.g. font-family,
 // so they never get a color keyword: 'Red' and 'red' stay identifiers.
-// For all other attributes color names are ASCII case insensitive, e.g. 'Red' = 'red'.
-var
-  LoName: TCSSString;
 begin
   Result:=IndexOfKeyword(aName);
   if AllowUnknownIdentifiers then
   begin
-    if IsColorKeyword(Result) then
+    if IsColorKeyword(Result,false) then
       Result:=CSSIDNone;
     exit;
   end;
-  if Result>CSSIDNone then
-    exit;
-  LoName:=lowercase(aName);
-  Result:=IndexOfKeyword(LoName);
-  if (Result>=kwFirstColor) and (Result<=kwLastColor) then
-    // color keywords are case insensitive
-  else if LoName='currentcolor' then
-    Result:=kwCurrentColor
-  else
-    Result:=CSSIDNone;
 end;
 
 procedure TCSSRegistry.AddColorKeywords;
@@ -1877,15 +1903,20 @@ begin
   for i:=0 to High(CSSNamedColors) do
     Names[i]:=CSSNamedColors[i].Name;
   AddKeywords(Names,kwFirstColor,kwLastColor);
+
   kwTransparent:=IndexOfKeyword('transparent');
   kwCurrentColor:=AddKeyword('currentColor');
 end;
 
-function TCSSRegistry.IsColorKeyword(KeywordID: TCSSNumericalID): boolean;
+function TCSSRegistry.IsColorKeyword(KeywordID: TCSSNumericalID; OnlyConst: boolean): boolean;
 begin
-  Result:=(KeywordID>CSSIDNone)
-      and (((KeywordID>=kwFirstColor) and (KeywordID<=kwLastColor))
-        or (KeywordID=kwCurrentColor));
+  if (KeywordID>=kwFirstColor) and (KeywordID<=kwLastColor) then
+    exit(true);
+  if OnlyConst then
+    exit(false);
+  Result:=(KeywordID=kwCurrentColor)
+       or (KeywordID=kwTransparent)
+       or ((KeywordID>=kwFirstSystemColor) and (KeywordID<=kwLastSystemColor));
 end;
 
 function TCSSRegistry.GetNamedColor(const aName: TCSSString): TCSSAlphaColor;
@@ -1896,7 +1927,7 @@ end;
 function TCSSRegistry.GetKeywordColor(KeywordID: TCSSNumericalID): TCSSAlphaColor;
 begin
   if (KeywordID<kwFirstColor) or (KeywordID>kwLastColor) then
-    Result:=$ff000000
+    Result:=$ff000000 // black
   else
     Result:=CSSNamedColors[KeywordID-kwFirstColor].Color;
 end;
@@ -1935,6 +1966,13 @@ begin
     exit(CSSIDNone)
   else
     Result:={%H-}TCSSNumericalID(p);
+end;
+
+function TCSSRegistry.IsColorFunction(FuncID: TCSSNumericalID): boolean;
+// true if the function returns a <color>, see TCSSBaseResolver.ReadColorFunction
+// todo: hsl, hsla, hwb, lab, lch, oklab, oklch, light-dark, color(), color-mix()
+begin
+  Result:=(FuncID=CSSAttrFuncRGB) or (FuncID=CSSAttrFuncRGBA);
 end;
 
 { TCSSResolvedCallElement }
@@ -2043,6 +2081,8 @@ begin
       end;
     rtkSymbol:
       FIdentifier:=TCSSChar(CurTokens[p+1]);
+    rtkComma:
+      FIdentifier:=',';
     end;
   Result:=FIdentifier;
 end;
@@ -2249,9 +2289,8 @@ begin
   case TokenKind of
   rtkKeyword:
     begin
-      if (KeywordID>=CSSRegistry.kwFirstColor)
-          and (KeywordID<=CSSRegistry.kwLastColor)
-      then begin
+      if CSSRegistry.IsColorKeyword(KeywordID,false) then
+      begin
         if not ReadNext then
           exit(true);
       end;
@@ -2263,9 +2302,8 @@ begin
             exit(true);
     end;
   rtkFunction:
-    begin
-      // todo: check for allowed functions
-    end;
+    if ReadColor then
+      exit(true);
   rtkHexColor:
     exit(true);
   end;
@@ -2352,7 +2390,6 @@ begin
     end;
   rtkSymbol:
     case TCSSChar(ReadByte) of
-    ',': Symbol:=ctkCOMMA;
     ':': Symbol:=ctkCOLON;
     ';': Symbol:=ctkSEMICOLON;
     '.': Symbol:=ctkDOT;
@@ -2360,12 +2397,8 @@ begin
     '/': Symbol:=ctkDIV;
     else Symbol:=ctkUNKNOWN;
     end;
-  rtkPlus: Symbol:=ctkPLUS;
-  rtkMinus: Symbol:=ctkMINUS;
-  rtkLParenthesis: Symbol:=ctkLPARENTHESIS;
-  rtkRParenthesis: Symbol:=ctkRPARENTHESIS;
-  rtkLBracket: Symbol:=ctkLBRACKET;
-  rtkRBracket: Symbol:=ctkRBRACKET;
+  else
+    Symbol:=CSSResTokenToCSS[TokenKind];
   end;
   Result:=true;
 end;
@@ -2426,22 +2459,153 @@ begin
 end;
 
 function TCSSBaseResolver.IsColor: boolean;
+// Note: this only tests the current token, it does not check the arguments of a
+// color function and does not advance. Use ReadColor to consume a whole <color>.
 begin
   Result:=false;
   case TokenKind of
   rtkKeyword:
-    if ((KeywordID>=CSSRegistry.kwFirstColor)
-          and (KeywordID<=CSSRegistry.kwLastColor))
-        or (KeywordID=CSSRegistry.kwCurrentColor)
-    then
+    if CSSRegistry.IsColorKeyword(KeywordID,false) then
       exit(true);
   rtkFunction:
-    begin
-      // todo: check for allowed functions
-    end;
+    if CSSRegistry.IsColorFunction(FunctionID) then
+      exit(true);
   rtkHexColor:
     exit(true);
   end;
+end;
+
+function TCSSBaseResolver.ReadColorFunction(out aColor: TCSSAlphaColor): boolean;
+// Reads a color function, e.g. rgb() or rgba().
+// On entry the current token is the function, which already consumed the '(';
+// on success the current token is the closing parenthesis, so a ReadNext works.
+//   legacy, comma separated: rgb(R,G,B) and rgb(R,G,B,A)
+//   modern, space separated: rgb(R G B) and rgb(R G B / A)
+// css-color-4: rgba() is an alias of rgb(), both allow an alpha.
+// Out of range values are clamped.
+// Note: the legacy syntax requires all three channels to be either numbers or
+// percentages. Mixing them is accepted here, browsers are lenient as well and the
+// value is clamped either way.
+// todo: the 'none' component of css-color-4, e.g. rgb(255 none 0)
+
+  function ReadComponent(out v: byte): boolean;
+  // a channel as number 0..255 or percentage 0%..100%
+  var
+    d: double;
+  begin
+    Result:=false;
+    if TokenKind<>rtkFloat then exit;
+    case FloatUnit of
+    cuNone: d:=Float;
+    cuPercent: d:=Float*255/100;
+    else
+      exit;
+    end;
+    if d<=0 then
+      v:=0
+    else if d>=255 then
+      v:=255
+    else
+      v:=round(d);
+    Result:=ReadNext;
+  end;
+
+  function ReadAlpha(out v: byte): boolean;
+  // alpha as number 0..1 or percentage 0%..100%
+  var
+    d: double;
+  begin
+    Result:=false;
+    if TokenKind<>rtkFloat then exit;
+    case FloatUnit of
+    cuNone: d:=Float*255;
+    cuPercent: d:=Float*255/100;
+    else
+      exit;
+    end;
+    if d<=0 then
+      v:=0
+    else if d>=255 then
+      v:=255
+    else
+      v:=round(d);
+    Result:=ReadNext;
+  end;
+
+var
+  r, g, b, a: byte;
+  Legacy: Boolean;
+begin
+  Result:=false;
+  aColor:=0;
+  if TokenKind<>rtkFunction then exit;
+  if not CSSRegistry.IsColorFunction(FunctionID) then exit;
+
+  // the function token includes the '(', so ReadNext steps to the first argument
+  if not ReadNext then exit;
+  if not ReadComponent(r) then exit;
+
+  Legacy:=TokenKind=rtkComma;
+  if Legacy and not ReadNext then exit;
+  if not ReadComponent(g) then exit;
+  if Legacy then
+  begin
+    if TokenKind<>rtkComma then exit;
+    if not ReadNext then exit;
+  end;
+  if not ReadComponent(b) then exit;
+
+  a:=255;
+  if Legacy then
+  begin
+    if TokenKind=rtkComma then
+    begin
+      if not ReadNext then exit;
+      if not ReadAlpha(a) then exit;
+    end;
+  end else if IsSymbol(ctkDIV) then
+  begin
+    if not ReadNext then exit;
+    if not ReadAlpha(a) then exit;
+  end;
+
+  if TokenKind<>rtkRParenthesis then exit;
+
+  aColor:=(TCSSAlphaColor(a) shl 24) or (TCSSAlphaColor(r) shl 16)
+         or (TCSSAlphaColor(g) shl 8) or TCSSAlphaColor(b);
+  Result:=true;
+end;
+
+function TCSSBaseResolver.ReadColor(out StartPos, EndPos: integer): boolean;
+// True if the current token started a <color>.
+// After cal current token on last, so that a ReadNext reads the component behind the color,
+// e.g. on the ) of rgb().
+// EndPos is behind the last token of the color.
+var
+  aColor: TCSSAlphaColor;
+begin
+  Result:=false;
+  StartPos:=CurTokenStart;
+  EndPos:=CurTokenPos;
+  case TokenKind of
+  rtkKeyword:
+    Result:=CSSRegistry.IsColorKeyword(KeywordID,false);
+  rtkFunction:
+    if CSSRegistry.IsColorFunction(FunctionID) then
+    begin
+      Result:=ReadColorFunction(aColor);
+      EndPos:=CurTokenPos;
+    end;
+  rtkHexColor:
+    Result:=true;
+  end;
+end;
+
+function TCSSBaseResolver.ReadColor: boolean;
+var
+  StartPos, EndPos: integer;
+begin
+  Result:=ReadColor(StartPos{%H-},EndPos{%H-});
 end;
 
 function TCSSBaseResolver.IsBaseKeyword(aKeywordID: TCSSNumericalID): boolean;
@@ -2491,7 +2655,7 @@ end;
 function TCSSBaseResolver.IsSymbol(Token: TCSSToken): boolean;
 begin
   Result:=(Symbol=Token)
-    and (TokenKind in [rtkSymbol,rtkPlus,rtkMinus,
+    and (TokenKind in [rtkSymbol,rtkComma,rtkPlus,rtkMinus,
                   rtkLParenthesis,rtkRParenthesis,rtkLBracket,rtkRBracket]);
 end;
 
@@ -2844,7 +3008,12 @@ begin
         end;
       'a'..'z','A'..'Z':
         if not ReadWordToken then exit;
-      ',',':',';','*','/':
+      ',':
+        begin
+          AddKind(rtkComma);
+          inc(p);
+        end;
+      ':',';','*','/':
         begin
           AddKind(rtkSymbol);
           AddByte(byte(ord(p^)));
@@ -3118,6 +3287,7 @@ begin
     case aKind of
     rtkWhitespace: Result:=Result+' ';
     rtkSymbol: Result:=Result+TCSSChar(ReadByte);
+    rtkComma: Result:=Result+',';
     rtkLParenthesis: Result:=Result+'(';
     rtkRParenthesis: Result:=Result+')';
     rtkLBracket: Result:=Result+'[';
@@ -3157,6 +3327,7 @@ begin
   case aKind of
   rtkWhitespace: Result:=' ';
   rtkSymbol: Result:=TCSSChar(aData[1]);
+  rtkComma: Result:=',';
   rtkLParenthesis: Result:='(';
   rtkRParenthesis: Result:=')';
   rtkLBracket: Result:='[';
@@ -4139,18 +4310,16 @@ begin
   case CurComp.Kind of
   rvkKeyword:
     begin
-      if (CurComp.KeywordID>=CSSRegistry.kwFirstColor)
-          and (CurComp.KeywordID<=CSSRegistry.kwLastColor)
-      then
+      if CSSRegistry.IsColorKeyword(CurComp.KeywordID,false) then
         exit(true);
       for i:=0 to length(AllowedKeywordIDs)-1 do
         if CurComp.KeywordID=AllowedKeywordIDs[i] then
           exit(true);
     end;
   rvkFunction:
-    begin
-      // todo: check for allowed functions
-    end;
+    // the whole rgb(...) is one component, its arguments are not checked here
+    if CSSRegistry.IsColorFunction(CurComp.FunctionID) then
+      exit(true);
   rvkHexColor:
     exit(true);
   end;
