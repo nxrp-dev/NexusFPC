@@ -220,6 +220,7 @@ interface
         procedure referencesections(list:TAsmList);override;
         procedure insertlineinfo(list:TAsmList);override;
         function  dwarf_version: Word; virtual; abstract;
+        function  dwarf_line_version: Word; virtual;
       end;
 
       { TDebugInfoDwarf2 }
@@ -274,6 +275,7 @@ interface
         procedure insert_cu_header_after_version; override;
       public
         function  dwarf_version: Word; override;
+        function dwarf_line_version: Word; override;
       end;
 
 
@@ -3144,9 +3146,9 @@ implementation
         linelist.concat(tai_label.create(lbl));
 
         { version }
-        linelist.concat(tai_const.create_16bit_unaligned(dwarf_version));
+        linelist.concat(tai_const.create_16bit_unaligned(dwarf_line_version));
 
-        if dwarf_version >= 5 then
+        if dwarf_line_version >= 5 then
           begin
             { address size }
             linelist.concat(tai_const.create_8bit(sizeof(pint)));
@@ -3164,7 +3166,7 @@ implementation
         linelist.concat(tai_const.create_8bit(1));
 
         { maximum ops per instruction }
-        if dwarf_version>=4 then
+        if dwarf_line_version>=4 then
           linelist.concat(tai_const.create_8bit(1));
 
         { default_is_stmt }
@@ -3220,7 +3222,7 @@ implementation
           end;
         flist.Sort(@FileListSortCompare);
 
-        if dwarf_version >= 5 then
+        if dwarf_line_version >= 5 then
           begin
             { directory_entry_format count }
             linelist.concat(tai_const.create_8bit(1));
@@ -3244,11 +3246,11 @@ implementation
 
             linelist.concat(tai_string.create(ditem.Name+#0));
           end;
-        if dwarf_version < 5 then
+        if dwarf_line_version < 5 then
           linelist.concat(tai_const.create_8bit(0));
 
         { file_names count }
-        if dwarf_version >= 5 then
+        if dwarf_line_version >= 5 then
           begin
             { file_entry_format count }
             linelist.concat(tai_const.create_8bit(4));
@@ -3287,7 +3289,7 @@ implementation
             { file length }
             linelist.concat(tai_const.create_uleb128bit(0));
           end;
-        if dwarf_version < 5 then
+        if dwarf_line_version < 5 then
           linelist.concat(tai_const.create_8bit(0));
 
         { end of debug line header }
@@ -3839,6 +3841,11 @@ implementation
             asmline.concat(tai_const.Create_8bit(DW_LNE_end_sequence));
             asmline.concat(tai_comment.Create(strpnew('###################')));
           end;
+      end;
+
+    function TDebugInfoDwarf.dwarf_line_version: Word;
+      begin
+        Result := dwarf_version;
       end;
 
 
@@ -4643,6 +4650,11 @@ implementation
     function TDebugInfoDwarf5.dwarf_version: Word;
     begin
       Result:=5;
+    end;
+
+    function TDebugInfoDwarf5.dwarf_line_version: Word;
+    begin
+      Result := 5;
     end;
 
 
