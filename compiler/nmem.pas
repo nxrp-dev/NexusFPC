@@ -1009,7 +1009,8 @@ implementation
         // don't put records from which we load float fields
         // in integer registers
         if (left.resultdef.typ=recorddef) and
-           (resultdef.typ=floatdef) then
+           (resultdef.typ=floatdef) and
+           not is_vector(left.resultdef) then
           make_not_regable(left,[ra_addr_regable]);
 
         if is_currency(resultdef) then
@@ -1041,9 +1042,37 @@ implementation
              case left.expectloc of
                { if a floating point value is casted into a record, it
                  can happen that we get here an fpu or mm register }
-               LOC_CMMREGISTER,
+               LOC_CMMREGISTER:
+                 begin
+                   if not use_vectorfpu(resultdef) then
+                     begin
+                       // can happen for function results on win32 and darwin/x86
+                       if (left.resultdef.size > sizeof(pint)) then
+                         expectloc:=LOC_REFERENCE
+                       else
+                         expectloc:=LOC_SUBSETREG;
+                     end
+                   else if (left.resultdef.size > resultdef.size) then
+                     expectloc:=LOC_CMMLANE
+                   else
+                     expectloc:=LOC_CMMREGISTER;
+                 end;
+               LOC_MMREGISTER:
+                 begin
+                   if not use_vectorfpu(resultdef) then
+                     begin
+                       // can happen for function results on win32 and darwin/x86
+                       if (left.resultdef.size > sizeof(pint)) then
+                         expectloc:=LOC_REFERENCE
+                       else
+                         expectloc:=LOC_SUBSETREG;
+                     end
+                   else if (left.resultdef.size > resultdef.size) then
+                     expectloc:=LOC_MMLANE
+                   else
+                     expectloc:=LOC_MMREGISTER;
+                 end;
                LOC_CFPUREGISTER,
-               LOC_MMREGISTER,
                LOC_FPUREGISTER,
                LOC_CONSTANT,
                LOC_REGISTER,
@@ -1056,8 +1085,10 @@ implementation
                LOC_CREGISTER,
                LOC_CSUBSETREG:
                  expectloc:=LOC_CSUBSETREG;
+               LOC_CREFERENCE,
                LOC_REFERENCE,
-               LOC_CREFERENCE:
+               LOC_CMMLANE,
+               LOC_MMLANE:
                  expectloc:=left.expectloc;
                else internalerror(20060521);
               end;

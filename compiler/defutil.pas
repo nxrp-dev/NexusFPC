@@ -352,6 +352,9 @@ interface
     { is the type a vector, or can it be transparently used as one? }
     function is_vector(p : tdef) : boolean;
 
+    { Returns the element type of a vector type }
+    function get_vector_element(p: tdef): tdef;
+
     { return a real/hardware vectordef representing this def }
     function to_hwvectordef(p: tdef; nil_on_error: boolean): tdef;
 
@@ -370,6 +373,9 @@ interface
 
     { #Return an orddef (integer) corresponding to a tcgsize }
     function cgsize_orddef(size: tcgsize): torddef;
+
+    { #Return an arraydef corresponding to an MM-based tcgsize }
+    function cgmmsize_def(size: tcgsize): tstoreddef;
 
     {# Same as def_cgsize, except that it will interpret certain arrays as
        vectors and return OS_M* sizes for them }
@@ -1554,16 +1560,81 @@ implementation
       end;
 
 
+    function get_vector_element(p: tdef): tdef;
+      var
+        X: Integer;
+        elementdef: tdef;
+      begin
+        case p.typ of
+          arraydef:
+            begin
+              elementdef := tarraydef(p).elementdef;
+              while elementdef.typ = arraydef do
+                elementdef := TArrayDef(elementdef).elementdef;
+
+{$ifdef x86}
+              if elementdef.typ = recorddef then
+                { Recursive call }
+                Exit(get_vector_element(elementdef))
+              else
+{$endif x86}
+                Exit(elementdef);
+            end;
+{$ifdef x86}
+          recorddef:
+            begin
+              Result := nil;
+              for X := 0 to TRecordDef(p).symtable.SymList.Count - 1 do
+                if TSym(TRecordDef(p).symtable.SymList[X]).typ = fieldvarsym then
+                  begin
+                    if is_cyclic(TFieldVarSym(TRecordDef(p).symtable.SymList[X]).vardef) then
+                      { Try another one }
+                      Continue;
+
+                    case TFieldVarSym(TRecordDef(p).symtable.SymList[X]).vardef.typ of
+                      recorddef,
+                      arraydef:
+                        { Recursive call }
+                        begin
+                          elementdef := get_vector_element(TFieldVarSym(TRecordDef(p).symtable.SymList[X]).vardef);
+                          if Assigned(elementdef) then
+                            Exit(elementdef);
+                          { If nil, try another one }
+                        end;
+
+                      else
+                        Exit(TFieldVarSym(TRecordDef(p).symtable.SymList[X]).vardef);
+                    end;
+                  end;
+            end
+{$endif x86}
+          else
+            Result := nil;
+        end;
+      end;
+
+
     function is_vector(p : tdef) : boolean;
       begin
-        result:=(p.typ=arraydef) and
-                (tarraydef(p).is_hwvector { or
-                 (not(is_special_array(p)) and
-                  (tarraydef(p).elementdef.typ in [floatdef,orddef]) and
-                  (tarraydef(p).elementdef.typ=floatdef) and
-                  (tfloatdef(tarraydef(p).elementdef).floattype in [s32real,s64real])
-                 ) }
-                );
+        result:=(
+                  (p.typ=arraydef) and
+                  (
+                    tarraydef(p).is_hwvector or
+                    (
+                      not(is_special_array(p)) and
+                      (tarraydef(p).elementdef.typ in [floatdef,orddef])
+{$ifdef x86}
+                      and (tarraydef(p).size = 16)
+{$endif x86}
+                      {and
+                      (tarraydef(p).elementdef.typ=floatdef) and
+                      (tfloatdef(tarraydef(p).elementdef).floattype in [s32real,s64real])}
+                    )
+                  )
+                )
+{$ifdef x86}
+                or is_vectorable_record(p);
+{$endif x86}
       end;
 
 
@@ -1573,66 +1644,69 @@ implementation
 {$ifdef x86}
         result:= is_vector(p) and
                  (
-                  (
-                   (tarraydef(p).elementdef.typ=floatdef) and
+                   (p.typ = recorddef) or { If it's a record type, it's already been evaluated }
                    (
-                    (tarraydef(p).lowrange=0) and
-                    ((tarraydef(p).highrange=3) or
-                     (UseAVX and (tarraydef(p).highrange=7)) or
-                     (UseAVX512 and (tarraydef(p).highrange=15))
-                    ) and
-                    (tfloatdef(tarraydef(p).elementdef).floattype=s32real)
-                   )
-                  ) or
+                    (
+                     (tarraydef(p).elementdef.typ=floatdef) and
+                     (
+                      (tarraydef(p).lowrange=0) and
+                      ((tarraydef(p).highrange=3) or
+                       (UseAVX and (tarraydef(p).highrange=7)) or
+                       (UseAVX512 and (tarraydef(p).highrange=15))
+                      ) and
+                      (tfloatdef(tarraydef(p).elementdef).floattype=s32real)
+                     )
+                    ) or
 
-                  (
-                   (tarraydef(p).elementdef.typ=floatdef) and
-                   (
-                    (tarraydef(p).lowrange=0) and
-                    ((tarraydef(p).highrange=1) or
-                     (UseAVX and (tarraydef(p).highrange=3)) or
-                     (UseAVX512 and (tarraydef(p).highrange=7))
-                    )and
-                    (tfloatdef(tarraydef(p).elementdef).floattype=s64real)
-                   )
-                  ) {or
+                    (
+                     (tarraydef(p).elementdef.typ=floatdef) and
+                     (
+                      (tarraydef(p).lowrange=0) and
+                      ((tarraydef(p).highrange=1) or
+                       (UseAVX and (tarraydef(p).highrange=3)) or
+                       (UseAVX512 and (tarraydef(p).highrange=7))
+                      )and
+                      (tfloatdef(tarraydef(p).elementdef).floattype=s64real)
+                     )
+                    ) {or
 
-                  // MMX registers
-                  (
-                   (tarraydef(p).elementdef.typ=floatdef) and
-                   (
-                    (tarraydef(p).lowrange=0) and
-                    (tarraydef(p).highrange=1) and
-                    (tfloatdef(tarraydef(p).elementdef).floattype=s32real)
-                   )
-                  ) or
+                    // MMX registers
+                    (
+                     (tarraydef(p).elementdef.typ=floatdef) and
+                     (
+                      (tarraydef(p).lowrange=0) and
+                      (tarraydef(p).highrange=1) and
+                      (tfloatdef(tarraydef(p).elementdef).floattype=s32real)
+                     )
+                    ) or
 
-                  (
-                   (tarraydef(p).elementdef.typ=orddef) and
-                   (
-                    (tarraydef(p).lowrange=0) and
-                    (tarraydef(p).highrange=1) and
-                    (torddef(tarraydef(p).elementdef).ordtype in [s32bit,u32bit])
-                   )
-                  )  or
+                    (
+                     (tarraydef(p).elementdef.typ=orddef) and
+                     (
+                      (tarraydef(p).lowrange=0) and
+                      (tarraydef(p).highrange=1) and
+                      (torddef(tarraydef(p).elementdef).ordtype in [s32bit,u32bit])
+                     )
+                    )  or
 
-                  (
-                   (tarraydef(p).elementdef.typ=orddef) and
-                   (
-                    (tarraydef(p).lowrange=0) and
-                    (tarraydef(p).highrange=3) and
-                    (torddef(tarraydef(p).elementdef).ordtype in [s16bit,u16bit])
-                   )
-                  ) or
+                    (
+                     (tarraydef(p).elementdef.typ=orddef) and
+                     (
+                      (tarraydef(p).lowrange=0) and
+                      (tarraydef(p).highrange=3) and
+                      (torddef(tarraydef(p).elementdef).ordtype in [s16bit,u16bit])
+                     )
+                    ) or
 
-                  (
-                   (tarraydef(p).elementdef.typ=orddef) and
-                   (
-                    (tarraydef(p).lowrange=0) and
-                    (tarraydef(p).highrange=7) and
-                    (torddef(tarraydef(p).elementdef).ordtype in [s8bit,u8bit])
+                    (
+                     (tarraydef(p).elementdef.typ=orddef) and
+                     (
+                      (tarraydef(p).lowrange=0) and
+                      (tarraydef(p).highrange=7) and
+                      (torddef(tarraydef(p).elementdef).ordtype in [s8bit,u8bit])
+                     )
+                    ) }
                    )
-                  ) }
                  );
 {$else x86}
         result:=false;
@@ -1780,6 +1854,23 @@ implementation
               result:=int_float_cgsize(def.size)
             else
 {$endif wasm32}
+{$ifdef x86}
+            if is_vector(def) and (get_vector_element(def).typ = floatdef) and not (cs_fp_emulation in current_settings.moduleswitches) then
+              begin
+                { Determine if, based on the floating-point type and the size
+                  of the array, if it can be made into a vector }
+                case tfloatdef(get_vector_element(def)).floattype of
+                  s32real:
+                    result := float_array_cgsize(def.size);
+                  s64real:
+                    result := double_array_cgsize(def.size);
+                  else
+                    { If not, fall back }
+                    result := int_cgsize(def.size);
+                end;
+              end
+            else
+{$endif x86}
               result:=int_cgsize(def.size);
           arraydef :
             begin
@@ -1837,6 +1928,28 @@ implementation
         end;
       end;
 
+    function cgmmsize_def(size: tcgsize): tstoreddef;
+      begin
+        case size of
+          OS_M64:
+            result:=tstoreddef(x86_m64type);
+          OS_M128:
+            result:=tstoreddef(x86_m128itype);
+          OS_M128F:
+            result:=tstoreddef(x86_m128type);
+          OS_M128D:
+            result:=tstoreddef(x86_m128dtype);
+          OS_M256:
+            result:=tstoreddef(x86_m256itype);
+          OS_M256F:
+            result:=tstoreddef(x86_m256type);
+          OS_M256D:
+            result:=tstoreddef(x86_m256dtype);
+          else
+            internalerror(2012050402);
+        end;
+      end;
+
     function def_cgmmsize(def: tdef): tcgsize;
       begin
         case def.typ of
@@ -1866,19 +1979,19 @@ implementation
                     case TFloatDef(tarraydef(def).elementdef).floattype of
                       s32real:
                         case def.size of
-                          4:  result:=OS_M32;
-                          16: result:=OS_M128;
-                          32: result:=OS_M256;
-                          64: result:=OS_M512;
+                          4:  result:=OS_M32F;
+                          16: result:=OS_M128F;
+                          32: result:=OS_M256F;
+                          64: result:=OS_M512F;
                           else
                             internalerror(2017121400);
                         end;
                       s64real:
                         case def.size of
-                          8:  result:=OS_M64;
-                          16: result:=OS_M128;
-                          32: result:=OS_M256;
-                          64: result:=OS_M512;
+                          8:  result:=OS_M64D;
+                          16: result:=OS_M128D;
+                          32: result:=OS_M256D;
+                          64: result:=OS_M512D;
                           else
                             internalerror(2017121401);
                         end;

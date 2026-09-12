@@ -429,6 +429,7 @@ implementation
         wordfarpointertype:=tcpupointerdefclass(cpointerdef).createx86(u16inttype,x86pt_far);
         longintfarpointertype:=tcpupointerdefclass(cpointerdef).createx86(s32inttype,x86pt_far);
   {$endif i8086}
+{$endif x86}
         x86_m64type:=carraydef.create_vector(0,1,s32inttype);
         x86_m128type:=carraydef.create_vector(0,3,s32inttype);
         x86_m128dtype:=carraydef.create_vector(0,1,s32inttype);
@@ -444,7 +445,6 @@ implementation
         tarraydef(x86_m256type).elementdef:=s32floattype;
         tarraydef(x86_m256dtype).elementdef:=s64floattype;
         tarraydef(x86_m256itype).elementdef:=s32floattype;
-{$endif x86}
 {$ifdef wasm}
         wasmvoidexternreftype:=tcpupointerdefclass.create_externref(voidtype);
 {$endif wasm}
@@ -511,6 +511,7 @@ implementation
         addtype('FarPointer',voidfarpointertype);
         addtype('HugePointer',voidhugepointertype);
   {$endif i8086}
+{$endif x86}
         addtype('__m64',x86_m64type);
         addtype('__m128', x86_m128type);
         addtype('__m128d',x86_m128dtype);
@@ -518,7 +519,6 @@ implementation
         addtype('__m256', x86_m256type);
         addtype('__m256d',x86_m256dtype);
         addtype('__m256i',x86_m256itype);
-{$endif x86}
         addtype('ShortString',cshortstringtype);
 {$ifdef support_longstring}
         addtype('LongString',clongstringtype);

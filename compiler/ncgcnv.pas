@@ -531,6 +531,25 @@ interface
                     internalerror(2003012261);
                 end;
               end;
+            LOC_MMLANE,
+            LOC_CMMLANE:
+              begin
+                case expectloc of
+                  LOC_FPUREGISTER:
+                    begin
+                      hlcg.location_force_fpureg(current_asmdata.CurrAsmList,left.location,left.resultdef,false);
+                      location.register:=cg.getfpuregister(current_asmdata.CurrAsmList,location.size);
+                      hlcg.a_loadfpu_reg_reg(current_asmdata.CurrAsmList,left.resultdef,resultdef,left.location.register,location.register);
+                    end;
+                  LOC_MMREGISTER:
+                    begin
+                      location.register:=hlcg.getmmregister(current_asmdata.CurrAsmList,resultdef);
+                      hlcg.a_loadmm_lane_reg(current_asmdata.CurrAsmList,left.resultdef,resultdef,left.location.mmlane,location.register,mms_movescalar);
+                    end;
+                  else
+                    internalerror(2003012261);
+                end;
+              end;
             else
               internalerror(2002032215);
          end;
@@ -814,7 +833,10 @@ interface
             (resultdef.typ=floatdef) and
             (location.loc=LOC_CONSTANT)
            ) or
-           ((resultdef.typ=floatdef) xor (location.loc in [LOC_CFPUREGISTER,LOC_FPUREGISTER,LOC_CMMREGISTER,LOC_MMREGISTER])) then
+           (
+             ((resultdef.typ=floatdef) xor (location.loc in [LOC_CFPUREGISTER,LOC_FPUREGISTER,LOC_CMMREGISTER,LOC_MMREGISTER])) and
+             not (is_vector(resultdef) and (location.loc in [LOC_CMMREGISTER,LOC_MMREGISTER]))
+           ) then
           begin
             { check if the CPU supports direct moves between int and fpu registers and take advantage of it }
 {$ifdef cpufloatintregmov}

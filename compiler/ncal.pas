@@ -2890,16 +2890,17 @@ implementation
           realresdef:=tstoreddef(typedef);
         if realresdef.is_intregable then
           result:=LOC_REGISTER
-        else if (realresdef.typ=floatdef) and
-          not(cs_fp_emulation in current_settings.moduleswitches) then
-          if use_vectorfpu(realresdef) then
-            result:=LOC_MMREGISTER
-          else
-{$ifdef x86}
-            result:=LOC_REFERENCE
-{$else x86}
-            result:=LOC_FPUREGISTER
+        else if not(cs_fp_emulation in current_settings.moduleswitches) then
+          begin
+            if use_vectorfpu(realresdef) then
+              result:=LOC_MMREGISTER
+{$ifndef x86}
+            else if (realresdef.typ=floatdef) then
+              result:=LOC_FPUREGISTER
 {$endif x86}
+            else
+              result:=LOC_REFERENCE;
+          end
         else
           result:=LOC_REFERENCE
       end;

@@ -756,7 +756,8 @@ implementation
                   lnode.location.size,lnode.location.size,
                   lnode.location.reference,location.register);
              end;
-           LOC_MMREGISTER,LOC_CMMREGISTER:
+           LOC_MMREGISTER,LOC_CMMREGISTER,
+           LOC_MMLANE,LOC_CMMLANE:
              begin
                location:=lnode.location;
                hlcg.location_force_fpureg(current_asmdata.CurrAsmList,location,lnode.resultdef,false);

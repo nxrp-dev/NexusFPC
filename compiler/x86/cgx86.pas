@@ -96,10 +96,17 @@ unit cgx86;
         procedure a_loadmm_reg_reg(list: TAsmList; fromsize, tosize : tcgsize;reg1, reg2: tregister;shuffle : pmmshuffle); override;
         procedure a_loadmm_ref_reg(list: TAsmList; fromsize, tosize : tcgsize;const ref: treference; reg: tregister;shuffle : pmmshuffle); override;
         procedure a_loadmm_reg_ref(list: TAsmList; fromsize, tosize : tcgsize;reg: tregister; const ref: treference;shuffle : pmmshuffle); override;
+        procedure a_loadmm_lane_reg(list: TAsmList; fromsize, tosize : tcgsize; const mmlane: tmmlane; const reg: tregister;shuffle : pmmshuffle); override;
+        procedure a_loadmm_lane_ref(list: TAsmList; fromsize, tosize : tcgsize; const mmlane: tmmlane; const ref: treference;shuffle : pmmshuffle); override;
+        procedure a_loadmm_lane_lane(list: TAsmList; fromsize, tosize : tcgsize; const mmlane1, mmlane2: tmmlane;shuffle : pmmshuffle); override;
+        procedure a_loadmm_reg_lane(list: TAsmList; fromsize, tosize : tcgsize; const reg: tregister; const mmlane: tmmlane;shuffle : pmmshuffle); override;
+        procedure a_loadmm_ref_lane(list: TAsmList; fromsize, tosize : tcgsize; const ref: treference; const mmlane: tmmlane;shuffle : pmmshuffle); override;
         procedure a_opmm_ref_reg(list: TAsmList; Op: TOpCG; size : tcgsize;const ref: treference; reg: tregister;shuffle : pmmshuffle); override;
-        procedure a_opmm_reg_reg(list: TAsmList; Op: TOpCG; size : tcgsize;src,dst: tregister;shuffle : pmmshuffle);override;
-        procedure a_opmm_ref_reg_reg(list : TAsmList;Op : TOpCG;size : tcgsize;const ref : treference;src,dst : tregister;shuffle : pmmshuffle);override;
-        procedure a_opmm_reg_reg_reg(list : TAsmList;Op : TOpCG;size : tcgsize;src1,src2,dst : tregister;shuffle : pmmshuffle);override;
+        procedure a_opmm_reg_reg(list: TAsmList; Op: TOpCG; size : tcgsize;src,dst: tregister;shuffle : pmmshuffle); override;
+        procedure a_opmm_lane_reg(list: TAsmList; Op: TOpCG; size : tcgsize;const mmlane: tmmlane; reg: tregister;shuffle : pmmshuffle); override;
+        procedure a_opmm_ref_reg_reg(list : TAsmList;Op : TOpCG;size : tcgsize;const ref : treference;src,dst : tregister;shuffle : pmmshuffle) ;override;
+        procedure a_opmm_reg_reg_reg(list : TAsmList;Op : TOpCG;size : tcgsize;src1,src2,dst : tregister;shuffle : pmmshuffle); override;
+        procedure a_opmm_lane_reg_reg(list: TAsmList; Op: TOpCG; size : tcgsize;const mmlane: tmmlane; src,dst: tregister;shuffle : pmmshuffle); override;
 
         {  comparison operations }
         procedure a_cmp_const_reg_label(list : TAsmList;size : tcgsize;cmp_op : topcmp;a : tcgint;reg : tregister;
@@ -143,6 +150,8 @@ unit cgx86;
         procedure a_jmp_cond(list : TAsmList;cond : TOpCmp;l: tasmlabel);
         procedure check_register_size(size:tcgsize;reg:tregister);
 
+        procedure mm_maybe_typecast_reg_reg(list: TAsmList; fromsize,tosize: tcgsize; reg1,reg2: tregister;preserve_dest:boolean);
+
         procedure opmm_loc_reg(list: TAsmList; Op: TOpCG; size : tcgsize;loc : tlocation;dst: tregister; shuffle : pmmshuffle);
         procedure opmm_loc_reg_reg(list : TAsmList;Op : TOpCG;size : tcgsize;loc : tlocation;src,dst : tregister;shuffle : pmmshuffle);
 
@@ -163,16 +172,22 @@ unit cgx86;
       TCGSize2OpSize: Array[tcgsize] of topsize =
         (S_NO,S_B,S_W,S_L,S_Q,S_XMM,S_B,S_W,S_L,S_Q,S_XMM,
          S_FS,S_FL,S_FX,S_IQ,S_FXX,
+         S_NO,S_NO,S_NO,S_MD,S_XMM,S_YMM,S_ZMM,
+         S_NO,S_NO,S_NO,S_MD,S_XMM,S_YMM,S_ZMM,
          S_NO,S_NO,S_NO,S_MD,S_XMM,S_YMM,S_ZMM);
 {$elseif defined(i386)}
       TCGSize2OpSize: Array[tcgsize] of topsize =
         (S_NO,S_B,S_W,S_L,S_L,S_T,S_B,S_W,S_L,S_L,S_L,
          S_FS,S_FL,S_FX,S_IQ,S_FXX,
+         S_NO,S_NO,S_NO,S_MD,S_XMM,S_YMM,S_ZMM,
+         S_NO,S_NO,S_NO,S_MD,S_XMM,S_YMM,S_ZMM,
          S_NO,S_NO,S_NO,S_MD,S_XMM,S_YMM,S_ZMM);
 {$elseif defined(i8086)}
       TCGSize2OpSize: Array[tcgsize] of topsize =
         (S_NO,S_B,S_W,S_W,S_W,S_T,S_B,S_W,S_W,S_W,S_W,
          S_FS,S_FL,S_FX,S_IQ,S_FXX,
+         S_NO,S_NO,S_NO,S_MD,S_XMM,S_YMM,S_ZMM,
+         S_NO,S_NO,S_NO,S_MD,S_XMM,S_YMM,S_ZMM,
          S_NO,S_NO,S_NO,S_MD,S_XMM,S_YMM,S_ZMM);
 {$endif}
 
@@ -283,11 +298,17 @@ unit cgx86;
             result:=rg[R_MMREGISTER].getregister(list,R_SUBQ);
           OS_128,
           OS_M128,
+          OS_M128F,
+          OS_M128D,
           OS_F128:
             result:=rg[R_MMREGISTER].getregister(list,R_SUBMMX); { R_SUBMMWHOLE seems a bit dangerous and ambiguous, so changed to R_SUBMMX. [Kit] }
-          OS_M256:
+          OS_M256,
+          OS_M256F,
+          OS_M256D:
             result:=rg[R_MMREGISTER].getregister(list,R_SUBMMY);
-          OS_M512:
+          OS_M512,
+          OS_M512F,
+          OS_M512D:
             result:=rg[R_MMREGISTER].getregister(list,R_SUBMMZ);
           else
             internalerror(200506041);
@@ -1398,22 +1419,31 @@ unit cgx86;
                   result:=A_VMOVQ
                 else
                   result:=A_MOVQ;
-              OS_M128:
+              OS_M128,
+              OS_M256,
+              OS_M512:
                 { 128-bit aligned vector }
                 if UseAVX then
                   begin
                     if aligned then
-                      result:=A_VMOVAPS
+                      result:=A_VMOVDQA
                     else
-                      result:=A_VMOVUPS;
+                      result:=A_VMOVDQU;
                   end
-                else if aligned then
-                  result:=A_MOVAPS
                 else
-                  result:=A_MOVUPS;
-              OS_M256,
-              OS_M512:
-                { 256-bit aligned vector }
+                  begin
+                    if fromsize = OS_M512 then
+                      InternalError(2018012930);
+
+                    if aligned then
+                      result:=A_MOVDQA
+                    else
+                      result:=A_MOVDQU;
+                  end;
+              OS_M128F,
+              OS_M256F,
+              OS_M512F:
+                { Vector of Singles }
                 if UseAVX then
                   begin
                     if aligned then
@@ -1422,19 +1452,76 @@ unit cgx86;
                       result:=A_VMOVUPS;
                   end
                 else
-                  { SSE does not support 256-bit or 512-bit vectors }
-                  InternalError(2018012930);
+                  begin
+                    if fromsize = OS_M512F then
+                      InternalError(2018012931);
+
+                    if aligned then
+                      result:=A_MOVAPS
+                    else
+                      result:=A_MOVUPS;
+                  end;
+              OS_M128D,
+              OS_M256D,
+              OS_M512D:
+                { Vector of Doubles }
+                if UseAVX then
+                  begin
+                    if aligned then
+                      result:=A_VMOVAPD
+                    else
+                      result:=A_VMOVUPD;
+                  end
+                else
+                  begin
+                    if fromsize = OS_M512D then
+                      InternalError(2018012932);
+
+                    if aligned then
+                      result:=A_MOVAPD
+                    else
+                      result:=A_MOVUPD;
+                  end;
               else
                 InternalError(2018012920);
             end;
           end
-        else if (tcgsize2size[fromsize]=tcgsize2size[tosize]) and
-          (fromsize=OS_M128) then
+        else if (tcgsize2size[fromsize]=tcgsize2size[tosize]) then
           begin
-            if UseAVX then
-              result:=A_VMOVDQU
-            else
-              result:=A_MOVDQU;
+            case fromsize of
+              OS_M128, OS_M256, OS_M512:
+                begin
+                  if UseAVX then
+                    result:=A_VMOVDQU
+                  else if fromsize = OS_M512 then
+                    InternalError(2018012933)
+                  else
+                    result:=A_MOVDQU;
+                end;
+
+              OS_M128F, OS_M256F, OS_M512F:
+                begin
+                  if UseAVX then
+                    result:=A_VMOVUPS
+                  else if fromsize = OS_M512F then
+                    InternalError(2018012934)
+                  else
+                    result:=A_MOVUPS;
+                end;
+
+              OS_M128D, OS_M256D, OS_M512D:
+                begin
+                  if UseAVX then
+                    result:=A_VMOVUPD
+                  else if fromsize = OS_M512D then
+                    InternalError(2018012935)
+                  else
+                    result:=A_MOVUPD;
+                end;
+
+              else
+                internalerror(2010060105);
+            end;
           end
         else
           internalerror(2010060104);
@@ -1447,6 +1534,7 @@ unit cgx86;
       var
         instr : taicpu;
         op : TAsmOp;
+        hreg : TRegister;
       begin
         if shuffle=nil then
           begin
@@ -1473,15 +1561,106 @@ unit cgx86;
                     instr:=taicpu.op_reg_reg(A_VMOVDQA,S_NO,reg1,reg2)
                   else
                     instr:=taicpu.op_reg_reg(A_MOVDQA,S_NO,reg1,reg2);
-                OS_M256,
-                OS_M512:
+                OS_M128F:
+                  if UseAVX then
+                    instr:=taicpu.op_reg_reg(A_VMOVAPS,S_NO,reg1,reg2)
+                  else
+                    instr:=taicpu.op_reg_reg(A_MOVAPS,S_NO,reg1,reg2);
+                OS_M128D:
+                  if UseAVX then
+                    instr:=taicpu.op_reg_reg(A_VMOVAPD,S_NO,reg1,reg2)
+                  else
+                    instr:=taicpu.op_reg_reg(A_MOVAPD,S_NO,reg1,reg2);
+                OS_M256:
                   if UseAVX then
                     instr:=taicpu.op_reg_reg(A_VMOVDQA,S_NO,reg1,reg2)
                   else
+                    { SSE doesn't support 256-bit vectors }
+                    InternalError(2018012936);
+                OS_M256F,
+                OS_M512F:
+                  if UseAVX then
+                    instr:=taicpu.op_reg_reg(A_VMOVAPS,S_NO,reg1,reg2)
+                  else
+                    { SSE doesn't support 256-bit or 512-bit  vectors }
+                    InternalError(2018012937);
+                OS_M256D,
+                OS_M512D:
+                  if UseAVX then
+                    instr:=taicpu.op_reg_reg(A_VMOVAPD,S_NO,reg1,reg2)
+                  else
+                    { SSE doesn't support 256-bit or 512-bit vectors }
+                    InternalError(2018012938);
+                OS_M512:
+                  if UseAVX then
+                    instr:=taicpu.op_reg_reg(A_VMOVDQA64,S_NO,reg1,reg2)
+                  else
                     { SSE doesn't support 512-bit vectors }
-                    InternalError(2018012933);
+                    InternalError(2018012939);
                 else
                   internalerror(2006091201);
+              end
+
+            { Permit moves between differently-sized vector types, which might
+              occur with unions etc. }
+            else if (tosize=OS_M128F) and (fromsize in [OS_M128, OS_M128D]) then
+              begin
+                if UseAVX then
+                  instr:=taicpu.op_reg_reg(A_VMOVAPS,S_NO,reg1,reg2)
+                else
+                  instr:=taicpu.op_reg_reg(A_MOVAPS,S_NO,reg1,reg2);
+              end
+            else if (
+                ((tosize=OS_M256F) and (fromsize in [OS_M256, OS_M256D])) or
+                ((tosize=OS_M512F) and (fromsize in [OS_M512, OS_M512D]))
+              ) then
+              begin
+                if UseAVX then
+                  instr:=taicpu.op_reg_reg(A_VMOVAPS,S_NO,reg1,reg2)
+                else
+                  { SSE doesn't support 256-bit or 512-bit vectors }
+                  InternalError(2018012940);
+              end
+            else if (tosize=OS_M128D) and (fromsize in [OS_M128, OS_M128F]) then
+              begin
+                if UseAVX then
+                  instr:=taicpu.op_reg_reg(A_VMOVAPD,S_NO,reg1,reg2)
+                else
+                  instr:=taicpu.op_reg_reg(A_MOVAPD,S_NO,reg1,reg2);
+              end
+            else if (
+                ((tosize=OS_M256D) and (fromsize in [OS_M256, OS_M256F])) or
+                ((tosize=OS_M512D) and (fromsize in [OS_M512, OS_M512F]))
+              ) then
+              begin
+                if UseAVX then
+                  instr:=taicpu.op_reg_reg(A_VMOVAPD,S_NO,reg1,reg2)
+                else
+                  { SSE doesn't support 256-bit or 512-bit vectors }
+                  InternalError(2018012941);
+              end
+            else if (tosize=OS_M128) and (fromsize in [OS_M128F, OS_M128D]) then
+              begin
+                if UseAVX then
+                  instr:=taicpu.op_reg_reg(A_VMOVDQA,S_NO,reg1,reg2)
+                else
+                  instr:=taicpu.op_reg_reg(A_MOVDQA,S_NO,reg1,reg2);
+              end
+            else if (tosize=OS_M256) and (fromsize in [OS_M256F, OS_M256D]) then
+              begin
+                if UseAVX then
+                  instr:=taicpu.op_reg_reg(A_VMOVDQA,S_NO,reg1,reg2)
+                else
+                  { SSE doesn't support 256-bit vectors }
+                  InternalError(2018012942);
+              end
+            else if (tosize=OS_M512) and (fromsize in [OS_M512F, OS_M512D]) then
+              begin
+                if UseAVX then
+                  instr:=taicpu.op_reg_reg(A_VMOVDQA64,S_NO,reg1,reg2)
+                else
+                  { SSE doesn't support 512-bit vectors }
+                  InternalError(2018012943);
               end
             else
               internalerror(200312202);
@@ -1511,11 +1690,15 @@ unit cgx86;
             case op of
               A_VMOVAPD,
               A_VMOVAPS,
+              A_VMOVUPD,
+              A_VMOVUPS,
               A_VMOVSS,
               A_VMOVSD,
               A_VMOVQ,
               A_MOVAPD,
               A_MOVAPS,
+              A_MOVUPD,
+              A_MOVUPS,
               A_MOVSS,
               A_MOVSD,
               A_MOVQ:
@@ -1525,7 +1708,185 @@ unit cgx86;
             end;
           end
         else
-          internalerror(200312201);
+          begin
+            { Suppress warnings }
+            instr:=nil;
+            { Note, 256-bit and 512-bit MM shuffling are not yet supported }
+            case fromsize of
+              OS_F64:
+                begin
+                  { insert a double into a MM register lane while preserving
+                    the others }
+                  if shuffle^.len <> 1 then
+                    InternalError(2024082114);
+
+                  case tosize of
+                    OS_F64,
+                    OS_M64D:
+                      begin
+                        case shuffle^.shuffles[1] of
+                          0:
+                            { lower 64 bite to lower 64-bits - just copy the output }
+                            begin
+                              if UseAVX then
+                                instr:=taicpu.op_reg_reg_reg(A_VMOVSD,S_NO,reg1,reg2,reg2)
+                              else
+                                instr:=taicpu.op_reg_reg(A_MOVSD,S_NO,reg1,reg2);
+
+                              add_move_instruction(instr);
+                            end;
+                          $100:
+                            { lower 64 bite to upper 64-bits }
+                            begin
+                              if UseAVX then
+                                instr:=taicpu.op_const_reg_reg_reg(A_VSHUFPD,S_NO,%0000,reg1,reg2,reg2)
+                              else
+                                instr:=taicpu.op_const_reg_reg(A_SHUFPD,S_NO,%0000,reg1,reg2);
+                            end;
+                          else
+                            InternalError(2024082115);
+                        end;
+                      end;
+                    else
+                      InternalError(2024082108);
+                  end;
+                end;
+              OS_M128F:
+                { Shuffle singles }
+                begin
+                  case tosize of
+                    OS_M64,
+                    OS_M64F:
+                      { Transfer 2 singles }
+                      begin
+                        if shuffle^.len <> 1 then
+                          InternalError(2024082110);
+
+                        case shuffle^.shuffles[1] of
+                          0:
+                            { lower 64 bite to lower 64-bits - just copy the output }
+                            begin
+                              if UseAVX then
+                                op:=A_VMOVAPS
+                              else
+                                op:=A_MOVAPS;
+
+                              instr:=taicpu.op_reg_reg(op,S_NO,reg1,reg2);
+                              add_move_instruction(instr);
+                            end;
+                          1:
+                            { Upper 64 bits to lower 64 bits }
+                            begin
+                              if UseAVX then
+                                instr:=taicpu.op_const_reg_reg_reg(A_VSHUFPS,S_NO,%11101110,reg1,reg1,reg2)
+                              else
+                                begin
+                                  { Expand the register to the full MM so register
+                                    allocation and spilling doesn't use the wrong
+                                    move instruction later }
+                                  hreg:=getmmregister(list,reg_cgsize(reg1));
+
+                                  { Copy to the output first }
+                                  instr:=taicpu.op_reg_reg(A_MOVAPS,S_NO,reg1,hreg);
+                                  add_move_instruction(instr);
+                                  list.concat(instr);
+
+                                  list.concat(taicpu.op_const_reg_reg(A_SHUFPS,S_NO,%11101110,hreg,hreg));
+
+                                  instr:=taicpu.op_reg_reg(A_MOVAPS,S_NO,hreg,reg2);
+                                  add_move_instruction(instr);
+                                end;
+                            end;
+                          else
+                            InternalError(2024082111);
+                        end;
+                      end;
+                    else
+                      InternalError(2024082104);
+                  end;
+                end;
+              OS_M128D:
+                { Shuffle doubles }
+                begin
+                  case tosize of
+                     OS_F64,
+                     OS_M64,
+                     OS_M64D:
+                       { Transfer 1 double }
+                       begin
+                         if shuffle^.len <> 1 then
+                           InternalError(2024082112);
+
+                         case shuffle^.shuffles[1] of
+                           0:
+                             { lower 64 bite to lower 64-bits - just copy the output }
+                             begin
+                               if UseAVX then
+                                 op:=A_VMOVAPD
+                               else
+                                 op:=A_MOVAPD;
+
+                               instr:=taicpu.op_reg_reg(op,S_NO,reg1,reg2);
+                               add_move_instruction(instr);
+                             end;
+                           1:
+                             { Upper 64 bits to lower 64 bits }
+                             begin
+                               if UseAVX then
+                                 instr:=taicpu.op_const_reg_reg_reg(A_VSHUFPD,S_NO,%01,reg1,reg1,reg2)
+                               else
+                                 begin
+                                   { Expand the register to the full MM so register
+                                     allocation and spilling doesn't use the wrong
+                                     move instruction later }
+                                   hreg:=getmmregister(list,reg_cgsize(reg1));
+
+                                   { Copy to the output first }
+                                   instr:=taicpu.op_reg_reg(A_MOVAPD,S_NO,reg1,hreg);
+                                   add_move_instruction(instr);
+                                   list.concat(instr);
+
+                                   list.concat(taicpu.op_const_reg_reg(A_SHUFPD,S_NO,%01,hreg,hreg));
+
+                                   instr:=taicpu.op_reg_reg(A_MOVAPD,S_NO,hreg,reg2);
+                                   add_move_instruction(instr);
+                                 end;
+                             end;
+                           else
+                             InternalError(2024082113);
+                         end;
+                       end;
+                    else
+                      InternalError(2024082105);
+                  end;
+                end;
+              OS_M256F:
+                { Shuffle singles }
+                begin
+                  if not UseAVX then
+                    InternalError(2024082101);
+
+//                  case tosize of
+//                    else
+//                      InternalError(2024082106);
+//                  end;
+                end;
+              OS_M256D:
+                { Shuffle doubles }
+
+                begin
+                  if not UseAVX then
+                    InternalError(2024082102);
+
+//                  case tosize of
+//                    else
+//                      InternalError(2024082107);
+//                  end;
+                end;
+              else
+                internalerror(200312201);
+            end;
+          end;
         list.concat(instr);
       end;
 
@@ -1602,6 +1963,86 @@ unit cgx86;
                  else
                    { SSE doesn't support 512-bit vectors }
                    InternalError(2018012939);
+               OS_M128F:
+                 { Use XMM single transfer }
+                 if UseAVX then
+                   begin
+                     if GetRefAlignment(tmpref) = 16 then
+                       op := A_VMOVAPS
+                     else
+                       op := A_VMOVUPS;
+                   end
+                 else
+                   begin
+                     if GetRefAlignment(tmpref) = 16 then
+                       op := A_MOVAPS
+                     else
+                       op := A_MOVUPS;
+                   end;
+               OS_M256F:
+                 { Use YMM single transfer }
+                 if UseAVX then
+                   begin
+                     if GetRefAlignment(tmpref) = 32 then
+                       op := A_VMOVAPS
+                     else
+                       op := A_VMOVUPS;
+                   end
+                 else
+                   { SSE doesn't support 256-bit vectors }
+                   Internalerror(2020010402);
+               OS_M512F:
+                 { Use ZMM single transfer }
+                 if UseAVX then
+                   begin
+                     if GetRefAlignment(tmpref) = 64 then
+                       op := A_VMOVAPS
+                     else
+                       op := A_VMOVUPS;
+                   end
+                 else
+                   { SSE doesn't support 512-bit vectors }
+                   InternalError(2020010403);
+               OS_M128D:
+                 { Use XMM double transfer }
+                 if UseAVX then
+                   begin
+                     if GetRefAlignment(tmpref) = 16 then
+                       op := A_VMOVAPD
+                     else
+                       op := A_VMOVUPD;
+                   end
+                 else
+                   begin
+                     if GetRefAlignment(tmpref) = 16 then
+                       op := A_MOVAPD
+                     else
+                       op := A_MOVUPD;
+                   end;
+               OS_M256D:
+                 { Use YMM double transfer }
+                 if UseAVX then
+                   begin
+                     if GetRefAlignment(tmpref) = 32 then
+                       op := A_VMOVAPD
+                     else
+                       op := A_VMOVUPD;
+                   end
+                 else
+                   { SSE doesn't support 256-bit vectors }
+                   Internalerror(2020010404);
+               OS_M512D:
+                 { Use ZMM double transfer }
+                 if UseAVX then
+                   begin
+                     if GetRefAlignment(tmpref) = 64 then
+                       op := A_VMOVAPD
+                     else
+                       op := A_VMOVUPD;
+                   end
+                 else
+                   { SSE doesn't support 512-bit vectors }
+                   InternalError(2020010405);
                else
                  { No valid transfer command available }
                  internalerror(2017121410);
@@ -1659,40 +2100,130 @@ unit cgx86;
                OS_M128:
                  { Use XMM integer transfer }
                  if UseAVX then
-                 begin
-                   if GetRefAlignment(tmpref) = 16 then
-                     op := A_VMOVDQA
-                   else
-                     op := A_VMOVDQU;
-                 end else
-                 begin
-                   if GetRefAlignment(tmpref) = 16 then
-                     op := A_MOVDQA
-                   else
-                     op := A_MOVDQU;
-                 end;
+                   begin
+                     if GetRefAlignment(tmpref) = 16 then
+                       op := A_VMOVDQA
+                     else
+                       op := A_VMOVDQU;
+                   end
+                 else
+                   begin
+                     if GetRefAlignment(tmpref) = 16 then
+                       op := A_MOVDQA
+                     else
+                       op := A_MOVDQU;
+                   end;
                OS_M256:
-                 { Use XMM integer transfer }
+                 { Use YMM integer transfer }
                  if UseAVX then
-                 begin
-                   if GetRefAlignment(tmpref) = 32 then
-                     op := A_VMOVDQA
-                   else
-                     op := A_VMOVDQU;
-                 end else
+                   begin
+                     if GetRefAlignment(tmpref) = 32 then
+                       op := A_VMOVDQA
+                     else
+                       op := A_VMOVDQU;
+                   end
+                 else
                    { SSE doesn't support 256-bit vectors }
                    InternalError(2018012942);
+
                OS_M512:
+                 { Use ZMM integer transfer }
+                 if UseAVX then
+                   begin
+                     if GetRefAlignment(tmpref) = 64 then
+                       op := A_VMOVDQA64
+                     else
+                       op := A_VMOVDQU64;
+                   end
+                 else
+                   { SSE doesn't support 512-bit vectors }
+                   InternalError(2018012943);
+
+               OS_M128F:
                  { Use XMM integer transfer }
                  if UseAVX then
-                 begin
-                   if GetRefAlignment(tmpref) = 64 then
-                     op := A_VMOVDQA64
-                   else
-                     op := A_VMOVDQU64;
-                 end else
+                   begin
+                     if GetRefAlignment(tmpref) = 16 then
+                       op := A_VMOVAPS
+                     else
+                       op := A_VMOVUPS;
+                   end
+                 else
+                   begin
+                     if GetRefAlignment(tmpref) = 16 then
+                       op := A_MOVAPS
+                     else
+                       op := A_MOVUPS;
+                   end;
+
+               OS_M256F:
+                 { Use YMM integer transfer }
+                 if UseAVX then
+                   begin
+                     if GetRefAlignment(tmpref) = 32 then
+                       op := A_VMOVAPS
+                     else
+                       op := A_VMOVUPS;
+                   end
+                 else
+                   { SSE doesn't support 256-bit vectors }
+                   InternalError(2018012944);
+
+               OS_M512F:
+                 { Use ZMM integer transfer }
+                 if UseAVX then
+                   begin
+                     if GetRefAlignment(tmpref) = 64 then
+                       op := A_VMOVAPS
+                     else
+                       op := A_VMOVUPS;
+                   end
+                 else
                    { SSE doesn't support 512-bit vectors }
                    InternalError(2018012945);
+
+               OS_M128D:
+                 { Use XMM integer transfer }
+                 if UseAVX then
+                   begin
+                     if GetRefAlignment(tmpref) = 16 then
+                       op := A_VMOVAPD
+                     else
+                       op := A_VMOVUPD;
+                   end
+                 else
+                   begin
+                     if GetRefAlignment(tmpref) = 16 then
+                       op := A_MOVAPD
+                     else
+                       op := A_MOVUPD;
+                   end;
+
+               OS_M256D:
+                 { Use YMM integer transfer }
+                 if UseAVX then
+                   begin
+                     if GetRefAlignment(tmpref) = 32 then
+                       op := A_VMOVAPD
+                     else
+                       op := A_VMOVUPD;
+                   end
+                 else
+                   { SSE doesn't support 256-bit vectors }
+                   InternalError(2018012946);
+
+               OS_M512D:
+                 { Use ZMM integer transfer }
+                 if UseAVX then
+                   begin
+                     if GetRefAlignment(tmpref) = 64 then
+                       op := A_VMOVAPD
+                     else
+                       op := A_VMOVUPD;
+                   end
+                 else
+                   { SSE doesn't support 512-bit vectors }
+                   InternalError(2018012947);
                else
                  { No valid transfer command available }
                  internalerror(2017121411);
@@ -1721,6 +2252,714 @@ unit cgx86;
            internalerror(2003122501);
        end;
 
+    { Inserts the appropriate move instruction.  If preserve_dest is set to true,
+      only the first lane of reg2 is written to and the other lanes retain their
+      data }
+    procedure tcgx86.mm_maybe_typecast_reg_reg(list: TAsmList; fromsize,tosize: tcgsize; reg1,reg2: tregister;preserve_dest:boolean);
+      var
+        op: TAsmOp;
+        instr: taicpu;
+        hreg: tregister;
+      begin
+        op:=get_scalar_mm_op(fromsize,tosize,true);
+        case op of
+          A_CVTSD2SS:
+            begin
+              if preserve_dest then
+                begin
+                  hreg:=getmmregister(list,tosize);
+                  list.concat(taicpu.op_reg_reg(A_CVTSD2SS,S_NO,reg1,hreg));
+                  instr:=taicpu.op_reg_reg(A_MOVSS,S_NO,hreg,reg2);
+                  add_move_instruction(instr);
+                  list.concat(instr);
+                end
+              else
+                list.concat(taicpu.op_reg_reg(A_CVTSD2SS,S_NO,reg1,reg2));
+            end;
+
+          A_CVTSS2SD:
+            begin
+              if preserve_dest then
+                begin
+                  hreg:=getmmregister(list,tosize);
+                  list.concat(taicpu.op_reg_reg(A_CVTSS2SD,S_NO,reg1,hreg));
+                  instr:=taicpu.op_reg_reg(A_MOVSD,S_NO,hreg,reg2);
+                  add_move_instruction(instr);
+                  list.concat(instr);
+                end
+              else
+                list.concat(taicpu.op_reg_reg(A_CVTSS2SD,S_NO,reg1,reg2));
+            end;
+
+          A_VCVTSD2SS, A_VCVTSS2SD:
+            list.concat(taicpu.op_reg_reg_reg(op,S_NO,reg1,reg2,reg2));
+
+          A_VMOVSS:
+            begin
+              if preserve_dest then
+                instr:=taicpu.op_reg_reg_reg(A_VMOVSS,S_NO,reg1,reg2,reg2)
+              else
+                instr:=taicpu.op_reg_reg(A_VMOVAPS,S_NO,reg1,reg2);
+              add_move_instruction(instr);
+              list.concat(instr);
+            end;
+
+          A_VMOVSD:
+            begin
+              if preserve_dest then
+                instr:=taicpu.op_reg_reg_reg(A_VMOVSD,S_NO,reg1,reg2,reg2)
+              else
+                instr:=taicpu.op_reg_reg(A_VMOVAPD,S_NO,reg1,reg2);
+              add_move_instruction(instr);
+              list.concat(instr);
+            end;
+
+          A_MOVSS:
+            begin
+              if not preserve_dest then
+                op:=A_MOVAPS;
+              instr:=taicpu.op_reg_reg(op,S_NO,reg1,reg2);
+              add_move_instruction(instr);
+              list.concat(instr);
+            end;
+
+          A_MOVSD:
+            begin
+              if not preserve_dest then
+                op:=A_MOVAPD;
+              instr:=taicpu.op_reg_reg(op,S_NO,reg1,reg2);
+              add_move_instruction(instr);
+              list.concat(instr);
+            end;
+
+          A_MOVAPS, A_MOVUPS, A_MOVAPD, A_MOVUPD,
+          A_VMOVAPS, A_VMOVUPS, A_VMOVAPD, A_VMOVUPD:
+            begin
+              instr:=taicpu.op_reg_reg(op,S_NO,reg1,reg2);
+              add_move_instruction(instr);
+              list.concat(instr);
+            end;
+
+          else
+            { Includes A_NONE }
+            InternalError(2025052410);
+        end;
+      end;
+
+
+    procedure tcgx86.a_loadmm_lane_reg(list: TAsmList; fromsize, tosize : tcgsize; const mmlane: tmmlane; const reg: tregister;shuffle : pmmshuffle);
+       var
+         instr: taicpu;
+         hreg, hreg2: tregister;
+      begin
+        case mmlane.lanesize of
+          OS_F32:
+            begin
+              if (fromsize<>mmlane.lanesize) then
+                InternalError(2025051832);
+
+              if mmlane.lanecount<>1 then
+                { Multi-lane counts not supported }
+                InternalError(2025051837);
+
+              case mmlane.laneindex of
+                0:
+                  { lower 32 bits to lower 32 bits - just copy the output }
+                  mm_maybe_typecast_reg_reg(list,fromsize,tosize,mmlane.reg,reg,false);
+                1..3:
+                  begin
+                    if (mmlane.reg=reg) or (fromsize<>tosize) then
+                      { Expand the register to the full MM so register
+                        allocation and spilling doesn't use the wrong
+                        move instruction later }
+                      hreg:=getmmregister(list,reg_cgsize(mmlane.reg))
+                    else
+                      hreg:=reg;
+
+                    if UseAVX then
+                      list.concat(taicpu.op_const_reg_reg_reg(A_VSHUFPS,S_NO,mmlane.laneindex,mmlane.reg,mmlane.reg,hreg))
+                    else
+                      begin
+                        instr:=taicpu.op_reg_reg(A_MOVAPS,S_NO,mmlane.reg,hreg);
+                        add_move_instruction(instr);
+                        list.concat(instr);
+
+                        list.concat(taicpu.op_const_reg_reg(A_SHUFPS,S_NO,mmlane.laneindex,hreg,hreg));
+                      end;
+
+                    if (mmlane.reg=reg) or (fromsize<>tosize) then
+                      mm_maybe_typecast_reg_reg(list,fromsize,tosize,hreg,reg,false);
+                  end;
+                else
+                  { Anything above 128-bit is not yet supported and should not
+                    be put into a register }
+                  InternalError(2025051851);
+              end;
+            end;
+
+          OS_F64:
+            begin
+              if (fromsize<>mmlane.lanesize) then
+                InternalError(2025051830);
+
+              if mmlane.lanecount<>1 then
+                { Multi-lane counts not supported }
+                InternalError(2025051831);
+
+              case mmlane.laneindex of
+                0:
+                  begin
+                    { lower 64 bits to lower 64-bits - just copy the output }
+                    mm_maybe_typecast_reg_reg(list,fromsize,tosize,mmlane.reg,reg,false);
+                  end;
+                1:
+                  begin
+                    if (mmlane.reg=reg) or (fromsize<>tosize) then
+                      hreg:=getmmregister(list,fromsize)
+                    else
+                      hreg:=reg;
+
+                    { Expand the register to the full MM so register
+                      allocation and spilling doesn't use the wrong
+                      move instruction later }
+                    setsubreg(hreg,getsubreg(mmlane.reg));
+
+                    if UseAVX then
+                      list.concat(taicpu.op_const_reg_reg_reg(A_VSHUFPD,S_NO,%11,mmlane.reg,mmlane.reg,hreg))
+                    else
+                      begin
+                        instr:=taicpu.op_reg_reg(A_MOVAPD,S_NO,mmlane.reg,hreg);
+                        add_move_instruction(instr);
+                        list.concat(instr);
+                        list.concat(taicpu.op_const_reg_reg(A_SHUFPD,S_NO,%11,hreg,hreg));
+                      end;
+
+                    if (mmlane.reg=reg) or (fromsize<>tosize) then
+                      mm_maybe_typecast_reg_reg(list,fromsize,tosize,hreg,reg,false);
+                  end;
+                else
+                  { Anything above 128-bit is not yet supported and should not
+                    be put into a register }
+                  InternalError(2025051850);
+              end;
+            end;
+          else
+            InternalError(2025051840);
+        end;
+      end;
+
+
+    procedure tcgx86.a_loadmm_lane_ref(list: TAsmList; fromsize, tosize : tcgsize; const mmlane: tmmlane; const ref: treference;shuffle : pmmshuffle);
+      var
+        op, full_op: tasmop;
+        instr: taicpu;
+        tmpref: treference;
+        shufflecode: byte;
+        hreg: tregister;
+      begin
+        tmpref:=ref;
+        make_simple_ref(list,tmpref);
+
+        case mmlane.lanesize of
+           OS_F32:
+             begin
+               if mmlane.laneindex>=4 then
+                 { Anything above 128-bit is not yet supported and should not
+                   be put into a register }
+                 InternalError(2025051857);
+
+               if (fromsize<>tosize) or (fromsize<>mmlane.lanesize) then
+                 InternalError(2025051828);
+
+               if mmlane.lanecount<>1 then
+                 { Multi-lane counts not supported }
+                 InternalError(2025051829);
+
+               { Suppress warnings }
+               shufflecode:=%11100100;
+
+               if UseAVX then
+                 op:=A_VMOVSS
+               else
+                 op:=A_MOVSS;
+
+               { Shuffle source lane with lane 0 }
+               if mmlane.laneindex<>0 then
+                 begin
+                   shufflecode:=(Byte(%11100100) and not (Byte(%11) shl (mmlane.laneindex*2))) or mmlane.laneindex;
+                   hreg:=getmmregister(list,tosize);
+                   if UseAVX then
+                     list.concat(taicpu.op_const_reg_reg_reg(A_VSHUFPS,S_NO,shufflecode,mmlane.reg,mmlane.reg,hreg))
+                   else
+                     begin
+                       instr:=taicpu.op_reg_reg(A_MOVAPS,S_NO,mmlane.reg,hreg);
+                       add_move_instruction(instr);
+                       list.concat(instr);
+                       list.concat(taicpu.op_const_reg_reg(A_SHUFPS,S_NO,shufflecode,mmlane.reg,hreg));
+                     end;
+                 end
+               else
+                 hreg:=mmlane.reg;
+
+               list.concat(taicpu.op_reg_ref(op,S_NO,hreg,tmpref));
+
+               { Shuffle lanes back (might make for better optimisations later) }
+               if (mmlane.laneindex<>0) and not UseAVX then
+                 list.concat(taicpu.op_const_reg_reg(A_SHUFPS,S_NO,shufflecode,hreg,hreg));
+             end;
+
+          OS_F64:
+            begin
+              if mmlane.laneindex>=4 then
+                { Anything above 128-bit is not yet supported and should not
+                  be put into a register }
+                InternalError(2025051856);
+
+              if (fromsize<>tosize) or (fromsize<>mmlane.lanesize) then
+                InternalError(2025051826);
+
+              if mmlane.lanecount<>1 then
+                { Multi-lane counts not supported }
+                InternalError(2025051827);
+
+              if UseAVX then
+                op:=A_VMOVSD
+              else
+                op:=A_MOVSD;
+
+              { Suppress warnings }
+              shufflecode:=%01;
+
+              { Shuffle source lane with lane 0 }
+              if mmlane.laneindex<>0 then
+                begin
+                  { Expand the register to the full MM so register allocation
+                    and spilling doesn't use the wrong move instruction later }
+                  hreg:=getmmregister(list,reg_cgsize(mmlane.reg));
+
+                  //shufflecode:=%01; //(%10 and not (%1 shl (mmlane.laneindex))) or mmlane.laneindex;
+                  if UseAVX then
+                    list.concat(taicpu.op_const_reg_reg_reg(A_VSHUFPD,S_NO,shufflecode,mmlane.reg,mmlane.reg,hreg))
+                  else
+                    begin
+                      instr:=taicpu.op_reg_reg(A_MOVAPD,S_NO,mmlane.reg,hreg);
+                      add_move_instruction(instr);
+                      list.concat(instr);
+                      list.concat(taicpu.op_const_reg_reg(A_SHUFPD,S_NO,shufflecode,hreg,hreg));
+                    end;
+                end
+              else
+                hreg:=mmlane.reg;
+
+              list.concat(taicpu.op_reg_ref(op,S_NO,hreg,tmpref));
+
+              { Shuffle lanes back - this will help the peephole optimizer make
+                better choices }
+              if mmlane.laneindex<>0 then
+                begin
+                  if UseAVX then
+                    list.concat(taicpu.op_const_reg_reg_reg(A_VSHUFPD,S_NO,shufflecode,hreg,hreg,hreg))
+                  else
+                    list.concat(taicpu.op_const_reg_reg(A_SHUFPD,S_NO,shufflecode,hreg,hreg));
+                end;
+            end;
+          else
+            InternalError(2025051841);
+        end;
+      end;
+
+
+    procedure tcgx86.a_loadmm_lane_lane(list: TAsmList; fromsize, tosize : tcgsize; const mmlane1, mmlane2: tmmlane;shuffle : pmmshuffle);
+      var
+        instr: taicpu;
+        full_op: tasmop;
+        hreg, hreg2: tregister;
+        shufflecode1, shufflecode2: byte;
+      begin
+        if (fromsize<>tosize) then
+          begin
+            { With different sizes, we have to use an intermediate register }
+            hreg:=getmmregister(list,tosize);
+            a_loadmm_lane_reg(list, fromsize, tosize, mmlane1, hreg, shuffle);
+            a_loadmm_reg_lane(list, tosize, tosize, hreg, mmlane2, shuffle);
+            Exit;
+          end;
+
+        case mmlane1.lanesize of
+          OS_F32:
+            begin
+              if (fromsize<>mmlane1.lanesize) or (tosize<>mmlane2.lanesize) then
+                InternalError(2025051838);
+
+              if (mmlane1.lanecount<>1) or (mmlane2.lanecount<>1) then
+                { Multi-lane counts not supported }
+                InternalError(2025051839);
+
+              if mmlane1.reg=mmlane2.reg then
+                begin
+                  { Same register, so we can just use a shuffle }
+                  if (mmlane1.laneindex<>mmlane2.laneindex) then
+                    begin
+                      { If the lanes are the same as well, it's a null operation,
+                        so we don't need to do anything }
+
+                      if (mmlane1.laneindex>=4) or (mmlane2.laneindex>=4) then
+                        { Anything above 128-bit is not yet supported and should not
+                          be put into a register }
+                        InternalError(2025051855);
+
+                      shufflecode1:=(%11100100 and not ((%11 shl (mmlane1.laneindex*2)) or (%11 shl (mmlane2.laneindex*2))))
+                        or (mmlane1.laneindex shl (mmlane2.laneindex*2))
+                        or (mmlane2.laneindex shl (mmlane2.laneindex*2));
+
+                      if UseAVX then
+                        list.concat(taicpu.op_const_reg_reg_reg(A_VSHUFPS,S_NO,shufflecode1,mmlane1.reg,mmlane1.reg,mmlane1.reg))
+                      else
+                        list.concat(taicpu.op_const_reg_reg(A_SHUFPS,S_NO,shufflecode1,mmlane1.reg,mmlane1.reg));
+                    end;
+                end
+              else
+                begin
+                  if (mmlane1.laneindex=0) and (mmlane2.laneindex=0) then
+                    begin
+                      { lower 64 bite to lower 64-bits - just copy the output }
+                      if UseAVX then
+                        instr:=taicpu.op_reg_reg_reg(A_VMOVSS,S_NO,mmlane1.reg,mmlane2.reg,mmlane2.reg)
+                      else
+                        instr:=taicpu.op_reg_reg(A_MOVSS,S_NO,mmlane1.reg,mmlane2.reg);
+
+                      add_move_instruction(instr);
+                      list.concat(instr);
+                    end
+                  else
+                    begin
+                      if (mmlane1.laneindex>=4) or (mmlane2.laneindex>=4) then
+                        { Anything above 128-bit is not yet supported and should not
+                          be put into a register }
+                        InternalError(2025051854);
+
+                      { Suppress warnings }
+                      shufflecode1:=%11100100;
+                      shufflecode2:=%11100100;
+
+                      { Shuffle source and target lanes with lane 0 on the respective registers }
+                      if mmlane1.laneindex<>0 then
+                        begin
+                          shufflecode1:=(%11100100 and not (%11 shl (mmlane1.laneindex*2))) or mmlane1.laneindex;
+                          if UseAVX then
+                            list.concat(taicpu.op_const_reg_reg_reg(A_VSHUFPS,S_NO,shufflecode1,mmlane1.reg,mmlane1.reg,mmlane1.reg))
+                          else
+                            list.concat(taicpu.op_const_reg_reg(A_SHUFPS,S_NO,shufflecode1,mmlane1.reg,mmlane1.reg));
+                        end;
+
+                      if mmlane2.laneindex<>0 then
+                        begin
+                          shufflecode2:=(%11100100 and not (%11 shl (mmlane2.laneindex*2))) or mmlane2.laneindex;
+                          if UseAVX then
+                            list.concat(taicpu.op_const_reg_reg_reg(A_VSHUFPS,S_NO,shufflecode2,mmlane2.reg,mmlane2.reg,mmlane2.reg))
+                          else
+                            list.concat(taicpu.op_const_reg_reg(A_SHUFPS,S_NO,shufflecode2,mmlane2.reg,mmlane2.reg));
+                        end;
+
+                      if UseAVX then
+                        instr:=taicpu.op_reg_reg_reg(A_VMOVSS,S_NO,mmlane1.reg,mmlane2.reg,mmlane2.reg)
+                      else
+                        instr:=taicpu.op_reg_reg(A_MOVSS,S_NO,mmlane1.reg,mmlane2.reg);
+
+                      add_move_instruction(instr);
+                      list.concat(instr);
+
+                      { Shuffle lanes back }
+                      if mmlane2.laneindex<>0 then
+                        begin
+                          if UseAVX then
+                            list.concat(taicpu.op_const_reg_reg_reg(A_VSHUFPS,S_NO,shufflecode2,mmlane2.reg,mmlane2.reg,mmlane2.reg))
+                          else
+                            list.concat(taicpu.op_const_reg_reg(A_SHUFPS,S_NO,shufflecode2,mmlane2.reg,mmlane2.reg));
+                        end;
+
+                      if mmlane1.laneindex<>0 then
+                        begin
+                          if UseAVX then
+                            list.concat(taicpu.op_const_reg_reg_reg(A_VSHUFPS,S_NO,shufflecode1,mmlane1.reg,mmlane1.reg,mmlane1.reg))
+                          else
+                            list.concat(taicpu.op_const_reg_reg(A_SHUFPS,S_NO,shufflecode1,mmlane1.reg,mmlane1.reg));
+                        end;
+                    end;
+                end;
+
+            end;
+
+          OS_F64:
+            begin
+              if (fromsize<>mmlane1.lanesize) or (tosize<>mmlane2.lanesize) then
+                InternalError(2025051833);
+
+              if (mmlane1.lanecount<>1) or (mmlane2.lanecount<>1) then
+                { Multi-lane counts not supported }
+                InternalError(2025051834);
+
+              if UseAVX then
+                full_op:=A_VMOVAPD
+              else
+                full_op:=A_MOVAPD;
+
+              case mmlane1.laneindex of
+                0:
+                  begin
+                    hreg:=getmmregister(list,tosize);
+
+                    instr:=taicpu.op_reg_reg(full_op,S_NO,mmlane2.reg,hreg);
+                    add_move_instruction(instr);
+                    list.concat(instr);
+
+                    case mmlane2.laneindex of
+                      0:
+                        begin
+                          { lower 64 bits to lower 64-bits - just copy the output }
+                          if UseAVX then
+                            instr:=taicpu.op_reg_reg_reg(A_VMOVSD,S_NO,mmlane1.reg,hreg,hreg)
+                          else
+                            instr:=taicpu.op_reg_reg(A_MOVSD,S_NO,mmlane1.reg,hreg);
+                          add_move_instruction(instr);
+                          list.concat(instr);
+                        end;
+                      1:
+                        begin
+                          if UseAVX then
+                            list.concat(taicpu.op_reg_reg_reg(A_VUNPCKLPD,S_NO,mmlane1.reg,hreg,hreg))
+                          else
+                            list.concat(taicpu.op_reg_reg(A_UNPCKLPD,S_NO,mmlane1.reg,hreg));
+                        end;
+                      else
+                        InternalError(2025051842);
+                    end;
+
+                    instr:=taicpu.op_reg_reg(full_op,S_NO,hreg,mmlane2.reg);
+                    add_move_instruction(instr);
+                    list.concat(instr);
+                  end;
+                1:
+                  begin
+                    hreg:=getmmregister(list,tosize);
+                    case mmlane2.laneindex of
+                      0:
+                        begin
+                          instr:=taicpu.op_reg_reg(full_op,S_NO,mmlane1.reg,hreg);
+                          add_move_instruction(instr);
+                          list.concat(instr);
+
+                          if UseAVX then
+                            begin
+                              hreg2:=getmmregister(list,tosize);
+                              instr:=taicpu.op_reg_reg(full_op,S_NO,mmlane2.reg,hreg2);
+                              add_move_instruction(instr);
+                              list.concat(instr);
+
+                              list.concat(taicpu.op_reg_reg_reg(A_VUNPCKHPD,S_NO,hreg2,hreg,hreg2));
+
+                              instr:=taicpu.op_reg_reg(full_op,S_NO,hreg2,mmlane2.reg);
+                              add_move_instruction(instr);
+                              list.concat(instr);
+                            end
+                          else
+                            begin
+                              list.concat(taicpu.op_reg_reg(A_UNPCKHPD,S_NO,mmlane2.reg,hreg));
+
+                              instr:=taicpu.op_reg_reg(full_op,S_NO,hreg,mmlane2.reg);
+                              add_move_instruction(instr);
+                              list.concat(instr);
+                            end;
+                        end;
+                      1:
+                        begin
+                          hreg:=getmmregister(list,tosize);
+                          instr:=taicpu.op_reg_reg(full_op,S_NO,mmlane2.reg,hreg);
+                          add_move_instruction(instr);
+                          list.concat(instr);
+
+                          if UseAVX then
+                            list.concat(taicpu.op_reg_reg_reg(A_VUNPCKLPD,S_NO,mmlane1.reg,hreg,hreg))
+                          else
+                            list.concat(taicpu.op_reg_reg(A_UNPCKLPD,S_NO,mmlane1.reg,hreg));
+
+                          instr:=taicpu.op_reg_reg(full_op,S_NO,hreg,mmlane2.reg);
+                          add_move_instruction(instr);
+                          list.concat(instr);
+                        end;
+                      else
+                        InternalError(2025051843);
+                    end;
+                  end;
+                else
+                  { Anything above 128-bit is not yet supported and should not
+                    be put into a register }
+                  InternalError(2025051844);
+              end;
+            end;
+          else
+            InternalError(2025051852);
+        end;
+      end;
+
+
+    procedure tcgx86.a_loadmm_reg_lane(list: TAsmList; fromsize, tosize : tcgsize; const reg: tregister; const mmlane: tmmlane;shuffle : pmmshuffle);
+      var
+        shufflecode: byte;
+        hreg: tregister;
+        instr: taicpu;
+        op, full_op: tasmop;
+      begin
+        case mmlane.lanesize of
+          OS_F32:
+            begin
+              if (tosize<>mmlane.lanesize) then
+                InternalError(2025051848);
+
+              if mmlane.lanecount<>1 then
+                { Multi-lane counts not supported }
+                InternalError(2025051849);
+
+              case mmlane.laneindex of
+                0:
+                  { lower 32 bits to lower 32 bits - just copy the output }
+                  mm_maybe_typecast_reg_reg(list,fromsize,tosize,reg,mmlane.reg,true);
+                1..3:
+                  if UseAVX then
+                    begin
+                      if (fromsize<>tosize) then
+                        begin
+                          hreg:=getmmregister(list,mmlane.lanesize);
+                          mm_maybe_typecast_reg_reg(list,fromsize,tosize,mmlane.reg,hreg,false);
+                        end
+                      else
+                        hreg:=reg;
+
+                      list.concat(taicpu.op_const_reg_reg_reg(A_VINSERTPS,S_NO,mmlane.laneindex shl 4,reg,mmlane.reg,mmlane.reg))
+                    end
+                  else
+                    begin
+                      shufflecode:=(%11100100 and not (%11 shl (mmlane.laneindex*2))) or mmlane.laneindex;
+
+                      if (reg=mmlane.reg) or (fromsize<>tosize) then
+                        begin
+                          { If the source is mapped onto the destination (e.g. via "absolute"),
+                            we need to copy its value to play safe }
+                          hreg:=getmmregister(list,mmlane.lanesize);
+                          mm_maybe_typecast_reg_reg(list,fromsize,tosize,mmlane.reg,hreg,false);
+                        end
+                      else
+                        hreg:=reg;
+
+                      { Swap target lane with lane 0 }
+                      list.concat(taicpu.op_const_reg_reg(A_SHUFPS,S_NO,shufflecode,mmlane.reg,mmlane.reg));
+
+                      instr:=taicpu.op_reg_reg(A_MOVSS,S_NO,hreg,mmlane.reg);
+                      add_move_instruction(instr);
+                      list.concat(instr);
+
+                      { Swap lanes back }
+                      list.concat(taicpu.op_const_reg_reg(A_SHUFPS,S_NO,shufflecode,mmlane.reg,mmlane.reg));
+                    end;
+                else
+                  { Anything above 128-bit is not yet supported and should not
+                    be put into a register }
+                  InternalError(2025051847);
+              end;
+            end;
+
+          OS_F64:
+            begin
+              if (tosize<>mmlane.lanesize) then
+                InternalError(2025051835);
+
+              if mmlane.lanecount<>1 then
+                { Multi-lane counts not supported }
+                InternalError(2025051836);
+
+              if UseAVX then
+                full_op:=A_VMOVAPD
+              else
+                full_op:=A_MOVAPD;
+
+              if (fromsize<>tosize) then
+                begin
+                  { If the source is mapped onto the destination (e.g. via "absolute"),
+                    we need to copy its value to play safe }
+                  hreg:=getmmregister(list,tosize);
+                  mm_maybe_typecast_reg_reg(list,fromsize,tosize,reg,hreg,false);
+                end
+              else
+                hreg:=reg;
+
+              case mmlane.laneindex of
+                0:
+                  { lower 64 bits to lower 64-bits - just copy the output }
+                  mm_maybe_typecast_reg_reg(list,tosize,tosize,hreg,mmlane.reg,true);
+
+                1:
+                  if UseAVX then
+                    list.concat(taicpu.op_reg_reg_reg(A_VUNPCKLPD,S_NO,hreg,mmlane.reg,mmlane.reg))
+                  else
+                    list.concat(taicpu.op_reg_reg(A_UNPCKLPD,S_NO,hreg,mmlane.reg));
+
+                else
+                  { Anything above 128-bit is not yet supported and should not
+                    be put into a register }
+                  InternalError(2025051845);
+              end;
+            end;
+          else
+            InternalError(2025051853);
+        end;
+      end;
+
+
+    procedure tcgx86.a_loadmm_ref_lane(list: TAsmList; fromsize, tosize : tcgsize; const ref: treference; const mmlane: tmmlane;shuffle : pmmshuffle);
+      var
+        tmpreg: TRegister;
+        tmpref: TReference;
+      begin
+        tmpref:=ref;
+        make_simple_ref(list,tmpref);
+
+        { In some situations, there are direct commands that we can use }
+        if (tosize=OS_F64) and (fromsize=tosize) then
+          begin
+            if (tosize<>mmlane.lanesize) then
+              InternalError(2025060101);
+
+            if mmlane.lanecount<>1 then
+              { Multi-lane counts not supported }
+              InternalError(2025060102);
+
+            case mmlane.laneindex of
+              0:
+                if UseAVX then
+                  list.concat(taicpu.op_ref_reg_reg(A_VMOVLPD,S_NO,tmpref,mmlane.reg,mmlane.reg))
+                else
+                  list.concat(taicpu.op_ref_reg(A_MOVLPD,S_NO,tmpref,mmlane.reg));
+
+              1:
+                if UseAVX then
+                  list.concat(taicpu.op_ref_reg_reg(A_VMOVHPD,S_NO,tmpref,mmlane.reg,mmlane.reg))
+                else
+                  list.concat(taicpu.op_ref_reg(A_MOVHPD,S_NO,tmpref,mmlane.reg));
+
+              else
+                { Anything above 128-bit is not yet supported and should not
+                  be put into a register }
+                InternalError(2025060103);
+            end;
+
+            Exit;
+          end;
+
+        tmpreg:=getmmregister(list,fromsize);
+        a_loadmm_ref_reg(list,fromsize,fromsize,tmpref,tmpreg,shuffle);
+        a_loadmm_reg_lane(list,fromsize,tosize,tmpreg,mmlane,shuffle);
+      end;
+
 
     procedure tcgx86.a_opmm_ref_reg(list: TAsmList; Op: TOpCG; size : tcgsize;const ref: treference; reg: tregister;shuffle : pmmshuffle);
       var
@@ -1744,15 +2983,26 @@ unit cgx86;
      end;
 
 
+    procedure tcgx86.a_opmm_lane_reg(list: TAsmList; Op: TOpCG; size : tcgsize;const mmlane: tmmlane; reg: tregister;shuffle : pmmshuffle);
+      var
+        l : tlocation;
+      begin
+        l.loc:=LOC_MMLANE;
+        l.mmlane:=mmlane;
+        l.size:=size;
+        opmm_loc_reg(list,op,size,l,reg,shuffle);
+      end;
+
+
     procedure tcgx86.opmm_loc_reg_reg(list: TAsmList; Op: TOpCG; size : tcgsize;loc : tlocation;src,dst: tregister; shuffle : pmmshuffle);
       const
         opmm2asmop : array[0..1,OS_F32..OS_F64,topcg] of tasmop = (
           ( { scalar }
             ( { OS_F32 }
-              A_NOP,A_NOP,A_VADDSS,A_NOP,A_VDIVSS,A_NOP,A_NOP,A_VMULSS,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_VSUBSS,A_NOP,A_NOP,A_NOP
+              A_NOP,A_NOP,A_VADDSS,A_VANDPS,A_VDIVSS,A_NOP,A_NOP,A_VMULSS,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_VSUBSS,A_VXORPS,A_NOP,A_NOP
             ),
             ( { OS_F64 }
-              A_NOP,A_NOP,A_VADDSD,A_NOP,A_VDIVSD,A_NOP,A_NOP,A_VMULSD,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_VSUBSD,A_NOP,A_NOP,A_NOP
+              A_NOP,A_NOP,A_VADDSD,A_VANDPD,A_VDIVSD,A_NOP,A_NOP,A_VMULSD,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_VSUBSD,A_VXORPD,A_NOP,A_NOP
             )
           ),
           ( { vectorized/packed }
@@ -1760,21 +3010,27 @@ unit cgx86;
               these
             }
             ( { OS_F32 }
-              A_NOP,A_NOP,A_VADDPS,A_NOP,A_VDIVPS,A_NOP,A_NOP,A_VMULPS,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_VSUBPS,A_VXORPS,A_NOP,A_NOP
+              A_NOP,A_NOP,A_VADDPS,A_VANDPS,A_VDIVPS,A_NOP,A_NOP,A_VMULPS,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_VSUBPS,A_VXORPS,A_NOP,A_NOP
             ),
             ( { OS_F64 }
-              A_NOP,A_NOP,A_VADDPD,A_NOP,A_VDIVPD,A_NOP,A_NOP,A_VMULPD,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_VSUBPD,A_VXORPD,A_NOP,A_NOP
+              A_NOP,A_NOP,A_VADDPD,A_VANDPD,A_VDIVPD,A_NOP,A_NOP,A_VMULPD,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_VSUBPD,A_VXORPD,A_NOP,A_NOP
             )
           )
         );
+        opmm2asmop_full : array[topcg] of tasmop = (
+          A_NOP,A_NOP,A_NOP,A_VPAND,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_NOP,A_VPOR,A_NOP,A_NOP,A_NOP,A_NOP,A_VPXOR,A_NOP,A_NOP
+        );
 
       var
-        resultreg : tregister;
-        asmop : tasmop;
+        hreg, resultreg : tregister;
+        asmop, movop : tasmop;
+        need_aligned : boolean;
+        alignment_mask : integer;
       begin
         { this is an internally used procedure so the parameters have
           some constrains
         }
+        alignment_mask:=0;
         if loc.size<>size then
           internalerror(2013061108);
         resultreg:=dst;
@@ -1785,10 +3041,28 @@ unit cgx86;
             internalerror(2013061107);
           end
         else if (shuffle=nil) then
-          asmop:=opmm2asmop[1,size,op]
+          begin
+            if (loc.loc in [LOC_CMMLANE,LOC_MMLANE]) then
+              { Only valid for full MM registers }
+              InternalError(2025052002);
+            if size in [OS_F32,OS_F64] then
+              asmop:=opmm2asmop[0,size,op]
+            else if size in [OS_M128F,OS_M256F,OS_M512F] then
+              asmop:=opmm2asmop[1,OS_F32,op]
+            else if size in [OS_M128D,OS_M256D,OS_M512D] then
+              asmop:=opmm2asmop[1,OS_F64,op]
+            else
+              asmop:=opmm2asmop_full[op];
+
+            if size in [OS_M256,OS_M256F,OS_M256D,OS_M512,OS_M512F,OS_M512D] then
+              Include(current_procinfo.flags,pi_uses_ymm);
+
+            need_aligned:=true;
+          end
         else if shufflescalar(shuffle) then
           begin
             asmop:=opmm2asmop[0,size,op];
+            need_aligned:=false;
             { no scalar operation available? }
             if asmop=A_NOP then
               begin
@@ -1804,7 +3078,36 @@ unit cgx86;
           LOC_CREFERENCE,LOC_REFERENCE:
             begin
               make_simple_ref(current_asmdata.CurrAsmList,loc.reference);
-              list.concat(taicpu.op_ref_reg_reg(asmop,S_NO,loc.reference,src,resultreg));
+              if need_aligned and ((loc.reference.alignment and alignment_mask)<>0) then
+                begin
+                  case reg_cgsize(dst) of
+                    OS_M128:
+                      alignment_mask:=$F;
+                    OS_M256:
+                      alignment_mask:=$1F;
+                    OS_M512:
+                      alignment_mask:=$3F;
+                    else
+                      InternalError(2025060110);
+                  end;
+
+                  if size in [OS_F32,OS_M128F,OS_M256F,OS_M512F] then
+                    movop:=A_VMOVUPS
+                  else
+                    movop:=A_VMOVUPD;
+                  hreg:=getmmregister(current_asmdata.CurrAsmList,reg_cgsize(dst));
+                  list.concat(taicpu.op_ref_reg(movop,S_NO,loc.reference,hreg));
+                  list.concat(taicpu.op_reg_reg_reg(asmop,S_NO,hreg,src,resultreg));
+                end
+              else
+                list.concat(taicpu.op_ref_reg_reg(asmop,S_NO,loc.reference,src,resultreg));
+            end;
+          LOC_CMMLANE,LOC_MMLANE:
+            begin
+              hreg:=getmmregister(list,loc.size);
+              a_loadmm_lane_reg(list,loc.size,loc.size,loc.mmlane,hreg,shuffle);
+
+              list.concat(taicpu.op_reg_reg_reg(asmop,S_NO,hreg,src,resultreg));
             end;
           LOC_CMMREGISTER,LOC_MMREGISTER:
             list.concat(taicpu.op_reg_reg_reg(asmop,S_NO,loc.register,src,resultreg));
@@ -1814,7 +3117,7 @@ unit cgx86;
         { shuffle }
         if resultreg<>dst then
           begin
-            internalerror(2013061103);
+            internalerror(2013061109);
           end;
       end;
 
@@ -1841,7 +3144,23 @@ unit cgx86;
       end;
 
 
+    procedure tcgx86.a_opmm_lane_reg_reg(list: TAsmList; Op: TOpCG; size : tcgsize;const mmlane: tmmlane; src,dst: tregister;shuffle : pmmshuffle);
+      var
+        l : tlocation;
+      begin
+        l.loc:=LOC_MMLANE;
+        l.mmlane:=mmlane;
+        l.size:=size;
+        opmm_loc_reg_reg(list,op,size,l,src,dst,shuffle);
+      end;
+
+
     procedure tcgx86.opmm_loc_reg(list: TAsmList; Op: TOpCG; size : tcgsize;loc : tlocation;dst: tregister; shuffle : pmmshuffle);
+      var
+        hreg : tregister;
+        instr : taicpu;
+        need_aligned : boolean;
+        alignment_mask : integer;
       const
         opmm2asmop : array[0..1,OS_F32..OS_F64,topcg] of tasmop = (
           ( { scalar }
@@ -1893,7 +3212,7 @@ unit cgx86;
         );
       var
         resultreg : tregister;
-        asmop : tasmop;
+        asmop, movop : tasmop;
       begin
         { this is an internally used procedure so the parameters have
           some constrains
@@ -1901,6 +3220,8 @@ unit cgx86;
         if loc.size<>size then
           internalerror(200312213);
         resultreg:=dst;
+        need_aligned:=false;
+        alignment_mask:=0;
         { deshuffle }
         //!!!
         if (shuffle<>nil) and not(shufflescalar(shuffle)) then
@@ -1909,6 +3230,9 @@ unit cgx86;
           end
         else if shuffle=nil then
           begin
+            if (loc.loc in [LOC_CMMLANE,LOC_MMLANE]) then
+              { Only valid for full MM registers }
+              InternalError(2025052001);
             if UseAVX then
               begin
                 asmop:=opmm2asmop_full_avx[op];
@@ -1917,11 +3241,21 @@ unit cgx86;
                 if (asmop=A_VPXOR) and (FPUX86_HAS_32MMREGS in fpu_capabilities[current_settings.fputype]) then
                   asmop:=A_VPXORD;
 {$endif x86_64}
-                if size in [OS_M256,OS_M512] then
+                if size in [OS_M256,OS_M256F,OS_M256D,OS_M512,OS_M512F,OS_M512D] then
                   Include(current_procinfo.flags,pi_uses_ymm);
               end
             else if size in [OS_F32,OS_F64] then
               asmop:=opmm2asmop[0,size,op]
+            else if size in [OS_M128F,OS_M256F,OS_M512F] then
+              begin
+                asmop:=opmm2asmop[1,OS_F32,op];
+                need_aligned:=true;
+              end
+            else if size in [OS_M128D,OS_M256D,OS_M512D] then
+              begin
+                asmop:=opmm2asmop[1,OS_F64,op];
+                need_aligned:=true;
+              end
             else
               asmop:=opmm2asmop_full[op];
           end
@@ -1943,17 +3277,66 @@ unit cgx86;
         case loc.loc of
           LOC_CREFERENCE,LOC_REFERENCE:
             begin
+              if need_aligned then
+                begin
+                  case reg_cgsize(dst) of
+                    OS_M128, OS_M128F, OS_M128D:
+                      alignment_mask:=$F;
+                    OS_M256, OS_M256F, OS_M256D:
+                      alignment_mask:=$1F;
+                    OS_M512, OS_M512F, OS_M512D:
+                      alignment_mask:=$3F;
+                    else
+                      InternalError(2025060111);
+                  end;
+                end;
               make_simple_ref(current_asmdata.CurrAsmList,loc.reference);
-              if UseAVX then
-                list.concat(taicpu.op_ref_reg_reg(asmop,S_NO,loc.reference,resultreg,resultreg))
+              if need_aligned and ((loc.reference.alignment and alignment_mask)<>0) then
+                begin
+                  if size in [OS_F32,OS_M128F,OS_M256F,OS_M512F] then
+                    begin
+                      if UseAVX then
+                        movop:=A_VMOVUPS
+                      else
+                        movop:=A_MOVUPS;
+                    end
+                  else
+                    begin
+                      if UseAVX then
+                        movop:=A_VMOVUPD
+                      else
+                        movop:=A_MOVUPD;
+                    end;
+                  hreg:=getmmregister(current_asmdata.CurrAsmList,reg_cgsize(dst));
+                  list.concat(taicpu.op_ref_reg(movop,S_NO,loc.reference,hreg));
+                  if UseAVX then
+                    list.concat(taicpu.op_reg_reg_reg(asmop,S_NO,hreg,resultreg,resultreg))
+                  else
+                    list.concat(taicpu.op_reg_reg(asmop,S_NO,hreg,resultreg));
+                end
               else
-                list.concat(taicpu.op_ref_reg(asmop,S_NO,loc.reference,resultreg));
+                begin
+                  if UseAVX then
+                    list.concat(taicpu.op_ref_reg_reg(asmop,S_NO,loc.reference,resultreg,resultreg))
+                  else
+                    list.concat(taicpu.op_ref_reg(asmop,S_NO,loc.reference,resultreg));
+                end;
             end;
           LOC_CMMREGISTER,LOC_MMREGISTER:
             if UseAVX then
               list.concat(taicpu.op_reg_reg_reg(asmop,S_NO,loc.register,resultreg,resultreg))
             else
               list.concat(taicpu.op_reg_reg(asmop,S_NO,loc.register,resultreg));
+          LOC_CMMLANE,LOC_MMLANE:
+            begin
+              hreg:=getmmregister(list,loc.size);
+              a_loadmm_lane_reg(list,loc.size,loc.size,loc.mmlane,hreg,shuffle);
+
+              if UseAVX then
+                list.concat(taicpu.op_reg_reg_reg(asmop,S_NO,hreg,resultreg,resultreg))
+              else
+                list.concat(taicpu.op_reg_reg(asmop,S_NO,hreg,resultreg));
+            end;
           else
             internalerror(200312214);
         end;

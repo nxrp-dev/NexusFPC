@@ -2144,11 +2144,11 @@ begin
                      asize:=OT_BITS64;
                    OS_F80 :
                      asize:=OT_BITS80;
-                   OS_128,OS_M128:
+                   OS_128,OS_S128,OS_M128,OS_M128F,OS_M128D:
                      asize := OT_BITS128;
-                   OS_M256:
+                   OS_M256,OS_M256F,OS_M256D:
                      asize := OT_BITS256;
-                   OS_M512:
+                   OS_M512,OS_M512F,OS_M512D:
                      asize := OT_BITS512;
                    else
                      ;

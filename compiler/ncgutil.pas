@@ -425,8 +425,7 @@ implementation
     procedure location_allocate_register(list: TAsmList;out l: tlocation;def: tdef;constant: boolean);
       begin
         l.size:=def_cgsize(def);
-        if (def.typ=floatdef) and
-           not(cs_fp_emulation in current_settings.moduleswitches) then
+        if not(cs_fp_emulation in current_settings.moduleswitches) then
           begin
             if use_vectorfpu(def) then
               begin
@@ -435,45 +434,45 @@ implementation
                 else
                   location_reset(l,LOC_MMREGISTER,l.size);
                 l.register:=cg.getmmregister(list,l.size);
+                Exit;
               end
-            else
+            else if (def.typ=floatdef) then
               begin
                 if constant then
                   location_reset(l,LOC_CFPUREGISTER,l.size)
                 else
                   location_reset(l,LOC_FPUREGISTER,l.size);
                 l.register:=cg.getfpuregister(list,l.size);
-              end;
+                Exit;
+              end
+          end;
+
+        if constant then
+          location_reset(l,LOC_CREGISTER,l.size)
+        else
+          location_reset(l,LOC_REGISTER,l.size);
+{$if defined(cpu64bitalu)}
+        if l.size in [OS_128,OS_S128,OS_F128] then
+          begin
+            l.register128.reglo:=cg.getintregister(list,OS_64);
+            l.register128.reghi:=cg.getintregister(list,OS_64);
           end
         else
-          begin
-            if constant then
-              location_reset(l,LOC_CREGISTER,l.size)
-            else
-              location_reset(l,LOC_REGISTER,l.size);
-{$if defined(cpu64bitalu)}
-            if l.size in [OS_128,OS_S128,OS_F128] then
-              begin
-                l.register128.reglo:=cg.getintregister(list,OS_64);
-                l.register128.reghi:=cg.getintregister(list,OS_64);
-              end
-            else
 {$elseif not defined(cpuhighleveltarget)}
-            if l.size in [OS_64,OS_S64,OS_F64] then
-              begin
-                l.register64.reglo:=cg.getintregister(list,OS_32);
-                l.register64.reghi:=cg.getintregister(list,OS_32);
-              end
-            else
+        if l.size in [OS_64,OS_S64,OS_F64] then
+          begin
+            l.register64.reglo:=cg.getintregister(list,OS_32);
+            l.register64.reghi:=cg.getintregister(list,OS_32);
+          end
+        else
 {$endif cpu64bitalu and not cpuhighleveltarget}
-            { Note: for widths of records (and maybe objects, classes, etc.) an
-                    address register could be set here, but that is later
-                    changed to an intregister neverthless when in the
-                    tcgassignmentnode thlcgobj.maybe_change_load_node_reg is
-                    called for the temporary node; so the workaround for now is
-                    to fix the symptoms... }
-              l.register:=hlcg.getregisterfordef(list,def);
-          end;
+        { Note: for widths of records (and maybe objects, classes, etc.) an
+                address register could be set here, but that is later
+                changed to an intregister neverthless when in the
+                tcgassignmentnode thlcgobj.maybe_change_load_node_reg is
+                called for the temporary node; so the workaround for now is
+                to fix the symptoms... }
+          l.register:=hlcg.getregisterfordef(list,def);
       end;
 
 
@@ -992,8 +991,7 @@ implementation
               localvarsym :
                 begin
                   vs:=tabstractnormalvarsym(sym);
-                  if is_vector(vs.vardef) and
-                     fits_in_mm_register(vs.vardef) then
+                  if fits_in_mm_register(vs.vardef) then { fits_in_mm_register also calls is_vector }
                     vs.initialloc.size:=def_cgmmsize(vs.vardef)
                   else
                     vs.initialloc.size:=def_cgsize(vs.vardef);

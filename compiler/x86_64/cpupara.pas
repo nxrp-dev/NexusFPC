@@ -294,7 +294,63 @@ unit cpupara;
         else
           result:=class2;
         result.typ:=X86_64_SSE_CLASS;
-        result.def:=s64floattype;
+        result.def:=nil;
+
+        { Choose the best floating-point type }
+        case class1.def.typ of
+          arraydef:
+            if (tarraydef(class1.def).elementdef.typ=floatdef) then
+              begin
+                case tfloatdef(tarraydef(class1.def).elementdef).floattype of
+                  s32real, s64real:
+                    result.def:=tfloatdef(tarraydef(class1.def).elementdef);
+                  else
+                    ;
+                end;
+              end;
+
+          floatdef:
+            case tfloatdef(class1.def).floattype of
+              s32real, s64real:
+                result.def:=class1.def;
+              else
+                ;
+            end;
+
+          else
+            ;
+        end;
+
+        if result.def=nil then
+          begin
+            case class2.def.typ of
+              arraydef:
+                if (tarraydef(class2.def).elementdef.typ=floatdef) then
+                  begin
+                    case tfloatdef(tarraydef(class2.def).elementdef).floattype of
+                      s32real, s64real:
+                        result.def:=class2.def;
+                      else
+                        ;
+                    end;
+                  end;
+
+              floatdef:
+                case tfloatdef(class2.def).floattype of
+                  s32real, s64real:
+                    result.def:=class2.def;
+                  else
+                    ;
+                end;
+
+              else
+                ;
+            end;
+
+            if result.def=nil then
+              { Fall back to the double type if it comes to the worst }
+              result.def:=s64floattype;
+          end;
       end;
 
 
@@ -1160,7 +1216,7 @@ unit cpupara;
                       { Packed, unaligned array of Singles }
                       Result := 4
                     else
-                      Result := vecsize * 8
+                      Result := vecsize * 4
                 end
               else
                 Result := 0;
@@ -1422,6 +1478,8 @@ unit cpupara;
         mmretregidx: longint;
         retcgsize : tcgsize;
         paraloc : pcgparalocation;
+        tempdef: tdef;
+        floattype: TFloatType;
       begin
         if set_common_funcretloc_info(p,forcetempdef,retcgsize,result) then
           exit;
@@ -1559,8 +1617,24 @@ unit cpupara;
                                   Inc(j);
                                 end;
 
+                            { Try to get a more accurate size type }
+                            if classes[i].def.typ = floatdef then
+                              begin
+                                floattype := TFloatDef(classes[i].def).floattype;
+                                case floattype of
+                                  s32real,
+                                  s64real:
+                                    { Accepted };
+                                  else
+                                    floattype := s80real; { A trick to cause a mismatch }
+                                end;
+                              end
+                            else
+                              floattype := s80real; { A trick to cause a mismatch }
+
                             { j  = MM word count }
                             Inc(i, j - 1);
+
                             case j of
                               1:
                                 begin
@@ -1570,17 +1644,38 @@ unit cpupara;
                               2:
                                 begin
                                   setsubreg(paraloc^.register,R_SUBMMX);
-                                  paraloc^.size:=OS_M128;
+                                  case floattype of
+                                    s32real:
+                                      paraloc^.size:=OS_M128F;
+                                    s64real:
+                                      paraloc^.size:=OS_M128D;
+                                    else
+                                      paraloc^.size:=OS_M128;
+                                  end;
                                 end;
                               4:
                                 begin
                                   setsubreg(paraloc^.register,R_SUBMMY);
-                                  paraloc^.size:=OS_M256; { Currently unsupported }
+                                  case floattype of
+                                    s32real:
+                                      paraloc^.size:=OS_M256F;
+                                    s64real:
+                                      paraloc^.size:=OS_M256D;
+                                    else
+                                      paraloc^.size:=OS_M256;
+                                  end;
                                 end;
                               8:
                                 begin
                                   setsubreg(paraloc^.register,R_SUBMMZ);
-                                  paraloc^.size:=OS_M512; { Currently unsupported }
+                                  case floattype of
+                                    s32real:
+                                      paraloc^.size:=OS_M512F;
+                                    s64real:
+                                      paraloc^.size:=OS_M512D;
+                                    else
+                                      paraloc^.size:=OS_M512;
+                                  end;
                                 end;
                               else
                                 InternalError(2018012901);
@@ -1653,6 +1748,8 @@ unit cpupara;
         procparaalign,
         paraalign  : longint;
         use_ms_abi : boolean;
+        tempdef    : tdef;
+        floattype  : TFloatType;
       begin
         procparaalign:=get_para_align(p.proccalloption);
         use_ms_abi:=x86_64_use_ms_abi(p.proccalloption);
@@ -1714,6 +1811,27 @@ unit cpupara;
                   begin
                     { TODO: Can this set of instructions be put into 'defutil' without it relying on the argument classification? [Kit] }
 
+                    { Try to get a more accurate size type }
+                    if is_vector(paralocdef) then
+                      begin
+                        tempdef := get_vector_element(paralocdef);
+                        if tempdef.typ = floatdef then
+                          begin
+                            floattype := TFloatDef(tempdef).floattype;
+                            case floattype of
+                              s32real,
+                              s64real:
+                                { Accepted };
+                              else
+                                floattype := s80real; { A trick to cause a mismatch }
+                            end;
+                          end
+                        else
+                          floattype := s80real; { A trick to cause a mismatch }
+                      end
+                    else
+                      floattype := s80real; { A trick to cause a mismatch }
+
                     { The SIMD vector types have to be OS_M128 etc., not OS_128 etc.}
                     case is_simd_vector_type_or_homogeneous_aggregate(pocall_vectorcall,paralocdef,vs_value) of
                       0:
@@ -1724,11 +1842,32 @@ unit cpupara;
                       8:
                         paracgsize:=OS_F64;
                       16:
-                        paracgsize:=OS_M128;
+                        case floattype of
+                          s32real:
+                            paracgsize:=OS_M128F;
+                          s64real:
+                            paracgsize:=OS_M128D;
+                          else
+                            paracgsize:=OS_M128;
+                        end;
                       32:
-                        paracgsize:=OS_M256;
+                        case floattype of
+                          s32real:
+                            paracgsize:=OS_M256F;
+                          s64real:
+                            paracgsize:=OS_M256D;
+                          else
+                            paracgsize:=OS_M256;
+                        end;
                       64:
-                        paracgsize:=OS_M512;
+                        case floattype of
+                          s32real:
+                            paracgsize:=OS_M512F;
+                          s64real:
+                            paracgsize:=OS_M512D;
+                          else
+                            paracgsize:=OS_M512;
+                        end;
                       else
                         InternalError(2018012910);
                     end;
@@ -1910,8 +2049,24 @@ unit cpupara;
                                       Inc(j);
                                     end;
 
+                                { Try to get a more accurate size type }
+                                if loc[locidx].def.typ = floatdef then
+                                  begin
+                                    floattype := TFloatDef(loc[locidx].def).floattype;
+                                    case floattype of
+                                      s32real,
+                                      s64real:
+                                        { Accepted };
+                                      else
+                                        floattype := s80real; { A trick to cause a mismatch }
+                                    end;
+                                  end
+                                else
+                                  floattype := s80real; { A trick to cause a mismatch }
+
                                 { j = MM word count }
                                 Inc(locidx, j - 1);
+
                                 case j of
                                   1:
                                     begin
@@ -1921,17 +2076,38 @@ unit cpupara;
                                   2:
                                     begin
                                       subreg:=R_SUBMMX;
-                                      paraloc^.size:=OS_M128;
+                                      case floattype of
+                                        s32real:
+                                          paraloc^.size:=OS_M128F;
+                                        s64real:
+                                          paraloc^.size:=OS_M128D;
+                                        else
+                                          paraloc^.size:=OS_M128;
+                                      end;
                                     end;
                                   4:
                                     begin
                                       subreg:=R_SUBMMY;
-                                      paraloc^.size:=OS_M256; { Currently unsupported }
+                                      case floattype of
+                                        s32real:
+                                          paraloc^.size:=OS_M256F;
+                                        s64real:
+                                          paraloc^.size:=OS_M256D;
+                                        else
+                                          paraloc^.size:=OS_M256;
+                                      end;
                                     end;
                                   8:
                                     begin
                                       subreg:=R_SUBMMZ;
-                                      paraloc^.size:=OS_M512; { Currently unsupported }
+                                      case floattype of
+                                        s32real:
+                                          paraloc^.size:=OS_M512F;
+                                        s64real:
+                                          paraloc^.size:=OS_M512D;
+                                        else
+                                          paraloc^.size:=OS_M512;
+                                      end;
                                     end;
                                   else
                                     InternalError(2018012903);

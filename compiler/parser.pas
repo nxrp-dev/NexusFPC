@@ -438,6 +438,11 @@ implementation
          { Load current state from the init values }
          current_settings:=init_settings;
 
+{$if defined(i386) or defined(x86_64)}
+         if (CPUX86_HAS_SSE2 in cpu_capabilities[current_settings.cputype]) then
+           Include(current_settings.globalswitches, cs_support_vectors);
+{$endif i386 or x86_64}
+
          set_current_module(module);
          if not (module.state in [ms_compile]) then
            internalerror(200212281);

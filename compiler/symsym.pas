@@ -1992,7 +1992,13 @@ implementation
                  (not refpara and
                   not(varregable in [vr_none,vr_addr])))
 {$if not defined(powerpc) and not defined(powerpc64)}
-                and ((vardef.typ <> recorddef) or
+                and ((
+                       (vardef.typ <> recorddef) or
+                       (
+                         not(cs_fp_emulation in current_settings.moduleswitches) and
+                         is_vector(vardef)
+                       )
+                     ) or
                      (varregable = vr_addr) or
                      tabstractrecordsymtable(tabstractrecorddef(vardef).symtable).has_single_field(tempdef) or
                      not(varstate in [vs_written,vs_readwritten]));

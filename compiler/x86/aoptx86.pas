@@ -132,6 +132,11 @@ unit aoptx86;
           except where the register is being written }
         class function ReplaceRegisterInInstruction(const p: taicpu; const AOldReg, ANewReg: TRegister): Boolean; static;
 
+        { Returns true if the two registers are the same-sized MM register, taking into account that
+          registers used to store a lone single or double have a different sub-register than an
+          entire 128-bit register and thus equating them. }
+        class function MMRegistersEqual(reg1, reg2: tregister): boolean; static;
+
         { Returns true if the reference only refers to ESP or EBP (or their 64-bit equivalents),
           or writes to a global symbol }
         class function IsRefSafe(const ref: PReference): Boolean; static;
@@ -2497,8 +2502,9 @@ unit aoptx86;
             { vmova* reg1,reg1
               =>
               <nop> }
-            if taicpu(p).oper[0]^.reg = taicpu(p).oper[1]^.reg then
+            if MMRegistersEqual(taicpu(p).oper[0]^.reg, taicpu(p).oper[1]^.reg) then
               begin
+                DebugMsg(SPeepholeOptimization + '(V)MovA2Nop 1 done',p);
                 RemoveCurrentP(p);
                 result:=true;
                 exit;
@@ -2761,8 +2767,14 @@ unit aoptx86;
           { we mix single and double operations here because we assume that the compiler
             generates vmovapd only after double operations and vmovaps only after single operations }
           MatchInstruction(hp1,A_VMOVAPD,A_VMOVAPS,[S_NO]) and
-          MatchOperand(taicpu(p).oper[2]^,taicpu(hp1).oper[0]^) and
-          (taicpu(hp1).oper[1]^.typ=top_reg) then
+          (taicpu(hp1).oper[0]^.typ=top_reg) and
+          (taicpu(p).oper[2]^.typ=top_reg) and
+          (
+            { One can be a reference, but not both }
+            (taicpu(hp1).oper[1]^.typ=top_reg) or
+            (taicpu(p).oper[0]^.typ=top_reg)
+          ) and
+          MMRegistersEqual(taicpu(p).oper[2]^.reg,taicpu(hp1).oper[0]^.reg) then
           begin
             TransferUsedRegs(TmpUsedRegs);
             UpdateUsedRegs(TmpUsedRegs, tai(p.next));
@@ -2885,6 +2897,21 @@ unit aoptx86;
           else if p.oper[OperIdx]^.typ = top_ref then
             { It's okay to replace registers in references that get written to }
             Result := ReplaceRegisterInOper(p, OperIdx, AOldReg, ANewReg) or Result;
+      end;
+
+
+    class function TX86AsmOptimizer.MMRegistersEqual(reg1, reg2: tregister): boolean;
+      begin
+        if reg1 = reg2 then
+          { Simplest case }
+          Exit(True)
+        else if not SuperRegistersEqual(reg1, reg2) then
+          Exit(False);
+
+        { Equate the 128-bit sizes }
+        Result :=
+          (getsubreg(reg1) in [R_SUBMMS, R_SUBMMD, R_SUBMMX]) and
+          (getsubreg(reg2) in [R_SUBMMS, R_SUBMMD, R_SUBMMX]);
       end;
 
 
@@ -6057,7 +6084,15 @@ unit aoptx86;
       begin
         Result:=false;
         if taicpu(p).ops <> 2 then
+          { Wrong MOVSS! }
           exit;
+        if MatchOpType(taicpu(p),top_reg,top_reg) and MMRegistersEqual(taicpu(p).oper[0]^.reg,taicpu(p).oper[1]^.reg) then
+          begin
+            DebugMsg(SPeepholeOptimization + 'MovXX2Nop 1 done',p);
+            RemoveCurrentP(p);
+            result:=true;
+            exit;
+          end;
         if (MatchOpType(taicpu(p),top_reg,top_reg) and GetNextInstructionUsingReg(p,hp1,taicpu(p).oper[1]^.reg)) or
           GetNextInstruction(p,hp1) then
           begin
@@ -6211,15 +6246,16 @@ unit aoptx86;
             generates vmovapd only after double operations and vmovaps only after single operations }
           MatchInstruction(hp1,A_MOVAPD,A_MOVAPS,[S_NO]) and
           MatchOperand(taicpu(p).oper[1]^,taicpu(hp1).oper[0]^) and
-          MatchOperand(taicpu(p).oper[0]^,taicpu(hp1).oper[1]^) and
-          (taicpu(p).oper[0]^.typ=top_reg) then
+          (taicpu(p).oper[0]^.typ=top_reg) and
+          (taicpu(hp1).oper[1]^.typ=top_reg) and
+          MMRegistersEqual(taicpu(p).oper[0]^.reg,taicpu(hp1).oper[1]^.reg) then
           begin
             TransferUsedRegs(TmpUsedRegs);
             UpdateUsedRegs(TmpUsedRegs, tai(p.next));
             if not(RegUsedAfterInstruction(taicpu(p).oper[1]^.reg,hp1,TmpUsedRegs)) then
               begin
                 taicpu(p).loadoper(0,taicpu(hp1).oper[0]^);
-                taicpu(p).loadoper(1,taicpu(hp1).oper[1]^);
+                taicpu(p).loadreg(1,taicpu(hp1).oper[1]^.reg);
                 DebugMsg(SPeepholeOptimization + 'OpMov2Op done',p);
                 RemoveInstruction(hp1);
                 result:=true;

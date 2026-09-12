@@ -149,7 +149,9 @@ implementation
              A_VORPS,
              A_VANDPD,
              A_VANDPS,
+             A_VUNPCKLPD,
              A_VUNPCKLPS,
+             A_VUNPCKHPD,
              A_VUNPCKHPS,
              A_VSHUFPD,
              A_VREDUCEPD,
@@ -168,6 +170,7 @@ implementation
       var
         n,replaceoper : longint;
         is_subh: Boolean;
+        is_fullmm: Boolean;
       begin
         result:=false;
         with taicpu(instr) do
@@ -287,7 +290,9 @@ implementation
                               A_SHUFPD,
                               A_SHUFPS,
                               A_UNPCKLPD,
-                              A_UNPCKLPS :
+                              A_UNPCKLPS,
+                              A_UNPCKHPD,
+                              A_UNPCKHPS:
                                 replaceoper:=-1;
 
                               { movlhps/movhlps requires the second parameter to be XMM registers }
@@ -354,7 +359,9 @@ implementation
                               A_ORPS,
                               A_ANDPD,
                               A_ANDPS,
+                              A_UNPCKLPD,
                               A_UNPCKLPS,
+                              A_UNPCKHPD,
                               A_UNPCKHPS,
                               A_SHUFPD,
                               A_SHUFPS,
@@ -444,25 +451,70 @@ implementation
                   end
                 else
                   begin
-                    is_subh:=getsubreg(oper[replaceoper]^.reg)=R_SUBH;
+                    is_subh:=false;
+                    is_fullmm:=false;
+                    n:=0;
+
+                    case getsubreg(oper[replaceoper]^.reg) of
+                      R_SUBH:
+                        is_subh:=true;
+                      R_SUBMMX:
+                        begin
+                          is_fullmm:=true;
+                          n:=$F;
+                        end;
+                      R_SUBMMY:
+                        begin
+                          is_fullmm:=true;
+                          n:=$1F;
+                        end;
+                      R_SUBMMZ:
+                        begin
+                          is_fullmm:=true;
+                          n:=$3F;
+                        end;
+                      else
+                        ;
+                    end;
+                    is_fullmm:=getsubreg(oper[replaceoper]^.reg) in [R_SUBMMX,R_SUBMMY,R_SUBMMZ];
                     oper[replaceoper]^.typ:=top_ref;
                     new(oper[replaceoper]^.ref);
                     oper[replaceoper]^.ref^:=spilltemp;
                     if is_subh then
                       inc(oper[replaceoper]^.ref^.offset);
                     { memory locations aren't guaranteed to be aligned }
-                    case opcode of
-                      A_MOVAPS:
-                        opcode:=A_MOVSS;
-                      A_MOVAPD:
-                        opcode:=A_MOVSD;
-                      A_VMOVAPS:
-                        opcode:=A_VMOVSS;
-                      A_VMOVAPD:
-                        opcode:=A_VMOVSD;
-                      else
-                        ;
-                    end;
+                    if is_fullmm then
+                      begin
+                        if (spilltemp.alignment and n) <> 0 then
+                          { Likely not aligned! }
+                          case opcode of
+                            A_MOVAPS:
+                              opcode:=A_MOVUPS;
+                            A_MOVAPD:
+                              opcode:=A_MOVUPD;
+                            A_VMOVAPS:
+                              opcode:=A_VMOVUPS;
+                            A_VMOVAPD:
+                              opcode:=A_VMOVUPD;
+                            else
+                              ;
+                          end;
+                      end
+                    else
+                      begin
+                        case opcode of
+                          A_MOVAPS:
+                            opcode:=A_MOVSS;
+                          A_MOVAPD:
+                            opcode:=A_MOVSD;
+                          A_VMOVAPS:
+                            opcode:=A_VMOVSS;
+                          A_VMOVAPD:
+                            opcode:=A_VMOVSD;
+                          else
+                            ;
+                        end;
+                      end;
                   end;
                 result:=true;
               end;

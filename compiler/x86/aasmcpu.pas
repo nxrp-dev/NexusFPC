@@ -5018,7 +5018,10 @@ implementation
                    else
                      result:=taicpu.op_ref_reg(A_VMOVDQU64,S_NO,tmpref,r);
                 R_SUBMMX:
-                  result:=taicpu.op_ref_reg(A_VMOVDQU,S_NO,tmpref,r);
+                   if ref.alignment>=16 then
+                     result:=taicpu.op_ref_reg(A_VMOVDQA,S_NO,tmpref,r)
+                   else
+                     result:=taicpu.op_ref_reg(A_VMOVDQU,S_NO,tmpref,r);
                 else
                   internalerror(200506043);
               end
@@ -5032,7 +5035,10 @@ implementation
                 R_SUBMMWHOLE:
                   result:=taicpu.op_ref_reg(A_MOVQ,S_NO,tmpref,r);
                 R_SUBMMX:
-                  result:=taicpu.op_ref_reg(A_MOVDQA,S_NO,tmpref,r);
+                   if ref.alignment>=16 then
+                     result:=taicpu.op_ref_reg(A_MOVDQA,S_NO,tmpref,r)
+                   else
+                     result:=taicpu.op_ref_reg(A_MOVDQU,S_NO,tmpref,r);
                 else
                   internalerror(2005060405);
               end;
@@ -5076,6 +5082,11 @@ implementation
                   result:=taicpu.op_reg_ref(A_VMOVSD,S_NO,r,tmpref);
                 R_SUBMMS:
                   result:=taicpu.op_reg_ref(A_VMOVSS,S_NO,r,tmpref);
+                R_SUBMMX:
+                   if ref.alignment>=16 then
+                     result:=taicpu.op_reg_ref(A_VMOVDQA,S_NO,r,tmpref)
+                   else
+                     result:=taicpu.op_reg_ref(A_VMOVDQU,S_NO,r,tmpref);
                 R_SUBMMY:
                    if ref.alignment>=32 then
                      result:=taicpu.op_reg_ref(A_VMOVDQA,S_NO,r,tmpref)
@@ -5102,7 +5113,10 @@ implementation
                 R_SUBMMWHOLE:
                   result:=taicpu.op_reg_ref(A_MOVQ,S_NO,r,tmpref);
                 R_SUBMMX:
-                  result:=taicpu.op_reg_ref(A_MOVDQA,S_NO,r,tmpref);
+                  if ref.alignment>=16 then
+                    result:=taicpu.op_reg_ref(A_MOVDQA,S_NO,r,tmpref)
+                  else
+                    result:=taicpu.op_reg_ref(A_MOVDQU,S_NO,r,tmpref);
                 else
                   internalerror(2005060404);
               end;

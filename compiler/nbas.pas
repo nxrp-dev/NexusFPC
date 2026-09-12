@@ -1381,7 +1381,12 @@ implementation
            { temp must fit a single register }
            (tstoreddef(_typedef).is_fpuregable or
             (tstoreddef(_typedef).is_intregable and
-             (_size<=TCGSize2Size[OS_64]))) and
+             (_size<=TCGSize2Size[OS_64])) or
+             (
+               not(cs_fp_emulation in current_settings.moduleswitches) and
+               use_vectorfpu(_typedef)
+             )
+           ) and
            { size of register operations must be known }
            (def_cgsize(_typedef)<>OS_NO) and
            { no init/final needed }
@@ -1527,7 +1532,13 @@ implementation
           enabled a certain type to be stored in a register while the current settings do not support this, so correct this here
           if needed
         }
-        if not(tstoreddef(tempinfo^.typedef).is_fpuregable) and not(tstoreddef(tempinfo^.typedef).is_intregable) and (ti_may_be_in_reg in tempflags) then
+        if not(tstoreddef(tempinfo^.typedef).is_fpuregable) and
+          not(tstoreddef(tempinfo^.typedef).is_intregable) and
+          not(
+            not(cs_fp_emulation in current_settings.moduleswitches) and
+            use_vectorfpu(tempinfo^.typedef)
+          ) and
+          (ti_may_be_in_reg in tempflags) then
           excludetempflag(ti_may_be_in_reg);
       end;
 
@@ -1671,18 +1682,20 @@ implementation
         if not tempinfo^.typedef.needs_inittable and
            (ti_may_be_in_reg in tempflags) then
           begin
-            if tempinfo^.typedef.typ=floatdef then
+            if not(cs_fp_emulation in current_settings.moduleswitches) and
+              use_vectorfpu(tempinfo^.typedef) then
               begin
-                if not use_vectorfpu(tempinfo^.typedef) then
-                  if (tempinfo^.temptype = tt_persistent) then
-                    expectloc := LOC_CFPUREGISTER
-                  else
-                    expectloc := LOC_FPUREGISTER
+                if (tempinfo^.temptype = tt_persistent) then
+                  expectloc := LOC_CMMREGISTER
                 else
-                  if (tempinfo^.temptype = tt_persistent) then
-                    expectloc := LOC_CMMREGISTER
-                  else
-                    expectloc := LOC_MMREGISTER
+                  expectloc := LOC_MMREGISTER
+              end
+            else if (tempinfo^.typedef.typ=floatdef) then
+              begin
+                if (tempinfo^.temptype = tt_persistent) then
+                  expectloc := LOC_CFPUREGISTER
+                else
+                  expectloc := LOC_FPUREGISTER
               end
             else
               begin

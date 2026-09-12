@@ -826,7 +826,11 @@ interface
           floatdef :
             second_opfloat;
           else
-            second_opordinal;
+            if (cs_support_vectors in current_settings.globalswitches) and
+              use_vectorfpu(left.resultdef) then
+              second_opvector
+            else
+              second_opordinal;
         end;
       end;
 

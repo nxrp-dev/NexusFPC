@@ -114,6 +114,12 @@ unit cgutils;
      ctempposinvalid: treftemppos = (val: low(treftemppos.val));
 
    type
+      tmmlane = record
+        reg : tregister; { This must appear first so it is aliased over location.register }
+        laneindex, lanecount: byte;
+        lanesize: tcgsize;
+      end;
+
       tsubsetregister = record
         subsetreg : tregister;
         startbit, bitlen: byte;
@@ -169,6 +175,10 @@ unit cgutils;
                 2 : (register64 : tregister64);
 {$endif cpu64bitalu and not cpuhighleveltarget}
               );
+            LOC_MMLANE,
+            LOC_CMMLANE : (
+              mmlane: tmmlane;
+            );
             LOC_SUBSETREG,
             LOC_CSUBSETREG : (
               sreg: tsubsetregister;
@@ -343,6 +353,7 @@ uses
         if not (locreg.loc in [LOC_REGISTER,LOC_CREGISTER,
             LOC_MMXREGISTER,LOC_CMMXREGISTER,
             LOC_MMREGISTER,LOC_CMMREGISTER,
+            LOC_MMLANE,LOC_CMMLANE,
             LOC_FPUREGISTER,LOC_CFPUREGISTER]) then
           internalerror(2013122301);
 

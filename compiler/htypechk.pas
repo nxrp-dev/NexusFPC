@@ -1709,7 +1709,8 @@ implementation
                    will happen to the temp and be lost) }
                  if not gotsubscript and
                     not gotvec and
-                    not tstoreddef(hp.resultdef).is_intregable then
+                    not tstoreddef(hp.resultdef).is_intregable and
+                    not is_vector(tsubscriptnode(hp).left.resultdef) then
                    make_not_regable(hp,[ra_addr_regable]);
 
                  gotsubscript:=true;
