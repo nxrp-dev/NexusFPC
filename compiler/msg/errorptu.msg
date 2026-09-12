@@ -3056,7 +3056,7 @@ link_w_32bit_absolute_reloc=09201_W_Arquivo objeto "$1" contêm relocação abso
 % loading a unit from disk into memory. Many of these messages are
 % informational messages.
 % \begin{description}
-unit_t_usingfile=10000_T_Busca Unidade: $1
+unit_t_unitsearch=10000_T_Busca Unidade: $1
 % When you use the \var{-vt} option, the compiler tells you where it tries to find
 % unit files.
 unit_t_ppu_loading=10001_T_Carregando PPU $1

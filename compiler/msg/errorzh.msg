@@ -2855,7 +2855,7 @@ link_f_executable_too_big_exceeds_X_by_Y_bytes=09224_F_可执行文件映像对�
 % 本节列出了当编译器从磁盘加载单元到内存时可能出现的所有消息。
 % 其中许多是信息性消息。
 % \begin{description}
-unit_t_usingfile=10000_T_单元搜索：$1
+unit_t_unitsearch=10000_T_单元搜索：$1
 % 当你使用 \var{-vt} 选项时，编译器会告诉你它在哪里尝试查找单元文件。
 unit_t_ppu_loading=10001_T_正在加载 PPU $1
 % 当使用 \var{-vt} 开关时，编译器会告诉你它加载了哪些单元。

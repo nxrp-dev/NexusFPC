@@ -1819,7 +1819,7 @@ execinfo_x_stackcommit=09134_X_Espai utilitzat per la pila: $1 octets
 % loading a unit from disk into memory. Many of these messages are
 % informational messages.
 % \begin{description}
-unit_t_usingfile=10000_T_S'està cercant l'unitat: $1
+unit_t_unitsearch=10000_T_S'està cercant l'unitat: $1
 % When you use the \var{-vt}, the compiler tells you where it tries to find
 % unit files.
 unit_t_ppu_loading=10001_T_S'està carregant la PPU $1

@@ -1729,6 +1729,7 @@ parser_w_aligned_useless=03376_W_Aligned is useless here.
 %
 parser_h_try_result=03377_H_Did you mean to use {$modeswitch result} or -Mresult flag?
 parser_w_may_need_result=03378_W_{$modeswitch result} or -Mresult flag maybe required for anonymous functions.
+parser_e_anonymous_function_needed=03379_E_Anonymous function mode is required via {$modeswitch anonymousfunctions}!
 # Type Checking
 #
 # 04135 is the last used one
@@ -3347,7 +3348,7 @@ link_f_executable_too_big_exceeds_X_by_Y_bytes=09224_F_Executable image size is 
 % loading a unit from disk into memory. Many of these messages are
 % informational messages.
 % \begin{description}
-unit_t_usingfile=10000_T_Using unit file: $1
+unit_t_unitsearch=10000_T_Unitsearch: $1
 % When you use the \var{-vt} option, the compiler tells you where it tries to find
 % unit files.
 unit_t_ppu_loading=10001_T_PPU Loading $1
