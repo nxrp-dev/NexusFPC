@@ -1586,8 +1586,14 @@ begin
 {$ENDIF}
 end;
 
-label
-  RawThunkEnd;
+const
+  { increase if you have a thunk larger than this in bytes }
+  MaxRawThunkSize = 64;
+  RawThunkEndMarker = $f0f0f0f0;
+
+type
+  TRawThunkEndMarker = UInt32;
+  PRawThunkEndMarker = ^TRawThunkEndMarker;
 
 {$if defined(cpui386)}
 const
@@ -1619,7 +1625,7 @@ asm
   movl RawThunkPlaceholderContext, (%eax)
   movl RawThunkPlaceholderProc, %eax
   jmp %eax
-RawThunkEnd:
+  .long RawThunkEndMarker
 end;
 {$elseif defined(cpux86_64)}
 const
@@ -1637,7 +1643,7 @@ asm
   movq RawThunkPlaceholderContext, %rcx
   movq RawThunkPlaceholderProc, %rax
   jmp %rax
-RawThunkEnd:
+  .long RawThunkEndMarker
 end;
 {$else}
 procedure RawThunk; assembler; nostackframe;
@@ -1646,7 +1652,7 @@ asm
   movq RawThunkPlaceholderContext, %rdi
   movq RawThunkPlaceholderProc, %rax
   jmp %rax
-RawThunkEnd:
+  .long RawThunkEndMarker
 end;
 {$endif}
 {$elseif defined(cpuarm)}
@@ -1675,7 +1681,7 @@ asm
   .long RawThunkPlaceholderProc
 .LContext:
   .long RawThunkPlaceholderContext
-RawThunkEnd:
+  .long RawThunkEndMarker
 end;
 {$elseif defined(cpuaarch64)}
 const
@@ -1695,7 +1701,7 @@ asm
   .quad RawThunkPlaceholderProc
 .LContext:
   .quad RawThunkPlaceholderContext
-RawThunkEnd:
+  .long RawThunkEndMarker
 end;
 {$elseif defined(cpum68k)}
 const
@@ -1712,7 +1718,7 @@ asm
   move.l #RawThunkPlaceholderContext, (a0)
   move.l #RawThunkPlaceholderProc, a0
   jmp (a0)
-RawThunkEnd:
+  .long RawThunkEndMarker
 end;
 {$elseif defined(cpuriscv64)}
 const
@@ -1732,7 +1738,7 @@ asm
   .quad RawThunkPlaceholderProc
 .LContext:
   .quad RawThunkPlaceholderContext
-RawThunkEnd:
+  .long RawThunkEndMarker
 end;
 {$elseif defined(cpuriscv32)}
 const
@@ -1752,7 +1758,7 @@ asm
   .long RawThunkPlaceholderProc
 .LContext:
   .long RawThunkPlaceholderContext
-RawThunkEnd:
+  .long RawThunkEndMarker
 end;
 {$elseif defined(cpuloongarch64)}
 const
@@ -1774,13 +1780,13 @@ asm
   ld.d $t1, $ra, 0
   move $ra, $t0
   jr $t1
-RawThunkEnd:
+  .long RawThunkEndMarker
 end;
 {$endif}
 
 {$if declared(RawThunk)}
-const
-  RawThunkEndPtr: Pointer = @RawThunkEnd;
+var
+  RawThunkEndPtr: Pointer;
 
 type
 {$if declared(TRawThunkBytesToPop)}
@@ -1810,7 +1816,13 @@ begin
   { platform dose not have thunk support... :/ }
   Result := Nil;
 {$else}
-  Size := PtrUInt(RawThunkEndPtr) - PtrUInt(@RawThunk) + 1;
+  if not assigned(RawThunkEndPtr) then
+    begin
+      Result := Nil;
+      Exit;
+    end;
+
+  Size := PtrUInt(RawThunkEndPtr) - PtrUInt(@RawThunk);
   Result := AllocateMemory(size);
   Move(Pointer(@RawThunk)^, Result^, size);
 
@@ -1824,23 +1836,23 @@ begin
 {$if declared(TRawThunkBytesToPop)}
     if not btpdone and (i <= Size - SizeOf(TRawThunkBytesToPop)) then begin
       btp := PRawThunkBytesToPop(PByte(Result) + i);
-      if btp^ = TRawThunkBytesToPop(RawThunkPlaceholderBytesToPop) then begin
-        btp^ := TRawThunkBytesToPop(aBytesToPop);
+      if unaligned(btp^) = TRawThunkBytesToPop(RawThunkPlaceholderBytesToPop) then begin
+        unaligned(btp^) := TRawThunkBytesToPop(aBytesToPop);
         btpdone := True;
       end;
     end;
 {$endif}
     if not contextdone and (i <= Size - SizeOf(TRawThunkContext)) then begin
       context := PRawThunkContext(PByte(Result) + i);
-      if context^ = TRawThunkContext(RawThunkPlaceholderContext) then begin
-        context^ := TRawThunkContext(aContext);
+      if unaligned(context^) = TRawThunkContext(RawThunkPlaceholderContext) then begin
+        unaligned(context^) := TRawThunkContext(aContext);
         contextdone := True;
       end;
     end;
     if not procdone and (i <= Size - SizeOf(TRawThunkProc)) then begin
       proc := PRawThunkProc(PByte(Result) + i);
-      if proc^ = TRawThunkProc(RawThunkPlaceholderProc) then begin
-        proc^ := TRawThunkProc(aProc);
+      if unaligned(proc^) = TRawThunkProc(RawThunkPlaceholderProc) then begin
+        unaligned(proc^) := TRawThunkProc(aProc);
         procdone := True;
       end;
     end;
@@ -1861,7 +1873,8 @@ end;
 procedure FreeRawThunk(aThunk: CodePointer);
 begin
 {$if declared(RawThunk)}
-  FreeMemory(aThunk, PtrUInt(RawThunkEndPtr) - PtrUInt(@RawThunk));
+  if assigned(RawThunkEndPtr) then
+    FreeMemory(aThunk, PtrUInt(RawThunkEndPtr) - PtrUInt(@RawThunk));
 {$endif}
 end;
 
@@ -9193,6 +9206,29 @@ begin
 end;
 
 
+{$if declared(RawThunk)}
+procedure InitRawThunkEndPtr;
+var
+  rtp: PRawThunkEndMarker;
+  i, Size: sizeint;
+  RawThunkFound: boolean;
+begin
+  RawThunkFound := false;
+  for i := 0 to MaxRawThunkSize - SizeOf(TRawThunkEndMarker) do
+    begin
+      rtp := PRawThunkEndMarker(pointer(@RawThunk) + i);
+      if unaligned(rtp^) = TRawThunkEndMarker(RawThunkEndMarker) then
+        begin
+          RawThunkFound := true;
+          break;
+        end;
+    end;
+
+  if RawThunkFound then
+    RawThunkEndPtr := pointer(@RawThunk) + i;
+end;
+{$endif}
+
 {$ifndef InLazIDE}
 {$if defined(CPUI386) or (defined(CPUX86_64) and defined(WIN64)) or defined(CPUWASM32)}
 {$I invoke.inc}
@@ -9206,6 +9242,9 @@ initialization
   GRttiPool[False] := TRttiPool.Create;
   GRttiPool[True] := TRttiPool.Create;
   InitDefaultFunctionCallManager;
+{$if declared(RawThunk)}
+  InitRawThunkEndPtr;
+{$endif}
 {$ifdef SYSTEM_HAS_INVOKE}
   InitSystemFunctionCallManager;
 {$endif}
