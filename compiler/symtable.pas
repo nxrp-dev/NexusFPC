@@ -2531,7 +2531,8 @@ implementation
            (tprocdef(defowner).owner.defowner=tprocdef(defowner).struct) and
            (
             not(m_duplicate_names in current_settings.modeswitches) or
-            is_object(tprocdef(defowner).struct)
+            { Delphi allows duplicates in classes/records but disallows in objects. }
+            (m_delphi in current_settings.modeswitches) and is_object(tprocdef(defowner).struct)
            ) then
           result:=tprocdef(defowner).struct.symtable.checkduplicate(hashedid,sym);
       end;
