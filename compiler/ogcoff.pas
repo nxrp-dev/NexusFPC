@@ -3017,7 +3017,7 @@ const pemagic : array[0..3] of byte = (
                   end;
                 sechdr.datasize:=Size;
               end;
-            if (Size>0) then
+            if (Size>0) and (datapos>0) then
               sechdr.datapos:=datapos-datapos_offset;
             sechdr.nrelocs:=0;
             sechdr.relocpos:=0;
