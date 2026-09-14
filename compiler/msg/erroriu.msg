@@ -108,7 +108,7 @@ general_e_errorwritingresourcefile=01011_E_Scrivo il file di risorse della strin
 #
 #
 # La finestra dei messaggi di Lazarus filtra via tutto quello che non comincia
-# con uno di questi cinque prefissi in inglese (o meglio Lazarus versione 0.9.30 lo fa) 
+# con uno di questi cinque prefissi in inglese (o meglio Lazarus versione 0.9.30 lo fa)
 # per cui, almeno per ora, ce li dobbiamo tenere :-(
 # Fanno eccezione 'Fatale' e 'Errore' perché sono identici alle versioni inglesi, ma più lunghi.
 #
@@ -231,7 +231,7 @@ scan_w_macro_too_deep=02030_W_L'espansione della macro ha superato profondità 16
 % When expanding a macro, macros have been nested to a level of 16.
 % The compiler will expand no further, since this may be a sign that
 % recursion is used.
-scan_w_wrong_styled_switch=02031_W_Gli switch del compilatore non funzionano nei commenti che iniziano con // 
+scan_w_wrong_styled_switch=02031_W_Gli switch del compilatore non funzionano nei commenti che iniziano con //
 % Compiler switches should be in normal Pascal style comments.
 scan_d_handling_switch=02032_DL_Valutazione dello switch "$1"
 % When you set debugging info on (\var{-vd}) the compiler tells you when it
@@ -305,7 +305,7 @@ scan_e_invalid_maxfpureg_value=02055_E_Valore illegale per limiti registri FPU
 scan_w_only_one_resourcefile_supported=02056_W_Questa destinazione supporta solo un file di risorse
 % The target you are compiling for supports only one resource file.
 % The first resource file found is used, the others are discarded.
-scan_w_macro_support_turned_off=02057_W_Il supporto alle macro è disabilitato: macro ignorata 
+scan_w_macro_support_turned_off=02057_W_Il supporto alle macro è disabilitato: macro ignorata
 % A macro declaration has been found, but macro support is currently off,
 % so the declaration will be ignored. To turn macro support on compile with
 % -Sm on the command line or add \{\$MACRO ON\} in the source.
@@ -829,7 +829,7 @@ parser_e_ill_msg_param=03144_E_I gestori di messaggi possono prendere un solo pa
 % Parameters are declared as call by reference using the \var{var}-directive.
 parser_e_duplicate_message_label=03145_E_Label di messaggio duplicata: "$1"
 % A label for a message is used twice in one object/class.
-parser_e_self_in_non_message_handler=03146_E_In metodi che gestiscono messaggi, il parametro Self può essere solo esplicito 
+parser_e_self_in_non_message_handler=03146_E_In metodi che gestiscono messaggi, il parametro Self può essere solo esplicito
 % The \var{Self} parameter can only be passed explicitly to a method which
 % is declared as message handler.
 parser_e_threadvars_only_sg=03147_E_Le threadvars possono essere solo statiche o globali
@@ -1063,7 +1063,7 @@ parser_e_upper_lower_than_lower=03206_E_Limite superiore di intervallo minore de
 % the range.
 parser_e_macpas_exit_wrong_param=03207_E_I parametri di Exit devono essere il nome della procedura in cui è usato
 % Non local exit is not allowed. This error occurs only in mode MacPas.
-parser_e_illegal_assignment_to_count_var=03208_E_Assegnazione illegale della variabile "$1" del ciclo for-loop 
+parser_e_illegal_assignment_to_count_var=03208_E_Assegnazione illegale della variabile "$1" del ciclo for-loop
 % The type of a \var{for} loop variable must be an ordinal type.
 % Loop variables cannot be reals or strings. You also cannot assign values to
 % loop variables inside the loop (Except in Delphi and TP modes). Use a while or
@@ -1178,7 +1178,7 @@ parser_e_cant_export_var_different_name=03247_E_Non si possono esportare variabi
 % is exported inside the \var{exports} statement of a library.
 % In that case, you have to specify the export name at the point where the
 % variable is declared, using the \var{export} and \var{alias} directives.
-parser_e_weak_external_not_supported=03248_E_La destinazione attuale non supporta simboli esterni deboli 
+parser_e_weak_external_not_supported=03248_E_La destinazione attuale non supporta simboli esterni deboli
 % A "weak external" symbol is a symbol which may or may not exist at (either static
 % or dynamic) link time. This concept may not be available (or implemented yet)
 % on the current cpu/OS target.
@@ -1388,7 +1388,7 @@ type_h_mixed_signed_unsigned=04035_H_Mescolare longword ed espressioni con segno
 % then everything has to be evaluated in 64-bit arithmetic which is slower than normal
 % 32-bit arithmetic. You can avoid this by typecasting one operand so it
 % matches the result type of the other one.
-type_w_mixed_signed_unsigned2=04036_W_In questo punto, mescolare espressioni con segno e tipi cardinali può provocare un errore di controllo range 
+type_w_mixed_signed_unsigned2=04036_W_In questo punto, mescolare espressioni con segno e tipi cardinali può provocare un errore di controllo range
 % If you use a binary operator (and, or, xor) and one of
 % the operands is a longword while the other one is a signed expression, then,
 % if range checking is turned on, you may get a range check error because in
@@ -1405,7 +1405,7 @@ type_e_array_index_enums_with_assign_not_possible=04038_E_Gli enum con assegnazi
 %   Tenum = (a,b,e:=5);
 % \end{verbatim}
 % you cannot use it as the index of an array.
-type_e_classes_not_related=04039_E_I tipi classe o oggetto "$1" e "$2" non sono correlati. Conversione di tipo impossibile. 
+type_e_classes_not_related=04039_E_I tipi classe o oggetto "$1" e "$2" non sono correlati. Conversione di tipo impossibile.
 % There is a typecast from one class or object to another while the class/object
 % are not related. This will probably lead to errors.
 type_w_classes_not_related=04040_W_I tipi classe "$1" e "$2" non sono correlati.
@@ -1716,7 +1716,7 @@ sym_w_deprecated_symbol_with_msg=05066_W_Il simbolo "$1" è deprecato: "$2"
 % should be avoided as much as possible.
 sym_e_no_enumerator=05067_E_Non c'è un enumeratore per il tipo "$1"
 % This means that compiler cannot find an apropriate enumerator to use in the for-in loop.
-% To create an enumerator you need to defind an operator enumerator or add a public or published 
+% To create an enumerator you need to defind an operator enumerator or add a public or published
 % GetEnumerator method to the class or object definition.
 sym_e_no_enumerator_move=05068_E_Non c'è un metodo "MoveNext" nell'enumeratore "$1"
 % This means that compiler cannot find a public MoveNext method with the Boolean return type in
@@ -2337,7 +2337,7 @@ unit_f_ppu_dbx_count_problem=10017_F_Problemi nel conteggi Dbx nel PPU
 % There is an inconsistency in the debugging information of the unit.
 unit_e_illegal_unit_name=10018_E_Nome della unit $1 illegale
 % The name of the unit does not match the file name.
-unit_f_too_much_units=10019_F_Troppe unit 
+unit_f_too_much_units=10019_F_Troppe unit
 % \fpc has a limit of 1024 units in a program. You can change this behavior
 % by changing the \var{maxunits} constant in the \file{fmodule.pas} file of the
 % compiler, and recompiling the compiler.
@@ -2796,16 +2796,16 @@ S*2Aas_Assembla con GNU AS
 **2Cf<x>_Sceglie il set di istruzioni FPU, (vedi fpc -i)
 **2CF<x>_Precisione minima per costanti virgola mobile (default/32/64)
 **2Cg_Genera codice position-independent (PIC)
-**2Ch<n>_<n> dimensione in byte dello heap 
+**2Ch<n>_<n> dimensione in byte dello heap
 **3*_        (fra 1023 e 67107840)
 **2Ci_controllo dell'I/O
 **2Cn_Non fare il linking
 **2Co_Controlla l'overflow di operazioni su interi
 **2CO_Controlla il possibile overflow di operazioni su interi
-**2Cp<x>_Scegli il set di istruzioni, 
+**2Cp<x>_Scegli il set di istruzioni,
 **3*_        (vedi fpc -i per i valori possibili)
 **2CP<x>=<y>_ impostazioni per il packing
-**3CPPACKSET=<y>_ <y> imposta l'allocazione: 
+**3CPPACKSET=<y>_ <y> imposta l'allocazione:
 **3*_        (0, 1 o DEFAULT o NORMAL, 2, 4 e 8)
 **2Cr_Controllo degli intervalli (range)
 **2CR_Controlla la validità di chiamate a metodi di oggetti
@@ -2821,7 +2821,7 @@ S*2Aas_Assembla con GNU AS
 **1E_Identico a -Cn
 **1fPIC_Identico a -Cg
 **1F<x>_Imposta nomi di file e path:
-**2Fa<x>[,y]_(programma) carica unit <x> e [y] 
+**2Fa<x>[,y]_(programma) carica unit <x> e [y]
 **3*_        (prima di parsare la sezione uses)
 **2Fc<x>_Imposta codepage di input a <x>
 **2FC<x>_Imposta il nome dell'exe del compilatore RC a <x>
@@ -2833,7 +2833,7 @@ S*2Aas_Assembla con GNU AS
 **2Fi<x>_Aggiunge <x> al path degli include
 **2Fl<x>_Aggiunge <x> al path delle library
 **2FL<x>_Usa <x> come linker dinamico
-**2Fm<x>_Carica tabella conversione unicode da <x>.txt 
+**2Fm<x>_Carica tabella conversione unicode da <x>.txt
 **3*_        (nella directory del compilatore)
 **2Fo<x>_Aggiunge <x> al path dei file oggetto
 **2Fr<x>_Carica file dei messaggi di errore <x>
@@ -2847,20 +2847,20 @@ S*2Aas_Assembla con GNU AS
 *g2gh_Usa unit heaptrace (debug di memory leak o corruzioni)
 *g2gl_Usa unit line info (mostra più info con i backtrace)
 *g2go<x>_Imposta opzioni delle informazioni di debug
-*g3godwarfsets_Abilita debug info tipo DWARF 'set' 
+*g3godwarfsets_Abilita debug info tipo DWARF 'set'
 *g3*_        (attenzione: fa crashare gdb < 6.5)
-*g3gostabsabsincludes_Memorizza path assoluto per 
+*g3gostabsabsincludes_Memorizza path assoluto per
 *g3*_        gli include file in Stabs
-*g3godwarfmethodclassprefix_Prefissa i nomi dei metodi 
+*g3godwarfmethodclassprefix_Prefissa i nomi dei metodi
 **3*_        in DWARF con il nome di classe
 *g2gp_Conserva maiuscole nei nomi di simboli stabs
 *g2gs_Genera info di debug Stabs
-*g2gt_Scarta variabili locali 
+*g2gt_Scarta variabili locali
 *g3*_        (rileva il loro uso non inizializzato)
 *g2gv_Genera programmi tracciabili con Valgrind
 *g2gw_Genera info di debug DWARFv2 (come -gw2)
-*g2gw2_Genera info di debug DWARFv2 
-*g2gw3_Genera info di debug DWARFv3 
+*g2gw2_Genera info di debug DWARFv2
+*g2gw3_Genera info di debug DWARFv3
 **1i_Informazioni
 **2iD_Ritorna la data del compilatore
 **2iV_Ritorna la versione breve del compilatore
@@ -2875,21 +2875,21 @@ S*2Aas_Assembla con GNU AS
 **1M<x>_Imposta il modo del linguaggio a <x>
 **2Mfpc_Dialetto Free Pascal (default)
 **2Mobjfpc_Modo FPC con supporto Object Pascal
-**2Mdelphi_Modo compatibilità Delphi 7 
-**2Mtp_Modo compatibilità TP/BP 7.0 
+**2Mdelphi_Modo compatibilità Delphi 7
+**2Mtp_Modo compatibilità TP/BP 7.0
 **2Mmacpas_Modo compatibilità Macintosh Pascal e dialetti
 **1n_Non leggere i file configurazione di default
 **1o<x>_Rinomina l'eseguibile prodotto in <x>
 **1O<x>_Ottimizzazioni:
 **2O-_Disabilita le ottimizzazioni
-**2O1_Ottimizzazione livello 1 
+**2O1_Ottimizzazione livello 1
 **3*_        (rapide e trasparenti al debugger)
 **2O2_Ottimizzazione livello 2 (-O1 + ottimizz. veloce)
 **2O3_Ottimizzazione livello 3 (-O2 + ottimizz. lenta)
 **2Oa<x>=<y>_Imposta allineamento
-**2Oo[NO]<x>_Abilita/disabilita ottimizzazioni, 
+**2Oo[NO]<x>_Abilita/disabilita ottimizzazioni,
 **3*_        (vedi fpc -i per possibili valori)
-**2Op<x>_Imposta ottimizzazione per una CPU specifica, 
+**2Op<x>_Imposta ottimizzazione per una CPU specifica,
 **3*_        (vedi fpc -i per possibili valori)
 **2OW<x>_Genera feedback per l'ottimizz. globale <x> (vedi fpc -i)
 **2Ow<x>_Esegue ottimizzazione globale <x> (vedi fpc -i)
@@ -2916,7 +2916,7 @@ S*2Aas_Assembla con GNU AS
 **3*_h : Il compilatore si ferma anche con consigli
 **2Sg_Abilita LABEL e GOTO (default in -Mtp e -Mdelphi)
 **2Sh_Usa ansistring per default invece di shortstring
-**2Si_Abilita l'inlining di procedure e funzioni 
+**2Si_Abilita l'inlining di procedure e funzioni
 **3*_        dichiarate come "inline"
 **2Sk_Carica unit fpcylix
 **2SI<x>_Imposta stile di interfacce a <x>
@@ -2924,10 +2924,10 @@ S*2Aas_Assembla con GNU AS
 **3SIcorba_Interfaccia CORBA compatible
 **2Sm_Supporta macro simil-C (global)
 **2So_Come -Mtp
-**2Ss_Il nome del costruttore deve essere 'init' 
+**2Ss_Il nome del costruttore deve essere 'init'
 **3*_        (e il nome del distruttore deve essere 'done')
 **2St_Permetti la parola chiave static negli oggetti
-**2Sx_Abilita la parola chiave exception 
+**2Sx_Abilita la parola chiave exception
 **3*_        (default nei modi Delphi/ObjFPC)
 **1s_Non chiamare assembler e linker
 **2sh_Genera script per il linking sull'host
@@ -2964,9 +2964,9 @@ P*2Tmorphos_MorphOS
 S*2Tlinux_Linux
 **1u<x>_Elimina il simbolo <x>
 **1U_Opzioni per le unit:
-**2Un_Non controllare se i nomi della unit e 
+**2Un_Non controllare se i nomi della unit e
 **3*_        del file che la contiene sono uguali
-**2Ur_Genera file di release delle unit 
+**2Ur_Genera file di release delle unit
 **3*_        (niente ricompilazione automatica)
 **2Us_Compila una unit di sistema
 **1v<x>_Prolisso. <x> è una combinazione dei seguenti:
@@ -2991,7 +2991,7 @@ P*2Wb_Crea un bundle e non una libreria (Darwin)
 p*2Wb_Crea un bundle e non una libreria (Darwin)
 3*2WB_Crea una immagine rilocabile (Windows)
 A*2WB_Crea una immagine rilocabile (Windows, Symbian)
-3*2WC_Specifica applicazione di tipo console 
+3*2WC_Specifica applicazione di tipo console
 3*3*_        (EMX, OS/2, Windows)
 A*2WC_Specifica applicazione console (Windows)
 P*2WC_Specifica applicazione console (Classic Mac OS)
@@ -3007,9 +3007,9 @@ P*2WG_Specifica una applicazione grafica (Classic Mac OS)
 3*2Wi_Usa risorse interne (Darwin)
 P*2Wi_Usa risorse interne (Darwin)
 p*2Wi_Usa risorse interne (Darwin)
-3*2WN_Non generare codice di rilocazione, 
+3*2WN_Non generare codice di rilocazione,
 3*3*_        (necessario per il debug sotto Windows)
-A*2WN_Non generare codice di rilocazione, 
+A*2WN_Non generare codice di rilocazione,
 A*3*_(necessario per il debug sotto Windows)
 3*2WR_Genera codice di rilocazione (Windows)
 A*2WR_Genera codice di rilocazione (Windows)
@@ -3019,25 +3019,25 @@ A*2WX_Abilita stack dell'eseguibile (Linux)
 p*2WX_Abilita stack dell'eseguibile (Linux)
 P*2WX_Abilita stack dell'eseguibile (Linux)
 **1X_Opzioni per gli eseguibili:
-**2Xc_Passa --shared/-dynamic al linker 
+**2Xc_Passa --shared/-dynamic al linker
 **3*_        (BeOS, Darwin, FreeBSD, Linux)
-**2Xd_Non usare il path per la standard library 
+**2Xd_Non usare il path per la standard library
 **3*_        (per crosscompilazione)
 **2Xe_Usa linker esterno
 **2Xg_Metti le info di debug in un file diverso e inserisci
 **3*_        una sezione debuglink nell'eseguibile
-**2XD_Cerca di linkare le unit dinamicamente 
+**2XD_Cerca di linkare le unit dinamicamente
 **3*_        (FPC_LINK_DYNAMIC: on)
 **2Xi_Usa linker interno
 **2Xm_Genera la mappa di linking
 **2XM<x>_Rinomina la routine 'main' del programma (default: main)
 **2XP<x>_Aggiunge il prefisso <x> ai nomi delle binutils
-**2Xr<x>_Pone il path rlink del linker a <x> 
+**2Xr<x>_Pone il path rlink del linker a <x>
 **3*_        per crosscompilazioni, vedi manuale di ld (BeOS, Linux)
-**2XR<x>_Prepone <x> ai path del linker 
+**2XR<x>_Prepone <x> ai path del linker
 **3*_        (BeOS, Darwin, FreeBSD, Linux, Mac OS, Solaris)
 **2Xs_Elimina tutti i simboli dall'eseguibile finale
-**2XS_Prova a linkare tutte le unit staticamente 
+**2XS_Prova a linkare tutte le unit staticamente
 **3*_        (default, FPC_LINK_STATIC: on)
 **2Xt_Linka a librerie statiche (passa -static al linker)
 **2XX_Prova a usare lo smartlinking (FPC_LINK_SMART: on)

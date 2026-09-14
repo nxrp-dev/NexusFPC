@@ -258,6 +258,15 @@ implementation
         i : Integer;
         inverse : boolean;
         c : char;
+
+        procedure ToggleFlag(const flag: longint);
+        begin
+          if inverse then
+            status.verbosity:=status.verbosity and (not flag)
+          else
+            status.verbosity:=status.verbosity or flag;
+        end;
+
       begin
         Setverbosity:=false;
         val(s,m,i);
@@ -284,29 +293,14 @@ implementation
                 { Special cases }
                  '0' : status.verbosity:=V_Default;
                  'A' : status.verbosity:=V_All;
-                 'B' : begin
-                          if inverse then
-                            status.print_source_path:=false
-                          else
-                            status.print_source_path:=true;
-                       end;
+                 'B' : status.print_source_path:=not inverse;
                  'M' : if not ChangeMessageVerbosity(s,i,message_verbosity[inverse]) then
                          begin
                            result:=false;
                            exit
                          end;
-                 'P' : begin
-                         if inverse then
-                          paraprintnodetree:=0
-                         else
-                          paraprintnodetree:=1;
-                       end;
-                 'Q' : begin
-                          if inverse then
-                            status.showmsgnrs:=false
-                          else
-                            status.showmsgnrs:=true;
-                       end;
+                 'P' : paraprintnodetree:=byte(not inverse);
+                 'Q' : status.showmsgnrs:=not inverse;
                  'R' : begin
                           if inverse then
                             begin
@@ -320,65 +314,21 @@ implementation
                             end;
                        end;
                  'V' : PrepareReport;
-                 'Z' : begin
-                          if inverse then
-                            status.use_stderr:=false
-                          else
-                            status.use_stderr:=true;
-                       end;
+                 'Z' : status.use_stderr:=not inverse;
                 { Normal cases - do an or }
-                 'C' : if inverse then
-                         status.verbosity:=status.verbosity and (not V_Conditional)
-                       else
-                         status.verbosity:=status.verbosity or V_Conditional;
-                 'D' : if inverse then
-                         status.verbosity:=status.verbosity and (not V_Debug)
-                       else
-                         status.verbosity:=status.verbosity or V_Debug;
-                 'E' : if inverse then
-                         status.verbosity:=status.verbosity and (not V_Error)
-                       else
-                         status.verbosity:=status.verbosity or V_Error;
-                 'H' : if inverse then
-                         status.verbosity:=status.verbosity and (not V_Hint)
-                       else
-                         status.verbosity:=status.verbosity or V_Hint;
-                 'I' : if inverse then
-                         status.verbosity:=status.verbosity and (not V_Info)
-                       else
-                         status.verbosity:=status.verbosity or V_Info;
-                 'J' : if inverse then
-                         status.verbosity:=status.verbosity and (not V_Parallel)
-                       else
-                         status.verbosity:=status.verbosity or V_Parallel;
-                 'L' : if inverse then
-                         status.verbosity:=status.verbosity and (not V_Status)
-                       else
-                         status.verbosity:=status.verbosity or V_Status;
-                 'N' : if inverse then
-                         status.verbosity:=status.verbosity and (not V_Note)
-                       else
-                         status.verbosity:=status.verbosity or V_Note;
-                 'S' : if inverse then
-                         status.verbosity:=status.verbosity and (not V_TimeStamps)
-                       else
-                         status.verbosity:=status.verbosity or V_TimeStamps;
-                 'T' : if inverse then
-                         status.verbosity:=status.verbosity and (not V_Tried)
-                       else
-                         status.verbosity:=status.verbosity or V_Tried;
-                 'U' : if inverse then
-                         status.verbosity:=status.verbosity and (not V_Used)
-                       else
-                         status.verbosity:=status.verbosity or V_Used;
-                 'W' : if inverse then
-                         status.verbosity:=status.verbosity and (not V_Warning)
-                       else
-                         status.verbosity:=status.verbosity or V_Warning;
-                 'X' : if inverse then
-                         status.verbosity:=status.verbosity and (not V_Executable)
-                       else
-                         status.verbosity:=status.verbosity or V_Executable;
+                 'C' : ToggleFlag(V_Conditional);
+                 'D' : ToggleFlag(V_Debug);
+                 'E' : ToggleFlag(V_Error);
+                 'H' : ToggleFlag(V_Hint);
+                 'I' : ToggleFlag(V_Info);
+                 'J' : ToggleFlag(V_Parallel);
+                 'L' : ToggleFlag(V_Status);
+                 'N' : ToggleFlag(V_Note);
+                 'S' : ToggleFlag(V_TimeStamps);
+                 'T' : ToggleFlag(V_Tried);
+                 'U' : ToggleFlag(V_Used);
+                 'W' : ToggleFlag(V_Warning);
+                 'X' : ToggleFlag(V_Executable);
                  end;
                 inc(i);
              end;

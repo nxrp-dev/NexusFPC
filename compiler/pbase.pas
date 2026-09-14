@@ -132,6 +132,8 @@ implementation
             (Upper(s)=current_scanner.pattern) and
             (m_class in tokeninfo^[current_scanner.idtoken].keyword) then
            Message(parser_f_need_objfpc_or_delphi_mode);
+         if (not (m_result in current_settings.modeswitches)) and (Upper(s) = 'RESULT') then
+           Message(parser_h_try_result);
        end;
 
 
@@ -144,6 +146,8 @@ implementation
             (Upper(s)=current_scanner.pattern) and
             (m_class in tokeninfo^[current_scanner.idtoken].keyword) then
            MessagePos(filepos,parser_f_need_objfpc_or_delphi_mode);
+         if (not (m_result in current_settings.modeswitches)) and (Upper(s) = 'RESULT') then
+           Message(parser_h_try_result);
        end;
 
 

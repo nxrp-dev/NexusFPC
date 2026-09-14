@@ -1,8 +1,8 @@
 %%% Reordering of errores.msg respective to errore.msg
 %%% Contains all comments from errores.msg
 # **************** don't edit! *******************
-# edit erroresu.msg and convert it to iso-8859-15 
-# by e.g. 
+# edit erroresu.msg and convert it to iso-8859-15
+# by e.g.
 # recode utf-8..iso-8859-15
 # and save it as errores.msg
 # ************************************************

@@ -497,12 +497,12 @@ var
          var
            s : tcmdstr;
          begin
-           if CheckVerbosity(V_Tried) then
-             Message1(unit_t_unitsearch,Singlepathstring+filename+ext);
            s:=FileName+ext;
            if prefix<>'' then
              s:=prefix+'.'+s;
            UnitExists:=FindFile(s,Singlepathstring,true,foundfile);
+           if UnitExists and CheckVerbosity(V_Tried) then
+             Message1(unit_t_unitsearch,Singlepathstring+filename+ext);
          end;
 
          Function PPUSearchPath(const s,prefix:TCmdStr):boolean;
@@ -686,25 +686,31 @@ var
           begin
             { the full filename is specified so we can't use here the
               searchpath (PFV) }
-            if CheckVerbosity(V_Tried) then
-              Message1(unit_t_unitsearch,ChangeFileExt(sourcefn,sourceext));
             if FindFile(ChangeFileExt(sourcefn,sourceext),'',true,hs) then
+            begin
               include(fnd,auSrc);
+              if CheckVerbosity(V_Tried) then
+                Message1(unit_t_unitsearch,ChangeFileExt(sourcefn,sourceext));
+            end;
             if (fnd=[]) then
              begin
-               if CheckVerbosity(V_Tried) then
-                 Message1(unit_t_unitsearch,ChangeFileExt(sourcefn,pasext));
                if FindFile(ChangeFileExt(sourcefn,pasext),'',true,hs) then
+                begin
                  include(fnd,auSrc);
+                 if CheckVerbosity(V_Tried) then
+                   Message1(unit_t_unitsearch,ChangeFileExt(sourcefn,pasext));
+                end;
              end;
             if (fnd=[]) and
                ((m_mac in current_settings.modeswitches) or
                 (tf_p_ext_support in target_info.flags)) then
              begin
-               if CheckVerbosity(V_Tried) then
-                 Message1(unit_t_unitsearch,ChangeFileExt(sourcefn,pext));
                if FindFile(ChangeFileExt(sourcefn,pext),'',true,hs) then
-                include(fnd,auSrc)
+               begin
+                include(fnd,auSrc);
+                if CheckVerbosity(V_Tried) then
+                  Message1(unit_t_unitsearch,ChangeFileExt(sourcefn,pext));
+               end;
              end;
             if [auSrc]=fnd then
              begin

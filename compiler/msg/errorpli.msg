@@ -2133,13 +2133,13 @@ Platforma docelowa: $FPCCPU
 
 Wspierane platformy:
   $OSTARGETS
-  
+
 Wspierane instrukcje CPU:
   $INSTRUCTIONSETS
 
 Wspierane instrukcje FPU:
   $FPUINSTRUCTIONSETS
-  
+
 Ten program jest oparty na GNU General Public Licence
 Przeczytaj COPYING.v2 aby dowiedzieæ siê wiêcej
 

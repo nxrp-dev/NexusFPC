@@ -30,7 +30,7 @@
 #   exec_     calls to assembler, external linker, binder
 #   link_     internal linker
 #   package_  package handling
-#   sym_      symbol handling 
+#   sym_      symbol handling
 #
 # <type> the type of the message it should normally used for
 #   f_   fatal error
@@ -1727,6 +1727,9 @@ parser_w_aligned_useless=03376_W_Aligned is useless here.
 %
 % \end{description}
 %
+parser_h_try_result=03377_H_Did you mean to use {$modeswitch result} or -Mresult flag?
+parser_w_may_need_result=03378_W_{$modeswitch result} or -Mresult flag maybe required for anonymous functions.
+parser_e_anonymous_function_needed=03379_E_Anonymous function mode is required via {$modeswitch anonymousfunctions}!
 # Type Checking
 #
 # 04135 is the last used one
@@ -4467,7 +4470,7 @@ W*2Twasip1threads_The WebAssembly System Interface Preview 1 with Multithreading
 W*2Twasip2_The WebAssembly System Interface Preview 2 (WASI 0.2) (experimental)
 # end of targets section
 **1t<x>_Target architecture
-**2*_ * Defines FPC_SUBTARGET_<x> 
+**2*_ * Defines FPC_SUBTARGET_<x>
 **2*_ * Defines FPC_SUBTARGET as <arg>
 **2*_ * Additionally reads config file fpc-<subtarget>.cfg
 **1u<x>_Undefines the symbol <x>

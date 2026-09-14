@@ -59,37 +59,37 @@
 % çeşitli ayrıntı seviyesi \var{-v} anahtarlarıyla kontrol edilir.
 % \begin{description}
 general_t_compilername=01000_T_Derleyici: $1
-% \var{-vt} anahtarı kullanıldığında, bu satır hangi derleyicinin kullanıldığını 
-% bildirir. 
+% \var{-vt} anahtarı kullanıldığında, bu satır hangi derleyicinin kullanıldığını
+% bildirir.
 general_d_sourceos=01001_D_Derleyici işletim sistemi: $1
-% \var{-vd} anahtarı kullanıldığında, bu satır kaynak işletim sisteminin 
-% ne olduğunu gösterir. 
+% \var{-vd} anahtarı kullanıldığında, bu satır kaynak işletim sisteminin
+% ne olduğunu gösterir.
 general_i_targetos=01002_I_Hedef işletim sistemi: $1
-% \var{-vd} anahtarı kullanıldığında, bu satır size hedef işletim sisteminin 
+% \var{-vd} anahtarı kullanıldığında, bu satır size hedef işletim sisteminin
 % ne olduğunu söyler.
 general_t_exepath=01003_T_Yürütülebilir yolu kullanma: $1
-% \var{-vt} anahtarı kullanıldığında, bu satır derleyicinin ikili dosyalarını 
+% \var{-vt} anahtarı kullanıldığında, bu satır derleyicinin ikili dosyalarını
 % nerede aradığını gösterir.
 general_t_unitpath=01004_T_Birim yolunu kullanma: $1
-% \var{-vt} anahtarı kullanıldığında, bu satır derleyicinin derlenmiş birimleri 
+% \var{-vt} anahtarı kullanıldığında, bu satır derleyicinin derlenmiş birimleri
 % nerede aradığını gösterir. Bu yolu \var{-Fu} seçeneğiyle ayarlayabilirsiniz.
 general_t_includepath=01005_T_Dahili dosya yolunu kullanma: $1
-% \var{-vt} anahtarı kullanıldığında, bu satır derleyicinin içerme dosyalarını 
-% nerede aradığını gösterir (\var{\{\$I xxx\}} deyimlerinde kullanılan dosyalar). 
+% \var{-vt} anahtarı kullanıldığında, bu satır derleyicinin içerme dosyalarını
+% nerede aradığını gösterir (\var{\{\$I xxx\}} deyimlerinde kullanılan dosyalar).
 % Bu yolu \var{-Fi} seçeneğiyle ayarlayabilirsiniz.
 general_t_librarypath=01006_T_Kütüphane yolunu kullanma: $1
-% \var{-vt} anahtarı kullanıldığında, bu satır derleyicinin kitaplıkları nerede 
+% \var{-vt} anahtarı kullanıldığında, bu satır derleyicinin kitaplıkları nerede
 % aradığını gösterir. Bu yolu \var{-Fl} seçeneğiyle ayarlayabilirsiniz.
 general_t_objectpath=01007_T_Nesne yolunu kullanma: $1
-% \var{-vt} anahtarı kullanıldığında, bu satır derleyicinin bağladığınız 
-% nesne dosyalarını nerede aradığını gösterir (\var{\{\$L xxx\}} deyimlerinde 
+% \var{-vt} anahtarı kullanıldığında, bu satır derleyicinin bağladığınız
+% nesne dosyalarını nerede aradığını gösterir (\var{\{\$L xxx\}} deyimlerinde
 % kullanılan dosyalar). Bu yolu \var{-Fo} seçeneğiyle ayarlayabilirsiniz.
 general_i_abslines_compiled=01008_I_$1 derlenmiş satırlar, $2 sec$3
-% \var{-vi} anahtarı kullanıldığında, derleyici derlenen satır sayısını 
+% \var{-vi} anahtarı kullanıldığında, derleyici derlenen satır sayısını
 % ve derlenmesi için geçen süreyi (program saati değil gerçek zaman) bildirir.
 general_f_no_memory_left=01009_F_Hafıza kalmadı
-% Derleyici, programınızı derlemek için yeterli belleğe sahip değil. 
-% Bunun için birkaç çözüm var: 
+% Derleyici, programınızı derlemek için yeterli belleğe sahip değil.
+% Bunun için birkaç çözüm var:
 % \begin{itemize}
 % \öğe Derleyicinin derleme seçeneğini kullanıyorsanız, farklı birimleri
 % elle derlemeyi deneyin.
@@ -98,7 +98,7 @@ general_f_no_memory_left=01009_F_Hafıza kalmadı
 % (Bunun için \var{-Ch} seçeneğini kullanabilirsiniz, \seeo{Ch}.)
 % \end{itemize}
 general_i_writingresourcefile=01010_I_Kaynak String Tablosu dosyası yazılıyor: $1
-% Bu mesaj, derleyici bir programın tüm kaynak dizelerini içeren 
+% Bu mesaj, derleyici bir programın tüm kaynak dizelerini içeren
 % Kaynak String Tablosu dosyasını yazdığında gösterilir.
 general_e_errorwritingresourcefile=01011_E_Kaynak String Tablosu dosyası yazılıyor: $1
 % Derleyici, Kaynak String Tablosu dosyasını yazarken bir hatayla karşılaştığında
@@ -158,7 +158,7 @@ scan_f_syn_expected=02003_F_Sözdizimi hatası, "$1" olması gerekli ama "$2" va
 % Bu, derleyicinin yazdığınızdan farklı bir simge beklediğini gösterir.
 % Pascal diline karşı hata yapmak mümkün olan hemen hemen her yerde ortaya çıkabilir.
 scan_t_start_include_file=02004_TL_Dahil bir dosya okunuyor $1
-% \var{-vt} anahtarını sağladığınızda, derleyici içerdiği dosyayı okumaya 
+% \var{-vt} anahtarını sağladığınızda, derleyici içerdiği dosyayı okumaya
 % başladığında size bunu bildirir.
 scan_w_comment_level=02005_W_Yorum seviyesi $1 bulundu
 % \var{-vw} anahtarı kullanıldığında, derleyici iç içe geçmiş yorumlar bulursa
@@ -179,9 +179,9 @@ scan_f_cannot_open_input=02012_F_Dosya açılamıyor "$1"
 scan_f_cannot_open_includefile=02013_F_Dahili dosya açılamıyor "$1"
 % \ fpc, bir \var{\{\$include ..\}} ifadesinde belirttiğiniz kaynak dosyayı bulamıyor.
 scan_e_illegal_pack_records=02015_E_Geçersiz kayıt hizalama belirticisi "$1"
-% \var{n} için geçersiz bir değerle \var{\{\$PACKRECORDS n\} } veya \var{\{\$ALIGN n\} } 
-% belirtiyorsunuz. \$PACKRECORDS için geçerli hizalamalar 
-% 1, 2, 4, 8, 16, 32, C, NORMAL, DEFAULT ve \$ALIGN için geçerli hizalamalar 
+% \var{n} için geçersiz bir değerle \var{\{\$PACKRECORDS n\} } veya \var{\{\$ALIGN n\} }
+% belirtiyorsunuz. \$PACKRECORDS için geçerli hizalamalar
+% 1, 2, 4, 8, 16, 32, C, NORMAL, DEFAULT ve \$ALIGN için geçerli hizalamalar
 % 1, 2, 4, 8, 16, 32, ON, OFF. MacPas \$ALIGN kipinde MAC68K, POWER ve RESET
 % seçeneklerini de destekler.
 scan_e_illegal_pack_enum=02016_E_Illegal enum minimum boyut belirteci "$1"
@@ -215,10 +215,10 @@ scan_e_keyword_cant_be_a_macro=02028_E_Makro olarak yeniden tanımlanan anahtar 
 scan_f_macro_buffer_overflow=02029_F_Bir makroyu okurken veya genişletirken makro arabellek taşması
 % Makronuz veya sonucu derleyici için çok uzundu.
 scan_w_macro_too_deep=02030_W_Makroların genişletilmesi, 16 derinliğini aşıyor.
-% Bir makroyu genişletirken, makrolar 16 seviyesine yerleştirildi. 
-% Derleyici daha fazla genişlemeyecek, çünkü bu özyinelemenin 
+% Bir makroyu genişletirken, makrolar 16 seviyesine yerleştirildi.
+% Derleyici daha fazla genişlemeyecek, çünkü bu özyinelemenin
 % kullanıldığının bir işareti olabilir.
-scan_w_wrong_styled_switch=02031_W_derleyici anahtarları içinde // tarz yorumlar desteklenmiyor 
+scan_w_wrong_styled_switch=02031_W_derleyici anahtarları içinde // tarz yorumlar desteklenmiyor
 % Derleyici anahtarları normal Pascal tarzı yorumlarda olmalıdır.
 scan_d_handling_switch=02032_DL_Taşıma anahtarı "$1"
 % Hata ayıklama bilgisini (\var{-vd}) üzerine ayarladığınızda,
@@ -281,7 +281,7 @@ scan_e_wrong_switch_toggle=02052_E_Yanlış anahtar değiştirme, ON/OFF veya +/
 scan_e_resourcefiles_not_supported=02053_E_Kaynak dosyaları bu hedef için desteklenmiyor
 % Derlemekte olduğunuz hedef kaynak dosyalarını desteklemiyor.
 scan_w_include_env_not_found=02054_W_Çevrede bulunmayan "$1" ortamını dahil et
-% Dahil edilen ortam değişkeni çevrede bulunamıyor; 
+% Dahil edilen ortam değişkeni çevrede bulunamıyor;
 % bunun yerine boş bir string ile değiştirilecektir.
 scan_e_invalid_maxfpureg_value=02055_E_FPU sicil limiti için geçersiz değer
 % Bu direktif için geçerli değerler 0..8 ve NORMAL/DEFAULT.
@@ -290,7 +290,7 @@ scan_w_only_one_resourcefile_supported=02056_W_Bu hedef için yalnızca bir kayn
 % Bulunan ilk kaynak dosya kullanılır, diğerleri atılır.
 scan_w_macro_support_turned_off=02057_W_Makro desteği kapatıldı
 % Bir makro bildirimi bulundu, ancak makro desteği şu anda kapalı,
-% bu nedenle bildirim dikkate alınmayacak. 
+% bu nedenle bildirim dikkate alınmayacak.
 % Makro desteğini komut satırında -Sm ile derlemek için veya kaynağa \{\$MACRO ON\} ekleyin.
 scan_e_invalid_interface_type=02058_E_Geçersiz arabirim türü belirtildi. Geçerli değerler COM, CORBA veya DEFAULT'dur.
 % Belirtilen arabirim türü desteklenmiyor.
@@ -323,12 +323,12 @@ scan_e_utf8_malformed=02070_E_Hatalı biçimlendirilmiş UTF-8 dizesi
 scan_c_switching_to_utf8=02071_C_UTF-8 kodlamasını kullanarak, UTF8 imza bulundu
 % Derleyici, bir dosyanın başında bir UTF-8 kodlama imzası (\$ef, \$bb, \$bf) buldu,
 % bu nedenle dosyayı UTF-8 dosyası olarak yorumluyor.
-scan_e_compile_time_typeerror=02072_E_Derleme zamanı ifadesi: $1 istedi, ancak $3 'da $2 aldı 
+scan_e_compile_time_typeerror=02072_E_Derleme zamanı ifadesi: $1 istedi, ancak $3 'da $2 aldı
 % Derleme zamanı ifadesinin tür denetimi başarısız oldu.
 scan_n_app_type_not_support=02073_N_APPTYPE hedef işletim sistemi tarafından desteklenmiyor
 % \var{\{\$APPTYPE\}} yönergesi yalnızca belirli işletim sistemleri tarafından desteklenir.
 scan_e_illegal_optimization_specifier=02074_E_Geçersiz optimizasyon "$1" olarak belirlendi
-% \var{\{\$OPTIMIZATION xxx\}} yönergesiyle bir optimizasyon belirlediniz ve 
+% \var{\{\$OPTIMIZATION xxx\}} yönergesiyle bir optimizasyon belirlediniz ve
 % derleyici belirttiğiniz optimizasyonu tanımıyor.
 scan_w_setpeflags_not_support=02075_W_SETPEFLAGS hedef işletim sistemi tarafından desteklenmiyor
 % \var{\{\$SETPEFLAGS\}} direktif, hedef işletim sistemi tarafından desteklenmiyor.
@@ -364,7 +364,7 @@ scanner_f_illegal_utf8_bom=02089_F_UTF-8 BOM ile başlayan bir dosyayı farklı 
 % Tek bir derleme öğesinin parçası olan tüm kaynak kodların
 % (program, kütüphane, birim) aynı kod sayfasında kodlanması gerekir
 scanner_w_directive_ignored_on_target=02090_W_Mevcut hedef platform için "$1" yönergesi yok sayılıyor
-% Yönetilen platformlardaki paketlerin ve paket ayarlarının 
+% Yönetilen platformlardaki paketlerin ve paket ayarlarının
 % değiştirilmesi gibi bazı hedefler için bazı yönergeler dikkate alınmaz.
 scan_w_unavailable_system_codepage=02091_W_Mevcut sistem kod sayfası "$1" derleyici için mevcut değil. Varsayılan kod sayfasını tekrar "$2" olarak değiştiriyorum.
 % Geçerli sistem kod sayfası derleyici tarafından bilinmiyor.
@@ -440,7 +440,7 @@ parser_e_no_local_objects=03021_E_Yerel sınıf tanımlarına izin verilmiyor
 % Classes küresel olarak tanımlanmalıdır. Bir prosedür veya fonksiyon içinde tanımlanamazlar.
 parser_f_no_anonym_objects=03022_F_Anonim sınıf tanımlarına izin verilmez
 % Geçersiz bir nesne (sınıf) bildirimi ile karşılaşıldı, yani bir
-% başka bir nesne veya sınıftan türetilmemiş yöntemleri olmayan nesne veya sınıf. 
+% başka bir nesne veya sınıftan türetilmemiş yöntemleri olmayan nesne veya sınıf.
 % Örneğin:
 % \Begin{verbatim}
 % O = nesne yazın
@@ -738,13 +738,13 @@ parser_e_proc_dir_not_allowed_in_implementation=03118_E_Implementation bölümü
 % bulunmasına izin verilmez. Sadece \var {interface} bölümünde kullanabilirsiniz.
 parser_e_proc_dir_not_allowed_in_procvar=03119_E_Procvar bildirgesinde "$1" sayılı prosedür direktifine izin verilmiyor
 % Bu prosedür yönergesi bir prosedür ya da fonksiyon türü bildiriminin parçası olamaz.
-parser_e_function_already_declared_public_forward=03120_E_Fonksiyon zaten Public/Forward "$1" olarak tanımlandı 
+parser_e_function_already_declared_public_forward=03120_E_Fonksiyon zaten Public/Forward "$1" olarak tanımlandı
 % Bir fonksiyon iki kez \var {forward} olarak tanımlanırsa bu hatayı alırsınız.
 % Veya, \var {interface} bölümünde ve yine \var {application} bölümünde bir \var {forward}
 % bildirimi olarak gerçekleşirse bu hatayı alırsınız.
 parser_e_not_external_and_export=03121_E_Hem EXPORT hemde EXTERNAL kullanılamaz
 % Bu iki prosedür yönergesi karşılıklı olarak sınırlıdır.
-parser_h_not_supported_for_inline=03123_H_"$1" satır içi procedure/function içinde henüz desteklenmiyor 
+parser_h_not_supported_for_inline=03123_H_"$1" satır içi procedure/function içinde henüz desteklenmiyor
 % Satır içi prosedürler bu bildirimi desteklemez.
 parser_h_inlining_disabled=03124_H_Satır içi devre dışı
 % İşlemlerin dizilmesi devre dışıdır.
@@ -880,7 +880,7 @@ parser_e_no_con_des_in_interfaces=03171_E_Interface lerde constructor ve destruc
 parser_e_no_access_specifier_in_interfaces=03172_E_Erişim belirticileri INTERFACE ve OBJCPROTOCOL'larda kullanılamaz.
 % \var{public}, \var{private}, \var{protected} ve \var{published} erişim belirticileri,
 % arabirimlerde, Objective-C protokollerinde ve kategorilerinde kullanılamaz.
-% çünkü bir interface/protocol/category nin tüm yöntemleri public de olmalıdır. 
+% çünkü bir interface/protocol/category nin tüm yöntemleri public de olmalıdır.
 parser_e_no_vars_in_interfaces=03173_E_Bir interface, yardımcı veya Objective-C protokolü veya kategorisi alanlar içeremez
 % Arabirimler, yardımcılar ve Objective-C protokollerinde ve kategorilerinde alan bildirimlerine izin verilmez.
 % Bir interface/helper/protocol/category, yalnızca yöntem okuma/yazma belirticilerini içeren methods ve properties içerebilir.
@@ -1506,7 +1506,7 @@ type_e_class_type_expected=04009_E_class tipi bekleniyor, ancak "$1" aldı
 % Değişken veya ifade, \var{class} türünde değil. Bu genellikle ne zaman olur
 % \begin{enumerate}
 % \item Bir sınıf bildirgesindeki ana sınıf bir sınıf değildir.
-% \item Bir istisna işleyici (\var{On}), sınıf olmayan bir tür tanımlayıcı içeriyor. 
+% \item Bir istisna işleyici (\var{On}), sınıf olmayan bir tür tanımlayıcı içeriyor.
 % \end{enumerate}
 type_e_cant_eval_constant_expr=04011_E_Sürekli ifade değerlendirilemiyor
 % Bu hata, bildirdiğiniz bir dizinin sınırları sıra sabitlerini değerlendirmediğinde ortaya çıkabilir.
@@ -1600,7 +1600,7 @@ type_h_mixed_signed_unsigned=04035_H_İmzalı ifadeleri ve şifreleri karıştı
 % then everything has to be evaluated in 64-bit arithmetic which is slower than normal
 % 32-bit arithmetic. You can avoid this by typecasting one operand so it
 % matches the result type of the other one.
-type_w_mixed_signed_unsigned2=04036_W_İşaretli ifadelerin ve cardinals ler buraya karıştırılması, aralık kontrol hatasına neden olabilir 
+type_w_mixed_signed_unsigned2=04036_W_İşaretli ifadelerin ve cardinals ler buraya karıştırılması, aralık kontrol hatasına neden olabilir
 % If you use a binary operator (and, or, xor) and one of
 % the operands is a longword while the other one is a signed expression, then,
 % if range checking is turned on, you may get a range check error because in
@@ -1845,7 +1845,7 @@ type_e_no_managed_assign_generic_typecast=04115_E_Bir ifadenin atama tarafı, y�
 % to statically determine that no type-unsafe assignments or operations occur. By assigning a parent class type to a
 % variable of a child type by typecasting the assignment side to the parent class type, the type safety would no
 % longer be guaranteed and the generated code would fail verification at run time time.
-type_w_interface_lower_visibility=04116_-W_"$1" interface yöntemi, bir interface örneği üzerinden erişildiğinde "$2" görünürlüğünü public oluyor 
+type_w_interface_lower_visibility=04116_-W_"$1" interface yöntemi, bir interface örneği üzerinden erişildiğinde "$2" görünürlüğünü public oluyor
 type_e_interface_lower_visibility=04117_E_"$1" interface yöntemi "$2" den daha yüksek bir görünürlük oranına (public) sahiptir
 % All methods in an interface have always public visibility. That means that if
 % an interface method is implemented using a (strict) protected or private method,
@@ -1938,7 +1938,7 @@ sym_e_class_forward_not_resolved=05022_E_İleri class tanımı "$1" çözülemed
 sym_n_unit_not_used=05023_H_Birim $2 içinde "$1" uniti kullanılmıyor
 % Başvurulan birim \var{uses} kullanılmıyor.
 sym_h_para_identifier_not_used=05024_H_Parametre "$1" kullanılmıyor
-% Parametre (yerel veya genel olarak) tanımlandı, 
+% Parametre (yerel veya genel olarak) tanımlandı,
 % ancak kullanılmadı (yerel veya genel olarak).
 sym_n_local_identifier_not_used=05025_N_Yerel değişken "$1" kullanılmadı
 % Bir prosedür veya fonksiyonda bir değişken tanımladınız ancak kullanmadınız.
@@ -2237,7 +2237,7 @@ cg_e_no_code_for_inline_stored=06033_E_Satır içi prosedür için kayıtlı kod
 cg_e_can_access_element_zero=06035_E_Bir ansi/wide- veya longstring öğesinin sıfırına erişilemiyor, bunun yerine (set) uzunluk kullanın
 % You should use \var{setlength} to set the length of an ansi/wide/longstring
 % and \var{length} to get the length of such string type.
-cg_e_cannot_call_cons_dest_inside_with=06037_E_Constructors veya destructors 'with' yan tümcesinde çağrılamaz 
+cg_e_cannot_call_cons_dest_inside_with=06037_E_Constructors veya destructors 'with' yan tümcesinde çağrılamaz
 % Inside a \var{with} clause you cannot call a constructor or destructor for the
 % object you have in the \var{with} clause.
 cg_e_cannot_call_message_direct=06038_E_Mesaj işleyicisi yöntemleri doğrudan çağrılamıyor
@@ -3254,7 +3254,7 @@ wpo_duplicate_wpotype=12012_W_"$2" bölümündeki bilgileri kullanarak geri bild
 wpo_cannot_extract_live_symbol_info_strip=12013_E_Sembol soyunurken sembol canlılığı bilgisi programdan çıkarılamaz, -Xs- kullanın
 % Certain symbol liveness collectors extract the symbol information from the linked program. If the symbol information
 % is stripped (option -Xs), this is not possible.
-wpo_cannot_extract_live_symbol_info_no_link=12014_E_Programdan sembol canlılığı bilgisi alınamıyor, Bağlanamıyor 
+wpo_cannot_extract_live_symbol_info_no_link=12014_E_Programdan sembol canlılığı bilgisi alınamıyor, Bağlanamıyor
 % Certain symbol liveness collectors extract the symbol information from the linked program. If the program is not
 % linked by the compiler, this is not possible.
 wpo_cannot_find_symbol_progs=12015_F_Bağlantılı programdan sembol canlılığı bilgilerini çıkarmak için "$1" veya "$$" bulunamıyor

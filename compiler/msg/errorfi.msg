@@ -243,7 +243,7 @@ scan_w_macro_too_deep=02030_W_L'expansion des macros dépasse une profondeur de 1
 % When expanding a macro, macros have been nested to a level of 16.
 % The compiler will expand no further, since this may be a sign that
 % recursion is used.
-scan_w_wrong_styled_switch=02031_W_Les commutateurs du compilateur ne sont pas supportés dans les commentaires de style // 
+scan_w_wrong_styled_switch=02031_W_Les commutateurs du compilateur ne sont pas supportés dans les commentaires de style //
 % Compiler switches should be in normal pascal style comments.
 scan_d_handling_switch=02032_D_Interprétation du commutateur "$1"
 % When you set debugging info on (\var{-vd}) the compiler tells you when it
@@ -1029,7 +1029,7 @@ parser_e_no_procvarobj_const=03183_E_Les constantes typées de la forme "procedur
 % that of the method (which is known at compile time) and that of the object or
 % class instance it operates on (which can not be known at compile time).
 parser_e_default_value_only_one_para=03184_E_Une valeur par défaut ne peut être affectée qu'à un paramètre
-% It is not possible to specify a default value for several parameters at once. 
+% It is not possible to specify a default value for several parameters at once.
 % The following is invalid:
 % \begin{verbatim}
 % Procedure MyProcedure (A,B : Integer = 0);
@@ -2399,7 +2399,7 @@ cg_e_unable_inline_procvar=06032_E_Les appels à des variables procédure ne peuve
 % A procedure with a procedural variable call cannot be inlined.
 cg_e_no_code_for_inline_stored=06033_E_Pas de code pour la procédure inline stockée
 % The compiler couldn't store code for the inline procedure.
-cg_e_can_access_element_zero=06035_E_Impossible d'accéder à l'élément zéro d'une chaîne ANSI, large ou longue, utilisez à la place (set)length 
+cg_e_can_access_element_zero=06035_E_Impossible d'accéder à l'élément zéro d'une chaîne ANSI, large ou longue, utilisez à la place (set)length
 % You should use \var{setlength} to set the length of an ansi/wide/longstring
 % and \var{length} to get the length of such a string types
 cg_e_cannot_call_cons_dest_inside_with=06037_E_Constructeurs et destructeurs ne peuvent pas être appelés à l'intérieur d'une clause 'with'
@@ -3128,7 +3128,7 @@ unit_u_load_unit=10027_U_Chargement à partir de $1 ($2) de l'unité $3
 % When you use the \var{-vu} flag, which unit is loaded from which unit is
 % shown.
 unit_u_recompile_crc_change=10028_U_Recompilation de $1, la somme de contrôle est maintenant $2
-% The unit is recompiled because the checksum of a unit it depends on has 
+% The unit is recompiled because the checksum of a unit it depends on has
 % changed.
 unit_u_recompile_source_found_alone=10029_U_Recompilation de $1, seul le source a été trouvé
 % When you use the \var{-vu} flag, these messages tell you why the current

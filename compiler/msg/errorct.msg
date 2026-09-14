@@ -250,7 +250,7 @@ scan_t_back_in=02043_TL_S'està tornant a $1
 scan_w_unsupported_app_type=02044_W_El tipus de l'aplicació "$1" no és compatible
 % You get this warning, if you specify an unknown application type
 % with the directive \var{\{\$APPTYPE\}}
-scan_w_app_type_not_support=02045_W_APPTYPE no és compatible amb el SO objectiu 
+scan_w_app_type_not_support=02045_W_APPTYPE no és compatible amb el SO objectiu
 % The \var{\{\$APPTYPE\}} directive is supported by certain operanting
 % systems only.
 scan_w_description_not_support=02046_W_DESCRIPTION no és compatible amb el SO objectiu
@@ -308,7 +308,7 @@ scan_e_wrong_switch_toggle_default=02066_E_La posició del commutador és errònia,
 % You need to use ON or OFF or DEFAULT or a + or - or * to toggle the switch
 scan_e_mode_switch_not_allowed=02067_E_Aquí no es permet el commutador de mode "$1"
 % A mode switch has already been encountered, or, in case of option -Mmacpas,
-% a mode switch occur after UNIT 
+% a mode switch occur after UNIT
 scan_e_error_macro_undefined=02068_E_La variable de temps de compilació "$1" no està definida
 % Thus the conditional compile time expression cannot be evaluated.
 % \end{description}
@@ -394,7 +394,7 @@ parser_e_header_dont_match_forward=03029_E_L'encapçalament de la funció no conco
 parser_e_header_different_var_names=03030_E_L'encapçalament de la funció "$1" no concorda amb la posterior declaració : el nom de la variable canvia $2 => $3
 % You declared the function in the \var{interface} part, or with the
 % \var{forward} directive, but define it with a different parameter list.
-parser_n_duplicate_enum=03031_N_Els valors en tipus d'enumerats han de ser ascendents 
+parser_n_duplicate_enum=03031_N_Els valors en tipus d'enumerats han de ser ascendents
 % \fpc allows enumeration constructions as in C. Given the following
 % declaration two declarations:
 % \begin{verbatim}
@@ -419,7 +419,7 @@ parser_e_case_lower_less_than_upper_bound=03038_E_El límit superior de CASE és m
 % is useless
 parser_e_type_const_not_possible=03039_E_No es permeten les constants amb tipus de les classes
 % You cannot declare a constant of type class or object.
-parser_e_no_overloaded_procvars=03040_E_No es permeten les funcions variables de les funcions sobrecarregades 
+parser_e_no_overloaded_procvars=03040_E_No es permeten les funcions variables de les funcions sobrecarregades
 % You are trying to assign an overloaded function to a procedural variable.
 % This is not allowed.
 parser_e_invalid_string_size=03041_E_La longitud d'una cadena ha de ser un valor entre 1 i 255
@@ -530,7 +530,7 @@ parser_e_dont_nest_export=03067_E_Les funcions declarades amb EXPORT no poden es
 % You cannot declare a function or procedure within a function or procedure
 % that was declared as an export procedure.
 parser_e_methods_dont_be_export=03068_E_Els mètodes no poden ser EXPORTats
-% You cannot declare a procedure that is a method for an object as 
+% You cannot declare a procedure that is a method for an object as
 % \var{export}ed.
 parser_e_call_by_ref_without_typeconv=03069_E_Les trucades per paràmetres variables tenen que concordar exactament: s'ha obtingut "$1", s'esperava "$2"
 % When calling a function declared with \var{var} parameters, the variables in
@@ -543,7 +543,7 @@ parser_e_self_not_in_method=03071_E_SELF només és permet en mètodes
 % You are trying to use the \var{self} parameter outside an object's method.
 % Only methods get passed the \var{self} parameters.
 parser_e_generic_methods_only_in_methods=03072_E_Els mètodes només poden estar en altres mètodes cridats directament amb l'identificador del tipus de la classe
-% A construction like \var{sometype.somemethod} is only allowed in a method. 
+% A construction like \var{sometype.somemethod} is only allowed in a method.
 parser_e_illegal_colon_qualifier=03073_E_Ús no vàlid de ":"
 % You are using the format \var{:} (colon) 2 times on an expression that
 % is not a real expression.
@@ -570,7 +570,7 @@ parser_e_false_with_expr=03079_E_El tipus de l'expressió ha de ser CLASS o RECOR
 % or \var{class}. You are using \var{with} on an expression that is not of
 % this type.
 parser_e_void_function=03080_E_Els procediments no poden retornar cap valor
-% In \fpc, you can specify a return value for a function when using 
+% In \fpc, you can specify a return value for a function when using
 % the \var{exit} statement. This error occurs when you try to do this with a
 % procedure. Procedures cannot return a value.
 parser_e_only_methods_allowed=03081_E_Els constructors, destructors i class operators han de ser mètodes
@@ -582,7 +582,7 @@ parser_e_operator_not_overloaded=03082_E_L'operador no està sobrecarregat
 parser_e_no_such_assignment=03083_E_No es pot sobrecarregar l'assignació per tipus iguals
 % You can not overload assignment for types
 % that the compiler considers as equal.
-parser_e_overload_impossible=03084_E_No es pot sobrecarregar l'operador 
+parser_e_overload_impossible=03084_E_No es pot sobrecarregar l'operador
 % The combination of operator, arguments and return type are
 % incompatible.
 parser_e_no_reraise_possible=03085_E_Aquí no es pot rellançar una excepció
@@ -1043,7 +1043,7 @@ type_e_not_equal_types=04002_E_Els tipus "$1" i "$2" no concorden
 % The types are not equal
 type_e_type_id_expected=04003_E_S'esperava un identificador de tipus
 % The identifier is not a type, or you forgot to supply a type identifier.
-type_e_variable_id_expected=04004_E_S'esperava un identificador de variable 
+type_e_variable_id_expected=04004_E_S'esperava un identificador de variable
 % This happens when you pass a constant to a routine (such as \var{Inc} var or \var{Dec})
 % when it expects a variable. You can only pass variables as arguments to these functions.
 type_e_integer_expr_expected=04005_E_S'esperava una expressió entera, però s'ha obtingut "$1"
@@ -1114,7 +1114,7 @@ type_w_maybe_wrong_hi_lo=04022_W_lo/hi(dword/qword) retorna el word/dword més al
 % bits 8..15 for \var{hi}. If you want the TP behavior you have
 % to type case the argument to \var{word/integer}
 type_e_integer_or_real_expr_expected=04023_E_S'esperava una expressió tipus INTEGER o REAL
-% The first argument to \var{str} must a real or integer type. 
+% The first argument to \var{str} must a real or integer type.
 type_e_wrong_type_in_array_constructor=04024_E_El tipus "$1" no és correcte en el constructor del conjunt
 % You are trying to use a type in an array constructor which is not
 % allowed.
@@ -1192,7 +1192,7 @@ type_w_signed_unsigned_always_true=04045_W_La comparació és sempre vertadera a c
 % There is a comparison between an unsigned value and a signed constant which is
 % less than zero. Because of type promotion, the statement will always evaluate to
 % true. Explicitly typecast the constant to the correct range to avoid this problem.
-type_w_instance_with_abstract=04046_W_S'està construint una classe "$1" amb mètodes abstractes 
+type_w_instance_with_abstract=04046_W_S'està construint una classe "$1" amb mètodes abstractes
 % An instance of a class is created which contains non_implemented abstract
 % methods. This will probably lead to a runtime error 211 in the code if that
 % routine is ever called. All abstract methods should be overridden.
@@ -1207,7 +1207,7 @@ type_h_smaller_possible_range_check=04049_H_El tamany dels tipus no concorden, p
 % There is an assignement to a smaller type than the source type. This means that
 % this may cause a range-check error, or may lead to possible loss of data
 type_e_cant_take_address_of_abtract_method=04050_E_No es pot obtenir l'adreça d'un mètode abstracte
-% An abstract method has no body, so the address of an abstract method can not 
+% An abstract method has no body, so the address of an abstract method can not
 % be taken
 type_e_operator_not_allowed=04051_E_No es pot aplicar l'operador pel tipus d'operand
 % You are trying an operator that is not available for the type of the
@@ -1278,7 +1278,7 @@ sym_e_only_static_in_static=05010_E_Només les variables estàtiques poden ser uti
 % A static method of an object can only access static variables.
 sym_e_type_must_be_rec_or_object_or_class=05012_E_Record or object or class type expected
 % The variable or expression isn't of the type \var{record} or \var{object} or \var{class}.
-sym_e_no_instance_of_abstract_object=05013_E_No es permeten les instàncies de les classes o els objectes amb un mètode abstracte 
+sym_e_no_instance_of_abstract_object=05013_E_No es permeten les instàncies de les classes o els objectes amb un mètode abstracte
 % You are trying to generate an instance of a class which has an abstract
 % method that wasn't overridden.
 sym_w_label_not_defined=05014_W_No s'ha definit l'etiqueta "$1"
@@ -1319,7 +1319,7 @@ sym_n_local_identifier_only_set=05027_N_S'ha assignat la variable local "$1" per
 sym_h_local_symbol_not_used=05028_H_No s'utilitza $1 local "$2"
 % A local symbol is never used.
 sym_n_private_identifier_not_used=05029_N_No s'utilitza el camp privat "$1.$2"
-sym_n_private_identifier_only_set=05030_N_S'ha assignat el camp privat "$1.$2" però no s'utilitza 
+sym_n_private_identifier_only_set=05030_N_S'ha assignat el camp privat "$1.$2" però no s'utilitza
 sym_n_private_method_not_used=05031_N_No s'utilitza el mètode privat "$1.$2"
 sym_e_set_expected=05032_E_S'esperava un tipus de conjunt
 % The variable or expression is not of type \var{set}. This happens in an
@@ -1841,7 +1841,7 @@ unit_u_ppu_invalid_version=10008_U_La versió $1 de la PPU no és vàlida
 % This unit file was compiled with a different version of the compiler, and
 % cannot be read.
 unit_u_ppu_invalid_processor=10009_U_La PPU està compilada per a un altre processador
-% This unit file was compiled for a different processor type, and 
+% This unit file was compiled for a different processor type, and
 % cannot be read
 unit_u_ppu_invalid_target=10010_U_La PPU està compilada per un altre objectiu
 % This unit file was compiled for a different processor type, and
@@ -1948,7 +1948,7 @@ unit_u_loading_interface_units=10043_U_S'estan carregant les unitats d'INTERFACE
 % When you use the \var{-vu} flag, the compiler warms that it starts
 % loading the units defined in the interface part of the unit
 unit_u_loading_implementation_units=10044_U_S'estan carregant les unitat d'IMPLEMENTATION desde $1
-% When you use the \var{-vu} flag, the compiler warms that it starts 
+% When you use the \var{-vu} flag, the compiler warms that it starts
 % loading the units defined in the implementation part of the unit
 unit_u_interface_crc_changed=10045_U_L'interfície CRC ha canviat per la unitat $1
 % When you use the \var{-vu} flag, the compiler warms that it the
@@ -1956,26 +1956,26 @@ unit_u_interface_crc_changed=10045_U_L'interfície CRC ha canviat per la unitat $
 % has been parsed
 unit_u_implementation_crc_changed=10046_U_L'implementació CRC ha canviat per l'unitat $1
 % When you use the \var{-vu} flag, the compiler warms that it the
-% CRC calculated has been changed after the implementation 
+% CRC calculated has been changed after the implementation
 % has been parsed
 unit_u_finished_compiling=10047_U_S'ha acabat la compilació de l'unitat $1
-% When you use the \var{-vu} flag, the compiler warms that it 
+% When you use the \var{-vu} flag, the compiler warms that it
 % has finished compiling the unit
 unit_u_add_depend_to=10048_U_S'ha afegit la dependència de $1 a $2
-% When you use the \var{-vu} flag, the compiler warms that it 
+% When you use the \var{-vu} flag, the compiler warms that it
 % has added a dependency between the two units
 unit_u_no_reload_is_caller=10049_U_No es torna a carregar, es crida: $1
-% When you use the \var{-vu} flag, the compiler warms that it 
+% When you use the \var{-vu} flag, the compiler warms that it
 % has will not reload the unit because it is the unit that wants
 % to load this unit
 unit_u_no_reload_in_second_compile=10050_U_No es torna a carregar, ja és en segona compilació: $1
-% When you use the \var{-vu} flag, the compiler warms that it 
+% When you use the \var{-vu} flag, the compiler warms that it
 % has will not reload the unit because it is already in a second recompile
 unit_u_flag_for_reload=10051_U_Senyalador per la recàrrega: $1
-% When you use the \var{-vu} flag, the compiler warms that it 
+% When you use the \var{-vu} flag, the compiler warms that it
 % has to reload the unit
 unit_u_forced_reload=10052_U_Es torna a carregar forçadament
-% When you use the \var{-vu} flag, the compiler warms that it 
+% When you use the \var{-vu} flag, the compiler warms that it
 % has is reloading the unit because it was required
 unit_u_previous_state=10053_U_Estat previ de $1: $2
 % When you use the \var{-vu} flag, the compiler shows the
@@ -1991,13 +1991,13 @@ unit_u_finished_loading_unit=10056_U_S'ha acabat la càrrega de l'unitat $1
 % When you use the \var{-vu} flag, the compiler warms that it finished
 % loading the unit
 unit_u_registering_new_unit=10057_U_S'està registrant l'unitat nova $1
-% When you use the \var{-vu} flag, the compiler warms that it has 
+% When you use the \var{-vu} flag, the compiler warms that it has
 % found a new unit and registers it in the internal lists
 unit_u_reresolving_unit=10058_U_S'està tornant a resoldre l'unitat $1
-% When you use the \var{-vu} flag, the compiler warms that it 
+% When you use the \var{-vu} flag, the compiler warms that it
 % has to recalculate the internal data of the unit
 unit_u_skipping_reresolving_unit=10059_U_No es torna a resoldre l'unitat $1, encara s'estan carregant les unitats utilitzades
-% When you use the \var{-vu} flag, the compiler warms that it 
+% When you use the \var{-vu} flag, the compiler warms that it
 % skips to recalculate the internal data of the unit because there
 % is no data to racalculate
 % \end{description}
@@ -2154,7 +2154,7 @@ option_help_pages=11025_[
 **2ar_Escriu info.d'alotj/desalotj del registre en el fitxer d'assemblador
 **2at_Escriu info.d'alotj/desalotj temporal en el fitxer d'assemblador
 **1A<x>_format de la sortida:
-**2Adefault_Utilitza assemblador predeterminat 
+**2Adefault_Utilitza assemblador predeterminat
 3*2Aas_Utilitza assemblador GNU AS
 3*2Anasmcoff_fitxer coff (Go32v2) utilitzant Nasm
 3*2Aasmelf_fitxer elf32 (Linux) utilitzant Nasm

@@ -4366,9 +4366,13 @@ implementation
              _PROCEDURE,
              _FUNCTION:
                begin
-                 if (block_type=bt_body) and
-                     (m_anonymous_functions in current_settings.modeswitches) then
+                 if (block_type=bt_body) then begin
+                   if (m_anonymous_functions in current_settings.modeswitches) then
                    begin
+                     if (current_scanner.token = _FUNCTION) and
+                        not (m_result in current_settings.modeswitches) then
+                      Message(parser_w_may_need_result);
+
                      filepos:=current_filepos;
                      oldprocvardef:=getprocvardef;
                      oldfuncrefdef:=getfuncrefdef;
@@ -4388,7 +4392,14 @@ implementation
                          p1:=cerrornode.create;
                          MessagePos(filepos,parser_e_illegal_expression);
                        end;
+                   end { modeswitch check }
+                   else begin
+                     Message(parser_e_anonymous_function_needed);
+                     p1:=cerrornode.create;
+                     { recover }
+                     consume(current_scanner.token);
                    end
+                 end
                  else
                    begin
                      Message(parser_e_illegal_expression);
