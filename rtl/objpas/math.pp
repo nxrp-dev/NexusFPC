@@ -2585,14 +2585,48 @@ procedure sumsandsquares(const data : PExtended; Const N : Integer;
   end;
 {$endif FPC_HAS_TYPE_EXTENDED}
 
+{ Numerical Recipes — The Art of Scientific Computing — 3rd Edition
+  7.3.8 Ratio-of-Uniforms Method
+  7.3.9 Normal Deviates by Ratio-of-Uniforms
+
+  Ratio of uniforms method: a pair of random variables (u, v) uniformly distributed over
+  C_f = [ (u, v): 0 ≤ u ≤ sqrt(f(v / u)) ]
+  yields a random variable X = v / u with the density f.
+
+  For normal distribution,
+  f(x) = exp(−v² / 2),
+  u ≤ sqrt(exp(−(v/u)² / 2)) = exp(−v² / 4u²),
+  v[1,2] ≤ ±2u * sqrt(−ln u), or v² ≤ −4u² * ln u.
+
+  (u, v) pair is generated using rejection sampling from the bounding box
+  0 < u < 1, −sqrt(2 / e) < v < sqrt(2 / e)
+  by C_f: v² < −4u² * ln u.
+
+  To save on logarithms, there are quadratic bounding curves (https://dl.acm.org/doi/pdf/10.1145/138351.138364)
+  r2 < Q(u, v) = (u − s)² − b(u − s)(v + t) + a(u − t)² < r1
+  s=0.449871  a=0.19600   t=0.386595
+  b=0.25472  r1=0.27597  r2=0.27846 }
+
 function randg(mean,stddev : float) : float;
-  Var U1,S2 : Float;
+  const
+    m=sqrt(2/exp(1));
+    s=0.449871;
+    a=0.19600;
+    t=-0.386595;
+    b=0.25472;
+    r1=0.27597;
+    r2=0.27846;
+  var
+    u,v,x,y,Q : float;
   begin
-     repeat
-       u1:= 2*random-1;
-       S2:=Sqr(U1)+sqr(2*random-1);
-     until s2<1;
-     randg:=Sqrt(-2*ln(S2)/S2)*u1*stddev+Mean;
+    repeat { Calls 2.74 randoms and 0.012 lns on average. }
+      u:=random;
+      v:=2*m*random-m;
+      x:=u-s;
+      y:=abs(v)-t;
+      Q:=x*x-y*(b*x-a*y);
+    until (Q<r2) and ((Q<r1) or (v*v<=-4*(u*u)*ln(u)));
+    result:=stddev*(v/u)+mean;
   end;
 
 
