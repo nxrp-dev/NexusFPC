@@ -3209,7 +3209,13 @@ implementation
                   (sp_generic_dummy in srsym.symoptions) and
                   (current_scanner.token in [_LT,_LSHARPBRACKET]) then
                 begin
-                  result:=cspecializenode.create(nil,getaddr,srsym,unit_found)
+                  { if the sym came from a with-symtable, attach the with
+                    reference as the specialization's left node, so that
+                    generate_inline_specialization can resolve the method
+                    call against the proper instance }
+                  if srsymtable.symtabletype=withsymtable then
+                    result:=tnode(twithsymtable(srsymtable).withrefnode).getcopy;
+                  result:=cspecializenode.create(result,getaddr,srsym,unit_found)
                 end
               { check if it's a method/class method }
               else if is_member_read(srsym,srsymtable,result,hdef) then
