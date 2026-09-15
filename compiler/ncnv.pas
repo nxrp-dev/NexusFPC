@@ -4759,13 +4759,27 @@ implementation
 
 
     function ttypeconvnode.pass_1 : tnode;
+      var
+        olddef: tdef;
       begin
         if warn_pointer_to_signed then
           cgmessage(type_w_pointer_to_signed);
         result:=nil;
+        olddef:=left.resultdef;
         firstpass(left);
         if codegenerror then
          exit;
+        { If the left node transformed and the resultdef changed, which can
+          happen if a Str call gets inlined and is converted into a Char, for
+          example, then we must regenerate the typeconv node }
+        if Assigned(olddef) and (left.resultdef<>olddef) then
+          begin
+            result:=ctypeconvnode.create(left,olddef);
+            result.flags:=flags*[nf_explicit,nf_internal];
+            left:=nil;
+            Exit;
+          end;
+
         expectloc:=left.expectloc;
 
         if nf_explicit in flags then

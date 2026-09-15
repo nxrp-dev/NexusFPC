@@ -2908,8 +2908,9 @@ implementation
     function tcallnode.handle_compilerproc: tnode;
       var
         para: TCallParaNode;
-        minlennode, maxlennode, outnode, valnode, constnode: TNode;
+        minlennode, maxlennode, outnode, valnode, constnode, codepagenode, newassign, newcall: TNode;
         minstrlen: Int64;
+        srsym: TSym;
         StringLiteral, name: string;
         ValOutput: TConstExprInt;
         ValCode: Longint;
@@ -2991,6 +2992,15 @@ implementation
                                       else
                                         Str(tordconstnode(valnode).value.uvalue:minstrlen, StringLiteral);
 
+                                      codepagenode := nil;
+                                      if (paracount >= 4) and is_ansistring(outnode.resultdef) then
+                                        begin
+                                          para := GetParaFromIndex(paracount - 4);
+                                          if Assigned(para) then
+                                            { For ansistrings etc, the last parameter is a code page }
+                                            codepagenode := para.left;
+                                        end;
+
                                       para := GetParaFromIndex(paracount);
                                       if Assigned(para) then
                                         begin
@@ -3010,10 +3020,41 @@ implementation
                                       else
                                         constnode := cstringconstnode.createstr(StringLiteral);
 
-                                      result := cassignmentnode.create(
+                                      newassign := cassignmentnode.create(
                                         outnode.getcopy,
                                         constnode
                                       );
+                                      if not Assigned(codepagenode) then
+                                        begin
+                                          result := newassign;
+                                          Exit;
+                                        end;
+
+                                      result := internalstatements(NewStatements);
+                                      addstatement(NewStatements, newassign);
+
+                                      { Manually add a "SetCodePage" call after the assignment
+                                        (codepagenode doesn't actually have to be a constant)
+                                      }
+                                      srsym := tsym(systemunit.Find('SETCODEPAGE'));
+                                      if not Assigned(srsym) then
+                                        InternalError(2026060101);
+
+                                      newcall := ccallnode.create(
+                                        ccallparanode.create(
+                                          cordconstnode.create(0,pasbool1type,false),
+                                          ccallparanode.create(
+                                            codepagenode.getcopy,
+                                            ccallparanode.create(
+                                              outnode.getcopy,
+                                              nil
+                                            )
+                                          )
+                                        ),
+                                        tprocsym(srsym),srsym.owner,nil,[],nil
+                                      );
+                                      Include(newcall.flags, nf_internal);
+                                      addstatement(NewStatements, newcall);
                                     end;
                                 end;
                             end;
