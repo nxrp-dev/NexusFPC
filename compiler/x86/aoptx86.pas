@@ -93,6 +93,9 @@ unit aoptx86;
         function GetNextInstructionUsingRegTrackingUse(Current: tai; out Next: tai; reg: TRegister): Boolean;
         function RegModifiedByInstruction(Reg: TRegister; p1: tai): boolean; override;
 
+        { Returns true if any kind of reference appears between p1 and p2 }
+        function RefsBetween(p1, p2: tai): boolean;
+
         { returns true if any of the registers in ref are modified by any
           instruction between p1 and p2, or if those instructions write to the
           reference }
@@ -113,6 +116,9 @@ unit aoptx86;
           using AUsedRegs for the current register usage information.  Returns NR_NO
           if no free register could be found }
         function GetMMRegisterBetween(RegSize: TSubRegister; var AUsedRegs: TAllUsedRegs; p, hp: tai; DontAlloc: Boolean = False): TRegister;
+
+        { Checks to see if the MM registers are the same size, accounting for R_SUBMMS and R_SUBMMD }
+        class function MMRegistersEqual(const reg1,reg2: tregister): boolean; static;
 
         { checks whether loading a new value in reg1 overwrites the entirety of reg2 }
         class function Reg1WriteOverwritesReg2Entirely(reg1, reg2: tregister): boolean; static;
@@ -1358,6 +1364,21 @@ unit aoptx86;
       end;
 
 
+    function TX86AsmOptimizer.RefsBetween(p1, p2: tai): boolean;
+      var
+        x: Integer;
+      begin
+        Result:=False;
+        while assigned(p1) and assigned(p2) and GetNextInstruction(p1,p1) and (p1<>p2) do
+          if p1.typ=ait_instruction then
+            for x:=0 to taicpu(p1).ops-1 do
+              begin
+                if taicpu(p1).oper[x]^.typ=top_ref then
+                  Exit(True);
+              end;
+      end;
+
+
     function TX86AsmOptimizer.RefModifiedBetween(Ref: TReference; RefSize: ASizeInt; p1, p2: tai): Boolean;
       const
         WriteOps: array[0..3] of set of TInsChange =
@@ -1690,6 +1711,19 @@ unit aoptx86;
                 Exit;
               end;
           end;
+      end;
+
+
+    class function TX86AsmOptimizer.MMRegistersEqual(const reg1,reg2: tregister): boolean;
+      begin
+        Result:=SuperRegistersEqual(reg1,reg2) and
+          (
+            (getsubreg(reg1)=getsubreg(reg2)) or
+            (
+              (getsubreg(reg1) in [R_SUBMMS,R_SUBMMD,R_SUBMMX]) and
+              (getsubreg(reg2) in [R_SUBMMS,R_SUBMMD,R_SUBMMX])
+            )
+          );
       end;
 
 
@@ -2490,6 +2524,7 @@ unit aoptx86;
     function TX86AsmOptimizer.OptPass1_V_MOVAP(var p : tai) : boolean;
       var
         hp1,hp2 : tai;
+        memsize: ASizeInt;
       begin
         result:=false;
         if MatchOpType(taicpu(p),top_reg,top_reg) then
@@ -2497,8 +2532,9 @@ unit aoptx86;
             { vmova* reg1,reg1
               =>
               <nop> }
-            if taicpu(p).oper[0]^.reg = taicpu(p).oper[1]^.reg then
+            if MMRegistersEqual(taicpu(p).oper[0]^.reg, taicpu(p).oper[1]^.reg) then
               begin
+                DebugMsg(SPeepholeOptimization + '(V)MOVXX2Nop 1',p);
                 RemoveCurrentP(p);
                 result:=true;
                 exit;
@@ -2510,7 +2546,6 @@ unit aoptx86;
                 { Under -O2 and below, the instructions are always adjacent }
                 not (cs_opt_level3 in current_settings.optimizerswitches) or
                 (taicpu(hp1).ops <= 1) or
-                not RegInOp(taicpu(p).oper[0]^.reg, taicpu(hp1).oper[1]^) or
                 { If reg1 = reg3, reg1 must not be modified in between }
                 not RegModifiedBetween(taicpu(p).oper[0]^.reg, p, hp1)
               ) then
@@ -2546,7 +2581,16 @@ unit aoptx86;
                       vmova* <op>,reg1
                       =>
                       vmova* reg1,<op> }
-                    if MatchOperand(taicpu(p).oper[0]^,taicpu(hp1).oper[1]^) and
+                    if (
+                        (
+                          (taicpu(hp1).oper[1]^.typ=top_reg) and
+                          MMRegistersEqual(taicpu(p).oper[0]^.reg,taicpu(hp1).oper[1]^.reg)
+                        ) or
+                        (
+                          (taicpu(hp1).oper[1]^.typ=top_ref) and
+                          MatchOperand(taicpu(p).oper[0]^,taicpu(hp1).oper[1]^)
+                        )
+                      ) and
                       ((taicpu(p).oper[0]^.typ<>top_ref) or
                        (not(vol_read in taicpu(p).oper[0]^.ref^.volatility))
                       ) then
@@ -2557,12 +2601,12 @@ unit aoptx86;
                         exit;
                       end
                   end
-                else if ((MatchInstruction(p,[A_MOVAPS,A_VMOVAPS],[S_NO]) and
+                else if ((MatchInstruction(p,[A_MOVAPS,A_VMOVAPS,A_MOVUPS,A_VMOVUPS],[S_NO]) and
                   MatchInstruction(hp1,[A_MOVSS,A_VMOVSS],[S_NO])) or
-                  ((MatchInstruction(p,[A_MOVAPD,A_VMOVAPD],[S_NO]) and
+                  ((MatchInstruction(p,[A_MOVAPD,A_VMOVAPD,A_MOVUPD,A_VMOVUPD],[S_NO]) and
                     MatchInstruction(hp1,[A_MOVSD,A_VMOVSD],[S_NO])))
                   ) and
-                  MatchOperand(taicpu(p).oper[1]^,taicpu(hp1).oper[0]^) then
+                  MMRegistersEqual(taicpu(p).oper[1]^.reg,taicpu(hp1).oper[0]^.reg) then
                   begin
                     { vmova* reg1,reg2
                       ...
@@ -2572,22 +2616,102 @@ unit aoptx86;
                       vmovs* reg1,<op> }
                     TransferUsedRegs(TmpUsedRegs);
                     UpdateUsedRegsBetween(TmpUsedRegs, p, hp1);
+
+                    { Get the size of the data just in case we need it for a reference later }
+                    case taicpu(hp1).opcode of
+                      A_MOVSS, A_VMOVSS:
+                        memsize:=4;
+                      A_MOVSD, A_VMOVSD:
+                        memsize:=8;
+                      else
+                        begin
+                          { Find a register to get the size }
+                          if taicpu(hp1).oper[0]^.typ=top_reg then
+                            begin
+                              case getsubreg(taicpu(hp1).oper[0]^.reg) of
+                                R_SUBMMZ:
+                                  memsize:=64;
+                                R_SUBMMY:
+                                  memsize:=32;
+                                else
+                                  memsize:=16;
+                              end;
+                            end
+                          else
+                            begin
+                              case getsubreg(taicpu(hp1).oper[1]^.reg) of
+                                R_SUBMMZ:
+                                  memsize:=64;
+                                R_SUBMMY:
+                                  memsize:=32;
+                                else
+                                  memsize:=16;
+                              end;
+                            end;
+
+                        end;
+                    end;
+
                     if not(RegUsedAfterInstruction(taicpu(p).oper[1]^.reg,hp1,TmpUsedRegs)) then
                       begin
-                        DebugMsg(SPeepholeOptimization + '(V)MOVA*(V)MOVS*2(V)MOVS* 1',p);
-                        taicpu(p).opcode:=taicpu(hp1).opcode;
-                        taicpu(p).loadoper(1,taicpu(hp1).oper[1]^);
+                        if (taicpu(hp1).oper[1]^.typ=top_reg) and
+                          MMRegistersEqual(taicpu(p).oper[0]^.reg,taicpu(hp1).oper[1]^.reg) and
+                          (
+                            (taicpu(hp1).ops=2) or
+                            (
+                              (taicpu(hp1).oper[2]^.typ=top_reg) and
+                              MMRegistersEqual(taicpu(p).oper[0]^.reg,taicpu(hp1).oper[2]^.reg)
+                            )
+                          ) then
+                          begin
+                            { if <op>=reg1, then it's a null operation }
+                            DebugMsg(SPeepholeOptimization + '(V)MOVXX2Nop 2',p);
+                            RemoveInstruction(hp1);
+                            RemoveCurrentP(p);
+                            result:=true;
+                            exit;
+                          end
+                        else if (taicpu(hp1).oper[taicpu(hp1).ops-1]^.typ<>top_ref) or
+                          (
+                            { If <op> is a reference, make sure it's not in use
+                              in between the two instructions.  If it's not a
+                              register-based reference, don't optimisee at all
+                              if the instructions aren't adjacent }
+                            (
+                              (taicpu(hp1).ops=2) or
+                              MMRegistersEqual(taicpu(hp1).oper[0]^.reg,taicpu(hp1).oper[1]^.reg)
+                            ) and
+                            (
+                              { If not -O3, p and hp1 are always adjacent }
+                              not(cs_opt_level3 in current_settings.optimizerswitches) or
+                              (
+                                GetNextInstruction(p,hp2) and
+                                (hp1=hp2)
+                              ) or
+                              (
+                                RefModifiedBetween(taicpu(hp1).oper[taicpu(hp1).ops-1]^.ref^,memsize,p,hp1) and
+                                not RefsBetween(p,hp1)
+                              )
+                            )
+                          ) then
+                          begin
+                            DebugMsg(SPeepholeOptimization + '(V)MOVA*(V)MOVS*2(V)MOVS* 1',p);
+                            taicpu(p).opcode:=taicpu(hp1).opcode;
+                            taicpu(p).loadoper(1,taicpu(hp1).oper[1]^);
 
-                        TransferUsedRegs(TmpUsedRegs);
-                        AllocRegBetween(taicpu(p).oper[0]^.reg, p, hp1, TmpUsedRegs);
+                            TransferUsedRegs(TmpUsedRegs);
+                            AllocRegBetween(taicpu(p).oper[0]^.reg, p, hp1, TmpUsedRegs);
 
-                        RemoveInstruction(hp1);
-                        result:=true;
-                        exit;
+                            RemoveInstruction(hp1);
+                            result:=true;
+                            exit;
+                          end;
                       end
                   end;
 
-              if MatchInstruction(hp1,[A_VFMADDPD,
+              if (taicpu(hp1).ops>=2) and
+                  not RegInOp(taicpu(p).oper[0]^.reg, taicpu(hp1).oper[taicpu(hp1).ops-1]^) and
+                  MatchInstruction(hp1,[A_VFMADDPD,
                                               A_VFMADD132PD,
                                               A_VFMADD132PS,
                                               A_VFMADD132SD,
