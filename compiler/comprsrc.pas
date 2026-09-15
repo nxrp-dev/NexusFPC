@@ -26,7 +26,7 @@ unit comprsrc;
 interface
 
   uses
-    Systems, cstreams, cscript;
+    Classes, Systems, cstreams, cscript;
 
 type
    tresoutput = (roRES, roOBJ);
@@ -459,10 +459,28 @@ end;
 
 procedure CompileResourceFiles;
 var
+  usednames : tstringlist;
+
+  function UniqueFileName(const fn: string): string;
+  var
+    i: Integer;
+  begin
+    Result:=fn;
+    i:=1;
+    while usednames.IndexOf(Result)>=0 do
+    begin
+      Result:=Format('%s_%d%s', [ChangeFileExt(fn, ''), i, ExtractFileExt(fn)]);
+      inc(i);
+    end;
+    usednames.Add(Result);
+  end;
+
+var
   resourcefile : tresourcefile;
   res: TCmdStrListItem;
   p,s : TCmdStr;
   outfmt : tresoutput;
+  separatorpos: SizeInt;
 begin
   { Don't do anything for systems supporting resources without using resource
     file classes (e.g. Mac OS). They process resources elsewhere. }
@@ -470,54 +488,70 @@ begin
      (res_no_compile in target_res.resflags) then
     exit;
 
-  p:=ExtractFilePath(ExpandFileName(current_module.mainsource));
-  res:=TCmdStrListItem(current_module.ResourceFiles.First);
-  while res<>nil do
-    begin
-      if target_info.res=res_none then
-        Message(scan_e_resourcefiles_not_supported);
-      s:=res.FPStr;
-      if not path_absolute(s) then
-        s:=p+s;
-      if not FileExists(s, True) then
-        begin
-          Message1(exec_e_cant_open_resource_file, s);
-          Include(current_settings.globalswitches, cs_link_nolink);
-          exit;
-        end;
-      resourcefile:=TResourceFile(resinfos[target_info.res]^.resourcefileclass.create(s));
-      if resourcefile.IsCompiled(s) then
-        begin
-          resourcefile.free;
-          resourcefile := nil;
-          if AnsiCompareFileName(IncludeTrailingPathDelimiter(ExpandFileName(current_module.outputpath)), p) <> 0 then
-            begin
-              { Copy .res file to units output dir. Otherwise .res file will not be found
-                when only compiled units path is available }
-              res.FPStr:=ExtractFileName(res.FPStr); //store file name only in PPU.
-              if not CopyResFile(s,res.FPStr) then exit;
-            end;
-        end
-      else
-        begin
-          res.FPStr:=ExtractFileName(res.FPStr);
-          if (target_res.rcbin='') and (RCCompiler='') then
-            begin
-              { if target does not have .rc to .res compiler, create obj }
-              outfmt:=roOBJ;
-              res.FPStr:=ChangeFileExt(res.FPStr,target_info.resobjext);
-            end
-          else
-            begin
-              outfmt:=roRES;
-              res.FPStr:=ChangeFileExt(res.FPStr,target_info.resext);
-            end;
-          resourcefile.compile(outfmt, current_module.outputpath+res.FPStr);
-          resourcefile.free;
-          resourcefile := nil;
-        end;
-      res:=TCmdStrListItem(res.Next);
-    end;
+  usednames:=tstringlist.Create;
+  try
+    usednames.Sorted:=True;
+    usednames.CaseSensitive:=FileNameCaseSensitive;
+    p:=ExtractFilePath(ExpandFileName(current_module.mainsource));
+    res:=TCmdStrListItem(current_module.ResourceFiles.First);
+    while res<>nil do
+      begin
+        if target_info.res=res_none then
+          Message(scan_e_resourcefiles_not_supported);
+        s:=res.FPStr;
+
+        // support the {$R file.res file.rc} syntax
+        separatorpos:=Pos(#32,s);
+        if separatorpos>0 then
+          begin
+            res.FPStr:=Copy(s,1,separatorpos-1);
+            s:=Copy(s,separatorpos+1);
+          end;
+
+        if not path_absolute(s) then
+          s:=p+s;
+        if not FileExists(s, True) then
+          begin
+            Message1(exec_e_cant_open_resource_file, s);
+            Include(current_settings.globalswitches, cs_link_nolink);
+            exit;
+          end;
+        resourcefile:=TResourceFile(resinfos[target_info.res]^.resourcefileclass.create(s));
+        if resourcefile.IsCompiled(s) then
+          begin
+            resourcefile.free;
+            resourcefile := nil;
+            if AnsiCompareFileName(IncludeTrailingPathDelimiter(ExpandFileName(current_module.outputpath)), p) <> 0 then
+              begin
+                { Copy .res file to units output dir. Otherwise .res file will not be found
+                  when only compiled units path is available }
+                res.FPStr:=UniqueFileName(ExtractFileName(res.FPStr)); //store file name only in PPU.
+                if not CopyResFile(s,res.FPStr) then exit;
+              end;
+          end
+        else
+          begin
+            res.FPStr:=ExtractFileName(res.FPStr);
+            if (target_res.rcbin='') and (RCCompiler='') then
+              begin
+                { if target does not have .rc to .res compiler, create obj }
+                outfmt:=roOBJ;
+                res.FPStr:=UniqueFileName(ChangeFileExt(res.FPStr,target_info.resobjext));
+              end
+            else
+              begin
+                outfmt:=roRES;
+                res.FPStr:=UniqueFileName(ChangeFileExt(res.FPStr,target_info.resext));
+              end;
+            resourcefile.compile(outfmt, current_module.outputpath+res.FPStr);
+            resourcefile.free;
+            resourcefile := nil;
+          end;
+        res:=TCmdStrListItem(res.Next);
+      end;
+  finally
+    usednames.Free;
+  end;
 end;
 
 
