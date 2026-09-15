@@ -83,7 +83,8 @@ interface
 
       TDwarfHashSetItem = record
         HashSetItem: THashSetItem;
-        lab, ref_lab: tasmsymbol;
+        lab, ref_lab: tasmsymbol;  // DW_TAG_typedef,  DW_TAG_reference_type
+        type_lab: tasmsymbol;
         struct_lab: tasmsymbol;
       end;
       PDwarfHashSetItem = ^TDwarfHashSetItem;
@@ -127,6 +128,7 @@ interface
         function FinishAbbrevSearch: longint;
 
         function def_dwarf_lab(def:tdef) : tasmsymbol;
+        function def_dwarf_type_lab(def:tdef) : tasmsymbol;
         function def_dwarf_ref_lab(def:tdef) : tasmsymbol;
         function def_dwarf_class_struct_lab(def:tobjectdef) : tasmsymbol;
         function get_file_index(afile: tinputfile): Integer;
@@ -263,8 +265,12 @@ interface
       { TDebugInfoDwarf4 }
 
       TDebugInfoDwarf4 = class(TDebugInfoDwarf3)
+      protected
+        function attribute_for_stinglensize: tdwarf_attribute; virtual; // overwrite in DWARF-5
+        procedure addstringdef(const name: shortstring; def: tstringdef; chardef: tdef; deref: boolean; lensize: aint);
       public
         function  dwarf_version: Word; override;
+        procedure appenddef_string(list:TAsmList;def:tstringdef);override;
       end;
 
       { TDebugInfoDwarf5 }
@@ -272,8 +278,10 @@ interface
       TDebugInfoDwarf5 = class(TDebugInfoDwarf4)
       protected
         procedure insert_cu_header_after_version; override;
+        function attribute_for_stinglensize: tdwarf_attribute; override;
       public
         function  dwarf_version: Word; override;
+        procedure appenddef_string(list:TAsmList;def:tstringdef);override;
       end;
 
 
@@ -689,6 +697,7 @@ implementation
                     if not assigned(def.typesym) then
                       internalerror(200610011);
                     result^.lab:=current_asmdata.RefAsmSymbol(make_mangledname('DBG',def.typesym.owner,symname(def.typesym, true)),AT_METADATA);
+                    result^.type_lab:=current_asmdata.RefAsmSymbol(make_mangledname('DBGTYPE',def.typesym.owner,symname(def.typesym, true)),AT_METADATA);
                     result^.ref_lab:=current_asmdata.RefAsmSymbol(make_mangledname('DBGREF',def.typesym.owner,symname(def.typesym, true)),AT_METADATA);
                     if needstructdeflab then
                       result^.struct_lab:=current_asmdata.RefAsmSymbol(make_mangledname('DBG2',def.typesym.owner,symname(def.typesym, true)),AT_METADATA);
@@ -703,6 +712,7 @@ implementation
                        (def.owner.iscurrentunit) then
                       begin
                         result^.lab:=current_asmdata.DefineAsmSymbol(make_mangledname('DBG',def.typesym.owner,symname(def.typesym, true)),AB_GLOBAL,AT_METADATA,voidpointertype);
+                        result^.type_lab:=current_asmdata.DefineAsmSymbol(make_mangledname('DBGTYPE',def.typesym.owner,symname(def.typesym, true)),AB_GLOBAL,AT_METADATA,voidpointertype);
                         result^.ref_lab:=current_asmdata.DefineAsmSymbol(make_mangledname('DBGREF',def.typesym.owner,symname(def.typesym, true)),AB_GLOBAL,AT_METADATA,voidpointertype);
                         if needstructdeflab then
                           result^.struct_lab:=current_asmdata.DefineAsmSymbol(make_mangledname('DBG2',def.typesym.owner,symname(def.typesym, true)),AB_GLOBAL,AT_METADATA,voidpointertype);
@@ -713,6 +723,7 @@ implementation
                         { The pointer typecast is needed to prevent a problem with range checking
                           on when the typecast is changed to 'as' }
                         current_asmdata.getglobaldatalabel(TAsmLabel(pointer(result^.lab)));
+                        current_asmdata.getglobaldatalabel(TAsmLabel(pointer(result^.type_lab)));
                         current_asmdata.getglobaldatalabel(TAsmLabel(pointer(result^.ref_lab)));
                         if needstructdeflab then
                           current_asmdata.getglobaldatalabel(TAsmLabel(pointer(result^.struct_lab)));
@@ -725,6 +736,7 @@ implementation
                   on when the typecast is changed to 'as' }
                 { addrlabel instead of datalabel because it must be a local one }
                 current_asmdata.getaddrlabel(TAsmLabel(pointer(result^.lab)));
+                current_asmdata.getaddrlabel(TAsmLabel(pointer(result^.type_lab)));
                 current_asmdata.getaddrlabel(TAsmLabel(pointer(result^.ref_lab)));
                 if needstructdeflab then
                   current_asmdata.getaddrlabel(TAsmLabel(pointer(result^.struct_lab)));
@@ -750,6 +762,11 @@ implementation
     function TDebugInfoDwarf.def_dwarf_lab(def: tdef): tasmsymbol;
       begin
         result:=get_def_dwarf_labs(def)^.lab;
+      end;
+
+    function TDebugInfoDwarf.def_dwarf_type_lab(def: tdef): tasmsymbol;
+      begin
+        result:=get_def_dwarf_labs(def)^.type_lab;
       end;
 
     function TDebugInfoDwarf.def_dwarf_class_struct_lab(def: tobjectdef): tasmsymbol;
@@ -1989,7 +2006,17 @@ implementation
             append_labelentry_ref(DW_AT_type,labsym);
             finish_entry;
             current_asmdata.asmlists[al_dwarf_info].concat(tai_symbol.create(labsym,0));
-          end
+          end;
+
+        labsym:=def_dwarf_type_lab(def);
+        case labsym.bind of
+          AB_GLOBAL:
+            current_asmdata.asmlists[al_dwarf_info].concat(tai_symbol.create_global(labsym,0));
+          AB_LOCAL:
+            current_asmdata.asmlists[al_dwarf_info].concat(tai_symbol.create(labsym,0));
+          else
+            internalerror(2013082001);
+        end;
       end;
 
 
@@ -4622,6 +4649,167 @@ implementation
       Result:=4;
     end;
 
+    function TDebugInfoDwarf4.attribute_for_stinglensize: tdwarf_attribute;
+      begin
+        Result := DW_AT_byte_size; // DWARF-5 needs: DW_AT_string_length_byte_size
+      end;
+
+    procedure TDebugInfoDwarf4.addstringdef(const name: shortstring; def: tstringdef; chardef: tdef; deref: boolean; lensize: aint);
+      var
+        upperopcodes: longint;
+      begin
+        { Notes on DW_AT_string_length and DW_AT_byte_size
+          * DWARF-3
+          * DWARF-4
+            DW_AT_string_length: The "location description" for the length of the string
+            DW_AT_byte_size: The size of the "string length" in memory at the above location
+                             Default: size of Pointer
+                             If no DW_AT_string_length is given, this is the byte/bit size of the string (storage size holding the string)
+          * DWARF-5
+            DW_AT_string_length: The "location description" for the length of the string
+                                 OR a reference to the length value
+            DW_AT_string_length_byte_size (or bit):
+                                 The size of the "string length" in memory at the above location
+                                 Default: size of pointer
+            DW_AT_byte_size (or bit): The storage size of the type
+                             Could be used for shortstring
+            DW_AT_type: Starting with DWARF-5 the type of contained chars.
+                        A reference to a DW_TAG_base_type base type entry.
+                        If absent, then the character is encoded using the system default.
+        }
+
+
+        { deref=true -> ansi/unicde/widestring; deref = false -> short/longstring }
+        if assigned(def.typesym) then
+          append_entry(DW_TAG_string_type,false,[
+            DW_AT_name,DW_FORM_string,name+#0,
+            DW_AT_data_location,DW_FORM_block1,2+ord(not(deref))
+          ])
+        else
+          append_entry(DW_TAG_string_type,false,[
+            DW_AT_data_location,DW_FORM_block1,2+ord(not(deref))
+          ]);
+
+        { in all cases we start with the address of the string }
+        current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_8bit(ord(DW_OP_push_object_address)));
+        if deref then
+          begin
+            { ansi/unicode/widestring -> dereference the address of the string, and then
+              we point to address of the string
+            }
+            current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_8bit(ord(DW_OP_deref)));
+          end
+        else
+          begin
+            { shortstring characters begin at string[1], so add one to the string's address }
+            current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_8bit(ord(DW_OP_lit0)+lensize));
+            current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_8bit(ord(DW_OP_plus)))
+          end;
+
+        { reference to the element type of the string }
+        if chardef <> nil then
+          append_labelentry_ref(DW_AT_type,def_dwarf_type_lab(chardef));
+
+        if deref then
+          begin
+            if not (is_widestring(def) and (tf_winlikewidestring in target_info.flags)) then
+              upperopcodes:=14
+            else
+              upperopcodes:=17;
+
+            // DWARF-4: DW_AT_byte_size
+            // DWARF-5: DW_AT_string_length_byte_size
+            if upperopcodes=14 then
+              append_attribute(attribute_for_stinglensize, DW_FORM_data1, [4]); // size of the length field
+
+            append_block1(DW_AT_string_length, upperopcodes);
+            { high(string) is stored sizeof(sizeint) bytes before the string data }
+            current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_8bit(ord(DW_OP_push_object_address)));
+            current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_8bit(ord(DW_OP_deref)));
+            { pointer = nil? }
+            current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_8bit(ord(DW_OP_dup)));
+            current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_8bit(ord(DW_OP_bra)));
+            if upperopcodes=17 then
+              begin
+                current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_16bit_unaligned(4));
+                { yes -> length = 0 }
+                current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_8bit(ord(DW_OP_lit0)));
+                { skip the extra deref_size argument and the division by two of the length }
+                current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_8bit(ord(DW_OP_skip)));
+                current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_16bit_unaligned(6));
+
+                { no -> load length }
+                { for Windows WideString the size is always a DWORD }
+                current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_8bit(ord(DW_OP_lit4)));
+                current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_8bit(ord(DW_OP_minus)));
+                current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_8bit(ord(DW_OP_deref_size)));
+                current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_8bit(4));
+                { for widestrings, the length is specified in bytes, so divide by two }
+                current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_8bit(ord(DW_OP_lit1)));
+                current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_8bit(ord(DW_OP_shr)));
+                current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_8bit(ord(DW_OP_stack_value)));
+              end
+            else
+              begin
+                current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_16bit_unaligned(5));
+                { yes -> length = 0 }
+                current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_8bit(ord(DW_OP_lit0)));
+                { stack-value for the zero-length }
+                current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_8bit(ord(DW_OP_stack_value)));
+                { skip the extra deref_size argument and the division by two of the length }
+                current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_8bit(ord(DW_OP_skip)));
+                current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_16bit_unaligned(2));
+
+                { no -> point to length }
+                current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_8bit(ord(DW_OP_lit0)+sizesinttype.size));
+                current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_8bit(ord(DW_OP_minus)));
+                { skip to past end is not allowed, thus use a nop here }
+                current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_8bit(ord(DW_OP_nop)));
+              end;
+          end
+        else
+          begin
+            // DWARF-4: DW_AT_byte_size
+            // DWARF-5: DW_AT_string_length_byte_size
+            append_attribute(attribute_for_stinglensize, DW_FORM_data1, [lensize]); // size of the length field
+
+            append_block1(DW_AT_string_length, 1);
+            { for shortstrings, the length is the first byte of the string }
+            current_asmdata.asmlists[al_dwarf_info].concat(tai_const.create_8bit(ord(DW_OP_push_object_address)));
+          end;
+
+        finish_entry;
+      end;
+
+    procedure TDebugInfoDwarf4.appenddef_string(list: TAsmList; def: tstringdef);
+      begin
+        if not(ds_dwarf_fpd in current_settings.debugswitches) then
+          begin
+            // At least LLDB 6.0.0 does not like this implementation of string types.
+            // And GDB also does not handle it correct
+            // Call the inherited DWARF 2 implementation, which works fine.
+            inherited;
+            exit;
+          end;
+
+        case def.stringtype of
+          st_shortstring:
+            addstringdef('ShortString',def, nil,false,1);
+          st_longstring:
+{$ifdef cpu64bitaddr}
+            addstringdef('LongString',def, nil,false,8);
+{$else cpu64bitaddr}
+            addstringdef('LongString',def, nil,false,4);
+{$endif cpu64bitaddr}
+          st_ansistring:
+            addstringdef('AnsiString',def, nil,true,-1);
+          else
+            inherited;
+        end;
+      end;
+
+    { TDebugInfoDwarf5 }
+
     procedure TDebugInfoDwarf5.insert_cu_header_after_version;
     begin
       { DWARF-5 has a different order of fields in the header }
@@ -4640,10 +4828,44 @@ implementation
           current_asmdata.DefineAsmSymbol(target_asm.labelprefix+'debug_abbrev0',AB_LOCAL,AT_METADATA,voidpointertype)));
     end;
 
+    function TDebugInfoDwarf5.attribute_for_stinglensize: tdwarf_attribute;
+    begin
+      Result := DW_AT_string_length_byte_size;
+    end;
+
     function TDebugInfoDwarf5.dwarf_version: Word;
     begin
       Result:=5;
     end;
+
+    procedure TDebugInfoDwarf5.appenddef_string(list: TAsmList; def: tstringdef);
+      begin
+        if not(ds_dwarf_fpd in current_settings.debugswitches) then
+          begin
+            // At least LLDB 6.0.0 does not like this implementation of string types.
+            // And GDB also does not handle it correct
+            // Call the inherited DWARF 2 implementation, which works fine.
+            inherited;
+            exit;
+          end;
+
+        case def.stringtype of
+          st_shortstring:
+            addstringdef('ShortString',def, cansichartype,false,1);
+          st_longstring:
+{$ifdef cpu64bitaddr}
+            addstringdef('LongString',def, cansichartype,false,8);
+{$else cpu64bitaddr}
+            addstringdef('LongString',def, cansichartype,false,4);
+{$endif cpu64bitaddr}
+          st_ansistring:
+            addstringdef('AnsiString',def, cansichartype,true,-1);
+          st_unicodestring:
+            addstringdef('UnicodeString',def, cwidechartype,true,-1);
+          st_widestring:
+            addstringdef('WideString',def, cwidechartype,true,-1)
+        end;
+      end;
 
 
 {****************************************************************************
