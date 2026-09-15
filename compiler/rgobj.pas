@@ -81,20 +81,20 @@ unit rgobj;
       Tmoveins=class(Tlinkedlistitem)
         moveset:Tmoveset;
         x,y:Tsuperregister;
-        id:longint;
       end;
 
-      Tmovelistheader=record
-        count,
-        maxcount,
-        sorted_until : cardinal;
+      PTmoveins=^Tmoveins;
+      Pmovehashlist=^Tmovehashlist;
+      Tmovehashlist=object
+        h2itemid : puint32; { region contains h2itemid + items; h2itemid[i]=0 means empty cell, h2itemid[i] = itemid > 0 references items[itemid - 1]. }
+        items : PTmoveins;
+        hmask,nitems,maxitems : uint32;
+        procedure init;
+        procedure done;
+        procedure add(ins:Tmoveins); { no-op if exists }
+        procedure rehash(foritems:sizeuint);
+        class function hashins(m:Tmoveins):sizeuint; static; {$ifdef USEINLINE} inline; {$endif}
       end;
-
-      Tmovelist=record
-        header : Tmovelistheader;
-        data : array[tsuperregister] of Tmoveins;
-      end;
-      Pmovelist=^Tmovelist;
 
       Treginfoflag=(
         ri_coalesced,       { the register is coalesced with other register }
@@ -111,8 +111,8 @@ unit rgobj;
         alias    : Tsuperregister;
         { The register allocator assigns each register a colour }
         colour   : Tsuperregister;
-        movelist : Pmovelist;
-        adjlist  : Psuperregisterworklist;
+        movehlist : Tmovehashlist;
+        adjlist  : Tsuperregisterworkhashlist;
         degree   : TSuperregister;
         flags    : Treginfoflagset;
         weight   : longint;
@@ -152,6 +152,7 @@ unit rgobj;
         spilled : boolean;
         interferences : Tinterferencebitmap;
       end;
+      pspillinfo = ^tspillinfo;
 
       {#------------------------------------------------------------------
 
@@ -206,8 +207,8 @@ unit rgobj;
         regtype           : Tregistertype;
         { default subregister used }
         defaultsub        : tsubregister;
-        live_registers:Tsuperregisterworklist;
-        spillednodes: tsuperregisterworklist;
+        live_registers    : Tsuperregisterworkhashlist;
+        spillednodes      : tsuperregisterworkhashlist;
 
         { can be overridden to add cpu specific interferences }
         procedure add_cpu_interferences(p : tai);virtual;
@@ -247,7 +248,7 @@ unit rgobj;
         freezeworklist,
         spillworklist,
         coalescednodes,
-        selectstack       : tsuperregisterworklist;
+        selectstack       : tsuperregisterworkhashlist;
         worklist_moves,
         active_moves,
         frozen_moves,
@@ -262,7 +263,6 @@ unit rgobj;
         has_usedmarks: boolean;
         has_directalloc: boolean;
         spillinfo : array of tspillinfo;
-        moveins_id_counter: longint;
 
         { Disposes of the reginfo array.}
         procedure dispose_reginfo;
@@ -274,8 +274,6 @@ unit rgobj;
         procedure colour_registers;
         procedure insert_regalloc_info(list:TAsmList;u:tsuperregister);
         procedure generate_interference_graph(list:TAsmList;headertai:tai);
-        { sort spilled nodes by increasing number of interferences }
-        procedure sort_spillednodes;
         { translates the registers in the given assembler list }
         procedure translate_registers(list:TAsmList);
         function  spill_registers(list:TAsmList;headertai:tai):boolean;virtual;
@@ -284,7 +282,6 @@ unit rgobj;
         procedure add_to_movelist(u:Tsuperregister;ins:Tmoveins);
         function move_related(n:Tsuperregister):boolean;
         procedure make_work_list;
-        procedure sort_simplify_worklist;
         procedure enable_moves(n:Tsuperregister);
         procedure decrement_degree(m:Tsuperregister);
         procedure simplify;
@@ -333,36 +330,6 @@ unit rgobj;
       sysutils,
       globals,
       verbose,tgobj,procinfo,cgobj;
-
-    procedure sort_movelist(ml:Pmovelist);
-
-    var h,i,p:longword;
-        t:Tmoveins;
-
-    begin
-      with ml^ do
-        begin
-          if header.count<2 then
-            exit;
-          p:=longword(1) shl BsrDWord(header.count-1);
-          repeat
-            for h:=p to header.count-1 do
-              begin
-                i:=h;
-                t:=data[i];
-                repeat
-                  if data[i-p].id<=t.id then
-                    break;
-                  data[i]:=data[i-p];
-                  dec(i,p);
-                until i<p;
-                data[i]:=t;
-              end;
-            p:=p shr 1;
-          until p=0;
-          header.sorted_until:=header.count-1;
-        end;
-    end;
 
 {******************************************************************************
                               tinterferencebitmap
@@ -425,6 +392,110 @@ unit rgobj;
           exclude(fbitmap[x1,y1][y and $ff],(x and $ff));
       end;
 
+    procedure Tmovehashlist.init;
+      const
+        EmptyH2itemid : uint32=0;
+      begin
+        h2itemid:=@EmptyH2itemid;
+        { Other fields must be zero. External zeroing assumed! }
+      end;
+
+    procedure Tmovehashlist.done;
+      begin
+        if assigned(items) then
+          freemem(h2itemid);
+      end;
+
+    procedure Tmovehashlist.add(ins:Tmoveins);
+      var hashRest,ih,ii : sizeuint;
+      begin
+        hashRest:=hashins(ins);
+        ih:=hashRest and hmask;
+        repeat
+          ii:=h2itemid[ih];
+          if ii=0 then
+            if nitems<>maxitems then
+              begin
+                h2itemid[ih]:=1+nitems;
+                items[nitems]:=ins;
+                nitems:=nitems+1;
+                exit;
+              end
+            else
+              begin
+                rehash(nitems+1);
+                add(ins);
+                exit;
+              end
+          else
+            if items[ii-1]=ins then
+              exit;
+{$push} {$q-,r-}
+          ih:=(ih+hashRest+1) and hmask;
+          hashRest:=hashRest shr 5;
+{$pop}
+        until false;
+      end;
+
+    procedure Tmovehashlist.rehash(foritems:sizeuint);
+      var newh2itemid : puint32;
+          newitems : PTmoveins;
+          item : Tmoveins;
+          newhmask,newmaxitems,itemsOffset,iitem,ih,hashRest : sizeuint;
+      begin
+        if foritems shr (bitsizeof(h2itemid^)-3)<>0 then
+          internalerror(2022042501); { too big table }
+        newmaxitems:=4+foritems+foritems div 2;
+        newhmask:=sizeuint(1) shl (1+BsrDWord(newmaxitems-1))-1; { UpToPow2(newmaxitems)-1 }
+        if newmaxitems>newhmask div 2+newhmask div 16 then { 1/2+1/16 = 56.25% = max allowed load factor }
+          newhmask:=2*newhmask+1;
+
+        itemsOffset:=Align(sizeof(h2itemid^)*(newhmask+1), {alignof(items^)} sizeof(pointer));
+        newh2itemid:=GetMem(itemsOffset+newmaxitems*sizeof(items^));
+        newitems:=pointer(newh2itemid)+itemsOffset;
+
+        Move(items^,newitems^,sizeof(items^)*nitems);
+
+        { Add newitems to newh2itemid. Shortcut by copying previous h2itemid if hmask hasn't changed. }
+        if hmask=newhmask then
+          Move(h2itemid^,newh2itemid^,sizeof(h2itemid^)*(newhmask+1))
+        else
+          begin
+            FillChar(newh2itemid^,sizeof(h2itemid^)*(newhmask+1),0);
+            iitem:=0;
+            while iitem<nitems do
+              begin
+                item:=newitems[iitem];
+                hashRest:=hashins(item);
+                ih:=hashRest and newhmask;
+                repeat
+                  if newh2itemid[ih]=0 then
+                    begin
+                      newh2itemid[ih]:=1+iitem;
+                      break;
+                    end;
+{$push} {$q-,r-}
+                  ih:=(ih+hashRest+1) and newhmask;
+                  hashRest:=hashRest shr 5;
+{$pop}
+                until false;
+                iitem:=iitem+1;
+              end;
+          end;
+
+        if assigned(items) then { h2itemid is fake when items=nil }
+          FreeMem(h2itemid);
+        h2itemid:=newh2itemid;
+        items:=newitems;
+        hmask:=newhmask;
+        maxitems:=newmaxitems;
+      end;
+
+    class function tmovehashlist.hashins(m:Tmoveins):sizeuint;
+      begin
+        result:=PtrUint(m) div (4*sizeof(pointer)); { "div approximate Tmoveins.InstanceSize". }
+      end;
+
 
 {******************************************************************************
                                 trgobj
@@ -454,14 +525,15 @@ unit rgobj;
          { Get reginfo for CPU registers }
          maxreginfo:=first_imaginary;
          maxreginfoinc:=16;
-         moveins_id_counter:=0;
          worklist_moves:=Tlinkedlist.create;
          move_garbage:=TLinkedList.Create;
          SetLength(reginfo,first_imaginary);
          for i:=0 to first_imaginary-1 do
            begin
+             reginfo[i].movehlist.init;
              reginfo[i].degree:=high(tsuperregister);
              reginfo[i].alias:=RS_INVALID;
+             reginfo[i].adjlist.init;
            end;
          { Usable registers }
          // default value set by constructor
@@ -512,18 +584,15 @@ unit rgobj;
 
     procedure Trgobj.dispose_reginfo;
       var
-        i : cardinal;
+        i : sizeint;
       begin
         if reginfo<>nil then
           begin
             for i:=0 to maxreg-1 do
-              with reginfo[i] do
-                begin
-                  if adjlist<>nil then
-                    dispose(adjlist,done);
-                  if movelist<>nil then
-                    dispose(movelist);
-                end;
+              begin
+                reginfo[i].adjlist.Done;
+                reginfo[i].movehlist.Done;
+              end;
             reginfo:=nil;
           end;
       end;
@@ -532,6 +601,7 @@ unit rgobj;
     function trgobj.getnewreg(subreg:tsubregister):tsuperregister;
       var
         oldmaxreginfo : tsuperregister;
+        i : sizeint;
       begin
         result:=maxreg;
         inc(maxreg);
@@ -550,6 +620,11 @@ unit rgobj;
                   maxreginfoinc:=maxreginfoinc*2;
               end;
             SetLength(reginfo,maxreginfo);
+            for i:=oldmaxreginfo to maxreginfo-1 do
+              begin
+                reginfo[i].movehlist.init;
+                reginfo[i].adjlist.init;
+              end;
           end;
         reginfo[result].subreg:=subreg;
       end;
@@ -724,9 +799,7 @@ unit rgobj;
 {$endif}
         with reginfo[u] do
           begin
-            if adjlist=nil then
-              new(adjlist,init);
-            adjlist^.add(v);
+            adjlist.add(v);
             if (v<first_imaginary) and
                (v in usable_register_set) then
               inc(real_reg_interferences);
@@ -749,13 +822,12 @@ unit rgobj;
 
     procedure trgobj.add_edges_used(u:Tsuperregister);
 
-    var i:cardinal;
+    var i:sizeint;
 
     begin
       with live_registers do
-        if length>0 then
-          for i:=0 to length-1 do
-            add_edge(u,get_alias(buf[i]));
+        for i:=0 to length-1 do
+          add_edge(u,get_alias(buf[i]));
     end;
 
 {$ifdef EXTDEBUG}
@@ -807,28 +879,7 @@ unit rgobj;
         if (u>=maxreginfo) then
           internalerror(2012101902);
 {$endif}
-      with reginfo[u] do
-        begin
-          if movelist=nil then
-            begin
-              { don't use sizeof(tmovelistheader), because that ignores alignment }
-              getmem(movelist,ptruint(@movelist^.data)-ptruint(movelist)+16*sizeof(pointer));
-              movelist^.header.maxcount:=16;
-              movelist^.header.count:=0;
-              movelist^.header.sorted_until:=0;
-            end
-          else
-            begin
-              if movelist^.header.count>=movelist^.header.maxcount then
-                begin
-                  movelist^.header.maxcount:=movelist^.header.maxcount*2;
-                  { don't use sizeof(tmovelistheader), because that ignores alignment }
-                  reallocmem(movelist,ptruint(@movelist^.data)-ptruint(movelist)+movelist^.header.maxcount*sizeof(pointer));
-                end;
-            end;
-          movelist^.data[movelist^.header.count]:=ins;
-          inc(movelist^.header.count);
-        end;
+      reginfo[u].movehlist.add(ins);
     end;
 
 
@@ -959,11 +1010,7 @@ unit rgobj;
       { How should we handle m68k move %d0,%a0? }
       if (getregtype(sreg)<>getregtype(dreg)) then
         exit;
-      if moveins_id_counter=high(moveins_id_counter) then
-        internalerror(2021112701);
-      inc(moveins_id_counter);
       i:=Tmoveins.create;
-      i.id:=moveins_id_counter;
       i.moveset:=ms_worklist_moves;
       worklist_moves.insert(i);
       ssupreg:=getsupreg(sreg);
@@ -980,110 +1027,25 @@ unit rgobj;
 
     function trgobj.move_related(n:Tsuperregister):boolean;
 
-    var i:cardinal;
+    var i : sizeint;
+        movehlist : Pmovehashlist;
 
     begin
       move_related:=false;
-      with reginfo[n] do
-        if movelist<>nil then
-          with movelist^ do
-            for i:=0 to header.count-1 do
-              if Tmoveins(data[i]).moveset in [ms_worklist_moves,ms_active_moves] then
-                begin
-                  move_related:=true;
-                  break;
-                end;
-    end;
-
-    procedure Trgobj.sort_simplify_worklist;
-
-    {Sorts the simplifyworklist by the number of interferences the
-     registers in it cause. This allows simplify to execute in
-     constant time.
-
-     Sort the list in the descending order, since items of simplifyworklist
-     are retrieved from end to start and then items are added to selectstack.
-     The selectstack list is also processed from end to start.
-
-     Such way nodes with most interferences will get their colors first.
-     Since degree of nodes in simplifyworklist before sorting is always
-     less than the number of usable registers this should not trigger spilling
-     and should lead to a better register allocation in some cases.
-    }
-
-    var p,h,i,leni,lent:longword;
-        t:Tsuperregister;
-        adji,adjt:Psuperregisterworklist;
-
-    begin
-      with simplifyworklist do
-        begin
-          if length<2 then
-            exit;
-          p:=longword(1) shl BsrDWord(length-1);
-          repeat
-            for h:=p to length-1 do
-              begin
-                i:=h;
-                t:=buf[i];
-                adjt:=reginfo[buf[i]].adjlist;
-                lent:=0;
-                if adjt<>nil then
-                  lent:=adjt^.length;
-                repeat
-                  adji:=reginfo[buf[i-p]].adjlist;
-                  leni:=0;
-                  if adji<>nil then
-                    leni:=adji^.length;
-                  if leni>=lent then
-                    break;
-                  buf[i]:=buf[i-p];
-                  dec(i,p)
-                until i<p;
-                buf[i]:=t;
-              end;
-            p:=p shr 1;
-          until p=0;
-        end;
-    end;
-
-
-    { sort spilled nodes by increasing number of interferences }
-    procedure Trgobj.sort_spillednodes;
-      var
-        p,h,i,leni,lent:longword;
-        t:Tsuperregister;
-        adji,adjt:Psuperregisterworklist;
-      begin
-        with spillednodes do
+      movehlist:=@reginfo[n].movehlist;
+      for i:=0 to sizeint(movehlist^.nitems)-1 do
+        if movehlist^.items[i].moveset in [ms_worklist_moves,ms_active_moves] then
           begin
-            if length<2 then
-              exit;
-            p:=longword(1) shl BsrDWord(length-1);
-            repeat
-              for h:=p to length-1 do
-                begin
-                  i:=h;
-                  t:=buf[i];
-                  adjt:=reginfo[buf[i]].adjlist;
-                  lent:=0;
-                  if adjt<>nil then
-                    lent:=adjt^.length;
-                  repeat
-                    adji:=reginfo[buf[i-p]].adjlist;
-                    leni:=0;
-                    if adji<>nil then
-                      leni:=adji^.length;
-                    if leni<=lent then
-                      break;
-                    buf[i]:=buf[i-p];
-                    dec(i,p)
-                  until i<p;
-                  buf[i]:=t;
-                end;
-              p:=p shr 1;
-            until p=0;
+            move_related:=true;
+            break;
           end;
+    end;
+
+    function simplifyworklist_come_before(a,b:Tsuperregister;param:pointer):boolean;
+      var
+        rg:TReginfoArray absolute param;
+      begin
+        result:=rg[a].adjlist.length>rg[b].adjlist.length;
       end;
 
 
@@ -1097,10 +1059,7 @@ unit rgobj;
       for n:=first_imaginary to maxreg-1 do
         with reginfo[n] do
           begin
-            if adjlist=nil then
-              degree:=0
-            else
-              degree:=adjlist^.length;
+            degree:=adjlist.length;
             if degree>=usable_registers_cnt then
               spillworklist.add(n)
             else if move_related(n) then
@@ -1108,7 +1067,21 @@ unit rgobj;
             else if not(ri_coalesced in flags) then
               simplifyworklist.add(n);
           end;
-      sort_simplify_worklist;
+
+      {Sort the simplifyworklist by the number of interferences the
+       registers in it cause. This allows simplify to execute in
+       constant time.
+
+       Sort the list in the descending order, since items of simplifyworklist
+       are retrieved from end to start and then items are added to selectstack.
+       The selectstack list is also processed from end to start.
+
+       Such way nodes with most interferences will get their colors first.
+       Since degree of nodes in simplifyworklist before sorting is always
+       less than the number of usable registers this should not trigger spilling
+       and should lead to a better register allocation in some cases.
+      }
+      simplifyworklist.sort(@simplifyworklist_come_before,pointer(reginfo));
     end;
 
 
@@ -1124,30 +1097,30 @@ unit rgobj;
 
     procedure trgobj.enable_moves(n:Tsuperregister);
 
-    var m:Tlinkedlistitem;
-        i:cardinal;
+    var i : sizeint;
+        movehlist : Pmovehashlist;
+        m : Tmoveins;
 
     begin
-      with reginfo[n] do
-        if movelist<>nil then
-          for i:=0 to movelist^.header.count-1 do
+      movehlist:=@reginfo[n].movehlist;
+      for i:=0 to sizeint(movehlist^.nitems)-1 do
+        begin
+          m:=movehlist^.items[i];
+          if m.moveset=ms_active_moves then
             begin
-              m:=movelist^.data[i];
-              if Tmoveins(m).moveset=ms_active_moves then
-                begin
-                  {Move m from the set active_moves to the set worklist_moves.}
-                  active_moves.remove(m);
-                  Tmoveins(m).moveset:=ms_worklist_moves;
-                  worklist_moves.concat(m);
-                end;
-          end;
+              {Move m from the set active_moves to the set worklist_moves.}
+              active_moves.remove(m);
+              m.moveset:=ms_worklist_moves;
+              worklist_moves.concat(m);
+            end;
+        end;
     end;
 
     procedure Trgobj.decrement_degree(m:Tsuperregister);
 
-    var adj : Psuperregisterworklist;
-        n : tsuperregister;
-        d,i : cardinal;
+    var n : tsuperregister;
+        d : cardinal;
+        i : sizeint;
 
     begin
       with reginfo[m] do
@@ -1161,14 +1134,12 @@ unit rgobj;
               {Enable moves for m.}
               enable_moves(m);
               {Enable moves for adjacent.}
-              adj:=adjlist;
-              if adj<>nil then
-                for i:=1 to adj^.length do
-                  begin
-                    n:=adj^.buf[i-1];
-                    if reginfo[n].flags*[ri_selected,ri_coalesced]<>[] then
-                      enable_moves(n);
-                  end;
+              for i:=0 to adjlist.length-1 do
+                begin
+                  n:=adjlist.buf[i];
+                  if reginfo[n].flags*[ri_selected,ri_coalesced]<>[] then
+                    enable_moves(n);
+                end;
               {Remove the node from the spillworklist.}
               if not spillworklist.delete(m) then
                 internalerror(200310145);
@@ -1183,9 +1154,9 @@ unit rgobj;
 
     procedure trgobj.simplify;
 
-    var adj : Psuperregisterworklist;
+    var adj : Psuperregisterworkhashlist;
         m,n : Tsuperregister;
-        i : cardinal;
+        i : sizeint;
     begin
       {We take the element with the least interferences out of the
        simplifyworklist. Since the simplifyworklist is now sorted, we
@@ -1197,16 +1168,15 @@ unit rgobj;
       with reginfo[m] do
         begin
           include(flags,ri_selected);
-          adj:=adjlist;
+          adj:=@adjlist;
         end;
-      if adj<>nil then
-        for i:=1 to adj^.length do
-          begin
-            n:=adj^.buf[i-1];
-            if (n>=first_imaginary) and
-               (reginfo[n].flags*[ri_selected,ri_coalesced]=[]) then
-              decrement_degree(n);
-          end;
+      for i:=0 to adj^.length-1 do
+        begin
+          n:=adj^.buf[i];
+          if (n>=first_imaginary) and
+             (reginfo[n].flags*[ri_selected,ri_coalesced]=[]) then
+            decrement_degree(n);
+        end;
     end;
 
     function trgobj.get_alias(n:Tsuperregister):Tsuperregister;
@@ -1244,33 +1214,31 @@ unit rgobj;
             ibitmap[r,t];
       end;
 
-    var adj : Psuperregisterworklist;
-        i : cardinal;
+    var i : sizeint;
         n : tsuperregister;
 
     begin
       with reginfo[v] do
         begin
           adjacent_ok:=true;
-          adj:=adjlist;
-          if adj<>nil then
-            for i:=1 to adj^.length do
-              begin
-                n:=adj^.buf[i-1];
-                if (reginfo[n].flags*[ri_coalesced]=[]) and not ok(n,u) then
-                  begin
-                    adjacent_ok:=false;
-                    break;
-                  end;
-              end;
+          for i:=0 to adjlist.length-1 do
+            begin
+              n:=adjlist.buf[i];
+              if (reginfo[n].flags*[ri_coalesced]=[]) and not ok(n,u) then
+                begin
+                  adjacent_ok:=false;
+                  break;
+                end;
+            end;
         end;
     end;
 
     function trgobj.conservative(u,v:Tsuperregister):boolean;
 
-    var adj : Psuperregisterworklist;
+    var adj : Psuperregisterworkhashlist;
         done : Tsuperregisterset; {To prevent that we count nodes twice.}
-        i,k:cardinal;
+        i : sizeint;
+        k : cardinal;
         n : tsuperregister;
 
     begin
@@ -1278,39 +1246,36 @@ unit rgobj;
       supregset_reset(done,false,maxreg);
       with reginfo[u] do
         begin
-          adj:=adjlist;
-          if adj<>nil then
-            for i:=1 to adj^.length do
-              begin
-                n:=adj^.buf[i-1];
-                if reginfo[n].flags*[ri_coalesced,ri_selected]=[] then
-                  begin
-                    supregset_include(done,n);
-                    if reginfo[n].degree>=usable_registers_cnt then
-                      inc(k);
-                  end;
-              end;
+          for i:=0 to adjlist.length-1 do
+            begin
+              n:=adjlist.buf[i];
+              if reginfo[n].flags*[ri_coalesced,ri_selected]=[] then
+                begin
+                  supregset_include(done,n);
+                  if reginfo[n].degree>=usable_registers_cnt then
+                    inc(k);
+                end;
+            end;
         end;
-      adj:=reginfo[v].adjlist;
-      if adj<>nil then
-        for i:=1 to adj^.length do
-          begin
-            n:=adj^.buf[i-1];
-            if (u<first_imaginary) and
-               (n>=first_imaginary) and
-               not ibitmap[u,n] and
-               (usable_registers_cnt-reginfo[n].real_reg_interferences<=1) then
-              begin
-                { Do not coalesce if 'u' is the last usable real register available
-                  for imaginary register 'n'. }
-                conservative:=false;
-                exit;
-              end;
-            if not supregset_in(done,n) and
-               (reginfo[n].degree>=usable_registers_cnt) and
-               (reginfo[n].flags*[ri_coalesced,ri_selected]=[]) then
-              inc(k);
-          end;
+      adj:=@reginfo[v].adjlist;
+      for i:=0 to adj^.length-1 do
+        begin
+          n:=adj^.buf[i];
+          if (u<first_imaginary) and
+             (n>=first_imaginary) and
+             not ibitmap[u,n] and
+             (usable_registers_cnt-reginfo[n].real_reg_interferences<=1) then
+            begin
+              { Do not coalesce if 'u' is the last usable real register available
+                for imaginary register 'n'. }
+              conservative:=false;
+              exit;
+            end;
+          if not supregset_in(done,n) and
+             (reginfo[n].degree>=usable_registers_cnt) and
+             (reginfo[n].flags*[ri_coalesced,ri_selected]=[]) then
+            inc(k);
+        end;
       conservative:=(k<usable_registers_cnt);
     end;
 
@@ -1336,11 +1301,10 @@ unit rgobj;
 
     procedure trgobj.combine(u,v:Tsuperregister);
 
-    var adj : Psuperregisterworklist;
-        original_u_count, i,n,p,q:cardinal;
+    var adj : Psuperregisterworkhashlist;
+        i,n : sizeint;
         t : tsuperregister;
-        searched:Tmoveins;
-        found : boolean;
+        vmovehlist : Pmovehashlist;
 
     begin
       if not freezeworklist.delete(v) then
@@ -1350,104 +1314,53 @@ unit rgobj;
       reginfo[v].alias:=u;
 
       {Combine both movelists. Since the movelists are sets, only add
-       elements that are not already present. The movelists cannot be
-       empty by definition; nodes are only coalesced if there is a move
-       between them. To prevent quadratic time blowup (movelists of
-       especially machine registers can get very large because of moves
-       generated during calls) we need to go into disgusting complexity.
+       elements that are not already present, but Tmovehashlist.add
+       already silently refuses duplicates, so just add.
 
-       (See webtbs/tw2242 for an example that stresses this.)
+       The movelists cannot be empty by definition; nodes are only coalesced
+       if there is a move between them.
 
-       We want to sort the movelist to be able to search logarithmically.
-       Unfortunately, sorting the movelist every time before searching
-       is counter-productive, since the movelist usually grows with a few
-       items at a time. Therefore, we split the movelist into a sorted
-       and an unsorted part and search through both. If the unsorted part
-       becomes too large, we sort.}
-      if assigned(reginfo[u].movelist) then
-        begin
-          {We have to weigh the cost of sorting the list against searching
-           the cost of the unsorted part. I use factor of 8 here; if the
-           number of items is less than 8 times the numer of unsorted items,
-           we'll sort the list.}
-          with reginfo[u].movelist^ do
-            if header.count<8*(header.count-header.sorted_until) then
-              sort_movelist(reginfo[u].movelist);
-          if assigned(reginfo[v].movelist) then
-            begin
-              original_u_count:=reginfo[u].movelist^.header.count;
-              for n:=0 to reginfo[v].movelist^.header.count-1 do
-                begin
-                  {Binary search the sorted part of the list.}
-                  searched:=reginfo[v].movelist^.data[n];
-                  p:=0;
-                  q:=reginfo[u].movelist^.header.sorted_until;
-                  i:=0;
-                  if q<>0 then
-                    repeat
-                      i:=(p+q) shr 1;
-                      if searched.id>reginfo[u].movelist^.data[i].id then
-                        p:=i+1
-                      else
-                        q:=i;
-                    until p=q;
-                  with reginfo[u].movelist^ do
-                    if searched<>data[i] then
-                      begin
-                        {Linear search the unsorted part of the list.}
-                        found:=false;
-                        { no need to search the instructions we've already added
-                          from v, we know we won't find a match there }
-                        for i:=header.sorted_until+1 to original_u_count-1 do
-                          if searched.id=data[i].id then
-                            begin
-                              found:=true;
-                              break;
-                            end;
-                        if not found then
-                          add_to_movelist(u,searched);
-                      end;
-                end;
-            end;
-        end;
+       See webtbs/tw2242 for an example that stresses this. }
+      vmovehlist:=@reginfo[v].movehlist;
+      for n:=0 to sizeint(vmovehlist^.nitems)-1 do
+        add_to_movelist(u,vmovehlist^.items[n]);
 
       enable_moves(v);
 
-      adj:=reginfo[v].adjlist;
-      if adj<>nil then
-        for i:=1 to adj^.length do
-          begin
-            t:=adj^.buf[i-1];
-            with reginfo[t] do
-              if not(ri_coalesced in flags) then
-                begin
-                  {t has a connection to v. Since we are adding v to u, we
-                   need to connect t to u. However, beware if t was already
-                   connected to u...}
-                  if (ibitmap[t,u]) and not (ri_selected in flags) then
-                    begin
-                      {... because in that case, we are actually removing an edge
-                       and the degree of t decreases.}
-                      decrement_degree(t);
-                      { if v is combined with a real register, retry
-                        coalescing of interfering nodes since it may succeed now. }
-                      if (u<first_imaginary) and
-                         (adj^.length>=usable_registers_cnt) and
-                         (reginfo[t].degree>usable_registers_cnt) then
-                        enable_moves(t);
-                    end
-                  else
-                    begin
-                      add_edge(t,u);
-                      {We have added an edge to t and u. So their degree increases.
-                       However, v is added to u. That means its neighbours will
-                       no longer point to v, but to u instead. Therefore, only the
-                       degree of u increases.}
-                      if (u>=first_imaginary) and not (ri_selected in flags) then
-                        inc(reginfo[u].degree);
-                    end;
-                end;
-          end;
+      adj:=@reginfo[v].adjlist;
+      for i:=0 to adj^.length-1 do
+        begin
+          t:=adj^.buf[i];
+          with reginfo[t] do
+            if not(ri_coalesced in flags) then
+              begin
+                {t has a connection to v. Since we are adding v to u, we
+                 need to connect t to u. However, beware if t was already
+                 connected to u...}
+                if (ibitmap[t,u]) and not (ri_selected in flags) then
+                  begin
+                    {... because in that case, we are actually removing an edge
+                     and the degree of t decreases.}
+                    decrement_degree(t);
+                    { if v is combined with a real register, retry
+                      coalescing of interfering nodes since it may succeed now. }
+                    if (u<first_imaginary) and
+                       (adj^.length>=usable_registers_cnt) and
+                       (reginfo[t].degree>usable_registers_cnt) then
+                      enable_moves(t);
+                  end
+                else
+                  begin
+                    add_edge(t,u);
+                    {We have added an edge to t and u. So their degree increases.
+                     However, v is added to u. That means its neighbours will
+                     no longer point to v, but to u instead. Therefore, only the
+                     degree of u increases.}
+                    if (u>=first_imaginary) and not (ri_selected in flags) then
+                      inc(reginfo[u].degree);
+                  end;
+              end;
+        end;
       if (reginfo[u].degree>=usable_registers_cnt) and freezeworklist.delete(u) then
         spillworklist.add(u);
     end;
@@ -1512,39 +1425,40 @@ unit rgobj;
 
     procedure trgobj.freeze_moves(u:Tsuperregister);
 
-    var i:cardinal;
-        m:Tlinkedlistitem;
-        v,x,y:Tsuperregister;
+    var i:sizeint;
+        m:Tmoveins;
+        v,xalias,yalias:Tsuperregister;
+        umovehlist : Pmovehashlist;
 
     begin
-      if reginfo[u].movelist<>nil then
-        for i:=0 to reginfo[u].movelist^.header.count-1 do
-          begin
-            m:=reginfo[u].movelist^.data[i];
-            if Tmoveins(m).moveset in [ms_worklist_moves,ms_active_moves] then
-              begin
-                x:=Tmoveins(m).x;
-                y:=Tmoveins(m).y;
-                if get_alias(y)=get_alias(u) then
-                  v:=get_alias(x)
-                else
-                  v:=get_alias(y);
-                {Move m from active_moves/worklist_moves to frozen_moves.}
-                if Tmoveins(m).moveset=ms_active_moves then
-                  active_moves.remove(m)
-                else
-                  worklist_moves.remove(m);
-                Tmoveins(m).moveset:=ms_frozen_moves;
-                frozen_moves.insert(m);
+      umovehlist:=@reginfo[u].movehlist;
+      for i:=0 to sizeint(umovehlist^.nitems)-1 do
+        begin
+          m:=umovehlist^.items[i];
+          if m.moveset in [ms_worklist_moves,ms_active_moves] then
+            begin
+              xalias:=get_alias(m.x);
+              yalias:=get_alias(m.y);
+              if yalias=get_alias(u) then
+                v:=xalias
+              else
+                v:=yalias;
+              {Move m from active_moves/worklist_moves to frozen_moves.}
+              if m.moveset=ms_active_moves then
+                active_moves.remove(m)
+              else
+                worklist_moves.remove(m);
+              m.moveset:=ms_frozen_moves;
+              frozen_moves.insert(m);
 
-                if (v>=first_imaginary) and not(move_related(v)) and
-                   (reginfo[v].degree<usable_registers_cnt) then
-                  begin
-                    freezeworklist.delete(v);
-                    simplifyworklist.add(v);
-                  end;
-              end;
-          end;
+              if (v>=first_imaginary) and not(move_related(v)) and
+                 (reginfo[v].degree<usable_registers_cnt) then
+                begin
+                  freezeworklist.delete(v);
+                  simplifyworklist.add(v);
+                end;
+            end;
+        end;
     end;
 
     procedure trgobj.freeze;
@@ -1573,7 +1487,7 @@ unit rgobj;
     procedure trgobj.select_spill;
     var
       n : tsuperregister;
-      adj : psuperregisterworklist;
+      adj : Psuperregisterworkhashlist;
       maxlength,minlength,p,i :word;
       minweight: longint;
       {$ifdef SPILLING_NEW}
@@ -1612,18 +1526,18 @@ unit rgobj;
           { Safe: This procedure is only called if length<>0 }
           for i:=0 to length-1 do
             begin
-              adj:=reginfo[buf^[i]].adjlist;
-              dist:=adj^.length-reginfo[buf^[i]].total_interferences/reginfo[buf^[i]].count_uses;
-              if assigned(adj) and
-                (reginfo[buf^[i]].weight<minweight) and
+              adj:=@reginfo[buf[i]].adjlist;
+              dist:=adj^.length-reginfo[buf[i]].total_interferences/reginfo[buf[i]].count_uses;
+              if (adj^.length<>0) and
+                (reginfo[buf[i]].weight<minweight) and
                 (dist>=1) and
-                (reginfo[buf^[i]].weight>0) then
+                (reginfo[buf[i]].weight>0) then
                 begin
                   p:=i;
-                  minweight:=reginfo[buf^[i]].weight;
+                  minweight:=reginfo[buf[i]].weight;
                 end;
             end;
-          n:=buf^[p];
+          n:=buf[p];
           deleteidx(p);
         end;
 {$endif SPILLING_NEW}
@@ -1650,9 +1564,8 @@ unit rgobj;
           for i:=0 to length-1 do
             if not(ri_spill_helper in reginfo[buf[i]].flags) then
               begin
-                adj:=reginfo[buf[i]].adjlist;
-                if assigned(adj) and
-                   (
+                adj:=@reginfo[buf[i]].adjlist;
+                if (
                     (adj^.length>maxlength) or
                     ((adj^.length=maxlength) and (reginfo[buf[i]].weight<minweight))
                    ) then
@@ -1677,9 +1590,8 @@ unit rgobj;
               p:=0;
               for i:=0 to length-1 do
                 begin
-                  adj:=reginfo[buf[i]].adjlist;
-                  if assigned(adj) and
-                     (
+                  adj:=@reginfo[buf[i]].adjlist;
+                  if (
                       (adj^.length<minlength) or
                       ((adj^.length=minlength) and (reginfo[buf[i]].weight<minweight))
                      ) then
@@ -1721,8 +1633,9 @@ unit rgobj;
 
     function colour_register(n : Tsuperregister) : boolean;
       var
-        j,k : cardinal;
-        adj : Psuperregisterworklist;
+        j : sizeint;
+        k : cardinal;
+        adj : Psuperregisterworkhashlist;
         adj_colours:set of 0..255;
         a,c : Tsuperregister;
 {$if declared(RS_STACK_POINTER_REG) and (RS_STACK_POINTER_REG<>RS_INVALID)}
@@ -1731,14 +1644,13 @@ unit rgobj;
       begin
         {Create a list of colours that we cannot assign to n.}
         adj_colours:=[];
-        adj:=reginfo[n].adjlist;
-        if adj<>nil then
-          for j:=0 to adj^.length-1 do
-            begin
-              a:=get_alias(adj^.buf[j]);
-              if supregset_in(colourednodes,a) and (reginfo[a].colour<=255) then
-                include(adj_colours,reginfo[a].colour);
-            end;
+        adj:=@reginfo[n].adjlist;
+        for j:=0 to adj^.length-1 do
+          begin
+            a:=get_alias(adj^.buf[j]);
+            if supregset_in(colourednodes,a) and (reginfo[a].colour<=255) then
+              include(adj_colours,reginfo[a].colour);
+          end;
         { e.g. AVR does not have a stack pointer register }
 {$if declared(RS_STACK_POINTER_REG) and (RS_STACK_POINTER_REG<>RS_INVALID)}
         { FIXME: temp variable r is needed here to avoid Internal error 20060521 }
@@ -1766,16 +1678,17 @@ unit rgobj;
       end;
 
     var
-        i,k : cardinal;
+        i : sizeint;
+        k : cardinal;
         n : Tsuperregister;
         spill_loop : boolean;
     begin
       reset_colours;
       {Now colour the imaginary registers on the select-stack.}
       spill_loop:=false;
-      for i:=selectstack.length downto 1 do
+      for i:=selectstack.length-1 downto 0 do
         begin
-          n:=selectstack.buf[i-1];
+          n:=selectstack.buf[i];
           if not colour_register(n) and
             (ri_spill_helper in reginfo[n].flags) then
             begin
@@ -1793,9 +1706,9 @@ unit rgobj;
             Trying to eliminate this by using a different colouring order. }
           reset_colours;
           { To prevent spilling of helper registers it is needed to assign colours to them first. }
-          for i:=selectstack.length downto 1 do
+          for i:=selectstack.length-1 downto 0 do
             begin
-              n:=selectstack.buf[i-1];
+              n:=selectstack.buf[i];
               if ri_spill_helper in reginfo[n].flags then
                 if not colour_register(n) then
                   { Can't colour the spill helper register n.
@@ -1804,18 +1717,18 @@ unit rgobj;
                   internalerror(2021091001);
             end;
           { Assign colours for the rest of the registers }
-          for i:=selectstack.length downto 1 do
+          for i:=selectstack.length-1 downto 0 do
             begin
-              n:=selectstack.buf[i-1];
+              n:=selectstack.buf[i];
               if not (ri_spill_helper in reginfo[n].flags) then
                 colour_register(n);
             end;
         end;
 
       {Finally colour the nodes that were coalesced.}
-      for i:=1 to coalescednodes.length do
+      for i:=0 to coalescednodes.length-1 do
         begin
-          n:=coalescednodes.buf[i-1];
+          n:=coalescednodes.buf[i];
           k:=get_alias(n);
           reginfo[n].colour:=reginfo[k].colour;
         end;
@@ -1869,36 +1782,23 @@ unit rgobj;
     {Remove node u from the interference graph and remove all collected
      move instructions it is associated with.}
 
-    var i : word;
+    var i : sizeint;
         v : Tsuperregister;
-        adj,adj2 : Psuperregisterworklist;
+        adj : Psuperregisterworkhashlist;
 
     begin
-      adj:=reginfo[u].adjlist;
-      if adj<>nil then
+      adj:=@reginfo[u].adjlist;
+      for i:=0 to adj^.length-1 do
         begin
-          for i:=1 to adj^.length do
-            begin
-              v:=adj^.buf[i-1];
-              {Remove (u,v) and (v,u) from bitmap.}
-              ibitmap[u,v]:=false;
-              ibitmap[v,u]:=false;
-              {Remove (v,u) from adjacency list.}
-              adj2:=reginfo[v].adjlist;
-              if adj2<>nil then
-                begin
-                  adj2^.delete(u);
-                  if adj2^.length=0 then
-                    begin
-                      dispose(adj2,done);
-                      reginfo[v].adjlist:=nil;
-                    end;
-                end;
-            end;
-          {Remove ( u,* ) from adjacency list.}
-          dispose(adj,done);
-          reginfo[u].adjlist:=nil;
+          v:=adj^.buf[i];
+          {Remove (u,v) and (v,u) from bitmap.}
+          ibitmap[u,v]:=false;
+          ibitmap[v,u]:=false;
+          {Remove (v,u) from adjacency list.}
+          reginfo[v].adjlist.delete(u);
         end;
+      {Remove ( u,* ) from adjacency list.}
+      adj^.clear;
     end;
 
 
@@ -2451,6 +2351,14 @@ unit rgobj;
       end;
 
 
+    function spillednodes_come_before(a,b:Tsuperregister;param:pointer):boolean;
+      var
+        rg:TReginfoArray absolute param;
+      begin
+        result:=rg[a].adjlist.length<rg[b].adjlist.length;
+      end;
+
+
     function trgobj.spill_registers(list:TAsmList;headertai:tai):boolean;
     { Returns true if any help registers have been used }
       var
@@ -2459,16 +2367,20 @@ unit rgobj;
         p : Tai;
         regs_to_spill_set:Tsuperregisterset;
         spill_temps : Tspill_temp_list;
-        supreg,x,y : tsuperregister;
+        supreg : tsuperregister;
+        xspill,yspill : pspillinfo;
         templist : TAsmList;
-        j : Longint;
+        j : sizeint;
         getnewspillloc : Boolean;
+        tmovehlist : Pmovehashlist;
+        m : Tmoveins;
       begin
         spill_registers:=false;
         live_registers.clear;
-        { spilling should start with the node with the highest number of interferences, so we can coalesce as
+        { sort spilled nodes by increasing number of interferences
+          spilling should start with the node with the highest number of interferences, so we can coalesce as
           much as possible spilled nodes (coalesce in case of spilled node means they share the same memory location) }
-        sort_spillednodes;
+        spillednodes.sort(@spillednodes_come_before,pointer(reginfo));
         for i:=first_imaginary to maxreg-1 do
           exclude(reginfo[i].flags,ri_selected);
         SetLength(spill_temps,maxreg);
@@ -2513,34 +2425,41 @@ unit rgobj;
 
                 doing so might save some mem->mem moves }
               if (cs_opt_level3 in current_settings.optimizerswitches) and
-                 getnewspillloc and
-                 assigned(reginfo[t].movelist) then
-                for j:=0 to reginfo[t].movelist^.header.count-1 do
-                  begin
-                    x:=Tmoveins(reginfo[t].movelist^.data[j]).x;
-                    y:=Tmoveins(reginfo[t].movelist^.data[j]).y;
-                    if (x=t) and
-                      (spillinfo[get_alias(y)].spilled) and
-                      not(spillinfo[get_alias(y)].interferences[0,t]) then
-                      begin
-                        spill_temps[t]:=spillinfo[get_alias(y)].spilllocation;
+                 getnewspillloc then
+                begin
+                  tmovehlist:=@reginfo[t].movehlist;
+                  for j:=0 to sizeint(tmovehlist^.nitems)-1 do
+                    begin
+                      m:=tmovehlist^.items[j];
+                      if (m.x=t) then
+                        begin
+                          yspill:=@spillinfo[get_alias(m.y)];
+                          if (yspill^.spilled) and
+                             not(yspill^.interferences[0,t]) then
+                            begin
+                              spill_temps[t]:=yspill^.spilllocation;
 {$ifdef DEBUG_SPILLCOALESCE}
-                        writeln('trgobj.spill_registers: Spill coalesce ',t,' to ',y);
+                              writeln('trgobj.spill_registers: Spill coalesce ',t,' to ',m.y);
 {$endif DEBUG_SPILLCOALESCE}
-                        getnewspillloc:=false;
-                        break;
-                      end
-                    else if (y=t) and
-                      (spillinfo[get_alias(x)].spilled) and
-                      not(spillinfo[get_alias(x)].interferences[0,t]) then
-                      begin
+                              getnewspillloc:=false;
+                              break;
+                            end;
+                        end;
+                      if (m.y=t) then
+                        begin
+                          xspill:=@spillinfo[get_alias(m.x)];
+                          if (xspill^.spilled) and
+                             not(xspill^.interferences[0,t]) then
+                            begin
 {$ifdef DEBUG_SPILLCOALESCE}
-                        writeln('trgobj.spill_registers: Spill coalesce ',t,' to ',x);
+                              writeln('trgobj.spill_registers: Spill coalesce ',t,' to ',m.x);
 {$endif DEBUG_SPILLCOALESCE}
-                        spill_temps[t]:=spillinfo[get_alias(x)].spilllocation;
-                        getnewspillloc:=false;
-                        break;
-                      end;
+                              spill_temps[t]:=xspill^.spilllocation;
+                              getnewspillloc:=false;
+                              break;
+                            end;
+                        end;
+                    end;
                   end;
 
               if getnewspillloc then
@@ -2825,7 +2744,7 @@ unit rgobj;
       var
         loadpos,
         storepos : tai;
-        oldlive_registers : tsuperregisterworklist;
+        oldlive_registers : Tsuperregisterworkhashlist;
       begin
         result := false;
         fillchar(spregs,sizeof(spregs),0);
