@@ -424,6 +424,10 @@ const
     {$ifdef HasInt64}
     ,btInt64,btComp
     {$endif}];
+  btAllUnsignedInteger = [btByte,btWord,btUIntSingle,btLongWord,btUIntDouble
+    {$ifdef HasInt64}
+    ,btQWord
+    {$endif}];
   btAllChars = [btChar,{$ifdef FPC_HAS_CPSTRING}btAnsiChar,{$endif}btWideChar];
   btAllStrings = [btString,
     {$ifdef FPC_HAS_CPSTRING}btAnsiString,btShortString,btRawByteString,{$endif}
@@ -37398,12 +37402,12 @@ begin
           RaiseMsg(20170216152532,nIllegalQualifierInFrontOf,sIllegalQualifierInFrontOf,
             [OpcodeStrings[TUnaryExpr(El).OpCode],GetResolverResultDescription(ResolvedEl)],El);
       eopSubtract:
-        if ResolvedEl.BaseType in (btAllSignedInteger+btAllFloats) then
+        if ResolvedEl.BaseType in btAllFloats then
           exit
         else if ResolvedEl.BaseType in btAllInteger then
           begin
           case ResolvedEl.BaseType of
-          btByte,btWord:
+          btByte,btWord,btShortInt,btSmallInt:
             ResolvedEl.BaseType:=btLongint;
           btLongWord,btUIntDouble:
             ResolvedEl.BaseType:=btIntDouble;
