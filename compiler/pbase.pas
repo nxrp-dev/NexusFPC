@@ -131,7 +131,7 @@ implementation
            if we just parsed the a token that has m_class }
          if not(m_class in current_settings.modeswitches) and
             (Upper(s)=current_scanner.pattern) and
-            (m_class in tokeninfo^[current_scanner.idtoken].keyword) then
+            (m_class in tokeninfo[current_scanner.idtoken].keyword) then
            Message(parser_f_need_objfpc_or_delphi_mode);
        end;
 
@@ -143,7 +143,7 @@ implementation
            if we just parsed the a token that has m_class }
          if not(m_class in current_settings.modeswitches) and
             (Upper(s)=current_scanner.pattern) and
-            (m_class in tokeninfo^[current_scanner.idtoken].keyword) then
+            (m_class in tokeninfo[current_scanner.idtoken].keyword) then
            MessagePos(filepos,parser_f_need_objfpc_or_delphi_mode);
        end;
 
@@ -160,9 +160,9 @@ implementation
                        tostr(current_scanner.multiline_start_line),
                        tostr(current_scanner.multiline_start_column))
             else if current_scanner.token=_id then
-              Message2(scan_f_syn_expected,tokeninfo^[i].str,'identifier '+current_scanner.pattern)
+              Message2(scan_f_syn_expected,tokeninfo[i].str,'identifier '+current_scanner.pattern)
             else
-              Message2(scan_f_syn_expected,tokeninfo^[i].str,tokeninfo^[current_scanner.token].str);
+              Message2(scan_f_syn_expected,tokeninfo[i].str,tokeninfo[current_scanner.token].str);
           end
         else
           begin
@@ -178,9 +178,9 @@ implementation
         if (current_scanner.token<>_POINT) then
           begin
           if current_scanner.token=_id then
-            Message2(scan_f_syn_expected,tokeninfo^[_POINT].str,'identifier '+current_scanner.pattern)
+            Message2(scan_f_syn_expected,tokeninfo[_POINT].str,'identifier '+current_scanner.pattern)
           else
-            Message2(scan_f_syn_expected,tokeninfo^[_POINT].str,tokeninfo^[current_scanner.token].str)
+            Message2(scan_f_syn_expected,tokeninfo[_POINT].str,tokeninfo[current_scanner.token].str)
           end
         else if current_scanner.c<>#0 then
           current_scanner.readtoken(true);
@@ -490,7 +490,7 @@ implementation
             _LIBRARY:
               begin
                 if sp_hint_library in symopt then
-                  Message1(parser_e_dir_not_allowed,arraytokeninfo[current_scanner.idtoken].str)
+                  Message1(parser_e_dir_not_allowed,tokeninfo[current_scanner.idtoken].str)
                 else
                   include(symopt,sp_hint_library);
                 try_consume_hintdirective:=true;
@@ -498,7 +498,7 @@ implementation
             _DEPRECATED:
               begin
                 if sp_hint_deprecated in symopt then
-                  Message1(parser_e_dir_not_allowed,arraytokeninfo[current_scanner.idtoken].str)
+                  Message1(parser_e_dir_not_allowed,tokeninfo[current_scanner.idtoken].str)
                 else
                   include(symopt,sp_hint_deprecated);
                 try_consume_hintdirective:=true;
@@ -507,7 +507,7 @@ implementation
             _EXPERIMENTAL:
               begin
                 if sp_hint_experimental in symopt then
-                  Message1(parser_e_dir_not_allowed,arraytokeninfo[current_scanner.idtoken].str)
+                  Message1(parser_e_dir_not_allowed,tokeninfo[current_scanner.idtoken].str)
                 else
                   include(symopt,sp_hint_experimental);
                 try_consume_hintdirective:=true;
@@ -515,7 +515,7 @@ implementation
             _PLATFORM:
               begin
                 if sp_hint_platform in symopt then
-                  Message1(parser_e_dir_not_allowed,arraytokeninfo[current_scanner.idtoken].str)
+                  Message1(parser_e_dir_not_allowed,tokeninfo[current_scanner.idtoken].str)
                 else
                   include(symopt,sp_hint_platform);
                 try_consume_hintdirective:=true;
@@ -523,7 +523,7 @@ implementation
             _UNIMPLEMENTED:
               begin
                 if sp_hint_unimplemented in symopt then
-                  Message1(parser_e_dir_not_allowed,arraytokeninfo[current_scanner.idtoken].str)
+                  Message1(parser_e_dir_not_allowed,tokeninfo[current_scanner.idtoken].str)
                 else
                   include(symopt,sp_hint_unimplemented);
                 try_consume_hintdirective:=true;

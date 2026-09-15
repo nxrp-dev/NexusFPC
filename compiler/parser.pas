@@ -379,7 +379,7 @@ implementation
              _EOF :
                break;
              else
-               preprocfile.Add(tokeninfo^[current_scanner.token].str)
+               preprocfile.Add(tokeninfo[current_scanner.token].str)
            end;
          until false;
        { free scanner }
