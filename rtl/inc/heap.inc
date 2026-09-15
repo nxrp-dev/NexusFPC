@@ -2616,4 +2616,30 @@ begin
 end;
 
 {$endif ndef HAS_MEMORYMANAGER}
+
+procedure HeapMinimize; { Here because is not present as a field of MemoryManager and depends on HeapInc. }
+{$ifndef HAS_MEMORYMANAGER}
+var
+  ts: HeapInc.pThreadState;
+begin
+  ts := @HeapInc.thisTs;
+{$ifdef FPC_HAS_FEATURE_THREADING}
+  if Assigned(ts^.toFree) then
+    ts^.FlushToFree;
+{$endif FPC_HAS_FEATURE_THREADING}
+  ts^.FreeEmptyArenas;
+{$ifdef HAS_SYSOSFREE}
+  if Assigned(ts^.freeOS1) then
+  begin
+    dec(ts^.allocated, ts^.freeOS1^.size);
+    SysOSFree(ts^.freeOS1, ts^.freeOS1^.size);
+    ts^.freeOS1 := nil;
+  end;
+{$endif HAS_SYSOSFREE}
+end;
+{$else HAS_MEMORYMANAGER}
+begin
+end;
+{$endif HAS_MEMORYMANAGER}
+
 {$endif FPC_HAS_FEATURE_HEAP}

@@ -88,6 +88,9 @@ Procedure Freememory(p:pointer;Size:ptruint);
 
 { FPC additions }
 Function  MemSize(p:pointer):ptruint;
+{$ifndef LEGACYHEAP}
+procedure HeapMinimize;
+{$endif LEGACYHEAP}
 
 { Delphi functions }
 function GetMem(size:ptruint):pointer; inline;
