@@ -64,11 +64,12 @@ begin
   GetExtent(R);
   R.B.Y := R.A.Y + 1;
   MenuBar := new (PMenuBar, Init(R, NewMenu(
-                 NewSubMenu('打开', hcNoContext, NewMenu(NewItem('~Н~ов打тест по пъ́тя',  'Еф2', kbF2, cmNew, hcNew,
+                 // $15 is scan code for "Z" key which is also "Н"
+                 NewSubMenu('打开', hcNoContext, NewMenu(NewItemAdvanced('~Н~ов打тест по пъ́тя',  'Еф2', kbF2, $15, cmNew, hcNew,
                       NewItem('~O~pen', '💩', kbF3, cmOpen, hcOpen,
                       NewLine(
                       NewItem('E~x~it', 'ъ́ъ́ъ́打', kbAltX, cmQuit, hcNoContext, nil))))),
-                 NewSubMenu('~E~dit', hcNoContext, NewMenu(
+                 NewSubMenuAdvanced('Пр~а~вка', kbAltF, hcNoContext, NewMenu(
                  NewItem('Window ~3~','',kbNoKey,cmWindow3,hcNoContext,nil)),
                  NewSubMenu('~O~rders', hcNoContext, {NewMenu(GetOrdersMenuItems(nil))}nil,
                  NewSubMenu('O~p~tions', hcNoContext, {NewMenu(GetOptionsMenuItems(nil))}nil,
@@ -107,10 +108,12 @@ begin
   R.Assign(32, 2, 77, 18);                           { Assign screen area }
   P := New(PDialog, Init(R, '테스트 대화 상자'));         { Create dialog }
   If (P <> Nil) Then Begin                           { Dialog valid }
-    R.Assign(5, 5, 20, 7);                          { Allocate area }
-    P^.Insert(New(PCheckBoxes, Init(R,
-      NewSItem('Test',
-      NewSITem('Item 2', Nil)))));                   { Insert check box }
+    R.Assign(5, 5, 20, 8);                          { Allocate area }
+
+    P^.Insert(New(PRadioButtons, Init(R,
+      NewAdvancedSItem('~T~est', 0,
+      NewAdvancedSItem('~Т~ест', $31,       // Т(N) = $31
+      NewAdvancedSItem('~Э~лемент 3', $28, Nil)))))); // Э(') = $28
     R.Assign(5, 2, 20, 3);                           { Assign area }
 
     B := New(PScrollBar, Init(R));                   { Insert scroll bar }
@@ -145,9 +148,10 @@ begin
     List^.AtInsert(8, 'Ninth');              { Insert text }
     List^.AtInsert(9, 'Last item');          { Insert text }
     Lb^.Newlist(List);                               { Give list to listbox }
-    R.Assign(30, 2, 40, 4);                          { Assign area }
+    R.Assign(25, 2, 40, 4);                          { Assign area }
 
-    P^.Insert(New(PButton, Init(R, '好的', 100, bfGrabFocus)));{ Create okay button }
+    P^.Insert(New(PButton, Init(R, '~О~кей! 好的!', 100, bfGrabFocus, $24)));{ Create okay button, О(J)=$24 }
+
     R.Assign(30, 15, 40, 17);                        { Assign area }
 
     Desktop^.Insert(P);                              { Insert dialog }

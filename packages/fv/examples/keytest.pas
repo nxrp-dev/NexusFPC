@@ -240,7 +240,7 @@ begin
   New(StatusLine,
     Init(R,
       NewStatusDef(0, $FFFF,
-        NewStatusKey('~Alt+X~ Exit', kbAltX, cmQuit, nil),
+        NewStatusKey('~Ctrl+Q~ Quit', kbCtrlQ, cmQuit, nil),
         nil
       )
     )

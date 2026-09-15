@@ -71,7 +71,7 @@ USES
 {$endif FV_UNICODE}
    FreeVision.Fvconsts, System.Objects,                       { Standard GFV units }
 {$ifdef FV_UNICODE}
-   FreeVision.Udrivers, FreeVision.Uviews, FreeVision.Uvalidate, System.Unicode.Graphemebreakproperty;
+   FreeVision.Udrivers, FreeVision.Uviews, FreeVision.Uvalidate, System.Unicode.Graphemebreakproperty, System.SysUtils;
 {$else FV_UNICODE}
    FreeVision.Drivers, FreeVision.Views, FreeVision.Validate;
 {$endif FV_UNICODE}
@@ -92,7 +92,7 @@ USES
 {$endif FV_UNICODE}
    FVConsts, Objects,                       { Standard GFV units }
 {$ifdef FV_UNICODE}
-   UDrivers, UViews, UValidate, GraphemeBreakProperty;
+   UDrivers, UViews, UValidate, GraphemeBreakProperty, SysUtils;
 {$else FV_UNICODE}
    Drivers, Views, Validate;
 {$endif FV_UNICODE}
@@ -193,6 +193,14 @@ TYPE
      Value: Sw_PString;                               { Item string }
      Next: PSItem;                                    { Next item }
    END;
+{$IFDEF FPC}
+PAdvancedSItem = ^TAdvancedSItem;
+TAdvancedSItem = RECORD
+  Value: Sw_PString;
+  ScanCode: Word;
+  Next: PAdvancedSItem;
+END;
+{$ENDIF}
 
 {***************************************************************************}
 {                            OBJECT DEFINITIONS                             }
@@ -240,8 +248,11 @@ TYPE
          Flags    : Byte;                             { Button flags }
          Command  : Word;                             { Button command }
          Title    : Sw_PString;                       { Button title }
+         {$IFDEF FPC}
+         ScanCodeHotkey: Word;
+         {$ENDIF}
       CONSTRUCTOR Init (Var Bounds: TRect; ATitle: TTitleStr; ACommand: Word;
-        AFlags: Word);
+        AFlags: Word {$IFDEF FPC}; AScanCodeHotkey: Word = 0{$ENDIF}); // Optional: See note on hotkey implementation
       CONSTRUCTOR Load (Var S: TStream);
       DESTRUCTOR Done; Virtual;
       FUNCTION GetPalette: PPalette; Virtual;
@@ -278,7 +289,15 @@ TYPE
 {$else FV_UNICODE}
          Strings   : TStringCollection;               { String collection }
 {$endif FV_UNICODE}
+         {$IFDEF FPC}
+         ScanCodeHotkeys: PCollection;
+         {$ENDIF}
+      {$IFDEF FPC}
+      CONSTRUCTOR Init (Var Bounds: TRect; AStrings: PSItem); overload;
+      CONSTRUCTOR Init (Var Bounds: TRect; AStrings: PAdvancedSItem); overload;
+      {$ELSE}
       CONSTRUCTOR Init (Var Bounds: TRect; AStrings: PSItem);
+      {$ENDIF}
       CONSTRUCTOR Load (Var S: TStream);
       DESTRUCTOR Done; Virtual;
       FUNCTION DataSize: Sw_Word; Virtual;
@@ -320,6 +339,9 @@ TYPE
    TRadioButtons = OBJECT (TCluster)
       FUNCTION Mark (Item: Sw_Integer): Boolean; Virtual;
       PROCEDURE Draw; Virtual;
+      {$IFDEF FPC}
+      CONSTRUCTOR Init (Var Bounds: TRect; AStrings: PAdvancedSItem); overload;
+      {$ENDIF}
       PROCEDURE Press (Item: Sw_Integer); Virtual;
       PROCEDURE MovedTo(Item: Sw_Integer); Virtual;
       PROCEDURE SetData (Var Rec); Virtual;
@@ -341,6 +363,9 @@ TYPE
       FUNCTION Mark (Item: Sw_Integer): Boolean; Virtual;
       PROCEDURE Draw; Virtual;
       PROCEDURE Press (Item: Sw_Integer); Virtual;
+      {$IFDEF FPC}
+      CONSTRUCTOR Init (Var Bounds: TRect; AStrings: PAdvancedSItem); overload;
+      {$ENDIF}
    END;
    PCheckBoxes = ^TCheckBoxes;
 
@@ -359,8 +384,12 @@ TYPE
          SelRange: Byte;                              { Select item range }
          Flags   : Word;                              { Select flags }
          States  : Sw_PString;                        { Strings }
-      CONSTRUCTOR Init (Var Bounds: TRect; AStrings: PSItem;
-        ASelRange: Byte; AFlags: Word; Const AStates: String);
+      {$IFDEF FPC}
+      CONSTRUCTOR Init (Var Bounds: TRect; AStrings: PSItem; ASelRange: Byte; AFlags: Word; Const AStates: String); overload;
+      CONSTRUCTOR Init (Var Bounds: TRect; AStrings: PAdvancedSItem; ASelRange: Byte; AFlags: Word; Const AStates: String); overload;
+      {$ELSE}
+      CONSTRUCTOR Init (Var Bounds: TRect; AStrings: PSItem; ASelRange: Byte; AFlags: Word; Const AStates: String);
+      {$ENDIF}
       CONSTRUCTOR Load (Var S: TStream);
       DESTRUCTOR Done; Virtual;
       FUNCTION DataSize: Sw_Word; Virtual;
@@ -477,7 +506,10 @@ TYPE
    TLabel = OBJECT (TStaticText)
          Light: Boolean;
          Link: PView;                                 { Linked view }
-      CONSTRUCTOR Init (Var Bounds: TRect; CONST AText: Sw_String; ALink: PView);
+         {$IFDEF FPC}
+         ScanCodeHotkey: Word;
+         {$ENDIF}
+      CONSTRUCTOR Init (Var Bounds: TRect; CONST AText: Sw_String; ALink: PView {$IFDEF FPC}; AScanCodeHotkey: Word = 0{$ENDIF}); // Optional: See note on hotkey implementation
       CONSTRUCTOR Load (Var S: TStream);
       FUNCTION GetPalette: PPalette; Virtual;
       PROCEDURE Draw; Virtual;
@@ -860,6 +892,47 @@ should be nil.
 28Apr98 LdB
 ---------------------------------------------------------------------}
 FUNCTION NewSItem (Const Str: Sw_String; ANext: PSItem): PSItem;
+
+{$IFDEF FPC}
+{-------------------------------------------------------------------------}
+{ A Note on Hotkey Implementation Strategy for Dialogs                    }
+{-------------------------------------------------------------------------}
+{ Free Vision provides two methods for defining hotkeys in controls       }
+{ like TButton, TLabel, and TCluster descendants (RadioButtons, etc.),    }
+{ each serving a different user expectation.                              }
+{                                                                         }
+{ 1. Traditional (Character-based): Use NewSItem, or the standard         }
+{    Init constructors that take a simple string (e.g., ~O~k).            }
+{    This method matches the CHARACTER generated by a key press.          }
+{    --> RECOMMENDED FOR: UIs in Latin-based languages (EN, FR, etc.).    }
+{    WHY: It correctly handles different keyboard layouts like QWERTY and }
+{    AZERTY, ensuring the hotkey works as labeled on the user's keyboard. }
+{                                                                         }
+{ 2. Advanced (Scan Code-based): Use NewAdvancedSItem or the new Init     }
+{    constructors that accept a scan code parameter.                      }
+{    This method matches the PHYSICAL KEY's scan code.                    }
+{    --> RECOMMENDED FOR: UIs in NON-LATIN languages (e.g., Cyrillic).    }
+{    WHY: It allows users to activate hotkeys based on muscle memory      }
+{    without switching layouts. For example, a Cyrillic ~О~К button can   }
+{    be bound to the physical 'J' key's scan code, as 'О' is on that key. }
+{                                                                         }
+{ DEVELOPER'S RESPONSIBILITY:                                             }
+{ Choose the method that best serves your target audience. This feature   }
+{ is a tool to be used thoughtfully to improve usability.                 }
+{                                                                         }
+{ Special note on compatibility:                                          }
+{ Support for specifying key scan codes for shortcuts is implemented      }
+{ using modern Pascal features: method overloading and optional           }
+{ parameters. For backward compatibility reasons, this code will only     }
+{ compile on FPC.                                                         }
+{-------------------------------------------------------------------------}
+
+{-NewAdvancedSItem---------------------------------------------------
+Allocates memory for a new TAdvancedSItem record, setting the text,
+scancode, and the next item in the chain.
+---------------------------------------------------------------------}
+FUNCTION NewAdvancedSItem (const Str: Sw_String; AScanCode: Word; ANext: PAdvancedSItem): PAdvancedSItem;
+{$ENDIF}
 
 { NewCommandSItem allocates and returns a pointer to a new #TCommandSItem#
  record.  The Value and Next fields of the record are set to NewStr(Str)
@@ -2227,7 +2300,7 @@ END;
 {  Init -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 25Apr98 LdB              }
 {---------------------------------------------------------------------------}
 CONSTRUCTOR TButton.Init (Var Bounds: TRect; ATitle: TTitleStr;
-  ACommand: Word; AFlags: Word);
+  ACommand: Word; AFlags: Word {$IFDEF FPC}; AScanCodeHotkey: Word = 0{$ENDIF});
 BEGIN
    Inherited Init(Bounds);                            { Call ancestor }
    EventMask := EventMask OR evBroadcast;             { Handle broadcasts }
@@ -2240,6 +2313,9 @@ BEGIN
      Else AmDefault := False;                         { Check if default }
    Title := Sw_NewStr(ATitle);                           { Hold title string }
    Command := ACommand;                               { Hold button command }
+   {$IFDEF FPC}
+   ScanCodeHotkey := AScanCodeHotkey;
+   {$ENDIF}
    TabMask := TabMask OR (tmLeft + tmRight +
      tmTab + tmShiftTab + tmUp + tmDown);             { Set tab masks }
 END;
@@ -2258,6 +2334,9 @@ BEGIN
    S.Read(Command, SizeOf(Command));                  { Read command }
    S.Read(Flags, SizeOf(Flags));                      { Read flags }
    S.Read(AmDefault, SizeOf(AmDefault));              { Read if default }
+   {$IFDEF FPC}
+   ScanCodeHotkey := 0;
+   {$ENDIF}
    If NOT CommandEnabled(Command) Then                { Check command state }
      State := State OR sfDisabled Else                { Command disabled }
      State := State AND NOT sfDisabled;               { Command enabled }
@@ -2431,6 +2510,8 @@ END;
 PROCEDURE TButton.HandleEvent (Var Event: TEvent);
 VAR Down: Boolean; C: AnsiChar; ButRect: TRect;
     Mouse : TPoint;
+    HotkeyMatches: Boolean;
+    hotkeyChar: WideChar; mypos: Integer;
 BEGIN
    ButRect.A.X := 0;                            { Get origin point }
    ButRect.A.Y := 0;                            { Get origin point }
@@ -2466,11 +2547,50 @@ BEGIN
        ClearEvent(Event);                             { Event was handled }
      End;
      evKeyDown: Begin
-       If Title <> Sw_PString_Empty Then C := HotKey(Title Sw_PString_DeRef)     { Key title hotkey }
-         Else C := #0;                                { Invalid title }
-       If (Event.KeyCode = GetAltCode(C)) OR          { Alt AnsiChar }
-       (Owner^.Phase = phPostProcess) AND (C <> #0)
-       AND (Upcase(Event.CharCode) = C) OR            { Matches hotkey }
+       HotkeyMatches := False;
+       begin
+         {$ifdef FV_UNICODE}
+         begin
+           hotkeyChar := #0;
+           if Title <> '' then
+           begin
+             mypos := Pos('~', Title);
+             if (mypos > 0) and (mypos < Length(Title)) then
+               hotkeyChar := Title[mypos + 1];
+           end;
+           if hotkeyChar <> #0 then
+           begin
+             if Event.UnicodeChar <> #0 then
+               HotkeyMatches := (WideUpperCase(Event.UnicodeChar) = WideUpperCase(hotkeyChar));
+           end;
+           // Fallback for EN hotkeys in non-EN layout
+           if not HotkeyMatches then
+           begin
+             C := GetAltChar(Event.ScanCode shl 8);
+             if C <> #0 then HotkeyMatches := (hotkeyChar = WideUpperCase(C));
+           end;
+         end;
+         {$else}
+         If Title <> Sw_PString_Empty Then C := HotKey(Title Sw_PString_DeRef)
+           Else C := #0;
+         if C <> #0 then
+         begin
+           if Event.CharCode <> #0 then HotkeyMatches := (UpCase(Event.CharCode) = C);
+           if not HotkeyMatches then
+             HotkeyMatches := (UpCase(GetAltChar(Event.ScanCode shl 8)) = C);
+         end;
+         {$endif}
+       end;
+
+       if not HotkeyMatches then
+       begin
+         {$IFDEF FPC}
+         if (ScanCodeHotkey <> 0) and (Event.ScanCode = ScanCodeHotkey) then
+           HotkeyMatches := True;
+         {$ENDIF}
+       end;
+
+       If (HotkeyMatches AND (Owner^.Phase = phPostProcess)) OR
        (State AND sfFocused <> 0) AND                 { View focused }
        ((Event.CharCode = ' ') OR                     { Space bar }
        (Event.KeyCode=kbEnter)) Then Begin            { Enter key }
@@ -2510,6 +2630,48 @@ CONST TvClusterClassName = 'TVCLUSTER';
 {--TCluster-----------------------------------------------------------------}
 {  Init -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 28May98 LdB              }
 {---------------------------------------------------------------------------}
+{$IFDEF FPC}
+CONSTRUCTOR TCluster.Init (Var Bounds: TRect; AStrings: PAdvancedSItem);
+VAR
+  I: Sw_Integer;
+  P: PAdvancedSItem;
+  pwc: PWord;
+BEGIN
+  Inherited Init(Bounds);
+  Options := Options OR (ofSelectable + ofFirstClick + ofPreProcess + ofPostProcess + ofVersion20);
+  I := 0;
+  P := AStrings;
+  While (P <> Nil) Do
+  begin
+    Inc(I);
+    P := P^.Next;
+  end;
+  Strings.Init(I, 0);
+  ScanCodeHotkeys := New(PCollection, Init(I, 0));
+  While (AStrings <> Nil) Do
+  begin
+    P := AStrings;
+    {$ifdef FV_UNICODE}
+    Strings.AtInsert(Strings.Count, AStrings^.Value);
+    {$else}
+    Strings.AtInsert(Strings.Count, AStrings^.Value);
+    {$endif}
+    New(pwc);
+    pwc^ := AStrings^.ScanCode;
+    ScanCodeHotkeys^.AtInsert(ScanCodeHotkeys^.Count, pwc);
+    AStrings := AStrings^.Next;
+    {$ifndef FV_UNICODE}
+    if P^.Value <> nil then DisposeStr(P^.Value);
+    {$endif}
+    Dispose(P);
+  end;
+  Sel := 0;
+  SetCursor(2,0);
+  ShowCursor;
+  EnableMask := Sw_Integer($FFFFFFFF);
+END;
+{$ENDIF}
+
 CONSTRUCTOR TCluster.Init (Var Bounds: TRect; AStrings: PSItem);
 VAR I: Sw_Integer; P: PSItem;
 BEGIN
@@ -2523,10 +2685,21 @@ BEGIN
      P := P^.Next;                                    { Move to next item }
    End;
    Strings.Init(I, 0);                                { Create collection }
+   {$IFDEF FPC}
+   ScanCodeHotkeys := nil; // No scancodes in this version
+   {$ENDIF}
    While (AStrings <> Nil) Do Begin
      P := AStrings;                                   { Transfer item ptr }
+   {$ifdef FV_UNICODE}
+     Strings.AtInsert(Strings.Count, AStrings^.Value);
+   {$else}
      Strings.AtInsert(Strings.Count, AStrings^.Value);{ Insert string }
+   {$endif}
      AStrings := AStrings^.Next;                      { Move to next item }
+   {$ifndef FV_UNICODE}
+     { In non-unicode, AStrings^.Value is a PString we own and must dispose }
+     if P^.Value <> nil then DisposeStr(P^.Value);
+   {$endif}
      Dispose(P);                                      { Dispose prior item }
    End;
    Sel := 0;
@@ -2546,6 +2719,9 @@ BEGIN
      Begin
        S.Read(Value, SizeOf(Value));                  { Read value }
        S.Read(Sel, Sizeof(Sel));                      { Read select item }
+       {$IFDEF FPC}
+       ScanCodeHotkeys := nil;
+       {$ENDIF}
        S.Read(EnableMask, SizeOf(EnableMask))         { Read enable masks }
      End
    Else
@@ -2564,7 +2740,18 @@ END;
 {  Done -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 26Jul99 LdB              }
 {---------------------------------------------------------------------------}
 DESTRUCTOR TCluster.Done;
+VAR i: Integer;
 BEGIN
+   {$IFDEF FPC}
+   if ScanCodeHotkeys <> nil then
+   begin
+     for i := 0 to ScanCodeHotkeys^.Count - 1 do
+       if ScanCodeHotkeys^.At(i) <> nil then
+         Dispose(PWord(ScanCodeHotkeys^.At(i)));
+     Dispose(ScanCodeHotkeys);
+     ScanCodeHotkeys := nil;
+   end;
+   {$ENDIF}
    Strings.Done;                                      { Dispose of strings }
    Inherited Done;                                    { Call ancestor }
 END;
@@ -2691,8 +2878,12 @@ BEGIN
            WordRec(B[Col+2]).Lo := Byte(Marker[
              MultiMark(Cur) + 1]);                    { Transfer marker }
 {$endif FV_UNICODE}
+           {$ifdef FV_UNICODE}
+           MoveCStr(B[Col+5], UnicodeString(Strings.At(Cur)), Color);
+           {$else}
            MoveCStr(B[Col+5], Sw_PString(Strings.At(
              Cur)) Sw_PString_Deref, Color);                          { Transfer item string }
+           {$endif}
            If ShowMarkers AND (State AND sfFocused <> 0)
            AND (Cur = Sel) Then Begin                 { Current is selected }
 {$ifdef FV_UNICODE}
@@ -2784,7 +2975,14 @@ END;
 {  HandleEvent -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 04Jun98 LdB       }
 {---------------------------------------------------------------------------}
 PROCEDURE TCluster.HandleEvent (Var Event: TEvent);
-VAR C: AnsiChar; I, S, Vh: Sw_Integer; Key: Word; Mouse: TPoint; Ts: PString;
+VAR C: AnsiChar; I, S, Vh: Sw_Integer; Key: Word; Mouse: TPoint;
+{$ifdef FV_UNICODE}
+TempStr: UnicodeString;
+{$else}
+Ts: PString;
+{$endif}
+HotkeyMatches: Boolean;
+hotkeyChar: WideChar; mypos: Integer;
 
    PROCEDURE MoveSel;
    BEGIN
@@ -2846,23 +3044,66 @@ BEGIN
        End;
        Else Begin                                     { Not an arrow key }
          For I := 0 To Strings.Count-1 Do Begin       { Scan each item }
-           Ts := Strings.At(I);                       { Fetch string pointer }
-           If (Ts <> Nil) Then C := HotKey(Ts^)       { Check for hotkey }
-             Else C := #0;                            { No valid string }
-           If (GetAltCode(C) = Event.KeyCode) OR      { Hot key for item }
+           HotkeyMatches := False;
+           begin
+             {$ifdef FV_UNICODE}
+             begin
+               hotkeyChar := #0;
+               TempStr := UnicodeString(Strings.At(I));
+               if TempStr <> '' then
+               begin
+                 mypos := Pos('~', TempStr);
+                 if (mypos > 0) and (mypos < Length(TempStr)) then
+                   hotkeyChar := TempStr[mypos + 1];
+               end;
+               if hotkeyChar <> #0 then
+               begin
+                 if Event.UnicodeChar <> #0 then
+                   HotkeyMatches := (WideUpperCase(Event.UnicodeChar) = WideUpperCase(hotkeyChar));
+               end;
+               // Fallback for EN hotkeys in non-EN layout
+               if not HotkeyMatches then
+               begin
+                 C := GetAltChar(Event.ScanCode shl 8);
+                 if C <> #0 then HotkeyMatches := (hotkeyChar = WideUpperCase(C));
+               end;
+             end;
+             {$else}
+             Ts := Strings.At(I);
+             If (Ts <> Nil) Then C := HotKey(Ts^)
+               Else C := #0;
+             if C <> #0 then
+             begin
+               if Event.CharCode <> #0 then HotkeyMatches := (UpCase(Event.CharCode) = C);
+               if not HotkeyMatches then
+                 HotkeyMatches := (UpCase(GetAltChar(Event.ScanCode shl 8)) = C);
+             end;
+             {$endif}
+           end;
+
+           if not HotkeyMatches then
+           begin
+             {$IFDEF FPC}
+             if (ScanCodeHotkeys <> nil) AND (I < ScanCodeHotkeys^.Count) then
+             begin
+               if (ScanCodeHotkeys^.At(I) <> nil) and (PWord(ScanCodeHotkeys^.At(I))^ <> 0) then
+                 if PWord(ScanCodeHotkeys^.At(I))^ = Event.ScanCode then
+                   HotkeyMatches := True;
+             end;
+             {$ENDIF}
+           end;
+
+           If HotkeyMatches AND
            (((Owner^.Phase = phPostProcess) OR        { Owner in post process }
-           (State AND sfFocused <> 0)) AND (C <> #0)  { Non zero hotkey }
-           AND (UpCase(Event.CharCode) = C))          { Matches current key }
-           Then Begin
-             If ButtonState(I) Then Begin             { Check mask enabled }
-               If Focus Then Begin                    { Check view focus }
-                 Sel := I;                            { Set selected }
-                 MovedTo(Sel);                        { Move to selected }
-                 Press(Sel);                          { Call pressed }
-                 DrawView;                            { Now draw changes }
-               End;
-               ClearEvent(Event);                     { Event was handled }
+           (State AND sfFocused <> 0)) AND ButtonState(I)) Then
+           Begin
+             If Focus Then Begin                    { Check view focus }
+               Sel := I;                            { Set selected }
+               MovedTo(Sel);                        { Move to selected }
+               Press(Sel);                          { Call pressed }
+               DrawView;                            { Now draw changes }
              End;
+             ClearEvent(Event);                     { Event was handled }
              Exit;                                    { Now exit }
            End;
          End;
@@ -2911,7 +3152,12 @@ END;
 {  Column -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 03Jun98 LdB            }
 {---------------------------------------------------------------------------}
 FUNCTION TCluster.Column (Item: Sw_Integer): Sw_Integer;
-VAR I, Col, Width, L, Vh: Sw_Integer; Ts: PString;
+VAR I, Col, Width, L, Vh: Sw_Integer;
+{$ifdef FV_UNICODE}
+Ts: UnicodeString;
+{$else}
+Ts: PString;
+{$endif}
 BEGIN
    Vh := Size.Y;                              { Vertical size }
    If (Item >= Vh) Then Begin                         { Valid selection }
@@ -2923,9 +3169,14 @@ BEGIN
          Width := 0;                                  { Zero width }
        End;
        If (I < Strings.Count) Then Begin              { Valid string }
+       {$ifdef FV_UNICODE}
+         Ts := UnicodeString(Strings.At(I));
+         L := CTextWidth(Ts);
+       {$else}
          Ts := Strings.At(I);                         { Transfer string }
          If (Ts <> Nil) Then L := CStrLen(Ts^)        { Length of string }
            Else L := 0;                               { No string }
+       {$endif}
        End;
        If (L > Width) Then Width := L;                { Hold longest string }
      End;
@@ -2937,6 +3188,12 @@ END;
 {                        TRadioButtons OBJECT METHODS                       }
 {+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++}
 
+{$IFDEF FPC}
+CONSTRUCTOR TRadioButtons.Init(var Bounds: TRect; AStrings: PAdvancedSItem);
+begin
+  inherited Init(Bounds, AStrings);
+end;
+{$ENDIF}
 {--TRadioButtons------------------------------------------------------------}
 {  Mark -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 30Apr98 LdB              }
 {---------------------------------------------------------------------------}
@@ -2987,6 +3244,12 @@ END;
 {                        TCheckBoxes OBJECT METHODS                         }
 {+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++}
 
+{$IFDEF FPC}
+CONSTRUCTOR TCheckBoxes.Init(var Bounds: TRect; AStrings: PAdvancedSItem);
+begin
+  inherited Init(Bounds, AStrings);
+end;
+{$ENDIF}
 {--TCheckBoxes--------------------------------------------------------------}
 {  Mark -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 30Apr98 LdB              }
 {---------------------------------------------------------------------------}
@@ -3022,6 +3285,17 @@ END;
 {--TMultiCheckBoxes---------------------------------------------------------}
 {  Init -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 05Jun98 LdB              }
 {---------------------------------------------------------------------------}
+{$IFDEF FPC}
+CONSTRUCTOR TMultiCheckBoxes.Init (Var Bounds: TRect; AStrings: PAdvancedSItem;
+ASelRange: Byte; AFlags: Word; Const AStates: String);
+BEGIN
+   Inherited Init(Bounds, AStrings);
+   SelRange := ASelRange;
+   Flags := AFlags;
+   States := Sw_NewStr(AStates);
+END;
+{$ENDIF}
+
 CONSTRUCTOR TMultiCheckBoxes.Init (Var Bounds: TRect; AStrings: PSItem;
 ASelRange: Byte; AFlags: Word; Const AStates: String);
 BEGIN
@@ -3646,10 +3920,13 @@ END;
 {--TLabel-------------------------------------------------------------------}
 {  Init -> Platforms DOS/DPMI/WIN/NT/OS2 - Updated 26Oct99 LdB              }
 {---------------------------------------------------------------------------}
-CONSTRUCTOR TLabel.Init (Var Bounds: TRect; CONST AText: Sw_String; ALink: PView);
+CONSTRUCTOR TLabel.Init (Var Bounds: TRect; CONST AText: Sw_String; ALink: PView {$IFDEF FPC}; AScanCodeHotkey: Word = 0{$ENDIF});
 BEGIN
    Inherited Init(Bounds, AText);                     { Call ancestor }
    Link := ALink;                                     { Hold link }
+   {$IFDEF FPC}
+   ScanCodeHotkey := AScanCodeHotkey;
+   {$ENDIF}
    Options := Options OR (ofPreProcess+ofPostProcess);{ Set pre/post process }
    EventMask := EventMask OR evBroadcast;             { Sees broadcast events }
 END;
@@ -3660,6 +3937,9 @@ END;
 CONSTRUCTOR TLabel.Load (Var S: TStream);
 BEGIN
    Inherited Load(S);                                 { Call ancestor }
+   {$IFDEF FPC}
+   ScanCodeHotkey := 0;
+   {$ENDIF}
    GetPeerViewPtr(S, Link);                           { Load link view }
 END;
 
@@ -3710,6 +3990,8 @@ END;
 {---------------------------------------------------------------------------}
 PROCEDURE TLabel.HandleEvent (Var Event: TEvent);
 VAR C: AnsiChar;
+HotkeyMatches: Boolean;
+hotkeyChar: WideChar; mypos: Integer;
 
    PROCEDURE FocusLink;
    BEGIN
@@ -3727,11 +4009,50 @@ BEGIN
        Begin
          if text<>Sw_PString_Empty then
            begin
-             C := HotKey(Text Sw_PString_DeRef);            { Check for hotkey }
-             If (GetAltCode(C) = Event.KeyCode) OR          { Alt plus AnsiChar }
-               ((C <> #0) AND (Owner^.Phase = phPostProcess)  { Post process phase }
-                AND (UpCase(Event.CharCode) = C)) Then         { Upper case match }
-               FocusLink;                                   { Focus link view }
+             HotkeyMatches := False;
+             begin
+               {$ifdef FV_UNICODE}
+               begin
+                 hotkeyChar := #0;
+                 if Text <> '' then
+                 begin
+                   mypos := Pos('~', Text);
+                   if (mypos > 0) and (mypos < Length(Text)) then
+                     hotkeyChar := Text[mypos + 1];
+                 end;
+                 if hotkeyChar <> #0 then
+                 begin
+                   if Event.UnicodeChar <> #0 then
+                     HotkeyMatches := (WideUpperCase(Event.UnicodeChar) = WideUpperCase(hotkeyChar));
+                 end;
+                 // Fallback for EN hotkeys in non-EN layout
+                 if not HotkeyMatches then
+                 begin
+                   C := GetAltChar(Event.ScanCode shl 8);
+                   if C <> #0 then HotkeyMatches := (hotkeyChar = WideUpperCase(C));
+                 end;
+               end;
+               {$else}
+               C := HotKey(Text Sw_PString_DeRef);
+               if C <> #0 then
+               begin
+                 if Event.CharCode <> #0 then HotkeyMatches := (UpCase(Event.CharCode) = C);
+                 if not HotkeyMatches then
+                   HotkeyMatches := (UpCase(GetAltChar(Event.ScanCode shl 8)) = C);
+               end;
+               {$endif}
+             end;
+
+             if not HotkeyMatches then
+             begin
+               {$IFDEF FPC}
+               if (ScanCodeHotkey <> 0) and (Event.ScanCode = ScanCodeHotkey) then
+                 HotkeyMatches := True;
+               {$ENDIF}
+             end;
+
+             If HotkeyMatches AND (Owner^.Phase = phPostProcess) Then
+               FocusLink;
            end;
        end;
      evBroadcast: If ((Event.Command = cmReceivedFocus)
@@ -4784,6 +5105,17 @@ BEGIN
    Item^.Next := ANext;                               { Chain the ptr }
    NewSItem := Item;                                  { Return item }
 END;
+{$IFDEF FPC}
+FUNCTION NewAdvancedSItem (const Str: Sw_String; AScanCode: Word; ANext: PAdvancedSItem): PAdvancedSItem;
+VAR Item: PAdvancedSItem;
+BEGIN
+   New(Item);
+   Item^.Value := Sw_NewStr(Str);
+   Item^.ScanCode := AScanCode;
+   Item^.Next := ANext;
+   NewAdvancedSItem := Item;
+END;
+{$ENDIF}
 
 {****************************************************************************}
 { NewCommandSItem                                                            }
