@@ -360,21 +360,120 @@ end;
 {$ifdef FPC_MANAGED_MOVE}
 function fpc_Copy_with_move_semantics (Src, Dest, TypeInfo : Pointer) : SizeInt;[Public,alias : 'FPC_COPY_WITH_MOVE_SEMANTICS']; compilerproc;
 var
-  tki : pointer;
+  copiedsize,
+  expectedoffset,
+  EleCount,
+  offset,
+  i: SizeInt;
+  Temp,
+  info: pointer;
 begin
-  tki:=aligntoqword(typeInfo+2+PByte(typeInfo)[1]);
-  if PTypeKind(TypeInfo)^=tkArray then { Only tkArray, tkObject, tkRecord are possible, search for 'fpc_copy_proc' in compiler/nld.pas. }
-    result:=PArrayInfo(tki)^.Size
-  else
-    result:=PRecordInfoInit(tki)^.Size;
-  int_finalize(Dest,TypeInfo);
-  move(src^,dest^,result);
-  int_initialize(Src,TypeInfo);
+  result:=sizeof(pointer);
+  case PTypeKind(TypeInfo)^ of
+{$ifdef FPC_HAS_FEATURE_ANSISTRINGS}
+    tkAstring:
+      begin
+        fpc_ansistr_decr_ref(PPointer(dest)^);
+        PPointer(dest)^:=PPointer(src)^;
+        PPointer(src)^:=nil;
+      end;
+{$endif FPC_HAS_FEATURE_ANSISTRINGS}
+{$ifdef FPC_HAS_FEATURE_WIDESTRINGS}
+  {$ifndef FPC_WIDESTRING_EQUAL_UNICODESTRING}
+    tkWstring:
+      begin
+        fpc_WideStr_decr_ref(PPointer(dest)^);
+        PPointer(dest)^:=PPointer(src)^;
+        PPointer(src)^:=nil;
+      end;
+  {$endif FPC_WIDESTRING_EQUAL_UNICODESTRING}
+    tkUstring:
+      begin
+        fpc_UnicodeStr_Decr_Ref(PPointer(dest)^);
+        PPointer(dest)^:=PPointer(src)^;
+        PPointer(src)^:=nil;
+      end;
+{$endif FPC_HAS_FEATURE_WIDESTRINGS}
+    tkArray:
+      begin
+        Temp:=aligntoqword(typeInfo+2+PByte(typeInfo)[1]);
+        Result:=PArrayInfo(Temp)^.Size;
+        EleCount:=PArrayInfo(Temp)^.ElCount;
+        { no elements to process => exit }
+        if EleCount = 0 then
+          Exit;
+        Info:=PArrayInfo(Temp)^.ElInfo^;
+        copiedsize:=Result div EleCount;
+        Offset:=0;
+        { Process elements }
+        for I:=1 to EleCount do
+          begin
+            int_copy_with_move_semantics(Src+Offset,Dest+Offset,Info);
+            inc(Offset,copiedsize);
+          end;
+      end;
+{$ifdef FPC_HAS_FEATURE_OBJECTS}
+    tkobject,
+{$endif FPC_HAS_FEATURE_OBJECTS}
+    tkrecord:
+      begin
+        info:=RTTIRecordInfoInit(typeinfo);
+        { If custom finalizer first call it before doing the move }
+        if Assigned(PRecordInfoInit(info)^.recordop) and Assigned(PRecordInfoInit(info)^.recordop^.Finalize) then
+          PRecordInfoInit(info)^.recordop^.Finalize(Dest);
+        { Perform move over all elements }
+        Result:=PRecordInfoInit(info)^.Size;
+        EleCount:=PRecordInfoInit(info)^.Count;
+        { Get element info, hacky, but what else can we do? }
+        Temp:=AlignTypeData(Pointer(@PRecordInfoInit(info)^.Count)+SizeOf(PRecordInfoInit(info)^.Count));
+        expectedoffset:=0;
+        { Process elements with rtti }
+        for i:=1 to EleCount Do
+          begin
+            Offset:=PRecordElement(Temp)^.Offset;
+            if Offset>expectedoffset then
+              move((Src+expectedoffset)^,(Dest+expectedoffset)^,Offset-expectedoffset);
+            expectedoffset:=Offset+int_copy_with_move_semantics(Src+Offset,Dest+Offset,PRecordElement(Temp)^.TypeInfo^);
+            Inc(PRecordElement(Temp));
+          end;
+        { elements remaining? }
+        if result>expectedoffset then
+          move((Src+expectedoffset)^,(Dest+expectedoffset)^,Result-expectedoffset);
+        { If custom initializer perform on cleared up src to avoid undefined states }
+        if Assigned(PRecordInfoInit(info)^.recordop) and Assigned(PRecordInfoInit(info)^.recordop^.Initialize) then
+          PRecordInfoInit(info)^.recordop^.Initialize(Src);
+      end;
+{$ifdef FPC_HAS_FEATURE_DYNARRAYS}
+    tkDynArray:
+      begin
+        fpc_dynarray_clear(PPointer(dest)^,typeinfo);
+        PPointer(dest)^:=PPointer(src)^;
+        PPointer(src)^:=nil;
+      end;
+{$endif FPC_HAS_FEATURE_DYNARRAYS}
+{$ifdef FPC_HAS_FEATURE_CLASSES}
+    tkInterface:
+      begin
+        intf_decr_ref(PPointer(dest)^);
+        PPointer(dest)^:=PPointer(src)^;
+        PPointer(src)^:=nil;
+      end;
+{$endif FPC_HAS_FEATURE_CLASSES}
+{$ifdef FPC_HAS_FEATURE_VARIANTS}
+    tkVariant:
+      begin
+        variant_clear(pvardata(dest)^);
+        pvardata(dest)^:=pvardata(src)^;
+        variant_init(pvardata(src)^);
+        result:=sizeof(tvardata);
+      end;
+{$endif FPC_HAS_FEATURE_VARIANTS}
+  end;
 end;
 
 procedure fpc_Copy_with_move_semantics_proc (Src, Dest, TypeInfo : Pointer);compilerproc; inline;
 begin
-  int_Copy_with_move_semantics(src,dest,typeinfo);
+  int_copy_with_move_semantics(src,dest,typeinfo);
 end;
 {$endif FPC_MANAGED_MOVE}
 
