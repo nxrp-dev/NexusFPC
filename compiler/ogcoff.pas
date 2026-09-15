@@ -3443,13 +3443,20 @@ const pemagic : array[0..3] of byte = (
         datapos_offset:=sizeof(go32v2stub);
         CExeSection:=TExeSection;
         CObjData:=TDJCoffObjData;
+        SectionMemAlign:=SectionDataAlign;  { for compatiblity with UPX }
       end;
 
 
     procedure TDJCoffexeoutput.MemPos_Header;
       begin
         { Headers are not loaded, first 4K page is reserved }
-        CurrMemPos:=$1000;
+        //CurrMemPos:=$1000;
+        { Setting CurrMemPos to $1000 was sufficient for go32v2 target
+          (according to DJGPP documentation), but, to facilitate UPX, field
+          RvaOfs have to have correlation with field DataPos.
+          For this correlation to hold up SectionMemAlign has to be equal to SectionDataAlign. }
+        inherited;
+        CurrMemPos:=CurrMemPos-datapos_offset+$1000;
       end;
 
     constructor TPECoffexeoutput.create;
