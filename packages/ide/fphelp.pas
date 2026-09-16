@@ -69,7 +69,7 @@ const
 implementation
 
 uses Objects,Views,App,MsgBox,
-     WUtils,WOAHelp,WHTMLHlp,WNGHelp,WOS2Help,WVPHelp,WWinHelp,
+     WUtils,WOAHelp,WHTMLHlp,WNGHelp,WVPHelp,WWinHelp,
      FPConst,FPVars,FPUtils;
 
 const
@@ -482,7 +482,6 @@ begin
 
   WOAHelp.RegisterHelpType;
   WNGHelp.RegisterHelpType;
-  WOS2Help.RegisterHelpType;
   WWinHelp.RegisterHelpType;
   WVPHelp.RegisterHelpType;
   WHTMLHlp.RegisterHelpType; // Also registers chm and html index (.htx)
@@ -678,23 +677,10 @@ begin
   FPNGGetAttrColor:=OK;
 end;
 
-function FPINFGetAttrColor(TextStyle, TextColor: byte; var Color: byte): boolean;
-var OK: boolean;
-begin
-  OK:=false;
-  case TextColor of
-    1 : OK:=FPHTMLGetSectionColor(hsHeading1,Color);
-    2 : OK:=FPHTMLGetSectionColor(hsHeading2,Color);
-    3 : OK:=FPHTMLGetSectionColor(hsHeading3,Color);
-  end;
-  FPINFGetAttrColor:=OK;
-end;
-
 procedure InitHelpFiles;
 begin
   HTMLGetSectionColor:={$ifdef FPC}@{$endif}FPHTMLGetSectionColor;
   NGGetAttrColor:={$ifdef FPC}@{$endif}FPNGGetAttrColor;
-  INFGetAttrColor:={$ifdef FPC}@{$endif}FPINFGetAttrColor;
   New(HelpFiles, Init(10,10));
 end;
 

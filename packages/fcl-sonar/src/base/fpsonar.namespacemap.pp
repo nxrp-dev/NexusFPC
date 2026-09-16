@@ -28,7 +28,7 @@ type
   TNamespacePairArray = array of TNamespacePair;
 
 const
-  cNamespaceMap: array[0..2410] of TNamespacePair = (
+  cNamespaceMap: array[0..2338] of TNamespacePair = (
     (Plain: 'a52'; Dotted: 'Api.A52'),
     (Plain: 'abactions'; Dotted: 'MacOsApi.ABActions'),
     (Plain: 'abaddressbook'; Dotted: 'MacOsApi.ABAddressBook'),
