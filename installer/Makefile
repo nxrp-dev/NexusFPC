@@ -1904,7 +1904,7 @@ else
 TAROPT=vz
 TAREXT=.tar.gz
 endif
-override REQUIRE_PACKAGES=rtl rtl-unicode rtl-console fv unzip rtl-extra ide
+override REQUIRE_PACKAGES=rtl rtl-unicode rtl-console fv unzip rtl-extra
 ifeq ($(CPU_OS_TARGET),i386-linux)
 REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_RTL-UNICODE=1
@@ -3130,50 +3130,6 @@ override COMPILER_UNITDIR+=$(UNITDIR_RTL-EXTRA)
 endif
 ifdef UNITDIR_FPMAKE_RTL-EXTRA
 override COMPILER_FPMAKE_UNITDIR+=$(UNITDIR_FPMAKE_RTL-EXTRA)
-endif
-endif
-ifdef REQUIRE_PACKAGES_IDE
-PACKAGEDIR_IDE:=$(firstword $(subst /Makefile.fpc,,$(strip $(wildcard $(addsuffix /ide/Makefile.fpc,$(PACKAGESDIR))))))
-ifeq ($(PACKAGEDIR_IDE),)
-PACKAGEDIR_IDE:=$(firstword $(subst /Makefile,,$(strip $(wildcard $(addsuffix /ide/Makefile,$(PACKAGESDIR))))))
-ifneq ($(PACKAGEDIR_IDE),)
-PACKAGEDIR_IDE:=$(firstword $(subst /fpmake.pp,,$(strip $(wildcard $(addsuffix /ide/fpmake.pp,$(PACKAGESDIR))))))
-endif
-endif
-ifneq ($(PACKAGEDIR_IDE),)
-ifneq ($(wildcard $(PACKAGEDIR_IDE)/units/$(TARGETSUFFIX)),)
-UNITDIR_IDE=$(PACKAGEDIR_IDE)/units/$(TARGETSUFFIX)
-else
-UNITDIR_IDE=$(PACKAGEDIR_IDE)
-endif
-ifneq ($(wildcard $(PACKAGEDIR_IDE)/units/$(SOURCESUFFIX)),)
-UNITDIR_FPMAKE_IDE=$(PACKAGEDIR_IDE)/units/$(SOURCESUFFIX)
-else
-ifneq ($(wildcard $(PACKAGEDIR_IDE)/units_bs/$(SOURCESUFFIX)),)
-UNITDIR_FPMAKE_IDE=$(PACKAGEDIR_IDE)/units_bs/$(SOURCESUFFIX)
-else
-UNITDIR_FPMAKE_IDE=$(PACKAGEDIR_IDE)
-endif
-endif
-ifdef CHECKDEPEND
-$(PACKAGEDIR_IDE)/$(FPCMADE):
-	$(MAKE) -C $(PACKAGEDIR_IDE) $(FPCMADE)
-override ALLDEPENDENCIES+=$(PACKAGEDIR_IDE)/$(FPCMADE)
-endif
-else
-PACKAGEDIR_IDE=
-UNITDIR_IDE:=$(subst /Package.fpc,,$(strip $(wildcard $(addsuffix /ide/Package.fpc,$(UNITSDIR)))))
-ifneq ($(UNITDIR_IDE),)
-UNITDIR_IDE:=$(firstword $(UNITDIR_IDE))
-else
-UNITDIR_IDE=
-endif
-endif
-ifdef UNITDIR_IDE
-override COMPILER_UNITDIR+=$(UNITDIR_IDE)
-endif
-ifdef UNITDIR_FPMAKE_IDE
-override COMPILER_FPMAKE_UNITDIR+=$(UNITDIR_FPMAKE_IDE)
 endif
 endif
 ifndef NOCPUDEF

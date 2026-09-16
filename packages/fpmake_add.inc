@@ -69,7 +69,6 @@
   add_httpd24(ADirectory+IncludeTrailingPathDelimiter('httpd24'));
   add_ibase(ADirectory+IncludeTrailingPathDelimiter('ibase'));
   add_iconvenc(ADirectory+IncludeTrailingPathDelimiter('iconvenc'));
-  add_ide(ADirectory+IncludeTrailingPathDelimiter('ide'));
   add_imagemagick(ADirectory+IncludeTrailingPathDelimiter('imagemagick'));
   add_imlib(ADirectory+IncludeTrailingPathDelimiter('imlib'));
   add_iosxlocale(ADirectory+IncludeTrailingPathDelimiter('iosxlocale'));

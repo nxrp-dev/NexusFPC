@@ -1,4 +1,3 @@
-{ $include ide/fpmake.pp}
 
 {$include packages/fpmake.pp}
 

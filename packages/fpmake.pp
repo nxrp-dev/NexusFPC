@@ -35,7 +35,6 @@ procedure add_packages_comandlineoptions();
 begin
   AddCustomFpmakeCommandlineOption('data2inc', 'Use indicated data2inc executable.');
   AddCustomFpmakeCommandlineOption('genfpmkunit', 'Regenerate the fpmkunitsrc.inc file (fppkg).');
-  add_ide_comandlineoptions();
 end;
 
 procedure add_packages(const ADirectory: string);

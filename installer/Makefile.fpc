@@ -20,7 +20,7 @@ files_freebsd=installer.pas
 programs=install writeidx
 
 [require]
-packages=rtl-unicode rtl-console fv unzip rtl-extra ide
+packages=rtl-unicode rtl-console fv unzip rtl-extra
 
 [compiler]
 

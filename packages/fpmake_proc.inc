@@ -388,8 +388,6 @@ begin
 {$include iconvenc/fpmake.pp}
 end;
 
-{$include ide/fpmake.pp}
-
 procedure add_imagemagick(const ADirectory: string);
 begin
   with Installer do
