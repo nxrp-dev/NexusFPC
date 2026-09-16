@@ -66,15 +66,9 @@ uses
   { system information for source system }
   { the information about the target os  }
   { are pulled in by the t_* units       }
-{$ifdef amiga}
-  ,i_amiga
-{$endif amiga}
 {$ifdef android}
   ,i_android
 {$endif android}
-{$ifdef aros}
-  ,i_aros
-{$endif}
 {$ifdef atari}
   ,i_atari
 {$endif atari}
@@ -106,9 +100,6 @@ uses
 {$ifdef macos}
   ,i_macos
 {$endif macos}
-{$ifdef morphos}
-  ,i_morph
-{$endif morphos}
 {$ifdef nds}
   ,i_nds
 {$endif nds}

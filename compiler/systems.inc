@@ -99,7 +99,7 @@
              system_i386_OS2,           { 4 }
              system_i386_Win32,         { 5 }
              system_i386_freebsd,       { 6 }
-             system_m68k_Amiga,         { 7 }
+             obsolete_system_m68k_Amiga,{ 7 }
              system_m68k_Atari,         { 8 }
              system_m68k_macosclassic,  { 9 }
              system_m68k_linux,         { 10 }
@@ -125,10 +125,10 @@
              system_powerpc_openbsd,    { 30 }
              system_arm_linux,          { 31 }
              system_i386_watcom,        { 32 }
-             system_powerpc_MorphOS,    { 33 }
+             obsolete_system_powerpc_MorphOS,{ 33 }
              system_x86_64_freebsd,     { 34 }
              system_i386_netwlibc,      { 35 }
-             system_powerpc_Amiga,      { 36 }
+             obsolete_system_powerpc_Amiga,{ 36 }
              system_x86_64_win64,       { 37 }
              system_arm_wince,          { 38 }
              obsolete_system_ia64_win64,{ 39 }
@@ -175,15 +175,15 @@
              system_mipsel_android,     { 80 }
              system_mipseb_embedded,    { 81 }
              system_mipsel_embedded,    { 82 }
-             system_i386_aros,          { 83 }
-             system_x86_64_aros,        { 84 }
+             obsolete_system_i386_aros, { 83 }
+             obsolete_system_x86_64_aros,{ 84 }
              system_x86_64_dragonfly,   { 85 }
              system_aarch64_ios,        { 86 }
              system_x86_64_iphonesim,   { 87 }
              system_aarch64_linux,      { 88 }
              system_i8086_win16,        { 89 }
              system_i8086_embedded,     { 90 }
-             system_arm_aros,           { 91 }
+             obsolete_system_arm_aros,  { 91 }
              system_wasm32_embedded,    { 92 }
              system_sparc64_linux,      { 93 }
              system_sparc64_solaris,    { 94 }
@@ -300,8 +300,6 @@
 
        tlink = (ld_none,
              ld_aix,           { external linkers (one per OS, handles all CPUs) }
-             ld_amiga,
-             ld_aros,
              ld_atari,
              ld_android,
              ld_beos,
@@ -314,7 +312,6 @@
              ld_haiku,
              ld_jvm,
              ld_linux,
-             ld_morphos,
              ld_mpw,
              ld_msdos,
              ld_nds,
@@ -376,7 +373,7 @@
        );
 
        tscripttype = (script_none
-            ,script_dos,script_unix,script_amiga,
+            ,script_dos,script_unix,
             script_mpw,
             script_fpcres
        );

@@ -590,9 +590,6 @@ begin
     (LTarget='win16') or
     (LTarget='win32') or
     (LTarget='win64');
-  TargetAmigaLike:=
-    (LTarget='amiga') or
-    (LTarget='morphos');
   TargetIsMacOS:=
     (LTarget='macos');
   { Base on whether UNIX is defined as default macro
@@ -1200,13 +1197,6 @@ begin
     end;
    { Netware wlic XXX.nlm style }
   FileName:=TestOutputFilename('',PPFile,'nlm');
-  if FileExists(FileName) then
-    begin
-      LibraryExists:=true;
-      exit;
-    end;
-   { Amiga  XXX.library style }
-  FileName:=TestOutputFilename('',PPFile,'library');
   if FileExists(FileName) then
     begin
       LibraryExists:=true;

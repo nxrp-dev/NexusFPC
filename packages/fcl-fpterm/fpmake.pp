@@ -14,7 +14,7 @@ Const
   UnixLikes = AllUnixOSes -[QNX];
 
   WinEventOSes = [win32,win64];
-  KVMAll       = [emx,go32v2,msdos,netware,netwlibc,os2,win32,win64,win16]+UnixLikes+AllAmigaLikeOSes-[macosx];
+  KVMAll       = [emx,go32v2,msdos,netware,netwlibc,os2,win32,win64,win16]+UnixLikes-[macosx];
 
   // all full KVMers have crt too
   CrtOSes      = KVMALL+[WatCom];

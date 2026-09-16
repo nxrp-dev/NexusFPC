@@ -393,8 +393,6 @@ filecheck=*os2.zip
 package=upaszlibos2.zip[upzlos2.zip],PasZLib units
 # OS/2-2 2
 package=uregexpros2.zip[uregos2.zip],Regular expression units
-# OS/2-2 3
-package=urexxos2.zip,REXX SAA interface units
 # OS/2-2 4
 package=uunzipos2.zip[uzipos2.zip],Unzip units
 # OS/2-2 5
@@ -568,8 +566,6 @@ filecheck=*emx.zip
 package=upaszlibemx.zip[upzlemx.zip],PasZLib units
 # EMX-2 2
 package=uregexpremx.zip[uregemx.zip],Regular expression units
-# EMX-2 3
-package=urexxemx.zip,REXX SAA interface units
 # EMX-2 4
 package=uunzipemx.zip[uzipemx.zip],Unzip units
 # EMX-2 5
@@ -704,8 +700,6 @@ package=units-unzip-source.zip[uzipsrc.zip],Unzip units sources
 package=units-regexpr-source.zip[uregsrc.zip],Regular expression units sources
 # Source 11
 package=units-paszlib-source.zip[upzlsrc.zip],PasZLib units sources
-# Source 12
-package=units-rexx-source.zip[urexxsrc.zip],REXX SAA interface units sources
 # Source 13
 package=units-zlib-source.zip[uzlibsrc.zip],ZLib interface units sources
 # Source 14

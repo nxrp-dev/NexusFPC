@@ -199,8 +199,7 @@ const
   suppported_targets_x_smallr = systems_linux + systems_solaris + systems_android
                              + systems_openbsd
                              + [system_i386_haiku,system_x86_64_haiku]
-                             + [system_i386_beos]
-                             + [system_m68k_amiga];
+                             + [system_i386_beos];
 
 {****************************************************************************
                                  Defines
@@ -2202,11 +2201,6 @@ begin
       target_unsup_features:=[f_threading];
     system_m68k_human68k:
       target_unsup_features:=[f_threading,f_dynlibs];
-    { classic amiga has dynamic libraries, but they cannot be integrated in the
-      normal dynlibs infrastructure due to architectural differences, so therefore
-      lets disable the feature. }
-    system_m68k_amiga:
-      target_unsup_features:=[f_dynlibs];
     system_m68k_sinclairql:
       target_unsup_features:=[f_threading,f_dynlibs];
     system_z80_zxspectrum:
@@ -2227,12 +2221,6 @@ begin
   else
     features:=features+target_unsup_features;
 
-{$if defined(hasamiga)}
-   { enable vlink as default linker on Amiga but not for cross compilers (for now) }
-   if (target_info.system in [system_m68k_amiga,system_powerpc_amiga]) and
-      not LinkerSetExplicitly then
-     include(init_settings.globalswitches,cs_link_vlink);
-{$endif}
 {$ifdef m68k}
    { always enable vlink as default linker for the Sinclair QL, Atari, and Human 68k }
    if (target_info.system in [system_m68k_sinclairql,system_m68k_atari,system_m68k_human68k]) and
@@ -5025,22 +5013,6 @@ begin
         utilsprefix:=target_cpu_string + '-linux-android-';
     end;
 
-  { Set up default value for the heap on Amiga-likes (values only apply if the OSHeap allocator is used) }
-  if target_info.system in systems_amigalike then
-    begin
-      case target_info.system of
-        system_m68k_amiga:
-          heapsize:=256*1024;
-        system_powerpc_amiga,
-        system_powerpc_morphos,
-        system_arm_aros,
-        system_i386_aros,
-        system_x86_64_aros:
-          heapsize:=1024*1024;
-        else
-          heapsize:=256*1024;
-      end;
-    end;
   if target_info.system in (systems_embedded+systems_freertos+[system_z80_zxspectrum,system_z80_msxdos]) then
     begin
       case target_info.system of
@@ -5366,7 +5338,7 @@ begin
     if fpu type not explicitly set }
   if not(option.FPUSetExplicitly) and
      ((target_info.system in [system_arm_wince,system_arm_gba,
-         system_m68k_amiga,system_m68k_atari,
+         system_m68k_atari,
          system_arm_nds,system_arm_embedded,system_arm_freertos,
          system_riscv32_embedded,system_riscv64_embedded,system_xtensa_linux,
          system_z80_embedded,system_z80_zxspectrum,system_riscv32_freertos,

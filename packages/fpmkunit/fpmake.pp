@@ -39,7 +39,7 @@ begin
     // compile fpmake from a single place
     D:=P.Dependencies.Add('hash');
     D:=P.Dependencies.Add('paszlib');
-    D:=P.Dependencies.Add('fcl-process',AllOSes-[morphos,aros,amiga,go32v2,os2]);
+    D:=P.Dependencies.Add('fcl-process',AllOSes-[go32v2,os2]);
     D:=P.Dependencies.Add('libtar');
 
     with P.Targets.AddUnit('src/fpmkunit.pp') do

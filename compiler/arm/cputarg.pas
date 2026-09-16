@@ -65,9 +65,6 @@ implementation
     {$ifndef NOTARGETDARWIN}
       ,t_darwin
     {$endif}
-    {$ifndef NOTARGETAROS}
-      ,t_aros
-    {$endif}
     {$ifndef NOTARGETFREERTOS}
       ,t_freertos
     {$endif}

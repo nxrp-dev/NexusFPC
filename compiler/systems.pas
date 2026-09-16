@@ -321,7 +321,7 @@ interface
        systems_freertos = [system_xtensa_freertos,system_arm_freertos,system_riscv32_freertos];
 
        { all systems that allow section directive }
-       systems_allow_section = systems_embedded+systems_freertos+systems_wasm+[system_powerpc_morphos];
+       systems_allow_section = systems_embedded+systems_freertos+systems_wasm;
 
        { systems that uses dotted function names as descriptors }
        systems_dotted_function_names = [system_powerpc64_linux]+systems_aix;
@@ -343,12 +343,6 @@ interface
 
        { all OS/2 targets }
        systems_os2 = [system_i386_OS2,system_i386_emx];
-
-       { AROS systems }
-       systems_aros = [system_i386_aros,system_x86_64_aros,system_arm_aros];
-
-       { all amiga like systems }
-       systems_amigalike = [system_m68k_amiga,system_powerpc_morphos,system_powerpc_amiga]+systems_aros;
 
        { all native nt systems }
        systems_nativent = [system_i386_nativent];
@@ -403,7 +397,7 @@ interface
                                    system_z80_zxspectrum,system_z80_msxdos,
                                    system_wasm32_wasip1,system_wasm32_wasip1threads,system_wasm32_wasip2,
                                    system_loongarch64_linux,system_mipsel_ps1
-                                  ]+systems_darwin+systems_amigalike;
+                                  ]+systems_darwin;
 
        { all systems that use the PE+ header in the PE/COFF file
          Note: this is here and not in ogcoff, because it's required in other
@@ -469,7 +463,7 @@ interface
                              + [system_i386_GO32V2]
                              + [system_i386_os2]
                              + [system_i386_beos,system_i386_haiku]
-                             + [system_powerpc_morphos];
+                             ;
 
        systems_support_uf2 = [system_arm_embedded,system_avr_embedded,system_mipsel_embedded,system_xtensa_embedded];
 

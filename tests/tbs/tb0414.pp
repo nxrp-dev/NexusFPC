@@ -9,13 +9,6 @@
   for m68k.
 }
 program tb0414;
-{$ifdef amiga}
-{ Emulation is off by default }
-{$ifopt E-}
-{$error Emulation is disabled by default for amiga!!}
-{$endif}
-{$endif}
-
 {$ifdef atari}
 { Emulation is off by default }
 {$ifopt E-}

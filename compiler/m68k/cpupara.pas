@@ -646,12 +646,7 @@ unit cpupara;
 
     function tcpuparamanager.parsefuncretloc(p : tabstractprocdef; const s : string) : boolean;
       begin
-        case target_info.system of
-          system_m68k_amiga:
-            result:=parse_loc_string_to_register(p.exp_funcretloc, s);
-          else
-            internalerror(2005121801);
-        end;
+        result:=false;
       end;
 
 

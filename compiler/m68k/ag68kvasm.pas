@@ -76,8 +76,7 @@ unit ag68kvasm;
               (vlink) complains if it has to write into the relocations in a rodata,
               and if it has to merge rodata and data sections on Amiga/Atari. (KB) }
             case target_info.system of
-              system_m68k_atari,
-              system_m68k_amiga:
+              system_m68k_atari:
                 result:='adrw';
             else
               result:='adr';
@@ -99,7 +98,6 @@ unit ag68kvasm;
 
         case target_info.system of
           { a.out doesn't support named sections, lets use ELF for interoperability }
-          system_m68k_amiga,
           system_m68k_atari,
           system_m68k_embedded,
           system_m68k_sinclairql,
@@ -108,16 +106,8 @@ unit ag68kvasm;
           internalerror(2016052601);
         end;
 
-        if (target_info.system = system_m68k_amiga) then
-          begin
-            Replace(result,'$ASM',maybequoted(ScriptFixFileName(Unix2AmigaPath(AsmFileName))));
-            Replace(result,'$OBJ',maybequoted(ScriptFixFileName(Unix2AmigaPath(ObjFileName))));
-          end
-        else
-          begin
-            Replace(result,'$ASM',maybequoted(ScriptFixFileName(AsmFileName)));
-            Replace(result,'$OBJ',maybequoted(ScriptFixFileName(ObjFileName)));
-          end;
+        Replace(result,'$ASM',maybequoted(ScriptFixFileName(AsmFileName)));
+        Replace(result,'$OBJ',maybequoted(ScriptFixFileName(ObjFileName)));
         Replace(result,'$ARCH','-m'+GasCpuTypeStr[current_settings.cputype]);
         Replace(result,'$OTYPE',objtype);
         Replace(result,'$EXTRAOPT',asmextraopt);
@@ -137,7 +127,7 @@ unit ag68kvasm;
          idtxt  : 'VASM';
          asmbin : 'vasmm68k_std';
          asmcmd:  '-quiet -elfregs -gas $OTYPE $ARCH -o $OBJ $EXTRAOPT $ASM';
-         supported_targets : [system_m68k_amiga,system_m68k_atari,system_m68k_sinclairql,system_m68k_human68k,system_m68k_embedded];
+         supported_targets : [system_m68k_atari,system_m68k_sinclairql,system_m68k_human68k,system_m68k_embedded];
          flags : [af_needar,af_smartlink_sections];
          labelprefix : '.L';
          labelmaxlen : -1;

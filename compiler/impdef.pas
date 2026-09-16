@@ -121,11 +121,7 @@ const
 {$ifdef unix}
   DirSep = '/';
 {$else}
-  {$ifdef hasamiga}
-  DirSep = '/';
-  {$else}
   DirSep = '\';
-  {$endif}
 {$endif}
 var
  path:string;

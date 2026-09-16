@@ -446,23 +446,7 @@ implementation
                         ;
                     end;
                   end;
-                if (target_info.system in [system_powerpc_morphos,system_m68k_amiga]) then
-                  begin
-                    if (current_scanner.idtoken=_LOCATION) then
-                      begin
-                        consume(_LOCATION);
-                        locationstr:=current_scanner.cstringpattern;
-                        consume(_CSTRING);
-                      end
-                    else
-                      begin
-                        if explicit_paraloc then
-                          Message(parser_e_paraloc_all_paras);
-                        locationstr:='';
-                      end;
-                  end
-                else
-                  locationstr:='';
+                locationstr:='';
 
                 { default parameter }
                 if (m_default_para in current_settings.modeswitches) then
@@ -499,23 +483,6 @@ implementation
               vs.vardef:=hdef;
               vs.defaultconstsym:=defaultvalue;
 
-              if (target_info.system in [system_powerpc_morphos,system_m68k_amiga]) then
-                begin
-                  if locationstr<>'' then
-                    begin
-                      if sc.count>1 then
-                        Message(parser_e_paraloc_only_one_para);
-                      if (paranr>1) and not(explicit_paraloc) then
-                        Message(parser_e_paraloc_all_paras);
-                      explicit_paraloc:=true;
-                      include(vs.varoptions,vo_has_explicit_paraloc);
-                      if not(paramanager.parseparaloc(vs,locationstr)) then
-                        message(parser_e_illegal_explicit_paraloc);
-                    end
-                  else
-                    if explicit_paraloc then
-                      Message(parser_e_paraloc_all_paras);
-                end;
 {$ifdef wasm}
               if (vs.varspez in [vs_var,vs_constref,vs_out]) and is_wasm_reference_type(vs.vardef) then
                 Message(parser_e_wasm_ref_types_can_only_be_passed_by_value);
@@ -1484,29 +1451,6 @@ implementation
               if try_to_consume(_COLON) then
                begin
                  read_returndef(pd);
-                 if (target_info.system in [system_m68k_amiga]) then
-                  begin
-                   if (current_scanner.idtoken=_LOCATION) then
-                    begin
-                     if po_explicitparaloc in pd.procoptions then
-                      begin
-                       consume(_LOCATION);
-                       locationstr:=current_scanner.cstringpattern;
-                       consume(_CSTRING);
-                      end
-                     else
-                      { I guess this needs a new message... (KB) }
-                      Message(parser_e_paraloc_all_paras);
-                    end
-                   else
-                    begin
-                     if po_explicitparaloc in pd.procoptions then
-                      { assign default locationstr, if none specified }
-                      { and we've arguments with explicit paraloc }
-                      locationstr:='D0';
-                    end;
-                  end;
-
                end
               else
                begin
@@ -2228,34 +2172,13 @@ end;
 procedure pd_syscall(pd:tabstractprocdef);
 
     procedure include_po_syscall;
-      var
-        syscall: psyscallinfo;
       begin
         case target_info.system of
           system_arm_palmos,
           system_m68k_palmos,
           system_m68k_human68k,
-          system_m68k_atari,
-          system_m68k_amiga,
-          system_powerpc_amiga:
+          system_m68k_atari:
               include(pd.procoptions,get_default_syscall);
-          system_powerpc_morphos,
-          system_arm_aros,
-          system_i386_aros,
-          system_x86_64_aros:
-              begin
-                syscall:=get_syscall_by_token(current_scanner.idtoken);
-                if assigned(syscall) then
-                  begin
-                    if target_info.system in syscall^.validon then
-                      begin
-                        consume(current_scanner.idtoken);
-                        include(pd.procoptions,syscall^.procoption);
-                      end
-                  end
-                else
-                  include(pd.procoptions,get_default_syscall);
-              end;
           else
             Message(parser_e_syscall_format_not_support);
         end;
@@ -2270,28 +2193,8 @@ procedure pd_syscall(pd:tabstractprocdef);
 
       function po_syscall_to_regname: string;
         begin
-          if po_syscall_legacy in tprocdef(pd).procoptions then
-            result:='a6'
-          { let nobase on MorphOS store the libbase in r12 as well, because
-            we will need the libbase anyway during the call generation }
-          else if (po_syscall_basenone in tprocdef(pd).procoptions) and
-                  (target_info.system = system_powerpc_morphos) then
-                 result:='r12'
-          else if po_syscall_basereg in tprocdef(pd).procoptions then
-            begin
-              case target_info.system of
-                system_i386_aros:
-                    result:='eax';
-                system_x86_64_aros:
-                    result:='r12';
-                system_powerpc_morphos:
-                    result:='r12';
-                else
-                  internalerror(2016090201);
-              end;
-            end
-          else
-            internalerror(2016090101);
+          result:='';
+          internalerror(2016090101);
         end;
 
 {$if defined(powerpc) or defined(m68k) or defined(i386) or defined(x86_64) or defined(arm)}
@@ -2307,7 +2210,7 @@ var
   paranr: aint;
 {$endif defined(powerpc) or defined(m68k) or defined(i386) or defined(x86_64) or defined(arm)}
 begin
-  if (pd.typ<>procdef) and (target_info.system <> system_powerpc_amiga) then
+  if pd.typ<>procdef then
     internalerror(2003042614);
   tprocdef(pd).forwarddef:=false;
 {$if defined(powerpc) or defined(m68k) or defined(i386) or defined(x86_64) or defined(arm)}
@@ -2386,10 +2289,7 @@ begin
   if (v<low(Tprocdef(pd).extnumber)) or (v>high(Tprocdef(pd).extnumber)) then
     message3(type_e_range_check_error_bounds,tostr(v),tostr(low(Tprocdef(pd).extnumber)),tostr(high(Tprocdef(pd).extnumber)))
   else
-    if target_info.system in [system_arm_aros,system_i386_aros,system_x86_64_aros] then
-      Tprocdef(pd).extnumber:=v.uvalue * sizeof(pint)
-    else
-      Tprocdef(pd).extnumber:=v.uvalue;
+    Tprocdef(pd).extnumber:=v.uvalue;
 {$endif defined(powerpc) or defined(m68k) or defined(i386) or defined(x86_64) or defined(arm)}
 end;
 

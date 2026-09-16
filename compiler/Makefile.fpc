@@ -906,11 +906,7 @@ ifeq ($(COMPILEREXENAME),)
 COMPILEREXENAME:=$(EXENAME)
 endif
 
-ifeq ($(OS_SOURCE),morphos)
-COMPILEREXEDIR:=$(shell echo $(BASEDIR) | sed 's/\///;s/\//:/')
-else
 COMPILEREXEDIR:=$(BASEDIR)
-endif
 
 .PHONY : revision
 

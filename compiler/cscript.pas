@@ -61,15 +61,6 @@ type
     Procedure WriteToDisk;override;
   end;
 
-  TAsmScriptAmiga = class (TAsmScript)
-    Constructor Create (Const ScriptName : TCmdStr); override;
-    Procedure AddAsmCommand (Const Command, Options,FileName : TCmdStr);override;
-    Procedure AddLinkCommand (Const Command, Options, FileName : TCmdStr);override;
-    Procedure AddDeleteCommand (Const FileName : TCmdStr);override;
-    Procedure AddDeleteDirCommand (Const FileName : TCmdStr);override;
-    Procedure WriteToDisk;override;
-  end;
-
   TAsmScriptUnix = class (TAsmScript)
     Constructor Create (Const ScriptName : TCmdStr);override;
     Procedure AddAsmCommand (Const Command, Options,FileName : TCmdStr);override;
@@ -293,75 +284,6 @@ Begin
 end;
 
 {****************************************************************************
-                                  Amiga Asm Response
-****************************************************************************}
-
-
-Constructor TAsmScriptAmiga.Create (Const ScriptName : TCmdStr);
-begin
-  Inherited Create(ScriptName);
-end;
-
-
-Procedure TAsmScriptAmiga.AddAsmCommand (Const Command, Options,FileName : TCmdStr);
-begin
-  if FileName<>'' then
-   begin
-     Add('SET THEFILE '+ScriptFixFileName(FileName));
-     Add('echo Assembling $THEFILE');
-   end;
-  Add(maybequoted(command)+' '+Options);
-  { There is a problem here,
-    as always return with a non zero error value PM  }
-  Add('if error');
-  Add('why');
-  Add('skip asmend');
-  Add('endif');
-end;
-
-
-Procedure TAsmScriptAmiga.AddLinkCommand (Const Command, Options, FileName : TCmdStr);
-begin
-  if FileName<>'' then
-   begin
-     Add('SET THEFILE '+ScriptFixFileName(FileName));
-     Add('echo Linking $THEFILE');
-   end;
-  Add(maybequoted(command)+' '+Options);
-  Add('if error');
-  Add('skip linkend');
-  Add('endif');
-end;
-
-
-Procedure TAsmScriptAmiga.AddDeleteCommand (Const FileName : TCmdStr);
-begin
- Add('Delete ' + Unix2AmigaPath(MaybeQuoted(ScriptFixFileName(FileName))) + ' Quiet');
-end;
-
-
-Procedure TAsmScriptAmiga.AddDeleteDirCommand (Const FileName : TCmdStr);
-begin
- Add('Delete ' + Unix2AmigaPath(MaybeQuoted(ScriptFixFileName(FileName))) + ' All Quiet');
-end;
-
-
-Procedure TAsmScriptAmiga.WriteToDisk;
-Begin
-  Add('skip end');
-  Add('lab asmend');
-  Add('why');
-  Add('echo An error occurred while assembling $THEFILE');
-  Add('skip end');
-  Add('lab linkend');
-  Add('why');
-  Add('echo An error occurred while linking $THEFILE');
-  Add('lab end');
-  inherited WriteToDisk;
-end;
-
-
-{****************************************************************************
                               Unix Asm Response
 ****************************************************************************}
 
@@ -494,8 +416,6 @@ function GenerateScript(const st: TCmdStr): TAsmScript;
         Result:=TAsmScriptUnix.Create(st);
       script_dos :
         Result:=TAsmScriptDos.Create(st);
-      script_amiga :
-        Result:=TAsmScriptAmiga.Create(st);
       script_mpw :
         Result:=TAsmScriptMPW.Create(st);
       else

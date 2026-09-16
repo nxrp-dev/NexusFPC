@@ -18,22 +18,21 @@ begin
     P.Directory:=ADirectory;
 {$endif ALLPACKAGES}
     P.Version:='3.3.1';
-    P.OSes:=AllUnixOSes+[Win32,Win64]+[MorphOS]-[Android]+[OS2];
+    P.OSes:=AllUnixOSes+[Win32,Win64]-[Android]+[OS2];
 
     P.Dependencies.Add('x11',AllUnixOSes-[darwin,iphonesim,ios]);
     if Defaults.CPU<>arm then
       P.Dependencies.Add('x11',[darwin]);
-    P.Dependencies.Add('morphunits',[morphos]);
 
     P.SourcePath.Add('src');
     P.IncludePath.Add('src');
 
-    T:=P.Targets.AddImplicitUnit('freeglut.pp',AllOSes-[morphos]);
-    T:=P.Targets.AddUnit('glext.pp',AllOSes-[morphos]);
+    T:=P.Targets.AddImplicitUnit('freeglut.pp',AllOSes);
+    T:=P.Targets.AddUnit('glext.pp',AllOSes);
     T:=P.Targets.AddUnit('gl.pp');
     T:=P.Targets.AddUnit('glu.pp');
     T:=P.Targets.AddUnit('glut.pp');
-    // T.Dependencies.Add('freeglut',AllOSes-[morphos]);
+    // T.Dependencies.Add('freeglut',AllOSes);
     T:=P.Targets.AddUnit('glx.pp',AllUnixOSes-[darwin,iphonesim,ios]);
     if Defaults.CPU<>arm then
       T:=P.Targets.AddUnit('glx.pp',[darwin]);

@@ -1680,28 +1680,6 @@ implementation
           current_asmdata.asmlists[al_globals].concat(tai_datablock.Create_global('__fpc_stackarea_start',stacksize-1,carraydef.getreusable(u8inttype,stacksize-1),AT_DATA));
           current_asmdata.asmlists[al_globals].concat(tai_datablock.Create_global('__fpc_stackarea_end',1,carraydef.getreusable(u8inttype,1),AT_DATA));
         end;
-{$IFDEF POWERPC}
-      { AmigaOS4 "stack cookie" support }
-      if ( target_info.system = system_powerpc_amiga ) then
-       begin
-         { this symbol is needed to ignite powerpc amigaos' }
-         { stack allocation magic for us with the given stack size. }
-         { note: won't work for m68k amigaos or morphos. (KB) }
-         str(stacksize,s);
-         s:='$STACK: '+s+#0;
-         def:=carraydef.getreusable(cansichartype,length(s));
-         tcb:=ctai_typedconstbuilder.create([tcalo_new_section]);
-         tcb.maybe_begin_aggregate(def);
-         tcb.emit_tai(Tai_string.Create(s),def);
-         tcb.maybe_end_aggregate(def);
-         sym:=current_asmdata.DefineAsmSymbol('__stack_cookie',AB_GLOBAL,AT_DATA,def);
-         current_asmdata.asmlists[al_globals].concatlist(
-           tcb.get_final_asmlist(sym,def,sec_data,'__stack_cookie',sizeof(pint))
-         );
-         tcb.free;
-         tcb := nil;
-       end;
-{$ENDIF POWERPC}
       { Initial heapsize }
       tcb:=ctai_typedconstbuilder.create([tcalo_new_section,tcalo_make_dead_strippable]);
       tcb.emit_tai(Tai_const.Create_int_dataptr(heapsize),ptruinttype);

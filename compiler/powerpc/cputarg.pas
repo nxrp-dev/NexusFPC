@@ -47,12 +47,6 @@ implementation
     {$ifndef NOTARGETDARWIN}
       ,t_darwin
     {$endif}
-    {$ifndef NOTARGETMORPHOS}
-      ,t_morph
-    {$endif}
-    {$ifndef NOTARGETAMIGA}
-      ,t_amiga
-    {$endif}
     {$ifndef NOTARGETWII}
       ,t_wii
     {$endif}

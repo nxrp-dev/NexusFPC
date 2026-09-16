@@ -35,7 +35,6 @@ Function GetFileContents (FN : String) : String;
 const
 { Constants used in IsAbsolute function }
   TargetHasDosStyleDirectories : boolean = false;
-  TargetAmigaLike : boolean = false;
   TargetIsMacOS : boolean = false;
   TargetIsUnix : boolean = false;
 
@@ -158,11 +157,6 @@ begin
       if (F[1]='/') or (F[1]='\') then
         IsAbsolute:=true;
       if (Length(F)>2) and (F[2]=':') and ((F[3]='\') or (F[3]='/')) then
-        IsAbsolute:=true;
-    end
-  else if TargetAmigaLike then
-    begin
-      if (length(F)>0) and (Pos(':',F) <> 0) then
         IsAbsolute:=true;
     end
   else if TargetIsMacOS then

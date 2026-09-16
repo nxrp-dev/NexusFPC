@@ -89,16 +89,8 @@ unit agppcvasm;
         result:=asminfo^.asmcmd;
 
         objtype:='-Felf';
-        if (target_info.system in [system_powerpc_amiga, system_powerpc_morphos]) then
-          begin
-            Replace(result,'$ASM',maybequoted(ScriptFixFileName(Unix2AmigaPath(AsmFileName))));
-            Replace(result,'$OBJ',maybequoted(ScriptFixFileName(Unix2AmigaPath(ObjFileName))));
-          end
-        else
-          begin
-            Replace(result,'$ASM',maybequoted(ScriptFixFileName(AsmFileName)));
-            Replace(result,'$OBJ',maybequoted(ScriptFixFileName(ObjFileName)));
-          end;
+        Replace(result,'$ASM',maybequoted(ScriptFixFileName(AsmFileName)));
+        Replace(result,'$OBJ',maybequoted(ScriptFixFileName(ObjFileName)));
         Replace(result,'$OTYPE',objtype);
         Replace(result,'$EXTRAOPT',asmextraopt);
       end;
@@ -122,7 +114,7 @@ unit agppcvasm;
          idtxt  : 'VASM';
          asmbin : 'vasmppc_std';
          asmcmd:  '-quiet $OTYPE -o $OBJ $EXTRAOPT $ASM';
-         supported_targets : [system_powerpc_amiga,system_powerpc_morphos,system_powerpc_linux];
+         supported_targets : [system_powerpc_linux];
          flags : [af_needar,af_smartlink_sections];
          labelprefix : '.L';
          labelmaxlen : -1;

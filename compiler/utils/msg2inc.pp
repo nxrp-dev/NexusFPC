@@ -19,12 +19,6 @@ program msg2inc;
 {$ifdef unix}
   {$define EOL_ONE_CHAR}
 {$endif unix}
-{$ifdef amiga}
-  {$define EOL_ONE_CHAR}
-{$endif amiga}
-{$ifdef morphos}
-  {$define EOL_ONE_CHAR}
-{$endif}
 {$ifdef macos}
   {$define EOL_ONE_CHAR}
 {$endif}

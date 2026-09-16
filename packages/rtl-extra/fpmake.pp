@@ -19,14 +19,14 @@ Const
   IPCBSDs       = [FreeBSD,NetBSD,OpenBSD,DragonFly];
 //  IPCcdeclOSes  = [Darwin,iphonesim,ios];
 
-  PrinterOSes   = [go32v2,msdos,os2,win32,win64,atari]+unixlikes-[beos,haiku,morphos];
+  PrinterOSes   = [go32v2,msdos,os2,win32,win64,atari]+unixlikes-[beos,haiku];
   SerialOSes    = [android,linux,netbsd,openbsd,win32,win64];
-  UComplexOSes  = [atari,embedded,emx,gba,go32v2,msdos,nativent,nds,netware,netwlibc,os2,sinclairql,human68k,symbian,watcom,wii,wince,win32,win64,freertos,wasip1,wasip1threads]+UnixLikes+AllAmigaLikeOSes;
-  MatrixOSes    = [atari,embedded,emx,gba,go32v2,msdos,nativent,nds,netware,netwlibc,os2,sinclairql,human68k,symbian,watcom,wii,win32,win64,wince,freertos,wasip1,wasip1threads]+UnixLikes+AllAmigaLikeOSes;
-  ObjectsOSes   = [atari,embedded,emx,gba,go32v2,macosclassic,msdos,nds,netware,netwlibc,os2,sinclairql,human68k,symbian,watcom,wii,win16,win32,win64,wince,freertos,wasip1,wasip1threads]+UnixLikes+AllAmigaLikeOSes;
+  UComplexOSes  = [atari,embedded,emx,gba,go32v2,msdos,nativent,nds,netware,netwlibc,os2,sinclairql,human68k,symbian,watcom,wii,wince,win32,win64,freertos,wasip1,wasip1threads]+UnixLikes;
+  MatrixOSes    = [atari,embedded,emx,gba,go32v2,msdos,nativent,nds,netware,netwlibc,os2,sinclairql,human68k,symbian,watcom,wii,win32,win64,wince,freertos,wasip1,wasip1threads]+UnixLikes;
+  ObjectsOSes   = [atari,embedded,emx,gba,go32v2,macosclassic,msdos,nds,netware,netwlibc,os2,sinclairql,human68k,symbian,watcom,wii,win16,win32,win64,wince,freertos,wasip1,wasip1threads]+UnixLikes;
   WinsockOSes   = [win32,win64,wince,os2,emx,netware,netwlibc];
   WinSock2OSes  = [win32,win64,wince];
-  SocketsOSes   = UnixLikes+AllAmigaLikeOSes+[netware,netwlibc,os2,emx,wince,win32,win64];
+  SocketsOSes   = UnixLikes+[netware,netwlibc,os2,emx,wince,win32,win64];
   gpmOSes = [Linux,Android];
   AllTargetsextra = ObjectsOSes + UComplexOSes + MatrixOSes+
                       SerialOSes +PrinterOSes+SocketsOSes+gpmOSes;
@@ -62,12 +62,6 @@ begin
     P.Email := '';
     P.Description := 'Rtl-extra, RTL not needed for bootstrapping';
     P.NeedLibC:= false;
-    P.Dependencies.Add('morphunits',[morphos]);
-    P.Dependencies.Add('arosunits',[aros]);
-    if Defaults.CPU=m68k then
-      P.Dependencies.Add('amunits',[amiga]);
-    if Defaults.CPU=powerpc then
-      P.Dependencies.Add('os4units',[amiga]);
 
     P.SourcePath.Add('src/inc');
     P.SourcePath.Add('src/$(OS)');
@@ -80,7 +74,6 @@ begin
     // unit from that directory. Maybe we should try to merge the WinSock(2)
     // units to remove the wince directory completely...
     P.SourcePath.Add('src/win',[win32,win64,wince]);
-    P.SourcePath.Add('src/amiga',[morphos]);
 
     P.IncludePath.Add('src/bsd',AllBSDOSes);
     P.IncludePath.Add('src/inc');

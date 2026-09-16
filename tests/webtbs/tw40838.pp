@@ -1,12 +1,9 @@
-{ %TARGET=win32,win64,wince,linux,freebsd,netbsd,openbsd,darwin,amiga,morphos,aros }
+{ %TARGET=win32,win64,wince,linux,freebsd,netbsd,openbsd,darwin }
 program tw40838;
 
 {$mode objfpc} {$modeswitch anonymousfunctions}
 
-{$if defined(amiga)}
-uses
-  athreads;
-{$elseif defined(unix)}
+{$if defined(unix)}
 uses
   cthreads;
 {$endif}

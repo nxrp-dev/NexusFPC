@@ -52,29 +52,8 @@ implementation
     end;
 
   procedure tarmcallnode.do_syscall;
-    var
-      tmpref: treference;
     begin
-      case target_info.system of
-        system_arm_aros:
-            begin
-              if (po_syscall_baselast in tprocdef(procdefinition).procoptions) then
-                begin
-                  current_asmdata.CurrAsmList.concat(tai_comment.create(strpnew('AROS SysCall')));
-
-                  cg.getcpuregister(current_asmdata.CurrAsmList,NR_R12);
-                  get_syscall_call_ref(tmpref,NR_R12);
-
-                  cg.a_load_ref_reg(current_asmdata.CurrAsmList,OS_ADDR,OS_ADDR,tmpref,NR_R12);
-                  cg.a_call_reg(current_asmdata.CurrAsmList,NR_R12);
-                  cg.ungetcpuregister(current_asmdata.CurrAsmList,NR_R12);
-                  exit;
-                end;
-              internalerror(2016110601);
-            end;
-        else
-          internalerror(2016110602);
-      end;
+      internalerror(2016110602);
     end;
 
   procedure tarmcallnode.set_result_location(realresdef: tstoreddef);

@@ -81,10 +81,10 @@ interface
       { Please keep this order, see OSCPUSupported below
   TOS=(osNone,
     linux,go32v2,win32,os2,freebsd,beos,netbsd,
-    amiga,atari, solaris, qnx, netware, openbsd,wdosx,
-    palmos,macosclassic,darwin,emx,watcom,morphos,netwlibc,
+    obsolete_amiga,atari, solaris, qnx, netware, openbsd,wdosx,
+    palmos,macosclassic,darwin,emx,watcom,obsolete_morphos,netwlibc,
     win64,wince,gba,nds,embedded,symbian,haiku,iphonesim,
-    aix,java,android,nativent,msdos,wii,aros,dragonfly,
+    aix,java,android,nativent,msdos,wii,obsolete_aros,dragonfly,
     win16,freertos,zxspectrum,msxdos,ios,amstradcpc,sinclairql,
     wasip1,human68k,ps1,wasip1threads,wasip2
   );}
@@ -98,10 +98,10 @@ interface
 
       TOS=(
         o_none,linux,go32v2,win32,os2,freebsd,beos,haiku,netbsd,
-        amiga,atari, solaris, qnx, netware, openbsd,wdosx,
-        palmos,macosclassic,darwin,emx,watcom,morphos,netwlibc,
+        obsolete_amiga,atari, solaris, qnx, netware, openbsd,wdosx,
+        palmos,macosclassic,darwin,emx,watcom,obsolete_morphos,netwlibc,
         win64,wince,gba,nds,embedded,symbian,nativent,iphonesim,
-        wii,aix,java,android,msdos,aros,dragonfly,win16,freertos,
+        wii,aix,java,android,msdos,obsolete_aros,dragonfly,win16,freertos,
         zxspectrum,msxdos,ios,amstradcpc,sinclairql,wasip1,human68k,ps1,
         wasip1threads,wasip2
       );
@@ -130,10 +130,10 @@ interface
 
       OSStr : array[TOS] of string=(
         'none','linux','go32v2','win32','os2','freebsd','beos','haiku','netbsd',
-        'amiga','atari','solaris', 'qnx', 'netware','openbsd','wdosx',
-        'palmos','macosclassic','darwin','emx','watcom','morphos','netwlibc',
+        'obsolete-amiga','atari','solaris', 'qnx', 'netware','openbsd','wdosx',
+        'palmos','macosclassic','darwin','emx','watcom','obsolete-morphos','netwlibc',
         'win64','wince','gba','nds','embedded','symbian','nativent',
-        'iphonesim', 'wii', 'aix', 'java', 'android', 'msdos', 'aros',
+        'iphonesim', 'wii', 'aix', 'java', 'android', 'msdos', 'obsolete-aros',
         'dragonfly', 'win16', 'freertos', 'zxspectrum', 'msxdos',
         'ios','amstradcpc','sinclairql','wasip1','human68k','ps1','wasip1threads',
         'wasip2'
@@ -141,10 +141,10 @@ interface
 
       OSSuffix : array[TOS] of string=(
         '_none','_linux','_go32v2','_win32','_os2','_freebsd','_beos','_haiku','_netbsd',
-        '_amiga','_atari','_solaris', '_qnx', '_netware','_openbsd','_wdosx',
-        '_palmos','_macosclassic','_darwin','_emx','_watcom','_morphos','_netwlibc',
+        '_obsolete_amiga','_atari','_solaris', '_qnx', '_netware','_openbsd','_wdosx',
+        '_palmos','_macosclassic','_darwin','_emx','_watcom','_obsolete_morphos','_netwlibc',
         '_win64','_wince','_gba','_nds','_embedded','_symbian','_nativent',
-        '_iphonesim','_wii','_aix','_java','_android','_msdos','_aros',
+        '_iphonesim','_wii','_aix','_java','_android','_msdos','_obsolete_aros',
         '_dragonfly','_win16','_freertos','_zxspectrum','_msxdos',
         '_ios','_amstradcpc','_sinclairql','_wasip1','_human68k','_ps1','_wasip1threads',
         '_wasip2'
@@ -169,7 +169,7 @@ interface
         { beos }    ( false, true,  false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
         { haiku }   ( false, true,  false, false, false, true,  false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
         { netbsd }  ( false, true,  true,  true,  true,  true,  true,  false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { amiga }   ( false, false, true,  true,  false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+ { obsolete_amiga } ( false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
         { atari }   ( false, false, true,  false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
         { solaris } ( false, true,  false, false, true,  true,  false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
         { qnx }     ( false, true,  false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
@@ -181,7 +181,7 @@ interface
         { darwin }  ( false, true,  false, true,  false, true,  false, true,  false, false, false, false, false, false, false,   false, false, true,   false, false, false,  false,  false, false, false),
         { emx }     ( false, true,  false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
         { watcom }  ( false, true,  false, false, false ,false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { morphos } ( false, false, false, true,  false ,false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+{ obsolete_morphos }( false, false, false, false, false ,false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
         { netwlibc }( false, true,  false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
         { win64   } ( false, false, false, false, false, true,  false, false, false, false, false, false, false, false, false,   false, false, true,   false, false, false,  false,  false, false, false),
         { wince    }( false, true,  false, false, false, false, true,  false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
@@ -196,7 +196,7 @@ interface
         { java }    ( false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,   true,  false, false,  false, false, false,  false,  false, false, false),
         { android } ( false, true,  false, false, false, true,  true,  false, false, false, false, false, true,  false, false,   true,  false, true,   false, false, false,  false,  false, false, false),
         { msdos }   ( false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, true , false,  false, false, false,  false,  false, false, false),
-        { aros }    ( false, true,  false, false, false, true,  true,  false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+  { obsolete_aros } ( false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
         {dragonfly} ( false, false, false, false, false, true,  false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
         { win16 }   ( false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, true , false,  false, false, false,  false,  false, false, false),
         { freertos }( false, false, false, false, false, false, true,  false, false, false, false, false, false, false, false,   false, false, false,  false, false, true,   false,   true, false, false),

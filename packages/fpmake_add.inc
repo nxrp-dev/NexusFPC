@@ -1,7 +1,4 @@
   add_a52(ADirectory+IncludeTrailingPathDelimiter('a52'));
-  add_ami_extra(ADirectory+IncludeTrailingPathDelimiter('ami-extra'));
-  add_amunits(ADirectory+IncludeTrailingPathDelimiter('amunits'));
-  add_arosunits(ADirectory+IncludeTrailingPathDelimiter('arosunits'));
   add_aspell(ADirectory+IncludeTrailingPathDelimiter('aspell'));
   add_bfd(ADirectory+IncludeTrailingPathDelimiter('bfd'));
   add_bzip2(ADirectory+IncludeTrailingPathDelimiter('bzip2'));
@@ -106,7 +103,6 @@
   add_lua(ADirectory+IncludeTrailingPathDelimiter('lua'));
   add_mad(ADirectory+IncludeTrailingPathDelimiter('mad'));
   add_modplug(ADirectory+IncludeTrailingPathDelimiter('modplug'));
-  add_morphunits(ADirectory+IncludeTrailingPathDelimiter('morphunits'));
   add_mysql(ADirectory+IncludeTrailingPathDelimiter('mysql'));
   add_ncurses(ADirectory+IncludeTrailingPathDelimiter('ncurses'));
   add_newt(ADirectory+IncludeTrailingPathDelimiter('newt'));
@@ -123,7 +119,6 @@
   add_openssl(ADirectory+IncludeTrailingPathDelimiter('openssl'));
   add_oracle(ADirectory+IncludeTrailingPathDelimiter('oracle'));
   add_os2units(ADirectory+IncludeTrailingPathDelimiter('os2units'));
-  add_os4units(ADirectory+IncludeTrailingPathDelimiter('os4units'));
   add_palmunits(ADirectory+IncludeTrailingPathDelimiter('palmunits'));
   add_pasjpeg(ADirectory+IncludeTrailingPathDelimiter('pasjpeg'));
   add_pastojs(ADirectory+IncludeTrailingPathDelimiter('pastojs'));
@@ -139,7 +134,6 @@
   add_qlunits(ADirectory+IncludeTrailingPathDelimiter('qlunits'));
   add_redis(ADirectory+IncludeTrailingPathDelimiter('redis'));
   add_regexpr(ADirectory+IncludeTrailingPathDelimiter('regexpr'));
-  add_rexx(ADirectory+IncludeTrailingPathDelimiter('rexx'));
   add_rtl_console(ADirectory+IncludeTrailingPathDelimiter('rtl-console'));
   add_rtl_extra(ADirectory+IncludeTrailingPathDelimiter('rtl-extra'));
   add_rtl_generics(ADirectory+IncludeTrailingPathDelimiter('rtl-generics'));

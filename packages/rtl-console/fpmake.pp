@@ -13,7 +13,7 @@ Const
   UnixLikes = AllUnixOSes -[QNX];
 
   WinEventOSes = [win32,win64];
-  KVMAll       = [emx,go32v2,msdos,netware,netwlibc,os2,win32,win64,win16]+UnixLikes+AllAmigaLikeOSes;
+  KVMAll       = [emx,go32v2,msdos,netware,netwlibc,os2,win32,win64,win16]+UnixLikes;
   WASMOSes = [wasip1,wasip1threads];
 
   // all full KVMers have crt too
@@ -50,23 +50,15 @@ begin
     P.Dependencies.Add('rtl-extra'); // linux,android gpm.
     P.Dependencies.Add('rtl-objpas');
     P.Dependencies.Add('rtl-unicode');
-    P.Dependencies.Add('morphunits',[morphos]);
-    P.Dependencies.Add('arosunits',[aros]);
-    if Defaults.CPU=m68k then
-      P.Dependencies.Add('amunits',[amiga]);
-    if Defaults.CPU=powerpc then
-      P.Dependencies.Add('os4units',[amiga]);
     P.SourcePath.Add('src/inc');
     P.SourcePath.Add('src/$(OS)');
     P.SourcePath.Add('src/darwin',[iphonesim,ios]);
     P.SourcePath.Add('src/unix',AllUnixOSes);
     P.SourcePath.Add('src/os2commn',[os2,emx]);
-    P.SourcePath.Add('src/amicommon',AllAmigaLikeOSes);
     P.SourcePath.Add('src/win',WinEventOSes);
 
     P.IncludePath.Add('src/inc');
     P.IncludePath.Add('src/unix',AllUnixOSes);
-    P.IncludePath.add('src/amicommon',AllAmigaLikeOSes);
     P.IncludePath.Add('src/$(OS)');
     P.IncludePath.Add('src/darwin',[iphonesim,ios]);
 
@@ -101,7 +93,6 @@ begin
      begin
        AddInclude('videoh.inc');
        AddInclude('video.inc');
-       AddInclude('videodata.inc',AllAmigaLikeOSes);
        AddInclude('nwsys.inc',[netware]);
        AddUnit   ('mouse',[go32v2,msdos]);
        AddUnit   ('unixkvmbase',AllUnixOSes);
@@ -115,16 +106,6 @@ begin
        AddInclude('nwsys.inc',[netware]);
        AddUnit   ('video',[win16]);
        AddUnit   ('keyboard',[win16]);
-     end;
-
-    T:=P.Targets.AddUnit('vidcrt.pp', AllAmigaLikeOSes);
-    with T.Dependencies do
-     begin
-       AddInclude('crth.inc');
-       AddInclude('crt.inc');
-       AddUnit   ('video', AllAmigaLikeOSes);
-       AddUnit   ('keyboard', AllAmigaLikeOSes);
-       AddUnit   ('mouse', AllAmigaLikeOSes);
      end;
 
     T:=P.Targets.AddUnit('vesamode.pp',[go32v2,msdos]);

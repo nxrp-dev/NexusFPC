@@ -46,20 +46,10 @@ unit cpupi;
 
     procedure tcpuprocinfo.init_framepointer;
       begin
-        if not (target_info.system in [system_m68k_amiga]) then
-          begin
-            RS_FRAME_POINTER_REG:=RS_A6;
-            NR_FRAME_POINTER_REG:=NR_A6;
-            RS_PIC_OFFSET_REG:=RS_A5;
-            NR_PIC_OFFSET_REG:=NR_A5;
-          end
-        else
-          begin
-            NR_FRAME_POINTER_REG:=NR_A5;
-            RS_FRAME_POINTER_REG:=RS_A5;
-            RS_PIC_OFFSET_REG:=RS_A4;
-            NR_PIC_OFFSET_REG:=NR_A4;
-          end;
+        RS_FRAME_POINTER_REG:=RS_A6;
+        NR_FRAME_POINTER_REG:=NR_A6;
+        RS_PIC_OFFSET_REG:=RS_A5;
+        NR_PIC_OFFSET_REG:=NR_A5;
       end;
 
 begin

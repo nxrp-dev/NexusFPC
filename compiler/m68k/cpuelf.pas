@@ -141,7 +141,7 @@ implementation
          idtxt  : 'ELF';
          asmbin : '';
          asmcmd : '';
-         supported_targets : [system_m68k_amiga,system_m68k_embedded];
+         supported_targets : [system_m68k_embedded];
          flags : [af_outputbinary,af_smartlink_sections];
          labelprefix : '.L';
          labelmaxlen : -1;

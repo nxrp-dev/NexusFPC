@@ -38,9 +38,6 @@ implementation
     {$ifndef NOTARGETLINUX}
       ,t_linux
     {$endif}
-    {$ifndef NOTARGETAMIGA}
-      ,t_amiga
-    {$endif}
     {$ifndef NOTARGETATARI}
       ,t_atari
     {$endif}

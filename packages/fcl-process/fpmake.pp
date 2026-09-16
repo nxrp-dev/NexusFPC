@@ -34,17 +34,10 @@ begin
     P.IncludePath.Add('src/unix',AllUnixOSes);
     P.IncludePath.Add('src/winall',AllWindowsOSes);
     P.IncludePath.Add('src/win',[win32,win64]);
-    P.IncludePath.Add('src/amicommon',AllAmigaLikeOSes);
-    P.IncludePath.Add('src/$(OS)',AllOSes-[win32,win64]-AllUnixOSes-AllAmigaLikeOSes);
-    P.IncludePath.Add('src/dummy',AllOSes-[win32,win64]-AllUnixOSes-AllAmigaLikeOSes);
+    P.IncludePath.Add('src/$(OS)',AllOSes-[win32,win64]-AllUnixOSes);
+    P.IncludePath.Add('src/dummy',AllOSes-[win32,win64]-AllUnixOSes);
 
     P.Dependencies.add('winunits-jedi',[win32,win64]);
-    P.Dependencies.add('morphunits',[morphos]);
-    P.Dependencies.add('arosunits',[aros]);
-    if Defaults.CPU=powerpc then
-      P.Dependencies.add('os4units',[amiga])
-    else
-      P.Dependencies.add('amunits',[amiga]);
     P.Dependencies.add('fcl-base');
 
     T:=P.Targets.AddUnit('pipes.pp');

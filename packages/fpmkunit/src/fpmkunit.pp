@@ -32,21 +32,6 @@ Interface
 {$ifdef CPULLVM}
   {$define LLVM_INTERFACE_PROBLEM}
 {$endif CPULLVM}
-{$IFDEF MORPHOS}
- {$DEFINE NO_UNIT_PROCESS}
- {$DEFINE NO_THREADING}
-{$ENDIF}
-
-{$IFDEF AMIGA}
- {$DEFINE NO_UNIT_PROCESS}
- {$DEFINE NO_THREADING}
-{$ENDIF}
-
-{$IFDEF AROS}
- {$DEFINE NO_UNIT_PROCESS}
- {$DEFINE NO_THREADING}
-{$ENDIF}
-
 {$IFDEF OS2}
  {$DEFINE NO_UNIT_PROCESS}
 {$ENDIF OS2}
@@ -161,10 +146,10 @@ Type
   // Please keep this order, see OSCPUSupported below
   TOS=(osNone,
     linux,go32v2,win32,os2,freebsd,beos,netbsd,
-    amiga,atari, solaris, qnx, netware, openbsd,wdosx,
-    palmos,macosclassic,darwin,emx,watcom,morphos,netwlibc,
+    obsolete_amiga,atari, solaris, qnx, netware, openbsd,wdosx,
+    palmos,macosclassic,darwin,emx,watcom,obsolete_morphos,netwlibc,
     win64,wince,gba,nds,embedded,symbian,haiku,iphonesim,
-    aix,java,android,nativent,msdos,wii,aros,dragonfly,
+    aix,java,android,nativent,msdos,wii,obsolete_aros,dragonfly,
     win16,freertos,zxspectrum,msxdos,ios,amstradcpc,sinclairql,
     wasip1,human68k,ps1,wasip1threads,wasip2
   );
@@ -233,12 +218,11 @@ Const
   DOS = Go32v2;
   MacOSX = Darwin;
 
-  AllOSes = [Low(TOS)..High(TOS)];
+  AllOSes = [Low(TOS)..High(TOS)]-[obsolete_amiga,obsolete_morphos,obsolete_aros];
   AllCPUs = [Low(TCPU)..High(TCPU)];
   AllUnixOSes  = [Linux,FreeBSD,NetBSD,OpenBSD,Darwin,QNX,BeOS,Solaris,Haiku,iphonesim,ios,aix,Android,dragonfly];
   AllBSDOSes      = [FreeBSD,NetBSD,OpenBSD,Darwin,iphonesim,ios,dragonfly];
   AllWindowsOSes  = [Win32,Win64,WinCE];
-  AllAmigaLikeOSes = [Amiga,MorphOS,AROS];
   AllLimit83fsOses = [go32v2,os2,emx,watcom,msdos,win16,atari,human68k];
   AllWebAssemblyOSes = [wasip1, wasip1threads, wasip2];
 
@@ -256,7 +240,7 @@ Const
     { freebsd } ( false, true,  false, false, false, true,  false, true,  false, false, false, false, false, false,   false, false, true , false, false,  false,  false,   false, false, false),
     { beos }    ( false, true,  false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { netbsd }  ( false, true,  true,  true,  true,  true,  true,  false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
-    { amiga }   ( false, false, true,  true,  false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
+    { obsolete_amiga }   ( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { atari }   ( false, false, true,  false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { solaris } ( false, true,  false, false, true,  true,  false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { qnx }     ( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
@@ -268,7 +252,7 @@ Const
     { darwin }  ( false, true,  false, true,  false, true,  false,  true, false, false, false, false, false, false,   false, false, true , false, false,  false,  false,   false, false, false),
     { emx }     ( false, true,  false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { watcom }  ( false, true,  false, false, false ,false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
-    { morphos } ( false, false, false, true,  false ,false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
+    { obsolete_morphos } ( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { netwlibc }( false, true,  false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { win64   } ( false, false, false, false, false, true,  false, false, false, false, false, false, false, false,   false, false, true,  false, false,  false,  false,   false, false, false),
     { wince    }( false, true,  false, false, false, false, true,  false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
@@ -284,7 +268,7 @@ Const
     { nativent }( false, true,  false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { msdos }   ( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, true , false, false, false,  false,  false,   false, false, false),
     { wii }     ( false, false, false, true , false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
-    { aros }    ( false, true,  false, false, false, true,  true,  false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
+    { obsolete_aros }    ( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { dragonfly}( false, false, false, false, false, true,  false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { win16 }   ( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, true , false, false, false,  false,  false,   false, false, false),
     { freertos }( false, false, false, false, false, false, true,  false, false, false, false, false, false, false,   false, false, false, false, false,  true,   false,   true , false, false),
@@ -2441,7 +2425,7 @@ end;
 
 function maybequoted(const s:string):string;
 const
-  {$IF DEFINED(MSWINDOWS) OR DEFINED(AMIGA) OR DEFINED(MORPHOS) OR DEFINED(AROS)}
+  {$IF DEFINED(MSWINDOWS)}
     FORBIDDEN_CHARS = ['!', '@', '#', '$', '%', '^', '&', '*', '(', ')',
                        '{', '}', '''', '`', '~'];
   {$ELSE}

@@ -62,28 +62,8 @@ implementation
 
 
     procedure ti386callnode.do_syscall;
-      var
-        tmpref: treference;
       begin
-        case target_info.system of
-          system_i386_aros:
-            begin
-              if ([po_syscall_baselast, po_syscall_basereg] * tprocdef(procdefinition).procoptions) <> [] then
-                begin
-                  current_asmdata.CurrAsmList.concat(tai_comment.create(strpnew('AROS SysCall')));
-
-                  cg.getcpuregister(current_asmdata.CurrAsmList,NR_EAX);
-                  get_syscall_call_ref(tmpref,NR_EAX);
-
-                  current_asmdata.CurrAsmList.concat(taicpu.op_ref(A_CALL,S_NO,tmpref));
-                  cg.ungetcpuregister(current_asmdata.CurrAsmList,NR_EAX);
-                  exit;
-                end;
-              internalerror(2016090104);
-            end;
-          else
-            internalerror(2014081801);
-        end;
+        internalerror(2014081801);
       end;
 
 

@@ -72,55 +72,8 @@ implementation
       end;
 
     procedure tppccallnode.do_syscall;
-
-      procedure do_call_ref(constref ref: treference);
-        begin
-          cg.getcpuregister(current_asmdata.CurrAsmList,NR_R0);
-          cg.a_load_ref_reg(current_asmdata.CurrAsmList,OS_ADDR,OS_ADDR,ref,NR_R0);
-          cg.a_call_reg(current_asmdata.CurrAsmList,NR_R0);
-          cg.ungetcpuregister(current_asmdata.CurrAsmList,NR_R0);
-        end;
-
-      var
-        tmpref: treference;
       begin
-        case target_info.system of
-          system_powerpc_amiga:
-            begin
-              { one syscall convention for AmigaOS/PowerPC
-                which is very similar to basesysv (a.k.a basefirst) on MorphOS }
-              reference_reset_base(tmpref,NR_R3,tprocdef(procdefinition).extnumber,ctempposinvalid,sizeof(pint),[]);
-              do_call_ref(tmpref);
-            end;
-          system_powerpc_morphos:
-            begin
-              { all conventions but legacy }
-              if ([po_syscall_basefirst,po_syscall_basenone,
-                   po_syscall_baselast,po_syscall_basereg] * tprocdef(procdefinition).procoptions) <> [] then
-                begin
-                  cg.getcpuregister(current_asmdata.CurrAsmList,NR_R12);
-                  get_syscall_call_ref(tmpref,NR_R12);
-
-                  do_call_ref(tmpref);
-                  cg.ungetcpuregister(current_asmdata.CurrAsmList,NR_R12);
-                end
-              else if po_syscall_legacy in tprocdef(procdefinition).procoptions then
-                begin
-                  cg.getcpuregister(current_asmdata.CurrAsmList,NR_R3);
-
-                  { R3 must contain the call offset }
-                  current_asmdata.CurrAsmList.concat(taicpu.op_reg_const(A_LI,NR_R3,-tprocdef(procdefinition).extnumber));
-                  reference_reset_base(tmpref,NR_R2,100,ctempposinvalid,4,[]); { 100 ($64) is EmulDirectCallOS offset }
-
-                  do_call_ref(tmpref);
-                  cg.ungetcpuregister(current_asmdata.CurrAsmList,NR_R3);
-                end
-              else
-                internalerror(2005010403);
-            end;
-          else
-            internalerror(2004042901);
-        end;
+        internalerror(2004042901);
       end;
 
 

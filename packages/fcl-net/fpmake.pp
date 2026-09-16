@@ -38,27 +38,26 @@ begin
     P.IncludePath.Add('src/unix',AllUnixOSes);
     P.IncludePath.Add('src/win',AllWindowsOSes);
     P.IncludePath.Add('src/os2',[EMX]);
-    P.IncludePath.Add('src/amiga',[morphos]);
     P.IncludePath.Add('src/$(OS)',AllOSes-AllWindowsOSes-AllUnixOSes-[EMX]);
 
     // IP and Sockets
-    T:=P.Targets.AddUnit('fpsockets.pp',AllUnixOSes+AllWindowsOSes+AllAmigaLikeOSes);
+    T:=P.Targets.AddUnit('fpsockets.pp',AllUnixOSes+AllWindowsOSes);
     T:=P.Targets.AddUnit('netdb.pp',AllUnixOSes);
     T:=P.Targets.AddUnit('sslbase.pp');
-    T:=P.Targets.AddUnit('resolve.pp',AllUnixOSes+AllWindowsOSes+AllAmigaLikeOSes+[OS2,EMX]);
+    T:=P.Targets.AddUnit('resolve.pp',AllUnixOSes+AllWindowsOSes+[OS2,EMX]);
       with T.Dependencies do
         begin
           AddInclude('resolve.inc');
           AddUnit('netdb',AllUnixOSes);
         end;
     T.ResourceStrings := True;
-    T:=P.Targets.AddUnit('ssockets.pp',AllUnixOSes+AllWindowsOSes+AllAmigaLikeOSes+[OS2,EMX]);
+    T:=P.Targets.AddUnit('ssockets.pp',AllUnixOSes+AllWindowsOSes+[OS2,EMX]);
       with T.Dependencies do
         begin
           AddUnit('resolve');
         end;
     T.ResourceStrings := True;
-    T:=P.Targets.AddUnit('sslsockets.pp',AllUnixOSes+AllWindowsOSes+AllAmigaLikeOSes+[OS2,EMX]);
+    T:=P.Targets.AddUnit('sslsockets.pp',AllUnixOSes+AllWindowsOSes+[OS2,EMX]);
       with T.Dependencies do
         begin
           AddUnit('ssockets');

@@ -120,7 +120,6 @@ cross-platform packages                       low
   - OpenGL/MesaGL/Mesa3D/WarpMesaGL
   - REXX
     - rxstrings.pp (overloaded functions like len, pos, etc.)
-          - rexxsaa.pp..............................................YP
   - SciTech SNAP SDK
   - SciTech MGL
   - Twain (STi/CFM/Win32)
@@ -167,7 +166,6 @@ documentation (fpdoc)                         low
       - hwvideo.pas
   - cross-platform packages
     - REXX
-      - rexxsaa.pp
       - rxstrings.pp
 
 sample programs                               low

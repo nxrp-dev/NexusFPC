@@ -51,28 +51,8 @@ implementation
       cpupi;
 
     procedure tx8664callnode.do_syscall;
-      var
-        tmpref: treference;
       begin
-        case target_info.system of
-          system_x86_64_aros:
-            begin
-              if ([po_syscall_baselast,po_syscall_basereg] * tprocdef(procdefinition).procoptions) <> [] then
-                begin
-                  current_asmdata.CurrAsmList.concat(tai_comment.create(strpnew('AROS SysCall')));
-
-                  cg.getcpuregister(current_asmdata.CurrAsmList,NR_R12);
-                  get_syscall_call_ref(tmpref,NR_R12);
-
-                  current_asmdata.CurrAsmList.concat(taicpu.op_ref(A_CALL,S_NO,tmpref));
-                  cg.ungetcpuregister(current_asmdata.CurrAsmList,NR_R12);
-                  exit;
-                end;
-              internalerror(2016120101);
-            end;
-          else
-            internalerror(2015062801);
-        end;
+        internalerror(2015062801);
       end;
 
 

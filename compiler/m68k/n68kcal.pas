@@ -83,21 +83,6 @@ implementation
               else
                 internalerror(2016100302);
             end;
-          system_m68k_amiga:
-            begin
-              if po_syscall_legacy in tprocdef(procdefinition).procoptions then
-                begin
-                  { according to Amiga Developer CD 2.1, system functions destroy the
-                    scratch regs D0-D1 and A0-A1, but preserve all other regs. A6 is
-                    not used as FP on Amiga any more (we use A5), so we don't need to
-                    save it. (KB)
-                    http://amigadev.elowar.com/read/ADCD_2.1/Libraries_Manual_guide/node0290.html }
-                  reference_reset_base(tmpref,NR_A6,-tprocdef(procdefinition).extnumber,ctempposinvalid,4,[]);
-                  current_asmdata.CurrAsmList.concat(taicpu.op_ref(A_JSR,S_NO,tmpref));
-                end
-              else
-                internalerror(2005010403);
-            end;
           system_m68k_palmos:
             begin
               if po_syscall in tprocdef(procdefinition).procoptions then

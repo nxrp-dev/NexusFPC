@@ -323,11 +323,10 @@ begin
         { This one is only needed if DEBUG is set }
         P.Dependencies.Add('regexpr');
         if not (NoGDBOption) and not (GDBMIOption) then
-          P.Dependencies.Add('gdbint',AllOSes-AllAmigaLikeOSes);
+          P.Dependencies.Add('gdbint',AllOSes);
         if GDBMIOption then
           P.Dependencies.Add('fcl-process');
         P.Dependencies.Add('graph',[go32v2]);
-        P.Dependencies.Add('ami-extra',AllAmigaLikeOSes);
 
         P.SupportBuildModes:=[bmOneByOne];
 

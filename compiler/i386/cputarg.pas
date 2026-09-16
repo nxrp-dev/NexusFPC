@@ -89,9 +89,6 @@ implementation
     {$ifndef NOTARGETEMBEDDED}
       ,t_embed
     {$endif}
-    {$ifndef NOTARGETAROS}
-      ,t_aros
-    {$endif}
 
 {**************************************
              Assemblers

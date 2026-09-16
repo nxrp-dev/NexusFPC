@@ -40,7 +40,6 @@ begin
     P.SourcePath.Add('src');
     P.SourcePath.Add('src/ptcgraph');
     P.SourcePath.Add('src/macosx',[darwin]);
-    P.SourcePath.Add('src/amiga',[amiga]);
     P.SourcePath.Add('src/go32v2',[go32v2]);
     P.SourcePath.Add('src/msdos',[msdos]);
     P.SourcePath.Add('src/win32',[win32,win64]);
