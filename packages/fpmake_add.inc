@@ -31,7 +31,6 @@
   add_fcl_registry(ADirectory+IncludeTrailingPathDelimiter('fcl-registry'));
   add_fcl_report(ADirectory+IncludeTrailingPathDelimiter('fcl-report'));
   add_fcl_res(ADirectory+IncludeTrailingPathDelimiter('fcl-res'));
-  add_fcl_sdo(ADirectory+IncludeTrailingPathDelimiter('fcl-sdo'));
   add_fcl_sound(ADirectory+IncludeTrailingPathDelimiter('fcl-sound'));
   add_fcl_stl(ADirectory+IncludeTrailingPathDelimiter('fcl-stl'));
   add_fcl_syntax(ADirectory+IncludeTrailingPathDelimiter('fcl-syntax'));
@@ -45,7 +44,6 @@
   add_fpindexer(ADirectory+IncludeTrailingPathDelimiter('fpindexer'));
   add_fpmkunit(ADirectory+IncludeTrailingPathDelimiter('fpmkunit'));
   add_fppkg(ADirectory+IncludeTrailingPathDelimiter('fppkg'));
-  add_gdbint(ADirectory+IncludeTrailingPathDelimiter('gdbint'));
   add_gdbm(ADirectory+IncludeTrailingPathDelimiter('gdbm'));
   add_ggi(ADirectory+IncludeTrailingPathDelimiter('ggi'));
   add_gitlab(ADirectory+IncludeTrailingPathDelimiter('gitlab'));
@@ -113,7 +111,6 @@
   add_openssl(ADirectory+IncludeTrailingPathDelimiter('openssl'));
   add_oracle(ADirectory+IncludeTrailingPathDelimiter('oracle'));
   add_pasjpeg(ADirectory+IncludeTrailingPathDelimiter('pasjpeg'));
-  add_pastojs(ADirectory+IncludeTrailingPathDelimiter('pastojs'));
   add_paszlib(ADirectory+IncludeTrailingPathDelimiter('paszlib'));
   add_pcap(ADirectory+IncludeTrailingPathDelimiter('pcap'));
   add_postgres(ADirectory+IncludeTrailingPathDelimiter('postgres'));
@@ -160,4 +157,3 @@
   add_xforms(ADirectory+IncludeTrailingPathDelimiter('xforms'));
   add_zlib(ADirectory+IncludeTrailingPathDelimiter('zlib'));
   add_zorba(ADirectory+IncludeTrailingPathDelimiter('zorba'));
-  add_fcl_sonar(ADirectory+IncludeTrailingPathDelimiter('fcl-sonar'));

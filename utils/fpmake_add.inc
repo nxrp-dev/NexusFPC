@@ -17,9 +17,7 @@
   add_rmwait(ADirectory+IncludeTrailingPathDelimiter('rmwait'));
   add_tply(ADirectory+IncludeTrailingPathDelimiter('tply'));
   add_unicode(ADirectory+IncludeTrailingPathDelimiter('unicode'));
-  add_pas2js(ADirectory+IncludeTrailingPathDelimiter('pas2js'));
   add_ihxutil(ADirectory+IncludeTrailingPathDelimiter('ihxutil'));
   add_wasmbin(ADirectory+IncludeTrailingPathDelimiter('wasmbin'));
   add_openapi2pas(ADirectory+IncludeTrailingPathDelimiter('openapi'));
   add_ptop(ADirectory+IncludeTrailingPathDelimiter('ptop'));  
-  add_fpsonar(ADirectory+IncludeTrailingPathDelimiter('fpsonar'));

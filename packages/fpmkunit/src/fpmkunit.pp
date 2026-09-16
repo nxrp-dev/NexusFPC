@@ -156,11 +156,8 @@ Type
 
   TInstallMode = (imInstall, imUnInstall);
 
-  TTargetType = (ttProgram,ttUnit,ttImplicitUnit,ttCleanOnlyUnit,ttExampleUnit,ttExampleProgram,ttFPDoc,ttSharedLibrary);
+  TTargetType = (ttProgram,ttUnit,ttImplicitUnit,ttCleanOnlyUnit,ttExampleUnit,ttExampleProgram,ttSharedLibrary);
   TTargetTypes = set of TTargetType;
-
-  TFPDocFormat = (ffHtml, ffHtm, ffXHtml, ffLaTex, ffXMLStruct, ffChm);
-  TFPDocFormats = set of TFPDocFormat;
 
   TTargetState = (tsNeutral,tsConsidering,tsNoCompile,tsCompiled,tsInstalled,tsNotFound);
   TTargetStates = Set of TTargetState;
@@ -183,7 +180,7 @@ Type
   TLogEvent = Procedure (Level : TVerboseLevel; Const Msg : String) of Object;
   TNotifyProcEvent = procedure(Sender: TObject);
 
-  TRunMode = (rmCompile,rmBuild,rmInstall,rmBuildInstall,rmArchive,rmClean,rmDistClean,rmManifest,rmZipInstall,rmPkgList,rmUnInstall,rmInfo,rmDocProject);
+  TRunMode = (rmCompile,rmBuild,rmInstall,rmBuildInstall,rmArchive,rmClean,rmDistClean,rmManifest,rmZipInstall,rmPkgList,rmUnInstall,rmInfo);
 
   TBuildMode = (bmOneByOne, bmBuildUnit{, bmSkipImplicitUnits});
   TBuildModes = set of TBuildMode;
@@ -304,7 +301,6 @@ Const
 
   FPMakePPFile = 'fpmake.pp';
   ManifestFile = 'manifest.xml';
-  DocProjectFileExt = '-docs.xml';
   PkgListFileBase = 'pkg-';
   PkgListFileExt = '.lst';
 
@@ -511,8 +507,7 @@ Type
                         neaBeforeClean, neaAfterClean, neaBeforeArchive, neaAfterArchive,
                         neaBeforeManifest, neaAfterManifest, neaBeforePkgList, neaAfterPkgList,
                         neaBeforeUnInstall, neaAfterUnInstall,
-                        neaBeforeCreateBuildEngine, neaAfterCreateBuildengine,
-                        neaBeforeDocProject, neaAfterDocProject);
+                        neaBeforeCreateBuildEngine, neaAfterCreateBuildengine);
 
   TNotifyEventActionSet = set of TNotifyEventAction;
 
@@ -733,7 +728,6 @@ Type
     FFPCTarget: String;
     FTargetState: TTargetState;
     FTargetType: TTargetType;
-    FXML: string;
     function GetOptions: TStrings;
     procedure SetOptions(const AValue: TStrings);
   Protected
@@ -761,7 +755,6 @@ Type
     Function SubTargetsAsString: String;
     procedure SetName(const AValue: String);override;
     procedure SetExeName(const AValue: String);
-    procedure SetXML(const AValue: string);
     // Deprecated API
     Procedure GetCleanFiles(List : TStrings; const APrefixU, APrefixB : String; ACPU:TCPU; AOS : TOS; const aSubTarget : String); virtual; deprecated 'use TcompileTarget instead';
     Procedure GetArchiveFiles(List : TStrings; ACPU:TCPU; AOS : TOS); virtual; deprecated 'use TcompileTarget instead';
@@ -795,7 +788,6 @@ Type
     Property ObjectPath : TConditionalStrings Read FObjectPath;
     Property UnitPath : TConditionalStrings Read FUnitPath;
     Property IncludePath : TConditionalStrings Read FIncludePath;
-    Property XML: string Read FXML Write SetXML;
     Property IsFPMakePlugin : Boolean read FIsFPMakePlugin write FIsFPMakePlugin;
     // Events.
     Property BeforeCompile : TNotifyEvent Read FBeforeCompile Write FBeforeCompile;
@@ -821,7 +813,6 @@ Type
     function GetTarget(const AName : String): TTarget;
     procedure SetTargetItem(Index : Integer; const AValue: TTarget);
   Public
-    Function AddFPDoc(Const AUnitName, AXMLName : String) : TTarget;inline;
     Function AddUnit(Const AUnitName : String) : TTarget;inline;
     Function AddUnit(Const AUnitName : String;const OSes:TOSes) : TTarget;inline;
 {$ifdef cpu_only_overloads}
@@ -935,7 +926,6 @@ Type
     FBeforePkgListProc: TNotifyProcEvent;
     FBuildMode: TBuildMode;
     FFlags: TStrings;
-    FFPDocFormat: TFPDocFormats;
     FIsFPMakeAddIn: boolean;
     FNamespaceMap: String;
     FSubTargets: TRTLStringDynArray;
@@ -1075,7 +1065,6 @@ Type
     Property SourcePath : TConditionalStrings Read FSourcePath;
     Property ExamplePath : TConditionalStrings Read FExamplePath;
     Property TestPath : TConditionalStrings Read FTestPath;
-    Property FPDocFormat: TFPDocFormats read FFPDocFormat write FFPDocFormat;
     // Targets and dependencies
     Property InstallFiles : TConditionalDestStrings Read FInstallFiles;
     Property CleanFiles : TConditionalStrings Read FCleanFiles;
@@ -1145,8 +1134,6 @@ Type
     FBuildTarget: TCompileTarget;
     FCompiler: String;
     FCopy: String;
-    FFPDocOptions: String;
-    FFPDocOutputDir: String;
     FFPUnitSourcePath: String;
     FIgnoreInvalidOptions: Boolean;
     FInstallExamples: Boolean;
@@ -1168,7 +1155,6 @@ Type
     FLibInstallDir,
     FDocInstallDir,
     FExamplesInstallDir : String;
-    FSingleFPDocFile: Boolean;
     FSearchPath: TStrings;
     FSkipAllPrograms: boolean;
     FSkipCrossPrograms: boolean;
@@ -1187,7 +1173,6 @@ Type
     function GetBuildCPU: TCpu;
     function GetBuildOS: TOS;
     function GetBuildString: String;
-    function GetFPDocOutputDir: String;
     function GetFPUnitSourcePath: String;
     function GetLocalUnitDir: String;
     function GetGlobalUnitDir: String;
@@ -1284,8 +1269,6 @@ Type
     Property LibInstallDir : String Read GetLibInstallDir Write FLibInstallDir;
     Property DocInstallDir : String Read GetDocInstallDir Write FDocInstallDir;
     Property ExamplesInstallDir : String Read GetExamplesInstallDir Write FExamplesInstallDir;
-    Property FPDocOutputDir : String Read GetFPDocOutputDir Write FFPDocOutputDir;
-    Property FPDocOptions : String Read FFPDocOptions Write FFPDocOptions;
     Property FPUnitSourcePath: String read GetFPUnitSourcePath Write FFPUnitSourcePath;
 
     // Command tools. If not set, internal commands  will be used.
@@ -1301,7 +1284,6 @@ Type
     Property UseEnvironment : Boolean read FUseEnvironment write FUseEnvironment;
     Property IgnoreInvalidOptions: Boolean read FIgnoreInvalidOptions write FIgnoreInvalidOptions;
     Property BuildMode: TBuildMode read FBuildMode write FBuildMode;
-    Property SingleFPDocFile : Boolean Read FSingleFPDocFile Write FSingleFPDocFile;
     Property Namespaces : Boolean Read FNamespaces Write FNameSpaces;
     // Installation options
     Property InstallExamples: Boolean read FInstallExamples write FInstallExamples;
@@ -1390,7 +1372,6 @@ Type
     procedure AddDependencyPaths(L: TStrings; DependencyType: TDependencyType; ATarget: TTarget);
     procedure AddDependencyUnitPaths(L:TStrings;APackage: TPackage);
     procedure AddDependencyTransmittedOptions(Args: TStrings; APackage: TPackage);
-    procedure GetDocProject(Proj: TStrings; P: TPackage; aIndent: string); virtual;
 
   Public
     Constructor Create(AOwner : TComponent); override;
@@ -1463,7 +1444,6 @@ Type
     Procedure Archive(Packages : TPackages);
     procedure Manifest(Packages: TPackages; Package: TPackage);
     procedure PkgList(Packages: TPackages);
-    procedure FPDocProject(Packages: TPackages; SingleDocFile : Boolean);
     Procedure Clean(Packages : TPackages; AllTargets: boolean);
 
     Procedure Log(Level : TVerboseLevel; Msg : String);
@@ -1514,7 +1494,6 @@ Type
     Procedure Archive; virtual;
     Procedure Manifest; virtual;
     Procedure PkgList; virtual;
-    Procedure FPDocProject; virtual;
     Procedure Info; virtual;
     procedure AddAutoPackageVariantsToPackage(APackage: TPackage); virtual;
   Public
@@ -1946,7 +1925,6 @@ ResourceString
   SInfoCleaningPackage    = 'Cleaning package %s';
   SInfoCleanPackagecomplete = 'Clean of package %s completed';
   SInfoManifestPackage    = 'Creating manifest for package %s';
-  SInfoPackageDocProject  = 'Creating fpdoc project file for package %s';
   SInfoPkgListPackage    = 'Adding package %s to the package list';
   SInfoCopyingFile        = 'Copying file "%s" to "%s"';
   SInfoDeletedFile        = 'Deleted file "%s"';
@@ -2022,7 +2000,6 @@ ResourceString
   SHelpHelp           = 'This message.';
   SHelpManifest       = 'Create a manifest suitable for import in repository.';
   SHelpPkgList        = 'Create list of all packages suitable for FPC installer.';
-  SHelpFPDocProject   = 'Create fpdoc project file(s) for all packages';
   SHelpZipInstall     = 'Install all units in the package(s) into an archive.';
   SHelpCmdOptions     = 'Where options is one or more of the following:';
   SHelpCPU            = 'Compile for indicated CPU.';
@@ -2048,9 +2025,6 @@ ResourceString
   SHelpSkipCrossProgs = 'Skip programs when cross-compiling/installing';
   SHelpSkipAllProgs   = 'Skip all programs even if native-compiling/installing';
   SHelpIgnoreInvOpt   = 'Ignore further invalid options.';
-  sHelpFpdocOutputDir = 'Use indicated directory as fpdoc output folder.';
-  sHelpSingleFpdocFile = 'Create a single fpdoc project file for all projects';
-  sHelpDocOptionsFile = 'Name=Value File with options for fpdoc project file';
   sHelpFPUnitSrcPath  = 'Sourcepath to replace in fpunits.cfg on installation.';
   sHelpThreads        = 'Enable the indicated amount of worker threads.';
   {$ifdef HAS_UNIT_PROCESS}
@@ -3932,14 +3906,6 @@ begin
   Items[Index]:=AValue;
 end;
 
-function TTargets.AddFPDoc(const AUnitName, AXMLName: String): TTarget;
-begin
-  Result:=Add as TTarget;
-  Result.Name:=AUnitName;
-  Result.XML:=AXMLName;
-  Result.TargetType:=ttFPDoc;
-end;
-
 function TTargets.AddUnit(const AUnitName: String): TTarget;
 begin
   Result:=AddUnit(AUnitName,AllCPUs,AllOSes);
@@ -4807,77 +4773,6 @@ begin
     end;
 end;
 
-procedure TBuildEngine.GetDocProject(Proj: TStrings; P : TPackage; aIndent: string);
-
-  Procedure AddLn(S : String);
-
-  begin
-     Proj.Add(aIndent+S);
-  end;
-
-  Procedure AddLn(Fmt : String; Args : array of const);
-
-  begin
-    Proj.Add(aIndent+Fmt,Args);
-  end;
-
-Var
-  T : TTarget;
-  S, O, FN : String;
-  SL : TStringList;
-  L : TUnsortedDuplicatesStringList;
-  I : Integer;
-  iCPU : TCPU;
-  iOS : TOS;
-
-begin
-  GPathPrefix:=P.Directory;
-  AddPackageMacrosToDictionary(P,P.Dictionary);
-  // First target OS
-  ResolveFileNames(P,Defaults.CPU,Defaults.OS,False,True);
-  // Then other OSes
-  for ICPU:=Low(TCPU) to high(TCPU) do
-    for IOS:=Low(TOS) to high(TOS) do
-       if (IOS<>Defaults.OS) or (iCPU<>Defaults.CPU) then
-         if OSCPUSupported[IOS,ICPU] then
-            ResolveFileNames(P,ICPU,IOS,false);
-  AddLn('<package name="%s" output="" content="%s.xct">',[quotexml(P.Name),quotexml(P.Name)]);
-  Addln('  <units>');
-  SL:=TStringList.Create;
-  For T in P.Targets do
-    if (T.TargetType in [ttUnit,ttImplicitUnit]) and (T.TargetSourceFileName<>'') then
-      begin
-      SL.Clear;
-      // Writeln(T.Name,' -> ',T.TargetSourceFileName);
-      FN:=AddPathPrefix(P,T.TargetSourceFileName);
-      SL.Add('-d'+CPUToString(Defaults.CPU));
-      SL.Add('-d'+OSToString(Defaults.OS));
-      if Defaults.OS in AllUnixOSes then
-        SL.Add('-dUNIX');
-      SL.Add('-M'+ModeToString(T.Mode));
-      // Include Path
-      L:=TUnsortedDuplicatesStringList.Create;
-      L.Duplicates:=dupIgnore;
-      AddDependencyPaths(L,depInclude,T);
-      AddConditionalStrings(P, L,P.IncludePath,Defaults.CompileTarget);
-      AddConditionalStrings(P, L,T.IncludePath,Defaults.CompileTarget);
-      for i:=0 to L.Count-1 do
-        SL.Add('-Fi'+AddPathPrefix(P,L[i]));
-      FreeAndNil(L);
-      if P.HaveOptions Then
-        SL.AddStrings(P.Options);
-      if T.HaveOptions then
-        SL.AddStrings(T.Options);
-      O:='';
-      for S in SL do
-        O:=O+' '+MaybeQuoted(P.Dictionary.ReplaceStrings(S));
-      Delete(O,1,1);
-      AddLn('    <unit file="%s" options="%s"/>',[FN,QuoteXML(O)]);
-      end;
-  Addln('  </units>');
-  AddLn('</package>');
-end;
-
 procedure TPackage.AddPackageVariant(APackageVariant: TPackageVariants);
 begin
   if not assigned(APackageVariant.FMasterPackage) then
@@ -5512,14 +5407,6 @@ begin
     Result:=FSearchPath[0]
   else
     Result:='';
-end;
-
-function TCustomDefaults.GetFPDocOutputDir: String;
-begin
-  If (FFPDocOutputDir<>'') then
-    Result:=FixPath(FFPDocOutputDir, True)
-  else
-    Result:=FixPath('.'+PathDelim+'docs', True);
 end;
 
 function TCustomDefaults.GetFPUnitSourcePath: String;
@@ -6356,8 +6243,6 @@ begin
       FRunMode:=rmUnInstall
     else if CheckCommand(I,'in','info') then
       FRunMode:=rmInfo
-    else if CheckCommand(I,'dp','fpdocproject') then
-      FRunMode:=rmDocProject
     else if CheckOption(I,'h','help') then
       Usage('',[])
     else if Checkoption(I,'C','cpu') then
@@ -6444,12 +6329,6 @@ begin
       Defaults.BuildMode:=bmBuildUnit
     else if CheckOption(I,'io','ignoreinvalidoption', true) then
       Defaults.IgnoreInvalidOptions:=true
-    else if CheckOption(I,'df','doc-folder') then
-      Defaults.FPDocOutputDir:=OptionArg(I)
-    else if CheckCommand(I,'do','doc-options') then
-      Defaults.FPDocOptions:=OptionArg(I)
-    else if CheckCommand(I,'sd','single-docfile') then
-      Defaults.SingleFPDocFile:=True
     else if CheckCommand(I,'ns','namespaces') then
       Defaults.Namespaces:=True
     else if CheckOption(I,'fsp','fpunitsrcpath') then
@@ -6512,7 +6391,6 @@ begin
   LogCmd('manifest',SHelpManifest);
   LogCmd('zipinstall',SHelpZipInstall);
   LogCmd('pkglist',SHelpPkgList);
-  LogCmd('fpdocproject',SHelpFPDocProject);
   Log(vlInfo,SHelpCmdOptions);
   LogOption('h','help',SHelpHelp);
   LogOption('lc','list-commands',SHelpList);
@@ -6544,9 +6422,6 @@ begin
   LogArgOption('r','compiler',SHelpCompiler);
   LogArgOption('f','config',SHelpConfig);
   LogArgOption('o','options',SHelpOptions);
-  LogArgOption('df', 'doc-folder', sHelpFpdocOutputDir);
-  LogArgOption('sd','single-docfile', sHelpSingleFpdocFile);
-  LogArgOption('do','doc-options', sHelpDocOptionsFile);
   LogArgOption('fsp', 'fpunitsrcpath', sHelpFPUnitSrcPath);
   LogArgOption('zp', 'zipprefix', sHelpZipPrefix);
 {$ifndef NO_THREADING}
@@ -6655,13 +6530,6 @@ begin
   NotifyEventCollection.CallEvents(neaAfterPkgList, self);
 end;
 
-procedure TCustomInstaller.FPDocProject;
-begin
-  NotifyEventCollection.CallEvents(neaBeforeDocProject, self);
-  BuildEngine.FPDocProject(Packages,Defaults.SingleFPDocFile);
-  NotifyEventCollection.CallEvents(neaAfterDocProject, self);
-end;
-
 procedure TCustomInstaller.AddAutoPackageVariantsToPackage(APackage: TPackage);
 var
   i: Integer;
@@ -6719,7 +6587,6 @@ begin
       rmPkgList : PkgList;
       rmUnInstall : UnInstall;
       rmInfo      : Info;
-      rmDocProject : FPDocProject;
     end;
   except
     On E : Exception do
@@ -7813,8 +7680,7 @@ begin
                     else
                       FindExampleSource(T);
                   end;
-                ttCleanOnlyUnit, // not sure about this one ?
-                ttFPDoc:
+                ttCleanOnlyUnit: // not sure about this one ?
                   ; // Avoid compiler warning
               end;
             finally
@@ -8741,13 +8607,7 @@ procedure TBuildEngine.Compile(APackage: TPackage);
 Var
   T : TTarget;
   I : Integer;
-  Cmd: string;
-  cmdOpts: string;
-  sFPDocFormat: string;
-  IFPDocFormat: TFPDocFormat;
-  d: integer;
   aPath,UC: string;
-  dep: TDependency;
   RegenerateUnitconfigFile: boolean;
   BUName: string;
 
@@ -8860,8 +8720,6 @@ Var
   end;
 
 begin
-  cmdOpts := '';
-
   log(vlWarning,SWarnStartCompilingPackage,[APackage.Name, Defaults.Target]);
 
   case Defaults.BuildMode of
@@ -8921,20 +8779,6 @@ begin
         ttProgram:
           begin // do nothing, are compiled later
           end;
-        ttFPDoc:
-          begin
-            for d := 0 to T.Dependencies.Count - 1 do
-            begin
-              dep := TDependency(T.Dependencies[d]);
-
-              //add unit dependencies
-              if dep.DependencyType = depUnit then
-                cmdOpts := cmdOpts + ' --input=' + AddPathPrefix(APackage,dep.Value);
-            end;
-
-            //check if a documentation target is given
-            cmdOpts := cmdOpts + ' --input=' + AddPathPrefix(APackage,T.Directory + T.Name + T.Extension) + ' --descr='+ T.XML;
-          end
         else
           log(vldebug, SDbgTargetIsNotAUnitOrProgram,[T.Name]);
         end;
@@ -8960,34 +8804,6 @@ begin
         Log(vlInfo, Format(SDbgGenerating, [UC]));
         APackage.SaveUnitConfigToFile(UC,Defaults.CPU,Defaults.OS);
       end;
-
-    //compile documentation, because options were found
-    if cmdOpts <> '' then
-    begin
-      //append package name
-      cmdOpts := cmdOpts + ' --package=' + APackage.Name;
-
-      for IFPDocFormat:=Low(TFPDocFormat) to High(TFPDocFormat) do
-      begin
-        if IFPDocFormat in APackage.FPDocFormat then
-        begin
-          //prepend output format
-          case IFPDocFormat of
-            ffHtml:      sFPDocFormat := '--format=html --output=' + AddPathPrefix(APackage,Defaults.FPDocOutputDir);
-            ffHtm:       sFPDocFormat := '--format=htm --output=' + AddPathPrefix(APackage,Defaults.FPDocOutputDir);
-            ffXHtml:     sFPDocFormat := '--format=xhtml --output=' + AddPathPrefix(APackage,Defaults.FPDocOutputDir);
-            ffLaTex:     sFPDocFormat := '--format=latex --output=' + AddPathPrefix(APackage,Defaults.FPDocOutputDir) + APackage.Name + '.tex';
-            ffXMLStruct: sFPDocFormat := '--format=xml-struct --output=' + AddPathPrefix(APackage,Defaults.FPDocOutputDir);
-            ffChm:       sFPDocFormat := '--format=chm --output=' + AddPathPrefix(APackage,Defaults.FPDocOutputDir) + APackage.Name + '.chm';
-          end;
-
-          //execute fpdoc
-          Cmd:=ExeSearch('fpdoc',{$IFDEF FPC_DOTTEDUNITS}System.{$ENDIF}SysUtils.GetEnvironmentvariable('PATH'));
-          if Cmd = '' then Cmd := 'fpdoc';
-          ExecuteProcess(Cmd, sFPDocFormat + cmdOpts);
-        end;
-      end;
-    end;
 
     DoAfterCompile(APackage);
   Finally
@@ -9938,87 +9754,6 @@ begin
   NotifyEventCollection.CallEvents(neaAfterPkgList, Self);
 end;
 
-procedure TBuildEngine.FPDocProject(Packages: TPackages; SingleDocFile: Boolean);
-
-  Procedure AddHeader(L,Opts : Tstrings);
-
-  Var
-    I : Integer;
-    N,V : String;
-
-  begin
-    L.Add('<?xml version="1.0" encoding="utf-8"?>');
-    L.Add('<docproject>');
-    L.Add('  <options>');
-    L.Add('    <option name="ostarget" value="'+QuoteXML(CPUToString(Defaults.CPU))+'"/>');
-    L.Add('    <option name="cputarget" value="'+QuoteXML(OSToString(Defaults.OS))+'"/>');
-    L.Add('    <option name="parse-impl" value="false"/>');
-    L.Add('    <option name="dont-trim" value="false"/>');
-    if assigned(Opts) then
-      begin
-      For I:=0 to Opts.Count-1 do
-        begin
-        Opts.GetNameValue(I,N,V);
-        L.Add('    <option name="%s" value="%s"/>',[QuoteXML(N),QuoteXML(V)]);
-        end;
-      end;
-    L.Add('  </options>');
-    L.Add('  <packages>');
-  end;
-
-  Procedure AddFooter(L : Tstrings);
-  begin
-    L.Add('  </packages>');
-    L.Add('</docproject>');
-  end;
-
-Var
-  L,LOpts : TStringList;
-  FN : String;
-  P : TPackage;
-
-begin
-  LOpts:=Nil;
-  L:=TStringList.Create;
-  Try
-    if Defaults.FPDocOptions<>'' then
-       begin
-       LOpts:=TStringList.Create;
-       LOpts.LoadFromFile(Defaults.FPDocOptions);
-       end;
-    if SingleDocFile then
-      begin
-      FN:='fpmake'+DocProjectFileExt;
-      if Defaults.FPDocOutputDir<>'' then
-        FN:=IncludeTrailingPathDelimiter(Defaults.FPDocOutputDir)+FN;
-      Log(vlDebug, Format(SDbgGenerating, [FN]));
-      AddHeader(L,Lopts);
-      Log(vlInfo, Format(SInfoPackageDocProject,['<all>']));
-      For P in Packages do
-        GetDocProject(L,P,'    ');
-      AddFooter(L);
-      L.SaveToFile(FN);
-      end
-   else
-     For P in Packages do
-       begin
-       L.Clear;
-       FN:=P.Name+DocProjectFileExt;
-       if Defaults.FPDocOutputDir<>'' then
-         FN:=IncludeTrailingPathDelimiter(Defaults.FPDocOutputDir)+FN;
-       Log(vlDebug, Format(SDbgGenerating, [FN]));
-       AddHeader(L,Lopts);
-       Log(vlInfo, Format(SInfoPackageDocProject,[P.Name]));
-       GetDocProject(L,P,'    ');
-       AddFooter(L);
-       L.SaveToFile(FN);
-       end;
-  Finally
-    L.Free;
-    Lopts.Free;
-  end;
-end;
-
 procedure TBuildEngine.Clean(Packages: TPackages; AllTargets: boolean);
 Var
   I : Integer;
@@ -10193,7 +9928,6 @@ begin
     DestTarget.ObjectPath.Assign(ObjectPath);
     DestTarget.UnitPath.Assign(UnitPath);
     DestTarget.IncludePath.Assign(IncludePath);
-    DestTarget.FXML := FXML;
     DestTarget.AfterCompile := AfterCompile;
     DestTarget.BeforeCompile := BeforeCompile;
     DestTarget.BeforeClean := BeforeCompile;
@@ -10377,11 +10111,6 @@ begin
   FExeName:=Copy(N,1,Length(N)-Length(E));
   { Use exact AValue for -o option }
   AddOption('-o'+AValue);
-end;
-
-procedure TTarget.SetXML(const AValue: string);
-begin
-  FXML:=FixPath(AValue, False);
 end;
 
 procedure TTarget.GetCleanFiles(List: TStrings; const APrefixU,
@@ -10571,12 +10300,6 @@ begin
          (D.TargetFileName<>'') then
         List.Add(D.TargetFileName);
     end;
-  // FPDoc files
-  if XML <> '' then
-  begin
-    List.Add(Directory + Name + Extension);
-    List.Add(XML);
-  end;
 end;
 
 procedure TTarget.AddOption(const aValue: String);

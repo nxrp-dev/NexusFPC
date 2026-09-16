@@ -24,11 +24,8 @@ REQUIREDVERSION=3.2.2
 REQUIREDVERSION2=3.2.0
 
 
-# make versions < 3.77 (OS2 version) are buggy
-ifndef inOS2
 override FPCDIR:=$(BASEDIR)
 export FPCDIR
-endif
 
 # Build dir
 ifndef BUILDDIR
@@ -159,7 +156,7 @@ ALLTARGET=all
 else
 ifndef ALLTARGET
 SHAREDTARGETS=
-SMARTTARGETS=win32 go32v2 linux freebsd netbsd openbsd netware netwlibc darwin
+SMARTTARGETS=win32 go32v2 linux freebsd netbsd openbsd darwin
 ifneq ($(findstring $(OS_TARGET),$(SHAREDTARGETS)),)
 ALLTARGET=shared
 else

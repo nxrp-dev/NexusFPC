@@ -54,6 +54,8 @@ A developer who needs a platform, target, package, or compatibility feature inte
 
 In the case of packages specifically.  Upstream FPC has a number of useful packages that have been deemed inappropriate for inclusion.  Ones that are on the upper edge of usefulness for Nexus will be imported into a Nexus specific package repository where they can be used by Nexus.  An attempt will be made to keep these specific packages current with upstream development where it exists.
 
+When these packages are brought back in, they will be analyzed and compared with what else is available.  THe primary point is not that we don't want to support non-core packages but non-core packages need to be an active decision and maintained solely on their own.
+
 NexusFPC may change defaults, remove unsupported targets, retire obsolete compatibility paths, simplify maintenance, and adopt useful upstream development features as part of its supported baseline. Those decisions should improve the focused Nexus toolchain without making Nexus source needlessly dependent on a private compiler dialect.
 
 ## Scope

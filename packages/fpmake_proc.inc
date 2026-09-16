@@ -184,12 +184,6 @@ begin
 {$include fcl-res/fpmake.pp}
 end;
 
-procedure add_fcl_sdo(const ADirectory: string);
-begin
-  with Installer do
-{$include fcl-sdo/fpmake.pp}
-end;
-
 procedure add_fcl_sound(const ADirectory: string);
 begin
   with Installer do
@@ -255,8 +249,6 @@ begin
 end;
 
 {$include fppkg/fpmake.pp}
-
-{$include gdbint/fpmake.pp}
 
 procedure add_gdbm(const ADirectory: string);
 begin
@@ -652,12 +644,6 @@ begin
 {$include pasjpeg/fpmake.pp}
 end;
 
-procedure add_pastojs(const ADirectory: string);
-begin
-  with Installer do
-{$include pastojs/fpmake.pp}
-end;
-
 procedure add_paszlib(const ADirectory: string);
 begin
   with Installer do
@@ -911,7 +897,4 @@ begin
   with Installer do
 {$include zorba/fpmake.pp}
 end;
-
-{$include fcl-sonar/fpmake.pp}
-
 

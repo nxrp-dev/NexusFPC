@@ -36,8 +36,6 @@
 
 {$include unicode/fpmake.pp}
 
-{$include pas2js/fpmake.pp}
-
 {$include ihxutil/fpmake.pp}
 
 {$include wasmbin/fpmake.pp}
@@ -45,5 +43,3 @@
 {$include openapi/fpmake.pp}
 
 {$include ptop/fpmake.pp}
-
-{$include fpsonar/fpmake.pp}

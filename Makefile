@@ -370,10 +370,8 @@ override PACKAGE_NAME=fpc
 override PACKAGE_VERSION=3.3.1
 REQUIREDVERSION=3.2.2
 REQUIREDVERSION2=3.2.0
-ifndef inOS2
 override FPCDIR:=$(BASEDIR)
 export FPCDIR
-endif
 ifndef BUILDDIR
 BUILDDIR=$(BASEDIR)/build
 endif
@@ -484,7 +482,7 @@ ALLTARGET=all
 else
 ifndef ALLTARGET
 SHAREDTARGETS=
-SMARTTARGETS=win32 go32v2 linux freebsd netbsd openbsd netware netwlibc darwin
+SMARTTARGETS=win32 go32v2 linux freebsd netbsd openbsd darwin
 ifneq ($(findstring $(OS_TARGET),$(SHAREDTARGETS)),)
 ALLTARGET=shared
 else
@@ -1273,7 +1271,6 @@ BATCHEXT=.sh
 EXEEXT=
 SHORTSUFFIX=qnx
 endif
-ALL_EXEEXT+=.nlm
 ifeq ($(OS_TARGET),macosclassic)
 BATCHEXT=
 EXEEXT=
