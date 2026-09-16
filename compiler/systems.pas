@@ -341,9 +341,6 @@ interface
        { all classic Mac OS targets }
        systems_macos = [system_m68k_macosclassic,system_powerpc_macosclassic];
 
-       { all OS/2 targets }
-       systems_os2 = [system_i386_OS2,system_i386_emx];
-
        { all native nt systems }
        systems_nativent = [system_i386_nativent];
 
@@ -351,7 +348,7 @@ interface
          some newer instructions (like CMOVcc or PREFECTXXX) lead to troubles,
          related to OS or emulator lack of support. }
        systems_i386_default_486 = [system_i386_go32v2, system_i386_watcom,
-                                   system_i386_emx, system_i386_wdosx,
+                                   system_i386_wdosx,
                                    system_i386_beos, system_i386_netware,
                                    system_i386_netwlibc, system_i386_symbian];
 
@@ -461,7 +458,6 @@ interface
        systems_support_checkpointer = systems_linux
                              + [system_i386_win32]
                              + [system_i386_GO32V2]
-                             + [system_i386_os2]
                              + [system_i386_beos,system_i386_haiku]
                              ;
 

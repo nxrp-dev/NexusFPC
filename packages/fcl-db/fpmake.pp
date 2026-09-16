@@ -12,7 +12,7 @@ const
   DatadictOSes        = [aix,beos,darwin,haiku,linux,freebsd,win32,win64,wince,android,dragonfly];
   SqldbConnectionOSes = [aix,beos,haiku,linux,freebsd,darwin,iphonesim,ios,netbsd,openbsd,solaris,win32,win64,wince,android,dragonfly];
   SqliteOSes          = [aix,beos,haiku,linux,freebsd,darwin,iphonesim,ios,netbsd,openbsd,solaris,win32,win64,wince,android,dragonfly];
-  DBaseOSes           = [aix,beos,haiku,linux,freebsd,darwin,iphonesim,ios,netbsd,openbsd,solaris,win32,win64,wince,android,os2,dragonfly];
+  DBaseOSes           = [aix,beos,haiku,linux,freebsd,darwin,iphonesim,ios,netbsd,openbsd,solaris,win32,win64,wince,android,dragonfly];
   MSSQLOSes           = [beos,haiku,linux,freebsd,netbsd,openbsd,solaris,win32,win64,android,dragonfly];
 
 
@@ -319,8 +319,7 @@ begin
       with T.Dependencies do
         begin
           AddInclude('dbf_common.inc');
-          AddInclude('dbf_wnix.inc', AllOSes-AllWindowsOSes-[os2]);
-          AddInclude('dbf_wos2.inc', [os2]);
+          AddInclude('dbf_wnix.inc', AllOSes-AllWindowsOSes);
         end;
     T:=P.Targets.AddUnit('fpcgcreatedbf.pp', DatadictOSes);
       with T.Dependencies do

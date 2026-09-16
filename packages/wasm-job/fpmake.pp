@@ -21,7 +21,7 @@ begin
     P.Directory:=ADirectory;
 {$endif ALLPACKAGES}
     P.Version:='3.3.1';
-    P.OSes:=  [atari,emx,gba,go32v2,msdos,nativent,nds,netware,netwlibc,os2,sinclairql,human68k,symbian,watcom,wii,win32,win64,wince,freertos,wasip1,wasip1threads]+AllUnixOSes-[QNX];
+    P.OSes:=  [atari,gba,go32v2,msdos,nativent,nds,netware,netwlibc,sinclairql,human68k,symbian,watcom,wii,win32,win64,wince,freertos,wasip1,wasip1threads]+AllUnixOSes-[QNX];
     if Defaults.CPU=jvm then
       P.OSes := P.OSes - [android];
     P.SourcePath.Add('src');

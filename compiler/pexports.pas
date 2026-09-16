@@ -225,8 +225,8 @@ implementation
                            { if a name is specified? (JM)                         }
 
                            if not (eo_name in options) then
-                             { Export names are not mangled on Windows and OS/2 }
-                             if (target_info.system in (systems_all_windows+[system_i386_emx, system_i386_os2])) then
+                             { Export names are not mangled on Windows }
+                             if (target_info.system in systems_all_windows) then
                                hpname:=orgs
                              { Use set mangled name in case of cdecl/cppdecl/mwpascal }
                              { and no name specified                                  }

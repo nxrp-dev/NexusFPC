@@ -32,10 +32,6 @@ Interface
 {$ifdef CPULLVM}
   {$define LLVM_INTERFACE_PROBLEM}
 {$endif CPULLVM}
-{$IFDEF OS2}
- {$DEFINE NO_UNIT_PROCESS}
-{$ENDIF OS2}
-
 {$IFDEF GO32V2}
  {$DEFINE NO_UNIT_PROCESS}
  {$DEFINE NO_THREADING}
@@ -145,9 +141,9 @@ Type
 
   // Please keep this order, see OSCPUSupported below
   TOS=(osNone,
-    linux,go32v2,win32,os2,freebsd,beos,netbsd,
+    linux,go32v2,win32,obsolete_os2,freebsd,beos,netbsd,
     obsolete_amiga,atari, solaris, qnx, netware, openbsd,wdosx,
-    palmos,macosclassic,darwin,emx,watcom,obsolete_morphos,netwlibc,
+    palmos,macosclassic,darwin,obsolete_emx,watcom,obsolete_morphos,netwlibc,
     win64,wince,gba,nds,embedded,symbian,haiku,iphonesim,
     aix,java,android,nativent,msdos,wii,obsolete_aros,dragonfly,
     win16,freertos,zxspectrum,msxdos,ios,amstradcpc,sinclairql,
@@ -218,16 +214,16 @@ Const
   DOS = Go32v2;
   MacOSX = Darwin;
 
-  AllOSes = [Low(TOS)..High(TOS)]-[obsolete_amiga,obsolete_morphos,obsolete_aros];
+  AllOSes = [Low(TOS)..High(TOS)]-[obsolete_os2,obsolete_amiga,obsolete_emx,obsolete_morphos,obsolete_aros];
   AllCPUs = [Low(TCPU)..High(TCPU)];
   AllUnixOSes  = [Linux,FreeBSD,NetBSD,OpenBSD,Darwin,QNX,BeOS,Solaris,Haiku,iphonesim,ios,aix,Android,dragonfly];
   AllBSDOSes      = [FreeBSD,NetBSD,OpenBSD,Darwin,iphonesim,ios,dragonfly];
   AllWindowsOSes  = [Win32,Win64,WinCE];
-  AllLimit83fsOses = [go32v2,os2,emx,watcom,msdos,win16,atari,human68k];
+  AllLimit83fsOses = [go32v2,watcom,msdos,win16,atari,human68k];
   AllWebAssemblyOSes = [wasip1, wasip1threads, wasip2];
 
   AllSmartLinkLibraryOSes = [Linux,msdos,win16,palmos]; // OSes that use .a library files for smart-linking
-  AllImportLibraryOSes = AllWindowsOSes + [os2,emx,netwlibc,netware,watcom,go32v2,macosclassic,nativent,msdos,win16];
+  AllImportLibraryOSes = AllWindowsOSes + [netwlibc,netware,watcom,go32v2,macosclassic,nativent,msdos,win16];
 
   { This table is kept OS,Cpu because it is easier to maintain (PFV) }
   OSCPUSupported : array[TOS,TCpu] of boolean = (
@@ -236,7 +232,7 @@ Const
     { linux }   ( false, true,  true,  true,  true,  true,  true,  true,  false, true , true , true , true , true ,   false, false, true , false, true ,  true ,  true,    true , false, true),
     { go32v2 }  ( false, true,  false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { win32 }   ( false, true,  false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
-    { os2 }     ( false, true,  false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
+{ obsolete_os2 }( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { freebsd } ( false, true,  false, false, false, true,  false, true,  false, false, false, false, false, false,   false, false, true , false, false,  false,  false,   false, false, false),
     { beos }    ( false, true,  false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { netbsd }  ( false, true,  true,  true,  true,  true,  true,  false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
@@ -250,7 +246,7 @@ Const
     { palmos }  ( false, false, true,  false, false, false, true,  false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
 { macosclassic }( false, false, true,  true,  false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { darwin }  ( false, true,  false, true,  false, true,  false,  true, false, false, false, false, false, false,   false, false, true , false, false,  false,  false,   false, false, false),
-    { emx }     ( false, true,  false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
+{ obsolete_emx }( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { watcom }  ( false, true,  false, false, false ,false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { obsolete_morphos } ( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { netwlibc }( false, true,  false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
@@ -2684,8 +2680,6 @@ begin
   case aTarget.OS of
     go32v2: result := 'dos';
     watcom: result := 'wat';
-    os2:    result := 'os2';
-    emx:    result := 'emx';
     osNone:
       begin
         if ALimit83 then
@@ -2962,7 +2956,7 @@ end;
 
 function AddProgramExtension(const ExecutableName: string; AOS : TOS): string;
 begin
-  if AOS in [Go32v2,Win32,Win64,Wince,OS2,EMX,Watcom] then
+  if AOS in [Go32v2,Win32,Win64,Wince,Watcom] then
     Result:=ExecutableName+ExeExt
   else if AOS in [wasip1,wasip1threads,wasip2] then
     Result:=ExecutableName+WasiExeExt
@@ -2972,7 +2966,7 @@ end;
 
 function AddLibraryExtension(const LibraryName: string; AOS : TOS): string;
 begin
-  if AOS in [Go32v2,Win32,Win64,Wince,OS2,EMX,Watcom] then
+  if AOS in [Go32v2,Win32,Win64,Wince,Watcom] then
     Result:=LibraryName+DLLExt
   else if aOS in [darwin,macosclassic,iphonesim,ios] then
     Result:=LibraryName+DyLibExt
@@ -2988,8 +2982,6 @@ function GetImportLibraryFilename(const UnitName: string; AOS: TOS): string;
 begin
   if AOS in [go32v2,watcom] then
     Result := 'libimp'+UnitName
-  else if AOS in [os2,emx] then
-    Result := UnitName
   else if AOS in [netware,netwlibc,macosclassic] then
     Result := 'lib'+UnitName
   else

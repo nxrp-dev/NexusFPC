@@ -355,8 +355,7 @@ unit scandir;
       var
          hs : string;
       begin
-        if not (target_info.system in systems_all_windows + [system_i386_os2,
-                                       system_i386_emx, system_powerpc_macosclassic,
+        if not (target_info.system in systems_all_windows + [system_powerpc_macosclassic,
                                        system_arm_nds, system_i8086_msdos,
                                        system_i8086_embedded, system_m68k_atari] +
                                        systems_nativent) then
@@ -380,9 +379,6 @@ unit scandir;
                    SetApptype(app_cui)
                  else if (hs='NATIVE') and (target_info.system in systems_windows + systems_nativent) then
                    SetApptype(app_native)
-                 else if (hs='FS') and (target_info.system in [system_i386_os2,
-                                                             system_i386_emx]) then
-                   SetApptype(app_fs)
                  else if (hs='TOOL') and (target_info.system in [system_powerpc_macosclassic]) then
                    SetApptype(app_tool)
                  else if (hs='ARM9') and (target_info.system in [system_arm_nds]) then
@@ -488,7 +484,7 @@ unit scandir;
 
     procedure dir_description;
       begin
-        if not (target_info.system in systems_all_windows+[system_i386_os2,system_i386_emx,
+        if not (target_info.system in systems_all_windows+[
                  system_i386_netware,system_i386_wdosx,system_i386_netwlibc,system_i8086_win16]) then
           Message(scan_w_description_not_support);
         { change description global var in all cases }
@@ -1816,7 +1812,7 @@ unit scandir;
         major, minor, revision : longint;
         error : integer;
       begin
-        if not (target_info.system in systems_all_windows+[system_i386_os2,system_i386_emx,
+        if not (target_info.system in systems_all_windows+[
                  system_i386_netware,system_i386_wdosx,
                  system_i386_netwlibc]) then
           begin

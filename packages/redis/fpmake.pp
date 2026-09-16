@@ -20,7 +20,7 @@ begin
     P.Email := '';
     P.Description := 'Redis interface unit.';
     // Keep this lis the same as fcl-net.
-    P.OSes:=AllUnixOSes+AllWindowsOSes+[OS2,EMX];
+    P.OSes:=AllUnixOSes+AllWindowsOSes;
     if Defaults.CPU=jvm then
       P.OSes := P.OSes - [android];
 

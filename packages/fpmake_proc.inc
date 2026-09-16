@@ -670,12 +670,6 @@ begin
 {$include oracle/fpmake.pp}
 end;
 
-procedure add_os2units(const ADirectory: string);
-begin
-  with Installer do
-{$include os2units/fpmake.pp}
-end;
-
 procedure add_palmunits(const ADirectory: string);
 begin
   with Installer do

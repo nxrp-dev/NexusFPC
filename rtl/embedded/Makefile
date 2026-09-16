@@ -5,7 +5,7 @@ default: all
 MAKEFILETARGETS=i386-embedded m68k-embedded powerpc-embedded sparc-embedded x86_64-embedded arm-embedded powerpc64-embedded avr-embedded armeb-embedded mipsel-embedded i8086-embedded aarch64-embedded wasm32-embedded riscv32-embedded riscv64-embedded xtensa-embedded z80-embedded
 BSDs = freebsd netbsd openbsd darwin dragonfly
 UNIXs = linux $(BSDs) solaris qnx haiku aix
-LIMIT83fs = go32v2 os2 emx watcom msdos win16 atari human68k
+LIMIT83fs = go32v2 watcom msdos win16 atari human68k
 OSNeedsComspecToRunBatch = go32v2 watcom
 FORCE:
 .PHONY: FORCE
@@ -1636,24 +1636,6 @@ endif
 ifeq ($(OS_TARGET),win32)
 SHAREDLIBEXT=.dll
 SHORTSUFFIX=w32
-endif
-ifeq ($(OS_TARGET),os2)
-BATCHEXT=.cmd
-AOUTEXT=.out
-STATICLIBPREFIX=
-SHAREDLIBEXT=.dll
-SHORTSUFFIX=os2
-ECHO=echo
-IMPORTLIBPREFIX=
-endif
-ifeq ($(OS_TARGET),emx)
-BATCHEXT=.cmd
-AOUTEXT=.out
-STATICLIBPREFIX=
-SHAREDLIBEXT=.dll
-SHORTSUFFIX=emx
-ECHO=echo
-IMPORTLIBPREFIX=
 endif
 ifeq ($(OS_TARGET),amiga)
 EXEEXT=

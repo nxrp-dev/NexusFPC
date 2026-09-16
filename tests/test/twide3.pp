@@ -1,4 +1,4 @@
-{ %skiptarget=win32,win64,wince,os2,emx,go32v2,msdos }
+{ %skiptarget=win32,win64,wince,go32v2,msdos }
 { This test is only useful if the local codepage is utf-8 which
   usually not the case on windows (and never can be the case on OS/2)
 }

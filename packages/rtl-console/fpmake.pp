@@ -13,7 +13,7 @@ Const
   UnixLikes = AllUnixOSes -[QNX];
 
   WinEventOSes = [win32,win64];
-  KVMAll       = [emx,go32v2,msdos,netware,netwlibc,os2,win32,win64,win16]+UnixLikes;
+  KVMAll       = [go32v2,msdos,netware,netwlibc,win32,win64,win16]+UnixLikes;
   WASMOSes = [wasip1,wasip1threads];
 
   // all full KVMers have crt too
@@ -54,7 +54,6 @@ begin
     P.SourcePath.Add('src/$(OS)');
     P.SourcePath.Add('src/darwin',[iphonesim,ios]);
     P.SourcePath.Add('src/unix',AllUnixOSes);
-    P.SourcePath.Add('src/os2commn',[os2,emx]);
     P.SourcePath.Add('src/win',WinEventOSes);
 
     P.IncludePath.Add('src/inc');

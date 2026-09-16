@@ -3946,7 +3946,7 @@ begin
          end;
        'C':
          begin
-           if target_info.system in systems_all_windows+systems_os2+systems_macos then
+           if target_info.system in systems_all_windows+systems_macos then
              begin
                if UnsetBool(More, j, opt, false) then
                  SetApptype(app_gui)
@@ -3992,19 +3992,11 @@ begin
                break;
              end;
 {$endif defined(m68k)}
-           if target_info.system in systems_os2 then
-             begin
-               if UnsetBool(More, j, opt, false) then
-                 SetApptype(app_cui)
-               else
-                 SetApptype(app_fs);
-             end
-           else
-             IllegalPara(opt);
+           IllegalPara(opt);
          end;
        'G':
          begin
-           if target_info.system in systems_all_windows+systems_os2+systems_macos then
+           if target_info.system in systems_all_windows+systems_macos then
              begin
                if UnsetBool(More, j, opt, false) then
                  SetApptype(app_cui)

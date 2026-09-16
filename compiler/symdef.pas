@@ -1761,8 +1761,7 @@ implementation
          use_crc : boolean;
          dllprefix : TSymStr;
       begin
-        if (target_info.system in (systems_all_windows + systems_nativent +
-                           [system_i386_emx, system_i386_os2]))
+        if (target_info.system in (systems_all_windows + systems_nativent))
             and (dllname <> '') then
           begin
             dllprefix:=lower(ExtractFileName(dllname));

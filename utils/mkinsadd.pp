@@ -31,9 +31,9 @@ uses
 
 
 const
- MaxTarget = 5;
- TargetListShort: array [1..MaxTarget] of string [3] = ('dos', 'emx', 'os2', 'w32', 'src');
- TargetListLong: array [1..MaxTarget] of string = ('dos', 'emx', 'os2', '.i386-win32', '.source');
+ MaxTarget = 3;
+ TargetListShort: array [1..MaxTarget] of string [3] = ('dos', 'w32', 'src');
+ TargetListLong: array [1..MaxTarget] of string = ('dos', '.i386-win32', '.source');
  DefDiffFN = 'install.add';
  PackageStr = 'package=';
  UnitsStr = 'units-';

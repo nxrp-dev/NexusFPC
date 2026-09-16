@@ -100,7 +100,7 @@ begin
           AddInclude('flt_conv.inc');
           AddInclude('flt_core.inc');
           AddInclude('flt_pack.inc');
-          AddInclude('systhrd.inc',AllWindowsOSes+[Netware,Netwlibc,EMX,OS2]);
+          AddInclude('systhrd.inc',AllWindowsOSes+[Netware,Netwlibc]);
           // Unix implementations
           AddInclude('osdefs.inc',AllUnixOSes);
           AddInclude('sysunixh.inc',AllUnixOSes);

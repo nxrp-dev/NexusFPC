@@ -118,7 +118,6 @@
   add_opengles(ADirectory+IncludeTrailingPathDelimiter('opengles'));
   add_openssl(ADirectory+IncludeTrailingPathDelimiter('openssl'));
   add_oracle(ADirectory+IncludeTrailingPathDelimiter('oracle'));
-  add_os2units(ADirectory+IncludeTrailingPathDelimiter('os2units'));
   add_palmunits(ADirectory+IncludeTrailingPathDelimiter('palmunits'));
   add_pasjpeg(ADirectory+IncludeTrailingPathDelimiter('pasjpeg'));
   add_pastojs(ADirectory+IncludeTrailingPathDelimiter('pastojs'));

@@ -1,5 +1,5 @@
 { %cpu=i386,powerpc}
-{ %target=linux,win32,go32v2,os2,beos,haiku }
+{ %target=linux,win32,go32v2,beos,haiku }
 { %opt=-ghcl }
 
 { Source provided for Free Pascal Bug Report 3348 }

@@ -578,7 +578,7 @@ interface
             idtxt  : 'AS_AOUT';
             asmbin : 'as';
             asmcmd : '-o $OBJ $EXTRAOPT $ASM';
-            supported_targets : [system_i386_linux,system_i386_OS2,system_i386_freebsd,system_i386_netbsd,system_i386_openbsd,system_i386_EMX,system_i386_embedded];
+            supported_targets : [system_i386_linux,system_i386_freebsd,system_i386_netbsd,system_i386_openbsd,system_i386_embedded];
             flags : [af_needar,af_stabs_use_function_absolute_addresses];
             labelprefix : 'L';
             labelmaxlen : -1;

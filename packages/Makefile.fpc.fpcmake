@@ -60,8 +60,6 @@ dirs_win32=rtl-console rtl-unicode fv winunits-base winunits-jedi fcl-web fastcg
 dirs_win64=rtl-console rtl-unicode fv winunits-base winunits-jedi fcl-web fastcgi ibase mysql zlib oracle odbc postgres sqlite imagemagick gdbint \
                 tcl opengl gtk1 fpgtk fftw sdl openssl cdrom  httpd22 numlib fcl-extra opencl nvapi ptc graph openal
 dirs_wince=rtl-unicode winceunits httpd22 fcl-web fastcgi tcl fftw unzip zlib sqlite mysql ibase postgres oracle odbc sdl openssl oggvorbis numlib
-dirs_os2=rtl-console rtl-unicode fv zlib libpng x11 tcl fpgtk rexx os2units gtk1 imlib
-dirs_emx=rtl-console rtl-unicode fv zlib libpng x11 tcl fpgtk rexx os2units gtk1 imlib
 dirs_netware=rtl-console rtl-unicode fv zlib unzip
 dirs_netwlibc=rtl-console rtl-unicode fv zlib unzip
 dirs_palmos=palmunits
@@ -338,13 +336,11 @@ gtk2_smart: x11_smart cairo_smart fpmkunit_smart
 gtk2_debug: x11_debug cairo_debug fpmkunit_release
 gtk2_release: x11_release cairo_release fpmkunit_shared
 else
-ifeq ($(findstring $(OS_TARGET),os2 emx),)
 gtk1_all:  opengl_all fpmkunit_all
 gtk1_debug:  opengl_debug fpmkunit_debug
 gtk1_smart:  opengl_smart fpmkunit_smart
 gtk1_release:  opengl_release fpmkunit_release
 gtk1_shared:  opengl_shared fpmkunit_shared
-endif
 
 gtk2_all: cairo_all fpmkunit_all
 gtk2_shared: cairo_shared fpmkunit_shared

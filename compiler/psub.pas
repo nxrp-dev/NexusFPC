@@ -2676,15 +2676,6 @@ implementation
         { Insert mangledname }
         pd.aliasnames.insert(pd.mangledname);
 
-        { Handle Export of this procedure }
-        if (po_exports in pd.procoptions) and
-           (target_info.system in [system_i386_os2,system_i386_emx]) then
-          begin
-            pd.aliasnames.insert(pd.procsym.realname);
-            if cs_link_deffile in current_settings.globalswitches then
-              deffile.AddExport(pd.mangledname);
-          end;
-
         { Insert result variables in the localst }
         insert_funcret_local(pd);
 

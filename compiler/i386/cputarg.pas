@@ -50,12 +50,6 @@ implementation
     {$ifndef NOTARGETSUNOS}
       ,t_sunos
     {$endif}
-    {$ifndef NOTARGETEMX}
-      ,t_emx
-    {$endif}
-    {$ifndef NOTARGETOS2}
-      ,t_os2
-    {$endif}
     {$ifndef NOTARGETWIN}
       ,t_win
     {$endif}

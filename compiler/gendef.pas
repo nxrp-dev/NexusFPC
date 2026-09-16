@@ -114,18 +114,6 @@ begin
   if ioresult<>0 then
    exit;
   case target_info.system of
-    system_i386_Os2, system_i386_emx:
-      begin
-        write(t,'NAME '+ChangeFileExt(inputfilename,''));
-        if usewindowapi then
-          write(t,' WINDOWAPI');
-        writeln(t,'');
-        writeln(t,'PROTMODE');
-        writeln(t,'DESCRIPTION '+''''+description+'''');
-        writeln(t,'DATA'#9'MULTIPLE');
-        writeln(t,'STACKSIZE'#9+tostr(stacksize));
-        writeln(t,'HEAPSIZE'#9+tostr(heapsize));
-      end;
     system_i386_win32,
     system_x86_64_win64,
     system_aarch64_win64,

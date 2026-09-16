@@ -109,13 +109,6 @@ uses
 {$ifdef nwl}
   ,i_nwl
 {$endif nwm}
-{$ifdef os2}
- {$ifdef emx}
-  ,i_emx
- {$else emx}
-  ,i_os2
- {$endif emx}
-{$endif os2}
 {$ifdef palmos}
   ,i_palmos
 {$endif palmos}

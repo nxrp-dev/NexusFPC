@@ -579,11 +579,9 @@ begin
   GetCompilerTarget;
   LTarget := CompilerTarget;
   TargetHasDosStyleDirectories :=
-    (LTarget='emx') or
     (LTarget='go32v2') or
     (LTarget='msdos') or
     (LTarget='nativent') or
-    (LTarget='os2') or
     (LTarget='symbian') or
     (LTarget='watcom') or
     (LTarget='wdosx') or
@@ -652,10 +650,8 @@ begin
   { Call this first to ensure that CompilerTarget is not empty }
   GetCompilerTarget;
   LTarget := CompilerTarget;
-  UseOSOnly:= (LTarget='emx') or
-              (LTarget='go32v2') or
-              (LTarget='msdos') or
-              (LTarget='os2');
+  UseOSOnly:= (LTarget='go32v2') or
+              (LTarget='msdos');
 end;
 {$endif not LIMIT83FS}
 

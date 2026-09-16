@@ -33,7 +33,7 @@ begin
     P.Directory:=ADirectory;
     P.Version:='3.3.1';
 
-    P.OSes := [win32, win64, os2, emx];
+    P.OSes := [win32, win64];
 
     gtkOSes:=[linux];
     // Only compile fpmcgtk on win32 when the gtk-library is found in the path

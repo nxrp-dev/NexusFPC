@@ -1,4 +1,3 @@
-{ %skiptarget=os2,emx }
 {$codepage cp1252}
 {$mode objfpc}
 {$H+}

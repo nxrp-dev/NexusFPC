@@ -19,7 +19,7 @@ begin
 {$endif ALLPACKAGES}
     P.Version:='3.3.1';
     P.SourcePath.Add('src');
-    P.OSes := AllUnixOSes+AllWindowsOSes+[os2,emx]-[qnx,win16];
+    P.OSes := AllUnixOSes+AllWindowsOSes-[qnx,win16];
     if Defaults.CPU=jvm then
       P.OSes := P.OSes - [java,android];
 

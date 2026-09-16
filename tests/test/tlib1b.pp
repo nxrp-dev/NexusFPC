@@ -1,4 +1,4 @@
-{ %skiptarget=$nosharedlib,os2 }
+{ %skiptarget=$nosharedlib }
 { %opt=-gl -O- }
 { %needlibrary }
 { %delfiles=tlib1a }

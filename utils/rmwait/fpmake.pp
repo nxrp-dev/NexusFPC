@@ -31,7 +31,7 @@ begin
     P.Directory:=ADirectory;
     P.Version:='3.3.1';
 
-    P.OSes:=[win32,win64,wince,os2,emx,go32v2];
+    P.OSes:=[win32,win64,wince,go32v2];
 
     T:=P.Targets.AddProgram('rmwait.pas');
     end;

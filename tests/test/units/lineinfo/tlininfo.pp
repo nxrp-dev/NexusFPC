@@ -1,5 +1,5 @@
 {%OPT=-gl -O-}
-{%TARGET=os2,go32v2,win32}
+{%TARGET=go32v2,win32}
 program tlininfo;
 
 { $DEFINE DEBUG}

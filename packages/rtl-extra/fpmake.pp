@@ -19,14 +19,14 @@ Const
   IPCBSDs       = [FreeBSD,NetBSD,OpenBSD,DragonFly];
 //  IPCcdeclOSes  = [Darwin,iphonesim,ios];
 
-  PrinterOSes   = [go32v2,msdos,os2,win32,win64,atari]+unixlikes-[beos,haiku];
+  PrinterOSes   = [go32v2,msdos,win32,win64,atari]+unixlikes-[beos,haiku];
   SerialOSes    = [android,linux,netbsd,openbsd,win32,win64];
-  UComplexOSes  = [atari,embedded,emx,gba,go32v2,msdos,nativent,nds,netware,netwlibc,os2,sinclairql,human68k,symbian,watcom,wii,wince,win32,win64,freertos,wasip1,wasip1threads]+UnixLikes;
-  MatrixOSes    = [atari,embedded,emx,gba,go32v2,msdos,nativent,nds,netware,netwlibc,os2,sinclairql,human68k,symbian,watcom,wii,win32,win64,wince,freertos,wasip1,wasip1threads]+UnixLikes;
-  ObjectsOSes   = [atari,embedded,emx,gba,go32v2,macosclassic,msdos,nds,netware,netwlibc,os2,sinclairql,human68k,symbian,watcom,wii,win16,win32,win64,wince,freertos,wasip1,wasip1threads]+UnixLikes;
-  WinsockOSes   = [win32,win64,wince,os2,emx,netware,netwlibc];
+  UComplexOSes  = [atari,embedded,gba,go32v2,msdos,nativent,nds,netware,netwlibc,sinclairql,human68k,symbian,watcom,wii,wince,win32,win64,freertos,wasip1,wasip1threads]+UnixLikes;
+  MatrixOSes    = [atari,embedded,gba,go32v2,msdos,nativent,nds,netware,netwlibc,sinclairql,human68k,symbian,watcom,wii,win32,win64,wince,freertos,wasip1,wasip1threads]+UnixLikes;
+  ObjectsOSes   = [atari,embedded,gba,go32v2,macosclassic,msdos,nds,netware,netwlibc,sinclairql,human68k,symbian,watcom,wii,win16,win32,win64,wince,freertos,wasip1,wasip1threads]+UnixLikes;
+  WinsockOSes   = [win32,win64,wince,netware,netwlibc];
   WinSock2OSes  = [win32,win64,wince];
-  SocketsOSes   = UnixLikes+[netware,netwlibc,os2,emx,wince,win32,win64];
+  SocketsOSes   = UnixLikes+[netware,netwlibc,wince,win32,win64];
   gpmOSes = [Linux,Android];
   AllTargetsextra = ObjectsOSes + UComplexOSes + MatrixOSes+
                       SerialOSes +PrinterOSes+SocketsOSes+gpmOSes;
@@ -68,7 +68,6 @@ begin
     P.SourcePath.Add('src/darwin',[iphonesim,ios]);
     P.SourcePath.Add('src/unix',AllUnixOSes);
     P.SourcePath.Add('src/bsd',AllBSDOSes);
-    P.SourcePath.Add('src/os2commn',[os2,emx]);
     P.SourcePath.Add('src/netwcomn',[netware,netwlibc]);
     // We also need the win/ directory for WinCE as this uses the sockets
     // unit from that directory. Maybe we should try to merge the WinSock(2)
@@ -77,8 +76,6 @@ begin
 
     P.IncludePath.Add('src/bsd',AllBSDOSes);
     P.IncludePath.Add('src/inc');
-    P.IncludePath.Add('src/os2commn',[os2,emx]);
-    P.IncludePath.Add('../../rtl/os2',[os2,emx]);
     P.IncludePath.Add('src/netwcomn',[netware,netwlibc]);
     P.IncludePath.Add('src/unix',AllUnixOSes);
     P.IncludePath.Add('src/$(OS)');

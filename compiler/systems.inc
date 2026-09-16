@@ -96,7 +96,7 @@
              obsolete_system_i386_GO32V1,{ 1 }
              system_i386_GO32V2,        { 2 }
              system_i386_linux,         { 3 }
-             system_i386_OS2,           { 4 }
+             obsolete_system_i386_OS2,  { 4 }
              system_i386_Win32,         { 5 }
              system_i386_freebsd,       { 6 }
              obsolete_system_m68k_Amiga,{ 7 }
@@ -120,7 +120,7 @@
              obsolete_system_m68k_openbsd,{ 25 }
              system_x86_64_linux,       { 26 }
              system_powerpc_darwin,     { 27 }
-             system_i386_EMX,           { 28 }
+             obsolete_system_i386_EMX,  { 28 }
              system_powerpc_netbsd,     { 29 }
              system_powerpc_openbsd,    { 30 }
              system_arm_linux,          { 31 }
@@ -317,7 +317,6 @@
              ld_nds,
              ld_netwlibc,
              ld_netware,
-             ld_os2,
              ld_palmos,
              ld_solaris,
              ld_watcom,

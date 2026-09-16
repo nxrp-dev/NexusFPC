@@ -516,8 +516,6 @@ implementation
         usesectionflags:=false;
         usesectionprogbits:=false;
         case target_info.system of
-         system_i386_OS2,
-         system_i386_EMX: ;
          system_m68k_atari, { atari tos/mint GNU AS also doesn't seem to like .section (KB) }
          system_m68k_sinclairql, { same story, only ancient GNU tools available (KB) }
          system_m68k_palmos, { see above... (KB) }
