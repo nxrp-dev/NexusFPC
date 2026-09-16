@@ -547,330 +547,326 @@ UTILS=1
 endif
 endif
 endif
-INSTALLERTARGETS=go32v2 msdos
-ifneq ($(findstring $(OS_TARGET),$(INSTALLERTARGETS)),)
-INSTALLER=1
-endif
 ifeq ($(CPU_OS_TARGET),i386-linux)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),i386-go32v2)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),i386-win32)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),i386-freebsd)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),i386-beos)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),i386-haiku)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),i386-netbsd)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),i386-solaris)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),i386-qnx)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),i386-openbsd)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),i386-wdosx)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),i386-darwin)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),i386-watcom)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),i386-wince)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),i386-embedded)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),i386-symbian)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),i386-nativent)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),i386-iphonesim)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),i386-android)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),m68k-linux)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),m68k-netbsd)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),m68k-atari)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),m68k-palmos)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),m68k-macosclassic)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),m68k-embedded)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),m68k-sinclairql)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),m68k-human68k)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-linux)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-netbsd)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-macosclassic)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-darwin)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-embedded)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-wii)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-aix)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),sparc-linux)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),sparc-netbsd)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),sparc-solaris)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),sparc-embedded)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-linux)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-freebsd)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-haiku)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-netbsd)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-solaris)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-openbsd)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-darwin)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-win64)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-embedded)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-iphonesim)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-android)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-dragonfly)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),arm-linux)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),arm-netbsd)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),arm-palmos)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),arm-wince)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),arm-gba)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),arm-nds)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),arm-embedded)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),arm-symbian)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),arm-android)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),arm-freertos)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),arm-ios)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-linux)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-freebsd)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-darwin)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-embedded)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-aix)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),avr-embedded)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),armeb-linux)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),armeb-embedded)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),mips-linux)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),mipsel-linux)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),mipsel-embedded)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),mipsel-android)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),mipsel-ps1)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),mips64-linux)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),mips64el-linux)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),jvm-java)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),jvm-android)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),i8086-embedded)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),i8086-msdos)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),i8086-win16)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-linux)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-freebsd)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-darwin)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-win64)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-embedded)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-iphonesim)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-android)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-ios)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),wasm32-embedded)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),wasm32-wasip1)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),wasm32-wasip1threads)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),wasm32-wasip2)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),sparc64-linux)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),riscv32-linux)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),riscv32-embedded)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),riscv32-freertos)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),riscv64-linux)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),riscv64-embedded)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),xtensa-linux)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),xtensa-embedded)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),xtensa-freertos)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),z80-embedded)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),z80-zxspectrum)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),z80-msxdos)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),z80-amstradcpc)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 ifeq ($(CPU_OS_TARGET),loongarch64-linux)
-override TARGET_DIRS+=compiler rtl utils packages installer
+override TARGET_DIRS+=compiler rtl utils packages
 endif
 override INSTALL_FPCPACKAGE=y
 ifdef REQUIRE_UNITSDIR
@@ -2181,749 +2177,642 @@ TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-go32v2)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-win32)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-freebsd)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-beos)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-haiku)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-netbsd)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-solaris)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-qnx)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-openbsd)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-wdosx)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-darwin)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-watcom)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-wince)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-embedded)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-symbian)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-nativent)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-iphonesim)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-android)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),m68k-linux)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),m68k-netbsd)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),m68k-atari)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),m68k-palmos)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),m68k-macosclassic)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),m68k-embedded)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),m68k-sinclairql)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),m68k-human68k)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-linux)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-netbsd)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-macosclassic)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-darwin)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-embedded)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-wii)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-aix)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),sparc-linux)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),sparc-netbsd)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),sparc-solaris)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),sparc-embedded)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-linux)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-freebsd)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-haiku)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-netbsd)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-solaris)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-openbsd)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-darwin)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-win64)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-embedded)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-iphonesim)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-android)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-dragonfly)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-linux)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-netbsd)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-palmos)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-wince)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-gba)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-nds)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-embedded)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-symbian)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-android)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-freertos)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-ios)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-linux)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-freebsd)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-darwin)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-embedded)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-aix)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),avr-embedded)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),armeb-linux)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),armeb-embedded)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),mips-linux)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),mipsel-linux)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),mipsel-embedded)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),mipsel-android)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),mipsel-ps1)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),mips64-linux)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),mips64el-linux)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),jvm-java)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),jvm-android)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),i8086-embedded)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),i8086-msdos)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),i8086-win16)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-linux)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-freebsd)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-darwin)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-win64)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-embedded)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-iphonesim)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-android)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-ios)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),wasm32-embedded)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),wasm32-wasip1)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),wasm32-wasip1threads)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),wasm32-wasip2)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),sparc64-linux)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),riscv32-linux)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),riscv32-embedded)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),riscv32-freertos)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),riscv64-linux)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),riscv64-embedded)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),xtensa-linux)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),xtensa-embedded)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),xtensa-freertos)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),z80-embedded)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),z80-zxspectrum)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),z80-msxdos)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),z80-amstradcpc)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifeq ($(CPU_OS_TARGET),loongarch64-linux)
 TARGET_DIRS_COMPILER=1
 TARGET_DIRS_RTL=1
 TARGET_DIRS_UTILS=1
 TARGET_DIRS_PACKAGES=1
-TARGET_DIRS_INSTALLER=1
 endif
 ifdef TARGET_DIRS_COMPILER
 compiler_all:
@@ -3105,51 +2994,6 @@ packages:
 	$(MAKE) -C packages all
 .PHONY: packages_all packages_debug packages_smart packages_release packages_units packages_examples packages_shared packages_install packages_sourceinstall packages_exampleinstall packages_distinstall packages_zipinstall packages_zipsourceinstall packages_zipexampleinstall packages_zipdistinstall packages_clean packages_distclean packages_cleanall packages_info packages_makefiles packages
 endif
-ifdef TARGET_DIRS_INSTALLER
-installer_all:
-	$(MAKE) -C installer all
-installer_debug:
-	$(MAKE) -C installer debug
-installer_smart:
-	$(MAKE) -C installer smart
-installer_release:
-	$(MAKE) -C installer release
-installer_units:
-	$(MAKE) -C installer units
-installer_examples:
-	$(MAKE) -C installer examples
-installer_shared:
-	$(MAKE) -C installer shared
-installer_install:
-	$(MAKE) -C installer install
-installer_sourceinstall:
-	$(MAKE) -C installer sourceinstall
-installer_exampleinstall:
-	$(MAKE) -C installer exampleinstall
-installer_distinstall:
-	$(MAKE) -C installer distinstall
-installer_zipinstall:
-	$(MAKE) -C installer zipinstall
-installer_zipsourceinstall:
-	$(MAKE) -C installer zipsourceinstall
-installer_zipexampleinstall:
-	$(MAKE) -C installer zipexampleinstall
-installer_zipdistinstall:
-	$(MAKE) -C installer zipdistinstall
-installer_clean:
-	$(MAKE) -C installer clean
-installer_distclean:
-	$(MAKE) -C installer distclean
-installer_cleanall:
-	$(MAKE) -C installer cleanall
-installer_info:
-	$(MAKE) -C installer info
-installer_makefiles:
-	$(MAKE) -C installer makefiles
-installer:
-	$(MAKE) -C installer all
-.PHONY: installer_all installer_debug installer_smart installer_release installer_units installer_examples installer_shared installer_install installer_sourceinstall installer_exampleinstall installer_distinstall installer_zipinstall installer_zipsourceinstall installer_zipexampleinstall installer_zipdistinstall installer_clean installer_distclean installer_cleanall installer_info installer_makefiles installer
-endif
 debug: $(addsuffix _debug,$(TARGET_DIRS))
 smart: $(addsuffix _smart,$(TARGET_DIRS))
 release: $(addsuffix _release,$(TARGET_DIRS))
@@ -3224,16 +3068,10 @@ endif
 ifdef UTILS
 	$(MAKE) utils_clean $(CLEANOPTS)
 endif
-ifdef INSTALLER
-	$(MAKE) installer_clean $(CLEANOPTS)
-endif
 	$(MAKE) rtl_$(ALLTARGET) $(BUILDOPTS)
 	$(MAKE) packages_$(ALLTARGET) $(BUILDOPTS)
 ifdef UTILS
 	$(MAKE) utils_all $(BUILDOPTS)
-endif
-ifdef INSTALLER
-	$(MAKE) installer_all $(BUILDOPTS)
 endif
 	$(ECHOREDIR) Build > $(BUILDSTAMP)
 	$(ECHOREDIR) Build > base.$(BUILDSTAMP)

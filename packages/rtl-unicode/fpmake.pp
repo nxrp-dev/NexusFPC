@@ -106,10 +106,6 @@ begin
         AddInclude('collation_zh_le.inc');
       end;
 
-
-    with T.Dependencies do
-      AddUnit('freebidi');
-
     T:=P.Targets.AddUnit('cpbuildu.pp',CPUnits);
     T.Install:=False;
     with T.Dependencies do

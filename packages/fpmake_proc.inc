@@ -28,12 +28,6 @@ begin
 {$include cairo/fpmake.pp}
 end;
 
-procedure add_cdrom(const ADirectory: string);
-begin
-  with Installer do
-{$include cdrom/fpmake.pp}
-end;
-
 procedure add_chm(const ADirectory: string);
 begin
   with Installer do
@@ -141,12 +135,6 @@ begin
 end;
 
 {$include fcl-md/fpmake.pp}
-
-procedure add_fcl_mustache(const ADirectory: string);
-begin
-  with Installer do
-{$include fcl-mustache/fpmake.pp}
-end;
 
 procedure add_fcl_net(const ADirectory: string);
 begin
@@ -268,12 +256,6 @@ end;
 
 {$include fppkg/fpmake.pp}
 
-procedure add_fv(const ADirectory: string);
-begin
-  with Installer do
-{$include fv/fpmake.pp}
-end;
-
 {$include gdbint/fpmake.pp}
 
 procedure add_gdbm(const ADirectory: string);
@@ -307,8 +289,6 @@ begin
   with Installer do
 {$include gnutls/fpmake.pp}
 end;
-
-{$include googleapi/fpmake.pp}
 
 procedure add_graph(const ADirectory: string);
 begin
@@ -618,8 +598,6 @@ begin
 {$include objcrtl/fpmake.pp}
 end;
 
-{$include odata/fpmake.pp}
-
 procedure add_odbc(const ADirectory: string);
 begin
   with Installer do
@@ -666,12 +644,6 @@ procedure add_oracle(const ADirectory: string);
 begin
   with Installer do
 {$include oracle/fpmake.pp}
-end;
-
-procedure add_palmunits(const ADirectory: string);
-begin
-  with Installer do
-{$include palmunits/fpmake.pp}
 end;
 
 procedure add_pasjpeg(const ADirectory: string);

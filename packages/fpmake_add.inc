@@ -3,7 +3,6 @@
   add_bfd(ADirectory+IncludeTrailingPathDelimiter('bfd'));
   add_bzip2(ADirectory+IncludeTrailingPathDelimiter('bzip2'));
   add_cairo(ADirectory+IncludeTrailingPathDelimiter('cairo'));
-  add_cdrom(ADirectory+IncludeTrailingPathDelimiter('cdrom'));
   add_chm(ADirectory+IncludeTrailingPathDelimiter('chm'));
   add_cocoaint(ADirectory+IncludeTrailingPathDelimiter('cocoaint'));
   add_dblib(ADirectory+IncludeTrailingPathDelimiter('dblib'));
@@ -24,7 +23,6 @@
   add_fcl_json(ADirectory+IncludeTrailingPathDelimiter('fcl-json'));
   add_fcl_jsonschema(ADirectory+IncludeTrailingPathDelimiter('fcl-jsonschema'));
   add_fcl_md(ADirectory+IncludeTrailingPathDelimiter('fcl-md'));
-  add_fcl_mustache(ADirectory+IncludeTrailingPathDelimiter('fcl-mustache'));
   add_fcl_net(ADirectory+IncludeTrailingPathDelimiter('fcl-net'));
   add_fcl_openapi(ADirectory+IncludeTrailingPathDelimiter('fcl-openapi'));
   add_fcl_passrc(ADirectory+IncludeTrailingPathDelimiter('fcl-passrc'));
@@ -47,7 +45,6 @@
   add_fpindexer(ADirectory+IncludeTrailingPathDelimiter('fpindexer'));
   add_fpmkunit(ADirectory+IncludeTrailingPathDelimiter('fpmkunit'));
   add_fppkg(ADirectory+IncludeTrailingPathDelimiter('fppkg'));
-  add_fv(ADirectory+IncludeTrailingPathDelimiter('fv'));
   add_gdbint(ADirectory+IncludeTrailingPathDelimiter('gdbint'));
   add_gdbm(ADirectory+IncludeTrailingPathDelimiter('gdbm'));
   add_ggi(ADirectory+IncludeTrailingPathDelimiter('ggi'));
@@ -55,7 +52,6 @@
   add_gmp(ADirectory+IncludeTrailingPathDelimiter('gmp'));
   add_gnome1(ADirectory+IncludeTrailingPathDelimiter('gnome1'));
   add_gnutls(ADirectory+IncludeTrailingPathDelimiter('gnutls'));
-  add_googleapi(ADirectory+IncludeTrailingPathDelimiter('googleapi'));
   add_graph(ADirectory+IncludeTrailingPathDelimiter('graph'));
   add_gstreamer(ADirectory+IncludeTrailingPathDelimiter('gstreamer'));
   add_gtk1(ADirectory+IncludeTrailingPathDelimiter('gtk1'));
@@ -108,7 +104,6 @@
   add_numlib(ADirectory+IncludeTrailingPathDelimiter('numlib'));
   add_nvapi(ADirectory+IncludeTrailingPathDelimiter('nvapi'));
   add_objcrtl(ADirectory+IncludeTrailingPathDelimiter('objcrtl'));
-  add_odata(ADirectory+IncludeTrailingPathDelimiter('odata'));
   add_odbc(ADirectory+IncludeTrailingPathDelimiter('odbc'));
   add_oggvorbis(ADirectory+IncludeTrailingPathDelimiter('oggvorbis'));
   add_openal(ADirectory+IncludeTrailingPathDelimiter('openal'));
@@ -117,7 +112,6 @@
   add_opengles(ADirectory+IncludeTrailingPathDelimiter('opengles'));
   add_openssl(ADirectory+IncludeTrailingPathDelimiter('openssl'));
   add_oracle(ADirectory+IncludeTrailingPathDelimiter('oracle'));
-  add_palmunits(ADirectory+IncludeTrailingPathDelimiter('palmunits'));
   add_pasjpeg(ADirectory+IncludeTrailingPathDelimiter('pasjpeg'));
   add_pastojs(ADirectory+IncludeTrailingPathDelimiter('pastojs'));
   add_paszlib(ADirectory+IncludeTrailingPathDelimiter('paszlib'));
