@@ -415,9 +415,9 @@ Type
 
     TPlatform = (pfWindows, pfMacOS, pfiOS, pfAndroid, pfWinRT, pfLinux,
                  pfGo32v2, pfOS2, pfFreeBSD, pfBeos, pfNetBSD, pfAmiga,
-                 pfAtari, pfSolaris, pfQNX, pfNetware, pfOpenBSD, pfWDosX,
+                 pfAtari, pfSolaris, pfQNX, pfObsoleteNetware, pfOpenBSD, pfWDosX,
                  pfPalmos, pfMacOSClassic, pfDarwin, pfEMX, pfWatcom,
-                 pfMorphos, pfNetwLibC, pfWinCE, pfGBA, pfNDS, pfEmbedded,
+                 pfMorphos, pfObsoleteNetwLibC, pfWinCE, pfGBA, pfNDS, pfEmbedded,
                  pfSymbian, pfHaiku, pfIPhoneSim, pfAIX, pfJava,
                  pfNativeNT, pfMSDos, pfWII, pfAROS, pfDragonFly, pfWin16,
                  pfFreeRTOS, pfZXSpectrum, pfMSXDOS, pfAmstradCPC,

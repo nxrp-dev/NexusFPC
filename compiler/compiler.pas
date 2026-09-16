@@ -103,12 +103,6 @@ uses
 {$ifdef nds}
   ,i_nds
 {$endif nds}
-{$ifdef nwm}
-  ,i_nwm
-{$endif nwm}
-{$ifdef nwl}
-  ,i_nwl
-{$endif nwm}
 {$ifdef palmos}
   ,i_palmos
 {$endif palmos}

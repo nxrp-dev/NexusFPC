@@ -30,8 +30,6 @@ units_nativent=matrix ucomplex
 units_gba=matrix ucomplex objects
 units_emx=matrix ucomplex objects
 units_os2=matrix ucomplex objects
-units_netware=matrix ucomplex objects
-units_netwlibc=matrix ucomplex objects
 units_morphos=matrix ucomplex objects
 
 # since we plan to move more units, we set up more dirs than we now have.

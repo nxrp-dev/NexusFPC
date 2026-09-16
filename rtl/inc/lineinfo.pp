@@ -327,13 +327,7 @@ begin
   BackTraceStrFunc:=@SysBackTraceStr;
   Success:=GetLineInfo(ptruint(addr),func,source,line);
 { create string }
-{$ifdef netware}
-  { we need addr relative to code start on netware }
-  dec(addr,ptruint(system.NWGetCodeStart));
-  StabBackTraceStr:='  CodeStart + $'+HexStr(ptruint(addr),sizeof(ptruint)*2);
-{$else}
   StabBackTraceStr:='  $'+HexStr(ptruint(addr),sizeof(ptruint)*2);
-{$endif}
   if Success then
   begin
     if func<>'' then

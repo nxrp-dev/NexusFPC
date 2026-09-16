@@ -92,9 +92,6 @@ begin
 {$IFDEF AMIGA}
  {$WARNING The following test is wrong for Amiga (volumes are not detected properly)!}
 {$ENDIF AMIGA}
-{$IFDEF NETWARE}
- {$WARNING The following test is wrong for Amiga (volumes are not detected properly)!}
-{$ENDIF NETWARE}
 {$IFNDEF UNIX}
   if (length(dir)>2) and (dir[2]= DriveSeparator) and (dir[3]=DirectorySeparator) then
     begin

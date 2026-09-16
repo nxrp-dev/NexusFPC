@@ -39,12 +39,6 @@ Interface
 {$ifdef BSD}
 {$define implemented}
 {$endif}
-{$ifdef netwlibc}
-{$define implemented}
-{$endif}
-{$ifdef netware_clib}
-{$define implemented}
-{$endif}
 {$H-}
 
 Var
@@ -85,12 +79,6 @@ Uses
 {$ifdef go32v2}
   go32,
 {$endif go32v2}
-{$ifdef netwlibc}
-  Libc,
-{$endif netwlibc}
-{$ifdef netware_clib}
-  nwserv,
-{$endif netware_clib}
 {$ifdef Windows}
   windows,
 {$endif Windows}

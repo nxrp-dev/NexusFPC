@@ -9,11 +9,9 @@ procedure add_rtl_unicode(const ADirectory: string);
 
 Const
   CollationOSes = [aix,android,macosclassic,darwin,freebsd,go32v2,linux,netbsd,openbsd,solaris,win32,win64,dragonfly,haiku,freertos,watcom,wasip1,wasip1threads];
-  CPUnits       = [aix,android,beos,macosclassic,darwin,iphonesim,ios,gba,nds,freebsd,go32v2,haiku,linux,netbsd,netware,netwlibc,openbsd,solaris,watcom,wii,win32,win64,wince,dragonfly,freertos,wasip1,wasip1threads];
-  utf8bidiOSes  = [netware,netwlibc];
-  freebidiOSes  = [netware,netwlibc];
+  CPUnits       = [aix,android,beos,macosclassic,darwin,iphonesim,ios,gba,nds,freebsd,go32v2,haiku,linux,netbsd,openbsd,solaris,watcom,wii,win32,win64,wince,dragonfly,freertos,wasip1,wasip1threads];
   UnicodeBaseOnlyOSes   = [atari,human68k,msdos,sinclairql,win16];
-  UnicodeAllOSes =   CollationOSes + utf8bidiOSes + freebidiOSes + CPUnits + UnicodeBaseOnlyOSes;
+  UnicodeAllOSes =   CollationOSes + CPUnits + UnicodeBaseOnlyOSes;
 
   GraphemeBreakPropertyOSes = UnicodeAllOSes;
   EastAsianWidthOSes        = UnicodeAllOSes;
@@ -108,8 +106,6 @@ begin
         AddInclude('collation_zh_le.inc');
       end;
 
-    T:=P.Targets.AddUnit('freebidi.pp',freebidiOSes);
-    T:=P.Targets.AddUnit('utf8bidi.pp',utf8bidiOSes);
 
     with T.Dependencies do
       AddUnit('freebidi');

@@ -1155,9 +1155,6 @@ begin
   {$IFDEF QNX}
   Result:=pfQNX;
   {$ENDIF}
-  {$IFDEF Netware}
-  Result:=pfNetware;
-  {$ENDIF}
   {$IFDEF OpenBSD}
   Result:=pfOpenBSD;
   {$ENDIF}
@@ -1181,9 +1178,6 @@ begin
   {$ENDIF}
   {$IFDEF MORPHOS}
   Result:=pfMorphos;
-  {$ENDIF}
-  {$IFDEF NETWLIBC}
-  Result:=pfNetwLibC;
   {$ENDIF}
   {$IFDEF WINCE}
   Result:=pfWinCE;

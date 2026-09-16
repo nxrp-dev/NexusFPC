@@ -98,13 +98,6 @@ USES
        UnixApi.Types,UnixApi.Base,UnixApi.Unix,
    {$ENDIF}
 
-   {$IFDEF OS_NETWARE_LIBC}
-      Api.Libc,
-   {$ENDIF}
-   {$IFDEF OS_NETWARE_CLIB}
-      NetWareApi.nwserv,
-   {$ENDIF}
-
    {$IFDEF OS_AMIGA}
       TP.DOS, Amiga.Core.Amigados,
    {$ENDIF}
@@ -149,13 +142,6 @@ USES
 
    {$IFDEF OS_UNIX}
        unixtype,baseunix,unix,
-   {$ENDIF}
-
-   {$IFDEF OS_NETWARE_LIBC}
-      libc,
-   {$ENDIF}
-   {$IFDEF OS_NETWARE_CLIB}
-      nwserv,
    {$ENDIF}
 
    {$IFDEF OS_AMIGA}
@@ -876,20 +862,6 @@ Function GetDosTicks:longint; { returns ticks at 18.2 Hz, just like DOS }
     GetDosTicks:=MemL[$40:$6c];
   end;
 {$ENDIF OS_DOS}
-{$IFDEF OS_NETWARE_LIBC}
-var
-  tv : TTimeVal;
-  tz : TTimeZone;
-  begin
-    fpGetTimeOfDay(tv,tz);
-    GetDosTicks:=((tv.tv_sec mod 86400) div 60)*1092+((tv.tv_Sec mod 60)*1000000+tv.tv_USec) div 549
-  end;
-{$ENDIF}
-{$IFDEF OS_NETWARE_CLIB}
-  begin
-    GetDosTicks := Nwserv.GetCurrentTicks;
-  end;
-{$ENDIF}
 {$IFDEF OS_AMIGA}
   begin
     GetDosTicks:= ((dos.GetMsCount div 55) - StartupTicks) and $7FFFFFFF;
@@ -934,16 +906,6 @@ begin
 end;
 {$ENDIF}
 {$IFDEF OS_WIN16}
-  begin
-    Delay (10);
-  end;
-{$ENDIF}
-{$IFDEF OS_NETWARE_LIBC}
-  begin
-    Delay (10);
-  end;
-{$ENDIF}
-{$IFDEF OS_NETWARE_CLIB}
   begin
     Delay (10);
   end;

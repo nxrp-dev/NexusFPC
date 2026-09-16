@@ -14,7 +14,7 @@ To recompile the compiler, you can use the make utility as following:
 If an option is omitted, then target CPU/OS will be same as current CPU/OS
 
 Possibles targets are : linux go32v2 win32 os2 freebsd beos netbsd amiga haiku
-atari sunos qnx netware openbsd wdosx palmos macos macosx emx
+atari sunos qnx openbsd wdosx palmos macos macosx emx
 
 The list might change anytime, including possible target CPUs.
 Almost - if not all - possible target CPUs + OSes are put in Makefile.fpc and Makefile.

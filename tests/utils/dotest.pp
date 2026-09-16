@@ -627,12 +627,6 @@ begin
     ExeExt:='.gba'
   else if LTarget='nds' then
     ExeExt:='.bin'
-  else if (LTarget='netware') or (LTarget='netwlibc') then
-    begin
-      ExeExt:='.nlm';
-      DllExt:='.nlm';
-      DllPrefix:='';
-    end
   else if LTarget='wii' then
     ExeExt:='.dol'
   else if (LTarget='wasip1') or (LTarget='wasip1threads') then
@@ -1186,13 +1180,6 @@ begin
     end;
    { MacOS LibXXX style }
   FileName:=TestOutputFilename('Lib',PPFile,'');
-  if FileExists(FileName) then
-    begin
-      LibraryExists:=true;
-      exit;
-    end;
-   { Netware wlic XXX.nlm style }
-  FileName:=TestOutputFilename('',PPFile,'nlm');
   if FileExists(FileName) then
     begin
       LibraryExists:=true;

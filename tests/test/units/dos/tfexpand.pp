@@ -70,11 +70,6 @@ uses
  {$DEFINE NODOTS}
 {$ENDIF HASAMIGA}
 
-{$IFDEF NETWARE}
- {$DEFINE VOLUMES}
- {$DEFINE NODRIVEC}
-{$ENDIF NETWARE}
-
 {$IFDEF UNIX}
  {$DEFINE NODRIVEC}
 {$ENDIF UNIX}
@@ -406,11 +401,7 @@ if CDir [Length (CDir)] = DirSep then Check ('c:anything', CDir + 'anything')
                                                + DirSep + DirSep, TestDir + TestDir1Name + DirSep);
  {$ENDIF NODOTS}
 {$ENDIF MACOS}
-{$IFDEF NETWARE}
- Check ('...', TestDir);
-{$ELSE NETWARE}
  Check ('...', CurDir + DirSep + '...');
-{$ENDIF NETWARE}
  Check (TestFileName, CurDir + DirSep + TestFileName);
 {$IFDEF UNIX}
  S := GetEnv ('HOME');
@@ -525,12 +516,6 @@ if CDir [Length (CDir)] = DirSep then Check ('c:anything', CDir + 'anything')
  Check ('VolName' + DriveSep + DirSep + '..', 'VolName:' + DirSep);
  Check ('VolName' + DriveSep + DirSep + '..' + DirSep, 'VolName' + DriveSep + DirSep);
  {$ENDIF NODOTS}
- {$IFDEF NETWARE}
- Check ('SrvName\VolName' + DriveSep + DirSep + 'TEST', 'SrvName' + DirSep + 'VolName' +
-                                                         DriveSep + DirSep + 'TEST');
- Check ('SrvName/VolName' + DriveSep + DirSep + 'TEST', 'SrvName' + DirSep + 'VolName' +
-                                                         DriveSep + DirSep + 'TEST');
- {$ENDIF NETWARE}
  {$IFDEF HASAMIGA}
   {$IFDEF NODOTS}
  Check ('.', CurDir + DirSep + '.');

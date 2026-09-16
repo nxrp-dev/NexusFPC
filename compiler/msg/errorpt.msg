@@ -3329,8 +3329,6 @@ S*2Aas_Monta usando o GNU AS
 3*2Tiphonesim_ iPhoneSimulator do iOS SDK 3.2+ (versäes antigas: -Tdarwin)
 3*2Tlinux_Linux
 3*2Tnetbsd_NetBSD
-3*2Tnetware_M¢dulo Novell Netware (clib)
-3*2Tnetwlibc_M¢dulo Novell Netware (libc)
 3*2Topenbsd_OpenBSD
 3*2Tos2_OS/2 / eComStation
 3*2Tsymbian_Symbian OS

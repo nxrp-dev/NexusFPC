@@ -2320,8 +2320,6 @@ S*2Aas_asemblacja przy u¾yciu GNU AS
 3*2Tgo32v2_DJ Delorie DOS extender - wersja 2
 3*2Tlinux_Linux
 3*2Tnetbsd_NetBSD
-3*2Tnetware_Novell Netware Module (clib)
-3*2Tnetwlibc_Novell Netware Module (libc)
 3*2Topenbsd_OpenBSD
 3*2Tos2_OS/2 / eComStation
 3*2Twatcom_DOS extendery zgodne z Watcomem

@@ -2297,8 +2297,6 @@ S*2Aas_assemblar utilitzant GNU AS
 3*2go32v2_versió 2 de DJ Deloire DOS extender
 3*2Tlinux_Linux
 3*2Tnetbsd_NetBSD
-3*2Tnetware_Novell Netware Module (clib)
-3*2Tnetwlibc_Novell Netware Module (libc)
 3*2Topenbsd_OpenBSD
 3*2Tos2_OS/2 eComStation
 3*2Twatcom_Watcom compatible DOS extender

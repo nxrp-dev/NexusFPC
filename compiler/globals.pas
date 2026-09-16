@@ -403,7 +403,6 @@ Const
        dllversion    : string;
        dllmajor,
        dllminor,
-       dllrevision   : word;  { revision only for netware }
        { win pe  }
        peosversionminor,
        peosversionmajor,
@@ -428,10 +427,6 @@ Const
 
        current_tokenpos,                  { position of the last token }
        current_filepos : tfileposinfo;    { current position }
-
-       nwscreenname : string;
-       nwthreadname : string;
-       nwcopyright  : string;
 
        codegenerror : boolean;           { true if there is an error reported }
        exception_raised : boolean;           { true if there is an exception reported }
@@ -1840,10 +1835,6 @@ implementation
         dllversion:='';
         dllmajor:=1;
         dllminor:=0;
-        dllrevision:=0;
-        nwscreenname := '';
-        nwthreadname := '';
-        nwcopyright  := '';
         UseDeffileForExports:=false;
         UseDeffileForExportsSetExplicitly:=false;
         GenerateImportSection:=false;

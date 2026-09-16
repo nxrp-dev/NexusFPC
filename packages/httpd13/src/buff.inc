@@ -224,7 +224,7 @@ function ap_bfileno(fb: PBUFF; direction: cint): cint;
 procedure ap_bhalfduplex(fb: PBUFF);
  {$IFDEF WINDOWS} stdcall; {$ELSE} cdecl; {$ENDIF} external LibHTTPD;
 
-{$if defined(WINDOWS) or defined(NETWARE) or defined(CYGWIN_WINSOCK)}
+{$if defined(WINDOWS) or defined(CYGWIN_WINSOCK)}
 
 { ap_recvwithtimeout/ap_sendwithtimeout socket primitives for WinSock }
 //API_EXPORT(int) ap_sendwithtimeout(int sock, const AnsiChar *buf, int len, int flags);

@@ -38,13 +38,8 @@ const
   {* Set default for Windows file system  }
     HTTPD_ROOT = '/apache';
   {$else}
-    {$ifdef NETWARE}
-  {* Set the default for NetWare  }
-    HTTPD_ROOT = '/apache';
-   {$else}
   {* Set for all other OSs  }
     HTTPD_ROOT = '/usr/local/apache';
-    {$endif}
   {$endif}
 {$endif}
 { HTTPD_ROOT  }

@@ -33,12 +33,6 @@ program create_startup_test_crash;
 {$ifdef wdosx}
 {$define HasExeSuffix}
 {$endif}
-{$ifdef netware}
-{$define HasNlmSuffix}
-{$endif}
-{$ifdef netwlibc}
-{$define HasNlmSuffix}
-{$endif}
 
 uses
   dos;
@@ -55,11 +49,7 @@ const
 {$ifdef HasExeSuffix}
   '.exe'
 {$else}
-  {$ifdef HasNlmSuffix}
-    '.nlm'
-  {$else}
-    ''
-  {$endif}
+  ''
 {$endif}
   ;
 const

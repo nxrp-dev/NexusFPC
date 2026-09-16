@@ -111,7 +111,7 @@
              system_i386_beos,          { 16 }
              system_i386_netbsd,        { 17 }
              system_m68k_netbsd,        { 18 }
-             system_i386_Netware,       { 19 }
+             obsolete_system_i386_Netware,{ 19 }
              obsolete_system_i386_qnx,  { 20 }
              system_i386_wdosx,         { 21 }
              system_sparc_solaris,      { 22 }
@@ -127,7 +127,7 @@
              system_i386_watcom,        { 32 }
              obsolete_system_powerpc_MorphOS,{ 33 }
              system_x86_64_freebsd,     { 34 }
-             system_i386_netwlibc,      { 35 }
+             obsolete_system_i386_netwlibc,{ 35 }
              obsolete_system_powerpc_Amiga,{ 36 }
              system_x86_64_win64,       { 37 }
              system_arm_wince,          { 38 }
@@ -252,7 +252,6 @@
              ,as_ggas                  { gnu assembler called "gas" instead of "as" }
              ,as_i386_nasmhaiku
              ,as_powerpc_vasm
-             ,as_i386_nlmcoff
              ,as_powerpc_xcoff
              ,as_jvm_jasmin
              ,as_yasm
@@ -315,8 +314,6 @@
              ld_mpw,
              ld_msdos,
              ld_nds,
-             ld_netwlibc,
-             ld_netware,
              ld_palmos,
              ld_solaris,
              ld_watcom,
@@ -327,7 +324,6 @@
              ld_int_go32v2,    { implemented internal linkers }
              ld_int_linux,
              ld_int_nativent,
-             ld_int_netware,
              ld_int_windows,
              ld_int_msdos,
              ld_int_win16,

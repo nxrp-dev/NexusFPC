@@ -2328,14 +2328,6 @@ type
     FSuspendedInternal: longbool;
     FThreadReaped: boolean;
 {$endif}
-{$ifdef netwlibc}
-  private
-    // see tthread.inc, ThreadFunc and TThread.Resume
-    FSem: Pointer;
-    FInitialSuspended: boolean;
-    FSuspendedExternal: boolean;
-    FPid: LongInt;
-{$endif}
 {$if defined(hasamiga)}
   private
     FInitialSuspended: boolean;

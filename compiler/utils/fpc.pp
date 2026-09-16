@@ -29,15 +29,11 @@ program fpc;
 {$ifdef UNIX}
     exeext='';
 {$else UNIX}
-  {$ifdef NETWARE}
-    exeext='.nlm';
-  {$else}
     {$ifdef ATARI}
       exeext='.ttp';
     {$else}
       exeext='.exe';
     {$endif ATARI}
-  {$endif NETWARE}
 {$endif UNIX}
 
 Const

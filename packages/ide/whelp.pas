@@ -191,12 +191,6 @@ uses
 {$IFDEF OS2}
   DosCalls,
 {$ENDIF OS2}
-{$ifdef netwlibc}
-  Libc,
-{$endif}
-{$ifdef netware_clib}
-  nwserv,
-{$endif}
 {$ifdef HASAMIGA}
   dos,
 {$endif}
@@ -305,20 +299,6 @@ Function GetDosTicks:longint; { returns ticks at 18.2 Hz, just like DOS }
     GetDosTicks:=MemL[$40:$6c];
   end;
 {$endif go32v2}
-{$ifdef netwlibc}
-var
-  tv : TTimeVal;
-  tz : TTimeZone;
-begin
-  fpGetTimeOfDay(tv,tz);
-  GetDosTicks:=((tv.tv_sec mod 86400) div 60)*1092+((tv.tv_Sec mod 60)*1000000+tv.tv_USec) div 549
-end;
-{$endif}
-{$ifdef netware_clib}
-begin
-  GetDosTicks := Nwserv.GetCurrentTicks;
-end;
-{$endif}
 {$ifdef HASAMIGA}
 begin
   GetDosTicks := ((dos.GetMsCount div 55) - StartupTicks) and $7FFFFFFF;

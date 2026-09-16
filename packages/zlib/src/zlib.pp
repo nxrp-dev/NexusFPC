@@ -25,15 +25,11 @@ uses
 {$ENDIF FPC_DOTTEDUNITS}
 
 const
-{$ifdef netware}  {zlib.nlm comes with netware6}
-  libz='zlib';
-{$else}
-  {$ifdef windows}
-    libz='zlib1';
-  {$else windows}
-    libz='z';
-  {$endif windows}
-{$endif}
+{$ifdef windows}
+  libz='zlib1';
+{$else windows}
+  libz='z';
+{$endif windows}
 
 {$ifndef windows}
 {$linklib libz}

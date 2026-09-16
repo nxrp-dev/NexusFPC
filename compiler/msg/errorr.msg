@@ -2735,8 +2735,6 @@ S*2Aas_Ассемблер GNU AS
 3*2Tgo32v2_Версия 2 расширителя DOS DJ Delorie
 3*2Tlinux_Linux
 3*2Tnetbsd_NetBSD
-3*2Tnetware_Модуль Novell Netware (clib)
-3*2Tnetwlibc_Модуль Novell Netware (libc)
 3*2Topenbsd_OpenBSD
 3*2Tos2_OS/2 / eComStation
 3*2Tsymbian_Symbian OS

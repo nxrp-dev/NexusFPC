@@ -13,7 +13,7 @@ Const
   UnixLikes = AllUnixOSes -[QNX];
 
   WinEventOSes = [win32,win64];
-  KVMAll       = [go32v2,msdos,netware,netwlibc,win32,win64,win16]+UnixLikes;
+  KVMAll       = [go32v2,msdos,win32,win64,win16]+UnixLikes;
   WASMOSes = [wasip1,wasip1threads];
 
   // all full KVMers have crt too
@@ -72,7 +72,6 @@ begin
         AddInclude('keyboard.inc');
         AddInclude('keyscan.inc',AllUnixOSes);
         AddUnit   ('winevent',[win32,win64]);
-        AddInclude('nwsys.inc',[netware]);
         AddUnit   ('mouse',AllUnixOSes);
         AddUnit   ('video',[win16]);
         AddUnit   ('unixkvmbase',AllUnixOSes);
@@ -92,7 +91,6 @@ begin
      begin
        AddInclude('videoh.inc');
        AddInclude('video.inc');
-       AddInclude('nwsys.inc',[netware]);
        AddUnit   ('mouse',[go32v2,msdos]);
        AddUnit   ('unixkvmbase',AllUnixOSes);
      end;
@@ -102,7 +100,6 @@ begin
      begin
        AddInclude('crth.inc');
        AddInclude('crt.inc');
-       AddInclude('nwsys.inc',[netware]);
        AddUnit   ('video',[win16]);
        AddUnit   ('keyboard',[win16]);
      end;

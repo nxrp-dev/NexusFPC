@@ -23,13 +23,6 @@ uses
 {$ifdef Windows}
   windows,
 {$endif Windows}
-{$ifdef netwlibc}
-  libc,
-{$else}
-  {$ifdef netware}
-    nwserv,
-  {$endif}
-{$endif}
 
 {$ifdef Unix}
   baseunix,

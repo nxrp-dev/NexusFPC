@@ -44,13 +44,9 @@ const
   {$else}{$ifdef BEOS}
     { Set the default for BeOS }
     HTTPD_ROOT = '/boot/home/apache';
-  {$else}{$ifdef NETWARE}
-    { Set the default for NetWare }
-    HTTPD_ROOT = '/apache';
   {$else}
     { Set for all other OSes }
     HTTPD_ROOT = '/usr/local/apache';
-  {$endif}
   {$endif}
   {$endif}
   {$endif}

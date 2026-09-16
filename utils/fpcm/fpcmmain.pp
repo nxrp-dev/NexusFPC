@@ -75,8 +75,8 @@ interface
       { Please keep this order, see OSCPUSupported below
   TOS=(osNone,
     linux,go32v2,win32,obsolete_os2,freebsd,beos,netbsd,
-    obsolete_amiga,atari, solaris, qnx, netware, openbsd,wdosx,
-    palmos,macosclassic,darwin,obsolete_emx,watcom,obsolete_morphos,netwlibc,
+    obsolete_amiga,atari, solaris, qnx, obsolete_netware, openbsd,wdosx,
+    palmos,macosclassic,darwin,obsolete_emx,watcom,obsolete_morphos,obsolete_netwlibc,
     win64,wince,gba,nds,embedded,symbian,haiku,iphonesim,
     aix,java,android,nativent,msdos,wii,obsolete_aros,dragonfly,
     win16,freertos,zxspectrum,msxdos,ios,amstradcpc,sinclairql,
@@ -92,8 +92,8 @@ interface
 
       TOS=(
         o_none,linux,go32v2,win32,obsolete_os2,freebsd,beos,haiku,netbsd,
-        obsolete_amiga,atari, solaris, qnx, netware, openbsd,wdosx,
-        palmos,macosclassic,darwin,obsolete_emx,watcom,obsolete_morphos,netwlibc,
+        obsolete_amiga,atari, solaris, qnx, obsolete_netware, openbsd,wdosx,
+        palmos,macosclassic,darwin,obsolete_emx,watcom,obsolete_morphos,obsolete_netwlibc,
         win64,wince,gba,nds,embedded,symbian,nativent,iphonesim,
         wii,aix,java,android,msdos,obsolete_aros,dragonfly,win16,freertos,
         zxspectrum,msxdos,ios,amstradcpc,sinclairql,wasip1,human68k,ps1,
@@ -124,8 +124,8 @@ interface
 
       OSStr : array[TOS] of string=(
         'none','linux','go32v2','win32','obsolete-os2','freebsd','beos','haiku','netbsd',
-        'obsolete-amiga','atari','solaris', 'qnx', 'netware','openbsd','wdosx',
-        'palmos','macosclassic','darwin','obsolete-emx','watcom','obsolete-morphos','netwlibc',
+        'obsolete-amiga','atari','solaris', 'qnx', 'obsolete-netware','openbsd','wdosx',
+        'palmos','macosclassic','darwin','obsolete-emx','watcom','obsolete-morphos','obsolete-netwlibc',
         'win64','wince','gba','nds','embedded','symbian','nativent',
         'iphonesim', 'wii', 'aix', 'java', 'android', 'msdos', 'obsolete-aros',
         'dragonfly', 'win16', 'freertos', 'zxspectrum', 'msxdos',
@@ -135,8 +135,8 @@ interface
 
       OSSuffix : array[TOS] of string=(
         '_none','_linux','_go32v2','_win32','_obsolete_os2','_freebsd','_beos','_haiku','_netbsd',
-        '_obsolete_amiga','_atari','_solaris', '_qnx', '_netware','_openbsd','_wdosx',
-        '_palmos','_macosclassic','_darwin','_obsolete_emx','_watcom','_obsolete_morphos','_netwlibc',
+        '_obsolete_amiga','_atari','_solaris', '_qnx', '_obsolete_netware','_openbsd','_wdosx',
+        '_palmos','_macosclassic','_darwin','_obsolete_emx','_watcom','_obsolete_morphos','_obsolete_netwlibc',
         '_win64','_wince','_gba','_nds','_embedded','_symbian','_nativent',
         '_iphonesim','_wii','_aix','_java','_android','_msdos','_obsolete_aros',
         '_dragonfly','_win16','_freertos','_zxspectrum','_msxdos',
@@ -167,7 +167,7 @@ interface
         { atari }   ( false, false, true,  false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
         { solaris } ( false, true,  false, false, true,  true,  false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
         { qnx }     ( false, true,  false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { netware } ( false, true,  false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+ { obsolete_netware } ( false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
         { openbsd } ( false, true,  false, false, false, true,  false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
         { wdosx }   ( false, true,  false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
         { palmos }  ( false, false, true,  false, false, false, true,  false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
@@ -176,7 +176,7 @@ interface
  { obsolete_emx }   ( false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
         { watcom }  ( false, true,  false, false, false ,false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
 { obsolete_morphos }( false, false, false, false, false ,false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { netwlibc }( false, true,  false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
+ { obsolete_netwlibc }( false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
         { win64   } ( false, false, false, false, false, true,  false, false, false, false, false, false, false, false, false,   false, false, true,   false, false, false,  false,  false, false, false),
         { wince    }( false, true,  false, false, false, false, true,  false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
         { gba    }  ( false, false, false, false, false, false, true,  false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),

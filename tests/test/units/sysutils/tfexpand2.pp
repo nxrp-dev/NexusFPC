@@ -62,10 +62,6 @@ uses
  {$DEFINE NODRIVEC}
 {$ENDIF AMIGA}
 
-{$IFDEF NETWARE}
- {$DEFINE VOLUMES}
- {$DEFINE NODRIVEC}
-{$ENDIF NETWARE}
 
 {$IFDEF UNIX}
  {$DEFINE NODRIVEC}
@@ -358,11 +354,7 @@ if CDir [Length (CDir)] = DirSep then Check ('c:anything', CDir + 'anything')
                                                + DirSep + DirSep, TestDir + TestDir1Name + DirSep);
  {$ENDIF NODOTS}
 {$ENDIF MACOS}
-{$IFDEF NETWARE}
- Check ('...', TestDir);
-{$ELSE NETWARE}
  Check ('...', CurDir + DirSep + '...');
-{$ENDIF NETWARE}
  Check (TestFileName, CurDir + DirSep + TestFileName);
 {$IFDEF UNIX}
  S := GetEnvironmentVariable ('HOME');
@@ -460,12 +452,6 @@ if CDir [Length (CDir)] = DirSep then Check ('c:anything', CDir + 'anything')
  Check (UTF8String('√olıame') + DriveSep + DirSep + '..', UTF8String('√olıame:') + DirSep);
  Check (UTF8String('√olıame') + DriveSep + DirSep + '..' + DirSep, UTF8String('√olıame') + DriveSep + DirSep);
  {$ENDIF NODOTS}
- {$IFDEF NETWARE}
- Check (UTF8String('∑rvName\√olıame') + DriveSep + DirSep + UTF8String('†ĘŚ™'), UTF8String('∑rvName') + DirSep + UTF8String('√olıame') +
-                                                         DriveSep + DirSep + UTF8String('†ĘŚ™'));
- Check (UTF8String('∑rvName/√olıame') + DriveSep + DirSep + UTF8String('†ĘŚ™'), UTF8String('∑rvName') + DirSep + UTF8String('√olıame') +
-                                                         DriveSep + DirSep + UTF8String('†ĘŚ™'));
- {$ENDIF NETWARE}
  {$IFDEF AMIGA}
   {$IFDEF NODOTS}
  Check ('.', CurDir + DirSep + '.');

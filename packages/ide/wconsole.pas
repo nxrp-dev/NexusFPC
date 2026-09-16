@@ -36,9 +36,6 @@ interface
 {$ifdef go32v2}
       longint
 {$endif go32v2}
-{$ifdef netware}
-      longint
-{$endif netware}
 {$ifdef amiga}
       longint
 {$endif amiga}
@@ -76,9 +73,6 @@ Begin
 {$ifdef go32v2}
   ConsoleMode:=0;
 {$endif go32v2}
-{$ifdef netware}
-  ConsoleMode:=0;
-{$endif}
 End;
 
 Procedure RestoreConsoleMode(const ConsoleMode : TConsoleMode);

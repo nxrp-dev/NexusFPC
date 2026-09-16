@@ -191,9 +191,6 @@ PROCEDURE SecondsToTime (Sd: LongInt; Var Hour24, Minute, Second: Word);
   USES TP.DOS;
 {$endif OS_GO32}
 
-{$ifdef OS_NETWARE}
-  USES TP.DOS;
-{$endif OS_NETWARE}
 
 {$ifdef OS_AMIGA}
   USES TP.DOS;
@@ -207,9 +204,6 @@ PROCEDURE SecondsToTime (Sd: LongInt; Var Hour24, Minute, Second: Word);
   USES Dos;
 {$endif OS_GO32}
 
-{$ifdef OS_NETWARE}
-  USES Dos;
-{$endif OS_NETWARE}
 
 {$ifdef OS_AMIGA}
   USES Dos;
@@ -375,11 +369,6 @@ BEGIN
  {settime is dummy in Linux}
 END;
 {$endif OS_UNIX}
-{$IFDEF OS_NETWARE}
-BEGIN
- {settime is dummy in Netware (Libc and Clib) }
-END;
-{$ENDIF OS_NETWARE}
 {$IFDEF OS_AMIGA}
 BEGIN
  { settime is dummy on Amiga }
@@ -597,11 +586,6 @@ BEGIN
   {$IFDEF FPC_DOTTEDUNITS}TP.{$ENDIF}DOS.GetTime(Hour,Minute,Second,Sec100);
 END;
 {$endif OS_UNIX}
-{$IFDEF OS_NETWARE}
-BEGIN
-  {$IFDEF FPC_DOTTEDUNITS}TP.{$ENDIF}DOS.GetTime(Hour,Minute,Second,Sec100);
-END;
-{$ENDIF OS_NETWARE}
 {$IFDEF OS_AMIGA}
 BEGIN
   {$IFDEF FPC_DOTTEDUNITS}TP.{$ENDIF}DOS.GetTime(Hour,Minute,Second,Sec100);

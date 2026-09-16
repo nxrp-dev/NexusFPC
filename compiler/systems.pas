@@ -349,8 +349,7 @@ interface
          related to OS or emulator lack of support. }
        systems_i386_default_486 = [system_i386_go32v2, system_i386_watcom,
                                    system_i386_wdosx,
-                                   system_i386_beos, system_i386_netware,
-                                   system_i386_netwlibc, system_i386_symbian];
+                                   system_i386_beos, system_i386_symbian];
 
        { systems supporting Objective-C }
        systems_objc_supported = systems_darwin;
@@ -364,8 +363,6 @@ interface
        { all systems supporting exports from programs or units }
        systems_unit_program_exports = [system_i386_win32,
                                          system_i386_wdosx,
-                                         system_i386_Netware,
-                                         system_i386_netwlibc,
                                          system_arm_wince,
                                          system_x86_64_win64,
                                          system_i8086_win16,

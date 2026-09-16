@@ -257,9 +257,6 @@ end;
   {$define PE32PLUS}
 {$endif}
 
-{$ifdef netwlibc}
-  {$define netware}
-{$endif}
 
 {$IFDEF OS2}
   {$DEFINE EMX}
@@ -300,149 +297,6 @@ type
                                   NLM
 ****************************************************************************}
 
-{$ifdef netware}
-
-function getByte(var f:file):byte;
-  begin
-    BlockRead (f,getByte,1);
-  end;
-
-  procedure Skip (var f:file; bytes : longint);
-  var i : longint;
-  begin
-    for i := 1 to bytes do getbyte(f);
-  end;
-
-  function get0String (var f:file) : shortstring;
-  var c : AnsiChar;
-  begin
-    get0String := '';
-    c := AnsiChar (getbyte(f));
-    while (c <> #0) do
-    begin
-      get0String := get0String + c;
-      c := AnsiChar (getbyte(f));
-    end;
-  end;
-
-  function getint32 (var f:file): longint;
-  begin
-    blockread (F, getint32, 4);
-  end;
-
-
-const SIZE_OF_NLM_INTERNAL_FIXED_HEADER = 130;
-      SIZE_OF_NLM_INTERNAL_VERSION_HEADER = 32;
-      SIZE_OF_NLM_INTERNAL_EXTENDED_HEADER = 124;
-
-function openNetwareNLM(var e:TExeFile):boolean;
-var valid : boolean;
-    name  : shortstring;
-    hdrLength,
-    dataOffset,
-    dataLength : longint;
-
-
-  function getLString : ShortString;
-  var Res:Shortstring;
-  begin
-    blockread (e.F, res, 1);
-    if length (res) > 0 THEN
-      blockread (e.F, res[1], length (res));
-    getbyte(e.f);
-    getLString := res;
-  end;
-
-  function getFixString (Len : byte) : shortstring;
-  var i : byte;
-  begin
-    getFixString := '';
-    for I := 1 to Len do
-      getFixString := getFixString + AnsiChar (getbyte(e.f));
-  end;
-
-
-  function getword : word;
-  begin
-    blockread (e.F, getword, 2);
-  end;
-
-
-
-begin
-  e.sechdrofs := 0;
-  openNetwareNLM:=false;
-
-  // read and check header
-  Skip (e.f,SIZE_OF_NLM_INTERNAL_FIXED_HEADER);
-  getLString;  // NLM Description
-  getInt32(e.f);    // Stacksize
-  getInt32(e.f);    // Reserved
-  skip(e.f,5);     // old Thread Name
-  getLString;  // Screen Name
-  getLString;  // Thread Name
-  hdrLength := -1;
-  dataOffset := -1;
-  dataLength := -1;
-  valid := true;
-  repeat
-    name := getFixString (8);
-    if (name = 'VeRsIoN#') then
-    begin
-      Skip (e.f,SIZE_OF_NLM_INTERNAL_VERSION_HEADER-8);
-    end else
-    if (name = 'CoPyRiGh') then
-    begin
-      getword;     // T=
-      getLString;  // Copyright String
-    end else
-    if (name = 'MeSsAgEs') then
-    begin
-      skip (e.f,SIZE_OF_NLM_INTERNAL_EXTENDED_HEADER - 8);
-    end else
-    if (name = 'CuStHeAd') then
-    begin
-      hdrLength := getInt32(e.f);
-      dataOffset := getInt32(e.f);
-      dataLength := getInt32(e.f);
-      Skip (e.f,8); // dateStamp
-      Valid := false;
-    end else
-      Valid := false;
-  until not valid;
-  if (hdrLength = -1) or (dataOffset = -1) or (dataLength = -1) then
-    exit;
-
-  Seek (e.F, dataOffset);
-  e.sechdrofs := dataOffset;
-  openNetwareNLM := (e.sechdrofs > 0);
-end;
-
-function FindSectionNetwareNLM(var e:TExeFile;const asecname:shortstring;var secofs,seclen:longint):boolean;
-var name : shortstring;
-    alignAmount : longint;
-begin
-  seek(e.f,e.sechdrofs);
-    (* The format of the section information is:
-       null terminated section name
-       zeroes to adjust to 4 byte boundary
-       4 byte section data file pointer
-       4 byte section size *)
-  Repeat
-    Name := Get0String(e.f);
-    alignAmount := 4 - ((length (Name) + 1) MOD 4);
-    Skip (e.f,AlignAmount);
-    if (Name = asecname) then
-    begin
-      secOfs := getInt32(e.f);
-      secLen := getInt32(e.f);
-    end else
-      Skip(e.f,8);
-  until (Name = '') or (Name = asecname);
-  FindSectionNetwareNLM := (Name=asecname);
-end;
-
-{$endif}
 
 
 {****************************************************************************
@@ -1559,10 +1413,6 @@ const
      openproc : @OpenEMXaout;
      findproc : @FindSectionEMXaout;
 {$ENDIF EMX}
-{$ifdef netware}
-     openproc : @OpenNetwareNLM;
-     findproc : @FindSectionNetwareNLM;
-{$endif}
    );
 
 function OpenExeFile(var e:TExeFile;const fn:shortstring):boolean;

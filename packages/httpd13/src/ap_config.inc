@@ -28,7 +28,7 @@
 //#include "ap_config_auto.h"
 //#endif
 
-{$if defined(WIN32) or defined(NETWARE)}
+{$ifdef WIN32}
   { not available under WIN32, so provide important entries manually }
   {$undefine HAVE_UNISTD_H}
 {$endif}
@@ -974,9 +974,6 @@ const
 #define USE_PTHREAD_SERIALIZED_ACCEPT
 #endif
 
-{$else}{$if defined(NETWARE)}
-#define NONBLOCK_WHEN_MULTI_LISTEN
-
 {$else}
   { Unknown system - Edit these to match }
   {$ifdef BSD}
@@ -990,7 +987,6 @@ const
   {$undefine NO_SETSID}
   { NEED_STRDUP is set on stupid systems that don't have strdup. }
   {$undefine NEED_STRDUP}
-{$endif}
 {$endif}
 {$endif}
 {$endif}

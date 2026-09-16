@@ -12,7 +12,6 @@ ifdef FPC_DOTTEDUNITS
 #
 # Here all dotted units
 #
-AIOUNIT=NetWareApi.Aio
 ALLWINNER_A20UNIT=Embedded.Allwinner_a20
 ANDROIDR14UNIT=AndroidAPI.AndroidR14
 ATHREADSUNIT=AmigaApi.AThreads
@@ -133,7 +132,6 @@ INTRINSICSUNIT=System.Intrinsics
 ISO7185UNIT=iso7185
 JDK15UNIT=JavaApi.JDK15
 KBDCALLSUNIT=OS2Api.kbdcalls
-LIBCUNIT=NetwareLibCApi.Libc
 LINEINFOUNIT=lineinfo
 LINUXUNIT=LinuxApi
 LINUXVCSUNIT=LinuxApi.Vcs
@@ -168,16 +166,9 @@ MSMOUSEUNIT=DOSApi.MSMouse
 MULTIBOOTUNIT=EmbeddedApi.multiboot
 NDKUNIT=NTApi.NDK
 NDKUTILSUNIT=NTApi.NDKUtils
-NETWAREUNIT=NetwareApi.NetWare
 NEWEXEUNIT=OS2Api.newexe
 NRF51UNIT=EmbeddedApi.nrf51
 NRF52UNIT=EmbeddedApi.nrf52
-NWCALLSUNIT=NetWareApi.Nwcalls
-NWNITUNIT=NetWareApi.Nwnit
-NWPREUNIT=NetWareApi.Nwpre
-NWPROTUNIT=NetWareApi.Nwprot
-NWSERVUNIT=NetWareApi.Nwserv
-NWSNUTUNIT=NetWareApi.Nwsnut
 OBJCUNIT=objc
 OBJCBASEUNIT=objcbase
 OBJPASUNIT=objpas
@@ -279,7 +270,6 @@ else
 #
 # Here all non-dotted units
 #
-AIOUNIT=aio
 ALLWINNER_A20UNIT=allwinner_a20
 ANDROIDR14UNIT=androidr14
 ATHREADSUNIT=athreads
@@ -401,7 +391,6 @@ INTRINSICSUNIT=intrinsics
 ISO7185UNIT=iso7185
 JDK15UNIT=jdk15
 KBDCALLSUNIT=kbdcalls
-LIBCUNIT=libc
 LINEINFOUNIT=lineinfo
 LINUXUNIT=linux
 LINUXVCSUNIT=linuxvcs
@@ -436,16 +425,9 @@ MSMOUSEUNIT=msmouse
 MULTIBOOTUNIT=multiboot
 NDKUNIT=ndk
 NDKUTILSUNIT=ndkutils
-NETWAREUNIT=netware
 NEWEXEUNIT=newexe
 NRF51UNIT=nrf51
 NRF52UNIT=nrf52
-NWCALLSUNIT=nwcalls
-NWNITUNIT=nwnit
-NWPREUNIT=nwpre
-NWPROTUNIT=nwprot
-NWSERVUNIT=nwserv
-NWSNUTUNIT=nwsnut
 OBJCUNIT=objc
 OBJCBASEUNIT=objcbase
 OBJPASUNIT=objpas

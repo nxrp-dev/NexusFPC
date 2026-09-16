@@ -156,7 +156,7 @@ unit scandir;
         error : longint;
       begin
         { change description global var in all cases }
-        { it not used but in win32, os2 and netware }
+        { it not used but in win32 and os2 }
         current_scanner.skipspace;
         { we should only accept Major.Minor format for win32 and os2 }
         current_scanner.readnumber;
@@ -485,40 +485,13 @@ unit scandir;
     procedure dir_description;
       begin
         if not (target_info.system in systems_all_windows+[
-                 system_i386_netware,system_i386_wdosx,system_i386_netwlibc,system_i8086_win16]) then
+                 system_i386_wdosx,system_i8086_win16]) then
           Message(scan_w_description_not_support);
         { change description global var in all cases }
-        { it not used but in win32, os2 and netware }
+        { it not used but in win32 and os2 }
         current_scanner.skipspace;
         description:=current_scanner.readcomment;
         DescriptionSetExplicity:=true;
-      end;
-
-    procedure dir_screenname; {ad}
-      begin
-        if not (target_info.system in [system_i386_netware,system_i386_netwlibc]) then
-          {Message(scan_w_description_not_support);}
-          comment (V_Warning,'Screenname only supported for target netware');
-        current_scanner.skipspace;
-        nwscreenname:=current_scanner.readcomment;
-      end;
-
-      procedure dir_threadname; {ad}
-      begin
-        if not (target_info.system in [system_i386_netware,system_i386_netwlibc]) then
-          {Message(scan_w_description_not_support);}
-          comment (V_Warning,'Threadname only supported for target netware');
-        current_scanner.skipspace;
-        nwthreadname:=current_scanner.readcomment;
-      end;
-
-      procedure dir_copyright; {ad}
-      begin
-        if not (target_info.system in [system_i386_netware,system_i386_netwlibc]) then
-          {Message(scan_w_description_not_support);}
-          comment (V_Warning,'Copyright only supported for target netware');
-        current_scanner.skipspace;
-        nwcopyright:=current_scanner.readcomment;
       end;
 
     procedure dir_error;
@@ -1809,12 +1782,11 @@ unit scandir;
 
     procedure dir_version;
       var
-        major, minor, revision : longint;
+        major, minor : longint;
         error : integer;
       begin
         if not (target_info.system in systems_all_windows+[
-                 system_i386_netware,system_i386_wdosx,
-                 system_i386_netwlibc]) then
+                 system_i386_wdosx]) then
           begin
             Message(scan_n_version_not_support);
             exit;
@@ -1824,13 +1796,12 @@ unit scandir;
         else
           begin
             { change description global var in all cases }
-            { it not used but in win32, os2 and netware }
+            { it not used but in win32 and os2 }
             current_scanner.skipspace;
             { we should only accept Major.Minor format for win32 and os2 }
             current_scanner.readnumber;
             major:=0;
             minor:=0;
-            revision:=0;
             val(current_scanner.pattern,major,error);
             if (error<>0) or (major > high(word)) or (major < 0) then
               begin
@@ -1847,28 +1818,9 @@ unit scandir;
                     Message1(scan_w_wrong_version_ignored,tostr(major)+'.'+current_scanner.pattern);
                     exit;
                   end;
-                if (current_scanner.c='.') and
-                   (target_info.system in [system_i386_netware,system_i386_netwlibc]) then
-                  begin
-                     current_scanner.readchar;
-                     current_scanner.readnumber;
-                     val(current_scanner.pattern,revision,error);
-                     if (error<>0) or (revision > high(word)) or (revision < 0) then
-                       begin
-                          Message1(scan_w_wrong_version_ignored,tostr(revision)+'.'+current_scanner.pattern);
-                          exit;
-                       end;
-                     dllmajor:=word(major);
-                     dllminor:=word(minor);
-                     dllrevision:=word(revision);
-                     dllversion:=tostr(major)+','+tostr(minor)+','+tostr(revision);
-                  end
-                else
-                  begin
-                     dllmajor:=word(major);
-                     dllminor:=word(minor);
-                     dllversion:=tostr(major)+'.'+tostr(minor);
-                  end;
+                dllmajor:=word(major);
+                dllminor:=word(minor);
+                dllversion:=tostr(major)+'.'+tostr(minor);
               end
             else
               dllversion:=tostr(major);
@@ -2210,7 +2162,6 @@ unit scandir;
         AddDirective('CODEALIGN',directive_all, @dir_codealign);
         AddDirective('CODEPAGE',directive_all, @dir_codepage);
         AddDirective('COPERATORS',directive_all, @dir_coperators);
-        AddDirective('COPYRIGHT',directive_all, @dir_copyright);
         AddDirective('D',directive_all, @dir_description);
         AddDirective('DEBUGINFO',directive_all, @dir_debuginfo);
         AddDirective('DEFINITIONINFO',directive_all, @dir_definitioninfo);
@@ -2305,7 +2256,6 @@ unit scandir;
         AddDirective('SETPEOSVERSION', directive_all, @dir_setpeosversion);
         AddDirective('SETPEUSERVERSION', directive_all, @dir_setpeuserversion);
         AddDirective('SETPESUBSYSVERSION', directive_all, @dir_setpesubsysversion);
-        AddDirective('SCREENNAME',directive_all, @dir_screenname);
         AddDirective('SMARTLINK',directive_all, @dir_smartlink);
         AddDirective('STACKCHECKING',directive_all,@dir_stackchecking);
         AddDirective('STACKFRAMES',directive_all, @dir_stackframes);
@@ -2313,7 +2263,6 @@ unit scandir;
         AddDirective('STRINGCHECKS', directive_all, @dir_stringchecks);
         AddDirective('SYSCALL',directive_all, @dir_syscall);
         AddDirective('TARGETSWITCH',directive_all, @dir_targetswitch);
-        AddDirective('THREADNAME',directive_all, @dir_threadname);
         AddDirective('TYPEDADDRESS',directive_all, @dir_typedaddress);
         AddDirective('TYPEINFO',directive_all, @dir_typeinfo);
         AddDirective('UNITPATH',directive_all, @dir_unitpath);

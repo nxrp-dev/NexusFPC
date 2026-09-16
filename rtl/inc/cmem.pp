@@ -31,10 +31,6 @@ Const
   LibName = 'msvcrt';
 {$elseif defined(wince)}
   LibName = 'coredll';
-{$elseif defined(netware)}
-  LibName = 'clib';
-{$elseif defined(netwlibc)}
-  LibName = 'libc';
 {$elseif defined(macos)}
   LibName = 'StdCLib';
 {$elseif defined(beos)}

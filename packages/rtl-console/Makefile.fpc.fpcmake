@@ -27,8 +27,6 @@ units_win32=winevent crt video mouse keyboard
 units_win64=winevent crt video mouse keyboard
 units_emx=crt video mouse keyboard
 units_os2=crt video mouse keyboard
-units_netware=crt video mouse keyboard
-units_netwlibc=crt video mouse keyboard
 units_morphos=video mouse keyboard
 units_aros=video mouse keyboard
 

@@ -41,12 +41,8 @@ const
   {$else}{$if defined(BEOS) or defined(BONE)}
     { Set the default for BeOS }
     HTTPD_ROOT = '/boot/home/apache';
-  {$else}{$ifdef NETWARE}
-    { Set the default for NetWare }
-    HTTPD_ROOT = 'sys:/apache';
   {$else}
     HTTPD_ROOT = '/usr/local/apache';
-  {$endif}
   {$endif}
   {$endif}
   {$endif}
@@ -91,13 +87,8 @@ const
   DEFAULT_HTTP_PORT =	80;
   DEFAULT_HTTPS_PORT =	443;
 //#define ap_is_default_port(port,r)	((port) == ap_default_port(r))
-{$ifdef NETWARE}
-#define ap_http_method(r) ap_os_http_method((void*)r)
-#define ap_default_port(r) ap_os_default_port((void*)r)
-{$else}
 //  ap_http_method(r) = 'http';
 //  ap_default_port(r) = DEFAULT_HTTP_PORT;
-{$endif}
 
 { --------- Default user name and group name running standalone ---------- }
 { --- These may be specified as numbers by placing a # before a number --- }
@@ -235,11 +226,8 @@ const
 {$ifndef HARD_SERVER_LIMIT}
 {$ifdef WINDOWS}
   HARD_SERVER_LIMIT = 1024;
-{$else}{$if defined(NETWARE)}
-  HARD_SERVER_LIMIT = 2048;
 {$else}
   HARD_SERVER_LIMIT = 256;
-{$endif}
 {$endif}
 {$endif}
 
@@ -1135,13 +1123,9 @@ procedure ap_chdir_file(const file_: PAnsiChar);
 {$else}{$ifdef OS2}
 //API_EXPORT(AnsiChar *) ap_os_case_canonical_filename(pool *pPool, const AnsiChar *szFile);
 //API_EXPORT(AnsiChar *) ap_os_systemcase_filename(pool *pPool, const AnsiChar *szFile);
-{$else}{$ifdef NETWARE}
-//API_EXPORT(AnsiChar *) ap_os_case_canonical_filename(pool *pPool, const AnsiChar *szFile);
-//#define ap_os_systemcase_filename(p,f) ap_os_case_canonical_filename(p,f)
-{$else}
+  {$else}
 //#define ap_os_case_canonical_filename(p,f) ap_os_canonical_filename(p,f)
 //#define ap_os_systemcase_filename(p,f) ap_os_canonical_filename(p,f)
-{$endif}
 {$endif}
 {$endif}
 {$endif}

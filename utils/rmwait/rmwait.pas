@@ -304,7 +304,7 @@ var
   RemFNDir: boolean;
 begin
   RemFNDir := false;
-{$IF NOT DEFINED (OS2) and NOT DEFINED (WINDOWS) and NOT DEFINED (DPMI) and NOT DEFINED (UNIX) and NOT DEFINED (MACOS) and NOT DEFINED (AMIGA) and NOT DEFINED (NETWARE)}
+{$IF NOT DEFINED (OS2) and NOT DEFINED (WINDOWS) and NOT DEFINED (DPMI) and NOT DEFINED (UNIX) and NOT DEFINED (MACOS) and NOT DEFINED (AMIGA)}
  {$WARNING Proper behaviour for this target platform has not been checked!}
 {$ENDIF}
 {$IF NOT DEFINED (MACOS) and NOT DEFINED (AMIGA)}
@@ -317,9 +317,6 @@ begin
         or ((Length (FN) = 2) and (FN [1] = DirectorySeparator)))
 (* Root of UNC path - nonsense, but changing it to root of current drive would be dangerous. *)
   {$ELSE}
-   {$IFDEF NETWARE}
- if (Length (FN) = Pos (DirectorySeparator, FN))
-   {$ENDIF NETWARE}
   {$ENDIF}
       and (FN [Length (FN)] = DirectorySeparator) then
  {$ENDIF UNIX}

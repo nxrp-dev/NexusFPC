@@ -28,14 +28,6 @@ Type
     {$define SYMLINKREC_USEFINDDATA}
     TFindData = TWin32FindDataW;
 {$endif}
-{$ifdef netware_clib}
-    TFindData = TNetwareFindData;
-    {$define SEARCHREC_USEFINDDATA}
-{$endif}
-{$ifdef netware_libc}
-    TFindData = TNetwareLibcFindData;
-    {$define SEARCHREC_USEFINDDATA}
-{$endif}
 {$ifdef MacOS}
     TFindData = TMacOSFindData;
     {$define SEARCHREC_USEFINDDATA}

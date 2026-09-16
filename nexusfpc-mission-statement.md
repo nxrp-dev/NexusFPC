@@ -52,6 +52,8 @@ Nexus will not depend on NexusFPC-specific language features, ABI changes, propr
 
 A developer who needs a platform, target, package, or compatibility feature intentionally omitted from NexusFPC should remain free to use upstream Free Pascal or another compatible FPC toolchain.
 
+In the case of packages specifically.  Upstream FPC has a number of useful packages that have been deemed inappropriate for inclusion.  Ones that are on the upper edge of usefulness for Nexus will be imported into a Nexus specific package repository where they can be used by Nexus.  An attempt will be made to keep these specific packages current with upstream development where it exists.
+
 NexusFPC may change defaults, remove unsupported targets, retire obsolete compatibility paths, simplify maintenance, and adopt useful upstream development features as part of its supported baseline. Those decisions should improve the focused Nexus toolchain without making Nexus source needlessly dependent on a private compiler dialect.
 
 ## Scope

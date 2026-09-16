@@ -370,7 +370,6 @@ endif
 override PACKAGE_NAME=rtl
 PACKAGEDIR_MAIN:=$(firstword $(subst /Makefile.fpc,,$(strip $(wildcard $(addsuffix /rtl/Makefile.fpc,$(PACKAGESDIR))))))
 ifdef FPC_DOTTEDUNITS
-AIOUNIT=NetWareApi.Aio
 ALLWINNER_A20UNIT=Embedded.Allwinner_a20
 ANDROIDR14UNIT=AndroidAPI.AndroidR14
 ATHREADSUNIT=AmigaApi.AThreads
@@ -491,7 +490,6 @@ INTRINSICSUNIT=System.Intrinsics
 ISO7185UNIT=iso7185
 JDK15UNIT=JavaApi.JDK15
 KBDCALLSUNIT=OS2Api.kbdcalls
-LIBCUNIT=NetwareLibCApi.Libc
 LINEINFOUNIT=lineinfo
 LINUXUNIT=LinuxApi
 LINUXVCSUNIT=LinuxApi.Vcs
@@ -526,16 +524,9 @@ MSMOUSEUNIT=DOSApi.MSMouse
 MULTIBOOTUNIT=EmbeddedApi.multiboot
 NDKUNIT=NTApi.NDK
 NDKUTILSUNIT=NTApi.NDKUtils
-NETWAREUNIT=NetwareApi.NetWare
 NEWEXEUNIT=OS2Api.newexe
 NRF51UNIT=EmbeddedApi.nrf51
 NRF52UNIT=EmbeddedApi.nrf52
-NWCALLSUNIT=NetWareApi.Nwcalls
-NWNITUNIT=NetWareApi.Nwnit
-NWPREUNIT=NetWareApi.Nwpre
-NWPROTUNIT=NetWareApi.Nwprot
-NWSERVUNIT=NetWareApi.Nwserv
-NWSNUTUNIT=NetWareApi.Nwsnut
 OBJCUNIT=objc
 OBJCBASEUNIT=objcbase
 OBJPASUNIT=objpas
@@ -788,16 +779,9 @@ MSMOUSEUNIT=msmouse
 MULTIBOOTUNIT=multiboot
 NDKUNIT=ndk
 NDKUTILSUNIT=ndkutils
-NETWAREUNIT=netware
 NEWEXEUNIT=newexe
 NRF51UNIT=nrf51
 NRF52UNIT=nrf52
-NWCALLSUNIT=nwcalls
-NWNITUNIT=nwnit
-NWPREUNIT=nwpre
-NWPROTUNIT=nwprot
-NWSERVUNIT=nwserv
-NWSNUTUNIT=nwsnut
 OBJCUNIT=objc
 OBJCBASEUNIT=objcbase
 OBJPASUNIT=objpas
@@ -1279,19 +1263,7 @@ BATCHEXT=.sh
 EXEEXT=
 SHORTSUFFIX=qnx
 endif
-ifeq ($(OS_TARGET),netware)
-EXEEXT=.nlm
-STATICLIBPREFIX=
-SHORTSUFFIX=nw
-IMPORTLIBPREFIX=imp
-endif
 ALL_EXEEXT+=.nlm
-ifeq ($(OS_TARGET),netwlibc)
-EXEEXT=.nlm
-STATICLIBPREFIX=
-SHORTSUFFIX=nwl
-IMPORTLIBPREFIX=imp
-endif
 ifeq ($(OS_TARGET),macosclassic)
 BATCHEXT=
 EXEEXT=

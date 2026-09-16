@@ -142,8 +142,8 @@ Type
   // Please keep this order, see OSCPUSupported below
   TOS=(osNone,
     linux,go32v2,win32,obsolete_os2,freebsd,beos,netbsd,
-    obsolete_amiga,atari, solaris, qnx, netware, openbsd,wdosx,
-    palmos,macosclassic,darwin,obsolete_emx,watcom,obsolete_morphos,netwlibc,
+    obsolete_amiga,atari, solaris, qnx, obsolete_netware, openbsd,wdosx,
+    palmos,macosclassic,darwin,obsolete_emx,watcom,obsolete_morphos,obsolete_netwlibc,
     win64,wince,gba,nds,embedded,symbian,haiku,iphonesim,
     aix,java,android,nativent,msdos,wii,obsolete_aros,dragonfly,
     win16,freertos,zxspectrum,msxdos,ios,amstradcpc,sinclairql,
@@ -214,7 +214,7 @@ Const
   DOS = Go32v2;
   MacOSX = Darwin;
 
-  AllOSes = [Low(TOS)..High(TOS)]-[obsolete_os2,obsolete_amiga,obsolete_emx,obsolete_morphos,obsolete_aros];
+  AllOSes = [Low(TOS)..High(TOS)]-[obsolete_os2,obsolete_amiga,obsolete_netware,obsolete_emx,obsolete_morphos,obsolete_netwlibc,obsolete_aros];
   AllCPUs = [Low(TCPU)..High(TCPU)];
   AllUnixOSes  = [Linux,FreeBSD,NetBSD,OpenBSD,Darwin,QNX,BeOS,Solaris,Haiku,iphonesim,ios,aix,Android,dragonfly];
   AllBSDOSes      = [FreeBSD,NetBSD,OpenBSD,Darwin,iphonesim,ios,dragonfly];
@@ -223,7 +223,7 @@ Const
   AllWebAssemblyOSes = [wasip1, wasip1threads, wasip2];
 
   AllSmartLinkLibraryOSes = [Linux,msdos,win16,palmos]; // OSes that use .a library files for smart-linking
-  AllImportLibraryOSes = AllWindowsOSes + [netwlibc,netware,watcom,go32v2,macosclassic,nativent,msdos,win16];
+  AllImportLibraryOSes = AllWindowsOSes + [watcom,go32v2,macosclassic,nativent,msdos,win16];
 
   { This table is kept OS,Cpu because it is easier to maintain (PFV) }
   OSCPUSupported : array[TOS,TCpu] of boolean = (
@@ -240,7 +240,7 @@ Const
     { atari }   ( false, false, true,  false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { solaris } ( false, true,  false, false, true,  true,  false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { qnx }     ( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
-    { netware } ( false, true,  false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
+{ obsolete_netware } ( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { openbsd } ( false, true,  false, false, false, true,  false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { wdosx }   ( false, true,  false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { palmos }  ( false, false, true,  false, false, false, true,  false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
@@ -249,7 +249,7 @@ Const
 { obsolete_emx }( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { watcom }  ( false, true,  false, false, false ,false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { obsolete_morphos } ( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
-    { netwlibc }( false, true,  false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
+{ obsolete_netwlibc }( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { win64   } ( false, false, false, false, false, true,  false, false, false, false, false, false, false, false,   false, false, true,  false, false,  false,  false,   false, false, false),
     { wince    }( false, true,  false, false, false, false, true,  false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { gba    }  ( false, false, false, false, false, false, true,  false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
@@ -2982,7 +2982,7 @@ function GetImportLibraryFilename(const UnitName: string; AOS: TOS): string;
 begin
   if AOS in [go32v2,watcom] then
     Result := 'libimp'+UnitName
-  else if AOS in [netware,netwlibc,macosclassic] then
+  else if AOS in [macosclassic] then
     Result := 'lib'+UnitName
   else
     Result := 'libimp'+UnitName;
@@ -10217,7 +10217,7 @@ end;
 
 function TTarget.GetUnitLibFileName(AOS : TOS): String;
 begin
-  if AOS in [atari,netwlibc,go32v2,watcom,wdosx,msdos,win16] then
+  if AOS in [atari,go32v2,watcom,wdosx,msdos,win16] then
     Result := Name+LibExt
   else if AOS in [java] then
     Result:=Name+'.jar'

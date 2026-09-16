@@ -3726,8 +3726,6 @@ F*2P<x>_设置目标 CPU (aarch64,arm,avr,i386,i8086,jvm,loongarch64,m68k,mips,m
 3*2Tlinux_Linux
 3*2Tnativent_原生 NT API (实验性)
 3*2Tnetbsd_NetBSD
-3*2Tnetware_Novell Netware 模块 (clib)
-3*2Tnetwlibc_Novell Netware 模块 (libc)
 3*2Topenbsd_OpenBSD
 3*2Tos2_OS/2 / eComStation
 3*2Tsolaris_Solaris

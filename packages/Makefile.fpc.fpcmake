@@ -60,8 +60,6 @@ dirs_win32=rtl-console rtl-unicode fv winunits-base winunits-jedi fcl-web fastcg
 dirs_win64=rtl-console rtl-unicode fv winunits-base winunits-jedi fcl-web fastcgi ibase mysql zlib oracle odbc postgres sqlite imagemagick gdbint \
                 tcl opengl gtk1 fpgtk fftw sdl openssl cdrom  httpd22 numlib fcl-extra opencl nvapi ptc graph openal
 dirs_wince=rtl-unicode winceunits httpd22 fcl-web fastcgi tcl fftw unzip zlib sqlite mysql ibase postgres oracle odbc sdl openssl oggvorbis numlib
-dirs_netware=rtl-console rtl-unicode fv zlib unzip
-dirs_netwlibc=rtl-console rtl-unicode fv zlib unzip
 dirs_palmos=palmunits
 dirs_go32v2=rtl-console rtl-unicode fv graph unzip gdbint
 dirs_wii=libogcfpc

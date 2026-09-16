@@ -127,7 +127,7 @@ type
   apr_fileperms_t = apr_int32_t;
 
 //#if (defined WIN32) || (defined NETWARE)
-{$if defined(WINDOWS) or defined(NETWARE)}
+{$ifdef WINDOWS}
 {**
  * Structure for determining the device the file is on.
  *}

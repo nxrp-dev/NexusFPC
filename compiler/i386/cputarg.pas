@@ -53,12 +53,6 @@ implementation
     {$ifndef NOTARGETWIN}
       ,t_win
     {$endif}
-    {$ifndef NOTARGETNETWARE}
-      ,t_nwm
-    {$endif}
-    {$ifndef NOTARGETNETWLIBC}
-      ,t_nwl
-    {$endif}
     {$ifndef NOTARGETGO32V2}
       ,t_go32v2
     {$endif}

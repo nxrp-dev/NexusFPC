@@ -551,10 +551,6 @@ end;
 {$elseif defined(macos)}
         if IsMacFullPath(s) then
           result:=true;
-{$elseif defined(netware)}
-        if (Pos (DriveSeparator, S) <> 0) or
-                ((Length (S) > 0) and (S [1] in AllowDirectorySeparators)) then
-          result:=true;
 {$elseif defined(win32) or defined(win64) or defined(go32v2) or defined(os2) or defined(watcom)}
         if ((length(s)>0) and (s[1] in AllowDirectorySeparators)) or
 (* The following check for non-empty AllowDriveSeparators assumes that all

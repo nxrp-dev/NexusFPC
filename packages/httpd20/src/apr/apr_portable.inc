@@ -107,20 +107,6 @@ type
   apr_os_shm_t: Pointer;
 
 {$else}
-{$ifdef NETWARE}
-  apr_os_file_t: cint;
-  DIR                   apr_os_dir_t;
-  apr_os_sock_t: cint;
-  NXMutex_t             apr_os_proc_mutex_t;
-  NXThreadId_t          apr_os_thread_t;
-  long                  apr_os_proc_t;
-  NXKey_t               apr_os_threadkey_t;
-  struct timeval        apr_os_imp_time_t;
-  struct tm             apr_os_exp_time_t;
-  apr_os_dso_handle_t: Pointer;
-  apr_os_shm_t: Pointer;
-
-{$else}
 { Any other OS should go above this one.  This is the lowest common
  * denominator typedefs for  all UNIX-like systems.  :)
  }
@@ -171,7 +157,6 @@ typedef void *                apr_os_dso_handle_t;
 {$endif}
 typedef void*                 apr_os_shm_t;         {< native SHM }
 
-{$endif}
 {$endif}
 {$endif}
 {$endif}

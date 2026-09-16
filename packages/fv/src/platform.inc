@@ -277,20 +277,6 @@ FOR FPC THESE ARE THE TRANSLATIONS
   {$DEFINE OS_UNIX}
 {$ENDIF}
 
-{------------------------------------------------}
-{  FPC Netware COMPILER changes operating system }
-{------------------------------------------------}
-{$IFDEF Netware}
-  {$UNDEF OS_DOS}
-  {$DEFINE OS_NETWARE}
-  {$IFDEF NETWARE_LIBC}
-    {$DEFINE OS_NETWARE_LIBC}
-  {$ELSE}
-    {$DEFINE OS_NETWARE_CLIB}
-  {$ENDIF}
-  {$DEFINE HasSysMsgUnit}
-{$ENDIF}
-
 {---------------------------------------------------------------------------}
 {  FPC GO32V2 COMPILER changes operating system - Updated 27Aug98 LdB       }
 {---------------------------------------------------------------------------}

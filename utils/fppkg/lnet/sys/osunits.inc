@@ -6,10 +6,6 @@
   BaseUnix, NetDB,
 {$endif}
 
-{$ifdef NETWARE}
-  WinSock,
-{$endif}
-
 {$ifdef OS2}
   WinSock,
 {$endif}
