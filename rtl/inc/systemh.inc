@@ -1792,10 +1792,7 @@ const
 {$i dynarrh.inc}
 {$endif FPC_HAS_FEATURE_DYNARRAYS}
 
-{ documenting compiler proc. is useless, they shouldn't be used by the user anyways }
-{$ifndef fpdocsystem}
 {$i compproc.inc}
-{$endif fpdocsystem}
 
 {*****************************************************************************
                                Heap
@@ -1848,11 +1845,3 @@ type
   by the compiler to generate code for any routine containing
   implicit or explicit exceptions }
 {$i excepth.inc}
-
-{*****************************************************************************
-                   FPDoc phony declarations.
-*****************************************************************************}
-
-{$ifdef fpdocsystem}
-{$i system.fpd}
-{$endif}

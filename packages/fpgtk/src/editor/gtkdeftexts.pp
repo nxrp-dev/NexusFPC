@@ -120,7 +120,7 @@ resourcestring
 
 // Help
   sInfoTitle = 'Help';
-  sInfoMessage = 'Not yet implemented (searching for FPDoc and help display component)';
+  sInfoMessage = 'Not yet implemented (searching for a help display component)';
 
 // ButtonRow
   sNew = 'New';

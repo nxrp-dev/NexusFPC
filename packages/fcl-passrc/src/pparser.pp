@@ -5349,7 +5349,7 @@ function TPasParser.ParseGenericTypeDecl(Parent: TPasElement;
     if GenericTemplateTypes.Count>0 then
       begin
       // Note: TPasResolver sets GenericTemplateTypes already in CreateElement
-      //       This is for other tools like fpdoc.
+      //       This is for other tools using their own tree containers.
       NewEl.SetGenericTemplates(GenericTemplateTypes);
       end;
   end;

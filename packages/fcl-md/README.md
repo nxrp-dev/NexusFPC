@@ -6,10 +6,10 @@ Extensible means 2 things:
 * You can add new block types by simply registering a processor for it.
   You can also override a block type's parser to provide custom behaviour.
 
-* You can render the markdown to whatever format you want. 
-  By default, rendering to html and fpdoc are supported. (LaTeX still planned)
+* You can render the markdown to whatever format you want.
+  Renderers for HTML, LaTeX, PDF and ANSI text are included.
 
-Both renderers are demoed in the [demo](demo) directory.
+The renderers are demonstrated in the [demo](demo) directory.
 
 While the commonmark spec has been used in the implementation, 
 the parser makes no pretence at being fully commonmark compliant.

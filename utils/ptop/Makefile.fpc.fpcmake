@@ -1,5 +1,5 @@
 #
-#   Makefile.fpc for FPDoc
+#   Makefile.fpc for ptop
 #
 
 [package]
@@ -26,4 +26,3 @@ units=ptopu
 
 [rules]
 .NOTPARALLEL:
-fpdoc$(EXEEXT): ptop.pp ptopu.pp

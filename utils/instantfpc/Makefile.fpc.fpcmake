@@ -1,5 +1,5 @@
 #
-#   Makefile.fpc for FPDoc
+#   Makefile.fpc for instantfpc
 #
 
 [package]
@@ -26,5 +26,4 @@ units=instantfptools
 
 [rules]
 .NOTPARALLEL:
-fpdoc$(EXEEXT): instantfpc.pas instantfptools.pas
 

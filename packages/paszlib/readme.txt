@@ -34,7 +34,7 @@ as much as possible.
 
 Not all (de)compression methods specified in the zip standard [1] are supported.
 Encryption (either zip 2.0 or AES) is not supported, nor are multiple disk sets (spanning/splitting).
-Please see the fpdoc help and the zipper.pp for details on using the class.
+Please see zipper.pp for details on using the class.
 
 Zip file format
 ===============

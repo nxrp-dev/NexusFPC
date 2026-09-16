@@ -9,7 +9,7 @@ uses
   Classes, consoletestrunner, utest.markdown.utils, markdown.elements, Markdown.HTMLEntities,
   markdown.htmlrender, markdown.inlinetext, markdown.line, markdown.parser, markdown.render, markdown.scanner,
   markdown.utils, utest.markdown.scanner, utest.markdown.inlinetext, utest.markdown.htmlrender, utest.markdown.parser,
-  utest.markdown.fpdocrender,markdown.latexrender,utest.markdown.latexrender,markdown.processors;
+  markdown.latexrender,utest.markdown.latexrender,markdown.processors;
 
 begin
   DefaultRunAllTests:=True;

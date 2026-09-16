@@ -8,8 +8,6 @@
 
 {$include fpcreslipo/fpmake.pp}
 
-{$include fpdoc/fpmake.pp}
-
 {$include fpmc/fpmake.pp}
 
 {$include fppkg/fpmake.pp}

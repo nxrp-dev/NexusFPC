@@ -94,8 +94,6 @@ type
 
 {$INCLUDE core/coreinterface.inc}
 
-{$IFNDEF FPDOC}
-
 {$IFDEF ENABLE_C_API}
 {$INCLUDE c_api/capi_index.inc}
 {$INCLUDE c_api/capi_errord.inc}
@@ -113,8 +111,6 @@ type
 {$INCLUDE c_api/capi_moded.inc}
 {$INCLUDE c_api/capi_timerd.inc}
 {$ENDIF ENABLE_C_API}
-
-{$ENDIF FPDOC}
 
 implementation
 

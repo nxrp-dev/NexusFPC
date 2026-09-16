@@ -2,7 +2,6 @@
 //program but for checking the constructs to be parsed well.
 //All statements are written like testparser would print them out to diff the
 //result with this file again to show differences.
-//Based on /utils/fpdoc/testunit.pp
 {$mode objfpc}
 {$h+}
 unit testunit1;

@@ -617,8 +617,6 @@ begin
     TableOfContentsFileName := Cfg.GetValue('Settings/TOCFile/Value','');
 
   // For chm file merging, bintoc must be false and binindex true. Change defaults in time?
-  // OTOH, merging will be mostly done for fpdoc files, and that doesn't care about defaults.
-
   S:=Cfg.GetValue('Files/MakeBinaryTOC/Value', '');
   if s='' Then
     MakeBinaryTOC := Cfg.GetValue('Settings/MakeBinaryTOC/Value', True)

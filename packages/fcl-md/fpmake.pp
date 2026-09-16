@@ -116,14 +116,6 @@ begin
       AddUnit('markdown.render');
       end;
 
-    T:=P.Targets.AddUnit('markdown.fpdocrender.pas');
-    with T.Dependencies do
-      begin
-      AddUnit('markdown.elements');
-      AddUnit('markdown.utils');
-      AddUnit('markdown.render');
-      end;
-
     T:=P.Targets.AddUnit('markdown.pdfrender.pas',P.OSes-NoPdfOSes);
     with T.Dependencies do
       begin
@@ -143,7 +135,6 @@ begin
     P.ExamplePath.Add('demo');
     T:=P.Targets.AddExampleProgram('demomd.lpr');
     T:=P.Targets.AddExampleProgram('md2html.lpr');
-    T:=P.Targets.AddExampleProgram('md2fpdoc.lpr');
     T:=P.Targets.AddExampleProgram('md2pdf.lpr');
     T:=P.Targets.AddExampleProgram('md2ansi.lpr');
   end;

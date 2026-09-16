@@ -2528,11 +2528,7 @@ type
        TToStringNameMode = (snmNameClassName,snmClassName,snmName);
     class var ToStringNameMode : TToStringNameMode;
   public
-    //!! Moved temporary
-    // fpdoc doesn't handle this yet :(
-{$ifndef fpdocsystem}
     function IInterfaceComponentReference.GetComponent=iicrgetcomponent;
-{$endif}
     procedure WriteState(Writer: TWriter); virtual;
     constructor Create(AOwner: TComponent); virtual;
     destructor Destroy; override;

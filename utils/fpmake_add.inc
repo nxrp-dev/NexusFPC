@@ -3,7 +3,6 @@
   add_fpcmkcfg(ADirectory+IncludeTrailingPathDelimiter('fpcmkcfg'));
   add_fpcres(ADirectory+IncludeTrailingPathDelimiter('fpcres'));
   add_fpcreslipo(ADirectory+IncludeTrailingPathDelimiter('fpcreslipo'));
-  add_fpdoc(ADirectory+IncludeTrailingPathDelimiter('fpdoc'));
   add_fpmc(ADirectory+IncludeTrailingPathDelimiter('fpmc'));
   add_fppkg_util(ADirectory+IncludeTrailingPathDelimiter('fppkg'));
   add_fprcp(ADirectory+IncludeTrailingPathDelimiter('fprcp'));

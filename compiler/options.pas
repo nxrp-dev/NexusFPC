@@ -4967,7 +4967,6 @@ begin
   def_system_macro('FPC_ALIGNED_THREADVARTABLES');
   def_system_macro('FPC_INITFINAL_HASUNITNAME');
 
-  { don't remove this, it's also for fpdoc necessary (FK) }
   def_system_macro('FPC_HAS_FEATURE_SUPPORT');
   if (Option.parasubtarget<>'') then
     begin

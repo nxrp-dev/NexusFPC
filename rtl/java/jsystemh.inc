@@ -928,10 +928,7 @@ const
 {$endif FPC_HAS_FEATURE_DYNARRAYS}
 *)
 
-{ documenting compiler proc. is useless, they shouldn't be used by the user anyways }
-{$ifndef fpdocsystem}
 {$i jcompproc.inc}
-{$endif fpdocsystem}
 
 {*****************************************************************************
                                Heap
@@ -956,10 +953,3 @@ const
 (*
 {$i resh.inc}
 *)
-{*****************************************************************************
-                   FPDoc phony declarations.
-*****************************************************************************}
-
-{$ifdef fpdocsystem}
-{$i system.fpd}
-{$endif}

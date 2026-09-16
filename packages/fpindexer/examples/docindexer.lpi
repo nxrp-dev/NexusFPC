@@ -28,13 +28,13 @@
     </PublishOptions>
     <RunParams>
       <local>
-        <CommandLineParams Value="-e -d ~\dh\doc\fpdoc\ -d ~\dh\doc\prog\ -d ~\dh\doc\ref -d ~\dh\doc\user -p iso-8859-1 -c database.ini"/>
+        <CommandLineParams Value="-e -d ~\dh\doc\prog\ -d ~\dh\doc\ref -d ~\dh\doc\user -p iso-8859-1 -c database.ini"/>
       </local>
       <FormatVersion Value="2"/>
       <Modes Count="1">
         <Mode0 Name="default">
           <local>
-            <CommandLineParams Value="-e -d ~\dh\doc\fpdoc\ -d ~\dh\doc\prog\ -d ~\dh\doc\ref -d ~\dh\doc\user -p iso-8859-1 -c database.ini"/>
+            <CommandLineParams Value="-e -d ~\dh\doc\prog\ -d ~\dh\doc\ref -d ~\dh\doc\user -p iso-8859-1 -c database.ini"/>
           </local>
         </Mode0>
       </Modes>

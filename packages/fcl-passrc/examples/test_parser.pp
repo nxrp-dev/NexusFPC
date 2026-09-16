@@ -147,9 +147,7 @@ uses SysUtils, Classes, PParser, PasTree;
 //# types the parser needs
 
 type
-  { We have to override abstract TPasTreeContainer methods.
-    See utils/fpdoc/dglobals.pp for an implementation of TFPDocEngine,
-    a "real" engine. }
+  { We have to override abstract TPasTreeContainer methods. }
   TSimpleEngine = class(TPasTreeContainer)
   public
     function CreateElement(AClass: TPTreeElement; const AName: String;
@@ -171,7 +169,7 @@ end;
 
 function TSimpleEngine.FindElement(const AName: String): TPasElement;
 begin
-  { dummy implementation, see TFPDocEngine.FindElement for a real example }
+  { dummy implementation }
   Result := nil;
 end;
 

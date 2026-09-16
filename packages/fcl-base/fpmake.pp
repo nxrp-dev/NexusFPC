@@ -175,7 +175,6 @@ begin
       T:=P.Targets.AddExampleProgram('dparser.pp');
       T:=P.Targets.AddExampleProgram('dsockcli.pp');
       T:=P.Targets.AddExampleProgram('dsocksvr.pp');
-      T:=P.Targets.AddExampleProgram('fpdoc.dtd');
       T:=P.Targets.AddExampleProgram('fstream.pp');
       T:=P.Targets.AddExampleProgram('htdump.pp');
       T:=P.Targets.AddExampleProgram('isockcli.pp');

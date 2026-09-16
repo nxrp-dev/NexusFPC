@@ -402,7 +402,6 @@ var
   _ptsin: TVDIPtsIn;
   _ptsout: TVDIPtsOut;
 
-{$ifndef FPDOC}
 const
   pblock: TVDIPB = (
     control: @_contrl;
@@ -411,8 +410,6 @@ const
     intout: @_intout;
     ptsout: @_ptsout;
   ); public name 'vdipb';
-{$ENDIF}
-
 function string_to_vdi(const src: shortstring; dst: psmallint): smallint;
 var
   i, len: longint;
