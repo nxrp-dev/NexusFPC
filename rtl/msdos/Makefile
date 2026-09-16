@@ -1197,21 +1197,6 @@ ifeq ($(OS_TARGET),win32)
 SHAREDLIBEXT=.dll
 SHORTSUFFIX=w32
 endif
-ifeq ($(OS_TARGET),amiga)
-EXEEXT=
-SHAREDLIBEXT=.library
-SHORTSUFFIX=amg
-endif
-ifeq ($(OS_TARGET),aros)
-EXEEXT=
-SHAREDLIBEXT=.library
-SHORTSUFFIX=aros
-endif
-ifeq ($(OS_TARGET),morphos)
-EXEEXT=
-SHAREDLIBEXT=.library
-SHORTSUFFIX=mos
-endif
 ifeq ($(OS_TARGET),atari)
 EXEEXT=.ttp
 SHORTSUFFIX=ata
