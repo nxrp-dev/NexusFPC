@@ -3403,7 +3403,6 @@ Free Pascal 编译器版本 $FPCVERSION
 #    s = Sparc64 targets
 #    V = AVR
 #    x = xtensa targets
-#    Z = Z80
 # The second character also indicates who will display this line,
 # (if the above character was TRUE) the current possibilities are :
 #    * = everyone
@@ -3458,11 +3457,6 @@ F*0*_仅列出对默认或选定平台有效的选项。
 4*2Anasmwin64_使用 Nasm 汇编 Win64 目标文件(实验性)
 4*2Apecoff_使用内部写入器生成 PE-COFF (Win64)
 4*2Ayasm_使用 Yasm 汇编(实验性)
-6*2Aas_使用 GNU AS 生成 Unix o-文件
-6*2Agas_GNU Motorola 汇编器
-6*2Amit_MIT 语法(旧版 GAS)
-6*2Amot_标准 Motorola 汇编器
-6*2Avasm_使用 vasm 进行汇编
 8*2Anasm_使用 Nasm 汇编
 8*2Anasmobj_使用 Nasm 汇编
 A*2Aas_使用 GNU AS 汇编
@@ -3489,9 +3483,6 @@ W*2Allvm-mc-17_使用 llvm-mc-17 汇编
 W*2Allvm-mc_使用 llvm-mc 汇编(版本 18 或更高)
 W*2Awasa_使用 wasa 汇编(实验性)
 x*2Aas_使用 GNU AS 汇编
-Z*2Asdcc-sdasz80_使用 SDCC-SDASZ80 汇编
-Z*2Avasm_使用 Vasm 汇编
-Z*2Az80asm_使用 z80asm 汇编
 # 仅由 IDE 内部使用
 **1b_生成浏览器信息
 **2bl_生成本地符号信息
@@ -3670,7 +3661,7 @@ L*2il_返回 LLVM 后端支持的 LLVM/Xcode 版本列表
 F*1P<x>_目标 CPU / 编译器相关选项：
 F*2PB_显示默认编译器二进制文件
 F*2PP_显示默认目标 CPU
-F*2P<x>_设置目标 CPU (aarch64,arm,avr,i386,i8086,jvm,loongarch64,m68k,mips,mipsel,powerpc,powerpc64,riscv32,riscv64,sparc,sparc64,wasm32,x86_64,xtensa,z80)
+F*2P<x>_设置目标 CPU (aarch64,arm,avr,i386,i8086,jvm,loongarch64,mips,mipsel,powerpc,powerpc64,riscv32,riscv64,sparc,sparc64,wasm32,x86_64,xtensa)
 **1R<x>_汇编器读取风格：
 **2Rdefault_使用目标的默认汇编器
 3*2Ratt_读取 AT&T 风格汇编器
@@ -3679,7 +3670,6 @@ F*2P<x>_设置目标 CPU (aarch64,arm,avr,i386,i8086,jvm,loongarch64,m68k,mips,m
 4*2Rintel_读取 Intel 风格汇编器
 8*2Ratt_读取 AT&T 风格汇编器
 8*2Rintel_读取 Intel 风格汇编器
-6*2RMOT_读取 Motorola 风格汇编器
 **1s_不调用汇编器和链接器
 **2sh_生成在主机上链接的脚本，自动切换到外部汇编器写入器
 **2sr_跳过寄存器分配阶段(与 -alr 一起使用)，自动切换到外部汇编器写入器
@@ -3749,15 +3739,6 @@ F*2P<x>_设置目标 CPU (aarch64,arm,avr,i386,i8086,jvm,loongarch64,m68k,mips,m
 4*2Tsolaris_Solaris
 4*2Twin64_Win64 (64 位 Windows 系统)
 # m68k 目标
-6*2Tamiga_Commodore Amiga
-6*2Tatari_Atari ST/STe/TT
-6*2Tembedded_嵌入式
-6*2Thuman68k_Human 68k
-6*2Tlinux_Linux
-6*2Tnetbsd_NetBSD
-6*2Tmacosclassic_经典 Mac OS
-6*2Tpalmos_PalmOS
-6*2Tsinclairql_Sinclair QL
 # i8086 目标
 8*2Tembedded_嵌入式
 8*2Tmsdos_MS-DOS (及兼容系统)
@@ -3830,7 +3811,6 @@ x*2Tembedded_嵌入式
 x*2Tfreertos_FreeRTOS
 x*2Tlinux_Linux
 # z80 目标
-Z*2Tembedded_嵌入式
 # wasm32 目标
 W*2Tembedded_嵌入式
 W*2Twasip1_WebAssembly 系统接口预览版 1 (WASI 0.1)
@@ -3891,7 +3871,6 @@ A*2Wb_创建包而不是库(Darwin)
 4*2WB<x>_将映像基址设置为 <x>(Windows)
 A*2WB_创建可重定位映像(Windows, Symbian)
 A*2WB<x>_将映像基址设置为 <x>(Windows, Symbian)
-Z*2WB<x>_将映像基址设置为 <x>(ZX Spectrum)
 3*2WC_指定控制台类型应用程序(EMX, OS/2, Windows)
 4*2WC_指定控制台类型应用程序(Windows)
 A*2WC_指定控制台类型应用程序(Windows)
@@ -3906,7 +3885,6 @@ A*2We_使用外部资源(Darwin)
 P*2We_使用外部资源(Darwin)
 p*2We_使用外部资源(Darwin)
 3*2WF_指定全屏类型应用程序(EMX, OS/2)
-6*2WF<x>_将 TOS 程序标志设置为 <x>(Atari)
 3*2WG_指定图形类型应用程序(EMX, OS/2, Windows)
 4*2WG_指定图形类型应用程序(Windows)
 A*2WG_指定图形类型应用程序(Windows)
@@ -3952,13 +3930,7 @@ A*2WR_生成重定位代码(Windows)
 8*2Wt<x>_设置目标可执行文件格式
 8*3Wtcom_创建 DOS .COM 文件(需要微型内存模型)
 8*3Wtexe_创建 DOS .EXE 文件(默认)
-6*2Wt<x>_设置目标可执行文件格式(Atari)
-6*3Wttos_创建 TOS 可执行文件(默认)
-6*3Wtmint_创建 MiNT 可执行文件
 P*2WT_指定 MPW 工具类型应用程序(经典 Mac OS)
-6*2WQ<x>_设置可执行文件元数据格式(Sinclair QL)
-6*3WQqhdr_将元数据设置为 QDOS 文件头样式(默认)
-6*3WQxtcc_将元数据设置为 XTcc 样式
 **2WX_启用可执行栈(Linux)
 **1x<suff>_设置编译器可执行文件的后缀(仅限 fpc 命令)
 **1X_可执行文件选项：

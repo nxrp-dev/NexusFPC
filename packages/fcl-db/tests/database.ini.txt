@@ -88,16 +88,6 @@ user=root
 password=
 hostname=127.0.0.1
 
-[oracle]
-; Oracle database:
-connector=sql
-connectorparams=oracle
-; SID or instance name:
-name=xe
-user=system
-password=
-hostname=127.0.0.1
-
 [postgresql]
 ; PostgreSQL database:
 connector=sql

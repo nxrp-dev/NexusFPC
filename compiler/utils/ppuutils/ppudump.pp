@@ -87,7 +87,7 @@ const
     { 19 } 'riscv32',
     { 20 } 'riscv64',
     { 21 } 'xtensa',
-    { 22 } 'z80',
+    { 22 } 'z80 (obsolete)',
     { 23 } 'mips64',
     { 24 } 'mips64el',
     { 25 } 'loongarch64'
@@ -117,7 +117,7 @@ const
     { 19 } false {'riscv32'},
     { 20 } false {'riscv64'},
     { 21 } true  {'xtensa'},
-    { 22 } true  {'z80'},
+    { 22 } true  {'z80 (obsolete)'},
     { 23 } false {'mips64'},
     { 24 } false {'mips64el'},
     { 25 } false {'loongarch64'}
@@ -234,7 +234,7 @@ const
   { 105 } 'Linux-Xtensa',
   { 106 } 'FreeRTos-arm',
   { 107 } 'Win64-AArch64',
-  { 108 } 'Embedded-Z80',
+  { 108 } 'Obsolete-Embedded-Z80',
   { 109 } 'Obsolete-ZXSpectrum-Z80',
   { 110 } 'Obsolete-MSX-DOS-Z80',
   { 111 } 'Darwin-AArch64',

@@ -776,11 +776,6 @@ initialization
   RegisterExport(system_i386_openbsd,texportlibbsd);
   RegisterTarget(system_i386_openbsd_info);
 {$endif i386}
-{$ifdef m68k}
-  RegisterImport(system_m68k_netbsd,timportlibbsd);
-  RegisterExport(system_m68k_netbsd,texportlibbsd);
-  RegisterTarget(system_m68k_netbsd_info);
-{$endif m68k}
 {$ifdef powerpc}
   RegisterImport(system_powerpc_netbsd,timportlibbsd);
   RegisterExport(system_powerpc_netbsd,texportlibbsd);

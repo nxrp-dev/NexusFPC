@@ -7,7 +7,7 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   typinfo, Classes, SysUtils, CustApp, db, sqldb,
-  ibconnection, sqlite3conn, oracleconnection, mssqlconn,
+  ibconnection, sqlite3conn, mssqlconn,
   odbcconn, pqconnection, strutils;
 
 

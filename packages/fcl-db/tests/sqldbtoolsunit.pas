@@ -10,21 +10,17 @@ uses
   ,ibconnection
   ,pqconnection
   ,odbcconn
-  {$IFNDEF WIN64}
-  {See packages\fcl-db\fpmake.pp: Oracle connector not built yet on Win64}
-  ,oracleconnection
-  {$ENDIF WIN64}
   ,sqlite3conn
   ,mssqlconn
   ;
 
 type
-  TSQLConnType = (postgresql,interbase,odbc,oracle,sqlite3,mssql,sybase);
+  TSQLConnType = (postgresql,interbase,odbc,sqlite3,mssql,sybase);
   TSQLServerType = (ssFirebird, ssInterbase, ssMSSQL, ssMySQL, ssOracle, ssPostgreSQL, ssSQLite, ssSybase, ssUnknown);
 
 const
   SQLConnTypesNames : Array [TSQLConnType] of String[19] =
-        ('POSTGRESQL','INTERBASE','ODBC','ORACLE','SQLITE3','MSSQL','SYBASE');
+        ('POSTGRESQL','INTERBASE','ODBC','SQLITE3','MSSQL','SYBASE');
 
   STestNotApplicable = 'This test does not apply to this sqldb connection type';
 
@@ -150,7 +146,7 @@ const
 
   // fall back mapping (e.g. in case GetConnectionInfo(citServerType) is not implemented)
   SQLConnTypeToServerTypeMap : array[TSQLConnType] of TSQLServerType =
-    (ssPostgreSQL,ssFirebird,ssUnknown,ssOracle,ssSQLite,ssMSSQL,ssSybase);
+    (ssPostgreSQL,ssFirebird,ssUnknown,ssSQLite,ssMSSQL,ssSybase);
 
 
 function IdentifierCase(const s: string): string;
@@ -180,9 +176,6 @@ begin
     POSTGRESQL: Fconnection := TPQConnection.Create(nil);
     INTERBASE : Fconnection := TIBConnection.Create(nil);
     ODBC:       Fconnection := TODBCConnection.Create(nil);
-  {$IFNDEF Win64}
-    ORACLE:     Fconnection := TOracleConnection.Create(nil);
-  {$ENDIF Win64}
     MSSQL:      Fconnection := TMSSQLConnection.Create(nil);
     SYBASE:     Fconnection := TSybaseConnection.Create(nil);
     else        writeln('Invalid database type, check if a valid database type for your achitecture was provided in the file ''database.ini''');

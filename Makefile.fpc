@@ -32,11 +32,8 @@ ifndef BUILDDIR
 BUILDDIR=$(BASEDIR)/build
 endif
 
-# New ppc386 (or ppc68k if on m68k machine !)
+# New compiler
 ifndef PPNEW
-ifeq ($(CPU_TARGET),m68k)
-PPSUF=68k
-endif
 ifeq ($(CPU_TARGET),i386)
 PPSUF=386
 endif
@@ -93,9 +90,6 @@ PPSUF=rv64
 endif
 ifeq ($(CPU_TARGET),xtensa)
 PPSUF=xtensa
-endif
-ifeq ($(CPU_TARGET),z80)
-PPSUF=z80
 endif
 ifeq ($(CPU_TARGET),wasm32)
 PPSUF=wasm32

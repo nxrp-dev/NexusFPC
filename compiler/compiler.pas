@@ -69,9 +69,6 @@ uses
 {$ifdef android}
   ,i_android
 {$endif android}
-{$ifdef atari}
-  ,i_atari
-{$endif atari}
 {$ifdef beos}
   ,i_beos
 {$endif beos}
@@ -91,9 +88,6 @@ uses
 {$ifdef haiku}
   ,i_haiku
 {$endif haiku}
-{$ifdef human68k}
-  ,i_human68k
-{$endif human68k}
 {$ifdef linux}
   ,i_linux
 {$endif linux}
@@ -106,9 +100,6 @@ uses
 {$ifdef solaris}
   ,i_sunos
 {$endif solaris}
-{$ifdef sinclairql}
-  ,i_sinclairql
-{$endif sinclairql}
 {$ifdef wdosx}
   ,i_wdosx
 {$endif wdosx}

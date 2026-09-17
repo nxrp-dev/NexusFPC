@@ -5316,7 +5316,7 @@ begin
          system_m68k_atari,
          system_arm_nds,system_arm_embedded,system_arm_freertos,
          system_riscv32_embedded,system_riscv64_embedded,system_xtensa_linux,
-         system_z80_embedded,system_riscv32_freertos,
+         system_riscv32_freertos,
          system_mipsel_ps1])
 {$ifdef arm}
       or (target_info.abi=abi_eabi)

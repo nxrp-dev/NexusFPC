@@ -56,7 +56,7 @@
              cpu_riscv32,                  { 19 }
              cpu_riscv64,                  { 20 }
              cpu_xtensa,                   { 21 }
-             cpu_z80,                      { 22 }
+             obsolete_cpu_z80,                      { 22 }
              cpu_mips64,                   { 23 }
              cpu_mips64el,                 { 24 }
              cpu_loongarch64               { 25 }
@@ -200,7 +200,7 @@
              system_xtensa_linux,       { 105 }
              system_arm_freertos,       { 106 }
              system_aarch64_win64,      { 107 }
-             system_z80_embedded,       { 108 }
+             obsolete_system_z80_embedded,       { 108 }
              obsolete_system_z80_zxspectrum,     { 109 }
              obsolete_system_z80_msxdos,         { 110 }
              system_aarch64_darwin,     { 111 }
@@ -275,10 +275,10 @@
              ,as_powerpc_gas_legacy    { for systems with very old GAS versions only, which don't support eg. named sections }
              ,as_clang_llvm
              ,as_clang_gas             { machine code assembler in gas style assembled by clang }
-             ,as_z80asm
-             ,as_sdcc_sdasz80
-             ,as_z80_vasm
-             ,as_z80_rel
+             ,obsolete_as_z80asm
+             ,obsolete_as_sdcc_sdasz80
+             ,obsolete_as_z80_vasm
+             ,obsolete_as_z80_rel
              ,as_wasm32_wabt
              ,as_wasm32_wasa
              ,as_wasm32_llvm_mc_v10    { WebAssembly code assembled by llvm-mc (llvm machine code playground) from LLVM 10 }

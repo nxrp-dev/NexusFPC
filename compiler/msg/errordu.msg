@@ -4050,7 +4050,6 @@ diskutiert werden können, usw.):
 #    s = Sparc64 targets
 #    V = AVR
 #    x = xtensa targets
-#    Z = Z80
 # The second character also indicates who will display this line,
 # (if the above character was TRUE) the current possibilities are :
 #    * = everyone
@@ -4105,11 +4104,6 @@ F*0*_Es werden nur Optionen aufgelistet, die für die voreingestellte oder ausge
 4*2Anasmwin64_Assembliere Win64 Objektdatei mit Hilfe von Nasm (experimentell)
 4*2Apecoff_PE-COFF (Win64) mit Hilfe des internen Schreibers
 4*2Ayasm_Assembliere mit Hilfe von Yasm (experimentell)
-6*2Aas_Unix o-Datei mit Hilfe von GNU AS
-6*2Agas_GNU Motorola Assembler
-6*2Amit_MIT Syntax (old GAS)
-6*2Amot_Standard Motorola Assembler
-6*2Avasm_Assembliere mit Hilfe von vasm
 8*2Anasm_Assembliere mit Hilfe von Nasm
 8*2Anasmobj_Assembliere mit Hilfe von Nasm
 A*2Aas_Assembliere mit Hilfe von GNU AS
@@ -4135,9 +4129,6 @@ W*2Allvm-mc-17_Assembliere mit Hilfe von llvm-mc-17
 W*2Allvm-mc_Assembliere mit Hilfe von llvm-mc (Version 18 oder später)
 W*2Awasa_Assembliere mit Hilfe von wasa (experimentell)
 x*2Aas_Assembliere mit Hilfe von GNU AS
-Z*2Asdcc-sdasz80_Assembliere mit Hilfe von SDCC-SDASZ80
-Z*2Avasm_Assembliere mit Hilfe von Vasm
-Z*2Az80asm_Assembliere mit Hilfe von z80asm
 # Used only internally by IDE
 **1b_Erzeuge Browser-Info
 **2bl_Erzeuge Info zu lokalen Symbolen
@@ -4324,7 +4315,6 @@ F*2P<x>_Setze den Zielprozessor (aarch64, arm, avr, i386, i8086, jvm, loongarch6
 4*2Rintel_Lese Assembler im Intel-Format
 8*2Ratt_Lese Assembler Code im AT&T-Format
 8*2Rintel_Lese Assembler im Intel-Format
-6*2RMOT_Lese Assembler im Motorola-Format
 **1s_Rufe weder Assembler noch Linker auf
 **2sh_Erzeuge Skript, um auf dem Host zu linken und übergebe automatisch an den externen Assembler-Schreiber
 **2sr_Überspringe die Phase der "register allocation" (mit -alr benutzen) und übergebe automatisch an den externen Assembler-Schreiber
@@ -4392,16 +4382,6 @@ F*2P<x>_Setze den Zielprozessor (aarch64, arm, avr, i386, i8086, jvm, loongarch6
 4*2Topenbsd_OpenBSD
 4*2Tsolaris_Solaris
 4*2Twin64_Win64 (64-Bit Windows Systeme)
-# m68k targets
-6*2Tamiga_Commodore Amiga
-6*2Tatari_Atari ST/STe/TT
-6*2Tembedded_Embedded
-6*2Thuman68k_Human 68k
-6*2Tlinux_Linux
-6*2Tnetbsd_NetBSD
-6*2Tmacosclassic_Classic Mac OS
-6*2Tpalmos_PalmOS
-6*2Tsinclairql_Sinclair QL
 # i8086 targets
 8*2Tembedded_Embedded
 8*2Tmsdos_MS-DOS (und kompatible)
@@ -4474,8 +4454,6 @@ V*2Tembedded_Embedded
 x*2Tembedded_Embedded
 x*2Tfreertos_FreeRTOS
 x*2Tlinux_Linux
-# z80 targets
-Z*2Tembedded_Embedded
 # wasm32 targets
 W*2Tembedded_Embedded
 W*2Twasi_Das WebAssembly System Interface (WASI)
@@ -4537,7 +4515,6 @@ A*2Wb_Erzeuge statt einer Bibliothek ein Bundle (Darwin)
 4*2WB<x>_Setze die Imagebasis auf <x> (Windows)
 A*2WB_Erzeuge ein relozierbares Image (Windows, Symbian)
 A*2WB<x>_Setze die Imagebasis auf <x> (Windows, Symbian)
-Z*2WB<x>_Setze die Imagebasis auf <x> (ZX Spectrum)
 3*2WC_Spezifiziere "console type application" (EMX, OS/2, Windows)
 4*2WC_Spezifiziere "console type application" (Windows)
 A*2WC_Spezifiziere "console type application" (Windows)
@@ -4552,7 +4529,6 @@ A*2We_Benutze externe Resourcen (Darwin)
 P*2We_Benutze externe Resourcen (Darwin)
 p*2We_Benutze externe Resourcen (Darwin)
 3*2WF_Spezifiziere "full-screen type application" (EMX, OS/2)
-6*2WF<x>_Setze TOS Programm-Flags auf <x> (Atari)
 3*2WG_Spezifiziere "graphic type application" (EMX, OS/2, Windows)
 4*2WG_Spezifiziere "graphic type application" (Windows)
 A*2WG_Spezifiziere "graphic type application" (Windows)
@@ -4598,13 +4574,7 @@ A*2WR_Erzeuge "relocation code" (Windows)
 8*2Wt<x>_Setze das Format der Ziel-Executable
 8*3Wtcom_Erzeuge eine DOS .COM Datei (erfordert das winzige (tiny) Speichermodell)
 8*3Wtexe_Erzeuge eine DOS .EXE Datei (Voreinstellung)
-6*2Wt<x>_Setze das Format der Ziel-Executable (Atari)
-6*3Wttos_Erzeuge eine TOS Executable-Datei (Voreinstellung)
-6*3Wtmint_Erzeuge eine MiNT Executable-Datei
 P*2WT_Spezifiziere "MPW tool type application" (Classic Mac OS)
-6*2WQ<x>_Setze das "executable" Metadata-Format (Sinclair QL)
-6*3WQqhdr_Setze Metadata auf QDOS Datei-Header Stil (Voreinstellung)
-6*3WQxtcc_Setze Metadata auf XTcc Stil
 **2WX_Ermögliche den executable stack (Linux)
 **1x<suff>_Setze den Suffix für das Compiler-Programm (nur für das fpc Kommando)
 **1X_Programm-Optionen:

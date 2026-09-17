@@ -5,7 +5,6 @@ src/datadict/fpddsqldb.pp=namespaced/Data.Dict.Sqldb.pp
 {s*:src/datadict/}=namespaced/
 {i+:src/datadict/}
 src/datadict/fpddsqlite3.pp=namespaced/Data.Dict.Sqlite3.pp
-src/datadict/fpddoracle.pp=namespaced/Data.Dict.Oracle.pp
 src/datadict/fpdddiff.pp=namespaced/Data.Dict.Diff.pp
 src/datadict/fpdatadict.pp=namespaced/Data.Dict.Base.pp
 src/datadict/fpdddbf.pp=namespaced/Data.Dict.Dbf.pp
@@ -14,9 +13,6 @@ src/datadict/fpddfb.pp=namespaced/Data.Dict.Fb.pp
 src/datadict/fpddregstd.pp=namespaced/Data.Dict.Regstd.pp
 src/datadict/fpddodbc.pp=namespaced/Data.Dict.Odbc.pp
 src/datadict/fpddpq.pp=namespaced/Data.Dict.Pq.pp
-src/paradox/paradox.pp=namespaced/Data.Paradox.pp
-{s*:src/paradox/}=namespaced/
-{i+:src/paradox/}
 src/json/fpjsondataset.pp=namespaced/Data.JsonDataset.pp
 {s*:src/json/}=namespaced/
 {i+:src/json/}
@@ -58,9 +54,6 @@ src/sqldb/odbc/odbcconn.pas=namespaced/Data.SqlDb.Odbc.pas
 src/sqldb/sqldbpool.pp=namespaced/Data.SqlDb.Pool.pp
 {s*:src/sqldb/}=namespaced/
 {i+:src/sqldb/}
-src/sqldb/oracle/oracleconnection.pp=namespaced/Data.SqlDb.Oracle.pp
-{s*:src/sqldb/oracle/}=namespaced/
-{i+:src/sqldb/oracle/}
 src/sqldb/sqldb.pp=namespaced/Data.Sqldb.pp
 src/sqldb/sqldblib.pp=namespaced/Data.SqlDb.Lib.pp
 src/sqldb/postgres/pqconnection.pp=namespaced/Data.SqlDb.Pq.pp

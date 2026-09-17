@@ -271,11 +271,6 @@ initialization
     set_source_info(system_i8086_freertos_info);
   {$endif embedded}
 {$endif cpu8086}
-{$ifdef cpum68k}
-  {$ifdef embedded}
-    set_source_info(system_m68k_freertos_info);
-  {$endif embedded}
-{$endif cpum68k}
 {$ifdef cpuriscv32}
   {$ifdef embedded}
     set_source_info(system_riscv32_freertos_info);

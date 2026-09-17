@@ -602,72 +602,6 @@ unit i_bsd;
             llvmdatalayout : 'e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:128:128-a0:0:64-s0:64:64-f80:128:128-n8:16:32:64-S128';
           );
 
-       system_m68k_netbsd_info : tsysteminfo =
-          (
-            system       : system_m68k_NetBSD;
-            name         : 'NetBSD for m68k';
-            shortname    : 'NetBSD';
-            flags        : [tf_under_development,tf_needs_symbol_size,tf_needs_symbol_type,tf_requires_proper_alignment,
-                            tf_files_case_sensitive,tf_smartlink_sections,tf_has_winlike_resources,tf_supports_hidden_symbols];
-            cpu          : cpu_m68k;
-            unit_env     : 'BSDUNITS';
-            extradefines : 'UNIX;BSD;HASUNIX';
-            exeext       : '';
-            defext       : '.def';
-            scriptext    : '.sh';
-            smartext     : '.sl';
-            unitext      : '.ppu';
-            unitlibext   : '.ppl';
-            asmext       : '.s';
-            objext       : '.o';
-            resext       : '.res';
-            resobjext    : '.or';
-            sharedlibext : '.so';
-            staticlibext : '.a';
-            staticlibprefix : 'libp';
-            sharedlibprefix : 'lib';
-            sharedClibext : '.so';
-            staticClibext : '.a';
-            staticClibprefix : 'lib';
-            sharedClibprefix : 'lib';
-            importlibprefix : 'libimp';
-            importlibext : '.a';
-            Cprefix      : '';
-            newline      : #10;
-            dirsep       : '/';
-            assem        : as_gas;
-            assemextern  : as_gas;
-            link         : ld_none;
-            linkextern   : ld_bsd;
-            ar           : ar_gnu_ar;
-            res          : res_elf;
-            dbg          : dbg_stabs;
-            script       : script_unix;
-            endian       : endian_big;
-            alignment    :
-              (
-                procalign       : 4;
-                loopalign       : 4;
-                jumpalign       : 0;
-                jumpalignskipmax    : 0;
-                coalescealign   : 0;
-                coalescealignskipmax: 0;
-                constalignmin   : 0;
-                constalignmax   : 1;
-                varalignmin     : 0;
-                varalignmax     : 1;
-                localalignmin   : 0;
-                localalignmax   : 1;
-                recordalignmin  : 0;
-                recordalignmax  : 4;
-                maxCrecordalign : 8
-              );
-            first_parm_offset : 8;
-            stacksize   : 262144;
-            stackalign   : 4;
-            abi          : abi_default;
-            llvmdatalayout : 'todo';
-          );
 
        system_powerpc_netbsd_info : tsysteminfo =
           (
@@ -907,11 +841,6 @@ initialization
      set_source_info(system_x86_64_NetBSD_info);
    {$endif}
 {$endif}
-{$ifdef cpu68}
-  {$ifdef NetBSD}
-     set_source_info(system_m68k_NetBSD_info);
-  {$endif NetBSD}
-{$endif cpu68}
 {$ifdef cpupowerpc32}
   {$ifdef NetBSD}
      set_source_info(system_powerpc_netbsd_info);

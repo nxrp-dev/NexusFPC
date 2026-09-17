@@ -174,74 +174,6 @@ unit i_linux;
             llvmdatalayout : 'todo';
           );
 
-       system_m68k_linux_info : tsysteminfo =
-          (
-            system       : system_m68k_linux;
-            name         : 'Linux for m68k';
-            shortname    : 'Linux';
-            flags        : [tf_needs_symbol_size,tf_needs_symbol_type,tf_files_case_sensitive,
-                            tf_smartlink_sections,tf_safecall_exceptions,tf_safecall_clearstack,
-                            tf_requires_proper_alignment, { Coldfire seems to need this at least (KB) }
-                            tf_has_winlike_resources,tf_supports_hidden_symbols];
-            cpu          : cpu_m68k;
-            unit_env     : 'LINUXUNITS';
-            extradefines : 'UNIX;HASUNIX';
-            exeext       : '';
-            defext       : '.def';
-            scriptext    : '.sh';
-            smartext     : '.sl';
-            unitext      : '.ppu';
-            unitlibext   : '.ppl';
-            asmext       : '.s';
-            objext       : '.o';
-            resext       : '.res';
-            resobjext    : '.or';
-            sharedlibext : '.so';
-            staticlibext : '.a';
-            staticlibprefix : 'libp';
-            sharedlibprefix : 'lib';
-            sharedClibext : '.so';
-            staticClibext : '.a';
-            staticClibprefix : 'lib';
-            sharedClibprefix : 'lib';
-            importlibprefix : 'libimp';
-            importlibext : '.a';
-            Cprefix      : '';
-            newline      : #10;
-            dirsep       : '/';
-            assem        : as_gas;
-            assemextern  : as_gas;
-            link         : ld_none;
-            linkextern   : ld_linux;
-            ar           : ar_gnu_ar;
-            res          : res_elf;
-            dbg          : dbg_dwarf3;
-            script       : script_unix;
-            endian       : endian_big;
-            alignment    :
-              (
-                procalign       : 4;
-                loopalign       : 4;
-                jumpalign       : 0;
-                jumpalignskipmax    : 0;
-                coalescealign   : 0;
-                coalescealignskipmax: 0;
-                constalignmin   : 0;
-                constalignmax   : 16;
-                varalignmin     : 0;
-                varalignmax     : 16;
-                localalignmin   : 4;
-                localalignmax   : 8;
-                recordalignmin  : 0;
-                recordalignmax  : 16;
-                maxCrecordalign : 2;
-              );
-            first_parm_offset : 8;
-            stacksize    : 8*1024*1024;
-            stackalign   : 4;
-            abi : abi_default;
-            llvmdatalayout : 'todo';
-          );
 
        system_powerpc_linux_info : tsysteminfo =
           (
@@ -1550,11 +1482,6 @@ initialization
     {$endif FreeBSD}
   {$endif}
 {$endif CPUI386}
-{$ifdef CPU68}
-  {$ifdef linux}
-    set_source_info(system_m68k_linux_info);
-  {$endif linux}
-{$endif CPU68}
 {$ifdef CPUX86_64}
   {$ifdef linux}
     set_source_info(system_x86_64_linux_info);

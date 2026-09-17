@@ -32,7 +32,7 @@ fpcdir=..
 unexport FPC_VERSION FPC_COMPILERINFO
 
 # Which platforms are ready for inclusion in the cycle
-CYCLETARGETS=i386 powerpc sparc arm x86_64 powerpc64 m68k armeb mipsel mips avr jvm i8086 aarch64 sparc64 riscv32 riscv64 xtensa z80 wasm32 loongarch64
+CYCLETARGETS=i386 powerpc sparc arm x86_64 powerpc64 armeb mipsel mips avr jvm i8086 aarch64 sparc64 riscv32 riscv64 xtensa wasm32 loongarch64
 
 # Platforms not yet ready
 BETATARGETS=mips64 mips64el
@@ -43,7 +43,7 @@ ALLTARGETS=$(CYCLETARGETS)
 # All OS targets that do not support native compiler
 NO_NATIVE_COMPILER_OS_LIST=embedded freertos gba macosclassic msdos nds sinclairql symbian watcom wii ps1 wasip2
 # All CPU targets that do not support native compiler
-NO_NATIVE_COMPILER_CPU_LIST=avr i8086 jvm z80
+NO_NATIVE_COMPILER_CPU_LIST=avr i8086 jvm
 
 # Don't compile a native compiler & utilities for targets
 # which do not support it
@@ -67,7 +67,7 @@ CROSSINSTALL=1
 endif
 endif
 
-# Allow POWERPC, POWERPC64, M68K, I386, jvm defines for target cpu
+# Allow POWERPC, POWERPC64, I386, jvm defines for target cpu
 ifdef POWERPC
 PPC_TARGET=powerpc
 endif
@@ -79,9 +79,6 @@ PPC_TARGET=sparc
 endif
 ifdef SPARC64
 PPC_TARGET=sparc64
-endif
-ifdef M68K
-PPC_TARGET=m68k
 endif
 ifdef I386
 PPC_TARGET=i386
@@ -127,9 +124,6 @@ PPC_TARGET=riscv64
 endif
 ifdef XTENSA
 PPC_TARGET=xtensa
-endif
-ifdef Z80
-PPC_TARGET=z80
 endif
 ifdef LOONGARCH64
 PPC_TARGET=loongarch64
@@ -253,9 +247,6 @@ MSGFILES=$(wildcard msg/error*.msg)
 ifeq ($(CPC_TARGET),i386)
 CPUSUF=386
 endif
-ifeq ($(CPC_TARGET),m68k)
-CPUSUF=68k
-endif
 ifeq ($(CPC_TARGET),powerpc)
 CPUSUF=ppc
 endif
@@ -307,9 +298,6 @@ CPUSUF=rv64
 endif
 ifeq ($(CPC_TARGET),xtensa)
 CPUSUF=xtensa
-endif
-ifeq ($(CPC_TARGET),z80)
-CPUSUF=z80
 endif
 ifeq ($(CPC_TARGET),wasm32)
 CPUSUF=wasm32
@@ -414,10 +402,6 @@ ifeq ($(PPC_TARGET),powerpc64)
 override LOCALOPT+=-Fuppcgen
 endif
 
-# m68k specific
-ifeq ($(PPC_TARGET),m68k)
-override LOCALOPT+=
-endif
 
 # Sparc specific
 ifeq ($(PPC_TARGET),sparc)
@@ -697,8 +681,8 @@ endif
 # cpu targets
 #####################################################################
 
-PPC_TARGETS=i386 m68k powerpc sparc arm armeb x86_64 powerpc64 mips mipsel mips64 mips64el avr jvm i8086 aarch64 sparc64 riscv32 riscv64 xtensa z80 wasm32 loongarch64
-PPC_SUFFIXES=386 68k ppc sparc arm armeb x64 ppc64 mips mipsel mips64 mips64el avr jvm 8086 a64 sparc64 rv32 rv64 xtensa z80 wasm32 loongarch64
+PPC_TARGETS=i386 powerpc sparc arm armeb x86_64 powerpc64 mips mipsel mips64 mips64el avr jvm i8086 aarch64 sparc64 riscv32 riscv64 xtensa wasm32 loongarch64
+PPC_SUFFIXES=386 ppc sparc arm armeb x64 ppc64 mips mipsel mips64 mips64el avr jvm 8086 a64 sparc64 rv32 rv64 xtensa wasm32 loongarch64
 INSTALL_TARGETS=$(addsuffix _exe_install,$(sort $(CYCLETARGETS) $(PPC_TARGETS)))
 CLEAN_TARGETS=$(addsuffix _clean,$(sort $(CYCLETARGETS) $(PPC_TARGETS)))
 SYMLINKINSTALL_TARGETS=$(addsuffix _symlink_install,$(sort $(CYCLETARGETS) $(PPC_TARGETS)))
@@ -807,15 +791,12 @@ insdataarch64 : aarch64/a64ins.dat
 	    $(COMPILER) -FE$(COMPILERUTILSDIR) $(COMPILERUTILSDIR)/mka64ins.pp
         cd aarch64 && ..$(PATHSEP)utils$(PATHSEP)mka64ins$(SRCEXEEXT)
 
-insdatz80 : z80/z80ins.dat
-	$(COMPILER) -FE$(COMPILERUTILSDIR) $(COMPILERUTILSDIR)/mkz80ins.pp
-        cd z80 && ..$(PATHSEP)utils$(PATHSEP)mkz80ins$(SRCEXEEXT)
 
 insdatloongarch64 : loongarch64/loongarchins.dat
 	    $(COMPILER) -FE$(COMPILERUTILSDIR) $(COMPILERUTILSDIR)/mkloongarch64ins.pp
         cd loongarch64 && ..$(PATHSEP)utils$(PATHSEP)mkloongarch64ins$(SRCEXEEXT)
 
-insdat: insdatx86 insdatarm insdataarch64 insdatz80 insdatloongarch64
+insdat: insdatx86 insdatarm insdataarch64 insdatloongarch64
 
 regdatx86 : x86/x86reg.dat
 	$(COMPILER) -FE$(COMPILERUTILSDIR) $(COMPILERUTILSDIR)/mkx86reg.pp
@@ -852,9 +833,6 @@ regdatmips : mips/mipsreg.dat
 	    $(COMPILER) -FE$(COMPILERUTILSDIR) $(COMPILERUTILSDIR)/mkmpsreg.pp
         cd mips && ..$(PATHSEP)utils$(PATHSEP)mkmpsreg$(SRCEXEEXT)
 
-regdatz80 : z80/z80reg.dat
-            $(COMPILER) -FE$(COMPILERUTILSDIR) $(COMPILERUTILSDIR)/mkz80reg.pp
-        cd z80 && ..$(PATHSEP)utils$(PATHSEP)mkz80reg$(SRCEXEEXT)
 
 regdatwasm : wasm32/wasmreg.dat
 	    $(COMPILER) -FE$(COMPILERUTILSDIR) $(COMPILERUTILSDIR)/mkwasmreg.pp
@@ -874,7 +852,7 @@ regdatloongarch64 : loongarch64/loongarchreg.dat
             $(COMPILER) -FE$(COMPILERUTILSDIR) $(COMPILERUTILSDIR)/mkloongarch64reg.pp
         cd loongarch64 && ..$(PATHSEP)utils$(PATHSEP)mkloongarch64reg$(SRCEXEEXT)
 
-regdat : regdatx86 regdatarm regdatsp regdatavr regdataarch64 regdatmips regdatsp64 regdatz80 regdatwasm regdatrv32 regdatrv64 regdatloongarch64
+regdat : regdatx86 regdatarm regdatsp regdatavr regdataarch64 regdatmips regdatsp64 regdatwasm regdatrv32 regdatrv64 regdatloongarch64
 
 intrdatx86 : x86/x86intr.dat
 		$(COMPILER) -FE$(COMPILERUTILSDIR) $(COMPILERUTILSDIR)/mkx86inl.pp
@@ -1159,7 +1137,7 @@ ifeq ($(OS_SOURCE),win64)
   EXCLUDE_80BIT_TARGETS=1
 endif
 
-ifneq ($(findstring $(CPU_SOURCE),aarch64 arm avr jvm m68k mips mipsel mips64 mips64el powerpc powerpc64 sparc sparc64 riscv32 riscv64 xtensa loongarch64),)
+ifneq ($(findstring $(CPU_SOURCE),aarch64 arm avr jvm mips mipsel mips64 mips64el powerpc powerpc64 sparc sparc64 riscv32 riscv64 xtensa loongarch64),)
   EXCLUDE_80BIT_TARGETS=1
 endif
 endif

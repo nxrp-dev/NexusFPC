@@ -1400,11 +1400,6 @@ initialization
   RegisterExport(system_i386_linux,texportliblinux);
   RegisterTarget(system_i386_linux_info);
 {$endif i386}
-{$ifdef m68k}
-  RegisterImport(system_m68k_linux,timportliblinux);
-  RegisterExport(system_m68k_linux,texportliblinux);
-  RegisterTarget(system_m68k_linux_info);
-{$endif m68k}
 {$ifdef powerpc}
   RegisterImport(system_powerpc_linux,timportliblinux);
   RegisterExport(system_powerpc_linux,texportliblinux);

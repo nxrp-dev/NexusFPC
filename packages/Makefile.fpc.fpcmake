@@ -4,64 +4,62 @@
 #
 
 [target]
-dirs=hash pasjpeg paszlib fpmkunit fcl-xml fcl-base fcl-db fcl-image fcl-net fcl-registry fcl-fpcunit fcl-json fcl-process unzip regexpr fcl-res libgd symbolic bzip2
-dirs_linux_i386=libc unixutil graph pxlib bzip2
-dirs_i386_linux=graph
-dirs_x86_64_linux=graph
-dirs_powerpc_linux=graph
-dirs_powerpc64_linux=graph
-dirs_sparc_linux=graph
-dirs_arm_linux=graph
-dirs_m68k_linux=graph
-dirs_beos=fastcgi fcl-async ibase ncurses zlib oracle odbc postgres sqlite pthreads \
-               libpng x11 gdbm tcl syslog libcurl cairo bfd svgalib \
-               utmp  pcap sdl openssl graph gtk2 librsvg  pxlib \
+dirs=hash pasjpeg paszlib fpmkunit fcl-xml fcl-base fcl-db fcl-image fcl-net fcl-registry fcl-fpcunit fcl-json fcl-process unzip regexpr fcl-res
+dirs_linux_i386=libc
+dirs_i386_linux=
+dirs_x86_64_linux=
+dirs_powerpc_linux=
+dirs_powerpc64_linux=
+dirs_sparc_linux=
+dirs_arm_linux=
+dirs_m68k_linux=
+dirs_beos=fcl-async ibase zlib odbc postgres sqlite pthreads \
+               libpng x11 cairo bfd \
+                openssl gtk2  \
                iconvenc
-dirs_haiku=fastcgi fcl-async ibase ncurses zlib oracle odbc postgres sqlite pthreads \
-               libpng x11 gdbm tcl syslog libcurl cairo bfd svgalib \
-               utmp  pcap sdl openssl graph gtk2 librsvg  pxlib \
+dirs_haiku=fcl-async ibase zlib odbc postgres sqlite pthreads \
+               libpng x11 cairo bfd \
+                openssl gtk2  \
                iconvenc
-dirs_freebsd=fastcgi fcl-async ibase ncurses zlib oracle odbc postgres sqlite pthreads \
-               libpng x11 gdbm tcl syslog libcurl cairo  bfd svgalib \
-               utmp  pcap sdl openssl graph gtk2 librsvg  pxlib \
-               users iconvenc fcl-extra libxml
-dirs_dragonfly=fastcgi fcl-async ibase ncurses zlib oracle odbc postgres sqlite pthreads \
-               libpng x11 gdbm tcl syslog libcurl cairo  bfd svgalib \
-               utmp  pcap sdl openssl graph gtk2 librsvg  pxlib \
-               users iconvenc fcl-extra libxml
-dirs_darwin=fastcgi fcl-async ibase ncurses zlib oracle odbc postgres sqlite pthreads \
-               libpng gdbm tcl syslog libcurl bfd utmp pcap openssl iconvenc fcl-extra univint iosxlocale
-dirs_iphonesim=fastcgi fcl-async ibase ncurses zlib oracle odbc postgres sqlite pthreads \
-               libpng gdbm tcl syslog libcurl bfd utmp pcap openssl iconvenc fcl-extra univint iosxlocale
-dirs_i386_darwin=graph sdl x11 cairo gtk2 librsvg objcrtl cocoaint openal
-dirs_powerpc_darwin=graph sdl x11 cairo gtk2 librsvg objcrtl cocoaint
-dirs_x86_64_darwin=x11 cairo gtk2 librsvg cocoaint objcrtl
-dirs_powerpc64_darwin=x11 cairo gtk2 librsvg cocoaint objcrtl
+dirs_freebsd=fcl-async ibase zlib odbc postgres sqlite pthreads \
+               libpng x11 cairo  bfd \
+                openssl gtk2  \
+               iconvenc
+dirs_dragonfly=fcl-async ibase zlib odbc postgres sqlite pthreads \
+               libpng x11 cairo  bfd \
+                openssl gtk2  \
+               iconvenc
+dirs_darwin=fcl-async ibase zlib odbc postgres sqlite pthreads \
+               libpng bfd openssl iconvenc univint iosxlocale
+dirs_iphonesim=fcl-async ibase zlib odbc postgres sqlite pthreads \
+               libpng bfd openssl iconvenc univint iosxlocale
+dirs_i386_darwin=x11 cairo gtk2 objcrtl cocoaint
+dirs_powerpc_darwin=x11 cairo gtk2 objcrtl cocoaint
+dirs_x86_64_darwin=x11 cairo gtk2 cocoaint objcrtl
+dirs_powerpc64_darwin=x11 cairo gtk2 cocoaint objcrtl
 dirs_arm_darwin=opengles objcrtl
 dirs_i386_iphonesim= opengles objcrtl
-dirs_solaris=fastcgi fcl-async ibase ncurses zlib oracle odbc postgres sqlite pthreads \
-               libpng x11 gdbm tcl syslog libcurl cairo bfd svgalib fcl-extra \
-               utmp  pcap openssl iconvenc gtk2 cairo
-dirs_netbsd=fastcgi fcl-async ibase ncurses zlib oracle odbc postgres sqlite pthreads \
-               libpng x11 gdbm tcl syslog libcurl cairo gtk2 librsvg bfd svgalib \
-               utmp  pcap sdl openssl pxlib
-dirs_openbsd=fastcgi fcl-async ibase ncurses zlib oracle odbc  postgres sqlite pthreads \
-               libpng x11 gdbm tcl syslog libcurl cairo gtk2 librsvg bfd svgalib \
-               utmp  pcap sdl openssl pxlib
-dirs_linux=fastcgi fcl-async ibase ncurses unzip zlib oracle dbus odbc postgres sqlite pthreads \
-               libpng x11 uuid ldap modplug dts mad  gdbm tcl syslog libcurl cairo gtk2 librsvg \
-               a52 bfd svgalib newt users  iconvenc libxml proj4 fcl-extra \
-               utmp  openal lua oggvorbis pcap sdl openssl \
-               pxlib libsee
-dirs_win32=winunits-base fastcgi ibase zlib oracle odbc postgres sqlite \
-               libpng mad tcl gtk2 librsvg a52 openal lua fcl-extra \
-               oggvorbis sdl openssl graph pcap  pxlib cairo libxml \
-               libsee nvapi
-dirs_win64=winunits-base fastcgi ibase zlib oracle odbc postgres sqlite \
-                tcl sdl openssl fcl-extra nvapi graph openal
-dirs_wince=fastcgi tcl unzip zlib sqlite ibase postgres oracle odbc sdl openssl oggvorbis
+dirs_solaris=fcl-async ibase zlib odbc postgres sqlite pthreads \
+               libpng x11 cairo bfd \
+                openssl iconvenc gtk2 cairo
+dirs_netbsd=fcl-async ibase zlib odbc postgres sqlite pthreads \
+               libpng x11 cairo gtk2 bfd \
+                openssl
+dirs_openbsd=fcl-async ibase zlib odbc  postgres sqlite pthreads \
+               libpng x11 cairo gtk2 bfd \
+                openssl
+dirs_linux=fcl-async ibase unzip zlib odbc postgres sqlite pthreads \
+               libpng x11  cairo gtk2 \
+               bfd  iconvenc \
+                openssl
+dirs_win32=winunits-base ibase zlib odbc postgres sqlite \
+               libpng gtk2 \
+               openssl  cairo
+dirs_win64=winunits-base ibase zlib odbc postgres sqlite \
+                openssl
+dirs_wince=unzip zlib sqlite ibase postgres odbc openssl
 dirs_palmos=
-dirs_go32v2=graph unzip
+dirs_go32v2=unzip
 dirs_wii=
 dirs_arm_nds=
 
@@ -113,27 +111,6 @@ fcl-base_release: fpmkunit_release paszlib_release
 fcl-base_shared: fpmkunit_shared paszlib_shared
 endif
 
-ifneq ($(findstring $(OS_TARGET),win32 win64),)
-fcl-extra_all: fpmkunit_all fcl-base winunits-base_all
-fcl-extra_debug: fpmkunit_debug fcl-base_debug winunits-base_debug
-fcl-extra_smart: fpmkunit_smart fcl-base_smart winunits-base_smart
-fcl-extra_release: fpmkunit_release fcl-base_release winunits-base_release
-fcl-extra_shared: fpmkunit_shared fcl-base_shared winunits-base_shared
-else
-ifneq ($(findstring $(OS_TARGET),darwin iphonesim),)
-fcl-extra_all: fpmkunit_all univint_all fcl-base_all
-fcl-extra_debug: fpmkunit_debug univint_debug fcl-base_debug
-fcl-extra_smart: fpmkunit_smart univint_smart fcl-base_smart
-fcl-extra_release: fpmkunit_release univint_release fcl-base_release
-fcl-extra_shared: fpmkunit_shared univint_shared fcl-base_shared
-else
-fcl-extra_all: fpmkunit_all fcl-base_all
-fcl-extra_debug: fpmkunit_debug fcl-base_debug
-fcl-extra_smart: fpmkunit_smart fcl-base_smart
-fcl-extra_release: fpmkunit_release fcl-base_release
-fcl-extra_shared: fpmkunit_shared fcl-base_shared
-endif
-endif
 
 ifneq ($(findstring $(FULL_TARGET),i386-darwin powerpc-darwin x86_64-darwin powerpc64-darwin),)
 cocoaint_all: univint_all
@@ -198,11 +175,6 @@ endif
 
 
 
-fastcgi_all: fpmkunit_all
-fastcgi_debug: fpmkunit_debug
-fastcgi_smart: fpmkunit_smart
-fastcgi_release: fpmkunit_release
-fastcgi_shared: fpmkunit_shared
 
 fcl-res_all: fpmkunit_all
 fcl-res_debug: fpmkunit_debug
@@ -217,18 +189,18 @@ fcl-async_release: fpmkunit_release
 fcl-async_shared: fpmkunit_shared
 
 ifneq ($(findstring $(OS_TARGET),linux freebsd openbsd netbsd win32 beos haiku dragonfly),)
-fcl-db_all: fcl-xml_all fcl-base_all ibase_all oracle_all odbc_all postgres_all sqlite_all pxlib_all fcl-json_all fpmkunit_all
-fcl-db_debug: fcl-xml_debug fcl-base_debug ibase_debug oracle_debug odbc_debug postgres_debug sqlite_debug pxlib_debug fcl-json_debug fpmkunit_debug
-fcl-db_smart: fcl-xml_smart fcl-base_smart ibase_smart oracle_smart odbc_smart postgres_smart sqlite_smart pxlib_smart fcl-json_smart fpmkunit_smart
-fcl-db_release: fcl-xml_release fcl-base_release ibase_release oracle_release odbc_release postgres_release sqlite_release pxlib_release fcl-json_release fpmkunit_release
-fcl-db_shared: fcl-xml_shared fcl-base_shared ibase_shared oracle_shared odbc_shared postgres_shared sqlite_shared pxlib_shared fcl-json_shared fpmkunit_shared
+fcl-db_all: fcl-xml_all fcl-base_all ibase_all odbc_all postgres_all sqlite_all fcl-json_all fpmkunit_all
+fcl-db_debug: fcl-xml_debug fcl-base_debug ibase_debug odbc_debug postgres_debug sqlite_debug fcl-json_debug fpmkunit_debug
+fcl-db_smart: fcl-xml_smart fcl-base_smart ibase_smart odbc_smart postgres_smart sqlite_smart fcl-json_smart fpmkunit_smart
+fcl-db_release: fcl-xml_release fcl-base_release ibase_release odbc_release postgres_release sqlite_release fcl-json_release fpmkunit_release
+fcl-db_shared: fcl-xml_shared fcl-base_shared ibase_shared odbc_shared postgres_shared sqlite_shared fcl-json_shared fpmkunit_shared
 else
 ifneq ($(findstring $(OS_TARGET),win64 wince solaris darwin iphonesim),)
-fcl-db_all: fcl-xml_all fcl-base_all ibase_all oracle_all odbc_all postgres_all sqlite_all fcl-json_all fpmkunit_all
-fcl-db_debug: fcl-xml_debug fcl-base_debug ibase_debug oracle_debug odbc_debug postgres_debug sqlite_debug fcl-json_debug fpmkunit_debug
-fcl-db_smart: fcl-xml_smart fcl-base_smart ibase_smart oracle_smart odbc_smart postgres_smart sqlite_smart fcl-json_smart fpmkunit_smart
-fcl-db_release: fcl-xml_release fcl-base_release ibase_release oracle_release odbc_release postgres_release sqlite_release fcl-json_release fpmkunit_release
-fcl-db_shared: fcl-xml_shared fcl-base_shared ibase_shared oracle_shared odbc_shared postgres_shared sqlite_shared fcl-json_shared fpmkunit_shared
+fcl-db_all: fcl-xml_all fcl-base_all ibase_all odbc_all postgres_all sqlite_all fcl-json_all fpmkunit_all
+fcl-db_debug: fcl-xml_debug fcl-base_debug ibase_debug odbc_debug postgres_debug sqlite_debug fcl-json_debug fpmkunit_debug
+fcl-db_smart: fcl-xml_smart fcl-base_smart ibase_smart odbc_smart postgres_smart sqlite_smart fcl-json_smart fpmkunit_smart
+fcl-db_release: fcl-xml_release fcl-base_release ibase_release odbc_release postgres_release sqlite_release fcl-json_release fpmkunit_release
+fcl-db_shared: fcl-xml_shared fcl-base_shared ibase_shared odbc_shared postgres_shared sqlite_shared fcl-json_shared fpmkunit_shared
 else
 fcl-db_all: fcl-xml_all fcl-base_all fcl-json_all fpmkunit_all
 fcl-db_debug: fcl-xml_debug fcl-base_debug fcl-json_debug fpmkunit_debug
@@ -266,11 +238,6 @@ endif
 
 
 ifeq ($(findstring $(OS_TARGET),go32v2),)
-graph_all: sdl_all
-graph_shared: sdl_shared
-graph_smart: sdl_smart
-graph_debug: sdl_debug
-graph_release: sdl_release
 endif
 
 ifneq ($(findstring $(OS_TARGET),linux darwin iphonesim freebsd openbsd netbsd solaris dragonfly),)
@@ -290,11 +257,6 @@ gtk2_release: cairo_release fpmkunit_release
 endif
 
 
-ldap_all: hash_all fpmkunit_all
-ldap_shared: hash_shared fpmkunit_shared
-ldap_smart: hash_smart fpmkunit_smart
-ldap_debug: hash_debug fpmkunit_debug
-ldap_release: hash_release fpmkunit_release
 
 libpng_all: zlib_all
 libpng_shared: zlib_shared
@@ -302,35 +264,8 @@ libpng_smart: zlib_smart
 libpng_debug: zlib_debug
 libpng_release: zlib_release
 
-ifneq ($(findstring $(OS_TARGET),linux darwin iphonesim freebsd openbsd netbsd solaris dragonfly),)
-sdl_all: pthreads_all x11_all fpmkunit_all
-sdl_shared: pthreads_shared x11_shared fpmkunit_shared
-sdl_smart: pthreads_smart x11_smart fpmkunit_smart
-sdl_debug: pthreads_debug x11_debug fpmkunit_debug
-sdl_release: pthreads_release x11_release_release
 
 
-else
-sdl_all: fpmkunit_all
-sdl_shared: fpmkunit_shared
-sdl_smart: fpmkunit_smart
-sdl_debug: fpmkunit_debug
-sdl_release: fpmkunit_release
-
-
-endif
-
-tcl_all: fcl-base_all fpmkunit_all
-tcl_shared: fcl-base_shared fpmkunit_shared
-tcl_smart: fcl-base_smart fpmkunit_smart
-tcl_debug: fcl-base_debug fpmkunit_debug
-tcl_release: fcl-base_release fpmkunit_release
-
-unixutil_all: libc_all fcl-base_all fpmkunit_all
-unixutil_shared: libc_shared fcl-base_shared fpkmunit_shared
-unixutil_smart: libc_smart fcl-base_smart fpmkunit_smart
-unixutil_debug: libc_debug fcl-base_debug fpmkunit_debug
-unixutil_release: libc_release fcl-base_release fpmkunit_release
 
 winunits-base_all: fcl-registry_all fcl-base_all fpmkunit_all
 winunits-base_shared: fcl-registry_shared fcl-base_shared fpmkunit_shared
@@ -346,11 +281,6 @@ xforms_debug: x11_debug fpmkunit_debug
 xforms_release: x11_release fpmkunit_release
 
 
-librsvg_all: gtk2_all fpmkunit_all
-librsvg_shared: gtk2_shared fpmkunit_shared
-librsvg_smart: gtk2_smart fpmkunit_smart
-librsvg_debug: gtk2_debug fpmkunit_debug
-librsvg_release: gtk2_release fpmkunit_release
 
 ifneq ($(findstring $(OS_TARGET),linux freebsd darwin iphonesim beos haiku dragonfly),)
 fcl-xml_all: iconvenc_all
@@ -373,30 +303,10 @@ libcurl_smart: fpmkunit_smart
 libcurl_debug: fpmkunit_debug
 libcurl_release: fpmkunit_release
 
-libgd_all: fpmkunit_all
-libgd_shared: fpmkunit_shared
-libgd_smart: fpmkunit_smart
-libgd_debug: fpmkunit_debug
-libgd_release: fpmkunit_release
 
 
-libsee_all: fpmkunit_all
-libsee_shared: fpmkunit_shared
-libsee_smart: fpmkunit_smart
-libsee_debug: fpmkunit_debug
-libsee_release: fpmkunit_release
 
-lua_all: fpmkunit_all
-lua_shared: fpmkunit_shared
-lua_smart: fpmkunit_smart
-lua_debug: fpmkunit_debug
-lua_release: fpmkunit_release
 
-a52_all: fpmkunit_all
-a52_shared: fpmkunit_shared
-a52_smart: fpmkunit_smart
-a52_debug: fpmkunit_debug
-a52_release: fpmkunit_release
 
 
 bfd_all: fpmkunit_all
@@ -405,11 +315,6 @@ bfd_smart: fpmkunit_smart
 bfd_debug: fpmkunit_debug
 bfd_release: fpmkunit_release
 
-bzip2_all: fpmkunit_all
-bzip2_shared: fpmkunit_shared
-bzip2_smart: fpmkunit_smart
-bzip2_debug: fpmkunit_debug
-bzip2_release: fpmkunit_release
 
 dbus_all: fpmkunit_all
 dbus_shared: fpmkunit_shared
@@ -417,11 +322,6 @@ dbus_smart: fpmkunit_smart
 dbus_debug: fpmkunit_debug
 dbus_release: fpmkunit_release
 
-dts_all: fpmkunit_all
-dts_shared: fpmkunit_shared
-dts_smart: fpmkunit_smart
-dts_debug: fpmkunit_debug
-dts_release: fpmkunit_release
 
 
 
@@ -431,23 +331,8 @@ sqlite_smart: fpmkunit_smart
 sqlite_debug: fpmkunit_debug
 sqlite_release: fpmkunit_release
 
-svgalib_all: fpmkunit_all
-svgalib_shared: fpmkunit_shared
-svgalib_smart: fpmkunit_smart
-svgalib_debug: fpmkunit_debug
-svgalib_release: fpmkunit_release
 
-symbolic_all: fpmkunit_all
-symbolic_shared: fpmkunit_shared
-symbolic_smart: fpmkunit_smart
-symbolic_debug: fpmkunit_debug
-symbolic_release: fpmkunit_release
 
-syslog_all: fpmkunit_all
-syslog_shared: fpmkunit_shared
-syslog_smart: fpmkunit_smart
-syslog_debug: fpmkunit_debug
-syslog_release: fpmkunit_release
 
 ibase_all: fpmkunit_all
 ibase_shared: fpmkunit_shared
@@ -455,11 +340,6 @@ ibase_smart: fpmkunit_smart
 ibase_debug: fpmkunit_debug
 ibase_release: fpmkunit_release
 
-oracle_all: fpmkunit_all
-oracle_shared: fpmkunit_shared
-oracle_smart: fpmkunit_smart
-oracle_debug: fpmkunit_debug
-oracle_release: fpmkunit_release
 
 postgres_all: fpmkunit_all
 postgres_shared: fpmkunit_shared
@@ -473,17 +353,7 @@ pthreads_smart: fpmkunit_smart
 pthreads_debug: fpmkunit_debug
 pthreads_release: fpmkunit_release
 
-gdbm_all: fpmkunit_all
-gdbm_shared: fpmkunit_shared
-gdbm_smart: fpmkunit_smart
-gdbm_debug: fpmkunit_debug
-gdbm_release: fpmkunit_release
 
-proj4_all: fpmkunit_all
-proj4_shared: fpmkunit_shared
-proj4_smart: fpmkunit_smart
-proj4_debug: fpmkunit_debug
-proj4_release: fpmkunit_release
 
 regexpr_all: fpmkunit_all
 regexpr_shared: fpmkunit_shared
@@ -491,23 +361,8 @@ regexpr_smart: fpmkunit_smart
 regexpr_debug: fpmkunit_debug
 regexpr_release: fpmkunit_release
 
-users_all: fpmkunit_all
-users_shared: fpmkunit_shared
-users_smart: fpmkunit_smart
-users_debug: fpmkunit_debug
-users_release: fpmkunit_release
 
-utmp_all: fpmkunit_all
-utmp_shared: fpmkunit_shared
-utmp_smart: fpmkunit_smart
-utmp_debug: fpmkunit_debug
-utmp_release: fpmkunit_release
 
-uuid_all: fpmkunit_all
-uuid_shared: fpmkunit_shared
-uuid_smart: fpmkunit_smart
-uuid_debug: fpmkunit_debug
-uuid_release: fpmkunit_release
 
 x11_all: fpmkunit_all
 x11_shared: fpmkunit_shared
@@ -521,23 +376,8 @@ odbc_smart: fpmkunit_smart
 odbc_debug: fpmkunit_debug
 odbc_release: fpmkunit_release
 
-oggvorbis_all: fpmkunit_all
-oggvorbis_shared: fpmkunit_shared
-oggvorbis_smart: fpmkunit_smart
-oggvorbis_debug: fpmkunit_debug
-oggvorbis_release: fpmkunit_release
 
-openal_all: fpmkunit_all
-openal_shared: fpmkunit_shared
-openal_smart: fpmkunit_smart
-openal_debug: fpmkunit_debug
-openal_release: fpmkunit_release
 
-nvapi_all: fpmkunit_all
-nvapi_shared: fpmkunit_shared
-nvapi_smart: fpmkunit_smart
-nvapi_debug: fpmkunit_debug
-nvapi_release: fpmkunit_release
 
 gmp_all: fpmkunit_all
 gmp_shared: fpmkunit_shared
@@ -545,11 +385,6 @@ gmp_smart: fpmkunit_smart
 gmp_debug: fpmkunit_debug
 gmp_release: fpmkunit_release
 
-graph_all: fpmkunit_all
-graph_shared: fpmkunit_shared
-graph_smart: fpmkunit_smart
-graph_debug: fpmkunit_debug
-graph_release: fpmkunit_release
 
 hermes_all: fpmkunit_all
 hermes_shared: fpmkunit_shared
@@ -571,29 +406,9 @@ libxml_smart: fpmkunit_smart
 libxml_debug: fpmkunit_debug
 libxml_release: fpmkunit_release
 
-mad_all: fpmkunit_all
-mad_shared: fpmkunit_shared
-mad_smart: fpmkunit_smart
-mad_debug: fpmkunit_debug
-mad_release: fpmkunit_release
 
-modplug_all: fpmkunit_all
-modplug_shared: fpmkunit_shared
-modplug_smart: fpmkunit_smart
-modplug_debug: fpmkunit_debug
-modplug_release: fpmkunit_release
 
-ncurses_all: fpmkunit_all
-ncurses_shared: fpmkunit_shared
-ncurses_smart: fpmkunit_smart
-ncurses_debug: fpmkunit_debug
-ncurses_release: fpmkunit_release
 
-newt_all: fpmkunit_all
-newt_shared: fpmkunit_shared
-newt_smart: fpmkunit_smart
-newt_debug: fpmkunit_debug
-newt_release: fpmkunit_release
 
 zlib_all: fpmkunit_all
 zlib_shared: fpmkunit_shared
@@ -625,11 +440,6 @@ cocoaint_smart: fpmkunit_smart
 cocoaint_debug: fpmkunit_debug
 cocoaint_release: fpmkunit_release
 
-pcap_all: fpmkunit_all
-pcap_shared: fpmkunit_shared
-pcap_smart: fpmkunit_smart
-pcap_debug: fpmkunit_debug
-pcap_release: fpmkunit_release
 
 pasjpeg_all: fpmkunit_all
 pasjpeg_shared: fpmkunit_shared
@@ -649,11 +459,6 @@ openssl_smart: fpmkunit_smart
 openssl_debug: fpmkunit_debug
 openssl_release: fpmkunit_release
 
-pxlib_all: fpmkunit_all
-pxlib_shared: fpmkunit_shared
-pxlib_smart: fpmkunit_smart
-pxlib_debug: fpmkunit_debug
-pxlib_release: fpmkunit_release
 
 rexx_all: fpmkunit_all
 rexx_shared: fpmkunit_shared

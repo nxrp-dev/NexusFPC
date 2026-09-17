@@ -90,7 +90,7 @@ begin
 
     { Ideally, we should check if rtl contains math unit,
       I do know how that can be checked. PM 2019/11/27 }
-    if ((Defaults.CPU<>i8086) and (Defaults.CPU<>z80))
+    if (Defaults.CPU<>i8086)
        or (Defaults.OS<>embedded) then
       begin
         T:=P.Targets.AddUnit('ucomplex.pp',UComplexOSes);

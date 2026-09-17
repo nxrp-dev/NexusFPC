@@ -67,7 +67,6 @@ Const
       'i8086': Result := '8086';
       'jvm': Result := 'jvm';
       'loongarch64': Result:='loongarch64';
-      'm68k': Result := '68k';
       'mips': Result := 'mips';
       'mipsel': Result := 'mipsel';
       'mipseb': Result := 'mipseb';
@@ -81,7 +80,6 @@ Const
       'sparc64': Result := 'sparc64';
       'x86_64': Result := 'x64';
       'xtensa': Result := 'xtensa';
-      'z80': Result := 'z80';
       'wasm32': Result := 'wasm32'
       else
         error('Illegal processor type "'+processorstr+'"');
@@ -95,10 +93,6 @@ Const
          ppcbin:='ppc386';
          processorname:='i386';
     {$endif i386}
-    {$ifdef m68k}
-         ppcbin:='ppc68k';
-         processorname:='m68k';
-    {$endif m68k}
     {$ifdef powerpc}
          ppcbin:='ppcppc';
          processorname:='powerpc';

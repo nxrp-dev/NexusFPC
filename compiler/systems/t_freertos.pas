@@ -1969,10 +1969,6 @@ initialization
   RegisterTarget(system_mipsel_embedded_info);
 {$endif mipsel}
 
-{$ifdef m68k}
-  RegisterLinker(ld_freertos,TlinkerFreeRTOS);
-  RegisterTarget(system_m68k_embedded_info);
-{$endif m68k}
 
 {$ifdef riscv32}
   RegisterLinker(ld_freertos,TlinkerFreeRTOS);

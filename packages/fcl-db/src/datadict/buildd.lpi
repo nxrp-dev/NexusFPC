@@ -29,7 +29,7 @@
         </Mode0>
       </Modes>
     </RunParams>
-    <Units Count="11">
+    <Units Count="10">
       <Unit0>
         <Filename Value="buildd.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -61,21 +61,17 @@
         <IsPartOfProject Value="True"/>
       </Unit6>
       <Unit7>
-        <Filename Value="fpddoracle.pp"/>
+        <Filename Value="fpddsqlite3.pp"/>
         <IsPartOfProject Value="True"/>
       </Unit7>
       <Unit8>
-        <Filename Value="fpddsqlite3.pp"/>
+        <Filename Value="fpddregstd.pp"/>
         <IsPartOfProject Value="True"/>
       </Unit8>
       <Unit9>
-        <Filename Value="fpddregstd.pp"/>
-        <IsPartOfProject Value="True"/>
-      </Unit9>
-      <Unit10>
         <Filename Value="fpdddiff.pp"/>
         <IsPartOfProject Value="True"/>
-      </Unit10>
+      </Unit9>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

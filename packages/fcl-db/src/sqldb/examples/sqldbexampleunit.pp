@@ -16,7 +16,7 @@ interface
 
 uses
   Classes, sysutils,
-  sqldb, pqconnection, IBConnection, ODBCConn, oracleconnection;
+  sqldb, pqconnection, IBConnection, ODBCConn;
 
 var dbtype,
     dbname,
@@ -85,7 +85,6 @@ begin
   if dbtype = 'postgresql' then Fconnection := tpqConnection.Create(nil);
   if dbtype = 'interbase' then Fconnection := tIBConnection.Create(nil);
   if dbtype = 'odbc' then Fconnection := tODBCConnection.Create(nil);
-  if dbtype = 'oracle' then Fconnection := TOracleConnection.Create(nil);
 
   if not assigned(Fconnection) then ExitWithError('Invalid database-type, check if a valid database-type was provided in the file ''database.ini''');
 

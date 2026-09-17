@@ -4032,7 +4032,6 @@ new features, etc.):
 #    s = Sparc64 targets
 #    V = AVR
 #    x = xtensa targets
-#    Z = Z80
 # The second character also indicates who will display this line,
 # (if the above character was TRUE) the current possibilities are :
 #    * = everyone
@@ -4087,11 +4086,6 @@ F*0*_Only options valid for the default or selected platform are listed.
 4*2Anasmwin64_Assemble Win64 object file using Nasm (experimental)
 4*2Apecoff_PE-COFF (Win64) using internal writer
 4*2Ayasm_Assemble using Yasm (experimental)
-6*2Aas_Unix o-file using GNU AS
-6*2Agas_GNU Motorola assembler
-6*2Amit_MIT Syntax (old GAS)
-6*2Amot_Standard Motorola assembler
-6*2Avasm_Use vasm to assemble
 8*2Anasm_Assemble using Nasm
 8*2Anasmobj_Assemble using Nasm
 8*2Aomf Assemble using internal OMF object writer
@@ -4118,9 +4112,6 @@ W*2Allvm-mc-17_Assemble using llvm-mc-17
 W*2Allvm-mc_Assemble using llvm-mc (version 18 or later)
 W*2Awasa_Assemble using wasa (experimental)
 x*2Aas_Assemble using GNU AS
-Z*2Asdcc-sdasz80_Assemble using SDCC-SDASZ80
-Z*2Avasm_Assemble using Vasm
-Z*2Az80asm_Assemble using z80asm
 # Used only internally by IDE
 **1b_Generate browser info
 **2bl_Generate local symbol info
@@ -4300,7 +4291,7 @@ L*2il_Return list of supported LLVM/Xcode versions by the LLVM backend
 F*1P<x>_Target CPU / compiler related options:
 F*2PB_Show default compiler binary
 F*2PP_Show default target cpu
-F*2P<x>_Set target CPU (aarch64,arm,avr,i386,i8086,jvm,loongarch64,m68k,mips,mipsel,powerpc,powerpc64,riscv32,riscv64,sparc,sparc64,wasm32,x86_64,xtensa,z80)
+F*2P<x>_Set target CPU (aarch64,arm,avr,i386,i8086,jvm,loongarch64,mips,mipsel,powerpc,powerpc64,riscv32,riscv64,sparc,sparc64,wasm32,x86_64,xtensa)
 **1R<x>_Assembler reading style:
 **2Rdefault_Use default assembler for target
 3*2Ratt_Read AT&T style assembler
@@ -4309,7 +4300,6 @@ F*2P<x>_Set target CPU (aarch64,arm,avr,i386,i8086,jvm,loongarch64,m68k,mips,mip
 4*2Rintel_Read Intel style assembler
 8*2Ratt_Read AT&T style assembler
 8*2Rintel_Read Intel style assembler
-6*2RMOT_Read Motorola style assembler
 **1s_Do not call assembler and linker
 **2sh_Generate script to link on host, automatically switches to external assembler writer
 **2sr_Skip register allocation phase (use with -alr), automatically switches to external assembler writer
@@ -4378,16 +4368,6 @@ F*2P<x>_Set target CPU (aarch64,arm,avr,i386,i8086,jvm,loongarch64,m68k,mips,mip
 4*2Topenbsd_OpenBSD
 4*2Tsolaris_Solaris
 4*2Twin64_Win64 (64 bit Windows systems)
-# m68k targets
-6*2Tamiga_Commodore Amiga
-6*2Tatari_Atari ST/STe/TT
-6*2Tembedded_Embedded
-6*2Thuman68k_Human 68k
-6*2Tlinux_Linux
-6*2Tnetbsd_NetBSD
-6*2Tmacosclassic_Classic Mac OS
-6*2Tpalmos_PalmOS
-6*2Tsinclairql_Sinclair QL
 # i8086 targets
 8*2Tembedded_Embedded
 8*2Tmsdos_MS-DOS (and compatible)
@@ -4460,8 +4440,6 @@ V*2Tembedded_Embedded
 x*2Tembedded_Embedded
 x*2Tfreertos_FreeRTOS
 x*2Tlinux_Linux
-# z80 targets
-Z*2Tembedded_Embedded
 # wasm32 targets
 W*2Tembedded_Embedded
 W*2Twasip1_The WebAssembly System Interface Preview 1 (WASI 0.1)
@@ -4522,7 +4500,6 @@ A*2Wb_Create a bundle instead of a library (Darwin)
 4*2WB<x>_Set image base to <x> (Windows)
 A*2WB_Create a relocatable image (Windows, Symbian)
 A*2WB<x>_Set image base to <x> (Windows, Symbian)
-Z*2WB<x>_Set image base to <x> (ZX Spectrum)
 3*2WC_Specify console type application (EMX, OS/2, Windows)
 4*2WC_Specify console type application (Windows)
 A*2WC_Specify console type application (Windows)
@@ -4537,7 +4514,6 @@ A*2We_Use external resources (Darwin)
 P*2We_Use external resources (Darwin)
 p*2We_Use external resources (Darwin)
 3*2WF_Specify full-screen type application (EMX, OS/2)
-6*2WF<x>_Set TOS program flags to <x> (Atari)
 3*2WG_Specify graphic type application (EMX, OS/2, Windows)
 4*2WG_Specify graphic type application (Windows)
 A*2WG_Specify graphic type application (Windows)
@@ -4583,13 +4559,7 @@ A*2WR_Generate relocation code (Windows)
 8*2Wt<x>_Set the target executable format
 8*3Wtcom_Create a DOS .COM file (requires tiny memory model)
 8*3Wtexe_Create a DOS .EXE file (default)
-6*2Wt<x>_Set the target executable format (Atari)
-6*3Wttos_Create TOS executable file (default)
-6*3Wtmint_Create a MiNT executable file
 P*2WT_Specify MPW tool type application (Classic Mac OS)
-6*2WQ<x>_Set executable metadata format (Sinclair QL)
-6*3WQqhdr_Set metadata to QDOS File Header style (default)
-6*3WQxtcc_Set metadata to XTcc style
 **2WX_Enable executable stack (Linux)
 **1x<suff>_Set suffix for compiler executable (fpc command only)
 **1X_Executable options:

@@ -33,7 +33,6 @@ program pp;
   I8086               generate a compiler for the Intel 8086+
   JVM                 generate a compiler for the JVM (Java Virtual Machine)
   LOONGARCH64         generate a compiler for the LoongArch64 architecture
-  M68K                generate a compiler for the M68000
   MIPS                generate a compiler for the MIPS (Big Endian)
   MIPSEL              generate a compiler for the MIPSEL (Little Endian)
   POWERPC             generate a compiler for the PowerPC
@@ -45,7 +44,6 @@ program pp;
   WASM32              generate a compiler for WebAssembly 32-bit
   X86_64              generate a compiler for the AMD x86-64 architecture
   XTENSA              generate a compiler for XTENSA
-  Z80                 generate a compiler for Z80
 
   -----------------------------------------------------------------
   Other compiler switches
@@ -112,12 +110,6 @@ program pp;
   {$endif CPUDEFINED}
   {$define CPUDEFINED}
 {$endif x86_64}
-{$ifdef M68K}
-  {$ifdef CPUDEFINED}
-    {$fatal ONLY one of the switches for the CPU type must be defined}
-  {$endif CPUDEFINED}
-  {$define CPUDEFINED}
-{$endif M68K}
 {$ifdef POWERPC}
   {$ifdef CPUDEFINED}
     {$fatal ONLY one of the switches for the CPU type must be defined}
@@ -190,12 +182,6 @@ program pp;
   {$endif CPUDEFINED}
   {$define CPUDEFINED}
 {$endif XTENSA}
-{$ifdef Z80}
-  {$ifdef CPUDEFINED}
-    {$fatal ONLY one of the switches for the CPU type must be defined}
-  {$endif CPUDEFINED}
-  {$define CPUDEFINED}
-{$endif Z80}
 {$ifdef WASM32}
   {$ifdef CPUDEFINED}
     {$fatal ONLY one of the switches for the CPU type must be defined}

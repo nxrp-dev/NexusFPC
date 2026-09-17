@@ -244,22 +244,6 @@
   {$endif}
 {$endif arm}
 
-{$ifdef m68k}
-  {$define cpu32bit}
-  {$define cpu32bitaddr}
-  {$define cpu32bitalu}
-  {$define cpuflags}
-  {$define cpurox}
-  {$define cpufpemu}
-  {$define cpurefshaveindexreg}
-  {$define cpucapabilities}
-  {$define fpucapabilities}
-  {$define cpuneedsmulhelper}
-  {$define cpuneedsdivhelper}
-  {$define cpu_uses_separate_address_registers}
-  {$define SUPPORT_SAFECALL}
-  {$define SUPPORT_GET_FRAME}
-{$endif m68k}
 
 {$ifdef avr}
   {$define cpu8bit}
@@ -368,18 +352,6 @@
   {$define SUPPORT_SAFECALL}
 {$endif riscv32}
 
-{$ifdef z80}
-  {$define cpu8bit}
-  {$define cpu16bitaddr}
-  {$define cpu8bitalu}
-  {$define cpufpemu}
-  {$define cpuflags}
-  {$define cpunofpu}
-  {$define cpunodefaultint}
-  {$define cpuneedsdivhelper}
-  {$define cpuneedsmulhelper}
-  {$define cpucapabilities}
-{$endif z80}
 
 {$ifdef riscv64}
   {$define riscv}

@@ -30,7 +30,7 @@ begin
     { Program does not fit in 16-bit memory constraints }
     P.OSes := P.OSes - [msdos,sinclairql,human68k];
     { avr-embedded and i8086-embedded do not meet needed requirements }
-    if Defaults.CPU in [avr,i8086,z80] then
+    if Defaults.CPU in [avr,i8086] then
       P.OSes := P.OSes - [embedded];
     { wasm32 CPU does not support
       goto used in these sources }

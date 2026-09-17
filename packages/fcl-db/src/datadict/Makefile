@@ -369,16 +369,16 @@ endif
 override PACKAGE_NAME=fcl-db
 PACKAGEDIR_MAIN:=$(firstword $(subst /Makefile.fpc,,$(strip $(wildcard $(addsuffix /fcl-db/Makefile.fpc,$(PACKAGESDIR))))))
 ifeq ($(CPU_OS_TARGET),i386-linux)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),i386-go32v2)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
 endif
 ifeq ($(CPU_OS_TARGET),i386-win32)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),i386-freebsd)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),i386-beos)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
@@ -387,19 +387,19 @@ ifeq ($(CPU_OS_TARGET),i386-haiku)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
 endif
 ifeq ($(CPU_OS_TARGET),i386-netbsd)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),i386-solaris)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
 endif
 ifeq ($(CPU_OS_TARGET),i386-openbsd)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),i386-wdosx)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
 endif
 ifeq ($(CPU_OS_TARGET),i386-darwin)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),i386-watcom)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
@@ -417,16 +417,16 @@ ifeq ($(CPU_OS_TARGET),i386-nativent)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
 endif
 ifeq ($(CPU_OS_TARGET),i386-iphonesim)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),i386-android)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
 endif
 ifeq ($(CPU_OS_TARGET),m68k-linux)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),m68k-netbsd)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),m68k-atari)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
@@ -444,16 +444,16 @@ ifeq ($(CPU_OS_TARGET),m68k-human68k)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-linux)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-netbsd)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-macosclassic)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-darwin)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-embedded)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
@@ -462,13 +462,13 @@ ifeq ($(CPU_OS_TARGET),powerpc-wii)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-aix)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),sparc-linux)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),sparc-netbsd)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),sparc-solaris)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
@@ -477,25 +477,25 @@ ifeq ($(CPU_OS_TARGET),sparc-embedded)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-linux)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-freebsd)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-haiku)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-netbsd)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-solaris)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-openbsd)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-darwin)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-win64)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddodbc fpddsqlite3
@@ -504,7 +504,7 @@ ifeq ($(CPU_OS_TARGET),x86_64-embedded)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-iphonesim)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-android)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
@@ -513,10 +513,10 @@ ifeq ($(CPU_OS_TARGET),x86_64-dragonfly)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
 endif
 ifeq ($(CPU_OS_TARGET),arm-linux)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),arm-netbsd)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),arm-wince)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddsqlite3
@@ -543,31 +543,31 @@ ifeq ($(CPU_OS_TARGET),arm-ios)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-linux)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-darwin)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-embedded)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-aix)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),avr-embedded)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
 endif
 ifeq ($(CPU_OS_TARGET),armeb-linux)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),armeb-embedded)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
 endif
 ifeq ($(CPU_OS_TARGET),mips-linux)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),mipsel-linux)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),mipsel-embedded)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
@@ -579,10 +579,10 @@ ifeq ($(CPU_OS_TARGET),mipsel-ps1)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
 endif
 ifeq ($(CPU_OS_TARGET),mips64-linux)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),mips64el-linux)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),jvm-java)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
@@ -597,13 +597,13 @@ ifeq ($(CPU_OS_TARGET),i8086-msdos)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-linux)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-freebsd)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-darwin)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-win64)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddodbc fpddsqlite3
@@ -612,7 +612,7 @@ ifeq ($(CPU_OS_TARGET),aarch64-embedded)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-iphonesim)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-android)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
@@ -624,10 +624,10 @@ ifeq ($(CPU_OS_TARGET),wasm32-embedded)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
 endif
 ifeq ($(CPU_OS_TARGET),sparc64-linux)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),riscv32-linux)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),riscv32-embedded)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
@@ -636,13 +636,13 @@ ifeq ($(CPU_OS_TARGET),riscv32-freertos)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
 endif
 ifeq ($(CPU_OS_TARGET),riscv64-linux)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),riscv64-embedded)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
 endif
 ifeq ($(CPU_OS_TARGET),xtensa-linux)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),xtensa-embedded)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
@@ -654,19 +654,19 @@ ifeq ($(CPU_OS_TARGET),z80-embedded)
 override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb
 endif
 ifeq ($(CPU_OS_TARGET),loongarch64-linux)
-override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_UNITS+=fpdatadict fpdddiff fpdddbf fpddsqldb  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),i386-linux)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),i386-go32v2)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
 endif
 ifeq ($(CPU_OS_TARGET),i386-win32)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),i386-freebsd)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),i386-beos)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
@@ -675,19 +675,19 @@ ifeq ($(CPU_OS_TARGET),i386-haiku)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
 endif
 ifeq ($(CPU_OS_TARGET),i386-netbsd)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),i386-solaris)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
 endif
 ifeq ($(CPU_OS_TARGET),i386-openbsd)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),i386-wdosx)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
 endif
 ifeq ($(CPU_OS_TARGET),i386-darwin)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),i386-watcom)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
@@ -705,16 +705,16 @@ ifeq ($(CPU_OS_TARGET),i386-nativent)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
 endif
 ifeq ($(CPU_OS_TARGET),i386-iphonesim)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),i386-android)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
 endif
 ifeq ($(CPU_OS_TARGET),m68k-linux)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),m68k-netbsd)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),m68k-atari)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
@@ -732,16 +732,16 @@ ifeq ($(CPU_OS_TARGET),m68k-human68k)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-linux)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-netbsd)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-macosclassic)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-darwin)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-embedded)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
@@ -750,13 +750,13 @@ ifeq ($(CPU_OS_TARGET),powerpc-wii)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-aix)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),sparc-linux)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),sparc-netbsd)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),sparc-solaris)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
@@ -765,25 +765,25 @@ ifeq ($(CPU_OS_TARGET),sparc-embedded)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-linux)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-freebsd)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-haiku)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-netbsd)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-solaris)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-openbsd)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-darwin)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-win64)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddpq fpddodbc fpddsqlite3
@@ -792,7 +792,7 @@ ifeq ($(CPU_OS_TARGET),x86_64-embedded)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-iphonesim)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-android)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
@@ -801,10 +801,10 @@ ifeq ($(CPU_OS_TARGET),x86_64-dragonfly)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
 endif
 ifeq ($(CPU_OS_TARGET),arm-linux)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),arm-netbsd)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),arm-wince)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddpq fpddsqlite3
@@ -831,31 +831,31 @@ ifeq ($(CPU_OS_TARGET),arm-ios)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-linux)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-darwin)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-embedded)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-aix)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),avr-embedded)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
 endif
 ifeq ($(CPU_OS_TARGET),armeb-linux)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),armeb-embedded)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
 endif
 ifeq ($(CPU_OS_TARGET),mips-linux)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),mipsel-linux)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),mipsel-embedded)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
@@ -867,10 +867,10 @@ ifeq ($(CPU_OS_TARGET),mipsel-ps1)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
 endif
 ifeq ($(CPU_OS_TARGET),mips64-linux)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),mips64el-linux)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),jvm-java)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
@@ -885,13 +885,13 @@ ifeq ($(CPU_OS_TARGET),i8086-msdos)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-linux)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-freebsd)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-darwin)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-win64)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddpq fpddodbc fpddsqlite3
@@ -900,7 +900,7 @@ ifeq ($(CPU_OS_TARGET),aarch64-embedded)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-iphonesim)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-android)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
@@ -912,10 +912,10 @@ ifeq ($(CPU_OS_TARGET),wasm32-embedded)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
 endif
 ifeq ($(CPU_OS_TARGET),sparc64-linux)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),riscv32-linux)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),riscv32-embedded)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
@@ -924,13 +924,13 @@ ifeq ($(CPU_OS_TARGET),riscv32-freertos)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
 endif
 ifeq ($(CPU_OS_TARGET),riscv64-linux)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),riscv64-embedded)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
 endif
 ifeq ($(CPU_OS_TARGET),xtensa-linux)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 ifeq ($(CPU_OS_TARGET),xtensa-embedded)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
@@ -942,7 +942,7 @@ ifeq ($(CPU_OS_TARGET),z80-embedded)
 override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff
 endif
 ifeq ($(CPU_OS_TARGET),loongarch64-linux)
-override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+override TARGET_RSTS+=fpdatadict fpddfb fpddsqldb fpdddiff  fpddfb fpddodbc fpddpq fpddsqlite3 fpddregstd
 endif
 override INSTALL_FPCPACKAGE=y
 ifeq ($(CPU_OS_TARGET),i386-linux)
@@ -1979,7 +1979,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -1994,7 +1993,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2004,7 +2002,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2024,7 +2021,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2039,7 +2035,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2054,7 +2049,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2069,7 +2063,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2094,7 +2087,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2109,7 +2101,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2119,7 +2110,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2154,7 +2144,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2164,7 +2153,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2179,7 +2167,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2199,7 +2186,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2209,7 +2195,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2219,7 +2204,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2239,7 +2223,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2249,7 +2232,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2264,7 +2246,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2279,7 +2260,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2289,7 +2269,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2311,7 +2290,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2331,7 +2309,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2341,7 +2318,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2351,7 +2327,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2396,7 +2371,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2406,7 +2380,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2421,7 +2394,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2436,7 +2408,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2451,7 +2422,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2461,7 +2431,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2486,7 +2455,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2496,7 +2464,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2526,7 +2493,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2536,7 +2502,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2546,7 +2511,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2568,7 +2532,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2593,7 +2556,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2603,7 +2565,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2623,7 +2584,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2638,7 +2598,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2663,7 +2622,6 @@ REQUIRE_PACKAGES_RTL=1
 REQUIRE_PACKAGES_FCL-BASE=1
 REQUIRE_PACKAGES_FCL-XML=1
 REQUIRE_PACKAGES_IBASE=1
-REQUIRE_PACKAGES_ORACLE=1
 REQUIRE_PACKAGES_SQLITE=1
 REQUIRE_PACKAGES_ODBC=1
 REQUIRE_PACKAGES_POSTGRES=1
@@ -2842,50 +2800,6 @@ override COMPILER_UNITDIR+=$(UNITDIR_IBASE)
 endif
 ifdef UNITDIR_FPMAKE_IBASE
 override COMPILER_FPMAKE_UNITDIR+=$(UNITDIR_FPMAKE_IBASE)
-endif
-endif
-ifdef REQUIRE_PACKAGES_ORACLE
-PACKAGEDIR_ORACLE:=$(firstword $(subst /Makefile.fpc,,$(strip $(wildcard $(addsuffix /oracle/Makefile.fpc,$(PACKAGESDIR))))))
-ifeq ($(PACKAGEDIR_ORACLE),)
-PACKAGEDIR_ORACLE:=$(firstword $(subst /Makefile,,$(strip $(wildcard $(addsuffix /oracle/Makefile,$(PACKAGESDIR))))))
-ifneq ($(PACKAGEDIR_ORACLE),)
-PACKAGEDIR_ORACLE:=$(firstword $(subst /fpmake.pp,,$(strip $(wildcard $(addsuffix /oracle/fpmake.pp,$(PACKAGESDIR))))))
-endif
-endif
-ifneq ($(PACKAGEDIR_ORACLE),)
-ifneq ($(wildcard $(PACKAGEDIR_ORACLE)/units/$(TARGETSUFFIX)),)
-UNITDIR_ORACLE=$(PACKAGEDIR_ORACLE)/units/$(TARGETSUFFIX)
-else
-UNITDIR_ORACLE=$(PACKAGEDIR_ORACLE)
-endif
-ifneq ($(wildcard $(PACKAGEDIR_ORACLE)/units/$(SOURCESUFFIX)),)
-UNITDIR_FPMAKE_ORACLE=$(PACKAGEDIR_ORACLE)/units/$(SOURCESUFFIX)
-else
-ifneq ($(wildcard $(PACKAGEDIR_ORACLE)/units_bs/$(SOURCESUFFIX)),)
-UNITDIR_FPMAKE_ORACLE=$(PACKAGEDIR_ORACLE)/units_bs/$(SOURCESUFFIX)
-else
-UNITDIR_FPMAKE_ORACLE=$(PACKAGEDIR_ORACLE)
-endif
-endif
-ifdef CHECKDEPEND
-$(PACKAGEDIR_ORACLE)/$(FPCMADE):
-	$(MAKE) -C $(PACKAGEDIR_ORACLE) $(FPCMADE)
-override ALLDEPENDENCIES+=$(PACKAGEDIR_ORACLE)/$(FPCMADE)
-endif
-else
-PACKAGEDIR_ORACLE=
-UNITDIR_ORACLE:=$(subst /Package.fpc,,$(strip $(wildcard $(addsuffix /oracle/Package.fpc,$(UNITSDIR)))))
-ifneq ($(UNITDIR_ORACLE),)
-UNITDIR_ORACLE:=$(firstword $(UNITDIR_ORACLE))
-else
-UNITDIR_ORACLE=
-endif
-endif
-ifdef UNITDIR_ORACLE
-override COMPILER_UNITDIR+=$(UNITDIR_ORACLE)
-endif
-ifdef UNITDIR_FPMAKE_ORACLE
-override COMPILER_FPMAKE_UNITDIR+=$(UNITDIR_FPMAKE_ORACLE)
 endif
 endif
 ifdef REQUIRE_PACKAGES_SQLITE

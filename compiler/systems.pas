@@ -313,7 +313,7 @@ interface
                            system_powerpc64_embedded,system_avr_embedded,
                            system_jvm_java32,system_mipseb_embedded,system_mipsel_embedded,
                            system_i8086_embedded,system_riscv32_embedded,system_riscv64_embedded,
-                           system_xtensa_embedded,system_z80_embedded,system_wasm32_embedded,
+                           system_xtensa_embedded,system_wasm32_embedded,
                            system_aarch64_embedded];
 
        { all FreeRTOS systems }
@@ -470,13 +470,13 @@ interface
 
        { all internal writers }
        asms_internals = asms_int_coff + asms_int_elf
-                        + [as_i8086_omf, as_z80_rel, as_wasm32_wasm, as_i386_macho];
+                        + [as_i8086_omf, as_wasm32_wasm, as_i386_macho];
 
        cpu2str : array[TSystemCpu] of string[12] =
             ('','i386','m68k','alpha','powerpc','sparc','vm','ia64','x86_64',
              'mips','arm', 'powerpc64', 'avr', 'mipsel','jvm', 'i8086',
              'aarch64', 'wasm32', 'sparc64', 'riscv32', 'riscv64', 'xtensa',
-             'z80', 'mips64', 'mips64el', 'loongarch64');
+             'obsolete-z80', 'mips64', 'mips64el', 'loongarch64');
 
        abiinfo : array[tabi] of tabiinfo = (
          (name: 'DEFAULT'; supported: true),
@@ -1002,13 +1002,6 @@ begin
   {$endif default_target_set}
 {$endif x86_64}
 
-{$ifdef m68k}
-  {$ifdef cpu68}
-    default_target(source_info.system);
-  {$else cpu68}
-    default_target(system_m68k_linux);
-  {$endif cpu68}
-{$endif m68k}
 
 {$ifdef powerpc}
   {$ifdef cpupowerpc32}
@@ -1186,9 +1179,6 @@ begin
   default_target(system_wasm32_wasip1);
 {$endif wasm32}
 
-{$ifdef z80}
-  default_target(system_z80_embedded);
-{$endif z80}
 
 {$ifdef riscv32}
   default_target(system_riscv32_linux);

@@ -594,10 +594,7 @@ begin
   TestFieldDeclaration(ftDate,8);
 
   for i := 0 to testDateValuesCount-1 do
-    if SQLConnType=oracle then
-      TSQLDBConnector(DBConnector).Connection.ExecuteDirect('insert into FPDEV2 (FT) values (to_date (''' + testDateValues[i] + ''',''YYYY-MM-DD''))')
-    else
-      TSQLDBConnector(DBConnector).Connection.ExecuteDirect('insert into FPDEV2 (FT) values (''' + testDateValues[i] + ''')');
+    TSQLDBConnector(DBConnector).Connection.ExecuteDirect('insert into FPDEV2 (FT) values (''' + testDateValues[i] + ''')');
 
   with TSQLDBConnector(DBConnector).Query do
     begin
@@ -658,10 +655,7 @@ begin
   TestFieldDeclaration(ftDateTime,8);
 
   for i := 0 to testValuesCount-1 do
-    if SQLConnType=oracle then
-      TSQLDBConnector(DBConnector).Connection.ExecuteDirect('insert into FPDEV2 (FT) values (to_date (''' + testValues[i] + ''',''YYYY-MM-DD HH24:MI:SS''))')
-    else
-      TSQLDBConnector(DBConnector).Connection.ExecuteDirect('insert into FPDEV2 (FT) values (''' + testValues[i] + ''')');
+    TSQLDBConnector(DBConnector).Connection.ExecuteDirect('insert into FPDEV2 (FT) values (''' + testValues[i] + ''')');
 
   with TSQLDBConnector(DBConnector).Query do
     begin

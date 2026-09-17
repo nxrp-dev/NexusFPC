@@ -8,7 +8,6 @@ uses {$ifdef unix}cthreads,{$endif} fpmkunit;
 procedure add_fcl_db(const ADirectory: string);
 
 const
-  ParadoxOSes         = [beos,haiku,linux,freebsd,netbsd,openbsd,win32,dragonfly];
   DatadictOSes        = [aix,beos,darwin,haiku,linux,freebsd,win32,win64,wince,android,dragonfly];
   SqldbConnectionOSes = [aix,beos,haiku,linux,freebsd,darwin,iphonesim,ios,netbsd,openbsd,solaris,win32,win64,wince,android,dragonfly];
   SqliteOSes          = [aix,beos,haiku,linux,freebsd,darwin,iphonesim,ios,netbsd,openbsd,solaris,win32,win64,wince,android,dragonfly];
@@ -40,14 +39,12 @@ begin
     P.Version:='3.3.1';
     P.SourcePath.Add('src');
     P.SourcePath.Add('src/base');
-    P.SourcePath.Add('src/paradox', ParadoxOSes);
     P.SourcePath.Add('src/sqldb');
     P.SourcePath.Add('src/sqldb/postgres', SqldbConnectionOSes);
     P.SourcePath.Add('src/sqldb/sqlite', SqldbConnectionOSes);
     P.SourcePath.Add('src/sqldb/interbase', SqldbConnectionOSes);
     P.SourcePath.Add('src/sqldb/odbc', SqldbConnectionOSes);
     P.SourcePath.Add('src/sqldb/examples', SqldbConnectionOSes);
-    P.SourcePath.Add('src/sqldb/oracle', SqldbConnectionOSes);
     P.SourcePath.Add('src/sqldb/mssql', MSSQLOSes);
     P.SourcePath.Add('src/sdf');
     P.SourcePath.Add('src/json');
@@ -72,11 +69,9 @@ begin
     P.Dependencies.Add('rtl-extra'); // clocale
     P.Dependencies.Add('ibase', SqldbConnectionOSes);
     P.Dependencies.Add('odbc', SqldbConnectionOSes);
-    P.Dependencies.Add('oracle', SqldbConnectionOSes);
     P.Dependencies.Add('postgres', SqldbConnectionOSes);
     P.Dependencies.Add('sqlite', SqldbConnectionOSes+SqliteOSes);
     P.Dependencies.Add('dblib', MSSQLOSes);
-    P.Dependencies.Add('pxlib',ParadoxOSes);
     P.Dependencies.Add('fcl-json');
 
 //    P.Options.Add('-S2h');
@@ -420,14 +415,6 @@ begin
           AddUnit('fpddsqldb');
           AddUnit('odbcconn');
         end;
-    T:=P.Targets.AddUnit('fpddoracle.pp', DatadictOSes);
-      with T.Dependencies do
-        begin
-          AddUnit('sqldb');
-          AddUnit('fpdatadict');
-          AddUnit('fpddsqldb');
-          AddUnit('oracleconnection');
-        end;
     T:=P.Targets.AddUnit('fpddpq.pp', DatadictOSes);
       with T.Dependencies do
         begin
@@ -451,7 +438,6 @@ begin
           AddUnit('fpdddbf');
           AddUnit('fpddfb');
           AddUnit('fpddpq');
-          AddUnit('fpddoracle');
           AddUnit('fpddsqlite3');
           AddUnit('fpddmssql');
           AddUnit('fpddodbc');
@@ -583,21 +569,6 @@ begin
           AddUnit('db');
           AddUnit('bufdataset');
           AddUnit('dbconst');
-        end;
-    T:=P.Targets.AddUnit('oracleconnection.pp', SqldbConnectionOSes);
-    T.ResourceStrings:=true;
-      with T.Dependencies do
-        begin
-          AddUnit('sqldb');
-          AddUnit('db');
-          AddUnit('dbconst');
-        end;
-    T:=P.Targets.AddUnit('paradox.pp',ParadoxOSes);
-    T.ResourceStrings:=true;
-      with T.Dependencies do
-        begin
-          AddUnit('db');
-          AddUnit('bufdataset_parser');
         end;
     T:=P.Targets.AddUnit('pqconnection.pp', SqldbConnectionOSes);
     T.ResourceStrings:=true;
