@@ -7,11 +7,7 @@ interface
 uses
   Classes, SysUtils, toolsunit
   ,db, sqldb
-  ,ibconnection
-  ,pqconnection
-  ,odbcconn
   ,sqlite3conn
-  ,mssqlconn
   ;
 
 type
@@ -164,20 +160,16 @@ end;
 { TSQLDBConnector }
 
 procedure TSQLDBConnector.CreateFConnection;
-var t : TSQLConnType;
+var
     i : integer;
     s : string;
 begin
-  for t := low(SQLConnTypesNames) to high(SQLConnTypesNames) do
-    if UpperCase(dbconnectorparams) = SQLConnTypesNames[t] then SQLConnType := t;
+  if UpperCase(dbconnectorparams) <> 'SQLITE3' then
+    raise Exception.Create('Only SQLITE3 is supported by the SQLDB test connector');
+  SQLConnType := SQLITE3;
 
   case SQLConnType of
     SQLITE3:    Fconnection := TSQLite3Connection.Create(nil);
-    POSTGRESQL: Fconnection := TPQConnection.Create(nil);
-    INTERBASE : Fconnection := TIBConnection.Create(nil);
-    ODBC:       Fconnection := TODBCConnection.Create(nil);
-    MSSQL:      Fconnection := TMSSQLConnection.Create(nil);
-    SYBASE:     Fconnection := TSybaseConnection.Create(nil);
     else        writeln('Invalid database type, check if a valid database type for your achitecture was provided in the file ''database.ini''');
   end;
 

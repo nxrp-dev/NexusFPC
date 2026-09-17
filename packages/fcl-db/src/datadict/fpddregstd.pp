@@ -42,11 +42,11 @@ uses
 {$ENDIF FPC_DOTTEDUNITS}
 
 Type
-  TDataDictEngine = (teDBF,teFirebird,tePostgreSQL,teSQLite3,teODBC, teMSSQL);
+  TDataDictEngine = (teDBF,teSQLite3);
   TDataDictEngines = set of TDataDictEngine;
 
 Const
-  AllStdDDEngines = [teDBF,teFirebird,tePostgreSQL,teSQLite3,teODBC,teMSSQL];
+  AllStdDDEngines = [teDBF,teSQLite3];
 
 Type
 
@@ -77,36 +77,22 @@ implementation
 {$IFDEF FPC_DOTTEDUNITS}
 uses
   Data.Dict.Dbf,
-  Data.Dict.Fb,
-  Data.Dict.Pq,
-  Data.Dict.Sqlite3,
-  Data.Dict.Mssql,
-  Data.Dict.Odbc;
+  Data.Dict.Sqlite3;
 {$ELSE FPC_DOTTEDUNITS}
 uses
   fpdddbf,
-  fpddfb,
-  fpddpq,
-  fpddsqlite3,
-  fpddmssql,
-  fpddodbc;
+  fpddsqlite3;
 {$ENDIF FPC_DOTTEDUNITS}
 
 Const
   StdEngineClasses : Array [TDataDictEngine] of TFPDDEngineClass
-                   = (TDBFDDEngine, TSQLDBFBDDEngine,
-                      TSQLDBPostGreSQLDDEngine,
-                      TSQLDBSQLite3DDEngine,TSQLDBODBCDDEngine, TSQLDBMSSQLDDEngine);
+                   = (TDBFDDEngine, TSQLDBSQLite3DDEngine);
 
   StdEngineRegs : Array [TDataDictEngine] of procedure
-                = (@InitDBFImporter, @RegisterFBDDEngine,
-                  @RegisterPostgreSQLDDengine,
-                  @RegisterSQLite3DDEngine, @RegisterODBCDDengine,@RegisterMSSQLDDEngine);
+                = (@InitDBFImporter, @RegisterSQLite3DDEngine);
 
   StdEngineUnRegs : Array [TDataDictEngine] of procedure
-                = (@DoneDBFImporter, @UnRegisterFBDDEngine,
-                  @UnRegisterPostgreSQLDDengine,
-                  @UnRegisterSQLite3DDEngine, @UnRegisterODBCDDengine,@UnRegisterMSSQLDDEngine);
+                = (@DoneDBFImporter, @UnRegisterSQLite3DDEngine);
 
 function RegisterStdDDEngines(Engines: TDataDictEngines): TDataDictEngines;
 

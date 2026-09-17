@@ -17,11 +17,6 @@ begin
 {$include cocoaint/fpmake.pp}
 end;
 
-procedure add_dblib(const ADirectory: string);
-begin
-  with Installer do
-{$include dblib/fpmake.pp}
-end;
 
 procedure add_fcl_async(const ADirectory: string);
 begin
@@ -110,11 +105,6 @@ begin
 {$include hash/fpmake.pp}
 end;
 
-procedure add_ibase(const ADirectory: string);
-begin
-  with Installer do
-{$include ibase/fpmake.pp}
-end;
 
 procedure add_iconvenc(const ADirectory: string);
 begin
@@ -134,11 +124,6 @@ begin
 {$include jni/fpmake.pp}
 end;
 
-procedure add_libc(const ADirectory: string);
-begin
-  with Installer do
-{$include libc/fpmake.pp}
-end;
 
 procedure add_libffi(const ADirectory: string);
 begin
@@ -176,11 +161,6 @@ begin
 {$include objcrtl/fpmake.pp}
 end;
 
-procedure add_odbc(const ADirectory: string);
-begin
-  with Installer do
-{$include odbc/fpmake.pp}
-end;
 
 procedure add_opengles(const ADirectory: string);
 begin
@@ -206,11 +186,6 @@ begin
 {$include paszlib/fpmake.pp}
 end;
 
-procedure add_postgres(const ADirectory: string);
-begin
-  with Installer do
-{$include postgres/fpmake.pp}
-end;
 
 
 

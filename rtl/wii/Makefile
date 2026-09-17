@@ -1274,9 +1274,6 @@ STATICLIBEXT=.a
 else
 EXEEXT=.bin
 endif
-ifeq ($(CPU_TARGET),z80)
-OEXT=.rel
-endif
 SHORTSUFFIX=emb
 endif
 ALL_EXEEXT+=.bin
@@ -1667,9 +1664,6 @@ ifneq ($(filter $(OS_TARGET),dragonfly freebsd openbsd netbsd linux solaris),)
 ifneq ($(filter $(CPU_TARGET),x86_64 mips mipsel mips64 mips64el riscv64 powerpc64),)
 override FPCOPT+=-Cg
 endif
-endif
-ifneq ($(filter $(CPU_TARGET),z80),)
-override FPCOPT+=-CX -XX
 endif
 ifdef LINKSHARED
 endif

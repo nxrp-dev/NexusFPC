@@ -7,14 +7,3 @@ Targets.ResetDefaults;
 Targets.DefaultDir:='db/sqldb';
 T:=Targets.AddUnit('sqldb');
 T.ResourceStrings:=True;
-
-{ Include connection drivers }
-
-{ PosGreSQL }
-{$i postgres/fpmake.inc}
-
-{ Interbase/Firebird }
-{$i interbase/fpmake.inc}
-
-{ MS SQL }
-{$i mssql/fpmake.inc}

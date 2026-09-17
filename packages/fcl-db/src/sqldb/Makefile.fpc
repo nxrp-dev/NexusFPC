@@ -6,17 +6,17 @@
 main=fcl-db
 
 [target]
-dirs_beos=interbase postgres odbc sqlite mssql
-dirs_linux=interbase postgres odbc sqlite mssql
-dirs_freebsd=interbase postgres odbc sqlite mssql
-dirs_darwin=interbase postgres odbc sqlite
-dirs_iphonesim=interbase postgres odbc sqlite
-dirs_netbsd=interbase postgres odbc sqlite mssql
-dirs_openbsd=interbase postgres odbc sqlite mssql
-dirs_win32=interbase postgres odbc sqlite mssql
-dirs_win64=interbase odbc sqlite mssql
-dirs_wince=interbase postgres odbc sqlite
-dirs_aix=interbase postgres odbc sqlite
+dirs_beos=sqlite
+dirs_linux=sqlite
+dirs_freebsd=sqlite
+dirs_darwin=sqlite
+dirs_iphonesim=sqlite
+dirs_netbsd=sqlite
+dirs_openbsd=sqlite
+dirs_win32=sqlite
+dirs_win64=sqlite
+dirs_wince=sqlite
+dirs_aix=sqlite
 units=sqldb
 rsts=sqldb
 

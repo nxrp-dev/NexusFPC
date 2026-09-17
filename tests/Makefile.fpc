@@ -205,8 +205,6 @@ $(TEST_OUTPUTDIR):
 utils:
         $(MAKE) -C utils utils
 
-utilsdb:
-        $(MAKE) -C utils utilsdb
 
 ifndef DIGEST
 DIGEST=utils/digest

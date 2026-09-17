@@ -23,10 +23,10 @@ interface
 
 {$IFDEF FPC_DOTTEDUNITS}
 uses
-  System.Classes, System.SysUtils, Data.Db, Data.Sqldb, Data.SqlDb.Pq, System.SyncObjs, System.Contnrs;
+  System.Classes, System.SysUtils, Data.Db, Data.Sqldb, System.SyncObjs, System.Contnrs;
 {$ELSE FPC_DOTTEDUNITS}
 uses
-  Classes, SysUtils, db, sqldb, pqconnection, syncobjs, contnrs;
+  Classes, SysUtils, db, sqldb, syncobjs, contnrs;
 {$ENDIF FPC_DOTTEDUNITS}
 
 const

@@ -40,12 +40,7 @@ begin
     P.SourcePath.Add('src');
     P.SourcePath.Add('src/base');
     P.SourcePath.Add('src/sqldb');
-    P.SourcePath.Add('src/sqldb/postgres', SqldbConnectionOSes);
     P.SourcePath.Add('src/sqldb/sqlite', SqldbConnectionOSes);
-    P.SourcePath.Add('src/sqldb/interbase', SqldbConnectionOSes);
-    P.SourcePath.Add('src/sqldb/odbc', SqldbConnectionOSes);
-    P.SourcePath.Add('src/sqldb/examples', SqldbConnectionOSes);
-    P.SourcePath.Add('src/sqldb/mssql', MSSQLOSes);
     P.SourcePath.Add('src/sdf');
     P.SourcePath.Add('src/json');
     P.SourcePath.Add('src/datadict', DatadictOSes);
@@ -56,7 +51,6 @@ begin
     P.SourcePath.Add('src/dbase');
     P.IncludePath.Add('src/base');
     P.IncludePath.Add('src/sqldb');
-    P.IncludePath.Add('src/sqldb/postgres', SqldbConnectionOSes);
     P.IncludePath.Add('src/sdf');
     P.IncludePath.Add('src/memds');
     P.IncludePath.Add('src/sqlite',SqliteOSes);
@@ -67,11 +61,7 @@ begin
     P.Dependencies.Add('fcl-xml');
     P.Dependencies.Add('rtl-objpas');
     P.Dependencies.Add('rtl-extra'); // clocale
-    P.Dependencies.Add('ibase', SqldbConnectionOSes);
-    P.Dependencies.Add('odbc', SqldbConnectionOSes);
-    P.Dependencies.Add('postgres', SqldbConnectionOSes);
     P.Dependencies.Add('sqlite', SqldbConnectionOSes+SqliteOSes);
-    P.Dependencies.Add('dblib', MSSQLOSes);
     P.Dependencies.Add('fcl-json');
 
 //    P.Options.Add('-S2h');
@@ -399,48 +389,12 @@ begin
           AddUnit('fpdatadict');
           AddUnit('dbf_idxfile');
         end;
-    T:=P.Targets.AddUnit('fpddfb.pp', DatadictOSes);
-      with T.Dependencies do
-        begin
-          AddUnit('sqldb');
-          AddUnit('fpdatadict');
-          AddUnit('fpddsqldb');
-          AddUnit('ibconnection');
-        end;
-    T:=P.Targets.AddUnit('fpddodbc.pp', DatadictOSes);
-      with T.Dependencies do
-        begin
-          AddUnit('sqldb');
-          AddUnit('fpdatadict');
-          AddUnit('fpddsqldb');
-          AddUnit('odbcconn');
-        end;
-    T:=P.Targets.AddUnit('fpddpq.pp', DatadictOSes);
-      with T.Dependencies do
-        begin
-          AddUnit('sqldb');
-          AddUnit('fpdatadict');
-          AddUnit('fpddsqldb');
-          AddUnit('pqconnection');
-        end;
-    T:=P.Targets.AddUnit('fpddmssql.pp', DatadictOSes*MSSQLOSes);
-      with T.Dependencies do
-        begin
-          AddUnit('sqldb');
-          AddUnit('fpdatadict');
-          AddUnit('fpddsqldb');
-          AddUnit('mssqlconn');
-        end;
     T:=P.Targets.AddUnit('fpddregstd.pp', (DatadictOSes*MSSQLOses));
       with T.Dependencies do
         begin
           AddUnit('fpdatadict');
           AddUnit('fpdddbf');
-          AddUnit('fpddfb');
-          AddUnit('fpddpq');
           AddUnit('fpddsqlite3');
-          AddUnit('fpddmssql');
-          AddUnit('fpddodbc');
         end;
     T:=P.Targets.AddUnit('customsqliteds.pas', SqliteOSes);
       with T.Dependencies do
@@ -528,33 +482,6 @@ begin
           AddUnit('db');
           AddUnit('fpdbexport');
         end;
-    T:=P.Targets.AddUnit('ibconnection.pp', SqldbConnectionOSes);
-      with T.Dependencies do
-        begin
-          AddUnit('sqldb');
-          AddUnit('db');
-          AddUnit('dbconst');
-          AddUnit('bufdataset');
-        end;
-    T:=P.Targets.AddUnit('fbadmin.pp', SqldbConnectionOSes);
-    T.ResourceStrings:=true;
-      with T.Dependencies do
-        begin
-          AddUnit('sqldb');
-          AddUnit('db');
-          AddUnit('dbconst');
-          AddUnit('bufdataset');
-          AddUnit('ibconnection');
-        end;
-    T:=P.Targets.AddUnit('fbeventmonitor.pp', SqldbConnectionOSes);
-      with T.Dependencies do
-        begin
-          AddUnit('sqldb');
-          AddUnit('db');
-          AddUnit('dbconst');
-          AddUnit('bufdataset');
-          AddUnit('ibconnection');
-        end;
     T:=P.Targets.AddUnit('memds.pp');
     T.ResourceStrings:=true;
       with T.Dependencies do
@@ -562,41 +489,6 @@ begin
           AddUnit('db');
         end;
 
-    T:=P.Targets.AddUnit('odbcconn.pas', SqldbConnectionOSes);
-      with T.Dependencies do
-        begin
-          AddUnit('sqldb');
-          AddUnit('db');
-          AddUnit('bufdataset');
-          AddUnit('dbconst');
-        end;
-    T:=P.Targets.AddUnit('pqconnection.pp', SqldbConnectionOSes);
-    T.ResourceStrings:=true;
-      with T.Dependencies do
-        begin
-          AddUnit('sqldb');
-          AddUnit('db');
-          AddUnit('dbconst');
-          AddUnit('bufdataset');
-        end;
-    T:=P.Targets.AddUnit('pqeventmonitor.pp', SqldbConnectionOSes);
-      T.ResourceStrings:=true;
-      with T.Dependencies do
-        begin
-          AddUnit('sqldb');
-          AddUnit('db');
-          AddUnit('dbconst');
-          AddUnit('bufdataset');
-          AddUnit('pqconnection');
-        end;
-    T:=P.Targets.AddUnit('mssqlconn.pp', MSSQLOSes);
-    with T.Dependencies do
-      begin
-        AddUnit('sqldb');
-        AddUnit('db');
-        AddUnit('dbconst');
-        AddUnit('bufdataset');
-      end;
     T:=P.Targets.AddUnit('sdfdata.pp');
       with T.Dependencies do
         begin
