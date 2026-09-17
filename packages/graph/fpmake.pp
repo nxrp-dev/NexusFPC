@@ -29,16 +29,7 @@ begin
     P.OSes:=[go32v2,win32,win64,linux,freebsd,openbsd,darwin,msdos,netbsd];
 
     P.Dependencies.Add('sdl',[i386,powerpc],[win32,linux,freebsd,darwin]);
-    P.Dependencies.Add('ptc',[win32,win64,linux,darwin,openbsd,freebsd,netbsd]);
-
-    // Dependencies for ptc, due to fpcmake bug:
-    P.Dependencies.Add('fcl-base',[win32,win64,linux,openbsd,freebsd,darwin,netbsd]);
-    P.Dependencies.Add('x11',[freebsd,openbsd,linux,netbsd]); // ptc only depends on bsd and linux on x11
-    P.Dependencies.Add('hermes',[win32,win64,linux,openbsd,freebsd,darwin,netbsd]);
-    P.Dependencies.Add('opengl',[win32,win64,linux,openbsd,freebsd,netbsd]);
-
     P.SourcePath.Add('src');
-    P.SourcePath.Add('src/ptcgraph');
     P.SourcePath.Add('src/macosx',[darwin]);
     P.SourcePath.Add('src/go32v2',[go32v2]);
     P.SourcePath.Add('src/msdos',[msdos]);
@@ -116,31 +107,6 @@ begin
         begin
           AddUnit('graph');
         end;
-    T:=P.Targets.AddUnit('ptcgraph.pp',[win32,win64,linux,openbsd,freebsd,darwin,netbsd]);
-      with T.Dependencies do
-        begin
-          AddInclude('graphh.inc');
-          AddInclude('graph.inc');
-          AddInclude('fontdata.inc');
-          AddInclude('clip.inc');
-          AddInclude('palette.inc');
-          AddInclude('modes.inc');
-          AddInclude('fills.inc');
-          AddInclude('gtext.inc');
-        end;
-    T:=P.Targets.AddUnit('ptccrt.pp',[win32,win64,linux,openbsd,freebsd,darwin,netbsd]);
-      with T.Dependencies do
-        begin
-          AddUnit('ptcgraph');
-        end;
-    T:=P.Targets.AddUnit('ptcmouse.pp',[win32,win64,linux,openbsd,freebsd,darwin,netbsd]);
-      with T.Dependencies do
-        begin
-          AddUnit('ptcgraph');
-        end;
-
-
-
     P.NamespaceMap:='namespaces.lst';
 
 {$ifndef ALLPACKAGES}

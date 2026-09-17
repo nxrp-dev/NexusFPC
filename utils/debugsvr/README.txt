@@ -11,7 +11,7 @@ with the dbugintf unit og gexperts.
 
 To use this:
 
-- Start the debug server (gtk or console version)
+- Start the console debug server
   (the unix socket version of dbugintf will attempt to start it if it
    is not yet started. The inet socket version will not)
 

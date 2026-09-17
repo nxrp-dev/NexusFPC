@@ -47,9 +47,6 @@ implementation
     {$ifndef NOTARGETGBA}
       ,t_gba
     {$endif}
-    {$ifndef NOTARGETPALMOS}
-      ,t_palmos
-    {$endif}
     {$ifndef NOTARGETNDS}
       ,t_nds
     {$endif}

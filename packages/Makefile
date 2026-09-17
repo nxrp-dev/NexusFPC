@@ -805,7 +805,6 @@ BATCHEXT=.sh
 EXEEXT=
 SHORTSUFFIX=qnx
 endif
-ALL_EXEEXT+=.nlm
 ifeq ($(OS_TARGET),macosclassic)
 BATCHEXT=
 EXEEXT=

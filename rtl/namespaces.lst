@@ -379,16 +379,6 @@ os2/so32dll.pas=namespaced/os2/OS2Api.so32dll.pas
 os2/sysos2.pas=os2/OS2Api.sysos2.pas
 os2/sysutils.pp=os2/System.SysUtils.pp
 os2/viocalls.pas=namespaced/os2/OS2Api.viocalls.pas
-palmos/api/common.pp=palmos/api/PalmApi.common.pp
-{s*:palmos/api/}=palmos/api/
-{i+:palmos/api/}
-palmos/api/sysall.pp=palmos/api/PalmApi.sysall.pp
-palmos/api/systraps.pp=namespaced/palmos/PalmApi.systraps.pp
-palmos/api/ui.pp=palmos/api/PalmApi.ui.pp
-palmos/pilot.pp=namespaced/palmos/PalmApi.pilot.pp
-{s*:palmos/}=namespaced/palmos/
-{i+:palmos/}
-palmos/systraps.pp=namespaced/palmos/PalmApi.systraps.pp
 powerpc/intrinsics.pp=powerpc/System.Intrinsics.pp
 {s*:powerpc/}=powerpc/
 {i+:powerpc/}

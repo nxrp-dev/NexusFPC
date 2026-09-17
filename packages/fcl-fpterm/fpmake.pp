@@ -27,8 +27,6 @@ Const
 {end of copied code}
 
   KVMAny       = KbdOSes+VideoOSes+MouseOSes;
-  PtcKvmOSes   = [linux,win32,win64,go32v2,openbsd,freebsd,netbsd];
-
   // OSes that have unix98pty and termio units
   UnixPtyOSes  = [linux,openbsd,freebsd,netbsd];
 
@@ -54,8 +52,6 @@ begin
     P.SourcePath.Add('src');
 
     p.Dependencies.Add('rtl-console', KVMAny);
-    p.Dependencies.Add('ptckvm', PtcKvmOSes);
-
     T:=P.Targets.AddUnit('fpterm.base.pas');
 
     T:=P.Targets.AddUnit('fpterm.view.pas');
@@ -142,24 +138,6 @@ begin
         AddUnit('fpterm.keyboardinput');
         AddUnit('fpterm.pointingdeviceinput');
         AddUnit('fpterm.view.video');
-        AddUnit('fpterm.keyboardinput.keyboard');
-        AddUnit('fpterm.pointingdeviceinput.mouse');
-      end;
-
-    T:=P.Targets.AddUnit('fpterm.view.video.ptc.kvm.pas', PtcKvmOSes);
-    with T.Dependencies do
-      begin
-        AddUnit('fpterm.view.video.base');
-      end;
-
-    T:=P.Targets.AddUnit('fpterm.ptc.kvm.pas', PtcKvmOSes);
-    with T.Dependencies do
-      begin
-        AddUnit('fpterm');
-        AddUnit('fpterm.view');
-        AddUnit('fpterm.keyboardinput');
-        AddUnit('fpterm.pointingdeviceinput');
-        AddUnit('fpterm.view.video.ptc.kvm');
         AddUnit('fpterm.keyboardinput.keyboard');
         AddUnit('fpterm.pointingdeviceinput.mouse');
       end;

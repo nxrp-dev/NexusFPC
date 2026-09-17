@@ -218,7 +218,6 @@ begin
       T:=P.Targets.AddExampleProgram('threads.pp');
       T:=P.Targets.AddExampleProgram('tidea.pp');
       T:=P.Targets.AddExampleProgram('tstelcmd.pp');
-      T:=P.Targets.AddExampleProgram('tstelgtk.pp');
       T:=P.Targets.AddExampleProgram('txmlreg.pp');
       T:=P.Targets.AddExampleProgram('xmldump.pp');
       T:=P.Targets.AddExampleProgram('testthreadpool.pp');

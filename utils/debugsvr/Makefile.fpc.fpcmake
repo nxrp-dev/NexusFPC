@@ -4,7 +4,7 @@
 
 [target]
 units=msgintf debugserverintf dbugintf
-dirs=gtk console
+dirs=console
 examples=testdebug speeddebug
 rsts=debugserverintf dbugintf
 

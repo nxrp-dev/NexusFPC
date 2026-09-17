@@ -211,7 +211,7 @@ Const
   DOS = Go32v2;
   MacOSX = Darwin;
 
-  AllOSes = [Low(TOS)..High(TOS)]-[obsolete_os2,obsolete_amiga,obsolete_netware,obsolete_emx,obsolete_morphos,obsolete_netwlibc,obsolete_aros];
+  AllOSes = [Low(TOS)..High(TOS)]-[obsolete_os2,obsolete_amiga,obsolete_netware,palmos,obsolete_emx,obsolete_morphos,obsolete_netwlibc,obsolete_aros];
   AllCPUs = [Low(TCPU)..High(TCPU)];
   AllUnixOSes  = [Linux,FreeBSD,NetBSD,OpenBSD,Darwin,QNX,BeOS,Solaris,Haiku,iphonesim,ios,aix,Android,dragonfly];
   AllBSDOSes      = [FreeBSD,NetBSD,OpenBSD,Darwin,iphonesim,ios,dragonfly];
@@ -219,7 +219,7 @@ Const
   AllLimit83fsOses = [go32v2,watcom,msdos,win16,atari,human68k];
   AllWebAssemblyOSes = [wasip1, wasip1threads, wasip2];
 
-  AllSmartLinkLibraryOSes = [Linux,msdos,win16,palmos]; // OSes that use .a library files for smart-linking
+  AllSmartLinkLibraryOSes = [Linux,msdos,win16]; // OSes that use .a library files for smart-linking
   AllImportLibraryOSes = AllWindowsOSes + [watcom,go32v2,macosclassic,nativent,msdos,win16];
 
   { This table is kept OS,Cpu because it is easier to maintain (PFV) }
@@ -240,7 +240,7 @@ Const
 { obsolete_netware } ( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { openbsd } ( false, true,  false, false, false, true,  false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { wdosx }   ( false, true,  false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
-    { palmos }  ( false, false, true,  false, false, false, true,  false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
+    { palmos }  ( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
 { macosclassic }( false, false, true,  true,  false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { darwin }  ( false, true,  false, true,  false, true,  false,  true, false, false, false, false, false, false,   false, false, true , false, false,  false,  false,   false, false, false),
 { obsolete_emx }( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),

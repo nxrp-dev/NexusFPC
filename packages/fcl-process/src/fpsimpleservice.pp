@@ -32,10 +32,10 @@ interface
 
 {$IFDEF FPC_DOTTEDUNITS}
 uses
-  System.Classes, System.SysUtils, Fcl.CustApp, Winapi.Windows, Fcl.EventLog, WinApi.Jedi.Winsvc;
+  System.Classes, System.SysUtils, Fcl.CustApp, Winapi.Windows, Fcl.EventLog;
 {$ELSE FPC_DOTTEDUNITS}
 uses
-  Classes, SysUtils, custapp, windows, eventlog, jwawinsvc;
+  Classes, SysUtils, custapp, windows, eventlog;
 {$ENDIF FPC_DOTTEDUNITS}
 
 Type
@@ -133,7 +133,7 @@ begin
   Application.ServiceController(Command);
 end;
 
-procedure ServiceMainEntry(ArgC : DWord; ArgV : pchar); stdcall;
+procedure ServiceMainEntry(ArgC : DWord; ArgV : LPPTSTR); stdcall;
 
 begin
   Application.ServiceMain(ArgC,PPchar(ArgV));

@@ -1,6 +1,6 @@
 { This file is part of fpterm - a terminal emulator, written in Free Pascal
 
-  This unit implements the shared parts, between the 'video' and the 'ptckvm'
+  This unit implements the shared video support.
   terminal display.
 
   Copyright (C) 2024 Nikolay Nikolov <nickysn@users.sourceforge.net>

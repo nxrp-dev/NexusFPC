@@ -103,9 +103,6 @@ uses
 {$ifdef nds}
   ,i_nds
 {$endif nds}
-{$ifdef palmos}
-  ,i_palmos
-{$endif palmos}
 {$ifdef solaris}
   ,i_sunos
 {$endif solaris}

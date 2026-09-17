@@ -14,9 +14,9 @@
 { Win32 implementation of service application }
 
 {$IFDEF FPC_DOTTEDUNITS}
-uses WinApi.Windows,WinApi.Jedi.Winsvc;
+uses WinApi.Windows;
 {$ELSE FPC_DOTTEDUNITS}
-uses windows,jwawinsvc;
+uses windows;
 {$ENDIF FPC_DOTTEDUNITS}
 
 Const
@@ -46,7 +46,7 @@ begin
     Application.Log(etError,Format(SerrNoControlContext,[dwControl,dwEventType,ptrint(lpEventData)]));
 end;
 
-Procedure ServiceMainEntry(Argc : DWord; Args : PChar); stdcall;
+Procedure ServiceMainEntry(Argc : DWord; Args : LPPTSTR); stdcall;
 
 begin
   If Assigned(Application) then

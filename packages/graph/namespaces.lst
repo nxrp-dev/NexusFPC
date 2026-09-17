@@ -13,11 +13,6 @@ src/unix/ggigraph.pp=namespaced/System.Unix.Ggigraph.pp
 {s*:src/unix/}=namespaced/
 {i+:src/unix/}
 src/unix/graph.pp=namespaced/TP.Graph.pp
-src/ptcgraph/ptcgraph.pp=namespaced/System.PTC.Ptcgraph.pp
-{s*:src/ptcgraph/}=namespaced/
-{i+:src/ptcgraph/}
-src/ptcgraph/ptcmouse.pp=namespaced/System.PTC.Ptcmouse.pp
-src/ptcgraph/ptccrt.pp=namespaced/System.PTC.Ptccrt.pp
 src/sdlgraph/sdlgraph.pp=namespaced/System.Sdlgraph.pp
 {s*:src/sdlgraph/}=namespaced/
 {i+:src/sdlgraph/}

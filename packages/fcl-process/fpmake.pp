@@ -37,7 +37,6 @@ begin
     P.IncludePath.Add('src/$(OS)',AllOSes-[win32,win64]-AllUnixOSes);
     P.IncludePath.Add('src/dummy',AllOSes-[win32,win64]-AllUnixOSes);
 
-    P.Dependencies.add('winunits-jedi',[win32,win64]);
     P.Dependencies.add('fcl-base');
 
     T:=P.Targets.AddUnit('pipes.pp');

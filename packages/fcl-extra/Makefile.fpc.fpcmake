@@ -8,8 +8,8 @@ version=3.3.1
 
 [require]
 packages=fcl-base
-packages_win32=winunits-base winunits-jedi  
-packages_win64=winunits-base winunits-jedi   
+packages_win32=winunits-base
+packages_win64=winunits-base
 packages_darwin=univint  
 packages_iphonesim=univint  
 

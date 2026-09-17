@@ -433,6 +433,7 @@ function WNetGetLastError(lpError:LPDWORD; lpErrorBuf:LPSTR; nErrorBufSize:DWORD
 function MultinetGetConnectionPerformance(lpNetResource:LPNETRESOURCE; lpNetConnectInfoStruct:LPNETCONNECTINFOSTRUCT):DWORD; external 'mpr' name 'MultinetGetConnectionPerformanceA';
 function ChangeServiceConfig(hService:SC_HANDLE; dwServiceType:DWORD; dwStartType:DWORD; dwErrorControl:DWORD; lpBinaryPathName:LPCSTR;lpLoadOrderGroup:LPCSTR; lpdwTagId:LPDWORD; lpDependencies:LPCSTR; lpServiceStartName:LPCSTR;
   lpPassword:LPCSTR;lpDisplayName:LPCSTR):WINBOOL; external 'advapi32' name 'ChangeServiceConfigA';
+function ChangeServiceConfig2(hService:SC_HANDLE; dwInfoLevel:DWORD; lpInfo:LPVOID):WINBOOL; external 'advapi32' name 'ChangeServiceConfig2A';
 function CreateService(hSCManager:SC_HANDLE; lpServiceName:LPCSTR; lpDisplayName:LPCSTR; dwDesiredAccess:DWORD; dwServiceType:DWORD;dwStartType:DWORD; dwErrorControl:DWORD; lpBinaryPathName:LPCSTR; lpLoadOrderGroup:LPCSTR;
   lpdwTagId:LPDWORD;lpDependencies:LPCSTR; lpServiceStartName:LPCSTR; lpPassword:LPCSTR):SC_HANDLE; external 'advapi32' name 'CreateServiceA';
 function EnumDependentServices(hService:SC_HANDLE; dwServiceState:DWORD; lpServices:LPENUM_SERVICE_STATUS; cbBufSize:DWORD; pcbBytesNeeded:LPDWORD;lpServicesReturned:LPDWORD):WINBOOL; external 'advapi32' name 'EnumDependentServicesA';
@@ -445,6 +446,7 @@ function OpenService(hSCManager:SC_HANDLE; lpServiceName:LPCSTR; dwDesiredAccess
 function QueryServiceConfig(hService:SC_HANDLE; lpServiceConfig:LPQUERY_SERVICE_CONFIG; cbBufSize:DWORD; pcbBytesNeeded:LPDWORD):WINBOOL; external 'advapi32' name 'QueryServiceConfigA';
 function QueryServiceLockStatus(hSCManager:SC_HANDLE; lpLockStatus:LPQUERY_SERVICE_LOCK_STATUS; cbBufSize:DWORD; pcbBytesNeeded:LPDWORD):WINBOOL; external 'advapi32' name 'QueryServiceLockStatusA';
 function RegisterServiceCtrlHandler(lpServiceName:LPCSTR; lpHandlerProc:LPHANDLER_FUNCTION):SERVICE_STATUS_HANDLE; external 'advapi32' name 'RegisterServiceCtrlHandlerA';
+function RegisterServiceCtrlHandlerEx(lpServiceName:LPCSTR; lpHandlerProc:LPHANDLER_FUNCTION_EX; lpContext:LPVOID):SERVICE_STATUS_HANDLE; external 'advapi32' name 'RegisterServiceCtrlHandlerExA';
 function StartServiceCtrlDispatcher(lpServiceStartTable:LPSERVICE_TABLE_ENTRY):WINBOOL; external 'advapi32' name 'StartServiceCtrlDispatcherA';
 function StartService(hService:SC_HANDLE; dwNumServiceArgs:DWORD; lpServiceArgVectors:LPPCSTR):WINBOOL; external 'advapi32' name 'StartServiceA';
 function DragQueryFile(_para1:HDROP; _para2:cardinal; _para3:PAnsiChar;_para4:cardinal):cardinal; external 'shell32' name 'DragQueryFileA';

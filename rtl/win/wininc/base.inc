@@ -740,7 +740,8 @@
 
      PHANDLER_ROUTINE = function (_para1:DWORD):WINBOOL;stdcall;
 
-     LPHANDLER_FUNCTION = function (_para1:DWORD):WINBOOL;stdcall;
+     LPHANDLER_FUNCTION = procedure (_para1:DWORD);stdcall;
+     LPHANDLER_FUNCTION_EX = function (dwControl,dwEventType:DWORD; lpEventData,lpContext:LPVOID):DWORD;stdcall;
 
      PFNGETPROFILEPATHA = function (_para1:LPCSTR; _para2:LPSTR; _para3:UINT):UINT;stdcall;
      PFNGETPROFILEPATHW = function (_para1:LPCWSTR; _para2:LPSTR; _para3:UINT):UINT;stdcall;

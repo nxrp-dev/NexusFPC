@@ -41,9 +41,6 @@ implementation
     {$ifndef NOTARGETATARI}
       ,t_atari
     {$endif}
-    {$ifndef NOTARGETPALMOS}
-      ,t_palmos
-    {$endif}
     {$ifndef NOTARGETBSD}
       ,t_bsd
     {$endif}

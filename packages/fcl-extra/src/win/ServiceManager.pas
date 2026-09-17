@@ -21,10 +21,10 @@ interface
 
 {$IFDEF FPC_DOTTEDUNITS}
 uses
-  WinApi.Windows, System.SysUtils, System.Classes, WinApi.Jedi.Winnt, WinApi.Jedi.Winsvc;
+  WinApi.Windows, System.SysUtils, System.Classes;
 {$ELSE FPC_DOTTEDUNITS}
 uses
-  Windows, SysUtils, Classes, jwawinnt, jwawinsvc;
+  Windows, SysUtils, Classes;
 {$ENDIF FPC_DOTTEDUNITS}
 
 type
@@ -297,14 +297,14 @@ begin
   ResumeHandle:=0;
   Info:=Nil;
   EnumServicesStatus(FHandle,SERVICE_WIN32,SERVICE_STATE_ALL,Info,0,
-                     BytesNeeded,ServicesReturned,Resumehandle);
+                     @BytesNeeded,@ServicesReturned,@Resumehandle);
   if (GetLastError<>ERROR_MORE_DATA) then
     RaiseLastOSError;
   Getmem(Info,BytesNeeded);
   Try
     P:=Info;
     If Not EnumServicesStatus(FHandle,SERVICE_WIN32,SERVICE_STATE_ALL,Info,BytesNeeded,
-                       BytesNeeded,ServicesReturned,Resumehandle) then
+                       @BytesNeeded,@ServicesReturned,@Resumehandle) then
       RaiseLastOSError;
     For I:=1 to Servicesreturned do
       begin
@@ -515,13 +515,13 @@ begin
   P:=Nil;
   List.Clear;
   // If call succeeds with size 0, then there are no dependent services...
-  if Not EnumDependentServices(SHandle,ServiceState,P,0,BytesNeeded,Count) then
+  if Not EnumDependentServices(SHandle,ServiceState,P,0,@BytesNeeded,@Count) then
     begin
     If (GetLastError<>ERROR_MORE_DATA) then
       RaiseLastOSError;
     GetMem(P,BytesNeeded);
     Try
-      If Not EnumDependentServices(SHandle,ServiceState,P,bytesNeeded,BytesNeeded,Count) Then
+      If Not EnumDependentServices(SHandle,ServiceState,P,bytesNeeded,@BytesNeeded,@Count) Then
         RaiseLastOSError;
       E:=P;
       For I:=0 to Count-1 do
@@ -706,7 +706,7 @@ begin
     Pargs:=StringsToPcharList(Args);
     end;
   Try
-    If not {$IFDEF FPC_DOTTEDUNITS}WinApi.Jedi.WinSvc{$ELSE}jwawinsvc{$ENDIF}.StartService(SHandle,Argc,PChar(PArgs)) then
+    If not {$IFDEF FPC_DOTTEDUNITS}WinApi.Windows{$ELSE}Windows{$ENDIF}.StartServiceA(SHandle,Argc,LPPCSTR(PArgs)) then
       RaiseLastOSError;
   Finally
     If (PArgs<>Nil) then
@@ -732,7 +732,7 @@ end;
 Procedure TServiceManager.LockServiceDatabase;
 
 begin
-  FDBLock:={$IFDEF FPC_DOTTEDUNITS}WinApi.Jedi.WinSvc{$ELSE}jwawinsvc{$ENDIF}.LockServiceDatabase(Handle);
+  FDBLock:={$IFDEF FPC_DOTTEDUNITS}WinApi.Windows{$ELSE}Windows{$ENDIF}.LockServiceDatabase(Handle);
   If FDBLock=Nil then
     RaiseLastOSError;
 end;
@@ -742,7 +742,7 @@ begin
   If (FDBLock<>Nil) then
     begin
     Try
-      If Not {$IFDEF FPC_DOTTEDUNITS}WinApi.Jedi.WinSvc{$ELSE}jwawinsvc{$ENDIF}.UnLockServiceDatabase(FDBLock) then
+      If Not {$IFDEF FPC_DOTTEDUNITS}WinApi.Windows{$ELSE}Windows{$ENDIF}.UnLockServiceDatabase(FDBLock) then
         RaiseLastOSError;
     Finally
       FDBLock:=Nil;
@@ -757,13 +757,13 @@ Var
   BytesNeeded, BytesSize : DWord;
 
 begin
-  {$IFDEF FPC_DOTTEDUNITS}WinApi.Jedi.WinSvc{$ELSE}jwawinsvc{$ENDIF}.QueryServiceConfig(SHandle,Nil,0,BytesNeeded);
+  {$IFDEF FPC_DOTTEDUNITS}WinApi.Windows{$ELSE}Windows{$ENDIF}.QueryServiceConfig(SHandle,Nil,0,@BytesNeeded);
   If (GetLastError<>ERROR_INSUFFICIENT_BUFFER) then
     RaiseLastOSError;
   BytesSize := BytesNeeded;
   GetMem(SvcCfg,BytesSize);
   Try
-    If Not {$IFDEF FPC_DOTTEDUNITS}WinApi.Jedi.WinSvc{$ELSE}jwawinsvc{$ENDIF}.QueryServiceConfig(SHandle,SvcCfg,BytesSize,BytesNeeded) then
+    If Not {$IFDEF FPC_DOTTEDUNITS}WinApi.Windows{$ELSE}Windows{$ENDIF}.QueryServiceConfig(SHandle,SvcCfg,BytesSize,@BytesNeeded) then
       RaiseLastOSError;
     With config,SvcCfg^ do
       begin
@@ -984,4 +984,3 @@ begin
 end;
 
 end.
- 
