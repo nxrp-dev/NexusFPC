@@ -4,11 +4,11 @@
 
 [target]
 programs=stringl dparser fstream mstream list threads testrtf \
-         cfgtest xmldump htdump testez tidea \
+         cfgtest xmldump htdump tidea \
          b64test b64test2 b64enc b64dec restest testz testz2 \
          istream doecho testol testcont txmlreg testreg tstelcmd \
-         testapp testcgi testbs testbf cachetest poolmm1 poolmm2 tarmakercons \
-         tarmakerconsgzip avltreetest testmime decodeascii85 encodeascii85
+         testapp testbs testbf cachetest poolmm1 poolmm2 tarmakercons \
+         tarmakerconsgzip avltreetest decodeascii85 encodeascii85
 programs_win32=showver testproc testhres testnres testsres testrhre \
                testrnre testrsre testur ipcserver ipcclient debugtest \
                dbugsrv testtimer
@@ -35,7 +35,7 @@ programs_emx=isockcli isocksvr testhres testnres testsres testrhre \
 rst=restest
 
 [require]
-packages=fcl-base fcl-db fcl-fpcunit fcl-image fcl-net fcl-passrc fcl-registry fcl-web fcl-xml
+packages=fcl-base fcl-db fcl-fpcunit fcl-image fcl-net fcl-passrc fcl-registry fcl-xml
 
 [install]
 fpcpackage=y

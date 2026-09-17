@@ -7,7 +7,7 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   typinfo, Classes, SysUtils, CustApp, db, sqldb, fpdatadict,
-  fpddfb,fpddpq,fpddOracle,fpddsqlite3,fpddmysql40,fpddmysql41,fpddmysql50, fpddodbc,
+  fpddfb,fpddpq,fpddOracle,fpddsqlite3,fpddodbc,
   strutils;
 
 

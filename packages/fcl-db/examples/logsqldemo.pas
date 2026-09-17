@@ -7,8 +7,8 @@ uses
   cthreads,
   {$ENDIF}{$ENDIF}
   typinfo, Classes, SysUtils, CustApp, db, sqldb,
-  ibconnection, sqlite3conn, oracleconnection, mysql40conn,mysql41conn, mssqlconn,
-  mysql50conn, mysql55conn, mysql56conn, odbcconn, pqconnection, strutils;
+  ibconnection, sqlite3conn, oracleconnection, mssqlconn,
+  odbcconn, pqconnection, strutils;
 
 
 type

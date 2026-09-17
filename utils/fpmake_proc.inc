@@ -10,8 +10,6 @@
 
 {$include fpmc/fpmake.pp}
 
-{$include fppkg/fpmake.pp}
-
 {$include fprcp/fpmake.pp}
 
 {$include h2pas/fpmake.pp}
@@ -32,12 +30,8 @@
 
 {$include tply/fpmake.pp}
 
-{$include unicode/fpmake.pp}
-
 {$include ihxutil/fpmake.pp}
 
 {$include wasmbin/fpmake.pp}
-
-{$include openapi/fpmake.pp}
 
 {$include ptop/fpmake.pp}

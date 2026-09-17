@@ -16,8 +16,7 @@ interface
 
 uses
   Classes, sysutils,
-  sqldb, pqconnection, IBConnection, ODBCConn,
-  mysql40conn, mysql41conn, mysql50conn, oracleconnection;
+  sqldb, pqconnection, IBConnection, ODBCConn, oracleconnection;
 
 var dbtype,
     dbname,
@@ -83,9 +82,6 @@ end;
 procedure CreateFConnection;
 
 begin
-  if dbtype = 'mysql40' then Fconnection := tMySQL40Connection.Create(nil);
-  if dbtype = 'mysql41' then Fconnection := tMySQL41Connection.Create(nil);
-  if dbtype = 'mysql50' then Fconnection := tMySQL50Connection.Create(nil);
   if dbtype = 'postgresql' then Fconnection := tpqConnection.Create(nil);
   if dbtype = 'interbase' then Fconnection := tIBConnection.Create(nil);
   if dbtype = 'odbc' then Fconnection := tODBCConnection.Create(nil);

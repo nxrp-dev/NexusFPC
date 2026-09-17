@@ -4,7 +4,7 @@ program testsqldb;
 
   The following parameters are used, in given order:
 
-    parameter1 = databasetype (mysql,interbase,postgresql - case sensitive)
+    parameter1 = databasetype (interbase,postgresql - case sensitive)
     parameter2 = databasename
     parameter3 = tablename
     parameter4 = username, optional
@@ -22,7 +22,6 @@ program testsqldb;
 uses
   Classes,
   pqconnection,
-  mysql51conn,
   IBConnection,
   sqlite3conn,
   sqldb;
@@ -35,7 +34,6 @@ var connection  : tSQLConnection;
 
 begin
   dbtype := paramstr(1);
-  if dbtype = 'mysql' then connection := tMySQL51Connection.Create(nil);
   if dbtype = 'postgresql' then connection := tpqConnection.Create(nil);
   if dbtype = 'interbase' then connection := tIBConnection.Create(nil);
   if dbtype = 'sqlite3' then connection := tSQLite3Connection.Create(nil);

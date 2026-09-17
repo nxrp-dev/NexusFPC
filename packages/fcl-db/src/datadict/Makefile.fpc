@@ -7,40 +7,40 @@ main=fcl-db
 
 [require]
 packages=fcl-base fcl-xml
-packages_linux=ibase mysql oracle sqlite odbc postgres
-packages_freebsd=ibase mysql oracle sqlite odbc postgres
-packages_darwin=ibase mysql oracle sqlite odbc postgres
-packages_iphonesim=ibase mysql oracle sqlite odbc postgres
-packages_netbsd=ibase mysql oracle sqlite odbc postgres
-packages_openbsd=ibase mysql oracle sqlite odbc postgres
-packages_win32=ibase mysql oracle sqlite odbc postgres
-packages_wince=ibase mysql oracle sqlite odbc postgres
+packages_linux=ibase oracle sqlite odbc postgres
+packages_freebsd=ibase oracle sqlite odbc postgres
+packages_darwin=ibase oracle sqlite odbc postgres
+packages_iphonesim=ibase oracle sqlite odbc postgres
+packages_netbsd=ibase oracle sqlite odbc postgres
+packages_openbsd=ibase oracle sqlite odbc postgres
+packages_win32=ibase oracle sqlite odbc postgres
+packages_wince=ibase oracle sqlite odbc postgres
 packages_win64=sqlite odbc
-packages_aix=ibase mysql oracle sqlite odbc postgres
+packages_aix=ibase oracle sqlite odbc postgres
 
 [target]
 units=fpdatadict fpdddiff fpdddbf fpddsqldb
-units_linux=fpddfb fpddmysql40 fpddmysql41 fpddmysql50 fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd fpddmysql51 fpddmysql55
-units_freebsd=fpddfb fpddmysql40 fpddmysql41 fpddmysql50 fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd fpddmysql51 fpddmysql55 
-units_darwin=fpddfb fpddmysql40 fpddmysql41 fpddmysql50 fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd fpddmysql51 fpddmysql55
-units_iphonesim=fpddfb fpddmysql40 fpddmysql41 fpddmysql50 fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd fpddmysql51 fpddmysql55
-units_netbsd=fpddfb fpddmysql40 fpddmysql41 fpddmysql50 fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd fpddmysql51 fpddmysql55
-units_openbsd=fpddfb fpddmysql40 fpddmysql41 fpddmysql50 fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd fpddmysql51 fpddmysql55
-units_win32=fpddfb fpddmysql40 fpddmysql41 fpddmysql50 fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd fpddmysql51 fpddmysql55
+units_linux=fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+units_freebsd=fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+units_darwin=fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+units_iphonesim=fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+units_netbsd=fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+units_openbsd=fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+units_win32=fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
 units_wince=fpddsqlite3
 units_win64=fpddodbc fpddsqlite3
-units_aix=fpddfb fpddmysql40 fpddmysql41 fpddmysql50 fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd fpddmysql51 fpddmysql55
+units_aix=fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
 rsts=fpdatadict fpddfb fpddsqldb fpdddiff
-rsts_linux=fpddfb fpddmysql40 fpddmysql41 fpddmysql50 fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd fpddmysql51 fpddmysql55
-rsts_freebsd=fpddfb fpddmysql40 fpddmysql41 fpddmysql50 fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd fpddmysql51 fpddmysql55
-rsts_darwin=fpddfb fpddmysql40 fpddmysql41 fpddmysql50 fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd fpddmysql51 fpddmysql55
-rsts_iphonesim=fpddfb fpddmysql40 fpddmysql41 fpddmysql50 fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd fpddmysql51 fpddmysql55
-rsts_netbsd=fpddfb fpddmysql40 fpddmysql41 fpddmysql50 fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd fpddmysql51 fpddmysql55
-rsts_openbsd=fpddfb fpddmysql40 fpddmysql41 fpddmysql50 fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd fpddmysql51 fpddmysql55
-rsts_win32=fpddfb fpddmysql40 fpddmysql41 fpddmysql50 fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd fpddmysql51 fpddmysql55
+rsts_linux=fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+rsts_freebsd=fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+rsts_darwin=fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+rsts_iphonesim=fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+rsts_netbsd=fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+rsts_openbsd=fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
+rsts_win32=fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
 rsts_wince=fpddfb fpddpq fpddsqlite3
 rsts_win64=fpddfb fpddpq fpddodbc fpddsqlite3
-rsts_aix=fpddfb fpddmysql40 fpddmysql41 fpddmysql50 fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd fpddmysql51 fpddmysql55
+rsts_aix=fpddfb fpddodbc fpddpq fpddoracle fpddsqlite3 fpddregstd
 
 [compiler]
 options=-S2h

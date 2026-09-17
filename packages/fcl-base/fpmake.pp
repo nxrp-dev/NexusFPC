@@ -194,9 +194,7 @@ begin
       T:=P.Targets.AddExampleProgram('testapp.pp');
       T:=P.Targets.AddExampleProgram('testbf.pp');
       T:=P.Targets.AddExampleProgram('testbs.pp');
-      T:=P.Targets.AddExampleProgram('testcgi.pp');
       T:=P.Targets.AddExampleProgram('testcont.pp');
-      T:=P.Targets.AddExampleProgram('testez.pp');
       T:=P.Targets.AddExampleProgram('testhres.pp');
       T:=P.Targets.AddExampleProgram('testnres.pp');
       T:=P.Targets.AddExampleProgram('testol.pp');
@@ -211,7 +209,6 @@ begin
       T:=P.Targets.AddExampleProgram('testtimer.pp');
       T:=P.Targets.AddExampleProgram('testunzip.pp');
       T:=P.Targets.AddExampleProgram('testur.pp');
-      T:=P.Targets.AddExampleProgram('testweb.pp');
       T:=P.Targets.AddExampleProgram('testz2.pp');
       T:=P.Targets.AddExampleProgram('testzip.pp');
       T:=P.Targets.AddExampleProgram('testz.pp');
@@ -228,7 +225,6 @@ begin
       // overview.rtf
       // simple.xml
       // parser.dat
-      // testcgi.html
 
 
     P.NamespaceMap:='namespaces.lst';

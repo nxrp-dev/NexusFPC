@@ -159,19 +159,6 @@
 -Fu%basepath%/units/$fpctarget/*
 -Fu%basepath%/units/$fpctarget/rtl
 
-#IFDEF FPCAPACHE_1_3
--Fu%basepath%/units/$fpctarget/httpd13/
-#ELSE
-#IFDEF FPCAPACHE_2_0
--Fu%basepath%/units/$fpctarget/httpd20
-#ELSE
--Fu%basepath%/units/$fpctarget/httpd22
-#ENDIF
-#ENDIF
-
-# searchpath for fppkg user-specific packages
--Fu%localbasepath%/units/$FPCTARGET/*
-
 # searchpath for tools
 -FD%basepath%/bin/$FPCTARGET
 

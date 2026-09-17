@@ -7,7 +7,6 @@ interface
 uses
   Classes, SysUtils, toolsunit
   ,db, sqldb
-  ,mysql40conn, mysql41conn, mysql50conn, mysql51conn, mysql55conn, mysql56conn, mysql57conn, mysql80conn
   ,ibconnection
   ,pqconnection
   ,odbcconn
@@ -20,13 +19,12 @@ uses
   ;
 
 type
-  TSQLConnType = (mysql40,mysql41,mysql50,mysql51,mysql55,mysql56,mysql57,mysql80,postgresql,interbase,odbc,oracle,sqlite3,mssql,sybase);
+  TSQLConnType = (postgresql,interbase,odbc,oracle,sqlite3,mssql,sybase);
   TSQLServerType = (ssFirebird, ssInterbase, ssMSSQL, ssMySQL, ssOracle, ssPostgreSQL, ssSQLite, ssSybase, ssUnknown);
 
 const
-  MySQLConnTypes = [mysql40,mysql41,mysql50,mysql51,mysql55,mysql56,mysql57,mysql80];
   SQLConnTypesNames : Array [TSQLConnType] of String[19] =
-        ('MYSQL40','MYSQL41','MYSQL50','MYSQL51','MYSQL55','MYSQL56','MYSQL57','MYSQL80','POSTGRESQL','INTERBASE','ODBC','ORACLE','SQLITE3','MSSQL','SYBASE');
+        ('POSTGRESQL','INTERBASE','ODBC','ORACLE','SQLITE3','MSSQL','SYBASE');
 
   STestNotApplicable = 'This test does not apply to this sqldb connection type';
 
@@ -152,7 +150,7 @@ const
 
   // fall back mapping (e.g. in case GetConnectionInfo(citServerType) is not implemented)
   SQLConnTypeToServerTypeMap : array[TSQLConnType] of TSQLServerType =
-    (ssMySQL,ssMySQL,ssMySQL,ssMySQL,ssMySQL,ssMySQL,ssMySQL,ssMySQL,ssPostgreSQL,ssFirebird,ssUnknown,ssOracle,ssSQLite,ssMSSQL,ssSybase);
+    (ssPostgreSQL,ssFirebird,ssUnknown,ssOracle,ssSQLite,ssMSSQL,ssSybase);
 
 
 function IdentifierCase(const s: string): string;
@@ -178,14 +176,6 @@ begin
     if UpperCase(dbconnectorparams) = SQLConnTypesNames[t] then SQLConnType := t;
 
   case SQLConnType of
-    MYSQL40:    Fconnection := TMySQL40Connection.Create(nil);
-    MYSQL41:    Fconnection := TMySQL41Connection.Create(nil);
-    MYSQL50:    Fconnection := TMySQL50Connection.Create(nil);
-    MYSQL51:    Fconnection := TMySQL51Connection.Create(nil);
-    MYSQL55:    Fconnection := TMySQL55Connection.Create(nil);
-    MYSQL56:    Fconnection := TMySQL56Connection.Create(nil);
-    MYSQL57:    Fconnection := TMySQL57Connection.Create(nil);
-    MYSQL80:    Fconnection := TMySQL80Connection.Create(nil);
     SQLITE3:    Fconnection := TSQLite3Connection.Create(nil);
     POSTGRESQL: Fconnection := TPQConnection.Create(nil);
     INTERBASE : Fconnection := TIBConnection.Create(nil);
@@ -358,14 +348,6 @@ begin
       FieldtypeDefinitions[ftWideMemo] := 'NCLOB';
       end;
   end;
-
-  if SQLConnType in [mysql40,mysql41] then
-    begin
-    // Mysql versions prior to 5.0.3 removes the trailing spaces on varchar
-    // fields on insertion. So to test properly, we have to do the same
-    for i := 0 to testValuesCount-1 do
-      testStringValues[i] := TrimRight(testStringValues[i]);
-    end;
 
   if SQLServerType in [ssMSSQL, ssSQLite, ssSybase] then
     // Some DB's do not support sql compliant boolean data type.

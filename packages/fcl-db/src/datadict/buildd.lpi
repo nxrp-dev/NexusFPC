@@ -29,7 +29,7 @@
         </Mode0>
       </Modes>
     </RunParams>
-    <Units Count="14">
+    <Units Count="11">
       <Unit0>
         <Filename Value="buildd.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -53,41 +53,29 @@
         <IsPartOfProject Value="True"/>
       </Unit4>
       <Unit5>
-        <Filename Value="fpddmysql40.pp"/>
+        <Filename Value="fpddpq.pp"/>
         <IsPartOfProject Value="True"/>
       </Unit5>
       <Unit6>
-        <Filename Value="fpddmysql41.pp"/>
+        <Filename Value="fpddodbc.pp"/>
         <IsPartOfProject Value="True"/>
       </Unit6>
       <Unit7>
-        <Filename Value="fpddmysql50.pp"/>
+        <Filename Value="fpddoracle.pp"/>
         <IsPartOfProject Value="True"/>
       </Unit7>
       <Unit8>
-        <Filename Value="fpddpq.pp"/>
+        <Filename Value="fpddsqlite3.pp"/>
         <IsPartOfProject Value="True"/>
       </Unit8>
       <Unit9>
-        <Filename Value="fpddodbc.pp"/>
+        <Filename Value="fpddregstd.pp"/>
         <IsPartOfProject Value="True"/>
       </Unit9>
       <Unit10>
-        <Filename Value="fpddoracle.pp"/>
-        <IsPartOfProject Value="True"/>
-      </Unit10>
-      <Unit11>
-        <Filename Value="fpddsqlite3.pp"/>
-        <IsPartOfProject Value="True"/>
-      </Unit11>
-      <Unit12>
-        <Filename Value="fpddregstd.pp"/>
-        <IsPartOfProject Value="True"/>
-      </Unit12>
-      <Unit13>
         <Filename Value="fpdddiff.pp"/>
         <IsPartOfProject Value="True"/>
-      </Unit13>
+      </Unit10>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

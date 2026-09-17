@@ -4,7 +4,6 @@
   add_fpcres(ADirectory+IncludeTrailingPathDelimiter('fpcres'));
   add_fpcreslipo(ADirectory+IncludeTrailingPathDelimiter('fpcreslipo'));
   add_fpmc(ADirectory+IncludeTrailingPathDelimiter('fpmc'));
-  add_fppkg_util(ADirectory+IncludeTrailingPathDelimiter('fppkg'));
   add_fprcp(ADirectory+IncludeTrailingPathDelimiter('fprcp'));
   add_h2pas(ADirectory+IncludeTrailingPathDelimiter('h2pas'));
   add_json2pas(ADirectory+IncludeTrailingPathDelimiter('json2pas'));
@@ -15,8 +14,6 @@
   add_pas2ut(ADirectory+IncludeTrailingPathDelimiter('pas2ut'));
   add_rmwait(ADirectory+IncludeTrailingPathDelimiter('rmwait'));
   add_tply(ADirectory+IncludeTrailingPathDelimiter('tply'));
-  add_unicode(ADirectory+IncludeTrailingPathDelimiter('unicode'));
   add_ihxutil(ADirectory+IncludeTrailingPathDelimiter('ihxutil'));
   add_wasmbin(ADirectory+IncludeTrailingPathDelimiter('wasmbin'));
-  add_openapi2pas(ADirectory+IncludeTrailingPathDelimiter('openapi'));
   add_ptop(ADirectory+IncludeTrailingPathDelimiter('ptop'));  

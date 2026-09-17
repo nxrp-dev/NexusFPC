@@ -53,16 +53,12 @@ begin
     p.Commands.AddCommand(caBeforeCompile, Data2IncBin, '-b -s fpc.cft fpccfg.inc DefaultConfig','fpccfg.inc','fpc.cft');
     p.Commands.AddCommand(caBeforeCompile, Data2IncBin, '-b -s fpinc.cfg fpcfg.inc fpcfg','fpcfg.inc','fpinc.cfg');
     p.Commands.AddCommand(caBeforeCompile, Data2IncBin, '-b -s fpinc.ini fpini.inc fpini','fpini.inc','fpinc.ini');
-    p.Commands.AddCommand(caBeforeCompile, Data2IncBin, '-b -s fppkg.cfg fppkg.inc fppkg','fppkg.inc','fppkg.cfg');
-    p.Commands.AddCommand(caBeforeCompile, Data2IncBin, '-b -s default.cft default.inc fppkg_default','default.inc','default.cft');
 
     T:=P.Targets.AddProgram('fpcmkcfg.pp');
     T.ResourceStrings:=true;
     T.Dependencies.AddInclude('fpccfg.inc');
     T.Dependencies.AddInclude('fpcfg.inc');
     T.Dependencies.AddInclude('fpini.inc');
-    T.Dependencies.AddInclude('fppkg.inc');
-    T.Dependencies.AddInclude('default.inc');
     end;
 end;
 

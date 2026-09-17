@@ -62,34 +62,6 @@ password=masterkey
 hostname=
 charset=
 
-[mysql55]
-; MySQL 5.5 database:
-connector=sql
-connectorparams=mysql55
-name=testdb
-user=root
-password=
-hostname=127.0.0.1
-
-[mysql56]
-; MySQL 5.6 database:
-connector=sql
-connectorparams=mysql56
-name=testdb
-user=root
-password=
-hostname=127.0.0.1
-
-[mysql57]
-; MySQL 5.7 database:
-connector=sql
-connectorparams=mysql57
-name=testdb
-user=root
-password=
-hostname=127.0.0.1
-charset=utf8mb4
-
 [mssql]
 ; MS SQL Server database:
 connector=sql

@@ -8,12 +8,7 @@ uses
   {$ENDIF}{$ENDIF}
   sysutils, Classes, sqldb,sqldblib,
   pqconnection,
-  ibconnection,
-  mysql55conn,
-  mysql51conn,
-  mysql50conn,
-  mysql41conn,
-  mysql40conn;
+  ibconnection;
 
 Procedure List;
 

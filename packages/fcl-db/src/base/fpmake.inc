@@ -29,9 +29,5 @@ T.ResourceStrings:=True;
 { dbase directory}
 {$i dbase/fpmake.inc}
 
-{ mysql directory}
-{$i mysql/fpmake.inc}
-
 { directory}
 { $i /fpmake.inc}
-    

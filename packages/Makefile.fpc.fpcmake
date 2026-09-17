@@ -4,7 +4,7 @@
 #
 
 [target]
-dirs=hash pasjpeg paszlib fpmkunit fcl-xml fcl-base fcl-db fcl-image fcl-net fcl-passrc fcl-registry fcl-fpcunit fcl-json fcl-js fcl-process unzip regexpr fcl-res fcl-stl libgd symbolic bzip2 hermes fppkg
+dirs=hash pasjpeg paszlib fpmkunit fcl-xml fcl-base fcl-db fcl-image fcl-net fcl-passrc fcl-registry fcl-fpcunit fcl-json fcl-js fcl-process unzip regexpr fcl-res fcl-stl libgd symbolic bzip2 hermes
 dirs_linux_i386=libc unixutil graph pxlib bzip2
 dirs_i386_linux=graph
 dirs_x86_64_linux=graph
@@ -13,55 +13,55 @@ dirs_powerpc64_linux=graph
 dirs_sparc_linux=graph
 dirs_arm_linux=graph
 dirs_m68k_linux=graph
-dirs_beos=rtl-console rtl-unicode fcl-web fastcgi fcl-async ibase mysql ncurses zlib oracle odbc postgres sqlite pthreads imagemagick \
+dirs_beos=fastcgi fcl-async ibase ncurses zlib oracle odbc postgres sqlite pthreads \
                libpng x11 gdbm tcl syslog libcurl opengl cairo bfd svgalib \
-               utmp  xforms fftw pcap sdl openssl graph gtk2 librsvg  httpd22 pxlib \
+               utmp  xforms pcap sdl openssl graph gtk2 librsvg  pxlib \
                iconvenc
-dirs_haiku=rtl-console rtl-unicode fcl-web fastcgi fcl-async ibase mysql ncurses zlib oracle odbc postgres sqlite pthreads imagemagick \
+dirs_haiku=fastcgi fcl-async ibase ncurses zlib oracle odbc postgres sqlite pthreads \
                libpng x11 gdbm tcl syslog libcurl opengl cairo bfd svgalib \
-               utmp  xforms fftw pcap sdl openssl graph gtk2 librsvg  httpd22 pxlib \
+               utmp  xforms pcap sdl openssl graph gtk2 librsvg  pxlib \
                iconvenc
-dirs_freebsd=rtl-console rtl-unicode fcl-web fastcgi fcl-async ibase mysql ncurses zlib oracle odbc postgres sqlite pthreads imagemagick \
+dirs_freebsd=fastcgi fcl-async ibase ncurses zlib oracle odbc postgres sqlite pthreads \
                libpng x11 gdbm tcl syslog libcurl opengl cairo  bfd svgalib \
-               utmp  xforms fftw pcap sdl openssl graph gtk2 librsvg  httpd22 pxlib \
+               utmp  xforms pcap sdl openssl graph gtk2 librsvg  pxlib \
                users iconvenc gmp fcl-extra libxml
-dirs_dragonfly=rtl-console fcl-web fastcgi fcl-async ibase mysql ncurses zlib oracle odbc postgres sqlite pthreads imagemagick \
+dirs_dragonfly=fastcgi fcl-async ibase ncurses zlib oracle odbc postgres sqlite pthreads \
                libpng x11 gdbm tcl syslog libcurl opengl cairo  bfd svgalib \
-               utmp  xforms fftw pcap sdl openssl graph gtk2 librsvg  httpd22 pxlib \
+               utmp  xforms pcap sdl openssl graph gtk2 librsvg  pxlib \
                users iconvenc gmp fcl-extra libxml
-dirs_darwin=rtl-console rtl-unicode fcl-web fastcgi fcl-async ibase mysql ncurses zlib oracle odbc postgres sqlite pthreads imagemagick \
-               libpng gdbm tcl syslog libcurl bfd utmp fftw pcap openssl iconvenc gmp fcl-extra univint iosxlocale
-dirs_iphonesim=rtl-console rtl-unicode fcl-web fastcgi fcl-async ibase mysql ncurses zlib oracle odbc postgres sqlite pthreads imagemagick \
-               libpng gdbm tcl syslog libcurl bfd utmp fftw pcap openssl iconvenc gmp fcl-extra univint iosxlocale
-dirs_i386_darwin=graph sdl opengl x11 cairo gtk2 librsvg xforms httpd22 objcrtl cocoaint opencl openal
-dirs_powerpc_darwin=graph sdl opengl x11 cairo gtk2 librsvg xforms httpd22 objcrtl cocoaint
-dirs_x86_64_darwin=opengl x11 cairo gtk2 librsvg xforms httpd22 cocoaint objcrtl
-dirs_powerpc64_darwin=opengl x11 cairo gtk2 librsvg xforms httpd22 cocoaint objcrtl
-dirs_arm_darwin=httpd22 opengles objcrtl
-dirs_i386_iphonesim= httpd22 opengles objcrtl
-dirs_solaris=rtl-console rtl-unicode fcl-web fastcgi fcl-async ibase mysql ncurses zlib oracle odbc postgres sqlite pthreads imagemagick \
+dirs_darwin=fastcgi fcl-async ibase ncurses zlib oracle odbc postgres sqlite pthreads \
+               libpng gdbm tcl syslog libcurl bfd utmp pcap openssl iconvenc gmp fcl-extra univint iosxlocale
+dirs_iphonesim=fastcgi fcl-async ibase ncurses zlib oracle odbc postgres sqlite pthreads \
+               libpng gdbm tcl syslog libcurl bfd utmp pcap openssl iconvenc gmp fcl-extra univint iosxlocale
+dirs_i386_darwin=graph sdl opengl x11 cairo gtk2 librsvg xforms objcrtl cocoaint opencl openal
+dirs_powerpc_darwin=graph sdl opengl x11 cairo gtk2 librsvg xforms objcrtl cocoaint
+dirs_x86_64_darwin=opengl x11 cairo gtk2 librsvg xforms cocoaint objcrtl
+dirs_powerpc64_darwin=opengl x11 cairo gtk2 librsvg xforms cocoaint objcrtl
+dirs_arm_darwin=opengles objcrtl
+dirs_i386_iphonesim= opengles objcrtl
+dirs_solaris=fastcgi fcl-async ibase ncurses zlib oracle odbc postgres sqlite pthreads \
                libpng x11 gdbm tcl syslog libcurl opengl cairo bfd svgalib fcl-extra \
-               utmp  xforms fftw pcap openssl httpd22 iconvenc gtk2 cairo
-dirs_netbsd=rtl-console rtl-unicode fcl-web fastcgi fcl-async ibase mysql ncurses zlib oracle odbc postgres sqlite pthreads imagemagick \
+               utmp  xforms pcap openssl iconvenc gtk2 cairo
+dirs_netbsd=fastcgi fcl-async ibase ncurses zlib oracle odbc postgres sqlite pthreads \
                libpng x11 gdbm tcl syslog libcurl opengl cairo gtk2 librsvg bfd svgalib \
-               utmp  xforms fftw pcap sdl openssl httpd22 pxlib
-dirs_openbsd=rtl-console rtl-unicode fcl-web fastcgi fcl-async ibase mysql ncurses zlib oracle odbc  postgres sqlite pthreads imagemagick \
+               utmp  xforms pcap sdl openssl pxlib
+dirs_openbsd=fastcgi fcl-async ibase ncurses zlib oracle odbc  postgres sqlite pthreads \
                libpng x11 gdbm tcl syslog libcurl opengl cairo gtk2 librsvg bfd svgalib \
-               utmp  xforms fftw pcap sdl openssl httpd22 pxlib
-dirs_linux=rtl-console rtl-unicode fcl-web fastcgi fcl-async ibase mysql ncurses unzip zlib oracle dbus odbc postgres sqlite pthreads imagemagick \
+               utmp  xforms pcap sdl openssl pxlib
+dirs_linux=fastcgi fcl-async ibase ncurses unzip zlib oracle dbus odbc postgres sqlite pthreads \
                libpng x11 uuid ldap modplug dts mad  gdbm tcl syslog libcurl opengl opencl cairo gtk2 librsvg \
                a52 bfd svgalib newt users  iconvenc libxml proj4 fcl-extra \
-               utmp  openal lua oggvorbis xforms fftw pcap sdl openssl httpd22 \
+               utmp  openal lua oggvorbis xforms pcap sdl openssl \
                pxlib gmp libsee
-dirs_win32=rtl-console rtl-unicode winunits-base fcl-web fastcgi ibase mysql zlib oracle odbc postgres sqlite imagemagick \
-               libpng mad tcl opengl gtk2 librsvg a52 openal fftw lua fcl-extra \
-               oggvorbis sdl openssl graph pcap  httpd22 pxlib cairo libxml \
+dirs_win32=winunits-base fastcgi ibase zlib oracle odbc postgres sqlite \
+               libpng mad tcl opengl gtk2 librsvg a52 openal lua fcl-extra \
+               oggvorbis sdl openssl graph pcap  pxlib cairo libxml \
                gmp opencl libsee nvapi
-dirs_win64=rtl-console rtl-unicode winunits-base fcl-web fastcgi ibase mysql zlib oracle odbc postgres sqlite imagemagick \
-                tcl opengl fftw sdl openssl httpd22 fcl-extra opencl nvapi graph openal
-dirs_wince=rtl-unicode httpd22 fcl-web fastcgi tcl fftw unzip zlib sqlite mysql ibase postgres oracle odbc sdl openssl oggvorbis
+dirs_win64=winunits-base fastcgi ibase zlib oracle odbc postgres sqlite \
+                tcl opengl sdl openssl fcl-extra opencl nvapi graph openal
+dirs_wince=fastcgi tcl unzip zlib sqlite ibase postgres oracle odbc sdl openssl oggvorbis
 dirs_palmos=
-dirs_go32v2=rtl-console rtl-unicode graph unzip
+dirs_go32v2=graph unzip
 dirs_wii=libogcfpc
 dirs_arm_nds=
 
@@ -151,20 +151,6 @@ iosxlocale_release: univint_release
 iosxlocle_shared: univint_shared
 endif
 
-ifneq ($(findstring $(OS_TARGET),beos haiku freebsd darwin iphonesim solaris netbsd openbsd linux win32 win64 wince dragonfly),)
-fppkg_all: fpmkunit_all fcl-base_all fcl-xml_all fcl-process_all fcl-net_all paszlib_all fcl-web_all fpmkunit_all
-fppkg_debug: fpmkunit_debug fcl-base_debug fcl-xml_debug fcl-process_debug fcl-net_debug paszlib_debug fcl-web_debug fpmkunit_debug
-fppkg_smart: fpmkunit_smart fcl-base_smart fcl-xml_smart fcl-process_smart fcl-net_smart paszlib_smart fcl-web_smart fpmkunit_smart
-fppkg_release: fpmkunit_release fcl-base_release fcl-xml_release fcl-process_release fcl-net_release paszlib_release fcl-web_release fpmkunit_release
-fppkg_shared: fpmkunit_shared fcl-base_shared fcl-xml_shared fcl-process_shared fcl-net_shared paszlib_shared fcl-web_shared fpmkunit_shared
-else
-fppkg_all: fpmkunit_all fcl-base_all fcl-xml_all fcl-process_all paszlib_all fpmkunit_all
-fppkg_debug: fpmkunit_debug fcl-base_debug fcl-xml_debug fcl-process_debug paszlib_debug fpmkunit_debug
-fppkg_smart: fpmkunit_smart fcl-base_smart fcl-xml_smart fcl-process_smart paszlib_smart fpmkunit_smart
-fppkg_release: fpmkunit_release fcl-base_release fcl-xml_release fcl-process_release paszlib_release fpmkunit_release
-fppkg_shared: fpmkunit_shared fcl-base_shared fcl-xml_shared fcl-process_shared paszlib_shared fpmkunit_shared
-endif
-
 fcl-xml_all: fcl-base_all fpmkunit_all
 fcl-xml_debug: fcl-base_debug fpmkunit_debug
 fcl-xml_smart: fcl-base_smart fpmkunit_smart
@@ -215,11 +201,6 @@ fcl-net_release: fpmkunit_release fcl-passrc_release fcl-xml_release fcl-async_r
 fcl-net_shared: fpmkunit_shared fcl-passrc_shared fcl-xml_shared fcl-async_shared
 endif
 
-fcl-web_all: fpmkunit_all fcl-db_all fcl-xml_all fcl-process_all httpd22_all fastcgi_all fcl-net_all fcl-json_all
-fcl-web_debug: fpmkunit_debug fcl-db_debug fcl-xml_debug fcl-process_debug httpd22_debug fastcgi_debug fcl-net_debug fcl-json_debug
-fcl-web_smart: fpmkunit_smart fcl-db_smart fcl-xml_smart fcl-process_smart httpd22_smart fastcgi_smart fcl-net_smart fcl-json_smart
-fcl-web_release: fpmkunit_release fcl-db_release fcl-xml_release fcl-process_release httpd22_release fastcgi_release fcl-net_release fcl-json_release
-fcl-web_shared: fpmkunit_shared fcl-db_shared fcl-xml_shared fcl-process_shared httpd22_shared fastcgi_shared fcl-net_shared fcl-json_shared
 
 fcl-passrc_all: fpmkunit_all fcl-base_all
 fcl-passrc_debug: fpmkunit_debug fcl-base_debug
@@ -246,18 +227,18 @@ fcl-async_release: fpmkunit_release
 fcl-async_shared: fpmkunit_shared
 
 ifneq ($(findstring $(OS_TARGET),linux freebsd openbsd netbsd win32 beos haiku dragonfly),)
-fcl-db_all: fcl-xml_all fcl-base_all mysql_all ibase_all oracle_all odbc_all postgres_all sqlite_all pxlib_all fcl-json_all fpmkunit_all
-fcl-db_debug: fcl-xml_debug fcl-base_debug mysql_debug ibase_debug oracle_debug odbc_debug postgres_debug sqlite_debug pxlib_debug fcl-json_debug fpmkunit_debug
-fcl-db_smart: fcl-xml_smart fcl-base_smart mysql_smart ibase_smart oracle_smart odbc_smart postgres_smart sqlite_smart pxlib_smart fcl-json_smart fpmkunit_smart
-fcl-db_release: fcl-xml_release fcl-base_release mysql_release ibase_release oracle_release odbc_release postgres_release sqlite_release pxlib_release fcl-json_release fpmkunit_release
-fcl-db_shared: fcl-xml_shared fcl-base_shared mysql_shared ibase_shared oracle_shared odbc_shared postgres_shared sqlite_shared pxlib_shared fcl-json_shared fpmkunit_shared
+fcl-db_all: fcl-xml_all fcl-base_all ibase_all oracle_all odbc_all postgres_all sqlite_all pxlib_all fcl-json_all fpmkunit_all
+fcl-db_debug: fcl-xml_debug fcl-base_debug ibase_debug oracle_debug odbc_debug postgres_debug sqlite_debug pxlib_debug fcl-json_debug fpmkunit_debug
+fcl-db_smart: fcl-xml_smart fcl-base_smart ibase_smart oracle_smart odbc_smart postgres_smart sqlite_smart pxlib_smart fcl-json_smart fpmkunit_smart
+fcl-db_release: fcl-xml_release fcl-base_release ibase_release oracle_release odbc_release postgres_release sqlite_release pxlib_release fcl-json_release fpmkunit_release
+fcl-db_shared: fcl-xml_shared fcl-base_shared ibase_shared oracle_shared odbc_shared postgres_shared sqlite_shared pxlib_shared fcl-json_shared fpmkunit_shared
 else
 ifneq ($(findstring $(OS_TARGET),win64 wince solaris darwin iphonesim),)
-fcl-db_all: fcl-xml_all fcl-base_all mysql_all ibase_all oracle_all odbc_all postgres_all sqlite_all fcl-json_all fpmkunit_all
-fcl-db_debug: fcl-xml_debug fcl-base_debug mysql_debug ibase_debug oracle_debug odbc_debug postgres_debug sqlite_debug fcl-json_debug fpmkunit_debug
-fcl-db_smart: fcl-xml_smart fcl-base_smart mysql_smart ibase_smart oracle_smart odbc_smart postgres_smart sqlite_smart fcl-json_smart fpmkunit_smart
-fcl-db_release: fcl-xml_release fcl-base_release mysql_release ibase_release oracle_release odbc_release postgres_release sqlite_release fcl-json_release fpmkunit_release
-fcl-db_shared: fcl-xml_shared fcl-base_shared mysql_shared ibase_shared oracle_shared odbc_shared postgres_shared sqlite_shared fcl-json_shared fpmkunit_shared
+fcl-db_all: fcl-xml_all fcl-base_all ibase_all oracle_all odbc_all postgres_all sqlite_all fcl-json_all fpmkunit_all
+fcl-db_debug: fcl-xml_debug fcl-base_debug ibase_debug oracle_debug odbc_debug postgres_debug sqlite_debug fcl-json_debug fpmkunit_debug
+fcl-db_smart: fcl-xml_smart fcl-base_smart ibase_smart oracle_smart odbc_smart postgres_smart sqlite_smart fcl-json_smart fpmkunit_smart
+fcl-db_release: fcl-xml_release fcl-base_release ibase_release oracle_release odbc_release postgres_release sqlite_release fcl-json_release fpmkunit_release
+fcl-db_shared: fcl-xml_shared fcl-base_shared ibase_shared oracle_shared odbc_shared postgres_shared sqlite_shared fcl-json_shared fpmkunit_shared
 else
 fcl-db_all: fcl-xml_all fcl-base_all fcl-json_all fpmkunit_all
 fcl-db_debug: fcl-xml_debug fcl-base_debug fcl-json_debug fpmkunit_debug
@@ -267,11 +248,11 @@ fcl-db_shared: fcl-xml_shared fcl-base_shared fcl-json_shared fpmkunit_shared
 endif
 endif
 
-fcl_all: fcl-base_all fcl-xml_all fcl-fpcunit_all fcl-db_all fcl-web_all fcl-registry_all fcl-passrc_all fcl-image_all fcl-net_all fcl-json_all fcl-res_all
-fcl_debug: fcl-base_debug fcl-xml_debug fcl-fpcunit_debug fcl-db_debug fcl-web_debug fcl-registry_debug fcl-passrc_debug fcl-image_debug fcl-net_debug fcl-json_debug fcl-res_debug
-fcl_smart: fcl-base_smart fcl-xml_smart fcl-fpcunit_smart fcl-db_smart fcl-web_smart fcl-registry_smart fcl-passrc_smart fcl-image_smart fcl-net_smart fcl-json_smart fcl-res_smart
-fcl_release: fcl-base_release fcl-xml_release fcl-fpcunit_release fcl-db_release fcl-web_release fcl-registry_release fcl-passrc_release fcl-image_release fcl-net_release fcl-json_release fcl-res_release
-fcl_shared: fcl-base_shared fcl-xml_shared fcl-fpcunit_shared fcl-db_shared fcl-web_shared fcl-registry_shared fcl-passrc_shared fcl-image_shared fcl-net_shared fcl-json_shared fcl-res_shared
+fcl_all: fcl-base_all fcl-xml_all fcl-fpcunit_all fcl-db_all fcl-registry_all fcl-passrc_all fcl-image_all fcl-net_all fcl-json_all fcl-res_all
+fcl_debug: fcl-base_debug fcl-xml_debug fcl-fpcunit_debug fcl-db_debug fcl-registry_debug fcl-passrc_debug fcl-image_debug fcl-net_debug fcl-json_debug fcl-res_debug
+fcl_smart: fcl-base_smart fcl-xml_smart fcl-fpcunit_smart fcl-db_smart fcl-registry_smart fcl-passrc_smart fcl-image_smart fcl-net_smart fcl-json_smart fcl-res_smart
+fcl_release: fcl-base_release fcl-xml_release fcl-fpcunit_release fcl-db_release fcl-registry_release fcl-passrc_release fcl-image_release fcl-net_release fcl-json_release fcl-res_release
+fcl_shared: fcl-base_shared fcl-xml_shared fcl-fpcunit_shared fcl-db_shared fcl-registry_shared fcl-passrc_shared fcl-image_shared fcl-net_shared fcl-json_shared fcl-res_shared
 
 libpng_all: zlib_all fpmkunit_all
 libpng_debug: zlib_debug fpmkunit_debug
@@ -478,11 +459,6 @@ fcl-stl_smart: fpmkunit_smart
 fcl-stl_debug: fpmkunit_debug
 fcl-stl_release: fpmkunit_release
 
-fftw_all: fpmkunit_all
-fftw_shared: fpmkunit_shared
-fftw_smart: fpmkunit_smart
-fftw_debug: fpmkunit_debug
-fftw_release: fpmkunit_release
 
 sqlite_all: fpmkunit_all
 sqlite_shared: fpmkunit_shared
@@ -513,13 +489,6 @@ ibase_shared: fpmkunit_shared
 ibase_smart: fpmkunit_smart
 ibase_debug: fpmkunit_debug
 ibase_release: fpmkunit_release
-
-mysql_all: fpmkunit_all
-mysql_shared: fpmkunit_shared
-mysql_smart: fpmkunit_smart
-mysql_debug: fpmkunit_debug
-mysql_release: fpmkunit_release
-
 
 oracle_all: fpmkunit_all
 oracle_shared: fpmkunit_shared
@@ -623,11 +592,6 @@ hermes_smart: fpmkunit_smart
 hermes_debug: fpmkunit_debug
 hermes_release: fpmkunit_release
 
-httpd22_all: fpmkunit_all
-httpd22_shared: fpmkunit_shared
-httpd22_smart: fpmkunit_smart
-httpd22_debug: fpmkunit_debug
-httpd22_release: fpmkunit_release
 
 iconvenc_all: fpmkunit_all
 iconvenc_shared: fpmkunit_shared
@@ -635,11 +599,6 @@ iconvenc_smart: fpmkunit_smart
 iconvenc_debug: fpmkunit_debug
 iconvenc_release: fpmkunit_release
 
-imagemagick_all: fpmkunit_all
-imagemagick_shared: fpmkunit_shared
-imagemagick_smart: fpmkunit_smart
-imagemagick_debug: fpmkunit_debug
-imagemagick_release: fpmkunit_release
 
 libxml_all: fpmkunit_all
 libxml_shared: fpmkunit_shared

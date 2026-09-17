@@ -22,7 +22,7 @@
           <Version Value="11"/>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <OtherUnitFiles Value="../src/base;../src/sqldb/odbc;../src/sqldb/mssql;../src/sqldb/sqlite;../src/sqldb/postgres;../src/sqldb/oracle;../src/memds;../src/sqldb;../src/sqldb/interbase;../src/sqldb/mysql;../src/dbase;../src/sdf"/>
+            <OtherUnitFiles Value="../src/base;../src/sqldb/odbc;../src/sqldb/mssql;../src/sqldb/sqlite;../src/sqldb/postgres;../src/sqldb/oracle;../src/memds;../src/sqldb;../src/sqldb/interbase;../src/dbase;../src/sdf"/>
           </SearchPaths>
         </CompilerOptions>
       </Item2>
@@ -57,7 +57,7 @@
           <Version Value="11"/>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <OtherUnitFiles Value="../src/base;../src/sqldb/odbc;../src/sqldb/mssql;../src/sqldb/sqlite;../src/sqldb/postgres;../src/sqldb/oracle;../src/memds;../src/sqldb;../src/sqldb/interbase;../src/sqldb/mysql;../src/dbase;../src/sdf;../src/export"/>
+            <OtherUnitFiles Value="../src/base;../src/sqldb/odbc;../src/sqldb/mssql;../src/sqldb/sqlite;../src/sqldb/postgres;../src/sqldb/oracle;../src/memds;../src/sqldb;../src/sqldb/interbase;../src/dbase;../src/sdf;../src/export"/>
           </SearchPaths>
           <Other>
             <CustomOptions Value="-dTEST_SQLITE3DS"/>
@@ -116,7 +116,7 @@
     <Version Value="11"/>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="../src/base;../src/sqldb/odbc;../src/sqldb/mssql;../src/sqldb/sqlite;../src/sqldb/postgres;../src/sqldb/oracle;../src/memds;../src/sqldb;../src/sqldb/interbase;../src/sqldb/mysql;../src/dbase;../src/sdf;../src/export"/>
+      <OtherUnitFiles Value="../src/base;../src/sqldb/odbc;../src/sqldb/mssql;../src/sqldb/sqlite;../src/sqldb/postgres;../src/sqldb/oracle;../src/memds;../src/sqldb;../src/sqldb/interbase;../src/dbase;../src/sdf;../src/export"/>
     </SearchPaths>
     <Linking>
       <Debugging>

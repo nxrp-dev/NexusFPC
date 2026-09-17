@@ -13,12 +13,8 @@ T.ResourceStrings:=True;
 { PosGreSQL }
 {$i postgres/fpmake.inc}
 
-{ MySQL }
-{$i mysql/fpmake.inc}
-
 { Interbase/Firebird }
 {$i interbase/fpmake.inc}
 
 { MS SQL }
 {$i mssql/fpmake.inc}
-    

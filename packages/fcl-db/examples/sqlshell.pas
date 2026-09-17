@@ -2,7 +2,7 @@
 {$h+}
 uses
   custapp, sysutils, strutils, classes, db, sqldb, bufdataset, XMLDatapacketReader,
-  sqlite3conn, pqconnection, ibconnection, mssqlconn, oracleconnection,mysql55conn,mysql40conn,mysql51conn,mysql50conn;
+  sqlite3conn, pqconnection, ibconnection, mssqlconn, oracleconnection;
 
 Const
   CmdSep = [' ',#9,#10,#13,#12];

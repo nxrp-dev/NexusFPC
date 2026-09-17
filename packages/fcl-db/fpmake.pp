@@ -45,7 +45,6 @@ begin
     P.SourcePath.Add('src/sqldb/postgres', SqldbConnectionOSes);
     P.SourcePath.Add('src/sqldb/sqlite', SqldbConnectionOSes);
     P.SourcePath.Add('src/sqldb/interbase', SqldbConnectionOSes);
-    P.SourcePath.Add('src/sqldb/mysql', SqldbConnectionOSes);
     P.SourcePath.Add('src/sqldb/odbc', SqldbConnectionOSes);
     P.SourcePath.Add('src/sqldb/examples', SqldbConnectionOSes);
     P.SourcePath.Add('src/sqldb/oracle', SqldbConnectionOSes);
@@ -61,7 +60,6 @@ begin
     P.IncludePath.Add('src/base');
     P.IncludePath.Add('src/sqldb');
     P.IncludePath.Add('src/sqldb/postgres', SqldbConnectionOSes);
-    P.IncludePath.Add('src/sqldb/mysql', SqldbConnectionOSes);
     P.IncludePath.Add('src/sdf');
     P.IncludePath.Add('src/memds');
     P.IncludePath.Add('src/sqlite',SqliteOSes);
@@ -73,7 +71,6 @@ begin
     P.Dependencies.Add('rtl-objpas');
     P.Dependencies.Add('rtl-extra'); // clocale
     P.Dependencies.Add('ibase', SqldbConnectionOSes);
-    P.Dependencies.Add('mysql', SqldbConnectionOSes);
     P.Dependencies.Add('odbc', SqldbConnectionOSes);
     P.Dependencies.Add('oracle', SqldbConnectionOSes);
     P.Dependencies.Add('postgres', SqldbConnectionOSes);
@@ -415,70 +412,6 @@ begin
           AddUnit('fpddsqldb');
           AddUnit('ibconnection');
         end;
-    T:=P.Targets.AddUnit('fpddmysql40.pp', DatadictOSes);
-      with T.Dependencies do
-        begin
-          AddUnit('sqldb');
-          AddUnit('fpdatadict');
-          AddUnit('fpddsqldb');
-          AddUnit('mysql40conn');
-        end;
-    T:=P.Targets.AddUnit('fpddmysql41.pp', DatadictOSes);
-      with T.Dependencies do
-        begin
-          AddUnit('sqldb');
-          AddUnit('fpdatadict');
-          AddUnit('fpddsqldb');
-          AddUnit('mysql41conn');
-        end;
-    T:=P.Targets.AddUnit('fpddmysql50.pp', DatadictOSes);
-      with T.Dependencies do
-        begin
-          AddUnit('sqldb');
-          AddUnit('fpdatadict');
-          AddUnit('fpddsqldb');
-          AddUnit('mysql50conn');
-        end;
-    T:=P.Targets.AddUnit('fpddmysql51.pp', DatadictOSes);
-      with T.Dependencies do
-        begin
-          AddUnit('sqldb');
-          AddUnit('fpdatadict');
-          AddUnit('fpddsqldb');
-          AddUnit('mysql51conn');
-        end;
-    T:=P.Targets.AddUnit('fpddmysql55.pp', DatadictOSes);
-      with T.Dependencies do
-        begin
-          AddUnit('sqldb');
-          AddUnit('fpdatadict');
-          AddUnit('fpddsqldb');
-          AddUnit('mysql55conn');
-        end;
-    T:=P.Targets.AddUnit('fpddmysql56.pp', DatadictOSes);
-      with T.Dependencies do
-        begin
-          AddUnit('sqldb');
-          AddUnit('fpdatadict');
-          AddUnit('fpddsqldb');
-          AddUnit('mysql56conn');
-        end;
-    T:=P.Targets.AddUnit('fpddmysql57.pp', DatadictOSes);
-      with T.Dependencies do
-        begin
-          AddUnit('sqldb');
-          AddUnit('fpdatadict');
-          AddUnit('fpddsqldb');
-          AddUnit('mysql57conn');
-        end;
-    T:=P.Targets.AddUnit('fpddmysql80.pp', DatadictOSes);
-      with T.Dependencies do
-        begin
-          AddUnit('sqldb');
-          AddUnit('fpdatadict');
-          AddUnit('fpddsqldb');
-          AddUnit('mysql80conn');
-        end;
     T:=P.Targets.AddUnit('fpddodbc.pp', DatadictOSes);
       with T.Dependencies do
         begin
@@ -520,9 +453,6 @@ begin
           AddUnit('fpddpq');
           AddUnit('fpddoracle');
           AddUnit('fpddsqlite3');
-          AddUnit('fpddmysql40');
-          AddUnit('fpddmysql41');
-          AddUnit('fpddmysql50');
           AddUnit('fpddmssql');
           AddUnit('fpddodbc');
         end;
@@ -644,93 +574,6 @@ begin
       with T.Dependencies do
         begin
           AddUnit('db');
-        end;
-
-    T:=P.Targets.AddUnit('mysql40conn.pas', SqldbConnectionOSes);
-    T.ResourceStrings:=true;
-      with T.Dependencies do
-        begin
-          AddInclude('mysqlconn.inc');
-          AddUnit('bufdataset');
-          AddUnit('sqldb');
-          AddUnit('db');
-          AddUnit('dbconst');
-        end;
-    T:=P.Targets.AddUnit('mysql41conn.pas', SqldbConnectionOSes);
-    T.ResourceStrings:=true;
-      with T.Dependencies do
-        begin
-          AddInclude('mysqlconn.inc');
-          AddUnit('bufdataset');
-          AddUnit('sqldb');
-          AddUnit('db');
-          AddUnit('dbconst');
-        end;
-
-    T:=P.Targets.AddUnit('mysql50conn.pas', SqldbConnectionOSes);
-    T.ResourceStrings:=true;
-      with T.Dependencies do
-        begin
-          AddInclude('mysqlconn.inc');
-          AddUnit('bufdataset');
-          AddUnit('sqldb');
-          AddUnit('db');
-          AddUnit('dbconst');
-        end;
-
-    T:=P.Targets.AddUnit('mysql51conn.pas', SqldbConnectionOSes);
-    T.ResourceStrings:=true;
-      with T.Dependencies do
-        begin
-          AddInclude('mysqlconn.inc');
-          AddUnit('bufdataset');
-          AddUnit('sqldb');
-          AddUnit('db');
-          AddUnit('dbconst');
-        end;
-
-    T:=P.Targets.AddUnit('mysql55conn.pas', SqldbConnectionOSes);
-    T.ResourceStrings:=true;
-      with T.Dependencies do
-        begin
-          AddInclude('mysqlconn.inc');
-          AddUnit('bufdataset');
-          AddUnit('sqldb');
-          AddUnit('db');
-          AddUnit('dbconst');
-        end;
-
-    T:=P.Targets.AddUnit('mysql56conn.pas', SqldbConnectionOSes);
-    T.ResourceStrings:=true;
-      with T.Dependencies do
-        begin
-          AddInclude('mysqlconn.inc');
-          AddUnit('bufdataset');
-          AddUnit('sqldb');
-          AddUnit('db');
-          AddUnit('dbconst');
-        end;
-
-    T:=P.Targets.AddUnit('mysql57conn.pas', SqldbConnectionOSes);
-    T.ResourceStrings:=true;
-      with T.Dependencies do
-        begin
-          AddInclude('mysqlconn.inc');
-          AddUnit('bufdataset');
-          AddUnit('sqldb');
-          AddUnit('db');
-          AddUnit('dbconst');
-        end;
-
-    T:=P.Targets.AddUnit('mysql80conn.pas', SqldbConnectionOSes);
-    T.ResourceStrings:=true;
-      with T.Dependencies do
-        begin
-          AddInclude('mysqlconn.inc');
-          AddUnit('bufdataset');
-          AddUnit('sqldb');
-          AddUnit('db');
-          AddUnit('dbconst');
         end;
 
     T:=P.Targets.AddUnit('odbcconn.pas', SqldbConnectionOSes);
