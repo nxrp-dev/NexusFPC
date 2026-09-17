@@ -12,7 +12,7 @@ IF "%~1" NEQ "" (
 
 REM Check RTL dir?
 
-IF NOT EXIST "%RTLDIR%\ucmaps" (
+IF NOT EXIST "%RTLDIR%\Makefile.fpc" (
 	ECHO This script must be executed in the rtl directory or have an argument to specify the RTL directory
 	ENDLOCAL
 	EXIT 1

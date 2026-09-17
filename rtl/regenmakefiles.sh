@@ -29,7 +29,7 @@ fi
 #
 # Check rtl dir ?
 #
-if [ ! -d "$RTLDIR/ucmaps" ]; then
+if [ ! -f "$RTLDIR/Makefile.fpc" ]; then
   echo "This script must be executed in the rtl directory or have an argument to specify the RTL directory"
   exit 1
 fi
