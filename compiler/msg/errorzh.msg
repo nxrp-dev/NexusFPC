@@ -3761,7 +3761,6 @@ F*2P<x>_设置目标 CPU (aarch64,arm,avr,i386,i8086,jvm,loongarch64,m68k,mips,m
 # i8086 目标
 8*2Tembedded_嵌入式
 8*2Tmsdos_MS-DOS (及兼容系统)
-8*2Twin16_Windows 16 位
 # arm 目标
 A*2Tandroid_Android
 A*2Taros_AROS
@@ -3832,9 +3831,6 @@ x*2Tfreertos_FreeRTOS
 x*2Tlinux_Linux
 # z80 目标
 Z*2Tembedded_嵌入式
-Z*2Tamstradcpc_Amstrad CPC
-Z*2Tmsxdos_MSX-DOS
-Z*2Tzxspectrum_ZX Spectrum
 # wasm32 目标
 W*2Tembedded_嵌入式
 W*2Twasip1_WebAssembly 系统接口预览版 1 (WASI 0.1)

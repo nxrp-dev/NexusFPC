@@ -18,7 +18,7 @@ Type
 
 
   // Some operating systems need FindHandle to be a Pointer
-{$if defined(unix) or defined(msdos) or defined(hasamiga) or defined(atari) or defined(win16) or defined(sinclairql)}
+{$if defined(unix) or defined(msdos) or defined(hasamiga) or defined(atari) or defined(sinclairql)}
     {$define FINDHANDLE_IS_POINTER}
 {$endif}
 
@@ -141,7 +141,7 @@ Type
 
   TDateTimeInfoRec = record
   private
-{$IF DEFINED(WINDOWS) AND NOT DEFINED(WIN16)}
+{$IF DEFINED(WINDOWS)}
     Data: TFindData platform;
 {$ELSE}
   {$IFDEF UNIX}

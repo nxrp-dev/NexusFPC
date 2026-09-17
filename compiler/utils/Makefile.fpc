@@ -4,7 +4,6 @@
 
 [target]
 programs=fpc ppufiles ppudump ppumove mka64ins mkarmins mkx86ins msg2inc mkx86inl mkz80ins
-rst=fpcsubst
 
 [clean]
 units=ppu crc
@@ -77,9 +76,7 @@ gppc386$(EXEEXT): $(COMPILER_UNITTARGETDIR) gppc386.pp
 
 vppcx64$(EXEEXT): $(COMPILER_UNITTARGETDIR) vppcx64.pp
 
-fpcsubst$(EXEEXT): fpcsubst.pp usubst.pp
-
-fpcmkcfg$(EXEEXT): fpcmkcfg.pp usubst.pp fpccfg.inc fpcfg.inc fpini.inc
+fpcmkcfg$(EXEEXT): fpcmkcfg.pp fpccfg.inc fpcfg.inc fpini.inc
 
 ifneq ($(DATA2INC),)
 fpccfg.inc: fpc.cft

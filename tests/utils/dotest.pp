@@ -585,7 +585,6 @@ begin
     (LTarget='symbian') or
     (LTarget='watcom') or
     (LTarget='wdosx') or
-    (LTarget='win16') or
     (LTarget='win32') or
     (LTarget='win64');
   TargetIsMacOS:=

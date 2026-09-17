@@ -2187,8 +2187,6 @@ begin
       target_unsup_features:=[f_stackcheck];
     system_i8086_msdos:
       target_unsup_features:=[f_threading,f_dynlibs];
-    system_i8086_win16:
-      target_unsup_features:=[f_threading];
     system_jvm_java32,
     system_jvm_android32:
       target_unsup_features:=[f_heap,f_textio,f_consoleio,f_fileio,
@@ -2203,17 +2201,13 @@ begin
       target_unsup_features:=[f_threading,f_dynlibs];
     system_m68k_sinclairql:
       target_unsup_features:=[f_threading,f_dynlibs];
-    system_z80_zxspectrum:
-      target_unsup_features:=[f_threading,f_dynlibs{,f_fileio,f_textio},f_commandargs,f_exitcode];
-    system_z80_msxdos:
-      target_unsup_features:=[f_threading,f_dynlibs];
     else
       target_unsup_features:=[];
   end;
 
   { monitor support? }
   if not(target_info.system in systems_aix+systems_bsd+systems_linux+systems_android+
-    systems_nativent+systems_solaris+systems_wasm+systems_all_windows-[system_i8086_win16]+systems_darwin) then
+    systems_nativent+systems_solaris+systems_wasm+systems_all_windows+systems_darwin) then
     Include(target_unsup_features,f_monitor);
 
   if def then
@@ -2248,16 +2242,6 @@ begin
       Message(option_com_files_require_tiny_model);
       StopOptions(1);
     end;
-  if (target_info.system = system_i8086_win16) and
-     not (init_settings.x86memorymodel in [mm_large,mm_huge]) then
-    begin
-      if MemoryModelSetExplicitly then
-        Message1(option_e_win16_unsupported_memory_model,x86memorymodelstr[init_settings.x86memorymodel])
-      else
-        Message(option_n_win16_set_default_large_memory_model);
-      undef_system_macro('FPC_MM_'+x86memorymodelstr[init_settings.x86memorymodel]);
-      init_settings.x86memorymodel:=mm_large;
-    end;
 {$endif i8086}
 
 {$ifdef AVR}
@@ -2269,7 +2253,7 @@ begin
 
 {$ifndef i8086_link_intern_debuginfo}
   if (cs_debuginfo in init_settings.moduleswitches) and
-     (target_info.system in [system_i8086_msdos,system_i8086_win16,system_i8086_embedded]) and
+     (target_info.system in [system_i8086_msdos,system_i8086_embedded]) and
      not (cs_link_extern in init_settings.globalswitches) then
     begin
       Message(option_debug_info_requires_external_linker);
@@ -2387,7 +2371,7 @@ begin
    begin
      case more[j] of
        '5' :
-         if (target_info.system in systems_all_windows+systems_nativent-[system_i8086_win16])
+         if (target_info.system in systems_all_windows+systems_nativent)
             or (target_info.cpu in [cpu_mipseb, cpu_mipsel]) then
            begin
              if UnsetBool(More, j, opt, false) then
@@ -3921,7 +3905,7 @@ begin
          end;
        'B':
          begin
-           if target_info.system in systems_all_windows+systems_symbian+[system_z80_zxspectrum] then
+           if target_info.system in systems_all_windows+systems_symbian then
              begin
                {  -WB200000 means set trefered base address
                  to $200000, but does not change relocsection boolean
@@ -4039,7 +4023,7 @@ begin
        'm':
          begin
 {$if defined(i8086)}
-           if (target_info.system in [system_i8086_msdos,system_i8086_win16,system_i8086_embedded]) then
+           if (target_info.system in [system_i8086_msdos,system_i8086_embedded]) then
              begin
                case Upper(Copy(More,j+1)) of
                  'TINY':    init_settings.x86memorymodel:=mm_tiny;
@@ -5004,7 +4988,7 @@ begin
         utilsprefix:=target_cpu_string + '-linux-android-';
     end;
 
-  if target_info.system in (systems_embedded+systems_freertos+[system_z80_zxspectrum,system_z80_msxdos]) then
+  if target_info.system in (systems_embedded+systems_freertos) then
     begin
       case target_info.system of
 {$ifdef AVR}
@@ -5332,7 +5316,7 @@ begin
          system_m68k_atari,
          system_arm_nds,system_arm_embedded,system_arm_freertos,
          system_riscv32_embedded,system_riscv64_embedded,system_xtensa_linux,
-         system_z80_embedded,system_z80_zxspectrum,system_riscv32_freertos,
+         system_z80_embedded,system_riscv32_freertos,
          system_mipsel_ps1])
 {$ifdef arm}
       or (target_info.abi=abi_eabi)

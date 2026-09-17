@@ -458,15 +458,6 @@ win/messages.pp=namespaced/windows/WinApi.Messages.pp
 win/sharemem.pp=namespaced/windows/WinApi.ShareMem.pp
 win/sysutils.pp=win/System.SysUtils.pp
 win/windirs.pp=namespaced/windows/WinApi.WinDirs.pp
-win16/classes.pp=win16/System.Classes.pp
-{s*:win16/}=namespaced/windows/
-{i+:win16/}
-win16/dos.pp=namespaced/common/TP.DOS.pp
-win16/ports.pp=win16/System.Ports.pp
-win16/sysutils.pp=win16/System.SysUtils.pp
-win16/win31.pp=namespaced/windows/WinApi.Win31.pp
-win16/winprocs.pp=namespaced/windows/WinApi.WinProcs.pp
-win16/wintypes.pp=namespaced/windows/WinApi.WinTypes.pp
 win32/classes.pp=win32/System.Classes.pp
 {s*:win32/}=namespaced/windows/
 {i+:win32/}

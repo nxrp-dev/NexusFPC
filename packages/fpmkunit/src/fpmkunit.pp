@@ -146,7 +146,7 @@ Type
     palmos,macosclassic,darwin,obsolete_emx,watcom,obsolete_morphos,obsolete_netwlibc,
     win64,wince,gba,nds,embedded,symbian,haiku,iphonesim,
     aix,java,android,nativent,msdos,wii,obsolete_aros,dragonfly,
-    win16,freertos,zxspectrum,msxdos,ios,amstradcpc,sinclairql,
+    obsolete_win16,freertos,obsolete_zxspectrum,obsolete_msxdos,ios,obsolete_amstradcpc,sinclairql,
     wasip1,human68k,ps1,wasip1threads,wasip2
   );
   TOSes = Set of TOS;
@@ -211,16 +211,16 @@ Const
   DOS = Go32v2;
   MacOSX = Darwin;
 
-  AllOSes = [Low(TOS)..High(TOS)]-[obsolete_os2,obsolete_amiga,obsolete_netware,palmos,obsolete_emx,obsolete_morphos,obsolete_netwlibc,obsolete_aros];
+  AllOSes = [Low(TOS)..High(TOS)]-[obsolete_os2,obsolete_amiga,obsolete_netware,palmos,obsolete_emx,obsolete_morphos,obsolete_netwlibc,obsolete_aros,obsolete_win16,obsolete_zxspectrum,obsolete_msxdos,obsolete_amstradcpc];
   AllCPUs = [Low(TCPU)..High(TCPU)];
   AllUnixOSes  = [Linux,FreeBSD,NetBSD,OpenBSD,Darwin,QNX,BeOS,Solaris,Haiku,iphonesim,ios,aix,Android,dragonfly];
   AllBSDOSes      = [FreeBSD,NetBSD,OpenBSD,Darwin,iphonesim,ios,dragonfly];
   AllWindowsOSes  = [Win32,Win64,WinCE];
-  AllLimit83fsOses = [go32v2,watcom,msdos,win16,atari,human68k];
+  AllLimit83fsOses = [go32v2,watcom,msdos,atari,human68k];
   AllWebAssemblyOSes = [wasip1, wasip1threads, wasip2];
 
-  AllSmartLinkLibraryOSes = [Linux,msdos,win16]; // OSes that use .a library files for smart-linking
-  AllImportLibraryOSes = AllWindowsOSes + [watcom,go32v2,macosclassic,nativent,msdos,win16];
+  AllSmartLinkLibraryOSes = [Linux,msdos]; // OSes that use .a library files for smart-linking
+  AllImportLibraryOSes = AllWindowsOSes + [watcom,go32v2,macosclassic,nativent,msdos];
 
   { This table is kept OS,Cpu because it is easier to maintain (PFV) }
   OSCPUSupported : array[TOS,TCpu] of boolean = (
@@ -263,12 +263,12 @@ Const
     { wii }     ( false, false, false, true , false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { obsolete_aros }    ( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { dragonfly}( false, false, false, false, false, true,  false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
-    { win16 }   ( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, true , false, false, false,  false,  false,   false, false, false),
+    { obsolete_win16 }   ( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { freertos }( false, false, false, false, false, false, true,  false, false, false, false, false, false, false,   false, false, false, false, false,  true,   false,   true , false, false),
-    {zxspectrum}( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, true,  false),
-    { msxdos }  ( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, true,  false),
+    {obsolete_zxspectrum}( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false,  false),
+    { obsolete_msxdos }  ( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false,  false),
     { ios }     ( false, false, false, false, false, false,  true, false, false, false, false, false, false, false,   false, false, true , false, false,  false,  false,   false, false, false),
-    {amstradcpc}( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, true,  false),
+    {obsolete_amstradcpc}( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false,  false),
     {sinclairql}( false, false, true,  false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
     { wasip1 }  ( false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false, true,  false,  false,  false,   false, false, false),
     { human68k }( false, false, true,  false, false, false, false, false, false, false, false, false, false, false,   false, false, false, false, false,  false,  false,   false, false, false),
@@ -9951,7 +9951,7 @@ end;
 
 function TTarget.GetUnitLibFileName(AOS : TOS): String;
 begin
-  if AOS in [atari,go32v2,watcom,wdosx,msdos,win16] then
+  if AOS in [atari,go32v2,watcom,wdosx,msdos] then
     Result := Name+LibExt
   else if AOS in [java] then
     Result:=Name+'.jar'

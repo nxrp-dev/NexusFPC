@@ -38,9 +38,6 @@ implementation
     {$ifndef NOTARGETMSDOS}
       ,t_msdos
     {$endif}
-    {$ifndef NOTARGETWIN}
-      ,t_win16
-    {$endif}
     {$ifndef NOTARGETEMBEDDED}
       ,t_embed
     {$endif}

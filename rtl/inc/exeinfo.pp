@@ -1466,7 +1466,7 @@ end;
 
 
 {$ifdef CPUI8086}
-  {$if defined(MSDOS) or defined(WIN16)}
+  {$if defined(MSDOS)}
     {$if defined(FPC_MM_TINY) or defined(FPC_MM_SMALL) or defined(FPC_MM_MEDIUM)}
       {$define NEED_SMALL_BUFFER_SIZE}
     {$endif}

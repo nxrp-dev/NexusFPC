@@ -45,7 +45,7 @@ begin
     begin
     P:=AddPackage('utils');
     P.ShortName := 'utils';
-    P.OSes:=AllOSes-[embedded,msdos,win16,macosclassic,palmos,zxspectrum,msxdos,amstradcpc,sinclairql,human68k,ps1,wasip2];
+    P.OSes:=AllOSes-[embedded,msdos,macosclassic,palmos,sinclairql,human68k,ps1,wasip2];
     if Defaults.CPU=jvm then
       P.OSes := P.OSes - [java,android];
 
@@ -75,17 +75,8 @@ begin
     T.ResourceStrings:=true;
 
     P.Targets.AddProgram('data2inc.pp');
-    P.Targets.AddProgram('delp.pp');
     P.Targets.AddProgram('bin2obj.pp');
     P.Targets.AddProgram('postw32.pp');
-    P.Targets.AddProgram('rmcvsdir.pp');
-    P.Targets.AddProgram('grab_vcsa.pp',[linux]);
-
-    T:=P.Targets.AddProgram('fpcsubst.pp');
-    T.Dependencies.AddUnit('usubst');
-    T.ResourceStrings:=true;
-
-    P.Targets.AddUnit('usubst.pp').install:=false;
 
     { The source files fpmake_proc.inc and fpmake_add.inc
       need to be added explicitly to be integrated in source zip }

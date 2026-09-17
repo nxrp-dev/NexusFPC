@@ -382,7 +382,7 @@ implementation
 
         { Windows correctly handles reallocations in readonly sections }
         if (atype=sec_rodata) and
-          (target_info.system in systems_all_windows+systems_nativent-[system_i8086_win16]) then
+          (target_info.system in systems_all_windows+systems_nativent) then
           secname:='.rodata';
 
         { Use .rodata and .data.rel.ro for Android with PIC }

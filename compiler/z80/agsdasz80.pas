@@ -890,7 +890,7 @@ unit agsdasz80;
             idtxt  : 'SDCC-SDASZ80';
             asmbin : 'sdasz80';
             asmcmd : '-g -o $EXTRAOPT $OBJ $ASM';
-            supported_targets : [system_Z80_embedded,system_z80_zxspectrum,system_z80_msxdos];
+            supported_targets : [system_Z80_embedded];
             flags : [af_needar];
             labelprefix : '.L';
             labelmaxlen : 79;

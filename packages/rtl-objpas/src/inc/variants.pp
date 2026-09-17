@@ -377,11 +377,8 @@ uses
 {$ENDIF FPC_DOTTEDUNITS}
 
 {$IFDEF MSWINDOWS}
-  {$IFNDEF WIN16}
-    { i8086-win16 system define MSWINDOWS macro but does not support OLE strings }
-    procedure SysFreeString(bstr:pointer); stdcall; external 'oleaut32.dll' name 'SysFreeString';
-    {$DEFINE USE_MSWINDOWS_OLE}
-  {$ENDIF not WIN16}
+  procedure SysFreeString(bstr:pointer); stdcall; external 'oleaut32.dll' name 'SysFreeString';
+  {$DEFINE USE_MSWINDOWS_OLE}
 {$ENDIF MSWINDOWS}
 
 var

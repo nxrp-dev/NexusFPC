@@ -3007,7 +3007,7 @@ type
 
 { WinCE: does not have environment strings. Add some way to specify heaptrc options?
   msdos: don’t want to bother with far pointers and their forwarding to ScanIgnoringCase & ParseEnv... }
-{$elseif not defined(wince) and not defined(sinclairql) and not defined(msdos) and not defined(msxdos)}
+{$elseif not defined(wince) and not defined(sinclairql) and not defined(msdos)}
   procedure LoadEnvironment;
   var
     ep: ppAnsiChar;

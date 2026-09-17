@@ -44,7 +44,6 @@ begin
   Result:=FindResourceEx(ModuleHandle,PAnsiChar(ResourceType),PAnsiChar(ResourceName),Language);
 end;
 
-{$ifndef Win16}
 Function FindResource(ModuleHandle: TFPResourceHMODULE; const ResourceName: AnsiString; ResourceType: PAnsiChar): TFPResourceHandle;
 
 begin
@@ -68,7 +67,6 @@ Function FindResourceEx(ModuleHandle: TFPResourceHMODULE; const ResourceType: An
 begin
   Result:=FindResourceEx(ModuleHandle,PAnsiChar(ResourceType),ResourceName,Language);
 end;
-{$endif Win16}
 {$endif}
 
 (*****************************************************************************
@@ -167,12 +165,10 @@ end;
 *****************************************************************************)
 { These functions will call the specified resource manager functions }
 
-{$ifndef Win16}
 Function HINSTANCE : TFPResourceHMODULE;
 begin
   Result:=resourcemanager.HINSTANCEFunc();
 end;
-{$endif Win16}
 
 Function EnumResourceTypes(ModuleHandle : TFPResourceHMODULE; EnumFunc : EnumResTypeProc; lParam : PtrInt) : LongBool;
 begin
@@ -189,7 +185,6 @@ begin
   Result:=resourcemanager.EnumResourceLanguagesFunc(ModuleHandle,ResourceType,ResourceName,EnumFunc,lParam);
 end;
 
-{$ifndef Win16}
 Function FindResource(ModuleHandle: TFPResourceHMODULE; ResourceName, ResourceType: PAnsiChar): TFPResourceHandle;
 begin
   Result:=resourcemanager.FindResourceFunc(ModuleHandle,ResourceName,ResourceType);
@@ -224,5 +219,4 @@ Function FreeResource(ResData: TFPResourceHGLOBAL): LongBool;
 begin
   Result:=resourcemanager.FreeResourceFunc(ResData);
 end;
-{$endif Win16}
 

@@ -22,17 +22,11 @@ unit Types;
 {$if defined(win32) or defined(win64) or defined(wince)}
     uses
        {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows;
-{$elseif defined(win16)}
-    uses
-        {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}WinTypes;
 {$endif}
 
 {$if defined(win32) or defined(win64)}
 const
   RT_RCDATA =  {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}Windows.RT_RCDATA deprecated 'Use Windows.RT_RCDATA instead';
-{$elseif defined(win16)}
-const
-  RT_RCDATA =  {$IFDEF FPC_DOTTEDUNITS}WinApi.{$ENDIF}WinTypes.RT_RCDATA deprecated 'Use WinTypes.RT_RCDATA instead';
 {$endif}
 
 Const

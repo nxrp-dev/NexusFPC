@@ -609,7 +609,7 @@ interface
         else if (atype=sec_threadvar) and
           (target_info.system in (systems_windows+systems_wince)) then
           writer.AsmWrite('.tls'#9'bss')
-        else if target_info.system in [system_i8086_msdos,system_i8086_win16,system_i8086_embedded] then
+        else if target_info.system in [system_i8086_msdos,system_i8086_embedded] then
           begin
             if (atype=sec_user) then
               secname:=aname
@@ -717,7 +717,7 @@ interface
     procedure TX86NasmAssembler.WriteGroups;
       begin
 {$ifdef i8086}
-        if target_info.system in [system_i8086_msdos,system_i8086_win16,system_i8086_embedded] then
+        if target_info.system in [system_i8086_msdos,system_i8086_embedded] then
           begin
             if current_settings.x86memorymodel=mm_huge then
               WriteSection(sec_data,'',2);
@@ -1433,7 +1433,6 @@ interface
 {$ifdef i8086}
         case target_info.system of
           system_i8086_msdos,
-          system_i8086_win16,
           system_i8086_embedded:
             begin
               FormatName:='obj';
@@ -1494,7 +1493,7 @@ interface
             idtxt  : 'NASM';
             asmbin : 'nasm';
             asmcmd : '-f $FORMAT $DEBUG -o $OBJ -w-orphan-labels $EXTRAOPT $ASM';
-            supported_targets : [system_i8086_msdos,system_i8086_win16,system_i8086_embedded];
+            supported_targets : [system_i8086_msdos,system_i8086_embedded];
             flags : [af_needar,af_no_debug];
             labelprefix : '..@';
             labelmaxlen : -1;
@@ -1507,7 +1506,7 @@ interface
             idtxt  : 'NASMOBJ';
             asmbin : 'nasm';
             asmcmd : '-f obj -o $OBJ -w-orphan-labels $EXTRAOPT $ASM';
-            supported_targets : [system_i8086_msdos,system_i8086_win16,system_i8086_embedded];
+            supported_targets : [system_i8086_msdos,system_i8086_embedded];
             flags : [af_needar,af_no_debug];
             labelprefix : '..@';
             labelmaxlen : -1;

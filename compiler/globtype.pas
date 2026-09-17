@@ -201,7 +201,7 @@ interface
          cs_executable_stack,
          { i8086 specific }
          cs_huge_code,
-         cs_win16_smartcallbacks,
+         cs_obsolete_win16_smartcallbacks,
          { Record usage of checkpointer experimental feature }
          cs_checkpointer_called,
          { enable link time optimisation (both unit code generation and optimising the whole program/library) }

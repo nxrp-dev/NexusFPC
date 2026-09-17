@@ -5,7 +5,7 @@ default: all
 MAKEFILETARGETS=i386-qnx
 BSDs = freebsd netbsd openbsd darwin dragonfly
 UNIXs = linux $(BSDs) solaris qnx haiku aix
-LIMIT83fs = go32v2 watcom msdos win16 atari human68k
+LIMIT83fs = go32v2 watcom msdos atari human68k
 OSNeedsComspecToRunBatch = go32v2 watcom
 FORCE:
 .PHONY: FORCE
@@ -613,17 +613,13 @@ WASIUTILUNIT=WASIApi.WASIUtil
 WATCOMUNIT=WatcomApi.WatCom
 WEBASSEMBLYUNIT=Wasm.Api
 WASMSEMUNIT=Wasm.Semaphore
-WIN31UNIT=WinApi.Win31
 WINDIRSUNIT=WinApi.WinDirs
 WINDOWSUNIT=WinApi.Windows
-WINPROCSUNIT=WinApi.WinProcs
 WINSYSUTUNIT=WinApi.WinSysUt
-WINTYPESUNIT=WinApi.WinTypes
 X86UNIT=System.X86
 XMC4500UNIT=EmbeddedApi.xmc4500
 NOTHREADSUNIT=System.NoThreads
 else
-AIOUNIT=aio
 ALLWINNER_A20UNIT=allwinner_a20
 ANDROIDR14UNIT=androidr14
 ATHREADSUNIT=athreads
@@ -745,7 +741,6 @@ INTRINSICSUNIT=intrinsics
 ISO7185UNIT=iso7185
 JDK15UNIT=jdk15
 KBDCALLSUNIT=kbdcalls
-LIBCUNIT=libc
 LINEINFOUNIT=lineinfo
 LINUXUNIT=linux
 LINUXVCSUNIT=linuxvcs
@@ -868,12 +863,9 @@ WASIUTILUNIT=wasiutil
 WATCOMUNIT=watcom
 WEBASSEMBLYUNIT=webassembly
 WASMSEMUNIT=wasmsem
-WIN31UNIT=win31
 WINDIRSUNIT=windirs
 WINDOWSUNIT=windows
-WINPROCSUNIT=winprocs
 WINSYSUTUNIT=winsysut
-WINTYPESUNIT=wintypes
 X86UNIT=x86
 XMC4500UNIT=xmc4500
 NOTHREADSUNIT=nothreads
@@ -1221,7 +1213,6 @@ BATCHEXT=.sh
 EXEEXT=
 SHORTSUFFIX=qnx
 endif
-ALL_EXEEXT+=.nlm
 ifeq ($(OS_TARGET),macosclassic)
 BATCHEXT=
 EXEEXT=
@@ -1281,11 +1272,6 @@ STATICLIBPREFIX=
 STATICLIBEXT=.a
 SHORTSUFFIX=d16
 endif
-ifeq ($(OS_TARGET),msxdos)
-STATICLIBPREFIX=
-STATICLIBEXT=.a
-SHORTSUFFIX=msd
-endif
 ifeq ($(OS_TARGET),embedded)
 ifeq ($(CPU_TARGET),i8086)
 STATICLIBPREFIX=
@@ -1299,15 +1285,6 @@ endif
 SHORTSUFFIX=emb
 endif
 ALL_EXEEXT+=.bin
-ifeq ($(OS_TARGET),win16)
-STATICLIBPREFIX=
-STATICLIBEXT=.a
-SHAREDLIBEXT=.dll
-SHORTSUFFIX=w16
-endif
-ifeq ($(OS_TARGET),zxspectrum)
-OEXT=.rel
-endif
 ifeq ($(OS_TARGET),wasip1)
 EXEEXT=.wasm
 endif
@@ -2777,24 +2754,6 @@ messages$(PPUEXT): $(MESSAGES_DEPS)
 	$(COMPILER) -Fi$(WINMESSAGESINCDIR) $<
 WinApi.Messages$(PPUEXT): $(NSWINDOWSDIR)/WinApi.Messages.pp $(MESSAGES_DEPS)
 	$(COMPILER) -Fi$(WINMESSAGESINCDIR) -Fi$(WINMMESSAGESDIR) $<
-WINTYPES_DEPS = wintypes.pp wintypes.inc $(SYSTEMUNIT)$(PPUEXT) \
-	       $(WINTYPES_DEPS_OS) $(WINTYPES_DEPS_CPU)
-wintypes$(PPUEXT) : $(WINTYPES_DEPS)
-	$(COMPILER) $<
-WinApi.WinTypes$(PPUEXT) : $(NSWINDOWSDIR)/WinApi.WinTypes.pp $(WINTYPES_DEPS)
-	$(COMPILER) $<
-WINPROCS_DEPS = winprocs.pp winprocsh.inc winprocs.inc $(SYSTEMUNIT)$(PPUEXT) $(OBJPASUNIT)$(PPUEXT) $(WINTYPESUNIT)$(PPUEXT) \
-	       $(WINTYPES_DEPS_OS) $(WINTYPES_DEPS_CPU)
-winprocs$(PPUEXT) : $(WINPROCS_DEPS)
-	$(COMPILER) $<
-WinApi.Winprocs$(PPUEXT) : $(NSWINDOWSDIR)/WinApi.WinProcs.pp $(WINPROCS_DEPS)
-	$(COMPILER) $<
-WIN31_DEPS = win31.pp $(SYSTEMUNIT)$(PPUEXT) $(OBJPASUNIT)$(PPUEXT) $(WINTYPESUNIT)$(PPUEXT) \
-	       $(WINTYPES_DEPS_OS) $(WINTYPES_DEPS_CPU)
-win31$(PPUEXT) : $(WIN31_DEPS)
-	$(COMPILER) $<
-WinApi.Win31$(PPUEXT) : $(NSWINDOWSDIR)/WinApi.Win31.pp $(WINPROCS_DEPS)
-	$(COMPILER) $<
 ifeq ($(filter -dFPC_USE_LIBC,$(FPCOPT)),)
   SYSCTL_DEPS_OS+=$(SYSCALLUNIT)$(PPUEXT)
 endif

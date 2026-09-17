@@ -28,7 +28,7 @@
         <LaunchingApplication PathPlusParams="\usr\X11R6\bin\xterm -T 'Lazarus Run Output' -e $(LazarusDir)\tools\runwait.sh $(TargetCmdLine)"/>
       </local>
     </RunParams>
-    <Units Count="252">
+    <Units Count="250">
       <Unit0>
         <Filename Value="pp.pas"/>
         <IsPartOfProject Value="True"/>
@@ -977,69 +977,61 @@
         <IsPartOfProject Value="True"/>
       </Unit235>
       <Unit236>
-        <Filename Value="systems\i_win16.pas"/>
+        <Filename Value="systems\i_embed.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit236>
       <Unit237>
-        <Filename Value="systems\t_win16.pas"/>
+        <Filename Value="systems\t_embed.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit237>
       <Unit238>
-        <Filename Value="systems\i_embed.pas"/>
+        <Filename Value="entfile.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit238>
       <Unit239>
-        <Filename Value="systems\t_embed.pas"/>
+        <Filename Value="aasmdef.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit239>
       <Unit240>
-        <Filename Value="entfile.pas"/>
+        <Filename Value="aoptutils.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit240>
       <Unit241>
-        <Filename Value="aasmdef.pas"/>
+        <Filename Value="fpcp.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit241>
       <Unit242>
-        <Filename Value="aoptutils.pas"/>
+        <Filename Value="fpkg.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit242>
       <Unit243>
-        <Filename Value="fpcp.pas"/>
+        <Filename Value="ncgnstfl.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit243>
       <Unit244>
-        <Filename Value="fpkg.pas"/>
+        <Filename Value="objcasm.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit244>
       <Unit245>
-        <Filename Value="ncgnstfl.pas"/>
+        <Filename Value="pcp.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit245>
       <Unit246>
-        <Filename Value="objcasm.pas"/>
+        <Filename Value="pgentype.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit246>
       <Unit247>
-        <Filename Value="pcp.pas"/>
+        <Filename Value="pkgutil.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit247>
       <Unit248>
-        <Filename Value="pgentype.pas"/>
+        <Filename Value="syscinfo.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit248>
       <Unit249>
-        <Filename Value="pkgutil.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit249>
-      <Unit250>
-        <Filename Value="syscinfo.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit250>
-      <Unit251>
         <Filename Value="optloadmodifystore.pas"/>
         <IsPartOfProject Value="True"/>
-      </Unit251>
+      </Unit249>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

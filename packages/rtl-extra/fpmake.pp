@@ -23,7 +23,7 @@ Const
   SerialOSes    = [android,linux,netbsd,openbsd,win32,win64];
   UComplexOSes  = [atari,embedded,gba,go32v2,msdos,nativent,nds,sinclairql,human68k,symbian,watcom,wii,wince,win32,win64,freertos,wasip1,wasip1threads]+UnixLikes;
   MatrixOSes    = [atari,embedded,gba,go32v2,msdos,nativent,nds,sinclairql,human68k,symbian,watcom,wii,win32,win64,wince,freertos,wasip1,wasip1threads]+UnixLikes;
-  ObjectsOSes   = [atari,embedded,gba,go32v2,macosclassic,msdos,nds,sinclairql,human68k,symbian,watcom,wii,win16,win32,win64,wince,freertos,wasip1,wasip1threads]+UnixLikes;
+  ObjectsOSes   = [atari,embedded,gba,go32v2,macosclassic,msdos,nds,sinclairql,human68k,symbian,watcom,wii,win32,win64,wince,freertos,wasip1,wasip1threads]+UnixLikes;
   WinsockOSes   = [win32,win64,wince];
   WinSock2OSes  = [win32,win64,wince];
   SocketsOSes   = UnixLikes+[wince,win32,win64];
@@ -82,7 +82,7 @@ begin
 
     // Add clocale for Android first in order to compile the source file
     // from the 'android' dir, not the 'unix' dir.
-    T:=P.Targets.AddUnit('real48utils.pp',AllTargetsextra-[msdos,win16]  { msdos,win16 excluded temporarily, until bitpacked records containing longints on 16-bit targets are fixed }
+    T:=P.Targets.AddUnit('real48utils.pp',AllTargetsextra-[msdos]  { msdos excluded temporarily, until bitpacked records containing longints on 16-bit targets are fixed }
                                                          -[wasip1,wasip1threads] { internal error on the WebAssembly target }
                                                          -[embedded]);   { at least avr has no floats }
     if Defaults.CPU<>jvm then

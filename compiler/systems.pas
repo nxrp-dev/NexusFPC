@@ -281,13 +281,12 @@ interface
 
        systems_aix = [system_powerpc_aix,system_powerpc64_aix];
 
-       { all real windows systems, no cripple ones like win16, wince, wdosx et. al. }
+       { all real windows systems, no cripple ones like wince, wdosx et. al. }
        systems_windows = [system_i386_win32,system_x86_64_win64,system_aarch64_win64];
 
        { all windows systems }
        systems_all_windows = systems_windows+
-                             [system_arm_wince,system_i386_wince,
-                             system_i8086_win16];
+                             [system_arm_wince,system_i386_wince];
 
        { all darwin systems }
        systems_ios = [system_arm_ios,system_aarch64_ios];
@@ -333,7 +332,7 @@ interface
        ;
 
        { systems that allow external far variables }
-       systems_allow_external_far_var = [system_i8086_msdos,system_i8086_win16,system_i8086_embedded];
+       systems_allow_external_far_var = [system_i8086_msdos,system_i8086_embedded];
 
        { all symbian systems }
        systems_symbian = [system_i386_symbian,system_arm_symbian];
@@ -365,7 +364,6 @@ interface
                                          system_i386_wdosx,
                                          system_arm_wince,
                                          system_x86_64_win64,
-                                         system_i8086_win16,
                                          system_aarch64_win64]+systems_linux+systems_android+systems_wasm;
 
        { all systems that reference symbols in other binaries using indirect imports }
@@ -388,7 +386,6 @@ interface
                                    system_i386_openbsd,system_x86_64_openbsd,
                                    system_riscv32_linux,system_riscv64_linux,
                                    system_aarch64_win64,
-                                   system_z80_zxspectrum,system_z80_msxdos,
                                    system_wasm32_wasip1,system_wasm32_wasip1threads,system_wasm32_wasip2,
                                    system_loongarch64_linux,system_mipsel_ps1
                                   ]+systems_darwin;

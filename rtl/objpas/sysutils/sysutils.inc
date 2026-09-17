@@ -865,23 +865,6 @@ begin
   SetLength(Buffer, ResultLength);
   Result := Buffer;
 end;
-{$elseif defined(win16)}
-function GetModuleName(Module: HMODULE): string;
-var
-  ResultLength, BufferLength: DWORD;
-  Buffer: RawByteString;
-begin
-  BufferLength := MAX_PATH div 2;
-  repeat
-    Inc(BufferLength, BufferLength);
-    SetLength(Buffer, BufferLength);
-    ResultLength := GetModuleFileName(Module, FarAddr(Buffer[1]), BufferLength);
-    if ResultLength = 0 then
-      Exit('');
-  until ResultLength < BufferLength;
-  SetLength(Buffer, ResultLength);
-  Result := Buffer;
-end;
 {$else}
 function GetModuleName(Module: HMODULE): string;
 begin
@@ -1221,20 +1204,8 @@ begin
   {$IFDEF DRAGONFLY}
   Result:=pfDragonFly;
   {$ENDIF}
-  {$IFDEF WIN16}
-  Result:=pfWin16;
-  {$ENDIF}
   {$IFDEF FREERTOS}
   Result:=pfFreeRTOS;
-  {$ENDIF}
-  {$IFDEF ZXSPECTRUM}
-  Result:=pfZXSpectrum;
-  {$ENDIF}
-  {$IFDEF MSXDOS}
-  Result:=pfMSXDOS;
-  {$ENDIF}
-  {$IFDEF AMSTRADCPC}
-  Result:=pfAmstradCPC;
   {$ENDIF}
   {$IFDEF SINCLAIRQL}
   Result:=pfSinclairQL;

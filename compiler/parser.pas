@@ -223,23 +223,6 @@ implementation
                      maxheapsize:=65520;
                  end;
              end;
-           system_i8086_win16:
-             begin
-               if stacksize=0 then
-                 begin
-                   if init_settings.x86memorymodel in x86_far_data_models then
-                     stacksize:=8192
-                   else
-                     stacksize:=5120;
-                 end;
-               if heapsize=0 then
-                 begin
-                   if init_settings.x86memorymodel in x86_far_data_models then
-                     heapsize:=8192
-                   else
-                     heapsize:=4096;
-                 end;
-             end;
 {$endif i8086}
            else
              ;

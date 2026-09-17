@@ -38,15 +38,6 @@ implementation
     {$ifndef NOTARGETEMBEDDED}
       ,t_embed
     {$endif}
-    {$ifndef NOTARGETZXSPECTRUM}
-      ,t_zxspectrum
-    {$endif}
-    {$ifndef NOTARGETMSXDOS}
-      ,t_msxdos
-    {$endif}
-    {$ifndef NOTARGETAMSTRADCPC}
-      ,t_amstradcpc
-    {$endif}
 
 {**************************************
              Assemblers

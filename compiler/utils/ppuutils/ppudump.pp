@@ -215,7 +215,7 @@ const
   { 86 }  'iOS-AArch64',
   { 87 }  'iPhoneSim-x86-64',
   { 88 }  'Linux-AArch64',
-  { 89 }  'Win16',
+  { 89 }  'obsolete Win16',
   { 90 }  'Embedded-i8086',
   { 91 }  'AROS-arm',
   { 92 }  'WebAssembly-wasm',
@@ -235,10 +235,10 @@ const
   { 106 } 'FreeRTos-arm',
   { 107 } 'Win64-AArch64',
   { 108 } 'Embedded-Z80',
-  { 109 } 'ZXSpectrum-Z80',
-  { 110 } 'MSX-DOS-Z80',
+  { 109 } 'Obsolete-ZXSpectrum-Z80',
+  { 110 } 'Obsolete-MSX-DOS-Z80',
   { 111 } 'Darwin-AArch64',
-  { 112 } 'AmstradCPC-Z80',
+  { 112 } 'Obsolete-AmstradCPC-Z80',
   { 113 } 'SinclairQL-m68k',
   { 114 } 'WASIp1-WASM32',
   { 115 } 'FreeBSD-AArch64',
@@ -2340,7 +2340,7 @@ const
         'Executable Stack', {cs_executable_stack}
          { i8086 specific }
         'Huge code', {cs_huge_code}
-        'Win16 smart callbacks', {cs_win16_smartcallbacks}
+        'obsolete Win16 smart callbacks', {cs_obsolete_win16_smartcallbacks}
          { Record usage of checkpointer experimental feature }
         'CheckPointer used', {cs_checkpointer_called}
         'Supports LLVM Link-Time Optimization' {cs_lto}

@@ -2,25 +2,18 @@
 type
   //Obsolete types, kept for backwards compatibility
   TResourceHandle = PtrUint;
-{$ifdef Win16}
-  HMODULE = THandle; {HINST}
-  HGLOBAL = THandle;
-{$else Win16}
   HMODULE = PtrUint;
   HGLOBAL = PtrUint;
-{$endif Win16}
   //New types
   TFPResourceHandle = PtrUInt;
   TFPResourceHMODULE = PtrUInt;
   TFPResourceHGLOBAL = PtrUInt;
-{$ifndef Win16}
 {$ifdef FPC_OS_UNICODE}
   {roozbeh : maybe it should be moved after ifndef mswindows,as there is one declared in wince,base.inc}
   MAKEINTRESOURCE = pwidechar;
 {$else}
   MAKEINTRESOURCE = PAnsiChar;
 {$endif}
-{$endif not Win16}
 
 {$ifndef MSWINDOWS }
 { windows has this in the windows unit. It probably would better
@@ -60,13 +53,10 @@ function Is_IntResource(aStr : PAnsiChar) : boolean; {$ifdef SYSTEMINLINE}inline
 function MakeLangID(primary,sub : word) : word; {$ifdef SYSTEMINLINE}inline;{$endif}
 
 // Win32 API compatible Resource functions
-{$ifndef Win16}
 Function HINSTANCE : TFPResourceHMODULE;
-{$endif Win16}
 Function EnumResourceTypes(ModuleHandle : TFPResourceHMODULE; EnumFunc : EnumResTypeProc; lParam : PtrInt) : LongBool;
 Function EnumResourceNames(ModuleHandle : TFPResourceHMODULE; ResourceType : PAnsiChar; EnumFunc : EnumResNameProc; lParam : PtrInt) : LongBool;
 Function EnumResourceLanguages(ModuleHandle : TFPResourceHMODULE; ResourceType, ResourceName : PAnsiChar; EnumFunc : EnumResLangProc; lParam : PtrInt) : LongBool;
-{$ifndef Win16}
 Function FindResource(ModuleHandle: TFPResourceHMODULE; ResourceName, ResourceType: PAnsiChar): TFPResourceHandle;
 Function FindResourceEx(ModuleHandle: TFPResourceHMODULE; ResourceType, ResourceName: PAnsiChar; Language : word): TFPResourceHandle;
 Function LoadResource(ModuleHandle: TFPResourceHMODULE; ResHandle: TFPResourceHandle): TFPResourceHGLOBAL;
@@ -74,16 +64,13 @@ Function SizeofResource(ModuleHandle: TFPResourceHMODULE; ResHandle: TFPResource
 Function LockResource(ResData: TFPResourceHGLOBAL): Pointer;
 Function UnlockResource(ResData: TFPResourceHGLOBAL): LongBool;
 Function FreeResource(ResData: TFPResourceHGLOBAL): LongBool;
-{$endif Win16}
 {$ifdef FPC_HAS_FEATURE_ANSISTRINGS}
 Function FindResource(ModuleHandle: TFPResourceHMODULE; const ResourceName, ResourceType: AnsiString): TFPResourceHandle;
 Function FindResourceEx(ModuleHandle: TFPResourceHMODULE; const ResourceType, ResourceName: AnsiString; Language : word): TFPResourceHandle;
-{$ifndef Win16}
 Function FindResource(ModuleHandle: TFPResourceHMODULE; const ResourceName: AnsiString; ResourceType: PAnsiChar): TFPResourceHandle;
 Function FindResourceEx(ModuleHandle: TFPResourceHMODULE; ResourceType: PAnsiChar; const ResourceName: AnsiString; Language : word): TFPResourceHandle;
 Function FindResource(ModuleHandle: TFPResourceHMODULE; ResourceName: PAnsiChar; const ResourceType: AnsiString): TFPResourceHandle;
 Function FindResourceEx(ModuleHandle: TFPResourceHMODULE; const ResourceType: AnsiString; ResourceName: PAnsiChar; Language : word): TFPResourceHandle;
-{$endif Win16}
 {$endif}
 
 type

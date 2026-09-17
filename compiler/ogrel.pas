@@ -131,12 +131,6 @@ interface
         constructor create;override;
       end;
 
-      { TZXSpectrumIntelHexExeOutput }
-
-      TZXSpectrumIntelHexExeOutput = class(TIntelHexExeOutput)
-      public
-        constructor create;override;
-      end;
 
 implementation
 
@@ -1355,18 +1349,6 @@ implementation
         MaxMemPos:=$FFFF;
       end;
 
-{*****************************************************************************
-                         TZXSpectrumIntelHexExeOutput
-*****************************************************************************}
-
-    constructor TZXSpectrumIntelHexExeOutput.create;
-      begin
-        inherited create;
-        { The ZX Spectrum RTL switches to interrupt mode 2, and install an
-          interrupt handler + table, starting at address $FDFD, so we must limit
-          program size to $FDFC }
-        MaxMemPos:=$FDFC;
-      end;
 
 {*****************************************************************************
                                   Initialize
@@ -1378,7 +1360,7 @@ implementation
             idtxt  : 'REL';
             asmbin : '';
             asmcmd : '';
-            supported_targets : [system_z80_embedded,system_z80_zxspectrum,system_z80_msxdos];
+            supported_targets : [system_z80_embedded];
             flags : [af_outputbinary,af_smartlink_sections];
             labelprefix : '..@';
             labelmaxlen : 79;

@@ -4406,7 +4406,6 @@ F*2P<x>_Setze den Zielprozessor (aarch64, arm, avr, i386, i8086, jvm, loongarch6
 # i8086 targets
 8*2Tembedded_Embedded
 8*2Tmsdos_MS-DOS (und kompatible)
-8*2Twin16_Windows 16-Bit
 # arm targets
 A*2Tandroid_Android
 A*2Taros_AROS
@@ -4478,9 +4477,6 @@ x*2Tfreertos_FreeRTOS
 x*2Tlinux_Linux
 # z80 targets
 Z*2Tembedded_Embedded
-Z*2Tamstradcpc_Amstrad CPC
-Z*2Tmsxdos_MSX-DOS
-Z*2Tzxspectrum_ZX Spectrum
 # wasm32 targets
 W*2Tembedded_Embedded
 W*2Twasi_Das WebAssembly System Interface (WASI)

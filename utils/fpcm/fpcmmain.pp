@@ -79,7 +79,7 @@ interface
     palmos,macosclassic,darwin,obsolete_emx,watcom,obsolete_morphos,obsolete_netwlibc,
     win64,wince,gba,nds,embedded,symbian,haiku,iphonesim,
     aix,java,android,nativent,msdos,wii,obsolete_aros,dragonfly,
-    win16,freertos,zxspectrum,msxdos,ios,amstradcpc,sinclairql,
+    obsolete_win16,freertos,obsolete_zxspectrum,obsolete_msxdos,ios,obsolete_amstradcpc,sinclairql,
     wasip1,human68k,ps1,wasip1threads,wasip2
   );}
   TOS = fpmkunit.TOS;
@@ -95,8 +95,8 @@ interface
         obsolete_amiga,atari, solaris, qnx, obsolete_netware, openbsd,wdosx,
         palmos,macosclassic,darwin,obsolete_emx,watcom,obsolete_morphos,obsolete_netwlibc,
         win64,wince,gba,nds,embedded,symbian,nativent,iphonesim,
-        wii,aix,java,android,msdos,obsolete_aros,dragonfly,win16,freertos,
-        zxspectrum,msxdos,ios,amstradcpc,sinclairql,wasip1,human68k,ps1,
+        wii,aix,java,android,msdos,obsolete_aros,dragonfly,obsolete_win16,freertos,
+        obsolete_zxspectrum,obsolete_msxdos,ios,obsolete_amstradcpc,sinclairql,wasip1,human68k,ps1,
         wasip1threads,wasip2
       );
 {$endif}
@@ -128,8 +128,8 @@ interface
         'palmos','macosclassic','darwin','obsolete-emx','watcom','obsolete-morphos','obsolete-netwlibc',
         'win64','wince','gba','nds','embedded','symbian','nativent',
         'iphonesim', 'wii', 'aix', 'java', 'android', 'msdos', 'obsolete-aros',
-        'dragonfly', 'win16', 'freertos', 'zxspectrum', 'msxdos',
-        'ios','amstradcpc','sinclairql','wasip1','human68k','ps1','wasip1threads',
+        'dragonfly', 'obsolete-win16', 'freertos', 'obsolete-zxspectrum', 'obsolete-msxdos',
+        'ios','obsolete-amstradcpc','sinclairql','wasip1','human68k','ps1','wasip1threads',
         'wasip2'
       );
 
@@ -139,8 +139,8 @@ interface
         '_palmos','_macosclassic','_darwin','_obsolete_emx','_watcom','_obsolete_morphos','_obsolete_netwlibc',
         '_win64','_wince','_gba','_nds','_embedded','_symbian','_nativent',
         '_iphonesim','_wii','_aix','_java','_android','_msdos','_obsolete_aros',
-        '_dragonfly','_win16','_freertos','_zxspectrum','_msxdos',
-        '_ios','_amstradcpc','_sinclairql','_wasip1','_human68k','_ps1','_wasip1threads',
+        '_dragonfly','_obsolete_win16','_freertos','_obsolete_zxspectrum','_obsolete_msxdos',
+        '_ios','_obsolete_amstradcpc','_sinclairql','_wasip1','_human68k','_ps1','_wasip1threads',
         '_wasip2'
       );
 
@@ -192,12 +192,12 @@ interface
         { msdos }   ( false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, true , false,  false, false, false,  false,  false, false, false),
   { obsolete_aros } ( false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
         {dragonfly} ( false, false, false, false, false, true,  false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
-        { win16 }   ( false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, true , false,  false, false, false,  false,  false, false, false),
+        { obsolete_win16 }   ( false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
         { freertos }( false, false, false, false, false, false, true,  false, false, false, false, false, false, false, false,   false, false, false,  false, false, true,   false,   true, false, false),
-        {zxspectrum}( false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, true,  false),
-        { msxdos}   ( false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, true,  false),
+        {obsolete_zxspectrum}( false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false,  false),
+        { obsolete_msxdos}   ( false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false,  false),
         { ios }     ( false, false, false, false, false, false, true,  false, false, false, false, false, false, false, false,   false, false, true ,  false, false, false,  false,  false, false, false),
-        {amstradcpc}( false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, true,  false),
+        {obsolete_amstradcpc}( false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false,  false),
         {sinclairql}( false, false, true,  false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),
         { wasip1 }  ( false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  true,  false, false,  false,  false, false, false),
         { human68k }( false, false, true,  false, false, false, false, false, false, false, false, false, false, false, false,   false, false, false,  false, false, false,  false,  false, false, false),

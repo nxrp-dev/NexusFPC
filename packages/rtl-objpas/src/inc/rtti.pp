@@ -1108,9 +1108,7 @@ resourcestring
 implementation
 
 {$ifdef windows}
-  {$ifndef win16}
-    {$define USE_WINDOWS_UNIT}
-  {$endif not win16}
+  {$define USE_WINDOWS_UNIT}
 {$endif windows}
 
 uses

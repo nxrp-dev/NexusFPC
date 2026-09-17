@@ -8,81 +8,17 @@ unit linuxvcs;
 
 const vcs_device:shortint=-1;
 
-function try_grab_vcsa:boolean;
 
 {*****************************************************************************}
                                  implementation
 {*****************************************************************************}
 
 {$IFDEF FPC_DOTTEDUNITS}
-uses UnixApi.Base,System.Strings;
+uses UnixApi.Base;
 {$ELSE FPC_DOTTEDUNITS}
-uses baseunix,strings;
+uses baseunix;
 {$ENDIF FPC_DOTTEDUNITS}
 
-function try_grab_vcsa_in_path(path:PAnsiChar;len:cardinal):boolean;
-
-const  grab_vcsa='/grab_vcsa';
-       grab_vcsa_s:array[1..length(grab_vcsa)] of AnsiChar=grab_vcsa;
-
-var p:PAnsiChar;
-    child:Tpid;
-    status:cint;
-    pstat:stat;
-
-begin
-  getmem(p,len+length(grab_vcsa)+1);
-  move(path^,p^,len);
-  move(grab_vcsa_s,(p+len)^,length(grab_vcsa));
-  (p+len+length(grab_vcsa))^:=#0;
-  {Check if file exists.}
-  if fpstat(p,pstat)<>0 then
-    begin
-      try_grab_vcsa_in_path:=false;
-      exit;
-    end;
-  child:=fpfork;
-  if child=0 then
-    begin
-      fpexecve(p,nil,nil);
-      halt(255); {fpexec must have failed...}
-    end;
-  fpwaitpid(child,status,0);
-  try_grab_vcsa_in_path:=status=0; {Return true if success.}
-  freemem(p);
-end;
-
-
-function try_grab_vcsa:boolean;
-
-{If we cannot open /dev/vcsa0-31 it usually because we do not have
- permission. At login the owner of the tty you login is set to yourself.
-
- This is not done for vcsa, which is kinda strange as vcsa is revoke from
- you when you log out. We try to call a setuid root helper which chowns
- the vcsa device so we can get access to the screen buffer...}
-
-var path,p:PAnsiChar;
-
-begin
-  try_grab_vcsa:=false;
-  path:=fpgetenv('PATH');
-  if path=nil then
-    exit;
-  p:=strscan(path,':');
-  while p<>nil do
-    begin
-      if try_grab_vcsa_in_path(path,p-path) then
-        begin
-          try_grab_vcsa:=true;
-          exit;
-        end;
-      path:=p+1;
-      p:=strscan(path,':');
-    end;
-  if try_grab_vcsa_in_path(path,strlen(path)) then
-    exit;
-end;
 
 
 procedure detect_linuxvcs;

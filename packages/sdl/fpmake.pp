@@ -24,8 +24,8 @@ begin
     if Defaults.CPU=arm then
        P.OSes := P.OSes - [darwin];
     P.OSes := P.OSes - [iphonesim,ios,java,go32v2,watcom,nativent,embedded,
-                        android,msdos,gba,nds,win16,atari,macosclassic,palmos,symbian,wii,
-                        freertos,zxspectrum,msxdos,amstradcpc,sinclairql,wasip1,wasip1threads,human68k,ps1,wasip2];
+                        android,msdos,gba,nds,atari,macosclassic,palmos,symbian,wii,
+                        freertos,sinclairql,wasip1,wasip1threads,human68k,ps1,wasip2];
 
     T:=P.Targets.AddUnit('logger.pas');
       with T.Dependencies do
