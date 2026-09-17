@@ -4,7 +4,7 @@
 #
 
 [target]
-dirs=hash pasjpeg paszlib fpmkunit fcl-xml fcl-base fcl-db fcl-image fcl-net fcl-passrc fcl-registry fcl-fpcunit fcl-json fcl-js fcl-process unzip regexpr fcl-res fcl-stl libgd symbolic bzip2 hermes
+dirs=hash pasjpeg paszlib fpmkunit fcl-xml fcl-base fcl-db fcl-image fcl-net fcl-registry fcl-fpcunit fcl-json fcl-process unzip regexpr fcl-res libgd symbolic bzip2
 dirs_linux_i386=libc unixutil graph pxlib bzip2
 dirs_i386_linux=graph
 dirs_x86_64_linux=graph
@@ -14,55 +14,55 @@ dirs_sparc_linux=graph
 dirs_arm_linux=graph
 dirs_m68k_linux=graph
 dirs_beos=fastcgi fcl-async ibase ncurses zlib oracle odbc postgres sqlite pthreads \
-               libpng x11 gdbm tcl syslog libcurl opengl cairo bfd svgalib \
-               utmp  xforms pcap sdl openssl graph gtk2 librsvg  pxlib \
+               libpng x11 gdbm tcl syslog libcurl cairo bfd svgalib \
+               utmp  pcap sdl openssl graph gtk2 librsvg  pxlib \
                iconvenc
 dirs_haiku=fastcgi fcl-async ibase ncurses zlib oracle odbc postgres sqlite pthreads \
-               libpng x11 gdbm tcl syslog libcurl opengl cairo bfd svgalib \
-               utmp  xforms pcap sdl openssl graph gtk2 librsvg  pxlib \
+               libpng x11 gdbm tcl syslog libcurl cairo bfd svgalib \
+               utmp  pcap sdl openssl graph gtk2 librsvg  pxlib \
                iconvenc
 dirs_freebsd=fastcgi fcl-async ibase ncurses zlib oracle odbc postgres sqlite pthreads \
-               libpng x11 gdbm tcl syslog libcurl opengl cairo  bfd svgalib \
-               utmp  xforms pcap sdl openssl graph gtk2 librsvg  pxlib \
-               users iconvenc gmp fcl-extra libxml
+               libpng x11 gdbm tcl syslog libcurl cairo  bfd svgalib \
+               utmp  pcap sdl openssl graph gtk2 librsvg  pxlib \
+               users iconvenc fcl-extra libxml
 dirs_dragonfly=fastcgi fcl-async ibase ncurses zlib oracle odbc postgres sqlite pthreads \
-               libpng x11 gdbm tcl syslog libcurl opengl cairo  bfd svgalib \
-               utmp  xforms pcap sdl openssl graph gtk2 librsvg  pxlib \
-               users iconvenc gmp fcl-extra libxml
+               libpng x11 gdbm tcl syslog libcurl cairo  bfd svgalib \
+               utmp  pcap sdl openssl graph gtk2 librsvg  pxlib \
+               users iconvenc fcl-extra libxml
 dirs_darwin=fastcgi fcl-async ibase ncurses zlib oracle odbc postgres sqlite pthreads \
-               libpng gdbm tcl syslog libcurl bfd utmp pcap openssl iconvenc gmp fcl-extra univint iosxlocale
+               libpng gdbm tcl syslog libcurl bfd utmp pcap openssl iconvenc fcl-extra univint iosxlocale
 dirs_iphonesim=fastcgi fcl-async ibase ncurses zlib oracle odbc postgres sqlite pthreads \
-               libpng gdbm tcl syslog libcurl bfd utmp pcap openssl iconvenc gmp fcl-extra univint iosxlocale
-dirs_i386_darwin=graph sdl opengl x11 cairo gtk2 librsvg xforms objcrtl cocoaint opencl openal
-dirs_powerpc_darwin=graph sdl opengl x11 cairo gtk2 librsvg xforms objcrtl cocoaint
-dirs_x86_64_darwin=opengl x11 cairo gtk2 librsvg xforms cocoaint objcrtl
-dirs_powerpc64_darwin=opengl x11 cairo gtk2 librsvg xforms cocoaint objcrtl
+               libpng gdbm tcl syslog libcurl bfd utmp pcap openssl iconvenc fcl-extra univint iosxlocale
+dirs_i386_darwin=graph sdl x11 cairo gtk2 librsvg objcrtl cocoaint openal
+dirs_powerpc_darwin=graph sdl x11 cairo gtk2 librsvg objcrtl cocoaint
+dirs_x86_64_darwin=x11 cairo gtk2 librsvg cocoaint objcrtl
+dirs_powerpc64_darwin=x11 cairo gtk2 librsvg cocoaint objcrtl
 dirs_arm_darwin=opengles objcrtl
 dirs_i386_iphonesim= opengles objcrtl
 dirs_solaris=fastcgi fcl-async ibase ncurses zlib oracle odbc postgres sqlite pthreads \
-               libpng x11 gdbm tcl syslog libcurl opengl cairo bfd svgalib fcl-extra \
-               utmp  xforms pcap openssl iconvenc gtk2 cairo
+               libpng x11 gdbm tcl syslog libcurl cairo bfd svgalib fcl-extra \
+               utmp  pcap openssl iconvenc gtk2 cairo
 dirs_netbsd=fastcgi fcl-async ibase ncurses zlib oracle odbc postgres sqlite pthreads \
-               libpng x11 gdbm tcl syslog libcurl opengl cairo gtk2 librsvg bfd svgalib \
-               utmp  xforms pcap sdl openssl pxlib
+               libpng x11 gdbm tcl syslog libcurl cairo gtk2 librsvg bfd svgalib \
+               utmp  pcap sdl openssl pxlib
 dirs_openbsd=fastcgi fcl-async ibase ncurses zlib oracle odbc  postgres sqlite pthreads \
-               libpng x11 gdbm tcl syslog libcurl opengl cairo gtk2 librsvg bfd svgalib \
-               utmp  xforms pcap sdl openssl pxlib
+               libpng x11 gdbm tcl syslog libcurl cairo gtk2 librsvg bfd svgalib \
+               utmp  pcap sdl openssl pxlib
 dirs_linux=fastcgi fcl-async ibase ncurses unzip zlib oracle dbus odbc postgres sqlite pthreads \
-               libpng x11 uuid ldap modplug dts mad  gdbm tcl syslog libcurl opengl opencl cairo gtk2 librsvg \
+               libpng x11 uuid ldap modplug dts mad  gdbm tcl syslog libcurl cairo gtk2 librsvg \
                a52 bfd svgalib newt users  iconvenc libxml proj4 fcl-extra \
-               utmp  openal lua oggvorbis xforms pcap sdl openssl \
-               pxlib gmp libsee
+               utmp  openal lua oggvorbis pcap sdl openssl \
+               pxlib libsee
 dirs_win32=winunits-base fastcgi ibase zlib oracle odbc postgres sqlite \
-               libpng mad tcl opengl gtk2 librsvg a52 openal lua fcl-extra \
+               libpng mad tcl gtk2 librsvg a52 openal lua fcl-extra \
                oggvorbis sdl openssl graph pcap  pxlib cairo libxml \
-               gmp opencl libsee nvapi
+               libsee nvapi
 dirs_win64=winunits-base fastcgi ibase zlib oracle odbc postgres sqlite \
-                tcl opengl sdl openssl fcl-extra opencl nvapi graph openal
+                tcl sdl openssl fcl-extra nvapi graph openal
 dirs_wince=fastcgi tcl unzip zlib sqlite ibase postgres oracle odbc sdl openssl oggvorbis
 dirs_palmos=
 dirs_go32v2=graph unzip
-dirs_wii=libogcfpc
+dirs_wii=
 dirs_arm_nds=
 
 [install]
@@ -163,11 +163,6 @@ fcl-json_smart: fcl-base_smart
 fcl-json_release: fcl-base_release
 fcl-json_shared: fcl-base_shared
 
-fcl-js_all: fcl-base_all
-fcl-js_debug: fcl-base_debug
-fcl-js_smart: fcl-base_smart
-fcl-js_release: fcl-base_release
-fcl-js_shared: fcl-base_shared
 
 fcl-image_all: fcl-base_all paszlib_all pasjpeg_all
 fcl-image_debug: fcl-base_debug paszlib_debug pasjpeg_debug
@@ -188,25 +183,20 @@ fcl-registry_release: fpmkunit_release fcl-xml_release
 fcl-registry_shared: fpmkunit_shared fcl-xml_shared
 
 ifeq ($(findstring $(OS_TARGET),linux darwin iphonesim freebsd openbsd netbsd solaris dragonfly),)
-fcl-net_all: fpmkunit_all fcl-passrc_all fcl-xml_all
-fcl-net_debug: fpmkunit_debug fcl-passrc_debug fcl-xml_debug
-fcl-net_smart: fpmkunit_smart fcl-passrc_smart fcl-xml_smart
-fcl-net_release: fpmkunit_release fcl-passrc_release fcl-xml_release
-fcl-net_shared: fpmkunit_shared fcl-passrc_shared fcl-xml_shared
+fcl-net_all: fpmkunit_all fcl-xml_all
+fcl-net_debug: fpmkunit_debug fcl-xml_debug
+fcl-net_smart: fpmkunit_smart fcl-xml_smart
+fcl-net_release: fpmkunit_release fcl-xml_release
+fcl-net_shared: fpmkunit_shared fcl-xml_shared
 else
-fcl-net_all: fpmkunit_all fcl-passrc_all fcl-xml_all fcl-async_all
-fcl-net_debug: fpmkunit_debug fcl-passrc_debug fcl-xml_debug fcl-async_debug
-fcl-net_smart: fpmkunit_smart fcl-passrc_smart fcl-xml_smart fcl-async_smart
-fcl-net_release: fpmkunit_release fcl-passrc_release fcl-xml_release fcl-async_release
-fcl-net_shared: fpmkunit_shared fcl-passrc_shared fcl-xml_shared fcl-async_shared
+fcl-net_all: fpmkunit_all fcl-xml_all fcl-async_all
+fcl-net_debug: fpmkunit_debug fcl-xml_debug fcl-async_debug
+fcl-net_smart: fpmkunit_smart fcl-xml_smart fcl-async_smart
+fcl-net_release: fpmkunit_release fcl-xml_release fcl-async_release
+fcl-net_shared: fpmkunit_shared fcl-xml_shared fcl-async_shared
 endif
 
 
-fcl-passrc_all: fpmkunit_all fcl-base_all
-fcl-passrc_debug: fpmkunit_debug fcl-base_debug
-fcl-passrc_smart: fpmkunit_smart fcl-base_smart
-fcl-passrc_release: fpmkunit_release fcl-base_release
-fcl-passrc_shared: fpmkunit_shared  fcl-base_shared
 
 fastcgi_all: fpmkunit_all
 fastcgi_debug: fpmkunit_debug
@@ -248,11 +238,11 @@ fcl-db_shared: fcl-xml_shared fcl-base_shared fcl-json_shared fpmkunit_shared
 endif
 endif
 
-fcl_all: fcl-base_all fcl-xml_all fcl-fpcunit_all fcl-db_all fcl-registry_all fcl-passrc_all fcl-image_all fcl-net_all fcl-json_all fcl-res_all
-fcl_debug: fcl-base_debug fcl-xml_debug fcl-fpcunit_debug fcl-db_debug fcl-registry_debug fcl-passrc_debug fcl-image_debug fcl-net_debug fcl-json_debug fcl-res_debug
-fcl_smart: fcl-base_smart fcl-xml_smart fcl-fpcunit_smart fcl-db_smart fcl-registry_smart fcl-passrc_smart fcl-image_smart fcl-net_smart fcl-json_smart fcl-res_smart
-fcl_release: fcl-base_release fcl-xml_release fcl-fpcunit_release fcl-db_release fcl-registry_release fcl-passrc_release fcl-image_release fcl-net_release fcl-json_release fcl-res_release
-fcl_shared: fcl-base_shared fcl-xml_shared fcl-fpcunit_shared fcl-db_shared fcl-registry_shared fcl-passrc_shared fcl-image_shared fcl-net_shared fcl-json_shared fcl-res_shared
+fcl_all: fcl-base_all fcl-xml_all fcl-fpcunit_all fcl-db_all fcl-registry_all fcl-image_all fcl-net_all fcl-json_all fcl-res_all
+fcl_debug: fcl-base_debug fcl-xml_debug fcl-fpcunit_debug fcl-db_debug fcl-registry_debug fcl-image_debug fcl-net_debug fcl-json_debug fcl-res_debug
+fcl_smart: fcl-base_smart fcl-xml_smart fcl-fpcunit_smart fcl-db_smart fcl-registry_smart fcl-image_smart fcl-net_smart fcl-json_smart fcl-res_smart
+fcl_release: fcl-base_release fcl-xml_release fcl-fpcunit_release fcl-db_release fcl-registry_release fcl-image_release fcl-net_release fcl-json_release fcl-res_release
+fcl_shared: fcl-base_shared fcl-xml_shared fcl-fpcunit_shared fcl-db_shared fcl-registry_shared fcl-image_shared fcl-net_shared fcl-json_shared fcl-res_shared
 
 libpng_all: zlib_all fpmkunit_all
 libpng_debug: zlib_debug fpmkunit_debug
@@ -319,11 +309,6 @@ sdl_smart: pthreads_smart x11_smart fpmkunit_smart
 sdl_debug: pthreads_debug x11_debug fpmkunit_debug
 sdl_release: pthreads_release x11_release_release
 
-opengl_all: x11_all fpmkunit_all
-opengl_shared: x11_shared fpmkunit_shared
-opengl_smart: x11_smart fpmkunit_smart
-opengl_debug: x11_debug fpmkunit_debug
-opengl_release: x11_release fpmkunit_release
 
 else
 sdl_all: fpmkunit_all
@@ -332,11 +317,6 @@ sdl_smart: fpmkunit_smart
 sdl_debug: fpmkunit_debug
 sdl_release: fpmkunit_release
 
-opengl_all: fpmkunit_all
-opengl_shared: fpmkunit_shared
-opengl_smart: fpmkunit_smart
-opengl_debug: fpmkunit_debug
-opengl_release: fpmkunit_release
 
 endif
 
@@ -380,11 +360,6 @@ fcl-xml_debug: iconvenc_debug
 fcl-xml_release: iconvenc_release
 endif
 
-opencl_all:  opengl_all fpmkunit_all
-opencl_debug:  opengl_debug fpmkunit_debug
-opencl_smart:  opengl_smart fpmkunit_smart
-opencl_release:  opengl_release fpmkunit_release
-opencl_shared:  opengl_shared fpmkunit_shared
 
 libc_all: fpmkunit_all
 libc_shared: fpmkunit_shared
@@ -404,11 +379,6 @@ libgd_smart: fpmkunit_smart
 libgd_debug: fpmkunit_debug
 libgd_release: fpmkunit_release
 
-libogcfpc_all: fpmkunit_all
-libogcfpc_shared: fpmkunit_shared
-libogcfpc_smart: fpmkunit_smart
-libogcfpc_debug: fpmkunit_debug
-libogcfpc_release: fpmkunit_release
 
 libsee_all: fpmkunit_all
 libsee_shared: fpmkunit_shared
@@ -453,11 +423,6 @@ dts_smart: fpmkunit_smart
 dts_debug: fpmkunit_debug
 dts_release: fpmkunit_release
 
-fcl-stl_all: fpmkunit_all
-fcl-stl_shared: fpmkunit_shared
-fcl-stl_smart: fpmkunit_smart
-fcl-stl_debug: fpmkunit_debug
-fcl-stl_release: fpmkunit_release
 
 
 sqlite_all: fpmkunit_all

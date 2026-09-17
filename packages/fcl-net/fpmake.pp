@@ -20,7 +20,6 @@ begin
     P.Version:='3.3.1';
     P.Dependencies.Add('fcl-base');
     P.Dependencies.Add('fcl-xml');
-    P.Dependencies.Add('fcl-passrc');
     P.Dependencies.Add('fcl-async',[linux,freebsd,netbsd,openbsd,dragonfly]);
     P.Dependencies.Add('rtl-extra');
 

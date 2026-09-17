@@ -2447,7 +2447,7 @@ TESTDIRECTDIRS=
 TESTSUBDIRS=cg cg/variants cg/cdecl cpu8/avr cpu16 cpu16/i8086 library opt wasm $(addprefix units/,$(TESTUNITDIRS))
 TESTPACKAGESDIRS=bzip2 cocoaint fcl-base fcl-db fcl-image fcl-registry fcl-xml hash rtl-objpas univint webtbs win-base zlib
 TESTPACKAGESUBDIRS=$(addprefix packages/,$(TESTPACKAGESDIRS))
-TESTPACKAGESDIRECTDIRS=rtl-objpas rtl-generics hash regexpr fcl-registry fcl-passrc fcl-json fcl-image fcl-process libtar
+TESTPACKAGESDIRECTDIRS=rtl-objpas rtl-generics hash regexpr fcl-registry fcl-json fcl-image fcl-process libtar
 TESTPACKAGESDIRECTSUBDIRS=$(addprefix ../packages/,$(addsuffix /tests,$(TESTPACKAGESDIRECTDIRS)))
 ifdef QUICKTEST
 export QUICKTEST

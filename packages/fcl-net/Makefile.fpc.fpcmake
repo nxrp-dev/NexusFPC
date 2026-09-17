@@ -25,7 +25,7 @@ units_wince=resolve ssockets
 units_aros=resolve ssockets
 
 [require]
-packages=fcl-base fcl-xml fcl-passrc fcl-async
+packages=fcl-base fcl-xml fcl-async
 
 [compiler]
 options=-S2h

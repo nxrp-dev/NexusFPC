@@ -1285,7 +1285,6 @@ begin
     P.Sources.AddExampleFiles('examples/filechooser/*',P.Directory,false,'filechooser');
     P.Sources.AddExampleFiles('examples/gettingstarted/*',P.Directory,false,'gettingstarted');
     P.Sources.AddExampleFiles('examples/gtk_demo/*',P.Directory,false,'gtk_demo');
-    P.Sources.AddExampleFiles('examples/gtkglext/*',P.Directory,false,'gtkglext');
     P.Sources.AddExampleFiles('examples/helloworld/*',P.Directory,false,'helloworld');
     P.Sources.AddExampleFiles('examples/helloworld2/*',P.Directory,false,'helloworld2');
     P.Sources.AddExampleFiles('examples/plugins/*',P.Directory,false,'plugins');

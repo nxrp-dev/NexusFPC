@@ -6,8 +6,6 @@
 
 {$include fpcreslipo/fpmake.pp}
 
-{$include pas2fpm/fpmake.pp}
-
 {$include pas2jni/fpmake.pp}
 
 {$include rmwait/fpmake.pp}

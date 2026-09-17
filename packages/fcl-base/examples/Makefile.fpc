@@ -35,7 +35,7 @@ programs_emx=isockcli isocksvr testhres testnres testsres testrhre \
 rst=restest
 
 [require]
-packages=fcl-base fcl-db fcl-fpcunit fcl-image fcl-net fcl-passrc fcl-registry fcl-xml
+packages=fcl-base fcl-db fcl-fpcunit fcl-image fcl-net fcl-registry fcl-xml
 
 [install]
 fpcpackage=y

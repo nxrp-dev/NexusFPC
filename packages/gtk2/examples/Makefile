@@ -367,292 +367,292 @@ FPCFPMAKE=$(FPC)
 endif
 endif
 ifeq ($(CPU_OS_TARGET),i386-linux)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),i386-go32v2)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),i386-win32)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),i386-freebsd)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),i386-beos)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),i386-haiku)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),i386-netbsd)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),i386-solaris)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),i386-openbsd)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),i386-wdosx)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),i386-darwin)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),i386-watcom)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),i386-wince)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),i386-embedded)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),i386-symbian)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),i386-nativent)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),i386-iphonesim)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),i386-android)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),m68k-linux)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),m68k-netbsd)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),m68k-atari)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),m68k-macosclassic)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),m68k-embedded)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),m68k-sinclairql)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),m68k-human68k)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-linux)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-netbsd)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-macosclassic)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-darwin)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-embedded)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-wii)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-aix)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),sparc-linux)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),sparc-netbsd)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),sparc-solaris)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),sparc-embedded)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-linux)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-freebsd)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-haiku)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-netbsd)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-solaris)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-openbsd)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-darwin)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-win64)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-embedded)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-iphonesim)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-android)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-dragonfly)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),arm-linux)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),arm-netbsd)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),arm-wince)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),arm-gba)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),arm-nds)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),arm-embedded)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),arm-symbian)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),arm-android)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),arm-freertos)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),arm-ios)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-linux)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-darwin)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-embedded)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-aix)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),avr-embedded)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),armeb-linux)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),armeb-embedded)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),mips-linux)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),mipsel-linux)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),mipsel-embedded)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),mipsel-android)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),mipsel-ps1)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),mips64-linux)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),mips64el-linux)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),jvm-java)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),jvm-android)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),i8086-embedded)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),i8086-msdos)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-linux)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-freebsd)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-darwin)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-win64)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-embedded)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-iphonesim)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-android)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-ios)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),wasm32-embedded)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),sparc64-linux)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),riscv32-linux)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),riscv32-embedded)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),riscv32-freertos)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),riscv64-linux)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),riscv64-embedded)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),xtensa-linux)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),xtensa-embedded)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),xtensa-freertos)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),z80-embedded)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 ifeq ($(CPU_OS_TARGET),loongarch64-linux)
-override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple gtkglext
+override TARGET_DIRS+=helloworld helloworld2 gtk_demo gettingstarted plugins scribble_simple
 endif
 override INSTALL_FPCPACKAGE=y
 ifdef REQUIRE_UNITSDIR
@@ -1398,387 +1398,291 @@ endif
 override REQUIRE_PACKAGES=gtk2
 ifeq ($(CPU_OS_TARGET),i386-linux)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-go32v2)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-win32)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-freebsd)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-beos)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-haiku)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-netbsd)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-solaris)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-openbsd)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-wdosx)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-darwin)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-watcom)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-wince)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-embedded)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-symbian)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-nativent)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-iphonesim)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-android)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),m68k-linux)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),m68k-netbsd)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),m68k-atari)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),m68k-macosclassic)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),m68k-embedded)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),m68k-sinclairql)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),m68k-human68k)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-linux)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-netbsd)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-macosclassic)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-darwin)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-embedded)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-wii)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-aix)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),sparc-linux)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),sparc-netbsd)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),sparc-solaris)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),sparc-embedded)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-linux)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-freebsd)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-haiku)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-netbsd)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-solaris)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-openbsd)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-darwin)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-win64)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-embedded)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-iphonesim)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-android)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-dragonfly)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-linux)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-netbsd)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-wince)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-gba)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-nds)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-embedded)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-symbian)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-android)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-freertos)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-ios)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-linux)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-darwin)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-embedded)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-aix)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),avr-embedded)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),armeb-linux)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),armeb-embedded)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),mips-linux)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),mipsel-linux)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),mipsel-embedded)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),mipsel-android)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),mipsel-ps1)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),mips64-linux)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),mips64el-linux)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),jvm-java)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),jvm-android)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),i8086-embedded)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),i8086-msdos)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-linux)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-freebsd)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-darwin)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-win64)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-embedded)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-iphonesim)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-android)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-ios)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),wasm32-embedded)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),sparc64-linux)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),riscv32-linux)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),riscv32-embedded)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),riscv32-freertos)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),riscv64-linux)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),riscv64-embedded)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),xtensa-linux)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),xtensa-embedded)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),xtensa-freertos)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),z80-embedded)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifeq ($(CPU_OS_TARGET),loongarch64-linux)
 REQUIRE_PACKAGES_GTK2=1
-REQUIRE_PACKAGES_OPENGL=1
 endif
 ifdef REQUIRE_PACKAGES_GTK2
 PACKAGEDIR_GTK2:=$(firstword $(subst /Makefile.fpc,,$(strip $(wildcard $(addsuffix /gtk2/Makefile.fpc,$(PACKAGESDIR))))))
@@ -1822,50 +1726,6 @@ override COMPILER_UNITDIR+=$(UNITDIR_GTK2)
 endif
 ifdef UNITDIR_FPMAKE_GTK2
 override COMPILER_FPMAKE_UNITDIR+=$(UNITDIR_FPMAKE_GTK2)
-endif
-endif
-ifdef REQUIRE_PACKAGES_OPENGL
-PACKAGEDIR_OPENGL:=$(firstword $(subst /Makefile.fpc,,$(strip $(wildcard $(addsuffix /opengl/Makefile.fpc,$(PACKAGESDIR))))))
-ifeq ($(PACKAGEDIR_OPENGL),)
-PACKAGEDIR_OPENGL:=$(firstword $(subst /Makefile,,$(strip $(wildcard $(addsuffix /opengl/Makefile,$(PACKAGESDIR))))))
-ifneq ($(PACKAGEDIR_OPENGL),)
-PACKAGEDIR_OPENGL:=$(firstword $(subst /fpmake.pp,,$(strip $(wildcard $(addsuffix /opengl/fpmake.pp,$(PACKAGESDIR))))))
-endif
-endif
-ifneq ($(PACKAGEDIR_OPENGL),)
-ifneq ($(wildcard $(PACKAGEDIR_OPENGL)/units/$(TARGETSUFFIX)),)
-UNITDIR_OPENGL=$(PACKAGEDIR_OPENGL)/units/$(TARGETSUFFIX)
-else
-UNITDIR_OPENGL=$(PACKAGEDIR_OPENGL)
-endif
-ifneq ($(wildcard $(PACKAGEDIR_OPENGL)/units/$(SOURCESUFFIX)),)
-UNITDIR_FPMAKE_OPENGL=$(PACKAGEDIR_OPENGL)/units/$(SOURCESUFFIX)
-else
-ifneq ($(wildcard $(PACKAGEDIR_OPENGL)/units_bs/$(SOURCESUFFIX)),)
-UNITDIR_FPMAKE_OPENGL=$(PACKAGEDIR_OPENGL)/units_bs/$(SOURCESUFFIX)
-else
-UNITDIR_FPMAKE_OPENGL=$(PACKAGEDIR_OPENGL)
-endif
-endif
-ifdef CHECKDEPEND
-$(PACKAGEDIR_OPENGL)/$(FPCMADE):
-	$(MAKE) -C $(PACKAGEDIR_OPENGL) $(FPCMADE)
-override ALLDEPENDENCIES+=$(PACKAGEDIR_OPENGL)/$(FPCMADE)
-endif
-else
-PACKAGEDIR_OPENGL=
-UNITDIR_OPENGL:=$(subst /Package.fpc,,$(strip $(wildcard $(addsuffix /opengl/Package.fpc,$(UNITSDIR)))))
-ifneq ($(UNITDIR_OPENGL),)
-UNITDIR_OPENGL:=$(firstword $(UNITDIR_OPENGL))
-else
-UNITDIR_OPENGL=
-endif
-endif
-ifdef UNITDIR_OPENGL
-override COMPILER_UNITDIR+=$(UNITDIR_OPENGL)
-endif
-ifdef UNITDIR_FPMAKE_OPENGL
-override COMPILER_FPMAKE_UNITDIR+=$(UNITDIR_FPMAKE_OPENGL)
 endif
 endif
 ifndef NOCPUDEF
@@ -2259,7 +2119,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-go32v2)
 TARGET_DIRS_HELLOWORLD=1
@@ -2268,7 +2127,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-win32)
 TARGET_DIRS_HELLOWORLD=1
@@ -2277,7 +2135,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-freebsd)
 TARGET_DIRS_HELLOWORLD=1
@@ -2286,7 +2143,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-beos)
 TARGET_DIRS_HELLOWORLD=1
@@ -2295,7 +2151,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-haiku)
 TARGET_DIRS_HELLOWORLD=1
@@ -2304,7 +2159,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-netbsd)
 TARGET_DIRS_HELLOWORLD=1
@@ -2313,7 +2167,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-solaris)
 TARGET_DIRS_HELLOWORLD=1
@@ -2322,7 +2175,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-openbsd)
 TARGET_DIRS_HELLOWORLD=1
@@ -2331,7 +2183,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-wdosx)
 TARGET_DIRS_HELLOWORLD=1
@@ -2340,7 +2191,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-darwin)
 TARGET_DIRS_HELLOWORLD=1
@@ -2349,7 +2199,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-watcom)
 TARGET_DIRS_HELLOWORLD=1
@@ -2358,7 +2207,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-wince)
 TARGET_DIRS_HELLOWORLD=1
@@ -2367,7 +2215,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-embedded)
 TARGET_DIRS_HELLOWORLD=1
@@ -2376,7 +2223,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-symbian)
 TARGET_DIRS_HELLOWORLD=1
@@ -2385,7 +2231,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-nativent)
 TARGET_DIRS_HELLOWORLD=1
@@ -2394,7 +2239,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-iphonesim)
 TARGET_DIRS_HELLOWORLD=1
@@ -2403,7 +2247,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),i386-android)
 TARGET_DIRS_HELLOWORLD=1
@@ -2412,7 +2255,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),m68k-linux)
 TARGET_DIRS_HELLOWORLD=1
@@ -2421,7 +2263,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),m68k-netbsd)
 TARGET_DIRS_HELLOWORLD=1
@@ -2430,7 +2271,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),m68k-atari)
 TARGET_DIRS_HELLOWORLD=1
@@ -2439,7 +2279,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),m68k-macosclassic)
 TARGET_DIRS_HELLOWORLD=1
@@ -2448,7 +2287,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),m68k-embedded)
 TARGET_DIRS_HELLOWORLD=1
@@ -2457,7 +2295,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),m68k-sinclairql)
 TARGET_DIRS_HELLOWORLD=1
@@ -2466,7 +2303,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),m68k-human68k)
 TARGET_DIRS_HELLOWORLD=1
@@ -2475,7 +2311,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-linux)
 TARGET_DIRS_HELLOWORLD=1
@@ -2484,7 +2319,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-netbsd)
 TARGET_DIRS_HELLOWORLD=1
@@ -2493,7 +2327,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-macosclassic)
 TARGET_DIRS_HELLOWORLD=1
@@ -2502,7 +2335,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-darwin)
 TARGET_DIRS_HELLOWORLD=1
@@ -2511,7 +2343,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-embedded)
 TARGET_DIRS_HELLOWORLD=1
@@ -2520,7 +2351,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-wii)
 TARGET_DIRS_HELLOWORLD=1
@@ -2529,7 +2359,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc-aix)
 TARGET_DIRS_HELLOWORLD=1
@@ -2538,7 +2367,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),sparc-linux)
 TARGET_DIRS_HELLOWORLD=1
@@ -2547,7 +2375,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),sparc-netbsd)
 TARGET_DIRS_HELLOWORLD=1
@@ -2556,7 +2383,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),sparc-solaris)
 TARGET_DIRS_HELLOWORLD=1
@@ -2565,7 +2391,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),sparc-embedded)
 TARGET_DIRS_HELLOWORLD=1
@@ -2574,7 +2399,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-linux)
 TARGET_DIRS_HELLOWORLD=1
@@ -2583,7 +2407,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-freebsd)
 TARGET_DIRS_HELLOWORLD=1
@@ -2592,7 +2415,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-haiku)
 TARGET_DIRS_HELLOWORLD=1
@@ -2601,7 +2423,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-netbsd)
 TARGET_DIRS_HELLOWORLD=1
@@ -2610,7 +2431,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-solaris)
 TARGET_DIRS_HELLOWORLD=1
@@ -2619,7 +2439,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-openbsd)
 TARGET_DIRS_HELLOWORLD=1
@@ -2628,7 +2447,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-darwin)
 TARGET_DIRS_HELLOWORLD=1
@@ -2637,7 +2455,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-win64)
 TARGET_DIRS_HELLOWORLD=1
@@ -2646,7 +2463,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-embedded)
 TARGET_DIRS_HELLOWORLD=1
@@ -2655,7 +2471,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-iphonesim)
 TARGET_DIRS_HELLOWORLD=1
@@ -2664,7 +2479,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-android)
 TARGET_DIRS_HELLOWORLD=1
@@ -2673,7 +2487,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),x86_64-dragonfly)
 TARGET_DIRS_HELLOWORLD=1
@@ -2682,7 +2495,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-linux)
 TARGET_DIRS_HELLOWORLD=1
@@ -2691,7 +2503,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-netbsd)
 TARGET_DIRS_HELLOWORLD=1
@@ -2700,7 +2511,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-wince)
 TARGET_DIRS_HELLOWORLD=1
@@ -2709,7 +2519,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-gba)
 TARGET_DIRS_HELLOWORLD=1
@@ -2718,7 +2527,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-nds)
 TARGET_DIRS_HELLOWORLD=1
@@ -2727,7 +2535,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-embedded)
 TARGET_DIRS_HELLOWORLD=1
@@ -2736,7 +2543,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-symbian)
 TARGET_DIRS_HELLOWORLD=1
@@ -2745,7 +2551,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-android)
 TARGET_DIRS_HELLOWORLD=1
@@ -2754,7 +2559,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-freertos)
 TARGET_DIRS_HELLOWORLD=1
@@ -2763,7 +2567,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),arm-ios)
 TARGET_DIRS_HELLOWORLD=1
@@ -2772,7 +2575,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-linux)
 TARGET_DIRS_HELLOWORLD=1
@@ -2781,7 +2583,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-darwin)
 TARGET_DIRS_HELLOWORLD=1
@@ -2790,7 +2591,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-embedded)
 TARGET_DIRS_HELLOWORLD=1
@@ -2799,7 +2599,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),powerpc64-aix)
 TARGET_DIRS_HELLOWORLD=1
@@ -2808,7 +2607,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),avr-embedded)
 TARGET_DIRS_HELLOWORLD=1
@@ -2817,7 +2615,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),armeb-linux)
 TARGET_DIRS_HELLOWORLD=1
@@ -2826,7 +2623,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),armeb-embedded)
 TARGET_DIRS_HELLOWORLD=1
@@ -2835,7 +2631,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),mips-linux)
 TARGET_DIRS_HELLOWORLD=1
@@ -2844,7 +2639,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),mipsel-linux)
 TARGET_DIRS_HELLOWORLD=1
@@ -2853,7 +2647,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),mipsel-embedded)
 TARGET_DIRS_HELLOWORLD=1
@@ -2862,7 +2655,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),mipsel-android)
 TARGET_DIRS_HELLOWORLD=1
@@ -2871,7 +2663,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),mipsel-ps1)
 TARGET_DIRS_HELLOWORLD=1
@@ -2880,7 +2671,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),mips64-linux)
 TARGET_DIRS_HELLOWORLD=1
@@ -2889,7 +2679,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),mips64el-linux)
 TARGET_DIRS_HELLOWORLD=1
@@ -2898,7 +2687,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),jvm-java)
 TARGET_DIRS_HELLOWORLD=1
@@ -2907,7 +2695,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),jvm-android)
 TARGET_DIRS_HELLOWORLD=1
@@ -2916,7 +2703,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),i8086-embedded)
 TARGET_DIRS_HELLOWORLD=1
@@ -2925,7 +2711,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),i8086-msdos)
 TARGET_DIRS_HELLOWORLD=1
@@ -2934,7 +2719,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-linux)
 TARGET_DIRS_HELLOWORLD=1
@@ -2943,7 +2727,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-freebsd)
 TARGET_DIRS_HELLOWORLD=1
@@ -2952,7 +2735,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-darwin)
 TARGET_DIRS_HELLOWORLD=1
@@ -2961,7 +2743,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-win64)
 TARGET_DIRS_HELLOWORLD=1
@@ -2970,7 +2751,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-embedded)
 TARGET_DIRS_HELLOWORLD=1
@@ -2979,7 +2759,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-iphonesim)
 TARGET_DIRS_HELLOWORLD=1
@@ -2988,7 +2767,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-android)
 TARGET_DIRS_HELLOWORLD=1
@@ -2997,7 +2775,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),aarch64-ios)
 TARGET_DIRS_HELLOWORLD=1
@@ -3006,7 +2783,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),wasm32-embedded)
 TARGET_DIRS_HELLOWORLD=1
@@ -3015,7 +2791,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),sparc64-linux)
 TARGET_DIRS_HELLOWORLD=1
@@ -3024,7 +2799,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),riscv32-linux)
 TARGET_DIRS_HELLOWORLD=1
@@ -3033,7 +2807,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),riscv32-embedded)
 TARGET_DIRS_HELLOWORLD=1
@@ -3042,7 +2815,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),riscv32-freertos)
 TARGET_DIRS_HELLOWORLD=1
@@ -3051,7 +2823,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),riscv64-linux)
 TARGET_DIRS_HELLOWORLD=1
@@ -3060,7 +2831,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),riscv64-embedded)
 TARGET_DIRS_HELLOWORLD=1
@@ -3069,7 +2839,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),xtensa-linux)
 TARGET_DIRS_HELLOWORLD=1
@@ -3078,7 +2847,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),xtensa-embedded)
 TARGET_DIRS_HELLOWORLD=1
@@ -3087,7 +2855,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),xtensa-freertos)
 TARGET_DIRS_HELLOWORLD=1
@@ -3096,7 +2863,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),z80-embedded)
 TARGET_DIRS_HELLOWORLD=1
@@ -3105,7 +2871,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifeq ($(CPU_OS_TARGET),loongarch64-linux)
 TARGET_DIRS_HELLOWORLD=1
@@ -3114,7 +2879,6 @@ TARGET_DIRS_GTK_DEMO=1
 TARGET_DIRS_GETTINGSTARTED=1
 TARGET_DIRS_PLUGINS=1
 TARGET_DIRS_SCRIBBLE_SIMPLE=1
-TARGET_DIRS_GTKGLEXT=1
 endif
 ifdef TARGET_DIRS_HELLOWORLD
 helloworld_all:
@@ -3385,51 +3149,6 @@ scribble_simple_makefiles:
 scribble_simple:
 	$(MAKE) -C scribble_simple all
 .PHONY: scribble_simple_all scribble_simple_debug scribble_simple_smart scribble_simple_release scribble_simple_units scribble_simple_examples scribble_simple_shared scribble_simple_install scribble_simple_sourceinstall scribble_simple_exampleinstall scribble_simple_distinstall scribble_simple_zipinstall scribble_simple_zipsourceinstall scribble_simple_zipexampleinstall scribble_simple_zipdistinstall scribble_simple_clean scribble_simple_distclean scribble_simple_cleanall scribble_simple_info scribble_simple_makefiles scribble_simple
-endif
-ifdef TARGET_DIRS_GTKGLEXT
-gtkglext_all:
-	$(MAKE) -C gtkglext all
-gtkglext_debug:
-	$(MAKE) -C gtkglext debug
-gtkglext_smart:
-	$(MAKE) -C gtkglext smart
-gtkglext_release:
-	$(MAKE) -C gtkglext release
-gtkglext_units:
-	$(MAKE) -C gtkglext units
-gtkglext_examples:
-	$(MAKE) -C gtkglext examples
-gtkglext_shared:
-	$(MAKE) -C gtkglext shared
-gtkglext_install:
-	$(MAKE) -C gtkglext install
-gtkglext_sourceinstall:
-	$(MAKE) -C gtkglext sourceinstall
-gtkglext_exampleinstall:
-	$(MAKE) -C gtkglext exampleinstall
-gtkglext_distinstall:
-	$(MAKE) -C gtkglext distinstall
-gtkglext_zipinstall:
-	$(MAKE) -C gtkglext zipinstall
-gtkglext_zipsourceinstall:
-	$(MAKE) -C gtkglext zipsourceinstall
-gtkglext_zipexampleinstall:
-	$(MAKE) -C gtkglext zipexampleinstall
-gtkglext_zipdistinstall:
-	$(MAKE) -C gtkglext zipdistinstall
-gtkglext_clean:
-	$(MAKE) -C gtkglext clean
-gtkglext_distclean:
-	$(MAKE) -C gtkglext distclean
-gtkglext_cleanall:
-	$(MAKE) -C gtkglext cleanall
-gtkglext_info:
-	$(MAKE) -C gtkglext info
-gtkglext_makefiles:
-	$(MAKE) -C gtkglext makefiles
-gtkglext:
-	$(MAKE) -C gtkglext all
-.PHONY: gtkglext_all gtkglext_debug gtkglext_smart gtkglext_release gtkglext_units gtkglext_examples gtkglext_shared gtkglext_install gtkglext_sourceinstall gtkglext_exampleinstall gtkglext_distinstall gtkglext_zipinstall gtkglext_zipsourceinstall gtkglext_zipexampleinstall gtkglext_zipdistinstall gtkglext_clean gtkglext_distclean gtkglext_cleanall gtkglext_info gtkglext_makefiles gtkglext
 endif
 all: $(addsuffix _all,$(TARGET_DIRS))
 debug: $(addsuffix _debug,$(TARGET_DIRS))
